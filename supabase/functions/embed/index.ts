@@ -25,7 +25,9 @@ Deno.serve(async (req) => {
     })
 
     const rawJobs = await queueRes.json()
+    console.log('pgmq read raw response:', JSON.stringify(rawJobs))
     const jobs = Array.isArray(rawJobs) ? rawJobs : (rawJobs ? [rawJobs] : [])
+    console.log('jobs array length:', jobs.length)
     if (!jobs || jobs.length === 0) {
       return new Response(JSON.stringify({ processed: 0 }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
