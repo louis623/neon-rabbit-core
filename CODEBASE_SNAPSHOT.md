@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-10_
+_Generated: 2026-04-10 (updated)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -11,6 +11,7 @@ _Generated: 2026-04-10_
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 16.2.1, React 19.2.4, Tailwind CSS 4, TypeScript 5 |
+| Chrome Extension | Manifest V3, vanilla JS, chrome.storage + chrome.alarms APIs |
 | Backend / DB | Supabase (Postgres, pgvector, pgmq, pg_net, pg_cron) |
 | Edge Functions | Deno + Hono (MCP) or plain Deno.serve |
 | AI / Embeddings | OpenRouter API (openai/text-embedding-3-small) |
@@ -201,4 +202,52 @@ Chrome extension (live show)
 Website component
   → Supabase Realtime subscription on live_queue
   → Real-time queue display to viewers
+```
+
+---
+
+## Chrome Extension (`chrome-extension/`)
+
+Manifest V3 extension that scrapes the Bomb Party back-office live-party-orders page and syncs the unrevealed queue to the `live-queue-sync` edge function.
+
+**Three inviolable rules:** No page refreshes. No DOM writes on the BP page. No alerts/popups/thrown errors.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `manifest.json` | MV3 manifest: permissions (storage, alarms), host (myoffice.bombparty.com), content script + service worker + popup |
+| `content.js` | Read-only DOM scraper — finds the orders table by header text, observes tbody for row changes, scrapes unrevealed first names, pushes to edge function |
+| `background.js` | Service worker — 60s alarm triggers content script sync via message passing |
+| `popup.html/css/js` | Setup UI (sync code input) and status UI (toggle, last sync time, status dot) |
+| `icons/` | Pink (#ec4899) placeholder icons with white sparkle (16/48/128px) |
+
+### Hardening (Codex-reviewed)
+
+- **Table discovery:** Finds the specific table whose `<thead>` contains both "First Name" and "Revealed" headers (case-insensitive, whitespace-normalized). Not just the first table on the page.
+- **Column detection:** Dynamic index lookup by header text — survives column reordering.
+- **Checkbox detection:** Multi-pattern: native checkbox, ARIA, checkmark chars, CSS class.
+- **Queue ordering:** Sorts by "Order Date" column if present; otherwise reverses DOM order (assumes newest-first).
+- **Row filtering:** Skips empty/short names, canceled/refunded status, deduplicates.
+- **Observer:** `{ childList: true, subtree: false }` on `<tbody>` only — fires on row add/remove, not attribute churn. 3-second debounce.
+- **Deduplication:** Queue hash comparison skips push if unchanged since last successful push.
+- **In-flight lock:** `isSyncing` flag prevents overlapping requests.
+- **Fetch timeout:** 8-second AbortController timeout.
+- **Auth failure:** 401 response pauses syncing until popup re-enables.
+- **Dead DOM recovery:** Checks `tbody.isConnected` before each scrape; re-discovers table if detached.
+- **Table retry cap:** 20 attempts (10 minutes), then stops. 60s alarm still re-triggers.
+- **Storage split:** `chrome.storage.sync` for settings (sync_code, enabled). `chrome.storage.local` for runtime state (lastSyncTime, lastSyncStatus).
+- **Message errors:** `chrome.runtime.lastError` silently consumed in background.js.
+
+### Data Flow
+
+```
+Bomb Party live-party-orders page
+  → content.js scrapes <tbody> rows
+  → Filters: unrevealed, not canceled, name >= 2 chars, deduplicated
+  → Sorts oldest-first (by Order Date or reversed DOM order)
+  → Hashes queue, skips if unchanged
+  → POST to live-queue-sync edge function (x-sync-key header)
+  → Edge function updates live_queue table
+  → Supabase Realtime pushes to website subscribers
 ```

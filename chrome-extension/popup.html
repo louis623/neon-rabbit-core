@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=280">
+  <link rel="stylesheet" href="popup.css">
+  <title>Sparkle Suite</title>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">&#10024; Sparkle Suite</span>
+  </div>
+
+  <div class="body">
+    <!-- Setup View -->
+    <div id="setup-view">
+      <label for="sync-input">Enter your Sync Code</label>
+      <input type="text" id="sync-input" placeholder="e.g. MHF-7342" maxlength="8" spellcheck="false" autocomplete="off">
+      <div id="setup-error" class="error"></div>
+      <button id="save-btn">Save</button>
+    </div>
+
+    <!-- Active View -->
+    <div id="active-view" class="hidden">
+      <div class="info-row">
+        <span class="label">Sync Code</span>
+        <span id="display-code" class="value code"></span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Syncing</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-enabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Last Sync</span>
+        <span class="value">
+          <span id="status-dot" class="dot"></span>
+          <span id="last-sync-time"></span>
+        </span>
+      </div>
+
+      <div class="footer">
+        <a href="#" id="reset-link">Reset</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
