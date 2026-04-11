@@ -44,6 +44,18 @@ function hashQueue(queue) {
 // ── Table discovery ─────────────────────────────────────────────
 
 function findTargetTable() {
+  // Primary: find by known ID
+  var byId = document.getElementById("party-order-table");
+  if (byId) return byId;
+
+  // Fallback: table inside div.table-responsive
+  var container = document.querySelector("div.table-responsive");
+  if (container) {
+    var nested = container.querySelector("table");
+    if (nested) return nested;
+  }
+
+  // Last resort: header-text scan
   var tables = document.querySelectorAll("table");
   for (var i = 0; i < tables.length; i++) {
     var thead = tables[i].querySelector("thead");

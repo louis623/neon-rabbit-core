@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-10 (updated)_
+_Generated: 2026-04-10T2 (updated)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -217,14 +217,14 @@ Manifest V3 extension that scrapes the Bomb Party back-office live-party-orders 
 | File | Purpose |
 |------|---------|
 | `manifest.json` | MV3 manifest: permissions (storage, alarms), host (myoffice.bombparty.com), content script + service worker + popup |
-| `content.js` | Read-only DOM scraper — finds the orders table by header text, observes tbody for row changes, scrapes unrevealed first names, pushes to edge function |
+| `content.js` | Read-only DOM scraper — finds the orders table by ID (`party-order-table`), fallback to `div.table-responsive`, fallback to header-text scan; observes tbody for row changes, scrapes unrevealed first names, pushes to edge function |
 | `background.js` | Service worker — 60s alarm triggers content script sync via message passing |
 | `popup.html/css/js` | Setup UI (sync code input) and status UI (toggle, last sync time, status dot) |
 | `icons/` | Pink (#ec4899) placeholder icons with white sparkle (16/48/128px) |
 
 ### Hardening (Codex-reviewed)
 
-- **Table discovery:** Finds the specific table whose `<thead>` contains both "First Name" and "Revealed" headers (case-insensitive, whitespace-normalized). Not just the first table on the page.
+- **Table discovery:** Three-tier lookup: (1) `#party-order-table` by ID, (2) first `<table>` inside `div.table-responsive`, (3) header-text scan for "First Name" + "Revealed" columns. Falls through until a match is found.
 - **Column detection:** Dynamic index lookup by header text — survives column reordering.
 - **Checkbox detection:** Multi-pattern: native checkbox, ARIA, checkmark chars, CSS class.
 - **Queue ordering:** Sorts by "Order Date" column if present; otherwise reverses DOM order (assumes newest-first).
