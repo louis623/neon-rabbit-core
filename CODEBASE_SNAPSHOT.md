@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-10T3 (updated)_
+_Generated: 2026-04-10T4 (updated)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -225,7 +225,7 @@ Manifest V3 extension that scrapes the Bomb Party back-office live-party-orders 
 ### Hardening (Codex-reviewed)
 
 - **Table discovery:** Three-tier lookup: (1) `#party-order-table` by ID, (2) first `<table>` inside `div.table-responsive`, (3) header-text scan for "First Name" + "Revealed" columns. Falls through until a match is found.
-- **Column detection:** Dynamic index lookup by header text — survives column reordering.
+- **Column detection:** Dynamic index lookup by header text — survives column reordering. `normalizeHeader` splits on `\n` and takes the first line only, so sort-indicator text appended by Bomb Party (e.g. "First Name\nDescending") doesn't break matching.
 - **Checkbox detection:** Multi-pattern: native checkbox, ARIA, checkmark chars, CSS class.
 - **Queue ordering:** Sorts by "Order Date" column if present; otherwise reverses DOM order (assumes newest-first).
 - **Row filtering:** Skips empty/short names, canceled/refunded status, deduplicates.

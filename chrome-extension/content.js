@@ -32,7 +32,7 @@ let enabled = true;
 // ── Helpers ─────────────────────────────────────────────────────
 
 function normalizeHeader(cell) {
-  return (cell.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+  return ((cell.textContent || "").split("\n")[0]).trim().toLowerCase();
 }
 
 function hashQueue(queue) {
