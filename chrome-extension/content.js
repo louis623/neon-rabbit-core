@@ -8,32 +8,28 @@ const SYNC_KEY = "K7mX9pQrN2vLsT4wHjBdCeF8aYuZgR6n";
 const LOG = "[SparkleSync]";
 const DEBOUNCE_MS = 3000;
 const FETCH_TIMEOUT_MS = 8000;
+const TABLE_WAIT_TIMEOUT_MS = 5000;
+const TABLE_POLL_MS = 2000;
 
 // ── Cached state ────────────────────────────────────────────────
 let cachedTable = null;
 let cachedTbody = null;
 let firstNameIdx = -1;
 let revealedIdx = -1;
-let orderDateIdx = -1;
-let statusIdx = -1;
-let hasOrderDateCol = false;
 
 let lastQueueHash = "";
 let isSyncing = false;
 let authFailed = false;
 let observer = null;
 let debounceTimer = null;
-let tableRetryTimer = null;
+let bodyObserver = null;
+let pollTimer = null;
 
 // Settings (cached from storage.sync, updated via onChanged)
 let syncCode = "";
 let enabled = true;
 
 // ── Helpers ─────────────────────────────────────────────────────
-
-function normalizeHeader(cell) {
-  return ((cell.textContent || "").split("\n")[0]).trim().toLowerCase();
-}
 
 function hashQueue(queue) {
   return JSON.stringify(queue);
@@ -42,33 +38,7 @@ function hashQueue(queue) {
 // ── Table discovery ─────────────────────────────────────────────
 
 function findTargetTable() {
-  // Primary: find by known ID
-  var byId = document.getElementById("party-order-table");
-  if (byId) return byId;
-
-  // Fallback: table inside div.table-responsive
-  var container = document.querySelector("div.table-responsive");
-  if (container) {
-    var nested = container.querySelector("table");
-    if (nested) return nested;
-  }
-
-  // Last resort: header-text scan
-  var tables = document.querySelectorAll("table");
-  for (var i = 0; i < tables.length; i++) {
-    var thead = tables[i].querySelector("thead");
-    if (!thead) continue;
-    var ths = thead.querySelectorAll("th");
-    var hasFirstName = false;
-    var hasRevealed = false;
-    for (var j = 0; j < ths.length; j++) {
-      var h = normalizeHeader(ths[j]);
-      if (h === "first name") hasFirstName = true;
-      if (h === "revealed") hasRevealed = true;
-    }
-    if (hasFirstName && hasRevealed) return tables[i];
-  }
-  return null;
+  return document.getElementById("party-order-table");
 }
 
 function findColumnIndices(table) {
@@ -77,48 +47,12 @@ function findColumnIndices(table) {
   var ths = thead.querySelectorAll("th");
   firstNameIdx = -1;
   revealedIdx = -1;
-  orderDateIdx = -1;
-  statusIdx = -1;
-  hasOrderDateCol = false;
   for (var i = 0; i < ths.length; i++) {
-    var h = normalizeHeader(ths[i]);
-    if (h === "first name") firstNameIdx = i;
-    else if (h === "revealed") revealedIdx = i;
-    else if (h === "order date") { orderDateIdx = i; hasOrderDateCol = true; }
-    else if (h === "order id") {
-      if (orderDateIdx === -1) { orderDateIdx = i; hasOrderDateCol = true; }
-    }
-    else if (h === "status") statusIdx = i;
+    var sortBy = ths[i].getAttribute("data-sort-by");
+    if (sortBy === "FirstName") firstNameIdx = i;
+    else if (sortBy === "IsRevealed") revealedIdx = i;
   }
   return firstNameIdx !== -1 && revealedIdx !== -1;
-}
-
-// ── Revealed detection (multi-pattern) ──────────────────────────
-
-function isRevealed(cell) {
-  // Pattern 1: native checkbox
-  var checkbox = cell.querySelector('input[type="checkbox"]');
-  if (checkbox) return checkbox.checked;
-
-  // Pattern 2: ARIA checkbox
-  var ariaEl = cell.querySelector('[role="checkbox"]');
-  if (ariaEl) return ariaEl.getAttribute("aria-checked") === "true";
-
-  // Pattern 3: checkmark characters
-  var text = cell.textContent || "";
-  if (/[✓✔☑]/.test(text)) return true;
-
-  // Pattern 4: class-based
-  var classes = (cell.className || "") + " ";
-  var children = cell.querySelectorAll("*");
-  for (var i = 0; i < children.length; i++) {
-    classes += (children[i].className || "") + " ";
-  }
-  classes = classes.toLowerCase();
-  if (classes.indexOf("checked") !== -1 || classes.indexOf("revealed") !== -1) return true;
-
-  // Default: not revealed → include in queue (safe default)
-  return false;
 }
 
 // ── Scraper ─────────────────────────────────────────────────────
@@ -130,7 +64,6 @@ function scrapeQueue() {
     if (!cachedTable) return null;
     if (!findColumnIndices(cachedTable)) return null;
     cachedTbody = cachedTable.querySelector("tbody");
-    // Re-attach observer to new tbody (or table if tbody still absent)
     if (observer) observer.disconnect();
     startObserver();
   }
@@ -138,55 +71,34 @@ function scrapeQueue() {
   // Table present but tbody absent — valid empty state
   if (!cachedTbody) return [];
 
-  var rows = cachedTbody.querySelectorAll("tr");
-  var entries = [];
+  var rows = cachedTbody.querySelectorAll("tr.product.product-row");
+  var names = [];
 
   for (var i = 0; i < rows.length; i++) {
     var cells = rows[i].querySelectorAll("td");
     if (cells.length <= firstNameIdx || cells.length <= revealedIdx) continue;
 
-    // Skip revealed items
-    if (isRevealed(cells[revealedIdx])) continue;
+    // Check revealed via checkbox
+    var checkbox = cells[revealedIdx].querySelector('input[type="checkbox"]');
+    if (!checkbox) continue;
+    if (checkbox.checked) continue; // already revealed — skip
 
-    // Skip canceled/refunded (if status column exists)
-    if (statusIdx !== -1 && cells.length > statusIdx) {
-      var st = (cells[statusIdx].textContent || "").trim().toLowerCase();
-      if (st === "canceled" || st === "cancelled" || st === "refunded") continue;
-    }
-
-    var name = (cells[firstNameIdx].textContent || "").trim();
-
-    // Skip empty or too-short names
+    var name = cells[firstNameIdx].textContent.trim();
     if (name.length < 2) continue;
 
-    var sortKey;
-    if (hasOrderDateCol && orderDateIdx !== -1 && cells.length > orderDateIdx) {
-      sortKey = (cells[orderDateIdx].textContent || "").trim();
-    } else {
-      sortKey = String(i).padStart(6, "0");
-    }
-
-    entries.push({ name: name, sortKey: sortKey, idx: i });
+    names.push(name);
   }
 
-  // Sort by sortKey ascending (oldest first)
-  if (hasOrderDateCol) {
-    entries.sort(function (a, b) {
-      return a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey ? 1 : 0;
-    });
-  } else {
-    // No date column — reverse DOM order (assumes newest-first display)
-    entries.reverse();
-  }
+  // Reverse: oldest unrevealed (currently being unboxed) comes first
+  names.reverse();
 
-  // Deduplicate by name (keep first occurrence after sort)
+  // Deduplicate (keep first occurrence after reverse)
   var seen = {};
   var queue = [];
-  for (var j = 0; j < entries.length; j++) {
-    var n = entries[j].name;
-    if (!seen[n]) {
-      seen[n] = true;
-      queue.push(n);
+  for (var j = 0; j < names.length; j++) {
+    if (!seen[names[j]]) {
+      seen[names[j]] = true;
+      queue.push(names[j]);
     }
   }
 
@@ -265,7 +177,7 @@ function syncIfNeeded() {
   }
 }
 
-// ── MutationObserver ────────────────────────────────────────────
+// ── MutationObserver (table rows) ───────────────────────────────
 
 function startObserver() {
   var target = cachedTbody || cachedTable;
@@ -274,61 +186,88 @@ function startObserver() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(syncIfNeeded, DEBOUNCE_MS);
   });
-  // If watching the full table (no tbody yet), use subtree to catch row additions
-  observer.observe(target, { childList: true, subtree: !cachedTbody });
+  observer.observe(target, { childList: true, subtree: !cachedTbody, attributes: true, attributeFilter: ["checked"] });
+}
+
+// ── Table appearance detection ───────────────────────────────────
+
+function onTableFound(table) {
+  // Stop watching for the table
+  if (bodyObserver) { bodyObserver.disconnect(); bodyObserver = null; }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
+  cachedTable = table;
+  if (!findColumnIndices(cachedTable)) {
+    console.log(LOG, "Table found but required columns (FirstName/IsRevealed) missing");
+    return;
+  }
+  cachedTbody = cachedTable.querySelector("tbody");
+  console.log(LOG, "Table found. Column indices — firstName:", firstNameIdx, "revealed:", revealedIdx);
+  startObserver();
+  syncIfNeeded();
+}
+
+function startTableWatcher() {
+  // Primary: MutationObserver on document.body
+  var timedOut = false;
+
+  bodyObserver = new MutationObserver(function () {
+    if (timedOut) return;
+    var table = findTargetTable();
+    if (table) {
+      timedOut = true; // prevent double-trigger
+      onTableFound(table);
+    }
+  });
+  bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Fallback: if not detected within 5s, switch to 2s polling
+  setTimeout(function () {
+    if (cachedTable) return; // already found
+    timedOut = true;
+    if (bodyObserver) { bodyObserver.disconnect(); bodyObserver = null; }
+    console.log(LOG, "MutationObserver timed out — falling back to 2s polling");
+
+    pollTimer = setInterval(function () {
+      var table = findTargetTable();
+      if (table) {
+        onTableFound(table);
+      }
+    }, TABLE_POLL_MS);
+  }, TABLE_WAIT_TIMEOUT_MS);
 }
 
 // ── Init ────────────────────────────────────────────────────────
 
 function init() {
-  // Load settings from storage.sync (one-time read, then listen for changes)
   chrome.storage.sync.get(["sync_code", "enabled"], function (data) {
     syncCode = data.sync_code || "";
-    enabled = data.enabled !== false; // default true
+    enabled = data.enabled !== false;
   });
 
-  // Listen for settings changes from popup
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area === "sync") {
       if (changes.sync_code) syncCode = changes.sync_code.newValue || "";
       if (changes.enabled !== undefined) {
         enabled = changes.enabled.newValue !== false;
-        // Reset auth failure flag when re-enabled
         if (enabled) authFailed = false;
       }
     }
   });
 
-  // Listen for alarm-triggered sync from background.js
   chrome.runtime.onMessage.addListener(function (msg) {
     if (msg && msg.action === "trigger-sync") {
       syncIfNeeded();
     }
   });
 
-  // Find and attach to the table
-  attemptTableDiscovery();
-}
-
-function attemptTableDiscovery() {
-  cachedTable = findTargetTable();
-  if (cachedTable && findColumnIndices(cachedTable)) {
-    // tbody may be absent or empty — both are valid; observer covers future rows
-    cachedTbody = cachedTable.querySelector("tbody");
-    console.log(LOG, "Table found. Columns:", {
-      firstName: firstNameIdx,
-      revealed: revealedIdx,
-      orderDate: orderDateIdx,
-      status: statusIdx,
-    });
-    startObserver();
-    syncIfNeeded(); // Initial sync — pushes [] if no rows yet
-    return;
+  // Check if table is already in the DOM (e.g. fast load or cached page)
+  var existing = findTargetTable();
+  if (existing) {
+    onTableFound(existing);
+  } else {
+    startTableWatcher();
   }
-
-  // Table or required columns not ready — keep retrying every 30s indefinitely
-  console.log(LOG, "Table not found, retrying in 30s…");
-  tableRetryTimer = setTimeout(attemptTableDiscovery, 30000);
 }
 
 // Entry point

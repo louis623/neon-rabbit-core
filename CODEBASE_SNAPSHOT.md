@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-10T4 (updated)_
+_Generated: 2026-04-10T5 (updated)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -217,25 +217,26 @@ Manifest V3 extension that scrapes the Bomb Party back-office live-party-orders 
 | File | Purpose |
 |------|---------|
 | `manifest.json` | MV3 manifest: permissions (storage, alarms), host (myoffice.bombparty.com), content script + service worker + popup |
-| `content.js` | Read-only DOM scraper — finds the orders table by ID (`party-order-table`), fallback to `div.table-responsive`, fallback to header-text scan; attaches MutationObserver even when table is empty (pushes `[]` until rows appear); observes tbody for row changes, scrapes unrevealed first names, pushes to edge function |
+| `content.js` | Read-only DOM scraper — finds the orders table by `#party-order-table` ID only (no fallbacks); uses `data-sort-by` attribute on `<th>` elements (`FirstName`, `IsRevealed`) for column detection, not textContent; selects `<tr class="product product-row">` rows from tbody; reads checkbox.checked for revealed state; attaches MutationObserver on document.body to detect table appearance (5s timeout then falls back to 2s polling); observes tbody for row/attribute changes; reverses DOM order for oldest-first queue; pushes to edge function |
 | `background.js` | Service worker — 60s alarm triggers content script sync via message passing |
 | `popup.html/css/js` | Setup UI (sync code input) and status UI (toggle, last sync time, status dot) |
 | `icons/` | Pink (#ec4899) placeholder icons with white sparkle (16/48/128px) |
 
 ### Hardening (Codex-reviewed)
 
-- **Table discovery:** Three-tier lookup: (1) `#party-order-table` by ID, (2) first `<table>` inside `div.table-responsive`, (3) header-text scan for "First Name" + "Revealed" columns. Falls through until a match is found.
-- **Column detection:** Dynamic index lookup by header text — survives column reordering. `normalizeHeader` splits on `\n` and takes the first line only, so sort-indicator text appended by Bomb Party (e.g. "First Name\nDescending") doesn't break matching.
-- **Checkbox detection:** Multi-pattern: native checkbox, ARIA, checkmark chars, CSS class.
-- **Queue ordering:** Sorts by "Order Date" column if present; otherwise reverses DOM order (assumes newest-first).
-- **Row filtering:** Skips empty/short names, canceled/refunded status, deduplicates.
-- **Observer:** Attaches to `<tbody>` with `subtree: false` when tbody present; falls back to observing `<table>` with `subtree: true` when tbody absent (catches first row insertions). 3-second debounce.
+- **Table discovery:** `document.getElementById("party-order-table")` — single stable ID, no fallbacks.
+- **Table appearance timing:** MutationObserver on `document.body` detects table insertion after JS renders it. If table isn't found within 5 seconds, falls back to `setInterval` polling every 2 seconds indefinitely. Checks for existing table immediately on init (fast-load case).
+- **Column detection:** Reads `data-sort-by` attribute on each `<th>` — `"FirstName"` → firstNameIdx, `"IsRevealed"` → revealedIdx. Never uses textContent (avoids "Ascending"/"Descending" noise from sort dropdowns).
+- **Row selection:** `tbody.querySelectorAll("tr.product.product-row")` — matches Bomb Party's exact row classes.
+- **Revealed check:** `cells[revealedIdx].querySelector('input[type="checkbox"]').checked` — direct native checkbox property.
+- **Queue ordering:** Reverses DOM order (oldest unrevealed = currently being unboxed comes first). No date-column sort.
+- **Row filtering:** Skips revealed rows, skips names < 2 chars, deduplicates by name.
+- **Observer:** Attaches to `<tbody>` (`subtree: false`) or `<table>` (`subtree: true`) with `attributeFilter: ["checked"]`. 3-second debounce.
 - **Deduplication:** Queue hash comparison skips push if unchanged since last successful push.
 - **In-flight lock:** `isSyncing` flag prevents overlapping requests.
 - **Fetch timeout:** 8-second AbortController timeout.
 - **Auth failure:** 401 response pauses syncing until popup re-enables.
 - **Dead DOM recovery:** Checks `tbody.isConnected` before each scrape; re-discovers table if detached.
-- **Table retry:** Retries every 30s indefinitely — no cap. Page may be open before any orders arrive; table becomes ready whenever it does.
 - **Storage split:** `chrome.storage.sync` for settings (sync_code, enabled). `chrome.storage.local` for runtime state (lastSyncTime, lastSyncStatus).
 - **Message errors:** `chrome.runtime.lastError` silently consumed in background.js.
 
