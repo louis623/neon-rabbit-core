@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-10T6 (updated)_
+_Generated: 2026-04-12 (updated)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -74,7 +74,7 @@ Isolated Open Brain instance for user March.
 - `id`, `content`, `embedding vector(1536)`, `type`, `topics TEXT[]`, `people TEXT[]`, `action_items TEXT[]`, `metadata JSONB`
 - RPCs: `match_thoughts_march()`, `upsert_thought_march()`
 
-### `live_queue` ← NEW
+### `live_queue`
 Live sales queue sync table — Chrome extension writes, website reads via Realtime.
 - `id UUID PK`, `rep_id UUID`, `sync_code TEXT UNIQUE`, `queue JSONB DEFAULT '[]'`, `last_updated TIMESTAMPTZ`, `created_at TIMESTAMPTZ`
 - Index: `idx_live_queue_sync_code`
@@ -89,6 +89,45 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 | Bri | Bri's Glowtique | BGL-2463 |
 | Heather | The Bling Kitchen | TBK-9157 |
 | Kara | Sprinkled in Diamonds | SID-6284 |
+
+### Sparkle Suite Tables (16 tables — migration 006)
+
+**Core:**
+- `reps` — central table, linked to auth.users. Columns: display_name, business_name, email, phone, custom_domain, template_id, shop_link, streaming_links (JSONB), social_handles (JSONB), profile_photo_url, camera_source, status (rep_status enum)
+- `collections` — Bomb Party jewelry collections (shared across all reps). Columns: name (UNIQUE)
+- `jewelry_designs` — proprietary BP jewelry database. Columns: item_number (UNIQUE), design_name, collection_id (FK), material, main_stone, bp_msrp, canonical_photo_url, special_features, length_info, type_prefix (jewelry_type enum), times_traded, times_listed
+
+**Trade Board:**
+- `trade_listings` — individual listings on a rep's board. Columns: rep_id (FK), design_id (FK), listing_photo_url, uses_canonical_photo, trade_preferences, rep_notes, status (listing_status enum), removal_reason, listed_at
+- `trade_requests` — customer-submitted trade requests. Columns: listing_id (FK), customer_name, customer_description, status (trade_request_status enum), rejection_reason, rep_notes
+- `trade_fulfillment` — post-approval pipeline (approved → shipped → completed). Columns: request_id (FK UNIQUE), fulfillment_status, shipping_notes, received_listing_id (FK), status_updated_at, completed_at
+
+**Rep Operations:**
+- `calendar_events` — show schedule. Columns: rep_id (FK), platform, event_time, duration_minutes, discount_code, discount_description, description, is_recurring, recurrence_rule, status (event_status enum)
+- `customer_audience` — TCPA/CAN-SPAM compliant subscriber list. Columns: rep_id (FK), name, phone, email, sms_consent, email_consent, marketing_consent, consent_date, sms_opted_out_at, email_opted_out_at, stop_keyword_received_at
+- `sms_wallet` — pre-loaded SMS balance ($25 min load). Columns: rep_id (FK UNIQUE), balance, auto_recharge_enabled, auto_recharge_threshold, auto_recharge_amount, minimum_load_amount, last_loaded_at
+- `wallet_transactions` — wallet load/charge log. Columns: wallet_id (FK), type (wallet_transaction_type enum), amount, stripe_fee, stripe_payment_intent_id, description
+- `message_log` — SMS/email send records. Columns: rep_id (FK), channel (message_channel enum), recipient, content_preview, screening_result, screening_notes, delivery_status, cost, is_automated, sent_at
+- `rep_notes` — Thumper memory (chronological summaries). Columns: rep_id (FK), summary, conversation_date
+- `rep_messages` — dashboard-delivered messages (reports, newsletters, support). Columns: rep_id (FK), message_type (rep_message_type enum), direction (message_direction enum), subject, body, is_read, read_at
+- `site_settings` — per-rep website customization. Columns: rep_id (FK UNIQUE), banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page
+- `subscriptions` — Stripe subscription management. Columns: rep_id (FK UNIQUE), stripe_subscription_id (UNIQUE), stripe_customer_id, plan_tier (plan_tier enum), status (subscription_status enum), monthly_amount, current_period_start, current_period_end, cancelled_at, cancelled_reason, cancellation_effective_date
+- `onboarding_status` — onboarding pipeline with photography kit tracking. Columns: rep_id (FK UNIQUE), current_stage (onboarding_stage enum), completed_steps (JSONB), camera_type, camera_quality_passed, lightbox_shipped, lightbox_shipped_at, kit_received, kit_received_at, started_at, completed_at
+
+**17 Enums:** rep_status, listing_status, trade_request_status, fulfillment_status, event_status, plan_tier, subscription_status, wallet_transaction_type, message_channel, screening_result, delivery_status, rep_message_type, message_direction, onboarding_stage, removal_reason, rejection_reason, jewelry_type
+
+**RLS:** Enabled on all 16 tables. Standard pattern: rep sees own data, admin (louis@neonrabbit.net) sees all. Special cases: jewelry_designs/collections have shared read; trade_requests allows public INSERT.
+
+**Realtime:** trade_requests, trade_listings, calendar_events, rep_messages
+
+**RPC Functions (SECURITY DEFINER):**
+- `rpc_submit_trade_request(p_listing_id, p_customer_name, p_customer_description)` — atomic: insert request + set listing to pending_trade
+- `rpc_approve_trade(p_request_id, p_rep_notes)` — atomic: approve request + set listing traded + create fulfillment + increment times_traded
+- `rpc_reject_trade(p_request_id, p_reason, p_rep_notes)` — atomic: deny request + restore listing to available
+
+**Notable Indexes:**
+- `idx_one_pending_request_per_listing` — partial unique index enforcing one pending request per listing
+- `idx_designs_fulltext` — GIN index for full-text search on design_name, material, main_stone
 
 ---
 
@@ -156,6 +195,7 @@ Telegram message handler:
 | `003_neon_rabbit_hq.sql` | Business management tables: projects, financials, expenses, clients, todos, ideas |
 | `004_march_open_brain.sql` | Isolated thoughts_march table + RPCs for user March |
 | `005_live_queue.sql` | live_queue table, RLS, seeded 5 rep rows, Realtime enabled |
+| `006_sparkle_suite_schema.sql` | Sparkle Suite platform: 16 tables, 17 enums, all indexes, RLS policies, Realtime (4 tables), 3 RPC functions |
 
 ---
 
