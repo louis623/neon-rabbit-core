@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-12 (updated)_
+_Generated: 2026-04-12 (Phase 0.3 + 0.6 complete)_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -13,10 +13,94 @@ _Generated: 2026-04-12 (updated)_
 | Frontend | Next.js 16.2.1, React 19.2.4, Tailwind CSS 4, TypeScript 5 |
 | Chrome Extension | Manifest V3, vanilla JS, chrome.storage + chrome.alarms APIs |
 | Backend / DB | Supabase (Postgres, pgvector, pgmq, pg_net, pg_cron) |
+| Auth | Supabase Auth (email/password), @supabase/ssr for SSR cookie handling |
 | Edge Functions | Deno + Hono (MCP) or plain Deno.serve |
 | AI / Embeddings | OpenRouter API (openai/text-embedding-3-small) |
 | Messaging | Telegram Bot API (node-telegram-bot-api) |
 | Deployment | Supabase Cloud (us-east-1, ref: bqhzfkgkjyuhlsozpylf) |
+
+---
+
+## Directory Tree
+
+```
+sparkle-suite/
+├── app/
+│   ├── api/
+│   │   ├── open-brain/context/route.ts
+│   │   └── telegram/route.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── chrome-extension/
+│   ├── background.js
+│   ├── content.js
+│   ├── manifest.json
+│   ├── popup.css
+│   ├── popup.js
+│   └── icons/
+├── lib/
+│   ├── supabase.ts              ← re-exports from supabase/client.ts
+│   ├── supabase/
+│   │   ├── client.ts            ← browser client (@supabase/ssr)
+│   │   ├── server.ts            ← server client (cookie-aware)
+│   │   └── admin.ts             ← service role client (bypasses RLS)
+│   └── telegram-bot.ts
+├── scripts/
+│   └── seed-test-rep.ts         ← idempotent test rep seeder
+├── supabase/
+│   ├── config.toml
+│   ├── functions/
+│   │   ├── embed/index.ts
+│   │   ├── live-queue-sync/index.ts
+│   │   ├── open-brain-mcp/index.ts
+│   │   └── open-brain-mcp-march/index.ts
+│   └── migrations/
+│       ├── 001_initial_schema.sql
+│       ├── 002_open_brain_embedding_pipeline.sql
+│       ├── 003_neon_rabbit_hq.sql
+│       ├── 004_march_open_brain.sql
+│       ├── 005_live_queue.sql
+│       ├── 006_sparkle_suite_schema.sql
+│       └── 007_fix_reps_admin_rls_recursion.sql
+├── vault/                        ← project docs/notes
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+└── CODEBASE_SNAPSHOT.md
+```
+
+---
+
+## Dependencies
+
+```json
+{
+  "@supabase/supabase-js": "^2.100.1",
+  "@supabase/ssr": "^0.7.0",
+  "next": "16.2.1",
+  "react": "19.2.4",
+  "react-dom": "19.2.4",
+  "node-telegram-bot-api": "^0.67.0"
+}
+```
+
+Dev: TypeScript 5, Tailwind CSS 4, ESLint 9, tsx, dotenv
+
+---
+
+## Auth Architecture (Phase 0.3)
+
+- **Provider:** Supabase Auth — email/password only (no social, no magic link yet)
+- **Self-registration:** Disabled. Louis creates rep accounts via admin API during onboarding.
+- **Auth users:**
+  - `louis@neonrabbit.net` — admin (full cross-rep visibility via RLS)
+  - `testrep@neonrabbit.net` — development sandbox rep account
+- **Link to data:** `reps.auth_user_id` references `auth.users(id)`
+- **Client utilities:**
+  - `lib/supabase/client.ts` — browser client (createBrowserClient from @supabase/ssr)
+  - `lib/supabase/server.ts` — server client (createServerClient with cookie handling)
+  - `lib/supabase/admin.ts` — service role client (bypasses RLS, for admin operations)
 
 ---
 
@@ -81,7 +165,7 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 - RLS: Public SELECT (anyone can read), writes via service role only
 - Realtime: enabled via `supabase_realtime` publication
 
-**Seeded reps:**
+**Seeded reps (live_queue):**
 | Rep | Client | Sync Code |
 |-----|--------|-----------|
 | Lindsey | Mile High Fizz | MHF-7342 |
@@ -116,7 +200,7 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 
 **17 Enums:** rep_status, listing_status, trade_request_status, fulfillment_status, event_status, plan_tier, subscription_status, wallet_transaction_type, message_channel, screening_result, delivery_status, rep_message_type, message_direction, onboarding_stage, removal_reason, rejection_reason, jewelry_type
 
-**RLS:** Enabled on all 16 tables. Standard pattern: rep sees own data, admin (louis@neonrabbit.net) sees all. Special cases: jewelry_designs/collections have shared read; trade_requests allows public INSERT.
+**RLS:** Enabled on all 16 tables. Standard pattern: rep sees own data, admin (louis@neonrabbit.net) sees all. Admin check on `reps` table uses `auth.jwt() ->> 'email'` (fixed in migration 007 to avoid recursion). All other tables check admin via subquery on `reps`. Special cases: jewelry_designs/collections have shared read; trade_requests allows public INSERT.
 
 **Realtime:** trade_requests, trade_listings, calendar_events, rep_messages
 
@@ -128,6 +212,31 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 **Notable Indexes:**
 - `idx_one_pending_request_per_listing` — partial unique index enforcing one pending request per listing
 - `idx_designs_fulltext` — GIN index for full-text search on design_name, material, main_stone
+
+---
+
+## Test Rep Seed Data (Phase 0.6)
+
+Account: `testrep@neonrabbit.net` — permanent development sandbox.
+
+| Table | Seeded Data |
+|-------|-------------|
+| reps | 'Demo Rep', 'Sparkle Suite Demo', active |
+| site_settings | tagline, banner, ticker — all visible |
+| sms_wallet | $25.00 balance |
+| subscriptions | monthly, active, $0 (test) |
+| onboarding_status | stage: launched, phone_fallback camera |
+| collections | March 2026, Galaxy, Celestial |
+| jewelry_designs | RG31452, NK66139, ER84972, ST78951, BR22415 |
+| trade_listings | 3 listed (RG31452, NK66139, ER84972) |
+| calendar_events | Friday Night Fizz, Sunday Sparkle Session |
+| rep_notes | 1 Thumper memory note |
+
+Seed script: `scripts/seed-test-rep.ts` (run via `npx tsx scripts/seed-test-rep.ts`)
+- Idempotent — cleans up existing test rep data before re-inserting
+- Uses service role client to bypass RLS
+- Dynamically looks up auth user IDs (no hardcoded UUIDs)
+- Also creates Louis's admin rep row if missing
 
 ---
 
@@ -150,7 +259,7 @@ Mirror of open-brain-mcp for user March.
 ### `embed`
 Background worker: reads from `embed_jobs` pgmq queue, generates OpenAI embeddings, writes back to `open_brain`.
 
-### `live-queue-sync` ← NEW
+### `live-queue-sync`
 REST endpoint for Chrome extension → live_queue table sync.
 - Auth: `x-sync-key: LIVE_QUEUE_SYNC_KEY` header (32-char alphanumeric secret)
 - Method: `POST`
@@ -177,12 +286,32 @@ REST endpoint for Chrome extension → live_queue table sync.
 ## Lib
 
 ### `lib/supabase.ts`
-Singleton Supabase client (anon key).
+Re-exports `createClient` from `lib/supabase/client.ts`.
+
+### `lib/supabase/client.ts`
+Browser Supabase client using `createBrowserClient` from `@supabase/ssr`.
+
+### `lib/supabase/server.ts`
+Server-side Supabase client with Next.js cookie handling via `createServerClient` from `@supabase/ssr`.
+
+### `lib/supabase/admin.ts`
+Service role Supabase client — bypasses RLS. For admin operations and seeding.
 
 ### `lib/telegram-bot.ts`
 Telegram message handler:
 - `generateEmbedding(text)` — OpenAI embeddings
 - `handleTelegramUpdate(body)` — receives webhook, stores message to `open_brain`
+
+---
+
+## Scripts
+
+### `scripts/seed-test-rep.ts`
+Idempotent seed script for the test rep development sandbox.
+- Creates auth users (louis@neonrabbit.net, testrep@neonrabbit.net) if not present
+- Cleans up existing test rep data, then re-seeds across 10 tables
+- Runs verification: auth sign-in, data presence, RLS isolation, admin visibility
+- Run: `npx tsx scripts/seed-test-rep.ts`
 
 ---
 
@@ -196,6 +325,7 @@ Telegram message handler:
 | `004_march_open_brain.sql` | Isolated thoughts_march table + RPCs for user March |
 | `005_live_queue.sql` | live_queue table, RLS, seeded 5 rep rows, Realtime enabled |
 | `006_sparkle_suite_schema.sql` | Sparkle Suite platform: 16 tables, 17 enums, all indexes, RLS policies, Realtime (4 tables), 3 RPC functions |
+| `007_fix_reps_admin_rls_recursion.sql` | Fix: admin RLS on reps table uses JWT claim instead of self-referencing subquery |
 
 ---
 
@@ -203,9 +333,9 @@ Telegram message handler:
 
 | Variable | Used In |
 |----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Frontend + API routes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Frontend (public read access) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-side + edge functions (bypasses RLS) |
+| `NEXT_PUBLIC_SUPABASE_URL` | All Supabase clients |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server clients (public, RLS-enforced) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin client + edge functions (bypasses RLS) |
 | `OPENAI_API_KEY` | Telegram bot embeddings, context API route |
 | `TELEGRAM_BOT_TOKEN` | Telegram webhook handler |
 | `MCP_ACCESS_KEY` | open-brain-mcp auth |
@@ -242,6 +372,11 @@ Chrome extension (live show)
 Website component
   → Supabase Realtime subscription on live_queue
   → Real-time queue display to viewers
+
+Rep dashboard (future)
+  → lib/supabase/server.ts (SSR, cookie auth)
+  → RLS-enforced queries (rep sees own data only)
+  → Admin (Louis) sees all via JWT email check
 ```
 
 ---
@@ -271,24 +406,6 @@ Manifest V3 extension that scrapes the Bomb Party back-office live-party-orders 
 | `background.js` | Service worker — 60s alarm triggers content script sync via message passing |
 | `popup.html/css/js` | Setup UI (sync code input) and status UI (toggle, last sync time, status dot) |
 | `icons/` | Pink (#ec4899) placeholder icons with white sparkle (16/48/128px) |
-
-### Hardening (Codex-reviewed)
-
-- **Table discovery:** `document.getElementById("party-order-table")` — single stable ID, no fallbacks.
-- **Table appearance timing:** MutationObserver on `document.body` detects table insertion after JS renders it. If table isn't found within 5 seconds, falls back to `setInterval` polling every 2 seconds indefinitely. Checks for existing table immediately on init (fast-load case).
-- **Column detection:** Reads `data-sort-by` attribute on each `<th>` — `"FirstName"` → firstNameIdx, `"IsRevealed"` → revealedIdx. Never uses textContent (avoids "Ascending"/"Descending" noise from sort dropdowns).
-- **Row selection:** `tbody.querySelectorAll("tr.product.product-row")` — matches Bomb Party's exact row classes.
-- **Revealed check:** `cells[revealedIdx].querySelector('input[type="checkbox"]').checked` — direct native checkbox property.
-- **Queue ordering:** Reverses DOM order (oldest unrevealed = currently being unboxed comes first). No date-column sort.
-- **Row filtering:** Skips revealed rows, skips names < 2 chars, deduplicates by name.
-- **Observer:** Attaches to `<tbody>` (`subtree: false`) or `<table>` (`subtree: true`) with `attributeFilter: ["checked"]`. 3-second debounce.
-- **Deduplication:** Queue hash comparison skips push if unchanged since last successful push.
-- **In-flight lock:** `isSyncing` flag prevents overlapping requests.
-- **Fetch timeout:** 8-second AbortController timeout.
-- **Auth failure:** 401 response pauses syncing until popup re-enables.
-- **Dead DOM recovery:** Checks `tbody.isConnected` before each scrape; re-discovers table if detached.
-- **Storage split:** `chrome.storage.sync` for settings (sync_code, enabled). `chrome.storage.local` for runtime state (lastSyncTime, lastSyncStatus).
-- **Message errors:** `chrome.runtime.lastError` silently consumed in background.js.
 
 ### Data Flow
 
