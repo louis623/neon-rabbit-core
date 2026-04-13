@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-12_
+_Generated: 2026-04-13_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -13,6 +13,7 @@ _Generated: 2026-04-12_
 | Frontend | Next.js 16.2.1, React 19.2.4, Tailwind CSS 4, TypeScript 5 |
 | Chrome Extension | Manifest V3, vanilla JS, chrome.storage + chrome.alarms APIs |
 | Backend / DB | Supabase (Postgres, pgvector, pgmq, pg_net, pg_cron) |
+| Payments | Stripe (v22, dahlia API), subscription billing, webhooks, customer portal |
 | Auth | Supabase Auth (email/password), @supabase/ssr for SSR cookie handling |
 | Edge Functions | Deno + Hono (MCP) or plain Deno.serve |
 | AI / Embeddings | OpenRouter API (openai/text-embedding-3-small) |
@@ -28,6 +29,12 @@ sparkle-suite/
 ├── app/
 │   ├── api/
 │   │   ├── open-brain/context/route.ts
+│   │   ├── stripe/
+│   │   │   ├── create-checkout/route.ts
+│   │   │   ├── create-portal-session/route.ts
+│   │   │   ├── subscription-status/route.ts
+│   │   │   ├── sync/route.ts
+│   │   │   └── webhook/route.ts
 │   │   └── telegram/route.ts
 │   ├── globals.css
 │   ├── layout.tsx
@@ -40,8 +47,14 @@ sparkle-suite/
 │   ├── popup.js
 │   └── icons/
 ├── lib/
+│   ├── stripe/
+│   │   ├── config.ts            ← Zod env validation, lazy-loaded
+│   │   ├── client.ts            ← Stripe instance (v22 dahlia API)
+│   │   ├── customers.ts         ← create/getOrCreate Stripe customer
+│   │   └── refunds.ts           ← pro-rata refund calculation + state machine
 │   ├── supabase.ts              ← re-exports from supabase/client.ts
 │   ├── supabase/
+│   │   ├── auth.ts              ← getAuthenticatedRep() for API route auth
 │   │   ├── client.ts            ← browser client (@supabase/ssr)
 │   │   ├── server.ts            ← server client (cookie-aware)
 │   │   └── admin.ts             ← service role client (bypasses RLS)
@@ -62,8 +75,10 @@ sparkle-suite/
 │       ├── 004_march_open_brain.sql
 │       ├── 005_live_queue.sql
 │       ├── 006_sparkle_suite_schema.sql
-│       └── 007_fix_reps_admin_rls_recursion.sql
+│       ├── 007_fix_reps_admin_rls_recursion.sql
+│       └── 008_stripe_billing.sql
 ├── vault/                        ← project docs/notes
+├── .env.example
 ├── package.json
 ├── tsconfig.json
 ├── next.config.ts
@@ -77,11 +92,13 @@ sparkle-suite/
 ```json
 {
   "@supabase/supabase-js": "^2.100.1",
-  "@supabase/ssr": "^0.7.0",
+  "@supabase/ssr": "^0.10.2",
   "next": "16.2.1",
   "react": "19.2.4",
   "react-dom": "19.2.4",
-  "node-telegram-bot-api": "^0.67.0"
+  "node-telegram-bot-api": "^0.67.0",
+  "stripe": "^22.0.1",
+  "zod": "^3.x"
 }
 ```
 
@@ -195,8 +212,22 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 - `rep_notes` — Thumper memory (chronological summaries). Columns: rep_id (FK), summary, conversation_date
 - `rep_messages` — dashboard-delivered messages (reports, newsletters, support). Columns: rep_id (FK), message_type (rep_message_type enum), direction (message_direction enum), subject, body, is_read, read_at
 - `site_settings` — per-rep website customization. Columns: rep_id (FK UNIQUE), banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page
-- `subscriptions` — Stripe subscription management. Columns: rep_id (FK UNIQUE), stripe_subscription_id (UNIQUE), stripe_customer_id, plan_tier (plan_tier enum), status (subscription_status enum), monthly_amount, current_period_start, current_period_end, cancelled_at, cancelled_reason, cancellation_effective_date
+- `subscriptions` — Stripe subscription management. Columns: rep_id (FK UNIQUE), stripe_subscription_id (UNIQUE), stripe_customer_id, plan_tier (plan_tier enum), status (subscription_status enum), monthly_amount, current_period_start, current_period_end, cancelled_at, cancelled_reason, cancellation_effective_date, cancel_at_period_end (BOOLEAN), stripe_livemode (BOOLEAN), stripe_event_timestamp (BIGINT — for webhook race-condition protection)
 - `onboarding_status` — onboarding pipeline with photography kit tracking. Columns: rep_id (FK UNIQUE), current_stage (onboarding_stage enum), completed_steps (JSONB), camera_type, camera_quality_passed, lightbox_shipped, lightbox_shipped_at, kit_received, kit_received_at, started_at, completed_at
+
+### `stripe_events` (migration 008)
+Webhook idempotency ledger. PK is Stripe event ID (`evt_xxx`). Prevents duplicate processing.
+- `id TEXT PK`, `event_type TEXT`, `processed_at TIMESTAMPTZ`
+- RLS: service-role only (policy denies all user access)
+
+### `refund_operations` (migration 008)
+Pro-rata refund state machine. Tracks cancellation + refund as a two-step process.
+- `id UUID PK`, `subscription_id UUID FK`, `stripe_subscription_id TEXT`, `billing_period_start/end TIMESTAMPTZ`, `refund_amount_cents INTEGER`, `stripe_refund_id TEXT`, `stripe_livemode BOOLEAN`, `status TEXT` (pending/cancelled/refunded/failed), `error_message TEXT`, `completed_at TIMESTAMPTZ`
+- UNIQUE constraint: `(stripe_subscription_id, billing_period_start)` — prevents duplicate refund operations per period
+- RLS: service-role only
+
+**reps table additions (migration 008):**
+- `stripe_customer_id TEXT` — Stripe customer ID for direct lookup (indexed)
 
 **17 Enums:** rep_status, listing_status, trade_request_status, fulfillment_status, event_status, plan_tier, subscription_status, wallet_transaction_type, message_channel, screening_result, delivery_status, rep_message_type, message_direction, onboarding_stage, removal_reason, rejection_reason, jewelry_type
 
@@ -276,6 +307,11 @@ REST endpoint for Chrome extension → live_queue table sync.
 ### API Routes
 - `POST /api/telegram` — Telegram webhook → `handleTelegramUpdate()` → inserts to `open_brain`
 - `POST /api/open-brain/context` — Semantic search: takes `{ query, count }`, generates embedding, calls `match_open_brain()` RPC
+- `POST /api/stripe/create-checkout` — Authenticated. Creates Stripe Checkout Session for subscription. Checks for existing active sub (409). Server-built URLs only.
+- `POST /api/stripe/webhook` — Stripe webhook. Signature verified. Event-ID dedup via stripe_events table. Handles: checkout.session.completed, customer.subscription.updated/deleted, invoice.payment_succeeded/failed. Returns 500 on error (Stripe retries). Race-condition protection via stripe_event_timestamp.
+- `POST /api/stripe/create-portal-session` — Authenticated. Creates Stripe Customer Portal session for managing subscription/payment method.
+- `GET /api/stripe/subscription-status` — Authenticated. Returns current subscription status from Supabase (not Stripe API).
+- `POST /api/stripe/sync` — Authenticated. Reconciliation: fetches Stripe subscriptions, upserts Supabase to match, returns diff.
 
 ### Pages
 - `app/page.tsx` — Default Next.js home (placeholder, not customized yet)
@@ -294,8 +330,25 @@ Browser Supabase client using `createBrowserClient` from `@supabase/ssr`.
 ### `lib/supabase/server.ts`
 Server-side Supabase client with Next.js cookie handling via `createServerClient` from `@supabase/ssr`.
 
+### `lib/supabase/auth.ts`
+`getAuthenticatedRep()` — extracts authenticated user from request cookies via `@supabase/ssr`, looks up corresponding `reps` row. Used by all non-webhook Stripe routes. Throws `AuthError` on failure.
+
 ### `lib/supabase/admin.ts`
 Service role Supabase client — bypasses RLS. For admin operations and seeding.
+
+### `lib/stripe/config.ts`
+Zod schema validation for Stripe env vars. Lazy-loaded (deferred to first request, not module evaluation) to avoid build-time crashes. Fail-fast in production runtime, warn in dev. Exports: `getStripeConfig()`, `isStripeEnabled()`, `getPriceId()`, `getAppUrl()`.
+
+### `lib/stripe/client.ts`
+Lazy Stripe instance (v22, `2026-03-25.dahlia` API). Created on first call to `getStripe()`.
+
+### `lib/stripe/customers.ts`
+- `createStripeCustomer(repId, email, name)` — creates Stripe customer with `rep_id` + `platform: sparkle_suite` metadata, saves `stripe_customer_id` to reps table
+- `getOrCreateStripeCustomer(repId)` — idempotent: returns existing if reps.stripe_customer_id is set
+
+### `lib/stripe/refunds.ts`
+- `calculateProRataRefund(periodStart, periodEnd, amount)` — epoch-second math, clamped to [0, amount]
+- `processProRataRefund(subscriptionId)` — state machine: insert refund_operations → cancel in Stripe → refund via Stripe (with idempotency key). Handles partial failures: if cancel succeeds but refund fails, marks "cancelled" with error for manual attention.
 
 ### `lib/telegram-bot.ts`
 Telegram message handler:
@@ -326,6 +379,7 @@ Idempotent seed script for the test rep development sandbox.
 | `005_live_queue.sql` | live_queue table, RLS, seeded 5 rep rows, Realtime enabled |
 | `006_sparkle_suite_schema.sql` | Sparkle Suite platform: 16 tables, 17 enums, all indexes, RLS policies, Realtime (4 tables), 3 RPC functions |
 | `007_fix_reps_admin_rls_recursion.sql` | Fix: admin RLS on reps table uses JWT claim instead of self-referencing subquery |
+| `008_stripe_billing.sql` | Stripe billing infra: stripe_events (idempotency), refund_operations (state machine), subscriptions additions (cancel_at_period_end, stripe_livemode, stripe_event_timestamp), reps.stripe_customer_id |
 
 ---
 
@@ -342,6 +396,12 @@ Idempotent seed script for the test rep development sandbox.
 | `MCP_ACCESS_KEY_MARCH` | open-brain-mcp-march auth |
 | `OPENROUTER_API_KEY` | open-brain-mcp embeddings + metadata extraction |
 | `LIVE_QUEUE_SYNC_KEY` | live-queue-sync auth (Chrome extension secret) |
+| `STRIPE_SECRET_KEY` | Stripe API (sk_test_ or sk_live_) — required in production |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature verification (whsec_) — required in production |
+| `STRIPE_PRICE_MONTHLY` | Stripe Price ID for monthly plan (optional) |
+| `STRIPE_PRICE_QUARTERLY` | Stripe Price ID for quarterly plan (optional) |
+| `STRIPE_PRICE_ANNUAL` | Stripe Price ID for annual plan (optional) |
+| `NEXT_PUBLIC_APP_URL` | App base URL for checkout/portal redirect URLs |
 
 ---
 
@@ -377,6 +437,25 @@ Rep dashboard (future)
   → lib/supabase/server.ts (SSR, cookie auth)
   → RLS-enforced queries (rep sees own data only)
   → Admin (Louis) sees all via JWT email check
+
+Stripe subscription flow:
+  → POST /api/stripe/create-checkout (authenticated)
+  → Creates Stripe Checkout Session
+  → Redirect to Stripe-hosted payment page
+  → On success: Stripe fires checkout.session.completed webhook
+  → POST /api/stripe/webhook verifies signature + dedup
+  → Upserts subscriptions table, links stripe_customer_id to reps
+  → Subsequent changes: subscription.updated/deleted webhooks keep DB in sync
+  → invoice.payment_succeeded/failed update subscription status
+  → Rep can manage via Customer Portal (/api/stripe/create-portal-session)
+  → Manual reconciliation available via /api/stripe/sync
+
+Stripe pro-rata refund flow:
+  → processProRataRefund(subscriptionId) [lib/stripe/refunds.ts]
+  → Insert refund_operations row (pending)
+  → Cancel subscription in Stripe → status: cancelled
+  → Issue refund with idempotency key → status: refunded
+  → If refund fails after cancel: status stays cancelled, error logged for manual resolution
 ```
 
 ---
