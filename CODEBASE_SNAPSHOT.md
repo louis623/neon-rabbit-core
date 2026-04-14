@@ -66,6 +66,7 @@ sparkle-suite/
 │   ├── functions/
 │   │   ├── embed/index.ts
 │   │   ├── live-queue-sync/index.ts
+│   │   ├── nr-hq-mcp/index.ts       ← NR HQ build tracker MCP (read-only)
 │   │   ├── open-brain-mcp/index.ts
 │   │   └── open-brain-mcp-march/index.ts
 │   └── migrations/
@@ -286,6 +287,15 @@ Mirror of open-brain-mcp for user March.
 - Auth: `MCP_ACCESS_KEY_MARCH` header
 - Tables: `thoughts_march` (via `match_thoughts_march`, `upsert_thought_march`)
 - URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/open-brain-mcp-march`
+
+### `nr-hq-mcp`
+Read-only MCP server exposing NR HQ build tracker state to Claude Desktop / claude.ai.
+- Auth: `x-brain-key: MCP_ACCESS_KEY` header (query `?key=` fallback)
+- Tools: `get_phases`, `get_tasks`, `get_gates`, `get_action_cards`, `get_build_summary`
+- Tech: Hono + @modelcontextprotocol/sdk + Zod, anon Supabase client (public SELECT RLS)
+- Tables: `construction_phases`, `construction_tasks`, `construction_gates`, `build_action_log`
+- Default project: env `NR_HQ_DEFAULT_PROJECT` or `sparkle_suite`
+- URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/nr-hq-mcp`
 
 ### `embed`
 Background worker: reads from `embed_jobs` pgmq queue, generates OpenAI embeddings, writes back to `open_brain`.

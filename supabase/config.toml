@@ -33,3 +33,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/open-brain-status-updater/deno.json"
 entrypoint = "./functions/open-brain-status-updater/index.ts"
+
+[functions.nr-hq-mcp]
+enabled = true
+verify_jwt = false
+import_map = "./functions/nr-hq-mcp/deno.json"
+entrypoint = "./functions/nr-hq-mcp/index.ts"
