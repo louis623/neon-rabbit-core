@@ -1,5 +1,5 @@
 # Codebase Snapshot — Sparkle Suite
-_Generated: 2026-04-14_
+_Generated: 2026-04-15_
 
 ## Project
 **Sparkle Suite** — Louis's operational HQ and client platform for his social selling / live-sales business (Neon Rabbit brand). Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), and Telegram Bot integration.
@@ -13,11 +13,12 @@ _Generated: 2026-04-14_
 | Frontend | Next.js 16.2.1, React 19.2.4, Tailwind CSS 4, TypeScript 5 |
 | Chrome Extension | Manifest V3, vanilla JS, chrome.storage + chrome.alarms APIs |
 | Backend / DB | Supabase (Postgres, pgvector, pgmq, pg_net, pg_cron) |
-| Payments | Stripe (v22, dahlia API), subscription billing, webhooks, customer portal |
+| Payments | Stripe (v22, dahlia API), subscription billing, SMS wallet loads, auto-recharge, webhooks, customer portal |
 | Auth | Supabase Auth (email/password), @supabase/ssr for SSR cookie handling |
 | Edge Functions | Deno + Hono (MCP) or plain Deno.serve |
 | AI / Embeddings | OpenRouter API (openai/text-embedding-3-small) |
 | Messaging | Telegram Bot API (node-telegram-bot-api) |
+| Validation | Zod 4 |
 | Deployment | Supabase Cloud (us-east-1, ref: bqhzfkgkjyuhlsozpylf) |
 
 ---
@@ -34,6 +35,9 @@ sparkle-suite/
 │   │   │   ├── create-portal-session/route.ts
 │   │   │   ├── subscription-status/route.ts
 │   │   │   ├── sync/route.ts
+│   │   │   ├── wallet/
+│   │   │   │   ├── auto-recharge/route.ts     ← update auto-recharge settings
+│   │   │   │   └── load/route.ts              ← create checkout session for wallet load
 │   │   │   └── webhook/route.ts
 │   │   └── telegram/route.ts
 │   ├── globals.css
@@ -47,28 +51,33 @@ sparkle-suite/
 │   ├── popup.js
 │   └── icons/
 ├── lib/
+│   ├── services/
+│   │   └── wallet.ts             ← ensureWallet, deductSmsCharge, auto-recharge trigger
 │   ├── stripe/
-│   │   ├── config.ts            ← Zod env validation, lazy-loaded
-│   │   ├── client.ts            ← Stripe instance (v22 dahlia API)
-│   │   ├── customers.ts         ← create/getOrCreate Stripe customer
-│   │   └── refunds.ts           ← pro-rata refund calculation + state machine
-│   ├── supabase.ts              ← re-exports from supabase/client.ts
+│   │   ├── config.ts             ← Zod env validation, lazy-loaded
+│   │   ├── client.ts             ← Stripe instance (v22 dahlia API)
+│   │   ├── customers.ts          ← create/getOrCreate Stripe customer
+│   │   └── refunds.ts            ← pro-rata refund calculation + state machine
+│   ├── supabase.ts               ← re-exports from supabase/client.ts
 │   ├── supabase/
-│   │   ├── auth.ts              ← getAuthenticatedRep() for API route auth
-│   │   ├── client.ts            ← browser client (@supabase/ssr)
-│   │   ├── server.ts            ← server client (cookie-aware)
-│   │   └── admin.ts             ← service role client (bypasses RLS)
+│   │   ├── auth.ts               ← getAuthenticatedRep() for API route auth
+│   │   ├── client.ts             ← browser client (@supabase/ssr)
+│   │   ├── server.ts             ← server client (cookie-aware)
+│   │   └── admin.ts              ← service role client (bypasses RLS)
 │   └── telegram-bot.ts
 ├── scripts/
-│   └── seed-test-rep.ts         ← idempotent test rep seeder
+│   └── seed-test-rep.ts          ← idempotent test rep seeder (cents-aware)
 ├── supabase/
 │   ├── config.toml
+│   ├── README.md
 │   ├── functions/
+│   │   ├── daily-financial-sync/index.ts
 │   │   ├── embed/index.ts
 │   │   ├── live-queue-sync/index.ts
-│   │   ├── nr-hq-mcp/index.ts       ← NR HQ build tracker MCP (read-only)
+│   │   ├── nr-hq-mcp/index.ts          ← NR HQ build tracker MCP (read-only)
 │   │   ├── open-brain-mcp/index.ts
-│   │   └── open-brain-mcp-march/index.ts
+│   │   ├── open-brain-mcp-march/index.ts
+│   │   └── open-brain-status-updater/index.ts
 │   └── migrations/
 │       ├── 001_initial_schema.sql
 │       ├── 002_open_brain_embedding_pipeline.sql
@@ -77,12 +86,16 @@ sparkle-suite/
 │       ├── 005_live_queue.sql
 │       ├── 006_sparkle_suite_schema.sql
 │       ├── 007_fix_reps_admin_rls_recursion.sql
-│       └── 008_stripe_billing.sql
-├── vault/                        ← project docs/notes
+│       ├── 008_stripe_billing.sql
+│       └── 009_sms_wallet_cents.sql    ← SMS wallet cents conversion + auto-recharge lock
+├── vault/                         ← project docs/notes
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
 ├── next.config.ts
+├── README.md
+├── SS_Service_Layer_Spec_v1_0.md
+├── SS_Supabase_Schema_v1_0.md
 └── CODEBASE_SNAPSHOT.md
 ```
 
@@ -99,7 +112,7 @@ sparkle-suite/
   "react-dom": "19.2.4",
   "node-telegram-bot-api": "^0.67.0",
   "stripe": "^22.0.1",
-  "zod": "^3.x"
+  "zod": "^4.3.6"
 }
 ```
 
@@ -207,8 +220,8 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 **Rep Operations:**
 - `calendar_events` — show schedule. Columns: rep_id (FK), platform, event_time, duration_minutes, discount_code, discount_description, description, is_recurring, recurrence_rule, status (event_status enum)
 - `customer_audience` — TCPA/CAN-SPAM compliant subscriber list. Columns: rep_id (FK), name, phone, email, sms_consent, email_consent, marketing_consent, consent_date, sms_opted_out_at, email_opted_out_at, stop_keyword_received_at
-- `sms_wallet` — pre-loaded SMS balance ($25 min load). Columns: rep_id (FK UNIQUE), balance, auto_recharge_enabled, auto_recharge_threshold, auto_recharge_amount, minimum_load_amount, last_loaded_at
-- `wallet_transactions` — wallet load/charge log. Columns: wallet_id (FK), type (wallet_transaction_type enum), amount, stripe_fee, stripe_payment_intent_id, description
+- `sms_wallet` — pre-loaded SMS balance (cents, $25 min load). Columns (post-009): `balance_cents INTEGER`, `auto_recharge_enabled BOOLEAN`, `auto_recharge_threshold_cents INTEGER`, `auto_recharge_amount_cents INTEGER`, `minimum_load_amount_cents INTEGER`, `auto_recharge_pending BOOLEAN`, `auto_recharge_attempt_id UUID`, `last_loaded_at`. Constraints: nonneg balance, threshold; amount ≥ 100¢; min_load ≥ 100¢; amount > threshold.
+- `wallet_transactions` — wallet load/charge log. Columns (post-009): `wallet_id` (FK), `type` (wallet_transaction_type enum), `amount_cents INTEGER` (unsigned; direction encoded in type), `stripe_fee_cents INTEGER NULL` (NULL = fee unknown), `stripe_payment_intent_id`, `description`. Unique partial index on `stripe_payment_intent_id` enforces idempotency.
 - `message_log` — SMS/email send records. Columns: rep_id (FK), channel (message_channel enum), recipient, content_preview, screening_result, screening_notes, delivery_status, cost, is_automated, sent_at
 - `rep_notes` — Thumper memory (chronological summaries). Columns: rep_id (FK), summary, conversation_date
 - `rep_messages` — dashboard-delivered messages (reports, newsletters, support). Columns: rep_id (FK), message_type (rep_message_type enum), direction (message_direction enum), subject, body, is_read, read_at
@@ -232,6 +245,8 @@ Pro-rata refund state machine. Tracks cancellation + refund as a two-step proces
 
 **17 Enums:** rep_status, listing_status, trade_request_status, fulfillment_status, event_status, plan_tier, subscription_status, wallet_transaction_type, message_channel, screening_result, delivery_status, rep_message_type, message_direction, onboarding_stage, removal_reason, rejection_reason, jewelry_type
 
+**`wallet_transaction_type` (rebuilt in migration 009):** `load`, `sms_charge`, `refund`, `adjustment_credit`, `adjustment_debit`, `auto_recharge`. Legacy `adjustment` rows were split by sign at migration time.
+
 **RLS:** Enabled on all 16 tables. Standard pattern: rep sees own data, admin (louis@neonrabbit.net) sees all. Admin check on `reps` table uses `auth.jwt() ->> 'email'` (fixed in migration 007 to avoid recursion). All other tables check admin via subquery on `reps`. Special cases: jewelry_designs/collections have shared read; trade_requests allows public INSERT.
 
 **Realtime:** trade_requests, trade_listings, calendar_events, rep_messages
@@ -240,10 +255,16 @@ Pro-rata refund state machine. Tracks cancellation + refund as a two-step proces
 - `rpc_submit_trade_request(p_listing_id, p_customer_name, p_customer_description)` — atomic: insert request + set listing to pending_trade
 - `rpc_approve_trade(p_request_id, p_rep_notes)` — atomic: approve request + set listing traded + create fulfillment + increment times_traded
 - `rpc_reject_trade(p_request_id, p_reason, p_rep_notes)` — atomic: deny request + restore listing to available
+- `deduct_wallet_balance(p_wallet_id UUID, p_amount INTEGER)` — atomic debit + auto-recharge lock acquisition. Returns `(new_balance_cents, should_recharge, attempt_id)`. Raises `INSUFFICIENT_FUNDS`, `WALLET_NOT_FOUND`, `INVALID_AMOUNT`. Acquires lock when new balance ≤ threshold AND `auto_recharge_enabled` AND (lock not held OR lock stale > 30 min). The 30-min stale-lock fallback self-heals attempts abandoned mid-3DS.
+- `credit_wallet(p_wallet_id, p_rep_id, p_amount, p_type, p_stripe_pi, p_stripe_fee, p_description, p_attempt_id)` — idempotent credit with ownership check and credit-only type allowlist (`load`, `auto_recharge`, `refund`, `adjustment_credit`). Order: lock wallet → verify rep ownership → attempt ledger insert (ON CONFLICT DO NOTHING on stripe PI) → credit balance only if inserted → clear lock only when type=`auto_recharge` and attempt matches. Returns `(new_balance_cents, credited)`.
+- `release_wallet_recharge_lock(p_wallet_id, p_attempt_id)` — scoped by attempt_id; no-op if another attempt is live.
+
+All three wallet RPCs are service-role only (REVOKE PUBLIC, GRANT EXECUTE service_role).
 
 **Notable Indexes:**
 - `idx_one_pending_request_per_listing` — partial unique index enforcing one pending request per listing
 - `idx_designs_fulltext` — GIN index for full-text search on design_name, material, main_stone
+- `idx_wallet_tx_stripe_pi_unique` — partial unique index on `wallet_transactions.stripe_payment_intent_id` (migration 009) — the idempotency gate for credit_wallet
 
 ---
 
@@ -255,7 +276,7 @@ Account: `testrep@neonrabbit.net` — permanent development sandbox.
 |-------|-------------|
 | reps | 'Demo Rep', 'Sparkle Suite Demo', active |
 | site_settings | tagline, banner, ticker — all visible |
-| sms_wallet | $25.00 balance |
+| sms_wallet | 5000¢ ($50.00) balance, auto_recharge_enabled=false, threshold=500¢, amount=2500¢ |
 | subscriptions | monthly, active, $0 (test) |
 | onboarding_status | stage: launched, phone_fallback camera |
 | collections | March 2026, Galaxy, Celestial |
@@ -269,6 +290,7 @@ Seed script: `scripts/seed-test-rep.ts` (run via `npx tsx scripts/seed-test-rep.
 - Uses service role client to bypass RLS
 - Dynamically looks up auth user IDs (no hardcoded UUIDs)
 - Also creates Louis's admin rep row if missing
+- Uses migration-009 cents columns (`balance_cents`, `auto_recharge_threshold_cents`, `auto_recharge_amount_cents`, `minimum_load_amount_cents`, `auto_recharge_pending`)
 
 ---
 
@@ -310,6 +332,12 @@ REST endpoint for Chrome extension → live_queue table sync.
 - CORS: open (`*`) for Chrome extension access
 - URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/live-queue-sync`
 
+### `daily-financial-sync`
+Scheduled job reconciling financial snapshots.
+
+### `open-brain-status-updater`
+Status maintenance job for Open Brain records.
+
 ---
 
 ## Next.js App (app/)
@@ -318,10 +346,12 @@ REST endpoint for Chrome extension → live_queue table sync.
 - `POST /api/telegram` — Telegram webhook → `handleTelegramUpdate()` → inserts to `open_brain`
 - `POST /api/open-brain/context` — Semantic search: takes `{ query, count }`, generates embedding, calls `match_open_brain()` RPC
 - `POST /api/stripe/create-checkout` — Authenticated. Creates Stripe Checkout Session for subscription. Checks for existing active sub (409). Server-built URLs only.
-- `POST /api/stripe/webhook` — Stripe webhook. Signature verified. Event-ID dedup via stripe_events table. Handles: checkout.session.completed, customer.subscription.updated/deleted, invoice.payment_succeeded/failed. Returns 500 on error (Stripe retries). Race-condition protection via stripe_event_timestamp.
+- `POST /api/stripe/webhook` — Stripe webhook. Signature verified. Event-ID dedup via stripe_events table. Handles: `checkout.session.completed` (routes wallet-load vs subscription by metadata), `customer.subscription.updated/deleted`, `invoice.payment_succeeded/failed`, `payment_intent.succeeded/payment_failed/canceled/requires_action` (auto-recharge flow). Returns 500 on error (Stripe retries). Race-condition protection via stripe_event_timestamp.
 - `POST /api/stripe/create-portal-session` — Authenticated. Creates Stripe Customer Portal session for managing subscription/payment method.
 - `GET /api/stripe/subscription-status` — Authenticated. Returns current subscription status from Supabase (not Stripe API).
 - `POST /api/stripe/sync` — Authenticated. Reconciliation: fetches Stripe subscriptions, upserts Supabase to match, returns diff.
+- `POST /api/stripe/wallet/load` — Authenticated. Body: `{ amount_cents: number }`. Validates amount ≥ `minimum_load_amount_cents`, ensures wallet row exists, gets-or-creates Stripe customer, creates Checkout Session (mode=payment) with metadata `{ rep_id, wallet_id, wallet_load: 'true', intended_cents }`. Credit applied via webhook `checkout.session.completed`.
+- `POST /api/stripe/wallet/auto-recharge` — Authenticated. Body: `{ enabled: boolean, threshold_cents?: integer, amount_cents?: integer }`. Validates `amount_cents ≥ 2500` and merged amount > merged threshold. Updates `sms_wallet` in-place, returns new settings.
 
 ### Pages
 - `app/page.tsx` — Default Next.js home (placeholder, not customized yet)
@@ -360,6 +390,32 @@ Lazy Stripe instance (v22, `2026-03-25.dahlia` API). Created on first call to `g
 - `calculateProRataRefund(periodStart, periodEnd, amount)` — epoch-second math, clamped to [0, amount]
 - `processProRataRefund(subscriptionId)` — state machine: insert refund_operations → cancel in Stripe → refund via Stripe (with idempotency key). Handles partial failures: if cancel succeeds but refund fails, marks "cancelled" with error for manual attention.
 
+### `lib/services/wallet.ts`
+SMS wallet service layer.
+
+```ts
+interface WalletRow {
+  id: string
+  rep_id: string
+  balance_cents: number
+  auto_recharge_enabled: boolean
+  auto_recharge_threshold_cents: number
+  auto_recharge_amount_cents: number
+  minimum_load_amount_cents: number
+  auto_recharge_pending: boolean
+  auto_recharge_attempt_id: string | null
+  last_loaded_at: string | null
+  created_at: string
+  updated_at: string
+}
+```
+
+- `SMS_CHARGE_CENTS = 9` — per-SMS debit amount.
+- `ensureWallet(repId)` — upsert-then-select on `sms_wallet` keyed by rep_id. Returns the row (defaults from schema).
+- `deductSmsCharge(repId)` — calls `deduct_wallet_balance` RPC with `SMS_CHARGE_CENTS`. On `INSUFFICIENT_FUNDS`, re-reads the current balance (never returns stale). On success, if RPC returned `should_recharge = true`, schedules `triggerAutoRecharge` via Next.js `after()` so the SMS request isn't delayed.
+- `triggerAutoRecharge(walletId, repId, attemptId)` (internal) — fresh-reads the wallet, aborts on `attempt_id` drift, resolves the Stripe customer (prefer `reps.stripe_customer_id`, fall back to latest active/trialing subscription), resolves a payment method (prefer `customer.invoice_settings.default_payment_method`, fall back to live-sub's `default_payment_method`), then `stripe.paymentIntents.create` with `confirm: true, off_session: true`, metadata `{ rep_id, wallet_id, auto_recharge: 'true', attempt_id }`, and `idempotencyKey: auto-recharge-${attemptId}`. Credit happens in the webhook, not here. On PI create failure or missing customer/PM, calls `release_wallet_recharge_lock`.
+- `releaseLock(walletId, attemptId)` (internal) — thin wrapper over the RPC.
+
 ### `lib/telegram-bot.ts`
 Telegram message handler:
 - `generateEmbedding(text)` — OpenAI embeddings
@@ -373,6 +429,7 @@ Telegram message handler:
 Idempotent seed script for the test rep development sandbox.
 - Creates auth users (louis@neonrabbit.net, testrep@neonrabbit.net) if not present
 - Cleans up existing test rep data, then re-seeds across 10 tables
+- Uses migration-009 `sms_wallet` columns (cents + auto-recharge lock fields)
 - Runs verification: auth sign-in, data presence, RLS isolation, admin visibility
 - Run: `npx tsx scripts/seed-test-rep.ts`
 
@@ -390,6 +447,7 @@ Idempotent seed script for the test rep development sandbox.
 | `006_sparkle_suite_schema.sql` | Sparkle Suite platform: 16 tables, 17 enums, all indexes, RLS policies, Realtime (4 tables), 3 RPC functions |
 | `007_fix_reps_admin_rls_recursion.sql` | Fix: admin RLS on reps table uses JWT claim instead of self-referencing subquery |
 | `008_stripe_billing.sql` | Stripe billing infra: stripe_events (idempotency), refund_operations (state machine), subscriptions additions (cancel_at_period_end, stripe_livemode, stripe_event_timestamp), reps.stripe_customer_id |
+| `009_sms_wallet_cents.sql` | SMS wallet cents conversion (DECIMAL → INTEGER cents on `sms_wallet` + `wallet_transactions`), enum rebuild (split `adjustment` → credit/debit + add `auto_recharge`), auto-recharge lock fields (`auto_recharge_pending`, `auto_recharge_attempt_id`), fail-loud pre-validation guards, and three SECURITY DEFINER RPCs: `deduct_wallet_balance`, `credit_wallet` (idempotent via unique partial index on `stripe_payment_intent_id`), `release_wallet_recharge_lock`. Deduct RPC self-heals locks stale > 30 min. |
 
 ---
 
@@ -466,6 +524,32 @@ Stripe pro-rata refund flow:
   → Cancel subscription in Stripe → status: cancelled
   → Issue refund with idempotency key → status: refunded
   → If refund fails after cancel: status stays cancelled, error logged for manual resolution
+
+SMS wallet manual load flow:
+  → POST /api/stripe/wallet/load { amount_cents } (authenticated)
+  → ensureWallet(repId) — upsert-then-select
+  → Validates amount ≥ minimum_load_amount_cents
+  → stripe.checkout.sessions.create (mode='payment') with metadata { rep_id, wallet_id, wallet_load: 'true', intended_cents }
+  → Redirect to Stripe-hosted payment page
+  → On success: checkout.session.completed webhook
+  → handleWalletLoad: retrieves PI with balance_transaction, verifies amount_received == intended, resolves Stripe fee (nullable — never invented)
+  → credit_wallet RPC (type='load', idempotent on stripe_payment_intent_id)
+
+SMS send → deduct → auto-recharge flow:
+  → deductSmsCharge(repId) [lib/services/wallet.ts]
+  → deduct_wallet_balance RPC — atomic debit + lock acquisition
+       · INSUFFICIENT_FUNDS: returns {success: false, fresh balance}
+       · success with should_recharge=true: schedules triggerAutoRecharge via Next.js after()
+  → triggerAutoRecharge runs out-of-band:
+       · fresh-read wallet, abort on attempt_id drift
+       · resolve customer (reps.stripe_customer_id || active sub) and payment method
+       · stripe.paymentIntents.create { off_session: true, confirm: true, metadata with attempt_id, idempotencyKey: auto-recharge-<attemptId> }
+       · if create fails or customer/PM missing → release_wallet_recharge_lock
+  → Stripe webhook handlers settle the PI:
+       · payment_intent.succeeded → credit_wallet (type='auto_recharge', clears lock when attempt_id matches)
+       · payment_intent.payment_failed / canceled → release_wallet_recharge_lock
+       · payment_intent.requires_action → log only (non-terminal; do NOT release lock — avoids duplicate off-session attempts during 3DS)
+       · stale lock (>30 min) in deduct RPC → self-heal by issuing a fresh attempt_id
 ```
 
 ---

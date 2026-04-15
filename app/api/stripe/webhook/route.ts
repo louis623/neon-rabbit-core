@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const dynamic = 'force-dynamic'
 
 function logStripeEvent(
-  level: 'info' | 'error',
+  level: 'info' | 'warn' | 'error',
   event: Stripe.Event,
   context: Record<string, unknown>
 ) {
@@ -71,10 +71,236 @@ async function markEventProcessed(eventId: string, eventType: string): Promise<v
   }
 }
 
+/**
+ * Resolve the Stripe processing fee for a PaymentIntent from its latest charge's
+ * balance transaction. Returns null if the balance transaction isn't yet available —
+ * callers should pass null to the credit RPC (we never invent fees).
+ */
+async function resolveStripeFeeCents(
+  stripe: Stripe,
+  pi: Stripe.PaymentIntent
+): Promise<number | null> {
+  const latestCharge = pi.latest_charge
+  if (!latestCharge) return null
+
+  let charge: Stripe.Charge | null = null
+  if (typeof latestCharge === 'string') {
+    charge = await stripe.charges.retrieve(latestCharge, { expand: ['balance_transaction'] })
+  } else if (latestCharge.balance_transaction) {
+    charge = latestCharge
+  } else {
+    charge = await stripe.charges.retrieve(latestCharge.id, { expand: ['balance_transaction'] })
+  }
+
+  const bt = charge?.balance_transaction
+  if (!bt) return null
+  if (typeof bt === 'string') return null
+  return bt.fee ?? null
+}
+
+async function handleWalletLoad(event: Stripe.Event, session: Stripe.Checkout.Session): Promise<void> {
+  const walletId = session.metadata?.wallet_id
+  const repId = session.metadata?.rep_id
+  const intendedStr = session.metadata?.intended_cents
+  if (!walletId || !repId || !intendedStr) {
+    logStripeEvent('error', event, {
+      phase: 'wallet_load',
+      reason: 'missing_wallet_metadata',
+      session_id: session.id,
+    })
+    return
+  }
+
+  if (session.payment_status !== 'paid') {
+    logStripeEvent('info', event, {
+      phase: 'wallet_load',
+      skipped: true,
+      reason: 'not_paid',
+      session_id: session.id,
+      payment_status: session.payment_status,
+    })
+    return
+  }
+
+  const intended = Number.parseInt(intendedStr, 10)
+  if (!Number.isInteger(intended) || intended <= 0) {
+    logStripeEvent('error', event, {
+      phase: 'wallet_load',
+      reason: 'invalid_intended_cents',
+      intendedStr,
+    })
+    return
+  }
+
+  if (!session.payment_intent) {
+    logStripeEvent('error', event, {
+      phase: 'wallet_load',
+      reason: 'missing_payment_intent',
+      session_id: session.id,
+    })
+    return
+  }
+
+  const stripe = getStripe()
+  const piId = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent.id
+  const pi = await stripe.paymentIntents.retrieve(piId, {
+    expand: ['latest_charge.balance_transaction'],
+  })
+
+  if (pi.amount_received < intended || session.amount_total !== intended) {
+    logStripeEvent('error', event, {
+      phase: 'wallet_load',
+      reason: 'amount_mismatch',
+      intended,
+      session_total: session.amount_total,
+      pi_received: pi.amount_received,
+    })
+    return
+  }
+
+  const feeCents = await resolveStripeFeeCents(stripe, pi)
+  if (feeCents === null) {
+    logStripeEvent('warn', event, {
+      phase: 'wallet_load',
+      reason: 'balance_transaction_not_ready',
+      pi_id: pi.id,
+    })
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin.rpc('credit_wallet', {
+    p_wallet_id: walletId,
+    p_rep_id: repId,
+    p_amount: intended,
+    p_type: 'load',
+    p_stripe_pi: pi.id,
+    p_stripe_fee: feeCents,
+    p_description: 'Wallet load',
+    p_attempt_id: null,
+  })
+  if (error) throw error
+
+  logStripeEvent('info', event, {
+    phase: 'wallet_load',
+    wallet_id: walletId,
+    rep_id: repId,
+    credited_cents: intended,
+    fee_cents: feeCents,
+    pi_id: pi.id,
+  })
+}
+
+async function handlePaymentIntentSucceeded(event: Stripe.Event) {
+  const pi = event.data.object as Stripe.PaymentIntent
+  if (pi.metadata?.auto_recharge !== 'true') return
+
+  const walletId = pi.metadata.wallet_id
+  const repId = pi.metadata.rep_id
+  const attemptId = pi.metadata.attempt_id
+  if (!walletId || !repId || !attemptId) {
+    logStripeEvent('error', event, {
+      phase: 'auto_recharge_succeeded',
+      reason: 'missing_metadata',
+      pi_id: pi.id,
+    })
+    return
+  }
+
+  const stripe = getStripe()
+  const feeCents = await resolveStripeFeeCents(stripe, pi)
+  if (feeCents === null) {
+    logStripeEvent('warn', event, {
+      phase: 'auto_recharge_succeeded',
+      reason: 'balance_transaction_not_ready',
+      pi_id: pi.id,
+    })
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin.rpc('credit_wallet', {
+    p_wallet_id: walletId,
+    p_rep_id: repId,
+    p_amount: pi.amount_received,
+    p_type: 'auto_recharge',
+    p_stripe_pi: pi.id,
+    p_stripe_fee: feeCents,
+    p_description: 'Auto-recharge',
+    p_attempt_id: attemptId,
+  })
+  if (error) throw error
+
+  logStripeEvent('info', event, {
+    phase: 'auto_recharge_succeeded',
+    wallet_id: walletId,
+    rep_id: repId,
+    credited_cents: pi.amount_received,
+    fee_cents: feeCents,
+    pi_id: pi.id,
+  })
+}
+
+async function releaseAutoRechargeLock(event: Stripe.Event, pi: Stripe.PaymentIntent, phase: string): Promise<void> {
+  const walletId = pi.metadata?.wallet_id
+  const attemptId = pi.metadata?.attempt_id
+  if (!walletId || !attemptId) {
+    logStripeEvent('error', event, { phase, reason: 'missing_metadata', pi_id: pi.id })
+    return
+  }
+  const admin = createAdminClient()
+  const { error } = await admin.rpc('release_wallet_recharge_lock', {
+    p_wallet_id: walletId,
+    p_attempt_id: attemptId,
+  })
+  if (error) throw error
+  logStripeEvent('warn', event, {
+    phase,
+    wallet_id: walletId,
+    pi_id: pi.id,
+    last_payment_error: pi.last_payment_error?.message ?? null,
+  })
+}
+
+async function handlePaymentIntentFailed(event: Stripe.Event) {
+  const pi = event.data.object as Stripe.PaymentIntent
+  if (pi.metadata?.auto_recharge !== 'true') return
+  await releaseAutoRechargeLock(event, pi, 'auto_recharge_failed')
+}
+
+async function handlePaymentIntentCanceled(event: Stripe.Event) {
+  const pi = event.data.object as Stripe.PaymentIntent
+  if (pi.metadata?.auto_recharge !== 'true') return
+  await releaseAutoRechargeLock(event, pi, 'auto_recharge_canceled')
+}
+
+/**
+ * requires_action is NON-terminal — do NOT release the lock here; otherwise the next
+ * SMS deduct could kick off a second off-session PI while the first awaits 3DS.
+ * The eventual terminal event (succeeded / payment_failed / canceled) will settle it.
+ */
+async function handlePaymentIntentRequiresAction(event: Stripe.Event) {
+  const pi = event.data.object as Stripe.PaymentIntent
+  if (pi.metadata?.auto_recharge !== 'true') return
+  logStripeEvent('warn', event, {
+    phase: 'auto_recharge_requires_action',
+    wallet_id: pi.metadata.wallet_id ?? null,
+    pi_id: pi.id,
+    last_payment_error: pi.last_payment_error?.message ?? null,
+  })
+}
+
 // --- Event Handlers ---
 
 async function handleCheckoutCompleted(event: Stripe.Event) {
   const session = event.data.object as Stripe.Checkout.Session
+
+  // Wallet loads are mode='payment', so they must be handled BEFORE the subscription-only early return.
+  if (session.metadata?.wallet_load === 'true') {
+    await handleWalletLoad(event, session)
+    return
+  }
+
   if (session.mode !== 'subscription' || !session.subscription) return
 
   const repId = session.metadata?.rep_id
@@ -256,6 +482,10 @@ const EVENT_HANDLERS: Record<string, (event: Stripe.Event) => Promise<void>> = {
   'customer.subscription.deleted': handleSubscriptionDeleted,
   'invoice.payment_succeeded': handleInvoicePaymentSucceeded,
   'invoice.payment_failed': handleInvoicePaymentFailed,
+  'payment_intent.succeeded': handlePaymentIntentSucceeded,
+  'payment_intent.payment_failed': handlePaymentIntentFailed,
+  'payment_intent.canceled': handlePaymentIntentCanceled,
+  'payment_intent.requires_action': handlePaymentIntentRequiresAction,
 }
 
 export async function POST(request: Request) {

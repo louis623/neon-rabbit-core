@@ -177,10 +177,12 @@ async function main() {
   console.log('Inserting sms_wallet...')
   const { error: walletErr } = await admin.from('sms_wallet').insert({
     rep_id: repId,
-    balance: 25.0,
+    balance_cents: 5000,
     auto_recharge_enabled: false,
-    auto_recharge_threshold: 5.0,
-    auto_recharge_amount: 25.0,
+    auto_recharge_threshold_cents: 500,
+    auto_recharge_amount_cents: 2500,
+    minimum_load_amount_cents: 2500,
+    auto_recharge_pending: false,
   })
   if (walletErr) throw new Error(`sms_wallet: ${walletErr.message}`)
 
