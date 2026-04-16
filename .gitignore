@@ -42,3 +42,7 @@ next-env.d.ts
 
 # local claude config
 .claude/
+
+# leftover artifacts
+sparkle-suite-live-queue.zip
+supabase/.temp/
