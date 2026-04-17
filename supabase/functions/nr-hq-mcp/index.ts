@@ -31,6 +31,10 @@ const OPEN_ITEM_CATEGORIES = ["gap", "legal", "decision", "research", "grey_area
 const OPEN_ITEM_STATUSES   = ["open", "deferred", "in_progress", "resolved"] as const;
 const OPEN_ITEM_PRIORITIES = ["low", "medium", "high"] as const;
 
+// Audit log enums — sourced from migration 013_build_action_log_audit.sql.
+const AUDIT_ACTORS  = ["chat", "claude_code"] as const;
+const AUDIT_TARGETS = ["task", "phase", "gate", "action_card"] as const;
+
 type Envelope = Record<string, unknown>;
 
 function textResult(obj: Envelope) {
@@ -241,7 +245,8 @@ server.registerTool(
         .from("build_action_log")
         .select("id, project, position, title, description, is_active, created_at, updated_at")
         .eq("project", p)
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .eq("entry_kind", "card_snapshot");
       if (position) q = q.eq("position", position);
       const { data, error } = await q;
       if (error) return errorResult(error.message);
@@ -274,7 +279,7 @@ server.registerTool(
         supabase.from("construction_phases").select("status, total_tasks, completed_tasks").eq("project", p),
         supabase.from("construction_tasks").select("status, execution_mode, assignee, can_run_overnight").eq("project", p),
         supabase.from("construction_gates").select("status").eq("project", p),
-        supabase.from("build_action_log").select("position, title, description").eq("project", p).eq("is_active", true),
+        supabase.from("build_action_log").select("position, title, description").eq("project", p).eq("is_active", true).eq("entry_kind", "card_snapshot"),
       ]);
       const firstErr = phasesRes.error ?? tasksRes.error ?? gatesRes.error ?? cardsRes.error;
       if (firstErr) return errorResult(firstErr.message);
@@ -373,7 +378,7 @@ server.registerTool(
   {
     title: "Update Task Status",
     description:
-      "Update a construction task's status (and optionally completion_session, completion_date, notes). When status='complete' and no completion_date is passed, completion_date is auto-set to now(). Completion_date is never nulled on status change away from complete.",
+      "Update a construction task's status (and optionally completion_session, completion_date, notes). When status='complete' and no completion_date is passed, completion_date is auto-set to now(). Completion_date is never nulled on status change away from complete. Writes an audit row to build_action_log atomically with the state change (entry_kind='audit', target_type='task'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       task_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
@@ -381,29 +386,25 @@ server.registerTool(
       completion_session: z.string().max(256).optional(),
       completion_date: z.string().datetime().optional(),
       notes: z.string().optional(),
+      actor: z.enum(AUDIT_ACTORS).optional(),
     },
   },
-  async ({ task_key, project, status, completion_session, completion_date, notes }) => {
+  async ({ task_key, project, status, completion_session, completion_date, notes, actor }) => {
     try {
       const p = project ?? DEFAULT_PROJECT;
-      const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
-      if (completion_session !== undefined) patch.completion_session = completion_session;
-      if (notes !== undefined) patch.notes = notes;
-      if (completion_date !== undefined) {
-        patch.completion_date = completion_date;
-      } else if (status === "complete") {
-        patch.completion_date = new Date().toISOString();
-      }
-      const { data, error } = await supabaseWrite
-        .from("construction_tasks")
-        .update(patch)
-        .eq("project", p)
-        .eq("task_key", task_key)
-        .select()
-        .maybeSingle();
+      const { data, error } = await supabaseWrite.rpc("rpc_update_task_status", {
+        p_project: p,
+        p_task_key: task_key,
+        p_status: status,
+        p_completion_session: completion_session ?? null,
+        p_completion_date: completion_date ?? null,
+        p_notes: notes ?? null,
+        p_actor: actor ?? "claude_code",
+      });
       if (error) return errorResult(error.message);
-      if (!data) return errorResult(`Task not found: ${task_key} (project=${p})`);
-      return textResult({ task: data });
+      const payload = data as { task: unknown } | null;
+      if (!payload?.task) return errorResult(`Task not found: ${task_key} (project=${p})`);
+      return textResult({ task: payload.task });
     } catch (err) {
       return errorResult((err as Error).message);
     }
@@ -416,56 +417,27 @@ server.registerTool(
   {
     title: "Update Phase Status",
     description:
-      "Update a construction phase's status. Recomputes total_tasks and completed_tasks from construction_tasks rows after the status write.",
+      "Update a construction phase's status. Always recomputes total_tasks/completed_tasks from construction_tasks and bumps updated_at on every call (drift-repair path). Audit row emitted only when status actually changes (entry_kind='audit', target_type='phase'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       phase_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
       status: z.enum(PHASE_STATUSES),
+      actor: z.enum(AUDIT_ACTORS).optional(),
     },
   },
-  async ({ phase_key, project, status }) => {
+  async ({ phase_key, project, status, actor }) => {
     try {
       const p = project ?? DEFAULT_PROJECT;
-      const now = new Date().toISOString();
-
-      // 1. Update status, get phase id
-      const { data: statusRow, error: statusErr } = await supabaseWrite
-        .from("construction_phases")
-        .update({ status, updated_at: now })
-        .eq("project", p)
-        .eq("phase_key", phase_key)
-        .select("id")
-        .maybeSingle();
-      if (statusErr) return errorResult(statusErr.message);
-      if (!statusRow) return errorResult(`Phase not found: ${phase_key} (project=${p})`);
-      const phaseId = statusRow.id as string;
-
-      // 2. Recompute counts
-      const totalRes = await supabaseWrite
-        .from("construction_tasks")
-        .select("id", { count: "exact", head: true })
-        .eq("phase_id", phaseId);
-      if (totalRes.error) return errorResult(totalRes.error.message);
-      const doneRes = await supabaseWrite
-        .from("construction_tasks")
-        .select("id", { count: "exact", head: true })
-        .eq("phase_id", phaseId)
-        .eq("status", "complete");
-      if (doneRes.error) return errorResult(doneRes.error.message);
-
-      // 3. Write counts back and return full row
-      const { data: finalRow, error: finalErr } = await supabaseWrite
-        .from("construction_phases")
-        .update({
-          total_tasks: totalRes.count ?? 0,
-          completed_tasks: doneRes.count ?? 0,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", phaseId)
-        .select()
-        .single();
-      if (finalErr) return errorResult(finalErr.message);
-      return textResult({ phase: finalRow });
+      const { data, error } = await supabaseWrite.rpc("rpc_update_phase_status", {
+        p_project: p,
+        p_phase_key: phase_key,
+        p_status: status,
+        p_actor: actor ?? "claude_code",
+      });
+      if (error) return errorResult(error.message);
+      const payload = data as { phase: unknown } | null;
+      if (!payload?.phase) return errorResult(`Phase not found: ${phase_key} (project=${p})`);
+      return textResult({ phase: payload.phase });
     } catch (err) {
       return errorResult((err as Error).message);
     }
@@ -477,26 +449,27 @@ server.registerTool(
   "update_gate_status",
   {
     title: "Update Gate Status",
-    description: "Update a test gate's status. Gates are identified by gate_key.",
+    description: "Update a test gate's status. Gates are identified by gate_key. Writes an audit row atomically when status actually changes (entry_kind='audit', target_type='gate'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       gate_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
       status: z.enum(GATE_STATUSES),
+      actor: z.enum(AUDIT_ACTORS).optional(),
     },
   },
-  async ({ gate_key, project, status }) => {
+  async ({ gate_key, project, status, actor }) => {
     try {
       const p = project ?? DEFAULT_PROJECT;
-      const { data, error } = await supabaseWrite
-        .from("construction_gates")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("project", p)
-        .eq("gate_key", gate_key)
-        .select()
-        .maybeSingle();
+      const { data, error } = await supabaseWrite.rpc("rpc_update_gate_status", {
+        p_project: p,
+        p_gate_key: gate_key,
+        p_status: status,
+        p_actor: actor ?? "claude_code",
+      });
       if (error) return errorResult(error.message);
-      if (!data) return errorResult(`Gate not found: ${gate_key} (project=${p})`);
-      return textResult({ gate: data });
+      const payload = data as { gate: unknown } | null;
+      if (!payload?.gate) return errorResult(`Gate not found: ${gate_key} (project=${p})`);
+      return textResult({ gate: payload.gate });
     } catch (err) {
       return errorResult((err as Error).message);
     }
@@ -509,43 +482,30 @@ server.registerTool(
   {
     title: "Update Rolling Action Cards",
     description:
-      "Write all 3 rolling action cards (previous/current/next) for a project atomically (as a triple). Archives any currently-active cards (is_active=false), then inserts 3 new active rows. All 3 positions are required — preserve unchanged cards by passing their existing values through.",
+      "Write all 3 rolling action cards (previous/current/next) for a project atomically (as a triple). Archives currently-active card snapshots, then inserts 3 new active rows (entry_kind='card_snapshot'). All 3 positions are required — preserve unchanged cards by passing their existing values through. Emits one audit row per position whose title or description changed (entry_kind='audit', target_type='action_card'). Optional actor param ('chat' or 'claude_code') labels the audit rows; defaults to 'claude_code'.",
     inputSchema: {
       project: z.string().min(1).max(128).optional(),
       previous: z.object({ title: z.string().min(1), description: z.string().optional() }),
       current:  z.object({ title: z.string().min(1), description: z.string().optional() }),
       next:     z.object({ title: z.string().min(1), description: z.string().optional() }),
+      actor:    z.enum(AUDIT_ACTORS).optional(),
     },
   },
-  async ({ project, previous, current, next }) => {
+  async ({ project, previous, current, next, actor }) => {
     try {
       const p = project ?? DEFAULT_PROJECT;
-      const now = new Date().toISOString();
-
-      // Archive old
-      const archiveRes = await supabaseWrite
-        .from("build_action_log")
-        .update({ is_active: false, updated_at: now })
-        .eq("project", p)
-        .eq("is_active", true);
-      if (archiveRes.error) return errorResult(archiveRes.error.message);
-
-      // Insert 3 new
-      const { data, error } = await supabaseWrite
-        .from("build_action_log")
-        .insert([
-          { project: p, position: "previous", title: previous.title, description: previous.description ?? null, is_active: true },
-          { project: p, position: "current",  title: current.title,  description: current.description ?? null,  is_active: true },
-          { project: p, position: "next",     title: next.title,     description: next.description ?? null,     is_active: true },
-        ])
-        .select();
+      const { data, error } = await supabaseWrite.rpc("rpc_update_action_cards", {
+        p_project: p,
+        p_cards: {
+          previous: { title: previous.title, description: previous.description ?? null },
+          current:  { title: current.title,  description: current.description  ?? null },
+          next:     { title: next.title,     description: next.description     ?? null },
+        },
+        p_actor: actor ?? "claude_code",
+      });
       if (error) return errorResult(error.message);
-
-      const cards: Record<string, unknown> = { previous: null, current: null, next: null };
-      for (const row of data ?? []) {
-        cards[(row as { position: string }).position] = row;
-      }
-      return textResult({ project: p, cards });
+      const payload = data as { cards: Record<string, unknown> } | null;
+      return textResult({ project: p, cards: payload?.cards ?? { previous: null, current: null, next: null } });
     } catch (err) {
       return errorResult((err as Error).message);
     }
@@ -865,6 +825,58 @@ server.registerTool(
       if (error) return errorResult(error.message);
       if (!data) return errorResult(`Client not found: id=${id}`);
       return textResult({ client: data });
+    } catch (err) {
+      return errorResult((err as Error).message);
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Audit log read — Memory Library Task 4 Part A
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Tool: get_recent_audit_log
+server.registerTool(
+  "get_recent_audit_log",
+  {
+    title: "Get Recent Audit Log",
+    description:
+      "Return recent audit-kind rows (entry_kind='audit') from build_action_log. " +
+      "Filter by project, target_type, target_key, actor. Ordered by created_at desc. " +
+      "Returns exact total match count via 'count' plus the returned array length via 'page_size'. " +
+      "TRUST BOUNDARY: this tool uses the service-role path and is gated only by MCP_ACCESS_KEY. " +
+      "Audit payloads (old_value/new_value) are NOT exposed via anon Supabase access — " +
+      "this tool is the only sanctioned read path for audit rows.",
+    inputSchema: {
+      project:     z.string().min(1).max(128).optional(),
+      target_type: z.enum(AUDIT_TARGETS).optional(),
+      target_key:  z.string().max(128).optional(),
+      actor:       z.enum(AUDIT_ACTORS).optional(),
+      limit:       z.number().int().min(1).max(200).optional().default(50),
+    },
+  },
+  async ({ project, target_type, target_key, actor, limit }) => {
+    try {
+      const p = project ?? DEFAULT_PROJECT;
+      // NOTE: service-role client. Audit rows are anon-invisible by RLS design;
+      // this is the only MCP tool authorized to surface them. Gated by MCP_ACCESS_KEY.
+      let q = supabaseWrite
+        .from("build_action_log")
+        .select(
+          "id, project, entry_kind, target_type, target_key, actor, old_value, new_value, summary, created_at",
+          { count: "exact" }
+        )
+        .eq("project", p)
+        .eq("entry_kind", "audit")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (target_type) q = q.eq("target_type", target_type);
+      if (target_key)  q = q.eq("target_key",  target_key);
+      if (actor)       q = q.eq("actor",       actor);
+      const { data, error, count } = await q;
+      if (error) return errorResult(error.message);
+      const rows = data ?? [];
+      return textResult({ project: p, count: count ?? 0, page_size: rows.length, rows });
     } catch (err) {
       return errorResult((err as Error).message);
     }

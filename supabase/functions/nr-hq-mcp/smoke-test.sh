@@ -76,6 +76,36 @@ extract_first_uuid() {
   echo "$LAST_BODY" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1
 }
 
+# MCP responses embed a JSON payload inside a "text" string field, so keys in
+# the inner payload appear as \"key\":\"value\" in $LAST_BODY. Unwrap the
+# JSON-string escaping so grep/sed patterns can match the inner JSON directly.
+unwrap_body() {
+  # shellcheck disable=SC1003  # we want a literal backslash
+  echo "$LAST_BODY" | sed 's/\\"/"/g; s/\\n/ /g'
+}
+
+assert_contains() {   # $1 body, $2 regex, $3 label
+  if echo "$1" | grep -qE "$2"; then
+    echo "✅ PASS  $3"; PASS=$((PASS + 1))
+  else
+    echo "❌ FAIL  $3"; echo "   regex: $2"
+    FAIL=$((FAIL + 1)); FAIL_NAMES+=("$3")
+  fi
+}
+
+# Extract the first JSON integer value of a given key from the (unwrapped) LAST_BODY.
+json_first_int() {    # $1 key
+  unwrap_body | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*[0-9]+" | head -1 \
+    | sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*([0-9]+)$/\1/"
+}
+
+# Extract the first JSON string value of a given key from the (unwrapped) LAST_BODY.
+# Value must not contain double-quotes.
+json_first_str() {    # $1 key
+  unwrap_body | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -1 \
+    | sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*\"(.*)\"$/\1/"
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Baseline reads (2)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -177,6 +207,104 @@ echo "⚠  NOTE: update_action_cards writes 3 placeholder cards. Restore real"
 echo "    cards via Claude Chat (update_action_cards) or SQL after smoke test."
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Audit-log coverage (tests 15–17) — Memory Library Task 4 Part A
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Exercises the build_action_log audit-write path introduced by migration 013.
+# Strategy: flip task_0_1 to a dynamically-chosen non-complete status, verify
+# a new row in entry_kind='audit'; no-op at that non-complete state and verify
+# NO row written; revert to original status and verify a second audit row with
+# swapped old/new. Self-contained: original status is captured and restored.
+
+echo
+echo "─── Audit log coverage (tests 15–17) ────────────────────────────────"
+SCRIPT_START_TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# 15.0 — Pre-read current status of task_0_1 from get_tasks; pick a non-complete flip target.
+call_tool "15.0 get_tasks (read task_0_1 current status)" "get_tasks" \
+  '{"phase_key":"phase_0","limit":50}'
+ORIG_STATUS="$(unwrap_body \
+  | awk '/"task_key":[ \t]*"task_0_1"/,/\}/' \
+  | grep -oE '"status":[ \t]*"[^"]+"' | head -1 \
+  | sed -E 's/.*"([^"]+)"$/\1/')"
+
+if [[ -z "$ORIG_STATUS" ]]; then
+  echo "❌ FAIL  15.0 could not extract task_0_1 current status — tests 15–17 skipped"
+  FAIL=$((FAIL + 1)); FAIL_NAMES+=("15.0")
+else
+  echo "   → task_0_1 current status: $ORIG_STATUS"
+  # Non-complete pool; first entry != ORIG_STATUS wins. Guarantees FLIP_STATUS is never
+  # 'complete' so the test 16 no-op doesn't trigger auto completion_date aliasing.
+  FLIP_STATUS=""
+  for cand in in_progress not_started blocked; do
+    if [[ "$cand" != "$ORIG_STATUS" ]]; then FLIP_STATUS="$cand"; break; fi
+  done
+  echo "   → flip target: $FLIP_STATUS (non-complete)"
+
+  # Baseline audit row count for this target.
+  call_tool "15.1 get_recent_audit_log (baseline count)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":200}'
+  BASE_COUNT="$(json_first_int count)"
+  [[ -z "$BASE_COUNT" ]] && BASE_COUNT=0
+  echo "   → baseline audit count: $BASE_COUNT"
+
+  # ── Test 15: flip ORIG → FLIP_STATUS with actor='chat' ─────────────────────
+  call_tool "15   update_task_status (flip, actor=chat)" "update_task_status" \
+    "$(printf '{"task_key":"task_0_1","status":"%s","actor":"chat"}' "$FLIP_STATUS")"
+
+  call_tool "15.2 get_recent_audit_log (post-flip, limit=1)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":1}'
+  UNWRAPPED="$(unwrap_body)"
+  assert_contains "$UNWRAPPED" "\"actor\"[[:space:]]*:[[:space:]]*\"chat\""              "15.3 audit actor=chat"
+  assert_contains "$UNWRAPPED" "\"entry_kind\"[[:space:]]*:[[:space:]]*\"audit\""        "15.4 audit entry_kind=audit"
+  assert_contains "$UNWRAPPED" "\"new_value\"[[:space:]]*:[[:space:]]*\"$FLIP_STATUS\""  "15.5 audit new_value=$FLIP_STATUS"
+  assert_contains "$UNWRAPPED" "\"old_value\"[[:space:]]*:[[:space:]]*\"$ORIG_STATUS\""  "15.6 audit old_value=$ORIG_STATUS"
+
+  call_tool "15.7 get_recent_audit_log (count +1 check)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":200}'
+  AFTER_FLIP_COUNT="$(json_first_int count)"
+  if [[ "$AFTER_FLIP_COUNT" -eq $((BASE_COUNT + 1)) ]]; then
+    echo "✅ PASS  15.8 count delta = +1"; PASS=$((PASS + 1))
+  else
+    echo "❌ FAIL  15.8 expected +1, got $((AFTER_FLIP_COUNT - BASE_COUNT))"
+    FAIL=$((FAIL + 1)); FAIL_NAMES+=("15.8")
+  fi
+
+  # ── Test 16: no-op at FLIP_STATUS — no audit row expected ─────────────────
+  call_tool "16   update_task_status (no-op at FLIP_STATUS)" "update_task_status" \
+    "$(printf '{"task_key":"task_0_1","status":"%s"}' "$FLIP_STATUS")"
+  call_tool "16.1 get_recent_audit_log (no-op count check)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":200}'
+  AFTER_NOOP_COUNT="$(json_first_int count)"
+  if [[ "$AFTER_NOOP_COUNT" -eq "$AFTER_FLIP_COUNT" ]]; then
+    echo "✅ PASS  16.2 no-op wrote no audit row (delta=0)"; PASS=$((PASS + 1))
+  else
+    echo "❌ FAIL  16.2 no-op delta (expected 0, got $((AFTER_NOOP_COUNT - AFTER_FLIP_COUNT)))"
+    FAIL=$((FAIL + 1)); FAIL_NAMES+=("16.2")
+  fi
+
+  # ── Test 17: revert FLIP_STATUS → ORIG_STATUS with actor='claude_code' ────
+  call_tool "17   update_task_status (revert, actor=claude_code)" "update_task_status" \
+    "$(printf '{"task_key":"task_0_1","status":"%s","actor":"claude_code"}' "$ORIG_STATUS")"
+  call_tool "17.1 get_recent_audit_log (post-revert, limit=1)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":1}'
+  UNWRAPPED="$(unwrap_body)"
+  assert_contains "$UNWRAPPED" "\"actor\"[[:space:]]*:[[:space:]]*\"claude_code\""       "17.2 audit actor=claude_code"
+  assert_contains "$UNWRAPPED" "\"old_value\"[[:space:]]*:[[:space:]]*\"$FLIP_STATUS\""  "17.3 audit old_value=$FLIP_STATUS"
+  assert_contains "$UNWRAPPED" "\"new_value\"[[:space:]]*:[[:space:]]*\"$ORIG_STATUS\""  "17.4 audit new_value=$ORIG_STATUS"
+
+  call_tool "17.5 get_recent_audit_log (count +2 check)" "get_recent_audit_log" \
+    '{"target_type":"task","target_key":"task_0_1","limit":200}'
+  FINAL_COUNT="$(json_first_int count)"
+  if [[ "$FINAL_COUNT" -eq $((BASE_COUNT + 2)) ]]; then
+    echo "✅ PASS  17.6 final count delta = +2"; PASS=$((PASS + 1))
+  else
+    echo "❌ FAIL  17.6 expected +2, got $((FINAL_COUNT - BASE_COUNT))"
+    FAIL=$((FAIL + 1)); FAIL_NAMES+=("17.6")
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -191,6 +319,11 @@ echo
 echo "CLEANUP (Supabase SQL Editor):"
 echo "  delete from public.open_items where title = 'SMOKE TEST — DELETE ME';"
 echo "  delete from public.neon_rabbit_clients where name = 'SMOKE TEST CLIENT';"
+echo "  delete from public.build_action_log"
+echo "    where entry_kind = 'audit'"
+echo "      and target_type = 'task'"
+echo "      and target_key = 'task_0_1'"
+echo "      and created_at >= '${SCRIPT_START_TS}';"
 echo
 
 exit $FAIL

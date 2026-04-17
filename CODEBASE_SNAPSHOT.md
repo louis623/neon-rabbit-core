@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-04-16_
+_Generated: 2026-04-17_
 
 ## Project
 **Neon Rabbit Core** — the umbrella repo (formerly `sparkle-suite`) housing every codebase under the Neon Rabbit brand: the **Sparkle Suite** rep-facing platform, the **NR HQ** internal build tracker, the **Open Brain** semantic memory store, and the **Live Queue** Chrome extension. Built on Next.js 16 + React 19, Supabase (Postgres + Edge Functions), Stripe billing, and Telegram Bot integration.
@@ -74,7 +74,7 @@ neon-rabbit-core/
 │   │   ├── daily-financial-sync/index.ts
 │   │   ├── embed/index.ts
 │   │   ├── live-queue-sync/index.ts
-│   │   ├── nr-hq-mcp/index.ts          ← NR HQ build tracker MCP (5 reads + 12 writes)
+│   │   ├── nr-hq-mcp/index.ts          ← NR HQ build tracker MCP (6 reads + 12 writes = 18 tools)
 │   │   ├── open-brain-mcp/index.ts
 │   │   ├── open-brain-mcp-march/index.ts
 │   │   └── open-brain-status-updater/index.ts
@@ -87,7 +87,13 @@ neon-rabbit-core/
 │       ├── 006_sparkle_suite_schema.sql
 │       ├── 007_fix_reps_admin_rls_recursion.sql
 │       ├── 008_stripe_billing.sql
-│       └── 009_sms_wallet_cents.sql    ← SMS wallet cents conversion + auto-recharge lock
+│       ├── 009_sms_wallet_cents.sql    ← SMS wallet cents conversion + auto-recharge lock
+│       ├── 010_nr_client_table_renames.sql
+│       ├── 011_nr_open_items.sql
+│       ├── 012_nr_open_items_sync_secret.sql
+│       ├── 013_build_action_log_audit.sql  ← entry_kind discriminator + 4 atomic state/audit RPCs
+│       ├── 014_build_action_log_description_nullable.sql
+│       └── 015_build_action_log_position_scope.sql
 ├── vault/                         ← project docs/notes
 ├── .env.example
 ├── package.json
@@ -311,13 +317,16 @@ Mirror of open-brain-mcp for user March.
 - URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/open-brain-mcp-march`
 
 ### `nr-hq-mcp`
-Read-only MCP server exposing NR HQ build tracker state to Claude Desktop / claude.ai.
+MCP server exposing NR HQ build tracker, open items, clients, and audit log to Claude Desktop / claude.ai. **18 tools total** (6 reads + 12 writes).
 - Auth: `x-brain-key: MCP_ACCESS_KEY` header (query `?key=` fallback)
-- Tools: `get_phases`, `get_tasks`, `get_gates`, `get_action_cards`, `get_build_summary`
-- Tech: Hono + @modelcontextprotocol/sdk + Zod, anon Supabase client (public SELECT RLS)
-- Tables: `construction_phases`, `construction_tasks`, `construction_gates`, `build_action_log`
+- Read tools: `get_phases`, `get_tasks`, `get_gates`, `get_action_cards`, `get_build_summary`, `get_recent_audit_log`
+- Write tools: `update_task_status`, `update_phase_status`, `update_gate_status`, `update_action_cards` (the 4 status tools are thin wrappers over SECURITY DEFINER RPCs — `rpc_update_{task,phase,gate,action_cards}_status` — that use `SELECT FOR UPDATE` row locks for atomic state+audit writes in one transaction. All 4 accept an optional `actor` param (`'chat' | 'claude_code'`, default `'claude_code'`) that labels the audit row); `create_open_item`, `update_open_item`, `resolve_open_item`, `get_open_items`; `create_client`, `update_client`, `get_clients`, `get_client`
+- Tech: Hono + @modelcontextprotocol/sdk + Zod. Reads use anon client (public RLS); writes use service_role client.
+- Tables: `construction_phases`, `construction_tasks`, `construction_gates`, `build_action_log`, `open_items`, `neon_rabbit_clients`
 - Default project: env `NR_HQ_DEFAULT_PROJECT` or `sparkle_suite`
 - URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/nr-hq-mcp`
+- **Audit semantics (migration 013):** every state change on a task, phase, gate, or action-card position writes a `build_action_log` row with `entry_kind='audit'`. No-op calls (same status, no other field changes) skip the audit write. `update_phase_status` always recomputes `total_tasks`/`completed_tasks` (drift-repair path) and bumps `updated_at` on every call; the audit row is emitted only when status actually changes. `get_action_cards` and `get_build_summary` defensively filter `entry_kind='card_snapshot'` so audit rows can never leak into the card-display paths.
+- **Audit trust boundary:** `get_recent_audit_log` uses the service-role client because audit `old_value`/`new_value` payloads can contain task notes/completion session strings. Anon SELECT on `build_action_log` is scoped to `entry_kind='card_snapshot'`; audit rows are reachable only through the MCP `x-brain-key` gate.
 
 ### `embed`
 Background worker: reads from `embed_jobs` pgmq queue, generates OpenAI embeddings, writes back to `open_brain`.
@@ -451,6 +460,9 @@ Idempotent seed script for the test rep development sandbox.
 | `010_nr_client_table_renames.sql` | Rename `clients` → `clients_build_pipeline` (SS build pipeline; pipeline_status/builds/payments FKs auto-track), `sparkle_clients` → `neon_rabbit_clients` (HQ canonical client DB; daily-financial-sync Edge Function target). Rename-only — no schema or data changes. |
 | `011_nr_open_items.sql` | `open_items` governance tracker: 3 enums (`open_item_category`, `open_item_status`, `open_item_priority`), table + `updated_at` trigger, 4 indexes, RLS (service_role full / anon read), 15-row seed across gap(1) / research(5) / legal(3) / grey_area(6). |
 | `012_nr_open_items_sync_secret.sql` | Append `open_items` task row flagging the pre-existing SYNC_SECRET auth disconnect on `daily-financial-sync` (cron silently 401-ing for ~12 days; last good `financial_snapshots` write 2026-04-04). Guarded on title — idempotent. |
+| `013_build_action_log_audit.sql` | Codify dashboard-created `build_action_log` canonical shape + extend to a unified build-activity log. Adds `entry_kind` discriminator (`card_snapshot`/`audit`) + audit columns (`target_type`, `target_key`, `actor`, `old_value`, `new_value`, `summary`) with DEFAULTs for rollout safety. NULL-validation DO block before tightening NOT NULL on base columns. Backfill existing 36 rows to `entry_kind='card_snapshot'`. 4 CHECK constraints (`entry_kind`, `target_type`, `actor`, audit-shape guard). 2 indexes (project+kind+created, target+kind). RLS: service_role full, anon SELECT scoped to `card_snapshot`. 4 atomic state+audit RPCs with `SELECT FOR UPDATE` and actor/status validation: `rpc_update_task_status`, `rpc_update_phase_status`, `rpc_update_gate_status`, `rpc_update_action_cards`. Follow-up open_item row tracking the scheduled NOT-NULL enforcement migration. Fully transactional, idempotent on rerun. |
+| `014_build_action_log_description_nullable.sql` | `alter column description drop not null`. The live column was NOT NULL from dashboard creation; audit rows legitimately don't carry a description (payload lives in summary/old/new). Also bumps the reserved NOT-NULL follow-up open_item to reference migration 016. |
+| `015_build_action_log_position_scope.sql` | Rewrite `build_action_log_position_check` (dashboard-created CHECK restricting `position` to `previous/current/next`) so it only applies to `card_snapshot` rows. Audit rows use `position=target_key` (e.g. `task_0_1`) which needed the broader predicate. |
 
 ---
 
@@ -669,4 +681,46 @@ Single-file Edge Function change — extends `supabase/functions/nr-hq-mcp/index
 **Guardrails honored:** 5 read tools are byte-identical to pre-Task-3 state (schemas, return shapes, anon client). `open-brain-mcp` and `daily-financial-sync` untouched. No new tables/migrations. `clients_build_pipeline` untouched. NR HQ Claude.ai connector config untouched — Louis reloads the connector post-deploy (disconnect + reconnect) to pick up the new tool list.
 
 **Post-deploy verification (Louis):** reload NR HQ connector, confirm 17 tools load in a fresh Claude Chat, fire one write to confirm end-to-end path.
+
+---
+
+## Session 2026-04-17 — Memory Library Task 4 Part A (build_action_log audit writes)
+
+Migrations 013–015 transform `build_action_log` from a pure rolling action-card store into a **unified build-activity log**. Every row is either a `card_snapshot` (the 3 active rolling cards + their archives) or an `audit` event (one row per state change on a task, phase, gate, or action-card position). The `nr-hq-mcp` Edge Function's 4 status tools are refactored into thin wrappers over 4 new atomic state+audit RPCs, and an 18th MCP tool `get_recent_audit_log` is added to read audit rows through the MCP trust boundary. Part B (dashboard History view) can now render a faithful timeline without a separate table.
+
+**Schema (migration 013, codifies dashboard-created table):**
+- Canonical base columns codified in `CREATE TABLE IF NOT EXISTS` (id uuid, project, position, title, description, is_active, created_at, updated_at). Drift reconciled via `ALTER COLUMN ... SET NOT NULL/DEFAULT`.
+- Pre-flight `DO` block counts null values across the NOT-NULL-targeted columns and raises a clear error if any row violates the invariant — fail fast, do not tighten silently.
+- Audit columns added: `entry_kind`, `target_type`, `target_key`, `actor`, `old_value`, `new_value`, `summary`. All nullable with DEFAULT on the two discriminator columns so old-code writes during the migration→deploy window still land valid.
+- Backfill runs BEFORE RLS activates so the new anon SELECT predicate never observes a null `entry_kind`.
+- CHECK constraints: `entry_kind IN ('card_snapshot','audit')`, `target_type IN ('task','phase','gate','action_card')`, `actor IN ('chat','claude_code')` (or null), and an audit-shape guard requiring audit rows to carry target_type/target_key/actor/summary.
+- Indexes: `(project, entry_kind, created_at desc)` for project-scoped history scans, and a partial `(target_type, target_key, created_at desc) WHERE entry_kind='audit'` for target drill-down.
+- RLS: service_role full; anon SELECT scoped to `entry_kind='card_snapshot'` — audit payloads (which can contain task notes / completion_session text) are **not** anon-readable.
+
+**The 4 atomic state+audit RPCs (migration 013, SECURITY DEFINER, service_role only):**
+- `rpc_update_task_status` — locks row with `SELECT FOR UPDATE`, applies Task 3 Decision 9 completion_date semantics exactly (explicit value wins; `status='complete'` with no value auto-sets to `now()` regardless of prior; never null on moves away), detects honest no-ops across status+notes+completion_session+completion_date, writes state+audit in one transaction. Audit `old_value`/`new_value` are plain strings on status-only changes, full JSON snapshots when multiple fields changed.
+- `rpc_update_phase_status` — ALWAYS recomputes `total_tasks`/`completed_tasks` from live `construction_tasks` counts and bumps `updated_at` on every call (preserves the drift-repair use case). Audit row emitted only when status actually changes.
+- `rpc_update_gate_status` — standard lock + compare + update + audit.
+- `rpc_update_action_cards` — snapshots and locks active card rows, archives them (with a defensive `coalesce(entry_kind, 'card_snapshot')` self-heal on the archive predicate), inserts 3 new active `card_snapshot` rows, and emits one audit row per position whose title or description changed. Audit `old_value`/`new_value` are JSON card objects.
+
+All 4 RPCs validate `actor` (`'chat'|'claude_code'`) and status values up front with `RAISE EXCEPTION` so SQL-direct callers get clear errors instead of opaque CHECK-violation messages. Status pools were probed against live CHECKs on 2026-04-17 and match: tasks `(not_started, in_progress, complete, blocked)`, phases `(not_started, in_progress, testing, complete)`, gates `(locked, testing, passed, failed)`.
+
+**Edge Function (`nr-hq-mcp/index.ts`):**
+- The 4 status tools (`update_task_status`, `update_phase_status`, `update_gate_status`, `update_action_cards`) are now thin RPC wrappers. Each accepts a new optional `actor: 'chat'|'claude_code'` param (defaults to `'claude_code'` when omitted — old callers unaffected). The `{task}`/`{phase}`/`{gate}`/`{project,cards}` response contracts are unchanged.
+- 18th tool `get_recent_audit_log` reads via `supabaseWrite` (service-role path) because audit rows are RLS-protected from anon. Filters: `project`, `target_type`, `target_key`, `actor`; returns exact `count` + `page_size`. This is the only sanctioned read path for audit rows.
+- `get_action_cards` and `get_build_summary` defensively filter `entry_kind='card_snapshot'` so audit rows can never leak into card-display surfaces.
+- `update_phase_status`'s tool description now documents the always-recount + updated_at-bump semantics.
+
+**Follow-up migrations discovered during validation:**
+- Migration 014 — `alter column description drop not null`. The live column was NOT NULL from dashboard creation; audit rows genuinely don't have descriptions (payload lives in `summary`/`old_value`/`new_value`).
+- Migration 015 — rewrite `build_action_log_position_check` to apply only to `card_snapshot` rows. Audit rows use `position=target_key` (e.g. `task_0_1`) which the original dashboard constraint `position IN ('previous','current','next')` rejected.
+- Open_item reserved for migration 016 — tightens audit columns to NOT NULL after ≥48h clean traffic.
+
+**Smoke test artifact (`supabase/functions/nr-hq-mcp/smoke-test.sh`):** extended from 14 to 17 logical tests (15–17 target the audit path via `get_recent_audit_log`). Self-contained: pre-reads `task_0_1` current status via `get_tasks`, computes a non-complete flip target, orders as flip → no-op → revert so the no-op step always lands at a non-complete state (avoids auto-completion_date aliasing). Env stays `MCP_ACCESS_KEY`-only; the new helpers (`unwrap_body`, `assert_contains`, `json_first_int`, `json_first_str`) strip the JSON-RPC escaping so grep patterns can match inner payload keys. Cleanup SQL printed at end is time-windowed (`created_at >= SCRIPT_START_TS`).
+
+**End-to-end RPC validation (service role, before function smoke):** `rpc_update_task_status` flip + no-op + revert sequence on `task_0_1` confirmed audit rows appearing with correct actor/old/new/summary values and correct JSON payload shape when multiple fields change (status=`complete` triggers auto-`completion_date=now()` producing multi-field diff). Two audit rows written, no-op wrote zero, task state restored to `complete`. All artifacts cleaned up before commit.
+
+**Guardrails honored:** Response contracts of the 4 status tools are byte-identical (wrappers reshape RPC output). Only additive surface changes: 1 new optional param on 4 existing tools + 1 new read tool. `get_phases`/`get_tasks`/`get_gates` untouched. `get_action_cards`/`get_build_summary` gain a defensive filter with no observable change (all valid rows satisfy it after backfill). `open_items` written only via the idempotent migration-013 insert (precedent: migration 012). `create_client`/`update_client` untouched. `daily-financial-sync`, `open-brain-mcp`, other Edge Functions untouched.
+
+**Post-deploy verification (Louis, Rule 18):** reload NR HQ connector to pick up the new `actor` param + `get_recent_audit_log`, confirm 18 tools in a fresh Claude Chat, fire one `update_task_status` with `actor='chat'`, call `get_recent_audit_log` to confirm the row lands with the expected shape. Run the MCP smoke test with the 1Password-sourced `MCP_ACCESS_KEY` — all 17 logical tests should pass. Inspect the new rows in Supabase → Database → `build_action_log` (6 new columns; 36 historical rows carry `entry_kind='card_snapshot'`).
 
