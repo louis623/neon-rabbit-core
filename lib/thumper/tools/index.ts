@@ -15,6 +15,9 @@ import { addListingTool } from './add-listing'
 import { getTradeRequestsTool } from './get-trade-requests'
 import { approveTradeTool } from './approve-trade'
 import { rejectTradeTool } from './reject-trade'
+import { searchJewelryDatabaseTool } from './search-jewelry-database'
+import { updateListingTool } from './update-listing'
+import { getTradeHistoryTool } from './get-trade-history'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -26,6 +29,9 @@ const REGISTRY: ToolDefinition[] = [
   getTradeRequestsTool,
   approveTradeTool,
   rejectTradeTool,
+  searchJewelryDatabaseTool,
+  updateListingTool,
+  getTradeHistoryTool,
 ]
 
 export function buildAllTools(ctx: ToolContext): ToolSet {

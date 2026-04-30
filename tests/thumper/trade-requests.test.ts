@@ -16,6 +16,7 @@ import { errors } from '@/lib/services/errors'
 const getTradeRequestsMock = vi.fn()
 const approveTradeMock = vi.fn()
 const rejectTradeMock = vi.fn()
+const getTradeHistoryMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 
@@ -23,6 +24,7 @@ vi.mock('@/lib/services/trade-requests', () => ({
   getTradeRequests: (...args: unknown[]) => getTradeRequestsMock(...args),
   approveTrade: (...args: unknown[]) => approveTradeMock(...args),
   rejectTrade: (...args: unknown[]) => rejectTradeMock(...args),
+  getTradeHistory: (...args: unknown[]) => getTradeHistoryMock(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -41,6 +43,7 @@ vi.mock('@/lib/thumper/guardian-telemetry', () => ({
 import { makeGetTradeRequestsTool } from '@/lib/thumper/tools/get-trade-requests'
 import { makeApproveTradeTool } from '@/lib/thumper/tools/approve-trade'
 import { makeRejectTradeTool } from '@/lib/thumper/tools/reject-trade'
+import { makeGetTradeHistoryTool } from '@/lib/thumper/tools/get-trade-history'
 
 interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
@@ -72,10 +75,18 @@ function makeRejectTool(): ToolDef {
   }) as unknown as ToolDef
 }
 
+function makeHistoryTool(): ToolDef {
+  return makeGetTradeHistoryTool({
+    repId: 'rep-1',
+    supabase: {} as never,
+  }) as unknown as ToolDef
+}
+
 beforeEach(() => {
   getTradeRequestsMock.mockReset()
   approveTradeMock.mockReset()
   rejectTradeMock.mockReset()
+  getTradeHistoryMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
 })
@@ -397,5 +408,153 @@ describe('reject_trade — write + audit', () => {
   it('does NOT expose needsApproval — rejection is reversible and runs without a dialog', () => {
     const tool = makeRejectTool()
     expect(tool.needsApproval).toBeFalsy()
+  })
+})
+
+describe('get_trade_history — read-only flatten', () => {
+  it('passes auth client + repId + { limit } to the service and flattens items + summary', async () => {
+    getTradeHistoryMock.mockResolvedValueOnce({
+      items: [
+        {
+          requestId: 'req-1',
+          listingId: 'listing-1',
+          customerName: 'Alice',
+          status: 'approved',
+          fulfillmentStatus: 'completed',
+          createdAt: '2026-04-20T10:00:00Z',
+          completedAt: '2026-04-22T10:00:00Z',
+          fulfillmentDays: 2,
+          design: {
+            itemNumber: 'RG31452',
+            designName: 'The Celeste Ring',
+            bpMsrp: 128,
+            typePrefix: 'RG',
+            collectionName: 'Lustre',
+          },
+        },
+        {
+          requestId: 'req-2',
+          listingId: 'listing-2',
+          customerName: 'Bob',
+          status: 'denied',
+          fulfillmentStatus: null,
+          createdAt: '2026-04-21T10:00:00Z',
+          completedAt: null,
+          fulfillmentDays: null,
+          design: {
+            itemNumber: 'NK66139',
+            designName: 'Orbit',
+            bpMsrp: null,
+            typePrefix: 'NK',
+            collectionName: null,
+          },
+        },
+      ],
+      summary: {
+        totalCompleted: 1,
+        totalMsrpTraded: 128,
+        avgFulfillmentDays: 2,
+        topDesign: { itemNumber: 'RG31452', designName: 'The Celeste Ring', count: 1 },
+        repeatCustomers: [],
+      },
+    })
+
+    const tool = makeHistoryTool()
+    const result = await tool.execute({ limit: 50 })
+
+    // getTradeHistory(supabase, repId, { limit })
+    expect(getTradeHistoryMock).toHaveBeenCalledTimes(1)
+    expect(getTradeHistoryMock.mock.calls[0][1]).toBe('rep-1')
+    expect(getTradeHistoryMock.mock.calls[0][2]).toEqual({ limit: 50 })
+
+    expect(result.count).toBe(2)
+    const items = result.items as Array<Record<string, unknown>>
+    expect(items[0]).toMatchObject({
+      requestId: 'req-1',
+      listingId: 'listing-1',
+      customerName: 'Alice',
+      status: 'approved',
+      fulfillmentStatus: 'completed',
+      fulfillmentDays: 2,
+    })
+    // Design object flattened with msrp/type rename to match the model-friendly
+    // shape the rest of the tools surface.
+    expect(items[0].design).toMatchObject({
+      itemNumber: 'RG31452',
+      designName: 'The Celeste Ring',
+      msrp: 128,
+      type: 'RG',
+      collectionName: 'Lustre',
+    })
+    expect(items[1]).toMatchObject({
+      status: 'denied',
+      fulfillmentStatus: null,
+      completedAt: null,
+      fulfillmentDays: null,
+    })
+
+    expect(result.summary).toMatchObject({
+      totalCompleted: 1,
+      totalMsrpTraded: 128,
+      avgFulfillmentDays: 2,
+      topDesign: { itemNumber: 'RG31452', designName: 'The Celeste Ring', count: 1 },
+      repeatCustomers: [],
+    })
+  })
+
+  it('forwards undefined limit when caller omits it', async () => {
+    getTradeHistoryMock.mockResolvedValueOnce({
+      items: [],
+      summary: {
+        totalCompleted: 0,
+        totalMsrpTraded: 0,
+        avgFulfillmentDays: null,
+        topDesign: null,
+        repeatCustomers: [],
+      },
+    })
+
+    const tool = makeHistoryTool()
+    await tool.execute({})
+
+    expect(getTradeHistoryMock.mock.calls[0][2]).toEqual({ limit: undefined })
+  })
+
+  it('passes through an empty result + zeroed summary cleanly', async () => {
+    getTradeHistoryMock.mockResolvedValueOnce({
+      items: [],
+      summary: {
+        totalCompleted: 0,
+        totalMsrpTraded: 0,
+        avgFulfillmentDays: null,
+        topDesign: null,
+        repeatCustomers: [],
+      },
+    })
+
+    const tool = makeHistoryTool()
+    const result = await tool.execute({})
+
+    expect(result.count).toBe(0)
+    expect(result.items).toEqual([])
+    expect(result.summary).toMatchObject({
+      totalCompleted: 0,
+      totalMsrpTraded: 0,
+      avgFulfillmentDays: null,
+      topDesign: null,
+      repeatCustomers: [],
+    })
+  })
+
+  it('translates ServiceError into ThumperToolError', async () => {
+    getTradeHistoryMock.mockRejectedValueOnce(
+      errors.UNAUTHORIZED('foreign repId'),
+    )
+
+    const tool = makeHistoryTool()
+    await expect(tool.execute({})).rejects.toMatchObject({
+      name: 'ThumperToolError',
+      code: 'UNAUTHORIZED',
+    })
   })
 })
