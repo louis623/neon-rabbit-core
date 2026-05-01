@@ -206,21 +206,32 @@ export async function recordApprovalEvent(
   return { replayed: false }
 }
 
-// Like loadCanonicalHistory but normalized for the client's UI hydrate path.
-// Walks the loaded messages and downgrades any assistant `approval-requested`
-// part whose approval id is recorded in approval_events to a terminal state:
-//   - approved=true  → state='output-available' with a placeholder output
-//   - approved=false → state='output-denied'
-// This unblocks pre-existing conversations stuck with approval-requested parts
-// from before the route's continuation pattern landed (when each resume POST
-// created a parallel assistant row instead of updating the original). The
-// terminal states are inert from both the route's replay-extraction
-// perspective (only approval-responded triggers the replay check) and the
-// client's render gate.
+// Like loadCanonicalHistory but annotated for the client's UI hydrate path.
+// Walks the loaded messages and attaches a non-SDK marker to any assistant
+// `approval-requested` part whose approval id is already recorded in
+// approval_events. The marker is read by the client gate
+// (lib/thumper/hitl-state.ts) to suppress live HITL cards for stale rows
+// without claiming the tool actually executed.
+//
+// Critical: an approval_events row is recorded BEFORE streamText runs in
+// app/api/thumper/route.ts. It only proves the user clicked, NOT that the
+// tool's execute() ran. We therefore must NOT transform the part into a
+// terminal state (output-available / output-denied) — doing so would:
+//   1. claim a successful tool execution that may never have happened,
+//   2. fabricate placeholder `output` payloads that get round-tripped back
+//      through useChat → convertToModelMessages, polluting model history.
+//
+// We leave `state: 'approval-requested'` and the original (output-less) part
+// shape intact — that's the truthful persisted state. The marker is purely a
+// render/gate hint that survives JSON round-tripping but is ignored by both
+// the AI SDK's convert-to-model-messages and the route's replay extractor
+// (which only matches `state === 'approval-responded'`).
 //
 // Only used by the GET /conversation/[id] hydrate route. The POST route's
 // loadCanonicalHistory call is left untouched — it only feeds an ownership
-// probe and a user-message dedup set, neither of which needs normalized parts.
+// probe and a user-message dedup set, neither of which needs annotation.
+export const HISTORICAL_APPROVAL_KEY = '__historicalApproval'
+
 export async function loadConversationForClient(
   supabase: SupabaseClient,
   conversationId: string
@@ -256,37 +267,23 @@ export async function loadConversationForClient(
   }
   if (resolved.size === 0) return messages
 
-  // Downgrade in place. Build new arrays so we don't mutate the loaded rows
+  // Annotate in place. Build new arrays so we don't mutate the loaded rows
   // (UIMessage is a structural type but UI consumers may share references).
   return messages.map((m) => {
     if (m.role !== 'assistant') return m
     let changed = false
     const nextParts = (m.parts ?? []).map((part) => {
-      const p = part as {
-        state?: string
-        approval?: { id?: string }
-        type?: string
-        input?: unknown
-      }
+      const p = part as { state?: string; approval?: { id?: string } }
       if (p?.state !== 'approval-requested' || !p?.approval?.id) return part
       const approved = resolved.get(p.approval.id)
       if (approved === undefined) return part
       changed = true
-      if (approved) {
-        return {
-          ...part,
-          state: 'output-available',
-          output: {
-            resolved: true,
-            note: 'Resolved on a prior turn',
-          },
-          approval: { id: p.approval.id, approved: true },
-        }
-      }
+      // Preserve every existing field — state, approval, input, type — and
+      // only attach the non-SDK historical marker. No fake output, no state
+      // transition.
       return {
         ...part,
-        state: 'output-denied',
-        approval: { id: p.approval.id, approved: false },
+        [HISTORICAL_APPROVAL_KEY]: { approved },
       }
     })
     if (!changed) return m

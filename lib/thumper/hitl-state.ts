@@ -31,6 +31,15 @@ export interface ActionableApproval {
   input: Record<string, unknown>
 }
 
+// Non-SDK marker attached by loadConversationForClient (persistence.ts) to
+// approval-requested parts whose approval_events row already exists. It is
+// purely a render-gate hint — the underlying part state stays
+// 'approval-requested' (the truthful persisted state). The hydrate path
+// can't safely upgrade the part to output-available because an
+// approval_events row only proves the user clicked, not that the tool's
+// execute() actually ran. See persistence.ts for the full rationale.
+const HISTORICAL_APPROVAL_KEY = '__historicalApproval'
+
 /**
  * Find an actionable approval-requested part within the LAST step of an
  * assistant message. Mirrors the AI SDK's
@@ -40,8 +49,16 @@ export interface ActionableApproval {
  * Approval-requested parts that live on prior steps (or prior messages) are
  * historical and the SDK can no longer mutate them via
  * `addToolApprovalResponse`, so they should not render a live HITL card and
- * should not lock the input. Returns `null` when the message has no
- * actionable approval in its last step.
+ * should not lock the input.
+ *
+ * A part marked with the non-SDK `__historicalApproval` flag (attached on
+ * hydrate when an approval_events row exists for its approval id) is also
+ * treated as historical — even if it's the last part of the last step.
+ * That covers the "approval recorded but resume aborted before tool
+ * executed" edge case: we suppress the dead live card and unlock the input
+ * without claiming the tool succeeded.
+ *
+ * Returns `null` when the message has no actionable approval in its last step.
  */
 export function approvalRequestedInLastStep(
   message: UIMessage
@@ -61,8 +78,13 @@ export function approvalRequestedInLastStep(
       toolName?: string
       input?: Record<string, unknown>
       approval?: { id?: string }
+      [k: string]: unknown
     }
     if (p.state !== 'approval-requested' || !p.approval?.id) continue
+    // Suppress historically-resolved approvals (recorded in approval_events
+    // before this hydrate) — they're not actionable, regardless of whether
+    // the prior turn's tool execution actually completed.
+    if (p[HISTORICAL_APPROVAL_KEY] != null) continue
     const toolName =
       p.toolName ??
       (p.type?.startsWith('tool-') ? p.type.slice('tool-'.length) : 'tool')
