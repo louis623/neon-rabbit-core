@@ -6,7 +6,7 @@ import styles from './HITLBlock.module.css'
 // lib/thumper/tools/*. reject_trade is intentionally absent — it's not a HITL
 // tool. Both confirm buttons keep the destructive-red style to match the
 // system-prompt contract in lib/thumper/system-prompt.ts.
-const APPROVAL_COPY: Record<
+export const APPROVAL_COPY: Record<
   string,
   { title: ReactNode; confirm: string; cancel: string }
 > = {
@@ -19,6 +19,11 @@ const APPROVAL_COPY: Record<
     title: 'Remove this listing from your board?',
     confirm: 'Remove listing',
     cancel: 'Cancel',
+  },
+  cancel_show: {
+    title: 'Cancel this show?',
+    confirm: 'Cancel show',
+    cancel: 'Keep show',
   },
 }
 

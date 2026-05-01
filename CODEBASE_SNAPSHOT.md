@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-04-30 (HEAD: feat(thumper): Task 1.5D — search_jewelry_database, update_listing, get_trade_history tools)_
+_Generated: 2026-05-01 (HEAD: feat(thumper): Task 1.6 — calendar/show management service layer + 4 tools + migration 031)_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -43,7 +43,7 @@ neon-rabbit-core/
 │   │   │   └── webhook/route.ts
 │   │   ├── telegram/route.ts
 │   │   └── thumper/                       ← Phase 1 Task 1.1 production chat surface
-│   │       ├── route.ts                    ← streamText + 9 tools + HITL + Guardian telemetry + Enforcer audit
+│   │       ├── route.ts                    ← streamText + 13 tools + HITL + Guardian telemetry + Enforcer audit
 │   │       ├── conversation/[conversationId]/route.ts
 │   │       ├── conversation/latest/route.ts ← Task 1.3 follow-up — returns rep's most recent conversation_id (cross-device sync)
 │   │       ├── health/route.ts             ← public health probe (api/db reachable, recent_error_rate)
@@ -303,7 +303,7 @@ Live sales queue sync table — Chrome extension writes, website reads via Realt
 - `trade_fulfillment` — post-approval pipeline (approved → shipped → completed). Columns: request_id (FK UNIQUE), fulfillment_status, shipping_notes, received_listing_id (FK), status_updated_at, completed_at
 
 **Rep Operations:**
-- `calendar_events` — show schedule. Columns: rep_id (FK), platform, event_time, duration_minutes, discount_code, discount_description, description, is_recurring, recurrence_rule, status (event_status enum)
+- `calendar_events` — show schedule. Columns: rep_id (FK), platform, event_time, duration_minutes, discount_code, discount_description, description, is_recurring, recurrence_rule, status (event_status enum), title (TEXT, migration 031), featured_collections (TEXT[], migration 031)
 - `customer_audience` — TCPA/CAN-SPAM compliant subscriber list. Columns: rep_id (FK), name, phone, email, sms_consent, email_consent, marketing_consent, consent_date, sms_opted_out_at, email_opted_out_at, stop_keyword_received_at
 - `sms_wallet` — pre-loaded SMS balance (cents, $25 min load). Columns (post-009): `balance_cents INTEGER`, `auto_recharge_enabled BOOLEAN`, `auto_recharge_threshold_cents INTEGER`, `auto_recharge_amount_cents INTEGER`, `minimum_load_amount_cents INTEGER`, `auto_recharge_pending BOOLEAN`, `auto_recharge_attempt_id UUID`, `last_loaded_at`. Constraints: nonneg balance, threshold; amount ≥ 100¢; min_load ≥ 100¢; amount > threshold.
 - `wallet_transactions` — wallet load/charge log. Columns (post-009): `wallet_id` (FK), `type` (wallet_transaction_type enum), `amount_cents INTEGER` (unsigned; direction encoded in type), `stripe_fee_cents INTEGER NULL` (NULL = fee unknown), `stripe_payment_intent_id`, `description`. Unique partial index on `stripe_payment_intent_id` enforces idempotency.
@@ -505,6 +505,16 @@ interface WalletRow {
 - `triggerAutoRecharge(walletId, repId, attemptId)` (internal) — fresh-reads the wallet, aborts on `attempt_id` drift, resolves the Stripe customer (prefer `reps.stripe_customer_id`, fall back to latest active/trialing subscription), resolves a payment method (prefer `customer.invoice_settings.default_payment_method`, fall back to live-sub's `default_payment_method`), then `stripe.paymentIntents.create` with `confirm: true, off_session: true`, metadata `{ rep_id, wallet_id, auto_recharge: 'true', attempt_id }`, and `idempotencyKey: auto-recharge-${attemptId}`. Credit happens in the webhook, not here. On PI create failure or missing customer/PM, calls `release_wallet_recharge_lock`.
 - `releaseLock(walletId, attemptId)` (internal) — thin wrapper over the RPC.
 
+### `lib/services/calendar.ts`
+Calendar / show-management service layer (Task 1.6). Auth-client only — every function takes `(supabase: SupabaseClient, repId: string, ...input)` and relies on rep-scoped RLS on `calendar_events` for isolation.
+
+- `addShow(supabase, repId, input)` — validates required fields (`platform`, `eventTime`), rejects past `eventTime`, defaults `durationMinutes` to 60, INSERTs and returns the camelCase-mapped row. Optional fields: `title`, `description`, `discountCode`, `discountDescription`, `featuredCollections` (string[]).
+- `listMyShows(supabase, repId, input)` — defaults `upcoming=true` (filters `event_time >= now()`) and `limit=10` (cap 20). Returns `{events, count}` ordered by `event_time` ascending.
+- `updateShow(supabase, repId, input)` — patch-only; service requires `eventId` + at least one editable field. Editable surface: `eventTime`, `durationMinutes`, `platform`, `title`, `description`, `discountCode`, `discountDescription`, `featuredCollections`, `status`. Refuses to edit `status='cancelled' | 'completed'` events (`EVENT_NOT_EDITABLE`). Returns the post-patch row + `patchedFields: string[]`.
+- `cancelShow(supabase, repId, input)` — sets `status='cancelled'` on owned events in `'scheduled' | 'live'`. Refuses already-`cancelled` / `completed` events (`EVENT_NOT_CANCELLABLE`). Returns the cancelled row.
+- Internal: `getOwnedEvent(supabase, repId, eventId)` enforces `(id, rep_id)` equality and throws `EVENT_NOT_FOUND` on miss; `mapDbRowToCalendarEvent()` does the snake_case→camelCase boundary conversion in one place.
+- Errors: `EVENT_NOT_FOUND`, `EVENT_NOT_EDITABLE`, `EVENT_NOT_CANCELLABLE`, `EVENT_TIME_PAST`, `MISSING_PLATFORM`, `MISSING_EVENT_TIME` (added to `lib/services/errors.ts`).
+
 ### `lib/telegram-bot.ts`
 Telegram message handler:
 - `generateEmbedding(text)` — OpenAI embeddings
@@ -553,6 +563,7 @@ Idempotent seed script for the test rep development sandbox.
 | `027_nr_open_items_sort_order.sql` | Adds `sort_order INTEGER NULL` to `open_items` for manual ranking on the HQ dashboard (lower numbers first; NULL sorts last). Seeds the 9 current va_compensation action items with Louis-approved ranks 1–9. nr-hq-mcp `get_open_items` switches to `ORDER BY sort_order ASC NULLS LAST, priority DESC, created_at DESC` when `is_action_item=true`; default ordering preserved otherwise. `create_open_item` and `update_open_item` accept optional integer `sort_order`. |
 | `028_ss_thumper_guardian_hooks.sql` | Phase 1 Task 1.1: Guardian (telemetry) + Enforcer (audit) tables for the production `/thumper` route. Five tables: `thumper_incidents` (severity ledger with resolution status), `tool_executions` (per-call timing + args_hash for telemetry), `auth_events` (login/logout/fail/reset/account_create), `trade_action_audit` (before/after SHA-256 state hashes for trade mutations), `sms_email_blast_audit` (schema-only — not wired in this task). All five RLS-enabled with single `service_role` policy; no rep-scoped policy. Writes go through `lib/thumper/guardian-telemetry.ts` and `lib/thumper/audit.ts` which use `createAdminClient()`. Runner: `tsx scripts/run-migration-028.ts` (asserts `DATABASE_URL` host includes project ref `bqhzfkgkjyuhlsozpylf` before applying). |
 | `029_ss_jewelry_photo_storage.sql` | Phase 1 Task 1.5B follow-on: first Supabase Storage integration. Creates public `jewelry-photos` bucket via `INSERT INTO storage.buckets ... ON CONFLICT (id) DO NOTHING`. Two RLS policies on `storage.objects` (idempotent via `DROP POLICY IF EXISTS` — Postgres has no `CREATE POLICY IF NOT EXISTS`): public SELECT scoped to `bucket_id='jewelry-photos'`; authenticated INSERT scoped to the rep's own folder via `split_part(name, '/', 1) = (SELECT id::text FROM reps WHERE auth_user_id = auth.uid())`. No UPDATE/DELETE policies — service-role admin client handles those out-of-band. Path layout inside bucket: `{rep_id}/{uuid}.{ext}`. Uploads happen via `lib/services/storage.ts:uploadJewelryPhoto()` using the service-role client (RLS bypassed; defense-in-depth via path convention). Runner: `tsx scripts/run-migration-029.ts` (same `bqhzfkgkjyuhlsozpylf` host assertion); preferred path `supabase db push`. |
+| `031_ss_calendar_title_and_collections.sql` | Phase 1 Task 1.6: additive widening of `calendar_events` for the show-management Thumper tools. `ADD COLUMN IF NOT EXISTS title TEXT` (per-show title for rep clarity / dashboard display) + `ADD COLUMN IF NOT EXISTS featured_collections TEXT[]` (collection names the rep plans to feature in the show). Both nullable. No data backfill, no RLS change, no enum change. Applied via `npx supabase db push` against the linked project. |
 
 ---
 
@@ -1211,3 +1222,48 @@ The "kitchen" — both Thumper (waiter 1) and the future dashboard (waiter 2) se
 - Live conversational smoke (rep asks "find me a sapphire ring" → "edit the notes on RG31452 to say 'wedding gift'" → "what trades have I done?") — deferred to live verification before push, not a hard gate for commit.
 
 **Zod 4 UUID note:** During test-iteration, the schema-level test for `update_listing.inputSchema.safeParse({ listingId, repNotes })` initially failed because Zod 4's `.uuid()` enforces version + variant bits per `[1-8]` and `[89abAB]` — `'11111111-1111-1111-1111-111111111111'` is not a valid version-tagged UUID. Switched to `'11111111-1111-4111-8111-111111111111'` (version 4, variant 8) for the test constant. Existing tests at the `tool.execute()` layer were unaffected because they bypass schema parsing.
+
+## Session 2026-05-01 — SS Phase 1 Task 1.6 (calendar/show management — service layer + 4 tools + migration 031)
+
+**Goal:** Give Thumper end-to-end ownership of the rep's show calendar (schedule, view, edit, cancel) by adding a calendar service layer + 4 tools, widening `calendar_events` with `title` + `featured_collections`, and updating the system prompt to a 5-area scope. This expands the production tool registry from 9 → 13 and is the first non-trade-board domain Thumper directly mutates.
+
+**New files:**
+- `lib/services/calendar.ts` (~289 lines) — auth-client-only service layer with four exports: `addShow`, `listMyShows`, `updateShow`, `cancelShow`. Validation: `eventTime` must parse and be in the future (`EVENT_TIME_PAST`); `platform` is required (`MISSING_PLATFORM`); `eventTime` is required on add (`MISSING_EVENT_TIME`); `durationMinutes` defaults to 60 if omitted. Authorization: every read/write goes through the internal `getOwnedEvent(supabase, repId, eventId)` helper which enforces `(id, rep_id)` equality and throws `EVENT_NOT_FOUND` on miss — defense-in-depth on top of RLS. Status transitions: `updateShow` refuses `cancelled` / `completed` events (`EVENT_NOT_EDITABLE`); `cancelShow` refuses already-`cancelled` / `completed` events (`EVENT_NOT_CANCELLABLE`). DTO mapping: single internal `mapDbRowToCalendarEvent()` does the snake_case→camelCase boundary conversion so all four functions return identical shapes. No admin client — every operation is rep-scoped via RLS.
+- `lib/thumper/tools/add-show.ts` (~51 lines) — `addShowTool: ToolDefinition` (`readOnly: false`, **no** `needsApproval` — additive and reversible via `cancel_show`). Inputs: `platform` (string), `eventTime` (ISO datetime string), optional `durationMinutes` / `title` / `description` / `discountCode` / `discountDescription` / `featuredCollections` (string[]). Auth client (`ctx.supabase`). Translates `ServiceError → ThumperToolError`.
+- `lib/thumper/tools/update-show.ts` (~159 lines) — `updateShowTool: ToolDefinition` (`readOnly: false`, **no** `needsApproval` — patch is reversible by re-patch). Schema enforces at-least-one-patch-field. Audit via `writeTradeActionAudit` (re-used from trade-board tools): `actionType: 'show_updated'` with `patchedFields: string[]` mirroring the keys actually applied; logs status changes on the field set when present. Audit isolation matches `update-listing` / `remove-listing` (audit-write failure → console + best-effort `logIncident` warn → mutation result still returned).
+- `lib/thumper/tools/cancel-show.ts` (~109 lines) — `cancelShowTool: ToolDefinition` (`readOnly: false`, **`needsApproval: true`** — destructive from rep perspective; HITL-gated via `app/thumper/components/HITLBlock.tsx`). Inputs: `eventId` (UUID, required) + optional `reason` (string, surfaced in audit only — not persisted to `calendar_events.cancellation_reason`, no such column exists; reserved for future migration). Audit: `actionType: 'show_cancelled'` with before/after status SHA hashes.
+- `lib/thumper/tools/list-my-shows.ts` (~63 lines) — `listMyShowsTool: ToolDefinition` (`readOnly: true`). Inputs: `upcoming` (boolean, default `true`) + `limit` (1-20, default 10). Auth client. Returns flattened `{ count, events: [{ eventId, platform, eventTime, durationMinutes, status, title, description, discountCode, discountDescription, featuredCollections }] }`.
+- `tests/thumper/calendar-service.test.ts` (~230 lines) — vitest unit tests for the four service functions. Covers validation (past `eventTime` rejected, missing platform/time rejected), authorization (rep mismatch → `EVENT_NOT_FOUND`), and status-transition guards (edit cancelled → `EVENT_NOT_EDITABLE`, cancel completed → `EVENT_NOT_CANCELLABLE`).
+- `tests/thumper/calendar-tools.test.ts` (~238 lines) — vitest unit tests for the four tool wrappers. Covers happy-path service threading, audit shape with `patchedFields` for `update_show`, audit shape for `cancel_show` (status hash transition `scheduled` → `cancelled`), `ServiceError → ThumperToolError` translation, registry metadata (`needsApproval` survives the build wrapper for `cancel_show`).
+- `supabase/migrations/031_ss_calendar_title_and_collections.sql` (6 lines) — `ADD COLUMN IF NOT EXISTS title TEXT` + `ADD COLUMN IF NOT EXISTS featured_collections TEXT[]` on `calendar_events`. Both nullable. Idempotent. No data backfill, no RLS change, no enum change. Applied via `npx supabase db push` against `bqhzfkgkjyuhlsozpylf` on 2026-05-01.
+
+**Modified:**
+- `lib/services/types.ts` — added the calendar/show domain types: `EventStatus` (`'scheduled' | 'live' | 'completed' | 'cancelled'`), `CalendarEvent` (camelCase canonical shape), `AddShowInput`, `AddShowResult`, `ListShowsInput`, `ListShowsResult`, `UpdateShowInput`, `UpdateShowResult`, `CancelShowResult`. The pre-existing `event_status` enum on the DB side maps 1:1 to `EventStatus` — no migration required.
+- `lib/services/errors.ts` — added 6 calendar-domain factories to the predefined errors map: `EVENT_NOT_FOUND`, `EVENT_NOT_EDITABLE`, `EVENT_NOT_CANCELLABLE`, `EVENT_TIME_PAST`, `MISSING_PLATFORM`, `MISSING_EVENT_TIME`. All extend `ServiceError` with `code` / `message` / `userMessage` / optional `statusCode` per the existing pattern.
+- `lib/services/index.ts` — barrel updated: re-exports the 9 new types from `./types` and the four functions (`addShow`, `listMyShows`, `updateShow`, `cancelShow`) from `./calendar`.
+- `lib/thumper/tools/index.ts` — three new imports (already 9 → now also `addShowTool`, `updateShowTool`, `cancelShowTool`, `listMyShowsTool`); `REGISTRY` extended from 9 → 13 entries. The `needsApproval`-survives-wrapping assertion at `lib/thumper/tools/index.ts:50-52` continues to pass — `cancel_show` joins `remove_listing` and `approve_trade` as the third write tool that sets it.
+- `lib/thumper/system-prompt.ts` — full sweep: `"nine tools"` → `"thirteen tools"`; scope `"four areas"` → `"five areas"` (adds `"managing the rep's show calendar (schedule, view, edit, cancel)"`); 4 new tool inventory bullets including the explicit `cancel_show` "write, requires rep approval" flag and `update_show` "write, no approval dialog — patch is reversible by re-patch" note; new boundary bullets requiring `eventId` clarity for `update_show` / `cancel_show`; fallback decline list rewritten — the prior "Scheduling a show, sending show reminders, or building a show plan — Not yet" entry is replaced with two narrower bullets ("Sending show reminders or notifications to subscribers — Not yet" and "Building a show plan — Not yet") because scheduling is now in scope; fallback copy extended to enumerate the 4 calendar tools alongside the 9 trade-board ones.
+- `app/thumper/components/HITLBlock.tsx` — `APPROVAL_COPY` is now `export`ed (so the HITL approval card renderer can resolve copy by tool name); new entry for `cancel_show` (`{ title: "Cancel this show?", confirm: "Cancel show", cancel: "Keep show" }`) — surfaces in the rep's HITL approval block when Thumper invokes `cancel_show`.
+- `package.json` — `test` script extended (allow-list, not glob) with `tests/thumper/calendar-service.test.ts` and `tests/thumper/calendar-tools.test.ts`.
+
+**Approval & client matrix:**
+
+| Tool | needsApproval | Client | Audit |
+|------|---------------|--------|-------|
+| `add_show` | false | auth | none |
+| `list_my_shows` | false | auth | none |
+| `update_show` | false | auth | `show_updated` (patchedFields) |
+| `cancel_show` | **true** | auth | `show_cancelled` (status hash) |
+
+All four use the auth client — calendar is fully rep-scoped via RLS on `calendar_events`. No admin-client paths.
+
+**Service-layer pattern continuity:** Calendar follows the same shape as `trade-board.ts` / `trade-requests.ts` — auth-client functions take `(supabase, repId, input)`, return camelCase DTOs, throw typed `ServiceError` subclasses. The `getOwnedEvent` helper mirrors the implicit ownership-check pattern that RLS already provides but adds an explicit `EVENT_NOT_FOUND` boundary so tool handlers don't have to disambiguate "RLS hid it" vs "doesn't exist."
+
+**Reason field on `cancel_show` (forward-looking):** The `reason` input is currently consumed only by the audit log — `calendar_events` has no `cancellation_reason` column. A future migration could add one; this tool is forward-compatible (the input is already plumbed through to the service call site).
+
+**Verification (2026-05-01):**
+- `npx supabase db push` applied 031 cleanly against `bqhzfkgkjyuhlsozpylf`. Output: `Applying migration 031_ss_calendar_title_and_collections.sql... Finished supabase db push.`
+- `npm test` covers 7 vitest files: the 5 from Task 1.5D plus the 2 new calendar files.
+- System-prompt sweep — `lib/thumper/system-prompt.ts` Grep checks: `"nine tools"` → 0; `"thirteen tools"` → 1+; `"four areas"` → 0; `"five areas"` → 1+; `add_show|update_show|cancel_show|list_my_shows` → 5+ matches.
+- Registry shape — `REGISTRY.length` goes 9 → 13; `buildAllTools(ctx)` returns the 9 prior keys plus `add_show`, `update_show`, `cancel_show`, `list_my_shows`.
+- Live conversational smoke (rep asks "schedule a show Friday at 7pm on TikTok" → "what shows do I have coming up?" → "cancel that one") — deferred to live verification on Vercel after deploy.

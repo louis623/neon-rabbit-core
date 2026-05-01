@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run tests/thumper/abort-modes.test.ts tests/thumper/add-listing-recovery.test.ts tests/thumper/trade-requests.test.ts tests/thumper/trade-board-tools.test.ts tests/thumper/jewelry-database.test.ts tests/thumper/hitl-state.test.ts",
+    "test": "vitest run tests/thumper/abort-modes.test.ts tests/thumper/add-listing-recovery.test.ts tests/thumper/trade-requests.test.ts tests/thumper/trade-board-tools.test.ts tests/thumper/jewelry-database.test.ts tests/thumper/hitl-state.test.ts tests/thumper/calendar-service.test.ts tests/thumper/calendar-tools.test.ts",
     "test:attack5": "vitest run tests/thumper/attack-5-poisoned-rep-notes.test.ts"
   },
   "dependencies": {

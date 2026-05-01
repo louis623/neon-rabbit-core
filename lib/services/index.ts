@@ -25,6 +25,15 @@ export type {
   AddListingBatchResult,
   UpdateListingInput,
   UpdateListingResult,
+  EventStatus,
+  CalendarEvent,
+  AddShowInput,
+  AddShowResult,
+  ListShowsInput,
+  ListShowsResult,
+  UpdateShowInput,
+  UpdateShowResult,
+  CancelShowResult,
   SubmitTradeRequestInput,
   SubmitTradeRequestResult,
   GetTradeRequestsFilters,
@@ -56,6 +65,9 @@ export {
   rejectTrade,
   getTradeHistory,
 } from './trade-requests'
+
+// Calendar / Shows
+export { addShow, listMyShows, updateShow, cancelShow } from './calendar'
 
 // Trade Fulfillment
 export { updateFulfillmentStatus, getFulfillmentQueue } from './trade-fulfillment'

@@ -132,6 +132,75 @@ export interface UpdateListingResult {
 }
 
 // ============================================================================
+// calendar / show management domain
+// ============================================================================
+
+export type EventStatus = 'scheduled' | 'live' | 'completed' | 'cancelled'
+
+export interface CalendarEvent {
+  id: string
+  repId: string
+  platform: string
+  eventTime: string
+  durationMinutes: number
+  title: string | null
+  description: string | null
+  discountCode: string | null
+  discountDescription: string | null
+  featuredCollections: string[] | null
+  isRecurring: boolean
+  recurrenceRule: string | null
+  status: EventStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AddShowInput {
+  platform: string
+  eventTime: string
+  durationMinutes?: number
+  title?: string
+  description?: string
+  discountCode?: string
+  discountDescription?: string
+  featuredCollections?: string[]
+}
+
+export interface AddShowResult {
+  event: CalendarEvent
+}
+
+export interface ListShowsInput {
+  status?: EventStatus | EventStatus[]
+  upcoming?: boolean
+  limit?: number
+}
+
+export interface ListShowsResult {
+  events: CalendarEvent[]
+  totalCount: number
+}
+
+export interface UpdateShowInput {
+  platform?: string
+  eventTime?: string
+  durationMinutes?: number
+  title?: string
+  description?: string
+  discountCode?: string
+  discountDescription?: string
+  featuredCollections?: string[]
+}
+
+export interface UpdateShowResult {
+  event: CalendarEvent
+}
+
+export interface CancelShowResult {
+  event: CalendarEvent
+}
+
+// ============================================================================
 // trade-requests domain
 // ============================================================================
 

@@ -1,10 +1,10 @@
 // Service-layer errors. ServiceError is the canonical class for new code.
 // TradeBoardError is preserved as a subclass so the existing tool handlers
 // (lib/thumper/tools/list-my-trade-board.ts, lib/thumper/tools/remove-listing.ts)
-// keep working without code changes — they do `instanceof TradeBoardError` and
+// keep working without code changes â€” they do `instanceof TradeBoardError` and
 // read `err.code`. Both checks survive subclassing.
 //
-// Tool handlers translate ServiceError → ThumperToolError at the route boundary
+// Tool handlers translate ServiceError â†’ ThumperToolError at the route boundary
 // (see lib/thumper/errors.ts). The service layer never references
 // ThumperToolError; that's the rule that lets the same service back both the
 // chat (Thumper) and HTTP (dashboard) entry points.
@@ -33,7 +33,7 @@ export class ServiceError extends Error {
 }
 
 // Backward-compat for existing trade-board tool handlers. The legacy two-arg
-// constructor signature (code, message) MUST be preserved — see the live
+// constructor signature (code, message) MUST be preserved â€” see the live
 // throw sites in `removeListing` below and the original implementation history.
 // Empty subclass keeps `instanceof TradeBoardError` working for code that
 // already imports the name.
@@ -58,13 +58,13 @@ export const errors = {
     new ServiceError({
       code: 'MISSING_ITEM_INPUT',
       message: 'itemNumber or listingId required',
-      userMessage: "I need either an item number or listing ID to do that.",
+      userMessage: 'I need either an item number or listing ID to do that.',
     }),
   MISSING_PIECE_PHOTO: () =>
     new ServiceError({
       code: 'MISSING_PIECE_PHOTO',
       message: 'piece photo URL required when no canonical photo exists',
-      userMessage: "I need a photo of the piece for that listing.",
+      userMessage: 'I need a photo of the piece for that listing.',
     }),
   CLICKWRAP_REQUIRED: () =>
     new ServiceError({
@@ -100,14 +100,14 @@ export const errors = {
   INVALID_STATUS_TRANSITION: (from: string, to: string) =>
     new ServiceError({
       code: 'INVALID_STATUS_TRANSITION',
-      message: `invalid status transition: ${from} → ${to}`,
+      message: `invalid status transition: ${from} â†’ ${to}`,
       userMessage: `I can't move that from "${from}" to "${to}".`,
     }),
   AMBIGUOUS_CUSTOMER: (name: string) =>
     new ServiceError({
       code: 'AMBIGUOUS_CUSTOMER',
       message: `more than one fulfillment matches customer "${name}"`,
-      userMessage: `Multiple customers named "${name}" — can you give me a request ID?`,
+      userMessage: `Multiple customers named "${name}" â€” can you give me a request ID?`,
     }),
   FULFILLMENT_NOT_FOUND: () =>
     new ServiceError({
@@ -138,6 +138,50 @@ export const errors = {
     new ServiceError({
       code: 'NEEDS_FULL_INFO',
       message: `no design found for item ${itemNumber}`,
-      userMessage: `I don't have ${itemNumber} on file yet — I'll need the design name and a photo.`,
+      userMessage: `I don't have ${itemNumber} on file yet â€” I'll need the design name and a photo.`,
+    }),
+  EVENT_NOT_FOUND: () =>
+    new ServiceError({
+      code: 'EVENT_NOT_FOUND',
+      message: 'calendar event not found or not owned by rep',
+      userMessage: "I couldn't find that show on your schedule.",
+      statusCode: 404,
+    }),
+  EVENT_NOT_EDITABLE: () =>
+    new ServiceError({
+      code: 'EVENT_NOT_EDITABLE',
+      message: 'event is not in scheduled status and cannot be modified',
+      userMessage:
+        'That show has already started, finished, or been cancelled â€” I can only edit upcoming scheduled shows.',
+      statusCode: 409,
+    }),
+  EVENT_NOT_CANCELLABLE: () =>
+    new ServiceError({
+      code: 'EVENT_NOT_CANCELLABLE',
+      message: 'event is already completed or cancelled',
+      userMessage: 'That show is already done or cancelled.',
+      statusCode: 409,
+    }),
+  EVENT_TIME_PAST: () =>
+    new ServiceError({
+      code: 'EVENT_TIME_PAST',
+      message: 'event time must be in the future',
+      userMessage: 'That time is in the past â€” when do you actually want to schedule it?',
+      statusCode: 400,
+    }),
+  MISSING_PLATFORM: () =>
+    new ServiceError({
+      code: 'MISSING_PLATFORM',
+      message: 'platform is required for a show',
+      userMessage:
+        'Where are you streaming? I need the platform â€” Facebook Live, TikTok, Instagram, etc.',
+      statusCode: 400,
+    }),
+  MISSING_EVENT_TIME: () =>
+    new ServiceError({
+      code: 'MISSING_EVENT_TIME',
+      message: 'event time is required for a show',
+      userMessage: 'When is the show? I need a date and time.',
+      statusCode: 400,
     }),
 }
