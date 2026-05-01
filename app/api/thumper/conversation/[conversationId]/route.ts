@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedThumperContext, AuthError } from '@/lib/thumper/auth'
-import { loadCanonicalHistory, getConversationOwner } from '@/lib/thumper/persistence'
+import { loadConversationForClient, getConversationOwner } from '@/lib/thumper/persistence'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,6 +30,6 @@ export async function GET(
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const messages = await loadCanonicalHistory(supabase, conversationId)
+  const messages = await loadConversationForClient(supabase, conversationId)
   return NextResponse.json({ conversationId, messages })
 }

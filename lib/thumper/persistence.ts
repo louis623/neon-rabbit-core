@@ -206,6 +206,94 @@ export async function recordApprovalEvent(
   return { replayed: false }
 }
 
+// Like loadCanonicalHistory but normalized for the client's UI hydrate path.
+// Walks the loaded messages and downgrades any assistant `approval-requested`
+// part whose approval id is recorded in approval_events to a terminal state:
+//   - approved=true  → state='output-available' with a placeholder output
+//   - approved=false → state='output-denied'
+// This unblocks pre-existing conversations stuck with approval-requested parts
+// from before the route's continuation pattern landed (when each resume POST
+// created a parallel assistant row instead of updating the original). The
+// terminal states are inert from both the route's replay-extraction
+// perspective (only approval-responded triggers the replay check) and the
+// client's render gate.
+//
+// Only used by the GET /conversation/[id] hydrate route. The POST route's
+// loadCanonicalHistory call is left untouched — it only feeds an ownership
+// probe and a user-message dedup set, neither of which needs normalized parts.
+export async function loadConversationForClient(
+  supabase: SupabaseClient,
+  conversationId: string
+): Promise<UIMessage[]> {
+  const messages = await loadCanonicalHistory(supabase, conversationId)
+
+  // Collect every approval id that appears in an approval-requested part.
+  const pendingApprovalIds: string[] = []
+  for (const m of messages) {
+    if (m.role !== 'assistant') continue
+    for (const part of m.parts ?? []) {
+      const p = part as { state?: string; approval?: { id?: string } }
+      if (p?.state === 'approval-requested' && p?.approval?.id) {
+        pendingApprovalIds.push(p.approval.id)
+      }
+    }
+  }
+  if (pendingApprovalIds.length === 0) return messages
+
+  // One round-trip: pull every recorded approval event for this conversation
+  // whose id matches a pending part. Conversation-scoped to keep the index
+  // selective.
+  const { data, error } = await supabase
+    .from('approval_events')
+    .select('approval_id, approved')
+    .eq('conversation_id', conversationId)
+    .in('approval_id', pendingApprovalIds)
+  if (error) throw error
+
+  const resolved = new Map<string, boolean>()
+  for (const row of (data ?? []) as Array<{ approval_id: string; approved: boolean }>) {
+    resolved.set(row.approval_id, row.approved)
+  }
+  if (resolved.size === 0) return messages
+
+  // Downgrade in place. Build new arrays so we don't mutate the loaded rows
+  // (UIMessage is a structural type but UI consumers may share references).
+  return messages.map((m) => {
+    if (m.role !== 'assistant') return m
+    let changed = false
+    const nextParts = (m.parts ?? []).map((part) => {
+      const p = part as {
+        state?: string
+        approval?: { id?: string }
+        type?: string
+        input?: unknown
+      }
+      if (p?.state !== 'approval-requested' || !p?.approval?.id) return part
+      const approved = resolved.get(p.approval.id)
+      if (approved === undefined) return part
+      changed = true
+      if (approved) {
+        return {
+          ...part,
+          state: 'output-available',
+          output: {
+            resolved: true,
+            note: 'Resolved on a prior turn',
+          },
+          approval: { id: p.approval.id, approved: true },
+        }
+      }
+      return {
+        ...part,
+        state: 'output-denied',
+        approval: { id: p.approval.id, approved: false },
+      }
+    })
+    if (!changed) return m
+    return { ...m, parts: nextParts as UIMessage['parts'] }
+  })
+}
+
 export async function hasPriorApproval(
   supabase: SupabaseClient,
   approvalId: string

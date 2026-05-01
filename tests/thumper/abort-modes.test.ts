@@ -61,6 +61,15 @@ function makeFakeStore() {
         row.status = 'aborted'
       }
     }),
+    // Continuation persistence: parts-only UPDATE, no status change. Mirrors
+    // checkpointAssistant's contract — used by route.ts onFinish when an
+    // existing assistant row is being augmented (HITL resume).
+    checkpointAssistant: vi.fn((args: { conversationId: string; messageId: string; parts: unknown }) => {
+      const row = conv.find(
+        (r) => r.conversation_id === args.conversationId && r.message_id === args.messageId
+      )
+      if (row) row.parts = args.parts
+    }),
     recordApproval: vi.fn((args: { conversationId: string; approvalId: string; approved: boolean }) => {
       approvals.push({
         conversation_id: args.conversationId,
@@ -72,11 +81,27 @@ function makeFakeStore() {
 }
 
 // onFinish branching: this is the contract pulled from app/api/thumper/route.ts.
-// If isAborted → call abortAssistant with partial parts. Else → completeAssistant.
+// Continuation (HITL resume, last incoming message was assistant) takes priority
+// regardless of isAborted — the prior turn already committed; we only ever
+// augment its parts. New turns: aborted → abortAssistant, else completeAssistant.
 async function onFinish(
   store: ReturnType<typeof makeFakeStore>,
-  args: { conversationId: string; messageId: string; parts: unknown; isAborted: boolean }
+  args: {
+    conversationId: string
+    messageId: string
+    parts: unknown
+    isAborted: boolean
+    isContinuation?: boolean
+  }
 ) {
+  if (args.isContinuation) {
+    store.checkpointAssistant({
+      conversationId: args.conversationId,
+      messageId: args.messageId,
+      parts: args.parts,
+    })
+    return
+  }
   if (args.isAborted) {
     store.abortAssistant({
       conversationId: args.conversationId,
@@ -183,5 +208,116 @@ describe('abort-modes', () => {
     const row = store.conv.find((r) => r.message_id === messageId)
     expect(row?.status).toBe('complete')
     expect(row?.parts).toEqual(finalParts)
+  })
+
+  // Continuation contract: when the route detects the incoming POST is a
+  // HITL resume (last incoming message was an assistant turn), it must reuse
+  // the existing assistant row's id, skip reserveAssistantMessage, and on
+  // onFinish call checkpointAssistant — NOT completeAssistant or
+  // abortAssistant. This keeps the original row's status='complete' intact
+  // while the post-approval parts (e.g. output-available) are merged in.
+  // Without this, a parallel assistant row was being created on every resume
+  // and the original stayed stuck at approval-requested in the DB, which
+  // resurrected dead approval cards on reload.
+  it('HITL continuation: reuses existing assistant row, updates parts via checkpoint, status stays complete', async () => {
+    const conversationId = 'conv-5'
+    const messageId = 'msg-5-assistant'
+
+    // Prior turn already committed: seed the row directly so the
+    // completeAssistant mock counter stays clean for this test's assertions.
+    // In production, reserveAssistant + completeAssistant ran in the prior POST.
+    const priorParts = [
+      { type: 'step-start' },
+      {
+        type: 'tool-approve_trade',
+        state: 'approval-requested',
+        toolName: 'approve_trade',
+        input: { requestId: 'req-1' },
+        approval: { id: 'approval-resume' },
+      },
+    ]
+    store.conv.push({
+      conversation_id: conversationId,
+      message_id: messageId,
+      rep_id: 'rep-1',
+      role: 'assistant',
+      parts: priorParts,
+      status: 'complete',
+    })
+
+    // Resume POST: route detects continuation, reuses messageId, skips
+    // reserveAssistant. Stream produces the post-approval merged parts:
+    // approval-requested → output-available + final text appended.
+    const mergedParts = [
+      { type: 'step-start' },
+      {
+        type: 'tool-approve_trade',
+        state: 'output-available',
+        toolName: 'approve_trade',
+        input: { requestId: 'req-1' },
+        output: { fulfillmentId: 'ful-1' },
+        approval: { id: 'approval-resume', approved: true },
+      },
+      { type: 'text', text: 'Approved — fulfillment row created.' },
+    ]
+    await onFinish(store, {
+      conversationId,
+      messageId,
+      parts: mergedParts,
+      isAborted: false,
+      isContinuation: true,
+    })
+
+    // Existing row was updated, NOT replaced or duplicated.
+    const rows = store.conv.filter((r) => r.message_id === messageId)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].parts).toEqual(mergedParts)
+    expect(rows[0].status).toBe('complete')
+
+    // Continuation must NOT reserve a new assistant row.
+    expect(store.reserveAssistant).not.toHaveBeenCalled()
+    expect(store.checkpointAssistant).toHaveBeenCalledTimes(1)
+    expect(store.completeAssistant).not.toHaveBeenCalled()
+    expect(store.abortAssistant).not.toHaveBeenCalled()
+  })
+
+  it('HITL continuation aborted mid-resume: status stays complete, parts updated to whatever streamed', async () => {
+    // If the resume stream dies mid-flight, we still want the original row
+    // to stay 'complete' (the prior turn committed cleanly) and the partial
+    // post-approval parts to be persisted. Flipping status to 'aborted' here
+    // would erase the approval-asking turn from canonical history because
+    // loadCanonicalHistory drops non-complete assistant rows.
+    const conversationId = 'conv-6'
+    const messageId = 'msg-6-assistant'
+    store.conv.push({
+      conversation_id: conversationId,
+      message_id: messageId,
+      rep_id: 'rep-1',
+      role: 'assistant',
+      parts: [],
+      status: 'complete',
+    })
+
+    const partial = [
+      { type: 'step-start' },
+      {
+        type: 'tool-approve_trade',
+        state: 'approval-responded',
+        toolName: 'approve_trade',
+        approval: { id: 'approval-x', approved: true },
+      },
+    ]
+    await onFinish(store, {
+      conversationId,
+      messageId,
+      parts: partial,
+      isAborted: true,
+      isContinuation: true,
+    })
+
+    const row = store.conv.find((r) => r.message_id === messageId)
+    expect(row?.status).toBe('complete')
+    expect(row?.parts).toEqual(partial)
+    expect(store.abortAssistant).not.toHaveBeenCalled()
   })
 })

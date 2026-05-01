@@ -26,12 +26,14 @@ import {
   reserveAssistantMessage,
   completeAssistant,
   abortAssistant,
+  checkpointAssistant,
   recordApprovalEvent,
 } from '@/lib/thumper/persistence'
 import { buildAllTools } from '@/lib/thumper/tools'
 import { THUMPER_SYSTEM_PROMPT } from '@/lib/thumper/system-prompt'
 import { probeConversationOwner } from '@/lib/thumper/probe-conversation-owner'
 import { logIncident } from '@/lib/thumper/guardian-telemetry'
+import { decideAssistantMessageId } from '@/lib/thumper/hitl-state'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -177,12 +179,21 @@ export async function POST(request: Request) {
   // Reserve assistant row before streamText starts. Same ID is wired to the
   // SDK via generateMessageId so the DB row and SDK-emitted message stay in
   // sync even if the stream aborts.
-  const assistantMessageId = randomUUID()
-  await reserveAssistantMessage(supabase, {
-    conversationId,
-    repId,
-    messageId: assistantMessageId,
-  })
+  //
+  // For HITL continuation (last message is an assistant turn carrying an
+  // approval-responded part), reuse that turn's id instead of generating a
+  // new one — this matches the AI SDK's continuation pattern and keeps the
+  // resume's output-available state on the original DB row, not a parallel
+  // one that would resurrect a dead approval card on reload.
+  const { messageId: assistantMessageId, isContinuation } =
+    decideAssistantMessageId(messages, () => randomUUID())
+  if (!isContinuation) {
+    await reserveAssistantMessage(supabase, {
+      conversationId,
+      repId,
+      messageId: assistantMessageId,
+    })
+  }
 
   const tools = buildAllTools({ repId, supabase, conversationId, runId })
 
@@ -294,11 +305,24 @@ export async function POST(request: Request) {
         emitHide('finish')
       }
     },
-    onFinish: async ({ responseMessage, isAborted }) => {
+    onFinish: async ({ responseMessage, isAborted, isContinuation: sdkIsContinuation }) => {
       // data-thinking parts are transient and will not appear in
       // responseMessage.parts, so persistence stays clean.
+      //
+      // Continuation (HITL resume): the prior turn already committed with
+      // status='complete'; we're augmenting its parts with the post-approval
+      // state. Use checkpointAssistant (parts-only UPDATE) and never flip
+      // status to 'aborted' — that would erase the approval-asking turn
+      // from canonical history (loadCanonicalHistory drops non-complete
+      // assistant rows from the model's view).
       try {
-        if (isAborted) {
+        if (sdkIsContinuation) {
+          await checkpointAssistant(supabase, {
+            conversationId,
+            messageId: responseMessage.id,
+            parts: responseMessage.parts,
+          })
+        } else if (isAborted) {
           await abortAssistant(supabase, {
             conversationId,
             messageId: responseMessage.id,

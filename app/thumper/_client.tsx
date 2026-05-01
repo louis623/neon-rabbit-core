@@ -23,6 +23,10 @@ import { ThumperColumn } from './components/ThumperColumn'
 import { ThumperGlyph } from './components/ThumperGlyph'
 import { ThumperMobileShell } from './components/ThumperMobileShell'
 import { compressImage } from '@/lib/thumper/image-compress'
+import {
+  findActionableApproval,
+  type ActionableApproval,
+} from '@/lib/thumper/hitl-state'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'thumper_last_conversation'
@@ -430,16 +434,17 @@ function ChatBody({
   const prevStatusRef = useRef<typeof status>(status)
 
   const isStreaming = status === 'streaming' || status === 'submitted'
-  const hasPendingApproval = useMemo(() => {
-    for (const m of messages) {
-      if (m.role !== 'assistant') continue
-      for (const part of m.parts ?? []) {
-        const p = part as { state?: string }
-        if (p.state === 'approval-requested') return true
-      }
-    }
-    return false
-  }, [messages])
+  // Actionable only if the LAST assistant message has an approval-requested
+  // part in its LAST step. Mirrors AI SDK's
+  // `lastAssistantMessageIsCompleteWithApprovalResponses` — anything older
+  // is historical and `addToolApprovalResponse` (which only mutates the
+  // last message) can't even target it. Treating older approval-requested
+  // parts as live would resurrect dead cards on reload and lock the input.
+  const actionableApproval = useMemo(
+    () => findActionableApproval(messages),
+    [messages]
+  )
+  const hasPendingApproval = actionableApproval !== null
 
   // Push streaming + HITL state up so the parent can disable the New button.
   useEffect(() => {
@@ -696,6 +701,11 @@ function ChatBody({
               isStreamingTail={isStreaming && idx === messages.length - 1}
               isThinking={thinkingFor === m.id}
               onApprove={addToolApprovalResponse}
+              actionableApproval={
+                actionableApproval?.messageId === m.id
+                  ? actionableApproval.approval
+                  : null
+              }
             />
           )
         })}
@@ -776,6 +786,7 @@ function AssistantMessage({
   isStreamingTail,
   isThinking,
   onApprove,
+  actionableApproval,
 }: {
   message: UIMessage
   timestamp?: string | number
@@ -783,6 +794,13 @@ function AssistantMessage({
   isStreamingTail: boolean
   isThinking: boolean
   onApprove: ApprovalResponseFn
+  // Non-null only when this message is the LAST assistant message AND its
+  // last step contains an approval-requested part. Stale historical
+  // approval-requested parts on earlier messages render nothing — the SDK
+  // can't re-target them, and the assistant's resolved reply (or the
+  // normalized terminal state from loadConversationForClient) already
+  // conveys the outcome.
+  actionableApproval: ActionableApproval | null
 }) {
   const parts = message.parts ?? []
   const text = parts
@@ -791,23 +809,11 @@ function AssistantMessage({
       return pt.type === 'text' ? pt.text ?? '' : ''
     })
     .join('')
-  const pendingApproval = parts.find((p) => {
-    const pt = p as { state?: string }
-    return pt.state === 'approval-requested'
-  }) as
-    | {
-        state?: string
-        toolName?: string
-        type?: string
-        input?: Record<string, unknown>
-        approval?: { id?: string }
-      }
-    | undefined
 
   // Visibility is server-owned: the route emits transient `data-thinking`
   // signals (show / confirm / hide) and the parent threads `isThinking` here.
   // Approval cards always win so they're never hidden behind the rabbit.
-  const showThinking = isThinking && !pendingApproval
+  const showThinking = isThinking && !actionableApproval
 
   return (
     <>
@@ -826,19 +832,14 @@ function AssistantMessage({
           />
         )
       ) : null}
-      {pendingApproval?.approval?.id ? (
+      {actionableApproval ? (
         <Bubble variant="thumper" showGlyph={!text && isFirstInRun}>
           <HITLBlock
-            approvalId={pendingApproval.approval.id}
-            toolName={
-              pendingApproval.toolName ??
-              (pendingApproval.type?.startsWith('tool-')
-                ? pendingApproval.type.slice('tool-'.length)
-                : 'tool')
-            }
-            args={pendingApproval.input ?? {}}
+            approvalId={actionableApproval.approvalId}
+            toolName={actionableApproval.toolName}
+            args={actionableApproval.input}
             onRespond={(approved) =>
-              onApprove({ id: pendingApproval.approval!.id!, approved })
+              onApprove({ id: actionableApproval.approvalId, approved })
             }
           />
         </Bubble>

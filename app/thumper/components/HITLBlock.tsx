@@ -1,5 +1,32 @@
+import type { ReactNode } from 'react'
 import { ListingPreview } from './ListingPreview'
 import styles from './HITLBlock.module.css'
+
+// Per-tool copy. Mirrors the set of tools that declare needsApproval:true in
+// lib/thumper/tools/*. reject_trade is intentionally absent — it's not a HITL
+// tool. Both confirm buttons keep the destructive-red style to match the
+// system-prompt contract in lib/thumper/system-prompt.ts.
+const APPROVAL_COPY: Record<
+  string,
+  { title: ReactNode; confirm: string; cancel: string }
+> = {
+  approve_trade: {
+    title: 'Approve this trade?',
+    confirm: 'Approve trade',
+    cancel: 'Cancel',
+  },
+  remove_listing: {
+    title: 'Remove this listing from your board?',
+    confirm: 'Remove listing',
+    cancel: 'Cancel',
+  },
+}
+
+const FALLBACK_COPY = {
+  title: 'Approve this action?',
+  confirm: 'Approve',
+  cancel: 'Cancel',
+}
 
 export function HITLBlock({
   approvalId,
@@ -12,9 +39,12 @@ export function HITLBlock({
   args: Record<string, unknown>
   onRespond: (approved: boolean) => void
 }) {
-  // Best-effort identification of the listing being removed. The model passes
-  // listingId or itemNumber; we don't have the design name here, so we render
-  // a compact preview from whatever's available.
+  const copy = APPROVAL_COPY[toolName] ?? FALLBACK_COPY
+
+  // remove_listing renders a compact preview of the target listing above the
+  // question. The model passes listingId or itemNumber; designName is rarely
+  // available here, so we synthesize a label from whatever's present.
+  const showListingPreview = toolName === 'remove_listing'
   const designName =
     (args.designName as string | undefined) ??
     (args.itemNumber ? `Item ${args.itemNumber}` : 'this listing')
@@ -22,18 +52,10 @@ export function HITLBlock({
 
   return (
     <div className={styles.block}>
-      {toolName === 'remove_listing' ? (
-        <>
-          <ListingPreview designName={designName} itemNumber={itemNumber} />
-          <div className={styles.question}>
-            Remove this listing from your board?
-          </div>
-        </>
-      ) : (
-        <div className={styles.question}>
-          Approve <code>{toolName}</code>?
-        </div>
-      )}
+      {showListingPreview ? (
+        <ListingPreview designName={designName} itemNumber={itemNumber} />
+      ) : null}
+      <div className={styles.question}>{copy.title}</div>
       <div className={styles.btnRow}>
         <button
           type="button"
@@ -41,7 +63,7 @@ export function HITLBlock({
           onClick={() => onRespond(false)}
           data-approval-id={approvalId}
         >
-          Cancel
+          {copy.cancel}
         </button>
         <button
           type="button"
@@ -49,7 +71,7 @@ export function HITLBlock({
           onClick={() => onRespond(true)}
           data-approval-id={approvalId}
         >
-          Remove listing
+          {copy.confirm}
         </button>
       </div>
     </div>
