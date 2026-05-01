@@ -8,6 +8,23 @@ _Generated: 2026-05-01 (HEAD: feat(thumper): Task 1.6 — calendar/show manageme
 
 ---
 
+## Latest Delta
+
+**Task 1.6B - recurring shows + multi-code support (2026-05-01)**
+- `calendar_events` is moving from `discount_code` / `discount_description` to `discount_codes JSONB` (array of `{code, description}` objects) plus `recurrence_group_id UUID` via `supabase/migrations/032_ss_calendar_multicodes_and_recurrence.sql`.
+- `lib/services/calendar.ts` now supports one-time shows with `discountCodes`, recurring show spawning with `{ cadence: 'daily' | 'weekly', duration: '1_month' | '3_months' | 'ongoing' }`, and future-series updates with `applyToSeries: true`.
+- `lib/services/types.ts` adds `DiscountCode`, `RecurringShowInput`, `CalendarEvent.recurrenceGroupId`, `AddShowResult.count/events`, and `UpdateShowResult.updatedCount`.
+- `lib/services/errors.ts` adds `TOO_MANY_DISCOUNT_CODES`, `EMPTY_DISCOUNT_CODE`, and `NOT_A_SERIES`.
+- Thumper still exposes 13 total tools, but `add_show`, `list_my_shows`, and `update_show` now use the multi-code / recurring-series calendar model.
+- `scripts/seed-test-rep.ts` now seeds `discount_codes` JSONB for sample `calendar_events`.
+
+**Verification status for this delta**
+- `npm test` - PASS (88/88)
+- `npx tsc --noEmit` - baseline still not clean because of pre-existing `tests/thumper/attack-5-poisoned-rep-notes.test.ts` `never`-typing errors; no new calendar-domain type errors remain
+- `supabase db push` / live schema verification - not run from Codex because mutating the linked remote Supabase project requires explicit user approval
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -1267,3 +1284,4 @@ All four use the auth client — calendar is fully rep-scoped via RLS on `calend
 - System-prompt sweep — `lib/thumper/system-prompt.ts` Grep checks: `"nine tools"` → 0; `"thirteen tools"` → 1+; `"four areas"` → 0; `"five areas"` → 1+; `add_show|update_show|cancel_show|list_my_shows` → 5+ matches.
 - Registry shape — `REGISTRY.length` goes 9 → 13; `buildAllTools(ctx)` returns the 9 prior keys plus `add_show`, `update_show`, `cancel_show`, `list_my_shows`.
 - Live conversational smoke (rep asks "schedule a show Friday at 7pm on TikTok" → "what shows do I have coming up?" → "cancel that one") — deferred to live verification on Vercel after deploy.
+

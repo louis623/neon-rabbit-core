@@ -26,6 +26,8 @@ export type {
   UpdateListingInput,
   UpdateListingResult,
   EventStatus,
+  DiscountCode,
+  RecurringShowInput,
   CalendarEvent,
   AddShowInput,
   AddShowResult,

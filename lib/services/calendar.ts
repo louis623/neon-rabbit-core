@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   type EventStatus,
@@ -9,12 +10,14 @@ import {
   type UpdateShowInput,
   type UpdateShowResult,
   type CancelShowResult,
+  type DiscountCode,
+  type RecurringShowInput,
 } from './types'
 import { errors } from './errors'
 
 const EVENT_SELECT = `
   id, rep_id, platform, event_time, duration_minutes, title, description,
-  discount_code, discount_description, featured_collections, is_recurring,
+  discount_codes, featured_collections, is_recurring, recurrence_group_id,
   recurrence_rule, status, created_at, updated_at
 `
 
@@ -26,14 +29,25 @@ type CalendarEventRow = {
   duration_minutes: number | null
   title: string | null
   description: string | null
-  discount_code: string | null
-  discount_description: string | null
+  discount_codes: DiscountCode[] | null
   featured_collections: string[] | null
   is_recurring: boolean | null
+  recurrence_group_id: string | null
   recurrence_rule: string | null
   status: EventStatus
   created_at: string
   updated_at: string
+}
+
+type CalendarEventUpdate = {
+  updated_at: string
+  platform?: string
+  event_time?: string
+  duration_minutes?: number
+  title?: string | null
+  description?: string | null
+  discount_codes?: DiscountCode[]
+  featured_collections?: string[] | null
 }
 
 function normalizeOptionalText(value: string | undefined): string | null {
@@ -80,6 +94,44 @@ function normalizeFutureEventTime(eventTime: string | undefined): string {
   return parsed.toISOString()
 }
 
+function normalizeDiscountCodes(discountCodes: DiscountCode[] | undefined): DiscountCode[] {
+  if (!discountCodes) return []
+  if (discountCodes.length > 10) throw errors.TOO_MANY_DISCOUNT_CODES()
+
+  return discountCodes.map((discountCode) => {
+    const code = discountCode.code.trim()
+    if (!code) throw errors.EMPTY_DISCOUNT_CODE()
+
+    return {
+      code,
+      description: discountCode.description.trim(),
+    }
+  })
+}
+
+function getRecurringOccurrenceCount(recurring: RecurringShowInput): number {
+  if (recurring.cadence === 'daily') {
+    if (recurring.duration === '1_month') return 30
+    if (recurring.duration === '3_months') return 90
+    return 180
+  }
+
+  if (recurring.duration === '1_month') return 4
+  if (recurring.duration === '3_months') return 13
+  return 26
+}
+
+function buildRecurringEventTimes(eventTime: string, recurring: RecurringShowInput): string[] {
+  const occurrences = getRecurringOccurrenceCount(recurring)
+  const stepDays = recurring.cadence === 'daily' ? 1 : 7
+  const startTime = Date.parse(eventTime)
+
+  return Array.from({ length: occurrences }, (_, index) => {
+    const nextTime = startTime + index * stepDays * 24 * 60 * 60 * 1000
+    return new Date(nextTime).toISOString()
+  })
+}
+
 function mapEvent(row: CalendarEventRow): CalendarEvent {
   return {
     id: row.id,
@@ -89,14 +141,39 @@ function mapEvent(row: CalendarEventRow): CalendarEvent {
     durationMinutes: row.duration_minutes ?? 60,
     title: row.title,
     description: row.description,
-    discountCode: row.discount_code,
-    discountDescription: row.discount_description,
+    discountCodes: row.discount_codes ?? [],
     featuredCollections: row.featured_collections,
     isRecurring: row.is_recurring ?? false,
+    recurrenceGroupId: row.recurrence_group_id,
     recurrenceRule: row.recurrence_rule,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  }
+}
+
+function applyUpdateToRow(
+  row: CalendarEventRow,
+  update: CalendarEventUpdate,
+): CalendarEventRow {
+  return {
+    ...row,
+    platform: update.platform ?? row.platform,
+    event_time: update.event_time ?? row.event_time,
+    duration_minutes: update.duration_minutes ?? row.duration_minutes,
+    title: Object.prototype.hasOwnProperty.call(update, 'title')
+      ? (update.title ?? null)
+      : row.title,
+    description: Object.prototype.hasOwnProperty.call(update, 'description')
+      ? (update.description ?? null)
+      : row.description,
+    discount_codes: Object.prototype.hasOwnProperty.call(update, 'discount_codes')
+      ? (update.discount_codes ?? [])
+      : row.discount_codes,
+    featured_collections: Object.prototype.hasOwnProperty.call(update, 'featured_collections')
+      ? (update.featured_collections ?? null)
+      : row.featured_collections,
+    updated_at: update.updated_at,
   }
 }
 
@@ -128,26 +205,60 @@ export async function addShow(
   const eventTime = normalizeFutureEventTime(input.eventTime)
   const platform = normalizeRequiredPlatform(input.platform)
   const durationMinutes = normalizeDuration(input.durationMinutes)
+  const discountCodes = normalizeDiscountCodes(input.discountCodes)
+  const title = normalizeOptionalText(input.title)
+  const description = normalizeOptionalText(input.description)
+  const featuredCollections = input.featuredCollections ?? null
+
+  if (!input.recurring) {
+    const { data, error } = await supabase
+      .from('calendar_events')
+      .insert({
+        rep_id: repId,
+        platform,
+        event_time: eventTime,
+        duration_minutes: durationMinutes,
+        title,
+        description,
+        discount_codes: discountCodes,
+        featured_collections: featuredCollections,
+        is_recurring: false,
+        recurrence_group_id: null,
+        recurrence_rule: null,
+        status: 'scheduled',
+      })
+      .select(EVENT_SELECT)
+      .single()
+    if (error) throw error
+
+    return { events: [mapEvent(data as CalendarEventRow)], count: 1 }
+  }
+
+  const recurrenceGroupId = randomUUID()
+  const eventRows = buildRecurringEventTimes(eventTime, input.recurring).map((nextEventTime) => ({
+    id: randomUUID(),
+    rep_id: repId,
+    platform,
+    event_time: nextEventTime,
+    duration_minutes: durationMinutes,
+    title,
+    description,
+    discount_codes: discountCodes,
+    featured_collections: featuredCollections,
+    is_recurring: true,
+    recurrence_group_id: recurrenceGroupId,
+    recurrence_rule: input.recurring!.cadence,
+    status: 'scheduled' as const,
+  }))
 
   const { data, error } = await supabase
     .from('calendar_events')
-    .insert({
-      rep_id: repId,
-      platform,
-      event_time: eventTime,
-      duration_minutes: durationMinutes,
-      title: normalizeOptionalText(input.title),
-      description: normalizeOptionalText(input.description),
-      discount_code: normalizeOptionalText(input.discountCode),
-      discount_description: normalizeOptionalText(input.discountDescription),
-      featured_collections: input.featuredCollections ?? null,
-      status: 'scheduled',
-    })
+    .insert(eventRows)
     .select(EVENT_SELECT)
-    .single()
   if (error) throw error
 
-  return { event: mapEvent(data as CalendarEventRow) }
+  const events = ((data ?? []) as CalendarEventRow[]).map(mapEvent)
+  return { events, count: events.length }
 }
 
 export async function listMyShows(
@@ -205,8 +316,9 @@ export async function updateShow(
 
   const current = await getOwnedEvent(supabase, repId, eventId)
   if (current.status !== 'scheduled') throw errors.EVENT_NOT_EDITABLE()
+  if (patch.applyToSeries && !current.recurrence_group_id) throw errors.NOT_A_SERIES()
 
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  const update: CalendarEventUpdate = { updated_at: new Date().toISOString() }
   let hasPatch = false
 
   if (patch.platform !== undefined) {
@@ -229,12 +341,8 @@ export async function updateShow(
     update.description = normalizeOptionalText(patch.description)
     hasPatch = true
   }
-  if (patch.discountCode !== undefined) {
-    update.discount_code = normalizeOptionalText(patch.discountCode)
-    hasPatch = true
-  }
-  if (patch.discountDescription !== undefined) {
-    update.discount_description = normalizeOptionalText(patch.discountDescription)
+  if (patch.discountCodes !== undefined) {
+    update.discount_codes = normalizeDiscountCodes(patch.discountCodes)
     hasPatch = true
   }
   if (patch.featuredCollections !== undefined) {
@@ -249,6 +357,27 @@ export async function updateShow(
     )
   }
 
+  if (patch.applyToSeries) {
+    const { data, error } = await supabase
+      .from('calendar_events')
+      .update(update)
+      .eq('rep_id', repId)
+      .eq('recurrence_group_id', current.recurrence_group_id)
+      .gt('event_time', new Date().toISOString())
+      .eq('status', 'scheduled')
+      .select(EVENT_SELECT)
+    if (error) throw error
+
+    const rows = ((data ?? []) as CalendarEventRow[]).map(mapEvent)
+    const targetEvent =
+      rows.find((event) => event.id === eventId) ?? mapEvent(applyUpdateToRow(current, update))
+
+    return {
+      event: targetEvent,
+      updatedCount: rows.length,
+    }
+  }
+
   const { data, error } = await supabase
     .from('calendar_events')
     .update(update)
@@ -258,7 +387,7 @@ export async function updateShow(
     .single()
   if (error) throw error
 
-  return { event: mapEvent(data as CalendarEventRow) }
+  return { event: mapEvent(data as CalendarEventRow), updatedCount: 1 }
 }
 
 export async function cancelShow(

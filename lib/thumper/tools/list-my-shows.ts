@@ -46,9 +46,16 @@ export function makeListMyShowsTool(ctx: { repId: string; supabase: SupabaseClie
           durationMinutes: event.durationMinutes,
           title: event.title,
           description: event.description,
-          discountCode: event.discountCode,
-          discountDescription: event.discountDescription,
+          discountCodes: event.discountCodes,
+          discountCodesSummary: event.discountCodes.length
+            ? event.discountCodes
+                .map((discountCode) => `${discountCode.code} (${discountCode.description})`)
+                .join(', ')
+            : null,
           featuredCollections: event.featuredCollections,
+          isRecurring: event.isRecurring,
+          recurrenceGroupId: event.recurrenceGroupId,
+          recurrenceRule: event.recurrenceRule,
           status: event.status,
         })),
       }

@@ -49,10 +49,10 @@ function calendarEvent(overrides: Record<string, unknown> = {}) {
     durationMinutes: 60,
     title: 'Friday Sparkles',
     description: 'Main show',
-    discountCode: null,
-    discountDescription: null,
+    discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
     featuredCollections: ['Celestial'],
     isRecurring: false,
+    recurrenceGroupId: null,
     recurrenceRule: null,
     status: 'scheduled',
     createdAt: '2099-04-01T12:00:00.000Z',
@@ -80,14 +80,16 @@ beforeEach(() => {
 })
 
 describe('calendar tools', () => {
-  it('add_show calls addShow with auth client + repId and returns the event payload', async () => {
-    addShowMock.mockResolvedValueOnce({ event: calendarEvent() })
+  it('add_show forwards multi-code and recurring inputs and returns the calendar payload', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 4, events: [calendarEvent({ isRecurring: true })] })
     const tool = makeAddShowTool(makeCtx()) as unknown as ToolDef
 
     const result = await tool.execute({
       platform: 'TikTok',
       eventTime: '2099-05-01T20:00:00.000Z',
       title: 'Friday Sparkles',
+      discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
+      recurring: { cadence: 'weekly', duration: '1_month' },
     })
 
     expect(addShowMock).toHaveBeenCalledWith(
@@ -97,16 +99,15 @@ describe('calendar tools', () => {
         platform: 'TikTok',
         eventTime: '2099-05-01T20:00:00.000Z',
         title: 'Friday Sparkles',
+        discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
+        recurring: { cadence: 'weekly', duration: '1_month' },
       }),
     )
-    expect(result.event).toMatchObject({
-      id: VALID_EVENT_ID,
-      title: 'Friday Sparkles',
-      status: 'scheduled',
-    })
+    expect(result.count).toBe(4)
+    expect(result.events).toHaveLength(1)
   })
 
-  it('list_my_shows returns count + totalCount + events', async () => {
+  it('list_my_shows returns count + totalCount + discount code arrays', async () => {
     listMyShowsMock.mockResolvedValueOnce({
       events: [calendarEvent()],
       totalCount: 3,
@@ -128,6 +129,7 @@ describe('calendar tools', () => {
       eventId: VALID_EVENT_ID,
       title: 'Friday Sparkles',
       platform: 'TikTok',
+      discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
     })
   })
 
@@ -139,6 +141,45 @@ describe('calendar tools', () => {
       code: 'NO_PATCH_FIELDS',
     })
     expect(updateShowMock).not.toHaveBeenCalled()
+  })
+
+  it('update_show forwards applyToSeries and returns updatedCount', async () => {
+    updateShowMock.mockResolvedValueOnce({
+      event: calendarEvent({
+        title: 'Moved title',
+        discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
+      }),
+      updatedCount: 5,
+    })
+    const tool = makeUpdateShowTool(makeCtx()) as unknown as ToolDef
+
+    const result = await tool.execute({
+      eventId: VALID_EVENT_ID,
+      title: 'Moved title',
+      discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
+      applyToSeries: true,
+    })
+
+    expect(updateShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      {
+        title: 'Moved title',
+        platform: undefined,
+        eventTime: undefined,
+        durationMinutes: undefined,
+        description: undefined,
+        discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
+        featuredCollections: undefined,
+        applyToSeries: true,
+      },
+    )
+    expect(result).toMatchObject({
+      updatedCount: 5,
+      patchedFields: ['title', 'discountCodes'],
+      event: { title: 'Moved title' },
+    })
   })
 
   it('update_show translates ServiceError into ThumperToolError', async () => {
@@ -218,14 +259,17 @@ describe('calendar registry and prompt wiring', () => {
     ]))
   })
 
-  it('system prompt promotes show scheduling into active scope and keeps reminders as not yet', () => {
+  it('system prompt documents recurring shows, multi-code support, and series updates', () => {
     expect(THUMPER_SYSTEM_PROMPT).toContain('You have thirteen tools available right now:')
     expect(THUMPER_SYSTEM_PROMPT).toContain('add_show')
     expect(THUMPER_SYSTEM_PROMPT).toContain('list_my_shows')
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_show')
     expect(THUMPER_SYSTEM_PROMPT).toContain('cancel_show')
-    expect(THUMPER_SYSTEM_PROMPT).toContain('Sending show reminders');
-    expect(THUMPER_SYSTEM_PROMPT).not.toContain('Scheduling a show, sending show reminders, or building a show plan â€” Not yet.')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('Recurring shows are now supported')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('How often')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('applyToSeries: true')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('Sending show reminders')
   })
 
   it('HITL copy includes custom cancel_show labels', () => {

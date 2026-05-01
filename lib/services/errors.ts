@@ -184,4 +184,27 @@ export const errors = {
       userMessage: 'When is the show? I need a date and time.',
       statusCode: 400,
     }),
+  TOO_MANY_DISCOUNT_CODES: () =>
+    new ServiceError({
+      code: 'TOO_MANY_DISCOUNT_CODES',
+      message: 'maximum 10 discount codes per show',
+      userMessage:
+        "That's a lot of codes! I can handle up to 10 per show - which ones are the most important?",
+      statusCode: 400,
+    }),
+  EMPTY_DISCOUNT_CODE: () =>
+    new ServiceError({
+      code: 'EMPTY_DISCOUNT_CODE',
+      message: 'discount code text cannot be empty',
+      userMessage: "One of those codes is blank - what should it say?",
+      statusCode: 400,
+    }),
+  NOT_A_SERIES: () =>
+    new ServiceError({
+      code: 'NOT_A_SERIES',
+      message: 'event is not part of a recurring series',
+      userMessage:
+        "That show isn't part of a recurring series, so I can only update it individually.",
+      statusCode: 400,
+    }),
 }

@@ -16,9 +16,12 @@ const inputSchema = z
     durationMinutes: z.number().int().positive().optional(),
     title: z.string().optional(),
     description: z.string().optional(),
-    discountCode: z.string().optional(),
-    discountDescription: z.string().optional(),
+    discountCodes: z.array(z.object({
+      code: z.string().min(1),
+      description: z.string(),
+    })).max(10).optional(),
     featuredCollections: z.array(z.string()).optional(),
+    applyToSeries: z.boolean().optional().default(false),
   })
   .refine(
     (value) =>
@@ -27,8 +30,7 @@ const inputSchema = z
       value.durationMinutes !== undefined ||
       value.title !== undefined ||
       value.description !== undefined ||
-      value.discountCode !== undefined ||
-      value.discountDescription !== undefined ||
+      value.discountCodes !== undefined ||
       value.featuredCollections !== undefined,
     { message: 'at least one patch field is required' },
   )
@@ -52,8 +54,8 @@ export function makeUpdateShowTool(ctx: {
 }) {
   return tool({
     description:
-      "Update details on a scheduled show. Can change time, platform, title, description, discount code, or featured collections. " +
-      "Only works on shows still in 'scheduled' status.",
+      'Update details on a scheduled show. Can change time, platform, title, description, discount codes, or featured collections. ' +
+      'Set applyToSeries=true to apply changes to all future shows in a recurring series.',
     inputSchema,
     execute: async (input) => {
       const {
@@ -63,9 +65,9 @@ export function makeUpdateShowTool(ctx: {
         durationMinutes,
         title,
         description,
-        discountCode,
-        discountDescription,
+        discountCodes,
         featuredCollections,
+        applyToSeries,
       } = input
 
       const patch = {
@@ -74,13 +76,13 @@ export function makeUpdateShowTool(ctx: {
         durationMinutes,
         title,
         description,
-        discountCode,
-        discountDescription,
+        discountCodes,
         featuredCollections,
+        applyToSeries,
       }
 
       const patchedFields = Object.entries(patch)
-        .filter(([, value]) => value !== undefined)
+        .filter(([key, value]) => key !== 'applyToSeries' && value !== undefined)
         .map(([key]) => key)
 
       if (patchedFields.length === 0) {
@@ -140,7 +142,9 @@ export function makeUpdateShowTool(ctx: {
 
       return {
         event: result.event,
+        updatedCount: result.updatedCount,
         patchedFields,
+        seriesApplied: applyToSeries ?? false,
       }
     },
   })

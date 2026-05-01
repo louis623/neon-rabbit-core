@@ -347,7 +347,7 @@ async function main() {
     description: 'Friday Night Fizz',
     event_time: nextFriday,
     platform: 'TikTok',
-    discount_code: 'SPARKLE10',
+    discount_codes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
     status: 'scheduled',
   })
   if (ev1Err) throw new Error(`calendar_events (Friday): ${ev1Err.message}`)

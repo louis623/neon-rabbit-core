@@ -17,10 +17,12 @@ function baseRow(overrides: Record<string, unknown> = {}) {
     duration_minutes: 60,
     title: 'Friday Sparkles',
     description: 'Main show',
-    discount_code: 'SPARKLE10',
-    discount_description: 'Ten percent off',
+    discount_codes: [
+      { code: 'SPARKLE10', description: 'Ten percent off' },
+    ],
     featured_collections: ['Celestial'],
     is_recurring: false,
+    recurrence_group_id: null,
     recurrence_rule: null,
     status: 'scheduled',
     created_at: '2099-04-01T12:00:00.000Z',
@@ -77,12 +79,37 @@ function makeInsertSingleChain(result: { data: unknown; error: unknown | null })
   return { select, single }
 }
 
+function makeInsertManyChain(result: { data: unknown[]; error: unknown | null }) {
+  const select = vi.fn(() => Promise.resolve(result))
+  return { select }
+}
+
 function makeUpdateSingleChain(result: { data: unknown; error: unknown | null }) {
   const single = vi.fn(() => Promise.resolve(result))
   const select = vi.fn(() => ({ single }))
   const eq = vi.fn(() => chain)
   const chain: Chain = { eq, select }
   return { chain, eq, select, single }
+}
+
+function makeUpdateManyChain(result: { data: unknown[]; error: unknown | null }) {
+  const state = {
+    eq: [] as Array<[string, unknown]>,
+    gt: [] as Array<[string, unknown]>,
+  }
+  const select = vi.fn(() => Promise.resolve(result))
+  const chain: Chain = {
+    eq: vi.fn((column: string, value: unknown) => {
+      state.eq.push([column, value])
+      return chain
+    }),
+    gt: vi.fn((column: string, value: unknown) => {
+      state.gt.push([column, value])
+      return chain
+    }),
+    select,
+  }
+  return { chain, state, select }
 }
 
 describe('calendar service', () => {
@@ -100,7 +127,7 @@ describe('calendar service', () => {
     expect(supabase.from).not.toHaveBeenCalled()
   })
 
-  it('addShow inserts a scheduled event with default duration and returns camelCase fields', async () => {
+  it('addShow inserts a scheduled event with default duration and returns discount code arrays', async () => {
     const row = baseRow()
     const insertSingle = makeInsertSingleChain({ data: row, error: null })
     const insert = vi.fn(() => ({ select: insertSingle.select }))
@@ -112,6 +139,7 @@ describe('calendar service', () => {
       platform: 'TikTok',
       eventTime: row.event_time as string,
       title: 'Friday Sparkles',
+      discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featuredCollections: ['Celestial'],
     })
 
@@ -122,19 +150,88 @@ describe('calendar service', () => {
       duration_minutes: 60,
       title: 'Friday Sparkles',
       description: null,
-      discount_code: null,
-      discount_description: null,
+      discount_codes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featured_collections: ['Celestial'],
+      is_recurring: false,
+      recurrence_group_id: null,
+      recurrence_rule: null,
       status: 'scheduled',
     })
-    expect(result.event).toMatchObject({
+    expect(result.count).toBe(1)
+    expect(result.events[0]).toMatchObject({
       id: 'event-1',
       repId: 'rep-1',
       eventTime: '2099-05-01T20:00:00.000Z',
       durationMinutes: 60,
+      discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
+      recurrenceGroupId: null,
       featuredCollections: ['Celestial'],
       status: 'scheduled',
     })
+  })
+
+  it('addShow spawns recurring weekly shows that share a recurrence group', async () => {
+    const rows = Array.from({ length: 4 }, (_, index) =>
+      baseRow({
+        id: `event-${index + 1}`,
+        title: 'Weekly Sparkles',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: new Date(Date.parse('2099-05-01T20:00:00.000Z') + index * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }),
+    )
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    const result = await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-05-01T20:00:00.000Z',
+      title: 'Weekly Sparkles',
+      discountCodes: [{ code: 'BOGO', description: 'Buy one get one' }],
+      recurring: { cadence: 'weekly', duration: '1_month' },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload).toHaveLength(4)
+    expect(insertPayload.every((row) => row.is_recurring === true)).toBe(true)
+    expect(insertPayload.every((row) => row.recurrence_rule === 'weekly')).toBe(true)
+    expect(insertPayload.every((row) => row.status === 'scheduled')).toBe(true)
+    expect(insertPayload.every((row) => row.discount_codes instanceof Array)).toBe(true)
+    expect(new Set(insertPayload.map((row) => row.recurrence_group_id))).toHaveLength(1)
+    expect(new Set(insertPayload.map((row) => row.id))).toHaveLength(4)
+
+    expect(result.count).toBe(4)
+    expect(result.events).toHaveLength(4)
+    expect(result.events[0]).toMatchObject({
+      title: 'Weekly Sparkles',
+      isRecurring: true,
+      recurrenceGroupId: 'group-1',
+      recurrenceRule: 'weekly',
+    })
+  })
+
+  it('addShow rejects more than 10 discount codes', async () => {
+    const supabase = {
+      from: vi.fn(),
+    }
+
+    await expect(
+      addShow(supabase as never, 'rep-1', {
+        platform: 'TikTok',
+        eventTime: '2099-05-01T20:00:00.000Z',
+        discountCodes: Array.from({ length: 11 }, (_, index) => ({
+          code: `CODE${index + 1}`,
+          description: `Code ${index + 1}`,
+        })),
+      }),
+    ).rejects.toMatchObject({ code: 'TOO_MANY_DISCOUNT_CODES' })
+    expect(supabase.from).not.toHaveBeenCalled()
   })
 
   it('listMyShows defaults to upcoming scheduled/live events ordered ascending and returns totalCount', async () => {
@@ -149,13 +246,14 @@ describe('calendar service', () => {
 
     expect(state.eq).toEqual([['rep_id', 'rep-1']])
     expect(state.gt[0][0]).toBe('event_time')
-    expect(state.in).toEqual([[ 'status', ['scheduled', 'live'] ]])
+    expect(state.in).toEqual([['status', ['scheduled', 'live']]])
     expect(state.order).toEqual([['event_time', { ascending: true }]])
     expect(state.limit).toEqual([10])
     expect(result.totalCount).toBe(7)
     expect(result.events[0]).toMatchObject({
       id: 'event-1',
       title: 'Friday Sparkles',
+      discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featuredCollections: ['Celestial'],
     })
   })
@@ -174,35 +272,80 @@ describe('calendar service', () => {
     ).rejects.toMatchObject({ code: 'EVENT_NOT_EDITABLE' })
   })
 
-  it('updateShow maps patch fields to snake_case and returns the updated row', async () => {
+  it('updateShow applies a patch to all future events in a recurrence group when applyToSeries is true', async () => {
     const current = makeSelectSingleChain({
-      data: baseRow(),
+      data: baseRow({
+        id: 'event-1',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+      }),
       error: null,
     })
-    const updatedRow = baseRow({
-      title: 'Wednesday Sparkles',
-      featured_collections: ['Galaxy', 'Celestial'],
-    })
-    const updated = makeUpdateSingleChain({ data: updatedRow, error: null })
+    const updatedRows = [
+      baseRow({
+        id: 'event-1',
+        title: 'Wednesday Sparkles',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+        discount_codes: [{ code: 'NEWCODE', description: 'Updated' }],
+      }),
+      baseRow({
+        id: 'event-2',
+        title: 'Wednesday Sparkles',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+        discount_codes: [{ code: 'NEWCODE', description: 'Updated' }],
+      }),
+    ]
+    const updated = makeUpdateManyChain({ data: updatedRows, error: null })
 
     const from = vi
       .fn()
       .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
       .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
 
     const supabase = { from } as never
 
     const result = await updateShow(supabase, 'rep-1', 'event-1', {
       title: 'Wednesday Sparkles',
-      featuredCollections: ['Galaxy', 'Celestial'],
+      discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
+      applyToSeries: true,
     })
 
     const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(updateCall.title).toBe('Wednesday Sparkles')
-    expect(updateCall.featured_collections).toEqual(['Galaxy', 'Celestial'])
+    expect(updateCall.discount_codes).toEqual([{ code: 'NEWCODE', description: 'Updated' }])
     expect(typeof updateCall.updated_at).toBe('string')
+    expect(updated.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['recurrence_group_id', 'group-1'],
+      ['status', 'scheduled'],
+    ])
+    expect(updated.state.gt[0][0]).toBe('event_time')
+    expect(result.updatedCount).toBe(2)
     expect(result.event.title).toBe('Wednesday Sparkles')
-    expect(result.event.featuredCollections).toEqual(['Galaxy', 'Celestial'])
+    expect(result.event.discountCodes).toEqual([{ code: 'NEWCODE', description: 'Updated' }])
+  })
+
+  it('updateShow rejects applyToSeries for a non-recurring event', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ recurrence_group_id: null, is_recurring: false }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(
+      updateShow(supabase, 'rep-1', 'event-1', {
+        title: 'Moved title',
+        applyToSeries: true,
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_A_SERIES' })
   })
 
   it('cancelShow only allows scheduled/live events and returns the cancelled row', async () => {

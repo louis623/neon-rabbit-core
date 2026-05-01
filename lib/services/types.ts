@@ -137,6 +137,16 @@ export interface UpdateListingResult {
 
 export type EventStatus = 'scheduled' | 'live' | 'completed' | 'cancelled'
 
+export interface DiscountCode {
+  code: string
+  description: string
+}
+
+export interface RecurringShowInput {
+  cadence: 'daily' | 'weekly'
+  duration: '1_month' | '3_months' | 'ongoing'
+}
+
 export interface CalendarEvent {
   id: string
   repId: string
@@ -145,10 +155,10 @@ export interface CalendarEvent {
   durationMinutes: number
   title: string | null
   description: string | null
-  discountCode: string | null
-  discountDescription: string | null
+  discountCodes: DiscountCode[]
   featuredCollections: string[] | null
   isRecurring: boolean
+  recurrenceGroupId: string | null
   recurrenceRule: string | null
   status: EventStatus
   createdAt: string
@@ -161,13 +171,14 @@ export interface AddShowInput {
   durationMinutes?: number
   title?: string
   description?: string
-  discountCode?: string
-  discountDescription?: string
+  discountCodes?: DiscountCode[]
   featuredCollections?: string[]
+  recurring?: RecurringShowInput
 }
 
 export interface AddShowResult {
-  event: CalendarEvent
+  events: CalendarEvent[]
+  count: number
 }
 
 export interface ListShowsInput {
@@ -187,13 +198,14 @@ export interface UpdateShowInput {
   durationMinutes?: number
   title?: string
   description?: string
-  discountCode?: string
-  discountDescription?: string
+  discountCodes?: DiscountCode[]
   featuredCollections?: string[]
+  applyToSeries?: boolean
 }
 
 export interface UpdateShowResult {
   event: CalendarEvent
+  updatedCount: number
 }
 
 export interface CancelShowResult {
