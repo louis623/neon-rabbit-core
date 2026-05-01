@@ -253,6 +253,7 @@ export async function updateShow(
     .from('calendar_events')
     .update(update)
     .eq('id', eventId)
+    .eq('rep_id', repId)
     .select(EVENT_SELECT)
     .single()
   if (error) throw error
@@ -281,6 +282,7 @@ export async function cancelShow(
       updated_at: new Date().toISOString(),
     })
     .eq('id', eventId)
+    .eq('rep_id', repId)
     .select(EVENT_SELECT)
     .single()
   if (error) throw error
