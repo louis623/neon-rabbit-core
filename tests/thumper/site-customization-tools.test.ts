@@ -1,0 +1,236 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const logIncidentMock = vi.fn()
+
+vi.mock('@/lib/thumper/guardian-telemetry', () => ({
+  logIncident: (...args: unknown[]) => logIncidentMock(...args),
+  logToolExecution: vi.fn().mockResolvedValue(undefined),
+}))
+
+import { makeUpdateBannerTextTool, updateBannerTextTool } from '@/lib/thumper/tools/update-banner-text'
+import {
+  makeUpdateStreamingLinksTool,
+  updateStreamingLinksTool,
+} from '@/lib/thumper/tools/update-streaming-links'
+import {
+  makeUpdateSiteSettingTool,
+  updateSiteSettingTool,
+} from '@/lib/thumper/tools/update-site-setting'
+import { buildAllTools } from '@/lib/thumper/tools'
+import { THUMPER_SYSTEM_PROMPT } from '@/lib/thumper/system-prompt'
+
+interface ToolDef {
+  execute: (input: unknown) => Promise<Record<string, unknown>>
+  needsApproval?: boolean
+}
+
+function makeUpdateChain<T>(response: { data: T | null; error: unknown }) {
+  const single = vi.fn().mockResolvedValue(response)
+  const select = vi.fn(() => ({ single }))
+  const eq = vi.fn(() => ({ select }))
+  const update = vi.fn(() => ({ eq }))
+  return {
+    api: { update },
+    spies: { update, eq, select, single },
+  }
+}
+
+function makeCtx(supabase: { from: (table: string) => unknown }) {
+  return {
+    repId: 'rep-1',
+    supabase: supabase as never,
+    conversationId: 'conv-1',
+    runId: 'run-1',
+  }
+}
+
+beforeEach(() => {
+  logIncidentMock.mockReset()
+})
+
+describe('site customization tools', () => {
+  it('update_banner_text writes banner_text + banner_visible:true to site_settings and returns the new banner copy', async () => {
+    const chain = makeUpdateChain({
+      data: {
+        banner_text: 'Going live at 8 tonight',
+        banner_visible: true,
+      },
+      error: null,
+    })
+    const from = vi.fn(() => chain.api)
+    const tool = makeUpdateBannerTextTool(makeCtx({ from })) as unknown as ToolDef
+
+    const result = await tool.execute({
+      bannerText: 'Going live at 8 tonight',
+    })
+
+    expect(from).toHaveBeenCalledWith('site_settings')
+    expect(chain.spies.update).toHaveBeenCalledWith({
+      banner_text: 'Going live at 8 tonight',
+      banner_visible: true,
+    })
+    expect(chain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(result).toEqual({
+      bannerText: 'Going live at 8 tonight',
+      bannerVisible: true,
+    })
+  })
+
+  it('update_banner_text translates a Supabase write failure into a ThumperToolError', async () => {
+    const chain = makeUpdateChain({
+      data: null,
+      error: { message: 'row update failed' },
+    })
+    const tool = makeUpdateBannerTextTool(
+      makeCtx({ from: vi.fn(() => chain.api) }),
+    ) as unknown as ToolDef
+
+    await expect(
+      tool.execute({ bannerText: 'new banner' }),
+    ).rejects.toMatchObject({
+      name: 'ThumperToolError',
+      code: 'SITE_SETTINGS_UPDATE_FAILED',
+    })
+  })
+
+  it('update_streaming_links replaces the full reps.streaming_links object and returns the updated links', async () => {
+    const links = {
+      tiktok: 'https://www.tiktok.com/@sparkles',
+      youtube: 'https://www.youtube.com/@sparkles',
+    }
+    const chain = makeUpdateChain({
+      data: { streaming_links: links },
+      error: null,
+    })
+    const from = vi.fn(() => chain.api)
+    const tool = makeUpdateStreamingLinksTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({ streamingLinks: links })
+
+    expect(from).toHaveBeenCalledWith('reps')
+    expect(chain.spies.update).toHaveBeenCalledWith({
+      streaming_links: links,
+    })
+    expect(chain.spies.eq).toHaveBeenCalledWith('id', 'rep-1')
+    expect(result).toEqual({
+      streamingLinks: links,
+      platforms: ['tiktok', 'youtube'],
+    })
+  })
+
+  it('update_site_setting rejects an empty patch before touching Supabase', async () => {
+    const from = vi.fn()
+    const tool = makeUpdateSiteSettingTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    await expect(tool.execute({})).rejects.toMatchObject({
+      name: 'ThumperToolError',
+      code: 'NO_SITE_SETTING_FIELDS',
+    })
+    expect(from).not.toHaveBeenCalled()
+  })
+
+  it('update_site_setting patches site_settings fields, updates reps.social_handles separately, and returns only the changed values', async () => {
+    const siteSettingsChain = makeUpdateChain({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: 'Fresh drops daily',
+        hero_image_url: null,
+        hero_animation_type: 'pan',
+        team_name: null,
+        show_join_page: false,
+      },
+      error: null,
+    })
+    const repsChain = makeUpdateChain({
+      data: {
+        social_handles: {
+          instagram: '@sparklesquad',
+        },
+      },
+      error: null,
+    })
+    const from = vi.fn((table: string) => {
+      if (table === 'site_settings') return siteSettingsChain.api
+      if (table === 'reps') return repsChain.api
+      throw new Error(`Unexpected table ${table}`)
+    })
+    const tool = makeUpdateSiteSettingTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({
+      tagline: 'Fresh drops daily',
+      heroAnimationType: 'pan',
+      showJoinPage: false,
+      socialHandles: {
+        instagram: '@sparklesquad',
+      },
+    })
+
+    expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
+      tagline: 'Fresh drops daily',
+      hero_animation_type: 'pan',
+      show_join_page: false,
+    })
+    expect(siteSettingsChain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(repsChain.spies.update).toHaveBeenCalledWith({
+      social_handles: {
+        instagram: '@sparklesquad',
+      },
+    })
+    expect(repsChain.spies.eq).toHaveBeenCalledWith('id', 'rep-1')
+    expect(result).toEqual({
+      updatedFields: [
+        'tagline',
+        'heroAnimationType',
+        'showJoinPage',
+        'socialHandles',
+      ],
+      updated: {
+        tagline: 'Fresh drops daily',
+        heroAnimationType: 'pan',
+        showJoinPage: false,
+        socialHandles: {
+          instagram: '@sparklesquad',
+        },
+      },
+    })
+  })
+})
+
+describe('site customization registry and prompt wiring', () => {
+  it('registers the three new site tools and preserves their write metadata', () => {
+    const tools = buildAllTools(makeCtx({ from: vi.fn() }))
+    const names = Object.keys(tools).sort()
+
+    expect(names).toHaveLength(18)
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'update_banner_text',
+        'update_streaming_links',
+        'update_site_setting',
+      ]),
+    )
+    expect(updateBannerTextTool.readOnly).toBe(false)
+    expect(updateStreamingLinksTool.readOnly).toBe(false)
+    expect(updateSiteSettingTool.readOnly).toBe(false)
+  })
+
+  it('system prompt documents the site-customization tools and the new 18-tool total', () => {
+    expect(THUMPER_SYSTEM_PROMPT).toContain(
+      'You have eighteen tools available right now:',
+    )
+    expect(THUMPER_SYSTEM_PROMPT).toContain('update_banner_text')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('update_streaming_links')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('update_site_setting')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('banner text')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('social handles')
+  })
+})

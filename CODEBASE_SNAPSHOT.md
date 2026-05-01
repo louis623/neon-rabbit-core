@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-05-01 (HEAD: feat(thumper): Task 1.6 — calendar/show management service layer + 4 tools + migration 031)_
+_Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Tasks 1.7+1.9 (site customization + rep notes tools))_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -10,18 +10,18 @@ _Generated: 2026-05-01 (HEAD: feat(thumper): Task 1.6 — calendar/show manageme
 
 ## Latest Delta
 
-**Task 1.6B - recurring shows + multi-code support (2026-05-01)**
-- `calendar_events` is moving from `discount_code` / `discount_description` to `discount_codes JSONB` (array of `{code, description}` objects) plus `recurrence_group_id UUID` via `supabase/migrations/032_ss_calendar_multicodes_and_recurrence.sql`.
-- `lib/services/calendar.ts` now supports one-time shows with `discountCodes`, recurring show spawning with `{ cadence: 'daily' | 'weekly', duration: '1_month' | '3_months' | 'ongoing' }`, and future-series updates with `applyToSeries: true`.
-- `lib/services/types.ts` adds `DiscountCode`, `RecurringShowInput`, `CalendarEvent.recurrenceGroupId`, `AddShowResult.count/events`, and `UpdateShowResult.updatedCount`.
-- `lib/services/errors.ts` adds `TOO_MANY_DISCOUNT_CODES`, `EMPTY_DISCOUNT_CODE`, and `NOT_A_SERIES`.
-- Thumper still exposes 13 total tools, but `add_show`, `list_my_shows`, and `update_show` now use the multi-code / recurring-series calendar model.
-- `scripts/seed-test-rep.ts` now seeds `discount_codes` JSONB for sample `calendar_events`.
+**Tasks 1.7 + 1.9 - site customization + rep notes tools (2026-05-01)**
+- Thumper now exposes 18 total tools: the prior 13 plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
+- `lib/thumper/tools/update-banner-text.ts` updates `site_settings.banner_text` and force-enables `banner_visible` when banner text is set.
+- `lib/thumper/tools/update-streaming-links.ts` replaces the rep-scoped `reps.streaming_links` JSONB payload with the full object Thumper passes.
+- `lib/thumper/tools/update-site-setting.ts` patches any subset of `site_settings` surface fields and performs a second rep-scoped write to `reps.social_handles` when that field is present.
+- `lib/thumper/tools/write-rep-note.ts` and `lib/thumper/tools/read-recent-rep-notes.ts` add internal memory persistence for `rep_notes`, with quiet degradation + `logIncident()` on write/read failures so Thumper can keep the conversation moving.
+- `lib/thumper/system-prompt.ts` now documents the three site-customization tools, the two internal note tools, and expands scope from 5 areas to 7.
 
 **Verification status for this delta**
-- `npm test` - PASS (88/88)
-- `npx tsc --noEmit` - baseline still not clean because of pre-existing `tests/thumper/attack-5-poisoned-rep-notes.test.ts` `never`-typing errors; no new calendar-domain type errors remain
-- `supabase db push` / live schema verification - not run from Codex because mutating the linked remote Supabase project requires explicit user approval
+- `npm test` - PASS (101/101)
+- `npx tsc --noEmit` - baseline still not clean because of the same pre-existing `tests/thumper/attack-5-poisoned-rep-notes.test.ts` `never`-typing errors; no new type-check failures introduced by Tasks 1.7+1.9
+- No migrations or remote schema pushes were required for Tasks 1.7+1.9
 
 ---
 
@@ -60,7 +60,7 @@ neon-rabbit-core/
 │   │   │   └── webhook/route.ts
 │   │   ├── telegram/route.ts
 │   │   └── thumper/                       ← Phase 1 Task 1.1 production chat surface
-│   │       ├── route.ts                    ← streamText + 13 tools + HITL + Guardian telemetry + Enforcer audit
+│   │       ├── route.ts                    ← streamText + 18 tools + HITL + Guardian telemetry + Enforcer audit
 │   │       ├── conversation/[conversationId]/route.ts
 │   │       ├── conversation/latest/route.ts ← Task 1.3 follow-up — returns rep's most recent conversation_id (cross-device sync)
 │   │       ├── health/route.ts             ← public health probe (api/db reachable, recent_error_rate)
@@ -119,7 +119,16 @@ neon-rabbit-core/
 │   │       ├── reject-trade.ts            ← Task 1.5C — ToolDefinition (readOnly: false, NO needsApproval — reversible), obtains createAdminClient and calls rejectTrade (rpc_reject_trade, listing returns to available iff sole pending request); writes trade_action_audit (action_type='trade_rejected', rejectionReason as null when omitted — never coerced to 'other'); translates ServiceError → ThumperToolError
 │   │       ├── search-jewelry-database.ts ← Task 1.5D — ToolDefinition (readOnly: true), obtains createAdminClient and calls searchJewelryDatabase on the admin client (cross-rep COUNT for activeListingsCount requires admin); ctx.repId still flows through to the service for the per-rep isOnMyBoard flag; flattens JewelryDatabaseResult[] into { count, results:[{designId, itemNumber, designName, material, mainStone, msrp, photoUrl (canonicalPhotoUrl), type (typePrefix), collectionName, isOnMyBoard, activeListingsCount}] }; translates ServiceError → ThumperToolError
 │   │       ├── update-listing.ts          ← Task 1.5D — ToolDefinition (readOnly: false, NO needsApproval — reversible), uses ctx.supabase auth client (rep-scoped UPDATE on trade_listings); Zod schema with two .refine() checks (at-least-one-patch-field and reject conflicting listingPhotoUrl+useCanonicalPhoto:true); handler-level defense-in-depth re-checks both invariants (NO_PATCH_FIELDS, CONFLICTING_PHOTO_INPUTS); editable surface is exactly four fields per UpdateListingInput (repNotes, tradePreferences, listingPhotoUrl, useCanonicalPhoto) — catalog/design metadata is NOT editable; writes trade_action_audit (action_type='listing_updated', afterState includes patchedFields[] mirroring what the service applied — when useCanonicalPhoto:true with non-null URL, listingPhotoUrl is excluded from patchedFields because the service ignores it); translates ServiceError → ThumperToolError
-│   │       └── get-trade-history.ts       ← Task 1.5D — ToolDefinition (readOnly: true), uses ctx.supabase auth client (pure rep-scoped read), calls getTradeHistory which hardcodes ['approved','denied'] status filter internally — pending requests are surfaced via get_trade_requests, not this tool; flattens TradeHistoryItem[] into { count, items:[{requestId, listingId, customerName, status, fulfillmentStatus, createdAt, completedAt, fulfillmentDays, design:{itemNumber, designName, msrp, type, collectionName}}], summary:{totalCompleted, totalMsrpTraded, avgFulfillmentDays, topDesign, repeatCustomers} }; translates ServiceError → ThumperToolError
+│   │       ├── get-trade-history.ts       ← Task 1.5D — ToolDefinition (readOnly: true), uses ctx.supabase auth client (pure rep-scoped read), calls getTradeHistory which hardcodes ['approved','denied'] status filter internally — pending requests are surfaced via get_trade_requests, not this tool; flattens TradeHistoryItem[] into { count, items:[{requestId, listingId, customerName, status, fulfillmentStatus, createdAt, completedAt, fulfillmentDays, design:{itemNumber, designName, msrp, type, collectionName}}], summary:{totalCompleted, totalMsrpTraded, avgFulfillmentDays, topDesign, repeatCustomers} }; translates ServiceError → ThumperToolError
+│   │       ├── add-show.ts                ← Task 1.6 — ToolDefinition (readOnly: false), schedules one-time or recurring shows with `discountCodes` + optional `recurring`
+│   │       ├── list-my-shows.ts           ← Task 1.6 — ToolDefinition (readOnly: true), lists upcoming or historical calendar events for the authenticated rep
+│   │       ├── update-show.ts             ← Task 1.6 — ToolDefinition (readOnly: false), patches scheduled-show details and supports `applyToSeries: true`
+│   │       ├── cancel-show.ts             ← Task 1.6 — ToolDefinition (readOnly: false, needsApproval: true), cancels a show and writes audit metadata
+│   │       ├── update-banner-text.ts      ← Task 1.7 — ToolDefinition (readOnly: false), updates `site_settings.banner_text` and auto-sets `banner_visible=true`
+│   │       ├── update-streaming-links.ts  ← Task 1.7 — ToolDefinition (readOnly: false), replaces the rep-scoped `reps.streaming_links` JSONB payload
+│   │       ├── update-site-setting.ts     ← Task 1.7 — ToolDefinition (readOnly: false), patches `site_settings` and writes `reps.social_handles` when present
+│   │       ├── write-rep-note.ts          ← Task 1.9 — ToolDefinition (readOnly: false), inserts `rep_notes` rows and degrades quietly on failure
+│   │       └── read-recent-rep-notes.ts   ← Task 1.9 — ToolDefinition (readOnly: true), loads recent `rep_notes` context with default limit 5 / max 20
 │   ├── stripe/
 │   │   ├── config.ts             ← Zod env validation, lazy-loaded
 │   │   ├── client.ts             ← Stripe instance (v22 dahlia API)
@@ -180,10 +189,17 @@ neon-rabbit-core/
 │       ├── 018_dashboard_authenticated_read.sql
 │       ├── 019_dashboard_read_thoughts.sql
 │       ├── 020_thumper_conversations.sql    ← thumper_conversations + approval_events
+│       ├── 021_vac_tables.sql
+│       ├── 023_nr_vac_summary_views_anon_readable.sql
+│       ├── 024_nr_memory_index_compiler.sql
 │       ├── 025_vac_key_dates.sql
 │       ├── 026_nr_open_items_action_flag.sql ← is_action_item BOOLEAN flag + 8-row seed
 │       ├── 027_nr_open_items_sort_order.sql  ← sort_order INTEGER for manual dashboard ranking
-│       └── 028_ss_thumper_guardian_hooks.sql ← thumper_incidents, tool_executions, auth_events, trade_action_audit, sms_email_blast_audit (RLS service-role-only)
+│       ├── 028_ss_thumper_guardian_hooks.sql ← thumper_incidents, tool_executions, auth_events, trade_action_audit, sms_email_blast_audit (RLS service-role-only)
+│       ├── 029_ss_jewelry_photo_storage.sql
+│       ├── 030_nr_vac_errors.sql
+│       ├── 031_ss_calendar_title_and_collections.sql
+│       └── 032_ss_calendar_multicodes_and_recurrence.sql
 ├── vault/                         ← project docs/notes
 ├── verification/                  ← Gate 0 + Phase 1 spike verification artifacts
 ├── .env.example
@@ -1284,4 +1300,47 @@ All four use the auth client — calendar is fully rep-scoped via RLS on `calend
 - System-prompt sweep — `lib/thumper/system-prompt.ts` Grep checks: `"nine tools"` → 0; `"thirteen tools"` → 1+; `"four areas"` → 0; `"five areas"` → 1+; `add_show|update_show|cancel_show|list_my_shows` → 5+ matches.
 - Registry shape — `REGISTRY.length` goes 9 → 13; `buildAllTools(ctx)` returns the 9 prior keys plus `add_show`, `update_show`, `cancel_show`, `list_my_shows`.
 - Live conversational smoke (rep asks "schedule a show Friday at 7pm on TikTok" → "what shows do I have coming up?" → "cancel that one") — deferred to live verification on Vercel after deploy.
+
+
+## Session 2026-05-01 � SS Phase 1 Tasks 1.7 + 1.9 (site customization + rep notes tools)
+
+**Goal:** Expand Thumper beyond board/trade/calendar work into rep-controlled public-site customization and lightweight memory. This adds three rep-facing site tools and two internal memory tools, bringing the production registry from 13 -> 18 tools with no schema changes and no route changes.
+
+**New files:**
+- `lib/thumper/tools/update-banner-text.ts` � `updateBannerTextTool: ToolDefinition` (`readOnly: false`). Uses the auth client and writes directly to `site_settings`, setting `banner_text` and forcing `banner_visible=true` in the same UPDATE. Returns `{ bannerText, bannerVisible }`. Failures are converted to `ThumperToolError(code='SITE_SETTINGS_UPDATE_FAILED')` with rep-friendly copy.
+- `lib/thumper/tools/update-streaming-links.ts` � `updateStreamingLinksTool: ToolDefinition` (`readOnly: false`). Uses the auth client and replaces the full `reps.streaming_links` JSONB object for the authenticated rep via `.eq('id', ctx.repId)`. Returns `{ streamingLinks, platforms }` where `platforms` is `Object.keys(savedLinks)`.
+- `lib/thumper/tools/update-site-setting.ts` � `updateSiteSettingTool: ToolDefinition` (`readOnly: false`). Zod input accepts any subset of `bannerText`, `bannerVisible`, `tickerText`, `tickerVisible`, `tagline`, `heroImageUrl`, `heroAnimationType ('zoom'|'pan')`, `teamName`, `showJoinPage`, and `socialHandles`. Handler-level defense-in-depth rejects empty patches with `ThumperToolError(code='NO_SITE_SETTING_FIELDS')`. Performs one optional write to `site_settings` and one optional write to `reps.social_handles`, returning `{ updatedFields, updated }` with only the fields that were actually patched.
+- `lib/thumper/tools/write-rep-note.ts` � `writeRepNoteTool: ToolDefinition` (`readOnly: false`, internal-use). Inserts into `rep_notes` using the auth client with `{ rep_id, summary, conversation_date }`. On success returns `{ saved:true, summaryPreview, conversationDate }`; on failure it logs `rep_note_write_failed` via `logIncident()` and returns `{ saved:false, summaryPreview }` instead of surfacing an error to the rep.
+- `lib/thumper/tools/read-recent-rep-notes.ts` � `readRecentRepNotesTool: ToolDefinition` (`readOnly: true`, internal-use). Reads `rep_notes` ordered by `conversation_date DESC`, default limit 5, hard max 20. Returns `{ count, notes:[{ noteId, summary, conversationDate }] }`. On failure it logs `rep_note_read_failed` and degrades to `{ count:0, notes:[], unavailable:true }`.
+- `tests/thumper/site-customization-tools.test.ts` � 9 vitest cases covering the three site tools: happy-path `site_settings` and `reps` updates, Supabase failure translation for `update_banner_text`, handler-level empty-patch guard for `update_site_setting`, registry `readOnly:false` metadata, and prompt/registry count assertions for the new 18-tool total.
+- `tests/thumper/rep-notes-tools.test.ts` � 6 vitest cases covering `write_rep_note` and `read_recent_rep_notes`: insert shape, summary preview truncation, quiet degradation on insert failure, default limit + DESC ordering, handler-level limit clamp to 20, empty-context degradation on read failure, and `readOnly` metadata assertions.
+
+**Modified:**
+- `lib/thumper/tools/index.ts` � registry extended from 13 -> 18 entries by importing and appending `updateBannerTextTool`, `updateStreamingLinksTool`, `updateSiteSettingTool`, `writeRepNoteTool`, and `readRecentRepNotesTool`. Wrapper composition remains unchanged: `withTelemetry()` inside `withErrorHandling()`, with duplicate-name guard + `needsApproval` preservation assertion still active.
+- `lib/thumper/system-prompt.ts` � `"thirteen tools"` ? `"eighteen tools"`; 5 new tool inventory bullets; new tool-boundary bullets clarifying that `update_streaming_links` replaces the full object, `update_site_setting` is the general site-customization entrypoint, and the two rep-note tools are internal and should not be narrated to the rep. Scope expands from 5 -> 7 areas by adding public-site customization and lightweight memory. The old `editing the rep's public site ... not yet` boundary is narrowed to custom domain, profile photo, or template while explicitly calling out the now-supported banner/ticker/tagline/hero/team/join-page/social/streaming surfaces.
+- `tests/thumper/calendar-tools.test.ts` � prompt/registry assertions updated from 13 tools to 18 so the existing calendar-domain suite still validates the full registry after Tasks 1.7+1.9.
+- `package.json` � `npm test` allow-list extended from 8 -> 10 vitest files by adding `tests/thumper/site-customization-tools.test.ts` and `tests/thumper/rep-notes-tools.test.ts`.
+- `CODEBASE_SNAPSHOT.md` � regenerated to reflect the 18-tool Thumper registry, current migration list through 032, updated verification counts, and this session block.
+
+**Scope wiring / route impact:** No changes were needed in `app/api/thumper/route.ts`. The route still builds its toolset entirely from `buildAllTools(ctx)`; adding the new handlers in `lib/thumper/tools/index.ts` is sufficient for the production route to expose them. No new API routes, no UI changes, and no service-layer additions were required for Tasks 1.7+1.9.
+
+**Table / client matrix:**
+
+| Tool | Tables touched | Client | Approval |
+|------|---------------|--------|----------|
+| `update_banner_text` | `site_settings` (UPDATE) | auth | no |
+| `update_streaming_links` | `reps.streaming_links` (UPDATE) | auth | no |
+| `update_site_setting` | `site_settings` (UPDATE), `reps.social_handles` (UPDATE) | auth | no |
+| `write_rep_note` | `rep_notes` (INSERT) | auth | no |
+| `read_recent_rep_notes` | `rep_notes` (SELECT) | auth | no |
+
+All five tools are rep-scoped and intentionally avoid `createAdminClient()`. The internal memory tools use best-effort incident logging and never bubble failures into the rep-facing conversation path.
+
+**Verification (2026-05-01):**
+- `npm test` � PASS, 10/10 files and 101/101 tests green: the previous 8-file suite plus `site-customization-tools.test.ts` and `rep-notes-tools.test.ts`.
+- `npx vitest run tests/thumper/site-customization-tools.test.ts tests/thumper/rep-notes-tools.test.ts tests/thumper/calendar-tools.test.ts` � PASS, 23/23 tests green for the new domains plus the updated calendar prompt/registry assertions.
+- `npx tsc --noEmit` � unchanged accepted baseline failure: 5 errors, all in `tests/thumper/attack-5-poisoned-rep-notes.test.ts` (`rep_notes` typing / `never` inference). No new errors introduced by Tasks 1.7+1.9.
+- Registry shape � `REGISTRY.length` goes 13 -> 18 and now returns the prior 13 keys plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
+- Prompt sweep � `lib/thumper/system-prompt.ts` now contains `You have eighteen tools available right now:` and all five new tool names. The existing 13-tool phrase is removed from current-state sections.
+
 
