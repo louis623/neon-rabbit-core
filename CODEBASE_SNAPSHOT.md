@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Tasks 1.7+1.9 (site customization + rep notes tools))_
+_Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Task 1.8 (notification stubs))_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -10,18 +10,20 @@ _Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Tasks 1.
 
 ## Latest Delta
 
-**Tasks 1.7 + 1.9 - site customization + rep notes tools (2026-05-01)**
-- Thumper now exposes 18 total tools: the prior 13 plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
-- `lib/thumper/tools/update-banner-text.ts` updates `site_settings.banner_text` and force-enables `banner_visible` when banner text is set.
-- `lib/thumper/tools/update-streaming-links.ts` replaces the rep-scoped `reps.streaming_links` JSONB payload with the full object Thumper passes.
-- `lib/thumper/tools/update-site-setting.ts` patches any subset of `site_settings` surface fields and performs a second rep-scoped write to `reps.social_handles` when that field is present.
-- `lib/thumper/tools/write-rep-note.ts` and `lib/thumper/tools/read-recent-rep-notes.ts` add internal memory persistence for `rep_notes`, with quiet degradation + `logIncident()` on write/read failures so Thumper can keep the conversation moving.
-- `lib/thumper/system-prompt.ts` now documents the three site-customization tools, the two internal note tools, and expands scope from 5 areas to 7.
+**Task 1.8 - notification stubs (2026-05-01)**
+- Thumper now exposes 21 total tools: the prior 18 plus `send_sms_notification`, `send_email_notification`, and `get_notification_preferences`.
+- `lib/thumper/tools/send-sms-notification.ts` adds a schema-validated SMS stub that returns the required friendly "coming soon" response without sending anything.
+- `lib/thumper/tools/send-email-notification.ts` adds the matching email stub with required-parameter validation and no provider integration.
+- `lib/thumper/tools/get-notification-preferences.ts` adds the notification-preferences stub that explains preferences will arrive with the real launch.
+- `lib/thumper/tools/index.ts` appends the three new notification tools to the registry without reordering existing entries.
+- `lib/thumper/system-prompt.ts` now documents the 21-tool total, adds a `Domain C - notification stubs` section, and expands scope from 7 areas to 8.
+- `tests/thumper/send-sms-notification.test.ts`, `tests/thumper/send-email-notification.test.ts`, and `tests/thumper/get-notification-preferences.test.ts` add the six new assertions that bring the Thumper suite to 107 tests.
+- `tests/thumper/attack-5-poisoned-rep-notes.test.ts` now uses an explicit loose-typed admin client so `npx tsc --noEmit` reaches zero errors instead of failing on `never` inference.
 
 **Verification status for this delta**
-- `npm test` - PASS (101/101)
-- `npx tsc --noEmit` - baseline still not clean because of the same pre-existing `tests/thumper/attack-5-poisoned-rep-notes.test.ts` `never`-typing errors; no new type-check failures introduced by Tasks 1.7+1.9
-- No migrations or remote schema pushes were required for Tasks 1.7+1.9
+- `npm test` - PASS (107/107)
+- `npx tsc --noEmit` - PASS (0 errors)
+- No migrations, provider integrations, new packages, or remote schema pushes were required for Task 1.8
 
 ---
 
@@ -60,7 +62,7 @@ neon-rabbit-core/
 │   │   │   └── webhook/route.ts
 │   │   ├── telegram/route.ts
 │   │   └── thumper/                       ← Phase 1 Task 1.1 production chat surface
-│   │       ├── route.ts                    ← streamText + 18 tools + HITL + Guardian telemetry + Enforcer audit
+│   │       ├── route.ts                    ← streamText + 21 tools + HITL + Guardian telemetry + Enforcer audit
 │   │       ├── conversation/[conversationId]/route.ts
 │   │       ├── conversation/latest/route.ts ← Task 1.3 follow-up — returns rep's most recent conversation_id (cross-device sync)
 │   │       ├── health/route.ts             ← public health probe (api/db reachable, recent_error_rate)
@@ -99,7 +101,7 @@ neon-rabbit-core/
 │   ├── thumper/                  ← Phase 1 Task 1.1 Thumper assistant (production)
 │   │   ├── auth.ts               ← getAuthenticatedThumperContext()
 │   │   ├── persistence.ts        ← thumper_conversations + approval_events I/O (incl. getLatestConversationId for cross-device sync)
-│   │   ├── system-prompt.ts      ← THUMPER_SYSTEM_PROMPT (Task 1.2 — 7 sections, ~4500 tokens; +disclosure/affiliation/content-screening; warmer personality)
+│   │   ├── system-prompt.ts      ← THUMPER_SYSTEM_PROMPT (Task 1.2 — 7 sections, 21 tools, Domain C notification stubs, 8 scope areas; +disclosure/affiliation/content-screening; warmer personality)
 │   │   ├── probe-conversation-owner.ts ← admin-client cross-tenant ownership probe
 │   │   ├── guardian-telemetry.ts ← logIncident, logToolExecution (writes thumper_incidents, tool_executions)
 │   │   ├── audit.ts              ← hashState (SHA-256 of sorted-key JSON), writeTradeActionAudit
@@ -128,7 +130,10 @@ neon-rabbit-core/
 │   │       ├── update-streaming-links.ts  ← Task 1.7 — ToolDefinition (readOnly: false), replaces the rep-scoped `reps.streaming_links` JSONB payload
 │   │       ├── update-site-setting.ts     ← Task 1.7 — ToolDefinition (readOnly: false), patches `site_settings` and writes `reps.social_handles` when present
 │   │       ├── write-rep-note.ts          ← Task 1.9 — ToolDefinition (readOnly: false), inserts `rep_notes` rows and degrades quietly on failure
-│   │       └── read-recent-rep-notes.ts   ← Task 1.9 — ToolDefinition (readOnly: true), loads recent `rep_notes` context with default limit 5 / max 20
+│   │       ├── read-recent-rep-notes.ts   ← Task 1.9 — ToolDefinition (readOnly: true), loads recent `rep_notes` context with default limit 5 / max 20
+│   │       ├── send-sms-notification.ts   ← Task 1.8 — ToolDefinition (readOnly: false), schema-validated SMS stub that returns the future-feature message without sending anything
+│   │       ├── send-email-notification.ts ← Task 1.8 — ToolDefinition (readOnly: false), schema-validated email stub that returns the future-feature message without provider wiring
+│   │       └── get-notification-preferences.ts ← Task 1.8 — ToolDefinition (readOnly: false), notification-preferences stub that returns the launch-soon guidance
 │   ├── stripe/
 │   │   ├── config.ts             ← Zod env validation, lazy-loaded
 │   │   ├── client.ts             ← Stripe instance (v22 dahlia API)
@@ -1342,5 +1347,10 @@ All five tools are rep-scoped and intentionally avoid `createAdminClient()`. The
 - `npx tsc --noEmit` � unchanged accepted baseline failure: 5 errors, all in `tests/thumper/attack-5-poisoned-rep-notes.test.ts` (`rep_notes` typing / `never` inference). No new errors introduced by Tasks 1.7+1.9.
 - Registry shape � `REGISTRY.length` goes 13 -> 18 and now returns the prior 13 keys plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
 - Prompt sweep � `lib/thumper/system-prompt.ts` now contains `You have eighteen tools available right now:` and all five new tool names. The existing 13-tool phrase is removed from current-state sections.
+
+
+
+
+
 
 

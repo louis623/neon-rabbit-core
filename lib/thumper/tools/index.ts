@@ -27,6 +27,9 @@ import { updateStreamingLinksTool } from './update-streaming-links'
 import { updateSiteSettingTool } from './update-site-setting'
 import { writeRepNoteTool } from './write-rep-note'
 import { readRecentRepNotesTool } from './read-recent-rep-notes'
+import { sendSmsNotificationTool } from './send-sms-notification'
+import { sendEmailNotificationTool } from './send-email-notification'
+import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -50,6 +53,9 @@ const REGISTRY: ToolDefinition[] = [
   updateSiteSettingTool,
   writeRepNoteTool,
   readRecentRepNotesTool,
+  sendSmsNotificationTool,
+  sendEmailNotificationTool,
+  getNotificationPreferencesTool,
 ]
 
 export function buildAllTools(ctx: ToolContext): ToolSet {

@@ -43,7 +43,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-let admin: ReturnType<typeof createClient>
+let admin: any
 let testRepId: string
 let poisonedNoteId: string
 let cookieHeader: string
