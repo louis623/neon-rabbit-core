@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Task 1.8 (notification stubs))_
+_Generated: 2026-05-01 (working tree: nr-hq-mcp task management tools)_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -10,20 +10,19 @@ _Generated: 2026-05-01 (HEAD: chore: regenerate CODEBASE_SNAPSHOT after Task 1.8
 
 ## Latest Delta
 
-**Task 1.8 - notification stubs (2026-05-01)**
-- Thumper now exposes 21 total tools: the prior 18 plus `send_sms_notification`, `send_email_notification`, and `get_notification_preferences`.
-- `lib/thumper/tools/send-sms-notification.ts` adds a schema-validated SMS stub that returns the required friendly "coming soon" response without sending anything.
-- `lib/thumper/tools/send-email-notification.ts` adds the matching email stub with required-parameter validation and no provider integration.
-- `lib/thumper/tools/get-notification-preferences.ts` adds the notification-preferences stub that explains preferences will arrive with the real launch.
-- `lib/thumper/tools/index.ts` appends the three new notification tools to the registry without reordering existing entries.
-- `lib/thumper/system-prompt.ts` now documents the 21-tool total, adds a `Domain C - notification stubs` section, and expands scope from 7 areas to 8.
-- `tests/thumper/send-sms-notification.test.ts`, `tests/thumper/send-email-notification.test.ts`, and `tests/thumper/get-notification-preferences.test.ts` add the six new assertions that bring the Thumper suite to 107 tests.
-- `tests/thumper/attack-5-poisoned-rep-notes.test.ts` now uses an explicit loose-typed admin client so `npx tsc --noEmit` reaches zero errors instead of failing on `never` inference.
+**NR HQ MCP - task management tools (2026-05-01)**
+- `supabase/functions/nr-hq-mcp/index.ts` now exposes 20 total MCP tools by adding `create_task` and `update_task` to the build-tracker write surface.
+- `create_task` resolves `phase_key` to `phase_id`, auto-generates `task_key` from `task_number` when omitted, auto-slots `display_order` within the phase, and returns the created `construction_tasks` row.
+- `update_task` handles metadata-only task edits (`task_name`, `task_number`, `execution_mode`, `assignee`, `can_run_overnight`, `time_estimate`, `display_order`) while leaving `status`, completion fields, and `notes` on `update_task_status`.
+- All build-tracker write tools now accept `actor='codex'` in addition to `chat` and `claude_code`.
+- `supabase/migrations/033_nr_hq_task_tools.sql` widens `build_action_log.actor`, adds `rpc_create_task` and `rpc_update_task`, and redefines the 4 existing build-tracker audit RPCs so `codex` is valid at the database layer too.
+- `supabase/functions/nr-hq-mcp/smoke-test.sh` now specifies the new task-create/task-update flow, duplicate and invalid-input failures, task audit-log assertions, and `actor='codex'` coverage for both the new tools and existing `update_task_status`.
 
 **Verification status for this delta**
-- `npm test` - PASS (107/107)
-- `npx tsc --noEmit` - PASS (0 errors)
-- No migrations, provider integrations, new packages, or remote schema pushes were required for Task 1.8
+- `node` + TypeScript `transpileModule` over `supabase/functions/nr-hq-mcp/index.ts` - PASS (`transpile ok`)
+- `npm test` - BLOCKED in sandbox (`vitest` startup hit `spawn EPERM` before test execution)
+- `supabase db push --linked --dry-run` - NOT RUN (policy blocked outbound linked-project verification without explicit user approval)
+- Git Bash syntax-check of `smoke-test.sh` - BLOCKED in sandbox (`bash.exe` failed to create signal pipe, Win32 error 5)
 
 ---
 
@@ -169,7 +168,7 @@ neon-rabbit-core/
 │   │   ├── daily-financial-sync/index.ts
 │   │   ├── embed/index.ts
 │   │   ├── live-queue-sync/index.ts
-│   │   ├── nr-hq-mcp/index.ts          ← NR HQ build tracker MCP (6 reads + 12 writes = 18 tools)
+?   ?   ??? nr-hq-mcp/index.ts          ? NR HQ build tracker MCP (6 reads + 14 writes = 20 tools)
 │   │   ├── open-brain-mcp/index.ts
 │   │   ├── open-brain-mcp-march/index.ts
 │   │   └── open-brain-status-updater/index.ts
@@ -205,6 +204,7 @@ neon-rabbit-core/
 │       ├── 030_nr_vac_errors.sql
 │       ├── 031_ss_calendar_title_and_collections.sql
 │       └── 032_ss_calendar_multicodes_and_recurrence.sql
+?       ??? 033_nr_hq_task_tools.sql         ? create_task/update_task RPCs + codex actor for build tracker
 ├── vault/                         ← project docs/notes
 ├── verification/                  ← Gate 0 + Phase 1 spike verification artifacts
 ├── .env.example
@@ -435,15 +435,15 @@ Mirror of open-brain-mcp for user March.
 
 ### `nr-hq-mcp`
 MCP server exposing NR HQ build tracker, open items, clients, VAC, and audit log to Claude Desktop / claude.ai.
-- **VAC Key Dates tools (migration 025):** `get_vac_key_dates` (status/date_type filters, default excludes past dates), `create_vac_key_date` (title+date_value+date_type required; provider/condition_id/description optional), `update_vac_key_date` (id required; all fields including status optional). No delete tool exposed — callers set `status='cancelled'` instead. Writers call `supabaseWrite.rpc('fn_*_vac_key_date')`; reader queries `vac_key_dates` directly via service_role client, ordered by `date_value` ascending.
+- **VAC Key Dates tools (migration 025):** `get_vac_key_dates` (status/date_type filters, default excludes past dates), `create_vac_key_date` (title+date_value+date_type required; provider/condition_id/description optional), `update_vac_key_date` (id required; all fields including status optional). No delete tool exposed - callers set `status='cancelled'` instead. Writers call `supabaseWrite.rpc('fn_*_vac_key_date')`; reader queries `vac_key_dates` directly via service_role client, ordered by `date_value` ascending.
 - Auth: `x-brain-key: MCP_ACCESS_KEY` header (query `?key=` fallback)
 - Read tools: `get_phases`, `get_tasks`, `get_gates`, `get_action_cards`, `get_build_summary`, `get_recent_audit_log`
-- Write tools: `update_task_status`, `update_phase_status`, `update_gate_status`, `update_action_cards` (the 4 status tools are thin wrappers over SECURITY DEFINER RPCs — `rpc_update_{task,phase,gate,action_cards}_status` — that use `SELECT FOR UPDATE` row locks for atomic state+audit writes in one transaction. All 4 accept an optional `actor` param (`'chat' | 'claude_code'`, default `'claude_code'`) that labels the audit row); `create_open_item`, `update_open_item`, `resolve_open_item`, `get_open_items`; `create_client`, `update_client`, `get_clients`, `get_client`
+- Write tools: `create_task`, `update_task`, `update_task_status`, `update_phase_status`, `update_gate_status`, `update_action_cards` (the 6 build-tracker write tools are thin wrappers over SECURITY DEFINER RPCs. `create_task` resolves `phase_key` before calling `rpc_create_task`, auto-generates `task_key` from `task_number` when omitted, and auto-slots `display_order` within the phase; `update_task` calls `rpc_update_task` for metadata-only edits and emits JSON old/new audit payloads. All 6 accept optional `actor` values `'chat' | 'claude_code' | 'codex'`); `create_open_item`, `update_open_item`, `resolve_open_item`, `get_open_items`; `create_client`, `update_client`, `get_clients`, `get_client`
 - Tech: Hono + @modelcontextprotocol/sdk + Zod. Reads use anon client (public RLS); writes use service_role client.
 - Tables: `construction_phases`, `construction_tasks`, `construction_gates`, `build_action_log`, `open_items`, `neon_rabbit_clients`
 - Default project: env `NR_HQ_DEFAULT_PROJECT` or `sparkle_suite`
 - URL: `https://bqhzfkgkjyuhlsozpylf.supabase.co/functions/v1/nr-hq-mcp`
-- **Audit semantics (migration 013):** every state change on a task, phase, gate, or action-card position writes a `build_action_log` row with `entry_kind='audit'`. No-op calls (same status, no other field changes) skip the audit write. `update_phase_status` always recomputes `total_tasks`/`completed_tasks` (drift-repair path) and bumps `updated_at` on every call; the audit row is emitted only when status actually changes. `get_action_cards` and `get_build_summary` defensively filter `entry_kind='card_snapshot'` so audit rows can never leak into the card-display paths.
+- **Audit semantics (migrations 013 + 033):** every task create, task metadata change, task status change, phase status change, gate status change, or action-card position change writes a `build_action_log` row with `entry_kind='audit'`. No-op metadata/status calls skip the audit write. `create_task` also recomputes the parent phase's cached `total_tasks` / `completed_tasks`; `update_phase_status` continues to recompute those counts and bump `updated_at` on every call. `get_action_cards` and `get_build_summary` defensively filter `entry_kind='card_snapshot'` so audit rows can never leak into the card-display paths.
 - **Audit trust boundary:** `get_recent_audit_log` uses the service-role client because audit `old_value`/`new_value` payloads can contain task notes/completion session strings. Anon SELECT on `build_action_log` is scoped to `entry_kind='card_snapshot'`; audit rows are reachable only through the MCP `x-brain-key` gate.
 
 ### `embed`
@@ -602,6 +602,7 @@ Idempotent seed script for the test rep development sandbox.
 | `028_ss_thumper_guardian_hooks.sql` | Phase 1 Task 1.1: Guardian (telemetry) + Enforcer (audit) tables for the production `/thumper` route. Five tables: `thumper_incidents` (severity ledger with resolution status), `tool_executions` (per-call timing + args_hash for telemetry), `auth_events` (login/logout/fail/reset/account_create), `trade_action_audit` (before/after SHA-256 state hashes for trade mutations), `sms_email_blast_audit` (schema-only — not wired in this task). All five RLS-enabled with single `service_role` policy; no rep-scoped policy. Writes go through `lib/thumper/guardian-telemetry.ts` and `lib/thumper/audit.ts` which use `createAdminClient()`. Runner: `tsx scripts/run-migration-028.ts` (asserts `DATABASE_URL` host includes project ref `bqhzfkgkjyuhlsozpylf` before applying). |
 | `029_ss_jewelry_photo_storage.sql` | Phase 1 Task 1.5B follow-on: first Supabase Storage integration. Creates public `jewelry-photos` bucket via `INSERT INTO storage.buckets ... ON CONFLICT (id) DO NOTHING`. Two RLS policies on `storage.objects` (idempotent via `DROP POLICY IF EXISTS` — Postgres has no `CREATE POLICY IF NOT EXISTS`): public SELECT scoped to `bucket_id='jewelry-photos'`; authenticated INSERT scoped to the rep's own folder via `split_part(name, '/', 1) = (SELECT id::text FROM reps WHERE auth_user_id = auth.uid())`. No UPDATE/DELETE policies — service-role admin client handles those out-of-band. Path layout inside bucket: `{rep_id}/{uuid}.{ext}`. Uploads happen via `lib/services/storage.ts:uploadJewelryPhoto()` using the service-role client (RLS bypassed; defense-in-depth via path convention). Runner: `tsx scripts/run-migration-029.ts` (same `bqhzfkgkjyuhlsozpylf` host assertion); preferred path `supabase db push`. |
 | `031_ss_calendar_title_and_collections.sql` | Phase 1 Task 1.6: additive widening of `calendar_events` for the show-management Thumper tools. `ADD COLUMN IF NOT EXISTS title TEXT` (per-show title for rep clarity / dashboard display) + `ADD COLUMN IF NOT EXISTS featured_collections TEXT[]` (collection names the rep plans to feature in the show). Both nullable. No data backfill, no RLS change, no enum change. Applied via `npx supabase db push` against the linked project. |
+| `033_nr_hq_task_tools.sql` | Build-tracker task management extension: widen `build_action_log.actor` to allow `codex`; add `rpc_create_task` (phase-locked insert with auto task_key/display_order, parent phase rollup refresh, task audit row) and `rpc_update_task` (metadata-only partial updates with JSON old/new audit payloads); recreate the 4 existing build-tracker audit RPCs so SQL-side actor validation matches the Edge Function. |
 
 ---
 
@@ -1307,25 +1308,25 @@ All four use the auth client — calendar is fully rep-scoped via RLS on `calend
 - Live conversational smoke (rep asks "schedule a show Friday at 7pm on TikTok" → "what shows do I have coming up?" → "cancel that one") — deferred to live verification on Vercel after deploy.
 
 
-## Session 2026-05-01 � SS Phase 1 Tasks 1.7 + 1.9 (site customization + rep notes tools)
+## Session 2026-05-01 � SS Phase 1 Tasks 1.7 + 1.9 (site customization + rep notes tools)
 
 **Goal:** Expand Thumper beyond board/trade/calendar work into rep-controlled public-site customization and lightweight memory. This adds three rep-facing site tools and two internal memory tools, bringing the production registry from 13 -> 18 tools with no schema changes and no route changes.
 
 **New files:**
-- `lib/thumper/tools/update-banner-text.ts` � `updateBannerTextTool: ToolDefinition` (`readOnly: false`). Uses the auth client and writes directly to `site_settings`, setting `banner_text` and forcing `banner_visible=true` in the same UPDATE. Returns `{ bannerText, bannerVisible }`. Failures are converted to `ThumperToolError(code='SITE_SETTINGS_UPDATE_FAILED')` with rep-friendly copy.
-- `lib/thumper/tools/update-streaming-links.ts` � `updateStreamingLinksTool: ToolDefinition` (`readOnly: false`). Uses the auth client and replaces the full `reps.streaming_links` JSONB object for the authenticated rep via `.eq('id', ctx.repId)`. Returns `{ streamingLinks, platforms }` where `platforms` is `Object.keys(savedLinks)`.
-- `lib/thumper/tools/update-site-setting.ts` � `updateSiteSettingTool: ToolDefinition` (`readOnly: false`). Zod input accepts any subset of `bannerText`, `bannerVisible`, `tickerText`, `tickerVisible`, `tagline`, `heroImageUrl`, `heroAnimationType ('zoom'|'pan')`, `teamName`, `showJoinPage`, and `socialHandles`. Handler-level defense-in-depth rejects empty patches with `ThumperToolError(code='NO_SITE_SETTING_FIELDS')`. Performs one optional write to `site_settings` and one optional write to `reps.social_handles`, returning `{ updatedFields, updated }` with only the fields that were actually patched.
-- `lib/thumper/tools/write-rep-note.ts` � `writeRepNoteTool: ToolDefinition` (`readOnly: false`, internal-use). Inserts into `rep_notes` using the auth client with `{ rep_id, summary, conversation_date }`. On success returns `{ saved:true, summaryPreview, conversationDate }`; on failure it logs `rep_note_write_failed` via `logIncident()` and returns `{ saved:false, summaryPreview }` instead of surfacing an error to the rep.
-- `lib/thumper/tools/read-recent-rep-notes.ts` � `readRecentRepNotesTool: ToolDefinition` (`readOnly: true`, internal-use). Reads `rep_notes` ordered by `conversation_date DESC`, default limit 5, hard max 20. Returns `{ count, notes:[{ noteId, summary, conversationDate }] }`. On failure it logs `rep_note_read_failed` and degrades to `{ count:0, notes:[], unavailable:true }`.
-- `tests/thumper/site-customization-tools.test.ts` � 9 vitest cases covering the three site tools: happy-path `site_settings` and `reps` updates, Supabase failure translation for `update_banner_text`, handler-level empty-patch guard for `update_site_setting`, registry `readOnly:false` metadata, and prompt/registry count assertions for the new 18-tool total.
-- `tests/thumper/rep-notes-tools.test.ts` � 6 vitest cases covering `write_rep_note` and `read_recent_rep_notes`: insert shape, summary preview truncation, quiet degradation on insert failure, default limit + DESC ordering, handler-level limit clamp to 20, empty-context degradation on read failure, and `readOnly` metadata assertions.
+- `lib/thumper/tools/update-banner-text.ts` � `updateBannerTextTool: ToolDefinition` (`readOnly: false`). Uses the auth client and writes directly to `site_settings`, setting `banner_text` and forcing `banner_visible=true` in the same UPDATE. Returns `{ bannerText, bannerVisible }`. Failures are converted to `ThumperToolError(code='SITE_SETTINGS_UPDATE_FAILED')` with rep-friendly copy.
+- `lib/thumper/tools/update-streaming-links.ts` � `updateStreamingLinksTool: ToolDefinition` (`readOnly: false`). Uses the auth client and replaces the full `reps.streaming_links` JSONB object for the authenticated rep via `.eq('id', ctx.repId)`. Returns `{ streamingLinks, platforms }` where `platforms` is `Object.keys(savedLinks)`.
+- `lib/thumper/tools/update-site-setting.ts` � `updateSiteSettingTool: ToolDefinition` (`readOnly: false`). Zod input accepts any subset of `bannerText`, `bannerVisible`, `tickerText`, `tickerVisible`, `tagline`, `heroImageUrl`, `heroAnimationType ('zoom'|'pan')`, `teamName`, `showJoinPage`, and `socialHandles`. Handler-level defense-in-depth rejects empty patches with `ThumperToolError(code='NO_SITE_SETTING_FIELDS')`. Performs one optional write to `site_settings` and one optional write to `reps.social_handles`, returning `{ updatedFields, updated }` with only the fields that were actually patched.
+- `lib/thumper/tools/write-rep-note.ts` � `writeRepNoteTool: ToolDefinition` (`readOnly: false`, internal-use). Inserts into `rep_notes` using the auth client with `{ rep_id, summary, conversation_date }`. On success returns `{ saved:true, summaryPreview, conversationDate }`; on failure it logs `rep_note_write_failed` via `logIncident()` and returns `{ saved:false, summaryPreview }` instead of surfacing an error to the rep.
+- `lib/thumper/tools/read-recent-rep-notes.ts` � `readRecentRepNotesTool: ToolDefinition` (`readOnly: true`, internal-use). Reads `rep_notes` ordered by `conversation_date DESC`, default limit 5, hard max 20. Returns `{ count, notes:[{ noteId, summary, conversationDate }] }`. On failure it logs `rep_note_read_failed` and degrades to `{ count:0, notes:[], unavailable:true }`.
+- `tests/thumper/site-customization-tools.test.ts` � 9 vitest cases covering the three site tools: happy-path `site_settings` and `reps` updates, Supabase failure translation for `update_banner_text`, handler-level empty-patch guard for `update_site_setting`, registry `readOnly:false` metadata, and prompt/registry count assertions for the new 18-tool total.
+- `tests/thumper/rep-notes-tools.test.ts` � 6 vitest cases covering `write_rep_note` and `read_recent_rep_notes`: insert shape, summary preview truncation, quiet degradation on insert failure, default limit + DESC ordering, handler-level limit clamp to 20, empty-context degradation on read failure, and `readOnly` metadata assertions.
 
 **Modified:**
-- `lib/thumper/tools/index.ts` � registry extended from 13 -> 18 entries by importing and appending `updateBannerTextTool`, `updateStreamingLinksTool`, `updateSiteSettingTool`, `writeRepNoteTool`, and `readRecentRepNotesTool`. Wrapper composition remains unchanged: `withTelemetry()` inside `withErrorHandling()`, with duplicate-name guard + `needsApproval` preservation assertion still active.
-- `lib/thumper/system-prompt.ts` � `"thirteen tools"` ? `"eighteen tools"`; 5 new tool inventory bullets; new tool-boundary bullets clarifying that `update_streaming_links` replaces the full object, `update_site_setting` is the general site-customization entrypoint, and the two rep-note tools are internal and should not be narrated to the rep. Scope expands from 5 -> 7 areas by adding public-site customization and lightweight memory. The old `editing the rep's public site ... not yet` boundary is narrowed to custom domain, profile photo, or template while explicitly calling out the now-supported banner/ticker/tagline/hero/team/join-page/social/streaming surfaces.
-- `tests/thumper/calendar-tools.test.ts` � prompt/registry assertions updated from 13 tools to 18 so the existing calendar-domain suite still validates the full registry after Tasks 1.7+1.9.
-- `package.json` � `npm test` allow-list extended from 8 -> 10 vitest files by adding `tests/thumper/site-customization-tools.test.ts` and `tests/thumper/rep-notes-tools.test.ts`.
-- `CODEBASE_SNAPSHOT.md` � regenerated to reflect the 18-tool Thumper registry, current migration list through 032, updated verification counts, and this session block.
+- `lib/thumper/tools/index.ts` � registry extended from 13 -> 18 entries by importing and appending `updateBannerTextTool`, `updateStreamingLinksTool`, `updateSiteSettingTool`, `writeRepNoteTool`, and `readRecentRepNotesTool`. Wrapper composition remains unchanged: `withTelemetry()` inside `withErrorHandling()`, with duplicate-name guard + `needsApproval` preservation assertion still active.
+- `lib/thumper/system-prompt.ts` � `"thirteen tools"` ? `"eighteen tools"`; 5 new tool inventory bullets; new tool-boundary bullets clarifying that `update_streaming_links` replaces the full object, `update_site_setting` is the general site-customization entrypoint, and the two rep-note tools are internal and should not be narrated to the rep. Scope expands from 5 -> 7 areas by adding public-site customization and lightweight memory. The old `editing the rep's public site ... not yet` boundary is narrowed to custom domain, profile photo, or template while explicitly calling out the now-supported banner/ticker/tagline/hero/team/join-page/social/streaming surfaces.
+- `tests/thumper/calendar-tools.test.ts` � prompt/registry assertions updated from 13 tools to 18 so the existing calendar-domain suite still validates the full registry after Tasks 1.7+1.9.
+- `package.json` � `npm test` allow-list extended from 8 -> 10 vitest files by adding `tests/thumper/site-customization-tools.test.ts` and `tests/thumper/rep-notes-tools.test.ts`.
+- `CODEBASE_SNAPSHOT.md` � regenerated to reflect the 18-tool Thumper registry, current migration list through 032, updated verification counts, and this session block.
 
 **Scope wiring / route impact:** No changes were needed in `app/api/thumper/route.ts`. The route still builds its toolset entirely from `buildAllTools(ctx)`; adding the new handlers in `lib/thumper/tools/index.ts` is sufficient for the production route to expose them. No new API routes, no UI changes, and no service-layer additions were required for Tasks 1.7+1.9.
 
@@ -1342,11 +1343,11 @@ All four use the auth client — calendar is fully rep-scoped via RLS on `calend
 All five tools are rep-scoped and intentionally avoid `createAdminClient()`. The internal memory tools use best-effort incident logging and never bubble failures into the rep-facing conversation path.
 
 **Verification (2026-05-01):**
-- `npm test` � PASS, 10/10 files and 101/101 tests green: the previous 8-file suite plus `site-customization-tools.test.ts` and `rep-notes-tools.test.ts`.
-- `npx vitest run tests/thumper/site-customization-tools.test.ts tests/thumper/rep-notes-tools.test.ts tests/thumper/calendar-tools.test.ts` � PASS, 23/23 tests green for the new domains plus the updated calendar prompt/registry assertions.
-- `npx tsc --noEmit` � unchanged accepted baseline failure: 5 errors, all in `tests/thumper/attack-5-poisoned-rep-notes.test.ts` (`rep_notes` typing / `never` inference). No new errors introduced by Tasks 1.7+1.9.
-- Registry shape � `REGISTRY.length` goes 13 -> 18 and now returns the prior 13 keys plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
-- Prompt sweep � `lib/thumper/system-prompt.ts` now contains `You have eighteen tools available right now:` and all five new tool names. The existing 13-tool phrase is removed from current-state sections.
+- `npm test` � PASS, 10/10 files and 101/101 tests green: the previous 8-file suite plus `site-customization-tools.test.ts` and `rep-notes-tools.test.ts`.
+- `npx vitest run tests/thumper/site-customization-tools.test.ts tests/thumper/rep-notes-tools.test.ts tests/thumper/calendar-tools.test.ts` � PASS, 23/23 tests green for the new domains plus the updated calendar prompt/registry assertions.
+- `npx tsc --noEmit` � unchanged accepted baseline failure: 5 errors, all in `tests/thumper/attack-5-poisoned-rep-notes.test.ts` (`rep_notes` typing / `never` inference). No new errors introduced by Tasks 1.7+1.9.
+- Registry shape � `REGISTRY.length` goes 13 -> 18 and now returns the prior 13 keys plus `update_banner_text`, `update_streaming_links`, `update_site_setting`, `write_rep_note`, and `read_recent_rep_notes`.
+- Prompt sweep � `lib/thumper/system-prompt.ts` now contains `You have eighteen tools available right now:` and all five new tool names. The existing 13-tool phrase is removed from current-state sections.
 
 
 

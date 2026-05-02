@@ -15,7 +15,7 @@ const OPEN_ITEMS_DEFAULT_PROJECT = "neon_rabbit";
 
 // Read client (anon + RLS) — used by the 5 get_* tools.
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// Write client (service_role) — used by the 12 write/CRUD tools.
+// Write client (service_role) — used by the 14 write/CRUD tools.
 const supabaseWrite = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Enum constants — mirror CHECK constraints in migration-008 + migration-010.
@@ -23,6 +23,7 @@ const PHASE_STATUSES   = ["not_started", "in_progress", "testing", "complete"] a
 const TASK_STATUSES    = ["not_started", "in_progress", "complete", "blocked"] as const;
 const EXECUTION_MODES  = ["ultraplan", "standard", "claude_chat", "manual"] as const;
 const ASSIGNEES        = ["claude_code", "louis", "both", "opus_chat"] as const;
+const TIME_ESTIMATES   = ["quick", "medium", "large", "multi_day"] as const;
 const GATE_STATUSES    = ["locked", "testing", "passed", "failed"] as const;
 const CARD_POSITIONS   = ["previous", "current", "next"] as const;
 
@@ -32,7 +33,7 @@ const OPEN_ITEM_STATUSES   = ["open", "deferred", "in_progress", "resolved"] as 
 const OPEN_ITEM_PRIORITIES = ["low", "medium", "high"] as const;
 
 // Audit log enums — sourced from migration 013_build_action_log_audit.sql.
-const AUDIT_ACTORS  = ["chat", "claude_code"] as const;
+const AUDIT_ACTORS  = ["chat", "claude_code", "codex"] as const;
 const AUDIT_TARGETS = ["task", "phase", "gate", "action_card"] as const;
 
 type Envelope = Record<string, unknown>;
@@ -55,6 +56,10 @@ function errorResult(msg: string) {
 function hasMore(offset: number, returned: number, total: number | null) {
   if (total === null) return false;
   return offset + returned < total;
+}
+
+function taskKeyFromNumber(taskNumber: string) {
+  return `task_${taskNumber.replaceAll(".", "_")}`;
 }
 
 // --- MCP Server ---
@@ -372,13 +377,132 @@ server.registerTool(
 // Write tools (service_role) — Memory Library Task 3
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Tool: create_task
+server.registerTool(
+  "create_task",
+  {
+    title: "Create Task",
+    description:
+      "Create a construction task in an existing phase. Resolves phase_key to phase_id before insert, auto-generates task_key from task_number when omitted, auto-assigns display_order within the phase when omitted, and writes an audit row (entry_kind='audit', target_type='task'). Optional actor param ('chat', 'claude_code', or 'codex') labels the audit row; defaults to 'claude_code'.",
+    inputSchema: {
+      task_name: z.string().min(1),
+      task_number: z.string().min(1).max(128),
+      phase_key: z.string().min(1).max(128),
+      project: z.string().min(1).max(128).optional(),
+      task_key: z.string().min(1).max(128).optional(),
+      status: z.enum(TASK_STATUSES).optional(),
+      execution_mode: z.enum(EXECUTION_MODES).optional(),
+      assignee: z.enum(ASSIGNEES).optional(),
+      can_run_overnight: z.boolean().optional(),
+      time_estimate: z.enum(TIME_ESTIMATES).optional(),
+      notes: z.string().nullable().optional(),
+      display_order: z.number().int().min(0).optional(),
+      actor: z.enum(AUDIT_ACTORS).optional(),
+    },
+  },
+  async ({ task_name, task_number, phase_key, project, task_key, status, execution_mode, assignee, can_run_overnight, time_estimate, notes, display_order, actor }) => {
+    try {
+      const p = project ?? DEFAULT_PROJECT;
+      const resolvedTaskKey = task_key ?? taskKeyFromNumber(task_number);
+
+      const { data: phase, error: phaseError } = await supabaseWrite
+        .from("construction_phases")
+        .select("id")
+        .eq("project", p)
+        .eq("phase_key", phase_key)
+        .maybeSingle();
+      if (phaseError) return errorResult(phaseError.message);
+      if (!phase) return errorResult(`Phase key '${phase_key}' not found in project '${p}'`);
+
+      const { data, error } = await supabaseWrite.rpc("rpc_create_task", {
+        p_project: p,
+        p_phase_id: phase.id as string,
+        p_task_number: task_number,
+        p_task_key: resolvedTaskKey,
+        p_task_name: task_name,
+        p_status: status ?? "not_started",
+        p_execution_mode: execution_mode ?? "standard",
+        p_assignee: assignee ?? "claude_code",
+        p_can_run_overnight: can_run_overnight ?? false,
+        p_time_estimate: time_estimate ?? "medium",
+        p_notes: notes ?? null,
+        p_display_order: display_order ?? null,
+        p_actor: actor ?? "claude_code",
+      });
+      if (error) return errorResult(error.message);
+      const payload = data as { task: unknown } | null;
+      if (!payload?.task) return errorResult(`Task creation failed for key '${resolvedTaskKey}' (project='${p}')`);
+      return textResult({ task: payload.task });
+    } catch (err) {
+      return errorResult((err as Error).message);
+    }
+  }
+);
+
+// Tool: update_task
+server.registerTool(
+  "update_task",
+  {
+    title: "Update Task",
+    description:
+      "Update construction task metadata except status/completion/notes. Supports renaming, renumbering, reassigning, reordering, and execution configuration changes. Applies only provided fields, bumps updated_at, and writes a task audit row with old_value/new_value JSON for changed fields. Optional actor param ('chat', 'claude_code', or 'codex') labels the audit row; defaults to 'claude_code'.",
+    inputSchema: {
+      task_key: z.string().min(1).max(128),
+      task_name: z.string().min(1).optional(),
+      task_number: z.string().min(1).max(128).optional(),
+      execution_mode: z.enum(EXECUTION_MODES).optional(),
+      assignee: z.enum(ASSIGNEES).optional(),
+      can_run_overnight: z.boolean().optional(),
+      time_estimate: z.enum(TIME_ESTIMATES).optional(),
+      display_order: z.number().int().min(0).optional(),
+      project: z.string().min(1).max(128).optional(),
+      actor: z.enum(AUDIT_ACTORS).optional(),
+    },
+  },
+  async ({ task_key, task_name, task_number, execution_mode, assignee, can_run_overnight, time_estimate, display_order, project, actor }) => {
+    try {
+      const p = project ?? DEFAULT_PROJECT;
+      const hasPatch =
+        task_name !== undefined ||
+        task_number !== undefined ||
+        execution_mode !== undefined ||
+        assignee !== undefined ||
+        can_run_overnight !== undefined ||
+        time_estimate !== undefined ||
+        display_order !== undefined;
+      if (!hasPatch) {
+        return errorResult("At least one updatable field must be provided.");
+      }
+
+      const { data, error } = await supabaseWrite.rpc("rpc_update_task", {
+        p_project: p,
+        p_task_key: task_key,
+        p_task_name: task_name ?? null,
+        p_task_number: task_number ?? null,
+        p_execution_mode: execution_mode ?? null,
+        p_assignee: assignee ?? null,
+        p_can_run_overnight: can_run_overnight ?? null,
+        p_time_estimate: time_estimate ?? null,
+        p_display_order: display_order ?? null,
+        p_actor: actor ?? "claude_code",
+      });
+      if (error) return errorResult(error.message);
+      const payload = data as { task: unknown } | null;
+      if (!payload?.task) return errorResult(`Task not found: ${task_key} (project=${p})`);
+      return textResult({ task: payload.task });
+    } catch (err) {
+      return errorResult((err as Error).message);
+    }
+  }
+);
+
 // Tool: update_task_status
 server.registerTool(
   "update_task_status",
   {
     title: "Update Task Status",
     description:
-      "Update a construction task's status (and optionally completion_session, completion_date, notes). When status='complete' and no completion_date is passed, completion_date is auto-set to now(). Completion_date is never nulled on status change away from complete. Writes an audit row to build_action_log atomically with the state change (entry_kind='audit', target_type='task'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
+      "Update a construction task's status (and optionally completion_session, completion_date, notes). When status='complete' and no completion_date is passed, completion_date is auto-set to now(). Completion_date is never nulled on status change away from complete. Writes an audit row to build_action_log atomically with the state change (entry_kind='audit', target_type='task'). Optional actor param ('chat', 'claude_code', or 'codex') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       task_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
@@ -417,7 +541,7 @@ server.registerTool(
   {
     title: "Update Phase Status",
     description:
-      "Update a construction phase's status. Always recomputes total_tasks/completed_tasks from construction_tasks and bumps updated_at on every call (drift-repair path). Audit row emitted only when status actually changes (entry_kind='audit', target_type='phase'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
+      "Update a construction phase's status. Always recomputes total_tasks/completed_tasks from construction_tasks and bumps updated_at on every call (drift-repair path). Audit row emitted only when status actually changes (entry_kind='audit', target_type='phase'). Optional actor param ('chat', 'claude_code', or 'codex') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       phase_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
@@ -449,7 +573,7 @@ server.registerTool(
   "update_gate_status",
   {
     title: "Update Gate Status",
-    description: "Update a test gate's status. Gates are identified by gate_key. Writes an audit row atomically when status actually changes (entry_kind='audit', target_type='gate'). Optional actor param ('chat' or 'claude_code') labels the audit row; defaults to 'claude_code'.",
+    description: "Update a test gate's status. Gates are identified by gate_key. Writes an audit row atomically when status actually changes (entry_kind='audit', target_type='gate'). Optional actor param ('chat', 'claude_code', or 'codex') labels the audit row; defaults to 'claude_code'.",
     inputSchema: {
       gate_key: z.string().min(1).max(128),
       project: z.string().min(1).max(128).optional(),
@@ -482,7 +606,7 @@ server.registerTool(
   {
     title: "Update Rolling Action Cards",
     description:
-      "Write all 3 rolling action cards (previous/current/next) for a project atomically (as a triple). Archives currently-active card snapshots, then inserts 3 new active rows (entry_kind='card_snapshot'). All 3 positions are required — preserve unchanged cards by passing their existing values through. Emits one audit row per position whose title or description changed (entry_kind='audit', target_type='action_card'). Optional actor param ('chat' or 'claude_code') labels the audit rows; defaults to 'claude_code'.",
+      "Write all 3 rolling action cards (previous/current/next) for a project atomically (as a triple). Archives currently-active card snapshots, then inserts 3 new active rows (entry_kind='card_snapshot'). All 3 positions are required — preserve unchanged cards by passing their existing values through. Emits one audit row per position whose title or description changed (entry_kind='audit', target_type='action_card'). Optional actor param ('chat', 'claude_code', or 'codex') labels the audit rows; defaults to 'claude_code'.",
     inputSchema: {
       project: z.string().min(1).max(128).optional(),
       previous: z.object({ title: z.string().min(1), description: z.string().optional() }),

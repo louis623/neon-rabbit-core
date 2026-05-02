@@ -35,6 +35,7 @@ FAIL=0
 FAIL_NAMES=()
 CREATED_OPEN_ITEM_ID=""
 CREATED_CLIENT_ID=""
+CREATED_TASK_KEY=""
 
 # ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,36 @@ call_tool() {
     PASS=$((PASS + 1))
   else
     echo "❌ FAIL  $label  (http=$http_code)"
+    echo "   body: $LAST_BODY"
+    FAIL=$((FAIL + 1))
+    FAIL_NAMES+=("$label")
+  fi
+}
+
+# Call a tool and expect an MCP error payload. Stores raw response in $LAST_BODY.
+call_tool_expect_error() {
+  local label="$1" tool="$2" args="$3"
+  local body http_code response
+  body=$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"%s","arguments":%s}}' \
+    "$tool" "$args")
+
+  response=$(curl -s -w "\n__HTTP__%{http_code}" -X POST "$ENDPOINT" \
+    -H "Accept: application/json, text/event-stream" \
+    -H "Content-Type: application/json" \
+    -d "$body")
+
+  http_code=$(echo "$response" | tail -n1 | sed 's/^__HTTP__//')
+  LAST_BODY=$(echo "$response" | sed '$d')
+
+  local is_error=0
+  if echo "$LAST_BODY" | grep -q '"isError":[[:space:]]*true'; then is_error=1; fi
+  if echo "$LAST_BODY" | grep -q '"error":[[:space:]]*{'; then is_error=1; fi
+
+  if [[ "$http_code" == "200" && $is_error -eq 1 ]]; then
+    echo "✅ PASS  $label"
+    PASS=$((PASS + 1))
+  else
+    echo "❌ FAIL  $label  (expected MCP error, http=$http_code)"
     echo "   body: $LAST_BODY"
     FAIL=$((FAIL + 1))
     FAIL_NAMES+=("$label")
@@ -104,6 +135,11 @@ json_first_int() {    # $1 key
 json_first_str() {    # $1 key
   unwrap_body | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -1 \
     | sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*\"(.*)\"$/\1/"
+}
+
+json_last_int() {     # $1 key
+  unwrap_body | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*[0-9]+" | tail -1 \
+    | sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*([0-9]+)$/\1/"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -305,6 +341,134 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Build Tracker Task CRUD (real create/update flow)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Creates one smoke-test task in phase_0, verifies auto task_key/display_order,
+# exercises duplicate/invalid input paths, then updates that task metadata and
+# checks the audit log payload.
+
+echo
+echo "─── Build Tracker Task CRUD ─────────────────────────────────────────────"
+
+call_tool "18.0 get_tasks (phase_0 baseline for display_order)" "get_tasks" \
+  '{"phase_key":"phase_0","limit":200}'
+BASELINE_TASK_COUNT="$(json_first_int count)"
+BASELINE_MAX_DISPLAY_ORDER="$(json_last_int display_order)"
+[[ -z "$BASELINE_TASK_COUNT" ]] && BASELINE_TASK_COUNT=0
+[[ -z "$BASELINE_MAX_DISPLAY_ORDER" ]] && BASELINE_MAX_DISPLAY_ORDER=0
+
+SMOKE_SUFFIX="$(date -u +%s)"
+SMOKE_TASK_NUMBER="99.${SMOKE_SUFFIX}"
+EXPECTED_SMOKE_TASK_KEY="task_99_${SMOKE_SUFFIX}"
+UPDATED_SMOKE_TASK_NUMBER="100.${SMOKE_SUFFIX}"
+
+call_tool "18   create_task (actor=codex, auto task_key/order)" "create_task" \
+  "$(printf '{"phase_key":"phase_0","task_name":"SMOKE TASK %s","task_number":"%s","actor":"codex"}' "$SMOKE_SUFFIX" "$SMOKE_TASK_NUMBER")"
+
+CREATED_TASK_KEY="$(json_first_str task_key)"
+if [[ -z "$CREATED_TASK_KEY" ]]; then
+  echo "❌ FAIL  18.1 capture created task_key"
+  FAIL=$((FAIL + 1)); FAIL_NAMES+=("18.1")
+else
+  echo "   → captured task_key: $CREATED_TASK_KEY"
+fi
+assert_contains "$(unwrap_body)" "\"task_name\"[[:space:]]*:[[:space:]]*\"SMOKE TASK ${SMOKE_SUFFIX}\"" \
+  "18.2 create_task returned created task"
+if [[ "$CREATED_TASK_KEY" == "$EXPECTED_SMOKE_TASK_KEY" ]]; then
+  echo "✅ PASS  18.3 auto-generated task_key format"
+  PASS=$((PASS + 1))
+else
+  echo "❌ FAIL  18.3 expected task_key=$EXPECTED_SMOKE_TASK_KEY got=${CREATED_TASK_KEY:-<empty>}"
+  FAIL=$((FAIL + 1)); FAIL_NAMES+=("18.3")
+fi
+CREATED_DISPLAY_ORDER="$(json_first_int display_order)"
+if [[ -n "$CREATED_DISPLAY_ORDER" && "$CREATED_DISPLAY_ORDER" -eq $((BASELINE_MAX_DISPLAY_ORDER + 1)) ]]; then
+  echo "✅ PASS  18.4 auto display_order slots after existing phase tasks"
+  PASS=$((PASS + 1))
+else
+  echo "❌ FAIL  18.4 expected display_order=$((BASELINE_MAX_DISPLAY_ORDER + 1)) got=${CREATED_DISPLAY_ORDER:-<empty>}"
+  FAIL=$((FAIL + 1)); FAIL_NAMES+=("18.4")
+fi
+
+call_tool "18.5 get_recent_audit_log (create_task audit)" "get_recent_audit_log" \
+  "$(printf '{"target_type":"task","target_key":"%s","limit":1}' "$EXPECTED_SMOKE_TASK_KEY")"
+UNWRAPPED="$(unwrap_body)"
+assert_contains "$UNWRAPPED" "\"actor\"[[:space:]]*:[[:space:]]*\"codex\"" \
+  "18.6 create_task audit actor=codex"
+assert_contains "$UNWRAPPED" "\"entry_kind\"[[:space:]]*:[[:space:]]*\"audit\"" \
+  "18.7 create_task audit entry_kind"
+
+call_tool_expect_error "19   create_task duplicate task_key fails" "create_task" \
+  "$(printf '{"phase_key":"phase_0","task_name":"SMOKE TASK DUP %s","task_number":"98.%s","task_key":"%s"}' "$SMOKE_SUFFIX" "$SMOKE_SUFFIX" "$EXPECTED_SMOKE_TASK_KEY")"
+assert_contains "$(unwrap_body)" "Task key '$EXPECTED_SMOKE_TASK_KEY' already exists" \
+  "19.1 duplicate task_key error message"
+
+call_tool_expect_error "20   create_task invalid phase_key fails" "create_task" \
+  "$(printf '{"phase_key":"phase_missing_%s","task_name":"bad","task_number":"97.%s"}' "$SMOKE_SUFFIX" "$SMOKE_SUFFIX")"
+assert_contains "$(unwrap_body)" "Phase key 'phase_missing_${SMOKE_SUFFIX}' not found" \
+  "20.1 invalid phase_key error message"
+
+call_tool "21   update_task (rename + multi-field, actor=codex)" "update_task" \
+  "$(printf '{"task_key":"%s","task_name":"SMOKE TASK UPDATED %s","task_number":"%s","execution_mode":"manual","assignee":"both","can_run_overnight":true,"time_estimate":"large","display_order":7,"actor":"codex"}' "$EXPECTED_SMOKE_TASK_KEY" "$SMOKE_SUFFIX" "$UPDATED_SMOKE_TASK_NUMBER")"
+UNWRAPPED="$(unwrap_body)"
+assert_contains "$UNWRAPPED" "\"task_name\"[[:space:]]*:[[:space:]]*\"SMOKE TASK UPDATED ${SMOKE_SUFFIX}\"" \
+  "21.1 update_task renamed task"
+assert_contains "$UNWRAPPED" "\"task_number\"[[:space:]]*:[[:space:]]*\"${UPDATED_SMOKE_TASK_NUMBER}\"" \
+  "21.2 update_task changed task_number"
+assert_contains "$UNWRAPPED" "\"execution_mode\"[[:space:]]*:[[:space:]]*\"manual\"" \
+  "21.3 update_task changed execution_mode"
+assert_contains "$UNWRAPPED" "\"assignee\"[[:space:]]*:[[:space:]]*\"both\"" \
+  "21.4 update_task changed assignee"
+assert_contains "$UNWRAPPED" "\"can_run_overnight\"[[:space:]]*:[[:space:]]*true" \
+  "21.5 update_task changed can_run_overnight"
+assert_contains "$UNWRAPPED" "\"time_estimate\"[[:space:]]*:[[:space:]]*\"large\"" \
+  "21.6 update_task changed time_estimate"
+assert_contains "$UNWRAPPED" "\"display_order\"[[:space:]]*:[[:space:]]*7" \
+  "21.7 update_task changed display_order"
+
+call_tool "21.8 get_recent_audit_log (update_task audit)" "get_recent_audit_log" \
+  "$(printf '{"target_type":"task","target_key":"%s","limit":1}' "$EXPECTED_SMOKE_TASK_KEY")"
+UNWRAPPED="$(unwrap_body)"
+assert_contains "$UNWRAPPED" "\"actor\"[[:space:]]*:[[:space:]]*\"codex\"" \
+  "21.9 update_task audit actor=codex"
+assert_contains "$UNWRAPPED" "\"old_value\"[^\n]*task_name[^\n]*SMOKE TASK ${SMOKE_SUFFIX}" \
+  "21.10 update_task audit old_value includes prior name"
+assert_contains "$UNWRAPPED" "\"old_value\"[^\n]*task_number[^\n]*${SMOKE_TASK_NUMBER}" \
+  "21.11 update_task audit old_value includes prior number"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*task_name[^\n]*SMOKE TASK UPDATED ${SMOKE_SUFFIX}" \
+  "21.12 update_task audit new_value includes updated name"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*task_number[^\n]*${UPDATED_SMOKE_TASK_NUMBER}" \
+  "21.13 update_task audit new_value includes updated number"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*execution_mode[^\n]*manual" \
+  "21.14 update_task audit new_value includes execution_mode"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*assignee[^\n]*both" \
+  "21.15 update_task audit new_value includes assignee"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*can_run_overnight[^\n]*true" \
+  "21.16 update_task audit new_value includes overnight flag"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*time_estimate[^\n]*large" \
+  "21.17 update_task audit new_value includes time estimate"
+assert_contains "$UNWRAPPED" "\"new_value\"[^\n]*display_order[^\n]*7" \
+  "21.18 update_task audit new_value includes display_order"
+
+call_tool_expect_error "22   update_task no optional fields fails" "update_task" \
+  "$(printf '{"task_key":"%s"}' "$EXPECTED_SMOKE_TASK_KEY")"
+assert_contains "$(unwrap_body)" "At least one updatable field must be provided" \
+  "22.1 update_task no-fields error message"
+
+call_tool_expect_error "23   update_task invalid task_key fails" "update_task" \
+  "$(printf '{"task_key":"task_missing_%s","task_name":"missing"}' "$SMOKE_SUFFIX")"
+assert_contains "$(unwrap_body)" "Task not found: task_missing_${SMOKE_SUFFIX}" \
+  "23.1 update_task invalid task_key error message"
+
+call_tool "24   update_task_status (actor=codex)" "update_task_status" \
+  "$(printf '{"task_key":"task_0_1","status":"complete","actor":"codex","notes":"smoke: codex actor acceptance %s"}' "$SMOKE_SUFFIX")"
+call_tool "24.1 get_recent_audit_log (task_0_1 actor=codex)" "get_recent_audit_log" \
+  '{"target_type":"task","target_key":"task_0_1","actor":"codex","limit":1}'
+assert_contains "$(unwrap_body)" "\"actor\"[[:space:]]*:[[:space:]]*\"codex\"" \
+  "24.2 update_task_status accepts actor=codex"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -322,8 +486,9 @@ echo "  delete from public.neon_rabbit_clients where name = 'SMOKE TEST CLIENT';
 echo "  delete from public.build_action_log"
 echo "    where entry_kind = 'audit'"
 echo "      and target_type = 'task'"
-echo "      and target_key = 'task_0_1'"
+echo "      and target_key in ('task_0_1', '${EXPECTED_SMOKE_TASK_KEY}')"
 echo "      and created_at >= '${SCRIPT_START_TS}';"
+echo "  delete from public.construction_tasks where project = 'sparkle_suite' and task_key = '${EXPECTED_SMOKE_TASK_KEY}';"
 echo
 
 exit $FAIL
