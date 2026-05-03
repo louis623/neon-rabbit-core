@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-05-03 (working tree: Amethyst design system source files committed under /design/amethyst/)_
+_Generated: 2026-05-03 (working tree: Amethyst homepage template now ships on `/` using the locked `/design/amethyst/` export as reference)_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -9,6 +9,15 @@ _Generated: 2026-05-03 (working tree: Amethyst design system source files commit
 ---
 
 ## Latest Delta
+
+**Amethyst homepage template on `/` (2026-05-03)**
+- `app/page.tsx` now renders the production Amethyst homepage instead of the default create-next-app starter content. Route metadata is set to `Amethyst Homepage Template`.
+- New `components/amethyst/` folder holds the production site shell and homepage composition:
+  - `site-shell.tsx` owns the reusable dark global header, locked dual counter-scroll ticker, and global footer.
+  - `amethyst-homepage.tsx` composes the customer-facing homepage sections: live reveal queue, hero, featured trade board preview, upcoming shows, Bomb Party explainer, signup block, and join-team CTA.
+- New `lib/amethyst/site-content.ts` defines the placeholder data contract for future Supabase wiring (`repName`, `businessName`, stream links, shop/join URLs, trade listings, events, socials, footer/nav links). `makeAmethystSiteContent()` derives dependent copy from overrides so the template does not hardcode one rep's brand into components.
+- `app/globals.css` now carries the Amethyst token layer as CSS custom properties plus the small shared animation primitives used by the homepage (`amethyst-scroll`, `amethyst-pulse`). Existing auth / Thumper routes remain untouched.
+- New SSR-friendly render test scaffold: `tests/amethyst-homepage.test.ts` asserts the homepage shell and content are data-driven, but the Vitest run is currently blocked by the sandbox's `spawn EPERM` issue before config load.
 
 **Amethyst design system source files (2026-05-03)**
 - New `design/amethyst/` directory at the repo root holding the canonical Claude Design export for the Amethyst site template.
@@ -25,6 +34,8 @@ _Generated: 2026-05-03 (working tree: Amethyst design system source files commit
 - `supabase/functions/nr-hq-mcp/smoke-test.sh` now specifies the new task-create/task-update flow, duplicate and invalid-input failures, task audit-log assertions, and `actor='codex'` coverage for both the new tools and existing `update_task_status`.
 
 **Verification status for this delta**
+- `npm run build` - PASS (`next build` compiled, type-checked, and prerendered `/` successfully on 2026-05-03)
+- `npx vitest run tests/amethyst-homepage.test.ts` - BLOCKED in sandbox before config load (`spawn EPERM` from Vitest/Vite realpath step; escalation retry was rejected by environment usage limits)
 - `node` + TypeScript `transpileModule` over `supabase/functions/nr-hq-mcp/index.ts` - PASS (`transpile ok`)
 - `npm test` - BLOCKED in sandbox (`vitest` startup hit `spawn EPERM` before test execution)
 - `supabase db push --linked --dry-run` - NOT RUN (policy blocked outbound linked-project verification without explicit user approval)
@@ -234,6 +245,12 @@ neon-rabbit-core/
 ```
 
 ---
+
+**Additional tree entries for the 2026-05-03 Amethyst homepage build**
+- `components/amethyst/amethyst-homepage.tsx` â€” customer-facing homepage composition for the Amethyst template
+- `components/amethyst/site-shell.tsx` â€” reusable global header + locked T3 ticker + footer shell
+- `lib/amethyst/site-content.ts` â€” placeholder content contract + override helper for future Supabase wiring
+- `tests/amethyst-homepage.test.ts` â€” SSR render coverage for the Amethyst site shell + data-driven placeholder content
 
 ## Dependencies
 
