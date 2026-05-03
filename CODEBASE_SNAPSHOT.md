@@ -1,5 +1,5 @@
 # Codebase Snapshot — Neon Rabbit Core
-_Generated: 2026-05-01 (working tree: nr-hq-mcp task management tools)_
+_Generated: 2026-05-03 (working tree: Amethyst design system source files committed under /design/amethyst/)_
 
 > **Pricing — monthly-only forever (April 19, 2026 decision).** `ss_quarterly_test` (price_1TNcicHRBK3pZpO2Map0zvq0, $129/3mo) and `ss_annual_test` (price_1TNcjcHRBK3pZpO2817mT1CP, $468/yr) are archived on Stripe (active=false, history preserved). Only active price on product `prod_UMLNC0ybgRkVKX` is `ss_monthly_test` (price_1TNciVHRBK3pZpO2Vsz9xfSH, $49/mo).
 
@@ -9,6 +9,12 @@ _Generated: 2026-05-01 (working tree: nr-hq-mcp task management tools)_
 ---
 
 ## Latest Delta
+
+**Amethyst design system source files (2026-05-03)**
+- New `design/amethyst/` directory at the repo root holding the canonical Claude Design export for the Amethyst site template.
+- Contents: `Amethyst Design System.html` (full system preview), per-page HTML previews (`Homepage.html`, `Trade.html`, `Join.html`), per-page CSS (`homepage.css`, `trade.css`, `join.css`), shared `components.css` + `tokens.css`, page-level `homepage.jsx` / `trade.jsx` / `join.jsx`, the `tweaks-panel.jsx` design playground, and a `README.md` calling the folder the locked design source-of-truth.
+- PRDs and the future Amethyst site build will reference `/design/amethyst/` directly. Files in this folder are intentionally NOT modified during build — they are the locked design reference, not a working copy.
+- No code changes elsewhere; no migrations; no tool registry / route changes. This delta is purely the design asset drop + accompanying README + snapshot regeneration.
 
 **NR HQ MCP - task management tools (2026-05-01)**
 - `supabase/functions/nr-hq-mcp/index.ts` now exposes 20 total MCP tools by adding `create_task` and `update_task` to the build-tracker write surface.
@@ -205,6 +211,15 @@ neon-rabbit-core/
 │       ├── 031_ss_calendar_title_and_collections.sql
 │       └── 032_ss_calendar_multicodes_and_recurrence.sql
 ?       ??? 033_nr_hq_task_tools.sql         ? create_task/update_task RPCs + codex actor for build tracker
+├── design/
+│   └── amethyst/                  ← Locked Claude Design export (2026-05-03) — Amethyst site template source-of-truth
+│       ├── README.md              ← Header / usage notes (do NOT modify during build)
+│       ├── Amethyst Design System.html
+│       ├── Homepage.html, Trade.html, Join.html
+│       ├── homepage.css, trade.css, join.css
+│       ├── components.css, tokens.css
+│       ├── homepage.jsx, trade.jsx, join.jsx
+│       └── tweaks-panel.jsx
 ├── vault/                         ← project docs/notes
 ├── verification/                  ← Gate 0 + Phase 1 spike verification artifacts
 ├── .env.example
@@ -1350,7 +1365,33 @@ All five tools are rep-scoped and intentionally avoid `createAdminClient()`. The
 - Prompt sweep � `lib/thumper/system-prompt.ts` now contains `You have eighteen tools available right now:` and all five new tool names. The existing 13-tool phrase is removed from current-state sections.
 
 
+## Session 2026-05-03 — Amethyst design system source files added (asset drop + snapshot regen)
 
+**Goal:** Land the canonical Claude Design export for the upcoming Amethyst site template into the repo as a locked design reference. PRDs and the build will read from this folder; nothing in this drop is touched during implementation.
+
+**New directory:** `design/amethyst/` at the repo root with 14 files:
+- `README.md` — header explaining the export date (2026-05-03), the four content categories (HTML previews, CSS tokens, design assets), and the explicit "do NOT modify these files during build" rule.
+- `Amethyst Design System.html` — full design-system preview (~69 KB).
+- `Homepage.html`, `Trade.html`, `Join.html` — per-page HTML previews.
+- `homepage.css`, `trade.css`, `join.css` — per-page CSS.
+- `components.css` (~50 KB) — shared component styles.
+- `tokens.css` — shared design tokens (color, typography, spacing).
+- `homepage.jsx`, `trade.jsx`, `join.jsx` — page-level React-ish previews from Claude Design.
+- `tweaks-panel.jsx` — Claude Design's tweaks/playground panel.
+
+**Files NOT changed:** No code, no migrations, no Edge Functions, no UI, no tests, no system prompt, no service layer. This commit is a pure asset drop. Vercel auto-deploy of `main` will publish the new directory but nothing in the running app references it yet — the future Amethyst route will read it.
+
+**Repo conventions applied:**
+- Branch: `main` only (per CLAUDE.md §1).
+- Commit message: `feat: add Amethyst design system source files from Claude Design export`.
+- Push: confirmed with Louis before `git push origin main` (per CLAUDE.md §1 push gate).
+- README inside `design/amethyst/` calls the folder a locked source-of-truth so future build sessions know not to edit the export in place.
+
+**Verification (2026-05-03):**
+- `git status` post-commit — clean.
+- `git log -1` — `6b053c6 feat: add Amethyst design system source files from Claude Design export`.
+- `git push origin main` — `0f826cf..6b053c6  main -> main`.
+- File-count check via `ls design/amethyst/` — 14 files present (13 export files + README.md).
 
 
 
