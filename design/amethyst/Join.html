@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sparkle by Sasha — Join the Team</title>
+
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=vend-sans@400,500,600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Italiana&family=Quicksand:wght@400;500;600;700&family=Archivo+Black&display=swap" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="components.css" />
+<link rel="stylesheet" href="homepage.css" />
+<link rel="stylesheet" href="join.css" />
+</head>
+<body class="joinpage">
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+// ─── Join page tweak defaults ─────────────────────────────────────────────
+// Same protected pattern as Homepage / Trade — defaults live here so design
+// edits to join.jsx can't trample saved values. Host rewrites only this block.
+window.JOIN_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "teamName": "Team Velvet Hour",
+  "repName": "Sasha Patel",
+  "repState": "Illinois",
+  "businessName": "Sparkle by Sasha",
+  "teamMemberCount": 6,
+  "showPromo": true,
+  "promoText": "November Promo: New reps get a guaranteed Diamond in their first launch pack.",
+  "heroPitch": "Join a crew of independent reps building real businesses on their own terms. We do live jewelry reveals, support each other through it, and — yes — we have a lot of fun. There's a spot waiting for you.",
+  "heroCtaText": "See starter packs",
+  "finalPitch": "Pick your starter pack, follow the steps on Bomb Party, and you're in. We'll set up your onboarding call within 24 hours.",
+  "bpReferralUrl": "https:\/\/bombparty.com\/?ref=sparklebysasha",
+  "showTicker": true,
+  "showHero": true,
+  "showTeam": true,
+  "showWhy": true,
+  "showFaq": true,
+  "showFinalCta": true,
+  "showFooter": true,
+  "showThumper": true,
+  "tickerTopText": "Live tonight · 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday",
+  "primaryColor": "#480DDF",
+  "accentColor": "#D209E3",
+  "bgTone": "lavender",
+  "headingFont": "italiana",
+  "headingWeight": 600,
+  "shapeRadius": "soft",
+  "density": "compact",
+  "saturation": 110,
+  "preset": "softGlam",
+  "sparkleLevel": "glittery",
+  "bgTreatment": "mesh",
+  "cardSurface": "holographic",
+  "textureOverlay": "sparkle",
+  "buttonEnergy": "calm",
+  "ctaEmphasis": "pulse",
+  "tradeFlair": "tier-glow",
+  "cursorEffect": "default",
+  "tickerSpeed": 0.6,
+  "showSlots": false
+}/*EDITMODE-END*/;
+</script>
+<script type="text/babel" src="join.jsx"></script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sparkle by Sasha — Live jewelry reveals</title>
+
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=vend-sans@400,500,600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Italiana&family=Quicksand:wght@400;500;600;700&family=Archivo+Black&display=swap" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="components.css" />
+<link rel="stylesheet" href="homepage.css" />
+</head>
+<body class="homepage">
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+// ─── Homepage tweak defaults ──────────────────────────────────────────────
+// This block lives in Homepage.html (the root) so the host can rewrite it
+// when a tweak changes. Keeping it OUT of homepage.jsx means design edits
+// to that file can't trample saved values.
+window.HOMEPAGE_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "repName": "Rep Name",
+  "businessName": "Show Name",
+  "tagline": "Live jewelry reveals every Tuesday — joy you can hold.",
+  "heroHeadline": "Real jewelry. Live reveals. Pure sparkle.",
+  "heroSub": "I'm Rep Name — every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  "buttonStyle": "sparkle",
+  "tickerVariant": "dual",
+  "thumperStyle": "square",
+  "showTicker": true,
+  "showLrq": true,
+  "showHero": true,
+  "showEvents": true,
+  "showWibp": true,
+  "showSignup": true,
+  "showJoinCta": true,
+  "showFooter": true,
+  "showThumper": true,
+  "eventCount": 2,
+  "lrqState": "live",
+  "tickerTopText": "Live tonight · 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday",
+  "primaryColor": "#5C0EFF",
+  "accentColor": "#FF1AC2",
+  "bgTone": "lavender",
+  "headingFont": "italiana",
+  "headingWeight": 600,
+  "shapeRadius": "soft",
+  "density": "regular",
+  "saturation": 130,
+  "preset": "sparkleParty",
+  "sparkleLevel": "glittery",
+  "bgTreatment": "confetti",
+  "cardSurface": "holographic",
+  "textureOverlay": "sparkle",
+  "buttonEnergy": "calm",
+  "ctaEmphasis": "standard",
+  "tradeFlair": "holo-unicorn",
+  "cursorEffect": "sparkle",
+  "tickerSpeed": 0.6,
+  "showSlots": false
+}/*EDITMODE-END*/;
+</script>
+<script type="text/babel" src="homepage.jsx"></script>
+
+</body>
+</html>
