@@ -52,6 +52,8 @@ supabase/.temp/
 
 # Local-only secrets / scratch (never committed)
 .local/
+.codex-logs/
+.worktrees/
 
 # Attack #5 transcript dumps (ephemeral test output)
 tests/thumper/attack-5-results/
