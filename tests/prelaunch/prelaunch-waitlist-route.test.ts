@@ -34,7 +34,7 @@ describe('POST /api/prelaunch/waitlist', () => {
     const singleMock = vi.fn().mockResolvedValueOnce({
       data: {
         id: 'waitlist-1',
-        full_name: 'Jamie Hart',
+        name: 'Jamie Hart',
         email: 'jamie@example.com',
       },
       error: null,
@@ -66,7 +66,7 @@ describe('POST /api/prelaunch/waitlist', () => {
 
     expect(fromMock).toHaveBeenCalledWith('sparkle_suite_waitlist')
     expect(insertMock).toHaveBeenCalledWith({
-      full_name: 'Jamie Hart',
+      name: 'Jamie Hart',
       email: 'jamie@example.com',
       phone: '303-555-0123',
       tiktok_handle: '@jamiehart',
@@ -76,7 +76,7 @@ describe('POST /api/prelaunch/waitlist', () => {
       email_consent: true,
       source: 'prelaunch_site',
     })
-    expect(selectMock).toHaveBeenCalledWith('id, full_name, email')
+    expect(selectMock).toHaveBeenCalledWith('id, name, email')
     expect(sendPrelaunchWaitlistWelcomeEmailMock).toHaveBeenCalledWith({
       email: 'jamie@example.com',
       name: 'Jamie Hart',
@@ -99,7 +99,7 @@ describe('POST /api/prelaunch/waitlist', () => {
     const singleMock = vi.fn().mockResolvedValueOnce({
       data: {
         id: 'waitlist-1',
-        full_name: 'Jamie Hart',
+        name: 'Jamie Hart',
         email: 'jamie@example.com',
       },
       error: null,
@@ -146,7 +146,7 @@ describe('POST /api/prelaunch/waitlist', () => {
     const singleMock = vi.fn().mockResolvedValueOnce({
       data: {
         id: 'waitlist-1',
-        full_name: 'Jamie Hart',
+        name: 'Jamie Hart',
         email: 'jamie@example.com',
       },
       error: null,
@@ -265,7 +265,7 @@ describe('POST /api/prelaunch/waitlist', () => {
       const singleMock = vi.fn().mockResolvedValueOnce({
         data: {
           id: `waitlist-${index}`,
-          full_name: 'Jamie Hart',
+          name: 'Jamie Hart',
           email: 'jamie@example.com',
         },
         error: null,

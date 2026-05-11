@@ -109,7 +109,7 @@ export function buildPrelaunchWaitlistInsert(
   const validated = validatePrelaunchWaitlistInput(input)
 
   return {
-    full_name: validated.name,
+    name: validated.name,
     email: validated.email,
     phone: validated.phone,
     tiktok_handle: validated.tiktokHandle,

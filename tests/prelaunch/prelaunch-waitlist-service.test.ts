@@ -58,7 +58,7 @@ describe('validatePrelaunchWaitlistInput', () => {
     })
 
     expect(insert).toEqual({
-      full_name: 'Jamie Hart',
+      name: 'Jamie Hart',
       email: 'jamie@example.com',
       phone: '303-555-0123',
       tiktok_handle: '@jamieh',

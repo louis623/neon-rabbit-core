@@ -1,6 +1,6 @@
 create table if not exists public.sparkle_suite_waitlist (
   id uuid primary key default gen_random_uuid(),
-  full_name text not null,
+  name text not null,
   email text not null,
   phone text not null,
   tiktok_handle text not null,
@@ -20,6 +20,7 @@ create table if not exists public.sparkle_suite_waitlist (
 );
 
 alter table public.sparkle_suite_waitlist
+  add column if not exists name text,
   add column if not exists setup_pain text,
   add column if not exists sms_consent boolean not null default false,
   add column if not exists email_consent boolean not null default false,
@@ -30,6 +31,13 @@ alter table public.sparkle_suite_waitlist
   add column if not exists welcome_email_sent_at timestamptz,
   add column if not exists source text not null default 'prelaunch_site',
   add column if not exists created_at timestamptz not null default now();
+
+update public.sparkle_suite_waitlist
+set name = coalesce(nullif(name, ''), 'Unknown')
+where name is null;
+
+alter table public.sparkle_suite_waitlist
+  alter column name set not null;
 
 do $$
 begin

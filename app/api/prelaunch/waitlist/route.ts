@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const { data, error } = await admin
       .from('sparkle_suite_waitlist')
       .insert(insert)
-      .select('id, full_name, email')
+      .select('id, name, email')
       .single()
 
     if (error || !data?.id) {
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     const welcomeEmail = await sendPrelaunchWaitlistWelcomeEmail({
       email: data.email,
-      name: data.full_name,
+      name: data.name,
     })
     await recordWelcomeEmailStatus(data.id, welcomeEmail)
 
