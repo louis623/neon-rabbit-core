@@ -18,6 +18,13 @@ export interface PrelaunchScoutResearchTarget {
   priority: PrelaunchScoutPriority
 }
 
+export interface PrelaunchScoutResearchPlan {
+  status: 'manual_research_required'
+  searchQueries: string[]
+  evidenceChecklist: string[]
+  blockers: string[]
+}
+
 export interface PrelaunchScoutLesson {
   sourceRunKey: string
   lesson: string
@@ -28,6 +35,7 @@ export interface PrelaunchScoutOutput {
   summary: string
   recommendedNextStep: 'book_discovery_call' | 'operator_review_first'
   researchTargets: PrelaunchScoutResearchTarget[]
+  researchPlan: PrelaunchScoutResearchPlan
   setupRisks: string[]
   suggestedQuestions: string[]
   reusedLessons: PrelaunchScoutLesson[]
@@ -82,6 +90,54 @@ function buildResearchTargets(
   }
 
   return targets
+}
+
+function buildResearchSearchQueries(
+  submission: PrelaunchIntakeReviewSubmission,
+) {
+  const queries: string[] = []
+
+  if (submission.social.tiktok) {
+    queries.push(
+      `${submission.businessName} ${submission.social.tiktok} TikTok`,
+    )
+  }
+  if (submission.social.instagram) {
+    queries.push(
+      `${submission.businessName} ${submission.social.instagram} Instagram`,
+    )
+  }
+  if (submission.social.facebook) {
+    queries.push(
+      `${submission.businessName} ${submission.social.facebook} Facebook`,
+    )
+  }
+  if (submission.team.name) {
+    queries.push(
+      `${submission.businessName} ${submission.team.name} Bomb Party`,
+    )
+  }
+  if (queries.length === 0) {
+    queries.push(`${submission.name} ${submission.businessName} Bomb Party`)
+  }
+
+  return queries
+}
+
+function buildResearchPlan(
+  submission: PrelaunchIntakeReviewSubmission,
+): PrelaunchScoutResearchPlan {
+  return {
+    status: 'manual_research_required',
+    searchQueries: buildResearchSearchQueries(submission),
+    evidenceChecklist: [
+      'Confirm recent live-show cadence and audience engagement.',
+      'Check whether the bio/link flow matches the intake current setup.',
+      'Look for launch blockers: inactive profiles, mismatched business name, or missing customer action links.',
+      'Capture one useful positioning note for the discovery call.',
+    ],
+    blockers: ['External social research is not connected yet.'],
+  }
 }
 
 function buildSetupRisks(submission: PrelaunchIntakeReviewSubmission) {
@@ -162,6 +218,7 @@ export function buildPrelaunchScoutOutput(
       'External social research is not connected yet, so this first Scout pass flags what Louis should verify manually.',
     recommendedNextStep,
     researchTargets: buildResearchTargets(submission),
+    researchPlan: buildResearchPlan(submission),
     setupRisks: buildSetupRisks(submission),
     suggestedQuestions: appendLessonReuseQuestion(
       buildSuggestedQuestions(submission),
@@ -275,6 +332,7 @@ export async function runPrelaunchScoutForIntake({
     metadata: {
       source: 'prelaunch_intake_review',
       recommended_next_step: output.recommendedNextStep,
+      research_plan_status: output.researchPlan.status,
       reused_lesson_count: reusedLessons.length,
       trigger_source: triggerSource,
     },

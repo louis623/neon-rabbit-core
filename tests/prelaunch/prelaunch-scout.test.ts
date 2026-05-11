@@ -55,6 +55,23 @@ describe('prelaunch Scout', () => {
     expect(output.suggestedQuestions.join(' ')).toContain('two-device')
   })
 
+  it('builds a manual social research plan without claiming research is complete', () => {
+    const output = buildPrelaunchScoutOutput(submission)
+
+    expect(output.researchPlan.status).toBe('manual_research_required')
+    expect(output.researchPlan.blockers).toContain(
+      'External social research is not connected yet.',
+    )
+    expect(output.researchPlan.searchQueries).toEqual([
+      'Jamie Hart Jewelry @jamieh TikTok',
+      'Jamie Hart Jewelry @jamiebling Instagram',
+      'Jamie Hart Jewelry Lindsey Team Bomb Party',
+    ])
+    expect(output.researchPlan.evidenceChecklist).toContain(
+      'Confirm recent live-show cadence and audience engagement.',
+    )
+  })
+
   it('reuses recent Scout lessons in the generated recommendation', () => {
     const output = buildPrelaunchScoutOutput(submission, [
       {
@@ -165,6 +182,7 @@ describe('prelaunch Scout', () => {
         trigger_source: 'operator_review',
         model: 'deterministic_scout_v1',
         metadata: expect.objectContaining({
+          research_plan_status: 'manual_research_required',
           reused_lesson_count: 1,
         }),
       }),
