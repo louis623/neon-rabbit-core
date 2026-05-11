@@ -4,15 +4,14 @@ import { PrelaunchAudience } from './_components/PrelaunchAudience'
 import { PrelaunchBenefits } from './_components/PrelaunchBenefits'
 import { PrelaunchFooter } from './_components/PrelaunchFooter'
 import { PrelaunchHero } from './_components/PrelaunchHero'
-import { PrelaunchIntakeForm } from './_components/PrelaunchIntakeForm'
 import { PrelaunchVideoSection } from './_components/PrelaunchVideoSection'
 import { PrelaunchWaitlistForm } from './_components/PrelaunchWaitlistForm'
 import { prelaunchContent } from '@/lib/prelaunch/content'
 
 export const metadata: Metadata = {
-  title: 'Sparkle Suite | Coming Soon for Reps',
+  title: 'Sparkle Suite | Coming Soon',
   description:
-    'Sparkle Suite is being built for reps who want smoother live shows, less patchwork, and a more polished customer experience. Join the waitlist.',
+    'Sparkle Suite is a coming-soon website and rep tool home base for Bomb Party reps who want a calmer, more polished online setup.',
   alternates: {
     canonical: '/prelaunch',
   },
@@ -21,9 +20,9 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: 'Sparkle Suite | Coming Soon for Reps',
+    title: 'Sparkle Suite | Coming Soon',
     description:
-      'A better customer experience starts with a better rep setup. Join the Sparkle Suite waitlist.',
+      'One easier home for your Bomb Party business. Join the Sparkle Suite waitlist.',
     url: '/prelaunch',
     siteName: 'Sparkle Suite',
     type: 'website',
@@ -32,19 +31,19 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.',
+        alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sparkle Suite | Coming Soon for Reps',
+    title: 'Sparkle Suite | Coming Soon',
     description:
-      'A better customer experience starts with a better rep setup. Join the Sparkle Suite waitlist.',
+      'One easier home for your Bomb Party business. Join the Sparkle Suite waitlist.',
     images: [
       {
         url: '/opengraph-image',
-        alt: 'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.',
+        alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
       },
     ],
   },
@@ -57,7 +56,7 @@ const prelaunchJsonLd = {
       '@type': 'WebSite',
       '@id': 'https://www.yoursparklesuite.com/#website',
       name: 'Sparkle Suite',
-      url: 'https://www.yoursparklesuite.com/prelaunch',
+      url: 'https://www.yoursparklesuite.com/',
       description: metadata.description,
       inLanguage: 'en-US',
     },
@@ -68,6 +67,11 @@ const prelaunchJsonLd = {
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
       description: prelaunchContent.body,
+      url: 'https://www.yoursparklesuite.com/prelaunch',
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Independent Bomb Party reps',
+      },
       offers: {
         '@type': 'Offer',
         availability: 'https://schema.org/PreOrder',
@@ -82,7 +86,7 @@ const prelaunchJsonLd = {
       '@type': 'Organization',
       '@id': 'https://www.yoursparklesuite.com/#organization',
       name: 'Sparkle Suite',
-      url: 'https://www.yoursparklesuite.com/prelaunch',
+      url: 'https://www.yoursparklesuite.com/',
       parentOrganization: {
         '@type': 'Organization',
         name: 'Neon Rabbit Digital Services',
@@ -111,7 +115,6 @@ export default function PrelaunchPage() {
       <PrelaunchBenefits />
       <PrelaunchAudience />
       <PrelaunchWaitlistForm />
-      <PrelaunchIntakeForm />
       <PrelaunchFooter />
     </main>
   )

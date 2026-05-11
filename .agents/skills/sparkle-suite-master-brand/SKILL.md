@@ -56,6 +56,7 @@ Red flags:
 - AI slop, prompty filler, fake-luxury language, or brainstorm-note wording
 - overclaiming features, roadmap certainty, or outcomes not supported by the docs
 - off-brand Nic-Nac framing, including treating Nic-Nac as the main product story
+- republishing the rejected public prelaunch design/copy without fresh Louis approval, especially `Be first in line when Sparkle Suite opens.`, `Thank you, [name]. We've got you.`, or the feature-stack `A better customer experience starts with a better rep setup.` hero
 
 If any red flag appears, stop, reload the local brand docs, and rewrite from the approved Sparkle Suite brand system.
 

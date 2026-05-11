@@ -1,42 +1,89 @@
 export const prelaunchContent = {
-  brandName: 'Sparkle Suite',
+  brand: 'Sparkle Suite',
   eyebrow: 'Coming Soon',
-  headline: 'A better customer experience starts with a better rep setup.',
+  headline: 'One easier home for your Bomb Party business.',
   body:
-    'Sparkle Suite is being built for reps who want smoother live shows, less patchwork, and an experience customers can actually feel.',
+    'A polished website and rep-friendly tools designed to help you look professional, stay organized, and feel less overwhelmed online.',
+  primaryCtaLabel: 'Join the Waitlist',
+  secondaryCtaLabel: 'What Is Sparkle Suite?',
   videoEmbedUrl: '',
+  videoHeading: 'Watch the guided walkthrough',
+  videoBody:
+    "We'll explain the problem reps are living in now and preview the calmer, more polished experience Sparkle Suite is being built to provide.",
+  videoFallbackHeading: 'What Is Sparkle Suite?',
+  videoFallbackBody:
+    'Sparkle Suite is being built to give Bomb Party reps one calmer, easier online home for their business, without making the tech side feel intimidating or heavy.',
+  videoPlaceholderLabel: 'Guided walkthrough frame',
+  benefitsHeading: 'A calmer online setup for everyday rep life',
   benefits: [
+    { id: 'professional-online', label: 'Look more professional online' },
     {
-      title: 'Trade board',
-      body:
-        'Give customers and fellow reps a cleaner trade experience than chasing pieces through comments, screenshots, and DMs.',
+      id: 'less-chaos',
+      label: 'Stop relying on scattered links and social-media chaos',
     },
     {
-      title: 'Live queue',
-      body:
-        'Help customers follow the line while your live keeps moving with less confusion.',
+      id: 'find-shows-updates',
+      label: 'Make it easier for customers to find your shows and updates',
     },
     {
-      title: 'Live event calendar',
-      body:
-        'Keep upcoming shows, promo details, and customer next steps easier to find before the live even starts.',
-    },
-    {
-      title: 'Email updates',
-      body:
-        'Send clearer follow-through, launch notes, and reminders from one calmer home base.',
-    },
-    {
-      title: 'SMS updates',
-      body:
-        'Create a faster update path when a live is close, timing changes, or social posts are not enough.',
-    },
-    {
-      title: 'Nic-Nac',
-      body:
-        'Use built-in Sparkle Suite assistant support for the behind-the-scenes parts of live show flow and setup.',
+      id: 'organized-home-base',
+      label: 'Get a calmer, more organized home base',
     },
   ],
-  audience:
-    'Reps who want a setup that feels more polished to customers, smoother during lives, and easier to run behind the scenes.',
-}
+  audienceHeading: 'Built for the reps who want something steadier',
+  audienceBody:
+    'Sparkle Suite is being shaped for sellers who care about presentation, consistency, and making their online business feel easier to run.',
+  audiences: [
+    { id: 'independent-reps', label: 'Independent Bomb Party reps' },
+    {
+      id: 'growing-teams',
+      label: 'Growing teams who want a cleaner customer experience',
+    },
+    {
+      id: 'busy-sellers',
+      label: 'Busy sellers who are tired of patching everything together by hand',
+    },
+  ],
+  waitlistHeading: 'Join the Sparkle Suite waitlist',
+  waitlistBody:
+    "Tell us a little about you, and we'll reach out by email and text when Sparkle Suite is ready to launch.",
+  waitlistFields: {
+    name: {
+      label: 'Your name',
+      placeholder: 'What should we call you?',
+    },
+    email: {
+      label: 'Best email',
+      placeholder: 'you@example.com',
+    },
+    phone: {
+      label: 'Phone number',
+      placeholder: 'Where should we text you?',
+    },
+    tiktokHandle: {
+      label: 'TikTok handle',
+      placeholder: '@yourhandle',
+    },
+    teamRepName: {
+      label: 'Team rep name',
+      placeholder: 'Who are you under?',
+    },
+    setupPain: {
+      label: 'What feels the most patchwork right now? (Optional)',
+      placeholder: 'Anything feeling messy, scattered, or harder than it should be?',
+    },
+  },
+  waitlistSmsConsentLabel: 'Yes, you can text me when Sparkle Suite is ready.',
+  waitlistEmailConsentLabel: 'Yes, you can email me when Sparkle Suite is ready.',
+  waitlistSubmitLabel: 'Join the Waitlist',
+  waitlistSubmittingLabel: 'Saving your spot...',
+  waitlistErrorFallback:
+    'Something went wrong while joining the waitlist. Please try again.',
+  waitlistSuccessTitle: 'You are on the list.',
+  waitlistSuccessBody:
+    'We will reach out by email and text when Sparkle Suite is ready, and you will be one of the first reps to hear about launch details.',
+  footerNote: "We're building this carefully.",
+  footerHeadline: 'A more polished home base is on the way.',
+  footerBody:
+    'Sparkle Suite is still coming soon, and we want the first version to feel polished, practical, and genuinely helpful for real rep life.',
+} as const

@@ -27,6 +27,23 @@ It is not:
 
 `A better customer experience starts with a better rep setup.`
 
+## Current approved prelaunch page direction
+
+The current public prelaunch page at `/prelaunch` should use the restored
+simple Bomb Party rep positioning:
+
+`One easier home for your Bomb Party business.`
+
+This restored direction replaces the rejected public-site treatments that were
+accidentally republished on May 11, 2026.
+
+Do not bring back these rejected public prelaunch treatments without Louis
+explicitly approving a new design review:
+
+- `Be first in line when Sparkle Suite opens.`
+- the split success-card treatment with `Thank you, [name]. We've got you.`
+- the feature-stack hero treatment that leads the public page with `A better customer experience starts with a better rep setup.`
+
 ## Approved feature claims
 
 - Trade board

@@ -35,6 +35,17 @@
 
 ## Hero Section Template
 
+For the current `/prelaunch` page, use the restored approved public line:
+
+- Headline: `One easier home for your Bomb Party business.`
+- Subheadline: `A polished website and rep-friendly tools designed to help you look professional, stay organized, and feel less overwhelmed online.`
+
+Do not bring back the rejected `Be first in line when Sparkle Suite opens.`
+waitlist card or the rejected live prelaunch feature-stack hero without fresh
+Louis approval.
+
+## Broader Brand Hero Template
+
 - Headline: `A better customer experience starts with a better rep setup.`
 - Subheadline: `Sparkle Suite is being built for reps who want smoother live shows, less patchwork, and an experience customers can actually feel.`
 - CTA: `Join the waitlist`

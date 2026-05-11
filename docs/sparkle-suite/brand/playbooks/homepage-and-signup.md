@@ -23,7 +23,8 @@ Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic
 
 ## Messaging priorities
 
-- Lead with the approved hook direction: a better customer experience starts with a better rep setup.
+- For the current prelaunch page, lead with the restored approved line: `One easier home for your Bomb Party business.`
+- Keep `A better customer experience starts with a better rep setup.` available for broader brand and content work, but do not use it as the current public prelaunch hero without a fresh design approval from Louis.
 - Keep the page centered on rep advantage, smoother live shows, and less patchwork.
 - Treat Sparkle Suite as a standalone rep brand, not a Neon Rabbit agency offering.
 - Name approved features truthfully and distinctly when the page needs product proof.
@@ -91,3 +92,6 @@ Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic
 - any third-party brand-led hero framing that pulls focus from Sparkle Suite as the master brand
 - undefined feature claims
 - hype that sounds more advanced than the real product story
+- the rejected public prelaunch copy/design: `Be first in line when Sparkle Suite opens.`
+- the rejected public prelaunch success-card treatment: `Thank you, [name]. We've got you.`
+- republishing the feature-stack `A better customer experience starts with a better rep setup.` hero as the live prelaunch page without fresh Louis approval

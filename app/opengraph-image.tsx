@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const alt =
-  'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.'
+  'Sparkle Suite coming soon: one easier home for your Bomb Party business.'
 
 export const size = {
   width: 1200,
@@ -142,7 +142,7 @@ export default function Image() {
                 lineHeight: 0.98,
               }}
             >
-              A better customer experience starts with a better rep setup.
+              One easier home for your Bomb Party business.
             </div>
             <div
               style={{
@@ -154,8 +154,9 @@ export default function Image() {
                 maxWidth: 820,
               }}
             >
-              Smoother live shows, less patchwork, and customer-facing polish
-              reps can feel proud to share.
+              A polished website and rep-friendly tools designed to help reps
+              look professional, stay organized, and feel less overwhelmed
+              online.
             </div>
           </div>
 
@@ -168,11 +169,10 @@ export default function Image() {
               gap: 18,
             }}
           >
-            <span>Trade board</span>
-            <span>Live queue</span>
-            <span>Live event calendar</span>
-            <span>Email + SMS updates</span>
-            <span>Nic-Nac</span>
+            <span>Polished website</span>
+            <span>Rep-friendly tools</span>
+            <span>Calmer setup</span>
+            <span>Waitlist open</span>
           </div>
         </div>
       </div>

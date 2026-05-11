@@ -2,21 +2,24 @@ import { prelaunchContent } from '@/lib/prelaunch/content'
 
 export function PrelaunchAudience() {
   return (
-    <section className="prelaunch-section bg-white">
-      <div className="prelaunch-shell grid gap-8 lg:grid-cols-[0.78fr_1.22fr]">
-        <h2 className="prelaunch-display text-4xl leading-tight text-[var(--prelaunch-plum-ink)] sm:text-5xl">
-          Who it&apos;s for
+    <section className="bg-[var(--prelaunch-pearl-blush)] px-6 py-16">
+      <div className="mx-auto max-w-5xl rounded-[2rem] border border-[color:rgba(90,52,92,0.12)] bg-white/80 p-8 backdrop-blur">
+        <h2 className="font-amethyst-display text-3xl text-[var(--prelaunch-plum-ink)] sm:text-4xl">
+          {prelaunchContent.audienceHeading}
         </h2>
-        <div>
-          <p className="text-2xl leading-10 text-[var(--prelaunch-ink)]">
-            {prelaunchContent.audience}
-          </p>
-          <p className="mt-5 leading-8 text-[var(--prelaunch-muted)]">
-            If customers are bouncing between posts, messages, reminders, and
-            unclear next steps, Sparkle Suite is being built for the version of
-            your business that feels easier to follow.
-          </p>
-        </div>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-[color:rgba(90,52,92,0.82)]">
+          {prelaunchContent.audienceBody}
+        </p>
+        <ul className="mt-8 grid gap-3 md:grid-cols-3">
+          {prelaunchContent.audiences.map((audience) => (
+            <li
+              key={audience.id}
+              className="rounded-[1.25rem] bg-[var(--prelaunch-pearl-blush)] px-5 py-4 font-medium text-[var(--prelaunch-plum-ink)]"
+            >
+              {audience.label}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )

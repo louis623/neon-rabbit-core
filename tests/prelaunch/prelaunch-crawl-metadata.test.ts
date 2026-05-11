@@ -41,7 +41,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
             url: '/opengraph-image',
             width: 1200,
             height: 630,
-            alt: 'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.',
+            alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
           },
         ],
       }),
@@ -52,7 +52,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
         images: [
           {
             url: '/opengraph-image',
-            alt: 'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.',
+            alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
           },
         ],
       }),
@@ -100,7 +100,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
       height: 630,
     })
     expect(openGraphImageAlt).toBe(
-      'Sparkle Suite coming soon: A better customer experience starts with a better rep setup.',
+      'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
     )
   })
 })
