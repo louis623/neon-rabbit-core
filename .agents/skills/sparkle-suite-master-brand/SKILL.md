@@ -17,6 +17,8 @@ Read these before producing content:
 - `docs/sparkle-suite/brand/01-master-brand-spec.md`
 - `docs/sparkle-suite/brand/02-messaging-pillars.md`
 - `docs/sparkle-suite/brand/03-nic-nac-positioning.md`
+- `docs/sparkle-suite/brand/05-public-site-version-lock.md`
+- `docs/sparkle-suite/brand/06-public-site-incident-lesson.md`
 
 Then load the matching channel files:
 
@@ -26,6 +28,7 @@ Then load the matching channel files:
 - Homepage or signup: `docs/sparkle-suite/brand/playbooks/homepage-and-signup.md` and `docs/sparkle-suite/brand/templates/landing-page-sections.md`
 - Rep acquisition materials: `docs/sparkle-suite/brand/playbooks/rep-acquisition-materials.md`
 - Reviews and QA: `docs/sparkle-suite/brand/04-brand-review-checklist.md`
+- Design kits, visual systems, social templates, or Canva-style brand assets: `docs/sparkle-suite/brand/07-design-kit-audit-brief.md`
 
 If the docs are not loaded yet, stop and load them before drafting.
 
@@ -58,6 +61,8 @@ Red flags:
 - off-brand Nic-Nac framing, including treating Nic-Nac as the main product story
 - republishing rejected public prelaunch design/copy without fresh Louis approval, especially `One easier home for your Bomb Party business.`, the software-led public page, `Tell us where to send launch updates.`, or named success-card copy such as `Thank you, Louis Chapman. We've got you.`
 - polishing, rebranding, rewriting, or visually improving the public site unless Louis explicitly says `go ahead and polish this`
+- using any Sparkle Suite design kit, design skill, social media kit, or visual-generation prompt before auditing whether it came from the approved public site or a rejected version
+- letting Louis think he is testing production when the agent is using local development or a preview deployment
 
 If any red flag appears, stop, reload the local brand docs, and rewrite from the approved Sparkle Suite brand system.
 
@@ -71,6 +76,8 @@ If any red flag appears, stop, reload the local brand docs, and rewrite from the
 - Keep short-form video and newsletter work grounded in customer experience, rep advantage, smoother live shows, and less patchwork.
 - The locked public `/prelaunch` version is `Sparkle Suite V1 Preview Public Site`, sourced from Vercel deployment `dpl_2yAXz2pKp4QsJ4sQzboqpfXfqyoM`.
 - The locked public hero is `A better customer experience starts with a better rep setup.`
+- Current fixed production deployment after the May 11 incident is `dpl_95Z57PuyJYJvvHabc2bjGCNzpZ8t`.
+- Public site changes need verification against the live domain after deploy.
 
 ## Output check before sending
 
