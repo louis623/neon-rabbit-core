@@ -137,6 +137,25 @@ describe('Sparkle Suite master brand system', () => {
     }
   })
 
+  it('retires old public-site plans so agents cannot follow rejected versions', () => {
+    const retiredFiles = [
+      'docs/superpowers/specs/2026-05-07-sparkle-suite-prelaunch-site-design.md',
+      'docs/superpowers/plans/2026-05-07-sparkle-suite-prelaunch-site.md',
+    ]
+
+    for (const file of retiredFiles) {
+      const content = read(file)
+
+      expect(content).toContain('Status:** Retired. Do not')
+      expect(content).toContain('Sparkle Suite V1 Preview Public Site')
+      expect(content).toContain('docs/sparkle-suite/brand/05-public-site-version-lock.md')
+      expect(content).toContain('go ahead and polish this')
+      expect(content).not.toContain('One easier home for your Bomb Party business.')
+      expect(content).not.toContain('Tell us where to send launch updates.')
+      expect(content).not.toContain('Thank you, Louis Chapman.')
+    }
+  })
+
   it('contains the required channel playbooks and review checklist', () => {
     const files = [
       'docs/sparkle-suite/brand/04-brand-review-checklist.md',

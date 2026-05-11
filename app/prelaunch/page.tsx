@@ -9,7 +9,9 @@ import { PrelaunchWaitlistForm } from './_components/PrelaunchWaitlistForm'
 import { prelaunchContent } from '@/lib/prelaunch/content'
 
 export const metadata: Metadata = {
-  title: 'Sparkle Suite | Coming Soon',
+  title: {
+    absolute: 'Sparkle Suite | Coming Soon',
+  },
   description: prelaunchContent.body,
   alternates: {
     canonical: '/prelaunch',

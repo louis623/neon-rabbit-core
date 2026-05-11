@@ -27,6 +27,9 @@ describe('Sparkle Suite crawl and metadata signals', () => {
   })
 
   it('sets the prelaunch canonical and sharing metadata', () => {
+    expect(prelaunchMetadata.title).toEqual({
+      absolute: 'Sparkle Suite | Coming Soon',
+    })
     expect(prelaunchMetadata.alternates).toEqual({
       canonical: '/prelaunch',
     })
