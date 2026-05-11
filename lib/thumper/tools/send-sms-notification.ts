@@ -1,30 +1,50 @@
 import { tool } from 'ai'
 import { z } from 'zod'
 
+import { ServiceError } from '@/lib/services/errors'
+import { sendSmsNotification } from '@/lib/services/sms-notifications'
+import { ThumperToolError } from '@/lib/thumper/errors'
 import type { ToolDefinition } from './types'
 
 export const inputSchema = z.object({
-  repId: z.string().min(1),
   recipientPhone: z.string().min(1),
   message: z.string().min(1),
 })
 
-const STUB_RESPONSE = {
-  success: false,
-  message:
-    "SMS notifications are coming soon! This feature is being built and will be available in a future update. For now, you can reach your customers directly through your phone's messaging app.",
-} as const
+function explainServiceError(error: unknown): never {
+  if (error instanceof ServiceError) {
+    throw new ThumperToolError({
+      code: error.code,
+      userMessage: error.userMessage,
+      cause: error,
+    })
+  }
+  throw error
+}
 
 export function makeSendSmsNotificationTool(_ctx?: {
   repId: string
   conversationId: string
   runId: string
 }) {
+  if (!_ctx?.repId) {
+    throw new Error('send_sms_notification requires an authenticated rep context')
+  }
+
   return tool({
     description:
-      'Stub for future SMS notifications. Returns a coming-soon message and does not send anything.',
+      'Send a one-off SMS notification to a single customer phone number. This is for direct texts, not subscriber blasts or show reminders.',
     inputSchema,
-    execute: async () => STUB_RESPONSE,
+    execute: async (input) => {
+      try {
+        return await sendSmsNotification(_ctx.repId, {
+          recipientPhone: input.recipientPhone,
+          message: input.message,
+        })
+      } catch (error) {
+        explainServiceError(error)
+      }
+    },
   })
 }
 

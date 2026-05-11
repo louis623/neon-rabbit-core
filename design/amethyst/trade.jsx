@@ -703,12 +703,12 @@ function Footer({ businessName }) {
 }
 
 // ============================================================
-// Thumper launcher (shared)
+// Nic-Nac launcher (shared)
 // ============================================================
 function Thumper() {
   return (
     <div className="hp-thumper">
-      <button className="hp-thumper-btn" aria-label="Open Thumper">
+      <button className="hp-thumper-btn" aria-label="Open Nic-Nac">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
         </svg>
@@ -1107,7 +1107,7 @@ function App() {
           <TweakToggle label="FAQ" value={t.showFaq} onChange={(v) => setTweak("showFaq", v)} />
           <TweakToggle label="Brand separation note" value={t.showLegal} onChange={(v) => setTweak("showLegal", v)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(v) => setTweak("showFooter", v)} />
-          <TweakToggle label="Thumper launcher" value={t.showThumper} onChange={(v) => setTweak("showThumper", v)} />
+          <TweakToggle label="Nic-Nac launcher" value={t.showThumper} onChange={(v) => setTweak("showThumper", v)} />
         </TweakSection>
 
         <TweakSection title="Copy sandbox">

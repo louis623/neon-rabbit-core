@@ -1,0 +1,428 @@
+export type LegalSection = {
+  title: string;
+  paragraphs?: string[];
+  bullets?: string[];
+  postBulletsParagraphs?: string[];
+  links?: Array<{
+    href: string;
+    label: string;
+  }>;
+};
+
+export type LegalDocument = {
+  pageTitle: string;
+  seoTitle: string;
+  seoDescription: string;
+  description: string;
+  lastUpdated: string;
+  developer: string;
+  contact: string;
+  sections: LegalSection[];
+};
+
+export const legalFooterLinks = [
+  {
+    href: "/privacy-policy",
+    label: "Privacy Policy",
+  },
+  {
+    href: "/terms-and-conditions",
+    label: "Terms and Conditions",
+  },
+] as const;
+
+export const privacyPolicyDocument: LegalDocument = {
+  pageTitle: "Privacy Policy",
+  seoTitle: "Sparkle Suite Privacy Policy | Neon Rabbit Digital Services",
+  seoDescription:
+    "Privacy Policy for Sparkle Suite, the Live Queue Chrome Extension, Sparkle Suite websites, and Sparkle Suite SMS and email updates.",
+  description: "Sparkle Suite Live Queue Chrome Extension, Sparkle Suite Websites, and SMS Updates",
+  lastUpdated: "May 9, 2026",
+  developer: "Neon Rabbit Digital Services, Jacksonville, FL",
+  contact: "louis@neonrabbit.net",
+  sections: [
+    {
+      title: "What This Policy Covers",
+      paragraphs: [
+        "This privacy policy explains how Neon Rabbit Digital Services collects, uses, stores, and protects information related to:",
+      ],
+      bullets: [
+        "the Sparkle Suite Live Queue Chrome Extension",
+        "Sparkle Suite representative websites",
+        "Sparkle Suite waitlist, signup, intake, and contact forms",
+        "SMS and email update programs connected to Sparkle Suite",
+        "related Neon Rabbit Digital Services websites and services",
+      ],
+    },
+    {
+      title: "What The Sparkle Suite Live Queue Extension Does",
+      paragraphs: [
+        "Sparkle Suite Live Queue is a Chrome extension that reads the live reveal queue from the Bomb Party rep dashboard and syncs it to the rep's Sparkle Suite website. This allows customers to see their position in the unboxing queue during live jewelry shows.",
+      ],
+    },
+    {
+      title: "Data We Collect",
+      paragraphs: [],
+    },
+    {
+      title: "From the Bomb Party dashboard through the Chrome extension, read-only",
+      paragraphs: ["The Sparkle Suite Live Queue Chrome Extension may read:"],
+      bullets: [
+        "customer first names from the Party Orders table",
+        "revealed or unrevealed status of each order",
+        "queue order",
+      ],
+    },
+    {
+      title: "Stored locally in your browser by the Chrome extension",
+      paragraphs: ["The extension may store:"],
+      bullets: [
+        "your sync code, entered once during setup",
+        "syncing on/off toggle state",
+        "last sync status",
+      ],
+    },
+    {
+      title: "Transmitted to our server by the Chrome extension",
+      paragraphs: [
+        "The extension may transmit:",
+        "This information is sent to a database hosted by or on behalf of Neon Rabbit Digital Services solely for displaying the queue on the representative's website.",
+      ],
+      bullets: [
+        "customer first names",
+        "queue order",
+        "reveal status",
+      ],
+    },
+    {
+      title: "Information collected through Sparkle Suite websites and forms",
+      paragraphs: [
+        "Sparkle Suite websites, waitlist forms, signup forms, intake forms, or contact forms may collect information you choose to provide, including:",
+        "We collect this information only when you provide it through a form, signup flow, opt-in checkbox, text message interaction, or other direct interaction with Sparkle Suite or Neon Rabbit Digital Services.",
+      ],
+      bullets: [
+        "name",
+        "email address",
+        "phone number",
+        "TikTok handle or social media handle",
+        "team representative name",
+        "business or website setup information",
+        "message preferences",
+        "SMS opt-in status",
+        "email opt-in status",
+        "consent timestamps",
+        "unsubscribe or opt-out status",
+        "message interaction data needed to operate the messaging service",
+      ],
+    },
+    {
+      title: "Data We Do NOT Collect Through The Chrome Extension",
+      paragraphs: ["The Sparkle Suite Live Queue Chrome Extension does not collect:"],
+      bullets: [
+        "last names",
+        "email addresses",
+        "phone numbers",
+        "mailing addresses",
+        "order IDs",
+        "payment information",
+        "transaction details",
+        "browsing history",
+        "website visits",
+        "cookies",
+        "saved passwords",
+        "autofill data",
+        "data from pages other than the Bomb Party dashboard",
+      ],
+    },
+    {
+      title: "How We Use Your Data",
+      paragraphs: [
+        "We use information collected through the Sparkle Suite Live Queue Chrome Extension exclusively to display the live reveal queue on the representative's Sparkle Suite website. Queue data is overwritten with each sync and is not retained for any other purpose.",
+        "We may use information collected through Sparkle Suite websites and forms to:",
+      ],
+      bullets: [
+        "provide Sparkle Suite services",
+        "respond to requests or inquiries",
+        "manage waitlist, signup, or onboarding workflows",
+        "send requested SMS or email updates",
+        "send live show reminders, event updates, trade board updates, launch updates, or occasional promotional announcements when you have opted in",
+        "maintain consent and opt-out records",
+        "improve Sparkle Suite services",
+        "protect against misuse, spam, fraud, or unauthorized access",
+        "comply with legal, carrier, platform, or regulatory requirements",
+      ],
+    },
+    {
+      title: "SMS Privacy Notice",
+      paragraphs: [
+        "If you opt in to receive text messages from Neon Rabbit Digital Services, Sparkle Suite, or a Sparkle Suite representative site, we may collect your name, phone number, SMS opt-in status, consent timestamp, message preferences, and message interaction data so we can send the messages you requested.",
+        "SMS messages may include launch updates, live show reminders, event updates, trade board updates, customer updates, and occasional promotional announcements.",
+        "Message frequency may vary. Message and data rates may apply. Consent is not a condition of purchase.",
+        "You can opt out of SMS messages at any time by replying STOP. You can request help by replying HELP.",
+      ],
+    },
+    {
+      title: "SMS Data Sharing",
+      paragraphs: [
+        "We will not sell, rent, trade, or share your SMS opt-in data or consent status with third parties for their promotional or marketing purposes.",
+        "All categories of data sharing described in this policy exclude text messaging originator opt-in data and consent. SMS opt-in data and consent status will not be shared with third parties for purposes unrelated to providing the SMS messaging service.",
+        "We may share personal information, including SMS opt-in or consent status, with service providers that help us provide messaging services. These may include messaging platforms, phone carriers, hosting providers, compliance vendors, and other vendors that assist in the delivery, routing, security, or compliance of text messages. These providers may use that information only to help us provide the messaging service.",
+      ],
+    },
+    {
+      title: "Data Sharing",
+      paragraphs: [
+        "We do not sell personal information.",
+        "We do not sell, trade, or share data collected by the Sparkle Suite Live Queue Chrome Extension with third parties for advertising, promotional, or marketing purposes.",
+        "We may share limited information with service providers that help us operate Sparkle Suite and Neon Rabbit Digital Services, such as hosting providers, database providers, messaging providers, email providers, analytics providers, security providers, and compliance vendors. These providers are allowed to use the information only to provide services to us.",
+        "We may also disclose information if required to comply with law, legal process, platform rules, carrier requirements, or to protect the rights, safety, and security of Neon Rabbit Digital Services, Sparkle Suite users, representatives, customers, or the public.",
+      ],
+    },
+    {
+      title: "Data Retention",
+      paragraphs: [
+        "Queue data from the Sparkle Suite Live Queue Chrome Extension is overwritten each time the extension syncs. We do not maintain historical records of queue data for the extension.",
+        "Information collected through Sparkle Suite websites and forms may be retained for as long as needed to provide services, maintain consent records, honor opt-out requests, comply with legal or carrier requirements, resolve disputes, enforce agreements, or operate Sparkle Suite.",
+        "SMS opt-in, opt-out, and consent records may be retained as needed to document compliance and prevent unwanted messages.",
+      ],
+    },
+    {
+      title: "Your Rights and Choices",
+      paragraphs: [],
+      bullets: [
+        "You can stop Chrome extension data collection at any time by toggling the extension off or uninstalling it.",
+        "You can opt out of SMS messages at any time by replying STOP.",
+        "You can request help for SMS messages by replying HELP.",
+        "You can unsubscribe from email messages by using the unsubscribe method provided in the email, if available, or by contacting us.",
+        "To request access to, correction of, or deletion of your data, contact louis@neonrabbit.net.",
+      ],
+    },
+    {
+      title: "Security",
+      paragraphs: [
+        "Data is transmitted over HTTPS.",
+        "Our database uses security controls, including row-level security where applicable, to help keep representative data isolated.",
+        "We take reasonable steps to protect information from unauthorized access, loss, misuse, or disclosure. However, no electronic transmission or storage system can be guaranteed to be completely secure.",
+      ],
+    },
+    {
+      title: "Children's Privacy",
+      paragraphs: [
+        "Sparkle Suite and Neon Rabbit Digital Services are not directed to children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided personal information to us, contact louis@neonrabbit.net so we can review and delete it if appropriate.",
+      ],
+    },
+    {
+      title: "Changes to This Policy",
+      paragraphs: [
+        "We may update this privacy policy from time to time. Changes will be reflected in the Last Updated date above.",
+      ],
+    },
+    {
+      title: "Contact",
+      paragraphs: [
+        "Neon Rabbit Digital Services",
+        "Jacksonville, FL",
+        "louis@neonrabbit.net",
+      ],
+    },
+  ],
+};
+
+export const termsAndConditionsDocument: LegalDocument = {
+  pageTitle: "Terms and Conditions",
+  seoTitle: "Sparkle Suite Terms and Conditions | Neon Rabbit Digital Services",
+  seoDescription:
+    "Terms and Conditions for Sparkle Suite, the Live Queue Chrome Extension, Sparkle Suite websites, and Sparkle Suite SMS and email updates.",
+  description: "Sparkle Suite, Sparkle Suite Live Queue Chrome Extension, and SMS Updates",
+  lastUpdated: "May 9, 2026",
+  developer: "Neon Rabbit Digital Services, Jacksonville, FL",
+  contact: "louis@neonrabbit.net",
+  sections: [
+    {
+      title: "Agreement to These Terms",
+      paragraphs: [
+        "These Terms and Conditions explain the rules for using Sparkle Suite, the Sparkle Suite Live Queue Chrome Extension, Sparkle Suite representative websites, related Neon Rabbit Digital Services websites, and SMS or email update programs connected to Sparkle Suite.",
+        "By using these services, installing the Chrome extension, submitting a form, joining a waitlist, opting in to messages, or using a Sparkle Suite representative website, you agree to these Terms and Conditions.",
+        "If you do not agree, do not use these services.",
+      ],
+    },
+    {
+      title: "About Sparkle Suite",
+      paragraphs: [
+        "Sparkle Suite is a software and website system created by Neon Rabbit Digital Services to help independent representatives manage parts of their online presence, including representative websites, live reveal queue display, customer updates, event reminders, trade board updates, and related tools.",
+        "Sparkle Suite is not owned by, operated by, endorsed by, or officially affiliated with Bomb Party, LLC. Bomb Party names, trademarks, products, and related references belong to their respective owner.",
+      ],
+    },
+    {
+      title: "Sparkle Suite Live Queue Chrome Extension",
+      paragraphs: [
+        "The Sparkle Suite Live Queue Chrome Extension reads limited queue information from the Bomb Party representative dashboard and syncs it to the representative's Sparkle Suite website.",
+        "The extension is intended to display customer first names, queue order, and reveal status during live jewelry shows.",
+        "The extension does not process payments, place orders, alter Bomb Party orders, or replace any official Bomb Party system.",
+        "Representatives are responsible for using the extension appropriately and making sure the information displayed to customers is accurate.",
+      ],
+    },
+    {
+      title: "Representative Website Content",
+      paragraphs: [
+        "Sparkle Suite representative websites may include show information, live queue information, trade board details, representative updates, links, signup forms, and related content.",
+        "Representatives are responsible for reviewing their own website content, business information, show details, trade details, and customer-facing information.",
+        "Neon Rabbit Digital Services may provide tools, templates, automation, or support, but representatives remain responsible for final business decisions, customer interactions, and compliance with any applicable Bomb Party policies or legal requirements.",
+      ],
+    },
+    {
+      title: "SMS Terms",
+      paragraphs: [
+        "Program name: Sparkle Suite / Neon Rabbit Digital Services.",
+        "By opting in to receive text messages from Neon Rabbit Digital Services, Sparkle Suite, or a Sparkle Suite representative site, you agree to receive SMS messages related to Sparkle Suite or the representative you signed up with.",
+        "Messages may include:",
+      ],
+      bullets: [
+        "launch updates",
+        "live show reminders",
+        "event updates",
+        "trade board updates",
+        "customer updates",
+        "website or onboarding updates",
+        "occasional promotional announcements",
+      ],
+      postBulletsParagraphs: [
+        "Message frequency may vary.",
+        "Message and data rates may apply.",
+        "Consent to receive SMS messages is not a condition of purchase.",
+        "You can opt out at any time by replying STOP.",
+        "You can request help at any time by replying HELP.",
+        "For help, you may also contact louis@neonrabbit.net.",
+        "Wireless carriers are not liable for delayed or undelivered messages.",
+      ],
+    },
+    {
+      title: "SMS Opt-In",
+      paragraphs: [
+        "You may opt in to SMS messages by submitting a Sparkle Suite or representative website form and checking an unchecked SMS consent box.",
+        "The SMS opt-in language will explain that you are agreeing to receive text messages, that message frequency may vary, that message and data rates may apply, that consent is not a condition of purchase, and that you can reply STOP to opt out or HELP for help.",
+      ],
+    },
+    {
+      title: "SMS Opt-Out",
+      paragraphs: [
+        "You can unsubscribe from SMS messages at any time by replying STOP.",
+        "After you reply STOP, you may receive a confirmation message stating that you have been unsubscribed. After that, you should not receive further SMS messages from that campaign unless you opt in again.",
+      ],
+    },
+    {
+      title: "SMS Help",
+      paragraphs: [
+        "You can reply HELP for help.",
+        "A HELP response may provide support information, including how to unsubscribe or how to contact Neon Rabbit Digital Services.",
+      ],
+    },
+    {
+      title: "Email Updates",
+      paragraphs: [
+        "If you opt in to email updates, you may receive messages related to Sparkle Suite, a Sparkle Suite representative, live shows, events, launch updates, onboarding updates, or related announcements.",
+        "You may unsubscribe from email updates by using the unsubscribe method provided in the email, if available, or by contacting louis@neonrabbit.net.",
+      ],
+    },
+    {
+      title: "Privacy",
+      paragraphs: [
+        "Your use of Sparkle Suite, the Sparkle Suite Live Queue Chrome Extension, Sparkle Suite representative websites, and related messaging programs is also governed by our Privacy Policy:",
+        "The Privacy Policy explains what information we collect, how we use it, and how SMS opt-in data is protected.",
+      ],
+      links: [
+        {
+          href: "/privacy-policy",
+          label: "/privacy-policy",
+        },
+      ],
+    },
+    {
+      title: "No Sale or Sharing of SMS Consent for Marketing",
+      paragraphs: [
+        "We do not sell, rent, trade, or share SMS opt-in data or SMS consent status with third parties for their promotional or marketing purposes.",
+        "SMS opt-in data and consent status may be shared only with service providers that help provide the messaging service, such as messaging platforms, phone carriers, hosting providers, compliance vendors, and other vendors involved in message delivery, routing, security, or compliance.",
+      ],
+    },
+    {
+      title: "Acceptable Use",
+      paragraphs: ["You agree not to use Sparkle Suite, the Chrome extension, representative websites, or messaging programs to:"],
+      bullets: [
+        "send unlawful, deceptive, abusive, harassing, or harmful content",
+        "violate carrier messaging rules",
+        "violate platform rules",
+        "violate intellectual property rights",
+        "interfere with the security or operation of the services",
+        "attempt to access data or systems you are not authorized to access",
+        "misrepresent your identity, affiliation, products, or services",
+        "send prohibited or non-compliant marketing claims",
+      ],
+    },
+    {
+      title: "Service Availability",
+      paragraphs: [
+        "Sparkle Suite and related services may change, pause, or become unavailable from time to time.",
+        "Neon Rabbit Digital Services may update, modify, suspend, or discontinue any part of the services at any time.",
+        "We do not guarantee uninterrupted or error-free service.",
+      ],
+    },
+    {
+      title: "Third-Party Services",
+      paragraphs: [
+        "Sparkle Suite may rely on third-party services such as hosting providers, database providers, messaging providers, email providers, payment providers, browser platforms, or other software tools.",
+        "Use of those third-party services may be subject to their own terms, policies, and availability.",
+        "Neon Rabbit Digital Services is not responsible for third-party service outages, delays, policy changes, or failures.",
+      ],
+    },
+    {
+      title: "Payments and Fees",
+      paragraphs: [
+        "Some Sparkle Suite services may require payment.",
+        "Any payment terms, subscription terms, setup fees, or service fees will be presented separately when applicable.",
+        "Unless otherwise stated in writing, fees are not automatically refundable once work has started or services have been provided.",
+      ],
+    },
+    {
+      title: "No Income Claims",
+      paragraphs: [
+        "Sparkle Suite does not guarantee sales, income, recruiting results, business growth, customer engagement, or any specific financial outcome.",
+        "Any business results depend on many factors outside the control of Neon Rabbit Digital Services, including representative effort, product demand, platform rules, customer interest, and market conditions.",
+      ],
+    },
+    {
+      title: "Intellectual Property",
+      paragraphs: [
+        "Sparkle Suite, related software, website templates, workflows, content structures, branding created by Neon Rabbit Digital Services, and related materials are owned by or licensed to Neon Rabbit Digital Services unless otherwise stated.",
+        "You may not copy, resell, redistribute, reverse engineer, or reuse Sparkle Suite software, templates, workflows, or materials outside the intended use of the service without written permission.",
+      ],
+    },
+    {
+      title: "Disclaimer of Warranties",
+      paragraphs: [
+        "The services are provided as is and as available.",
+        "To the fullest extent permitted by law, Neon Rabbit Digital Services disclaims warranties of any kind, whether express, implied, or statutory, including warranties of merchantability, fitness for a particular purpose, non-infringement, availability, accuracy, or reliability.",
+      ],
+    },
+    {
+      title: "Limitation of Liability",
+      paragraphs: [
+        "To the fullest extent permitted by law, Neon Rabbit Digital Services will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, including lost profits, lost revenue, lost data, lost business opportunities, or service interruptions.",
+      ],
+    },
+    {
+      title: "Changes to These Terms",
+      paragraphs: [
+        "We may update these Terms and Conditions from time to time. Changes will be reflected in the Last Updated date above.",
+        "Your continued use of the services after changes are posted means you accept the updated terms.",
+      ],
+    },
+    {
+      title: "Contact",
+      paragraphs: [
+        "Neon Rabbit Digital Services",
+        "Jacksonville, FL",
+        "louis@neonrabbit.net",
+      ],
+    },
+  ],
+};

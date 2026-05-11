@@ -17,7 +17,7 @@ export function ThumperColumn({
   onNewConversation?: () => void
   newConversationDisabled?: boolean
 }) {
-  const closeLabel = variant === 'desktop' ? 'Minimize Thumper' : 'Close Thumper'
+  const closeLabel = variant === 'desktop' ? 'Minimize Nic-Nac' : 'Close Nic-Nac'
   return (
     <aside
       className={`${styles.column} ${variant === 'mobile' ? styles.mobile : styles.desktop}`}

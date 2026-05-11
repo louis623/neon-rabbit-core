@@ -39,6 +39,7 @@ export function makeAddShowTool(ctx: { repId: string; supabase: SupabaseClient }
     description:
       'Schedule a new show. Can schedule a one-time show or a recurring series. ' +
       'For recurring: ask the rep how often (daily or weekly) and how long (one month, three months, or ongoing). ' +
+      'In the current build, ongoing schedules out about six months ahead. ' +
       'Discount codes support up to 10 per show as an array of {code, description} pairs.',
     inputSchema,
     execute: async (input) => {

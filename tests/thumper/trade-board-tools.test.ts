@@ -10,11 +10,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { errors } from '@/lib/services/errors'
 
 const updateListingMock = vi.fn()
+const processRepCustomListingPhotoUrlMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 
 vi.mock('@/lib/services/trade-board', () => ({
   updateListing: (...args: unknown[]) => updateListingMock(...args),
+}))
+
+vi.mock('@/lib/services/listing-photo-processing', () => ({
+  processRepCustomListingPhotoUrl: (...args: unknown[]) =>
+    processRepCustomListingPhotoUrlMock(...args),
 }))
 
 vi.mock('@/lib/thumper/audit', () => ({
@@ -52,6 +58,7 @@ const VALID_LISTING_ID = '11111111-1111-4111-8111-111111111111'
 
 beforeEach(() => {
   updateListingMock.mockReset()
+  processRepCustomListingPhotoUrlMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
 })
@@ -157,6 +164,7 @@ describe('update_listing — write + audit happy path', () => {
       repNotes: 'updated note',
       tradePreferences: 'looking for sapphires',
     })
+    expect(processRepCustomListingPhotoUrlMock).not.toHaveBeenCalled()
 
     expect(writeTradeActionAuditMock).toHaveBeenCalledTimes(1)
     const auditArg = writeTradeActionAuditMock.mock.calls[0][0] as {
@@ -182,6 +190,40 @@ describe('update_listing — write + audit happy path', () => {
       listingId: VALID_LISTING_ID,
       status: 'available',
       patchedFields: ['repNotes', 'tradePreferences'],
+    })
+  })
+
+  it('processes a non-null custom listing photo URL before calling updateListing', async () => {
+    processRepCustomListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/normalized.jpg',
+    })
+    updateListingMock.mockResolvedValueOnce({
+      listingId: VALID_LISTING_ID,
+      status: 'available',
+    })
+
+    const tool = makeTool()
+    const result = await tool.execute({
+      listingId: VALID_LISTING_ID,
+      listingPhotoUrl: 'https://rep.example.com/raw-upload.jpg',
+    })
+
+    expect(processRepCustomListingPhotoUrlMock).toHaveBeenCalledTimes(1)
+    expect(processRepCustomListingPhotoUrlMock).toHaveBeenCalledWith(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://rep.example.com/raw-upload.jpg',
+        filenameStem: `${VALID_LISTING_ID}-listing-photo`,
+      },
+    )
+    expect(updateListingMock).toHaveBeenCalledTimes(1)
+    expect(updateListingMock.mock.calls[0][3]).toEqual({
+      listingPhotoUrl: 'https://cdn.example.com/normalized.jpg',
+    })
+    expect(result).toEqual({
+      listingId: VALID_LISTING_ID,
+      status: 'available',
+      patchedFields: ['listingPhotoUrl'],
     })
   })
 
@@ -238,6 +280,27 @@ describe('update_listing — error handling', () => {
       name: 'ThumperToolError',
       code: 'INVALID_STATUS_TRANSITION',
     })
+    expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
+  })
+
+  it('translates listing photo processing ServiceError before updateListing is called', async () => {
+    processRepCustomListingPhotoUrlMock.mockRejectedValueOnce(
+      errors.LISTING_PHOTO_PREFLIGHT_FAILED([
+        'Move the camera a little closer so the jewelry takes up more of the frame.',
+      ]),
+    )
+
+    const tool = makeTool()
+    await expect(
+      tool.execute({
+        listingId: VALID_LISTING_ID,
+        listingPhotoUrl: 'https://rep.example.com/raw-upload.jpg',
+      }),
+    ).rejects.toMatchObject({
+      name: 'ThumperToolError',
+      code: 'LISTING_PHOTO_PREFLIGHT_FAILED',
+    })
+    expect(updateListingMock).not.toHaveBeenCalled()
     expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
   })
 

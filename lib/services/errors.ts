@@ -66,11 +66,24 @@ export const errors = {
       message: 'piece photo URL required when no canonical photo exists',
       userMessage: 'I need a photo of the piece for that listing.',
     }),
-  CLICKWRAP_REQUIRED: () =>
+  LISTING_PHOTO_PREFLIGHT_FAILED: (coachingMessages: string[]) =>
+    new ServiceError({
+      code: 'LISTING_PHOTO_PREFLIGHT_FAILED',
+      message: `listing photo preflight failed: ${coachingMessages.join(' ')}`,
+      userMessage: `That listing photo needs one more try before I can save it. ${coachingMessages.join(' ')}`.trim(),
+      statusCode: 422,
+    }),
+  CLICKWRAP_REQUIRED: (context: 'listing' | 'request' = 'listing') =>
     new ServiceError({
       code: 'CLICKWRAP_REQUIRED',
-      message: 'clickwrap acceptance required before listing',
-      userMessage: 'You need to accept the trade terms before I can list a piece.',
+      message:
+        context === 'request'
+          ? 'clickwrap acceptance required before submitting request'
+          : 'clickwrap acceptance required before listing',
+      userMessage:
+        context === 'request'
+          ? 'You need to accept the trade terms before I can submit that request.'
+          : 'You need to confirm you own the piece, the listing details are accurate, and that final trade decisions stay with you before I can list it. MSRP is reference data, not the trade-parity engine.',
     }),
   LISTING_NOT_FOUND: (detail?: string) =>
     new ServiceError({
@@ -206,5 +219,93 @@ export const errors = {
       userMessage:
         "That show isn't part of a recurring series, so I can only update it individually.",
       statusCode: 400,
+    }),
+  INVALID_PHONE_NUMBER: () =>
+    new ServiceError({
+      code: 'INVALID_PHONE_NUMBER',
+      message: 'recipient phone must be in E.164 format',
+      userMessage:
+        'I need the phone number in full international format, like +15551234567.',
+      statusCode: 400,
+    }),
+  CONTENT_SCREENING_BLOCKED: (matchedPhrases: string[]) =>
+    new ServiceError({
+      code: 'CONTENT_SCREENING_BLOCKED',
+      message: `content screening blocked the message: ${matchedPhrases.join(', ')}`,
+      userMessage: `I can't send that as written because it uses prohibited recruiting language: ${matchedPhrases.join(', ')}. Try plain product or show language instead.`,
+      statusCode: 422,
+    }),
+  SMS_NOT_CONFIGURED: () =>
+    new ServiceError({
+      code: 'SMS_NOT_CONFIGURED',
+      message: 'Telnyx SMS is not configured',
+      userMessage:
+        "SMS delivery isn't configured in this environment yet. If this keeps happening, let Louis know.",
+      statusCode: 503,
+    }),
+  INSUFFICIENT_SMS_WALLET: () =>
+    new ServiceError({
+      code: 'INSUFFICIENT_SMS_WALLET',
+      message: 'sms wallet has insufficient funds',
+      userMessage:
+        "There's not enough in the SMS wallet to send that text right now.",
+      statusCode: 402,
+    }),
+  SMS_DELIVERY_FAILED: (detail?: string) =>
+    new ServiceError({
+      code: 'SMS_DELIVERY_FAILED',
+      message: detail ? `telnyx send failed: ${detail}` : 'telnyx send failed',
+      userMessage: detail
+        ? `I couldn't send that text: ${detail}. If this keeps happening, let Louis know.`
+        : "I couldn't send that text. If this keeps happening, let Louis know.",
+      statusCode: 502,
+    }),
+  SMS_WEEKLY_LIMIT_REACHED: () =>
+    new ServiceError({
+      code: 'SMS_WEEKLY_LIMIT_REACHED',
+      message: 'manual SMS weekly limit reached',
+      userMessage: "You've hit your weekly text limit.",
+      statusCode: 429,
+    }),
+  EMAIL_NOT_CONFIGURED: () =>
+    new ServiceError({
+      code: 'EMAIL_NOT_CONFIGURED',
+      message: 'Resend email is not configured',
+      userMessage:
+        "Email delivery isn't configured in this environment yet. If this keeps happening, let Louis know.",
+      statusCode: 503,
+    }),
+  EMAIL_WEEKLY_LIMIT_REACHED: () =>
+    new ServiceError({
+      code: 'EMAIL_WEEKLY_LIMIT_REACHED',
+      message: 'manual email weekly limit reached',
+      userMessage: "You've hit your weekly email limit.",
+      statusCode: 429,
+    }),
+  EMAIL_DELIVERY_FAILED: (detail?: string) =>
+    new ServiceError({
+      code: 'EMAIL_DELIVERY_FAILED',
+      message: detail ? `resend send failed: ${detail}` : 'resend send failed',
+      userMessage: detail
+        ? `I couldn't send that email: ${detail}. If this keeps happening, let Louis know.`
+        : "I couldn't send that email. If this keeps happening, let Louis know.",
+      statusCode: 502,
+    }),
+  AUTOMATION_KEY_REQUIRED: () =>
+    new ServiceError({
+      code: 'AUTOMATION_KEY_REQUIRED',
+      message: 'automation key required for automated message sends',
+      userMessage: 'This automated reminder is missing its send key.',
+      statusCode: 400,
+    }),
+  AUTOMATED_MESSAGE_ALREADY_SENT: (channel: 'sms' | 'email') =>
+    new ServiceError({
+      code: 'AUTOMATED_MESSAGE_ALREADY_SENT',
+      message: `automated ${channel} reminder already sent for this show`,
+      userMessage:
+        channel === 'sms'
+          ? 'That automated text reminder already went out for this show.'
+          : 'That automated email reminder already went out for this show.',
+      statusCode: 409,
     }),
 }

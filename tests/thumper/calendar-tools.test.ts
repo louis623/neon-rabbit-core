@@ -243,14 +243,20 @@ describe('calendar tools', () => {
       severity: 'warn',
     })
   })
+
+  it('add_show description makes the current ongoing horizon explicit', () => {
+    const tool = makeAddShowTool(makeCtx()) as unknown as { description?: string }
+    expect(tool.description).toContain('ongoing')
+    expect(tool.description).toContain('about six months ahead')
+  })
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools now exposes 21 tools including the four calendar tools', () => {
+  it('buildAllTools now exposes 24 tools including the four calendar tools', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(21)
+    expect(names).toHaveLength(24)
     expect(names).toEqual(expect.arrayContaining([
       'add_show',
       'list_my_shows',
@@ -260,7 +266,7 @@ describe('calendar registry and prompt wiring', () => {
   })
 
   it('system prompt documents recurring shows, multi-code support, and series updates', () => {
-    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-one tools available right now:')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-four tools available right now:')
     expect(THUMPER_SYSTEM_PROMPT).toContain('add_show')
     expect(THUMPER_SYSTEM_PROMPT).toContain('list_my_shows')
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_show')
@@ -269,6 +275,7 @@ describe('calendar registry and prompt wiring', () => {
     expect(THUMPER_SYSTEM_PROMPT).toContain('How often')
     expect(THUMPER_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
     expect(THUMPER_SYSTEM_PROMPT).toContain('applyToSeries: true')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('about six months ahead')
     expect(THUMPER_SYSTEM_PROMPT).toContain('Sending show reminders')
   })
 

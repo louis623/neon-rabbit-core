@@ -1,0 +1,288 @@
+import {
+  defaultAmethystHomepageEvents,
+  type AmethystHomepageEventCard,
+} from './homepage-upcoming-shows'
+
+export interface AmethystHomepageMediaSlot {
+  typeLabel: string
+  caption: string
+  href: string
+  mediaUrl?: string
+}
+
+export interface AmethystHomepageSocialLink {
+  label: string
+  shortLabel: string
+  href: string
+}
+
+export interface AmethystHomepageTemplateData {
+  repName: string
+  businessName: string
+  teamName: string
+  tagline: string
+  heroHeadline: string
+  heroSub: string
+  tickerTopText: string
+  aboutHeadline: string
+  aboutParagraphs: [string, string, string]
+  aboutMediaSlots: [
+    AmethystHomepageMediaSlot,
+    AmethystHomepageMediaSlot,
+    AmethystHomepageMediaSlot,
+  ]
+  signupTitle: string
+  signupSub: string
+  signupConsent: string
+  joinTeamTitle: string
+  joinTeamSub: string
+  joinTeamUrl: string
+  footerTagline: string
+  legalDisclaimer: string
+  showcaseVideoCaption: string
+  showcaseVideoUrl: string
+  streamLinks: {
+    shop: string
+    watch: string
+    tiktok: string
+    facebook: string
+  }
+  socialLinks: [
+    AmethystHomepageSocialLink,
+    AmethystHomepageSocialLink,
+    AmethystHomepageSocialLink,
+    AmethystHomepageSocialLink,
+  ]
+  footerLinks: {
+    tradeBoard: string
+    catalog: string
+    preOrders: string
+    pastShows: string
+    faq: string
+    contact: string
+    privacy: string
+    terms: string
+    accessibility: string
+  }
+}
+
+export interface AmethystHomepageTweakDefaults {
+  repName: string
+  businessName: string
+  tagline: string
+  heroHeadline: string
+  heroSub: string
+  buttonStyle: string
+  tickerVariant: string
+  thumperStyle: string
+  showTicker: boolean
+  showLrq: boolean
+  showHero: boolean
+  showEvents: boolean
+  showWibp: boolean
+  showAbout: boolean
+  showSignup: boolean
+  showJoinCta: boolean
+  showFooter: boolean
+  showThumper: boolean
+  eventCount: number
+  lrqState: string
+  tickerTopText: string
+  primaryColor: string
+  accentColor: string
+  bgTone: string
+  headingFont: string
+  headingWeight: number
+  shapeRadius: string
+  density: string
+  saturation: number
+  preset: string
+  sparkleLevel: string
+  bgTreatment: string
+  cardSurface: string
+  textureOverlay: string
+  buttonEnergy: string
+  ctaEmphasis: string
+  tradeFlair: string
+  cursorEffect: string
+  tickerSpeed: number
+  showSlots: boolean
+}
+
+export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData = {
+  repName: 'Rep Name',
+  businessName: 'Show Name',
+  teamName: 'Team Velvet Hour',
+  tagline: 'Live jewelry reveals every Tuesday - joy you can hold.',
+  heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
+  heroSub:
+    "I'm Rep Name - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  tickerTopText:
+    'Live tonight - 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday',
+  aboutHeadline: 'Meet Rep Name and the story behind the sparkle.',
+  aboutParagraphs: [
+    'Share how you got started, what customers can expect in your live reveals, and why this business matters to you. This should feel personal, warm, and easy for new shoppers to connect with.',
+    'Talk about your community, your favorite kinds of reveals, or the energy you bring to show nights. Nic-Nac can rewrite this to match your voice while keeping the section polished and on-brand.',
+    'Add a final paragraph about your schedule, what makes your page special, or what you love most about helping customers find pieces they get excited to wear.',
+  ],
+  aboutMediaSlots: [
+    {
+      typeLabel: 'TikTok or reel',
+      caption: 'Drop in a TikTok, short reel, or vertical intro video.',
+      href: '#',
+    },
+    {
+      typeLabel: 'Photo',
+      caption: 'Add a lifestyle photo, show setup image, or team snapshot.',
+      href: '#',
+    },
+    {
+      typeLabel: 'Photo or video',
+      caption: 'Use this slot for another customer-facing image, embed, or promo clip.',
+      href: '#',
+    },
+  ],
+  signupTitle: 'Never miss a show.',
+  signupSub: 'Get a heads-up when Rep Name goes live, plus first dibs on new drops.',
+  signupConsent:
+    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Show Name. Msg & data rates may apply. Reply STOP to unsubscribe.',
+  joinTeamTitle: 'Want to do this too?',
+  joinTeamSub:
+    "Join my team. I'll show you how I built a real business doing live jewelry reveals on my own schedule - and Sparkle Suite gives you the site to run it.",
+  joinTeamUrl: '/amethyst/Join.html',
+  footerTagline:
+    'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
+  legalDisclaimer:
+    'Show Name is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
+  showcaseVideoCaption: '@repname - "When the box hits different..."',
+  showcaseVideoUrl: '#',
+  streamLinks: {
+    shop: 'https://bombparty.com',
+    watch: '#',
+    tiktok: '#',
+    facebook: '#',
+  },
+  socialLinks: [
+    { label: 'TikTok', shortLabel: 'TT', href: '#' },
+    { label: 'Facebook', shortLabel: 'FB', href: '#' },
+    { label: 'Instagram', shortLabel: 'IG', href: '#' },
+    { label: 'YouTube', shortLabel: 'YT', href: '#' },
+  ],
+  footerLinks: {
+    tradeBoard: '/amethyst/Trade.html',
+    catalog: 'https://bombparty.com',
+    preOrders: 'https://bombparty.com',
+    pastShows: '#events',
+    faq: '#',
+    contact: '#',
+    privacy: '#',
+    terms: '#',
+    accessibility: '#',
+  },
+}
+
+const lockedTweakDefaults: Omit<
+  AmethystHomepageTweakDefaults,
+  'repName' | 'businessName' | 'tagline' | 'heroHeadline' | 'heroSub' | 'tickerTopText'
+> = {
+  buttonStyle: 'sparkle',
+  tickerVariant: 'dual',
+  thumperStyle: 'square',
+  showTicker: true,
+  showLrq: true,
+  showHero: true,
+  showEvents: true,
+  showWibp: true,
+  showAbout: true,
+  showSignup: true,
+  showJoinCta: true,
+  showFooter: true,
+  showThumper: true,
+  eventCount: 2,
+  lrqState: 'live',
+  primaryColor: '#5C0EFF',
+  accentColor: '#FF1AC2',
+  bgTone: 'lavender',
+  headingFont: 'italiana',
+  headingWeight: 600,
+  shapeRadius: 'soft',
+  density: 'regular',
+  saturation: 130,
+  preset: 'sparkleParty',
+  sparkleLevel: 'glittery',
+  bgTreatment: 'confetti',
+  cardSurface: 'holographic',
+  textureOverlay: 'sparkle',
+  buttonEnergy: 'calm',
+  ctaEmphasis: 'standard',
+  tradeFlair: 'holo-unicorn',
+  cursorEffect: 'sparkle',
+  tickerSpeed: 0.6,
+  showSlots: false,
+}
+
+export function buildAmethystHomepageTweakDefaults(
+  data: AmethystHomepageTemplateData,
+): AmethystHomepageTweakDefaults {
+  return {
+    repName: data.repName,
+    businessName: data.businessName,
+    tagline: data.tagline,
+    heroHeadline: data.heroHeadline,
+    heroSub: data.heroSub,
+    tickerTopText: data.tickerTopText,
+    ...lockedTweakDefaults,
+  }
+}
+
+function safeScriptJson(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c')
+}
+
+export function buildAmethystHomepageBootstrapScript(
+  data: AmethystHomepageTemplateData = defaultAmethystHomepageTemplateData,
+  events: AmethystHomepageEventCard[] = defaultAmethystHomepageEvents,
+) {
+  const defaults = buildAmethystHomepageTweakDefaults(data)
+
+  return [
+    `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(data)};`,
+    `window.HOMEPAGE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
+    `window.AMETHYST_HOMEPAGE_EVENTS = ${safeScriptJson(events)};`,
+    `window.AMETHYST_APPLY_HOMEPAGE_TEMPLATE = function applyHomepageTemplate(currentTweaks) {`,
+    `  var content = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};`,
+    `  var tweaks = currentTweaks || window.HOMEPAGE_TWEAK_DEFAULTS || {};`,
+    `  var footerLinks = content.footerLinks || {};`,
+    `  var streamLinks = content.streamLinks || {};`,
+    `  var socialLinks = content.socialLinks || [];`,
+    `  function text(selector, value) { var node = document.querySelector(selector); if (node && typeof value === 'string' && value.length > 0) node.textContent = value; }`,
+    `  function html(selector, value) { var node = document.querySelector(selector); if (node && typeof value === 'string' && value.length > 0) node.innerHTML = value; }`,
+    `  function href(selector, value) { var node = document.querySelector(selector); if (node && value) node.setAttribute('href', value); }`,
+    `  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }`,
+    `  function bindButton(selector, value) { var node = document.querySelector(selector); if (!node || !value) return; node.style.cursor = 'pointer'; node.onclick = function () { if (/^https?:\\/\\//.test(value)) window.open(value, '_blank', 'noopener,noreferrer'); else window.location.href = value; }; }`,
+    `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
+    `  text('[data-slot="about headline"]', content.aboutHeadline);`,
+    `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,
+    `  text('[data-slot="about paragraph 2"]', content.aboutParagraphs && content.aboutParagraphs[1]);`,
+    `  text('[data-slot="about paragraph 3"]', content.aboutParagraphs && content.aboutParagraphs[2]);`,
+    `  text('.hp-signup-title', content.signupTitle);`,
+    `  text('.hp-signup-sub', content.signupSub);`,
+    `  html('.hp-signup-consent', (content.signupConsent || '') + ' <a href="' + (footerLinks.privacy || '#') + '">Privacy policy</a>.');`,
+    `  text('.hp-join-eyebrow', [tweaks.businessName || content.businessName, content.teamName].filter(Boolean).join(' · '));`,
+    `  text('.hp-join-title', content.joinTeamTitle);`,
+    `  text('.hp-join-sub', content.joinTeamSub);`,
+    `  text('.hp-footer-tag', content.footerTagline);`,
+    `  html('.hp-footer-bottom p', content.legalDisclaimer);`,
+    `  href('.hp-shop-btn', streamLinks.shop || '#');`,
+    `  href('.hp-hero-ctas .hp-btn-outline', streamLinks.shop || '#');`,
+    `  href('.hp-hero-ctas .hp-btn-watch', streamLinks.watch || streamLinks.tiktok || '#');`,
+    `  href('.hp-join-cta .hp-btn-primary', content.joinTeamUrl || '#');`,
+    `  href('.hp-signup-consent a', footerLinks.privacy || '#');`,
+    `  all('.hp-footer-socials a').forEach(function (node, index) { if (socialLinks[index]) node.setAttribute('href', socialLinks[index].href); });`,
+    `  [footerLinks.tradeBoard, footerLinks.catalog, footerLinks.preOrders, footerLinks.pastShows].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(2) a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  ['#about', content.joinTeamUrl || '#', footerLinks.faq || '#', footerLinks.contact || '#'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(3) a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  [footerLinks.privacy, footerLinks.terms, footerLinks.accessibility].forEach(function (value, index) { var node = all('.legal-row a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  (content.aboutMediaSlots || []).forEach(function (slot, index) { var card = document.querySelector('[data-slot="about media ' + (index + 1) + '"]'); if (!card || !slot) return; var typeNode = card.querySelector('.hp-about-media-type'); var captionNode = card.querySelector('.hp-about-media-caption'); if (typeNode && slot.typeLabel) typeNode.textContent = slot.typeLabel; if (captionNode && slot.caption) captionNode.textContent = slot.caption; if (slot.mediaUrl) { card.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.24), rgba(14, 8, 32, 0.52)), url("' + slot.mediaUrl + '")'; card.style.backgroundPosition = 'center'; card.style.backgroundSize = 'cover'; } if (slot.href) { card.style.cursor = 'pointer'; card.onclick = function () { if (/^https?:\\/\\//.test(slot.href)) window.open(slot.href, '_blank', 'noopener,noreferrer'); else window.location.href = slot.href; }; } });`,
+    `};`,
+  ].join('\n')
+}

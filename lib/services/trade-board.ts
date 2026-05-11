@@ -38,7 +38,7 @@ import {
   type UpdateListingResult,
 } from './types'
 import { TradeBoardError, errors } from './errors'
-import { resolveItemNumber } from './jewelry-database'
+import { normalizeItemNumber, resolveItemNumber } from './jewelry-database'
 
 // Re-export for the existing 4 callers that import from
 // '@/lib/services/trade-board'. Do not remove these without updating callers.
@@ -69,6 +69,15 @@ const LISTING_SELECT = `
   uses_canonical_photo, listed_at, removal_reason, created_at, updated_at,
   design:jewelry_designs(${DESIGN_SELECT})
 `
+
+function isManagedRepListingPhotoUrl(repId: string, photoUrl: string): boolean {
+  try {
+    const url = new URL(photoUrl)
+    return url.pathname.includes(`/jewelry-photos/${repId}/`)
+  } catch {
+    return false
+  }
+}
 
 export async function getMyBoard(
   supabase: SupabaseClient,
@@ -266,6 +275,15 @@ export async function addListing(
   if (!resolved.hasCollection) {
     throw errors.NEEDS_COLLECTION(resolved.design.id, resolved.design.designName)
   }
+  if (
+    input.listingPhotoUrl &&
+    !isManagedRepListingPhotoUrl(repId, input.listingPhotoUrl)
+  ) {
+    throw errors.INVALID_INPUT(
+      'listingPhotoUrl must be a processed Sparkle Suite listing photo',
+      'I need to process that listing photo through the image pipeline before I can save it.',
+    )
+  }
 
   // Duplicate check: rep already has an available listing for this design.
   const { data: existing, error: dupErr } = await supabase
@@ -333,7 +351,45 @@ export async function addListingBatch(
     return { added: [], pending: { needCollection: [], needFullInfo: [] } }
   }
 
-  const itemNumbers = input.items.map((i) => i.itemNumber)
+  const dedupedItems = new Map<string, BatchListingItem>()
+  for (const item of input.items) {
+    const itemNumber = normalizeItemNumber(item.itemNumber)
+    if (!itemNumber) continue
+
+    const existing = dedupedItems.get(itemNumber)
+    if (!existing) {
+      dedupedItems.set(itemNumber, {
+        ...item,
+        itemNumber,
+      })
+      continue
+    }
+
+    dedupedItems.set(itemNumber, {
+      itemNumber,
+      repNotes: existing.repNotes ?? item.repNotes,
+      tradePreferences: existing.tradePreferences ?? item.tradePreferences,
+      listingPhotoUrl: existing.listingPhotoUrl ?? item.listingPhotoUrl,
+    })
+  }
+
+  const normalizedItems = Array.from(dedupedItems.values())
+  if (normalizedItems.length === 0) {
+    return { added: [], pending: { needCollection: [], needFullInfo: [] } }
+  }
+  const invalidCustomPhotoItem = normalizedItems.find(
+    (item) =>
+      item.listingPhotoUrl &&
+      !isManagedRepListingPhotoUrl(repId, item.listingPhotoUrl),
+  )
+  if (invalidCustomPhotoItem) {
+    throw errors.INVALID_INPUT(
+      `batch listingPhotoUrl for ${invalidCustomPhotoItem.itemNumber} must be a processed Sparkle Suite listing photo`,
+      'I need to process that listing photo through the image pipeline before I can save it.',
+    )
+  }
+
+  const itemNumbers = normalizedItems.map((i) => i.itemNumber)
   const { data: designs, error: designErr } = await supabase
     .from('jewelry_designs')
     .select('id, item_number, design_name, collection_id')
@@ -353,7 +409,7 @@ export async function addListingBatch(
   const needCollection: Array<{ itemNumber: string; designId: string; designName: string }> = []
   const needFullInfo: Array<{ itemNumber: string }> = []
 
-  for (const item of input.items) {
+  for (const item of normalizedItems) {
     const d = designByItem.get(item.itemNumber)
     if (!d) {
       needFullInfo.push({ itemNumber: item.itemNumber })
@@ -460,6 +516,15 @@ export async function updateListing(
   const status = current.status as ListingStatus
   if (status !== 'available' && status !== 'pending_trade') {
     throw errors.INVALID_STATUS_TRANSITION(status, 'edit')
+  }
+  if (
+    patch.listingPhotoUrl &&
+    !isManagedRepListingPhotoUrl(repId, patch.listingPhotoUrl)
+  ) {
+    throw errors.INVALID_INPUT(
+      'listingPhotoUrl must be a processed Sparkle Suite listing photo',
+      'I need to process that listing photo through the image pipeline before I can save it.',
+    )
   }
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }

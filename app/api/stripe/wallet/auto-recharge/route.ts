@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureWallet } from '@/lib/services/wallet'
+import {
+  stripeCentsToWalletMils,
+  walletMilsToStripeCents,
+  walletMilsToUsd,
+} from '@/lib/services/wallet-units'
 
 interface Body {
   enabled?: unknown
@@ -51,8 +56,12 @@ export async function POST(request: Request) {
     // Make sure a row exists — reps without a wallet row must still be able to configure settings.
     const wallet = await ensureWallet(repId)
 
-    const mergedThreshold = thresholdCents ?? wallet.auto_recharge_threshold_cents
-    const mergedAmount = amountCents ?? wallet.auto_recharge_amount_cents
+    const mergedThreshold = thresholdCents === undefined
+      ? wallet.auto_recharge_threshold_mils
+      : stripeCentsToWalletMils(thresholdCents)
+    const mergedAmount = amountCents === undefined
+      ? wallet.auto_recharge_amount_mils
+      : stripeCentsToWalletMils(amountCents)
     if (mergedAmount <= mergedThreshold) {
       return NextResponse.json(
         { error: 'amount_cents must be strictly greater than threshold_cents' },
@@ -65,14 +74,18 @@ export async function POST(request: Request) {
       auto_recharge_enabled: body.enabled,
       updated_at: new Date().toISOString(),
     }
-    if (thresholdCents !== undefined) updates.auto_recharge_threshold_cents = thresholdCents
-    if (amountCents !== undefined) updates.auto_recharge_amount_cents = amountCents
+    if (thresholdCents !== undefined) {
+      updates.auto_recharge_threshold_mils = stripeCentsToWalletMils(thresholdCents)
+    }
+    if (amountCents !== undefined) {
+      updates.auto_recharge_amount_mils = stripeCentsToWalletMils(amountCents)
+    }
 
     const { data, error } = await admin
       .from('sms_wallet')
       .update(updates)
       .eq('rep_id', repId)
-      .select('auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents, minimum_load_amount_cents, balance_cents')
+      .select('auto_recharge_enabled, auto_recharge_threshold_mils, auto_recharge_amount_mils, minimum_load_amount_mils, balance_mils')
       .single()
 
     if (error || !data) {
@@ -80,7 +93,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
     }
 
-    return NextResponse.json({ wallet: data })
+    return NextResponse.json({
+      wallet: {
+        auto_recharge_enabled: data.auto_recharge_enabled,
+        auto_recharge_threshold_cents: walletMilsToStripeCents(data.auto_recharge_threshold_mils),
+        auto_recharge_amount_cents: walletMilsToStripeCents(data.auto_recharge_amount_mils),
+        minimum_load_amount_cents: walletMilsToStripeCents(data.minimum_load_amount_mils),
+        balance_mils: data.balance_mils,
+        balance_usd: walletMilsToUsd(data.balance_mils),
+      },
+    })
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 })

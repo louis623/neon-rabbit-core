@@ -15,7 +15,7 @@ export function ThinkingIndicator({ showGlyph }: { showGlyph?: boolean }) {
             className={styles.logo}
             aria-hidden="true"
           />
-          <span className={styles.label}>Thumper is thinking…</span>
+          <span className={styles.label}>Nic-Nac is thinking…</span>
         </div>
       </div>
     </div>

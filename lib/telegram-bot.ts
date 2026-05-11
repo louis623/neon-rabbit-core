@@ -7,6 +7,21 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 let bot: TelegramBot | null = null
 
+interface TelegramMessageUpdate {
+  message?: {
+    text?: string
+    from?: {
+      id?: number
+      username?: string
+    }
+    chat?: {
+      id?: number
+    }
+    message_id?: number
+    date?: number
+  }
+}
+
 export function getBot(): TelegramBot {
   if (!bot) {
     bot = new TelegramBot(token, { polling: false })
@@ -41,7 +56,7 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
   }
 }
 
-export async function handleTelegramUpdate(body: any) {
+export async function handleTelegramUpdate(body: TelegramMessageUpdate) {
   const message = body?.message
   if (!message || !message.text) return
 

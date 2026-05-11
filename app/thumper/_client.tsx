@@ -31,6 +31,7 @@ import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'thumper_last_conversation'
 const MAX_ATTACHMENTS = 10
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)'
 
 function newConversationId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -42,6 +43,11 @@ function newAttachmentId() {
   return `att_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 }
 
+function getInitialDesktopMatch() {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+}
+
 interface ApprovalResponseFn {
   (args: { id: string; approved: boolean; reason?: string }): void
 }
@@ -51,15 +57,22 @@ export default function ThumperClient() {
   const searchParams = useSearchParams()
 
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null)
-  const [initLoadError, setInitLoadError] = useState<string | null>(null)
+  const [historyState, setHistoryState] = useState<{
+    conversationId: string | null
+    messages: UIMessage[] | null
+    error: string | null
+  }>({
+    conversationId: null,
+    messages: null,
+    error: null,
+  })
   // Distinct from initLoadError: this fires when /latest itself fails (5xx /
   // network). We deliberately do NOT fall through to a fresh UUID here —
   // that would silently fork the rep onto a new conversation and re-create
   // the cross-device drift bug this whole change is fixing.
   const [initResolveError, setInitResolveError] = useState<string | null>(null)
   const [resolveAttempt, setResolveAttempt] = useState(0)
-  const [isDesktop, setIsDesktop] = useState(true)
+  const [isDesktop, setIsDesktop] = useState(getInitialDesktopMatch)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [desktopOpen, setDesktopOpen] = useState(true)
   // Lifted from ChatBody so "New conversation" can disable correctly without
@@ -112,7 +125,7 @@ export default function ThumperClient() {
         if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, id)
         const qs = new URLSearchParams(Array.from(searchParams.entries()))
         qs.set('c', id)
-        router.replace(`/thumper?${qs.toString()}`)
+        router.replace(`/nic-nac?${qs.toString()}`)
       } catch (err) {
         if (cancelled) return
         if ((err as { name?: string })?.name === 'AbortError') return
@@ -126,8 +139,7 @@ export default function ThumperClient() {
   }, [router, searchParams, resolveAttempt])
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    setIsDesktop(mq.matches)
+    const mq = window.matchMedia(DESKTOP_MEDIA_QUERY)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
@@ -137,26 +149,42 @@ export default function ThumperClient() {
   useEffect(() => {
     if (!conversationId) return
     let cancelled = false
-    setInitialMessages(null)
-    setInitLoadError(null)
     ;(async () => {
       try {
         const res = await fetch(`/api/thumper/conversation/${conversationId}`, {
           credentials: 'include',
         })
+        if (cancelled) return
         if (res.status === 401) {
-          setInitLoadError('Not signed in — visit /login and come back.')
+          setHistoryState({
+            conversationId,
+            messages: null,
+            error: 'Not signed in - visit /login and come back.',
+          })
           return
         }
         if (res.status === 403) {
-          setInitLoadError('This conversation belongs to another rep.')
+          setHistoryState({
+            conversationId,
+            messages: null,
+            error: 'This conversation belongs to another rep.',
+          })
           return
         }
         const body = await res.json()
         if (cancelled) return
-        setInitialMessages((body.messages ?? []) as UIMessage[])
+        setHistoryState({
+          conversationId,
+          messages: (body.messages ?? []) as UIMessage[],
+          error: null,
+        })
       } catch (err) {
-        setInitLoadError(`Failed to load conversation: ${(err as Error).message}`)
+        if (cancelled) return
+        setHistoryState({
+          conversationId,
+          messages: null,
+          error: `Failed to load conversation: ${(err as Error).message}`,
+        })
       }
     })()
     return () => {
@@ -190,6 +218,14 @@ export default function ThumperClient() {
     })
   }, [conversationId])
 
+  const initialMessages =
+    conversationId && historyState.conversationId === conversationId
+      ? historyState.messages
+      : null
+  const initLoadError =
+    conversationId && historyState.conversationId === conversationId
+      ? historyState.error
+      : null
   const isReady = conversationId && transport && initialMessages !== null
 
   // "New conversation" — rotate the id, replace URL, clear local state.
@@ -198,11 +234,10 @@ export default function ThumperClient() {
     if (chatState.isStreaming || chatState.hasPendingApproval) return
     const next = newConversationId()
     setConversationId(next)
-    setInitialMessages(null)
     if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next)
     const qs = new URLSearchParams(Array.from(searchParams.entries()))
     qs.set('c', next)
-    router.replace(`/thumper?${qs.toString()}`)
+    router.replace(`/nic-nac?${qs.toString()}`)
   }, [chatState, router, searchParams])
 
   const newDisabled = chatState.isStreaming || chatState.hasPendingApproval
@@ -253,7 +288,7 @@ export default function ThumperClient() {
             type="button"
             className={shellStyles.desktopReopen}
             onClick={() => setDesktopOpen(true)}
-            aria-label="Open Thumper"
+            aria-label="Open Nic-Nac"
           >
             <ThumperGlyph size={26} />
           </button>
@@ -426,10 +461,10 @@ function ChatBody({
   const [failedMessages, setFailedMessages] = useState<
     Map<string, { parts: UIMessage['parts'] }>
   >(new Map())
-  // Optimistic createdAt for messages that don't yet have server metadata.
-  const [optimisticCreated, setOptimisticCreated] = useState<Map<string, number>>(
-    new Map()
-  )
+  const [pendingOptimisticCreated, setPendingOptimisticCreated] = useState<{
+    stamp: number
+    previousLatestUserId: string | null
+  } | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const prevStatusRef = useRef<typeof status>(status)
 
@@ -472,32 +507,26 @@ function ChatBody({
     }
   }, [status, requestHide])
 
-  // On error transition, mark the most recent user message without a paired
-  // assistant response as failed so the inline retry surfaces.
-  useEffect(() => {
-    if (status !== 'error' || !error) return
-    // Find the latest user message that is the last in the list (no assistant
-    // reply yet) — that's the one whose send broke.
-    let lastUser: UIMessage | undefined
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user') {
-        lastUser = messages[i]
-        break
-      }
-    }
-    if (!lastUser) return
-    setFailedMessages((prev) => {
-      if (prev.has(lastUser!.id)) return prev
-      const next = new Map(prev)
-      next.set(lastUser!.id, { parts: lastUser!.parts ?? [] })
-      return next
-    })
-  }, [status, error, messages])
+  const currentFailedMessage =
+    status === 'error' && error ? findLatestUserMessage(messages) : null
+  const displayedFailedMessages =
+    currentFailedMessage && !failedMessages.has(currentFailedMessage.id)
+      ? new Map(failedMessages).set(currentFailedMessage.id, {
+          parts: currentFailedMessage.parts,
+        })
+      : failedMessages
 
   const hasError = !!error
   const hasMessages = messages.length > 0
   const chipsVisible = !isStreaming && !hasPendingApproval && !hasError
   const inputAriaDisabled = hasPendingApproval
+  const latestUserId = findLatestUserMessageId(messages)
+  const latestPendingUserId =
+    pendingOptimisticCreated &&
+    latestUserId &&
+    latestUserId !== pendingOptimisticCreated.previousLatestUserId
+      ? latestUserId
+      : null
 
   const sendWithParts = useCallback(
     async (parts: UIMessage['parts'], replaceMessageId?: string) => {
@@ -566,45 +595,23 @@ function ChatBody({
         type: 'file',
         mediaType: a.mediaType,
         url: a.dataUrl,
+        width: a.width,
+        height: a.height,
+        blurRisk: a.blurRisk,
+        lightingRisk: a.lightingRisk,
+        subjectCoverage: a.subjectCoverage,
+        subjectCentered: a.subjectCentered,
       } as unknown as UIMessage['parts'][number])
     }
     setDraft('')
     setAttachments([])
     setAttachmentNotice(null)
-    // Mark optimistic createdAt — the AI SDK assigns the message id internally,
-    // so we won't know it until messages updates. We tag the latest user msg
-    // in a follow-up effect by id, but as a simpler path: stamp Date.now()
-    // for the most recently appended user message inside the next render.
-    const stampNow = Date.now()
-    setOptimisticCreated((prev) => {
-      const next = new Map(prev)
-      // store under a sentinel; we'll resolve in the messages effect.
-      next.set('__pending__', stampNow)
-      return next
+    setPendingOptimisticCreated({
+      stamp: Date.now(),
+      previousLatestUserId: findLatestUserMessageId(messages),
     })
     await sendWithParts(parts)
   }
-
-  // After messages updates, resolve any __pending__ optimistic stamp onto the
-  // latest user message id that doesn't already have one.
-  useEffect(() => {
-    setOptimisticCreated((prev) => {
-      if (!prev.has('__pending__')) return prev
-      const stamp = prev.get('__pending__')!
-      let lastUserId: string | undefined
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].role === 'user') {
-          lastUserId = messages[i].id
-          break
-        }
-      }
-      if (!lastUserId || prev.has(lastUserId)) return prev
-      const next = new Map(prev)
-      next.delete('__pending__')
-      next.set(lastUserId, stamp)
-      return next
-    })
-  }, [messages])
 
   const handleChip = (text: string) => {
     if (hasPendingApproval || isStreaming) return
@@ -634,6 +641,12 @@ function ChatBody({
             id: newAttachmentId(),
             dataUrl: compressed.dataUrl,
             mediaType: 'image/jpeg',
+            width: compressed.width,
+            height: compressed.height,
+            blurRisk: compressed.blurRisk,
+            lightingRisk: compressed.lightingRisk,
+            subjectCoverage: compressed.subjectCoverage,
+            subjectCentered: compressed.subjectCentered,
           })
         } catch {
           failed.push(file.name || 'image')
@@ -657,7 +670,7 @@ function ChatBody({
 
   const handleRetry = useCallback(
     async (messageId: string) => {
-      const entry = failedMessages.get(messageId)
+      const entry = displayedFailedMessages.get(messageId)
       if (!entry) return
       setFailedMessages((prev) => {
         const next = new Map(prev)
@@ -668,7 +681,7 @@ function ChatBody({
       // Replace the failed message in place by passing its existing id.
       await sendWithParts(entry.parts, messageId)
     },
-    [failedMessages, clearError, sendWithParts]
+    [displayedFailedMessages, clearError, sendWithParts]
   )
 
   return (
@@ -676,9 +689,13 @@ function ChatBody({
       <ChatHistory isStreaming={isStreaming}>
         {!hasMessages ? <EmptyGreeting /> : null}
         {messages.map((m, idx) => {
-          const ts = readCreatedAt(m, optimisticCreated)
+          const ts = readCreatedAt(
+            m,
+            latestPendingUserId,
+            pendingOptimisticCreated?.stamp ?? null
+          )
           if (m.role === 'user') {
-            const failed = failedMessages.get(m.id)
+            const failed = displayedFailedMessages.get(m.id)
             return (
               <div key={m.id}>
                 <UserMessage message={m} timestamp={ts} />
@@ -709,10 +726,10 @@ function ChatBody({
             />
           )
         })}
-        {hasError && failedMessages.size === 0 ? (
+        {hasError && displayedFailedMessages.size === 0 ? (
           <ErrorBlock
             variant="global"
-            message="Couldn't reach Thumper just now. If this keeps happening, let Louis know."
+            message="Couldn't reach Nic-Nac just now. If this keeps happening, let Louis know."
             onRetry={() => regenerate()}
           />
         ) : null}
@@ -733,7 +750,7 @@ function ChatBody({
         onPickFiles={handlePickFiles}
         onRemoveAttachment={handleRemoveAttachment}
         attachmentNotice={attachmentNotice}
-        placeholder={hasPendingApproval ? 'Approve or cancel above…' : 'Ask Thumper…'}
+        placeholder={hasPendingApproval ? 'Approve or cancel above…' : 'Ask Nic-Nac…'}
       />
     </>
   )
@@ -741,11 +758,30 @@ function ChatBody({
 
 function readCreatedAt(
   m: UIMessage,
-  optimistic: Map<string, number>
+  latestPendingUserId: string | null,
+  pendingStamp: number | null
 ): string | number | undefined {
   const meta = m.metadata as { created_at?: string } | undefined
   if (meta?.created_at) return meta.created_at
-  return optimistic.get(m.id)
+  return m.id === latestPendingUserId ? pendingStamp ?? undefined : undefined
+}
+
+function findLatestUserMessageId(messages: UIMessage[]): string | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'user') return messages[i].id
+  }
+  return null
+}
+
+function findLatestUserMessage(
+  messages: UIMessage[]
+): { id: string; parts: UIMessage['parts'] } | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'user') {
+      return { id: messages[i].id, parts: messages[i].parts ?? [] }
+    }
+  }
+  return null
 }
 
 function isFirstThumperInRun(messages: UIMessage[], idx: number): boolean {

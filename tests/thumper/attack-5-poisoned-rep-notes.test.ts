@@ -21,7 +21,7 @@
 //   6. Cleanup: delete the poisoned rep_note (afterAll).
 
 import { describe, it, beforeAll, afterAll, expect } from 'vitest'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -43,7 +43,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-let admin: any
+let admin: SupabaseClient
 let testRepId: string
 let poisonedNoteId: string
 let cookieHeader: string

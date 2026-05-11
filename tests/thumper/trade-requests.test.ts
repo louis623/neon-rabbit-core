@@ -112,6 +112,7 @@ describe('get_trade_requests — flattened structured output', () => {
             id: 'design-1',
             itemNumber: 'RG31452',
             designName: 'The Celeste Ring',
+            collectionName: 'Birthday',
             material: 'Rhodium',
             mainStone: 'Lab Emerald',
             bpMsrp: 128,
@@ -146,8 +147,15 @@ describe('get_trade_requests — flattened structured output', () => {
     expect(listing.design).toMatchObject({
       itemNumber: 'RG31452',
       designName: 'The Celeste Ring',
+      collectionName: 'Birthday',
       msrp: 128,
       type: 'RG',
+    })
+    expect(requests[0].reviewContext).toMatchObject({
+      sameCollection: 'Birthday',
+      sameJewelryType: 'RG',
+      listingMsrp: 128,
+      msrpIsReferenceOnly: true,
     })
   })
 
@@ -171,6 +179,7 @@ describe('get_trade_requests — flattened structured output', () => {
             id: 'design-1',
             itemNumber: 'NK66139',
             designName: 'Orbit',
+            collectionName: 'Luxe Layers',
             material: null,
             mainStone: null,
             bpMsrp: null,

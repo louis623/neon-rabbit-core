@@ -1,17 +1,16 @@
 import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe/client'
-
-const SMS_CHARGE_CENTS = 9
+import { SMS_CHARGE_MILS, walletMilsToStripeCents } from './wallet-units'
 
 export interface WalletRow {
   id: string
   rep_id: string
-  balance_cents: number
+  balance_mils: number
   auto_recharge_enabled: boolean
-  auto_recharge_threshold_cents: number
-  auto_recharge_amount_cents: number
-  minimum_load_amount_cents: number
+  auto_recharge_threshold_mils: number
+  auto_recharge_amount_mils: number
+  minimum_load_amount_mils: number
   auto_recharge_pending: boolean
   auto_recharge_attempt_id: string | null
   last_loaded_at: string | null
@@ -41,13 +40,13 @@ export async function ensureWallet(repId: string): Promise<WalletRow> {
 
 export async function deductSmsCharge(
   repId: string
-): Promise<{ success: boolean; new_balance_cents: number }> {
+): Promise<{ success: boolean; new_balance_mils: number }> {
   const admin = createAdminClient()
   const wallet = await ensureWallet(repId)
 
   const { data, error } = await admin.rpc('deduct_wallet_balance', {
     p_wallet_id: wallet.id,
-    p_amount: SMS_CHARGE_CENTS,
+    p_amount: SMS_CHARGE_MILS,
   })
 
   if (error) {
@@ -55,12 +54,12 @@ export async function deductSmsCharge(
       // Fresh read — do not return the stale pre-RPC value.
       const { data: fresh } = await admin
         .from('sms_wallet')
-        .select('balance_cents')
+        .select('balance_mils')
         .eq('id', wallet.id)
         .single()
       return {
         success: false,
-        new_balance_cents: fresh?.balance_cents ?? wallet.balance_cents,
+        new_balance_mils: fresh?.balance_mils ?? wallet.balance_mils,
       }
     }
     throw error
@@ -68,7 +67,7 @@ export async function deductSmsCharge(
 
   // Supabase RPCs returning TABLE come back as an array of one row.
   const row = Array.isArray(data) ? data[0] : data
-  const newBalance = row?.new_balance_cents as number
+  const newBalance = row?.new_balance_mils as number
   const shouldRecharge = Boolean(row?.should_recharge)
   const attemptId = row?.attempt_id as string | null
 
@@ -80,7 +79,34 @@ export async function deductSmsCharge(
     )
   }
 
-  return { success: true, new_balance_cents: newBalance }
+  return { success: true, new_balance_mils: newBalance }
+}
+
+export async function refundSmsCharge(
+  repId: string,
+  description: string
+): Promise<{ new_balance_mils: number; credited: boolean }> {
+  const admin = createAdminClient()
+  const wallet = await ensureWallet(repId)
+
+  const { data, error } = await admin.rpc('credit_wallet', {
+    p_wallet_id: wallet.id,
+    p_rep_id: repId,
+    p_amount: SMS_CHARGE_MILS,
+    p_type: 'refund',
+    p_stripe_pi: null,
+    p_stripe_fee: null,
+    p_description: description,
+    p_attempt_id: null,
+  })
+
+  if (error) throw error
+
+  const row = Array.isArray(data) ? data[0] : data
+  return {
+    new_balance_mils: row?.new_balance_mils as number,
+    credited: Boolean(row?.credited),
+  }
 }
 
 async function releaseLock(walletId: string, attemptId: string): Promise<void> {
@@ -183,7 +209,7 @@ async function triggerAutoRecharge(
   try {
     await stripe.paymentIntents.create(
       {
-        amount: wallet.auto_recharge_amount_cents,
+        amount: walletMilsToStripeCents(wallet.auto_recharge_amount_mils),
         currency: 'usd',
         customer: customerId,
         payment_method: paymentMethodId,

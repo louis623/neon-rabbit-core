@@ -210,7 +210,7 @@ describe('site customization registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx({ from: vi.fn() }))
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(21)
+    expect(names).toHaveLength(24)
     expect(names).toEqual(
       expect.arrayContaining([
         'update_banner_text',
@@ -225,7 +225,7 @@ describe('site customization registry and prompt wiring', () => {
 
   it('system prompt documents the site-customization tools and the new 21-tool total', () => {
     expect(THUMPER_SYSTEM_PROMPT).toContain(
-      'You have twenty-one tools available right now:',
+      'You have twenty-four tools available right now:',
     )
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_banner_text')
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_streaming_links')

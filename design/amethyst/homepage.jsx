@@ -369,6 +369,56 @@ function Wibp({ repName }) {
 }
 
 // ============================================================
+// About
+// ============================================================
+function AboutSection({ repName }) {
+  return (
+    <section className="hp-section" id="about">
+      <div className="hp-container">
+        <div className="hp-about-grid">
+          <div className="hp-about-copy">
+            <div className="hp-section-eyebrow">About the rep</div>
+            <h2 className="hp-section-title slot" data-slot="about headline">
+              Meet <span className="slot" data-slot="rep name">{repName}</span> and the story behind the sparkle.
+            </h2>
+            <div className="hp-about-body">
+              <p className="slot" data-slot="about paragraph 1">
+                Share how you got started, what customers can expect in your live reveals, and why this business matters to you.
+                This should feel personal, warm, and easy for new shoppers to connect with.
+              </p>
+              <p className="slot" data-slot="about paragraph 2">
+                Talk about your community, your favorite kinds of reveals, or the energy you bring to show nights. Nic-Nac can
+                rewrite this to match your voice while keeping the section polished and on-brand.
+              </p>
+              <p className="slot" data-slot="about paragraph 3">
+                Add a final paragraph about your schedule, what makes your page special, or what you love most about helping
+                customers find pieces they get excited to wear.
+              </p>
+            </div>
+          </div>
+
+          <div className="hp-about-media-grid">
+            <div className="hp-about-media-card hp-about-media-card-tall slot" data-slot="about media 1">
+              <div className="hp-about-media-type">TikTok or reel</div>
+              <div className="hp-about-media-play">â–¶</div>
+              <div className="hp-about-media-caption">Drop in a TikTok, short reel, or vertical intro video.</div>
+            </div>
+            <div className="hp-about-media-card slot" data-slot="about media 2">
+              <div className="hp-about-media-type">Photo</div>
+              <div className="hp-about-media-caption">Add a lifestyle photo, show setup image, or team snapshot.</div>
+            </div>
+            <div className="hp-about-media-card slot" data-slot="about media 3">
+              <div className="hp-about-media-type">Photo or video</div>
+              <div className="hp-about-media-caption">Use this slot for another customer-facing image, embed, or promo clip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
 // Signup
 // ============================================================
 function Signup({ repName, businessName }) {
@@ -460,7 +510,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <h4>About</h4>
           <ul>
-            <li><a href="#">My story</a></li>
+            <li><a href="#about">My story</a></li>
             <li><a href="#">Join the team</a></li>
             <li><a href="#">FAQ</a></li>
             <li><a href="#">Contact</a></li>
@@ -492,12 +542,12 @@ function Footer({ businessName }) {
 }
 
 // ============================================================
-// Thumper launcher
+// Nic-Nac launcher
 // ============================================================
 function Thumper() {
   return (
     <div className="hp-thumper">
-      <button className="hp-thumper-btn" aria-label="Open Thumper">
+      <button className="hp-thumper-btn" aria-label="Open Nic-Nac">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
         </svg>
@@ -624,6 +674,9 @@ function App() {
 
       {/* What is a Bomb Party */}
       {t.showWibp && <Wibp repName={t.repName} />}
+
+      {/* About */}
+      {t.showAbout && <AboutSection repName={t.repName} />}
 
       {/* Signup */}
       {t.showSignup && <Signup repName={t.repName} businessName={t.businessName} />}
@@ -836,10 +889,11 @@ function App() {
           <TweakToggle label="Hero" value={t.showHero} onChange={(v) => setTweak("showHero", v)} />
           <TweakToggle label="Events" value={t.showEvents} onChange={(v) => setTweak("showEvents", v)} />
           <TweakToggle label="Bomb Party explainer" value={t.showWibp} onChange={(v) => setTweak("showWibp", v)} />
+          <TweakToggle label="About section" value={t.showAbout} onChange={(v) => setTweak("showAbout", v)} />
           <TweakToggle label="Signup" value={t.showSignup} onChange={(v) => setTweak("showSignup", v)} />
           <TweakToggle label="Join Team CTA" value={t.showJoinCta} onChange={(v) => setTweak("showJoinCta", v)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(v) => setTweak("showFooter", v)} />
-          <TweakToggle label="Thumper launcher" value={t.showThumper} onChange={(v) => setTweak("showThumper", v)} />
+          <TweakToggle label="Nic-Nac launcher" value={t.showThumper} onChange={(v) => setTweak("showThumper", v)} />
         </TweakSection>
 
         <TweakSection title="Copy sandbox">

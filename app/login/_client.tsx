@@ -39,7 +39,7 @@ export default function LoginClient() {
               setError(signErr.message)
               return
             }
-            const redirect = searchParams.get('redirect') || '/thumper'
+            const redirect = searchParams.get('redirect') || '/nic-nac'
             router.replace(redirect)
           } catch (err) {
             setError((err as Error).message)

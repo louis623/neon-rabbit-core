@@ -12,6 +12,15 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".worktrees/**",
+    ".superpowers/**",
+    ".tmp*/**",
+    ".tmp-*",
+    ".codex-logs/**",
+    "design/**",
+    "public/amethyst/**",
+    "supabase/functions/**",
+    "spike/**",
   ]),
 ]);
 

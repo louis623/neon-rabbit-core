@@ -235,27 +235,75 @@ describe('calendar service', () => {
   })
 
   it('listMyShows defaults to upcoming scheduled/live events ordered ascending and returns totalCount', async () => {
-    const row = baseRow()
-    const { chain, state } = makeListChain({ data: [row], count: 7, error: null })
-    const select = vi.fn(() => chain)
-    const supabase = {
-      from: vi.fn(() => ({ select })),
-    } as never
+    const scheduledRow = baseRow()
+    const liveChain = makeListChain({ data: [], count: 2, error: null })
+    const scheduledChain = makeListChain({ data: [scheduledRow], count: 7, error: null })
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => liveChain.chain) })
+      .mockReturnValueOnce({ select: vi.fn(() => scheduledChain.chain) })
+    const supabase = { from } as never
 
     const result = await listMyShows(supabase, 'rep-1')
 
-    expect(state.eq).toEqual([['rep_id', 'rep-1']])
-    expect(state.gt[0][0]).toBe('event_time')
-    expect(state.in).toEqual([['status', ['scheduled', 'live']]])
-    expect(state.order).toEqual([['event_time', { ascending: true }]])
-    expect(state.limit).toEqual([10])
-    expect(result.totalCount).toBe(7)
+    expect(liveChain.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['status', 'live'],
+    ])
+    expect(liveChain.state.gt).toEqual([])
+    expect(scheduledChain.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['status', 'scheduled'],
+    ])
+    expect(scheduledChain.state.gt[0][0]).toBe('event_time')
+    expect(scheduledChain.state.order).toEqual([['event_time', { ascending: true }]])
+    expect(scheduledChain.state.limit).toEqual([10])
+    expect(result.totalCount).toBe(9)
     expect(result.events[0]).toMatchObject({
       id: 'event-1',
       title: 'Friday Sparkles',
       discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featuredCollections: ['Celestial'],
     })
+  })
+
+  it('listMyShows keeps currently-live shows in the default upcoming path even if their start time is in the past', async () => {
+    const liveRow = baseRow({
+      id: 'live-1',
+      status: 'live',
+      event_time: '2099-04-30T20:00:00.000Z',
+      title: 'Live Right Now',
+    })
+    const scheduledRow = baseRow({
+      id: 'event-2',
+      status: 'scheduled',
+      event_time: '2099-05-02T20:00:00.000Z',
+      title: 'Tomorrow Night',
+    })
+
+    const liveChain = makeListChain({ data: [liveRow], count: 1, error: null })
+    const scheduledChain = makeListChain({ data: [scheduledRow], count: 1, error: null })
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => liveChain.chain) })
+      .mockReturnValueOnce({ select: vi.fn(() => scheduledChain.chain) })
+
+    const supabase = { from } as never
+
+    const result = await listMyShows(supabase, 'rep-1')
+
+    expect(liveChain.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['status', 'live'],
+    ])
+    expect(liveChain.state.gt).toEqual([])
+    expect(scheduledChain.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['status', 'scheduled'],
+    ])
+    expect(scheduledChain.state.gt[0][0]).toBe('event_time')
+    expect(result.totalCount).toBe(2)
+    expect(result.events.map((event) => event.id)).toEqual(['live-1', 'event-2'])
   })
 
   it('updateShow rejects events that are no longer scheduled', async () => {

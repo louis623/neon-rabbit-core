@@ -55,6 +55,13 @@ export type {
   CreateDesignResult,
   UpdateCanonicalPhotoResult,
 } from './types'
+export type {
+  JewelryPhotoIssueCode,
+  JewelryPhotoIssueSeverity,
+  JewelryPhotoPreflightInput,
+  JewelryPhotoPreflightIssue,
+  JewelryPhotoPreflightResult,
+} from './jewelry-photo-preflight'
 
 // Trade Board
 export { getMyBoard, removeListing, addListing, addListingBatch, updateListing } from './trade-board'
@@ -81,3 +88,6 @@ export {
   createDesign,
   updateCanonicalPhoto,
 } from './jewelry-database'
+
+// Jewelry Photo Pre-Flight
+export { assessJewelryPhotoPreflight } from './jewelry-photo-preflight'

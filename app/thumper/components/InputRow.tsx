@@ -9,6 +9,12 @@ export interface InputAttachment {
   id: string
   dataUrl: string
   mediaType: 'image/jpeg'
+  width: number
+  height: number
+  blurRisk: number
+  lightingRisk: number
+  subjectCoverage: number
+  subjectCentered: boolean
 }
 
 export interface InputRowProps {
@@ -199,7 +205,7 @@ export const InputRow = forwardRef<HTMLTextAreaElement, InputRowProps>(function 
               e.preventDefault()
             }
           }}
-          placeholder={placeholder ?? 'Ask Thumper…'}
+          placeholder={placeholder ?? 'Ask Nic-Nac…'}
           rows={1}
           aria-disabled={disabled || undefined}
           disabled={disabled}

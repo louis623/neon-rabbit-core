@@ -18,6 +18,8 @@ import { rejectTradeTool } from './reject-trade'
 import { searchJewelryDatabaseTool } from './search-jewelry-database'
 import { updateListingTool } from './update-listing'
 import { getTradeHistoryTool } from './get-trade-history'
+import { getFulfillmentQueueTool } from './get-fulfillment-queue'
+import { updateFulfillmentStatusTool } from './update-fulfillment-status'
 import { addShowTool } from './add-show'
 import { listMyShowsTool } from './list-my-shows'
 import { updateShowTool } from './update-show'
@@ -30,6 +32,7 @@ import { readRecentRepNotesTool } from './read-recent-rep-notes'
 import { sendSmsNotificationTool } from './send-sms-notification'
 import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
+import { customerAudienceTool } from './get-customer-audience'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -44,6 +47,8 @@ const REGISTRY: ToolDefinition[] = [
   searchJewelryDatabaseTool,
   updateListingTool,
   getTradeHistoryTool,
+  getFulfillmentQueueTool,
+  updateFulfillmentStatusTool,
   addShowTool,
   listMyShowsTool,
   updateShowTool,
@@ -56,6 +61,7 @@ const REGISTRY: ToolDefinition[] = [
   sendSmsNotificationTool,
   sendEmailNotificationTool,
   getNotificationPreferencesTool,
+  customerAudienceTool,
 ]
 
 export function buildAllTools(ctx: ToolContext): ToolSet {

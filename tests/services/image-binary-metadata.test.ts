@@ -1,0 +1,92 @@
+import { describe, expect, it } from 'vitest'
+
+import {
+  ImageBinaryMetadataError,
+  extractImageBinaryMetadata,
+} from '@/lib/services/image-binary-metadata'
+
+describe('image binary metadata', () => {
+  it('detects PNG dimensions from the IHDR chunk', () => {
+    const pngBytes = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x04, 0x00,
+      0x00, 0x00, 0x03, 0x00,
+      0x08, 0x06, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+    ])
+
+    expect(extractImageBinaryMetadata(pngBytes)).toEqual({
+      contentType: 'image/png',
+      width: 1024,
+      height: 768,
+    })
+  })
+
+  it('detects JPEG dimensions from a baseline SOF marker', () => {
+    const jpegBytes = new Uint8Array([
+      0xff, 0xd8,
+      0xff, 0xe0,
+      0x00, 0x10,
+      0x4a, 0x46, 0x49, 0x46, 0x00,
+      0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+      0xff, 0xc0,
+      0x00, 0x11,
+      0x08,
+      0x02, 0xd0,
+      0x05, 0x00,
+      0x03,
+      0x01, 0x11, 0x00,
+      0x02, 0x11, 0x00,
+      0x03, 0x11, 0x00,
+      0xff, 0xd9,
+    ])
+
+    expect(extractImageBinaryMetadata(jpegBytes)).toEqual({
+      contentType: 'image/jpeg',
+      width: 1280,
+      height: 720,
+    })
+  })
+
+  it('detects WEBP dimensions from a VP8X chunk', () => {
+    const webpBytes = new Uint8Array([
+      0x52, 0x49, 0x46, 0x46,
+      0x1e, 0x00, 0x00, 0x00,
+      0x57, 0x45, 0x42, 0x50,
+      0x56, 0x50, 0x38, 0x58,
+      0x0a, 0x00, 0x00, 0x00,
+      0x00,
+      0x00, 0x00, 0x00,
+      0xff, 0x03, 0x00,
+      0xff, 0x02, 0x00,
+    ])
+
+    expect(extractImageBinaryMetadata(webpBytes)).toEqual({
+      contentType: 'image/webp',
+      width: 1024,
+      height: 768,
+    })
+  })
+
+  it('returns null for unsupported bytes', () => {
+    const unsupportedBytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61])
+
+    expect(extractImageBinaryMetadata(unsupportedBytes)).toBeNull()
+  })
+
+  it('throws a clear error for truncated supported formats', () => {
+    const truncatedPng = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00,
+    ])
+
+    expect(() => extractImageBinaryMetadata(truncatedPng)).toThrowError(
+      ImageBinaryMetadataError,
+    )
+    expect(() => extractImageBinaryMetadata(truncatedPng)).toThrowError(
+      'PNG metadata is truncated or corrupt',
+    )
+  })
+})

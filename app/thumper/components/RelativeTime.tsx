@@ -6,10 +6,10 @@ import { useEffect, useState } from 'react'
 // Accepts an ISO string OR a number (epoch ms) for optimistic local timestamps.
 
 export function RelativeTime({ value }: { value: string | number | undefined }) {
-  const [, force] = useState(0)
+  const [now, setNow] = useState<number | null>(null)
 
   useEffect(() => {
-    const id = setInterval(() => force((n) => n + 1), 30_000)
+    const id = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
 
@@ -17,7 +17,7 @@ export function RelativeTime({ value }: { value: string | number | undefined }) 
   const ts = typeof value === 'number' ? value : Date.parse(value)
   if (!Number.isFinite(ts)) return null
 
-  const label = formatRelative(ts, Date.now())
+  const label = formatRelative(ts, now ?? ts)
   const isoLabel = new Date(ts).toISOString()
   return <time dateTime={isoLabel} title={new Date(ts).toLocaleString()}>{label}</time>
 }

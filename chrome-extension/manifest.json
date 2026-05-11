@@ -11,7 +11,7 @@
   "content_scripts": [
     {
       "matches": ["https://myoffice.bombparty.com/live-party-orders*"],
-      "js": ["content.js"],
+      "js": ["queue-filter.js", "content.js"],
       "run_at": "document_idle"
     }
   ],

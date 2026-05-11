@@ -23,6 +23,7 @@ import {
   type SubmitTradeRequestResult,
   type GetTradeRequestsFilters,
   type TradeRequestWithListing,
+  type TradeRequestNotificationSummary,
   type ApproveTradeResult,
   type RejectTradeResult,
   type GetTradeHistoryOptions,
@@ -48,6 +49,9 @@ export async function submitTradeRequest(
   input: SubmitTradeRequestInput
 ): Promise<SubmitTradeRequestResult> {
   if (!input.listingId) throw errors.MISSING_ITEM_INPUT()
+  if (!input.clickwrapAcknowledged) {
+    throw errors.CLICKWRAP_REQUIRED('request')
+  }
   if (!input.customerName?.trim()) {
     throw errors.INVALID_INPUT('customerName required', 'I need a customer name to submit that.')
   }
@@ -79,7 +83,8 @@ const REQUEST_LISTING_SELECT = `
     id, rep_id, listing_photo_url, uses_canonical_photo,
     design:jewelry_designs(
       id, item_number, design_name, material, main_stone, bp_msrp,
-      canonical_photo_url, type_prefix
+      canonical_photo_url, type_prefix,
+      collection:collections(name)
     )
   )
 `
@@ -112,6 +117,7 @@ export async function getTradeRequests(
           id: string
           item_number: string
           design_name: string
+          collection: { name: string } | { name: string }[] | null
           material: string | null
           main_stone: string | null
           bp_msrp: number | null
@@ -122,6 +128,7 @@ export async function getTradeRequests(
           id: string
           item_number: string
           design_name: string
+          collection: { name: string } | { name: string }[] | null
           material: string | null
           main_stone: string | null
           bp_msrp: number | null
@@ -148,6 +155,8 @@ export async function getTradeRequests(
       if (!lst) return null
       const design = Array.isArray(lst.design) ? lst.design[0] : lst.design
       if (!design) return null
+      const collectionRel = design.collection
+      const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
       // Auth client RLS already filters to this rep's listings, but double-check.
       if (lst.rep_id !== repId) return null
       return {
@@ -168,6 +177,7 @@ export async function getTradeRequests(
             id: design.id,
             itemNumber: design.item_number,
             designName: design.design_name,
+            collectionName: collection?.name ?? null,
             material: design.material,
             mainStone: design.main_stone,
             bpMsrp: design.bp_msrp,
@@ -180,6 +190,74 @@ export async function getTradeRequests(
     .filter((r): r is TradeRequestWithListing => r !== null)
 
   return rows
+}
+
+const REQUEST_NOTIFICATION_SELECT = `
+  id, customer_name, customer_description,
+  listing:trade_listings!inner(
+    id, rep_id,
+    design:jewelry_designs!inner(
+      item_number, design_name, bp_msrp, type_prefix,
+      collection:collections(name)
+    )
+  )
+`
+
+export async function getTradeRequestNotificationSummary(
+  supabase: SupabaseClient,
+  requestId: string
+): Promise<TradeRequestNotificationSummary | null> {
+  if (!requestId) throw errors.MISSING_ITEM_INPUT()
+
+  const { data, error } = await supabase
+    .from('trade_requests')
+    .select(REQUEST_NOTIFICATION_SELECT)
+    .eq('id', requestId)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+
+  type RawDesign = {
+    item_number: string
+    design_name: string
+    bp_msrp: number | null
+    type_prefix: TradeRequestNotificationSummary['listing']['typePrefix']
+    collection: { name: string } | { name: string }[] | null
+  }
+  type RawListing = {
+    id: string
+    rep_id: string
+    design: RawDesign | RawDesign[] | null
+  }
+  type RawRow = {
+    id: string
+    customer_name: string
+    customer_description: string
+    listing: RawListing | RawListing[] | null
+  }
+
+  const row = data as unknown as RawRow
+  const listing = Array.isArray(row.listing) ? row.listing[0] : row.listing
+  if (!listing) return null
+  const design = Array.isArray(listing.design) ? listing.design[0] : listing.design
+  if (!design) return null
+  const collectionRel = design.collection
+  const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+
+  return {
+    requestId: row.id,
+    repId: listing.rep_id,
+    customerName: row.customer_name,
+    customerDescription: row.customer_description,
+    listing: {
+      id: listing.id,
+      itemNumber: design.item_number,
+      designName: design.design_name,
+      collectionName: collection?.name ?? null,
+      typePrefix: design.type_prefix,
+      bpMsrp: design.bp_msrp,
+    },
+  }
 }
 
 async function assertRequestOwnedByRep(

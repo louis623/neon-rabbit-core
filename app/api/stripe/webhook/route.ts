@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/client'
 import { getStripeConfig } from '@/lib/stripe/config'
+import { stripeCentsToWalletMils } from '@/lib/services/wallet-units'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
@@ -173,10 +174,10 @@ async function handleWalletLoad(event: Stripe.Event, session: Stripe.Checkout.Se
   const { error } = await admin.rpc('credit_wallet', {
     p_wallet_id: walletId,
     p_rep_id: repId,
-    p_amount: intended,
+    p_amount: stripeCentsToWalletMils(intended),
     p_type: 'load',
     p_stripe_pi: pi.id,
-    p_stripe_fee: feeCents,
+    p_stripe_fee: feeCents === null ? null : stripeCentsToWalletMils(feeCents),
     p_description: 'Wallet load',
     p_attempt_id: null,
   })
@@ -186,8 +187,8 @@ async function handleWalletLoad(event: Stripe.Event, session: Stripe.Checkout.Se
     phase: 'wallet_load',
     wallet_id: walletId,
     rep_id: repId,
-    credited_cents: intended,
-    fee_cents: feeCents,
+    credited_mils: stripeCentsToWalletMils(intended),
+    fee_mils: feeCents === null ? null : stripeCentsToWalletMils(feeCents),
     pi_id: pi.id,
   })
 }
@@ -222,10 +223,10 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event) {
   const { error } = await admin.rpc('credit_wallet', {
     p_wallet_id: walletId,
     p_rep_id: repId,
-    p_amount: pi.amount_received,
+    p_amount: stripeCentsToWalletMils(pi.amount_received),
     p_type: 'auto_recharge',
     p_stripe_pi: pi.id,
-    p_stripe_fee: feeCents,
+    p_stripe_fee: feeCents === null ? null : stripeCentsToWalletMils(feeCents),
     p_description: 'Auto-recharge',
     p_attempt_id: attemptId,
   })
@@ -235,8 +236,8 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event) {
     phase: 'auto_recharge_succeeded',
     wallet_id: walletId,
     rep_id: repId,
-    credited_cents: pi.amount_received,
-    fee_cents: feeCents,
+    credited_mils: stripeCentsToWalletMils(pi.amount_received),
+    fee_mils: feeCents === null ? null : stripeCentsToWalletMils(feeCents),
     pi_id: pi.id,
   })
 }

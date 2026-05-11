@@ -17,6 +17,7 @@
 import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import { updateListing } from '@/lib/services/trade-board'
 import { ServiceError } from '@/lib/services/errors'
 import { writeTradeActionAudit } from '@/lib/thumper/audit'
@@ -145,7 +146,20 @@ export function makeUpdateListingTool(ctx: {
         listingPhotoUrl !== undefined &&
         !(useCanonicalPhoto === true && listingPhotoUrl !== null)
       ) {
-        patch.listingPhotoUrl = listingPhotoUrl
+        try {
+          patch.listingPhotoUrl =
+            listingPhotoUrl === null
+              ? null
+              : (
+                  await processRepCustomListingPhotoUrl({
+                    repId: ctx.repId,
+                    sourceImageUrl: listingPhotoUrl,
+                    filenameStem: `${listingId}-listing-photo`,
+                  })
+                ).photoUrl
+        } catch (err) {
+          explainServiceError(err)
+        }
         patchedFields.push('listingPhotoUrl')
       }
 

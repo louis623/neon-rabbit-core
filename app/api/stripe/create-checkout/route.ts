@@ -12,11 +12,16 @@ export async function POST(request: Request) {
 
   try {
     const { repId, rep } = await getAuthenticatedRep()
-    const body = await request.json()
-    const planType: string = body.planType
+    const body = await request.json().catch(() => ({}))
+    const requestedPlanType =
+      typeof body?.planType === 'string' ? body.planType.trim() : ''
+    const planType = requestedPlanType || 'monthly'
 
-    if (!planType || !['monthly', 'quarterly', 'annual'].includes(planType)) {
-      return NextResponse.json({ error: 'Invalid planType — must be monthly, quarterly, or annual' }, { status: 400 })
+    if (planType !== 'monthly') {
+      return NextResponse.json(
+        { error: 'Invalid planType — monthly is the only supported plan.' },
+        { status: 400 },
+      )
     }
 
     const priceId = getPriceId(planType)
@@ -48,8 +53,8 @@ export async function POST(request: Request) {
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${getAppUrl()}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${getAppUrl()}/billing`,
+      success_url: `${getAppUrl()}/nic-nac?billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getAppUrl()}/nic-nac?billing=subscription-cancelled`,
       metadata: {
         rep_id: repId,
         plan_type: planType,

@@ -1,0 +1,216 @@
+import {
+  buildPrelaunchScoutInput,
+  type PrelaunchIntakeReviewSubmission,
+} from '@/lib/prelaunch/intake-review'
+import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
+
+interface PrelaunchIntakeReviewPageContentProps {
+  submissions: PrelaunchIntakeReviewSubmission[]
+}
+
+function formatValue(value: string | null | undefined) {
+  return value?.trim() || 'Not provided'
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value))
+}
+
+export function PrelaunchIntakeReviewPageContent({
+  submissions,
+}: PrelaunchIntakeReviewPageContentProps) {
+  const total = submissions.length
+  const needsReview = submissions.filter(
+    (submission) => submission.prequalificationStatus === 'needs_review',
+  ).length
+  const qualified = submissions.filter(
+    (submission) => submission.prequalificationStatus === 'qualified',
+  ).length
+  const scoutReady = submissions.filter(
+    (submission) => submission.scoutInputStatus === 'ready',
+  ).length
+
+  return (
+    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <header className="flex flex-col gap-3 border-b border-slate-200 pb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Sparkle Suite
+          </p>
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+                Prelaunch intake review
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Review submitted rep fit checks, spot handoff blockers, and
+                copy Scout-ready context for the next onboarding step.
+              </p>
+            </div>
+            <a
+              className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+              href="/prelaunch"
+            >
+              View public page
+            </a>
+          </div>
+        </header>
+
+        <section
+          aria-label="Intake summary"
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {[
+            [`${total} total`, 'Submitted intake forms'],
+            [`${needsReview} needs review`, 'Fit flags or incomplete setup'],
+            [`${qualified} qualified`, 'No current fit flags'],
+            [`${scoutReady} Scout ready`, 'Ready for agent handoff'],
+          ].map(([value, label]) => (
+            <div
+              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+              key={label}
+            >
+              <p className="text-2xl font-semibold text-slate-950">{value}</p>
+              <p className="mt-1 text-sm text-slate-500">{label}</p>
+            </div>
+          ))}
+        </section>
+
+        {submissions.length === 0 ? (
+          <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
+            <h2 className="text-xl font-semibold text-slate-950">
+              No intake submissions yet
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              New /prelaunch intake forms will appear here after reps submit
+              their fit check.
+            </p>
+          </section>
+        ) : (
+          <section className="flex flex-col gap-4" aria-label="Submissions">
+            {submissions.map((submission) => (
+              <article
+                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+                key={submission.id}
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">
+                      Submitted {formatDate(submission.createdAt)}
+                    </p>
+                    <h2 className="mt-1 text-xl font-semibold text-slate-950">
+                      {submission.businessName}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {submission.name} - {submission.email} -{' '}
+                      {submission.phone}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold uppercase text-slate-700">
+                      {submission.prequalificationStatus.replace('_', ' ')}
+                    </span>
+                    <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-700">
+                      {submission.scoutInputStatus === 'ready'
+                        ? 'Scout ready'
+                        : submission.scoutInputStatus}
+                    </span>
+                    <span className="rounded-md bg-violet-50 px-3 py-1 text-xs font-semibold uppercase text-violet-700">
+                      {submission.waitlistId
+                        ? 'Waitlist linked'
+                        : 'No waitlist link'}
+                    </span>
+                  </div>
+                </div>
+
+                <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <dt className="font-semibold text-slate-500">
+                      Primary platform
+                    </dt>
+                    <dd className="mt-1 text-slate-900">
+                      {submission.primaryPlatform}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-slate-500">
+                      Streaming cadence
+                    </dt>
+                    <dd className="mt-1 text-slate-900">
+                      {submission.streamingFrequency}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-slate-500">
+                      Device setup
+                    </dt>
+                    <dd className="mt-1 text-slate-900">
+                      {submission.deviceSetup}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-slate-500">Team</dt>
+                    <dd className="mt-1 text-slate-900">
+                      {formatValue(submission.team.name)} -{' '}
+                      {submission.team.size}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-5 grid gap-4 text-sm lg:grid-cols-2">
+                  <div>
+                    <h3 className="font-semibold text-slate-500">
+                      Setup goal
+                    </h3>
+                    <p className="mt-1 leading-6 text-slate-800">
+                      {submission.setupGoal}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-500">
+                      Current setup
+                    </h3>
+                    <p className="mt-1 leading-6 text-slate-800">
+                      {submission.currentSetup}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {submission.fitFlags.length > 0 ? (
+                    submission.fitFlags.map((flag) => (
+                      <span
+                        className="rounded-md bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800"
+                        key={flag}
+                      >
+                        {flag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                      No fit flags
+                    </span>
+                  )}
+                </div>
+
+                <PrelaunchScoutRunButton intakeId={submission.id} />
+
+                <details className="mt-5 rounded-lg border border-slate-200 bg-slate-950 text-white">
+                  <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
+                    Scout input JSON
+                  </summary>
+                  <pre className="overflow-x-auto border-t border-white/10 p-4 text-xs leading-5 text-slate-100">
+                    {JSON.stringify(buildPrelaunchScoutInput(submission), null, 2)}
+                  </pre>
+                </details>
+              </article>
+            ))}
+          </section>
+        )}
+      </div>
+    </main>
+  )
+}

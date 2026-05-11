@@ -1,31 +1,52 @@
 import { tool } from 'ai'
 import { z } from 'zod'
 
+import { ServiceError } from '@/lib/services/errors'
+import { sendEmailNotification } from '@/lib/services/email-notifications'
+import { ThumperToolError } from '@/lib/thumper/errors'
 import type { ToolDefinition } from './types'
 
 export const inputSchema = z.object({
-  repId: z.string().min(1),
-  recipientEmail: z.string().min(1),
+  recipientEmail: z.string().email(),
   subject: z.string().min(1),
   body: z.string().min(1),
 })
 
-const STUB_RESPONSE = {
-  success: false,
-  message:
-    'Email notifications are coming soon! This feature is being built and will be available in a future update. For now, you can send emails directly from your email app.',
-} as const
+function explainServiceError(error: unknown): never {
+  if (error instanceof ServiceError) {
+    throw new ThumperToolError({
+      code: error.code,
+      userMessage: error.userMessage,
+      cause: error,
+    })
+  }
+  throw error
+}
 
 export function makeSendEmailNotificationTool(_ctx?: {
   repId: string
   conversationId: string
   runId: string
 }) {
+  if (!_ctx?.repId) {
+    throw new Error('send_email_notification requires an authenticated rep context')
+  }
+
   return tool({
     description:
-      'Stub for future email notifications. Returns a coming-soon message and does not send anything.',
+      'Send a one-off email notification to a single customer email address. This is for direct emails, not subscriber blasts or show reminders.',
     inputSchema,
-    execute: async () => STUB_RESPONSE,
+    execute: async (input) => {
+      try {
+        return await sendEmailNotification(_ctx.repId, {
+          recipientEmail: input.recipientEmail,
+          subject: input.subject,
+          body: input.body,
+        })
+      } catch (error) {
+        explainServiceError(error)
+      }
+    },
   })
 }
 

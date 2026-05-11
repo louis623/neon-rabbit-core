@@ -74,11 +74,18 @@ export function makeGetTradeRequestsTool(ctx: {
             design: {
               itemNumber: r.listing.design.itemNumber,
               designName: r.listing.design.designName,
+              collectionName: r.listing.design.collectionName,
               material: r.listing.design.material,
               mainStone: r.listing.design.mainStone,
               msrp: r.listing.design.bpMsrp,
               type: r.listing.design.typePrefix,
             },
+          },
+          reviewContext: {
+            sameCollection: r.listing.design.collectionName,
+            sameJewelryType: r.listing.design.typePrefix,
+            listingMsrp: r.listing.design.bpMsrp,
+            msrpIsReferenceOnly: true,
           },
         })),
       }

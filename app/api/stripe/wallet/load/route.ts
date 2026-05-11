@@ -4,6 +4,7 @@ import { getAppUrl } from '@/lib/stripe/config'
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { ensureWallet } from '@/lib/services/wallet'
+import { walletMilsToStripeCents } from '@/lib/services/wallet-units'
 
 export async function POST(request: Request) {
   if (!stripeEnabled()) {
@@ -26,11 +27,13 @@ export async function POST(request: Request) {
 
     const wallet = await ensureWallet(repId)
 
-    if (amountCents < wallet.minimum_load_amount_cents) {
+    const minimumLoadAmountCents = walletMilsToStripeCents(wallet.minimum_load_amount_mils)
+
+    if (amountCents < minimumLoadAmountCents) {
       return NextResponse.json(
         {
-          error: `amount_cents must be >= ${wallet.minimum_load_amount_cents}`,
-          minimum_load_amount_cents: wallet.minimum_load_amount_cents,
+          error: `amount_cents must be >= ${minimumLoadAmountCents}`,
+          minimum_load_amount_cents: minimumLoadAmountCents,
         },
         { status: 400 }
       )

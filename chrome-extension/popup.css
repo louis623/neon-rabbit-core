@@ -177,6 +177,76 @@ label[for="sync-input"] {
   background: #ef4444;
 }
 
+/* Party filter */
+.party-filter {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.party-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.party-filter-summary {
+  color: #9ca3af;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.party-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.party-filter-empty {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.party-filter-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.party-filter-option input {
+  margin-top: 2px;
+  accent-color: #8b5cf6;
+}
+
+.party-filter-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.party-filter-party {
+  color: #8b5cf6;
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.party-filter-meta {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 /* Footer */
 .footer {
   text-align: center;

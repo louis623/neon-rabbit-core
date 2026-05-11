@@ -2,6 +2,8 @@
 // re-encode as JPEG quality 0.8. Canvas re-encode strips EXIF as a side effect.
 // Returns both a File (compressed) and a data URL for thumbnail/transport use.
 
+import { measureImageQualitySignals } from './image-quality'
+
 const MAX_EDGE = 1024
 const JPEG_QUALITY = 0.8
 
@@ -11,6 +13,10 @@ export interface CompressedImage {
   mediaType: 'image/jpeg'
   width: number
   height: number
+  blurRisk: number
+  lightingRisk: number
+  subjectCoverage: number
+  subjectCentered: boolean
 }
 
 export async function compressImage(file: File): Promise<CompressedImage> {
@@ -36,6 +42,12 @@ export async function compressImage(file: File): Promise<CompressedImage> {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('canvas_context_unavailable')
     ctx.drawImage(img, 0, 0, targetW, targetH)
+    const imageData = ctx.getImageData(0, 0, targetW, targetH)
+    const qualitySignals = measureImageQualitySignals({
+      data: imageData.data,
+      width: targetW,
+      height: targetH,
+    })
 
     const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY)
     if (!dataUrl.startsWith('data:image/jpeg')) {
@@ -49,6 +61,10 @@ export async function compressImage(file: File): Promise<CompressedImage> {
       mediaType: 'image/jpeg',
       width: targetW,
       height: targetH,
+      blurRisk: qualitySignals.blurRisk,
+      lightingRisk: qualitySignals.lightingRisk,
+      subjectCoverage: qualitySignals.subjectCoverage,
+      subjectCentered: qualitySignals.subjectCentered,
     }
   } finally {
     URL.revokeObjectURL(objectUrl)

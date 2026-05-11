@@ -54,6 +54,9 @@ supabase/.temp/
 .local/
 .codex-logs/
 .worktrees/
+.superpowers/
+.tmp*/
+.tmp-*
 
 # Attack #5 transcript dumps (ephemeral test output)
 tests/thumper/attack-5-results/

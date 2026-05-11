@@ -1,0 +1,280 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { ServiceError, errors } from '@/lib/services/errors'
+import type {
+  HeroAnimationType,
+  SiteSettingsDashboardResult,
+  UpdateSiteSettingsDashboardInput,
+} from '@/lib/services/types'
+
+type SiteSettingsRow = {
+  banner_text: string | null
+  banner_visible: boolean | null
+  ticker_text: string | null
+  ticker_visible: boolean | null
+  tagline: string | null
+  hero_image_url: string | null
+  hero_animation_type: string | null
+  team_name: string | null
+  show_join_page: boolean | null
+}
+
+type RepProfileRow = {
+  display_name: string
+  business_name: string
+  email: string
+  phone: string | null
+  social_handles: Record<string, string> | null
+}
+
+const SITE_SETTINGS_SELECT =
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page'
+const REP_PROFILE_SELECT =
+  'display_name, business_name, email, phone, social_handles'
+
+function normalizeText(value: string | null | undefined) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeNullableText(value: string | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
+function normalizePhone(value: string | null | undefined) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeEmail(value: string | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value.trim()
+  return trimmed ? trimmed.toLowerCase() : ''
+}
+
+function normalizeHeroAnimationType(
+  value: string | null | undefined,
+): HeroAnimationType {
+  return value === 'pan' ? 'pan' : 'zoom'
+}
+
+function normalizeSocialHandles(
+  value: Record<string, string> | null | undefined,
+): Record<string, string> {
+  if (!value) return {}
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([key, handle]) => [key.trim(), handle.trim()] as const)
+      .filter(([key, handle]) => key.length > 0 && handle.length > 0),
+  )
+}
+
+function buildDashboardResult(args: {
+  siteSettings: SiteSettingsRow | null
+  repProfile: RepProfileRow
+}): SiteSettingsDashboardResult {
+  return {
+    displayName: args.repProfile.display_name,
+    businessName: args.repProfile.business_name,
+    email: args.repProfile.email,
+    phone: normalizePhone(args.repProfile.phone),
+    bannerText: normalizeText(args.siteSettings?.banner_text),
+    bannerVisible: args.siteSettings?.banner_visible ?? false,
+    tickerText: normalizeText(args.siteSettings?.ticker_text),
+    tickerVisible: args.siteSettings?.ticker_visible ?? false,
+    tagline: normalizeText(args.siteSettings?.tagline),
+    heroImageUrl: normalizeText(args.siteSettings?.hero_image_url),
+    heroAnimationType: normalizeHeroAnimationType(
+      args.siteSettings?.hero_animation_type,
+    ),
+    teamName: normalizeText(args.siteSettings?.team_name),
+    showJoinPage: args.siteSettings?.show_join_page ?? true,
+    socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
+  }
+}
+
+function toServiceError(
+  code: string,
+  message: string,
+  userMessage: string,
+  cause: unknown,
+  statusCode = 500,
+) {
+  return new ServiceError({
+    code,
+    message,
+    userMessage,
+    cause,
+    statusCode,
+  })
+}
+
+export async function getSiteSettingsDashboard(
+  supabase: SupabaseClient,
+  repId: string,
+): Promise<SiteSettingsDashboardResult> {
+  const [siteSettingsResult, repProfileResult] = await Promise.all([
+    supabase
+      .from('site_settings')
+      .select(SITE_SETTINGS_SELECT)
+      .eq('rep_id', repId)
+      .maybeSingle(),
+    supabase
+      .from('reps')
+      .select(REP_PROFILE_SELECT)
+      .eq('id', repId)
+      .single(),
+  ])
+
+  if (siteSettingsResult.error) {
+    throw toServiceError(
+      'SITE_SETTINGS_LOOKUP_FAILED',
+      'failed to load site settings',
+      "I couldn't load your site settings right now.",
+      siteSettingsResult.error,
+    )
+  }
+
+  if (repProfileResult.error || !repProfileResult.data) {
+    throw toServiceError(
+      'REP_PROFILE_LOOKUP_FAILED',
+      'failed to load rep profile',
+      "I couldn't load your profile right now.",
+      repProfileResult.error ?? new Error('rep profile row missing'),
+    )
+  }
+
+  return buildDashboardResult({
+    siteSettings: (siteSettingsResult.data as SiteSettingsRow | null) ?? null,
+    repProfile: repProfileResult.data as RepProfileRow,
+  })
+}
+
+export async function updateSiteSettingsDashboard(
+  supabase: SupabaseClient,
+  repId: string,
+  input: UpdateSiteSettingsDashboardInput,
+): Promise<SiteSettingsDashboardResult> {
+  const siteSettingsPatch: Record<string, unknown> = {}
+  const repPatch: Record<string, unknown> = {}
+
+  if (input.bannerText !== undefined) {
+    siteSettingsPatch.banner_text = normalizeNullableText(input.bannerText)
+  }
+  if (input.bannerVisible !== undefined) {
+    siteSettingsPatch.banner_visible = input.bannerVisible
+  }
+  if (input.tickerText !== undefined) {
+    siteSettingsPatch.ticker_text = normalizeNullableText(input.tickerText)
+  }
+  if (input.tickerVisible !== undefined) {
+    siteSettingsPatch.ticker_visible = input.tickerVisible
+  }
+  if (input.tagline !== undefined) {
+    siteSettingsPatch.tagline = normalizeNullableText(input.tagline)
+  }
+  if (input.heroImageUrl !== undefined) {
+    siteSettingsPatch.hero_image_url = normalizeNullableText(input.heroImageUrl)
+  }
+  if (input.heroAnimationType !== undefined) {
+    if (input.heroAnimationType !== 'zoom' && input.heroAnimationType !== 'pan') {
+      throw errors.INVALID_INPUT(
+        'heroAnimationType must be zoom or pan',
+        'Hero animation must be zoom or pan.',
+      )
+    }
+    siteSettingsPatch.hero_animation_type = input.heroAnimationType
+  }
+  if (input.teamName !== undefined) {
+    siteSettingsPatch.team_name = normalizeNullableText(input.teamName)
+  }
+  if (input.showJoinPage !== undefined) {
+    siteSettingsPatch.show_join_page = input.showJoinPage
+  }
+
+  if (input.displayName !== undefined) {
+    repPatch.display_name = normalizeText(input.displayName)
+  }
+  if (input.businessName !== undefined) {
+    repPatch.business_name = normalizeText(input.businessName)
+  }
+  if (input.email !== undefined) {
+    repPatch.email = normalizeEmail(input.email)
+  }
+  if (input.phone !== undefined) {
+    repPatch.phone = normalizeNullableText(input.phone)
+  }
+  if (input.socialHandles !== undefined) {
+    repPatch.social_handles = normalizeSocialHandles(input.socialHandles)
+  }
+
+  if (
+    Object.keys(siteSettingsPatch).length === 0 &&
+    Object.keys(repPatch).length === 0
+  ) {
+    throw errors.INVALID_INPUT(
+      'no site settings fields provided',
+      'Tell me what you want to change on your site.',
+    )
+  }
+
+  let siteSettingsRow: SiteSettingsRow | null = null
+  let repProfileRow: RepProfileRow | null = null
+
+  if (Object.keys(siteSettingsPatch).length > 0) {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .upsert(
+        {
+          rep_id: repId,
+          ...siteSettingsPatch,
+        },
+        { onConflict: 'rep_id' },
+      )
+      .select(SITE_SETTINGS_SELECT)
+      .single()
+
+    if (error || !data) {
+      throw toServiceError(
+        'SITE_SETTINGS_UPDATE_FAILED',
+        'failed to save site settings',
+        "I couldn't save your site settings right now.",
+        error ?? new Error('site settings upsert returned no row'),
+      )
+    }
+
+    siteSettingsRow = data as SiteSettingsRow
+  }
+
+  if (Object.keys(repPatch).length > 0) {
+    const { data, error } = await supabase
+      .from('reps')
+      .update(repPatch)
+      .eq('id', repId)
+      .select(REP_PROFILE_SELECT)
+      .single()
+
+    if (error || !data) {
+      throw toServiceError(
+        'REP_PROFILE_UPDATE_FAILED',
+        'failed to save rep profile',
+        "I couldn't save your profile right now.",
+        error ?? new Error('rep update returned no row'),
+      )
+    }
+
+    repProfileRow = data as RepProfileRow
+  }
+
+  if (!repProfileRow) {
+    throw errors.INVALID_INPUT(
+      'rep profile fields required for dashboard save',
+      'Please refresh and try saving again.',
+    )
+  }
+
+  return buildDashboardResult({
+    siteSettings: siteSettingsRow,
+    repProfile: repProfileRow,
+  })
+}

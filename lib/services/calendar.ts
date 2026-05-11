@@ -132,6 +132,35 @@ function buildRecurringEventTimes(eventTime: string, recurring: RecurringShowInp
   })
 }
 
+async function runListShowsQuery(
+  supabase: SupabaseClient,
+  repId: string,
+  statuses: EventStatus[],
+  opts: { upcomingOnly: boolean; nowIso: string; limit: number; ascending: boolean },
+): Promise<{ rows: CalendarEventRow[]; totalCount: number }> {
+  let query = supabase
+    .from('calendar_events')
+    .select(EVENT_SELECT, { count: 'exact' })
+    .eq('rep_id', repId)
+
+  if (opts.upcomingOnly) {
+    query = query.gt('event_time', opts.nowIso)
+  }
+
+  if (statuses.length === 1) {
+    query = query.eq('status', statuses[0])
+  } else {
+    query = query.in('status', statuses)
+  }
+
+  query = query.order('event_time', { ascending: opts.ascending })
+  const { data, error, count } = await query.limit(opts.limit)
+  if (error) throw error
+
+  const rows = (data ?? []) as CalendarEventRow[]
+  return { rows, totalCount: count ?? rows.length }
+}
+
 function mapEvent(row: CalendarEventRow): CalendarEvent {
   return {
     id: row.id,
@@ -281,28 +310,64 @@ export async function listMyShows(
     : upcoming
       ? (['scheduled', 'live'] as EventStatus[])
       : (['scheduled', 'live', 'completed'] as EventStatus[])
+  const ascending = upcoming
+  const nowIso = new Date().toISOString()
 
-  let query = supabase
-    .from('calendar_events')
-    .select(EVENT_SELECT, { count: 'exact' })
-    .eq('rep_id', repId)
+  if (upcoming && requestedStatuses.includes('live')) {
+    const liveStatuses = requestedStatuses.filter((status) => status === 'live')
+    const futureStatuses = requestedStatuses.filter((status) => status !== 'live')
 
-  if (upcoming) {
-    query = query.gt('event_time', new Date().toISOString())
+    if (futureStatuses.length === 0) {
+      const result = await runListShowsQuery(supabase, repId, liveStatuses, {
+        upcomingOnly: false,
+        nowIso,
+        limit,
+        ascending,
+      })
+      return {
+        events: result.rows.map(mapEvent),
+        totalCount: result.totalCount,
+      }
+    }
+
+    // Live shows can already be in progress, so they need to bypass the future-time filter.
+    const [liveResult, futureResult] = await Promise.all([
+      runListShowsQuery(supabase, repId, liveStatuses, {
+        upcomingOnly: false,
+        nowIso,
+        limit,
+        ascending,
+      }),
+      runListShowsQuery(supabase, repId, futureStatuses, {
+        upcomingOnly: true,
+        nowIso,
+        limit,
+        ascending,
+      }),
+    ])
+
+    const events = [...liveResult.rows, ...futureResult.rows]
+      .sort((a, b) => Date.parse(a.event_time) - Date.parse(b.event_time))
+      .slice(0, limit)
+      .map(mapEvent)
+
+    return {
+      events,
+      totalCount: liveResult.totalCount + futureResult.totalCount,
+    }
   }
 
-  if (requestedStatuses.length === 1) {
-    query = query.eq('status', requestedStatuses[0])
-  } else {
-    query = query.in('status', requestedStatuses)
+  const result = await runListShowsQuery(supabase, repId, requestedStatuses, {
+    upcomingOnly: upcoming,
+    nowIso,
+    limit,
+    ascending,
+  })
+
+  return {
+    events: result.rows.map(mapEvent),
+    totalCount: result.totalCount,
   }
-
-  query = query.order('event_time', { ascending: upcoming })
-  const { data, error, count } = await query.limit(limit)
-  if (error) throw error
-
-  const rows = ((data ?? []) as CalendarEventRow[]).map(mapEvent)
-  return { events: rows, totalCount: count ?? rows.length }
 }
 
 export async function updateShow(

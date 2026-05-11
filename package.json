@@ -4,9 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:3001": "next dev --port 3001",
+    "ensure:amethyst-dev": "tsx scripts/ensure-amethyst-dev.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "docs:import-neon-rabbit": "tsx scripts/import-neon-rabbit-drive-docs.ts",
+    "photo:process-queue": "tsx scripts/process-photo-enhancement-queue.ts",
+    "qa:amethyst": "npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-trade-template.test.ts && npm run verify:amethyst-links",
+    "verify:amethyst-links": "tsx scripts/verify-amethyst-links.ts",
     "test": "vitest run tests/thumper/abort-modes.test.ts tests/thumper/add-listing-recovery.test.ts tests/thumper/trade-requests.test.ts tests/thumper/trade-board-tools.test.ts tests/thumper/jewelry-database.test.ts tests/thumper/hitl-state.test.ts tests/thumper/calendar-service.test.ts tests/thumper/calendar-tools.test.ts tests/thumper/site-customization-tools.test.ts tests/thumper/rep-notes-tools.test.ts tests/thumper/send-sms-notification.test.ts tests/thumper/send-email-notification.test.ts tests/thumper/get-notification-preferences.test.ts",
     "test:attack5": "vitest run tests/thumper/attack-5-poisoned-rep-notes.test.ts"
   },

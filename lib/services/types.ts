@@ -220,11 +220,374 @@ export interface SubmitTradeRequestInput {
   listingId: string
   customerName: string
   customerDescription: string
+  clickwrapAcknowledged: boolean
 }
 
 export interface SubmitTradeRequestResult {
   requestId: string
   listingId: string
+}
+
+export interface CustomerAudienceSignupInput {
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+  smsConsent: boolean
+  emailConsent: boolean
+  marketingConsent: boolean
+}
+
+export interface CustomerAudienceSignupResult {
+  audienceId: string
+}
+
+export interface CustomerAudienceUnsubscribeInput {
+  repId: string
+  phone?: string
+  email?: string
+  unsubscribeSms: boolean
+  unsubscribeEmail: boolean
+}
+
+export interface CustomerAudienceUnsubscribeResult {
+  updatedCount: number
+  smsUpdatedCount: number
+  emailUpdatedCount: number
+}
+
+export type CustomerAudienceChannel = 'all' | 'sms' | 'email' | 'marketing'
+
+export interface GetCustomerAudienceFilters {
+  channelFilter?: CustomerAudienceChannel
+  limit?: number
+}
+
+export interface CustomerAudienceMember {
+  id: string
+  name: string
+  phone: string | null
+  email: string | null
+  smsConsent: boolean
+  emailConsent: boolean
+  marketingConsent: boolean
+  canReceiveSms: boolean
+  canReceiveEmail: boolean
+  consentDate: string | null
+  createdAt: string
+  smsOptedOutAt: string | null
+  emailOptedOutAt: string | null
+  stopKeywordReceivedAt: string | null
+}
+
+export interface CustomerAudienceSummary {
+  totalCustomers: number
+  smsReachableCount: number
+  emailReachableCount: number
+  marketingConsentCount: number
+  smsOptedOutCount: number
+  emailOptedOutCount: number
+  addedLast30DaysCount: number
+}
+
+export interface CustomerAudienceResult {
+  summary: CustomerAudienceSummary
+  customers: CustomerAudienceMember[]
+}
+
+export type WalletTransactionType =
+  | 'load'
+  | 'sms_charge'
+  | 'refund'
+  | 'adjustment'
+  | 'auto_recharge'
+
+export interface WalletTransactionSummary {
+  id: string
+  type: WalletTransactionType
+  amountMils: number
+  description: string | null
+  createdAt: string
+}
+
+export interface WalletDashboardResult {
+  balanceMils: number
+  balanceUsd: number
+  estimatedTextsRemaining: number
+  messagesSentThisMonth: number
+  messagesSpendThisMonthMils: number
+  messagesSpendThisMonthUsd: number
+  autoRechargeEnabled: boolean
+  autoRechargePending: boolean
+  autoRechargeThresholdMils: number
+  autoRechargeThresholdUsd: number
+  autoRechargeAmountMils: number
+  autoRechargeAmountUsd: number
+  minimumLoadAmountMils: number
+  minimumLoadAmountUsd: number
+  lastLoadedAt: string | null
+  recentTransactions: WalletTransactionSummary[]
+}
+
+export type HeroAnimationType = 'zoom' | 'pan'
+
+export interface SiteSettingsDashboardResult {
+  displayName: string
+  businessName: string
+  email: string
+  phone: string
+  bannerText: string
+  bannerVisible: boolean
+  tickerText: string
+  tickerVisible: boolean
+  tagline: string
+  heroImageUrl: string
+  heroAnimationType: HeroAnimationType
+  teamName: string
+  showJoinPage: boolean
+  socialHandles: Record<string, string>
+}
+
+export interface UpdateSiteSettingsDashboardInput {
+  displayName?: string
+  businessName?: string
+  email?: string
+  phone?: string
+  bannerText?: string
+  bannerVisible?: boolean
+  tickerText?: string
+  tickerVisible?: boolean
+  tagline?: string
+  heroImageUrl?: string
+  heroAnimationType?: HeroAnimationType
+  teamName?: string
+  showJoinPage?: boolean
+  socialHandles?: Record<string, string>
+}
+
+export type AccountBillingSubscriptionStatus =
+  | 'active'
+  | 'past_due'
+  | 'cancelled'
+  | 'paused'
+  | 'trialing'
+
+export interface AccountBillingSubscriptionSummary {
+  status: AccountBillingSubscriptionStatus
+  planType: 'monthly'
+  currentPeriodEnd: string | null
+  cancelAtPeriodEnd: boolean
+  cancelledAt: string | null
+  livemode: boolean
+}
+
+export interface AccountBillingPaymentMethodSummary {
+  brand: string
+  last4: string
+  expMonth: number
+  expYear: number
+}
+
+export interface AccountBillingInvoiceSummary {
+  id: string
+  createdAt: string
+  amountPaidCents: number
+  currency: string
+  status: string | null
+  hostedInvoiceUrl: string | null
+  invoicePdfUrl: string | null
+}
+
+export interface AccountBillingDashboardResult {
+  stripeConfigured: boolean
+  subscription: AccountBillingSubscriptionSummary | null
+  paymentMethod: AccountBillingPaymentMethodSummary | null
+  invoices: AccountBillingInvoiceSummary[]
+  canStartSubscription: boolean
+  canManageBilling: boolean
+}
+
+export type RepMessageType =
+  | 'monthly_report'
+  | 'newsletter'
+  | 'announcement'
+  | 'support_request'
+  | 'support_response'
+
+export type MessageDirection = 'nr_to_rep' | 'rep_to_nr'
+
+export interface RepMessageSummary {
+  id: string
+  messageType: RepMessageType
+  direction: MessageDirection
+  subject: string | null
+  body: string
+  isRead: boolean
+  readAt: string | null
+  createdAt: string
+}
+
+export interface GetRepMessagesFilters {
+  limit?: number
+  messageType?: RepMessageType
+  unreadOnly?: boolean
+}
+
+export interface RepMessagesDashboardResult {
+  unreadCount: number
+  messages: RepMessageSummary[]
+}
+
+export interface CreateRepSupportMessageInput {
+  subject: string
+  body: string
+}
+
+export interface HelpResource {
+  id: string
+  category: string
+  title: string
+  summary: string
+  body: string
+  quickActions: string[]
+}
+
+export interface SiteAnalyticsPrivacySummary {
+  disablesIpCapture: boolean
+  masksSensitiveInputs: boolean
+  identifiesAfterLoginOnly: boolean
+}
+
+export interface SiteAnalyticsOverview {
+  pageViews30d: number | null
+  uniqueVisitors30d: number | null
+  topTrafficSource: string | null
+  topDeviceType: string | null
+}
+
+export interface SiteAnalyticsBreakdownItem {
+  label: string
+  value: number
+}
+
+export interface SiteAnalyticsOperationalSnapshot {
+  activeListings: number
+  pendingRequests: number
+  upcomingShows: number
+  reachableCustomers: number
+}
+
+export interface SiteAnalyticsDashboardResult {
+  configured: boolean
+  privacy: SiteAnalyticsPrivacySummary
+  overview: SiteAnalyticsOverview
+  topPages: SiteAnalyticsBreakdownItem[]
+  trafficSources: SiteAnalyticsBreakdownItem[]
+  deviceMix: SiteAnalyticsBreakdownItem[]
+  operationalSnapshot: SiteAnalyticsOperationalSnapshot
+}
+
+export interface PrelaunchWaitlistInput {
+  name: string
+  email: string
+  phone: string
+  tiktokHandle: string
+  teamRepName: string
+  setupPain?: string
+  smsConsent: boolean
+  emailConsent: boolean
+}
+
+export interface PrelaunchWaitlistInsert {
+  full_name: string
+  email: string
+  phone: string
+  tiktok_handle: string
+  team_rep_name: string
+  setup_pain: string | null
+  sms_consent: boolean
+  email_consent: boolean
+  source: 'prelaunch_site'
+}
+
+export type PrelaunchWaitlistWelcomeEmailStatus =
+  | 'not_attempted'
+  | 'sent'
+  | 'skipped'
+  | 'failed'
+
+export interface PrelaunchIntakeInput {
+  fullName: string
+  email: string
+  phone: string
+  businessName: string
+  tiktokHandle: string
+  instagramHandle: string
+  facebookUrl: string
+  teamName?: string
+  teamSize: string
+  primaryPlatform: string
+  streamingFrequency: string
+  currentSetup: string
+  setupGoal: string
+  deviceSetup: string
+  brandVibe?: string
+  colorPreferences?: string
+  specialRequests?: string
+  smsConsent: boolean
+  emailConsent: boolean
+}
+
+export interface PrelaunchIntakeValidated {
+  fullName: string
+  email: string
+  phone: string
+  businessName: string
+  tiktokHandle?: string
+  instagramHandle?: string
+  facebookUrl?: string
+  teamName?: string
+  teamSize: string
+  primaryPlatform: string
+  streamingFrequency: string
+  currentSetup: string
+  setupGoal: string
+  deviceSetup: string
+  brandVibe?: string
+  colorPreferences?: string
+  specialRequests?: string
+  smsConsent: true
+  emailConsent: true
+}
+
+export type PrelaunchPrequalificationStatus = 'qualified' | 'needs_review'
+
+export interface PrelaunchIntakeInsert {
+  full_name: string
+  email: string
+  phone: string
+  business_name: string
+  tiktok_handle: string | null
+  instagram_handle: string | null
+  facebook_url: string | null
+  team_name: string | null
+  team_size: string
+  primary_platform: string
+  streaming_frequency: string
+  current_setup: string
+  setup_goal: string
+  device_setup: string
+  brand_vibe: string | null
+  color_preferences: string | null
+  special_requests: string | null
+  sms_consent: boolean
+  email_consent: boolean
+  prequalification_status: PrelaunchPrequalificationStatus
+  fit_flags: string[]
+  waitlist_id: string | null
+  scout_input_status: 'ready'
+  warmup_sequence_status: 'intake_received'
+  source: 'prelaunch_intake'
 }
 
 export interface GetTradeRequestsFilters {
@@ -250,12 +613,28 @@ export interface TradeRequestWithListing {
       id: string
       itemNumber: string
       designName: string
+      collectionName: string | null
       material: string | null
       mainStone: string | null
       bpMsrp: number | null
       canonicalPhotoUrl: string | null
       typePrefix: JewelryType
     }
+  }
+}
+
+export interface TradeRequestNotificationSummary {
+  requestId: string
+  repId: string
+  customerName: string
+  customerDescription: string
+  listing: {
+    id: string
+    itemNumber: string
+    designName: string
+    collectionName: string | null
+    typePrefix: JewelryType
+    bpMsrp: number | null
   }
 }
 
@@ -395,6 +774,7 @@ export interface CreateDesignInput {
   collectionName?: string
   specialFeatures?: string
   lengthInfo?: string
+  photoPipeline?: PhotoPipelineStatePatch
 }
 
 export interface CreateDesignResult {
@@ -408,4 +788,35 @@ export interface CreateDesignResult {
 export interface UpdateCanonicalPhotoResult {
   designId: string
   canonicalPhotoUrl: string
+}
+
+export type PhotoPipelineStatus =
+  | 'pending'
+  | 'staged'
+  | 'preflight_failed'
+  | 'ready'
+  | 'processing'
+  | 'qa_review'
+  | 'approved'
+  | 'rejected'
+  | 'published'
+  | 'error'
+
+export interface PhotoPipelineStatePatch {
+  originalPath?: string | null
+  originalUrl?: string | null
+  enhancedUrl?: string | null
+  provider?: string | null
+  status?: PhotoPipelineStatus
+  preflightScore?: number | null
+  preflightIssues?: unknown[] | null
+  qaDecision?: 'approve' | 'review' | 'hold' | 'reject' | null
+  qaConfidence?: number | null
+  processedAt?: string | null
+}
+
+export interface UpdatePhotoPipelineStateResult {
+  designId: string
+  photoPipelineStatus: PhotoPipelineStatus
+  enhancedPhotoUrl: string | null
 }

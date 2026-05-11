@@ -103,7 +103,7 @@ export interface AmethystSiteContent {
 export const defaultAmethystSiteContent: AmethystSiteContent = {
   repName: 'Rep Name',
   businessName: 'Show Name',
-  teamName: 'Team Name',
+  teamName: 'Team Velvet Hour',
   heroEyebrow: 'Live reveals · every Tuesday · 8pm local time',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
@@ -117,7 +117,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   ],
   bombPartyLearnMoreUrl: 'https://bombparty.com',
   shopUrl: 'https://bombparty.com',
-  joinTeamUrl: 'https://bombparty.com',
+  joinTeamUrl: '/amethyst/Join.html',
   streamLinks: [
     {
       label: 'Watch on TikTok',
@@ -239,7 +239,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   signupTitle: 'Never miss a show.',
   signupSub: 'Get a heads-up when Rep Name goes live, plus first looks at new trade board listings and featured collections.',
   signupConsent:
-    'By submitting, you agree to receive email and, if provided, SMS updates from Show Name. Message and data rates may apply. Reply STOP to unsubscribe.',
+    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Show Name. Message and data rates may apply. Reply STOP to unsubscribe.',
   joinTeamEyebrow: 'Join the team',
   joinTeamTitle: 'Want to do this too?',
   joinTeamSub:
@@ -254,7 +254,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   footerAboutLinks: [
     { label: 'Home', href: '#top' },
     { label: 'What is Bomb Party?', href: '#bomb-party' },
-    { label: 'Join Team', href: '#join-team' },
+    { label: 'Join Team', href: '/amethyst/Join.html' },
     { label: 'Sign Up', href: '#signup' },
   ],
   footerColumn: {
@@ -302,7 +302,7 @@ export function makeAmethystSiteContent(
       `Get a heads-up when ${repName} goes live, plus first looks at new trade board listings and featured collections.`,
     signupConsent:
       overrides.signupConsent ??
-      `By submitting, you agree to receive email and, if provided, SMS updates from ${businessName}. Message and data rates may apply. Reply STOP to unsubscribe.`,
+      `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Message and data rates may apply. Reply STOP to unsubscribe.`,
     legalDisclaimer:
       overrides.legalDisclaimer ??
       `${businessName} is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.`,

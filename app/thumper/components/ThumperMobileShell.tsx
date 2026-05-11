@@ -69,7 +69,7 @@ export function ThumperMobileShell({
         type="button"
         className={styles.bubble}
         onClick={onOpen}
-        aria-label="Open Thumper"
+        aria-label="Open Nic-Nac"
         aria-expanded={open}
       >
         <ThumperGlyph size={28} />
@@ -82,7 +82,7 @@ export function ThumperMobileShell({
           }}
           role="presentation"
         >
-          <div ref={modalRef} className={styles.modal} role="dialog" aria-modal="true" aria-label="Thumper">
+          <div ref={modalRef} className={styles.modal} role="dialog" aria-modal="true" aria-label="Nic-Nac">
             {children}
           </div>
         </div>

@@ -37,12 +37,17 @@
       }
 
       body {
+        position: relative;
         padding: 0;
+        background:
+          radial-gradient(circle at 16% 12%, rgba(210, 9, 227, 0.12), transparent 20%),
+          radial-gradient(circle at 84% 16%, rgba(72, 13, 223, 0.09), transparent 22%),
+          linear-gradient(180deg, #f7eff8 0%, #efe4f5 100%);
       }
 
       .poster-frame {
-        width: 100%;
-        height: 100%;
+        position: absolute;
+        inset: 0;
         padding: 42px;
         display: grid;
         background:

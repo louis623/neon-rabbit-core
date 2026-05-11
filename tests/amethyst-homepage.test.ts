@@ -9,25 +9,35 @@ import {
 import { AmethystHomepage } from '@/components/amethyst/amethyst-homepage'
 
 describe('Amethyst homepage template', () => {
-  it('renders the locked header nav, dual ticker, key homepage sections, and footer copy from placeholder content', () => {
+  it('renders the locked homepage shell and key export interactions from placeholder content', () => {
     const html = renderToStaticMarkup(
       createElement(AmethystHomepage, {
         content: defaultAmethystSiteContent,
       }),
     )
 
-    expect(html).toContain('Home')
+    expect(html).toContain('aria-label="Menu"')
+    expect(html).toContain('Shop')
+    expect(html).toContain('Watch Live')
     expect(html).toContain('Trade Board')
-    expect(html).toContain('Join Team')
-    expect(html).toContain('Learn about Bomb Party')
     expect(html).toContain('Upcoming Shows')
-    expect(html).toContain('Featured Trade Board')
     expect(html).toContain('What is Bomb Party?')
     expect(html).toContain('Never miss a show.')
     expect(html).toContain('Want to do this too?')
+    expect(html).toContain('Add to calendar')
+    expect(html).toContain('aria-label="Open Nic-Nac"')
     expect(html).toContain(defaultAmethystSiteContent.businessName)
     expect(html).toContain(defaultAmethystSiteContent.repName)
-    expect(html).toContain(defaultAmethystSiteContent.tradeBoardListings[0].title)
+    expect(html).toContain(defaultAmethystSiteContent.announcementItems[0])
+    expect(html).toContain('First name')
+    expect(html).toContain('Last name')
+    expect(html).toContain('Email')
+    expect(html).toContain('Phone')
+    expect(html).toContain('sms_consent')
+    expect(html).toContain('email_consent')
+    expect(html).toContain('marketing_consent')
+    expect(html).toContain('/amethyst/unsubscribe')
+    expect(html).not.toContain('Featured Trade Board')
   })
 
   it('uses the supplied site content instead of hardcoded rep-specific strings', () => {

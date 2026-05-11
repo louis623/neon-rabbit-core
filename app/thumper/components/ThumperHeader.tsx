@@ -16,7 +16,7 @@ export function ThumperHeader({
     <header className={styles.header}>
       <div className={styles.titleGroup}>
         <ThumperGlyph size={22} />
-        <span className={styles.title}>Thumper</span>
+        <span className={styles.title}>Nic-Nac</span>
       </div>
       <div className={styles.actions}>
         {onNewConversation ? (
@@ -43,7 +43,7 @@ export function ThumperHeader({
             type="button"
             onClick={onClose}
             className={styles.closeBtn}
-            aria-label={closeLabel ?? 'Close Thumper'}
+            aria-label={closeLabel ?? 'Close Nic-Nac'}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
               <path

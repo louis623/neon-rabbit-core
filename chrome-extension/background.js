@@ -1,7 +1,9 @@
 // Sparkle Suite Live Queue — Service Worker
 // Fires a 60-second alarm to trigger content script sync
 
-chrome.alarms.create("sparkle-sync", { periodInMinutes: 1 });
+chrome.alarms.create("sparkle-sync", { periodInMinutes: 1 }, function () {
+  void chrome.runtime.lastError; // silently consume extension reload races
+});
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name !== "sparkle-sync") return;

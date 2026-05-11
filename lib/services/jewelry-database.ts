@@ -22,27 +22,92 @@ import {
   type ResolveItemNumberResult,
   type CreateDesignInput,
   type CreateDesignResult,
+  type PhotoPipelineStatePatch,
   type UpdateCanonicalPhotoResult,
+  type UpdatePhotoPipelineStateResult,
 } from './types'
 import { errors } from './errors'
 
 const VALID_TYPE_PREFIXES = new Set<JewelryType>(['RG', 'NK', 'ER', 'ST', 'BR'])
 
+function hasPipelineSourceState(photoPipeline: PhotoPipelineStatePatch | undefined) {
+  return !!(
+    photoPipeline?.originalPath &&
+    photoPipeline?.originalUrl &&
+    photoPipeline?.status
+  )
+}
+
+function isApprovedCanonicalPhotoUrl(designId: string, photoUrl: string): boolean {
+  try {
+    const url = new URL(photoUrl)
+    return url.pathname.includes(`/approved/${designId}/`)
+  } catch {
+    return false
+  }
+}
+
+export function normalizeItemNumber(itemNumber: string): string {
+  return itemNumber.trim().toUpperCase()
+}
+
+function buildPhotoPipelineUpdate(
+  photoPipeline: PhotoPipelineStatePatch | undefined,
+): Record<string, unknown> {
+  if (!photoPipeline) return {}
+
+  const update: Record<string, unknown> = {}
+
+  if (photoPipeline.originalPath !== undefined) {
+    update.photo_pipeline_original_path = photoPipeline.originalPath
+  }
+  if (photoPipeline.originalUrl !== undefined) {
+    update.photo_pipeline_original_url = photoPipeline.originalUrl
+  }
+  if (photoPipeline.enhancedUrl !== undefined) {
+    update.photo_pipeline_enhanced_url = photoPipeline.enhancedUrl
+  }
+  if (photoPipeline.provider !== undefined) {
+    update.photo_pipeline_provider = photoPipeline.provider
+  }
+  if (photoPipeline.status !== undefined) {
+    update.photo_pipeline_status = photoPipeline.status
+  }
+  if (photoPipeline.preflightScore !== undefined) {
+    update.photo_pipeline_preflight_score = photoPipeline.preflightScore
+  }
+  if (photoPipeline.preflightIssues !== undefined) {
+    update.photo_pipeline_preflight_issues = photoPipeline.preflightIssues ?? []
+  }
+  if (photoPipeline.qaDecision !== undefined) {
+    update.photo_pipeline_qa_decision = photoPipeline.qaDecision
+  }
+  if (photoPipeline.qaConfidence !== undefined) {
+    update.photo_pipeline_qa_confidence = photoPipeline.qaConfidence
+  }
+  if (photoPipeline.processedAt !== undefined) {
+    update.photo_pipeline_processed_at = photoPipeline.processedAt
+  }
+
+  return update
+}
+
 export async function resolveItemNumber(
   supabase: SupabaseClient,
   itemNumber: string
 ): Promise<ResolveItemNumberResult> {
-  if (!itemNumber) throw errors.MISSING_ITEM_INPUT()
+  const normalizedItemNumber = normalizeItemNumber(itemNumber)
+  if (!normalizedItemNumber) throw errors.MISSING_ITEM_INPUT()
 
   const { data, error } = await supabase
     .from('jewelry_designs')
     .select(
       'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection_id, collection:collections(name)'
     )
-    .eq('item_number', itemNumber)
+    .eq('item_number', normalizedItemNumber)
     .maybeSingle()
   if (error) throw error
-  if (!data) return { found: false, itemNumber }
+  if (!data) return { found: false, itemNumber: normalizedItemNumber }
 
   const collectionRel = (data as { collection: { name: string } | { name: string }[] | null })
     .collection
@@ -177,15 +242,22 @@ export async function createDesign(
   supabase: SupabaseClient,
   input: CreateDesignInput
 ): Promise<CreateDesignResult> {
-  if (!input.itemNumber) throw errors.MISSING_ITEM_INPUT()
+  const normalizedItemNumber = normalizeItemNumber(input.itemNumber)
+  if (!normalizedItemNumber) throw errors.MISSING_ITEM_INPUT()
   if (!input.designName?.trim()) {
     throw errors.INVALID_INPUT('designName required', "I need a design name to create that piece.")
   }
   if (!input.piecePhotoUrl?.trim()) {
     throw errors.MISSING_PIECE_PHOTO()
   }
+  if (!hasPipelineSourceState(input.photoPipeline)) {
+    throw errors.INVALID_INPUT(
+      'new design photos must include staged photo pipeline metadata',
+      'I need to run that piece photo through the image pipeline before I can create the design.',
+    )
+  }
 
-  const typePrefix = input.itemNumber.slice(0, 2).toUpperCase() as JewelryType
+  const typePrefix = normalizedItemNumber.slice(0, 2) as JewelryType
   if (!VALID_TYPE_PREFIXES.has(typePrefix)) {
     throw errors.INVALID_INPUT(
       `unknown type prefix "${typePrefix}"`,
@@ -222,7 +294,7 @@ export async function createDesign(
   const { data: design, error: designErr } = await supabase
     .from('jewelry_designs')
     .insert({
-      item_number: input.itemNumber,
+      item_number: normalizedItemNumber,
       design_name: input.designName,
       type_prefix: typePrefix,
       collection_id: collectionId,
@@ -232,6 +304,7 @@ export async function createDesign(
       canonical_photo_url: input.piecePhotoUrl,
       special_features: input.specialFeatures ?? null,
       length_info: input.lengthInfo ?? null,
+      ...buildPhotoPipelineUpdate(input.photoPipeline),
     })
     .select('id, item_number, type_prefix')
     .single()
@@ -253,6 +326,12 @@ export async function updateCanonicalPhoto(
 ): Promise<UpdateCanonicalPhotoResult> {
   if (!designId) throw errors.MISSING_ITEM_INPUT()
   if (!photoUrl?.trim()) throw errors.MISSING_PIECE_PHOTO()
+  if (!isApprovedCanonicalPhotoUrl(designId, photoUrl)) {
+    throw errors.INVALID_INPUT(
+      'canonical photo updates must point at an approved pipeline asset',
+      'I can only promote an approved photo-pipeline image as the canonical design photo.',
+    )
+  }
 
   const { data, error } = await supabase
     .from('jewelry_designs')
@@ -266,5 +345,32 @@ export async function updateCanonicalPhoto(
   return {
     designId: data.id as string,
     canonicalPhotoUrl: data.canonical_photo_url as string,
+  }
+}
+
+export async function updatePhotoPipelineState(
+  supabase: SupabaseClient,
+  designId: string,
+  patch: PhotoPipelineStatePatch,
+): Promise<UpdatePhotoPipelineStateResult> {
+  if (!designId) throw errors.MISSING_ITEM_INPUT()
+
+  const { data, error } = await supabase
+    .from('jewelry_designs')
+    .update({
+      ...buildPhotoPipelineUpdate(patch),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', designId)
+    .select('id, photo_pipeline_status, photo_pipeline_enhanced_url')
+    .single()
+  if (error) throw error
+  if (!data) throw errors.LISTING_NOT_FOUND(`design ${designId}`)
+
+  return {
+    designId: data.id as string,
+    photoPipelineStatus:
+      data.photo_pipeline_status as UpdatePhotoPipelineStateResult['photoPipelineStatus'],
+    enhancedPhotoUrl: (data.photo_pipeline_enhanced_url as string | null) ?? null,
   }
 }

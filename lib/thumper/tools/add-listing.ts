@@ -14,9 +14,20 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { addListing, addListingBatch } from '@/lib/services/trade-board'
-import { createDesign } from '@/lib/services/jewelry-database'
+import {
+  createDesign,
+  updateCanonicalPhoto,
+  updatePhotoPipelineState,
+} from '@/lib/services/jewelry-database'
+import { prepareDesignSourcePhoto } from '@/lib/services/design-source-photo-processing'
+import { assessJewelryPhotoPreflight } from '@/lib/services/jewelry-photo-preflight'
+import { executePhotoEnhancement } from '@/lib/services/photo-enhancement'
+import { decideCanonicalEnhancedPhoto } from '@/lib/services/photo-enhancement-qa'
+import { analyzeServerImageQuality } from '@/lib/services/server-image-quality'
+import { processRepListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import { ServiceError } from '@/lib/services/errors'
-import { uploadJewelryPhoto } from '@/lib/services/storage'
+import { publishApprovedPhoto } from '@/lib/services/storage'
+import { getPhotoroomConfig } from '@/lib/photoroom/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/thumper/audit'
 import { logIncident } from '@/lib/thumper/guardian-telemetry'
@@ -121,7 +132,7 @@ async function writeAuditIsolated(args: {
 }
 
 // Look up the most recent user-uploaded image part in this conversation and
-// upload it to Supabase Storage, returning the resulting public URL. Returns
+// return its client-compressed data URL plus any persisted dimensions. Returns
 // null if no image part is found in any complete user message — caller is
 // responsible for surfacing MISSING_PIECE_PHOTO. Mirrors the persistence.ts
 // pattern of ordering by created_at DESC with id as the deterministic
@@ -129,8 +140,9 @@ async function writeAuditIsolated(args: {
 async function resolvePhotoFromConversation(ctx: {
   supabase: SupabaseClient
   conversationId: string
-  repId: string
-}): Promise<string | null> {
+}): Promise<{
+  imageDataUrl: string
+} | null> {
   const { data, error } = await ctx.supabase
     .from('thumper_conversations')
     .select('parts')
@@ -155,7 +167,9 @@ async function resolvePhotoFromConversation(ctx: {
         typeof p.url === 'string',
     )
     if (imagePart?.url) {
-      return await uploadJewelryPhoto(ctx.repId, imagePart.url)
+      return {
+        imageDataUrl: imagePart.url,
+      }
     }
   }
   return null
@@ -181,6 +195,22 @@ async function runSingle(
   }
 
   let createdNewDesign = false
+  let photoPreflight:
+    | ReturnType<typeof assessJewelryPhotoPreflight>
+    | null = null
+  let photoPipelineStatus: string | null = null
+  let sourcePhotoWidth = 0
+  let sourcePhotoHeight = 0
+  let sourcePhotoAnalysis:
+    | {
+        blurRisk: number
+        lightingRisk: number
+        detailRisk: number
+        backgroundDistractionRisk: number
+        subjectCoverage: number
+        subjectCentered: boolean
+      }
+    | null = null
 
   // New-design recovery: rep is retrying after a prior NEEDS_FULL_INFO.
   // Require collectionName here even though the service layer accepts a
@@ -198,19 +228,75 @@ async function runSingle(
     }
 
     let resolvedPhotoUrl: string | null = piecePhotoUrl?.trim() || null
-    if (!resolvedPhotoUrl) {
-      resolvedPhotoUrl = await resolvePhotoFromConversation({
+    let stagedOriginal:
+      | {
+          objectPath: string
+          signedUrl: string
+        }
+      | null = null
+    if (resolvedPhotoUrl) {
+      let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
+      try {
+        preparedSource = await prepareDesignSourcePhoto({
+          repId: ctx.repId,
+          sourceImageUrl: resolvedPhotoUrl,
+          filenameStem: itemNumber,
+        })
+      } catch (err) {
+        explainServiceError(err)
+      }
+      resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      stagedOriginal = preparedSource.stagedOriginal
+      photoPreflight = preparedSource.preflight
+      sourcePhotoWidth = preparedSource.analysis.width
+      sourcePhotoHeight = preparedSource.analysis.height
+      sourcePhotoAnalysis = {
+        blurRisk: preparedSource.analysis.blurRisk,
+        lightingRisk: preparedSource.analysis.lightingRisk,
+        detailRisk: preparedSource.analysis.detailRisk,
+        backgroundDistractionRisk:
+          preparedSource.analysis.backgroundDistractionRisk,
+        subjectCoverage: preparedSource.analysis.subjectCoverage,
+        subjectCentered: preparedSource.analysis.subjectCentered,
+      }
+      photoPipelineStatus = 'ready'
+    } else {
+      const resolvedPhoto = await resolvePhotoFromConversation({
         supabase: ctx.supabase,
         conversationId: ctx.conversationId,
-        repId: ctx.repId,
       })
-      if (!resolvedPhotoUrl) {
+      if (!resolvedPhoto) {
         throw new ThumperToolError({
           code: 'MISSING_PIECE_PHOTO',
           userMessage:
             "I don't see a photo of this piece in our conversation. Send me a photo and I'll add it.",
         })
       }
+      let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
+      try {
+        preparedSource = await prepareDesignSourcePhoto({
+          repId: ctx.repId,
+          sourceImageDataUrl: resolvedPhoto.imageDataUrl,
+          filenameStem: itemNumber,
+        })
+      } catch (err) {
+        explainServiceError(err)
+      }
+      stagedOriginal = preparedSource.stagedOriginal
+      resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      photoPreflight = preparedSource.preflight
+      sourcePhotoWidth = preparedSource.analysis.width
+      sourcePhotoHeight = preparedSource.analysis.height
+      sourcePhotoAnalysis = {
+        blurRisk: preparedSource.analysis.blurRisk,
+        lightingRisk: preparedSource.analysis.lightingRisk,
+        detailRisk: preparedSource.analysis.detailRisk,
+        backgroundDistractionRisk:
+          preparedSource.analysis.backgroundDistractionRisk,
+        subjectCoverage: preparedSource.analysis.subjectCoverage,
+        subjectCentered: preparedSource.analysis.subjectCentered,
+      }
+      photoPipelineStatus = 'ready'
     }
 
     let createResult: Awaited<ReturnType<typeof createDesign>>
@@ -225,11 +311,161 @@ async function runSingle(
         bpMsrp: input.bpMsrp,
         specialFeatures: input.specialFeatures,
         lengthInfo: input.lengthInfo,
+        photoPipeline: stagedOriginal
+          ? {
+              originalPath: stagedOriginal.objectPath,
+              originalUrl: stagedOriginal.signedUrl,
+              status: 'ready',
+              preflightScore: photoPreflight?.score ?? null,
+              preflightIssues: photoPreflight?.issues ?? [],
+            }
+          : undefined,
       })
     } catch (err) {
       explainServiceError(err)
     }
     createdNewDesign = true
+    if (stagedOriginal) {
+      const photoroomConfig = getPhotoroomConfig()
+      if (photoroomConfig) {
+        try {
+          await updatePhotoPipelineState(admin, createResult.designId, {
+            provider: 'photoroom',
+            status: 'processing',
+          })
+          const enhanced = await executePhotoEnhancement(
+            {
+              assetId: `${createResult.designId}:${itemNumber}`,
+              sourceImageUrl: stagedOriginal.signedUrl,
+              output: {
+                format: 'png',
+                background: 'white',
+              },
+              operations: {
+                removeBackground: true,
+                relight: 'preserve-hue-and-saturation',
+              },
+              context: {
+                repId: ctx.repId,
+                traceId: ctx.runId,
+              },
+            },
+            {
+              provider: photoroomConfig,
+            },
+          )
+          const outputMetadata = await analyzeServerImageQuality(
+            enhanced.output.bytes,
+          )
+          const outputPreflight = assessJewelryPhotoPreflight({
+            width: outputMetadata.width,
+            height: outputMetadata.height,
+            blurRisk: outputMetadata.blurRisk,
+            lightingRisk: outputMetadata.lightingRisk,
+            detailRisk: outputMetadata.detailRisk,
+            backgroundDistractionRisk:
+              outputMetadata.backgroundDistractionRisk,
+            subjectCoverage: outputMetadata.subjectCoverage,
+            subjectCentered: outputMetadata.subjectCentered,
+          })
+          const outputQa = decideCanonicalEnhancedPhoto({
+            assetId: `${createResult.designId}:${itemNumber}`,
+            provider: 'photoroom',
+            sourcePreflight: photoPreflight,
+            sourceAnalysis: sourcePhotoAnalysis,
+            outputPreflight,
+            outputAnalysis: {
+              blurRisk: outputMetadata.blurRisk,
+              lightingRisk: outputMetadata.lightingRisk,
+              detailRisk: outputMetadata.detailRisk,
+              backgroundDistractionRisk:
+                outputMetadata.backgroundDistractionRisk,
+              subjectCoverage: outputMetadata.subjectCoverage,
+              subjectCentered: outputMetadata.subjectCentered,
+            },
+            sourceWidth: sourcePhotoWidth,
+            sourceHeight: sourcePhotoHeight,
+            outputWidth: outputMetadata.width,
+            outputHeight: outputMetadata.height,
+            contentType:
+              outputMetadata.contentType ??
+              enhanced.response.contentType ??
+              'application/octet-stream',
+          })
+
+          if (outputQa.decision !== 'hold') {
+            const enhancedPhotoUrl = await publishApprovedPhoto(
+              createResult.designId,
+              enhanced.output.bytes,
+              {
+                contentType: outputMetadata.contentType,
+                filename: `${itemNumber}-enhanced`,
+              },
+            )
+            if (outputQa.decision === 'promote_canonical') {
+              await updateCanonicalPhoto(
+                admin,
+                createResult.designId,
+                enhancedPhotoUrl,
+              )
+              await updatePhotoPipelineState(admin, createResult.designId, {
+                provider: 'photoroom',
+                enhancedUrl: enhancedPhotoUrl,
+                status: 'published',
+                qaDecision: outputQa.qaDecision,
+                processedAt: new Date().toISOString(),
+              })
+              photoPipelineStatus = 'published'
+            } else {
+              await updatePhotoPipelineState(admin, createResult.designId, {
+                provider: 'photoroom',
+                enhancedUrl: enhancedPhotoUrl,
+                status: 'qa_review',
+                qaDecision: outputQa.qaDecision,
+                processedAt: new Date().toISOString(),
+              })
+              photoPipelineStatus = 'qa_review'
+            }
+          } else {
+            await updatePhotoPipelineState(admin, createResult.designId, {
+              provider: 'photoroom',
+              status: 'rejected',
+              qaDecision: outputQa.qaDecision,
+              processedAt: new Date().toISOString(),
+            })
+            photoPipelineStatus = 'rejected'
+          }
+        } catch (photoErr) {
+          photoPipelineStatus = 'error'
+          try {
+            await updatePhotoPipelineState(admin, createResult.designId, {
+              provider: 'photoroom',
+              status: 'error',
+              processedAt: new Date().toISOString(),
+            })
+          } catch {
+            /* swallow - listing itself already succeeded */
+          }
+          try {
+            await logIncident({
+              errorType: 'photo_pipeline_failed',
+              repId: ctx.repId,
+              conversationId: ctx.conversationId,
+              severity: 'warn',
+              details: {
+                toolName: 'add_listing',
+                runId: ctx.runId,
+                itemNumber,
+                designId: createResult.designId,
+                message: (photoErr as Error)?.message,
+              },
+            })
+          } catch {
+            /* swallow - observability must not affect outcome */
+          }
+        }
+      }
+    }
 
     await writeAuditIsolated({
       actionType: 'create_design',
@@ -248,13 +484,27 @@ async function runSingle(
   }
 
   let result: Awaited<ReturnType<typeof addListing>>
+  let processedListingPhotoUrl: string | undefined
+  if (input.listingPhotoUrl) {
+    try {
+      processedListingPhotoUrl = (
+        await processRepListingPhotoUrl({
+          repId: ctx.repId,
+          sourceImageUrl: input.listingPhotoUrl,
+          filenameStem: `${itemNumber}-listing-photo`,
+        })
+      ).photoUrl
+    } catch (err) {
+      explainServiceError(err)
+    }
+  }
   try {
     result = await addListing(admin, ctx.repId, {
       itemNumber,
       clickwrapAccepted: true,
       repNotes: input.repNotes,
       tradePreferences: input.tradePreferences,
-      listingPhotoUrl: input.listingPhotoUrl,
+      listingPhotoUrl: processedListingPhotoUrl,
     })
   } catch (err) {
     if (err instanceof ServiceError) {
@@ -311,6 +561,8 @@ async function runSingle(
     status: result.status,
     usesCanonicalPhoto: result.usesCanonicalPhoto,
     createdNewDesign,
+    ...(photoPipelineStatus ? { photoPipelineStatus } : {}),
+    ...(photoPreflight ? { photoPreflight } : {}),
   }
 }
 
@@ -328,15 +580,35 @@ async function runBatch(
     })
   }
 
+  const processedItems = []
+  for (const item of items) {
+    let listingPhotoUrl: string | undefined
+    if (item.listingPhotoUrl) {
+      try {
+        listingPhotoUrl = (
+          await processRepListingPhotoUrl({
+            repId: ctx.repId,
+            sourceImageUrl: item.listingPhotoUrl,
+            filenameStem: `${item.itemNumber}-listing-photo`,
+          })
+        ).photoUrl
+      } catch (err) {
+        explainServiceError(err)
+      }
+    }
+
+    processedItems.push({
+      itemNumber: item.itemNumber,
+      repNotes: item.repNotes,
+      tradePreferences: item.tradePreferences,
+      listingPhotoUrl,
+    })
+  }
+
   let result: Awaited<ReturnType<typeof addListingBatch>>
   try {
     result = await addListingBatch(admin, ctx.repId, {
-      items: items.map((i) => ({
-        itemNumber: i.itemNumber,
-        repNotes: i.repNotes,
-        tradePreferences: i.tradePreferences,
-        listingPhotoUrl: i.listingPhotoUrl,
-      })),
+      items: processedItems,
       clickwrapAccepted: true,
     })
   } catch (err) {
@@ -402,13 +674,13 @@ export function makeAddListingTool(ctx: {
 }) {
   return tool({
     description:
-      "Adds a piece to the authenticated rep's trade board. Single add (one item number per call). " +
-      "Requires clickwrap acceptance — the rep must confirm in conversation that they own the piece and the MSRP is accurate before this is set true. " +
-      "When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
-      "If the resolved item exists in the jewelry database, just pass mode:'single', itemNumber, clickwrapAccepted. " +
+      "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
+      "Requires clickwrap acceptance — the rep must confirm in conversation that they own the piece, the listing details are accurate, and that final trade decisions stay with them before this is set true. MSRP is reference data, not the trade-parity engine. " +
+      "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
+      "If the resolved item exists in the jewelry database, pass mode:'single', itemNumber, clickwrapAccepted for one piece, or mode:'batch', items[], clickwrapAccepted for several pieces at once. " +
       "If the item isn't in the database, the tool returns needsAction:'create_design'. Use vision to extract designName, then confirm collectionName with the rep before retrying — never autofill the collection from vision alone. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'cannot_complete' (NEEDS_COLLECTION) — same flag-to-Louis pattern. " +
-      'Batch mode exists in the schema but is not currently exercised.',
+      "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,
     execute: async (input) => {
       const admin = createAdminClient()
@@ -417,7 +689,7 @@ export function makeAddListingTool(ctx: {
         throw new ThumperToolError({
           code: 'CLICKWRAP_REQUIRED',
           userMessage:
-            'Before I list this, I need you to confirm you own the piece and the MSRP is accurate.',
+            'Before I list this, I need you to confirm you own the piece, the listing details are accurate, and that final trade decisions stay with you. MSRP is reference data, not the trade-parity engine.',
         })
       }
 
