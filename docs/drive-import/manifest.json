@@ -1,0 +1,752 @@
+{
+  "generatedAt": "2026-05-03T23:39:34.098Z",
+  "sourceRoot": "H:\\My Drive\\Neon Rabbit",
+  "destinationRoot": "C:\\Users\\louis\\neon-rabbit-core\\docs\\drive-import",
+  "importedCount": 186,
+  "imports": [
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Dashboard_Restructure_Plan_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Dashboard_Restructure_Plan_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Dashboard_Restructure_Plan_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Dashboard_Restructure_Plan_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1_3.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1_4.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1_4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1_5.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1_5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1_6.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1_6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1_7.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1_7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1.1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\HQ_Master_Plan_v1.2.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/hq/HQ_Master_Plan_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_10.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_10.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_11.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_11.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_12.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_12.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_7.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_8 (1).md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_8 (1).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_8.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1_9.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1.5.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1.5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Document_System_SOP_v1.6.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Document_System_SOP_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Memory_System_Map_v1_0_1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Memory_System_Map_v1_0_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Memory_System_Map_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Memory_System_Map_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Memory_System_Map_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Memory_System_Map_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_10.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_10.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_12.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_12.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_13.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_13.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_14.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_14.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_15.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_15.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_16 (1).md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_16 (1).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_16.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_16.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_17.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_17.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_18.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_18.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_19.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_19.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_6.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_7.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_8.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3_9.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.0.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.2.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.3.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.4.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\L1_NR_Plugins_Skills_Standing_Rules_v3.5.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3.5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\Master Code for Website (Live Reveal Co-Pilot).md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/operations/Master Code for Website (Live Reveal Co-Pilot).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\Master Files manifest.json & content.js (Live Reveal Copilot Set Up).md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/operations/Master Files manifest.json & content.js (Live Reveal Copilot Set Up).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\NR_Document_System_SOP.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/operations/NR_Document_System_SOP.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\NR_Memory_Index_Editorial_Policy_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/memory/NR_Memory_Index_Editorial_Policy_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\NR_Memory_Index_Editorial_Policy_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/neon-rabbit/memory/NR_Memory_Index_Editorial_Policy_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.0.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.1.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.2.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.3.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.4.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\RH_Master_Plan_v1.5.md",
+      "relativeDestination": "docs/drive-import/archive/rabbit-hole/plans/RH_Master_Plan_v1.5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1_5.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1_5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.3.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.4.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.6.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_Core_v1.7.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_Core_v1.7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1_5.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1_5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1_9.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1_9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.3.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.4.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.6.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.7.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v1.8.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v1.8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v2_0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v2_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v2_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v2_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v2_2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v2_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v2_3.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v2_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_KB_OpenItems_v2_4.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_KB_OpenItems_v2_4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.3.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.4.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.5.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.6.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.7.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Knowledge_Base_v1.8.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1.8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Live_Queue_Extension_Build_Plan_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Live_Queue_Extension_Build_Plan_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Live_Queue_Extension_Build_Plan_v1_2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Live_Queue_Extension_Build_Plan_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Live_Reveal_Co-Pilot_Guide.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Live_Reveal_Co-Pilot_Guide.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_2.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_3.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_4.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_5.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_6.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_7.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_8.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v1_9.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v1_9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v2_0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v2_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v3_0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v3_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Master_Build_Plan_v3_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/plans/SS_Master_Build_Plan_v3_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Service_Layer_Spec_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/specs/SS_Service_Layer_Spec_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Supabase_Schema_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/specs/SS_Supabase_Schema_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\SS_Supabase_Schema_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/sparkle-suite/specs/SS_Supabase_Schema_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\VAC_Evidence_Inventory_v1_0.md",
+      "relativeDestination": "docs/drive-import/archive/vac/VAC_Evidence_Inventory_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\VAC_Project_Tracker_v1_1.md",
+      "relativeDestination": "docs/drive-import/archive/vac/VAC_Project_Tracker_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\VAC_Project_Tracker_v1_2.md",
+      "relativeDestination": "docs/drive-import/archive/vac/VAC_Project_Tracker_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Archive\\VAC_Restart_Prompt_Next_Session.md",
+      "relativeDestination": "docs/drive-import/archive/vac/VAC_Restart_Prompt_Next_Session.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Claude_Code_CLI_Cheat_Sheet.md",
+      "relativeDestination": "docs/drive-import/tooling/Claude_Code_CLI_Cheat_Sheet.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Client Setup and Onboarding Live Reveal Co-Pilot.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/operations/Client Setup and Onboarding Live Reveal Co-Pilot.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Codex_CLI_Cheat_Sheet.md",
+      "relativeDestination": "docs/drive-import/tooling/Codex_CLI_Cheat_Sheet.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\HQ_Dashboard_Restructure_Plan_v1_2.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/hq/HQ_Dashboard_Restructure_Plan_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\HQ_Master_Plan_v1_8.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/hq/HQ_Master_Plan_v1_8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\HQ_Unified_Dashboard_Spec_v2.0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/hq/HQ_Unified_Dashboard_Spec_v2.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\L1_NR_Document_System_SOP_v1_13.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/operations/L1_NR_Document_System_SOP_v1_13.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\L1_NR_Memory_System_Map_v1_2.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/operations/L1_NR_Memory_System_Map_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\L1_NR_Plugins_Skills_Standing_Rules_v3_20.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/operations/L1_NR_Plugins_Skills_Standing_Rules_v3_20.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Google_Drive_Structure.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/memory/NR_Google_Drive_Structure.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Intelligence_System_Plan_v1.0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Intelligence_System_Plan_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Master_Build_Sequence_v1_0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Master_Build_Sequence_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Memory_Index_Editorial_Policy_v1_2 (1).md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/memory/NR_Memory_Index_Editorial_Policy_v1_2 (1).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Memory_Library_Build_Plan_v1_0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/memory/NR_Memory_Library_Build_Plan_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Open_Brain_Build_Session_Summary.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/open-brain/NR_Open_Brain_Build_Session_Summary.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Open_Brain_Migration_Prompt.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/open-brain/NR_Open_Brain_Migration_Prompt.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Plugins_Skills_Standing_Rules_v3.0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/operations/NR_Plugins_Skills_Standing_Rules_v3.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_PostLaunch_SEO_GEO_Checklist_v1.0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_PostLaunch_SEO_GEO_Checklist_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Side_Projects_Spec_v1_0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Side_Projects_Spec_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Skill_NeonRabbitHQ_v1.0.md",
+      "relativeDestination": "docs/drive-import/skills/NR_Skill_NeonRabbitHQ_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Smart_Product_Services_Menu (1).md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Smart_Product_Services_Menu (1).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Smart_Product_Services_Menu.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Smart_Product_Services_Menu.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\NR_Unified_Dashboard_Spec_v2.0.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/plans/NR_Unified_Dashboard_Spec_v2.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\open-brain-build-session-summary.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/open-brain/open-brain-build-session-summary.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\open-brain-migration-prompt.md",
+      "relativeDestination": "docs/drive-import/neon-rabbit/open-brain/open-brain-migration-prompt.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Master_Plan_v1.6.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/plans/RH_Master_Plan_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_01_RSS_Feed_Parsing_Engine.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_01_RSS_Feed_Parsing_Engine.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_02_Flutter_Supabase_Integration.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_02_Flutter_Supabase_Integration.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_03_Financial_Modeling.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_03_Financial_Modeling.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_04_Onboarding_Patterns.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_04_Onboarding_Patterns.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_05_Memory_Capture_Landscape.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_05_Memory_Capture_Landscape.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_06_Platform_Launch_Strategy.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_06_Platform_Launch_Strategy.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_07_Agent_Friendly_Architecture.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_07_Agent_Friendly_Architecture.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\RH_Research_08_Alternative_Distribution_Crypto.md",
+      "relativeDestination": "docs/drive-import/rabbit-hole/research/RH_Research_08_Alternative_Distribution_Crypto.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SKILL.md",
+      "relativeDestination": "docs/drive-import/skills/SKILL.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\Sparkle Suite Troubleshooting Guide.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/operations/Sparkle Suite Troubleshooting Guide.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_ClaudeDesign_To_ClaudeCode_Build_Standard_v1.1.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/plans/SS_ClaudeDesign_To_ClaudeCode_Build_Standard_v1.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Amber.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Amber.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Amethyst (1).md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst (1).md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Amethyst_ClaudeDesign.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst_ClaudeDesign.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Amethyst.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.1.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.3.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.4.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.5.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.5.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.6.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.6.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.7.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.7.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.8.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v1.9.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v1.9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v2.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v2.1.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v2.2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v2.3.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_ComponentLibrary_v2.4.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.4.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Garnet.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Garnet.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_RoseQuartz.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_RoseQuartz.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_DesignKit_Velvet.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/design/SS_DesignKit_Velvet.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_Agents_v1_0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_KB_Agents_v1_0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_Clients_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_KB_Clients_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_Core_v1.8.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_KB_Core_v1.8.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_Legal_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_KB_Legal_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_SiteSpec_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/specs/SS_KB_SiteSpec_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_KB_TradeBoard_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_KB_TradeBoard_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Knowledge_Base_v1_9.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/knowledge-base/SS_Knowledge_Base_v1_9.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Live_Queue_Extension_Build_Plan_v1_3.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/plans/SS_Live_Queue_Extension_Build_Plan_v1_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Master_Build_Plan_v3_2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/plans/SS_Master_Build_Plan_v3_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Master_Build_Plan_v3_3.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/plans/SS_Master_Build_Plan_v3_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Master_System_Outline.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/plans/SS_Master_System_Outline.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Service_Layer_Spec_v1_1.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/specs/SS_Service_Layer_Spec_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Service_Layer_Spec_v1_2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/specs/SS_Service_Layer_Spec_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Supabase_Schema_v1_2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/specs/SS_Supabase_Schema_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Supabase_Schema_v1_3.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/specs/SS_Supabase_Schema_v1_3.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Thumper_AISDK_Research_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/research/SS_Thumper_AISDK_Research_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Thumper_Codex_Review_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/research/SS_Thumper_Codex_Review_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Thumper_Tool_Inventory_v1_1.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/research/SS_Thumper_Tool_Inventory_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Thumper_Tool_Inventory_v1_2.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/research/SS_Thumper_Tool_Inventory_v1_2.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\SS_Thumper_Tool_Inventory_v1.0.md",
+      "relativeDestination": "docs/drive-import/sparkle-suite/research/SS_Thumper_Tool_Inventory_v1.0.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\VAC_Evidence_Inventory_v1_1.md",
+      "relativeDestination": "docs/drive-import/vac/VAC_Evidence_Inventory_v1_1.md"
+    },
+    {
+      "sourcePath": "H:\\My Drive\\Neon Rabbit\\VAC_Project_Tracker_v1.3.md",
+      "relativeDestination": "docs/drive-import/vac/VAC_Project_Tracker_v1.3.md"
+    }
+  ]
+}
