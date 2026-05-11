@@ -142,6 +142,53 @@ describe('POST /api/prelaunch/waitlist', () => {
     })
   })
 
+  it('records a skipped welcome email when resend is not configured', async () => {
+    const singleMock = vi.fn().mockResolvedValueOnce({
+      data: {
+        id: 'waitlist-1',
+        full_name: 'Jamie Hart',
+        email: 'jamie@example.com',
+      },
+      error: null,
+    })
+    insertMock.mockReturnValueOnce({
+      select: vi.fn(() => ({ single: singleMock })),
+    })
+    sendPrelaunchWaitlistWelcomeEmailMock.mockResolvedValueOnce({
+      status: 'skipped',
+      reason: 'resend_not_configured',
+    })
+    updateEqMock.mockResolvedValueOnce({ error: null })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/waitlist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Jamie Hart',
+          email: 'jamie@example.com',
+          phone: '303-555-0123',
+          tiktokHandle: '@jamiehart',
+          teamRepName: 'Lindsey',
+          smsConsent: true,
+          emailConsent: true,
+        }),
+      }),
+    )
+
+    expect(updateMock).toHaveBeenCalledWith({
+      welcome_email_status: 'skipped',
+      welcome_email_provider_id: null,
+      welcome_email_error: 'resend_not_configured',
+      welcome_email_sent_at: null,
+    })
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      welcomeEmail: { status: 'skipped' },
+    })
+  })
+
   it('returns a validation error for missing consent', async () => {
     const response = await POST(
       new Request('http://localhost/api/prelaunch/waitlist', {

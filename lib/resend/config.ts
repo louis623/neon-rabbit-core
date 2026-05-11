@@ -1,8 +1,22 @@
 import { z } from 'zod'
 
+function extractEmailAddress(value: string) {
+  const trimmed = value.trim()
+  const match = trimmed.match(/<([^<>]+)>$/)
+  return (match ? match[1] : trimmed).trim()
+}
+
+function isValidResendFromEmail(value: string) {
+  return z.string().email().safeParse(extractEmailAddress(value)).success
+}
+
 const resendEnvSchema = z.object({
-  RESEND_API_KEY: z.string().min(1),
-  RESEND_FROM_EMAIL: z.string().email(),
+  RESEND_API_KEY: z.string().trim().min(1),
+  RESEND_FROM_EMAIL: z
+    .string()
+    .trim()
+    .min(1)
+    .refine(isValidResendFromEmail, 'Invalid email address'),
 })
 
 type ResendEnv = z.infer<typeof resendEnvSchema>
@@ -42,11 +56,12 @@ function loadResendConfig(): { config: ResendEnv | null; enabled: boolean } {
       '[resend] Missing required environment variables in production:',
       result.error.flatten().fieldErrors,
     )
-    throw new Error('Resend configuration is incomplete — cannot start in production')
+    cached = { config: null, enabled: false, signature }
+    return cached
   }
 
   console.warn(
-    '[resend] Resend not configured — email sends will return 503:',
+    '[resend] Resend not configured - email sends will return 503:',
     result.error.flatten().fieldErrors,
   )
   cached = { config: null, enabled: false, signature }

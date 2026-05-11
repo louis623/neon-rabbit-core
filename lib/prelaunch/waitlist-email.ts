@@ -1,4 +1,5 @@
 import { getResendConfig, isResendEnabled } from '@/lib/resend/config'
+import { buildPrelaunchWaitlistWelcomeEmailContent } from '@/lib/prelaunch/email-content'
 
 export type PrelaunchWaitlistWelcomeEmailResult =
   | { status: 'sent'; providerId: string }
@@ -32,22 +33,6 @@ function getResendErrorMessage(payload: unknown) {
   return null
 }
 
-function buildWelcomeEmailText(name: string) {
-  return [
-    `Hi ${name},`,
-    '',
-    'You are on the Sparkle Suite waitlist.',
-    '',
-    'We will send practical launch updates as the coming-soon site, early access flow, and Nic-Nac setup experience come online.',
-    '',
-    'No purchase is required to join the waitlist. You can unsubscribe from email updates at any time by replying to this email or contacting Neon Rabbit Digital Services.',
-    '',
-    'Thanks for being early.',
-    '',
-    'Neon Rabbit Digital Services',
-  ].join('\n')
-}
-
 export async function sendPrelaunchWaitlistWelcomeEmail(
   input: PrelaunchWaitlistWelcomeEmailInput,
 ): Promise<PrelaunchWaitlistWelcomeEmailResult> {
@@ -61,7 +46,7 @@ export async function sendPrelaunchWaitlistWelcomeEmail(
   }
 
   const recipientEmail = input.email.trim().toLowerCase()
-  const name = input.name.trim() || 'there'
+  const content = buildPrelaunchWaitlistWelcomeEmailContent(input.name)
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -73,8 +58,8 @@ export async function sendPrelaunchWaitlistWelcomeEmail(
       body: JSON.stringify({
         from: resendConfig.RESEND_FROM_EMAIL,
         to: [recipientEmail],
-        subject: 'You are on the Sparkle Suite waitlist',
-        text: buildWelcomeEmailText(name),
+        subject: content.subject,
+        text: content.text,
       }),
     })
 

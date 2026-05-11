@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { PrelaunchIntakeReviewPageContent } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
+import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
+import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
 
 const submission: PrelaunchIntakeReviewSubmission = {
@@ -75,5 +77,40 @@ describe('PrelaunchIntakeReviewPageContent', () => {
 
     expect(html).toContain('No intake submissions yet')
     expect(html).toContain('New /prelaunch intake forms will appear here')
+  })
+
+  it('renders Scout research handoff details after a run', () => {
+    const output: PrelaunchScoutOutput = {
+      briefTitle: 'Scout brief: Jamie Hart Jewelry',
+      summary:
+        'Jamie Hart Jewelry is a TikTok prospect. External social research is not connected yet.',
+      recommendedNextStep: 'operator_review_first',
+      researchTargets: [
+        { label: 'TikTok', value: '@jamieh', priority: 'high' },
+      ],
+      researchPlan: {
+        status: 'manual_research_required',
+        searchQueries: ['Jamie Hart Jewelry @jamieh TikTok'],
+        evidenceChecklist: [
+          'Confirm recent live-show cadence and audience engagement.',
+        ],
+        blockers: ['External social research is not connected yet.'],
+      },
+      setupRisks: ['Confirm a two-device live setup.'],
+      suggestedQuestions: ['Can they support a two-device setup?'],
+      reusedLessons: [],
+      generatedBy: 'deterministic_scout_v1',
+    }
+
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchScoutRecommendationResult, { output }),
+    )
+
+    expect(html).toContain('Manual research handoff')
+    expect(html).toContain('Jamie Hart Jewelry @jamieh TikTok')
+    expect(html).toContain(
+      'Confirm recent live-show cadence and audience engagement.',
+    )
+    expect(html).toContain('External social research is not connected yet.')
   })
 })

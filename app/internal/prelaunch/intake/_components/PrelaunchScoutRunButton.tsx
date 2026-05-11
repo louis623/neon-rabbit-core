@@ -7,6 +7,66 @@ interface PrelaunchScoutRunButtonProps {
   intakeId: string
 }
 
+interface PrelaunchScoutRecommendationResultProps {
+  output: PrelaunchScoutOutput
+}
+
+export function PrelaunchScoutRecommendationResult({
+  output,
+}: PrelaunchScoutRecommendationResultProps) {
+  return (
+    <div className="mt-4 rounded-md border border-emerald-200 bg-white p-4 text-sm">
+      <p className="font-semibold text-emerald-800">{output.briefTitle}</p>
+      <p className="mt-2 leading-6 text-slate-700">{output.summary}</p>
+      <p className="mt-3 font-semibold text-slate-800">
+        Next step: {output.recommendedNextStep.replaceAll('_', ' ')}
+      </p>
+
+      <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p className="text-xs font-semibold uppercase text-slate-500">
+          Manual research handoff
+        </p>
+        <p className="mt-2 text-sm font-semibold text-slate-800">
+          Status: {output.researchPlan.status.replaceAll('_', ' ')}
+        </p>
+
+        {output.researchPlan.searchQueries.length > 0 ? (
+          <div className="mt-3">
+            <p className="font-semibold text-slate-700">Search queries</p>
+            <ul className="mt-2 space-y-1 text-slate-700">
+              {output.researchPlan.searchQueries.map((query) => (
+                <li key={query}>{query}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {output.researchPlan.evidenceChecklist.length > 0 ? (
+          <div className="mt-3">
+            <p className="font-semibold text-slate-700">Evidence checklist</p>
+            <ul className="mt-2 space-y-1 text-slate-700">
+              {output.researchPlan.evidenceChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {output.researchPlan.blockers.length > 0 ? (
+          <div className="mt-3 rounded-md bg-amber-50 p-3 text-amber-900">
+            <p className="font-semibold">Research blockers</p>
+            <ul className="mt-2 space-y-1">
+              {output.researchPlan.blockers.map((blocker) => (
+                <li key={blocker}>{blocker}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 export function PrelaunchScoutRunButton({
   intakeId,
 }: PrelaunchScoutRunButtonProps) {
@@ -63,13 +123,7 @@ export function PrelaunchScoutRunButton({
       </div>
 
       {status === 'done' && output ? (
-        <div className="mt-4 rounded-md border border-emerald-200 bg-white p-4 text-sm">
-          <p className="font-semibold text-emerald-800">{output.briefTitle}</p>
-          <p className="mt-2 leading-6 text-slate-700">{output.summary}</p>
-          <p className="mt-3 font-semibold text-slate-800">
-            Next step: {output.recommendedNextStep.replaceAll('_', ' ')}
-          </p>
-        </div>
+        <PrelaunchScoutRecommendationResult output={output} />
       ) : null}
 
       {status === 'error' && error ? (
