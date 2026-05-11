@@ -3,6 +3,7 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
 
 import { prelaunchContent } from '@/lib/prelaunch/content'
+import { SparkleSeal } from './PrelaunchVisuals'
 
 type WaitlistFormValues = {
   name: string
@@ -25,7 +26,7 @@ const initialValues: WaitlistFormValues = {
   setupPain: '',
   website: '',
   smsConsent: false,
-  emailConsent: false,
+  emailConsent: true,
 }
 
 export function PrelaunchWaitlistForm() {
@@ -90,176 +91,153 @@ export function PrelaunchWaitlistForm() {
   }
 
   return (
-    <section
-      id="waitlist"
-      className="bg-[linear-gradient(180deg,#fff4f8_0%,#ffffff_100%)] px-6 py-16"
-    >
-      <div className="mx-auto max-w-5xl rounded-[2rem] border border-[color:rgba(90,52,92,0.14)] bg-white p-8 shadow-[0_24px_70px_rgba(90,52,92,0.08)] sm:p-10">
-        <div className="max-w-3xl space-y-4">
-          <h2 className="font-amethyst-display text-3xl text-[var(--prelaunch-plum-ink)] sm:text-4xl">
-            {prelaunchContent.waitlistHeading}
-          </h2>
-          <p className="text-base leading-7 text-[color:rgba(90,52,92,0.82)]">
-            {prelaunchContent.waitlistBody}
-          </p>
-        </div>
-
-        {isSubmitted ? (
-          <div
-            aria-live="polite"
-            className="mt-8 rounded-[1.5rem] bg-[var(--prelaunch-pearl-blush)] p-6 text-[var(--prelaunch-plum-ink)]"
-          >
-            <h3 className="font-amethyst-display text-2xl">
-              {prelaunchContent.waitlistSuccessTitle}
-            </h3>
-            <p className="mt-3 max-w-2xl text-base leading-7">
-              {prelaunchContent.waitlistSuccessBody}
-            </p>
+    <section className="ss-waitlist" id="waitlist">
+      <div className="ss-wrap">
+        <div className="ss-waitlist__panel">
+          <div className="ss-waitlist__intro">
+            <span className="ss-eyebrow">{prelaunchContent.waitlistEyebrow}</span>
+            <h2>
+              Be first in line when <em>Sparkle Suite</em> opens.
+            </h2>
+            <p>{prelaunchContent.waitlistBody}</p>
+            <p className="ss-waitlist__small">{prelaunchContent.waitlistNote}</p>
           </div>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <fieldset className="space-y-6" disabled={isSubmitting}>
+          <div className={isSubmitted ? 'ss-form-wrap is-sent' : 'ss-form-wrap'}>
+            <form className="ss-form" noValidate onSubmit={handleSubmit}>
               <input
                 autoComplete="off"
-                className="hidden"
+                hidden
                 name="website"
                 onChange={handleChange}
                 tabIndex={-1}
                 type="text"
                 value={values.website}
               />
-              <div className="grid gap-5 md:grid-cols-2">
-                <FormField
-                  autoComplete="name"
-                  id="waitlist-name"
-                  label={prelaunchContent.waitlistFields.name.label}
-                  name="name"
-                  onChange={handleChange}
-                  placeholder={prelaunchContent.waitlistFields.name.placeholder}
-                  required
-                  value={values.name}
-                />
-                <FormField
-                  autoComplete="email"
-                  id="waitlist-email"
-                  label={prelaunchContent.waitlistFields.email.label}
-                  name="email"
-                  onChange={handleChange}
-                  placeholder={prelaunchContent.waitlistFields.email.placeholder}
-                  required
-                  type="email"
-                  value={values.email}
-                />
-                <FormField
-                  autoComplete="tel"
-                  id="waitlist-phone"
-                  label={prelaunchContent.waitlistFields.phone.label}
-                  name="phone"
-                  onChange={handleChange}
-                  placeholder={prelaunchContent.waitlistFields.phone.placeholder}
-                  required
-                  type="tel"
-                  value={values.phone}
-                />
-                <FormField
-                  id="waitlist-tiktok"
-                  label={prelaunchContent.waitlistFields.tiktokHandle.label}
-                  name="tiktokHandle"
-                  onChange={handleChange}
-                  placeholder={
-                    prelaunchContent.waitlistFields.tiktokHandle.placeholder
-                  }
-                  required
-                  value={values.tiktokHandle}
-                />
+              <fieldset className="ss-form__fieldset">
+                <div className="ss-form__row">
+                  <FormField
+                    autoComplete="name"
+                    id="waitlist-name"
+                    label={prelaunchContent.waitlistFields.name.label}
+                    name="name"
+                    onChange={handleChange}
+                    placeholder="First & last"
+                    required
+                    value={values.name}
+                  />
+                  <FormField
+                    autoComplete="email"
+                    id="waitlist-email"
+                    label={prelaunchContent.waitlistFields.email.label}
+                    name="email"
+                    onChange={handleChange}
+                    placeholder={prelaunchContent.waitlistFields.email.placeholder}
+                    required
+                    type="email"
+                    value={values.email}
+                  />
+                </div>
+                <div className="ss-form__row">
+                  <FormField
+                    autoComplete="tel"
+                    id="waitlist-phone"
+                    label={prelaunchContent.waitlistFields.phone.label}
+                    name="phone"
+                    onChange={handleChange}
+                    placeholder="(555) 123-4567"
+                    required
+                    type="tel"
+                    value={values.phone}
+                  />
+                  <FormField
+                    id="waitlist-tiktok"
+                    label={prelaunchContent.waitlistFields.tiktokHandle.label}
+                    name="tiktokHandle"
+                    onChange={handleChange}
+                    placeholder={prelaunchContent.waitlistFields.tiktokHandle.placeholder}
+                    value={values.tiktokHandle}
+                  />
+                </div>
                 <FormField
                   id="waitlist-team-rep"
                   label={prelaunchContent.waitlistFields.teamRepName.label}
                   name="teamRepName"
                   onChange={handleChange}
-                  placeholder={
-                    prelaunchContent.waitlistFields.teamRepName.placeholder
-                  }
-                  required
+                  placeholder="The rep or team you're under"
                   value={values.teamRepName}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  className="block text-sm font-semibold text-[var(--prelaunch-plum-ink)]"
-                  htmlFor="waitlist-setup-pain"
+                <div className="ss-field">
+                  <label htmlFor="waitlist-setup-pain">
+                    What part of your current setup feels the most patchwork?
+                    <span className="ss-field__opt">- optional</span>
+                  </label>
+                  <textarea
+                    id="waitlist-setup-pain"
+                    name="setupPain"
+                    onChange={handleChange}
+                    placeholder="A sentence or two is plenty. Skip it if you'd rather keep it simple."
+                    value={values.setupPain}
+                  />
+                </div>
+                <div className="ss-consents">
+                  <CheckboxField
+                    checked={values.smsConsent}
+                    id="waitlist-sms-consent"
+                    label={prelaunchContent.waitlistSmsConsentLabel}
+                    name="smsConsent"
+                    onChange={handleChange}
+                    required
+                    strongLabel="Text me updates."
+                  />
+                  <p className="ss-micro">
+                    Message frequency may vary. Message and data rates may
+                    apply. Consent is not a condition of purchase. Wireless
+                    carriers are not liable for delayed or undelivered messages.
+                    Reply HELP for help. SMS opt-in data is not sold, rented,
+                    traded, or shared for third-party marketing.
+                  </p>
+                  <CheckboxField
+                    checked={values.emailConsent}
+                    id="waitlist-email-consent"
+                    label={prelaunchContent.waitlistEmailConsentLabel}
+                    name="emailConsent"
+                    onChange={handleChange}
+                    required
+                    strongLabel="Email me updates."
+                  />
+                </div>
+              </fieldset>
+              {errorMessage ? <p className="ss-error">{errorMessage}</p> : null}
+              <div className="ss-form__submit">
+                <p className="ss-micro">{prelaunchContent.waitlistConsentNote}</p>
+                <button
+                  className="ss-btn ss-btn--gold"
+                  disabled={isSubmitting}
+                  type="submit"
                 >
-                  {prelaunchContent.waitlistFields.setupPain.label}
-                </label>
-                <textarea
-                  className="min-h-32 w-full rounded-[1.25rem] border border-[color:rgba(90,52,92,0.16)] bg-[var(--prelaunch-pearl-blush)] px-4 py-3 text-base text-[var(--prelaunch-plum-ink)] outline-none transition focus:border-[var(--prelaunch-plum-ink)] focus:bg-white"
-                  id="waitlist-setup-pain"
-                  name="setupPain"
-                  onChange={handleChange}
-                  placeholder={
-                    prelaunchContent.waitlistFields.setupPain.placeholder
-                  }
-                  value={values.setupPain}
-                />
+                  {isSubmitting
+                    ? prelaunchContent.waitlistSubmittingLabel
+                    : prelaunchContent.waitlistSubmitLabel}
+                  <span aria-hidden="true" className="ss-arrow">
+                    &rarr;
+                  </span>
+                </button>
               </div>
+            </form>
 
-              <div className="space-y-3 rounded-[1.5rem] bg-[var(--prelaunch-pearl-blush)] p-5">
-                <CheckboxField
-                  checked={values.smsConsent}
-                  id="waitlist-sms-consent"
-                  label={prelaunchContent.waitlistSmsConsentLabel}
-                  name="smsConsent"
-                  onChange={handleChange}
-                  required
-                />
-                <p className="text-xs leading-5 text-[color:rgba(90,52,92,0.72)]">
-                  Message frequency may vary. Message and data rates may apply.
-                  Consent is not a condition of purchase. Reply STOP to
-                  unsubscribe or HELP for help. Wireless carriers are not liable
-                  for delayed or undelivered messages. SMS opt-in data is not
-                  sold, rented, traded, or shared for third-party marketing. See
-                  our{' '}
-                  <a className="underline" href="/privacy-policy">
-                    Privacy Policy
-                  </a>{' '}
-                  and{' '}
-                  <a className="underline" href="/terms-and-conditions">
-                    Terms and Conditions
-                  </a>
-                  .
-                </p>
-                <CheckboxField
-                  checked={values.emailConsent}
-                  id="waitlist-email-consent"
-                  label={prelaunchContent.waitlistEmailConsentLabel}
-                  name="emailConsent"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </fieldset>
-
-            {errorMessage ? (
-              <p
-                aria-live="polite"
-                className="rounded-[1.25rem] border border-[color:rgba(170,63,94,0.18)] bg-[#fff0f4] px-4 py-3 text-sm font-medium text-[#8b3050]"
-              >
-                {errorMessage}
-              </p>
-            ) : null}
-
-            <button
-              className="rounded-full bg-[var(--prelaunch-plum-ink)] px-6 py-3 font-semibold text-white transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? prelaunchContent.waitlistSubmittingLabel
-                : prelaunchContent.waitlistSubmitLabel}
-            </button>
-          </form>
-        )}
+            <div aria-live="polite" className="ss-confirm" role="status">
+              <SparkleSeal className="ss-confirm__seal" />
+              <span className="ss-eyebrow">
+                {prelaunchContent.waitlistSuccessEyebrow}
+              </span>
+              <h3>
+                Thank you, <span className="ss-confirm__name">friend</span>.{' '}
+                <em>We've got you.</em>
+              </h3>
+              <p>{prelaunchContent.waitlistSuccessBody}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   )
@@ -289,16 +267,10 @@ function FormField({
   value,
 }: FormFieldProps) {
   return (
-    <div className="space-y-2">
-      <label
-        className="block text-sm font-semibold text-[var(--prelaunch-plum-ink)]"
-        htmlFor={id}
-      >
-        {label}
-      </label>
+    <div className="ss-field">
+      <label htmlFor={id}>{label}</label>
       <input
         autoComplete={autoComplete}
-        className="w-full rounded-full border border-[color:rgba(90,52,92,0.16)] bg-[var(--prelaunch-pearl-blush)] px-4 py-3 text-base text-[var(--prelaunch-plum-ink)] outline-none transition focus:border-[var(--prelaunch-plum-ink)] focus:bg-white"
         id={id}
         name={name}
         onChange={onChange}
@@ -318,6 +290,7 @@ type CheckboxFieldProps = {
   name: 'smsConsent' | 'emailConsent'
   onChange: (event: ChangeEvent<HTMLInputElement>) => void
   required?: boolean
+  strongLabel: string
 }
 
 function CheckboxField({
@@ -327,22 +300,28 @@ function CheckboxField({
   name,
   onChange,
   required,
+  strongLabel,
 }: CheckboxFieldProps) {
+  const plainLabel = label.replace(strongLabel, '').trim()
+
   return (
-    <label
-      className="flex items-start gap-3 text-sm leading-6 text-[var(--prelaunch-plum-ink)]"
-      htmlFor={id}
-    >
+    <label className="ss-check" htmlFor={id}>
       <input
         checked={checked}
-        className="mt-1 h-4 w-4 rounded border-[var(--prelaunch-plum-ink)] text-[var(--prelaunch-plum-ink)]"
         id={id}
         name={name}
         onChange={onChange}
         required={required}
         type="checkbox"
       />
-      <span>{label}</span>
+      <span aria-hidden="true" className="ss-check__box">
+        <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 12 12">
+          <path d="M2 6.5l2.5 2.5L10 3.5" />
+        </svg>
+      </span>
+      <span className="ss-check__text">
+        <strong>{strongLabel}</strong> {plainLabel}
+      </span>
     </label>
   )
 }

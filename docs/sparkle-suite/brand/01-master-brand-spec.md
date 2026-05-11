@@ -29,20 +29,34 @@ It is not:
 
 ## Current approved prelaunch page direction
 
-The current public prelaunch page at `/prelaunch` should use the restored
-simple Bomb Party rep positioning:
+The current public prelaunch page at `/prelaunch` is locked to:
 
-`One easier home for your Bomb Party business.`
+`Sparkle Suite V1 Preview Public Site`
 
-This restored direction replaces the rejected public-site treatments that were
-accidentally republished on May 11, 2026.
+The source deployment is `dpl_2yAXz2pKp4QsJ4sQzboqpfXfqyoM`, created on
+May 10, 2026 at 11:19 AM Eastern and promoted back to production on
+May 11, 2026.
 
-Do not bring back these rejected public prelaunch treatments without Louis
-explicitly approving a new design review:
+Required public hero:
+
+- `Sparkle Suite - Coming Soon`
+- `A better customer experience starts with a better rep setup.`
+- `Sparkle Suite gives reps a more polished website, standout live show tools, and built-in support that helps customers feel the difference.`
+
+Required public waitlist direction:
 
 - `Be first in line when Sparkle Suite opens.`
-- the split success-card treatment with `Thank you, [name]. We've got you.`
-- the feature-stack hero treatment that leads the public page with `A better customer experience starts with a better rep setup.`
+- `Thank you, friend. We've got you.`
+
+Do not bring back these rejected public prelaunch treatments without Louis explicitly approving a new design review:
+
+- `One easier home for your Bomb Party business.`
+- `A polished website and rep-friendly tools designed to help you look professional, stay organized, and feel less overwhelmed online.`
+- `Sparkle Suite is software for independent Bomb Party reps and live jewelry sellers`
+- `Tell us where to send launch updates.`
+- named success-card copy such as `Thank you, Louis Chapman. We've got you.`
+
+Do not polish, rebrand, rewrite, or visually improve the public site unless Louis explicitly says: `go ahead and polish this`.
 
 ## Approved feature claims
 

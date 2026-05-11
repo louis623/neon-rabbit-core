@@ -35,14 +35,17 @@
 
 ## Hero Section Template
 
-For the current `/prelaunch` page, use the restored approved public line:
+For the current `/prelaunch` page, use the locked `Sparkle Suite V1 Preview Public Site` direction:
 
-- Headline: `One easier home for your Bomb Party business.`
-- Subheadline: `A polished website and rep-friendly tools designed to help you look professional, stay organized, and feel less overwhelmed online.`
+- Eyebrow: `Sparkle Suite - Coming Soon`
+- Headline: `A better customer experience starts with a better rep setup.`
+- Subheadline: `Sparkle Suite gives reps a more polished website, standout live show tools, and built-in support that helps customers feel the difference.`
+- Primary CTA: `Join the Waitlist`
+- Secondary CTA: `What Is Sparkle Suite?`
 
-Do not bring back the rejected `Be first in line when Sparkle Suite opens.`
-waitlist card or the rejected live prelaunch feature-stack hero without fresh
-Louis approval.
+Do not bring back the rejected `One easier home for your Bomb Party business.`
+public page, the rejected software-led public page, or named success-card copy
+without fresh Louis approval.
 
 ## Broader Brand Hero Template
 
@@ -76,3 +79,4 @@ Louis approval.
 - do not drift into generic SaaS copy
 - do not oversell Nic-Nac ahead of the core rep-facing value story
 - do not make the page sound flashy, fake-luxury, or hype-heavy
+- do not polish, rebrand, rewrite, or visually improve the public site unless Louis explicitly says `go ahead and polish this`

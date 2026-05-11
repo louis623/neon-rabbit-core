@@ -56,7 +56,8 @@ Red flags:
 - AI slop, prompty filler, fake-luxury language, or brainstorm-note wording
 - overclaiming features, roadmap certainty, or outcomes not supported by the docs
 - off-brand Nic-Nac framing, including treating Nic-Nac as the main product story
-- republishing the rejected public prelaunch design/copy without fresh Louis approval, especially `Be first in line when Sparkle Suite opens.`, `Thank you, [name]. We've got you.`, or the feature-stack `A better customer experience starts with a better rep setup.` hero
+- republishing rejected public prelaunch design/copy without fresh Louis approval, especially `One easier home for your Bomb Party business.`, the software-led public page, `Tell us where to send launch updates.`, or named success-card copy such as `Thank you, Louis Chapman. We've got you.`
+- polishing, rebranding, rewriting, or visually improving the public site unless Louis explicitly says `go ahead and polish this`
 
 If any red flag appears, stop, reload the local brand docs, and rewrite from the approved Sparkle Suite brand system.
 
@@ -68,6 +69,8 @@ If any red flag appears, stop, reload the local brand docs, and rewrite from the
 - Nic-Nac is the built-in Sparkle Suite assistant for reps, not a generic chatbot.
 - Keep the copy polished, warm, plain-English, rep-centered, and premium without stiffness.
 - Keep short-form video and newsletter work grounded in customer experience, rep advantage, smoother live shows, and less patchwork.
+- The locked public `/prelaunch` version is `Sparkle Suite V1 Preview Public Site`, sourced from Vercel deployment `dpl_2yAXz2pKp4QsJ4sQzboqpfXfqyoM`.
+- The locked public hero is `A better customer experience starts with a better rep setup.`
 
 ## Output check before sending
 

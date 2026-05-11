@@ -1,25 +1,72 @@
 import { prelaunchContent } from '@/lib/prelaunch/content'
+import { FeatureGlyph } from './PrelaunchVisuals'
 
 export function PrelaunchBenefits() {
   return (
-    <section className="bg-[linear-gradient(180deg,#fff8fb_0%,#ffffff_100%)] px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="font-amethyst-display text-3xl text-[var(--prelaunch-plum-ink)] sm:text-4xl">
-          {prelaunchContent.benefitsHeading}
-        </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {prelaunchContent.benefits.map((benefit) => (
-            <article
-              key={benefit.id}
-              className="rounded-[1.5rem] border border-[color:rgba(90,52,92,0.14)] bg-white p-6 shadow-[0_20px_60px_rgba(90,52,92,0.06)]"
-            >
-              <p className="text-lg font-semibold text-[var(--prelaunch-plum-ink)]">
-                {benefit.label}
+    <>
+      <section className="ss-summary" id="summary">
+        <div className="ss-wrap">
+          <div className="ss-summary__panel">
+            <div className="ss-summary__copy">
+              <span className="ss-eyebrow ss-eyebrow--paper">
+                {prelaunchContent.valueHeading}
+              </span>
+              <span className="ss-rule ss-rule--paper" />
+              <h2>
+                The edge customers can actually <em>feel.</em>
+              </h2>
+              <p>
+                Sparkle Suite is built for reps who want more than a link page
+                and a handful of workarounds. Your site, trade board, live
+                queue, event calendar, customer updates, and Nic-Nac all work
+                together in one setup that feels more polished to customers and
+                easier to run on your side.
               </p>
-            </article>
-          ))}
+              <p>
+                That means a better experience up front, smoother flow while
+                you're live, and fewer details to keep chasing by hand.
+              </p>
+            </div>
+            <div className="ss-summary__cards">
+              {prelaunchContent.valueCards.map((card) => (
+                <div className="ss-summary__card" key={card.title}>
+                  <FeatureGlyph title={card.title} />
+                  <div>
+                    <h4>{card.title}</h4>
+                    <p>{card.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="ss-features" id="features">
+        <div className="ss-wrap">
+          <div className="ss-features__head">
+            <div>
+              <span className="ss-eyebrow">{prelaunchContent.suiteHeading}</span>
+              <h2>
+                The tools behind the <em>wow factor.</em>
+              </h2>
+            </div>
+            <p className="ss-lead">{prelaunchContent.suiteBody}</p>
+          </div>
+          <div className="ss-feat-grid">
+            {prelaunchContent.suiteItems.map((item) => (
+              <article className="ss-feat" key={item.number}>
+                <div className="ss-feat__head">
+                  <FeatureGlyph title={item.title} />
+                  <span className="ss-feat__num">{item.number}</span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

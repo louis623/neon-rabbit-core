@@ -1,36 +1,85 @@
 import { prelaunchContent } from '@/lib/prelaunch/content'
+import { FeatureGlyph, SparkleSeal } from './PrelaunchVisuals'
 
 export function PrelaunchHero() {
   return (
-    <section className="bg-[var(--prelaunch-pearl-blush)] px-6 py-20">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <p className="font-semibold tracking-[0.28em] text-[var(--prelaunch-plum-ink)] uppercase">
-          {prelaunchContent.brand}
-        </p>
-        <p className="text-sm font-medium tracking-[0.24em] text-[var(--prelaunch-plum-ink)] uppercase">
-          {prelaunchContent.eyebrow}
-        </p>
-        <h1 className="max-w-3xl font-amethyst-display text-4xl leading-tight text-[var(--prelaunch-plum-ink)] sm:text-5xl">
-          {prelaunchContent.headline}
-        </h1>
-        <p className="max-w-3xl text-lg leading-8 text-[color:rgba(90,52,92,0.86)]">
-          {prelaunchContent.body}
-        </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <a
-            className="rounded-full bg-[var(--prelaunch-plum-ink)] px-6 py-3 text-center font-semibold text-white"
-            href="#waitlist"
-          >
-            {prelaunchContent.primaryCtaLabel}
+    <>
+      <header className="ss-nav">
+        <div className="ss-wrap ss-nav__inner">
+          <a className="ss-brand" href="#top" aria-label="Sparkle Suite">
+            <SparkleSeal className="ss-brand__seal" />
+            <span className="ss-brand__name">{prelaunchContent.brand}</span>
           </a>
-          <a
-            className="rounded-full border border-[color:rgba(90,52,92,0.22)] bg-white px-6 py-3 text-center font-semibold text-[var(--prelaunch-plum-ink)]"
-            href="#video"
-          >
-            {prelaunchContent.secondaryCtaLabel}
-          </a>
+          <span className="ss-nav__pill">
+            <span className="ss-dot" />
+            {prelaunchContent.eyebrow}
+          </span>
         </div>
-      </div>
-    </section>
+      </header>
+
+      <section className="ss-hero" id="top">
+        <div className="ss-wrap ss-hero__grid">
+          <div className="ss-hero__copy">
+            <div className="ss-hero__kicker">
+              <span className="ss-rule" />
+              <span className="ss-eyebrow">
+                {prelaunchContent.brand} - {prelaunchContent.eyebrow}
+              </span>
+            </div>
+            <h1 className="ss-hero__title">
+              A better customer experience starts with a{' '}
+              <em>better rep setup</em>.
+            </h1>
+            <p className="ss-hero__sub">{prelaunchContent.body}</p>
+            <div className="ss-hero__ctas">
+              <a className="ss-btn ss-btn--primary" href="#waitlist">
+                {prelaunchContent.primaryCtaLabel}
+                <span aria-hidden="true" className="ss-arrow">
+                  &rarr;
+                </span>
+              </a>
+              <a className="ss-btn ss-btn--ghost" href="#summary">
+                {prelaunchContent.secondaryCtaLabel}
+              </a>
+            </div>
+            <ul className="ss-hero__signals">
+              {prelaunchContent.heroFeatures.map((feature) => (
+                <li key={feature.title}>
+                  <span className="ss-bullet" />
+                  <span>
+                    {feature.title === 'Nic-Nac'
+                      ? `${feature.title}, ${feature.body}`
+                      : `${feature.title} ${feature.body}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <aside aria-label="What's inside" className="ss-stack">
+            <div className="ss-stack__label">
+              <span className="ss-eyebrow ss-eyebrow--ink">
+                {prelaunchContent.previewHeading}
+              </span>
+              <span className="ss-eyebrow">{prelaunchContent.previewKicker}</span>
+            </div>
+            {prelaunchContent.previewItems.map((item) => (
+              <article className="ss-card" key={item.number}>
+                <FeatureGlyph title={item.title} />
+                <div>
+                  <div className="ss-card__title">{item.title}</div>
+                  <div className="ss-card__sub">{item.body}</div>
+                </div>
+                <span className="ss-card__meta">{item.number}</span>
+              </article>
+            ))}
+            <p className="ss-stack__note">
+              <strong>Plus Nic-Nac</strong> - the built-in live show AI assistant
+              helping with flow, content, and the moving parts behind the scenes.
+            </p>
+          </aside>
+        </div>
+      </section>
+    </>
   )
 }

@@ -10,8 +10,7 @@ import { prelaunchContent } from '@/lib/prelaunch/content'
 
 export const metadata: Metadata = {
   title: 'Sparkle Suite | Coming Soon',
-  description:
-    'Sparkle Suite is a coming-soon website and rep tool home base for Bomb Party reps who want a calmer, more polished online setup.',
+  description: prelaunchContent.body,
   alternates: {
     canonical: '/prelaunch',
   },
@@ -21,8 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Sparkle Suite | Coming Soon',
-    description:
-      'One easier home for your Bomb Party business. Join the Sparkle Suite waitlist.',
+    description: prelaunchContent.body,
     url: '/prelaunch',
     siteName: 'Sparkle Suite',
     type: 'website',
@@ -31,19 +29,18 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
+        alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Sparkle Suite | Coming Soon',
-    description:
-      'One easier home for your Bomb Party business. Join the Sparkle Suite waitlist.',
+    description: prelaunchContent.body,
     images: [
       {
         url: '/opengraph-image',
-        alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
+        alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
       },
     ],
   },
@@ -103,7 +100,7 @@ const prelaunchJsonLd = {
 
 export default function PrelaunchPage() {
   return (
-    <main className="prelaunch-page">
+    <main className="prelaunch-shell">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

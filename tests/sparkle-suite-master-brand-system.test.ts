@@ -70,14 +70,19 @@ describe('Sparkle Suite master brand system', () => {
     expect(index).toContain('Use this index as the front door for current daily use across the checklist, playbooks, and templates.')
     expect(index).toContain('## Navigation map')
     expect(index).toContain('Final review pass: `04-brand-review-checklist.md`')
+    expect(index).toContain('Public site version lock: `05-public-site-version-lock.md`')
     expect(index).toContain('Short-form video work: `playbooks/short-form-video.md`, `templates/short-form-video-hooks.md`, `templates/short-form-video-scripts.md`, and `templates/captions-and-ctas.md`')
     expect(index).toContain('Rep acquisition materials: `playbooks/rep-acquisition-materials.md`')
+    expect(index).toContain('Sparkle Suite V1 Preview Public Site')
     expect(index).not.toContain('Later stages of this system add the review checklist, playbooks, and templates.')
 
     const brandSpec = read('docs/sparkle-suite/brand/01-master-brand-spec.md')
     expect(brandSpec).toContain(
       'A better customer experience starts with a better rep setup.',
     )
+    expect(brandSpec).toContain('Sparkle Suite V1 Preview Public Site')
+    expect(brandSpec).toContain('One easier home for your Bomb Party business.')
+    expect(brandSpec).toContain('go ahead and polish this')
     expect(brandSpec).toContain('Trade board')
     expect(brandSpec).toContain('Live queue')
     expect(brandSpec).toContain('Live event calendar')
@@ -158,6 +163,8 @@ describe('Sparkle Suite master brand system', () => {
     expect(homepage).toContain('future signup pages')
     expect(homepage).toContain('better customer experience')
     expect(homepage).toContain('approved feature claims only')
+    expect(homepage).toContain('Sparkle Suite V1 Preview Public Site')
+    expect(homepage).toContain('go ahead and polish this')
     expect(homepage).toContain('## Headline rules')
     expect(homepage).toContain('## Subheadline rules')
     expect(homepage).toContain('## Feature section rules')
@@ -274,9 +281,12 @@ describe('Sparkle Suite master brand system', () => {
 
     const landingPage = read('docs/sparkle-suite/brand/templates/landing-page-sections.md')
     expect(landingPage).toContain('## Hero Section Template')
+    expect(landingPage).toContain('Sparkle Suite V1 Preview Public Site')
     expect(landingPage).toContain(
       'A better customer experience starts with a better rep setup.',
     )
+    expect(landingPage).toContain('What Is Sparkle Suite?')
+    expect(landingPage).toContain('go ahead and polish this')
     expect(landingPage).toContain('approved feature claims')
     expect(landingPage).toContain('Feature card 4: `Email updates -')
     expect(landingPage).toContain('Feature card 5: `SMS updates -')
@@ -310,6 +320,9 @@ describe('Sparkle Suite master brand system', () => {
     expect(skill).toContain('overclaiming')
     expect(skill).toContain('off-brand Nic-Nac framing')
     expect(skill).toContain('not a generic chatbot')
+    expect(skill).toContain('Sparkle Suite V1 Preview Public Site')
+    expect(skill).toContain('dpl_2yAXz2pKp4QsJ4sQzboqpfXfqyoM')
+    expect(skill).toContain('go ahead and polish this')
 
     const index = read('docs/sparkle-suite/brand/00-master-index.md')
     expect(index).toContain('## Daily use')

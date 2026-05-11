@@ -23,11 +23,13 @@ Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic
 
 ## Messaging priorities
 
-- For the current prelaunch page, lead with the restored approved line: `One easier home for your Bomb Party business.`
-- Keep `A better customer experience starts with a better rep setup.` available for broader brand and content work, but do not use it as the current public prelaunch hero without a fresh design approval from Louis.
+- For the current prelaunch page, use the locked `Sparkle Suite V1 Preview Public Site` direction.
+- The current public hero is `A better customer experience starts with a better rep setup.`
+- The current public body is `Sparkle Suite gives reps a more polished website, standout live show tools, and built-in support that helps customers feel the difference.`
 - Keep the page centered on rep advantage, smoother live shows, and less patchwork.
 - Treat Sparkle Suite as a standalone rep brand, not a Neon Rabbit agency offering.
 - Name approved features truthfully and distinctly when the page needs product proof.
+- Do not polish, rebrand, rewrite, or visually improve the public site unless Louis explicitly says: `go ahead and polish this`.
 
 ## Headline rules
 
@@ -92,6 +94,8 @@ Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic
 - any third-party brand-led hero framing that pulls focus from Sparkle Suite as the master brand
 - undefined feature claims
 - hype that sounds more advanced than the real product story
-- the rejected public prelaunch copy/design: `Be first in line when Sparkle Suite opens.`
-- the rejected public prelaunch success-card treatment: `Thank you, [name]. We've got you.`
-- republishing the feature-stack `A better customer experience starts with a better rep setup.` hero as the live prelaunch page without fresh Louis approval
+- the rejected public prelaunch copy/design: `One easier home for your Bomb Party business.`
+- the rejected public prelaunch subheadline: `A polished website and rep-friendly tools designed to help you look professional, stay organized, and feel less overwhelmed online.`
+- the rejected public prelaunch software-led copy: `Sparkle Suite is software for independent Bomb Party reps and live jewelry sellers`
+- the rejected public prelaunch form prompt: `Tell us where to send launch updates.`
+- named success-card copy such as `Thank you, Louis Chapman. We've got you.`

@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/font/google', () => ({
+  DM_Sans: () => ({ variable: '--font-prelaunch-sans' }),
   Geist: () => ({ variable: '--font-geist-sans' }),
   Geist_Mono: () => ({ variable: '--font-geist-mono' }),
   Italiana: () => ({ variable: '--font-amethyst-display' }),
+  Playfair_Display: () => ({ variable: '--font-prelaunch-display' }),
 }))
 
 import robots from '@/app/robots'
@@ -41,7 +43,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
             url: '/opengraph-image',
             width: 1200,
             height: 630,
-            alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
+            alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
           },
         ],
       }),
@@ -52,7 +54,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
         images: [
           {
             url: '/opengraph-image',
-            alt: 'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
+            alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
           },
         ],
       }),
@@ -100,7 +102,7 @@ describe('Sparkle Suite crawl and metadata signals', () => {
       height: 630,
     })
     expect(openGraphImageAlt).toBe(
-      'Sparkle Suite coming soon: one easier home for your Bomb Party business.',
+      'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
     )
   })
 })

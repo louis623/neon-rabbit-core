@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Italiana } from "next/font/google";
+import { DM_Sans, Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,10 +12,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const italiana = Italiana({
+const prelaunchDisplay = Playfair_Display({
+  variable: "--font-prelaunch-display",
+  subsets: ["latin"],
+});
+
+const prelaunchSans = DM_Sans({
+  variable: "--font-prelaunch-sans",
+  subsets: ["latin"],
+});
+
+const amethystDisplay = Playfair_Display({
   variable: "--font-amethyst-display",
   subsets: ["latin"],
-  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -51,7 +60,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${italiana.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${prelaunchDisplay.variable} ${prelaunchSans.variable} ${amethystDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

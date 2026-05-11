@@ -31,6 +31,7 @@ Use it for:
 
 - Core brand truth: `01-master-brand-spec.md`, `02-messaging-pillars.md`, `03-nic-nac-positioning.md`
 - Final review pass: `04-brand-review-checklist.md`
+- Public site version lock: `05-public-site-version-lock.md`
 - Homepage and signup work: `playbooks/homepage-and-signup.md` and `templates/landing-page-sections.md`
 - Short-form video work: `playbooks/short-form-video.md`, `templates/short-form-video-hooks.md`, `templates/short-form-video-scripts.md`, and `templates/captions-and-ctas.md`
 - Short-form specialist workflow: `playbooks/short-form-video-specialist-workflow.md` and `templates/tiktok-native-concept-batch.md`
@@ -43,6 +44,7 @@ Use it for:
 - Sparkle Suite is a standalone brand for reps, not a Neon Rabbit agency sub-brand.
 - The brand should feel polished, warm, simple, and premium without drifting into generic SaaS language.
 - The system should help every channel reinforce rep advantage, customer experience, smoother live shows, and less patchwork.
+- The public `/prelaunch` page is locked to `Sparkle Suite V1 Preview Public Site` until Louis explicitly approves a new design review.
 
 ## Example prompts
 
