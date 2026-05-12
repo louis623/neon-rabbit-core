@@ -47,6 +47,7 @@ export interface PrelaunchScoutCapturedEvidence {
   outboundLinks: string[]
   primaryOutboundLink: string | null
   primaryOutboundLinkReason: string | null
+  publicActionCandidates?: PrelaunchScoutPublicActionCandidate[]
 }
 
 export interface PrelaunchScoutEvidenceSourceReport {
@@ -68,6 +69,22 @@ type PrelaunchScoutEvidenceLabel =
   | 'Facebook'
   | 'Primary customer link'
   | 'Public link hub'
+
+type PrelaunchScoutPublicActionType =
+  | 'shop'
+  | 'live_show'
+  | 'vip_text'
+  | 'join_team'
+  | 'social'
+  | 'unknown'
+
+export interface PrelaunchScoutPublicActionCandidate {
+  sourceLabel: PrelaunchScoutEvidenceLabel
+  sourceUrl: string
+  text: string
+  url: string
+  actionType: PrelaunchScoutPublicActionType
+}
 
 const PRIMARY_CUSTOMER_LINK_LABEL = 'Primary customer link'
 const PUBLIC_LINK_HUB_LABEL = 'Public link hub'
@@ -428,10 +445,13 @@ function buildGroundedScoutSynthesisFields(
       .filter((value): value is string => Boolean(value))
       .filter((link) => !isGenericLinkHub(link)),
   )
+  const publicActionSummary =
+    buildScoutPublicActionCandidateSummary(capturedEvidence)
 
   return {
     evidenceBackedObservations: dedupeStrings([
       ...evidenceBullets,
+      ...(publicActionSummary ? [publicActionSummary] : []),
       ...outboundLinkBullets,
     ]).slice(0, 4),
     manualVerificationNeeded: dedupeStrings([
@@ -450,6 +470,11 @@ function buildGroundedScoutSynthesisFields(
             'Open the visible public customer path manually before the discovery call.',
           ]
         : []),
+      ...(publicActionSummary
+        ? [
+            'Confirm which visible public CTA should become the primary Sparkle Suite action.',
+          ]
+        : []),
     ]),
     contradictions:
       profileDirectLinks.length > 1
@@ -459,6 +484,41 @@ function buildGroundedScoutSynthesisFields(
         : [],
     confidence: hasCustomerLinkEvidence ? 'high' : 'medium',
   }
+}
+
+function buildScoutPublicActionCandidateSummary(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+) {
+  const actionTypeLabels = dedupeStrings(
+    capturedEvidence
+      .flatMap((item) => item.publicActionCandidates ?? [])
+      .map((candidate) => formatScoutPublicActionType(candidate.actionType))
+      .filter((value) => value !== 'unknown'),
+  ).slice(0, 4)
+
+  if (actionTypeLabels.length === 0) return null
+
+  return `Visible public CTAs include ${formatListForSentence(actionTypeLabels)} actions.`
+}
+
+function formatScoutPublicActionType(actionType: PrelaunchScoutPublicActionType) {
+  switch (actionType) {
+    case 'live_show':
+      return 'live show'
+    case 'vip_text':
+      return 'VIP text'
+    case 'join_team':
+      return 'join team'
+    default:
+      return actionType
+  }
+}
+
+function formatListForSentence(values: string[]) {
+  if (values.length <= 1) return values[0] ?? ''
+  if (values.length === 2) return `${values[0]} and ${values[1]}`
+
+  return `${values.slice(0, -1).join(', ')}, and ${values.at(-1)}`
 }
 
 function buildPrelaunchScoutPublicFunnel(
@@ -645,6 +705,14 @@ function buildScoutSynthesisPrompt(
           : null,
         item.outboundLinks.length > 0
           ? `outboundLinks: ${item.outboundLinks.join(', ')}`
+          : null,
+        item.publicActionCandidates && item.publicActionCandidates.length > 0
+          ? `publicActions: ${item.publicActionCandidates
+              .map(
+                (candidate) =>
+                  `[${candidate.actionType}] ${candidate.text} -> ${candidate.url}`,
+              )
+              .join(' | ')}`
           : null,
         item.primaryOutboundLink
           ? `primaryOutboundLink: ${item.primaryOutboundLink}`
@@ -1308,10 +1376,18 @@ function extractScoutEvidenceFromHtml(
 
   if ((!title && !description) || hasOnlyGenericTitle) return null
 
-  const outboundLinks = extractScoutOutboundLinks(url, canonicalUrl, html)
+  const outboundAnchors = extractScoutOutboundAnchors(url, canonicalUrl, html)
+  const outboundLinks = dedupeStrings(
+    outboundAnchors.map((anchor) => anchor.url),
+  ).slice(0, 3)
   const primaryOutboundLinkAssessment =
     assessPrimaryOutboundLink(outboundLinks)
   const evidenceSnippets = extractScoutEvidenceSnippets(html)
+  const publicActionCandidates = extractScoutPublicActionCandidates(
+    label,
+    url,
+    outboundAnchors,
+  )
 
   return {
     label,
@@ -1323,14 +1399,20 @@ function extractScoutEvidenceFromHtml(
     outboundLinks,
     primaryOutboundLink: primaryOutboundLinkAssessment.url,
     primaryOutboundLinkReason: primaryOutboundLinkAssessment.reason,
+    publicActionCandidates,
   }
 }
 
-function extractScoutOutboundLinks(
+interface ScoutOutboundAnchor {
+  text: string | null
+  url: string
+}
+
+function extractScoutOutboundAnchors(
   sourceUrl: string,
   canonicalUrl: string | null,
   html: string,
-) {
+): ScoutOutboundAnchor[] {
   const disallowedHosts = new Set(
     [sourceUrl, canonicalUrl]
       .filter((value): value is string => Boolean(value))
@@ -1344,19 +1426,142 @@ function extractScoutOutboundLinks(
       .filter((value): value is string => Boolean(value)),
   )
 
-  const matches = html.matchAll(/<a[^>]+href=["'](https?:\/\/[^"']+)["'][^>]*>/gi)
-  const links = Array.from(matches, (match) => decodeHtmlEntities(match[1]))
-    .filter((value): value is string => Boolean(value))
-    .filter((value) => {
-      try {
-        const parsed = new URL(value)
-        return !disallowedHosts.has(parsed.hostname.toLowerCase())
-      } catch {
-        return false
-      }
-    })
+  const matches = html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)
+  const anchors = Array.from(matches, (match) => {
+    const href = decodeHtmlEntities(
+      extractHtmlMatch(match[1], /\bhref=["']([^"']+)["']/i),
+    )
+    const text = decodeHtmlEntities(stripScoutHtmlTags(match[2]))
+    const url = sanitizeScoutPublicUrl(href, disallowedHosts)
 
-  return dedupeStrings(links).slice(0, 3)
+    if (!url) return null
+
+    return { text, url }
+  }).filter((value): value is ScoutOutboundAnchor => Boolean(value))
+
+  const seen = new Set<string>()
+
+  return anchors.filter((anchor) => {
+    const key = `${(anchor.text ?? '').toLowerCase()}|${anchor.url}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function extractScoutPublicActionCandidates(
+  sourceLabel: PrelaunchScoutEvidenceLabel,
+  sourceUrl: string,
+  anchors: ScoutOutboundAnchor[],
+): PrelaunchScoutPublicActionCandidate[] {
+  return anchors
+    .filter((anchor): anchor is ScoutOutboundAnchor & { text: string } =>
+      Boolean(anchor.text && anchor.text.length >= 3),
+    )
+    .map((anchor) => ({
+      sourceLabel,
+      sourceUrl,
+      text: anchor.text,
+      url: anchor.url,
+      actionType: classifyScoutPublicActionCandidate(anchor),
+    }))
+    .slice(0, 3)
+}
+
+function classifyScoutPublicActionCandidate({
+  text,
+  url,
+}: ScoutOutboundAnchor): PrelaunchScoutPublicActionType {
+  const haystack = `${text} ${url}`.toLowerCase()
+
+  if (/\b(vip|text|sms)\b/.test(haystack)) return 'vip_text'
+  if (/\b(live|show|replay)\b/.test(haystack)) return 'live_show'
+  if (/\b(shop|buy|claim|cart|store)\b/.test(haystack)) return 'shop'
+  if (/\b(join|team|enroll|sponsor)\b/.test(haystack)) return 'join_team'
+
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+    if (
+      ['tiktok.com', 'instagram.com', 'facebook.com', 'youtube.com'].some(
+        (host) => hostname === host || hostname.endsWith(`.${host}`),
+      )
+    ) {
+      return 'social'
+    }
+  } catch {
+    return 'unknown'
+  }
+
+  return 'unknown'
+}
+
+function sanitizeScoutPublicUrl(
+  value: string | null,
+  disallowedHosts: Set<string>,
+) {
+  if (!value) return null
+
+  try {
+    const parsed = new URL(value)
+    const hostname = parsed.hostname.toLowerCase()
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null
+    if (disallowedHosts.has(hostname)) return null
+    if (isPrivateScoutHostname(hostname)) return null
+
+    parsed.search = ''
+    parsed.hash = ''
+
+    return parsed.toString().replace(/\/$/, '')
+  } catch {
+    return null
+  }
+}
+
+function isPrivateScoutHostname(hostname: string) {
+  const normalizedHostname = hostname.replace(/^\[(.*)\]$/, '$1')
+
+  if (
+    normalizedHostname === 'localhost' ||
+    normalizedHostname.endsWith('.localhost') ||
+    normalizedHostname.endsWith('.local')
+  ) {
+    return true
+  }
+
+  if (normalizedHostname.includes(':')) {
+    if (normalizedHostname.startsWith('::ffff:')) {
+      return isPrivateScoutHostname(normalizedHostname.replace('::ffff:', ''))
+    }
+
+    return (
+      normalizedHostname === '::' ||
+      normalizedHostname === '::1' ||
+      normalizedHostname.startsWith('fe80:') ||
+      normalizedHostname.startsWith('fc') ||
+      normalizedHostname.startsWith('fd')
+    )
+  }
+
+  const ipv4Match = normalizedHostname.match(
+    /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/,
+  )
+  if (!ipv4Match) return false
+
+  const octets = ipv4Match.slice(1).map(Number)
+  if (octets.some((octet) => Number.isNaN(octet) || octet < 0 || octet > 255)) {
+    return true
+  }
+
+  const [first, second] = octets
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 169 && second === 254)
+  )
 }
 
 function assessPrimaryOutboundLink(outboundLinks: string[]) {

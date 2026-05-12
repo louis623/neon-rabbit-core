@@ -269,6 +269,7 @@ describe('prelaunch Scout', () => {
               <body>
                 <h2>Claim favorites before the next show</h2>
                 <button>Join the VIP text list</button>
+                <a href="https://vip.example.com/jamie?token=secret&utm_source=tiktok#top">Join VIP text list</a>
               </body>
             </html>
           `,
@@ -301,6 +302,16 @@ describe('prelaunch Scout', () => {
         evidenceSnippets: [
           'Claim favorites before the next show',
           'Join the VIP text list',
+          'Join VIP text list',
+        ],
+        publicActionCandidates: [
+          expect.objectContaining({
+            sourceLabel: 'Primary customer link',
+            sourceUrl: 'https://jamiehartjewelry.com/live',
+            text: 'Join VIP text list',
+            url: 'https://vip.example.com/jamie',
+            actionType: 'vip_text',
+          }),
         ],
       }),
     ])
@@ -383,6 +394,22 @@ describe('prelaunch Scout', () => {
           "Shop tonight's live board",
           'Join VIP text list',
         ],
+        publicActionCandidates: [
+          expect.objectContaining({
+            sourceLabel: 'Public link hub',
+            sourceUrl: 'https://linktr.ee/jamieh',
+            text: "Shop tonight's live board",
+            url: 'https://jamiehartjewelry.com/live',
+            actionType: 'live_show',
+          }),
+          expect.objectContaining({
+            sourceLabel: 'Public link hub',
+            sourceUrl: 'https://linktr.ee/jamieh',
+            text: 'Join VIP text list',
+            url: 'https://vip.example.com/join',
+            actionType: 'vip_text',
+          }),
+        ],
       }),
     ])
     expect(result.sourceReports).toContainEqual({
@@ -396,6 +423,149 @@ describe('prelaunch Scout', () => {
         label: 'Primary customer link',
       }),
     )
+  })
+
+  it('filters unsafe public CTA URLs and strips query data from stored evidence', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Shop my sparkle board." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+              </head>
+              <body>
+                <a href="https://linktr.ee/jamieh">Link hub</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Links</title>
+                <meta name="description" content="All public action links." />
+                <link rel="canonical" href="https://linktr.ee/jamieh" />
+              </head>
+              <body>
+                <a href="mailto:jamie@example.com">Email me</a>
+                <a href="tel:+19045550123">Text me</a>
+                <a href="http://localhost:3000/private">Preview draft</a>
+                <a href="http://0.0.0.0/private">Wildcard preview</a>
+                <a href="http://[::1]/private">IPv6 loopback preview</a>
+                <a href="http://[fd00::1]/private">IPv6 private preview</a>
+                <a href="http://[fe80::1]/private">IPv6 link local preview</a>
+                <a href="https://192.168.0.4/private">Private board</a>
+                <a href="https://jamiehartjewelry.com/live?token=secret&utm_source=tiktok#top">Shop tonight's live board</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          ...submission.social,
+          instagram: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    const hubEvidence = result.capturedEvidence.find(
+      (item) => item.label === 'Public link hub',
+    )
+
+    expect(hubEvidence?.outboundLinks).toEqual([
+      'https://jamiehartjewelry.com/live',
+    ])
+    expect(hubEvidence?.publicActionCandidates).toEqual([
+      expect.objectContaining({
+        text: "Shop tonight's live board",
+        url: 'https://jamiehartjewelry.com/live',
+        actionType: 'live_show',
+      }),
+    ])
+  })
+
+  it('keeps image-only public links eligible for one-hop customer-link checks', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+              </head>
+              <body>
+                <a href="https://jamiehartjewelry.com/live"><img alt="Shop live" src="/shop.png" /></a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry Live Shop</title>
+                <meta name="description" content="Shop the current live reveal board." />
+                <link rel="canonical" href="https://jamiehartjewelry.com/live" />
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: '@jamieh',
+          instagram: null,
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://jamiehartjewelry.com/live',
+      expect.any(Object),
+    )
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        publicActionCandidates: [],
+      }),
+      expect.objectContaining({
+        label: 'Primary customer link',
+        url: 'https://jamiehartjewelry.com/live',
+      }),
+    ])
   })
 
   it('limits public link-hub checks to two generic hubs', async () => {
@@ -714,6 +884,22 @@ describe('prelaunch Scout', () => {
         outboundLinks: [],
         primaryOutboundLink: null,
         primaryOutboundLinkReason: null,
+        publicActionCandidates: [
+          {
+            sourceLabel: 'Primary customer link',
+            sourceUrl: 'https://jamiehartjewelry.com/live',
+            text: 'Shop tonight live show',
+            url: 'https://jamiehartjewelry.com/live/show',
+            actionType: 'live_show',
+          },
+          {
+            sourceLabel: 'Primary customer link',
+            sourceUrl: 'https://jamiehartjewelry.com/live',
+            text: 'Join VIP text list',
+            url: 'https://vip.example.com/join',
+            actionType: 'vip_text',
+          },
+        ],
       },
     ])
 
@@ -723,6 +909,12 @@ describe('prelaunch Scout', () => {
     )
     expect(output.researchSynthesis.manualVerificationNeeded).toContain(
       'Confirm the direct customer-link page still matches the public profile promise.',
+    )
+    expect(output.researchSynthesis.manualVerificationNeeded).toContain(
+      'Confirm which visible public CTA should become the primary Sparkle Suite action.',
+    )
+    expect(output.researchSynthesis.evidenceBackedObservations).toContain(
+      'Visible public CTAs include live show and VIP text actions.',
     )
     expect(output.researchSynthesis.contradictions).toContain(
       'Multiple public profiles point to different direct customer links: https://jamiehartjewelry.com/live, https://shop.jamiehartjewelry.com.',
@@ -1106,6 +1298,15 @@ describe('prelaunch Scout', () => {
           primaryOutboundLink: 'https://jamiehartjewelry.com/live',
           primaryOutboundLinkReason:
             'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+          publicActionCandidates: [
+            {
+              sourceLabel: 'TikTok',
+              sourceUrl: 'https://www.tiktok.com/@jamieh',
+              text: 'Join VIP text list',
+              url: 'https://vip.example.com/join',
+              actionType: 'vip_text',
+            },
+          ],
         },
       ],
       {
@@ -1116,6 +1317,9 @@ describe('prelaunch Scout', () => {
     expect(generateTextMock).toHaveBeenCalledTimes(1)
     expect(generateTextMock.mock.calls[0]?.[0].prompt).toContain(
       'pageSignals: Live reveals every Tuesday | Shop tonight',
+    )
+    expect(generateTextMock.mock.calls[0]?.[0].prompt).toContain(
+      'publicActions: [vip_text] Join VIP text list -> https://vip.example.com/join',
     )
     expect(synthesis).toEqual({
       status: 'model_generated',
