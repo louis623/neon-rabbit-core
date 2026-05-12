@@ -177,6 +177,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             description:
               'Live jewelry sales, trade nights, and customer follow-up clips.',
             canonicalUrl: 'https://www.tiktok.com/@jamieh',
+            evidenceSnippets: [
+              'Live reveals every Tuesday',
+              "Shop tonight's live board",
+            ],
             outboundLinks: ['https://jamiehartjewelry.com/live'],
             primaryOutboundLink: 'https://jamiehartjewelry.com/live',
             primaryOutboundLinkReason:
@@ -189,6 +193,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             description:
               'Shop the current live reveal board and see next-show details.',
             canonicalUrl: 'https://jamiehartjewelry.com/live',
+            evidenceSnippets: [
+              'Claim favorites before the next show',
+              'Join the VIP text list',
+            ],
             outboundLinks: [],
             primaryOutboundLink: null,
             primaryOutboundLinkReason: null,
@@ -261,6 +269,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       'Shop the current live reveal board and see next-show details.',
     )
+    expect(html).toContain('Page signals')
+    expect(html).toContain('Live reveals every Tuesday')
+    expect(html).toContain('Shop tonight&#x27;s live board')
+    expect(html).toContain('Claim favorites before the next show')
+    expect(html).toContain('Join the VIP text list')
     expect(html).toContain(
       'Direct brand or shop links are more likely the real customer action than a generic link hub.',
     )

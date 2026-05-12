@@ -233,6 +233,78 @@ describe('prelaunch Scout', () => {
     })
   })
 
+  it('captures public page signal snippets from headings and CTA links', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales and trade night clips." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+              </head>
+              <body>
+                <h1>Live reveals every Tuesday</h1>
+                <a href="https://jamiehartjewelry.com/live">Shop tonight's live board</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry Live Shop</title>
+                <meta name="description" content="Shop the current live reveal board." />
+                <link rel="canonical" href="https://jamiehartjewelry.com/live" />
+              </head>
+              <body>
+                <h2>Claim favorites before the next show</h2>
+                <button>Join the VIP text list</button>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: '@jamieh',
+          instagram: null,
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        evidenceSnippets: [
+          'Live reveals every Tuesday',
+          "Shop tonight's live board",
+        ],
+      }),
+      expect.objectContaining({
+        label: 'Primary customer link',
+        evidenceSnippets: [
+          'Claim favorites before the next show',
+          'Join the VIP text list',
+        ],
+      }),
+    ])
+  })
+
   it('does not follow generic link hubs during the one-hop evidence pass', async () => {
     const fetchMock = vi
       .fn()
@@ -385,6 +457,29 @@ describe('prelaunch Scout', () => {
     )
     expect(output.suggestedQuestions).toContain(
       'Does the direct customer-link page match what the public profile promises?',
+    )
+  })
+
+  it('uses captured page signals in deterministic synthesis bullets', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'Primary customer link',
+        url: 'https://jamiehartjewelry.com/live',
+        title: 'Jamie Hart Jewelry Live Shop',
+        description: null,
+        canonicalUrl: 'https://jamiehartjewelry.com/live',
+        evidenceSnippets: [
+          'Claim favorites before the next show',
+          'Join the VIP text list',
+        ],
+        outboundLinks: [],
+        primaryOutboundLink: null,
+        primaryOutboundLinkReason: null,
+      },
+    ])
+
+    expect(output.researchSynthesis.summaryBullets).toContain(
+      'Claim favorites before the next show',
     )
   })
 
@@ -707,6 +802,10 @@ describe('prelaunch Scout', () => {
           description:
             'Live jewelry sales, trade nights, and customer follow-up clips.',
           canonicalUrl: 'https://www.tiktok.com/@jamieh',
+          evidenceSnippets: [
+            'Live reveals every Tuesday',
+            "Shop tonight's live board",
+          ],
           outboundLinks: ['https://jamiehartjewelry.com/live'],
           primaryOutboundLink: 'https://jamiehartjewelry.com/live',
           primaryOutboundLinkReason:
@@ -719,6 +818,9 @@ describe('prelaunch Scout', () => {
     )
 
     expect(generateTextMock).toHaveBeenCalledTimes(1)
+    expect(generateTextMock.mock.calls[0]?.[0].prompt).toContain(
+      'pageSignals: Live reveals every Tuesday | Shop tonight',
+    )
     expect(synthesis).toEqual({
       status: 'model_generated',
       discoveryAngle:

@@ -104,6 +104,18 @@ export function PrelaunchScoutRecommendationResult({
                       {item.description}
                     </p>
                   ) : null}
+                  {item.evidenceSnippets && item.evidenceSnippets.length > 0 ? (
+                    <div className="mt-2 rounded-md bg-slate-50 p-2">
+                      <p className="text-xs font-semibold uppercase text-slate-500">
+                        Page signals
+                      </p>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                        {item.evidenceSnippets.map((snippet) => (
+                          <li key={snippet}>{snippet}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                   {item.primaryOutboundLink ? (
                     <div className="mt-2 rounded-md bg-emerald-50 p-2">
                       <p className="text-xs font-semibold uppercase text-emerald-700">

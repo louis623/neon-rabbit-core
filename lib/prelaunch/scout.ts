@@ -43,6 +43,7 @@ export interface PrelaunchScoutCapturedEvidence {
   title: string | null
   description: string | null
   canonicalUrl: string | null
+  evidenceSnippets?: string[]
   outboundLinks: string[]
   primaryOutboundLink: string | null
   primaryOutboundLinkReason: string | null
@@ -328,7 +329,10 @@ function buildDeterministicScoutSynthesis(
   }
 
   const evidenceBullets = capturedEvidence
-    .map((item) => item.description ?? item.title)
+    .flatMap((item) => [
+      ...(item.evidenceSnippets ?? []),
+      item.description ?? item.title,
+    ])
     .filter((value): value is string => Boolean(value))
     .slice(0, 3)
   const outboundLinks = dedupeStrings(
@@ -501,6 +505,9 @@ function buildScoutSynthesisPrompt(
         `url: ${item.url}`,
         item.title ? `title: ${item.title}` : null,
         item.description ? `description: ${item.description}` : null,
+        item.evidenceSnippets && item.evidenceSnippets.length > 0
+          ? `pageSignals: ${item.evidenceSnippets.join(' | ')}`
+          : null,
         item.outboundLinks.length > 0
           ? `outboundLinks: ${item.outboundLinks.join(', ')}`
           : null,
@@ -1081,6 +1088,30 @@ function decodeHtmlEntities(value: string | null) {
     .replace(/&gt;/g, '>')
 }
 
+function stripScoutHtmlTags(value: string) {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function extractScoutEvidenceSnippets(html: string) {
+  const matches = html.matchAll(
+    /<(h[1-3]|button|a)\b[^>]*>([\s\S]*?)<\/\1>/gi,
+  )
+
+  return dedupeStrings(
+    Array.from(matches, (match) =>
+      decodeHtmlEntities(stripScoutHtmlTags(match[2])),
+    )
+      .filter((value): value is string => Boolean(value))
+      .filter((value) => value.length >= 3)
+      .filter((value) => !/^https?:\/\//i.test(value)),
+  ).slice(0, 4)
+}
+
 function extractScoutEvidenceFromHtml(
   label: PrelaunchScoutEvidenceLabel,
   url: string,
@@ -1112,6 +1143,7 @@ function extractScoutEvidenceFromHtml(
   const outboundLinks = extractScoutOutboundLinks(url, canonicalUrl, html)
   const primaryOutboundLinkAssessment =
     assessPrimaryOutboundLink(outboundLinks)
+  const evidenceSnippets = extractScoutEvidenceSnippets(html)
 
   return {
     label,
@@ -1119,6 +1151,7 @@ function extractScoutEvidenceFromHtml(
     title,
     description,
     canonicalUrl,
+    evidenceSnippets,
     outboundLinks,
     primaryOutboundLink: primaryOutboundLinkAssessment.url,
     primaryOutboundLinkReason: primaryOutboundLinkAssessment.reason,
