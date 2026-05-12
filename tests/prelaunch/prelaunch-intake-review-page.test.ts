@@ -97,6 +97,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               errorMessage: null,
               createdAt: '2026-05-09T19:30:00Z',
               synthesisStatus: 'deterministic_fallback',
+              synthesisConfidence: 'high',
               capturedEvidenceCount: 2,
             },
           },
@@ -113,6 +114,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
     expect(html).toContain('2 captured evidence items')
     expect(html).toContain('deterministic fallback synthesis')
+    expect(html).toContain('high confidence')
     expect(html).toContain('scout:intake-1:2026-05-09T19:30:00.000Z')
   })
 
@@ -131,6 +133,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               errorMessage: 'Public evidence fetch timed out.',
               createdAt: '2026-05-09T19:30:00Z',
               synthesisStatus: null,
+              synthesisConfidence: null,
               capturedEvidenceCount: null,
             },
           },

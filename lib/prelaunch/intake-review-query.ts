@@ -47,6 +47,7 @@ interface PrelaunchScoutRunReviewRow {
   created_at: string
   metadata: {
     synthesis_status?: unknown
+    synthesis_confidence?: unknown
     captured_evidence_count?: unknown
   } | null
 }
@@ -65,6 +66,10 @@ function normalizeScoutRunReviewRow(
     synthesisStatus:
       typeof row.metadata?.synthesis_status === 'string'
         ? row.metadata.synthesis_status
+        : null,
+    synthesisConfidence:
+      typeof row.metadata?.synthesis_confidence === 'string'
+        ? row.metadata.synthesis_confidence
         : null,
     capturedEvidenceCount:
       typeof row.metadata?.captured_evidence_count === 'number'

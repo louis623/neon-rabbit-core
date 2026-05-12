@@ -247,6 +247,14 @@ export function PrelaunchIntakeReviewPageContent({
                           synthesis
                         </span>
                       ) : null}
+                      {submission.latestScoutRun.synthesisConfidence ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-sky-800">
+                          {formatLabel(
+                            submission.latestScoutRun.synthesisConfidence,
+                          )}{' '}
+                          confidence
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-3 break-all text-xs font-semibold text-slate-500">
                       {submission.latestScoutRun.runKey}

@@ -35,6 +35,7 @@ export interface PrelaunchScoutRunReviewSummary {
   errorMessage: string | null
   createdAt: string
   synthesisStatus: string | null
+  synthesisConfidence: string | null
   capturedEvidenceCount: number | null
 }
 

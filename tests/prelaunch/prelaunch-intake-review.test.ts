@@ -187,6 +187,7 @@ describe('prelaunch intake review helpers', () => {
           created_at: '2026-05-09T19:30:00Z',
           metadata: {
             synthesis_status: 'deterministic_fallback',
+            synthesis_confidence: 'high',
             captured_evidence_count: 2,
           },
         },
@@ -243,6 +244,7 @@ describe('prelaunch intake review helpers', () => {
       errorMessage: null,
       createdAt: '2026-05-09T19:30:00Z',
       synthesisStatus: 'deterministic_fallback',
+      synthesisConfidence: 'high',
       capturedEvidenceCount: 2,
     })
   })
