@@ -95,11 +95,45 @@ describe('PrelaunchIntakeReviewPageContent', () => {
           'Confirm recent live-show cadence and audience engagement.',
         ],
         blockers: ['External social research is not connected yet.'],
+        capturedEvidence: [],
+        sourceReports: [
+          {
+            label: 'TikTok',
+            status: 'fetch_failed',
+            url: 'https://www.tiktok.com/@jamieh',
+            note: 'Scout could not fetch the public page metadata.',
+          },
+          {
+            label: 'Instagram',
+            status: 'metadata_missing',
+            url: 'https://www.instagram.com/jamiebling/',
+            note: 'Scout reached the public page but did not find usable title or description metadata.',
+          },
+          {
+            label: 'Facebook',
+            status: 'not_provided',
+            url: null,
+            note: 'No public handle or URL was provided in the intake.',
+          },
+        ],
       },
       setupRisks: ['Confirm a two-device live setup.'],
       suggestedQuestions: ['Can they support a two-device setup?'],
       reusedLessons: [],
       generatedBy: 'deterministic_scout_v1',
+      publicFunnel: {
+        shape: 'unclear',
+        summary:
+          'Scout does not have enough public link evidence to describe the customer path yet.',
+        primaryLinks: [],
+        concerns: ['Public customer path still needs manual confirmation.'],
+      },
+      researchSynthesis: {
+        status: 'not_available',
+        discoveryAngle: null,
+        summaryBullets: [],
+        followUpQuestions: [],
+      },
     }
 
     const html = renderToStaticMarkup(
@@ -112,5 +146,199 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       'Confirm recent live-show cadence and audience engagement.',
     )
     expect(html).toContain('External social research is not connected yet.')
+    expect(html).toContain('Source check results')
+    expect(html).toContain('TikTok: fetch failed')
+    expect(html).toContain(
+      'Scout reached the public page but did not find usable title or description metadata.',
+    )
+  })
+
+  it('renders captured public profile evidence when Scout finds it', () => {
+    const output: PrelaunchScoutOutput = {
+      briefTitle: 'Scout brief: Jamie Hart Jewelry',
+      summary:
+        'Jamie Hart Jewelry is a TikTok prospect. Scout captured lightweight public-profile evidence from TikTok.',
+      recommendedNextStep: 'operator_review_first',
+      researchTargets: [
+        { label: 'TikTok', value: '@jamieh', priority: 'high' },
+      ],
+      researchPlan: {
+        status: 'evidence_captured',
+        searchQueries: ['Jamie Hart Jewelry @jamieh TikTok'],
+        evidenceChecklist: [
+          'Look for one discovery-call angle from the captured bio/title language.',
+        ],
+        blockers: [],
+        capturedEvidence: [
+          {
+            label: 'TikTok',
+            url: 'https://www.tiktok.com/@jamieh',
+            title: 'Jamie Hart Jewelry | TikTok',
+            description:
+              'Live jewelry sales, trade nights, and customer follow-up clips.',
+            canonicalUrl: 'https://www.tiktok.com/@jamieh',
+            outboundLinks: ['https://jamiehartjewelry.com/live'],
+            primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+            primaryOutboundLinkReason:
+              'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+          },
+        ],
+        sourceReports: [
+          {
+            label: 'TikTok',
+            status: 'captured',
+            url: 'https://www.tiktok.com/@jamieh',
+            note: 'Usable public profile metadata was captured.',
+          },
+          {
+            label: 'Instagram',
+            status: 'metadata_missing',
+            url: 'https://www.instagram.com/jamiebling/',
+            note: 'Scout reached the public page but did not find usable title or description metadata.',
+          },
+          {
+            label: 'Facebook',
+            status: 'not_provided',
+            url: null,
+            note: 'No public handle or URL was provided in the intake.',
+          },
+        ],
+      },
+      setupRisks: ['Confirm a two-device live setup.'],
+      suggestedQuestions: ['Can they support a two-device setup?'],
+      reusedLessons: [],
+      generatedBy: 'deterministic_scout_v1',
+      publicFunnel: {
+        shape: 'direct_site_first',
+        summary:
+          'The public profile points customers straight to a direct brand or shop link first.',
+        primaryLinks: ['https://jamiehartjewelry.com/live'],
+        concerns: [],
+      },
+      researchSynthesis: {
+        status: 'deterministic_fallback',
+        discoveryAngle:
+          'The public TikTok profile is enough to start from customer-facing language instead of a blank first pass.',
+        summaryBullets: [
+          'Profile copy points toward live-sale momentum.',
+        ],
+        followUpQuestions: [
+          'Which customer action is breaking most often right now?',
+        ],
+      },
+    }
+
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchScoutRecommendationResult, { output }),
+    )
+
+    expect(html).toContain('Captured public evidence')
+    expect(html).toContain('Jamie Hart Jewelry | TikTok')
+    expect(html).toContain('https://www.tiktok.com/@jamieh')
+    expect(html).toContain(
+      'Live jewelry sales, trade nights, and customer follow-up clips.',
+    )
+    expect(html).toContain('Likely primary customer link')
+    expect(html).toContain(
+      'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+    )
+    expect(html).toContain('Public funnel read')
+    expect(html).toContain('direct site first')
+    expect(html).toContain(
+      'The public profile points customers straight to a direct brand or shop link first.',
+    )
+    expect(html).toContain('Possible customer links')
+    expect(html).toContain('https://jamiehartjewelry.com/live')
+    expect(html).toContain('TikTok: captured')
+  })
+
+  it('renders Scout synthesis when it exists', () => {
+    const output: PrelaunchScoutOutput = {
+      briefTitle: 'Scout brief: Jamie Hart Jewelry',
+      summary:
+        'Jamie Hart Jewelry is a TikTok prospect. Scout captured lightweight public-profile evidence from TikTok.',
+      recommendedNextStep: 'operator_review_first',
+      researchTargets: [
+        { label: 'TikTok', value: '@jamieh', priority: 'high' },
+      ],
+      researchPlan: {
+        status: 'evidence_captured',
+        searchQueries: ['Jamie Hart Jewelry @jamieh TikTok'],
+        evidenceChecklist: [],
+        blockers: [],
+        capturedEvidence: [
+          {
+            label: 'TikTok',
+            url: 'https://www.tiktok.com/@jamieh',
+            title: 'Jamie Hart Jewelry | TikTok',
+            description:
+              'Live jewelry sales, trade nights, and customer follow-up clips.',
+            canonicalUrl: 'https://www.tiktok.com/@jamieh',
+            outboundLinks: ['https://jamiehartjewelry.com/live'],
+            primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+            primaryOutboundLinkReason:
+              'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+          },
+        ],
+        sourceReports: [
+          {
+            label: 'TikTok',
+            status: 'captured',
+            url: 'https://www.tiktok.com/@jamieh',
+            note: 'Usable public profile metadata was captured.',
+          },
+          {
+            label: 'Instagram',
+            status: 'metadata_missing',
+            url: 'https://www.instagram.com/jamiebling/',
+            note: 'Scout reached the public page but did not find usable title or description metadata.',
+          },
+          {
+            label: 'Facebook',
+            status: 'not_provided',
+            url: null,
+            note: 'No public handle or URL was provided in the intake.',
+          },
+        ],
+      },
+      setupRisks: ['Confirm a two-device live setup.'],
+      suggestedQuestions: ['Can they support a two-device setup?'],
+      reusedLessons: [],
+      generatedBy: 'deterministic_scout_v1',
+      publicFunnel: {
+        shape: 'direct_site_first',
+        summary:
+          'The public profile points customers straight to a direct brand or shop link first.',
+        primaryLinks: ['https://jamiehartjewelry.com/live'],
+        concerns: [],
+      },
+      researchSynthesis: {
+        status: 'model_generated',
+        discoveryAngle:
+          'The public TikTok language already sounds customer-first, so the discovery call can focus on smoothing the live-show path.',
+        summaryBullets: [
+          'Profile language points to active live-sale momentum.',
+          'Customer follow-up already appears in the public positioning.',
+        ],
+        followUpQuestions: [
+          'Which customer action breaks most often between the live and the replay window?',
+        ],
+      },
+    }
+
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchScoutRecommendationResult, { output }),
+    )
+
+    expect(html).toContain('Scout synthesis')
+    expect(html).toContain(
+      'The public TikTok language already sounds customer-first, so the discovery call can focus on smoothing the live-show path.',
+    )
+    expect(html).toContain(
+      'Profile language points to active live-sale momentum.',
+    )
+    expect(html).toContain(
+      'Which customer action breaks most often between the live and the replay window?',
+    )
   })
 })

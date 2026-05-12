@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildPrelaunchScoutOutput,
+  collectPrelaunchScoutEvidence,
+  inspectPrelaunchScoutEvidenceSources,
   runPrelaunchScoutForIntake,
+  synthesizePrelaunchScoutEvidence,
 } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
 
@@ -70,6 +73,379 @@ describe('prelaunch Scout', () => {
     expect(output.researchPlan.evidenceChecklist).toContain(
       'Confirm recent live-show cadence and audience engagement.',
     )
+    expect(output.researchPlan.sourceReports).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        status: 'not_checked',
+        url: 'https://www.tiktok.com/@jamieh',
+      }),
+      expect.objectContaining({
+        label: 'Instagram',
+        status: 'not_checked',
+        url: 'https://www.instagram.com/jamiebling/',
+      }),
+      expect.objectContaining({
+        label: 'Facebook',
+        status: 'not_provided',
+        url: null,
+      }),
+    ])
+  })
+
+  it('captures lightweight evidence from public social profiles when available', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales, trade nights, and customer follow-up clips." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+                <a href="https://jamiehartjewelry.com/live">Live shop</a>
+                <a href="https://linktr.ee/jamieh">Link hub</a>
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: false,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () => '',
+      } satisfies Partial<Response>)
+
+    const evidence = await collectPrelaunchScoutEvidence(submission, {
+      fetchImpl: fetchMock as typeof fetch,
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(evidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description:
+          'Live jewelry sales, trade nights, and customer follow-up clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: [
+          'https://jamiehartjewelry.com/live',
+          'https://linktr.ee/jamieh',
+        ],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      }),
+    ])
+  })
+
+  it('reports per-source evidence outcomes for the operator', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales, trade nights, and customer follow-up clips." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+                <a href="https://jamiehartjewelry.com/live">Live shop</a>
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () => '<html><head><title>Instagram</title></head></html>',
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(submission, {
+      fetchImpl: fetchMock as typeof fetch,
+    })
+
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      }),
+    ])
+    expect(result.sourceReports).toEqual([
+      {
+        label: 'TikTok',
+        status: 'captured',
+        url: 'https://www.tiktok.com/@jamieh',
+        note: 'Usable public profile metadata was captured.',
+      },
+      {
+        label: 'Instagram',
+        status: 'metadata_missing',
+        url: 'https://www.instagram.com/jamiebling/',
+        note: 'Scout reached the public page but did not find usable title or description metadata.',
+      },
+      {
+        label: 'Facebook',
+        status: 'not_provided',
+        url: null,
+        note: 'No public handle or URL was provided in the intake.',
+      },
+    ])
+  })
+
+  it('normalizes bare handles and scheme-less social URLs before checking public sources', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+      text: async () => '',
+    } satisfies Partial<Response>)
+
+    await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: 'jamieh',
+          instagram: 'instagram.com/jamiebling',
+          facebook: 'www.facebook.com/groups/jamiebling',
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://www.tiktok.com/@jamieh',
+      expect.any(Object),
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://www.instagram.com/jamiebling/',
+      expect.any(Object),
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      'https://www.facebook.com/groups/jamiebling',
+      expect.any(Object),
+    )
+  })
+
+  it('switches Scout into evidence-backed mode when public profile evidence is captured', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description:
+          'Live jewelry sales, trade nights, and customer follow-up clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+    ])
+
+    expect(output.researchPlan.status).toBe('evidence_captured')
+    expect(output.researchPlan.blockers).toEqual([])
+    expect(output.researchPlan.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+      }),
+    ])
+    expect(output.researchPlan.sourceReports).toContainEqual(
+      expect.objectContaining({
+        label: 'TikTok',
+        status: 'captured',
+      }),
+    )
+    expect(output.summary).not.toContain(
+      'External social research is not connected yet',
+    )
+    expect(output.researchSynthesis.status).toBe('deterministic_fallback')
+    expect(output.publicFunnel).toEqual({
+      shape: 'direct_site_first',
+      summary:
+        'The public profile points customers straight to a direct brand or shop link first.',
+      primaryLinks: ['https://jamiehartjewelry.com/live'],
+      concerns: [],
+    })
+  })
+
+  it('classifies a generic link hub as the visible public funnel when no direct link is present', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'Instagram',
+        url: 'https://www.instagram.com/jamiebling/',
+        title: 'Jamie Hart Jewelry | Instagram',
+        description: 'Live reveals, replays, and launch updates.',
+        canonicalUrl: 'https://www.instagram.com/jamiebling/',
+        outboundLinks: ['https://linktr.ee/jamieh'],
+        primaryOutboundLink: 'https://linktr.ee/jamieh',
+        primaryOutboundLinkReason:
+          'Only a generic link hub was visible publicly, so that is the current likely customer path.',
+      },
+    ])
+
+    expect(output.publicFunnel).toEqual({
+      shape: 'hub_first',
+      summary:
+        'The visible public path depends on a generic link hub before customers reach a specific action.',
+      primaryLinks: ['https://linktr.ee/jamieh'],
+      concerns: [
+        'Confirm which hub destination should become the main Sparkle Suite call to action.',
+      ],
+    })
+    expect(output.suggestedQuestions).toContain(
+      'Which hub destination should become the main Sparkle Suite call to action?',
+    )
+  })
+
+  it('flags competing direct customer links across public sources', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description: 'Live jewelry sales and customer follow-up clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+      {
+        label: 'Instagram',
+        url: 'https://www.instagram.com/jamiebling/',
+        title: 'Jamie Hart Jewelry | Instagram',
+        description: 'Replays, live reminders, and launch updates.',
+        canonicalUrl: 'https://www.instagram.com/jamiebling/',
+        outboundLinks: ['https://shop.jamiehartjewelry.com'],
+        primaryOutboundLink: 'https://shop.jamiehartjewelry.com',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+    ])
+
+    expect(output.publicFunnel).toEqual({
+      shape: 'direct_site_first',
+      summary:
+        'The public profile points customers straight to a direct brand or shop link first.',
+      primaryLinks: [
+        'https://jamiehartjewelry.com/live',
+        'https://shop.jamiehartjewelry.com',
+      ],
+      concerns: [
+        'Multiple public profiles point to different direct customer links; confirm which link should be primary before the discovery call.',
+      ],
+    })
+    expect(output.suggestedQuestions).toContain(
+      'Which public customer link should become the primary Sparkle Suite call to action?',
+    )
+  })
+
+  it('uses model-backed synthesis when generation succeeds', async () => {
+    const generateTextMock = vi.fn().mockResolvedValue({
+      text: JSON.stringify({
+        discoveryAngle:
+          'Her public TikTok language already sounds customer-first, which makes the discovery call less about brand basics and more about smoothing the live-show path.',
+        summaryBullets: [
+          'TikTok headline suggests active live-sale momentum.',
+          'Public bio language points to customer follow-up, not just product drops.',
+        ],
+        followUpQuestions: [
+          'Which customer action is breaking most often between the live and the replay window?',
+          'What current link or bio flow needs the fastest cleanup before launch?',
+        ],
+      }),
+    })
+
+    const synthesis = await synthesizePrelaunchScoutEvidence(
+      submission,
+      [
+        {
+          label: 'TikTok',
+          url: 'https://www.tiktok.com/@jamieh',
+          title: 'Jamie Hart Jewelry | TikTok',
+          description:
+            'Live jewelry sales, trade nights, and customer follow-up clips.',
+          canonicalUrl: 'https://www.tiktok.com/@jamieh',
+          outboundLinks: ['https://jamiehartjewelry.com/live'],
+          primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+          primaryOutboundLinkReason:
+            'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+        },
+      ],
+      {
+        generateTextImpl: generateTextMock,
+      },
+    )
+
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
+    expect(synthesis).toEqual({
+      status: 'model_generated',
+      discoveryAngle:
+        'Her public TikTok language already sounds customer-first, which makes the discovery call less about brand basics and more about smoothing the live-show path.',
+      summaryBullets: [
+        'TikTok headline suggests active live-sale momentum.',
+        'Public bio language points to customer follow-up, not just product drops.',
+      ],
+      followUpQuestions: [
+        'Which customer action is breaking most often between the live and the replay window?',
+        'What current link or bio flow needs the fastest cleanup before launch?',
+      ],
+    })
+  })
+
+  it('prefers a direct site link over a generic link hub for the primary customer path', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+              </head>
+              <body>
+                <a href="https://linktr.ee/jamieh">Link hub</a>
+                <a href="https://jamiehartjewelry.com/live">Live shop</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: false,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () => '',
+      } satisfies Partial<Response>)
+
+    const evidence = await collectPrelaunchScoutEvidence(submission, {
+      fetchImpl: fetchMock as typeof fetch,
+    })
+
+    expect(evidence).toEqual([
+      expect.objectContaining({
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      }),
+    ])
   })
 
   it('reuses recent Scout lessons in the generated recommendation', () => {
@@ -149,6 +525,13 @@ describe('prelaunch Scout', () => {
     const previousRunsAgentEqMock = vi.fn(() => ({ eq: previousRunsStatusEqMock }))
     const previousRunsSelectMock = vi.fn(() => ({ eq: previousRunsAgentEqMock }))
     const agentRunsInsertMock = vi.fn().mockResolvedValueOnce({ error: null })
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({
+        ok: false,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () => '',
+      } satisfies Partial<Response>)
     const fromMock = vi.fn((table: string) => {
       if (table === 'agent_runs') {
         return {
@@ -164,6 +547,7 @@ describe('prelaunch Scout', () => {
 
     const result = await runPrelaunchScoutForIntake({
       admin: { from: fromMock } as never,
+      fetchImpl: fetchMock as typeof fetch,
       intakeId: 'intake-1',
       operatorRepId: 'rep-1',
       now: new Date('2026-05-09T19:00:00Z'),
@@ -183,7 +567,13 @@ describe('prelaunch Scout', () => {
         model: 'deterministic_scout_v1',
         metadata: expect.objectContaining({
           research_plan_status: 'manual_research_required',
+          public_funnel_shape: 'unclear',
           reused_lesson_count: 1,
+          evidence_source_statuses: [
+            { label: 'TikTok', status: 'fetch_failed' },
+            { label: 'Instagram', status: 'fetch_failed' },
+            { label: 'Facebook', status: 'not_provided' },
+          ],
         }),
       }),
     )

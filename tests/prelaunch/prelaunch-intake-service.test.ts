@@ -75,6 +75,32 @@ describe('validatePrelaunchIntakeInput', () => {
     ).toThrow(ServiceError)
   })
 
+  it('keeps scheme-less social profile URLs readable for Scout and operators', () => {
+    const result = validatePrelaunchIntakeInput({
+      fullName: 'Jamie Hart',
+      email: 'jamie@example.com',
+      phone: '303-555-0123',
+      businessName: 'Jamie Hart Jewelry',
+      tiktokHandle: 'tiktok.com/@jamieh',
+      instagramHandle: 'www.instagram.com/jamiebling',
+      facebookUrl: 'facebook.com/groups/jamiebling',
+      teamSize: '1-5',
+      primaryPlatform: 'tiktok',
+      streamingFrequency: 'weekly',
+      currentSetup: 'Bio link',
+      setupGoal: 'Cleaner setup',
+      deviceSetup: 'phone_and_computer',
+      smsConsent: true,
+      emailConsent: true,
+    })
+
+    expect(result.tiktokHandle).toBe('https://www.tiktok.com/@jamieh')
+    expect(result.instagramHandle).toBe(
+      'https://www.instagram.com/jamiebling/',
+    )
+    expect(result.facebookUrl).toBe('https://www.facebook.com/groups/jamiebling')
+  })
+
   it('builds the Supabase insert payload with fit flags for phone-only setup', () => {
     const insert = buildPrelaunchIntakeInsert({
       fullName: 'Jamie Hart',

@@ -52,6 +52,106 @@ export function PrelaunchScoutRecommendationResult({
           </div>
         ) : null}
 
+        {output.researchPlan.capturedEvidence.length > 0 ? (
+          <div className="mt-3">
+            <p className="font-semibold text-slate-700">Captured public evidence</p>
+            <ul className="mt-2 space-y-3 text-slate-700">
+              {output.researchPlan.capturedEvidence.map((item) => (
+                <li
+                  className="rounded-md border border-slate-200 bg-white p-3"
+                  key={`${item.label}:${item.url}`}
+                >
+                  <p className="font-semibold text-slate-800">{item.label}</p>
+                  {item.title ? <p className="mt-1 text-sm">{item.title}</p> : null}
+                  {item.description ? (
+                    <p className="mt-1 text-sm text-slate-600">
+                      {item.description}
+                    </p>
+                  ) : null}
+                  {item.primaryOutboundLink ? (
+                    <div className="mt-2 rounded-md bg-emerald-50 p-2">
+                      <p className="text-xs font-semibold uppercase text-emerald-700">
+                        Likely primary customer link
+                      </p>
+                      <a
+                        className="mt-1 inline-flex text-xs font-semibold text-emerald-700 underline"
+                        href={item.primaryOutboundLink}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {item.primaryOutboundLink}
+                      </a>
+                      {item.primaryOutboundLinkReason ? (
+                        <p className="mt-1 text-xs text-emerald-800">
+                          {item.primaryOutboundLinkReason}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {item.outboundLinks.length > 0 ? (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold uppercase text-slate-500">
+                        Possible customer links
+                      </p>
+                      <ul className="mt-2 space-y-1">
+                        {item.outboundLinks.map((link) => (
+                          <li key={link}>
+                            <a
+                              className="inline-flex text-xs font-semibold text-slate-500 underline"
+                              href={link}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <a
+                    className="mt-2 inline-flex text-xs font-semibold text-slate-500 underline"
+                    href={item.canonicalUrl ?? item.url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {item.canonicalUrl ?? item.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {output.researchPlan.sourceReports.length > 0 ? (
+          <div className="mt-3">
+            <p className="font-semibold text-slate-700">Source check results</p>
+            <ul className="mt-2 space-y-3 text-slate-700">
+              {output.researchPlan.sourceReports.map((item) => (
+                <li
+                  className="rounded-md border border-slate-200 bg-white p-3"
+                  key={`${item.label}:${item.url ?? 'not-provided'}`}
+                >
+                  <p className="font-semibold text-slate-800">
+                    {item.label}: {item.status.replaceAll('_', ' ')}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">{item.note}</p>
+                  {item.url ? (
+                    <a
+                      className="mt-2 inline-flex text-xs font-semibold text-slate-500 underline"
+                      href={item.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {item.url}
+                    </a>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         {output.researchPlan.blockers.length > 0 ? (
           <div className="mt-3 rounded-md bg-amber-50 p-3 text-amber-900">
             <p className="font-semibold">Research blockers</p>
@@ -63,6 +163,85 @@ export function PrelaunchScoutRecommendationResult({
           </div>
         ) : null}
       </div>
+
+      <div className="mt-4 rounded-md border border-sky-200 bg-sky-50 p-3">
+        <p className="text-xs font-semibold uppercase text-sky-700">
+          Public funnel read
+        </p>
+        <p className="mt-2 text-sm font-semibold text-slate-800">
+          {output.publicFunnel.shape.replaceAll('_', ' ')}
+        </p>
+        <p className="mt-1 text-sm leading-6 text-slate-700">
+          {output.publicFunnel.summary}
+        </p>
+
+        {output.publicFunnel.primaryLinks.length > 0 ? (
+          <div className="mt-3">
+            <p className="font-semibold text-slate-700">Primary public links</p>
+            <ul className="mt-2 space-y-1">
+              {output.publicFunnel.primaryLinks.map((link) => (
+                <li key={link}>
+                  <a
+                    className="inline-flex text-xs font-semibold text-slate-500 underline"
+                    href={link}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {output.publicFunnel.concerns.length > 0 ? (
+          <div className="mt-3 rounded-md bg-white p-2">
+            <p className="font-semibold text-slate-700">What to confirm</p>
+            <ul className="mt-2 space-y-1 text-slate-700">
+              {output.publicFunnel.concerns.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      {output.researchSynthesis.status !== 'not_available' ? (
+        <div className="mt-4 rounded-md border border-violet-200 bg-violet-50 p-3">
+          <p className="text-xs font-semibold uppercase text-violet-600">
+            Scout synthesis
+          </p>
+
+          {output.researchSynthesis.discoveryAngle ? (
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+              {output.researchSynthesis.discoveryAngle}
+            </p>
+          ) : null}
+
+          {output.researchSynthesis.summaryBullets.length > 0 ? (
+            <div className="mt-3">
+              <p className="font-semibold text-slate-700">What stands out</p>
+              <ul className="mt-2 space-y-1 text-slate-700">
+                {output.researchSynthesis.summaryBullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {output.researchSynthesis.followUpQuestions.length > 0 ? (
+            <div className="mt-3">
+              <p className="font-semibold text-slate-700">Follow-up questions</p>
+              <ul className="mt-2 space-y-1 text-slate-700">
+                {output.researchSynthesis.followUpQuestions.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

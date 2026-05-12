@@ -45,13 +45,65 @@ function readBoolean(value: unknown) {
   return false
 }
 
-function normalizeHandle(value: string | undefined) {
+type SocialProfilePlatform = 'tiktok' | 'instagram' | 'facebook'
+
+function looksLikeSchemeLessSocialProfileUrl(value: string) {
+  return /^(?:www\.)?(?:tiktok\.com|instagram\.com|facebook\.com|fb\.com)\//i.test(
+    value,
+  )
+}
+
+function normalizeSocialProfileUrl(
+  value: string,
+  platform: SocialProfilePlatform,
+) {
+  const withoutAccidentalAt =
+    value.startsWith('@') && looksLikeSchemeLessSocialProfileUrl(value.slice(1))
+      ? value.slice(1)
+      : value
+  const candidate = /^https?:\/\//i.test(withoutAccidentalAt)
+    ? withoutAccidentalAt
+    : looksLikeSchemeLessSocialProfileUrl(withoutAccidentalAt)
+      ? `https://${withoutAccidentalAt}`
+      : null
+
+  if (!candidate) return null
+
+  try {
+    const parsed = new URL(candidate)
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
+    const pathname = parsed.pathname.replace(/\/+$/, '')
+
+    if (platform === 'tiktok' && hostname === 'tiktok.com') {
+      return `https://www.tiktok.com${pathname}`
+    }
+
+    if (platform === 'instagram' && hostname === 'instagram.com') {
+      return `https://www.instagram.com${pathname}/`
+    }
+
+    if (
+      platform === 'facebook' &&
+      (hostname === 'facebook.com' || hostname === 'fb.com')
+    ) {
+      return `https://www.facebook.com${pathname}`
+    }
+  } catch {
+    return null
+  }
+
+  return /^https?:\/\//i.test(withoutAccidentalAt) ? withoutAccidentalAt : null
+}
+
+function normalizeHandle(
+  value: string | undefined,
+  platform: 'tiktok' | 'instagram',
+) {
   if (!value) return undefined
   const trimmed = value.trim()
   if (!trimmed) return undefined
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed
-  }
+  const profileUrl = normalizeSocialProfileUrl(trimmed, platform)
+  if (profileUrl) return profileUrl
   return trimmed.startsWith('@') ? trimmed : `@${trimmed}`
 }
 
@@ -113,9 +165,12 @@ export function validatePrelaunchIntakeInput(
   const email = input.email.trim().toLowerCase()
   const phone = input.phone.trim()
   const businessName = input.businessName.trim()
-  const tiktokHandle = normalizeHandle(input.tiktokHandle)
-  const instagramHandle = normalizeHandle(input.instagramHandle)
-  const facebookUrl = optionalText(input.facebookUrl)
+  const tiktokHandle = normalizeHandle(input.tiktokHandle, 'tiktok')
+  const instagramHandle = normalizeHandle(input.instagramHandle, 'instagram')
+  const rawFacebookUrl = optionalText(input.facebookUrl)
+  const facebookUrl = rawFacebookUrl
+    ? (normalizeSocialProfileUrl(rawFacebookUrl, 'facebook') ?? rawFacebookUrl)
+    : undefined
   const teamName = optionalText(input.teamName)
   const currentSetup = input.currentSetup.trim()
   const setupGoal = input.setupGoal.trim()
