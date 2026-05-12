@@ -3,11 +3,12 @@
 ## What moved
 
 - Advanced Phase 8.5 Scout output with explicit grounded synthesis fields.
-- The Scout synthesis contract now always includes:
+- New Scout-generated synthesis output now includes:
   - `evidenceBackedObservations`
   - `manualVerificationNeeded`
   - `contradictions`
   - `confidence`
+- The TypeScript shape remains backward-compatible with older saved `agent_runs.output` records that do not have these fields yet.
 
 ## Why this matters
 
@@ -23,5 +24,11 @@
 
 ## Verification
 
-- Focused Scout test passed:
-  - `npm exec vitest run tests/prelaunch/prelaunch-scout.test.ts`
+- Focused Scout/UI tests passed:
+  - `npm exec vitest run tests/prelaunch/prelaunch-scout.test.ts tests/prelaunch/prelaunch-intake-review-page.test.ts`
+- Established Sparkle Suite regression group passed:
+  - `npm exec vitest run tests/prelaunch tests/sparkle-suite-master-brand-system.test.ts tests/amethyst-static-assets-route.test.ts`
+- TypeScript passed:
+  - `npx tsc --noEmit --pretty false`
+- Production build passed with no Turbopack NFT warning:
+  - `npm run build`
