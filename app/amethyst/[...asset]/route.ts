@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 export const runtime = 'nodejs'
 
@@ -10,26 +11,24 @@ const CONTENT_TYPES: Record<string, string> = {
   '.md': 'text/markdown; charset=utf-8',
 }
 
-const AMETHYST_ASSET_PATHS = new Map<string, URL>(
-  [
-    ['Amethyst Design System.html', '../../../public/amethyst/Amethyst Design System.html'],
-    ['components.css', '../../../public/amethyst/components.css'],
-    ['homepage.css', '../../../public/amethyst/homepage.css'],
-    ['Homepage.html', '../../../public/amethyst/Homepage.html'],
-    ['homepage.jsx', '../../../public/amethyst/homepage.jsx'],
-    ['join.css', '../../../public/amethyst/join.css'],
-    ['Join.html', '../../../public/amethyst/Join.html'],
-    ['join.jsx', '../../../public/amethyst/join.jsx'],
-    ['README.md', '../../../public/amethyst/README.md'],
-    ['tokens.css', '../../../public/amethyst/tokens.css'],
-    ['trade.css', '../../../public/amethyst/trade.css'],
-    ['Trade.html', '../../../public/amethyst/Trade.html'],
-    ['trade.jsx', '../../../public/amethyst/trade.jsx'],
-    ['tweaks-panel.jsx', '../../../public/amethyst/tweaks-panel.jsx'],
-    ['Unsubscribe.html', '../../../public/amethyst/Unsubscribe.html'],
-    ['unsubscribe.jsx', '../../../public/amethyst/unsubscribe.jsx'],
-  ].map(([asset, path]) => [asset, new URL(path, import.meta.url)]),
-)
+const AMETHYST_ASSETS = new Set([
+  'Amethyst Design System.html',
+  'components.css',
+  'homepage.css',
+  'Homepage.html',
+  'homepage.jsx',
+  'join.css',
+  'Join.html',
+  'join.jsx',
+  'README.md',
+  'tokens.css',
+  'trade.css',
+  'Trade.html',
+  'trade.jsx',
+  'tweaks-panel.jsx',
+  'Unsubscribe.html',
+  'unsubscribe.jsx',
+])
 
 function getContentType(filePath: string | URL) {
   const pathname = typeof filePath === 'string' ? filePath : filePath.pathname
@@ -39,7 +38,10 @@ function getContentType(filePath: string | URL) {
 }
 
 function resolveAmethystAsset(asset: string[]) {
-  return AMETHYST_ASSET_PATHS.get(asset.join('/')) ?? null
+  const assetPath = asset.join('/')
+  if (!AMETHYST_ASSETS.has(assetPath)) return null
+
+  return join(process.cwd(), 'public', 'amethyst', assetPath)
 }
 
 export async function GET(

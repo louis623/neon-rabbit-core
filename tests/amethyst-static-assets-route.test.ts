@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import { GET } from '@/app/amethyst/[...asset]/route'
 
@@ -21,5 +23,15 @@ describe('Amethyst static asset route', () => {
     )
 
     expect(response.status).toBe(404)
+  })
+
+  it('keeps file tracing scoped to the public Amethyst export folder', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/amethyst/[...asset]/route.ts'),
+      'utf8',
+    )
+
+    expect(source).toContain("join(process.cwd(), 'public', 'amethyst', assetPath)")
+    expect(source).not.toContain('../../../public')
   })
 })
