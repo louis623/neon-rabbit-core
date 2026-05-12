@@ -182,6 +182,17 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             primaryOutboundLinkReason:
               'Direct brand or shop links are more likely the real customer action than a generic link hub.',
           },
+          {
+            label: 'Primary customer link',
+            url: 'https://jamiehartjewelry.com/live',
+            title: 'Jamie Hart Jewelry Live Shop',
+            description:
+              'Shop the current live reveal board and see next-show details.',
+            canonicalUrl: 'https://jamiehartjewelry.com/live',
+            outboundLinks: [],
+            primaryOutboundLink: null,
+            primaryOutboundLinkReason: null,
+          },
         ],
         sourceReports: [
           {
@@ -201,6 +212,12 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             status: 'not_provided',
             url: null,
             note: 'No public handle or URL was provided in the intake.',
+          },
+          {
+            label: 'Primary customer link',
+            status: 'captured',
+            url: 'https://jamiehartjewelry.com/live',
+            note: 'Usable public customer-link metadata was captured.',
           },
         ],
       },
@@ -239,6 +256,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       'Live jewelry sales, trade nights, and customer follow-up clips.',
     )
     expect(html).toContain('Likely primary customer link')
+    expect(html).toContain('Primary customer link')
+    expect(html).toContain('Jamie Hart Jewelry Live Shop')
+    expect(html).toContain(
+      'Shop the current live reveal board and see next-show details.',
+    )
     expect(html).toContain(
       'Direct brand or shop links are more likely the real customer action than a generic link hub.',
     )
@@ -250,6 +272,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Possible customer links')
     expect(html).toContain('https://jamiehartjewelry.com/live')
     expect(html).toContain('TikTok: captured')
+    expect(html).toContain('Usable public customer-link metadata was captured.')
   })
 
   it('renders Scout synthesis when it exists', () => {

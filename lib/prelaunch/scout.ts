@@ -37,7 +37,7 @@ export interface PrelaunchScoutLesson {
 }
 
 export interface PrelaunchScoutCapturedEvidence {
-  label: string
+  label: PrelaunchScoutEvidenceLabel
   url: string
   title: string | null
   description: string | null
@@ -48,7 +48,7 @@ export interface PrelaunchScoutCapturedEvidence {
 }
 
 export interface PrelaunchScoutEvidenceSourceReport {
-  label: 'TikTok' | 'Instagram' | 'Facebook'
+  label: PrelaunchScoutEvidenceLabel
   status:
     | 'not_provided'
     | 'not_checked'
@@ -59,6 +59,14 @@ export interface PrelaunchScoutEvidenceSourceReport {
   url: string | null
   note: string
 }
+
+type PrelaunchScoutEvidenceLabel =
+  | 'TikTok'
+  | 'Instagram'
+  | 'Facebook'
+  | 'Primary customer link'
+
+const PRIMARY_CUSTOMER_LINK_LABEL = 'Primary customer link'
 
 export interface PrelaunchScoutOutput {
   briefTitle: string
@@ -178,6 +186,15 @@ function buildResearchPlan(
   sourceReports: PrelaunchScoutEvidenceSourceReport[],
 ): PrelaunchScoutResearchPlan {
   if (capturedEvidence.length > 0) {
+    const hasCustomerLinkEvidence = capturedEvidence.some(
+      (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+    )
+    const hasFailedCustomerLinkCheck = sourceReports.some(
+      (item) =>
+        item.label === PRIMARY_CUSTOMER_LINK_LABEL &&
+        item.status !== 'captured',
+    )
+
     return {
       status: 'evidence_captured',
       searchQueries: buildResearchSearchQueries(submission),
@@ -185,6 +202,16 @@ function buildResearchPlan(
         'Confirm the public profile still matches the intake current setup.',
         'Look for one discovery-call angle from the captured bio/title language.',
         'Check whether live cadence, trade flow, or customer-action links need deeper manual follow-up.',
+        ...(hasCustomerLinkEvidence
+          ? [
+              'Compare the direct customer-link page against the public profile promise before the discovery call.',
+            ]
+          : []),
+        ...(hasFailedCustomerLinkCheck
+          ? [
+              'Open any direct customer links Scout could not fetch and verify the customer path manually.',
+            ]
+          : []),
       ],
       blockers: [],
       capturedEvidence,
@@ -255,6 +282,21 @@ function buildSuggestedQuestions(submission: PrelaunchIntakeReviewSubmission) {
   return questions
 }
 
+function buildSourceReportQuestions(
+  sourceReports: PrelaunchScoutEvidenceSourceReport[],
+) {
+  const hasFailedCustomerLinkCheck = sourceReports.some(
+    (item) =>
+      item.label === PRIMARY_CUSTOMER_LINK_LABEL && item.status !== 'captured',
+  )
+
+  return hasFailedCustomerLinkCheck
+    ? [
+        'Can Louis open the public customer link manually before the call to confirm the real customer path?',
+      ]
+    : []
+}
+
 function appendLessonReuseQuestion(
   questions: string[],
   lessons: PrelaunchScoutLesson[],
@@ -294,6 +336,9 @@ function buildDeterministicScoutSynthesis(
   const primaryOutboundLink =
     capturedEvidence.find((item) => item.primaryOutboundLink)?.primaryOutboundLink ??
     null
+  const hasCustomerLinkEvidence = capturedEvidence.some(
+    (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+  )
 
   return {
     status: 'deterministic_fallback',
@@ -320,6 +365,11 @@ function buildDeterministicScoutSynthesis(
       ...(primaryOutboundLink
         ? [
             `Which public link should become the main Sparkle Suite call to action first: ${primaryOutboundLink}?`,
+          ]
+        : []),
+      ...(hasCustomerLinkEvidence
+        ? [
+            'Does the direct customer-link page match what the public profile promises?',
           ]
         : []),
     ]).slice(0, 4),
@@ -372,6 +422,35 @@ function buildPrelaunchScoutPublicFunnel(
       'Confirm which hub destination should become the main Sparkle Suite call to action.',
     ],
   }
+}
+
+function buildCapturedEvidenceSummary(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+) {
+  if (capturedEvidence.length === 0) {
+    return 'External social research is not connected yet, so this first Scout pass flags what Louis should verify manually.'
+  }
+
+  const profileLabels = dedupeStrings(
+    capturedEvidence
+      .map((item) => item.label)
+      .filter((label) => label !== PRIMARY_CUSTOMER_LINK_LABEL),
+  )
+  const hasCustomerLinkEvidence = capturedEvidence.some(
+    (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+  )
+  const profileSummary =
+    profileLabels.length > 0
+      ? `public-profile evidence from ${profileLabels.join(', ')}`
+      : null
+  const customerLinkSummary = hasCustomerLinkEvidence
+    ? 'direct customer-link evidence'
+    : null
+  const evidenceSummary = [profileSummary, customerLinkSummary]
+    .filter(Boolean)
+    .join(' plus ')
+
+  return `Scout captured ${evidenceSummary} so Louis can start from real public signals before deeper manual review.`
 }
 
 type ScoutSynthesisGenerateText = (options: {
@@ -545,11 +624,7 @@ export function buildPrelaunchScoutOutput(
     summary:
       `${submission.businessName} is a ${submission.primaryPlatform} prospect ` +
       `streaming ${submission.streamingFrequency}. Intake goal: ${submission.setupGoal}. ` +
-      (capturedEvidence.length > 0
-        ? `Scout captured lightweight public-profile evidence from ${capturedEvidence
-            .map((item) => item.label)
-            .join(', ')} so Louis can start from real public signals before deeper manual review.`
-        : 'External social research is not connected yet, so this first Scout pass flags what Louis should verify manually.'),
+      buildCapturedEvidenceSummary(capturedEvidence),
     recommendedNextStep,
     researchTargets: buildResearchTargets(submission),
     researchPlan: buildResearchPlan(submission, capturedEvidence, sourceReports),
@@ -559,6 +634,7 @@ export function buildPrelaunchScoutOutput(
     suggestedQuestions: appendLessonReuseQuestion(
       dedupeStrings([
         ...buildSuggestedQuestions(submission),
+        ...buildSourceReportQuestions(sourceReports),
         ...researchSynthesis.followUpQuestions,
         ...(publicFunnel.shape === 'hub_first'
           ? ['Which hub destination should become the main Sparkle Suite call to action?']
@@ -633,20 +709,32 @@ function normalizePreviousScoutLesson(
 }
 
 async function loadRecentScoutLessons(admin: AdminClient, intakeId: string) {
-  const { data, error } = await admin
-    .from('agent_runs')
-    .select('run_key, summary, output')
-    .eq('agent_name', 'Scout')
-    .eq('status', 'completed')
-    .neq('intake_submission_id', intakeId)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  try {
+    const { data, error } = await admin
+      .from('agent_runs')
+      .select('run_key, summary, output')
+      .eq('agent_name', 'Scout')
+      .eq('status', 'completed')
+      .neq('intake_submission_id', intakeId)
+      .order('created_at', { ascending: false })
+      .limit(5)
 
-  if (error) throw error
+    if (error) throw error
 
-  return ((data ?? []) as PreviousScoutRunRow[])
-    .map(normalizePreviousScoutLesson)
-    .filter((lesson): lesson is PrelaunchScoutLesson => Boolean(lesson))
+    return {
+      lessons: ((data ?? []) as PreviousScoutRunRow[])
+        .map(normalizePreviousScoutLesson)
+        .filter((lesson): lesson is PrelaunchScoutLesson => Boolean(lesson)),
+      status: 'available' as const,
+    }
+  } catch (error) {
+    console.warn('[prelaunch/scout] Lesson reuse unavailable:', error)
+
+    return {
+      lessons: [],
+      status: 'unavailable' as const,
+    }
+  }
 }
 
 interface CollectPrelaunchScoutEvidenceOptions {
@@ -656,6 +744,18 @@ interface CollectPrelaunchScoutEvidenceOptions {
 interface ScoutEvidenceTarget {
   label: 'TikTok' | 'Instagram' | 'Facebook'
   url: string | null
+}
+
+interface ScoutPrimaryLinkEvidenceTarget {
+  label: typeof PRIMARY_CUSTOMER_LINK_LABEL
+  url: string
+}
+
+interface ScoutEvidenceFetchCopy {
+  fetchFailed: string
+  metadataMissing: string
+  nonHtmlResponse: string
+  captured: string
 }
 
 function normalizeScoutEvidenceUrl(
@@ -771,6 +871,111 @@ function buildDefaultScoutSourceReports(
   }))
 }
 
+function buildScoutPrimaryLinkEvidenceTargets(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+): ScoutPrimaryLinkEvidenceTarget[] {
+  return dedupeStrings(
+    capturedEvidence
+      .map((item) => item.primaryOutboundLink)
+      .filter((value): value is string => Boolean(value))
+      .filter((link) => !isGenericLinkHub(link)),
+  )
+    .slice(0, 2)
+    .map((url) => ({
+      label: PRIMARY_CUSTOMER_LINK_LABEL,
+      url,
+    }))
+}
+
+async function inspectScoutEvidenceTarget(
+  {
+    label,
+    url,
+  }: {
+    label: PrelaunchScoutEvidenceLabel
+    url: string
+  },
+  {
+    fetchImpl,
+    copy,
+  }: {
+    fetchImpl: typeof fetch
+    copy: ScoutEvidenceFetchCopy
+  },
+): Promise<{
+  evidence: PrelaunchScoutCapturedEvidence | null
+  report: PrelaunchScoutEvidenceSourceReport
+}> {
+  try {
+    const response = await fetchImpl(url, {
+      headers: {
+        accept: 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout(4000),
+    })
+
+    const contentType = response.headers.get('content-type') ?? ''
+    if (!response.ok) {
+      return {
+        evidence: null,
+        report: {
+          label,
+          status: 'fetch_failed' as const,
+          url,
+          note: copy.fetchFailed,
+        },
+      }
+    }
+
+    if (!contentType.includes('text/html')) {
+      return {
+        evidence: null,
+        report: {
+          label,
+          status: 'non_html_response' as const,
+          url,
+          note: copy.nonHtmlResponse,
+        },
+      }
+    }
+
+    const html = await response.text()
+    const evidence = extractScoutEvidenceFromHtml(label, url, html)
+
+    if (!evidence) {
+      return {
+        evidence: null,
+        report: {
+          label,
+          status: 'metadata_missing' as const,
+          url,
+          note: copy.metadataMissing,
+        },
+      }
+    }
+
+    return {
+      evidence,
+      report: {
+        label,
+        status: 'captured' as const,
+        url,
+        note: copy.captured,
+      },
+    }
+  } catch {
+    return {
+      evidence: null,
+      report: {
+        label,
+        status: 'fetch_failed' as const,
+        url,
+        note: copy.fetchFailed,
+      },
+    }
+  }
+}
+
 function extractHtmlMatch(html: string, pattern: RegExp) {
   const match = html.match(pattern)
   return match?.[1]?.trim() ?? null
@@ -788,7 +993,7 @@ function decodeHtmlEntities(value: string | null) {
 }
 
 function extractScoutEvidenceFromHtml(
-  label: string,
+  label: PrelaunchScoutEvidenceLabel,
   url: string,
   html: string,
 ): PrelaunchScoutCapturedEvidence | null {
@@ -922,6 +1127,21 @@ export async function inspectPrelaunchScoutEvidenceSources(
   { fetchImpl = fetch }: CollectPrelaunchScoutEvidenceOptions = {},
 ) {
   const targets = buildScoutEvidenceTargets(submission)
+  const socialEvidenceCopy = {
+    fetchFailed: 'Scout could not fetch the public page metadata.',
+    metadataMissing:
+      'Scout reached the public page but did not find usable title or description metadata.',
+    nonHtmlResponse: 'Scout fetched the URL but it did not return an HTML page.',
+    captured: 'Usable public profile metadata was captured.',
+  }
+  const customerLinkEvidenceCopy = {
+    fetchFailed: 'Scout could not fetch the public customer-link metadata.',
+    metadataMissing:
+      'Scout reached the public customer link but did not find usable title or description metadata.',
+    nonHtmlResponse:
+      'Scout fetched the public customer link, but it did not return an HTML page.',
+    captured: 'Usable public customer-link metadata was captured.',
+  }
 
   const results = await Promise.all(
     targets.map(async ({ label, url }) => {
@@ -937,84 +1157,41 @@ export async function inspectPrelaunchScoutEvidenceSources(
         }
       }
 
-      try {
-        const response = await fetchImpl(url, {
-          headers: {
-            accept: 'text/html,application/xhtml+xml',
-          },
-          signal: AbortSignal.timeout(4000),
-        })
-
-        const contentType = response.headers.get('content-type') ?? ''
-        if (!response.ok) {
-          return {
-            evidence: null,
-            report: {
-              label,
-              status: 'fetch_failed' as const,
-              url,
-              note: 'Scout could not fetch the public page metadata.',
-            },
-          }
-        }
-
-        if (!contentType.includes('text/html')) {
-          return {
-            evidence: null,
-            report: {
-              label,
-              status: 'non_html_response' as const,
-              url,
-              note: 'Scout fetched the URL but it did not return an HTML page.',
-            },
-          }
-        }
-
-        const html = await response.text()
-        const evidence = extractScoutEvidenceFromHtml(label, url, html)
-
-        if (!evidence) {
-          return {
-            evidence: null,
-            report: {
-              label,
-              status: 'metadata_missing' as const,
-              url,
-              note: 'Scout reached the public page but did not find usable title or description metadata.',
-            },
-          }
-        }
-
-        return {
-          evidence,
-          report: {
-            label,
-            status: 'captured' as const,
-            url,
-            note: 'Usable public profile metadata was captured.',
-          },
-        }
-      } catch {
-        return {
-          evidence: null,
-          report: {
-            label,
-            status: 'fetch_failed' as const,
-            url,
-            note: 'Scout could not fetch the public page metadata.',
-          },
-        }
-      }
+      return inspectScoutEvidenceTarget(
+        { label, url },
+        { fetchImpl, copy: socialEvidenceCopy },
+      )
     }),
+  )
+  const capturedSocialEvidence = results
+    .map((result) => result.evidence)
+    .filter(
+      (result): result is PrelaunchScoutCapturedEvidence => Boolean(result),
+    )
+  const primaryLinkTargets =
+    buildScoutPrimaryLinkEvidenceTargets(capturedSocialEvidence)
+  const primaryLinkResults = await Promise.all(
+    primaryLinkTargets.map(({ label, url }) =>
+      inspectScoutEvidenceTarget(
+        { label, url },
+        { fetchImpl, copy: customerLinkEvidenceCopy },
+      ),
+    ),
   )
 
   return {
-    capturedEvidence: results
-      .map((result) => result.evidence)
-      .filter(
-        (result): result is PrelaunchScoutCapturedEvidence => Boolean(result),
-      ),
-    sourceReports: results.map((result) => result.report),
+    capturedEvidence: [
+      ...capturedSocialEvidence,
+      ...primaryLinkResults
+        .map((result) => result.evidence)
+        .filter(
+          (result): result is PrelaunchScoutCapturedEvidence => Boolean(result),
+        ),
+    ],
+    sourceReports: [
+      ...results.map((result) => result.report),
+      ...primaryLinkResults.map((result) => result.report),
+    ],
   }
 }
 
@@ -1029,7 +1206,8 @@ export async function runPrelaunchScoutForIntake({
 }: RunPrelaunchScoutOptions) {
   const submission = await loadSubmissionById(admin, intakeId)
   const scoutInput = buildPrelaunchScoutInput(submission)
-  const reusedLessons = await loadRecentScoutLessons(admin, intakeId)
+  const reusedLessonLookup = await loadRecentScoutLessons(admin, intakeId)
+  const reusedLessons = reusedLessonLookup.lessons
   const { capturedEvidence, sourceReports } =
     await inspectPrelaunchScoutEvidenceSources(submission, {
       fetchImpl,
@@ -1073,12 +1251,14 @@ export async function runPrelaunchScoutForIntake({
       research_plan_status: output.researchPlan.status,
       public_funnel_shape: output.publicFunnel.shape,
       captured_evidence_count: capturedEvidence.length,
-      evidence_source_statuses: sourceReports.map(({ label, status }) => ({
+      evidence_source_statuses: sourceReports.map(({ label, status, url }) => ({
         label,
         status,
+        url,
       })),
       synthesis_status: researchSynthesis.status,
       reused_lesson_count: reusedLessons.length,
+      reused_lesson_status: reusedLessonLookup.status,
       trigger_source: triggerSource,
     },
     started_at: timestamp,
