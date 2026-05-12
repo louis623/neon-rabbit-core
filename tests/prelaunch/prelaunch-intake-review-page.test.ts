@@ -94,6 +94,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               model: 'deterministic_scout_v1',
               summary:
                 'Scout captured public evidence and suggested a call angle.',
+              errorMessage: null,
               createdAt: '2026-05-09T19:30:00Z',
               synthesisStatus: 'deterministic_fallback',
               capturedEvidenceCount: 2,
@@ -113,6 +114,34 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('2 captured evidence items')
     expect(html).toContain('deterministic fallback synthesis')
     expect(html).toContain('scout:intake-1:2026-05-09T19:30:00.000Z')
+  })
+
+  it('renders the latest failed Scout run error on the intake card', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            latestScoutRun: {
+              runKey: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+              status: 'failed',
+              triggerSource: 'intake_submission',
+              model: 'deterministic_scout_v1',
+              summary: null,
+              errorMessage: 'Public evidence fetch timed out.',
+              createdAt: '2026-05-09T19:30:00Z',
+              synthesisStatus: null,
+              capturedEvidenceCount: null,
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Latest saved Scout run')
+    expect(html).toContain('failed')
+    expect(html).toContain('Scout run error')
+    expect(html).toContain('Public evidence fetch timed out.')
   })
 
   it('renders Scout research handoff details after a run', () => {

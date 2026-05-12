@@ -43,6 +43,7 @@ interface PrelaunchScoutRunReviewRow {
   trigger_source: string
   model: string | null
   summary: string | null
+  error_message: string | null
   created_at: string
   metadata: {
     synthesis_status?: unknown
@@ -59,6 +60,7 @@ function normalizeScoutRunReviewRow(
     triggerSource: row.trigger_source,
     model: row.model,
     summary: row.summary,
+    errorMessage: row.error_message,
     createdAt: row.created_at,
     synthesisStatus:
       typeof row.metadata?.synthesis_status === 'string'
@@ -83,7 +85,7 @@ async function loadLatestScoutRunsByIntakeId(
     const { data, error } = await admin
       .from('agent_runs')
       .select(
-        'intake_submission_id, run_key, status, trigger_source, model, summary, created_at, metadata',
+        'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata',
       )
       .eq('agent_name', 'Scout')
       .in('intake_submission_id', intakeIds)

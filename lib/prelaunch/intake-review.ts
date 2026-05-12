@@ -32,6 +32,7 @@ export interface PrelaunchScoutRunReviewSummary {
   triggerSource: string
   model: string | null
   summary: string | null
+  errorMessage: string | null
   createdAt: string
   synthesisStatus: string | null
   capturedEvidenceCount: number | null

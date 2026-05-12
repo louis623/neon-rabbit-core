@@ -216,6 +216,16 @@ export function PrelaunchIntakeReviewPageContent({
                             {submission.latestScoutRun.summary}
                           </p>
                         ) : null}
+                        {submission.latestScoutRun.errorMessage ? (
+                          <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3">
+                            <p className="text-xs font-semibold uppercase text-red-700">
+                              Scout run error
+                            </p>
+                            <p className="mt-1 leading-6 text-red-900">
+                              {submission.latestScoutRun.errorMessage}
+                            </p>
+                          </div>
+                        ) : null}
                       </div>
                       <div className="flex flex-col gap-1 text-xs font-semibold text-slate-500 lg:text-right">
                         <span>{formatDate(submission.latestScoutRun.createdAt)}</span>

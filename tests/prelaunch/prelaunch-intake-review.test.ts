@@ -183,6 +183,7 @@ describe('prelaunch intake review helpers', () => {
           trigger_source: 'intake_submission',
           model: 'deterministic_scout_v1',
           summary: 'Scout captured public evidence and suggested a call angle.',
+          error_message: null,
           created_at: '2026-05-09T19:30:00Z',
           metadata: {
             synthesis_status: 'deterministic_fallback',
@@ -196,6 +197,7 @@ describe('prelaunch intake review helpers', () => {
           trigger_source: 'operator_review',
           model: 'deterministic_scout_v1',
           summary: 'Older Scout run.',
+          error_message: null,
           created_at: '2026-05-09T19:00:00Z',
           metadata: {
             synthesis_status: 'not_available',
@@ -226,7 +228,7 @@ describe('prelaunch intake review helpers', () => {
 
     expect(fromMock).toHaveBeenCalledWith('agent_runs')
     expect(scoutRunsSelectMock).toHaveBeenCalledWith(
-      'intake_submission_id, run_key, status, trigger_source, model, summary, created_at, metadata',
+      'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata',
     )
     expect(scoutRunsEqMock).toHaveBeenCalledWith('agent_name', 'Scout')
     expect(scoutRunsInMock).toHaveBeenCalledWith('intake_submission_id', [
@@ -238,9 +240,86 @@ describe('prelaunch intake review helpers', () => {
       triggerSource: 'intake_submission',
       model: 'deterministic_scout_v1',
       summary: 'Scout captured public evidence and suggested a call angle.',
+      errorMessage: null,
       createdAt: '2026-05-09T19:30:00Z',
       synthesisStatus: 'deterministic_fallback',
       capturedEvidenceCount: 2,
     })
+  })
+
+  it('keeps the latest failed Scout run error visible for review', async () => {
+    const intakeOrderMock = async () => ({
+      data: [
+        {
+          id: 'intake-1',
+          full_name: 'Jamie Hart',
+          email: 'jamie@example.com',
+          phone: '303-555-0123',
+          business_name: 'Jamie Hart Jewelry',
+          tiktok_handle: '@jamieh',
+          instagram_handle: null,
+          facebook_url: null,
+          team_name: null,
+          team_size: '1-5',
+          primary_platform: 'tiktok',
+          streaming_frequency: 'weekly',
+          current_setup: 'Bio link',
+          setup_goal: 'Cleaner hub',
+          device_setup: 'phone_and_computer',
+          brand_vibe: 'warm',
+          color_preferences: null,
+          special_requests: null,
+          intake_status: 'submitted',
+          prequalification_status: 'qualified',
+          fit_flags: [],
+          waitlist_id: 'waitlist-1',
+          scout_input_status: 'ready',
+          created_at: '2026-05-09T18:00:00Z',
+          updated_at: '2026-05-09T18:00:00Z',
+        },
+      ],
+      error: null,
+    })
+    const scoutRunsLimitMock = vi.fn().mockResolvedValueOnce({
+      data: [
+        {
+          intake_submission_id: 'intake-1',
+          run_key: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+          status: 'failed',
+          trigger_source: 'intake_submission',
+          model: 'deterministic_scout_v1',
+          summary: null,
+          error_message: 'Public evidence fetch timed out.',
+          created_at: '2026-05-09T19:30:00Z',
+          metadata: {},
+        },
+      ],
+      error: null,
+    })
+    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
+    const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
+    const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
+    const scoutRunsSelectMock = vi.fn(() => ({ eq: scoutRunsEqMock }))
+    const intakeLimitMock = vi.fn(() => ({ order: intakeOrderMock }))
+    const intakeSelectMock = vi.fn(() => ({ limit: intakeLimitMock }))
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'agent_runs') {
+        return { select: scoutRunsSelectMock }
+      }
+
+      return { select: intakeSelectMock }
+    })
+
+    const submissions = await loadPrelaunchIntakeReviewSubmissions(
+      { from: fromMock } as never,
+    )
+
+    expect(submissions[0]?.latestScoutRun).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        summary: null,
+        errorMessage: 'Public evidence fetch timed out.',
+      }),
+    )
   })
 })
