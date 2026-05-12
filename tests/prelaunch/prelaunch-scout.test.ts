@@ -306,7 +306,7 @@ describe('prelaunch Scout', () => {
     ])
   })
 
-  it('does not follow generic link hubs during the one-hop evidence pass', async () => {
+  it('captures public link-hub metadata without following hub destinations', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -327,26 +327,166 @@ describe('prelaunch Scout', () => {
           `,
       } satisfies Partial<Response>)
       .mockResolvedValueOnce({
-        ok: false,
+        ok: true,
         headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
-        text: async () => '',
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Links</title>
+                <meta name="description" content="Shop live boards and join VIP text updates." />
+                <link rel="canonical" href="https://linktr.ee/jamieh" />
+              </head>
+              <body>
+                <h1>Jamie Hart live sale links</h1>
+                <a href="https://jamiehartjewelry.com/live">Shop tonight's live board</a>
+                <a href="https://vip.example.com/join">Join VIP text list</a>
+              </body>
+            </html>
+          `,
       } satisfies Partial<Response>)
 
-    const result = await inspectPrelaunchScoutEvidenceSources(submission, {
-      fetchImpl: fetchMock as typeof fetch,
-    })
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          ...submission.social,
+          instagram: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://jamiehartjewelry.com/live',
+      expect.any(Object),
+    )
     expect(result.capturedEvidence).toEqual([
       expect.objectContaining({
         label: 'TikTok',
         primaryOutboundLink: 'https://linktr.ee/jamieh',
       }),
+      expect.objectContaining({
+        label: 'Public link hub',
+        url: 'https://linktr.ee/jamieh',
+        title: 'Jamie Hart Links',
+        description: 'Shop live boards and join VIP text updates.',
+        outboundLinks: [
+          'https://jamiehartjewelry.com/live',
+          'https://vip.example.com/join',
+        ],
+        evidenceSnippets: [
+          'Jamie Hart live sale links',
+          "Shop tonight's live board",
+          'Join VIP text list',
+        ],
+      }),
     ])
+    expect(result.sourceReports).toContainEqual({
+      label: 'Public link hub',
+      status: 'captured',
+      url: 'https://linktr.ee/jamieh',
+      note: 'Usable public link-hub metadata was captured.',
+    })
     expect(result.sourceReports).not.toContainEqual(
       expect.objectContaining({
         label: 'Primary customer link',
       }),
+    )
+  })
+
+  it('limits public link-hub checks to two generic hubs', async () => {
+    const socialPage = (
+      title: string,
+      canonicalUrl: string,
+      link: string,
+    ) => ({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+      text: async () =>
+        `
+          <html>
+            <head>
+              <title>${title}</title>
+              <meta property="og:description" content="Live-sale public profile." />
+              <link rel="canonical" href="${canonicalUrl}" />
+            </head>
+            <body>
+              <a href="${link}">Link hub</a>
+            </body>
+          </html>
+        `,
+    } satisfies Partial<Response>)
+    const hubPage = (title: string) =>
+      ({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>${title}</title>
+                <meta name="description" content="Public hub metadata." />
+              </head>
+            </html>
+          `,
+      }) satisfies Partial<Response>
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        socialPage(
+          'Jamie Hart Jewelry | TikTok',
+          'https://www.tiktok.com/@jamieh',
+          'https://linktr.ee/jamieh',
+        ),
+      )
+      .mockResolvedValueOnce(
+        socialPage(
+          'Jamie Hart Jewelry | Instagram',
+          'https://www.instagram.com/jamiebling/',
+          'https://beacons.ai/jamieh',
+        ),
+      )
+      .mockResolvedValueOnce(
+        socialPage(
+          'Jamie Hart Jewelry | Facebook',
+          'https://facebook.com/jamiehartjewelry',
+          'https://bio.site/jamieh',
+        ),
+      )
+      .mockResolvedValueOnce(hubPage('Linktree hub'))
+      .mockResolvedValueOnce(hubPage('Beacons hub'))
+
+    await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          ...submission.social,
+          facebook: 'https://facebook.com/jamiehartjewelry',
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(5)
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      'https://linktr.ee/jamieh',
+      expect.any(Object),
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      5,
+      'https://beacons.ai/jamieh',
+      expect.any(Object),
+    )
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://bio.site/jamieh',
+      expect.any(Object),
     )
   })
 
@@ -461,6 +601,40 @@ describe('prelaunch Scout', () => {
     )
   })
 
+  it('summarizes public link-hub evidence separately from social-profile evidence', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description: 'Live jewelry sales and trade night clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://linktr.ee/jamieh'],
+        primaryOutboundLink: 'https://linktr.ee/jamieh',
+        primaryOutboundLinkReason:
+          'Only a generic link hub was visible publicly, so that is the current likely customer path.',
+      },
+      {
+        label: 'Public link hub',
+        url: 'https://linktr.ee/jamieh',
+        title: 'Jamie Hart Links',
+        description: 'Shop live boards and join VIP text updates.',
+        canonicalUrl: 'https://linktr.ee/jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+    ])
+
+    expect(output.summary).toContain(
+      'Scout captured public-profile evidence from TikTok plus public link-hub evidence',
+    )
+    expect(output.summary).not.toContain(
+      'public-profile evidence from TikTok, Public link hub',
+    )
+  })
+
   it('uses captured page signals in deterministic synthesis bullets', () => {
     const output = buildPrelaunchScoutOutput(submission, [], [
       {
@@ -481,6 +655,29 @@ describe('prelaunch Scout', () => {
 
     expect(output.researchSynthesis.summaryBullets).toContain(
       'Claim favorites before the next show',
+    )
+  })
+
+  it('attributes link-hub outbound links as hub evidence in deterministic synthesis bullets', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'Public link hub',
+        url: 'https://linktr.ee/jamieh',
+        title: 'Jamie Hart Links',
+        description: null,
+        canonicalUrl: 'https://linktr.ee/jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+    ])
+
+    expect(output.researchSynthesis.summaryBullets).toContain(
+      'Public link hub points customers toward https://jamiehartjewelry.com/live.',
+    )
+    expect(output.researchSynthesis.summaryBullets).not.toContain(
+      'Public profile points customers toward https://jamiehartjewelry.com/live.',
     )
   })
 
@@ -732,6 +929,46 @@ describe('prelaunch Scout', () => {
     expect(output.suggestedQuestions).toContain(
       'Which hub destination should become the main Sparkle Suite call to action?',
     )
+  })
+
+  it('keeps a hub-first funnel when link-hub evidence exposes direct destinations', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description: 'Live jewelry sales and trade night clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://linktr.ee/jamieh'],
+        primaryOutboundLink: 'https://linktr.ee/jamieh',
+        primaryOutboundLinkReason:
+          'Only a generic link hub was visible publicly, so that is the current likely customer path.',
+      },
+      {
+        label: 'Public link hub',
+        url: 'https://linktr.ee/jamieh',
+        title: 'Jamie Hart Links',
+        description: 'Shop live boards and join VIP text updates.',
+        canonicalUrl: 'https://linktr.ee/jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+    ])
+
+    expect(output.publicFunnel).toEqual({
+      shape: 'hub_first',
+      summary:
+        'The visible public path depends on a generic link hub before customers reach a specific action.',
+      primaryLinks: [
+        'https://linktr.ee/jamieh',
+        'https://jamiehartjewelry.com/live',
+      ],
+      concerns: [
+        'Confirm which hub destination should become the main Sparkle Suite call to action.',
+      ],
+    })
   })
 
   it('flags competing direct customer links across public sources', () => {

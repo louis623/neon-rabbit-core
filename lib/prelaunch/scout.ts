@@ -67,8 +67,10 @@ type PrelaunchScoutEvidenceLabel =
   | 'Instagram'
   | 'Facebook'
   | 'Primary customer link'
+  | 'Public link hub'
 
 const PRIMARY_CUSTOMER_LINK_LABEL = 'Primary customer link'
+const PUBLIC_LINK_HUB_LABEL = 'Public link hub'
 
 export interface PrelaunchScoutOutput {
   briefTitle: string
@@ -335,8 +337,17 @@ function buildDeterministicScoutSynthesis(
     ])
     .filter((value): value is string => Boolean(value))
     .slice(0, 3)
-  const outboundLinks = dedupeStrings(
-    capturedEvidence.flatMap((item) => item.outboundLinks),
+  const outboundLinkBullets = dedupeStrings(
+    capturedEvidence.flatMap((item) =>
+      item.outboundLinks.map((link) => {
+        const label =
+          item.label === PUBLIC_LINK_HUB_LABEL
+            ? 'Public link hub'
+            : 'Public profile'
+
+        return `${label} points customers toward ${link}.`
+      }),
+    ),
   ).slice(0, 3)
   const primaryOutboundLink =
     capturedEvidence.find((item) => item.primaryOutboundLink)?.primaryOutboundLink ??
@@ -360,9 +371,7 @@ function buildDeterministicScoutSynthesis(
                   `${item.label} profile is reachable and gives Scout a real public starting point.`,
               )
         ),
-        ...outboundLinks.map(
-          (link) => `Public profile points customers toward ${link}.`,
-        ),
+        ...outboundLinkBullets,
       ]).slice(0, 4),
     followUpQuestions: dedupeStrings([
       `Which customer action breaks most often around ${submission.primaryPlatform} today?`,
@@ -384,13 +393,21 @@ function buildDeterministicScoutSynthesis(
 function buildPrelaunchScoutPublicFunnel(
   capturedEvidence: PrelaunchScoutCapturedEvidence[],
 ): PrelaunchScoutPublicFunnel {
+  const profilePrimaryLinks = dedupeStrings(
+    capturedEvidence
+      .filter((item) => isPublicProfileEvidenceLabel(item.label))
+      .map((item) => item.primaryOutboundLink)
+      .filter((value): value is string => Boolean(value)),
+  )
   const primaryLinks = dedupeStrings(
     capturedEvidence
       .map((item) => item.primaryOutboundLink)
       .filter((value): value is string => Boolean(value)),
   )
+  const classificationLinks =
+    profilePrimaryLinks.length > 0 ? profilePrimaryLinks : primaryLinks
 
-  if (primaryLinks.length === 0) {
+  if (classificationLinks.length === 0) {
     return {
       shape: 'unclear',
       summary:
@@ -400,9 +417,11 @@ function buildPrelaunchScoutPublicFunnel(
     }
   }
 
-  const hasDirectLink = primaryLinks.some((link) => !isGenericLinkHub(link))
+  const hasDirectLink = classificationLinks.some((link) => !isGenericLinkHub(link))
   if (hasDirectLink) {
-    const directLinks = primaryLinks.filter((link) => !isGenericLinkHub(link))
+    const directLinks = classificationLinks.filter(
+      (link) => !isGenericLinkHub(link),
+    )
 
     return {
       shape: 'direct_site_first',
@@ -429,6 +448,10 @@ function buildPrelaunchScoutPublicFunnel(
   }
 }
 
+function isPublicProfileEvidenceLabel(label: PrelaunchScoutEvidenceLabel) {
+  return label !== PRIMARY_CUSTOMER_LINK_LABEL && label !== PUBLIC_LINK_HUB_LABEL
+}
+
 function buildCapturedEvidenceSummary(
   capturedEvidence: PrelaunchScoutCapturedEvidence[],
 ) {
@@ -439,10 +462,13 @@ function buildCapturedEvidenceSummary(
   const profileLabels = dedupeStrings(
     capturedEvidence
       .map((item) => item.label)
-      .filter((label) => label !== PRIMARY_CUSTOMER_LINK_LABEL),
+      .filter(isPublicProfileEvidenceLabel),
   )
   const hasCustomerLinkEvidence = capturedEvidence.some(
     (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+  )
+  const hasLinkHubEvidence = capturedEvidence.some(
+    (item) => item.label === PUBLIC_LINK_HUB_LABEL,
   )
   const profileSummary =
     profileLabels.length > 0
@@ -451,7 +477,8 @@ function buildCapturedEvidenceSummary(
   const customerLinkSummary = hasCustomerLinkEvidence
     ? 'direct customer-link evidence'
     : null
-  const evidenceSummary = [profileSummary, customerLinkSummary]
+  const linkHubSummary = hasLinkHubEvidence ? 'public link-hub evidence' : null
+  const evidenceSummary = [profileSummary, linkHubSummary, customerLinkSummary]
     .filter(Boolean)
     .join(' plus ')
 
@@ -847,6 +874,11 @@ interface ScoutPrimaryLinkEvidenceTarget {
   url: string
 }
 
+interface ScoutLinkHubEvidenceTarget {
+  label: typeof PUBLIC_LINK_HUB_LABEL
+  url: string
+}
+
 interface ScoutEvidenceFetchCopy {
   fetchFailed: string
   metadataMissing: string
@@ -979,6 +1011,22 @@ function buildScoutPrimaryLinkEvidenceTargets(
     .slice(0, 2)
     .map((url) => ({
       label: PRIMARY_CUSTOMER_LINK_LABEL,
+      url,
+    }))
+}
+
+function buildScoutLinkHubEvidenceTargets(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+): ScoutLinkHubEvidenceTarget[] {
+  return dedupeStrings(
+    capturedEvidence
+      .map((item) => item.primaryOutboundLink)
+      .filter((value): value is string => Boolean(value))
+      .filter(isGenericLinkHub),
+  )
+    .slice(0, 2)
+    .map((url) => ({
+      label: PUBLIC_LINK_HUB_LABEL,
       url,
     }))
 }
@@ -1264,6 +1312,14 @@ export async function inspectPrelaunchScoutEvidenceSources(
       'Scout fetched the public customer link, but it did not return an HTML page.',
     captured: 'Usable public customer-link metadata was captured.',
   }
+  const linkHubEvidenceCopy = {
+    fetchFailed: 'Scout could not fetch the public link-hub metadata.',
+    metadataMissing:
+      'Scout reached the public link hub but did not find usable title or description metadata.',
+    nonHtmlResponse:
+      'Scout fetched the public link hub, but it did not return an HTML page.',
+    captured: 'Usable public link-hub metadata was captured.',
+  }
 
   const results = await Promise.all(
     targets.map(async ({ label, url }) => {
@@ -1290,6 +1346,16 @@ export async function inspectPrelaunchScoutEvidenceSources(
     .filter(
       (result): result is PrelaunchScoutCapturedEvidence => Boolean(result),
     )
+  const linkHubTargets =
+    buildScoutLinkHubEvidenceTargets(capturedSocialEvidence)
+  const linkHubResults = await Promise.all(
+    linkHubTargets.map(({ label, url }) =>
+      inspectScoutEvidenceTarget(
+        { label, url },
+        { fetchImpl, copy: linkHubEvidenceCopy },
+      ),
+    ),
+  )
   const primaryLinkTargets =
     buildScoutPrimaryLinkEvidenceTargets(capturedSocialEvidence)
   const primaryLinkResults = await Promise.all(
@@ -1304,6 +1370,11 @@ export async function inspectPrelaunchScoutEvidenceSources(
   return {
     capturedEvidence: [
       ...capturedSocialEvidence,
+      ...linkHubResults
+        .map((result) => result.evidence)
+        .filter(
+          (result): result is PrelaunchScoutCapturedEvidence => Boolean(result),
+        ),
       ...primaryLinkResults
         .map((result) => result.evidence)
         .filter(
@@ -1312,6 +1383,7 @@ export async function inspectPrelaunchScoutEvidenceSources(
     ],
     sourceReports: [
       ...results.map((result) => result.report),
+      ...linkHubResults.map((result) => result.report),
       ...primaryLinkResults.map((result) => result.report),
     ],
   }
