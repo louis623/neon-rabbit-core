@@ -35,6 +35,7 @@ const submission: PrelaunchIntakeReviewSubmission = {
   fitFlags: ['phone_only_setup'],
   waitlistId: 'waitlist-1',
   scoutInputStatus: 'ready',
+  latestScoutRun: null,
   createdAt: '2026-05-09T18:00:00Z',
   updatedAt: '2026-05-09T18:00:00Z',
 }
@@ -77,6 +78,41 @@ describe('PrelaunchIntakeReviewPageContent', () => {
 
     expect(html).toContain('No intake submissions yet')
     expect(html).toContain('New /prelaunch intake forms will appear here')
+  })
+
+  it('renders the latest saved Scout run on each intake card', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            scoutInputStatus: 'generated',
+            latestScoutRun: {
+              runKey: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+              status: 'completed',
+              triggerSource: 'intake_submission',
+              model: 'deterministic_scout_v1',
+              summary:
+                'Scout captured public evidence and suggested a call angle.',
+              createdAt: '2026-05-09T19:30:00Z',
+              synthesisStatus: 'deterministic_fallback',
+              capturedEvidenceCount: 2,
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Latest saved Scout run')
+    expect(html).toContain('completed')
+    expect(html).toContain('intake submission')
+    expect(html).toContain('deterministic scout v1')
+    expect(html).toContain(
+      'Scout captured public evidence and suggested a call angle.',
+    )
+    expect(html).toContain('2 captured evidence items')
+    expect(html).toContain('deterministic fallback synthesis')
+    expect(html).toContain('scout:intake-1:2026-05-09T19:30:00.000Z')
   })
 
   it('renders Scout research handoff details after a run', () => {

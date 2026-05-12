@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildPrelaunchScoutInput,
   normalizePrelaunchIntakeReviewRows,
 } from '@/lib/prelaunch/intake-review'
+import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
 
 describe('prelaunch intake review helpers', () => {
   it('normalizes review rows for operator review', () => {
@@ -66,6 +67,7 @@ describe('prelaunch intake review helpers', () => {
         fitFlags: [],
         waitlistId: 'waitlist-1',
         scoutInputStatus: 'ready',
+        latestScoutRun: null,
         createdAt: '2026-05-09T18:00:00Z',
         updatedAt: '2026-05-09T18:00:00Z',
       },
@@ -136,6 +138,109 @@ describe('prelaunch intake review helpers', () => {
         status: 'needs_review',
         fitFlags: ['phone_only_setup'],
       },
+    })
+  })
+
+  it('loads the latest saved Scout run for each intake submission', async () => {
+    const intakeOrderMock = async () => ({
+      data: [
+        {
+          id: 'intake-1',
+          full_name: 'Jamie Hart',
+          email: 'jamie@example.com',
+          phone: '303-555-0123',
+          business_name: 'Jamie Hart Jewelry',
+          tiktok_handle: '@jamieh',
+          instagram_handle: null,
+          facebook_url: null,
+          team_name: null,
+          team_size: '1-5',
+          primary_platform: 'tiktok',
+          streaming_frequency: 'weekly',
+          current_setup: 'Bio link',
+          setup_goal: 'Cleaner hub',
+          device_setup: 'phone_and_computer',
+          brand_vibe: 'warm',
+          color_preferences: null,
+          special_requests: null,
+          intake_status: 'submitted',
+          prequalification_status: 'qualified',
+          fit_flags: [],
+          waitlist_id: 'waitlist-1',
+          scout_input_status: 'generated',
+          created_at: '2026-05-09T18:00:00Z',
+          updated_at: '2026-05-09T18:00:00Z',
+        },
+      ],
+      error: null,
+    })
+    const scoutRunsLimitMock = vi.fn().mockResolvedValueOnce({
+      data: [
+        {
+          intake_submission_id: 'intake-1',
+          run_key: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+          status: 'completed',
+          trigger_source: 'intake_submission',
+          model: 'deterministic_scout_v1',
+          summary: 'Scout captured public evidence and suggested a call angle.',
+          created_at: '2026-05-09T19:30:00Z',
+          metadata: {
+            synthesis_status: 'deterministic_fallback',
+            captured_evidence_count: 2,
+          },
+        },
+        {
+          intake_submission_id: 'intake-1',
+          run_key: 'scout:intake-1:2026-05-09T19:00:00.000Z',
+          status: 'completed',
+          trigger_source: 'operator_review',
+          model: 'deterministic_scout_v1',
+          summary: 'Older Scout run.',
+          created_at: '2026-05-09T19:00:00Z',
+          metadata: {
+            synthesis_status: 'not_available',
+            captured_evidence_count: 0,
+          },
+        },
+      ],
+      error: null,
+    })
+    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
+    const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
+    const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
+    const scoutRunsSelectMock = vi.fn(() => ({ eq: scoutRunsEqMock }))
+    const intakeLimitMock = vi.fn(() => ({ order: intakeOrderMock }))
+    const intakeSelectMock = vi.fn(() => ({ limit: intakeLimitMock }))
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'agent_runs') {
+        return { select: scoutRunsSelectMock }
+      }
+
+      return { select: intakeSelectMock }
+    })
+
+    const submissions = await loadPrelaunchIntakeReviewSubmissions(
+      { from: fromMock } as never,
+      50,
+    )
+
+    expect(fromMock).toHaveBeenCalledWith('agent_runs')
+    expect(scoutRunsSelectMock).toHaveBeenCalledWith(
+      'intake_submission_id, run_key, status, trigger_source, model, summary, created_at, metadata',
+    )
+    expect(scoutRunsEqMock).toHaveBeenCalledWith('agent_name', 'Scout')
+    expect(scoutRunsInMock).toHaveBeenCalledWith('intake_submission_id', [
+      'intake-1',
+    ])
+    expect(submissions[0]?.latestScoutRun).toEqual({
+      runKey: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+      status: 'completed',
+      triggerSource: 'intake_submission',
+      model: 'deterministic_scout_v1',
+      summary: 'Scout captured public evidence and suggested a call angle.',
+      createdAt: '2026-05-09T19:30:00Z',
+      synthesisStatus: 'deterministic_fallback',
+      capturedEvidenceCount: 2,
     })
   })
 })

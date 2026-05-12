@@ -19,6 +19,10 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
+function formatLabel(value: string | null | undefined) {
+  return value?.replaceAll('_', ' ') ?? 'Not provided'
+}
+
 export function PrelaunchIntakeReviewPageContent({
   submissions,
 }: PrelaunchIntakeReviewPageContentProps) {
@@ -195,6 +199,50 @@ export function PrelaunchIntakeReviewPageContent({
                     </span>
                   )}
                 </div>
+
+                {submission.latestScoutRun ? (
+                  <section className="mt-5 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+                          Latest saved Scout run
+                        </p>
+                        <p className="mt-2 font-semibold text-slate-900">
+                          {formatLabel(submission.latestScoutRun.status)} via{' '}
+                          {formatLabel(submission.latestScoutRun.triggerSource)}
+                        </p>
+                        {submission.latestScoutRun.summary ? (
+                          <p className="mt-2 leading-6 text-slate-700">
+                            {submission.latestScoutRun.summary}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col gap-1 text-xs font-semibold text-slate-500 lg:text-right">
+                        <span>{formatDate(submission.latestScoutRun.createdAt)}</span>
+                        <span>{formatLabel(submission.latestScoutRun.model)}</span>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {submission.latestScoutRun.capturedEvidenceCount != null ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-sky-800">
+                          {submission.latestScoutRun.capturedEvidenceCount}{' '}
+                          captured evidence items
+                        </span>
+                      ) : null}
+                      {submission.latestScoutRun.synthesisStatus ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-sky-800">
+                          {formatLabel(
+                            submission.latestScoutRun.synthesisStatus,
+                          )}{' '}
+                          synthesis
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-3 break-all text-xs font-semibold text-slate-500">
+                      {submission.latestScoutRun.runKey}
+                    </p>
+                  </section>
+                ) : null}
 
                 <PrelaunchScoutRunButton intakeId={submission.id} />
 

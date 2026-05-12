@@ -37,6 +37,7 @@ const submission: PrelaunchIntakeReviewSubmission = {
   fitFlags: ['phone_only_setup'],
   waitlistId: 'waitlist-1',
   scoutInputStatus: 'ready',
+  latestScoutRun: null,
   createdAt: '2026-05-09T18:00:00Z',
   updatedAt: '2026-05-09T18:00:00Z',
 }

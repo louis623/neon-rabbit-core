@@ -26,6 +26,17 @@ export interface PrelaunchIntakeReviewRow {
   updated_at: string
 }
 
+export interface PrelaunchScoutRunReviewSummary {
+  runKey: string
+  status: string
+  triggerSource: string
+  model: string | null
+  summary: string | null
+  createdAt: string
+  synthesisStatus: string | null
+  capturedEvidenceCount: number | null
+}
+
 export interface PrelaunchIntakeReviewSubmission {
   id: string
   name: string
@@ -54,6 +65,7 @@ export interface PrelaunchIntakeReviewSubmission {
   fitFlags: string[]
   waitlistId: string | null
   scoutInputStatus: string
+  latestScoutRun: PrelaunchScoutRunReviewSummary | null
   createdAt: string
   updatedAt: string
 }
@@ -89,6 +101,7 @@ export function normalizePrelaunchIntakeReviewRows(
     fitFlags: row.fit_flags,
     waitlistId: row.waitlist_id,
     scoutInputStatus: row.scout_input_status,
+    latestScoutRun: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }))
