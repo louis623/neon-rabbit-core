@@ -58,6 +58,8 @@ Do not bring back these rejected public prelaunch treatments without Louis expli
 
 Do not polish, rebrand, rewrite, or visually improve the public site unless Louis explicitly says: `go ahead and polish this`.
 
+The official visual rulebook for this public direction lives in `08-production-site-design-kit.md`.
+
 ## Approved feature claims
 
 - Trade board

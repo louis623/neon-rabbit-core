@@ -3,7 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
     <title>Sparkle Suite QR Flyer - Coming Soon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="promo.css" />
   </head>
   <body class="flyer-export-page">
@@ -11,33 +18,41 @@
       <div class="qr-flyer-v2__texture" aria-hidden="true"></div>
       <div class="qr-flyer-v2__border" aria-hidden="true"></div>
 
-      <header class="qr-flyer-v2__header">
-        <p class="qr-flyer-v2__eyebrow">Coming soon</p>
-        <h1>Sparkle Suite</h1>
-        <p class="qr-flyer-v2__tagline">For reps who want smoother live shows</p>
+      <header class="qr-flyer-v2__brand">
+        <span class="qr-flyer-v2__seal" aria-hidden="true">S</span>
+        <span class="qr-flyer-v2__brand-name">Sparkle Suite</span>
       </header>
 
+      <section class="qr-flyer-v2__hero">
+        <div class="qr-flyer-v2__kicker">
+          <span class="qr-flyer-v2__rule" aria-hidden="true"></span>
+          <p class="qr-flyer-v2__eyebrow">Sparkle Suite - Coming Soon</p>
+        </div>
+        <h1>
+          A better customer experience starts with a <em>better rep setup</em>.
+        </h1>
+        <p>
+          Sparkle Suite gives reps a more polished website, standout live show tools, and
+          built-in support that helps customers feel the difference.
+        </p>
+      </section>
+
+      <ul class="qr-flyer-v2__signals" aria-label="Sparkle Suite feature highlights">
+        <li>Trade board that gives customers a cleaner way to browse and request trade pieces.</li>
+        <li>Live queue that helps people follow the line while your show keeps moving.</li>
+        <li>SMS updates for quick reminders when a live is close or plans change.</li>
+      </ul>
+
       <section class="qr-flyer-v2__scan">
-        <h2>Scan to join the waitlist</h2>
         <div class="qr-flyer-v2__qr-wrap">
           <img
             class="qr-flyer-v2__qr"
             alt="QR code for the Sparkle Suite prelaunch page"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&margin=18&data=https%3A%2F%2Fwww.yoursparklesuite.com%2F"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=18&data=https%3A%2F%2Fwww.yoursparklesuite.com%2Fprelaunch"
           />
         </div>
-        <p>Screenshot or save this post, then scan the QR code.</p>
-      </section>
-
-      <section class="qr-flyer-v2__bottom">
-        <p>A better customer experience starts with a better rep setup.</p>
-        <ul>
-          <li>Trade board</li>
-          <li>Live queue</li>
-          <li>Event calendar</li>
-          <li>Nic-Nac</li>
-        </ul>
-        <strong>www.yoursparklesuite.com</strong>
+        <p class="qr-flyer-v2__scan-title">Scan to join the waitlist.</p>
+        <p class="qr-flyer-v2__scan-note">www.yoursparklesuite.com/prelaunch</p>
       </section>
     </main>
   </body>

@@ -1,3 +1,12 @@
+# DO NOT USE
+
+This file is retired for current Sparkle Suite brand/design work.
+
+Reason: it is not based on the current production site at https://www.yoursparklesuite.com/prelaunch.
+
+Use the official production-based design kit in docs/sparkle-suite/brand instead.
+
+---
 # Sparkle Suite Design Kit: Amethyst
 # Source: Fontpair (fontpair.co)
 # License: Fonts from Fontshare (ITF Free Font License) — free commercial use

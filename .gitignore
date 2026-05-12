@@ -53,6 +53,7 @@ supabase/.temp/
 # Local-only secrets / scratch (never committed)
 .local/
 .codex-logs/
+.chrome-headless/
 .worktrees/
 .superpowers/
 .tmp*/

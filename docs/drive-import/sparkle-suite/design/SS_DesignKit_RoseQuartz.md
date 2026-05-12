@@ -1,3 +1,12 @@
+# DO NOT USE
+
+This file is retired for current Sparkle Suite brand/design work.
+
+Reason: it is not based on the current production site at https://www.yoursparklesuite.com/prelaunch.
+
+Use the official production-based design kit in docs/sparkle-suite/brand instead.
+
+---
 You are building a web app. This file defines the complete design system. Reference it for every styling decision. Do not deviate from the fonts, colors, or tokens specified below.
 
 DESIGN REFERENCE

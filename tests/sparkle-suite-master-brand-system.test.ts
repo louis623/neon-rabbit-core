@@ -73,6 +73,7 @@ describe('Sparkle Suite master brand system', () => {
     expect(index).toContain('Public site version lock: `05-public-site-version-lock.md`')
     expect(index).toContain('Public site incident lesson: `06-public-site-incident-lesson.md`')
     expect(index).toContain('Design kit audit brief: `07-design-kit-audit-brief.md`')
+    expect(index).toContain('Official production design kit: `08-production-site-design-kit.md`')
     expect(index).toContain('Short-form video work: `playbooks/short-form-video.md`, `templates/short-form-video-hooks.md`, `templates/short-form-video-scripts.md`, and `templates/captions-and-ctas.md`')
     expect(index).toContain('Rep acquisition materials: `playbooks/rep-acquisition-materials.md`')
     expect(index).toContain('Sparkle Suite V1 Preview Public Site')
@@ -86,6 +87,7 @@ describe('Sparkle Suite master brand system', () => {
     expect(brandSpec).toContain('Sparkle Suite V1 Preview Public Site')
     expect(brandSpec).toContain('One easier home for your Bomb Party business.')
     expect(brandSpec).toContain('go ahead and polish this')
+    expect(brandSpec).toContain('08-production-site-design-kit.md')
     expect(brandSpec).toContain('Trade board')
     expect(brandSpec).toContain('Live queue')
     expect(brandSpec).toContain('Live event calendar')
@@ -128,6 +130,7 @@ describe('Sparkle Suite master brand system', () => {
     expect(extractMarkdownFileReferences(brandSpec)).toEqual([
       '02-messaging-pillars.md',
       '03-nic-nac-positioning.md',
+      '08-production-site-design-kit.md',
     ])
     expect(extractMarkdownFileReferences(messagingPillars)).toEqual([])
     expect(extractMarkdownFileReferences(nicNac)).toEqual([])
@@ -330,6 +333,7 @@ describe('Sparkle Suite master brand system', () => {
     expect(skill).toContain('docs/sparkle-suite/brand/05-public-site-version-lock.md')
     expect(skill).toContain('docs/sparkle-suite/brand/06-public-site-incident-lesson.md')
     expect(skill).toContain('docs/sparkle-suite/brand/07-design-kit-audit-brief.md')
+    expect(skill).toContain('docs/sparkle-suite/brand/08-production-site-design-kit.md')
     expect(skill).toContain('docs/sparkle-suite/brand/playbooks/short-form-video.md')
     expect(skill).toContain('docs/sparkle-suite/brand/playbooks/email-newsletter.md')
     expect(skill).toContain('docs/sparkle-suite/brand/playbooks/rep-acquisition-materials.md')
@@ -386,5 +390,108 @@ describe('Sparkle Suite master brand system', () => {
     expect(auditBrief).toContain('dpl_2yAXz2pKp4QsJ4sQzboqpfXfqyoM')
     expect(auditBrief).toContain('dpl_95Z57PuyJYJvvHabc2bjGCNzpZ8t')
     expect(auditBrief).toContain('Do not generate new social media assets during the audit')
+  })
+
+  it('contains the official production-based design kit and retires imported kits', () => {
+    const productionKitPath = 'docs/sparkle-suite/brand/08-production-site-design-kit.md'
+    expect(existsSync(resolve(process.cwd(), productionKitPath)), productionKitPath).toBe(true)
+
+    const productionKit = read(productionKitPath)
+    expect(productionKit).toContain('This is the official Sparkle Suite design kit for public brand work.')
+    expect(productionKit).toContain('https://www.yoursparklesuite.com/prelaunch')
+    expect(productionKit).toContain('Sparkle Suite V1 Preview Public Site')
+    expect(productionKit).toContain('Playfair Display')
+    expect(productionKit).toContain('DM Sans')
+    expect(productionKit).toContain('A better customer experience starts with a better rep setup.')
+    expect(productionKit).toContain('Join the Waitlist')
+    expect(productionKit).toContain('Do not use these as the base for public-facing visuals:')
+
+    const retiredImportedFiles = [
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_Velvet.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_RoseQuartz.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_Garnet.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_Amber.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst_ClaudeDesign.md',
+      'docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.4.md',
+    ]
+
+    for (const file of retiredImportedFiles) {
+      expect(read(file)).toContain('# DO NOT USE')
+      expect(read(file)).toContain('it is not based on the current production site')
+    }
+  })
+
+  it('keeps the imported Sparkle Suite design folder visibly retired in orientation docs', () => {
+    const masterIndex = read('docs/drive-import/MASTER_INDEX.md')
+    const designReadmePath = 'docs/drive-import/sparkle-suite/design/README.md'
+
+    expect(existsSync(resolve(process.cwd(), designReadmePath)), designReadmePath).toBe(true)
+    expect(masterIndex).toContain('Retired Sparkle Suite imported design kits')
+    expect(masterIndex).toContain('docs/sparkle-suite/brand/08-production-site-design-kit.md')
+    expect(masterIndex).toContain(designReadmePath)
+    expect(masterIndex).not.toContain('Current Amethyst design kit.')
+    expect(masterIndex).not.toContain('Latest component library snapshot in the imported set.')
+
+    const designReadme = read(designReadmePath)
+    expect(designReadme).toContain('# Retired Sparkle Suite Imported Design Kits')
+    expect(designReadme).toContain('Do not use these files for current public Sparkle Suite brand work.')
+    expect(designReadme).toContain('docs/sparkle-suite/brand/08-production-site-design-kit.md')
+    expect(designReadme).toContain('docs/sparkle-suite/brand/09-social-asset-status.md')
+    expect(designReadme).toContain(
+      'public/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+    )
+  })
+
+  it('tracks the public social asset truth in one repo doc', () => {
+    const socialStatusPath = 'docs/sparkle-suite/brand/09-social-asset-status.md'
+    expect(existsSync(resolve(process.cwd(), socialStatusPath)), socialStatusPath).toBe(true)
+
+    const socialStatus = read(socialStatusPath)
+    expect(socialStatus).toContain('approved image-first QR flyer asset')
+    expect(socialStatus).toContain(
+      'public/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+    )
+    expect(socialStatus).toContain(
+      'Do not treat the older code-based flyer experiments as the approved final brand asset.',
+    )
+    expect(socialStatus).toContain(
+      'public/sparkle-suite-social/qr-flyer-coming-soon.html',
+    )
+    expect(socialStatus).toContain(
+      'public/sparkle-suite-social/exports/example-one-revised-tiktok-export.html',
+    )
+    expect(socialStatus).toContain(
+      'public/sparkle-suite-social/exports/sparkle-suite-qr-flyer-example-one-tiktok.png',
+    )
+  })
+
+  it('keeps old public social experiments visibly retired', () => {
+    const index = read('public/sparkle-suite-social/index.html')
+
+    expect(index).toContain('Retired Sparkle Suite social experiments')
+    expect(index).toContain(
+      'public/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+    )
+    expect(index).not.toContain('/sparkle-suite-social/tiktok-v1-coming-soon.html')
+    expect(index).not.toContain('/sparkle-suite-social/tiktok-v2-pain-point.html')
+    expect(index).not.toContain('/sparkle-suite-social/tiktok-v3-feature-flash.html')
+    expect(index).not.toContain('/sparkle-suite-social/qr-flyer-coming-soon.html')
+
+    const referenceOnlyHtmlFiles = [
+      'public/sparkle-suite-social/index.html',
+      'public/sparkle-suite-social/qr-flyer-coming-soon.html',
+      'public/sparkle-suite-social/tiktok-v1-coming-soon.html',
+      'public/sparkle-suite-social/tiktok-v2-pain-point.html',
+      'public/sparkle-suite-social/tiktok-v3-feature-flash.html',
+      'public/sparkle-suite-social/exports/example-one-revised-export.html',
+      'public/sparkle-suite-social/exports/example-one-revised-tiktok-export.html',
+    ]
+
+    for (const file of referenceOnlyHtmlFiles) {
+      expect(read(file), file).toContain(
+        '<meta name="robots" content="noindex,nofollow" />',
+      )
+    }
   })
 })

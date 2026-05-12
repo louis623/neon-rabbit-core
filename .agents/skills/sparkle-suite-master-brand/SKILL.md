@@ -19,6 +19,7 @@ Read these before producing content:
 - `docs/sparkle-suite/brand/03-nic-nac-positioning.md`
 - `docs/sparkle-suite/brand/05-public-site-version-lock.md`
 - `docs/sparkle-suite/brand/06-public-site-incident-lesson.md`
+- `docs/sparkle-suite/brand/08-production-site-design-kit.md`
 
 Then load the matching channel files:
 
@@ -28,7 +29,7 @@ Then load the matching channel files:
 - Homepage or signup: `docs/sparkle-suite/brand/playbooks/homepage-and-signup.md` and `docs/sparkle-suite/brand/templates/landing-page-sections.md`
 - Rep acquisition materials: `docs/sparkle-suite/brand/playbooks/rep-acquisition-materials.md`
 - Reviews and QA: `docs/sparkle-suite/brand/04-brand-review-checklist.md`
-- Design kits, visual systems, social templates, or Canva-style brand assets: `docs/sparkle-suite/brand/07-design-kit-audit-brief.md`
+- Design kits, visual systems, social templates, or Canva-style brand assets: `docs/sparkle-suite/brand/07-design-kit-audit-brief.md` and `docs/sparkle-suite/brand/08-production-site-design-kit.md`
 
 If the docs are not loaded yet, stop and load them before drafting.
 

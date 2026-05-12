@@ -56,12 +56,12 @@ These are the main docs for platform, product, and implementation context.
 
 ## Sparkle Suite Design
 
-Use these when the work touches theme systems, templates, or visual direction.
+Retired Sparkle Suite imported design kits are preserved here for audit/history only.
 
-- `docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst.md`: Current Amethyst design kit.
-- `docs/drive-import/sparkle-suite/design/SS_DesignKit_ComponentLibrary_v2.4.md`: Latest component library snapshot in the imported set.
-- `docs/drive-import/sparkle-suite/design/SS_DesignKit_Amethyst_ClaudeDesign.md`: Claude Design handoff for the Amethyst theme.
-- `docs/drive-import/sparkle-suite/design/`: Full imported design-kit history for Amethyst, Garnet, Velvet, RoseQuartz, and Amber.
+- `docs/sparkle-suite/brand/08-production-site-design-kit.md`: Official production-based visual source for current public Sparkle Suite brand work.
+- `docs/sparkle-suite/brand/09-social-asset-status.md`: Current public social asset status and approved QR flyer source.
+- `docs/drive-import/sparkle-suite/design/README.md`: Retirement notice for the imported design-kit folder.
+- `docs/drive-import/sparkle-suite/design/`: Retired imported design-kit history for Amethyst, Garnet, Velvet, RoseQuartz, and Amber. Do not use these files for current public brand assets.
 
 ## Rabbit Hole
 
