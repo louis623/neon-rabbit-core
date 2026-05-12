@@ -377,6 +377,8 @@ function buildDeterministicScoutSynthesis(
   const primaryOutboundLink =
     capturedEvidence.find((item) => item.primaryOutboundLink)?.primaryOutboundLink ??
     null
+  const primaryPublicAction =
+    selectScoutPrimaryPublicActionCandidate(capturedEvidence)
   const hasCustomerLinkEvidence = capturedEvidence.some(
     (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
   )
@@ -416,6 +418,11 @@ function buildDeterministicScoutSynthesis(
             'Does the direct customer-link page match what the public profile promises?',
           ]
         : []),
+      ...(primaryPublicAction
+        ? [
+            `Should "${primaryPublicAction.text}" be the main Sparkle Suite call to action?`,
+          ]
+        : []),
     ]).slice(0, 4),
     ...groundedFields,
   }
@@ -447,11 +454,25 @@ function buildGroundedScoutSynthesisFields(
   )
   const publicActionSummary =
     buildScoutPublicActionCandidateSummary(capturedEvidence)
+  const primaryPublicAction =
+    selectScoutPrimaryPublicActionCandidate(capturedEvidence)
+  const publicActionObservations = [
+    ...(primaryPublicAction
+      ? [
+          `Visible primary CTA appears to be "${primaryPublicAction.text}" at ${primaryPublicAction.url}.`,
+        ]
+      : []),
+    ...(publicActionSummary ? [publicActionSummary] : []),
+  ]
+  const evidenceBulletLimit =
+    publicActionObservations.length > 0
+      ? Math.max(1, 4 - publicActionObservations.length)
+      : 4
 
   return {
     evidenceBackedObservations: dedupeStrings([
-      ...evidenceBullets,
-      ...(publicActionSummary ? [publicActionSummary] : []),
+      ...evidenceBullets.slice(0, evidenceBulletLimit),
+      ...publicActionObservations,
       ...outboundLinkBullets,
     ]).slice(0, 4),
     manualVerificationNeeded: dedupeStrings([
@@ -473,6 +494,11 @@ function buildGroundedScoutSynthesisFields(
       ...(publicActionSummary
         ? [
             'Confirm which visible public CTA should become the primary Sparkle Suite action.',
+          ]
+        : []),
+      ...(primaryPublicAction
+        ? [
+            `Confirm whether "${primaryPublicAction.text}" should become the primary Sparkle Suite CTA.`,
           ]
         : []),
     ]),
@@ -499,6 +525,27 @@ function buildScoutPublicActionCandidateSummary(
   if (actionTypeLabels.length === 0) return null
 
   return `Visible public CTAs include ${formatListForSentence(actionTypeLabels)} actions.`
+}
+
+function selectScoutPrimaryPublicActionCandidate(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+) {
+  const rankedTypes: PrelaunchScoutPublicActionType[] = [
+    'shop',
+    'live_show',
+    'vip_text',
+    'join_team',
+  ]
+  const candidates = capturedEvidence.flatMap(
+    (item) => item.publicActionCandidates ?? [],
+  )
+
+  for (const actionType of rankedTypes) {
+    const candidate = candidates.find((item) => item.actionType === actionType)
+    if (candidate) return candidate
+  }
+
+  return null
 }
 
 function formatScoutPublicActionType(actionType: PrelaunchScoutPublicActionType) {
@@ -812,9 +859,18 @@ export async function synthesizePrelaunchScoutEvidence(
       discoveryAngle: parsed.discoveryAngle,
       summaryBullets: parsed.summaryBullets,
       followUpQuestions: parsed.followUpQuestions,
-      evidenceBackedObservations: parsed.evidenceBackedObservations,
-      manualVerificationNeeded: parsed.manualVerificationNeeded,
-      contradictions: parsed.contradictions,
+      evidenceBackedObservations: dedupeStrings([
+        ...parsed.evidenceBackedObservations,
+        ...(fallback.evidenceBackedObservations ?? []),
+      ]).slice(0, 4),
+      manualVerificationNeeded: dedupeStrings([
+        ...parsed.manualVerificationNeeded,
+        ...(fallback.manualVerificationNeeded ?? []),
+      ]).slice(0, 4),
+      contradictions: dedupeStrings([
+        ...parsed.contradictions,
+        ...(fallback.contradictions ?? []),
+      ]).slice(0, 4),
       confidence: parsed.confidence,
     }
   } catch {

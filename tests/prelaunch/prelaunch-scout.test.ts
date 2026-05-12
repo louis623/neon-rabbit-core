@@ -921,6 +921,59 @@ describe('prelaunch Scout', () => {
     )
   })
 
+  it('names the strongest visible public CTA from captured action candidates', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'Public link hub',
+        url: 'https://linktr.ee/jamieh',
+        title: 'Jamie Hart Links',
+        description: 'Shop live boards, join the VIP list, and follow socials.',
+        canonicalUrl: 'https://linktr.ee/jamieh',
+        outboundLinks: [
+          'https://instagram.com/jamiebling',
+          'https://vip.example.com/join',
+          'https://jamiehartjewelry.com/shop',
+        ],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/shop',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+        publicActionCandidates: [
+          {
+            sourceLabel: 'Public link hub',
+            sourceUrl: 'https://linktr.ee/jamieh',
+            text: 'Follow on Instagram',
+            url: 'https://instagram.com/jamiebling',
+            actionType: 'social',
+          },
+          {
+            sourceLabel: 'Public link hub',
+            sourceUrl: 'https://linktr.ee/jamieh',
+            text: 'Join VIP text list',
+            url: 'https://vip.example.com/join',
+            actionType: 'vip_text',
+          },
+          {
+            sourceLabel: 'Public link hub',
+            sourceUrl: 'https://linktr.ee/jamieh',
+            text: 'Shop live board',
+            url: 'https://jamiehartjewelry.com/shop',
+            actionType: 'shop',
+          },
+        ],
+      },
+    ])
+
+    expect(output.researchSynthesis.evidenceBackedObservations).toContain(
+      'Visible primary CTA appears to be "Shop live board" at https://jamiehartjewelry.com/shop.',
+    )
+    expect(output.researchSynthesis.manualVerificationNeeded).toContain(
+      'Confirm whether "Shop live board" should become the primary Sparkle Suite CTA.',
+    )
+    expect(output.suggestedQuestions).toContain(
+      'Should "Shop live board" be the main Sparkle Suite call to action?',
+    )
+  })
+
   it('flags customer links for manual review when the one-hop fetch fails', () => {
     const output = buildPrelaunchScoutOutput(
       submission,
@@ -1321,7 +1374,7 @@ describe('prelaunch Scout', () => {
     expect(generateTextMock.mock.calls[0]?.[0].prompt).toContain(
       'publicActions: [vip_text] Join VIP text list -> https://vip.example.com/join',
     )
-    expect(synthesis).toEqual({
+    expect(synthesis).toMatchObject({
       status: 'model_generated',
       discoveryAngle:
         'Her public TikTok language already sounds customer-first, which makes the discovery call less about brand basics and more about smoothing the live-show path.',
@@ -1333,17 +1386,91 @@ describe('prelaunch Scout', () => {
         'Which customer action is breaking most often between the live and the replay window?',
         'What current link or bio flow needs the fastest cleanup before launch?',
       ],
-      evidenceBackedObservations: [
-        'The profile headline and customer-link page both point to live-show shopping.',
-      ],
-      manualVerificationNeeded: [
-        'Confirm whether the live board is still the main customer action.',
-      ],
       contradictions: [
         'TikTok and Instagram appear to point to different public links.',
       ],
       confidence: 'medium',
     })
+    expect(synthesis.evidenceBackedObservations).toEqual(
+      expect.arrayContaining([
+        'The profile headline and customer-link page both point to live-show shopping.',
+        'Live reveals every Tuesday',
+      ]),
+    )
+    expect(synthesis.manualVerificationNeeded).toEqual(
+      expect.arrayContaining([
+        'Confirm whether the live board is still the main customer action.',
+        'Confirm which visible public CTA should become the primary Sparkle Suite action.',
+      ]),
+    )
+  })
+
+  it('preserves grounded CTA evidence when model-backed synthesis omits it', async () => {
+    const generateTextMock = vi.fn().mockResolvedValue({
+      text: JSON.stringify({
+        discoveryAngle:
+          'The public path is usable, but Louis should still confirm which customer action matters most.',
+        summaryBullets: [
+          'The profile gives Scout a starting point for the discovery call.',
+        ],
+        followUpQuestions: [
+          'Which customer action should Sparkle Suite make easiest to reach?',
+        ],
+        evidenceBackedObservations: [],
+        manualVerificationNeeded: [],
+        contradictions: [],
+        confidence: 'medium',
+      }),
+    })
+
+    const synthesis = await synthesizePrelaunchScoutEvidence(
+      submission,
+      [
+        {
+          label: 'Primary customer link',
+          url: 'https://jamiehartjewelry.com/live',
+          title: 'Jamie Hart Jewelry Live Shop',
+          description: 'Shop tonight live board and join VIP text updates.',
+          canonicalUrl: 'https://jamiehartjewelry.com/live',
+          evidenceSnippets: [
+            'Claim favorites before the next show',
+            'Live reveals every Tuesday',
+            'Replay winners posted weekly',
+          ],
+          outboundLinks: [],
+          primaryOutboundLink: null,
+          primaryOutboundLinkReason: null,
+          publicActionCandidates: [
+            {
+              sourceLabel: 'Primary customer link',
+              sourceUrl: 'https://jamiehartjewelry.com/live',
+              text: 'Shop tonight live show',
+              url: 'https://jamiehartjewelry.com/live/show',
+              actionType: 'live_show',
+            },
+            {
+              sourceLabel: 'Primary customer link',
+              sourceUrl: 'https://jamiehartjewelry.com/live',
+              text: 'Join VIP text list',
+              url: 'https://vip.example.com/join',
+              actionType: 'vip_text',
+            },
+          ],
+        },
+      ],
+      {
+        generateTextImpl: generateTextMock,
+      },
+    )
+
+    expect(synthesis.status).toBe('model_generated')
+    expect(synthesis.discoveryAngle).toContain('public path is usable')
+    expect(synthesis.evidenceBackedObservations).toContain(
+      'Visible public CTAs include live show and VIP text actions.',
+    )
+    expect(synthesis.manualVerificationNeeded).toContain(
+      'Confirm which visible public CTA should become the primary Sparkle Suite action.',
+    )
   })
 
   it('prefers a direct site link over a generic link hub for the primary customer path', async () => {
