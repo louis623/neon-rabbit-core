@@ -681,6 +681,54 @@ describe('prelaunch Scout', () => {
     )
   })
 
+  it('adds grounded synthesis fields for evidence confidence and manual verification', () => {
+    const output = buildPrelaunchScoutOutput(submission, [], [
+      {
+        label: 'TikTok',
+        url: 'https://www.tiktok.com/@jamieh',
+        title: 'Jamie Hart Jewelry | TikTok',
+        description: 'Live jewelry sales and trade night clips.',
+        canonicalUrl: 'https://www.tiktok.com/@jamieh',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+      {
+        label: 'Instagram',
+        url: 'https://www.instagram.com/jamiebling/',
+        title: 'Jamie Hart Jewelry | Instagram',
+        description: 'Live reminders and replay clips.',
+        canonicalUrl: 'https://www.instagram.com/jamiebling/',
+        outboundLinks: ['https://shop.jamiehartjewelry.com'],
+        primaryOutboundLink: 'https://shop.jamiehartjewelry.com',
+        primaryOutboundLinkReason:
+          'Direct brand or shop links are more likely the real customer action than a generic link hub.',
+      },
+      {
+        label: 'Primary customer link',
+        url: 'https://jamiehartjewelry.com/live',
+        title: 'Jamie Hart Jewelry Live Shop',
+        description: 'Shop the current live reveal board.',
+        canonicalUrl: 'https://jamiehartjewelry.com/live',
+        outboundLinks: [],
+        primaryOutboundLink: null,
+        primaryOutboundLinkReason: null,
+      },
+    ])
+
+    expect(output.researchSynthesis.confidence).toBe('high')
+    expect(output.researchSynthesis.evidenceBackedObservations).toContain(
+      'Live jewelry sales and trade night clips.',
+    )
+    expect(output.researchSynthesis.manualVerificationNeeded).toContain(
+      'Confirm the direct customer-link page still matches the public profile promise.',
+    )
+    expect(output.researchSynthesis.contradictions).toContain(
+      'Multiple public profiles point to different direct customer links: https://jamiehartjewelry.com/live, https://shop.jamiehartjewelry.com.',
+    )
+  })
+
   it('flags customer links for manual review when the one-hop fetch fails', () => {
     const output = buildPrelaunchScoutOutput(
       submission,
@@ -1027,6 +1075,16 @@ describe('prelaunch Scout', () => {
           'Which customer action is breaking most often between the live and the replay window?',
           'What current link or bio flow needs the fastest cleanup before launch?',
         ],
+        evidenceBackedObservations: [
+          'The profile headline and customer-link page both point to live-show shopping.',
+        ],
+        manualVerificationNeeded: [
+          'Confirm whether the live board is still the main customer action.',
+        ],
+        contradictions: [
+          'TikTok and Instagram appear to point to different public links.',
+        ],
+        confidence: 'medium',
       }),
     })
 
@@ -1071,6 +1129,16 @@ describe('prelaunch Scout', () => {
         'Which customer action is breaking most often between the live and the replay window?',
         'What current link or bio flow needs the fastest cleanup before launch?',
       ],
+      evidenceBackedObservations: [
+        'The profile headline and customer-link page both point to live-show shopping.',
+      ],
+      manualVerificationNeeded: [
+        'Confirm whether the live board is still the main customer action.',
+      ],
+      contradictions: [
+        'TikTok and Instagram appear to point to different public links.',
+      ],
+      confidence: 'medium',
     })
   })
 
@@ -1364,6 +1432,7 @@ describe('prelaunch Scout', () => {
         metadata: expect.objectContaining({
           research_plan_status: 'manual_research_required',
           public_funnel_shape: 'unclear',
+          synthesis_confidence: 'low',
           reused_lesson_count: 1,
           evidence_source_statuses: [
             {

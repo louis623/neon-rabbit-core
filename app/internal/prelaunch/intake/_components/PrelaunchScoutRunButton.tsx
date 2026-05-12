@@ -14,6 +14,12 @@ interface PrelaunchScoutRecommendationResultProps {
 export function PrelaunchScoutRecommendationResult({
   output,
 }: PrelaunchScoutRecommendationResultProps) {
+  const synthesis = output.researchSynthesis
+  const evidenceBackedObservations =
+    synthesis.evidenceBackedObservations ?? []
+  const manualVerificationNeeded = synthesis.manualVerificationNeeded ?? []
+  const contradictions = synthesis.contradictions ?? []
+
   return (
     <div className="mt-4 rounded-md border border-emerald-200 bg-white p-4 text-sm">
       <p className="font-semibold text-emerald-800">{output.briefTitle}</p>
@@ -255,34 +261,79 @@ export function PrelaunchScoutRecommendationResult({
         ) : null}
       </div>
 
-      {output.researchSynthesis.status !== 'not_available' ? (
+      {synthesis.status !== 'not_available' ? (
         <div className="mt-4 rounded-md border border-violet-200 bg-violet-50 p-3">
           <p className="text-xs font-semibold uppercase text-violet-600">
             Scout synthesis
           </p>
 
-          {output.researchSynthesis.discoveryAngle ? (
+          {synthesis.discoveryAngle ? (
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
-              {output.researchSynthesis.discoveryAngle}
+              {synthesis.discoveryAngle}
             </p>
           ) : null}
 
-          {output.researchSynthesis.summaryBullets.length > 0 ? (
+          {synthesis.confidence ? (
+            <p className="mt-2 text-xs font-semibold uppercase text-violet-700">
+              Confidence: {synthesis.confidence}
+            </p>
+          ) : null}
+
+          {synthesis.summaryBullets.length > 0 ? (
             <div className="mt-3">
               <p className="font-semibold text-slate-700">What stands out</p>
               <ul className="mt-2 space-y-1 text-slate-700">
-                {output.researchSynthesis.summaryBullets.map((item) => (
+                {synthesis.summaryBullets.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
             </div>
           ) : null}
 
-          {output.researchSynthesis.followUpQuestions.length > 0 ? (
+          {evidenceBackedObservations.length > 0 ? (
+            <div className="mt-3">
+              <p className="font-semibold text-slate-700">
+                Grounded observations
+              </p>
+              <ul className="mt-2 space-y-1 text-slate-700">
+                {evidenceBackedObservations.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {manualVerificationNeeded.length > 0 ? (
+            <div className="mt-3">
+              <p className="font-semibold text-slate-700">
+                Manual verification needed
+              </p>
+              <ul className="mt-2 space-y-1 text-slate-700">
+                {manualVerificationNeeded.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {contradictions.length > 0 ? (
+            <div className="mt-3 rounded-md bg-white p-2">
+              <p className="font-semibold text-slate-700">
+                Contradictions or tensions
+              </p>
+              <ul className="mt-2 space-y-1 text-slate-700">
+                {contradictions.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {synthesis.followUpQuestions.length > 0 ? (
             <div className="mt-3">
               <p className="font-semibold text-slate-700">Follow-up questions</p>
               <ul className="mt-2 space-y-1 text-slate-700">
-                {output.researchSynthesis.followUpQuestions.map((item) => (
+                {synthesis.followUpQuestions.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>

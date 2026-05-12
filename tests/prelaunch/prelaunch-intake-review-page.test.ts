@@ -198,6 +198,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         discoveryAngle: null,
         summaryBullets: [],
         followUpQuestions: [],
+        evidenceBackedObservations: [],
+        manualVerificationNeeded: [],
+        contradictions: [],
+        confidence: 'low',
       },
     }
 
@@ -315,6 +319,14 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         followUpQuestions: [
           'Which customer action is breaking most often right now?',
         ],
+        evidenceBackedObservations: [
+          'Profile copy points toward live-sale momentum.',
+        ],
+        manualVerificationNeeded: [
+          'Confirm the direct customer-link page still matches the public profile promise.',
+        ],
+        contradictions: [],
+        confidence: 'high',
       },
     }
 
@@ -424,6 +436,16 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         followUpQuestions: [
           'Which customer action breaks most often between the live and the replay window?',
         ],
+        evidenceBackedObservations: [
+          'The public profile and customer-link page both point to live-show shopping.',
+        ],
+        manualVerificationNeeded: [
+          'Confirm the direct customer-link page still matches the public profile promise.',
+        ],
+        contradictions: [
+          'TikTok and Instagram appear to point to different public links.',
+        ],
+        confidence: 'medium',
       },
     }
 
@@ -441,6 +463,19 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       'Which customer action breaks most often between the live and the replay window?',
     )
+    expect(html).toContain('Grounded observations')
+    expect(html).toContain(
+      'The public profile and customer-link page both point to live-show shopping.',
+    )
+    expect(html).toContain('Manual verification needed')
+    expect(html).toContain(
+      'Confirm the direct customer-link page still matches the public profile promise.',
+    )
+    expect(html).toContain('Contradictions or tensions')
+    expect(html).toContain(
+      'TikTok and Instagram appear to point to different public links.',
+    )
+    expect(html).toContain('Confidence: medium')
   })
 
   it('renders reused Scout lessons with similarity reasons', () => {
@@ -487,6 +522,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         discoveryAngle: null,
         summaryBullets: [],
         followUpQuestions: [],
+        evidenceBackedObservations: [],
+        manualVerificationNeeded: [],
+        contradictions: [],
+        confidence: 'low',
       },
     }
 

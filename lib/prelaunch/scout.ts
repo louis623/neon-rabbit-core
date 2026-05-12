@@ -98,6 +98,10 @@ export interface PrelaunchScoutResearchSynthesis {
   discoveryAngle: string | null
   summaryBullets: string[]
   followUpQuestions: string[]
+  evidenceBackedObservations?: string[]
+  manualVerificationNeeded?: string[]
+  contradictions?: string[]
+  confidence?: 'low' | 'medium' | 'high'
 }
 
 export interface RunPrelaunchScoutOptions {
@@ -327,6 +331,10 @@ function buildDeterministicScoutSynthesis(
       discoveryAngle: null,
       summaryBullets: [],
       followUpQuestions: [],
+      evidenceBackedObservations: [],
+      manualVerificationNeeded: [],
+      contradictions: [],
+      confidence: 'low',
     }
   }
 
@@ -354,6 +362,11 @@ function buildDeterministicScoutSynthesis(
     null
   const hasCustomerLinkEvidence = capturedEvidence.some(
     (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+  )
+  const groundedFields = buildGroundedScoutSynthesisFields(
+    capturedEvidence,
+    evidenceBullets,
+    outboundLinkBullets,
   )
 
   return {
@@ -387,6 +400,64 @@ function buildDeterministicScoutSynthesis(
           ]
         : []),
     ]).slice(0, 4),
+    ...groundedFields,
+  }
+}
+
+function buildGroundedScoutSynthesisFields(
+  capturedEvidence: PrelaunchScoutCapturedEvidence[],
+  evidenceBullets: string[],
+  outboundLinkBullets: string[],
+): Pick<
+  PrelaunchScoutResearchSynthesis,
+  | 'evidenceBackedObservations'
+  | 'manualVerificationNeeded'
+  | 'contradictions'
+  | 'confidence'
+> {
+  const hasCustomerLinkEvidence = capturedEvidence.some(
+    (item) => item.label === PRIMARY_CUSTOMER_LINK_LABEL,
+  )
+  const hasLinkHubEvidence = capturedEvidence.some(
+    (item) => item.label === PUBLIC_LINK_HUB_LABEL,
+  )
+  const profileDirectLinks = dedupeStrings(
+    capturedEvidence
+      .filter((item) => isPublicProfileEvidenceLabel(item.label))
+      .map((item) => item.primaryOutboundLink)
+      .filter((value): value is string => Boolean(value))
+      .filter((link) => !isGenericLinkHub(link)),
+  )
+
+  return {
+    evidenceBackedObservations: dedupeStrings([
+      ...evidenceBullets,
+      ...outboundLinkBullets,
+    ]).slice(0, 4),
+    manualVerificationNeeded: dedupeStrings([
+      ...(hasCustomerLinkEvidence
+        ? [
+            'Confirm the direct customer-link page still matches the public profile promise.',
+          ]
+        : []),
+      ...(hasLinkHubEvidence
+        ? [
+            'Confirm which public link-hub destination should become the main Sparkle Suite call to action.',
+          ]
+        : []),
+      ...(!hasCustomerLinkEvidence && !hasLinkHubEvidence
+        ? [
+            'Open the visible public customer path manually before the discovery call.',
+          ]
+        : []),
+    ]),
+    contradictions:
+      profileDirectLinks.length > 1
+        ? [
+            `Multiple public profiles point to different direct customer links: ${profileDirectLinks.join(', ')}.`,
+          ]
+        : [],
+    confidence: hasCustomerLinkEvidence ? 'high' : 'medium',
   }
 }
 
@@ -501,6 +572,10 @@ function parseScoutSynthesisJson(text: string) {
     discoveryAngle?: unknown
     summaryBullets?: unknown
     followUpQuestions?: unknown
+    evidenceBackedObservations?: unknown
+    manualVerificationNeeded?: unknown
+    contradictions?: unknown
+    confidence?: unknown
   }
 
   if (typeof parsed.discoveryAngle !== 'string') {
@@ -513,11 +588,44 @@ function parseScoutSynthesisJson(text: string) {
   const followUpQuestions = Array.isArray(parsed.followUpQuestions)
     ? parsed.followUpQuestions.filter((item): item is string => typeof item === 'string')
     : []
+  const evidenceBackedObservations = Array.isArray(
+    parsed.evidenceBackedObservations,
+  )
+    ? parsed.evidenceBackedObservations.filter(
+        (item): item is string => typeof item === 'string',
+      )
+    : []
+  const manualVerificationNeeded = Array.isArray(
+    parsed.manualVerificationNeeded,
+  )
+    ? parsed.manualVerificationNeeded.filter(
+        (item): item is string => typeof item === 'string',
+      )
+    : []
+  const contradictions = Array.isArray(parsed.contradictions)
+    ? parsed.contradictions.filter((item): item is string => typeof item === 'string')
+    : []
+  const confidence: PrelaunchScoutResearchSynthesis['confidence'] =
+    parsed.confidence === 'low' ||
+    parsed.confidence === 'medium' ||
+    parsed.confidence === 'high'
+      ? parsed.confidence
+      : 'medium'
 
   return {
     discoveryAngle: parsed.discoveryAngle.trim(),
     summaryBullets: dedupeStrings(summaryBullets).slice(0, 4),
     followUpQuestions: dedupeStrings(followUpQuestions).slice(0, 4),
+    evidenceBackedObservations: dedupeStrings(evidenceBackedObservations).slice(
+      0,
+      4,
+    ),
+    manualVerificationNeeded: dedupeStrings(manualVerificationNeeded).slice(
+      0,
+      4,
+    ),
+    contradictions: dedupeStrings(contradictions).slice(0, 4),
+    confidence,
   }
 }
 
@@ -556,13 +664,21 @@ Return JSON only with this shape:
 {
   "discoveryAngle": "string",
   "summaryBullets": ["string", "string"],
-  "followUpQuestions": ["string", "string"]
+  "followUpQuestions": ["string", "string"],
+  "evidenceBackedObservations": ["string", "string"],
+  "manualVerificationNeeded": ["string", "string"],
+  "contradictions": ["string"],
+  "confidence": "low | medium | high"
 }
 
 Rules:
 - Keep it plain English.
 - Do not overclaim research certainty.
 - Base the answer only on the intake facts and captured public evidence below.
+- Put only evidence-backed claims in evidenceBackedObservations.
+- Put unresolved checks or weak spots in manualVerificationNeeded.
+- Put conflicts between public sources in contradictions; return [] when none are visible.
+- Use confidence high only when public profile and direct customer-link evidence agree, medium when evidence is useful but incomplete, and low when evidence is thin.
 - Focus on what Louis should notice before a discovery call.
 - Each bullet or question should be one sentence.
 
@@ -628,6 +744,10 @@ export async function synthesizePrelaunchScoutEvidence(
       discoveryAngle: parsed.discoveryAngle,
       summaryBullets: parsed.summaryBullets,
       followUpQuestions: parsed.followUpQuestions,
+      evidenceBackedObservations: parsed.evidenceBackedObservations,
+      manualVerificationNeeded: parsed.manualVerificationNeeded,
+      contradictions: parsed.contradictions,
+      confidence: parsed.confidence,
     }
   } catch {
     return fallback
@@ -1451,6 +1571,7 @@ export async function runPrelaunchScoutForIntake({
         url,
       })),
       synthesis_status: researchSynthesis.status,
+      synthesis_confidence: researchSynthesis.confidence ?? null,
       reused_lesson_count: reusedLessons.length,
       reused_lesson_status: reusedLessonLookup.status,
       trigger_source: triggerSource,
