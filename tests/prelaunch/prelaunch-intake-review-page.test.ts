@@ -364,4 +364,66 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       'Which customer action breaks most often between the live and the replay window?',
     )
   })
+
+  it('renders reused Scout lessons with similarity reasons', () => {
+    const output: PrelaunchScoutOutput = {
+      briefTitle: 'Scout brief: Jamie Hart Jewelry',
+      summary:
+        'Jamie Hart Jewelry is a TikTok prospect. External social research is not connected yet.',
+      recommendedNextStep: 'operator_review_first',
+      researchTargets: [
+        { label: 'TikTok', value: '@jamieh', priority: 'high' },
+      ],
+      researchPlan: {
+        status: 'manual_research_required',
+        searchQueries: [],
+        evidenceChecklist: [],
+        blockers: [],
+        capturedEvidence: [],
+        sourceReports: [],
+      },
+      setupRisks: [],
+      suggestedQuestions: [],
+      reusedLessons: [
+        {
+          sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+          lesson:
+            'TikTok phone-only reps need a two-device plan before launch copy.',
+          similarityReasons: [
+            'same primary platform',
+            'same device setup',
+            'shared fit flag: phone_only_setup',
+          ],
+        },
+      ],
+      generatedBy: 'deterministic_scout_v1',
+      publicFunnel: {
+        shape: 'unclear',
+        summary:
+          'Scout does not have enough public link evidence to describe the customer path yet.',
+        primaryLinks: [],
+        concerns: [],
+      },
+      researchSynthesis: {
+        status: 'not_available',
+        discoveryAngle: null,
+        summaryBullets: [],
+        followUpQuestions: [],
+      },
+    }
+
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchScoutRecommendationResult, { output }),
+    )
+
+    expect(html).toContain('Reused Scout lessons')
+    expect(html).toContain(
+      'TikTok phone-only reps need a two-device plan before launch copy.',
+    )
+    expect(html).toContain('Why Scout reused this')
+    expect(html).toContain('same primary platform')
+    expect(html).toContain('same device setup')
+    expect(html).toContain('shared fit flag: phone_only_setup')
+    expect(html).toContain('scout:tiktok-intake:2026-05-09T18:30:00.000Z')
+  })
 })

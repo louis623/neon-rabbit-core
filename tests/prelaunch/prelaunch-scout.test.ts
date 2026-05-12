@@ -795,6 +795,136 @@ describe('prelaunch Scout', () => {
     )
   })
 
+  it('reuses lessons from similar prior Scout runs instead of unrelated runs', async () => {
+    const intakeSingleMock = vi.fn().mockResolvedValueOnce({
+      data: {
+        id: 'intake-1',
+        full_name: 'Jamie Hart',
+        email: 'jamie@example.com',
+        phone: '303-555-0123',
+        business_name: 'Jamie Hart Jewelry',
+        tiktok_handle: '@jamieh',
+        instagram_handle: '@jamiebling',
+        facebook_url: null,
+        team_name: 'Lindsey Team',
+        team_size: '6-20',
+        primary_platform: 'tiktok',
+        streaming_frequency: 'multiple_weekly',
+        current_setup: 'TikTok bio link and DMs',
+        setup_goal: 'Cleaner show-night hub',
+        device_setup: 'phone_only',
+        brand_vibe: 'polished and warm',
+        color_preferences: 'plum and pearl',
+        special_requests: 'Needs help with launch links',
+        intake_status: 'submitted',
+        prequalification_status: 'needs_review',
+        fit_flags: ['phone_only_setup'],
+        waitlist_id: 'waitlist-1',
+        scout_input_status: 'ready',
+        created_at: '2026-05-09T18:00:00Z',
+        updated_at: '2026-05-09T18:00:00Z',
+      },
+      error: null,
+    })
+    const intakeEqMock = vi.fn(() => ({ single: intakeSingleMock }))
+    const intakeSelectMock = vi.fn(() => ({ eq: intakeEqMock }))
+    const intakeUpdateEqMock = vi.fn().mockResolvedValueOnce({ error: null })
+    const intakeUpdateMock = vi.fn(() => ({ eq: intakeUpdateEqMock }))
+    const previousRunsLimitMock = vi.fn().mockResolvedValueOnce({
+      data: [
+        {
+          run_key: 'scout:facebook-intake:2026-05-09T18:00:00.000Z',
+          summary:
+            'Facebook-first reps often need a group-link cleanup before launch.',
+          output: null,
+          input: {
+            streamingContext: {
+              primaryPlatform: 'facebook',
+              deviceSetup: 'phone_and_computer',
+            },
+            teamContext: {
+              teamName: 'Other Team',
+            },
+            prequalification: {
+              fitFlags: [],
+            },
+          },
+        },
+        {
+          run_key: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+          summary:
+            'TikTok phone-only reps need a two-device plan before launch copy.',
+          output: null,
+          input: {
+            streamingContext: {
+              primaryPlatform: 'tiktok',
+              deviceSetup: 'phone_only',
+            },
+            teamContext: {
+              teamName: 'Lindsey Team',
+            },
+            prequalification: {
+              fitFlags: ['phone_only_setup'],
+            },
+          },
+        },
+      ],
+      error: null,
+    })
+    const previousRunsOrderMock = vi.fn(() => ({ limit: previousRunsLimitMock }))
+    const previousRunsNeqMock = vi.fn(() => ({ order: previousRunsOrderMock }))
+    const previousRunsStatusEqMock = vi.fn(() => ({ neq: previousRunsNeqMock }))
+    const previousRunsAgentEqMock = vi.fn(() => ({ eq: previousRunsStatusEqMock }))
+    const previousRunsSelectMock = vi.fn(() => ({ eq: previousRunsAgentEqMock }))
+    const agentRunsInsertMock = vi.fn().mockResolvedValueOnce({ error: null })
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+      text: async () => '',
+    } satisfies Partial<Response>)
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'agent_runs') {
+        return {
+          select: previousRunsSelectMock,
+          insert: agentRunsInsertMock,
+        }
+      }
+      return {
+        select: intakeSelectMock,
+        update: intakeUpdateMock,
+      }
+    })
+
+    const result = await runPrelaunchScoutForIntake({
+      admin: { from: fromMock } as never,
+      fetchImpl: fetchMock as typeof fetch,
+      intakeId: 'intake-1',
+      now: new Date('2026-05-09T19:00:00Z'),
+    })
+
+    expect(result.output.reusedLessons).toEqual([
+      {
+        sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+        lesson:
+          'TikTok phone-only reps need a two-device plan before launch copy.',
+        similarityReasons: [
+          'same primary platform',
+          'same device setup',
+          'same team',
+          'shared fit flag: phone_only_setup',
+        ],
+      },
+    ])
+    expect(agentRunsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          reused_lesson_count: 1,
+          reused_lesson_status: 'available',
+        }),
+      }),
+    )
+  })
+
   it('logs the Scout run and marks the intake Scout handoff generated', async () => {
     const intakeSingleMock = vi.fn().mockResolvedValueOnce({
       data: {
@@ -912,7 +1042,7 @@ describe('prelaunch Scout', () => {
       }),
     )
     expect(previousRunsSelectMock).toHaveBeenCalledWith(
-      'run_key, summary, output',
+      'run_key, summary, output, input',
     )
     expect(intakeUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({

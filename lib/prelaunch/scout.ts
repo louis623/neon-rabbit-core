@@ -34,6 +34,7 @@ export interface PrelaunchScoutResearchPlan {
 export interface PrelaunchScoutLesson {
   sourceRunKey: string
   lesson: string
+  similarityReasons?: string[]
 }
 
 export interface PrelaunchScoutCapturedEvidence {
@@ -683,16 +684,30 @@ interface PreviousScoutRunRow {
   output: {
     setupRisks?: unknown
   } | null
+  input: {
+    streamingContext?: {
+      primaryPlatform?: unknown
+      deviceSetup?: unknown
+    }
+    teamContext?: {
+      teamName?: unknown
+    }
+    prequalification?: {
+      fitFlags?: unknown
+    }
+  } | null
 }
 
 function normalizePreviousScoutLesson(
   row: PreviousScoutRunRow,
+  similarityReasons: string[] = [],
 ): PrelaunchScoutLesson | null {
   const summary = row.summary?.trim()
   if (summary) {
     return {
       sourceRunKey: row.run_key,
       lesson: summary,
+      ...(similarityReasons.length > 0 ? { similarityReasons } : {}),
     }
   }
 
@@ -705,17 +720,77 @@ function normalizePreviousScoutLesson(
   return {
     sourceRunKey: row.run_key,
     lesson: firstRisk,
+    ...(similarityReasons.length > 0 ? { similarityReasons } : {}),
   }
 }
 
-async function loadRecentScoutLessons(admin: AdminClient, intakeId: string) {
+function normalizeScoutComparableString(value: unknown) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : null
+}
+
+function buildScoutLessonSimilarityReasons(
+  submission: PrelaunchIntakeReviewSubmission,
+  row: PreviousScoutRunRow,
+) {
+  if (!row.input) return []
+
+  const reasons: string[] = []
+  const previousPrimaryPlatform = normalizeScoutComparableString(
+    row.input.streamingContext?.primaryPlatform,
+  )
+  const previousDeviceSetup = normalizeScoutComparableString(
+    row.input.streamingContext?.deviceSetup,
+  )
+  const previousTeamName = normalizeScoutComparableString(
+    row.input.teamContext?.teamName,
+  )
+  const previousFitFlags = Array.isArray(row.input.prequalification?.fitFlags)
+    ? row.input.prequalification.fitFlags.filter(
+        (flag): flag is string => typeof flag === 'string',
+      )
+    : []
+
+  if (
+    previousPrimaryPlatform &&
+    previousPrimaryPlatform === submission.primaryPlatform.toLowerCase()
+  ) {
+    reasons.push('same primary platform')
+  }
+  if (
+    previousDeviceSetup &&
+    previousDeviceSetup === submission.deviceSetup.toLowerCase()
+  ) {
+    reasons.push('same device setup')
+  }
+  if (
+    previousTeamName &&
+    submission.team.name &&
+    previousTeamName === submission.team.name.trim().toLowerCase()
+  ) {
+    reasons.push('same team')
+  }
+
+  const currentFitFlags = new Set(submission.fitFlags)
+  for (const flag of previousFitFlags) {
+    if (currentFitFlags.has(flag)) {
+      reasons.push(`shared fit flag: ${flag}`)
+    }
+  }
+
+  return reasons
+}
+
+async function loadRecentScoutLessons(
+  admin: AdminClient,
+  submission: PrelaunchIntakeReviewSubmission,
+) {
   try {
     const { data, error } = await admin
       .from('agent_runs')
-      .select('run_key, summary, output')
+      .select('run_key, summary, output, input')
       .eq('agent_name', 'Scout')
       .eq('status', 'completed')
-      .neq('intake_submission_id', intakeId)
+      .neq('intake_submission_id', submission.id)
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -723,8 +798,22 @@ async function loadRecentScoutLessons(admin: AdminClient, intakeId: string) {
 
     return {
       lessons: ((data ?? []) as PreviousScoutRunRow[])
-        .map(normalizePreviousScoutLesson)
-        .filter((lesson): lesson is PrelaunchScoutLesson => Boolean(lesson)),
+        .map((row) => {
+          const similarityReasons = buildScoutLessonSimilarityReasons(
+            submission,
+            row,
+          )
+
+          if (row.input && similarityReasons.length === 0) return null
+
+          return normalizePreviousScoutLesson(row, similarityReasons)
+        })
+        .filter((lesson): lesson is PrelaunchScoutLesson => Boolean(lesson))
+        .sort(
+          (first, second) =>
+            (second.similarityReasons?.length ?? 0) -
+            (first.similarityReasons?.length ?? 0),
+        ),
       status: 'available' as const,
     }
   } catch (error) {
@@ -1206,7 +1295,7 @@ export async function runPrelaunchScoutForIntake({
 }: RunPrelaunchScoutOptions) {
   const submission = await loadSubmissionById(admin, intakeId)
   const scoutInput = buildPrelaunchScoutInput(submission)
-  const reusedLessonLookup = await loadRecentScoutLessons(admin, intakeId)
+  const reusedLessonLookup = await loadRecentScoutLessons(admin, submission)
   const reusedLessons = reusedLessonLookup.lessons
   const { capturedEvidence, sourceReports } =
     await inspectPrelaunchScoutEvidenceSources(submission, {

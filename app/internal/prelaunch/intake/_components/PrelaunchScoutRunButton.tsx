@@ -22,6 +22,42 @@ export function PrelaunchScoutRecommendationResult({
         Next step: {output.recommendedNextStep.replaceAll('_', ' ')}
       </p>
 
+      {output.reusedLessons.length > 0 ? (
+        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+          <p className="text-xs font-semibold uppercase text-amber-700">
+            Reused Scout lessons
+          </p>
+          <ul className="mt-2 space-y-3 text-slate-700">
+            {output.reusedLessons.map((lesson) => (
+              <li
+                className="rounded-md border border-amber-100 bg-white p-3"
+                key={lesson.sourceRunKey}
+              >
+                <p className="text-sm leading-6 text-slate-800">
+                  {lesson.lesson}
+                </p>
+                {lesson.similarityReasons &&
+                lesson.similarityReasons.length > 0 ? (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold uppercase text-amber-700">
+                      Why Scout reused this
+                    </p>
+                    <ul className="mt-1 space-y-1 text-xs text-amber-900">
+                      {lesson.similarityReasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <p className="mt-2 text-xs font-semibold text-slate-500">
+                  {lesson.sourceRunKey}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
         <p className="text-xs font-semibold uppercase text-slate-500">
           Manual research handoff
