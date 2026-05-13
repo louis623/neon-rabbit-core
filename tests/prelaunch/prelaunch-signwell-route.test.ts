@@ -139,4 +139,27 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({ error: 'forbidden' })
   })
+
+  it('returns 401 for unauthenticated requests before agreement prep', async () => {
+    process.env.SIGNWELL_API_KEY = 'signwell_api_key'
+    process.env.SIGNWELL_API_BASE_URL = 'https://www.signwell.com/api/v1'
+    process.env.SIGNWELL_TEMPLATE_ID = 'template_123'
+    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+      new MockAuthError('not signed in'),
+    )
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/signwell/agreement', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'service_agreement',
+          intakeId: 'intake-1',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({ error: 'unauthenticated' })
+  })
 })

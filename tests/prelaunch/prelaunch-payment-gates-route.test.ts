@@ -136,4 +136,25 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({ error: 'forbidden' })
   })
+
+  it('returns 401 for unauthenticated requests before checkout prep', async () => {
+    process.env.STRIPE_PRICE_START_WORK_FEE = 'price_start_123'
+    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+      new MockAuthError('not signed in'),
+    )
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/payment-gates/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'start_work_fee',
+          intakeId: 'intake-1',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({ error: 'unauthenticated' })
+  })
 })

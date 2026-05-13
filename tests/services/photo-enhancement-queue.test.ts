@@ -258,4 +258,58 @@ describe('processReadyPhotoEnhancementQueue', () => {
       qaDecision: 'hold',
     })
   })
+
+  it('marks an item errored when the provider enhancement request fails', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(Buffer.from([1, 2, 3]), { status: 200 }))
+    getPhotoroomConfigMock.mockReturnValue({
+      provider: 'photoroom',
+      apiKey: 'phot_test_123',
+      baseUrl: 'https://image-api.photoroom.test',
+      timeoutMs: 8000,
+    })
+    getStagedOriginalPhotoSignedUrlMock.mockResolvedValueOnce(
+      'https://signed.example.com/original',
+    )
+    analyzeServerImageQualityMock.mockResolvedValueOnce(makeCleanAnalysis())
+    executePhotoEnhancementMock.mockRejectedValueOnce(
+      new Error('photoroom request failed with status 422'),
+    )
+
+    const result = await processReadyPhotoEnhancementQueue(
+      makeSupabaseRows([
+        {
+          id: 'design-1',
+          item_number: 'RG-100',
+          photo_pipeline_original_path: 'rep-1/source.png',
+          photo_pipeline_status: 'ready',
+        },
+      ]) as never,
+      { fetch: fetchMock },
+    )
+
+    expect(result.processedCount).toBe(1)
+    expect(result.errorCount).toBe(1)
+    expect(result.publishedCount).toBe(0)
+    expect(result.rejectedCount).toBe(0)
+    expect(result.items[0]).toMatchObject({
+      designId: 'design-1',
+      itemNumber: 'RG-100',
+      finalStatus: 'error',
+      qaDecision: null,
+      enhancedPhotoUrl: null,
+      errorMessage: 'photoroom request failed with status 422',
+    })
+    expect(publishApprovedPhotoMock).not.toHaveBeenCalled()
+    expect(updateCanonicalPhotoMock).not.toHaveBeenCalled()
+    expect(updatePhotoPipelineStateMock.mock.calls[0][2]).toMatchObject({
+      status: 'processing',
+      provider: 'photoroom',
+    })
+    expect(updatePhotoPipelineStateMock.mock.calls[1][2]).toMatchObject({
+      status: 'error',
+      provider: 'photoroom',
+    })
+  })
 })
