@@ -327,6 +327,14 @@ function normalizeScribeTranscriptSignals(value: unknown) {
   }
 }
 
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string'
+}
+
 function normalizeScribeBrief(value: unknown): PrelaunchScribeBrief | null {
   if (!value || typeof value !== 'object') return null
 
@@ -338,18 +346,62 @@ function normalizeScribeBrief(value: unknown): PrelaunchScribeBrief | null {
     record.status !== 'draft_ready' ||
     typeof record.sourceRunKey !== 'string' ||
     typeof record.summary !== 'string' ||
+    !record.meeting ||
+    typeof record.meeting !== 'object' ||
+    !isNullableString(record.meeting.title) ||
+    !isNullableString(record.meeting.startedAt) ||
+    !isStringArray(record.meeting.speakerNames) ||
     !record.profileDraft ||
     typeof record.profileDraft !== 'object' ||
-    !Array.isArray(record.operatorChecklist) ||
+    typeof record.profileDraft.intakeId !== 'string' ||
+    typeof record.profileDraft.ownerName !== 'string' ||
+    typeof record.profileDraft.businessName !== 'string' ||
+    !isStringArray(record.profileDraft.confirmedDecisions) ||
+    !isStringArray(record.profileDraft.styleAndSetupSignals) ||
+    !isStringArray(record.profileDraft.actionItems) ||
+    !isStringArray(record.profileDraft.openQuestions) ||
+    !isStringArray(record.operatorChecklist) ||
     !record.provenance ||
-    typeof record.provenance !== 'object'
+    typeof record.provenance !== 'object' ||
+    record.provenance.meetingProvider !== 'google_meet' ||
+    record.provenance.transcriptionProvider !== 'gemini' ||
+    typeof record.provenance.driveFileId !== 'string' ||
+    !isNullableString(record.provenance.driveFileUrl) ||
+    !isNullableString(record.provenance.meetUrl) ||
+    typeof record.provenance.transcriptCharCount !== 'number' ||
+    !Number.isFinite(record.provenance.transcriptCharCount)
   ) {
     return null
   }
 
   return {
-    ...record,
+    status: record.status,
+    sourceRunKey: record.sourceRunKey,
+    summary: record.summary,
+    meeting: {
+      title: record.meeting.title,
+      startedAt: record.meeting.startedAt,
+      speakerNames: record.meeting.speakerNames,
+    },
+    profileDraft: {
+      intakeId: record.profileDraft.intakeId,
+      ownerName: record.profileDraft.ownerName,
+      businessName: record.profileDraft.businessName,
+      confirmedDecisions: record.profileDraft.confirmedDecisions,
+      styleAndSetupSignals: record.profileDraft.styleAndSetupSignals,
+      actionItems: record.profileDraft.actionItems,
+      openQuestions: record.profileDraft.openQuestions,
+    },
+    operatorChecklist: record.operatorChecklist,
     manualReviewWarnings: normalizeStringArray(record.manualReviewWarnings),
+    provenance: {
+      meetingProvider: record.provenance.meetingProvider,
+      transcriptionProvider: record.provenance.transcriptionProvider,
+      driveFileId: record.provenance.driveFileId,
+      driveFileUrl: record.provenance.driveFileUrl,
+      meetUrl: record.provenance.meetUrl,
+      transcriptCharCount: record.provenance.transcriptCharCount,
+    },
   }
 }
 

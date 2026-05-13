@@ -590,6 +590,147 @@ describe('prelaunch intake review helpers', () => {
     })
   })
 
+  it('drops malformed persisted Scribe briefs while preserving the transcript run', async () => {
+    const intakeOrderMock = async () => ({
+      data: [
+        {
+          id: 'intake-1',
+          full_name: 'Jamie Hart',
+          email: 'jamie@example.com',
+          phone: '303-555-0123',
+          business_name: 'Jamie Hart Jewelry',
+          tiktok_handle: '@jamieh',
+          instagram_handle: null,
+          facebook_url: null,
+          team_name: null,
+          team_size: '1-5',
+          primary_platform: 'tiktok',
+          streaming_frequency: 'weekly',
+          current_setup: 'Bio link',
+          setup_goal: 'Cleaner hub',
+          device_setup: 'phone_and_computer',
+          brand_vibe: null,
+          color_preferences: null,
+          special_requests: null,
+          intake_status: 'submitted',
+          prequalification_status: 'qualified',
+          fit_flags: [],
+          waitlist_id: 'waitlist-1',
+          scout_input_status: 'ready',
+          handoff_status: 'meeting_ready',
+          created_at: '2026-05-09T18:00:00Z',
+          updated_at: '2026-05-09T18:00:00Z',
+        },
+      ],
+      error: null,
+    })
+    const scoutRunsLimitMock = async () => ({ data: [], error: null })
+    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
+    const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
+    const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
+    const scribeRunsLimitMock = async () => ({
+      data: [
+        {
+          intake_submission_id: 'intake-1',
+          run_key: 'scribe_hook:intake-1:drive-file-123',
+          status: 'queued',
+          trigger_source: 'google_meet_gemini_transcript',
+          model: 'gemini_transcript_hook_v1',
+          summary: 'Gemini transcript captured for Jamie Hart Jewelry.',
+          error_message: null,
+          created_at: '2026-05-13T17:00:00Z',
+          metadata: {
+            drive_file_id: 'drive-file-123',
+            drive_file_url:
+              'https://docs.google.com/document/d/drive-file-123/edit',
+            meet_url: null,
+            meeting_title: null,
+            transcript_char_count: 248,
+            speaker_count: 2,
+            decision_count: 1,
+            action_item_count: 1,
+            client_preference_count: 1,
+            scribe_status: 'queued',
+          },
+          output: {
+            status: 'ready_for_scribe',
+            transcript: {
+              speakerNames: ['Louis', 'Jamie', 42],
+              preview: 'Louis: Key decision: keep the velvet direction.',
+            },
+            signals: {
+              decisions: ['keep the velvet direction.', 42],
+              clientPreferences: ['plum and pearl'],
+              actionItems: ['review profile draft'],
+              openQuestions: [],
+            },
+            scribeBrief: {
+              status: 'draft_ready',
+              sourceRunKey: 'scribe_hook:intake-1:drive-file-123',
+              summary: 'Malformed persisted brief',
+              profileDraft: {
+                intakeId: 'intake-1',
+                ownerName: 'Jamie Hart',
+                businessName: 'Jamie Hart Jewelry',
+                confirmedDecisions: ['keep the velvet direction.', 42],
+                styleAndSetupSignals: ['plum and pearl'],
+                actionItems: ['review profile draft'],
+                openQuestions: [],
+              },
+              operatorChecklist: ['Review fields', 42],
+              manualReviewWarnings: ['warning'],
+              provenance: {
+                meetingProvider: 'google_meet',
+                transcriptionProvider: 'gemini',
+                driveFileId: 'drive-file-123',
+                transcriptCharCount: 248,
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    })
+    const scribeRunsOrderMock = vi.fn(() => ({ limit: scribeRunsLimitMock }))
+    const scribeRunsInMock = vi.fn(() => ({ order: scribeRunsOrderMock }))
+    const scribeRunsKindEqMock = vi.fn(() => ({ in: scribeRunsInMock }))
+    const scribeRunsNameEqMock = vi.fn(() => ({ eq: scribeRunsKindEqMock }))
+    const agentRunsSelectMock = vi
+      .fn()
+      .mockReturnValueOnce({ eq: scoutRunsEqMock })
+      .mockReturnValueOnce({ eq: scribeRunsNameEqMock })
+    const intakeLimitMock = vi.fn(() => ({ order: intakeOrderMock }))
+    const intakeSelectMock = vi.fn(() => ({ limit: intakeLimitMock }))
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'agent_runs') {
+        return { select: agentRunsSelectMock }
+      }
+
+      return { select: intakeSelectMock }
+    })
+
+    const submissions = await loadPrelaunchIntakeReviewSubmissions(
+      { from: fromMock } as never,
+      50,
+    )
+
+    const run = submissions[0]?.latestScribeTranscriptRun
+    expect(run).toEqual(
+      expect.objectContaining({
+        runKey: 'scribe_hook:intake-1:drive-file-123',
+        status: 'queued',
+        speakerNames: ['Louis', 'Jamie'],
+        signals: {
+          decisions: ['keep the velvet direction.'],
+          clientPreferences: ['plum and pearl'],
+          actionItems: ['review profile draft'],
+          openQuestions: [],
+        },
+      }),
+    )
+    expect(run?.scribeBrief).toBeUndefined()
+  })
+
   it('keeps the latest failed Scout run error visible for review', async () => {
     const intakeOrderMock = async () => ({
       data: [
