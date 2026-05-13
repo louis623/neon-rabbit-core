@@ -41,11 +41,26 @@ describe('Sparkle Suite launch polish', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('no-store')
-    await expect(response.json()).resolves.toEqual({
-      ok: true,
-      service: 'sparkle-suite-prelaunch',
-      status: 'ready',
-    })
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        ok: true,
+        service: 'sparkle-suite-prelaunch',
+        status: 'ready',
+        readiness: expect.objectContaining({
+          liveActionsEnabled: false,
+          qrAssets: expect.objectContaining({
+            approvedFlyerPath:
+              '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+          }),
+          gates: expect.arrayContaining([
+            expect.objectContaining({
+              key: 'agreement',
+              displayStatus: 'SignWell not configured',
+            }),
+          ]),
+        }),
+      }),
+    )
   })
 
   it('sets conservative launch security headers globally', async () => {
