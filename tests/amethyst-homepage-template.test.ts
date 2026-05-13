@@ -55,6 +55,25 @@ describe('Amethyst homepage template data wiring', () => {
     expect(html).toContain('<script src="/api/amethyst/homepage-template"></script>')
   })
 
+  it('ships crawl and sharing metadata with the locked homepage export', () => {
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Homepage.html'),
+      'utf8',
+    )
+
+    expect(html).toContain(
+      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha." />',
+    )
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Homepage.html" />',
+    )
+    expect(html).toContain('<meta name="robots" content="index,follow" />')
+    expect(html).toContain(
+      '<meta property="og:title" content="Sparkle by Sasha - Live jewelry reveals" />',
+    )
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
+  })
+
   it('wires the locked homepage export to the Trade and Join pages', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),

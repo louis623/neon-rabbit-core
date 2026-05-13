@@ -65,6 +65,25 @@ describe('Amethyst join page template data wiring', () => {
     expect(html).toContain('<script src="/api/amethyst/join-template"></script>')
   })
 
+  it('ships crawl and sharing metadata with the locked join export', () => {
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Join.html'),
+      'utf8',
+    )
+
+    expect(html).toContain(
+      '<meta name="description" content="Learn how to join Sparkle by Sasha and build a Bomb Party business with practical support from an active team." />',
+    )
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Join.html" />',
+    )
+    expect(html).toContain('<meta name="robots" content="index,follow" />')
+    expect(html).toContain(
+      '<meta property="og:title" content="Sparkle by Sasha - Join the Team" />',
+    )
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
+  })
+
   it('uses the shared top navigation pattern on the locked join-page export', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/join.jsx'),

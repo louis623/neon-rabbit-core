@@ -109,6 +109,25 @@ describe('Amethyst trade page template wiring', () => {
     expect(html).toContain('<script src="/api/amethyst/trade-template"></script>')
   })
 
+  it('ships crawl and sharing metadata with the locked trade export', () => {
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Trade.html'),
+      'utf8',
+    )
+
+    expect(html).toContain(
+      '<meta name="description" content="Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers." />',
+    )
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',
+    )
+    expect(html).toContain('<meta name="robots" content="index,follow" />')
+    expect(html).toContain(
+      '<meta property="og:title" content="Sparkle by Sasha - Trade Board" />',
+    )
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
+  })
+
   it('uses shared route wiring, real listing payloads, and filter wiring on the locked trade export', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
