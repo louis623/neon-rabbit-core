@@ -41,8 +41,41 @@ const submission: PrelaunchIntakeReviewSubmission = {
   updatedAt: '2026-05-09T18:00:00Z',
 }
 
+const gateEnvKeys = [
+  'SIGNWELL_API_KEY',
+  'SIGNWELL_API_BASE_URL',
+  'SIGNWELL_TEMPLATE_ID',
+  'STRIPE_PRICE_START_WORK_FEE',
+  'STRIPE_PRICE_LAUNCH_FEE',
+] as const
+
+function snapshotGateEnv() {
+  return Object.fromEntries(
+    gateEnvKeys.map((key) => [key, process.env[key]]),
+  ) as Record<(typeof gateEnvKeys)[number], string | undefined>
+}
+
+function restoreGateEnv(snapshot: ReturnType<typeof snapshotGateEnv>) {
+  for (const key of gateEnvKeys) {
+    const value = snapshot[key]
+
+    if (value == null) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
+  }
+}
+
 describe('PrelaunchIntakeReviewPageContent', () => {
   it('renders operator summary counts and intake cards', () => {
+    const originalEnv = snapshotGateEnv()
+    delete process.env.SIGNWELL_API_KEY
+    delete process.env.SIGNWELL_API_BASE_URL
+    delete process.env.SIGNWELL_TEMPLATE_ID
+    delete process.env.STRIPE_PRICE_START_WORK_FEE
+    delete process.env.STRIPE_PRICE_LAUNCH_FEE
+
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
         submissions: [
@@ -63,6 +96,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       }),
     )
 
+    restoreGateEnv(originalEnv)
+
     expect(html).toContain('Prelaunch intake review')
     expect(html).toContain('3 total')
     expect(html).toContain('2 needs review')
@@ -74,6 +109,15 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('jamie@example.com')
     expect(html).toContain('phone_only_setup')
     expect(html).toContain('Waitlist linked')
+    expect(html).toContain('Gate readiness')
+    expect(html).toContain('Agreement gate')
+    expect(html).toContain('SignWell not configured')
+    expect(html).toContain('Start work fee')
+    expect(html).toContain('Stripe price missing')
+    expect(html).toContain('Launch fee')
+    expect(html).toContain('No live send or payment action is enabled here yet.')
+    expect(html).not.toContain('Send agreement')
+    expect(html).not.toContain('Collect payment')
     expect(html).toContain('Run Scout')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
   })

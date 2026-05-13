@@ -2,6 +2,7 @@ import {
   buildPrelaunchScoutInput,
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
+import { getPrelaunchGateReadiness } from '@/lib/prelaunch/gate-readiness'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
@@ -32,6 +33,14 @@ function formatCount(
   return `${count} ${count === 1 ? singular : plural}`
 }
 
+function gateStatusClass(status: string) {
+  if (status === 'blocked') {
+    return 'border-amber-200 bg-amber-50 text-amber-900'
+  }
+
+  return 'border-slate-200 bg-slate-100 text-slate-700'
+}
+
 export function PrelaunchIntakeReviewPageContent({
   submissions,
 }: PrelaunchIntakeReviewPageContentProps) {
@@ -48,6 +57,7 @@ export function PrelaunchIntakeReviewPageContent({
   const meetingReady = submissions.filter(
     (submission) => submission.handoffStatus === 'meeting_ready',
   ).length
+  const gateReadiness = getPrelaunchGateReadiness()
 
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
@@ -217,6 +227,37 @@ export function PrelaunchIntakeReviewPageContent({
                     </span>
                   )}
                 </div>
+
+                <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-950">
+                        Gate readiness
+                      </h3>
+                      <p className="mt-1 leading-5 text-slate-600">
+                        No live send or payment action is enabled here yet.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                    {gateReadiness.map((gate) => (
+                      <div
+                        className={`rounded-md border p-3 ${gateStatusClass(
+                          gate.status,
+                        )}`}
+                        key={gate.key}
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                          {gate.label}
+                        </p>
+                        <p className="mt-2 text-sm font-semibold">
+                          {gate.displayStatus}
+                        </p>
+                        <p className="mt-1 text-xs leading-5">{gate.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
 
                 {submission.latestScoutRun ? (
                   <section className="mt-5 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm">
