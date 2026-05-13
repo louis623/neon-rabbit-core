@@ -49,7 +49,7 @@ Not allowed in this plan:
 - Modify: `app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent.tsx`
 - Modify: `tests/prelaunch/prelaunch-intake-review-page.test.ts`
 
-- [ ] **Step 1: Write the failing helper test**
+- [x] **Step 1: Write the failing helper test**
 
 Create tests for:
 - phone-only intake requires sample-photo screening and two-device workflow confirmation
@@ -64,7 +64,7 @@ npm exec vitest run tests/prelaunch/prelaunch-camera-quality-prep.test.ts
 
 Expected: FAIL because `@/lib/prelaunch/camera-quality-prep` does not exist.
 
-- [ ] **Step 2: Write the failing UI test**
+- [x] **Step 2: Write the failing UI test**
 
 Add an assertion to `tests/prelaunch/prelaunch-intake-review-page.test.ts` that the internal review card renders:
 - `Camera quality prep`
@@ -85,7 +85,7 @@ npm exec vitest run tests/prelaunch/prelaunch-intake-review-page.test.ts
 
 Expected: FAIL because the panel is not rendered yet.
 
-- [ ] **Step 3: Implement the helper**
+- [x] **Step 3: Implement the helper**
 
 Create `buildCameraQualityPrep(submission)` returning:
 - `status: 'sample_photo_required'`
@@ -98,11 +98,11 @@ Use existing `PrelaunchIntakeReviewSubmission` fields:
 - `currentSetup`
 - `setupGoal`
 
-- [ ] **Step 4: Render the panel**
+- [x] **Step 4: Render the panel**
 
 Render the helper output on each internal intake card near the existing Photography kit prep block.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run:
 ```powershell
@@ -130,7 +130,7 @@ git commit -m "feat: add camera quality prep guidance"
 - Modify: `app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent.tsx`
 - Modify: `tests/prelaunch/prelaunch-intake-review-page.test.ts`
 
-- [ ] **Step 1: Write failing manifest tests**
+- [x] **Step 1: Write failing manifest tests**
 
 Add tests asserting the approved QR manifest includes:
 - `displayTarget: 'www.yoursparklesuite.com/prelaunch#waitlist'`
@@ -144,15 +144,15 @@ npm exec vitest run tests/prelaunch/prelaunch-qr-assets.test.ts
 
 Expected: FAIL because the manifest does not include these fields.
 
-- [ ] **Step 2: Implement manifest fields**
+- [x] **Step 2: Implement manifest fields**
 
 Extend `getApprovedPrelaunchQrManifest()` only. Do not add QR image generation, dependencies, external provider URLs, or network calls.
 
-- [ ] **Step 3: Render QR readiness steps**
+- [x] **Step 3: Render QR readiness steps**
 
 Update the existing Approved QR flyer panel to show scan verification steps and blocked actions.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run the focused QR tests, full prelaunch suite, TypeScript, diff check, and build.
 
@@ -172,7 +172,7 @@ git commit -m "feat: add QR readiness verification"
 - Modify: `app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent.tsx`
 - Modify: `tests/prelaunch/prelaunch-intake-review-page.test.ts`
 
-- [ ] **Step 1: Write failing helper tests**
+- [x] **Step 1: Write failing helper tests**
 
 Cover:
 - no transcript means transcript handoff needed when intake is `meeting_ready`
@@ -187,7 +187,7 @@ npm exec vitest run tests/prelaunch/prelaunch-scribe-readiness.test.ts
 
 Expected: FAIL because `@/lib/prelaunch/scribe-readiness` does not exist.
 
-- [ ] **Step 2: Implement helper**
+- [x] **Step 2: Implement helper**
 
 Create `buildScribeReadiness(submission)` returning:
 - `label`
@@ -197,11 +197,11 @@ Create `buildScribeReadiness(submission)` returning:
 
 Guardrails must say no autonomous profile writeback, no legal/payment approval, and no live SignWell send.
 
-- [ ] **Step 3: Render helper output**
+- [x] **Step 3: Render helper output**
 
 Render a compact Scribe handoff completeness block near the existing Scribe run details.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run focused Scribe tests, full prelaunch suite, TypeScript, diff check, and build.
 
@@ -231,3 +231,28 @@ Update Neon Rabbit HQ and Open Brain with:
 - tests run
 - explicit confirmation that parked Phase 8 lanes were not touched
 - remaining Phase 8 blockers that require Louis/provider decisions
+
+## Completion Notes
+
+Completed low-attention Phase 8 slices on 2026-05-13:
+
+- `47ecf12` - Camera quality prep guidance.
+- `2d60c18` - QR readiness verification.
+- `e336a67` - Broadened Scribe gate guardrails.
+- `15b6e05` - Camera screening decisions.
+- `21ccb18` - Hardened Scribe brief normalization.
+- `ba43245` - Surfaced Scribe open questions before brief generation.
+- `5230e30` - Scribe handoff readiness helper and operator panel.
+- `5147064` - Manual transcript route error regression coverage.
+
+Remaining Phase 8 work that is not currently safe to keep building without Louis/provider/design review:
+
+- 8.1/8.2: public launch/waitlist completion depends on acceptance and real inbox confirmation.
+- 8.4/8.7/8.11/8.13: design sessions assigned to Claude/Opus-style planning before build.
+- 8.6: Google OAuth/Drive transcript acquisition remains parked behind Louis review.
+- 8.9/8.10/8.16: live SignWell/payment/webhook work remains parked behind legal/payment/migration verification.
+- 8.12/8.14: Wordsmith/Builder builds depend on upstream design/session boundaries and launch-gate decisions.
+- 8.17: dynamic QR/provider generation intentionally not built; approved static flyer remains the safe path.
+- 8.18/8.19: fulfillment/hardware automation remains operator-only until kit/vendor/shipping decisions are made.
+- 8.20: branding controls depend on the design-kit audit against the approved public site.
+- 8.21: provisioning architecture is still a larger design boundary, not a low-attention code slice.
