@@ -448,6 +448,40 @@ describe('prelaunch intake review helpers', () => {
                 'Confirm the Drive transcript belongs to this intake before running Scribe.',
               ],
             },
+            scribeBrief: {
+              status: 'draft_ready',
+              sourceRunKey: 'scribe_hook:intake-1:drive-file-123',
+              summary:
+                'Scribe draft for Jamie Hart Jewelry is ready for operator review: 1 decision, 1 client preference, 1 action item, and 0 open questions captured.',
+              meeting: {
+                title: 'Sparkle Suite discovery call - Jamie Hart',
+                startedAt: '2026-05-13T16:00:00Z',
+                speakerNames: ['Louis', 'Jamie'],
+              },
+              profileDraft: {
+                intakeId: 'intake-1',
+                ownerName: 'Jamie Hart',
+                businessName: 'Jamie Hart Jewelry',
+                confirmedDecisions: ['keep the velvet direction.'],
+                styleAndSetupSignals: ['I prefer plum and pearl.'],
+                actionItems: ['send the SignWell agreement.'],
+                openQuestions: [],
+              },
+              operatorChecklist: [
+                'Confirm the Drive transcript belongs to this intake before running Scribe.',
+                'Review all Scribe draft fields before copying them into onboarding or Builder work.',
+                'Do not treat this draft as legal, payment, or launch approval.',
+              ],
+              provenance: {
+                meetingProvider: 'google_meet',
+                transcriptionProvider: 'gemini',
+                driveFileId: 'drive-file-123',
+                driveFileUrl:
+                  'https://docs.google.com/document/d/drive-file-123/edit',
+                meetUrl: 'https://meet.google.com/abc-defg-hij',
+                transcriptCharCount: 248,
+              },
+            },
           },
         },
       ],
@@ -512,6 +546,40 @@ describe('prelaunch intake review helpers', () => {
         clientPreferences: ['I prefer plum and pearl.'],
         actionItems: ['send the SignWell agreement.'],
         openQuestions: [],
+      },
+      scribeBrief: {
+        status: 'draft_ready',
+        sourceRunKey: 'scribe_hook:intake-1:drive-file-123',
+        summary:
+          'Scribe draft for Jamie Hart Jewelry is ready for operator review: 1 decision, 1 client preference, 1 action item, and 0 open questions captured.',
+        meeting: {
+          title: 'Sparkle Suite discovery call - Jamie Hart',
+          startedAt: '2026-05-13T16:00:00Z',
+          speakerNames: ['Louis', 'Jamie'],
+        },
+        profileDraft: {
+          intakeId: 'intake-1',
+          ownerName: 'Jamie Hart',
+          businessName: 'Jamie Hart Jewelry',
+          confirmedDecisions: ['keep the velvet direction.'],
+          styleAndSetupSignals: ['I prefer plum and pearl.'],
+          actionItems: ['send the SignWell agreement.'],
+          openQuestions: [],
+        },
+        operatorChecklist: [
+          'Confirm the Drive transcript belongs to this intake before running Scribe.',
+          'Review all Scribe draft fields before copying them into onboarding or Builder work.',
+          'Do not treat this draft as legal, payment, or launch approval.',
+        ],
+        provenance: {
+          meetingProvider: 'google_meet',
+          transcriptionProvider: 'gemini',
+          driveFileId: 'drive-file-123',
+          driveFileUrl:
+            'https://docs.google.com/document/d/drive-file-123/edit',
+          meetUrl: 'https://meet.google.com/abc-defg-hij',
+          transcriptCharCount: 248,
+        },
       },
     })
   })

@@ -1,4 +1,8 @@
 import { ServiceError } from '@/lib/services/errors'
+import {
+  buildPrelaunchScribeBrief,
+  type PrelaunchScribeBrief,
+} from '@/lib/prelaunch/scribe'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -58,6 +62,7 @@ export interface PrelaunchMeetTranscriptHookOutput {
     status: 'queued'
     requiredManualChecks: string[]
   }
+  scribeBrief?: PrelaunchScribeBrief
 }
 
 const TRANSCRIPT_PREVIEW_CHARS = 500
@@ -286,7 +291,7 @@ export async function recordPrelaunchMeetTranscript({
   const normalizedMeetUrl = normalizeOptionalText(meetUrl)
   const normalizedMeetingTitle = normalizeOptionalText(meetingTitle)
   const normalizedMeetingStartedAt = normalizeOptionalText(meetingStartedAt)
-  const output = buildTranscriptHookOutput({
+  const transcriptHookOutput = buildTranscriptHookOutput({
     driveFileId: normalizedDriveFileId,
     driveFileUrl: normalizedDriveFileUrl,
     meetUrl: normalizedMeetUrl,
@@ -294,6 +299,18 @@ export async function recordPrelaunchMeetTranscript({
     meetingStartedAt: normalizedMeetingStartedAt,
     transcriptText: normalizedTranscriptText,
   })
+  const output = {
+    ...transcriptHookOutput,
+    scribeBrief: buildPrelaunchScribeBrief({
+      intake: {
+        id: intake.id,
+        name: intake.full_name,
+        businessName: intake.business_name,
+      },
+      transcriptRunKey: runKey,
+      transcriptHookOutput,
+    }),
+  }
 
   const { error: runError } = await admin.from('agent_runs').upsert(
     {

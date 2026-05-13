@@ -61,6 +61,33 @@ describe('prelaunch Meet transcript hook', () => {
     expect(result.output.signals.actionItems).toContain(
       'send the SignWell agreement after pricing is confirmed.',
     )
+    expect(result.output.scribeBrief).toEqual(
+      expect.objectContaining({
+        status: 'draft_ready',
+        sourceRunKey: 'scribe_hook:intake-1:drive-file-123',
+        summary:
+          'Scribe draft for Jamie Hart Jewelry is ready for operator review: 1 decision, 2 client preferences, 1 action item, and 0 open questions captured.',
+        profileDraft: expect.objectContaining({
+          intakeId: 'intake-1',
+          ownerName: 'Jamie Hart',
+          businessName: 'Jamie Hart Jewelry',
+          confirmedDecisions: [
+            'keep the homepage in the velvet concierge direction.',
+          ],
+          styleAndSetupSignals: [
+            'I prefer plum and pearl, and I need help with TikTok replay links.',
+            'My team name is Lindsey Bomb Party.',
+          ],
+          actionItems: [
+            'send the SignWell agreement after pricing is confirmed.',
+          ],
+        }),
+        operatorChecklist: expect.arrayContaining([
+          'Review all Scribe draft fields before copying them into onboarding or Builder work.',
+          'Do not treat this draft as legal, payment, or launch approval.',
+        ]),
+      }),
+    )
     expect(agentRunsUpsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         run_key: 'scribe_hook:intake-1:drive-file-123',

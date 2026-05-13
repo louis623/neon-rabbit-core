@@ -5,6 +5,7 @@ import {
   type PrelaunchScribeTranscriptRunReviewSummary,
   type PrelaunchIntakeReviewSubmission,
 } from './intake-review'
+import type { PrelaunchScribeBrief } from '@/lib/prelaunch/scribe'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -87,6 +88,7 @@ interface PrelaunchScribeTranscriptRunReviewRow {
     status?: unknown
     transcript?: unknown
     signals?: unknown
+    scribeBrief?: unknown
   } | null
 }
 
@@ -325,6 +327,27 @@ function normalizeScribeTranscriptSignals(value: unknown) {
   }
 }
 
+function normalizeScribeBrief(value: unknown): PrelaunchScribeBrief | null {
+  if (!value || typeof value !== 'object') return null
+
+  const record = value as PrelaunchScribeBrief
+
+  if (
+    record.status !== 'draft_ready' ||
+    typeof record.sourceRunKey !== 'string' ||
+    typeof record.summary !== 'string' ||
+    !record.profileDraft ||
+    typeof record.profileDraft !== 'object' ||
+    !Array.isArray(record.operatorChecklist) ||
+    !record.provenance ||
+    typeof record.provenance !== 'object'
+  ) {
+    return null
+  }
+
+  return record
+}
+
 function normalizeScribeTranscriptRunReviewRow(
   row: PrelaunchScribeTranscriptRunReviewRow,
 ): PrelaunchScribeTranscriptRunReviewSummary {
@@ -335,6 +358,7 @@ function normalizeScribeTranscriptRunReviewRow(
           preview?: unknown
         })
       : null
+  const scribeBrief = normalizeScribeBrief(row.output?.scribeBrief)
 
   return {
     runKey: row.run_key,
@@ -362,6 +386,7 @@ function normalizeScribeTranscriptRunReviewRow(
     speakerNames: normalizeStringArray(transcript?.speakerNames),
     preview: normalizeNullableString(transcript?.preview),
     signals: normalizeScribeTranscriptSignals(row.output?.signals),
+    ...(scribeBrief ? { scribeBrief } : {}),
   }
 }
 

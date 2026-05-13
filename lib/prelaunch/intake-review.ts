@@ -1,3 +1,5 @@
+import type { PrelaunchScribeBrief } from '@/lib/prelaunch/scribe'
+
 export interface PrelaunchIntakeReviewRow {
   id: string
   full_name: string
@@ -73,6 +75,7 @@ export interface PrelaunchScribeTranscriptRunReviewSummary {
     actionItems: string[]
     openQuestions: string[]
   }
+  scribeBrief?: PrelaunchScribeBrief
 }
 
 export interface PrelaunchScoutRunEvidenceSourceStatus {

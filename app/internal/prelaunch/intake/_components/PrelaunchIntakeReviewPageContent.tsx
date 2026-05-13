@@ -42,6 +42,27 @@ function gateStatusClass(status: string) {
   return 'border-slate-200 bg-slate-100 text-slate-700'
 }
 
+function BriefList({
+  items,
+  title,
+}: {
+  items: string[]
+  title: string
+}) {
+  if (items.length === 0) return null
+
+  return (
+    <div className="mt-3">
+      <p className="text-xs font-semibold uppercase text-slate-500">{title}</p>
+      <ul className="mt-2 space-y-1 text-xs text-slate-700">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function PrelaunchIntakeReviewPageContent({
   submissions,
 }: PrelaunchIntakeReviewPageContentProps) {
@@ -732,6 +753,61 @@ export function PrelaunchIntakeReviewPageContent({
                             </ul>
                           </div>
                         ) : null}
+                      </div>
+                    ) : null}
+                    {submission.latestScribeTranscriptRun.scribeBrief ? (
+                      <div className="mt-3 rounded-md border border-violet-100 bg-white p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">
+                          Scribe follow-up brief
+                        </p>
+                        <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                          {submission.latestScribeTranscriptRun.scribeBrief.summary}
+                        </p>
+                        <div className="mt-3 rounded-md bg-violet-50 p-3">
+                          <p className="text-xs font-semibold uppercase text-violet-700">
+                            Profile draft
+                          </p>
+                          <BriefList
+                            items={
+                              submission.latestScribeTranscriptRun.scribeBrief
+                                .profileDraft.confirmedDecisions
+                            }
+                            title="Confirmed decisions"
+                          />
+                          <BriefList
+                            items={
+                              submission.latestScribeTranscriptRun.scribeBrief
+                                .profileDraft.styleAndSetupSignals
+                            }
+                            title="Style and setup signals"
+                          />
+                          <BriefList
+                            items={
+                              submission.latestScribeTranscriptRun.scribeBrief
+                                .profileDraft.actionItems
+                            }
+                            title="Action items"
+                          />
+                          <BriefList
+                            items={
+                              submission.latestScribeTranscriptRun.scribeBrief
+                                .profileDraft.openQuestions
+                            }
+                            title="Open questions"
+                          />
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-xs font-semibold uppercase text-slate-500">
+                            Operator review checks
+                          </p>
+                          <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                            {submission.latestScribeTranscriptRun.scribeBrief.operatorChecklist.map(
+                              (item) => (
+                                <li key={item}>{item}</li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
                       </div>
                     ) : null}
                     <div className="mt-3 flex flex-col gap-1 text-xs font-semibold text-slate-500">
