@@ -45,6 +45,35 @@ export interface PrelaunchScoutRunReviewSummary {
   reusedLessons?: PrelaunchScoutRunReusedLesson[]
 }
 
+export interface PrelaunchScribeTranscriptRunReviewSummary {
+  runKey: string
+  status: string
+  triggerSource: string
+  model: string | null
+  summary: string | null
+  errorMessage: string | null
+  createdAt: string
+  driveFileId: string | null
+  driveFileUrl: string | null
+  meetUrl: string | null
+  meetingTitle: string | null
+  transcriptCharCount: number | null
+  speakerCount: number | null
+  decisionCount: number | null
+  actionItemCount: number | null
+  clientPreferenceCount: number | null
+  scribeStatus: string | null
+  statusForScribe: string | null
+  speakerNames: string[]
+  preview: string | null
+  signals: {
+    decisions: string[]
+    clientPreferences: string[]
+    actionItems: string[]
+    openQuestions: string[]
+  }
+}
+
 export interface PrelaunchScoutRunEvidenceSourceStatus {
   label: string
   status: string
@@ -104,6 +133,7 @@ export interface PrelaunchIntakeReviewSubmission {
   waitlistId: string | null
   scoutInputStatus: string
   latestScoutRun: PrelaunchScoutRunReviewSummary | null
+  latestScribeTranscriptRun?: PrelaunchScribeTranscriptRunReviewSummary | null
   createdAt: string
   updatedAt: string
 }

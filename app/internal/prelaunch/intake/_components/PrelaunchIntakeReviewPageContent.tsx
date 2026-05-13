@@ -23,6 +23,15 @@ function formatLabel(value: string | null | undefined) {
   return value?.replaceAll('_', ' ') ?? 'Not provided'
 }
 
+function formatCount(
+  value: number | null | undefined,
+  singular: string,
+  plural = `${singular}s`,
+) {
+  const count = value ?? 0
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 export function PrelaunchIntakeReviewPageContent({
   submissions,
 }: PrelaunchIntakeReviewPageContentProps) {
@@ -497,6 +506,180 @@ export function PrelaunchIntakeReviewPageContent({
                     <p className="mt-3 break-all text-xs font-semibold text-slate-500">
                       {submission.latestScoutRun.runKey}
                     </p>
+                  </section>
+                ) : null}
+
+                {submission.latestScribeTranscriptRun ? (
+                  <section className="mt-5 rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-4 text-sm">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-700">
+                          Latest Meet transcript
+                        </p>
+                        <p className="mt-2 font-semibold text-slate-900">
+                          {formatLabel(
+                            submission.latestScribeTranscriptRun.status,
+                          )}{' '}
+                          via{' '}
+                          {formatLabel(
+                            submission.latestScribeTranscriptRun.triggerSource,
+                          )}
+                        </p>
+                        {submission.latestScribeTranscriptRun.summary ? (
+                          <p className="mt-2 leading-6 text-slate-700">
+                            {submission.latestScribeTranscriptRun.summary}
+                          </p>
+                        ) : null}
+                        {submission.latestScribeTranscriptRun.meetingTitle ? (
+                          <p className="mt-2 text-xs font-semibold text-slate-600">
+                            {submission.latestScribeTranscriptRun.meetingTitle}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col gap-1 text-xs font-semibold text-slate-500 lg:text-right">
+                        <span>
+                          {formatDate(
+                            submission.latestScribeTranscriptRun.createdAt,
+                          )}
+                        </span>
+                        <span>
+                          {formatLabel(
+                            submission.latestScribeTranscriptRun.model,
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {submission.latestScribeTranscriptRun.statusForScribe ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-fuchsia-800">
+                          {formatLabel(
+                            submission.latestScribeTranscriptRun
+                              .statusForScribe,
+                          )}
+                        </span>
+                      ) : null}
+                      <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-fuchsia-800">
+                        {formatCount(
+                          submission.latestScribeTranscriptRun.speakerCount,
+                          'speaker',
+                        )}
+                      </span>
+                      <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-fuchsia-800">
+                        {formatCount(
+                          submission.latestScribeTranscriptRun.decisionCount,
+                          'decision',
+                        )}
+                      </span>
+                      <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-fuchsia-800">
+                        {formatCount(
+                          submission.latestScribeTranscriptRun.actionItemCount,
+                          'action item',
+                        )}
+                      </span>
+                      <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-fuchsia-800">
+                        {formatCount(
+                          submission.latestScribeTranscriptRun
+                            .clientPreferenceCount,
+                          'client preference',
+                        )}
+                      </span>
+                    </div>
+                    {submission.latestScribeTranscriptRun.speakerNames.length >
+                    0 ? (
+                      <p className="mt-3 text-xs font-semibold text-slate-600">
+                        Speakers:{' '}
+                        {submission.latestScribeTranscriptRun.speakerNames.join(
+                          ', ',
+                        )}
+                      </p>
+                    ) : null}
+                    {submission.latestScribeTranscriptRun.preview ? (
+                      <p className="mt-3 rounded-md border border-fuchsia-100 bg-white p-3 text-xs leading-5 text-slate-700">
+                        {submission.latestScribeTranscriptRun.preview}
+                      </p>
+                    ) : null}
+                    {submission.latestScribeTranscriptRun.signals.decisions
+                      .length > 0 ||
+                    submission.latestScribeTranscriptRun.signals
+                      .clientPreferences.length > 0 ||
+                    submission.latestScribeTranscriptRun.signals.actionItems
+                      .length > 0 ? (
+                      <div className="mt-3 rounded-md border border-fuchsia-100 bg-white p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-fuchsia-700">
+                          Transcript signals
+                        </p>
+                        {submission.latestScribeTranscriptRun.signals.decisions
+                          .length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Decisions
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScribeTranscriptRun.signals.decisions.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScribeTranscriptRun.signals
+                          .clientPreferences.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Client preferences
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScribeTranscriptRun.signals.clientPreferences.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScribeTranscriptRun.signals
+                          .actionItems.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Action items
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScribeTranscriptRun.signals.actionItems.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="mt-3 flex flex-col gap-1 text-xs font-semibold text-slate-500">
+                      {submission.latestScribeTranscriptRun.driveFileUrl ? (
+                        <a
+                          className="break-all text-fuchsia-700 underline"
+                          href={submission.latestScribeTranscriptRun.driveFileUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {submission.latestScribeTranscriptRun.driveFileUrl}
+                        </a>
+                      ) : null}
+                      {submission.latestScribeTranscriptRun.meetUrl ? (
+                        <a
+                          className="break-all text-fuchsia-700 underline"
+                          href={submission.latestScribeTranscriptRun.meetUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {submission.latestScribeTranscriptRun.meetUrl}
+                        </a>
+                      ) : null}
+                      <span className="break-all">
+                        {submission.latestScribeTranscriptRun.runKey}
+                      </span>
+                    </div>
                   </section>
                 ) : null}
 

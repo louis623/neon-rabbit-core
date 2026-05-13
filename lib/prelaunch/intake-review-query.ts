@@ -2,6 +2,7 @@ import {
   normalizePrelaunchIntakeReviewRows,
   type PrelaunchIntakeReviewRow,
   type PrelaunchScoutRunReviewSummary,
+  type PrelaunchScribeTranscriptRunReviewSummary,
   type PrelaunchIntakeReviewSubmission,
 } from './intake-review'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -57,6 +58,34 @@ interface PrelaunchScoutRunReviewRow {
     publicFunnel?: unknown
     researchSynthesis?: unknown
     reusedLessons?: unknown
+  } | null
+}
+
+interface PrelaunchScribeTranscriptRunReviewRow {
+  intake_submission_id: string | null
+  run_key: string
+  status: string
+  trigger_source: string
+  model: string | null
+  summary: string | null
+  error_message: string | null
+  created_at: string
+  metadata: {
+    drive_file_id?: unknown
+    drive_file_url?: unknown
+    meet_url?: unknown
+    meeting_title?: unknown
+    transcript_char_count?: unknown
+    speaker_count?: unknown
+    decision_count?: unknown
+    action_item_count?: unknown
+    client_preference_count?: unknown
+    scribe_status?: unknown
+  } | null
+  output: {
+    status?: unknown
+    transcript?: unknown
+    signals?: unknown
   } | null
 }
 
@@ -262,6 +291,79 @@ function normalizeScoutRunReviewRow(
   }
 }
 
+function normalizeNullableString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value : null
+}
+
+function normalizeNullableNumber(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function normalizeScribeTranscriptSignals(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return {
+      decisions: [],
+      clientPreferences: [],
+      actionItems: [],
+      openQuestions: [],
+    }
+  }
+
+  const record = value as {
+    decisions?: unknown
+    clientPreferences?: unknown
+    actionItems?: unknown
+    openQuestions?: unknown
+  }
+
+  return {
+    decisions: normalizeStringArray(record.decisions),
+    clientPreferences: normalizeStringArray(record.clientPreferences),
+    actionItems: normalizeStringArray(record.actionItems),
+    openQuestions: normalizeStringArray(record.openQuestions),
+  }
+}
+
+function normalizeScribeTranscriptRunReviewRow(
+  row: PrelaunchScribeTranscriptRunReviewRow,
+): PrelaunchScribeTranscriptRunReviewSummary {
+  const transcript =
+    row.output?.transcript && typeof row.output.transcript === 'object'
+      ? (row.output.transcript as {
+          speakerNames?: unknown
+          preview?: unknown
+        })
+      : null
+
+  return {
+    runKey: row.run_key,
+    status: row.status,
+    triggerSource: row.trigger_source,
+    model: row.model,
+    summary: row.summary,
+    errorMessage: row.error_message,
+    createdAt: row.created_at,
+    driveFileId: normalizeNullableString(row.metadata?.drive_file_id),
+    driveFileUrl: normalizeNullableString(row.metadata?.drive_file_url),
+    meetUrl: normalizeNullableString(row.metadata?.meet_url),
+    meetingTitle: normalizeNullableString(row.metadata?.meeting_title),
+    transcriptCharCount: normalizeNullableNumber(
+      row.metadata?.transcript_char_count,
+    ),
+    speakerCount: normalizeNullableNumber(row.metadata?.speaker_count),
+    decisionCount: normalizeNullableNumber(row.metadata?.decision_count),
+    actionItemCount: normalizeNullableNumber(row.metadata?.action_item_count),
+    clientPreferenceCount: normalizeNullableNumber(
+      row.metadata?.client_preference_count,
+    ),
+    scribeStatus: normalizeNullableString(row.metadata?.scribe_status),
+    statusForScribe: normalizeNullableString(row.output?.status),
+    speakerNames: normalizeStringArray(transcript?.speakerNames),
+    preview: normalizeNullableString(transcript?.preview),
+    signals: normalizeScribeTranscriptSignals(row.output?.signals),
+  }
+}
+
 async function loadLatestScoutRunsByIntakeId(
   admin: AdminClient,
   intakeIds: string[],
@@ -300,6 +402,54 @@ async function loadLatestScoutRunsByIntakeId(
   return runsByIntakeId
 }
 
+async function loadLatestScribeTranscriptRunsByIntakeId(
+  admin: AdminClient,
+  intakeIds: string[],
+) {
+  const runsByIntakeId = new Map<
+    string,
+    PrelaunchScribeTranscriptRunReviewSummary
+  >()
+
+  if (intakeIds.length === 0) return runsByIntakeId
+
+  try {
+    const { data, error } = await admin
+      .from('agent_runs')
+      .select(
+        'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata, output',
+      )
+      .eq('agent_name', 'Scribe')
+      .eq('agent_kind', 'post_meeting_transcript_hook')
+      .in('intake_submission_id', intakeIds)
+      .order('created_at', { ascending: false })
+      .limit(intakeIds.length * 3)
+
+    if (error) throw error
+
+    for (const row of (data ?? []) as PrelaunchScribeTranscriptRunReviewRow[]) {
+      if (
+        !row.intake_submission_id ||
+        runsByIntakeId.has(row.intake_submission_id)
+      ) {
+        continue
+      }
+
+      runsByIntakeId.set(
+        row.intake_submission_id,
+        normalizeScribeTranscriptRunReviewRow(row),
+      )
+    }
+  } catch (error) {
+    console.warn(
+      '[prelaunch/intake-review] Scribe transcript run history unavailable:',
+      error,
+    )
+  }
+
+  return runsByIntakeId
+}
+
 export async function loadPrelaunchIntakeReviewSubmissions(
   admin: AdminClient = createAdminClient(),
   limit = 50,
@@ -319,9 +469,16 @@ export async function loadPrelaunchIntakeReviewSubmissions(
     admin,
     submissions.map((submission) => submission.id),
   )
+  const latestScribeTranscriptRunsByIntakeId =
+    await loadLatestScribeTranscriptRunsByIntakeId(
+      admin,
+      submissions.map((submission) => submission.id),
+    )
 
   return submissions.map((submission) => ({
     ...submission,
     latestScoutRun: latestScoutRunsByIntakeId.get(submission.id) ?? null,
+    latestScribeTranscriptRun:
+      latestScribeTranscriptRunsByIntakeId.get(submission.id) ?? null,
   }))
 }

@@ -254,6 +254,70 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('https://www.instagram.com/jamiebling/')
   })
 
+  it('renders the latest Meet transcript hook on each intake card', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            latestScribeTranscriptRun: {
+              runKey: 'scribe_hook:intake-1:drive-file-123',
+              status: 'queued',
+              triggerSource: 'google_meet_gemini_transcript',
+              model: 'gemini_transcript_hook_v1',
+              summary:
+                'Gemini transcript captured for Jamie Hart Jewelry; Scribe processing is queued.',
+              errorMessage: null,
+              createdAt: '2026-05-13T17:00:00Z',
+              driveFileId: 'drive-file-123',
+              driveFileUrl:
+                'https://docs.google.com/document/d/drive-file-123/edit',
+              meetUrl: 'https://meet.google.com/abc-defg-hij',
+              meetingTitle: 'Sparkle Suite discovery call - Jamie Hart',
+              transcriptCharCount: 248,
+              speakerCount: 2,
+              decisionCount: 1,
+              actionItemCount: 1,
+              clientPreferenceCount: 2,
+              scribeStatus: 'queued',
+              statusForScribe: 'ready_for_scribe',
+              speakerNames: ['Louis', 'Jamie'],
+              preview: 'Louis: Key decision: keep the velvet direction.',
+              signals: {
+                decisions: ['keep the velvet direction.'],
+                clientPreferences: ['I prefer plum and pearl.'],
+                actionItems: ['send the SignWell agreement.'],
+                openQuestions: [],
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Latest Meet transcript')
+    expect(html).toContain('queued via google meet gemini transcript')
+    expect(html).toContain('gemini transcript hook v1')
+    expect(html).toContain(
+      'Gemini transcript captured for Jamie Hart Jewelry; Scribe processing is queued.',
+    )
+    expect(html).toContain('ready for scribe')
+    expect(html).toContain('2 speakers')
+    expect(html).toContain('1 decision')
+    expect(html).toContain('1 action item')
+    expect(html).toContain('2 client preferences')
+    expect(html).toContain('Sparkle Suite discovery call - Jamie Hart')
+    expect(html).toContain('Louis, Jamie')
+    expect(html).toContain('Louis: Key decision: keep the velvet direction.')
+    expect(html).toContain('Transcript signals')
+    expect(html).toContain('keep the velvet direction.')
+    expect(html).toContain('I prefer plum and pearl.')
+    expect(html).toContain('send the SignWell agreement.')
+    expect(html).toContain('https://docs.google.com/document/d/drive-file-123/edit')
+    expect(html).toContain('https://meet.google.com/abc-defg-hij')
+    expect(html).toContain('scribe_hook:intake-1:drive-file-123')
+  })
+
   it('renders the latest failed Scout run error on the intake card', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
