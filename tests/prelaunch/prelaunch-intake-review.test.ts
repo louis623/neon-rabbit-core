@@ -204,6 +204,19 @@ describe('prelaunch intake review helpers', () => {
               },
             ],
           },
+          output: {
+            reusedLessons: [
+              {
+                sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+                lesson:
+                  'TikTok phone-only reps need a two-device plan before launch copy.',
+                similarityReasons: [
+                  'same primary platform',
+                  'same device setup',
+                ],
+              },
+            ],
+          },
         },
         {
           intake_submission_id: 'intake-1',
@@ -243,7 +256,7 @@ describe('prelaunch intake review helpers', () => {
 
     expect(fromMock).toHaveBeenCalledWith('agent_runs')
     expect(scoutRunsSelectMock).toHaveBeenCalledWith(
-      'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata',
+      'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata, output',
     )
     expect(scoutRunsEqMock).toHaveBeenCalledWith('agent_name', 'Scout')
     expect(scoutRunsInMock).toHaveBeenCalledWith('intake_submission_id', [
@@ -262,6 +275,14 @@ describe('prelaunch intake review helpers', () => {
       capturedEvidenceCount: 2,
       reusedLessonCount: 1,
       reusedLessonStatus: 'available',
+      reusedLessons: [
+        {
+          sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+          lesson:
+            'TikTok phone-only reps need a two-device plan before launch copy.',
+          similarityReasons: ['same primary platform', 'same device setup'],
+        },
+      ],
       evidenceSourceStatuses: [
         {
           label: 'TikTok',

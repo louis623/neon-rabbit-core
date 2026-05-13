@@ -53,6 +53,9 @@ interface PrelaunchScoutRunReviewRow {
     reused_lesson_count?: unknown
     reused_lesson_status?: unknown
   } | null
+  output: {
+    reusedLessons?: unknown
+  } | null
 }
 
 function normalizeEvidenceSourceStatuses(value: unknown) {
@@ -86,9 +89,54 @@ function normalizeEvidenceSourceStatuses(value: unknown) {
     )
 }
 
+function normalizeReusedLessons(value: unknown) {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+
+      const record = item as {
+        sourceRunKey?: unknown
+        lesson?: unknown
+        similarityReasons?: unknown
+      }
+
+      if (
+        typeof record.sourceRunKey !== 'string' ||
+        typeof record.lesson !== 'string'
+      ) {
+        return null
+      }
+
+      const similarityReasons = Array.isArray(record.similarityReasons)
+        ? record.similarityReasons.filter(
+            (reason): reason is string => typeof reason === 'string',
+          )
+        : []
+
+      return {
+        sourceRunKey: record.sourceRunKey,
+        lesson: record.lesson,
+        ...(similarityReasons.length > 0 ? { similarityReasons } : {}),
+      }
+    })
+    .filter(
+      (
+        item,
+      ): item is {
+        sourceRunKey: string
+        lesson: string
+        similarityReasons?: string[]
+      } => Boolean(item),
+    )
+}
+
 function normalizeScoutRunReviewRow(
   row: PrelaunchScoutRunReviewRow,
 ): PrelaunchScoutRunReviewSummary {
+  const reusedLessons = normalizeReusedLessons(row.output?.reusedLessons)
+
   return {
     runKey: row.run_key,
     status: row.status,
@@ -120,6 +168,7 @@ function normalizeScoutRunReviewRow(
       typeof row.metadata?.reused_lesson_status === 'string'
         ? row.metadata.reused_lesson_status
         : null,
+    ...(reusedLessons.length > 0 ? { reusedLessons } : {}),
   }
 }
 
@@ -135,7 +184,7 @@ async function loadLatestScoutRunsByIntakeId(
     const { data, error } = await admin
       .from('agent_runs')
       .select(
-        'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata',
+        'intake_submission_id, run_key, status, trigger_source, model, summary, error_message, created_at, metadata, output',
       )
       .eq('agent_name', 'Scout')
       .in('intake_submission_id', intakeIds)

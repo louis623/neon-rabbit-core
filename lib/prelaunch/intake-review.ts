@@ -40,12 +40,19 @@ export interface PrelaunchScoutRunReviewSummary {
   evidenceSourceStatuses?: PrelaunchScoutRunEvidenceSourceStatus[]
   reusedLessonCount?: number | null
   reusedLessonStatus?: string | null
+  reusedLessons?: PrelaunchScoutRunReusedLesson[]
 }
 
 export interface PrelaunchScoutRunEvidenceSourceStatus {
   label: string
   status: string
   url: string | null
+}
+
+export interface PrelaunchScoutRunReusedLesson {
+  sourceRunKey: string
+  lesson: string
+  similarityReasons?: string[]
 }
 
 export interface PrelaunchIntakeReviewSubmission {

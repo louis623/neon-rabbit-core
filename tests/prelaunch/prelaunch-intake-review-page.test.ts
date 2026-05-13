@@ -101,6 +101,17 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               capturedEvidenceCount: 2,
               reusedLessonCount: 1,
               reusedLessonStatus: 'available',
+              reusedLessons: [
+                {
+                  sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
+                  lesson:
+                    'TikTok phone-only reps need a two-device plan before launch copy.',
+                  similarityReasons: [
+                    'same primary platform',
+                    'same device setup',
+                  ],
+                },
+              ],
               evidenceSourceStatuses: [
                 {
                   label: 'TikTok',
@@ -131,6 +142,14 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('high confidence')
     expect(html).toContain('1 reused lesson')
     expect(html).toContain('lesson reuse available')
+    expect(html).toContain('Saved reused lessons')
+    expect(html).toContain(
+      'TikTok phone-only reps need a two-device plan before launch copy.',
+    )
+    expect(html).toContain('Why Scout reused this')
+    expect(html).toContain('same primary platform')
+    expect(html).toContain('same device setup')
+    expect(html).toContain('scout:tiktok-intake:2026-05-09T18:30:00.000Z')
     expect(html).toContain('TikTok: captured')
     expect(html).toContain('Instagram: metadata missing')
     expect(html).toContain('scout:intake-1:2026-05-09T19:30:00.000Z')
