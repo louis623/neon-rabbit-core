@@ -3,6 +3,7 @@ import {
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
 import { getPrelaunchGateReadiness } from '@/lib/prelaunch/gate-readiness'
+import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
@@ -58,6 +59,9 @@ export function PrelaunchIntakeReviewPageContent({
     (submission) => submission.handoffStatus === 'meeting_ready',
   ).length
   const gateReadiness = getPrelaunchGateReadiness()
+  const qrManifest = getApprovedPrelaunchQrManifest({
+    baseUrl: process.env.NEXT_PUBLIC_APP_URL,
+  })
 
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
@@ -84,6 +88,31 @@ export function PrelaunchIntakeReviewPageContent({
             </a>
           </div>
         </header>
+
+        <section className="rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pink-700">
+                Approved QR flyer
+              </p>
+              <p className="mt-2 max-w-3xl leading-6 text-slate-700">
+                Use this approved image-first flyer for QR promotion work. It
+                points to the public waitlist target below.
+              </p>
+              <p className="mt-3 break-all rounded-md bg-white p-3 text-xs font-semibold text-slate-700">
+                Canonical waitlist target: {qrManifest.targetUrl}
+              </p>
+            </div>
+            <a
+              className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-pink-200 bg-white px-4 text-sm font-semibold text-pink-800 shadow-sm transition hover:border-pink-300 hover:bg-pink-100"
+              href={qrManifest.approvedFlyer.path}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open approved flyer
+            </a>
+          </div>
+        </section>
 
         <section
           aria-label="Intake summary"

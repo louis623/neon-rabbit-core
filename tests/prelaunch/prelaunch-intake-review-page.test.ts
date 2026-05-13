@@ -42,6 +42,7 @@ const submission: PrelaunchIntakeReviewSubmission = {
 }
 
 const gateEnvKeys = [
+  'NEXT_PUBLIC_APP_URL',
   'SIGNWELL_API_KEY',
   'SIGNWELL_API_BASE_URL',
   'SIGNWELL_TEMPLATE_ID',
@@ -75,6 +76,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     delete process.env.SIGNWELL_TEMPLATE_ID
     delete process.env.STRIPE_PRICE_START_WORK_FEE
     delete process.env.STRIPE_PRICE_LAUNCH_FEE
+    delete process.env.NEXT_PUBLIC_APP_URL
 
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
@@ -118,6 +120,14 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('No live send or payment action is enabled here yet.')
     expect(html).not.toContain('Send agreement')
     expect(html).not.toContain('Collect payment')
+    expect(html).toContain('Approved QR flyer')
+    expect(html).toContain('Open approved flyer')
+    expect(html).toContain(
+      '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+    )
+    expect(html).toContain('Canonical waitlist target')
+    expect(html).toContain('prelaunch?utm_source=sparkle_suite_qr')
+    expect(html).not.toContain('sparkle-suite-qr-flyer-example-one')
     expect(html).toContain('Run Scout')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
   })
