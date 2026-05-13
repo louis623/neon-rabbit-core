@@ -145,6 +145,30 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('New /prelaunch intake forms will appear here')
   })
 
+  it('renders Scribe handoff readiness when an intake is meeting-ready without a transcript', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            handoffStatus: 'meeting_ready',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Scribe handoff readiness')
+    expect(html).toContain('Transcript handoff needed')
+    expect(html).toContain('Attach transcript hook output')
+    expect(html).toContain(
+      'This intake is meeting-ready, but no Meet/Gemini transcript run is visible yet.',
+    )
+    expect(html).toContain('No autonomous profile writeback.')
+    expect(html).toContain('No live SignWell send.')
+    expect(html).not.toContain('Send agreement')
+    expect(html).not.toContain('Collect payment')
+  })
+
   it('renders consolidated next operator steps for blocked intake handoffs', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
@@ -551,6 +575,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('keep the velvet direction.')
     expect(html).toContain('I prefer plum and pearl.')
     expect(html).toContain('send the SignWell agreement.')
+    expect(html).toContain('Scribe handoff readiness')
+    expect(html).toContain('Scribe follow-up incomplete')
+    expect(html).toContain('Open questions need operator follow-up')
+    expect(html).toContain('Manual review warnings')
     expect(html).toContain('Scribe follow-up brief')
     expect(html).toContain(
       'Scribe draft for Jamie Hart Jewelry is ready for operator review',

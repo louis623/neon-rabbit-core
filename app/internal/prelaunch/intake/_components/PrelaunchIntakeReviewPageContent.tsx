@@ -9,6 +9,7 @@ import {
 import { buildCameraQualityPrep } from '@/lib/prelaunch/camera-quality-prep'
 import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
+import { buildScribeReadiness } from '@/lib/prelaunch/scribe-readiness'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
@@ -66,6 +67,13 @@ function photographyPrepClass(status: string) {
   }
 
   return 'border-sky-200 bg-sky-50 text-sky-900'
+}
+
+function scribeReadinessClass(status: string) {
+  if (status === 'missing') return 'border-red-200 bg-red-50 text-red-900'
+  if (status === 'review') return 'border-amber-200 bg-amber-50 text-amber-900'
+
+  return 'border-emerald-200 bg-emerald-50 text-emerald-900'
 }
 
 function buildOperatorReadiness(
@@ -330,6 +338,10 @@ export function PrelaunchIntakeReviewPageContent({
               )
               const photographyKitPrep = buildPhotographyKitPrep(submission)
               const cameraQualityPrep = buildCameraQualityPrep(submission)
+              const scribeReadiness = buildScribeReadiness(submission)
+              const shouldShowScribeReadiness =
+                submission.handoffStatus === 'meeting_ready' ||
+                Boolean(submission.latestScribeTranscriptRun)
 
               return (
                 <article
@@ -880,6 +892,51 @@ export function PrelaunchIntakeReviewPageContent({
                     <p className="mt-3 break-all text-xs font-semibold text-slate-500">
                       {submission.latestScoutRun.runKey}
                     </p>
+                  </section>
+                ) : null}
+
+                {shouldShowScribeReadiness ? (
+                  <section className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">
+                        Scribe handoff readiness
+                      </p>
+                      <h3 className="mt-1 font-semibold text-slate-950">
+                        {scribeReadiness.label}
+                      </h3>
+                      <p className="mt-1 leading-5 text-slate-600">
+                        Operator-only transcript and follow-up readiness. This
+                        does not write profile fields, approve launch gates, or
+                        send agreements.
+                      </p>
+                    </div>
+                    <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      {scribeReadiness.items.map((item) => (
+                        <div
+                          className={`rounded-md border p-3 ${scribeReadinessClass(
+                            item.status,
+                          )}`}
+                          key={item.label}
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                            {item.label}
+                          </p>
+                          <p className="mt-1 text-xs leading-5">
+                            {item.detail}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {scribeReadiness.guardrails.map((guardrail) => (
+                        <span
+                          className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-700"
+                          key={guardrail}
+                        >
+                          {guardrail}
+                        </span>
+                      ))}
+                    </div>
                   </section>
                 ) : null}
 
