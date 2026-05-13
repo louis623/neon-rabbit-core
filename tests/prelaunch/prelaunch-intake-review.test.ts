@@ -189,6 +189,20 @@ describe('prelaunch intake review helpers', () => {
             synthesis_status: 'deterministic_fallback',
             synthesis_confidence: 'high',
             captured_evidence_count: 2,
+            reused_lesson_count: 1,
+            reused_lesson_status: 'available',
+            evidence_source_statuses: [
+              {
+                label: 'TikTok',
+                status: 'captured',
+                url: 'https://www.tiktok.com/@jamieh',
+              },
+              {
+                label: 'Primary customer link',
+                status: 'captured',
+                url: 'https://jamiehartjewelry.com/live',
+              },
+            ],
           },
         },
         {
@@ -246,6 +260,20 @@ describe('prelaunch intake review helpers', () => {
       synthesisStatus: 'deterministic_fallback',
       synthesisConfidence: 'high',
       capturedEvidenceCount: 2,
+      reusedLessonCount: 1,
+      reusedLessonStatus: 'available',
+      evidenceSourceStatuses: [
+        {
+          label: 'TikTok',
+          status: 'captured',
+          url: 'https://www.tiktok.com/@jamieh',
+        },
+        {
+          label: 'Primary customer link',
+          status: 'captured',
+          url: 'https://jamiehartjewelry.com/live',
+        },
+      ],
     })
   })
 

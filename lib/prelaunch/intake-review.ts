@@ -37,6 +37,15 @@ export interface PrelaunchScoutRunReviewSummary {
   synthesisStatus: string | null
   synthesisConfidence: string | null
   capturedEvidenceCount: number | null
+  evidenceSourceStatuses?: PrelaunchScoutRunEvidenceSourceStatus[]
+  reusedLessonCount?: number | null
+  reusedLessonStatus?: string | null
+}
+
+export interface PrelaunchScoutRunEvidenceSourceStatus {
+  label: string
+  status: string
+  url: string | null
 }
 
 export interface PrelaunchIntakeReviewSubmission {

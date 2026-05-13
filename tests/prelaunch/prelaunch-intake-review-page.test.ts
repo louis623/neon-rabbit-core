@@ -99,6 +99,20 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               synthesisStatus: 'deterministic_fallback',
               synthesisConfidence: 'high',
               capturedEvidenceCount: 2,
+              reusedLessonCount: 1,
+              reusedLessonStatus: 'available',
+              evidenceSourceStatuses: [
+                {
+                  label: 'TikTok',
+                  status: 'captured',
+                  url: 'https://www.tiktok.com/@jamieh',
+                },
+                {
+                  label: 'Instagram',
+                  status: 'metadata_missing',
+                  url: 'https://www.instagram.com/jamiebling/',
+                },
+              ],
             },
           },
         ],
@@ -115,7 +129,53 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('2 captured evidence items')
     expect(html).toContain('deterministic fallback synthesis')
     expect(html).toContain('high confidence')
+    expect(html).toContain('1 reused lesson')
+    expect(html).toContain('lesson reuse available')
+    expect(html).toContain('TikTok: captured')
+    expect(html).toContain('Instagram: metadata missing')
     expect(html).toContain('scout:intake-1:2026-05-09T19:30:00.000Z')
+  })
+
+  it('renders saved Scout source checks on the latest run card', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            latestScoutRun: {
+              runKey: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+              status: 'completed',
+              triggerSource: 'operator_review',
+              model: 'deterministic_scout_v1',
+              summary: 'Scout captured public evidence.',
+              errorMessage: null,
+              createdAt: '2026-05-09T19:30:00Z',
+              synthesisStatus: 'deterministic_fallback',
+              synthesisConfidence: 'medium',
+              capturedEvidenceCount: 1,
+              evidenceSourceStatuses: [
+                {
+                  label: 'TikTok',
+                  status: 'captured',
+                  url: 'https://www.tiktok.com/@jamieh',
+                },
+                {
+                  label: 'Instagram',
+                  status: 'metadata_missing',
+                  url: 'https://www.instagram.com/jamiebling/',
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Saved source checks')
+    expect(html).toContain('TikTok: captured')
+    expect(html).toContain('Instagram: metadata missing')
+    expect(html).toContain('https://www.tiktok.com/@jamieh')
+    expect(html).toContain('https://www.instagram.com/jamiebling/')
   })
 
   it('renders the latest failed Scout run error on the intake card', () => {

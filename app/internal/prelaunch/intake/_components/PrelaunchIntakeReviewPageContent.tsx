@@ -255,7 +255,53 @@ export function PrelaunchIntakeReviewPageContent({
                           confidence
                         </span>
                       ) : null}
+                      {submission.latestScoutRun.reusedLessonCount != null ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-sky-800">
+                          {submission.latestScoutRun.reusedLessonCount}{' '}
+                          reused{' '}
+                          {submission.latestScoutRun.reusedLessonCount === 1
+                            ? 'lesson'
+                            : 'lessons'}
+                        </span>
+                      ) : null}
+                      {submission.latestScoutRun.reusedLessonStatus ? (
+                        <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-sky-800">
+                          lesson reuse{' '}
+                          {formatLabel(
+                            submission.latestScoutRun.reusedLessonStatus,
+                          )}
+                        </span>
+                      ) : null}
                     </div>
+                    {(submission.latestScoutRun.evidenceSourceStatuses ?? [])
+                      .length > 0 ? (
+                      <div className="mt-3 rounded-md border border-sky-100 bg-white p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
+                          Saved source checks
+                        </p>
+                        <ul className="mt-2 space-y-2 text-xs text-slate-700">
+                          {(
+                            submission.latestScoutRun.evidenceSourceStatuses ?? []
+                          ).map((item) => (
+                            <li key={`${item.label}:${item.url ?? item.status}`}>
+                              <span className="font-semibold text-slate-900">
+                                {item.label}: {formatLabel(item.status)}
+                              </span>
+                              {item.url ? (
+                                <a
+                                  className="ml-2 break-all font-semibold text-sky-700 underline"
+                                  href={item.url}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                >
+                                  {item.url}
+                                </a>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
                     <p className="mt-3 break-all text-xs font-semibold text-slate-500">
                       {submission.latestScoutRun.runKey}
                     </p>

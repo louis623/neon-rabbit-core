@@ -49,7 +49,41 @@ interface PrelaunchScoutRunReviewRow {
     synthesis_status?: unknown
     synthesis_confidence?: unknown
     captured_evidence_count?: unknown
+    evidence_source_statuses?: unknown
+    reused_lesson_count?: unknown
+    reused_lesson_status?: unknown
   } | null
+}
+
+function normalizeEvidenceSourceStatuses(value: unknown) {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+
+      const record = item as {
+        label?: unknown
+        status?: unknown
+        url?: unknown
+      }
+
+      if (
+        typeof record.label !== 'string' ||
+        typeof record.status !== 'string'
+      ) {
+        return null
+      }
+
+      return {
+        label: record.label,
+        status: record.status,
+        url: typeof record.url === 'string' ? record.url : null,
+      }
+    })
+    .filter((item): item is { label: string; status: string; url: string | null } =>
+      Boolean(item),
+    )
 }
 
 function normalizeScoutRunReviewRow(
@@ -74,6 +108,17 @@ function normalizeScoutRunReviewRow(
     capturedEvidenceCount:
       typeof row.metadata?.captured_evidence_count === 'number'
         ? row.metadata.captured_evidence_count
+        : null,
+    evidenceSourceStatuses: normalizeEvidenceSourceStatuses(
+      row.metadata?.evidence_source_statuses,
+    ),
+    reusedLessonCount:
+      typeof row.metadata?.reused_lesson_count === 'number'
+        ? row.metadata.reused_lesson_count
+        : null,
+    reusedLessonStatus:
+      typeof row.metadata?.reused_lesson_status === 'string'
+        ? row.metadata.reused_lesson_status
         : null,
   }
 }
