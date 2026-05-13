@@ -43,6 +43,22 @@ Good follow-up if Batch B is clean.
 - Consolidate mocked failure coverage for disabled SignWell, disabled payment gates, SMS refund behavior, Photoroom provider errors, audit-write failures, and route auth failures.
 - Keep all provider interactions mocked/offline.
 
+### Batch D: Phase 11 multi-rep isolation contracts
+
+Good follow-up after provider-free recovery contracts. This supports Phase 11.7 without claiming real Supabase RLS acceptance is complete.
+
+- Tighten single-member customer-audience lookup/update paths to query by both `id` and authenticated `rep_id`.
+- Preserve global STOP-by-phone behavior, which intentionally matches a phone number across reps.
+- Verify via mocked service tests and the existing Thumper customer-audience route test.
+
+### Batch E: Phase 9 custom-domain canonical helpers
+
+Good follow-up if Batch D lands cleanly. This supports Phase 9.5 without wiring production request-host routing.
+
+- Add pure Amethyst canonical metadata helpers for arbitrary validated origins.
+- Keep the helpers offline/fixture-driven.
+- Do not change Next metadata exports, request-host behavior, static route serving, sitemap serving, robots serving, or `llms.txt` serving until host-to-rep routing is decided.
+
 ## Parked Or Manual
 
 - Phase 5 SMS/Telnyx live work remains blocked until campaign approval, +19044383050 attachment, and real handset smoke.

@@ -25,6 +25,40 @@ type AudienceRow = {
 
 function makeSupabase(rows: AudienceRow[]) {
   const updateCalls: Array<{ values: Record<string, unknown>; ids: string[] }> = []
+  const selectFilters: Array<[string, unknown]> = []
+  const updateFilters: Array<[string, unknown]> = []
+
+  function makeSelectChain() {
+    const chain = {
+      then(resolve: (value: { data: AudienceRow[]; error: null }) => unknown) {
+        return Promise.resolve({ data: rows, error: null }).then(resolve)
+      },
+      eq(column: string, value: unknown) {
+        selectFilters.push([column, value])
+        return chain
+      },
+      not() {
+        return chain
+      },
+      maybeSingle() {
+        const idFilter = selectFilters.findLast(([column]) => column === 'id')?.[1]
+        const repFilter = selectFilters.findLast(
+          ([column]) => column === 'rep_id',
+        )?.[1]
+        return Promise.resolve({
+          data:
+            rows.find(
+              (row) =>
+                (!idFilter || row.id === idFilter) &&
+                (!repFilter || row.rep_id === repFilter),
+            ) ?? null,
+          error: null,
+        })
+      },
+    }
+
+    return chain
+  }
 
   const client = {
     from(table: string) {
@@ -34,20 +68,20 @@ function makeSupabase(rows: AudienceRow[]) {
 
       return {
         select() {
-          return {
-            async then() {
-              return { data: rows, error: null }
-            },
-            async eq() {
-              return { data: rows, error: null }
-            },
-            async not() {
-              return { data: rows, error: null }
-            },
-          }
+          return makeSelectChain()
         },
         update(values: Record<string, unknown>) {
-          return {
+          const updateChain = {
+            then(resolve: (value: { error: null }) => unknown) {
+              const idFilter = updateFilters.findLast(
+                ([column]) => column === 'id',
+              )?.[1]
+              updateCalls.push({
+                values,
+                ids: typeof idFilter === 'string' ? [idFilter] : [],
+              })
+              return Promise.resolve({ error: null }).then(resolve)
+            },
             in(column: string, ids: string[]) {
               if (column !== 'id') {
                 throw new Error(`Unexpected update filter ${column}`)
@@ -55,7 +89,13 @@ function makeSupabase(rows: AudienceRow[]) {
               updateCalls.push({ values, ids })
               return Promise.resolve({ error: null })
             },
+            eq(column: string, value: unknown) {
+              updateFilters.push([column, value])
+              return updateChain
+            },
           }
+
+          return updateChain
         },
       }
     },
@@ -64,6 +104,8 @@ function makeSupabase(rows: AudienceRow[]) {
   return {
     client: client as never,
     updateCalls,
+    selectFilters,
+    updateFilters,
   }
 }
 
@@ -149,7 +191,7 @@ describe('customer audience unsubscribe services', () => {
   })
 
   it('can unsubscribe a single audience member by id without touching duplicates', async () => {
-    const { client, updateCalls } = makeSupabase([
+    const { client, updateCalls, selectFilters, updateFilters } = makeSupabase([
       {
         id: 'aud-1',
         rep_id: 'rep-preview',
@@ -195,10 +237,18 @@ describe('customer audience unsubscribe services', () => {
     expect(updateCalls[0].ids).toEqual(['aud-1'])
     expect(updateCalls[0].values.sms_opted_out_at).toEqual(expect.any(String))
     expect(updateCalls[0].values).not.toHaveProperty('email_opted_out_at')
+    expect(selectFilters).toEqual([
+      ['id', 'aud-1'],
+      ['rep_id', 'rep-preview'],
+    ])
+    expect(updateFilters).toEqual([
+      ['id', 'aud-1'],
+      ['rep_id', 'rep-preview'],
+    ])
   })
 
   it('returns one mapped audience member by id for the authenticated rep', async () => {
-    const { client } = makeSupabase([
+    const { client, selectFilters } = makeSupabase([
       {
         id: 'aud-1',
         rep_id: 'rep-preview',
@@ -249,5 +299,9 @@ describe('customer audience unsubscribe services', () => {
       emailOptedOutAt: null,
       stopKeywordReceivedAt: null,
     })
+    expect(selectFilters).toEqual([
+      ['id', 'aud-1'],
+      ['rep_id', 'rep-preview'],
+    ])
   })
 })

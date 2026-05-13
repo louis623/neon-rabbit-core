@@ -149,6 +149,38 @@ async function listCustomerAudienceRows(supabase: SupabaseClient) {
   return (data ?? []) as unknown as CustomerAudienceRow[]
 }
 
+async function getCustomerAudienceRowForRep(
+  supabase: SupabaseClient,
+  repId: string,
+  audienceId: string,
+) {
+  const { data, error } = await supabase
+    .from('customer_audience')
+    .select(
+      [
+        'id',
+        'rep_id',
+        'name',
+        'phone',
+        'email',
+        'sms_consent',
+        'email_consent',
+        'marketing_consent',
+        'consent_date',
+        'sms_opted_out_at',
+        'email_opted_out_at',
+        'stop_keyword_received_at',
+        'created_at',
+      ].join(', '),
+    )
+    .eq('id', audienceId)
+    .eq('rep_id', repId)
+    .maybeSingle()
+
+  if (error) throw error
+  return (data ?? null) as unknown as CustomerAudienceRow | null
+}
+
 export async function createCustomerAudienceSignup(
   supabase: SupabaseClient,
   repId: string,
@@ -373,9 +405,10 @@ export async function unsubscribeCustomerAudienceMember(
     )
   }
 
-  const rows = await listCustomerAudienceRows(supabase)
-  const matchedRow = rows.find(
-    (row) => row.id === input.audienceId && row.rep_id === repId,
+  const matchedRow = await getCustomerAudienceRowForRep(
+    supabase,
+    repId,
+    input.audienceId,
   )
 
   if (!matchedRow) {
@@ -396,7 +429,8 @@ export async function unsubscribeCustomerAudienceMember(
   const { error } = await supabase
     .from('customer_audience')
     .update(updateValues)
-    .in('id', [matchedRow.id])
+    .eq('id', matchedRow.id)
+    .eq('rep_id', repId)
 
   if (error) throw error
 
@@ -423,9 +457,10 @@ export async function getCustomerAudienceMember(
     )
   }
 
-  const rows = await listCustomerAudienceRows(supabase)
-  const matchedRow = rows.find(
-    (row) => row.id === audienceId && row.rep_id === repId,
+  const matchedRow = await getCustomerAudienceRowForRep(
+    supabase,
+    repId,
+    audienceId,
   )
 
   return matchedRow ? mapAudienceRow(matchedRow) : null
