@@ -239,6 +239,27 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Collect payment')
   })
 
+  it('renders photography kit prep as operator-only readiness guidance', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [submission],
+      }),
+    )
+
+    expect(html).toContain('Photography kit prep')
+    expect(html).toContain('DUCLUS lightbox or equivalent white setup')
+    expect(html).toContain('Use the rep phone or existing camera first')
+    expect(html).toContain('Request sample jewelry photo')
+    expect(html).toContain('Run Nic-Nac screening')
+    expect(html).toContain(
+      'Coach framing, distance, lighting, and white background before changing hardware.',
+    )
+    expect(html).toContain('Manual exception')
+    expect(html).not.toContain('Order kit')
+    expect(html).not.toContain('Ship kit')
+    expect(html).not.toContain('Collect kit fee')
+  })
+
   it('renders the latest saved Scout run on each intake card', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

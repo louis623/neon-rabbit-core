@@ -6,6 +6,7 @@ import {
   getPrelaunchGateReadiness,
   type PrelaunchGateReadinessItem,
 } from '@/lib/prelaunch/gate-readiness'
+import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
@@ -56,6 +57,14 @@ function operatorStepClass(status: string) {
   if (status === 'review') return 'border-amber-200 bg-amber-50 text-amber-900'
 
   return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+}
+
+function photographyPrepClass(status: string) {
+  if (status === 'required') {
+    return 'border-amber-200 bg-amber-50 text-amber-900'
+  }
+
+  return 'border-sky-200 bg-sky-50 text-sky-900'
 }
 
 function buildOperatorReadiness(
@@ -292,6 +301,7 @@ export function PrelaunchIntakeReviewPageContent({
                 submission,
                 gateReadiness,
               )
+              const photographyKitPrep = buildPhotographyKitPrep(submission)
 
               return (
                 <article
@@ -431,6 +441,47 @@ export function PrelaunchIntakeReviewPageContent({
                     </span>
                   )}
                 </div>
+
+                <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Photography kit prep
+                    </p>
+                    <h3 className="mt-1 font-semibold text-slate-950">
+                      Sample photo needed before kit decision
+                    </h3>
+                    <p className="mt-1 leading-5 text-slate-600">
+                      Read-only operator checklist. This does not select a
+                      vendor, show pricing, create shipments, or change hardware
+                      automatically.
+                    </p>
+                  </div>
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {photographyKitPrep.items.map((item) => (
+                      <div
+                        className={`rounded-md border p-3 ${photographyPrepClass(
+                          item.status,
+                        )}`}
+                        key={item.label}
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-xs leading-5">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {photographyKitPrep.guardrails.map((guardrail) => (
+                      <span
+                        className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-700"
+                        key={guardrail}
+                      >
+                        {guardrail}
+                      </span>
+                    ))}
+                  </div>
+                </section>
 
                 <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
