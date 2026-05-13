@@ -57,7 +57,7 @@
 
 **COMPANION SPECS (upload alongside this plan for build work):**
 - SS_Supabase_Schema_v1_1.md — 17-table schema specification (source of truth for Phase 0 schema, reflects shipped reality as of April 19)
-- SS_Service_Layer_Spec_v1_0.md — Shared service layer: 12 functions, 3 trade-board Postgres RPCs (wallet RPCs TBD — open_item eb89bf3e)
+- SS_Service_Layer_Spec_v1_2.md — Shared service layer: trade board, calendar, and SMS wallet service contracts; 3 trade-board RPCs plus 3 SMS wallet RPCs
 
 ---
 
@@ -201,7 +201,7 @@ These are platform-wide rules that constrain every feature. Built into the archi
 | 0.2 | Create all tables + RLS policies in Supabase | 🔧 Medium | 🌙 Yes | Includes 3 RPC functions (rpc_submit_trade_request, rpc_approve_trade, rpc_reject_trade), 4 Realtime tables. Partial unique index for one-request-per-piece. GIN index for full-text search. |
 | 0.3 | Supabase Auth setup (rep login) | ⚡ Quick | 🌙 Yes | Email/password auth. Three Supabase client utilities: browser, server, admin. Admin policy uses self-referencing subquery (NOT auth.jwt()) to avoid RLS recursion. Credentials in 1Password. |
 | 0.4 | Stripe integration — subscription billing | 🔧 Medium | 🌙 Yes | Stripe client library (lazy init, Zod config validation), customer creation (idempotent getOrCreate), Checkout Session API, webhook handler with idempotency via `stripe_events` table (PK is `id`, storing the Stripe event ID directly), portal session, subscription status, pro-rata refund with state machine (refund_operations table). All non-webhook routes derive repId from cookies. Webhook reads `session.metadata.rep_id` to wire new subscriptions to the correct rep — metadata key is `rep_id`, NOT `rep_user_id`. |
-| 0.5 | Stripe integration — SMS wallet | 🧠 ULTRAPLAN | 🌙 Yes | Money-safety complexity — requires 3 rounds of Codex adversarial review before build. INTEGER cents (not DECIMAL) with fail-loud pre-validation. Enum split: adjustment → credit/debit, plus auto_recharge. sms_wallet lock fields (auto_recharge_pending + attempt_id). Partial unique index on stripe_payment_intent_id. 3 RPCs (deduct_wallet_balance, credit_wallet, release_wallet_recharge_lock) — SECURITY DEFINER, service_role-only grants. Atomic deduction (9 cents). Auto-recharge via after() with 30-minute stale lock recovery. Wallet load route (card-only checkout, minimum from DB). Real balance_transaction.fee (NULL if unavailable). |
+| 0.5 | Stripe integration — SMS wallet | 🧠 ULTRAPLAN | 🌙 Yes | Money-safety complexity — requires 3 rounds of Codex adversarial review before build. INTEGER mils (not DECIMAL; not cents) with fail-loud pre-validation because the SMS rate is $0.009/text. Enum split: adjustment → credit/debit, plus auto_recharge. sms_wallet lock fields (auto_recharge_pending + attempt_id). Partial unique index on stripe_payment_intent_id. 3 RPCs (deduct_wallet_balance, credit_wallet, release_wallet_recharge_lock) — SECURITY DEFINER, service_role-only grants. Atomic deduction (9 mils). Auto-recharge via after() with 30-minute stale lock recovery. Wallet load route (card-only checkout, minimum from DB). Real balance_transaction.fee stored in mils when available (NULL if unavailable). |
 | 0.6 | Seed data for test rep sandbox | ⚡ Quick | 🌙 Yes | Permanent test rep account. Idempotent seed script. Data across 10 tables: reps, site_settings, sms_wallet, subscriptions, onboarding_status, collections, jewelry_designs (real BP item numbers), trade_listings, calendar_events, rep_notes. |
 
 ### Test Gate 0

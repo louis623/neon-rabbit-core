@@ -7,11 +7,15 @@
 👤 WHO USES IT: Louis (reference), Claude (session context), Claude Code (build execution)
 🔄 UPDATE TRIGGER: Any service function added, business rule changed, or error handling pattern modified
 
-**Version:** 1.2 | **Created:** April 11, 2026 | **Last Updated:** May 1, 2026 | **Status:** LIVE — Aligned to deployed repo after Task 1.6B ship
+**Version:** 1.2 | **Created:** April 11, 2026 | **Last Updated:** May 13, 2026 | **Status:** LIVE — Aligned to deployed repo after Task 1.6B ship plus SMS wallet RPC addendum
 
 **v1.2 CHANGES (May 1, 2026):**
 
 Added calendar service layer (Tasks 1.6 + 1.6B). New file `calendar.ts` with 4 functions: `addShow` (supports recurring series spawning and multi-code discount arrays), `listMyShows`, `updateShow` (supports `applyToSeries` for bulk series updates), `cancelShow`. New types: `DiscountCode`, `RecurringInput`, `EventStatus`. Updated file organization table, Thumper tool mapping table (9 → 13 tools), and "What This Spec Does NOT Cover" section (removed calendar reference). Added `calendar.ts` to Supabase client strategy.
+
+**v1.2 ADDENDUM (May 13, 2026):**
+
+Documented the existing SMS wallet service wrappers and database RPC contracts shipped by Phase 0.5 / Phase 5.3 follow-up work. Wallet ledger values are integer mils, not cents, because the locked SMS rate is $0.009 per text.
 
 **v1.1 CHANGES (April 30, 2026):**
 
@@ -69,7 +73,7 @@ Thumper Tool Handler              Dashboard API Route
 
 ## File Organization
 
-Four service files plus two supporting files. All in `lib/services/` in the neon-rabbit-core repo.
+Six service files plus three supporting files. All in `lib/services/` in the neon-rabbit-core repo.
 
 | File | Domain | Functions |
 |------|--------|-----------|
@@ -78,6 +82,8 @@ Four service files plus two supporting files. All in `lib/services/` in the neon
 | `trade-fulfillment.ts` | Fulfillment — post-approval tracking (NOT exposed via Thumper) | updateFulfillmentStatus, getFulfillmentQueue |
 | `jewelry-database.ts` | Jewelry catalog — searching, resolving item numbers, creating new designs | searchJewelryDatabase, resolveItemNumber, createDesign, updateCanonicalPhoto |
 | `calendar.ts` | Calendar/show management — adding, listing, updating, cancelling shows | addShow, listMyShows, updateShow, cancelShow |
+| `wallet.ts` | SMS wallet ledger — wallet creation, atomic SMS debits, refunds, auto-recharge trigger/release | ensureWallet, deductSmsCharge, refundSmsCharge |
+| `wallet-units.ts` | SMS wallet unit conversion constants/helpers | SMS_CHARGE_MILS, walletMilsToDollars, walletMilsToStripeCents, dollarsToWalletMils |
 | `types.ts` | All shared TypeScript types, input/output interfaces, enums | — |
 | `errors.ts` | Custom error classes and predefined error messages | — |
 
@@ -109,7 +115,7 @@ If the rep REJECTS: listing → "available", piece reappears on the board. Anoth
 
 ## Postgres RPC Functions (Atomic Operations)
 
-Three database-level functions ensure multi-table operations succeed or fail as a unit. These are called by the service layer — NOT directly by Thumper or dashboard routes.
+Three trade-board database functions ensure multi-table operations succeed or fail as a unit. Three SMS wallet database functions ensure balance mutation and auto-recharge lock changes are atomic. These are called by the service layer — NOT directly by Thumper or dashboard routes.
 
 ### 1. `rpc_submit_trade_request`
 
@@ -141,6 +147,81 @@ Called when a rep rejects a pending trade request.
 **Atomic steps (all or nothing):**
 1. UPDATE `trade_requests` SET status = "denied", reason, rep_notes
 2. UPDATE `trade_listings` SET status = "available" (piece reappears on board)
+
+---
+
+## SMS Wallet RPC Functions (Atomic Ledger Operations)
+
+Wallet values are stored in integer mils (thousandths of a dollar), not cents. The locked SMS rate is `$0.009`, represented by `SMS_CHARGE_MILS = 9` in `lib/services/wallet-units.ts`.
+
+All three wallet RPCs are `SECURITY DEFINER`, run with `search_path = public`, revoke `PUBLIC`, and grant execute to `service_role only`. Call them through `lib/services/wallet.ts` or payment/webhook service code, never from public client code.
+
+### 4. `deduct_wallet_balance`
+
+Called when Sparkle Suite needs to charge a rep wallet for one billable SMS.
+
+**Signature (current migration 038):**
+```sql
+deduct_wallet_balance(p_wallet_id UUID, p_amount INTEGER)
+RETURNS TABLE(new_balance_mils INTEGER, should_recharge BOOLEAN, attempt_id UUID)
+```
+
+**Atomic steps (all or nothing):**
+1. Validate `p_amount` is a positive integer mil amount.
+2. Lock the wallet row with `FOR UPDATE`.
+3. Fail loud with `WALLET_NOT_FOUND` if the wallet does not exist.
+4. Fail loud with `INSUFFICIENT_FUNDS` if the debit would make the balance negative.
+5. Update `sms_wallet.balance_mils`.
+6. Insert a `wallet_transactions` row with type `sms_charge`, positive `amount_mils`, and description `SMS send`.
+7. If the new balance is at or below `auto_recharge_threshold_mils`, auto-recharge is enabled, and no fresh lock exists, set `auto_recharge_pending = true`, assign a new `auto_recharge_attempt_id`, and return it.
+
+**Return semantics:**
+- `new_balance_mils`: wallet balance after the debit.
+- `should_recharge`: true only when this call acquired the auto-recharge lock.
+- `attempt_id`: the new auto-recharge attempt UUID, or null when no recharge should start.
+
+### 5. `credit_wallet`
+
+Called by wallet load, auto-recharge, refund, or adjustment-credit paths after the caller has validated the business reason for adding wallet value.
+
+**Signature (current migration 038):**
+```sql
+credit_wallet(p_wallet_id UUID, p_rep_id UUID, p_amount INTEGER, p_type wallet_transaction_type, p_stripe_pi TEXT, p_stripe_fee INTEGER, p_description TEXT, p_attempt_id UUID)
+RETURNS TABLE(new_balance_mils INTEGER, credited BOOLEAN)
+```
+
+**Atomic steps (all or nothing):**
+1. Allow only credit-like transaction types: `load`, `auto_recharge`, `refund`, `adjustment_credit`.
+2. Validate `p_amount` is a positive integer mil amount.
+3. Lock the wallet row with `FOR UPDATE`.
+4. Fail loud with `WALLET_NOT_FOUND` if the wallet does not exist.
+5. Fail loud with `WALLET_REP_MISMATCH` if `sms_wallet.rep_id` does not match `p_rep_id`.
+6. Insert a `wallet_transactions` row with `amount_mils`, optional Stripe payment intent id, optional Stripe fee in mils, and description.
+7. Use the partial unique index on `stripe_payment_intent_id` for idempotency. If the payment intent was already processed, return the existing balance with `credited = false`.
+8. Add the amount to `sms_wallet.balance_mils`.
+9. For a matching `auto_recharge` attempt, clear `auto_recharge_pending` and `auto_recharge_attempt_id`.
+
+**Return semantics:**
+- `new_balance_mils`: current wallet balance after a new credit, or the locked pre-existing balance when idempotency prevented a duplicate credit.
+- `credited`: true only when this call inserted a new wallet transaction and updated the wallet balance.
+
+### 6. `release_wallet_recharge_lock`
+
+Called when an auto-recharge attempt cannot safely complete, such as missing Stripe customer/payment method or failed/canceled payment intent.
+
+**Signature (current migration 009; still valid after migration 038):**
+```sql
+release_wallet_recharge_lock(p_wallet_id UUID, p_attempt_id UUID)
+RETURNS VOID
+```
+
+**Atomic steps:**
+1. Clear `auto_recharge_pending`.
+2. Clear `auto_recharge_attempt_id`.
+3. Update `updated_at`.
+4. Scope the update by both wallet id and attempt id so a stale worker cannot release a newer live attempt.
+
+**Return semantics:** No rows are returned. A non-matching attempt id is a no-op.
 
 ---
 
@@ -1016,6 +1097,87 @@ interface CancelShowResult {
 
 ---
 
+### File: `lib/services/wallet.ts`
+
+Covers SMS wallet ledger operations used by send/refund and payment flows. These functions create an admin Supabase client internally because wallet debits/credits call service-role-only RPCs.
+
+---
+
+#### `ensureWallet`
+
+**Purpose:** Create a wallet row for the rep if one does not already exist, then return the current wallet row.
+
+**Signature (repo):**
+```typescript
+export async function ensureWallet(repId: string): Promise<WalletRow>
+```
+
+**Behavior:**
+- Upserts `sms_wallet` by `rep_id` with `ignoreDuplicates: true`
+- Reads the wallet row back by `rep_id`
+- Throws if the row still cannot be found
+
+**Return:** Full `WalletRow`, including `balance_mils`, threshold/recharge fields, lock fields, and timestamps.
+
+---
+
+#### `deductSmsCharge`
+
+**Purpose:** Deduct one billable SMS charge from a rep wallet.
+
+**Signature (repo):**
+```typescript
+export async function deductSmsCharge(
+  repId: string
+): Promise<{ success: boolean; new_balance_mils: number }>
+```
+
+**Behavior:**
+- Ensures the wallet exists for `repId`
+- Calls `deduct_wallet_balance(p_wallet_id UUID, p_amount INTEGER)` with `SMS_CHARGE_MILS`
+- Returns `{ success: false, new_balance_mils }` on `INSUFFICIENT_FUNDS` after a fresh balance read
+- Triggers `after(() => triggerAutoRecharge(...))` only when the RPC returns `should_recharge = true` with an attempt id
+
+**Hard boundary:** This function does not send SMS. It only handles the wallet debit and auto-recharge trigger state for the caller.
+
+---
+
+#### `refundSmsCharge`
+
+**Purpose:** Credit one SMS charge back to a rep wallet after a send failure or other refund-eligible event.
+
+**Signature (repo):**
+```typescript
+export async function refundSmsCharge(
+  repId: string,
+  description: string
+): Promise<{ new_balance_mils: number; credited: boolean }>
+```
+
+**Behavior:**
+- Ensures the wallet exists for `repId`
+- Calls `credit_wallet(...)` with `p_type = 'refund'`, `p_amount = SMS_CHARGE_MILS`, no Stripe payment intent, and the caller-provided description
+- Returns the RPC's `new_balance_mils` and `credited` fields
+
+---
+
+### File: `lib/services/wallet-units.ts`
+
+Defines the integer mil wallet unit rules used by wallet service code and Stripe amount conversion.
+
+**Key exports:**
+```typescript
+export const WALLET_MILS_PER_DOLLAR = 1000
+export const SMS_CHARGE_MILS = 9
+export function walletMilsToDollars(mils: number): number
+export function walletMilsToStripeCents(mils: number): number
+export function dollarsToWalletMils(dollars: number): number
+```
+
+**Why mils:** `$0.009` per SMS cannot be represented exactly as integer cents. Wallet storage stays integer-only by using thousandths of a dollar.
+
+---
+
 ## Supabase Storage — Jewelry Photos (Task 1.5B)
 
 **Bucket:** `jewelry-photos` (migration 029)
@@ -1186,6 +1348,7 @@ export function createServiceClient() {
 - `submitTradeRequest` → service client (customer is not authenticated as a rep)
 - `resolveItemNumber`, `createDesign` → service client (shared data, not rep-scoped)
 - `addShow`, `listMyShows`, `updateShow`, `cancelShow` → auth client (rep-scoped operations)
+- `ensureWallet`, `deductSmsCharge`, `refundSmsCharge` → admin client / service-role RPCs (wallet ledger operations)
 - ALL other functions → auth client (rep-scoped operations)
 
 ---
@@ -1228,7 +1391,7 @@ As of Task 1.6B ship (May 1, 2026), 13 Thumper tools map to these service functi
 | `update_show` | `updateShow` | calendar.ts | auth | No |
 | `cancel_show` | `cancelShow` | calendar.ts | auth | Yes |
 
-**Not exposed via Thumper:** `updateFulfillmentStatus`, `getFulfillmentQueue`, `submitTradeRequest` (customer-facing), `resolveItemNumber` (internal), `createDesign` (internal), `updateCanonicalPhoto` (internal).
+**Not exposed via Thumper:** `updateFulfillmentStatus`, `getFulfillmentQueue`, `submitTradeRequest` (customer-facing), `resolveItemNumber` (internal), `createDesign` (internal), `updateCanonicalPhoto` (internal), wallet RPCs (called only through wallet/payment service code).
 
 ---
 
@@ -1238,7 +1401,7 @@ These are handled by OTHER phases and other service modules:
 
 - **Thumper conversation management** — message history, streaming, model routing (Phase 1.1–1.4)
 - **Site customization** — banner, ticker, tagline, hero image (Phase 1.7)
-- **SMS/Email sending** — Telnyx, Resend, wallet billing, content screening (Phase 5)
+- **SMS/Email sending** — Telnyx, Resend, message content screening (Phase 5). This spec covers only wallet ledger/RPC contracts, not live provider sending.
 - **Thumper memory** — rep notes, conversation summaries (Phase 1.9)
 - **AI photo enhancement** — pre-flight check, Photoroom API, QA inspector (Phase 7)
 - **Onboarding pipeline** — agents, gates, intake form (Phase 8)
@@ -1251,6 +1414,7 @@ These are handled by OTHER phases and other service modules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2 addendum | May 13, 2026 | Documented SMS wallet service wrappers plus wallet RPC contracts: `deduct_wallet_balance`, `credit_wallet`, and `release_wallet_recharge_lock`. Clarified integer mil units and service-role-only RPC boundary. |
 | 1.2 | May 1, 2026 | Added calendar service layer (`calendar.ts`) with 4 functions: addShow (recurring series + multi-code discounts), listMyShows, updateShow (applyToSeries bulk updates), cancelShow. New types: DiscountCode, RecurringInput, EventStatus. Thumper tool mapping 9 → 13. Removed calendar from "not covered" section. |
 | 1.1 | April 30, 2026 | Aligned to deployed repo after Tasks 1.5A–1.5D. Fixed 3 HIGH drifts (searchJewelryDatabase, getTradeHistory, updateListing signatures). Removed update_fulfillment_status from Thumper scope. Added Supabase Storage jewelry-photos bucket. Added Thumper Tool ↔ Service Function mapping table. All signatures now show `(supabase, repId, ...)` repo pattern. |
 | 1.0 | April 11, 2026 | Initial spec. All 10 trade board tools + customer submission + fulfillment queue helper. One-request-per-piece rule (Session #23 decision). Three Postgres RPC functions. Two-layer security. |
