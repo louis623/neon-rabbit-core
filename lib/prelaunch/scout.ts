@@ -1439,10 +1439,17 @@ function extractScoutEvidenceFromHtml(
   const primaryOutboundLinkAssessment =
     assessPrimaryOutboundLink(outboundLinks)
   const evidenceSnippets = extractScoutEvidenceSnippets(html)
+  const actionAnchors =
+    label === PRIMARY_CUSTOMER_LINK_LABEL
+      ? [
+          ...outboundAnchors,
+          ...extractScoutSameSiteActionAnchors(url, canonicalUrl, html),
+        ]
+      : outboundAnchors
   const publicActionCandidates = extractScoutPublicActionCandidates(
     label,
     url,
-    outboundAnchors,
+    dedupeScoutOutboundAnchors(actionAnchors),
   )
 
   return {
@@ -1495,6 +1502,63 @@ function extractScoutOutboundAnchors(
     return { text, url }
   }).filter((value): value is ScoutOutboundAnchor => Boolean(value))
 
+  return dedupeScoutOutboundAnchors(anchors)
+}
+
+function extractScoutSameSiteActionAnchors(
+  sourceUrl: string,
+  canonicalUrl: string | null,
+  html: string,
+): ScoutOutboundAnchor[] {
+  const sameSiteHosts = new Set(
+    [sourceUrl, canonicalUrl]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => {
+        try {
+          return new URL(value).hostname.toLowerCase()
+        } catch {
+          return null
+        }
+      })
+      .filter((value): value is string => Boolean(value)),
+  )
+  const sourceUrls = new Set(
+    [sourceUrl, canonicalUrl]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => sanitizeScoutPublicUrl(value, new Set()))
+      .filter((value): value is string => Boolean(value)),
+  )
+
+  if (sameSiteHosts.size === 0) return []
+
+  const matches = html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)
+  const anchors = Array.from(matches, (match) => {
+    const href = decodeHtmlEntities(
+      extractHtmlMatch(match[1], /\bhref=["']([^"']+)["']/i),
+    )
+    const text = decodeHtmlEntities(stripScoutHtmlTags(match[2]))
+    const url = sanitizeScoutPublicUrl(href, new Set(), true, sourceUrl)
+
+    if (!url || sourceUrls.has(url)) return null
+
+    try {
+      const hostname = new URL(url).hostname.toLowerCase()
+      if (!sameSiteHosts.has(hostname)) return null
+    } catch {
+      return null
+    }
+
+    const anchor = { text, url }
+    const actionType = classifyScoutPublicActionCandidate(anchor)
+    if (actionType === 'unknown' || actionType === 'social') return null
+
+    return anchor
+  }).filter((value): value is ScoutOutboundAnchor => Boolean(value))
+
+  return dedupeScoutOutboundAnchors(anchors)
+}
+
+function dedupeScoutOutboundAnchors(anchors: ScoutOutboundAnchor[]) {
   const seen = new Set<string>()
 
   return anchors.filter((anchor) => {
@@ -1555,11 +1619,12 @@ function sanitizeScoutPublicUrl(
   value: string | null,
   disallowedHosts: Set<string>,
   allowSocialRedirectUnwrap = true,
+  baseUrl?: string,
 ): string | null {
   if (!value) return null
 
   try {
-    const parsed = new URL(value)
+    const parsed = baseUrl ? new URL(value, baseUrl) : new URL(value)
     const hostname = parsed.hostname.toLowerCase()
     const socialRedirectTarget = allowSocialRedirectUnwrap
       ? extractScoutSocialRedirectTarget(parsed)

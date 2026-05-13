@@ -317,6 +317,93 @@ describe('prelaunch Scout', () => {
     ])
   })
 
+  it('captures same-site CTA evidence from customer-link pages without extra fetches', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales and trade night clips." />
+                <link rel="canonical" href="https://www.tiktok.com/@jamieh" />
+              </head>
+              <body>
+                <a href="https://jamiehartjewelry.com/live">Shop tonight's live board</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry Live Shop</title>
+                <meta name="description" content="Shop the current live reveal board." />
+                <link rel="canonical" href="https://jamiehartjewelry.com/live" />
+              </head>
+              <body>
+                <a href="/vip?token=secret#top">Join VIP text list</a>
+                <a href="https://jamiehartjewelry.com/shop?utm_source=tiktok">Shop current board</a>
+                <a href="/privacy">Privacy Policy</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: '@jamieh',
+          instagram: null,
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://jamiehartjewelry.com/vip',
+      expect.any(Object),
+    )
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://jamiehartjewelry.com/shop',
+      expect.any(Object),
+    )
+    expect(result.capturedEvidence).toContainEqual(
+      expect.objectContaining({
+        label: 'Primary customer link',
+        outboundLinks: [],
+        publicActionCandidates: [
+          expect.objectContaining({
+            sourceLabel: 'Primary customer link',
+            sourceUrl: 'https://jamiehartjewelry.com/live',
+            text: 'Join VIP text list',
+            url: 'https://jamiehartjewelry.com/vip',
+            actionType: 'vip_text',
+          }),
+          expect.objectContaining({
+            sourceLabel: 'Primary customer link',
+            sourceUrl: 'https://jamiehartjewelry.com/live',
+            text: 'Shop current board',
+            url: 'https://jamiehartjewelry.com/shop',
+            actionType: 'shop',
+          }),
+        ],
+      }),
+    )
+  })
+
   it('captures public link-hub metadata without following hub destinations', async () => {
     const fetchMock = vi
       .fn()
