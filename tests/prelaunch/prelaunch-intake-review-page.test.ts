@@ -101,6 +101,15 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               capturedEvidenceCount: 2,
               reusedLessonCount: 1,
               reusedLessonStatus: 'available',
+              publicFunnel: {
+                shape: 'direct_site_first',
+                summary:
+                  'Public profiles point customers straight to the live shopping page.',
+                primaryLinks: ['https://jamiehartjewelry.com/live'],
+                concerns: [
+                  'Confirm the live link still matches the current show-night flow.',
+                ],
+              },
               reusedLessons: [
                 {
                   sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
@@ -142,6 +151,15 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('high confidence')
     expect(html).toContain('1 reused lesson')
     expect(html).toContain('lesson reuse available')
+    expect(html).toContain('Saved public funnel')
+    expect(html).toContain('direct site first')
+    expect(html).toContain(
+      'Public profiles point customers straight to the live shopping page.',
+    )
+    expect(html).toContain('https://jamiehartjewelry.com/live')
+    expect(html).toContain(
+      'Confirm the live link still matches the current show-night flow.',
+    )
     expect(html).toContain('Saved reused lessons')
     expect(html).toContain(
       'TikTok phone-only reps need a two-device plan before launch copy.',

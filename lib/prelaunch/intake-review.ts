@@ -40,6 +40,7 @@ export interface PrelaunchScoutRunReviewSummary {
   evidenceSourceStatuses?: PrelaunchScoutRunEvidenceSourceStatus[]
   reusedLessonCount?: number | null
   reusedLessonStatus?: string | null
+  publicFunnel?: PrelaunchScoutRunPublicFunnel
   reusedLessons?: PrelaunchScoutRunReusedLesson[]
 }
 
@@ -53,6 +54,13 @@ export interface PrelaunchScoutRunReusedLesson {
   sourceRunKey: string
   lesson: string
   similarityReasons?: string[]
+}
+
+export interface PrelaunchScoutRunPublicFunnel {
+  shape: 'direct_site_first' | 'hub_first' | 'unclear'
+  summary: string
+  primaryLinks: string[]
+  concerns: string[]
 }
 
 export interface PrelaunchIntakeReviewSubmission {

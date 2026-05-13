@@ -302,6 +302,60 @@ export function PrelaunchIntakeReviewPageContent({
                         </ul>
                       </div>
                     ) : null}
+                    {submission.latestScoutRun.publicFunnel ? (
+                      <div className="mt-3 rounded-md border border-sky-100 bg-white p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
+                          Saved public funnel
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-slate-900">
+                          {formatLabel(
+                            submission.latestScoutRun.publicFunnel.shape,
+                          )}
+                        </p>
+                        <p className="mt-1 leading-6 text-slate-700">
+                          {submission.latestScoutRun.publicFunnel.summary}
+                        </p>
+                        {submission.latestScoutRun.publicFunnel.primaryLinks
+                          .length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Primary public links
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs">
+                              {submission.latestScoutRun.publicFunnel.primaryLinks.map(
+                                (link) => (
+                                  <li key={link}>
+                                    <a
+                                      className="break-all font-semibold text-sky-700 underline"
+                                      href={link}
+                                      rel="noreferrer"
+                                      target="_blank"
+                                    >
+                                      {link}
+                                    </a>
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScoutRun.publicFunnel.concerns
+                          .length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Funnel checks
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.publicFunnel.concerns.map(
+                                (concern) => (
+                                  <li key={concern}>{concern}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {(submission.latestScoutRun.reusedLessons ?? []).length >
                     0 ? (
                       <div className="mt-3 rounded-md border border-amber-100 bg-white p-3">

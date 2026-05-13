@@ -205,6 +205,13 @@ describe('prelaunch intake review helpers', () => {
             ],
           },
           output: {
+            publicFunnel: {
+              shape: 'direct_site_first',
+              summary:
+                'Public profiles point customers straight to the live shopping page.',
+              primaryLinks: ['https://jamiehartjewelry.com/live'],
+              concerns: [],
+            },
             reusedLessons: [
               {
                 sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',
@@ -275,6 +282,13 @@ describe('prelaunch intake review helpers', () => {
       capturedEvidenceCount: 2,
       reusedLessonCount: 1,
       reusedLessonStatus: 'available',
+      publicFunnel: {
+        shape: 'direct_site_first',
+        summary:
+          'Public profiles point customers straight to the live shopping page.',
+        primaryLinks: ['https://jamiehartjewelry.com/live'],
+        concerns: [],
+      },
       reusedLessons: [
         {
           sourceRunKey: 'scout:tiktok-intake:2026-05-09T18:30:00.000Z',

@@ -54,6 +54,7 @@ interface PrelaunchScoutRunReviewRow {
     reused_lesson_status?: unknown
   } | null
   output: {
+    publicFunnel?: unknown
     reusedLessons?: unknown
   } | null
 }
@@ -132,10 +133,46 @@ function normalizeReusedLessons(value: unknown) {
     )
 }
 
+function normalizePublicFunnel(value: unknown) {
+  if (!value || typeof value !== 'object') return null
+
+  const record = value as {
+    shape?: unknown
+    summary?: unknown
+    primaryLinks?: unknown
+    concerns?: unknown
+  }
+  const validShapes = new Set(['direct_site_first', 'hub_first', 'unclear'])
+
+  if (
+    typeof record.shape !== 'string' ||
+    !validShapes.has(record.shape) ||
+    typeof record.summary !== 'string'
+  ) {
+    return null
+  }
+
+  return {
+    shape: record.shape as 'direct_site_first' | 'hub_first' | 'unclear',
+    summary: record.summary,
+    primaryLinks: Array.isArray(record.primaryLinks)
+      ? record.primaryLinks.filter(
+          (link): link is string => typeof link === 'string',
+        )
+      : [],
+    concerns: Array.isArray(record.concerns)
+      ? record.concerns.filter(
+          (concern): concern is string => typeof concern === 'string',
+        )
+      : [],
+  }
+}
+
 function normalizeScoutRunReviewRow(
   row: PrelaunchScoutRunReviewRow,
 ): PrelaunchScoutRunReviewSummary {
   const reusedLessons = normalizeReusedLessons(row.output?.reusedLessons)
+  const publicFunnel = normalizePublicFunnel(row.output?.publicFunnel)
 
   return {
     runKey: row.run_key,
@@ -168,6 +205,7 @@ function normalizeScoutRunReviewRow(
       typeof row.metadata?.reused_lesson_status === 'string'
         ? row.metadata.reused_lesson_status
         : null,
+    ...(publicFunnel ? { publicFunnel } : {}),
     ...(reusedLessons.length > 0 ? { reusedLessons } : {}),
   }
 }
