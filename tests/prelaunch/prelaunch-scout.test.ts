@@ -500,6 +500,200 @@ describe('prelaunch Scout', () => {
     ])
   })
 
+  it('unwraps known social redirect URLs before the one-hop customer-link check', async () => {
+    const instagramRedirect =
+      'https://l.instagram.com/?u=https%3A%2F%2Fjamiehartjewelry.com%2Flive%3Ftoken%3Dsecret%26utm_source%3Dinstagram%23top'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | Instagram</title>
+                <meta property="og:description" content="Live reminders and customer updates." />
+                <link rel="canonical" href="https://www.instagram.com/jamiebling/" />
+              </head>
+              <body>
+                <a href="${instagramRedirect}">Live shop</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry Live Shop</title>
+                <meta name="description" content="Shop the current live reveal board." />
+                <link rel="canonical" href="https://jamiehartjewelry.com/live" />
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: null,
+          instagram: '@jamiebling',
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://www.instagram.com/jamiebling/',
+      expect.any(Object),
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://jamiehartjewelry.com/live',
+      expect.any(Object),
+    )
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://l.instagram.com',
+      expect.any(Object),
+    )
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'Instagram',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+      }),
+      expect.objectContaining({
+        label: 'Primary customer link',
+        url: 'https://jamiehartjewelry.com/live',
+      }),
+    ])
+  })
+
+  it('drops social redirect targets that unwrap to private URLs', async () => {
+    const privateRedirect =
+      'https://l.instagram.com/?u=http%3A%2F%2F127.0.0.1%2Fadmin'
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+      text: async () =>
+        `
+          <html>
+            <head>
+              <title>Jamie Hart Jewelry | Instagram</title>
+              <meta property="og:description" content="Live reminders and customer updates." />
+              <link rel="canonical" href="https://www.instagram.com/jamiebling/" />
+            </head>
+            <body>
+              <a href="${privateRedirect}">Preview draft</a>
+            </body>
+          </html>
+        `,
+    } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: null,
+          instagram: '@jamiebling',
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'Instagram',
+        outboundLinks: [],
+        primaryOutboundLink: null,
+      }),
+    ])
+  })
+
+  it('unwraps known Facebook l.php redirect URLs before customer-link checks', async () => {
+    const facebookRedirect =
+      'https://www.facebook.com/l.php?u=https%3A%2F%2Fjamiehartjewelry.com%2Flive%3Ffbclid%3Dsecret%23replay'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | Facebook</title>
+                <meta property="og:description" content="Live sale reminders and replay links." />
+                <link rel="canonical" href="https://www.facebook.com/jamiehartjewelry" />
+              </head>
+              <body>
+                <a href="${facebookRedirect}">Live board</a>
+              </body>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry Live Board</title>
+                <meta name="description" content="Claim favorites from the current live board." />
+                <link rel="canonical" href="https://jamiehartjewelry.com/live" />
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: null,
+          instagram: null,
+          facebook: 'https://www.facebook.com/jamiehartjewelry',
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://jamiehartjewelry.com/live',
+      expect.any(Object),
+    )
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'Facebook',
+        outboundLinks: ['https://jamiehartjewelry.com/live'],
+        primaryOutboundLink: 'https://jamiehartjewelry.com/live',
+      }),
+      expect.objectContaining({
+        label: 'Primary customer link',
+        url: 'https://jamiehartjewelry.com/live',
+      }),
+    ])
+  })
+
   it('keeps image-only public links eligible for one-hop customer-link checks', async () => {
     const fetchMock = vi
       .fn()

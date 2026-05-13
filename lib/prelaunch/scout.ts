@@ -1554,12 +1554,22 @@ function classifyScoutPublicActionCandidate({
 function sanitizeScoutPublicUrl(
   value: string | null,
   disallowedHosts: Set<string>,
-) {
+  allowSocialRedirectUnwrap = true,
+): string | null {
   if (!value) return null
 
   try {
     const parsed = new URL(value)
     const hostname = parsed.hostname.toLowerCase()
+    const socialRedirectTarget = allowSocialRedirectUnwrap
+      ? extractScoutSocialRedirectTarget(parsed)
+      : undefined
+
+    if (socialRedirectTarget !== undefined) {
+      return socialRedirectTarget
+        ? sanitizeScoutPublicUrl(socialRedirectTarget, disallowedHosts, false)
+        : null
+    }
 
     if (!['http:', 'https:'].includes(parsed.protocol)) return null
     if (disallowedHosts.has(hostname)) return null
@@ -1572,6 +1582,29 @@ function sanitizeScoutPublicUrl(
   } catch {
     return null
   }
+}
+
+function extractScoutSocialRedirectTarget(parsed: URL) {
+  const hostname = parsed.hostname.toLowerCase()
+
+  if (hostname === 'l.instagram.com') {
+    return parsed.searchParams.get('u') ?? null
+  }
+
+  if (hostname === 'l.facebook.com' || hostname === 'lm.facebook.com') {
+    return parsed.searchParams.get('u') ?? null
+  }
+
+  if (
+    (hostname === 'facebook.com' ||
+      hostname === 'www.facebook.com' ||
+      hostname === 'm.facebook.com') &&
+    parsed.pathname === '/l.php'
+  ) {
+    return parsed.searchParams.get('u') ?? null
+  }
+
+  return undefined
 }
 
 function isPrivateScoutHostname(hostname: string) {
