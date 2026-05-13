@@ -101,6 +101,25 @@ describe('PrelaunchIntakeReviewPageContent', () => {
               capturedEvidenceCount: 2,
               reusedLessonCount: 1,
               reusedLessonStatus: 'available',
+              researchSynthesis: {
+                status: 'deterministic_fallback',
+                discoveryAngle:
+                  'The public path is ready for a focused discovery call.',
+                summaryBullets: ['TikTok points directly to live shopping.'],
+                followUpQuestions: [
+                  'Which live-shopping action should Scout prioritize?',
+                ],
+                evidenceBackedObservations: [
+                  'Public profile and customer link both mention live shopping.',
+                ],
+                manualVerificationNeeded: [
+                  'Confirm the live link is still current before outreach.',
+                ],
+                contradictions: [
+                  'Instagram profile still points to an older link.',
+                ],
+                confidence: 'high',
+              },
               publicFunnel: {
                 shape: 'direct_site_first',
                 summary:
@@ -151,6 +170,26 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('high confidence')
     expect(html).toContain('1 reused lesson')
     expect(html).toContain('lesson reuse available')
+    expect(html).toContain('Saved synthesis')
+    expect(html).toContain(
+      'The public path is ready for a focused discovery call.',
+    )
+    expect(html).toContain('What stands out')
+    expect(html).toContain('TikTok points directly to live shopping.')
+    expect(html).toContain('Grounded observations')
+    expect(html).toContain(
+      'Public profile and customer link both mention live shopping.',
+    )
+    expect(html).toContain('Manual verification needed')
+    expect(html).toContain(
+      'Confirm the live link is still current before outreach.',
+    )
+    expect(html).toContain('Contradictions or tensions')
+    expect(html).toContain('Instagram profile still points to an older link.')
+    expect(html).toContain('Follow-up questions')
+    expect(html).toContain(
+      'Which live-shopping action should Scout prioritize?',
+    )
     expect(html).toContain('Saved public funnel')
     expect(html).toContain('direct site first')
     expect(html).toContain(

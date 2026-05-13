@@ -55,8 +55,15 @@ interface PrelaunchScoutRunReviewRow {
   } | null
   output: {
     publicFunnel?: unknown
+    researchSynthesis?: unknown
     reusedLessons?: unknown
   } | null
+}
+
+function normalizeStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : []
 }
 
 function normalizeEvidenceSourceStatuses(value: unknown) {
@@ -110,11 +117,7 @@ function normalizeReusedLessons(value: unknown) {
         return null
       }
 
-      const similarityReasons = Array.isArray(record.similarityReasons)
-        ? record.similarityReasons.filter(
-            (reason): reason is string => typeof reason === 'string',
-          )
-        : []
+      const similarityReasons = normalizeStringArray(record.similarityReasons)
 
       return {
         sourceRunKey: record.sourceRunKey,
@@ -156,15 +159,60 @@ function normalizePublicFunnel(value: unknown) {
     shape: record.shape as 'direct_site_first' | 'hub_first' | 'unclear',
     summary: record.summary,
     primaryLinks: Array.isArray(record.primaryLinks)
-      ? record.primaryLinks.filter(
-          (link): link is string => typeof link === 'string',
-        )
+      ? normalizeStringArray(record.primaryLinks)
       : [],
     concerns: Array.isArray(record.concerns)
-      ? record.concerns.filter(
-          (concern): concern is string => typeof concern === 'string',
-        )
+      ? normalizeStringArray(record.concerns)
       : [],
+  }
+}
+
+function normalizeResearchSynthesis(value: unknown) {
+  if (!value || typeof value !== 'object') return null
+
+  const record = value as {
+    status?: unknown
+    discoveryAngle?: unknown
+    summaryBullets?: unknown
+    followUpQuestions?: unknown
+    evidenceBackedObservations?: unknown
+    manualVerificationNeeded?: unknown
+    contradictions?: unknown
+    confidence?: unknown
+  }
+  const validStatuses = new Set([
+    'not_available',
+    'deterministic_fallback',
+    'model_generated',
+  ])
+  const validConfidence = new Set(['low', 'medium', 'high'])
+
+  if (
+    typeof record.status !== 'string' ||
+    !validStatuses.has(record.status) ||
+    typeof record.confidence !== 'string' ||
+    !validConfidence.has(record.confidence)
+  ) {
+    return null
+  }
+
+  return {
+    status: record.status as
+      | 'not_available'
+      | 'deterministic_fallback'
+      | 'model_generated',
+    discoveryAngle:
+      typeof record.discoveryAngle === 'string' ? record.discoveryAngle : null,
+    summaryBullets: normalizeStringArray(record.summaryBullets),
+    followUpQuestions: normalizeStringArray(record.followUpQuestions),
+    evidenceBackedObservations: normalizeStringArray(
+      record.evidenceBackedObservations,
+    ),
+    manualVerificationNeeded: normalizeStringArray(
+      record.manualVerificationNeeded,
+    ),
+    contradictions: normalizeStringArray(record.contradictions),
+    confidence: record.confidence as 'low' | 'medium' | 'high',
   }
 }
 
@@ -173,6 +221,9 @@ function normalizeScoutRunReviewRow(
 ): PrelaunchScoutRunReviewSummary {
   const reusedLessons = normalizeReusedLessons(row.output?.reusedLessons)
   const publicFunnel = normalizePublicFunnel(row.output?.publicFunnel)
+  const researchSynthesis = normalizeResearchSynthesis(
+    row.output?.researchSynthesis,
+  )
 
   return {
     runKey: row.run_key,
@@ -205,6 +256,7 @@ function normalizeScoutRunReviewRow(
       typeof row.metadata?.reused_lesson_status === 'string'
         ? row.metadata.reused_lesson_status
         : null,
+    ...(researchSynthesis ? { researchSynthesis } : {}),
     ...(publicFunnel ? { publicFunnel } : {}),
     ...(reusedLessons.length > 0 ? { reusedLessons } : {}),
   }

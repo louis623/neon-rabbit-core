@@ -40,6 +40,7 @@ export interface PrelaunchScoutRunReviewSummary {
   evidenceSourceStatuses?: PrelaunchScoutRunEvidenceSourceStatus[]
   reusedLessonCount?: number | null
   reusedLessonStatus?: string | null
+  researchSynthesis?: PrelaunchScoutRunResearchSynthesis
   publicFunnel?: PrelaunchScoutRunPublicFunnel
   reusedLessons?: PrelaunchScoutRunReusedLesson[]
 }
@@ -61,6 +62,17 @@ export interface PrelaunchScoutRunPublicFunnel {
   summary: string
   primaryLinks: string[]
   concerns: string[]
+}
+
+export interface PrelaunchScoutRunResearchSynthesis {
+  status: 'not_available' | 'deterministic_fallback' | 'model_generated'
+  discoveryAngle: string | null
+  summaryBullets: string[]
+  followUpQuestions: string[]
+  evidenceBackedObservations: string[]
+  manualVerificationNeeded: string[]
+  contradictions: string[]
+  confidence: 'low' | 'medium' | 'high'
 }
 
 export interface PrelaunchIntakeReviewSubmission {

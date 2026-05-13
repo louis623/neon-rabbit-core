@@ -273,6 +273,106 @@ export function PrelaunchIntakeReviewPageContent({
                         </span>
                       ) : null}
                     </div>
+                    {submission.latestScoutRun.researchSynthesis &&
+                    submission.latestScoutRun.researchSynthesis.status !==
+                      'not_available' ? (
+                      <div className="mt-3 rounded-md border border-violet-100 bg-white p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">
+                          Saved synthesis
+                        </p>
+                        {submission.latestScoutRun.researchSynthesis
+                          .discoveryAngle ? (
+                          <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                            {
+                              submission.latestScoutRun.researchSynthesis
+                                .discoveryAngle
+                            }
+                          </p>
+                        ) : null}
+                        <p className="mt-2 text-xs font-semibold uppercase text-violet-700">
+                          Confidence:{' '}
+                          {
+                            submission.latestScoutRun.researchSynthesis
+                              .confidence
+                          }
+                        </p>
+                        {submission.latestScoutRun.researchSynthesis
+                          .summaryBullets.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              What stands out
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.researchSynthesis.summaryBullets.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScoutRun.researchSynthesis
+                          .evidenceBackedObservations.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Grounded observations
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.researchSynthesis.evidenceBackedObservations.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScoutRun.researchSynthesis
+                          .manualVerificationNeeded.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Manual verification needed
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.researchSynthesis.manualVerificationNeeded.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScoutRun.researchSynthesis
+                          .contradictions.length > 0 ? (
+                          <div className="mt-3 rounded-md bg-violet-50 p-2">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Contradictions or tensions
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.researchSynthesis.contradictions.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScoutRun.researchSynthesis
+                          .followUpQuestions.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Follow-up questions
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScoutRun.researchSynthesis.followUpQuestions.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {(submission.latestScoutRun.evidenceSourceStatuses ?? [])
                       .length > 0 ? (
                       <div className="mt-3 rounded-md border border-sky-100 bg-white p-3">

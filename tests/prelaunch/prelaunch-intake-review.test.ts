@@ -205,6 +205,25 @@ describe('prelaunch intake review helpers', () => {
             ],
           },
           output: {
+            researchSynthesis: {
+              status: 'deterministic_fallback',
+              discoveryAngle:
+                'The public path is ready for a focused discovery call.',
+              summaryBullets: ['TikTok points directly to live shopping.'],
+              followUpQuestions: [
+                'Which live-shopping action should Scout prioritize?',
+              ],
+              evidenceBackedObservations: [
+                'Public profile and customer link both mention live shopping.',
+              ],
+              manualVerificationNeeded: [
+                'Confirm the live link is still current before outreach.',
+              ],
+              contradictions: [
+                'Instagram profile still points to an older link.',
+              ],
+              confidence: 'high',
+            },
             publicFunnel: {
               shape: 'direct_site_first',
               summary:
@@ -282,6 +301,23 @@ describe('prelaunch intake review helpers', () => {
       capturedEvidenceCount: 2,
       reusedLessonCount: 1,
       reusedLessonStatus: 'available',
+      researchSynthesis: {
+        status: 'deterministic_fallback',
+        discoveryAngle:
+          'The public path is ready for a focused discovery call.',
+        summaryBullets: ['TikTok points directly to live shopping.'],
+        followUpQuestions: [
+          'Which live-shopping action should Scout prioritize?',
+        ],
+        evidenceBackedObservations: [
+          'Public profile and customer link both mention live shopping.',
+        ],
+        manualVerificationNeeded: [
+          'Confirm the live link is still current before outreach.',
+        ],
+        contradictions: ['Instagram profile still points to an older link.'],
+        confidence: 'high',
+      },
       publicFunnel: {
         shape: 'direct_site_first',
         summary:
