@@ -6,6 +6,7 @@ import {
   getPrelaunchGateReadiness,
   type PrelaunchGateReadinessItem,
 } from '@/lib/prelaunch/gate-readiness'
+import { buildCameraQualityPrep } from '@/lib/prelaunch/camera-quality-prep'
 import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
@@ -302,6 +303,7 @@ export function PrelaunchIntakeReviewPageContent({
                 gateReadiness,
               )
               const photographyKitPrep = buildPhotographyKitPrep(submission)
+              const cameraQualityPrep = buildCameraQualityPrep(submission)
 
               return (
                 <article
@@ -473,6 +475,47 @@ export function PrelaunchIntakeReviewPageContent({
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {photographyKitPrep.guardrails.map((guardrail) => (
+                      <span
+                        className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-700"
+                        key={guardrail}
+                      >
+                        {guardrail}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Camera quality prep
+                    </p>
+                    <h3 className="mt-1 font-semibold text-slate-950">
+                      Sample photo required before setup readiness
+                    </h3>
+                    <p className="mt-1 leading-5 text-slate-600">
+                      Operator-only screening guidance for the rep actual
+                      capture setup. This does not approve hardware, shipping,
+                      pricing, or fulfillment.
+                    </p>
+                  </div>
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {cameraQualityPrep.items.map((item) => (
+                      <div
+                        className={`rounded-md border p-3 ${photographyPrepClass(
+                          item.status,
+                        )}`}
+                        key={item.label}
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-xs leading-5">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {cameraQualityPrep.guardrails.map((guardrail) => (
                       <span
                         className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-700"
                         key={guardrail}

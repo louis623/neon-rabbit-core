@@ -260,6 +260,23 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Collect kit fee')
   })
 
+  it('renders camera quality prep without live fulfillment actions', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [submission],
+      }),
+    )
+
+    expect(html).toContain('Camera quality prep')
+    expect(html).toContain('Sample photo still needs Nic-Nac screening')
+    expect(html).toContain('Confirm two-device workflow')
+    expect(html).toContain('Do not treat this as kit approval')
+    expect(html).not.toContain('Send SMS')
+    expect(html).not.toContain('Order camera')
+    expect(html).not.toContain('Approve shipment')
+    expect(html).not.toContain('Collect kit fee')
+  })
+
   it('renders the latest saved Scout run on each intake card', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
