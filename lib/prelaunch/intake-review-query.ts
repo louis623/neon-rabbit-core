@@ -330,7 +330,9 @@ function normalizeScribeTranscriptSignals(value: unknown) {
 function normalizeScribeBrief(value: unknown): PrelaunchScribeBrief | null {
   if (!value || typeof value !== 'object') return null
 
-  const record = value as PrelaunchScribeBrief
+  const record = value as PrelaunchScribeBrief & {
+    manualReviewWarnings?: unknown
+  }
 
   if (
     record.status !== 'draft_ready' ||
@@ -345,7 +347,10 @@ function normalizeScribeBrief(value: unknown): PrelaunchScribeBrief | null {
     return null
   }
 
-  return record
+  return {
+    ...record,
+    manualReviewWarnings: normalizeStringArray(record.manualReviewWarnings),
+  }
 }
 
 function normalizeScribeTranscriptRunReviewRow(

@@ -31,6 +31,7 @@ export interface PrelaunchScribeBrief {
     openQuestions: string[]
   }
   operatorChecklist: string[]
+  manualReviewWarnings: string[]
   provenance: {
     meetingProvider: 'google_meet'
     transcriptionProvider: 'gemini'
@@ -40,6 +41,9 @@ export interface PrelaunchScribeBrief {
     transcriptCharCount: number
   }
 }
+
+const GATE_REVIEW_PATTERN =
+  /\b(signwell|agreement|contract|legal|attorney|price|pricing|payment|fee|stripe|checkout|start work|launch fee|launch approval|launch gate)\b/i
 
 function formatCount(
   value: number,
@@ -55,6 +59,13 @@ export function buildPrelaunchScribeBrief({
   transcriptHookOutput,
 }: BuildPrelaunchScribeBriefOptions): PrelaunchScribeBrief {
   const { transcript, signals, nextAgent } = transcriptHookOutput
+  const manualReviewWarnings = signals.actionItems.some((item) =>
+    GATE_REVIEW_PATTERN.test(item),
+  )
+    ? [
+        'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+      ]
+    : []
 
   return {
     status: 'draft_ready',
@@ -91,6 +102,7 @@ export function buildPrelaunchScribeBrief({
       'Review all Scribe draft fields before copying them into onboarding or Builder work.',
       'Do not treat this draft as legal, payment, or launch approval.',
     ],
+    manualReviewWarnings,
     provenance: {
       meetingProvider: transcript.source.meetingProvider,
       transcriptionProvider: transcript.source.transcriptionProvider,

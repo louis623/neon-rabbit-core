@@ -808,6 +808,21 @@ export function PrelaunchIntakeReviewPageContent({
                             )}
                           </ul>
                         </div>
+                        {submission.latestScribeTranscriptRun.scribeBrief
+                          .manualReviewWarnings.length > 0 ? (
+                          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+                            <p className="text-xs font-semibold uppercase text-amber-800">
+                              Scribe guardrails
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-amber-900">
+                              {submission.latestScribeTranscriptRun.scribeBrief.manualReviewWarnings.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
                     <div className="mt-3 flex flex-col gap-1 text-xs font-semibold text-slate-500">
