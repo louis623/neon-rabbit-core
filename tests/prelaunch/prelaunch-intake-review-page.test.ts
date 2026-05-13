@@ -141,6 +141,104 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('New /prelaunch intake forms will appear here')
   })
 
+  it('renders consolidated next operator steps for blocked intake handoffs', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            waitlistId: null,
+            latestScoutRun: {
+              runKey: 'scout:intake-1:2026-05-09T19:30:00.000Z',
+              status: 'failed',
+              triggerSource: 'intake_submission',
+              model: 'deterministic_scout_v1',
+              summary: null,
+              errorMessage: 'Public evidence fetch timed out.',
+              createdAt: '2026-05-09T19:30:00Z',
+              synthesisStatus: null,
+              synthesisConfidence: null,
+              capturedEvidenceCount: null,
+            },
+            latestScribeTranscriptRun: {
+              runKey: 'scribe_hook:intake-1:drive-file-123',
+              status: 'queued',
+              triggerSource: 'google_meet_gemini_transcript',
+              model: 'gemini_transcript_hook_v1',
+              summary: 'Gemini transcript captured; Scribe processing is queued.',
+              errorMessage: null,
+              createdAt: '2026-05-13T17:00:00Z',
+              driveFileId: 'drive-file-123',
+              driveFileUrl: null,
+              meetUrl: null,
+              meetingTitle: null,
+              transcriptCharCount: 248,
+              speakerCount: 2,
+              decisionCount: 1,
+              actionItemCount: 1,
+              clientPreferenceCount: 1,
+              scribeStatus: 'queued',
+              statusForScribe: 'ready_for_scribe',
+              speakerNames: ['Louis', 'Jamie'],
+              preview: null,
+              signals: {
+                decisions: [],
+                clientPreferences: [],
+                actionItems: ['send the SignWell agreement.'],
+                openQuestions: [],
+              },
+              scribeBrief: {
+                status: 'draft_ready',
+                sourceRunKey: 'scribe_hook:intake-1:drive-file-123',
+                summary: 'Scribe draft is ready for operator review.',
+                meeting: {
+                  title: null,
+                  startedAt: null,
+                  speakerNames: ['Louis', 'Jamie'],
+                },
+                profileDraft: {
+                  intakeId: 'intake-1',
+                  ownerName: 'Jamie Hart',
+                  businessName: 'Jamie Hart Jewelry',
+                  confirmedDecisions: [],
+                  styleAndSetupSignals: [],
+                  actionItems: ['send the SignWell agreement.'],
+                  openQuestions: [],
+                },
+                operatorChecklist: [
+                  'Review all Scribe draft fields before copying them into onboarding or Builder work.',
+                ],
+                manualReviewWarnings: [
+                  'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+                ],
+                provenance: {
+                  meetingProvider: 'google_meet',
+                  transcriptionProvider: 'gemini',
+                  driveFileId: 'drive-file-123',
+                  driveFileUrl: null,
+                  meetUrl: null,
+                  transcriptCharCount: 248,
+                },
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Next operator steps')
+    expect(html).toContain('Handoff blocked')
+    expect(html).toContain('Resolve fit review')
+    expect(html).toContain('phone_only_setup')
+    expect(html).toContain('Link waitlist lead')
+    expect(html).toContain('Review failed Scout run')
+    expect(html).toContain('Public evidence fetch timed out.')
+    expect(html).toContain('Review Scribe guardrails')
+    expect(html).toContain('Keep launch gates disabled')
+    expect(html).not.toContain('Send agreement')
+    expect(html).not.toContain('Collect payment')
+  })
+
   it('renders the latest saved Scout run on each intake card', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

@@ -2,12 +2,21 @@ import {
   buildPrelaunchScoutInput,
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
-import { getPrelaunchGateReadiness } from '@/lib/prelaunch/gate-readiness'
+import {
+  getPrelaunchGateReadiness,
+  type PrelaunchGateReadinessItem,
+} from '@/lib/prelaunch/gate-readiness'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
   submissions: PrelaunchIntakeReviewSubmission[]
+}
+
+interface OperatorReadinessItem {
+  label: string
+  detail: string
+  status: 'blocked' | 'review' | 'ready'
 }
 
 function formatValue(value: string | null | undefined) {
@@ -40,6 +49,116 @@ function gateStatusClass(status: string) {
   }
 
   return 'border-slate-200 bg-slate-100 text-slate-700'
+}
+
+function operatorStepClass(status: string) {
+  if (status === 'blocked') return 'border-red-200 bg-red-50 text-red-900'
+  if (status === 'review') return 'border-amber-200 bg-amber-50 text-amber-900'
+
+  return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+}
+
+function buildOperatorReadiness(
+  submission: PrelaunchIntakeReviewSubmission,
+  gates: PrelaunchGateReadinessItem[],
+) {
+  const items: OperatorReadinessItem[] = []
+
+  if (
+    submission.prequalificationStatus === 'needs_review' ||
+    submission.fitFlags.length > 0
+  ) {
+    items.push({
+      label: 'Resolve fit review',
+      detail:
+        submission.fitFlags.length > 0
+          ? `Open fit flags: ${submission.fitFlags.join(', ')}.`
+          : 'Prequalification still needs operator review.',
+      status: 'blocked',
+    })
+  } else {
+    items.push({
+      label: 'Fit review clear',
+      detail: 'No current fit flags are attached to this intake.',
+      status: 'ready',
+    })
+  }
+
+  items.push(
+    submission.waitlistId
+      ? {
+          label: 'Waitlist linked',
+          detail: 'The intake is connected to a waitlist lead.',
+          status: 'ready',
+        }
+      : {
+          label: 'Link waitlist lead',
+          detail: 'Connect the intake to the matching waitlist row before handoff.',
+          status: 'blocked',
+        },
+  )
+
+  if (!submission.latestScoutRun) {
+    items.push({
+      label: 'Run Scout',
+      detail: 'No saved Scout run is visible for this intake yet.',
+      status: 'review',
+    })
+  } else if (submission.latestScoutRun.status === 'failed') {
+    items.push({
+      label: 'Review failed Scout run',
+      detail:
+        submission.latestScoutRun.errorMessage ??
+        'The latest Scout run failed and needs operator review.',
+      status: 'blocked',
+    })
+  } else {
+    items.push({
+      label: 'Scout run saved',
+      detail: `Latest Scout status: ${formatLabel(
+        submission.latestScoutRun.status,
+      )}.`,
+      status: 'ready',
+    })
+  }
+
+  const scribeWarnings =
+    submission.latestScribeTranscriptRun?.scribeBrief?.manualReviewWarnings ?? []
+
+  if (scribeWarnings.length > 0) {
+    items.push({
+      label: 'Review Scribe guardrails',
+      detail: scribeWarnings[0],
+      status: 'blocked',
+    })
+  } else if (submission.latestScribeTranscriptRun?.scribeBrief) {
+    items.push({
+      label: 'Scribe brief ready',
+      detail: 'Scribe has a read-only follow-up brief ready for operator review.',
+      status: 'ready',
+    })
+  } else if (submission.handoffStatus === 'meeting_ready') {
+    items.push({
+      label: 'Review transcript handoff',
+      detail: 'The intake is marked meeting-ready, but no Scribe brief is visible yet.',
+      status: 'review',
+    })
+  }
+
+  items.push({
+    label: 'Keep launch gates disabled',
+    detail: gates
+      .map((gate) => `${gate.label}: ${gate.displayStatus}`)
+      .join('; '),
+    status: 'review',
+  })
+
+  return {
+    label: items.some((item) => item.status === 'blocked')
+      ? 'Handoff blocked'
+      : 'Operator review needed',
+    items,
+  }
 }
 
 function BriefList({
@@ -168,11 +287,46 @@ export function PrelaunchIntakeReviewPageContent({
           </section>
         ) : (
           <section className="flex flex-col gap-4" aria-label="Submissions">
-            {submissions.map((submission) => (
-              <article
-                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-                key={submission.id}
-              >
+            {submissions.map((submission) => {
+              const operatorReadiness = buildOperatorReadiness(
+                submission,
+                gateReadiness,
+              )
+
+              return (
+                <article
+                  className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+                  key={submission.id}
+                >
+                  <section className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            Next operator steps
+                          </p>
+                          <h3 className="mt-1 text-base font-semibold text-slate-950">
+                            {operatorReadiness.label}
+                          </h3>
+                        </div>
+                      </div>
+                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                        {operatorReadiness.items.map((item) => (
+                          <div
+                            className={`rounded-md border p-3 ${operatorStepClass(
+                              item.status,
+                            )}`}
+                            key={item.label}
+                          >
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                              {item.label}
+                            </p>
+                            <p className="mt-1 text-xs leading-5">
+                              {item.detail}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <p className="text-sm text-slate-500">
@@ -863,8 +1017,9 @@ export function PrelaunchIntakeReviewPageContent({
                     {JSON.stringify(buildPrelaunchScoutInput(submission), null, 2)}
                   </pre>
                 </details>
-              </article>
-            ))}
+                </article>
+              )
+            })}
           </section>
         )}
       </div>
