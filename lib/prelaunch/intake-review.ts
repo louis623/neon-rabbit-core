@@ -22,6 +22,7 @@ export interface PrelaunchIntakeReviewRow {
   fit_flags: string[]
   waitlist_id: string | null
   scout_input_status: string
+  handoff_status: string
   created_at: string
   updated_at: string
 }
@@ -132,6 +133,7 @@ export interface PrelaunchIntakeReviewSubmission {
   fitFlags: string[]
   waitlistId: string | null
   scoutInputStatus: string
+  handoffStatus: string
   latestScoutRun: PrelaunchScoutRunReviewSummary | null
   latestScribeTranscriptRun?: PrelaunchScribeTranscriptRunReviewSummary | null
   createdAt: string
@@ -169,6 +171,7 @@ export function normalizePrelaunchIntakeReviewRows(
     fitFlags: row.fit_flags,
     waitlistId: row.waitlist_id,
     scoutInputStatus: row.scout_input_status,
+    handoffStatus: row.handoff_status,
     latestScoutRun: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

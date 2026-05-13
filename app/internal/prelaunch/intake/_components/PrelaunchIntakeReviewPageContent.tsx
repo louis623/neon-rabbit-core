@@ -45,6 +45,9 @@ export function PrelaunchIntakeReviewPageContent({
   const scoutReady = submissions.filter(
     (submission) => submission.scoutInputStatus === 'ready',
   ).length
+  const meetingReady = submissions.filter(
+    (submission) => submission.handoffStatus === 'meeting_ready',
+  ).length
 
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
@@ -81,6 +84,7 @@ export function PrelaunchIntakeReviewPageContent({
             [`${needsReview} needs review`, 'Fit flags or incomplete setup'],
             [`${qualified} qualified`, 'No current fit flags'],
             [`${scoutReady} Scout ready`, 'Ready for agent handoff'],
+            [`${meetingReady} meeting ready`, 'Transcript handoff queued'],
           ].map(([value, label]) => (
             <div
               className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
@@ -130,6 +134,11 @@ export function PrelaunchIntakeReviewPageContent({
                       {submission.scoutInputStatus === 'ready'
                         ? 'Scout ready'
                         : submission.scoutInputStatus}
+                    </span>
+                    <span className="rounded-md bg-fuchsia-50 px-3 py-1 text-xs font-semibold uppercase text-fuchsia-700">
+                      {submission.handoffStatus === 'meeting_ready'
+                        ? 'Meeting ready'
+                        : formatLabel(submission.handoffStatus)}
                     </span>
                     <span className="rounded-md bg-violet-50 px-3 py-1 text-xs font-semibold uppercase text-violet-700">
                       {submission.waitlistId

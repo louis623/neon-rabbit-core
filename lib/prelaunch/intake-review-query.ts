@@ -33,6 +33,7 @@ export const PRELAUNCH_INTAKE_REVIEW_SELECT = [
   'fit_flags',
   'waitlist_id',
   'scout_input_status',
+  'handoff_status',
   'created_at',
   'updated_at',
 ].join(', ')

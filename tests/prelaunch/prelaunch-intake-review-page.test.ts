@@ -35,6 +35,7 @@ const submission: PrelaunchIntakeReviewSubmission = {
   fitFlags: ['phone_only_setup'],
   waitlistId: 'waitlist-1',
   scoutInputStatus: 'ready',
+  handoffStatus: 'scout_ready',
   latestScoutRun: null,
   createdAt: '2026-05-09T18:00:00Z',
   updatedAt: '2026-05-09T18:00:00Z',
@@ -45,6 +46,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
         submissions: [
+          {
+            ...submission,
+            handoffStatus: 'meeting_ready',
+          },
           submission,
           {
             ...submission,
@@ -59,10 +64,12 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Prelaunch intake review')
-    expect(html).toContain('2 total')
-    expect(html).toContain('1 needs review')
+    expect(html).toContain('3 total')
+    expect(html).toContain('2 needs review')
     expect(html).toContain('1 qualified')
-    expect(html).toContain('2 Scout ready')
+    expect(html).toContain('3 Scout ready')
+    expect(html).toContain('1 meeting ready')
+    expect(html).toContain('Meeting ready')
     expect(html).toContain('Jamie Hart Jewelry')
     expect(html).toContain('jamie@example.com')
     expect(html).toContain('phone_only_setup')
