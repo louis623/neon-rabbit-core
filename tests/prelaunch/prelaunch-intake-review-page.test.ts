@@ -577,6 +577,53 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('scribe_hook:intake-1:drive-file-123')
   })
 
+  it('surfaces transcript open questions even before a Scribe brief exists', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            latestScribeTranscriptRun: {
+              runKey: 'scribe_hook:intake-1:drive-file-open-question',
+              status: 'queued',
+              triggerSource: 'google_meet_gemini_transcript',
+              model: 'gemini_transcript_hook_v1',
+              summary: 'Gemini transcript captured; Scribe processing is queued.',
+              errorMessage: null,
+              createdAt: '2026-05-13T17:00:00Z',
+              driveFileId: 'drive-file-open-question',
+              driveFileUrl: null,
+              meetUrl: null,
+              meetingTitle: 'Sparkle Suite discovery call - Jamie Hart',
+              transcriptCharCount: 186,
+              speakerCount: 2,
+              decisionCount: 0,
+              actionItemCount: 0,
+              clientPreferenceCount: 0,
+              scribeStatus: 'queued',
+              statusForScribe: 'ready_for_scribe',
+              speakerNames: ['Louis', 'Jamie'],
+              preview: null,
+              signals: {
+                decisions: [],
+                clientPreferences: [],
+                actionItems: [],
+                openQuestions: ['Can we keep my current team name?'],
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Transcript signals')
+    expect(html).toContain('Open questions')
+    expect(html).toContain('Can we keep my current team name?')
+    expect(html).not.toContain('Scribe follow-up brief')
+    expect(html).not.toContain('Send agreement')
+    expect(html).not.toContain('Collect payment')
+  })
+
   it('renders the latest failed Scout run error on the intake card', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

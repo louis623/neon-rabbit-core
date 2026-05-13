@@ -977,6 +977,8 @@ export function PrelaunchIntakeReviewPageContent({
                     submission.latestScribeTranscriptRun.signals
                       .clientPreferences.length > 0 ||
                     submission.latestScribeTranscriptRun.signals.actionItems
+                      .length > 0 ||
+                    submission.latestScribeTranscriptRun.signals.openQuestions
                       .length > 0 ? (
                       <div className="mt-3 rounded-md border border-fuchsia-100 bg-white p-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-fuchsia-700">
@@ -1020,6 +1022,21 @@ export function PrelaunchIntakeReviewPageContent({
                             </p>
                             <ul className="mt-2 space-y-1 text-xs text-slate-700">
                               {submission.latestScribeTranscriptRun.signals.actionItems.map(
+                                (item) => (
+                                  <li key={item}>{item}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {submission.latestScribeTranscriptRun.signals
+                          .openQuestions.length > 0 ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-semibold uppercase text-slate-500">
+                              Open questions
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs text-slate-700">
+                              {submission.latestScribeTranscriptRun.signals.openQuestions.map(
                                 (item) => (
                                   <li key={item}>{item}</li>
                                 ),
