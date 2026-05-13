@@ -36,6 +36,11 @@ describe('GET /api/prelaunch/health', () => {
         qrAssets: {
           approvedFlyerPath:
             '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
+          contentType: 'image/png',
+          displayUrl: 'www.yoursparklesuite.com/prelaunch',
+          provider: 'none',
+          qrMode: 'approved_static_flyer_with_embedded_qr',
+          requiresExternalQrProvider: false,
           targetUrl:
             'https://www.yoursparklesuite.com/prelaunch?utm_source=sparkle_suite_qr&utm_medium=flyer&utm_campaign=prelaunch_waitlist&utm_content=tiktok_brand_image_v1#waitlist',
         },
@@ -82,6 +87,8 @@ describe('GET /api/prelaunch/health', () => {
     const serializedPayload = JSON.stringify(payload)
 
     expect(payload.readiness.liveActionsEnabled).toBe(false)
+    expect(payload.readiness.qrAssets.provider).toBe('none')
+    expect(payload.readiness.qrAssets.requiresExternalQrProvider).toBe(false)
     expect(payload.readiness.qrAssets.targetUrl).toBe(
       'https://staging.yoursparklesuite.com/prelaunch?utm_source=sparkle_suite_qr&utm_medium=flyer&utm_campaign=prelaunch_waitlist&utm_content=tiktok_brand_image_v1#waitlist',
     )
@@ -106,5 +113,6 @@ describe('GET /api/prelaunch/health', () => {
     expect(serializedPayload).not.toContain('template_secret_123')
     expect(serializedPayload).not.toContain('price_secret_start')
     expect(serializedPayload).not.toContain('price_secret_launch')
+    expect(serializedPayload).not.toContain('api.qrserver.com')
   })
 })

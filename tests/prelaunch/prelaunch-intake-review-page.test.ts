@@ -125,9 +125,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
     )
+    expect(html).toContain('QR verification steps')
+    expect(html).toContain('Use the approved static flyer PNG only.')
+    expect(html).toContain('No external QR provider is required.')
     expect(html).toContain('Canonical waitlist target')
     expect(html).toContain('prelaunch?utm_source=sparkle_suite_qr')
     expect(html).not.toContain('sparkle-suite-qr-flyer-example-one')
+    expect(html).not.toContain('api.qrserver.com')
     expect(html).toContain('Run Scout')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
   })

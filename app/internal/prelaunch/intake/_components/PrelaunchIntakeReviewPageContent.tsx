@@ -252,6 +252,32 @@ export function PrelaunchIntakeReviewPageContent({
               <p className="mt-3 break-all rounded-md bg-white p-3 text-xs font-semibold text-slate-700">
                 Canonical waitlist target: {qrManifest.targetUrl}
               </p>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                <div className="rounded-md bg-white p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
+                    QR verification steps
+                  </p>
+                  <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
+                    {qrManifest.verificationSteps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-md bg-white p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
+                    Provider status
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-700">
+                    No external QR provider is required. Use{' '}
+                    {qrManifest.displayUrl} with the approved static PNG.
+                  </p>
+                  <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
+                    {qrManifest.blockedActions.map((action) => (
+                      <li key={action}>{action}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
             <a
               className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-pink-200 bg-white px-4 text-sm font-semibold text-pink-800 shadow-sm transition hover:border-pink-300 hover:bg-pink-100"

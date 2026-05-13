@@ -17,6 +17,11 @@ export function GET() {
         liveActionsEnabled: false,
         qrAssets: {
           approvedFlyerPath: qrManifest.approvedFlyer.path,
+          contentType: qrManifest.approvedFlyer.contentType,
+          displayUrl: qrManifest.displayUrl,
+          provider: qrManifest.provider,
+          qrMode: qrManifest.qrMode,
+          requiresExternalQrProvider: qrManifest.requiresExternalQrProvider,
           targetUrl: qrManifest.targetUrl,
         },
         gates: getPrelaunchGateReadiness(),
