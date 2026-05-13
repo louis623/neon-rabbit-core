@@ -23,6 +23,12 @@ export interface RecordPrelaunchMeetTranscriptOptions {
   now?: Date
 }
 
+export interface ImportPrelaunchMeetTranscriptFromGoogleDocOptions
+  extends Omit<RecordPrelaunchMeetTranscriptOptions, 'driveFileId' | 'transcriptText'> {
+  fetchImpl?: typeof fetch
+  driveFileUrl: string
+}
+
 export interface PrelaunchMeetTranscriptSignals {
   decisions: string[]
   clientPreferences: string[]
@@ -55,6 +61,7 @@ export interface PrelaunchMeetTranscriptHookOutput {
 }
 
 const TRANSCRIPT_PREVIEW_CHARS = 500
+const GOOGLE_DOC_EXPORT_TIMEOUT_MS = 8000
 
 function requireText(value: string, code: string, message: string) {
   const trimmed = value.trim()
@@ -82,6 +89,34 @@ function buildTranscriptRunKey(intakeId: string, driveFileId: string) {
     .slice(0, 120)
 
   return `scribe_hook:${intakeId}:${safeDriveFileId}`
+}
+
+function extractGoogleDocFileId(value: string) {
+  const trimmed = value.trim()
+
+  try {
+    const parsed = new URL(trimmed)
+    const hostname = parsed.hostname.toLowerCase()
+
+    if (
+      parsed.protocol !== 'https:' ||
+      !['docs.google.com', 'www.docs.google.com'].includes(hostname)
+    ) {
+      return null
+    }
+
+    const match = parsed.pathname.match(
+      /^\/document\/(?:u\/\d+\/)?d\/([^/]+)/,
+    )
+    return match?.[1] ? decodeURIComponent(match[1]) : null
+  } catch {
+    return null
+  }
+}
+
+function buildGoogleDocTextExportUrl(driveFileId: string) {
+  const encodedId = encodeURIComponent(driveFileId)
+  return `https://docs.google.com/document/d/${encodedId}/export?format=txt`
 }
 
 function dedupeStrings(values: string[]) {
@@ -318,5 +353,98 @@ export async function recordPrelaunchMeetTranscript({
   return {
     runKey,
     output,
+  }
+}
+
+export async function importPrelaunchMeetTranscriptFromGoogleDoc({
+  fetchImpl = fetch,
+  driveFileUrl,
+  ...recordOptions
+}: ImportPrelaunchMeetTranscriptFromGoogleDocOptions) {
+  const normalizedDriveFileUrl = requireText(
+    driveFileUrl,
+    'DRIVE_FILE_URL_REQUIRED',
+    'driveFileUrl is required.',
+  )
+  const driveFileId = extractGoogleDocFileId(normalizedDriveFileUrl)
+
+  if (!driveFileId) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_URL_REQUIRED',
+      message: 'driveFileUrl must be a Google Docs document URL',
+      userMessage: 'I need a Google Docs transcript URL.',
+      statusCode: 400,
+    })
+  }
+
+  let response: Response
+  try {
+    response = await fetchImpl(buildGoogleDocTextExportUrl(driveFileId), {
+      headers: { accept: 'text/plain' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(GOOGLE_DOC_EXPORT_TIMEOUT_MS),
+    })
+  } catch (error) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_TRANSCRIPT_FETCH_FAILED',
+      message: 'failed to fetch Google Doc transcript export',
+      userMessage:
+        'I could not fetch that Google Docs transcript. Check sharing or try again.',
+      statusCode: 502,
+      cause: error,
+    })
+  }
+
+  if (!response.ok) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_TRANSCRIPT_NOT_ACCESSIBLE',
+      message: `Google Doc transcript export returned HTTP ${response.status}`,
+      userMessage:
+        'That Google Docs transcript is not accessible yet. Share it with transcript access or connect the Drive/OAuth path.',
+      statusCode: 424,
+    })
+  }
+
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+  if (contentType.includes('text/html')) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_TRANSCRIPT_HTML_RESPONSE',
+      message: 'Google Doc transcript export returned HTML instead of text',
+      userMessage:
+        'That Google Docs transcript returned a sign-in or sharing page instead of transcript text. Share it with transcript access or connect the Drive/OAuth path.',
+      statusCode: 424,
+    })
+  }
+
+  const transcriptText = (await response.text()).trim()
+  if (/^<!doctype html|^<html[\s>]/i.test(transcriptText)) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_TRANSCRIPT_HTML_RESPONSE',
+      message: 'Google Doc transcript export body looked like HTML',
+      userMessage:
+        'That Google Docs transcript returned a sign-in or sharing page instead of transcript text. Share it with transcript access or connect the Drive/OAuth path.',
+      statusCode: 424,
+    })
+  }
+
+  if (!transcriptText) {
+    throw new ServiceError({
+      code: 'GOOGLE_DOC_TRANSCRIPT_EMPTY',
+      message: 'Google Doc transcript export was empty',
+      userMessage: 'That Google Docs transcript did not contain any text.',
+      statusCode: 422,
+    })
+  }
+
+  const result = await recordPrelaunchMeetTranscript({
+    ...recordOptions,
+    driveFileId,
+    driveFileUrl: normalizedDriveFileUrl,
+    transcriptText,
+  })
+
+  return {
+    ...result,
+    driveFileId,
   }
 }
