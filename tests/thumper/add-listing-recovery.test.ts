@@ -7,8 +7,8 @@
 //     URL-fishing and looping without piecePhotoUrl.
 //   - The create-design retry branch still wires through when a real
 //     piecePhotoUrl is supplied (regression guard for the manual fallback).
-//   - NEEDS_COLLECTION still returns needsAction:'cannot_complete' with
-//     the existing flag-to-Louis message (regression guard).
+//   - NEEDS_COLLECTION asks for the exact collection name, then a retry can
+//     pass collectionName through to the service layer.
 //
 // All external collaborators are mocked — no network, no Supabase. The tests
 // invoke the real tool's execute() function so the runSingle branching and
@@ -911,8 +911,8 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
   })
 })
 
-describe('add_listing — NEEDS_COLLECTION recovery payload (preservation regression guard)', () => {
-  it('returns needsAction:cannot_complete with the existing flag-to-Louis message', async () => {
+describe('add_listing — NEEDS_COLLECTION recovery payload', () => {
+  it('asks for an exact collection name instead of hard-stopping', async () => {
     addListingMock.mockRejectedValueOnce(
       errors.NEEDS_COLLECTION('design-x', 'Mystery Piece'),
     )
@@ -924,10 +924,41 @@ describe('add_listing — NEEDS_COLLECTION recovery payload (preservation regres
       clickwrapAccepted: true,
     })
 
-    expect(result.needsAction).toBe('cannot_complete')
+    expect(result.needsAction).toBe('provide_collection')
     expect(result.code).toBe('NEEDS_COLLECTION')
     expect(result.itemNumber).toBe('EX-1')
-    expect(result.message).toContain('flagging to Louis')
+    expect(result.requiredFields).toEqual(['collectionName'])
+    expect(result.message).toContain('exact collection name')
+    expect(result.message).toContain('retry')
+  })
+
+  it('passes collectionName through on the retry path for existing designs', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-x',
+      itemNumber: 'EX-1',
+      designName: 'Mystery Piece',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool()
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'EX-1',
+      collectionName: 'Lustre',
+      clickwrapAccepted: true,
+    })
+
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      itemNumber: 'EX-1',
+      collectionName: 'Lustre',
+    })
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'EX-1',
+    })
   })
 })
 

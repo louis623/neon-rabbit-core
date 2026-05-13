@@ -80,6 +80,7 @@ export interface GetMyBoardFilters {
 export interface AddListingInput {
   itemNumber: string
   clickwrapAccepted: boolean
+  collectionName?: string
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string // when omitted, falls back to canonical photo
@@ -783,6 +784,17 @@ export interface CreateDesignResult {
   collectionId: string | null
   collectionName: string | null
   typePrefix: JewelryType
+}
+
+export interface UpdateDesignCollectionInput {
+  designId: string
+  collectionName: string
+}
+
+export interface UpdateDesignCollectionResult {
+  designId: string
+  collectionId: string
+  collectionName: string
 }
 
 export interface UpdateCanonicalPhotoResult {

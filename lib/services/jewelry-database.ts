@@ -22,6 +22,8 @@ import {
   type ResolveItemNumberResult,
   type CreateDesignInput,
   type CreateDesignResult,
+  type UpdateDesignCollectionInput,
+  type UpdateDesignCollectionResult,
   type PhotoPipelineStatePatch,
   type UpdateCanonicalPhotoResult,
   type UpdatePhotoPipelineStateResult,
@@ -49,6 +51,44 @@ function isApprovedCanonicalPhotoUrl(designId: string, photoUrl: string): boolea
 
 export function normalizeItemNumber(itemNumber: string): string {
   return itemNumber.trim().toUpperCase()
+}
+
+async function findOrCreateCollection(
+  supabase: SupabaseClient,
+  rawCollectionName: string,
+): Promise<{ id: string; name: string }> {
+  const name = rawCollectionName.trim()
+  if (!name) {
+    throw errors.INVALID_INPUT(
+      'collectionName required',
+      'I need the exact collection name before I can list that piece.',
+    )
+  }
+
+  const { data: existing, error: lookupErr } = await supabase
+    .from('collections')
+    .select('id, name')
+    .eq('name', name)
+    .maybeSingle()
+  if (lookupErr) throw lookupErr
+  if (existing) {
+    return {
+      id: existing.id as string,
+      name: existing.name as string,
+    }
+  }
+
+  const { data: created, error: insErr } = await supabase
+    .from('collections')
+    .insert({ name })
+    .select('id, name')
+    .single()
+  if (insErr) throw insErr
+
+  return {
+    id: created.id as string,
+    name: created.name as string,
+  }
 }
 
 function buildPhotoPipelineUpdate(
@@ -269,26 +309,9 @@ export async function createDesign(
   let collectionId: string | null = null
   let collectionName: string | null = null
   if (input.collectionName?.trim()) {
-    const name = input.collectionName.trim()
-    const { data: existing, error: lookupErr } = await supabase
-      .from('collections')
-      .select('id, name')
-      .eq('name', name)
-      .maybeSingle()
-    if (lookupErr) throw lookupErr
-    if (existing) {
-      collectionId = existing.id as string
-      collectionName = existing.name as string
-    } else {
-      const { data: created, error: insErr } = await supabase
-        .from('collections')
-        .insert({ name })
-        .select('id, name')
-        .single()
-      if (insErr) throw insErr
-      collectionId = created.id as string
-      collectionName = created.name as string
-    }
+    const collection = await findOrCreateCollection(supabase, input.collectionName)
+    collectionId = collection.id
+    collectionName = collection.name
   }
 
   const { data: design, error: designErr } = await supabase
@@ -316,6 +339,39 @@ export async function createDesign(
     collectionId,
     collectionName,
     typePrefix: design.type_prefix as JewelryType,
+  }
+}
+
+export async function updateDesignCollection(
+  supabase: SupabaseClient,
+  input: UpdateDesignCollectionInput,
+): Promise<UpdateDesignCollectionResult> {
+  if (!input.designId) throw errors.MISSING_ITEM_INPUT()
+
+  const collection = await findOrCreateCollection(supabase, input.collectionName)
+
+  const { data, error } = await supabase
+    .from('jewelry_designs')
+    .update({
+      collection_id: collection.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', input.designId)
+    .is('collection_id', null)
+    .select('id, collection_id')
+    .maybeSingle()
+  if (error) throw error
+  if (!data) {
+    throw errors.INVALID_INPUT(
+      'design already has a collection or does not exist',
+      "That piece already has a collection assigned, so I won't overwrite it.",
+    )
+  }
+
+  return {
+    designId: data.id as string,
+    collectionId: collection.id,
+    collectionName: collection.name,
   }
 }
 

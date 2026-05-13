@@ -16,4 +16,12 @@ describe('Thumper system prompt — add listing flow', () => {
     expect(THUMPER_SYSTEM_PROMPT).toContain('needCollection')
     expect(THUMPER_SYSTEM_PROMPT).toContain('needFullInfo')
   })
+
+  it('treats missing collection as an ask-and-retry recovery path', () => {
+    expect(THUMPER_SYSTEM_PROMPT).toContain('ask for the exact collection name')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('retry with collectionName')
+    expect(THUMPER_SYSTEM_PROMPT).not.toContain(
+      'NEEDS_COLLECTION as a hard limitation',
+    )
+  })
 })

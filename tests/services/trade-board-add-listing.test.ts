@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { addListingBatch } from '@/lib/services/trade-board'
+import { addListing, addListingBatch } from '@/lib/services/trade-board'
 import { resolveItemNumber } from '@/lib/services/jewelry-database'
 
 function makeResolveSupabase(row: Record<string, unknown> | null) {
@@ -92,6 +92,120 @@ function makeBatchSupabase() {
   }
 }
 
+function makeAddListingWithCollectionSupabase() {
+  const resolveMaybeSingle = vi.fn().mockResolvedValue({
+    data: {
+      id: 'design-1',
+      item_number: 'RG31452',
+      design_name: 'Celeste Ring',
+      material: 'Sterling Silver',
+      main_stone: 'Topaz',
+      bp_msrp: 42,
+      canonical_photo_url: null,
+      type_prefix: 'RG',
+      collection_id: null,
+      collection: null,
+    },
+    error: null,
+  })
+  const resolveEq = vi.fn().mockReturnValue({ maybeSingle: resolveMaybeSingle })
+
+  const collectionMaybeSingle = vi.fn().mockResolvedValue({
+    data: { id: 'collection-1', name: 'Lustre' },
+    error: null,
+  })
+  const collectionEq = vi.fn().mockReturnValue({
+    maybeSingle: collectionMaybeSingle,
+  })
+  const collectionSelect = vi.fn().mockReturnValue({ eq: collectionEq })
+
+  const patchMaybeSingle = vi.fn().mockResolvedValue({
+    data: { id: 'design-1', collection_id: 'collection-1' },
+    error: null,
+  })
+  const patchSelect = vi.fn().mockReturnValue({ maybeSingle: patchMaybeSingle })
+  const patchIs = vi.fn().mockReturnValue({ select: patchSelect })
+  const patchEq = vi.fn().mockReturnValue({ is: patchIs })
+  const patchUpdate = vi.fn().mockReturnValue({ eq: patchEq })
+
+  const timesListedMaybeSingle = vi.fn().mockResolvedValue({
+    data: { times_listed: 1 },
+    error: null,
+  })
+  const timesListedEq = vi
+    .fn()
+    .mockReturnValue({ maybeSingle: timesListedMaybeSingle })
+
+  const jewelrySelect = vi
+    .fn()
+    .mockReturnValueOnce({ eq: resolveEq })
+    .mockReturnValueOnce({ eq: timesListedEq })
+
+  const timesListedUpdateEq = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  })
+  const timesListedUpdate = vi
+    .fn()
+    .mockReturnValue({ eq: timesListedUpdateEq })
+  const jewelryUpdate = vi
+    .fn()
+    .mockImplementationOnce(patchUpdate)
+    .mockImplementationOnce(timesListedUpdate)
+
+  const duplicateMaybeSingle = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  })
+  const duplicateChain: Record<string, unknown> = {
+    maybeSingle: duplicateMaybeSingle,
+  }
+  duplicateChain.eq = vi.fn().mockReturnValue(duplicateChain)
+  duplicateChain.limit = vi.fn().mockReturnValue(duplicateChain)
+  const tradeListingsSelect = vi.fn().mockReturnValue(duplicateChain)
+
+  const insertSingle = vi.fn().mockResolvedValue({
+    data: { id: 'listing-1', status: 'available' },
+    error: null,
+  })
+  const insertSelect = vi.fn().mockReturnValue({ single: insertSingle })
+  const insert = vi.fn().mockReturnValue({ select: insertSelect })
+
+  const from = vi.fn((table: string) => {
+    if (table === 'jewelry_designs') {
+      return {
+        select: jewelrySelect,
+        update: jewelryUpdate,
+      }
+    }
+
+    if (table === 'collections') {
+      return {
+        select: collectionSelect,
+      }
+    }
+
+    if (table === 'trade_listings') {
+      return {
+        select: tradeListingsSelect,
+        insert,
+      }
+    }
+
+    throw new Error(`unexpected table ${table}`)
+  })
+
+  return {
+    client: { from } as never,
+    spies: {
+      collectionEq,
+      patchUpdate,
+      patchIs,
+      insert,
+    },
+  }
+}
+
 describe('resolveItemNumber', () => {
   it('normalizes whitespace and casing before exact matching item_number', async () => {
     const { client, spies } = makeResolveSupabase({
@@ -145,6 +259,38 @@ describe('addListingBatch', () => {
     })
     expect(result.added).toHaveLength(1)
     expect(result.added[0]).toMatchObject({
+      itemNumber: 'RG31452',
+      designName: 'Celeste Ring',
+    })
+  })
+})
+
+describe('addListing', () => {
+  it('patches a missing design collection before listing when the rep supplies the exact collection name', async () => {
+    const { client, spies } = makeAddListingWithCollectionSupabase()
+
+    const result = await addListing(client, 'rep-1', {
+      itemNumber: ' rg31452 ',
+      clickwrapAccepted: true,
+      collectionName: ' Lustre ',
+    })
+
+    expect(spies.collectionEq).toHaveBeenCalledWith('name', 'Lustre')
+    expect(spies.patchUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection_id: 'collection-1',
+        updated_at: expect.any(String),
+      }),
+    )
+    expect(spies.patchIs).toHaveBeenCalledWith('collection_id', null)
+    expect(spies.insert.mock.calls[0][0]).toMatchObject({
+      rep_id: 'rep-1',
+      design_id: 'design-1',
+      status: 'available',
+    })
+    expect(result).toMatchObject({
+      listingId: 'listing-1',
+      designId: 'design-1',
       itemNumber: 'RG31452',
       designName: 'Celeste Ring',
     })

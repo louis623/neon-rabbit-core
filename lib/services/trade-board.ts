@@ -38,7 +38,11 @@ import {
   type UpdateListingResult,
 } from './types'
 import { TradeBoardError, errors } from './errors'
-import { normalizeItemNumber, resolveItemNumber } from './jewelry-database'
+import {
+  normalizeItemNumber,
+  resolveItemNumber,
+  updateDesignCollection,
+} from './jewelry-database'
 
 // Re-export for the existing 4 callers that import from
 // '@/lib/services/trade-board'. Do not remove these without updating callers.
@@ -273,7 +277,13 @@ export async function addListing(
   const resolved = await resolveItemNumber(supabase, input.itemNumber)
   if (!resolved.found) throw errors.NEEDS_FULL_INFO(input.itemNumber)
   if (!resolved.hasCollection) {
-    throw errors.NEEDS_COLLECTION(resolved.design.id, resolved.design.designName)
+    if (!input.collectionName?.trim()) {
+      throw errors.NEEDS_COLLECTION(resolved.design.id, resolved.design.designName)
+    }
+    await updateDesignCollection(supabase, {
+      designId: resolved.design.id,
+      collectionName: input.collectionName,
+    })
   }
   if (
     input.listingPhotoUrl &&

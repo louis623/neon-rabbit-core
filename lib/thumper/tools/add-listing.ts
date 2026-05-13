@@ -502,6 +502,7 @@ async function runSingle(
     result = await addListing(admin, ctx.repId, {
       itemNumber,
       clickwrapAccepted: true,
+      collectionName: input.collectionName,
       repNotes: input.repNotes,
       tradePreferences: input.tradePreferences,
       listingPhotoUrl: processedListingPhotoUrl,
@@ -526,10 +527,11 @@ async function runSingle(
       }
       if (err.code === 'NEEDS_COLLECTION') {
         return {
-          needsAction: 'cannot_complete' as const,
+          needsAction: 'provide_collection' as const,
           code: 'NEEDS_COLLECTION' as const,
           itemNumber,
-          message: `${itemNumber} is in our database but doesn't have a collection assigned. There's no way to patch a collection onto an existing design from this tool today, so it can't be listed right now. Worth flagging to Louis.`,
+          requiredFields: ['collectionName'],
+          message: `${itemNumber} is in our database but needs an exact collection name before I can list it. Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision.`,
         }
       }
     }
@@ -679,7 +681,7 @@ export function makeAddListingTool(ctx: {
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "If the resolved item exists in the jewelry database, pass mode:'single', itemNumber, clickwrapAccepted for one piece, or mode:'batch', items[], clickwrapAccepted for several pieces at once. " +
       "If the item isn't in the database, the tool returns needsAction:'create_design'. Use vision to extract designName, then confirm collectionName with the rep before retrying — never autofill the collection from vision alone. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
-      "If the item exists but has no collection assigned, the tool returns needsAction:'cannot_complete' (NEEDS_COLLECTION) — same flag-to-Louis pattern. " +
+      "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,
     execute: async (input) => {
