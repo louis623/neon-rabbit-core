@@ -1394,6 +1394,102 @@ describe('prelaunch Scout', () => {
     ])
   })
 
+  it('blocks public source redirects to private URLs before reading metadata', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 302,
+      headers: new Headers({
+        location: 'http://127.0.0.1/admin',
+      }),
+      text: async () => '',
+    } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: 'https://example.com/redirect',
+          instagram: null,
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(result.capturedEvidence).toEqual([])
+    expect(result.sourceReports).toContainEqual({
+      label: 'TikTok',
+      status: 'fetch_failed',
+      url: 'https://example.com/redirect',
+      note: 'Scout could not fetch the public page metadata.',
+    })
+  })
+
+  it('follows safe public redirects after re-sanitizing the location', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 302,
+        headers: new Headers({
+          location: '/public-profile?token=secret#bio',
+        }),
+        text: async () => '',
+      } satisfies Partial<Response>)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        text: async () =>
+          `
+            <html>
+              <head>
+                <title>Jamie Hart Jewelry | TikTok</title>
+                <meta property="og:description" content="Live jewelry sales and trade night clips." />
+                <link rel="canonical" href="https://example.com/public-profile" />
+              </head>
+            </html>
+          `,
+      } satisfies Partial<Response>)
+
+    const result = await inspectPrelaunchScoutEvidenceSources(
+      {
+        ...submission,
+        social: {
+          tiktok: 'https://example.com/redirect',
+          instagram: null,
+          facebook: null,
+        },
+      },
+      {
+        fetchImpl: fetchMock as typeof fetch,
+      },
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://example.com/public-profile',
+      expect.any(Object),
+    )
+    expect(result.capturedEvidence).toEqual([
+      expect.objectContaining({
+        label: 'TikTok',
+        url: 'https://example.com/public-profile',
+        title: 'Jamie Hart Jewelry | TikTok',
+      }),
+    ])
+    expect(result.sourceReports).toContainEqual({
+      label: 'TikTok',
+      status: 'captured',
+      url: 'https://example.com/public-profile',
+      note: 'Usable public profile metadata was captured.',
+    })
+  })
+
   it('normalizes bare handles and scheme-less social URLs before checking public sources', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

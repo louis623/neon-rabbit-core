@@ -1130,6 +1130,8 @@ interface ScoutEvidenceFetchCopy {
   captured: string
 }
 
+const SCOUT_MAX_REDIRECTS = 3
+
 function normalizeScoutEvidenceUrl(
   label: 'TikTok' | 'Instagram' | 'Facebook',
   value: string | null,
@@ -1295,15 +1297,9 @@ async function inspectScoutEvidenceTarget(
   report: PrelaunchScoutEvidenceSourceReport
 }> {
   try {
-    const response = await fetchImpl(url, {
-      headers: {
-        accept: 'text/html,application/xhtml+xml',
-      },
-      signal: AbortSignal.timeout(4000),
-    })
+    const fetchResult = await fetchScoutPublicUrl(url, fetchImpl)
 
-    const contentType = response.headers.get('content-type') ?? ''
-    if (!response.ok) {
+    if (!fetchResult) {
       return {
         evidence: null,
         report: {
@@ -1315,20 +1311,35 @@ async function inspectScoutEvidenceTarget(
       }
     }
 
+    const { response, url: fetchedUrl } = fetchResult
+
+    const contentType = response.headers.get('content-type') ?? ''
+    if (!response.ok) {
+      return {
+        evidence: null,
+        report: {
+          label,
+          status: 'fetch_failed' as const,
+          url: fetchedUrl,
+          note: copy.fetchFailed,
+        },
+      }
+    }
+
     if (!contentType.includes('text/html')) {
       return {
         evidence: null,
         report: {
           label,
           status: 'non_html_response' as const,
-          url,
+          url: fetchedUrl,
           note: copy.nonHtmlResponse,
         },
       }
     }
 
     const html = await response.text()
-    const evidence = extractScoutEvidenceFromHtml(label, url, html)
+    const evidence = extractScoutEvidenceFromHtml(label, fetchedUrl, html)
 
     if (!evidence) {
       return {
@@ -1336,7 +1347,7 @@ async function inspectScoutEvidenceTarget(
         report: {
           label,
           status: 'metadata_missing' as const,
-          url,
+          url: fetchedUrl,
           note: copy.metadataMissing,
         },
       }
@@ -1347,7 +1358,7 @@ async function inspectScoutEvidenceTarget(
       report: {
         label,
         status: 'captured' as const,
-        url,
+        url: fetchedUrl,
         note: copy.captured,
       },
     }
@@ -1362,6 +1373,52 @@ async function inspectScoutEvidenceTarget(
       },
     }
   }
+}
+
+async function fetchScoutPublicUrl(
+  url: string,
+  fetchImpl: typeof fetch,
+): Promise<{ response: Response; url: string } | null> {
+  let nextUrl = url
+  const seenUrls = new Set<string>()
+
+  for (
+    let redirectCount = 0;
+    redirectCount <= SCOUT_MAX_REDIRECTS;
+    redirectCount += 1
+  ) {
+    if (seenUrls.has(nextUrl)) return null
+    seenUrls.add(nextUrl)
+
+    const response = await fetchImpl(nextUrl, {
+      headers: {
+        accept: 'text/html,application/xhtml+xml',
+      },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(4000),
+    })
+
+    if (!isScoutRedirectResponse(response)) {
+      return { response, url: nextUrl }
+    }
+
+    const redirectedUrl = sanitizeScoutPublicUrl(
+      response.headers.get('location'),
+      new Set(),
+      true,
+      nextUrl,
+    )
+
+    if (!redirectedUrl) return null
+
+    nextUrl = redirectedUrl
+  }
+
+  return null
+}
+
+function isScoutRedirectResponse(response: Response) {
+  return response.status >= 300 && response.status < 400
 }
 
 function extractHtmlMatch(html: string, pattern: RegExp) {
