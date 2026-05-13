@@ -87,7 +87,7 @@ describe('prelaunch Meet transcript hook', () => {
           'Do not treat this draft as legal, payment, or launch approval.',
         ]),
         manualReviewWarnings: [
-          'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+          'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
         ],
       }),
     )

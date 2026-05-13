@@ -59,11 +59,17 @@ export function buildPrelaunchScribeBrief({
   transcriptHookOutput,
 }: BuildPrelaunchScribeBriefOptions): PrelaunchScribeBrief {
   const { transcript, signals, nextAgent } = transcriptHookOutput
-  const manualReviewWarnings = signals.actionItems.some((item) =>
+  const signalValues = [
+    ...signals.decisions,
+    ...signals.clientPreferences,
+    ...signals.actionItems,
+    ...signals.openQuestions,
+  ]
+  const manualReviewWarnings = signalValues.some((item) =>
     GATE_REVIEW_PATTERN.test(item),
   )
     ? [
-        'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+        'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
       ]
     : []
 

@@ -473,7 +473,7 @@ describe('prelaunch intake review helpers', () => {
                 'Do not treat this draft as legal, payment, or launch approval.',
               ],
               manualReviewWarnings: [
-                'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+                'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
               ],
               provenance: {
                 meetingProvider: 'google_meet',
@@ -575,7 +575,7 @@ describe('prelaunch intake review helpers', () => {
           'Do not treat this draft as legal, payment, or launch approval.',
         ],
         manualReviewWarnings: [
-          'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+          'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
         ],
         provenance: {
           meetingProvider: 'google_meet',

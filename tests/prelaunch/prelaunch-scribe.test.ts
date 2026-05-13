@@ -80,7 +80,7 @@ describe('prelaunch Scribe', () => {
         'Do not treat this draft as legal, payment, or launch approval.',
       ],
       manualReviewWarnings: [
-        'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+        'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
       ],
       provenance: {
         meetingProvider: 'google_meet',
@@ -127,5 +127,29 @@ describe('prelaunch Scribe', () => {
       'Review all Scribe draft fields before copying them into onboarding or Builder work.',
     )
     expect(brief.manualReviewWarnings).toEqual([])
+  })
+
+  it('flags gate-sensitive language outside action items', () => {
+    const brief = buildPrelaunchScribeBrief({
+      intake: {
+        id: 'intake-3',
+        name: 'Riley Stone',
+        businessName: 'Riley Stone Jewelry',
+      },
+      transcriptRunKey: 'scribe_hook:intake-3:drive-file-789',
+      transcriptHookOutput: {
+        ...transcriptHookOutput,
+        signals: {
+          decisions: ['launch approval depends on final review.'],
+          clientPreferences: ['pricing should wait until Louis confirms the package.'],
+          actionItems: ['send style notes to Builder.'],
+          openQuestions: ['Do we need attorney review before the agreement?'],
+        },
+      },
+    })
+
+    expect(brief.manualReviewWarnings).toEqual([
+      'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+    ])
   })
 })

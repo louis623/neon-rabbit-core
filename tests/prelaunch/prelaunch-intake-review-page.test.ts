@@ -213,7 +213,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
                   'Review all Scribe draft fields before copying them into onboarding or Builder work.',
                 ],
                 manualReviewWarnings: [
-                  'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+                  'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
                 ],
                 provenance: {
                   meetingProvider: 'google_meet',
@@ -515,7 +515,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
                   'Do not treat this draft as legal, payment, or launch approval.',
                 ],
                 manualReviewWarnings: [
-                  'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
+                  'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work. Keep those items operator-only until the matching gate is configured and approved.',
                 ],
                 provenance: {
                   meetingProvider: 'google_meet',
@@ -569,7 +569,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
     expect(html).toContain('Scribe guardrails')
     expect(html).toContain(
-      'Transcript action items mention legal, agreement, payment, pricing, or launch-gate work.',
+      'Transcript signals mention legal, agreement, payment, pricing, or launch-gate work.',
     )
     expect(html).not.toContain('Run Scribe')
     expect(html).toContain('https://docs.google.com/document/d/drive-file-123/edit')
