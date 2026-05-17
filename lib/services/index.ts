@@ -1,4 +1,4 @@
-// Public barrel for the shared service layer. Both Thumper tool handlers
+// Public barrel for the shared service layer. Both Nic-Nac tool handlers
 // and dashboard routes can import from '@/lib/services'. Existing tool
 // callers that import from '@/lib/services/trade-board' continue to work
 // (trade-board.ts remains the stable facade for those names).
@@ -17,6 +17,9 @@ export type {
   TradeListingWithDesign,
   BoardResult,
   RemoveListingResult,
+  RestoreListingInput,
+  RestoreListingResult,
+  PurgeRemovedListingsResult,
   GetMyBoardFilters,
   AddListingInput,
   AddListingResult,
@@ -64,7 +67,15 @@ export type {
 } from './jewelry-photo-preflight'
 
 // Trade Board
-export { getMyBoard, removeListing, addListing, addListingBatch, updateListing } from './trade-board'
+export {
+  getMyBoard,
+  removeListing,
+  restoreListing,
+  purgeExpiredRemovedListings,
+  addListing,
+  addListingBatch,
+  updateListing,
+} from './trade-board'
 
 // Trade Requests
 export {

@@ -51,6 +51,15 @@ export const DUAL_INTERFACE_CONTRACTS: DualInterfaceContract[] = [
     notes: 'Soft-remove authenticated rep-owned listings only.',
   },
   {
+    id: 'trade-board.restore',
+    routeFile: 'app/api/thumper/trade-board/route.ts',
+    routeMethods: ['PATCH'],
+    toolFile: 'lib/thumper/tools/restore-listing.ts',
+    serviceFunctions: ['restoreListing'],
+    clientMode: 'auth',
+    notes: 'Restore authenticated rep-owned listings only inside the configured recovery window.',
+  },
+  {
     id: 'jewelry.search',
     routeFile: 'app/api/thumper/jewelry-library/route.ts',
     routeMethods: ['GET'],

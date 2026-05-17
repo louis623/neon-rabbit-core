@@ -26,6 +26,7 @@ function makeTradeListing(
     uses_canonical_photo: false,
     listed_at: '2026-05-05T12:00:00.000Z',
     removal_reason: null,
+    deleted_at: null,
     created_at: '2026-05-05T12:00:00.000Z',
     updated_at: '2026-05-05T12:00:00.000Z',
     design: {

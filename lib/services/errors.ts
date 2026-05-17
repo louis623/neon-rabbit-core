@@ -4,10 +4,9 @@
 // keep working without code changes â€” they do `instanceof TradeBoardError` and
 // read `err.code`. Both checks survive subclassing.
 //
-// Tool handlers translate ServiceError â†’ ThumperToolError at the route boundary
+// Tool handlers translate ServiceError to the assistant tool error at the route boundary
 // (see lib/thumper/errors.ts). The service layer never references
-// ThumperToolError; that's the rule that lets the same service back both the
-// chat (Thumper) and HTTP (dashboard) entry points.
+// tool error class; that's the rule that lets the same service back both the`r`n// chat assistant and HTTP dashboard entry points.
 
 export class ServiceError extends Error {
   readonly code: string
@@ -115,6 +114,16 @@ export const errors = {
       code: 'INVALID_STATUS_TRANSITION',
       message: `invalid status transition: ${from} â†’ ${to}`,
       userMessage: `I can't move that from "${from}" to "${to}".`,
+    }),
+  LISTING_RECOVERY_EXPIRED: (days: 7 | 30) =>
+    new ServiceError({
+      code: 'LISTING_RECOVERY_EXPIRED',
+      message: `removed listing is outside the ${days}-day recovery window`,
+      userMessage:
+        days === 7
+          ? "That listing is outside the 7-day recovery window, so I can't restore it."
+          : "That listing is outside the 30-day recovery window, so I can't restore it.",
+      statusCode: 409,
     }),
   AMBIGUOUS_CUSTOMER: (name: string) =>
     new ServiceError({

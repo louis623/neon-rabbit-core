@@ -30,6 +30,7 @@ export interface TradeListingWithDesign {
   uses_canonical_photo: boolean
   listed_at: string | null
   removal_reason: RemovalReason | null
+  deleted_at: string | null
   created_at: string
   updated_at: string
   design: {
@@ -61,6 +62,24 @@ export interface RemoveListingResult {
   previousStatus: ListingStatus
   cancelledRequestId?: string
   cancelledRequestCustomerName?: string
+}
+
+export interface RestoreListingInput {
+  listingId?: string
+  itemNumber?: string
+}
+
+export interface RestoreListingResult {
+  listingId: string
+  designName: string
+  status: 'available'
+  deletedAt: string
+  recoveryWindowDays: 7 | 30
+}
+
+export interface PurgeRemovedListingsResult {
+  purgedCount: number
+  cutoffIso: string
 }
 
 export interface GetMyBoardFilters {

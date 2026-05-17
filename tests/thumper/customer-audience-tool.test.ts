@@ -108,7 +108,7 @@ describe('get_customer_audience', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(24)
+    expect(names).toHaveLength(25)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_customer_audience',
@@ -119,7 +119,7 @@ describe('get_customer_audience', () => {
     expect(customerAudienceTool.readOnly).toBe(true)
     expect(customerAudienceTool.name).toBe('get_customer_audience')
     expect(THUMPER_SYSTEM_PROMPT).toContain(
-      'You have twenty-four tools available right now:',
+      'You have twenty-five tools available right now:',
     )
     expect(THUMPER_SYSTEM_PROMPT).toContain('get_customer_audience')
     expect(THUMPER_SYSTEM_PROMPT).toContain(

@@ -6,6 +6,7 @@ const getMyBoardMock = vi.fn()
 const addListingMock = vi.fn()
 const updateListingMock = vi.fn()
 const removeListingMock = vi.fn()
+const restoreListingMock = vi.fn()
 const processRepCustomListingPhotoUrlMock = vi.fn()
 
 vi.mock('@/lib/thumper/auth', () => ({
@@ -28,6 +29,7 @@ vi.mock('@/lib/services/trade-board', () => ({
   addListing: (...args: unknown[]) => addListingMock(...args),
   updateListing: (...args: unknown[]) => updateListingMock(...args),
   removeListing: (...args: unknown[]) => removeListingMock(...args),
+  restoreListing: (...args: unknown[]) => restoreListingMock(...args),
 }))
 
 vi.mock('@/lib/services/listing-photo-processing', () => ({
@@ -51,6 +53,7 @@ describe('trade board route', () => {
     addListingMock.mockReset()
     updateListingMock.mockReset()
     removeListingMock.mockReset()
+    restoreListingMock.mockReset()
     processRepCustomListingPhotoUrlMock.mockReset()
   })
 
@@ -160,6 +163,42 @@ describe('trade board route', () => {
         useCanonicalPhoto: undefined,
       },
     )
+    expect(response.status).toBe(200)
+  })
+
+  it('restores a removed listing with the authenticated rep client', async () => {
+    getAuthenticatedThumperContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    restoreListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designName: 'Aurora Ring',
+      status: 'available',
+      recoveryWindowDays: 7,
+    })
+
+    const response = await PATCH(
+      new Request('http://localhost/api/thumper/trade-board', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'restore',
+          listingId: 'listing-1',
+        }),
+      }),
+    )
+
+    expect(restoreListingMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      {
+        listingId: 'listing-1',
+        itemNumber: undefined,
+      },
+    )
+    expect(updateListingMock).not.toHaveBeenCalled()
     expect(response.status).toBe(200)
   })
 

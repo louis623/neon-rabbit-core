@@ -11,6 +11,7 @@ import {
   addListing,
   getMyBoard,
   removeListing,
+  restoreListing,
   updateListing,
 } from '@/lib/services/trade-board'
 
@@ -173,6 +174,16 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const { repId, supabase } = await getAuthenticatedThumperContext()
     const listingId = typeof body?.listingId === 'string' ? body.listingId.trim() : ''
+    if (body?.action === 'restore') {
+      const result = await restoreListing(supabase, repId, {
+        listingId,
+        itemNumber:
+          typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : undefined,
+      })
+
+      return NextResponse.json({ ok: true, result })
+    }
+
     const listingPhotoUrl =
       typeof body?.listingPhotoUrl === 'string' ? body.listingPhotoUrl : undefined
     const processedListingPhotoUrl = listingPhotoUrl

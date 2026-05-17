@@ -252,11 +252,11 @@ describe('calendar tools', () => {
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools now exposes 24 tools including the four calendar tools', () => {
+  it('buildAllTools now exposes 25 tools including the four calendar tools', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(24)
+    expect(names).toHaveLength(25)
     expect(names).toEqual(expect.arrayContaining([
       'add_show',
       'list_my_shows',
@@ -266,7 +266,7 @@ describe('calendar registry and prompt wiring', () => {
   })
 
   it('system prompt documents recurring shows, multi-code support, and series updates', () => {
-    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-four tools available right now:')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-five tools available right now:')
     expect(THUMPER_SYSTEM_PROMPT).toContain('add_show')
     expect(THUMPER_SYSTEM_PROMPT).toContain('list_my_shows')
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_show')

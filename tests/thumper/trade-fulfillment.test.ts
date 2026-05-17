@@ -321,7 +321,7 @@ describe('fulfillment registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(24)
+    expect(names).toHaveLength(25)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_fulfillment_queue',
@@ -331,7 +331,7 @@ describe('fulfillment registry and prompt wiring', () => {
   })
 
   it('system prompt documents the fulfillment queue tools and follow-up flow', () => {
-    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-four tools available right now:')
+    expect(THUMPER_SYSTEM_PROMPT).toContain('You have twenty-five tools available right now:')
     expect(THUMPER_SYSTEM_PROMPT).toContain('get_fulfillment_queue')
     expect(THUMPER_SYSTEM_PROMPT).toContain('update_fulfillment_status')
     expect(THUMPER_SYSTEM_PROMPT).toContain('approved → shipped → completed')

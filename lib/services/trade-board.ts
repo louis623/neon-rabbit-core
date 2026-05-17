@@ -28,6 +28,9 @@ import {
   type TradeListingWithDesign,
   type BoardResult,
   type RemoveListingResult,
+  type RestoreListingInput,
+  type RestoreListingResult,
+  type PurgeRemovedListingsResult,
   type GetMyBoardFilters,
   type AddListingInput,
   type AddListingResult,
@@ -55,6 +58,9 @@ export type {
   TradeListingWithDesign,
   BoardResult,
   RemoveListingResult,
+  RestoreListingInput,
+  RestoreListingResult,
+  PurgeRemovedListingsResult,
   GetMyBoardFilters,
   AddListingInput,
   AddListingResult,
@@ -70,9 +76,70 @@ const DESIGN_SELECT =
 
 const LISTING_SELECT = `
   id, rep_id, status, rep_notes, trade_preferences, listing_photo_url,
-  uses_canonical_photo, listed_at, removal_reason, created_at, updated_at,
+  uses_canonical_photo, listed_at, removal_reason, deleted_at, created_at, updated_at,
   design:jewelry_designs(${DESIGN_SELECT})
 `
+
+export type TradeListingRecoveryWindowDays = 7 | 30
+
+export interface TradeListingRecoveryOptions {
+  now?: Date
+  recoveryWindowDays?: TradeListingRecoveryWindowDays
+}
+
+export const DEFAULT_TRADE_LISTING_RECOVERY_WINDOW_DAYS = 7
+
+export function getTradeListingRecoveryWindowDays(
+  env: NodeJS.ProcessEnv = process.env,
+): TradeListingRecoveryWindowDays {
+  const raw = env.SPARKLE_TRADE_LISTING_RECOVERY_DAYS
+  if (!raw) return DEFAULT_TRADE_LISTING_RECOVERY_WINDOW_DAYS
+  const parsed = Number.parseInt(raw, 10)
+  if (parsed === 7 || parsed === 30) return parsed
+  throw new Error(
+    `SPARKLE_TRADE_LISTING_RECOVERY_DAYS must be 7 or 30; received ${raw}`,
+  )
+}
+
+export function getTradeListingRecoveryCutoffIso(
+  now: Date = new Date(),
+  recoveryWindowDays: TradeListingRecoveryWindowDays = getTradeListingRecoveryWindowDays(),
+): string {
+  return new Date(
+    now.getTime() - recoveryWindowDays * 24 * 60 * 60 * 1000,
+  ).toISOString()
+}
+
+function resolveRecoveryOptions(
+  options: TradeListingRecoveryOptions = {},
+): Required<TradeListingRecoveryOptions> {
+  return {
+    now: options.now ?? new Date(),
+    recoveryWindowDays:
+      options.recoveryWindowDays ?? getTradeListingRecoveryWindowDays(),
+  }
+}
+
+function isRemovedListingInsideRecoveryWindow(
+  deletedAt: string | null | undefined,
+  options: Required<TradeListingRecoveryOptions>,
+): boolean {
+  if (!deletedAt) return false
+  const deletedAtMs = new Date(deletedAt).getTime()
+  if (!Number.isFinite(deletedAtMs)) return false
+  const cutoffMs = new Date(
+    getTradeListingRecoveryCutoffIso(options.now, options.recoveryWindowDays),
+  ).getTime()
+  return deletedAtMs >= cutoffMs
+}
+
+function shouldIncludeListingInBoardRead(
+  listing: Pick<TradeListingWithDesign, 'status' | 'deleted_at'>,
+  options: Required<TradeListingRecoveryOptions>,
+): boolean {
+  if (listing.status !== 'removed') return true
+  return isRemovedListingInsideRecoveryWindow(listing.deleted_at, options)
+}
 
 function isManagedRepListingPhotoUrl(repId: string, photoUrl: string): boolean {
   try {
@@ -86,8 +153,10 @@ function isManagedRepListingPhotoUrl(repId: string, photoUrl: string): boolean {
 export async function getMyBoard(
   supabase: SupabaseClient,
   repId: string,
-  filters: GetMyBoardFilters = {}
+  filters: GetMyBoardFilters = {},
+  recoveryOptions: TradeListingRecoveryOptions = {},
 ): Promise<BoardResult> {
+  const resolvedRecoveryOptions = resolveRecoveryOptions(recoveryOptions)
   let query = supabase
     .from('trade_listings')
     .select(LISTING_SELECT)
@@ -127,6 +196,7 @@ export async function getMyBoard(
       return { ...row, design } as TradeListingWithDesign
     })
     .filter((l): l is TradeListingWithDesign => l !== null)
+    .filter((l) => shouldIncludeListingInBoardRead(l, resolvedRecoveryOptions))
 
   const filteredByCollection = filters.collectionFilter
     ? listings.filter((l) => l.design.collection?.name === filters.collectionFilter)
@@ -221,12 +291,14 @@ export async function removeListing(
   const designRel = currentRow.design as { design_name: string } | { design_name: string }[] | null
   const designName = Array.isArray(designRel) ? designRel[0]?.design_name ?? '' : designRel?.design_name ?? ''
 
+  const nowIso = new Date().toISOString()
   const { error: updErr } = await supabase
     .from('trade_listings')
     .update({
       status: 'removed',
       removal_reason: input.reason,
-      updated_at: new Date().toISOString(),
+      deleted_at: nowIso,
+      updated_at: nowIso,
     })
     .eq('id', listingId!)
     .eq('rep_id', repId)
@@ -258,6 +330,118 @@ export async function removeListing(
     previousStatus,
     cancelledRequestId,
     cancelledRequestCustomerName,
+  }
+}
+
+export async function restoreListing(
+  supabase: SupabaseClient,
+  repId: string,
+  input: RestoreListingInput,
+  recoveryOptions: TradeListingRecoveryOptions = {},
+): Promise<RestoreListingResult> {
+  if (!input.listingId && !input.itemNumber) {
+    throw errors.MISSING_ITEM_INPUT()
+  }
+
+  const resolvedRecoveryOptions = resolveRecoveryOptions(recoveryOptions)
+  let listingId = input.listingId
+
+  if (!listingId && input.itemNumber) {
+    const { data: designRow, error: designErr } = await supabase
+      .from('jewelry_designs')
+      .select('id')
+      .eq('item_number', input.itemNumber)
+      .maybeSingle()
+    if (designErr) throw designErr
+    if (!designRow) throw errors.LISTING_NOT_FOUND(input.itemNumber)
+
+    const { data: listingRows, error: listingErr } = await supabase
+      .from('trade_listings')
+      .select('id, deleted_at')
+      .eq('design_id', designRow.id)
+      .eq('rep_id', repId)
+      .eq('status', 'removed')
+      .order('deleted_at', { ascending: false, nullsFirst: false })
+      .limit(1)
+    if (listingErr) throw listingErr
+    if (!listingRows || listingRows.length === 0) {
+      throw errors.LISTING_NOT_FOUND(input.itemNumber)
+    }
+    listingId = listingRows[0].id as string
+  }
+
+  const { data: currentRow, error: fetchErr } = await supabase
+    .from('trade_listings')
+    .select(`id, status, rep_id, deleted_at, design:jewelry_designs(design_name)`)
+    .eq('id', listingId!)
+    .maybeSingle()
+  if (fetchErr) throw fetchErr
+  if (!currentRow) throw errors.UNAUTHORIZED('listing not found or not owned by rep')
+  if (currentRow.rep_id !== repId) {
+    throw errors.UNAUTHORIZED('listing belongs to another rep')
+  }
+
+  const status = currentRow.status as ListingStatus
+  if (status !== 'removed') throw errors.INVALID_STATUS_TRANSITION(status, 'restore')
+
+  const deletedAt = currentRow.deleted_at as string | null
+  if (!isRemovedListingInsideRecoveryWindow(deletedAt, resolvedRecoveryOptions)) {
+    throw errors.LISTING_RECOVERY_EXPIRED(
+      resolvedRecoveryOptions.recoveryWindowDays,
+    )
+  }
+
+  const nowIso = resolvedRecoveryOptions.now.toISOString()
+  const { error: updErr } = await supabase
+    .from('trade_listings')
+    .update({
+      status: 'available',
+      removal_reason: null,
+      deleted_at: null,
+      updated_at: nowIso,
+    })
+    .eq('id', listingId!)
+    .eq('rep_id', repId)
+  if (updErr) throw updErr
+
+  const designRel = currentRow.design as
+    | { design_name: string }
+    | { design_name: string }[]
+    | null
+  const designName = Array.isArray(designRel)
+    ? designRel[0]?.design_name ?? ''
+    : designRel?.design_name ?? ''
+
+  return {
+    listingId: listingId!,
+    designName,
+    status: 'available',
+    deletedAt: deletedAt!,
+    recoveryWindowDays: resolvedRecoveryOptions.recoveryWindowDays,
+  }
+}
+
+export async function purgeExpiredRemovedListings(
+  supabase: SupabaseClient,
+  recoveryOptions: TradeListingRecoveryOptions = {},
+): Promise<PurgeRemovedListingsResult> {
+  const resolvedRecoveryOptions = resolveRecoveryOptions(recoveryOptions)
+  const cutoffIso = getTradeListingRecoveryCutoffIso(
+    resolvedRecoveryOptions.now,
+    resolvedRecoveryOptions.recoveryWindowDays,
+  )
+
+  const { data, error } = await supabase
+    .from('trade_listings')
+    .delete()
+    .eq('status', 'removed')
+    .lt('deleted_at', cutoffIso)
+    .select('id')
+  if (error) throw error
+
+  return {
+    purgedCount: (data ?? []).length,
+    cutoffIso,
   }
 }
 

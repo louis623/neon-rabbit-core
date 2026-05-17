@@ -1,4 +1,4 @@
-// Thumper tool registry. Adding a new tool is mechanical:
+// Nic-Nac tool registry. Adding a new tool is mechanical:
 //   1. Create lib/thumper/tools/<name>.ts that exports a ToolDefinition
 //   2. Import and push it into REGISTRY below
 // No route.ts changes needed.
@@ -11,6 +11,7 @@
 import type { Tool, ToolSet } from 'ai'
 import { listMyTradeBoardTool } from './list-my-trade-board'
 import { removeListingTool } from './remove-listing'
+import { restoreListingTool } from './restore-listing'
 import { addListingTool } from './add-listing'
 import { getTradeRequestsTool } from './get-trade-requests'
 import { approveTradeTool } from './approve-trade'
@@ -40,6 +41,7 @@ import type { ToolContext, ToolDefinition } from './types'
 const REGISTRY: ToolDefinition[] = [
   listMyTradeBoardTool,
   removeListingTool,
+  restoreListingTool,
   addListingTool,
   getTradeRequestsTool,
   approveTradeTool,
