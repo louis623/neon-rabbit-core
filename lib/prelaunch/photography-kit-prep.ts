@@ -28,15 +28,15 @@ export function buildPhotographyKitPrep(
       status: 'review',
     },
     {
-      label: 'Request sample jewelry photo',
+      label: 'Require sample photo before hardware decision',
       detail:
-        'Ask for one or more sample jewelry photos from the rep real setup before making a kit decision.',
+        'Do not choose kit, vendor, or exception path until the rep sends sample photos from the real setup.',
       status: 'required',
     },
     {
-      label: 'Run Nic-Nac screening',
+      label: 'Use screening result to decide hardware path',
       detail:
-        'Screen sample photos for blur, lighting, framing, and white-background quality.',
+        'Use Nic-Nac sample-photo results only as decision support for coaching, manual exception, or later hardware review.',
       status: 'required',
     },
     {

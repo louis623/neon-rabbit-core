@@ -280,10 +280,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Photography kit prep')
+    expect(html).toContain('Hardware decision stays operator-only')
     expect(html).toContain('DUCLUS lightbox or equivalent white setup')
     expect(html).toContain('Use the rep phone or existing camera first')
-    expect(html).toContain('Request sample jewelry photo')
-    expect(html).toContain('Run Nic-Nac screening')
+    expect(html).toContain('Require sample photo before hardware decision')
+    expect(html).toContain('Use screening result to decide hardware path')
     expect(html).toContain(
       'Coach framing, distance, lighting, and white background before changing hardware.',
     )
@@ -301,9 +302,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Camera quality prep')
+    expect(html).toContain('Sample-photo quality needs human review')
     expect(html).toContain('Sample photo still needs Nic-Nac screening')
     expect(html).toContain('Confirm two-device workflow')
-    expect(html).toContain('Do not treat this as kit approval')
+    expect(html).toContain('Screening is not hardware approval')
     expect(html).not.toContain('Send SMS')
     expect(html).not.toContain('Order camera')
     expect(html).not.toContain('Approve shipment')

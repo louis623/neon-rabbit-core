@@ -100,14 +100,15 @@ describe('buildPhotographyKitPrep', () => {
 
     expect(prep.status).toBe('sample_photo_needed')
     expect(prep.items).toContainEqual({
-      label: 'Request sample jewelry photo',
+      label: 'Require sample photo before hardware decision',
       detail:
-        'Ask for one or more sample jewelry photos from the rep real setup before making a kit decision.',
+        'Do not choose kit, vendor, or exception path until the rep sends sample photos from the real setup.',
       status: 'required',
     })
     expect(prep.items).toContainEqual({
-      label: 'Run Nic-Nac screening',
-      detail: 'Screen sample photos for blur, lighting, framing, and white-background quality.',
+      label: 'Use screening result to decide hardware path',
+      detail:
+        'Use Nic-Nac sample-photo results only as decision support for coaching, manual exception, or later hardware review.',
       status: 'required',
     })
   })

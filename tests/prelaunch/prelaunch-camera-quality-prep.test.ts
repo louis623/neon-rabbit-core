@@ -89,15 +89,15 @@ describe('buildCameraQualityPrep', () => {
 
     expect(prep.status).toBe('sample_photo_required')
     expect(prep.items).toContainEqual({
-      label: 'Current setup context',
+      label: 'Capture setup quality context',
       detail:
-        'Review current setup: TikTok bio link and DMs. Setup goal: Cleaner show-night hub.',
+        'Assess photo quality against current setup: TikTok bio link and DMs. Setup goal: Cleaner show-night hub.',
       status: 'review',
     })
     expect(prep.items).toContainEqual({
-      label: 'Do not treat this as kit approval',
+      label: 'Screening is not hardware approval',
       detail:
-        'Passing intake fit does not approve hardware, shipping, pricing, or fulfillment.',
+        'Passing sample-photo screening does not approve hardware, shipping, pricing, or fulfillment.',
       status: 'review',
     })
   })

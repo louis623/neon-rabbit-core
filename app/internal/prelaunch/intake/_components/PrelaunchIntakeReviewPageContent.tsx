@@ -527,12 +527,12 @@ export function PrelaunchIntakeReviewPageContent({
                       Photography kit prep
                     </p>
                     <h3 className="mt-1 font-semibold text-slate-950">
-                      Sample photo needed before kit decision
+                      Hardware decision stays operator-only
                     </h3>
                     <p className="mt-1 leading-5 text-slate-600">
-                      Read-only operator checklist. This does not select a
-                      vendor, show pricing, create shipments, or change hardware
-                      automatically.
+                      Read-only hardware-decision checklist. This does not
+                      select a vendor, show pricing, create shipments, or change
+                      hardware automatically.
                     </p>
                   </div>
                   <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -568,12 +568,12 @@ export function PrelaunchIntakeReviewPageContent({
                       Camera quality prep
                     </p>
                     <h3 className="mt-1 font-semibold text-slate-950">
-                      Sample photo required before setup readiness
+                      Sample-photo quality needs human review
                     </h3>
                     <p className="mt-1 leading-5 text-slate-600">
-                      Operator-only screening guidance for the rep actual
-                      capture setup. This does not approve hardware, shipping,
-                      pricing, or fulfillment.
+                      Operator-only sample-photo screening for blur, lighting,
+                      framing, and white-background quality. This does not
+                      approve hardware, shipping, pricing, or fulfillment.
                     </p>
                   </div>
                   <div className="mt-4 grid gap-3 lg:grid-cols-2">

@@ -23,14 +23,14 @@ export function buildCameraQualityPrep(
       status: 'required',
     },
     {
-      label: 'Current setup context',
-      detail: `Review current setup: ${submission.currentSetup}. Setup goal: ${submission.setupGoal}.`,
+      label: 'Capture setup quality context',
+      detail: `Assess photo quality against current setup: ${submission.currentSetup}. Setup goal: ${submission.setupGoal}.`,
       status: 'review',
     },
     {
-      label: 'Do not treat this as kit approval',
+      label: 'Screening is not hardware approval',
       detail:
-        'Passing intake fit does not approve hardware, shipping, pricing, or fulfillment.',
+        'Passing sample-photo screening does not approve hardware, shipping, pricing, or fulfillment.',
       status: 'review',
     },
   ]
