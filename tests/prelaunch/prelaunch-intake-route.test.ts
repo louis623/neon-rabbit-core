@@ -202,6 +202,12 @@ describe('POST /api/prelaunch/intake', () => {
     )
 
     expect(insertMock).not.toHaveBeenCalled()
+    const updatePayload = (
+      intakeUpdateMock.mock.calls as unknown as Array<
+        [Record<string, unknown>]
+      >
+    )[0]?.[0]
+    expect(updatePayload).not.toHaveProperty('scout_input_status')
     expect(intakeUpdateEqMock).toHaveBeenCalledWith('id', 'intake-1')
     expect(runPrelaunchScoutForIntakeMock).toHaveBeenCalledWith({
       admin: { from: fromMock },

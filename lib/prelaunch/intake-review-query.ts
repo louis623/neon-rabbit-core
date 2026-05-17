@@ -464,7 +464,6 @@ async function loadLatestScoutRunsByIntakeId(
       .eq('agent_name', 'Scout')
       .in('intake_submission_id', intakeIds)
       .order('created_at', { ascending: false })
-      .limit(intakeIds.length * 3)
 
     if (error) throw error
 
@@ -506,7 +505,6 @@ async function loadLatestScribeTranscriptRunsByIntakeId(
       .eq('agent_kind', 'post_meeting_transcript_hook')
       .in('intake_submission_id', intakeIds)
       .order('created_at', { ascending: false })
-      .limit(intakeIds.length * 3)
 
     if (error) throw error
 

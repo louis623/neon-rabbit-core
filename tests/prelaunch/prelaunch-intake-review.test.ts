@@ -178,7 +178,7 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsLimitMock = vi.fn().mockResolvedValueOnce({
+    const scoutRunsOrderMock = vi.fn().mockResolvedValueOnce({
       data: [
         {
           intake_submission_id: 'intake-1',
@@ -265,7 +265,6 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
     const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
     const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
     const scoutRunsSelectMock = vi.fn(() => ({ eq: scoutRunsEqMock }))
@@ -386,14 +385,13 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsLimitMock = vi.fn().mockResolvedValueOnce({
+    const scoutRunsOrderMock = vi.fn().mockResolvedValueOnce({
       data: [],
       error: null,
     })
-    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
     const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
     const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
-    const scribeRunsLimitMock = vi.fn().mockResolvedValueOnce({
+    const scribeRunsOrderMock = vi.fn().mockResolvedValueOnce({
       data: [
         {
           intake_submission_id: 'intake-1',
@@ -490,7 +488,6 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scribeRunsOrderMock = vi.fn(() => ({ limit: scribeRunsLimitMock }))
     const scribeRunsInMock = vi.fn(() => ({ order: scribeRunsOrderMock }))
     const scribeRunsKindEqMock = vi.fn(() => ({ in: scribeRunsInMock }))
     const scribeRunsNameEqMock = vi.fn(() => ({ eq: scribeRunsKindEqMock }))
@@ -624,11 +621,10 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsLimitMock = async () => ({ data: [], error: null })
-    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
+    const scoutRunsOrderMock = vi.fn(async () => ({ data: [], error: null }))
     const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
     const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
-    const scribeRunsLimitMock = async () => ({
+    const scribeRunsOrderMock = vi.fn(async () => ({
       data: [
         {
           intake_submission_id: 'intake-1',
@@ -690,8 +686,7 @@ describe('prelaunch intake review helpers', () => {
         },
       ],
       error: null,
-    })
-    const scribeRunsOrderMock = vi.fn(() => ({ limit: scribeRunsLimitMock }))
+    }))
     const scribeRunsInMock = vi.fn(() => ({ order: scribeRunsOrderMock }))
     const scribeRunsKindEqMock = vi.fn(() => ({ in: scribeRunsInMock }))
     const scribeRunsNameEqMock = vi.fn(() => ({ eq: scribeRunsKindEqMock }))
@@ -765,7 +760,7 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsLimitMock = vi.fn().mockResolvedValueOnce({
+    const scoutRunsOrderMock = vi.fn().mockResolvedValueOnce({
       data: [
         {
           intake_submission_id: 'intake-1',
@@ -781,7 +776,6 @@ describe('prelaunch intake review helpers', () => {
       ],
       error: null,
     })
-    const scoutRunsOrderMock = vi.fn(() => ({ limit: scoutRunsLimitMock }))
     const scoutRunsInMock = vi.fn(() => ({ order: scoutRunsOrderMock }))
     const scoutRunsEqMock = vi.fn(() => ({ in: scoutRunsInMock }))
     const scoutRunsSelectMock = vi.fn(() => ({ eq: scoutRunsEqMock }))

@@ -2,7 +2,10 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import { PrelaunchIntakeReviewPageContent } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
+import {
+  normalizePrelaunchIntakeReviewLane,
+  PrelaunchIntakeReviewPageContent,
+} from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
@@ -69,6 +72,17 @@ function restoreGateEnv(snapshot: ReturnType<typeof snapshotGateEnv>) {
 }
 
 describe('PrelaunchIntakeReviewPageContent', () => {
+  it('normalizes supported operator lane filters', () => {
+    expect(normalizePrelaunchIntakeReviewLane('failed_scout')).toBe(
+      'failed_scout',
+    )
+    expect(normalizePrelaunchIntakeReviewLane(['meeting_ready'])).toBe(
+      'meeting_ready',
+    )
+    expect(normalizePrelaunchIntakeReviewLane('unknown')).toBeNull()
+    expect(normalizePrelaunchIntakeReviewLane(undefined)).toBeNull()
+  })
+
   it('renders operator summary counts and intake cards', () => {
     const originalEnv = snapshotGateEnv()
     delete process.env.SIGNWELL_API_KEY
@@ -84,6 +98,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
           {
             ...submission,
             handoffStatus: 'meeting_ready',
+            scoutInputStatus: 'generated',
           },
           submission,
           {
@@ -104,8 +119,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('3 total')
     expect(html).toContain('2 needs review')
     expect(html).toContain('1 qualified')
-    expect(html).toContain('3 Scout ready')
+    expect(html).toContain('1 Scout generated')
     expect(html).toContain('1 meeting ready')
+    expect(html).toContain('Scout input ready')
+    expect(html).toContain('Scout generated')
     expect(html).toContain('Meeting ready')
     expect(html).toContain('Jamie Hart Jewelry')
     expect(html).toContain('jamie@example.com')
@@ -139,6 +156,75 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('No kit fulfillment approval.')
     expect(html).not.toContain('Send SMS')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
+  })
+
+  it('renders operator priority lanes and filters by the active lane', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        activeLane: 'failed_scout',
+        submissions: [
+          {
+            ...submission,
+            businessName: 'Needs Review Jewelry',
+          },
+          {
+            ...submission,
+            id: 'intake-failed-scout',
+            email: 'failed@example.com',
+            businessName: 'Failed Scout Jewelry',
+            prequalificationStatus: 'qualified',
+            fitFlags: [],
+            scoutInputStatus: 'generated',
+            handoffStatus: 'reviewing',
+            latestScoutRun: {
+              runKey: 'scout:intake-failed-scout:2026-05-09T19:30:00.000Z',
+              status: 'failed',
+              triggerSource: 'intake_submission',
+              model: 'deterministic_scout_v1',
+              summary: null,
+              errorMessage: 'Public evidence fetch timed out.',
+              createdAt: '2026-05-09T19:30:00Z',
+              synthesisStatus: null,
+              synthesisConfidence: null,
+              capturedEvidenceCount: null,
+            },
+          },
+          {
+            ...submission,
+            id: 'intake-meeting',
+            email: 'meeting@example.com',
+            businessName: 'Meeting Ready Jewelry',
+            prequalificationStatus: 'qualified',
+            fitFlags: [],
+            scoutInputStatus: 'generated',
+            handoffStatus: 'meeting_ready',
+            latestScoutRun: null,
+            latestScribeTranscriptRun: null,
+          },
+          {
+            ...submission,
+            id: 'intake-clear',
+            email: 'clear@example.com',
+            businessName: 'Clear Lane Jewelry',
+            prequalificationStatus: 'qualified',
+            fitFlags: [],
+            scoutInputStatus: 'generated',
+            handoffStatus: 'scout_ready',
+            latestScoutRun: null,
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Priority lanes')
+    expect(html).toContain('1 Needs review')
+    expect(html).toContain('1 Failed Scout')
+    expect(html).toContain('1 Missing transcript')
+    expect(html).toContain('1 Meeting ready')
+    expect(html).toContain('4 Gate blocked')
+    expect(html).toContain('Showing Failed Scout lane')
+    expect(html).toContain('Failed Scout Jewelry')
+    expect(html).not.toContain('Clear Lane Jewelry')
   })
 
   it('renders a clear empty state when there are no submissions yet', () => {

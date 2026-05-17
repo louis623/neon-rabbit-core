@@ -99,12 +99,13 @@ export async function POST(request: Request) {
     const waitlistId = await findMatchingWaitlistId(admin, baseInsert.email)
     const insert = buildPrelaunchIntakeInsert(parsed, { waitlistId })
     const existingIntakeId = await findExistingIntakeId(admin, insert.email)
+    const { scout_input_status: _scoutInputStatus, ...existingUpdate } = insert
 
     let intakeSubmissionId = existingIntakeId
     const { data, error } = existingIntakeId
       ? await admin
           .from('sparkle_suite_intake_submissions')
-          .update(insert)
+          .update(existingUpdate)
           .eq('id', existingIntakeId)
           .select('id')
           .single()

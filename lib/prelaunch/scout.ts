@@ -2004,7 +2004,10 @@ export async function runPrelaunchScoutForIntake({
       scout_input_status: 'generated',
       scout_input: scoutInput,
       scout_input_generated_at: timestamp,
-      handoff_status: 'scout_ready',
+      handoff_status:
+        output.recommendedNextStep === 'operator_review_first'
+          ? 'reviewing'
+          : 'scout_ready',
     })
     .eq('id', intakeId)
 

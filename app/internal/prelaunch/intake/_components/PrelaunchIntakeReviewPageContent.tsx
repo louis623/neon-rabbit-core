@@ -15,12 +15,61 @@ import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
   submissions: PrelaunchIntakeReviewSubmission[]
+  activeLane?: PrelaunchIntakeReviewLane | null
 }
 
 interface OperatorReadinessItem {
   label: string
   detail: string
   status: 'blocked' | 'review' | 'ready'
+}
+
+export type PrelaunchIntakeReviewLane =
+  | 'needs_review'
+  | 'failed_scout'
+  | 'missing_transcript'
+  | 'meeting_ready'
+  | 'gate_blocked'
+
+const PRELAUNCH_INTAKE_LANES: Array<{
+  key: PrelaunchIntakeReviewLane
+  label: string
+  detail: string
+}> = [
+  {
+    key: 'needs_review',
+    label: 'Needs review',
+    detail: 'Fit or setup review',
+  },
+  {
+    key: 'failed_scout',
+    label: 'Failed Scout',
+    detail: 'Scout error review',
+  },
+  {
+    key: 'missing_transcript',
+    label: 'Missing transcript',
+    detail: 'Meeting-ready without Scribe',
+  },
+  {
+    key: 'meeting_ready',
+    label: 'Meeting ready',
+    detail: 'Transcript handoff queued',
+  },
+  {
+    key: 'gate_blocked',
+    label: 'Gate blocked',
+    detail: 'Launch gates still blocked',
+  },
+]
+
+export function normalizePrelaunchIntakeReviewLane(
+  value: string | string[] | undefined,
+): PrelaunchIntakeReviewLane | null {
+  const lane = Array.isArray(value) ? value[0] : value
+  return PRELAUNCH_INTAKE_LANES.some((candidate) => candidate.key === lane)
+    ? (lane as PrelaunchIntakeReviewLane)
+    : null
 }
 
 function formatValue(value: string | null | undefined) {
@@ -36,6 +85,50 @@ function formatDate(value: string) {
 
 function formatLabel(value: string | null | undefined) {
   return value?.replaceAll('_', ' ') ?? 'Not provided'
+}
+
+function formatScoutInputStatus(value: string) {
+  if (value === 'ready') return 'Scout input ready'
+  if (value === 'generated') return 'Scout generated'
+  return formatLabel(value)
+}
+
+function formatLaneHref(lane: PrelaunchIntakeReviewLane | null) {
+  return lane ? `/internal/prelaunch/intake?lane=${lane}` : '/internal/prelaunch/intake'
+}
+
+function hasBlockedGate(gateReadiness: PrelaunchGateReadinessItem[]) {
+  return gateReadiness.some((gate) => gate.status === 'blocked')
+}
+
+function submissionMatchesLane(
+  submission: PrelaunchIntakeReviewSubmission,
+  lane: PrelaunchIntakeReviewLane,
+  gateReadiness: PrelaunchGateReadinessItem[],
+) {
+  if (lane === 'needs_review') {
+    return (
+      submission.prequalificationStatus === 'needs_review' ||
+      submission.fitFlags.length > 0
+    )
+  }
+
+  if (lane === 'failed_scout') {
+    return submission.latestScoutRun?.status === 'failed'
+  }
+
+  if (lane === 'missing_transcript') {
+    return (
+      submission.handoffStatus === 'meeting_ready' &&
+      !submission.latestScribeTranscriptRun
+    )
+  }
+
+  if (lane === 'meeting_ready') {
+    return submission.handoffStatus === 'meeting_ready'
+  }
+
+  return hasBlockedGate(gateReadiness)
 }
 
 function formatCount(
@@ -202,6 +295,7 @@ function BriefList({
 }
 
 export function PrelaunchIntakeReviewPageContent({
+  activeLane = null,
   submissions,
 }: PrelaunchIntakeReviewPageContentProps) {
   const total = submissions.length
@@ -211,13 +305,26 @@ export function PrelaunchIntakeReviewPageContent({
   const qualified = submissions.filter(
     (submission) => submission.prequalificationStatus === 'qualified',
   ).length
-  const scoutReady = submissions.filter(
-    (submission) => submission.scoutInputStatus === 'ready',
+  const scoutGenerated = submissions.filter(
+    (submission) => submission.scoutInputStatus === 'generated',
   ).length
   const meetingReady = submissions.filter(
     (submission) => submission.handoffStatus === 'meeting_ready',
   ).length
   const gateReadiness = getPrelaunchGateReadiness()
+  const activeLaneConfig =
+    PRELAUNCH_INTAKE_LANES.find((lane) => lane.key === activeLane) ?? null
+  const visibleSubmissions = activeLaneConfig
+    ? submissions.filter((submission) =>
+        submissionMatchesLane(submission, activeLaneConfig.key, gateReadiness),
+      )
+    : submissions
+  const laneSummaries = PRELAUNCH_INTAKE_LANES.map((lane) => ({
+    ...lane,
+    count: submissions.filter((submission) =>
+      submissionMatchesLane(submission, lane.key, gateReadiness),
+    ).length,
+  }))
   const qrManifest = getApprovedPrelaunchQrManifest({
     baseUrl: process.env.NEXT_PUBLIC_APP_URL,
   })
@@ -307,7 +414,7 @@ export function PrelaunchIntakeReviewPageContent({
             [`${total} total`, 'Submitted intake forms'],
             [`${needsReview} needs review`, 'Fit flags or incomplete setup'],
             [`${qualified} qualified`, 'No current fit flags'],
-            [`${scoutReady} Scout ready`, 'Ready for agent handoff'],
+            [`${scoutGenerated} Scout generated`, 'Saved Scout output'],
             [`${meetingReady} meeting ready`, 'Transcript handoff queued'],
           ].map(([value, label]) => (
             <div
@@ -320,19 +427,71 @@ export function PrelaunchIntakeReviewPageContent({
           ))}
         </section>
 
-        {submissions.length === 0 ? (
+        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                Priority lanes
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-slate-950">
+                {activeLaneConfig
+                  ? `Showing ${activeLaneConfig.label} lane`
+                  : 'All operator lanes'}
+              </h2>
+            </div>
+            {activeLaneConfig ? (
+              <a
+                className="text-sm font-semibold text-slate-600 hover:text-slate-950"
+                href={formatLaneHref(null)}
+              >
+                Clear lane
+              </a>
+            ) : null}
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {laneSummaries.map((lane) => (
+              <a
+                className={`rounded-md border p-3 text-left transition ${
+                  activeLaneConfig?.key === lane.key
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-slate-300 hover:bg-slate-100'
+                }`}
+                href={formatLaneHref(lane.key)}
+                key={lane.key}
+              >
+                <p className="text-sm font-semibold">
+                  {lane.count} {lane.label}
+                </p>
+                <p
+                  className={`mt-1 text-xs ${
+                    activeLaneConfig?.key === lane.key
+                      ? 'text-slate-200'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  {lane.detail}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {visibleSubmissions.length === 0 ? (
           <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
             <h2 className="text-xl font-semibold text-slate-950">
-              No intake submissions yet
+              {activeLaneConfig
+                ? `No ${activeLaneConfig.label.toLowerCase()} submissions`
+                : 'No intake submissions yet'}
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              New /prelaunch intake forms will appear here after reps submit
-              their fit check.
+              {activeLaneConfig
+                ? 'Choose another lane or clear the lane filter to see the full queue.'
+                : 'New /prelaunch intake forms will appear here after reps submit their fit check.'}
             </p>
           </section>
         ) : (
           <section className="flex flex-col gap-4" aria-label="Submissions">
-            {submissions.map((submission) => {
+            {visibleSubmissions.map((submission) => {
               const operatorReadiness = buildOperatorReadiness(
                 submission,
                 gateReadiness,
@@ -434,9 +593,7 @@ export function PrelaunchIntakeReviewPageContent({
                       {submission.prequalificationStatus.replace('_', ' ')}
                     </span>
                     <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-700">
-                      {submission.scoutInputStatus === 'ready'
-                        ? 'Scout ready'
-                        : submission.scoutInputStatus}
+                      {formatScoutInputStatus(submission.scoutInputStatus)}
                     </span>
                     <span className="rounded-md bg-fuchsia-50 px-3 py-1 text-xs font-semibold uppercase text-fuchsia-700">
                       {submission.handoffStatus === 'meeting_ready'

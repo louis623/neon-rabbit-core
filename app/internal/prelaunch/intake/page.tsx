@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
 
-import { PrelaunchIntakeReviewPageContent } from './_components/PrelaunchIntakeReviewPageContent'
+import {
+  normalizePrelaunchIntakeReviewLane,
+  PrelaunchIntakeReviewPageContent,
+} from './_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
 import {
   AuthError,
@@ -11,7 +14,13 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export default async function InternalPrelaunchIntakePage() {
+interface InternalPrelaunchIntakePageProps {
+  searchParams?: Promise<{ lane?: string | string[] }>
+}
+
+export default async function InternalPrelaunchIntakePage({
+  searchParams,
+}: InternalPrelaunchIntakePageProps) {
   try {
     await getAuthenticatedOperator()
   } catch (error) {
@@ -36,6 +45,13 @@ export default async function InternalPrelaunchIntakePage() {
     throw error
   }
 
+  const query = searchParams ? await searchParams : {}
+  const activeLane = normalizePrelaunchIntakeReviewLane(query.lane)
   const submissions = await loadPrelaunchIntakeReviewSubmissions()
-  return <PrelaunchIntakeReviewPageContent submissions={submissions} />
+  return (
+    <PrelaunchIntakeReviewPageContent
+      activeLane={activeLane}
+      submissions={submissions}
+    />
+  )
 }

@@ -2042,7 +2042,7 @@ describe('prelaunch Scout', () => {
     )
   })
 
-  it('logs the Scout run and marks the intake Scout handoff generated', async () => {
+  it('logs the Scout run and keeps needs-review intakes in operator review', async () => {
     const intakeSingleMock = vi.fn().mockResolvedValueOnce({
       data: {
         id: 'intake-1',
@@ -2166,7 +2166,7 @@ describe('prelaunch Scout', () => {
       expect.objectContaining({
         scout_input_status: 'generated',
         scout_input_generated_at: '2026-05-09T19:00:00.000Z',
-        handoff_status: 'scout_ready',
+        handoff_status: 'reviewing',
       }),
     )
     expect(result.output.recommendedNextStep).toBe('operator_review_first')
@@ -2263,7 +2263,7 @@ describe('prelaunch Scout', () => {
     expect(intakeUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
         scout_input_status: 'generated',
-        handoff_status: 'scout_ready',
+        handoff_status: 'reviewing',
       }),
     )
   })
