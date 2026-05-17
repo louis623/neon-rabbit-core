@@ -1,7 +1,7 @@
-// Server-side jewelry photo upload utility. Used by the Thumper add_listing
+// Server-side jewelry photo upload utility. Used by the Nic-Nac add_listing
 // handler when a rep sends a photo of a NEW design (not yet in the jewelry
 // database). The handler extracts the most recent image part from the
-// persisted user message in thumper_conversations, calls uploadJewelryPhoto,
+// persisted user message in nic_nac_conversations, calls uploadJewelryPhoto,
 // and passes the returned public URL into createDesign() as piecePhotoUrl.
 //
 // Uses the service-role client so the upload is not subject to storage.objects

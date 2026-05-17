@@ -1,11 +1,11 @@
 // Service-layer errors. ServiceError is the canonical class for new code.
 // TradeBoardError is preserved as a subclass so the existing tool handlers
-// (lib/thumper/tools/list-my-trade-board.ts, lib/thumper/tools/remove-listing.ts)
+// (lib/nic-nac/tools/list-my-trade-board.ts, lib/nic-nac/tools/remove-listing.ts)
 // keep working without code changes â€” they do `instanceof TradeBoardError` and
 // read `err.code`. Both checks survive subclassing.
 //
 // Tool handlers translate ServiceError to the assistant tool error at the route boundary
-// (see lib/thumper/errors.ts). The service layer never references
+// (see lib/nic-nac/errors.ts). The service layer never references
 // tool error class; that's the rule that lets the same service back both the`r`n// chat assistant and HTTP dashboard entry points.
 
 export class ServiceError extends Error {

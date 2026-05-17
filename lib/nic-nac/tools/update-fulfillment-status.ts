@@ -1,0 +1,183 @@
+// Tool: update_fulfillment_status — write, NO HITL. Moves a fulfillment item
+// forward through the approved -> shipped -> completed pipeline.
+//
+// Auth client: updateFulfillmentStatus is auth-client only; RLS
+// (fulfillment_own_data) scopes the update through request -> listing -> rep_id.
+// The service itself also re-checks the rep's scope and transition rules.
+
+import { z } from 'zod'
+import { tool } from 'ai'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { updateFulfillmentStatus } from '@/lib/services/trade-fulfillment'
+import { ServiceError } from '@/lib/services/errors'
+import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
+import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
+import { NicNacToolError } from '@/lib/nic-nac/errors'
+import type {
+  FulfillmentStatus,
+  UpdateFulfillmentInput,
+} from '@/lib/services/types'
+import type { ToolDefinition } from './types'
+
+const inputSchema = z
+  .object({
+    requestId: z.string().uuid().optional(),
+    customerName: z.string().trim().min(1).optional(),
+    nextStatus: z.enum(['approved', 'shipped', 'completed']),
+    shippingNotes: z.string().optional(),
+    addToBoard: z.boolean().optional(),
+  })
+  .refine((v) => Boolean(v.requestId || v.customerName), {
+    message: 'requestId or customerName is required',
+  })
+
+function explainServiceError(err: unknown): never {
+  if (err instanceof ServiceError) {
+    throw new NicNacToolError({
+      code: err.code,
+      userMessage: err.userMessage,
+      cause: err,
+    })
+  }
+  throw err
+}
+
+function buildInput(args: {
+  requestId?: string
+  customerName?: string
+  nextStatus: FulfillmentStatus
+  shippingNotes?: string
+  addToBoard?: boolean
+}): UpdateFulfillmentInput {
+  const base = {
+    nextStatus: args.nextStatus,
+    shippingNotes: args.shippingNotes,
+    addToBoard: args.addToBoard,
+  }
+
+  if (args.requestId) {
+    return {
+      requestId: args.requestId,
+      ...base,
+    }
+  }
+
+  return {
+    customerName: args.customerName ?? '',
+    ...base,
+  }
+}
+
+export function makeUpdateFulfillmentStatusTool(ctx: {
+  repId: string
+  supabase: SupabaseClient
+  conversationId: string
+  runId: string
+}) {
+  return tool({
+    description:
+      'Move one fulfillment item forward through the authenticated rep’s trade pipeline. ' +
+      'Use this after get_fulfillment_queue when the rep says a trade has shipped or is fully done. ' +
+      'Forward-only: approved -> shipped -> completed. ' +
+      'Prefer requestId from the queue; customerName is only for clear one-off cases. ' +
+      'shippingNotes can hold tracking or shipment details. ' +
+      'If the rep already knows they want help adding the received piece to their board after completion, set addToBoard:true so Nic-Nac can follow up cleanly.',
+    inputSchema,
+    execute: async ({
+      requestId,
+      customerName,
+      nextStatus,
+      shippingNotes,
+      addToBoard,
+    }) => {
+      const input = buildInput({
+        requestId,
+        customerName,
+        nextStatus: nextStatus as FulfillmentStatus,
+        shippingNotes,
+        addToBoard,
+      })
+
+      let result: Awaited<ReturnType<typeof updateFulfillmentStatus>>
+      try {
+        result = await updateFulfillmentStatus(ctx.supabase, ctx.repId, input)
+      } catch (err) {
+        explainServiceError(err)
+      }
+
+      try {
+        await writeTradeActionAudit({
+          actionType: 'fulfillment_status_updated',
+          repId: ctx.repId,
+          targetListingId: null,
+          beforeState: {
+            fulfillmentId: result.fulfillmentId,
+            requestId: result.requestId,
+            status: result.previousStatus,
+            repId: ctx.repId,
+          },
+          afterState: {
+            fulfillmentId: result.fulfillmentId,
+            requestId: result.requestId,
+            status: result.status,
+            repId: ctx.repId,
+            shippingNotes: shippingNotes ?? null,
+            completedAt: result.completedAt,
+            shouldPromptAddToBoard: result.shouldPromptAddToBoard,
+          },
+          details: {
+            runId: ctx.runId,
+            conversationId: ctx.conversationId,
+            requestId: result.requestId,
+          },
+        })
+      } catch (auditErr) {
+        console.error('[nic-nac] trade_action_audit write failed', {
+          requestId: result.requestId,
+          fulfillmentId: result.fulfillmentId,
+          auditErr,
+        })
+        try {
+          await logIncident({
+            errorType: 'audit_write_failed',
+            repId: ctx.repId,
+            conversationId: ctx.conversationId,
+            severity: 'warn',
+            details: {
+              toolName: 'update_fulfillment_status',
+              runId: ctx.runId,
+              requestId: result.requestId,
+              fulfillmentId: result.fulfillmentId,
+              message: (auditErr as Error)?.message,
+            },
+          })
+        } catch {
+          /* swallow — observability must not affect outcome */
+        }
+      }
+
+      return {
+        fulfillmentId: result.fulfillmentId,
+        requestId: result.requestId,
+        previousStatus: result.previousStatus,
+        status: result.status,
+        completedAt: result.completedAt,
+        shippingNotesApplied: shippingNotes ?? null,
+        shouldPromptAddToBoard: result.shouldPromptAddToBoard,
+        nextSuggestedTool: result.shouldPromptAddToBoard ? 'add_listing' : null,
+      }
+    },
+  })
+}
+
+export const updateFulfillmentStatusTool: ToolDefinition = {
+  name: 'update_fulfillment_status',
+  readOnly: false,
+  build: (ctx) =>
+    makeUpdateFulfillmentStatusTool({
+      repId: ctx.repId,
+      supabase: ctx.supabase,
+      conversationId: ctx.conversationId,
+      runId: ctx.runId,
+    }),
+}

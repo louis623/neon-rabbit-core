@@ -5,7 +5,7 @@ import {
   getTradeRequestNotificationSummary,
   submitTradeRequest,
 } from '@/lib/services/trade-requests'
-import { notifyRepOfTradeRequest } from '@/lib/thumper/trade-request-notifications'
+import { notifyRepOfTradeRequest } from '@/lib/nic-nac/trade-request-notifications'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: Request) {

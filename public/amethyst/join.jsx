@@ -27,7 +27,7 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   showFaq: true,
   showFinalCta: true,
   showFooter: true,
-  showThumper: true,
+  showNicNac: true,
   tickerTopText: "Live tonight · 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday",
   primaryColor: "#480DDF",
   accentColor: "#D209E3",
@@ -630,10 +630,10 @@ function Footer({ businessName }) {
   );
 }
 
-function Thumper() {
+function NicNac() {
   return (
-    <div className="hp-thumper">
-      <button className="hp-thumper-btn" aria-label="Open Nic-Nac">
+    <div className="hp-nic-nac">
+      <button className="hp-nic-nac-btn" aria-label="Open Nic-Nac">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
         </svg>
@@ -787,7 +787,7 @@ function App() {
         {t.showFooter ? <Footer businessName={t.businessName} /> : null}
       </div>
 
-      {t.showThumper ? <Thumper /> : null}
+      {t.showNicNac ? <NicNac /> : null}
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} />
 
       <TweaksPanel title="Tweaks" subtitle="Tune the join page" defaultWidth={380}>
@@ -988,7 +988,7 @@ function App() {
           <TweakToggle label="FAQ" value={t.showFaq} onChange={(value) => setTweak("showFaq", value)} />
           <TweakToggle label="Final CTA" value={t.showFinalCta} onChange={(value) => setTweak("showFinalCta", value)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(value) => setTweak("showFooter", value)} />
-          <TweakToggle label="Nic-Nac launcher" value={t.showThumper} onChange={(value) => setTweak("showThumper", value)} />
+          <TweakToggle label="Nic-Nac launcher" value={t.showNicNac} onChange={(value) => setTweak("showNicNac", value)} />
         </TweakSection>
 
         <TweakSection title="Slot inspector">

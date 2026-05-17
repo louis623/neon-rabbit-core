@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { measureImageQualitySignals } from '@/lib/thumper/image-quality'
+import { measureImageQualitySignals } from '@/lib/nic-nac/image-quality'
 
 function clampChannel(value: number) {
   return Math.max(0, Math.min(255, Math.round(value)))

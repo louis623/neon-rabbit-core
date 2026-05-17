@@ -2013,15 +2013,15 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
 .hp-footer-bottom a { color: rgba(255,255,255,0.6); }
 
 /* ============================================================
-   Thumper launcher (TH3 Square + sparkle)
+   Nic-Nac launcher (TH3 Square + sparkle)
    ============================================================ */
-.hp-thumper {
+.hp-nic-nac {
   position: fixed;
   bottom: 24px;
   right: 24px;
   z-index: 90;
 }
-.hp-thumper-btn {
+.hp-nic-nac-btn {
   width: 56px; height: 56px;
   border-radius: 14px;
   background: var(--fg);
@@ -2035,18 +2035,18 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   box-shadow: 0 12px 32px rgba(42,31,64,0.25);
   transition: transform var(--dur-fast) var(--ease);
 }
-.hp-thumper-btn:hover { transform: translateY(-2px); }
-.hp-thumper-btn svg { width: 22px; height: 22px; }
-.hp-thumper-btn .spark {
+.hp-nic-nac-btn:hover { transform: translateY(-2px); }
+.hp-nic-nac-btn svg { width: 22px; height: 22px; }
+.hp-nic-nac-btn .spark {
   position: absolute;
   top: -3px;
   right: -3px;
   width: 12px; height: 12px;
   background: var(--hp-primary);
   transform: rotate(45deg);
-  animation: hp-thumper-spark 3s var(--ease) infinite;
+  animation: hp-nic-nac-spark 3s var(--ease) infinite;
 }
-@keyframes hp-thumper-spark {
+@keyframes hp-nic-nac-spark {
   0%, 100% { transform: rotate(45deg) scale(1); opacity: 1; }
   50% { transform: rotate(135deg) scale(1.15); opacity: 0.85; }
 }

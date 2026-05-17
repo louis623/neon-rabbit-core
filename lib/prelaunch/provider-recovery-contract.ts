@@ -48,7 +48,7 @@ export const PROVIDER_RECOVERY_CONTRACTS: ProviderRecoveryContract[] = [
     id: 'sms.not-configured',
     sourceLabel: 'send_sms_notification',
     expectedCode: 'SMS_NOT_CONFIGURED',
-    testFile: 'tests/thumper/send-sms-notification.test.ts',
+    testFile: 'tests/nic-nac/send-sms-notification.test.ts',
     liveProviderRequired: false,
     notes:
       'SMS tool fails before wallet debit, log insert, or Telnyx request when Telnyx env is absent.',
@@ -57,7 +57,7 @@ export const PROVIDER_RECOVERY_CONTRACTS: ProviderRecoveryContract[] = [
     id: 'sms.telnyx-reject-refund',
     sourceLabel: 'Carrier blocked the message.',
     expectedCode: 'SMS_DELIVERY_FAILED',
-    testFile: 'tests/thumper/send-sms-notification.test.ts',
+    testFile: 'tests/nic-nac/send-sms-notification.test.ts',
     liveProviderRequired: false,
     notes:
       'Mocked Telnyx rejection marks the log failed and refunds the SMS wallet charge.',
@@ -75,7 +75,7 @@ export const PROVIDER_RECOVERY_CONTRACTS: ProviderRecoveryContract[] = [
     id: 'audit.write-isolated',
     sourceLabel: 'audit table unreachable',
     expectedCode: 'audit_write_failed',
-    testFile: 'tests/thumper/trade-board-tools.test.ts',
+    testFile: 'tests/nic-nac/trade-board-tools.test.ts',
     liveProviderRequired: false,
     notes:
       'Audit write failures are logged as incidents and must not reverse successful business mutations.',

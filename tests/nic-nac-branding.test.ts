@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import { EmptyGreeting } from '@/app/thumper/components/EmptyGreeting'
-import { InputRow } from '@/app/thumper/components/InputRow'
-import { ThinkingIndicator } from '@/app/thumper/components/ThinkingIndicator'
-import { ThumperHeader } from '@/app/thumper/components/ThumperHeader'
+import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
+import { InputRow } from '@/app/nic-nac/components/InputRow'
+import { ThinkingIndicator } from '@/app/nic-nac/components/ThinkingIndicator'
+import { NicNacHeader } from '@/app/nic-nac/components/NicNacHeader'
 
 describe('Nic-Nac branding copy', () => {
   it('renders the rep-facing assistant name across the shell copy', () => {
@@ -26,7 +26,7 @@ describe('Nic-Nac branding copy', () => {
       }),
     )
     const headerHtml = renderToStaticMarkup(
-      createElement(ThumperHeader, {
+      createElement(NicNacHeader, {
         closeLabel: 'Close Nic-Nac',
         onClose: () => {},
       }),

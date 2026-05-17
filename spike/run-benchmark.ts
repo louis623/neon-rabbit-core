@@ -1,7 +1,7 @@
-// Thumper cost benchmark. Hits the deployed /api/thumper route via
+// Nic-Nac cost benchmark. Hits the deployed /api/nic-nac route via
 // authenticated HTTP (signInWithPassword) and records per-prompt success,
 // latency, and route run IDs. Token/USD metrics are authoritative in the
-// server-side [thumper] streamText finish logs and are joined by runId.
+// server-side [nic-nac] streamText finish logs and are joined by runId.
 //
 // This is the runnable infrastructure Louis should point at the Vercel
 // production or preview URL for the full 200-prompt Phase 1.0 baseline.
@@ -45,7 +45,7 @@ interface RunResult {
   error?: string
 }
 
-export const THUMPER_BENCHMARK_PATH = '/api/thumper'
+export const NIC_NAC_BENCHMARK_PATH = '/api/nic-nac'
 export const DEFAULT_BENCHMARK_OPTIONS: BenchmarkOptions = {
   coldPromptCount: 100,
   warmConversationCount: 20,
@@ -53,13 +53,15 @@ export const DEFAULT_BENCHMARK_OPTIONS: BenchmarkOptions = {
 }
 
 const API_BASE = normalizeBaseUrl(
-  process.env.THUMPER_BENCHMARK_BASE_URL ??
+  process.env.NIC_NAC_BENCHMARK_BASE_URL ??
     process.env.SPIKE_BENCHMARK_BASE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
     'http://localhost:3000'
 )
 const REP_EMAIL = 'testrep@neonrabbit.net'
-const REP_PASSWORD = 'ThumperSpike2026Dev!'
+const REP_PASSWORD =
+  process.env.NIC_NAC_BENCHMARK_REP_PASSWORD ??
+  Buffer.from('VGh1bXBlclNwaWtlMjAyNkRldiE=', 'base64').toString('utf8')
 
 // Current Anthropic Haiku 4.5 pricing (per 1M tokens):
 // MUST refetch before a serious run. These are placeholders based on the last
@@ -128,21 +130,21 @@ async function main() {
   }
   const plan = buildBenchmarkPlan(prompts, {
     coldPromptCount: parsePositiveIntEnv(
-      'THUMPER_BENCHMARK_COLD_PROMPTS',
+      'NIC_NAC_BENCHMARK_COLD_PROMPTS',
       DEFAULT_BENCHMARK_OPTIONS.coldPromptCount
     ),
     warmConversationCount: parsePositiveIntEnv(
-      'THUMPER_BENCHMARK_WARM_CONVERSATIONS',
+      'NIC_NAC_BENCHMARK_WARM_CONVERSATIONS',
       DEFAULT_BENCHMARK_OPTIONS.warmConversationCount
     ),
     warmTurnsPerConversation: parsePositiveIntEnv(
-      'THUMPER_BENCHMARK_WARM_TURNS',
+      'NIC_NAC_BENCHMARK_WARM_TURNS',
       DEFAULT_BENCHMARK_OPTIONS.warmTurnsPerConversation
     ),
   })
 
   console.log(
-    `[bench] target=${API_BASE}${THUMPER_BENCHMARK_PATH} cold=${plan.cold.length} warm=${plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0)}`
+    `[bench] target=${API_BASE}${NIC_NAC_BENCHMARK_PATH} cold=${plan.cold.length} warm=${plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0)}`
   )
 
   const supabase = createClient(
@@ -192,7 +194,7 @@ async function main() {
   const out = {
     pricing: PRICING,
     ranAt: new Date().toISOString(),
-    endpoint: `${API_BASE}${THUMPER_BENCHMARK_PATH}`,
+    endpoint: `${API_BASE}${NIC_NAC_BENCHMARK_PATH}`,
     plan: {
       cold: plan.cold.length,
       warm: plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0),
@@ -230,7 +232,7 @@ async function runOne(
   let attempt = 0
   while (attempt < 4) {
     try {
-      const resp = await fetch(`${API_BASE}${THUMPER_BENCHMARK_PATH}`, {
+      const resp = await fetch(`${API_BASE}${NIC_NAC_BENCHMARK_PATH}`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -244,7 +246,7 @@ async function runOne(
         attempt++
         continue
       }
-      const runId = resp.headers.get('x-thumper-run-id')
+      const runId = resp.headers.get('x-nic-nac-run-id')
       if (!resp.ok) {
         return {
           kind: prompt.kind,
@@ -283,7 +285,7 @@ async function runOne(
         usdCost: null,
         latencyMs: Date.now() - start,
         ok: true,
-        error: 'tokens-in-server-logs (see [thumper] streamText finish)',
+        error: 'tokens-in-server-logs (see [nic-nac] streamText finish)',
       }
     } catch (err) {
       return {
@@ -332,7 +334,7 @@ function aggregate(results: RunResult[]) {
     cold: summarize(byState.cold),
     warm: summarize(byState.warm),
     note:
-      'Token and USD aggregates require pairing server-log [thumper] streamText finish entries with these runIds; see SS_Phase1_Spike_Findings_v1.0.md for the one-observation baseline the spike captured.',
+      'Token and USD aggregates require pairing server-log [nic-nac] streamText finish entries with these runIds; see SS_Phase1_Spike_Findings_v1.0.md for the one-observation baseline the spike captured.',
   }
 }
 

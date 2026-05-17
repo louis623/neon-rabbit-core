@@ -1,0 +1,49 @@
+/* Nic-Nac design tokens — Section A of handoff bundle.
+   Imported once by app/nic-nac/page.tsx. All component .module.css files
+   consume these via var(--nic-nac-*). Source of truth: tokens.js from the
+   Claude Design handoff. */
+
+:root {
+  /* Accents */
+  --nic-nac-accent: #C4A0E8;
+  --nic-nac-accent-hover: #B48EDB;
+  --nic-nac-accent-pressed: #A47CCD;
+  --nic-nac-destructive: #DC2626;
+  --nic-nac-destructive-hover: #B91C1C;
+  --nic-nac-destructive-pressed: #991B1B;
+
+  /* Surfaces */
+  --nic-nac-surface-primary: #FAFAFC;
+  --nic-nac-surface-primary-solid: #FFFFFF;
+  --nic-nac-surface-dashboard: #F6F7F9;
+  --nic-nac-surface-dashboard-placeholder: #ECEEF2;
+  --nic-nac-surface-rep-message: #F1EAFB;
+  --nic-nac-surface-nic-nac-message: #FFFFFF;
+  --nic-nac-surface-input: #FFFFFF;
+  --nic-nac-surface-input-disabled: #F4F5F8;
+  --nic-nac-surface-error: #FEF2F2;
+
+  /* Borders */
+  --nic-nac-border: #E6E8EC;
+  --nic-nac-border-strong: #D4D7DD;
+  --nic-nac-border-input-focus: #C4A0E8;
+  --nic-nac-border-error: #FECACA;
+
+  /* Text */
+  --nic-nac-text-primary: #1A1C20;
+  --nic-nac-text-secondary: #5A5F6A;
+  --nic-nac-text-muted: #8A8F9A;
+  --nic-nac-text-placeholder: #A8ACB6;
+  --nic-nac-text-inverse: #FFFFFF;
+  --nic-nac-text-on-accent: #1A1C20;
+  --nic-nac-text-error: #991B1B;
+
+  /* Focus ring */
+  --nic-nac-focus-ring: #C4A0E8;
+}
+
+/* Streaming dot pulse — used by StreamingBubble.module.css via composition */
+@keyframes nic-nac-dot-pulse {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}

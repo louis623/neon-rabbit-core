@@ -1,0 +1,97 @@
+// Nic-Nac tool registry. Adding a new tool is mechanical:
+//   1. Create lib/nic-nac/tools/<name>.ts that exports a ToolDefinition
+//   2. Import and push it into REGISTRY below
+// No route.ts changes needed.
+//
+// buildAllTools(ctx) returns the ToolSet that streamText expects, with each
+// tool wrapped in:
+//   withErrorHandling( { name, ctx, readOnly }, withTelemetry(name, ctx, raw) )
+// Composition order matters — see the header comments in each wrapper.
+
+import type { Tool, ToolSet } from 'ai'
+import { listMyTradeBoardTool } from './list-my-trade-board'
+import { removeListingTool } from './remove-listing'
+import { restoreListingTool } from './restore-listing'
+import { addListingTool } from './add-listing'
+import { getTradeRequestsTool } from './get-trade-requests'
+import { approveTradeTool } from './approve-trade'
+import { rejectTradeTool } from './reject-trade'
+import { searchJewelryDatabaseTool } from './search-jewelry-database'
+import { updateListingTool } from './update-listing'
+import { getTradeHistoryTool } from './get-trade-history'
+import { getFulfillmentQueueTool } from './get-fulfillment-queue'
+import { updateFulfillmentStatusTool } from './update-fulfillment-status'
+import { addShowTool } from './add-show'
+import { listMyShowsTool } from './list-my-shows'
+import { updateShowTool } from './update-show'
+import { cancelShowTool } from './cancel-show'
+import { updateBannerTextTool } from './update-banner-text'
+import { updateStreamingLinksTool } from './update-streaming-links'
+import { updateSiteSettingTool } from './update-site-setting'
+import { writeRepNoteTool } from './write-rep-note'
+import { readRecentRepNotesTool } from './read-recent-rep-notes'
+import { sendSmsNotificationTool } from './send-sms-notification'
+import { sendEmailNotificationTool } from './send-email-notification'
+import { getNotificationPreferencesTool } from './get-notification-preferences'
+import { customerAudienceTool } from './get-customer-audience'
+import { withTelemetry } from './wrappers/with-telemetry'
+import { withErrorHandling } from './wrappers/with-error-handling'
+import type { ToolContext, ToolDefinition } from './types'
+
+const REGISTRY: ToolDefinition[] = [
+  listMyTradeBoardTool,
+  removeListingTool,
+  restoreListingTool,
+  addListingTool,
+  getTradeRequestsTool,
+  approveTradeTool,
+  rejectTradeTool,
+  searchJewelryDatabaseTool,
+  updateListingTool,
+  getTradeHistoryTool,
+  getFulfillmentQueueTool,
+  updateFulfillmentStatusTool,
+  addShowTool,
+  listMyShowsTool,
+  updateShowTool,
+  cancelShowTool,
+  updateBannerTextTool,
+  updateStreamingLinksTool,
+  updateSiteSettingTool,
+  writeRepNoteTool,
+  readRecentRepNotesTool,
+  sendSmsNotificationTool,
+  sendEmailNotificationTool,
+  getNotificationPreferencesTool,
+  customerAudienceTool,
+]
+
+export function buildAllTools(ctx: ToolContext): ToolSet {
+  // Fail loudly on duplicate tool names — Object.fromEntries silently
+  // overwrites, which would let a buggy registry ship without warning.
+  const seen = new Set<string>()
+  const dupes: string[] = []
+  for (const def of REGISTRY) {
+    if (seen.has(def.name)) dupes.push(def.name)
+    seen.add(def.name)
+  }
+  if (dupes.length) {
+    throw new Error(`[nic-nac] duplicate tool names in REGISTRY: ${dupes.join(', ')}`)
+  }
+
+  const entries: Array<[string, Tool]> = REGISTRY.map((def) => {
+    const built = def.build(ctx) as Tool & { needsApproval?: boolean }
+    const inner = withTelemetry(def.name, ctx, built)
+    const outer = withErrorHandling({ name: def.name, ctx, readOnly: def.readOnly }, inner)
+    // Dev-time safety net: assert metadata survived wrapping. If a future
+    // wrapper change drops needsApproval, HITL silently breaks — catch it here.
+    if ((outer as { needsApproval?: boolean }).needsApproval !== built.needsApproval) {
+      throw new Error(`[nic-nac] needsApproval lost during wrapping for ${def.name}`)
+    }
+    return [def.name, outer]
+  })
+
+  return Object.fromEntries(entries) as ToolSet
+}
+
+export type { ToolContext, ToolDefinition } from './types'

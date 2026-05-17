@@ -303,7 +303,7 @@ async function main() {
 
   // 11b. trade_requests — submit two pending requests via rpc_submit_trade_request.
   // The RPC flips the targeted listing's status to pending_trade automatically,
-  // which gives Thumper a real two-request inbox for testing approve + reject
+  // which gives Nic-Nac a real two-request inbox for testing approve + reject
   // flows independently. The third listing (ER84972) intentionally stays
   // available so other tests (e.g. remove_listing) have an untouched target.
   console.log('Submitting trade requests...')
@@ -362,7 +362,7 @@ async function main() {
   if (ev2Err) throw new Error(`calendar_events (Sunday): ${ev2Err.message}`)
   console.log('  Created 2 calendar events')
 
-  // 13. rep_notes (Thumper memory)
+  // 13. rep_notes (Nic-Nac memory)
   console.log('Inserting rep note...')
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const { error: noteErr } = await admin.from('rep_notes').insert({

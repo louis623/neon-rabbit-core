@@ -1117,16 +1117,16 @@
 .footer-bottom .seg { margin: 0 8px; opacity: 0.4; }
 
 /* ============================================================
-   Thumper launcher variations
+   Nic-Nac launcher variations
    ============================================================ */
-.thumper-stage {
+.nic-nac-stage {
   position: relative;
   height: 200px;
   background: var(--bg);
   border: 1px dashed var(--border);
   border-radius: var(--r-lg);
 }
-.thumper-stage > * {
+.nic-nac-stage > * {
   position: absolute;
   bottom: 16px;
   right: 16px;

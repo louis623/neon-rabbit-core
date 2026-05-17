@@ -47,7 +47,7 @@ export function classifyDriveDoc(fileName: string, isArchive: boolean): string {
 
   if (
     fileName.startsWith('SS_') &&
-    (fileName.includes('Research') || fileName.includes('Thumper'))
+    (fileName.includes('Research') || fileName.includes('Nic-Nac'))
   ) {
     return `${archivePrefix}sparkle-suite/research/${fileName}`
   }

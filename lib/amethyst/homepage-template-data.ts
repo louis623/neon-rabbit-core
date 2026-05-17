@@ -74,7 +74,7 @@ export interface AmethystHomepageTweakDefaults {
   heroSub: string
   buttonStyle: string
   tickerVariant: string
-  thumperStyle: string
+  nicNacStyle: string
   showTicker: boolean
   showLrq: boolean
   showHero: boolean
@@ -84,7 +84,7 @@ export interface AmethystHomepageTweakDefaults {
   showSignup: boolean
   showJoinCta: boolean
   showFooter: boolean
-  showThumper: boolean
+  showNicNac: boolean
   eventCount: number
   lrqState: string
   tickerTopText: string
@@ -187,7 +187,7 @@ const lockedTweakDefaults: Omit<
 > = {
   buttonStyle: 'sparkle',
   tickerVariant: 'dual',
-  thumperStyle: 'square',
+  nicNacStyle: 'square',
   showTicker: true,
   showLrq: true,
   showHero: true,
@@ -197,7 +197,7 @@ const lockedTweakDefaults: Omit<
   showSignup: true,
   showJoinCta: true,
   showFooter: true,
-  showThumper: true,
+  showNicNac: true,
   eventCount: 2,
   lrqState: 'live',
   primaryColor: '#5C0EFF',

@@ -1,0 +1,340 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const getAuthenticatedNicNacContextMock = vi.fn()
+const getAuthenticatedRepMock = vi.fn()
+const getMyBoardMock = vi.fn()
+const addListingMock = vi.fn()
+const updateListingMock = vi.fn()
+const removeListingMock = vi.fn()
+const restoreListingMock = vi.fn()
+const processRepCustomListingPhotoUrlMock = vi.fn()
+
+vi.mock('@/lib/nic-nac/auth', () => ({
+  AuthError: class AuthError extends Error {},
+  getAuthenticatedNicNacContext: (...args: unknown[]) =>
+    getAuthenticatedNicNacContextMock(...args),
+}))
+
+vi.mock('@/lib/supabase/auth', () => ({
+  AuthError: class AuthError extends Error {},
+  getAuthenticatedRep: (...args: unknown[]) => getAuthenticatedRepMock(...args),
+}))
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({ marker: 'admin' })),
+}))
+
+vi.mock('@/lib/services/trade-board', () => ({
+  getMyBoard: (...args: unknown[]) => getMyBoardMock(...args),
+  addListing: (...args: unknown[]) => addListingMock(...args),
+  updateListing: (...args: unknown[]) => updateListingMock(...args),
+  removeListing: (...args: unknown[]) => removeListingMock(...args),
+  restoreListing: (...args: unknown[]) => restoreListingMock(...args),
+}))
+
+vi.mock('@/lib/services/listing-photo-processing', () => ({
+  processRepCustomListingPhotoUrl: (...args: unknown[]) =>
+    processRepCustomListingPhotoUrlMock(...args),
+}))
+
+import {
+  DELETE,
+  GET,
+  PATCH,
+  POST,
+} from '@/app/api/nic-nac/trade-board/route'
+import { AuthError } from '@/lib/nic-nac/auth'
+
+describe('trade board route', () => {
+  beforeEach(() => {
+    getAuthenticatedNicNacContextMock.mockReset()
+    getAuthenticatedRepMock.mockReset()
+    getMyBoardMock.mockReset()
+    addListingMock.mockReset()
+    updateListingMock.mockReset()
+    removeListingMock.mockReset()
+    restoreListingMock.mockReset()
+    processRepCustomListingPhotoUrlMock.mockReset()
+  })
+
+  it('returns the authenticated rep trade board summary', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    getMyBoardMock.mockResolvedValueOnce({
+      listings: [{ id: 'listing-1' }],
+      summary: {
+        totalPieces: 1,
+        totalMsrp: 75,
+        typeBreakdown: { RG: 1, NK: 0, ER: 0, ST: 0, BR: 0 },
+        pendingRequestCount: 1,
+      },
+    })
+
+    const response = await GET(
+      new Request(
+        'http://localhost/api/nic-nac/trade-board?status=available&type=RG&collection=Birthday&sortBy=listed_at&sortOrder=asc&limit=8',
+      ),
+    )
+
+    expect(getMyBoardMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      {
+        statusFilter: 'available',
+        typeFilter: 'RG',
+        collectionFilter: 'Birthday',
+        sortBy: 'listed_at',
+        sortOrder: 'asc',
+        limit: 8,
+      },
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('adds a listing through the admin-backed fallback action', async () => {
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-2',
+      itemNumber: 'RG100',
+      designName: 'Aurora Ring',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          itemNumber: 'RG100',
+          clickwrapAccepted: true,
+          repNotes: 'Front table piece',
+        }),
+      }),
+    )
+
+    expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
+      itemNumber: 'RG100',
+      clickwrapAccepted: true,
+      repNotes: 'Front table piece',
+      tradePreferences: undefined,
+      listingPhotoUrl: undefined,
+    })
+    expect(response.status).toBe(200)
+  })
+
+  it('updates a listing with the authenticated rep client', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    updateListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      status: 'available',
+    })
+
+    const response = await PATCH(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          tradePreferences: 'Looking for studs',
+        }),
+      }),
+    )
+
+    expect(updateListingMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      'listing-1',
+      {
+        repNotes: undefined,
+        tradePreferences: 'Looking for studs',
+        listingPhotoUrl: undefined,
+        useCanonicalPhoto: undefined,
+      },
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('restores a removed listing with the authenticated rep client', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    restoreListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designName: 'Aurora Ring',
+      status: 'available',
+      recoveryWindowDays: 7,
+    })
+
+    const response = await PATCH(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'restore',
+          listingId: 'listing-1',
+        }),
+      }),
+    )
+
+    expect(restoreListingMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      {
+        listingId: 'listing-1',
+        itemNumber: undefined,
+      },
+    )
+    expect(updateListingMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+  })
+
+  it('normalizes a custom listing photo before addListing sees it', async () => {
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+    })
+    processRepCustomListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-2',
+      itemNumber: 'RG100',
+      designName: 'Aurora Ring',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    await POST(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          itemNumber: 'RG100',
+          clickwrapAccepted: true,
+          listingPhotoUrl: 'https://dropbox.example.com/ring.png',
+        }),
+      }),
+    )
+
+    expect(processRepCustomListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'https://dropbox.example.com/ring.png',
+      filenameStem: 'RG100-listing-photo',
+    })
+    expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
+      itemNumber: 'RG100',
+      clickwrapAccepted: true,
+      repNotes: undefined,
+      tradePreferences: undefined,
+      listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+    })
+  })
+
+  it('normalizes a custom listing photo before updateListing sees it', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    processRepCustomListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+    })
+    updateListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      status: 'available',
+    })
+
+    await PATCH(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          listingPhotoUrl: 'https://dropbox.example.com/ring.png',
+        }),
+      }),
+    )
+
+    expect(processRepCustomListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'https://dropbox.example.com/ring.png',
+      filenameStem: 'listing-1-listing-photo',
+    })
+    expect(updateListingMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      'listing-1',
+      {
+        repNotes: undefined,
+        tradePreferences: undefined,
+        listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+        useCanonicalPhoto: undefined,
+      },
+    )
+  })
+
+  it('removes a listing with a required reason', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    removeListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designName: 'Aurora Ring',
+      previousStatus: 'available',
+    })
+
+    const response = await DELETE(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          reason: 'keeping',
+        }),
+      }),
+    )
+
+    expect(removeListingMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      {
+        listingId: 'listing-1',
+        itemNumber: undefined,
+        reason: 'keeping',
+      },
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('returns 401 when the rep is not signed in', async () => {
+    getAuthenticatedNicNacContextMock.mockRejectedValueOnce(
+      new AuthError('Not authenticated'),
+    )
+
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/trade-board'),
+    )
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      error: 'unauthenticated',
+    })
+  })
+})

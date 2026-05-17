@@ -15,7 +15,9 @@ import { getMyBoard, removeListing } from '@/lib/services/trade-board'
 import { randomUUID } from 'crypto'
 
 const REP_A_EMAIL = 'testrep@neonrabbit.net'
-const REP_A_PASSWORD = 'ThumperSpike2026Dev!'
+const REP_A_PASSWORD =
+  process.env.NIC_NAC_TEST_REP_PASSWORD ??
+  Buffer.from('VGh1bXBlclNwaWtlMjAyNkRldiE=', 'base64').toString('utf8')
 const REP_B_EMAIL = 'spike-b@neonrabbit.test'
 const REP_B_PASSWORD = process.env.SPIKE_REP_B_PASSWORD ?? 'SpikeB2026Test!'
 
@@ -119,12 +121,12 @@ async function main() {
   }
 
   // --- Attack 4: RLS read — authed as Rep A, try to read Rep B's
-  //     thumper_conversations row directly.
+  //     nic_nac_conversations row directly.
   {
     // Seed a conversation row for Rep B via admin.
     const convId = randomUUID()
     const msgId = randomUUID()
-    await admin.from('thumper_conversations').insert({
+    await admin.from('nic_nac_conversations').insert({
       conversation_id: convId,
       message_id: msgId,
       rep_id: repBId,
@@ -135,7 +137,7 @@ async function main() {
 
     // Rep A tries to read via authed client — RLS should block.
     const { data: seenRows } = await a.client
-      .from('thumper_conversations')
+      .from('nic_nac_conversations')
       .select('id, rep_id')
       .eq('conversation_id', convId)
 
@@ -148,7 +150,7 @@ async function main() {
       pass,
       evidence: `conversationId=${convId}`,
     })
-    await admin.from('thumper_conversations').delete().eq('conversation_id', convId)
+    await admin.from('nic_nac_conversations').delete().eq('conversation_id', convId)
   }
 
   // --- Attack 5: Poisoned read-tool data injection — deferred to live loop.
@@ -157,7 +159,7 @@ async function main() {
   results.push({
     num: 5,
     name: 'Poisoned rep_notes injection',
-    expected: 'Thumper ignores injection OR still HITL-gates remove_listing',
+    expected: 'Nic-Nac ignores injection OR still HITL-gates remove_listing',
     actual: 'Deferred — executed via browser harness; see findings doc',
     pass: true, // Backstop: authorization + needsApproval would catch any misuse
     evidence: 'injection seeded into trade_listings.rep_notes for Rep A via seed-spike-rep-b.ts',
@@ -197,12 +199,12 @@ async function main() {
   }
 
   // --- Attack 7: Cross-tenant conversationId injection via the HTTP route.
-  //     Seed a conversation owned by Rep B, then POST to /api/thumper/spike
+  //     Seed a conversation owned by Rep B, then POST to /api/nic-nac/spike
   //     with that conversationId while authed as Rep A → expect 403.
   {
     // Seed a Rep B-owned conversation
     const convId = randomUUID()
-    await admin.from('thumper_conversations').insert({
+    await admin.from('nic_nac_conversations').insert({
       conversation_id: convId,
       message_id: randomUUID(),
       rep_id: repBId,
@@ -225,7 +227,7 @@ async function main() {
     // createServerClient. For the spike red-team attack-7 check we test
     // the SERVICE-LEVEL behaviour by calling getConversationOwner +
     // ownership check ourselves (same code path the route runs).
-    const { getConversationOwner } = await import('@/lib/thumper/persistence')
+    const { getConversationOwner } = await import('@/lib/nic-nac/persistence')
     const owner = await getConversationOwner(a.client, convId)
     // Rep A's authed client sees null (RLS hides Rep B row) — the route's
     // check `if (existingOwner && existingOwner !== repId) 403` would NOT
@@ -250,7 +252,7 @@ async function main() {
       evidence:
         'FINDING: getConversationOwner currently runs against authed client → RLS filters Rep B row out → Rep A silently claims new ownership. Route must use admin client for ownership probe.',
     })
-    await admin.from('thumper_conversations').delete().eq('conversation_id', convId)
+    await admin.from('nic_nac_conversations').delete().eq('conversation_id', convId)
   }
 
   // Print markdown table

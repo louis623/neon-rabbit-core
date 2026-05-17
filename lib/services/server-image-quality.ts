@@ -1,6 +1,6 @@
 import sharp from 'sharp'
 
-import { measureImageQualitySignals } from '@/lib/thumper/image-quality'
+import { measureImageQualitySignals } from '@/lib/nic-nac/image-quality'
 
 export interface ServerImageQualityAnalysis {
   contentType: string

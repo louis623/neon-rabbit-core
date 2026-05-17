@@ -97,7 +97,7 @@ export interface AmethystJoinTweakDefaults {
   showFaq: boolean
   showFinalCta: boolean
   showFooter: boolean
-  showThumper: boolean
+  showNicNac: boolean
   tickerTopText: string
   primaryColor: string
   accentColor: string
@@ -276,7 +276,7 @@ const lockedTweakDefaults: Omit<
   showFaq: true,
   showFinalCta: true,
   showFooter: true,
-  showThumper: true,
+  showNicNac: true,
   primaryColor: '#480DDF',
   accentColor: '#D209E3',
   bgTone: 'lavender',

@@ -17,7 +17,7 @@ vi.mock('@/lib/services/trade-requests', () => ({
     getTradeRequestNotificationSummaryMock(...args),
 }))
 
-vi.mock('@/lib/thumper/trade-request-notifications', () => ({
+vi.mock('@/lib/nic-nac/trade-request-notifications', () => ({
   notifyRepOfTradeRequest: (...args: unknown[]) =>
     notifyRepOfTradeRequestMock(...args),
 }))

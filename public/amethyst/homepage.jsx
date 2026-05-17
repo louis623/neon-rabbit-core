@@ -21,7 +21,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   heroSub: "I'm Rep Name - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
   buttonStyle: "sparkle",
   tickerVariant: "dual",
-  thumperStyle: "square",
+  nicNacStyle: "square",
   showTicker: true,
   showLrq: true,
   showHero: true,
@@ -31,7 +31,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   showSignup: true,
   showJoinCta: true,
   showFooter: true,
-  showThumper: true,
+  showNicNac: true,
   eventCount: 2,
   lrqState: "live",
   tickerTopText: "Live tonight - 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday",
@@ -1052,10 +1052,10 @@ function Footer({ businessName }) {
 // ============================================================
 // Nic-Nac launcher
 // ============================================================
-function Thumper() {
+function NicNac() {
   return (
-    <div className="hp-thumper">
-      <button className="hp-thumper-btn" aria-label="Open Nic-Nac">
+    <div className="hp-nic-nac">
+      <button className="hp-nic-nac-btn" aria-label="Open Nic-Nac">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
         </svg>
@@ -1211,8 +1211,8 @@ function App() {
       {t.showFooter && <Footer businessName={t.businessName} />}
       </div>
 
-      {/* Thumper */}
-      {t.showThumper && <Thumper />}
+      {/* Nic-Nac */}
+      {t.showNicNac && <NicNac />}
 
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} state={t.lrqState} />
 
@@ -1418,7 +1418,7 @@ function App() {
           <TweakToggle label="Signup" value={t.showSignup} onChange={(v) => setTweak("showSignup", v)} />
           <TweakToggle label="Join Team CTA" value={t.showJoinCta} onChange={(v) => setTweak("showJoinCta", v)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(v) => setTweak("showFooter", v)} />
-          <TweakToggle label="Nic-Nac launcher" value={t.showThumper} onChange={(v) => setTweak("showThumper", v)} />
+          <TweakToggle label="Nic-Nac launcher" value={t.showNicNac} onChange={(v) => setTweak("showNicNac", v)} />
         </TweakSection>
 
         <TweakSection title="Copy sandbox">

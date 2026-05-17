@@ -1,7 +1,7 @@
 {
   "split_baseline": { "conversational": 0.6, "read": 0.3, "hitl": 0.1 },
   "prompts": [
-    { "kind": "conversational", "text": "Hi Thumper! How are you today?" },
+    { "kind": "conversational", "text": "Hi Nic-Nac! How are you today?" },
     { "kind": "conversational", "text": "Remind me what you can help with." },
     { "kind": "conversational", "text": "Any tips for the trade board?" },
     { "kind": "conversational", "text": "What kinds of listings do reps usually get traded fastest?" },

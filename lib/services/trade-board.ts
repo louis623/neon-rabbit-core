@@ -1,5 +1,5 @@
 // Trade Board service — stable facade for the existing 4 callers
-// (lib/thumper/tools/list-my-trade-board.ts, lib/thumper/tools/remove-listing.ts,
+// (lib/nic-nac/tools/list-my-trade-board.ts, lib/nic-nac/tools/remove-listing.ts,
 // scripts/verify-trade-board.ts, scripts/red-team.ts). Public surface
 // (getMyBoard, removeListing, TradeBoardError, and the legacy types) is
 // preserved at this exact module path. New functions (addListing,
@@ -10,7 +10,7 @@
 //   getMyBoard      — auth client. RLS scopes by rep_id.
 //   removeListing   — auth client. UPDATE on trade_listings is rep-scoped;
 //                     auto-cancel on trade_requests works because
-//                     supabase/migrations/020_thumper_conversations.sql added
+//                     supabase/migrations/020_nic_nac_conversations.sql added
 //                     the `requests_rep_update` policy specifically for this.
 //   addListing      — service client. Touches jewelry_designs.times_listed,
 //                     for which only the admin policy permits UPDATE. The

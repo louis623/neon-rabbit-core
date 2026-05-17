@@ -7,7 +7,7 @@ async function main() {
   if (!convId) { console.error('Usage: tsx scripts/dump-conv.ts <conversationId>'); process.exit(1) }
   const admin = createAdminClient()
   const { data } = await admin
-    .from('thumper_conversations')
+    .from('nic_nac_conversations')
     .select('message_id, role, status, parts, created_at')
     .eq('conversation_id', convId)
     .order('created_at')

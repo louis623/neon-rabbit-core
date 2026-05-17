@@ -1,19 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-const permanentRedirectMock = vi.fn()
+import NicNacPage from '@/app/nic-nac/page'
 
-vi.mock('next/navigation', () => ({
-  permanentRedirect: (...args: unknown[]) => permanentRedirectMock(...args),
-}))
+describe('Nic-Nac entry route', () => {
+  it('renders the Nic-Nac shell directly', () => {
+    const element = NicNacPage()
 
-import ThumperPage from '@/app/thumper/page'
-
-describe('legacy /thumper entry', () => {
-  it('redirects to the Nic-Nac route', () => {
-    permanentRedirectMock.mockReset()
-
-    ThumperPage()
-
-    expect(permanentRedirectMock).toHaveBeenCalledWith('/nic-nac')
+    expect(element).toBeTruthy()
   })
 })
