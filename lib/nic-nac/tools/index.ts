@@ -30,6 +30,9 @@ import { updateStreamingLinksTool } from './update-streaming-links'
 import { updateSiteSettingTool } from './update-site-setting'
 import { writeRepNoteTool } from './write-rep-note'
 import { readRecentRepNotesTool } from './read-recent-rep-notes'
+import { startShowSessionTool } from './start-show-session'
+import { recordShowSessionEventTool } from './record-show-session-event'
+import { getShowSessionContextTool } from './get-show-session-context'
 import { sendSmsNotificationTool } from './send-sms-notification'
 import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
@@ -60,6 +63,9 @@ const REGISTRY: ToolDefinition[] = [
   updateSiteSettingTool,
   writeRepNoteTool,
   readRecentRepNotesTool,
+  startShowSessionTool,
+  recordShowSessionEventTool,
+  getShowSessionContextTool,
   sendSmsNotificationTool,
   sendEmailNotificationTool,
   getNotificationPreferencesTool,

@@ -376,7 +376,7 @@ describe('send_sms_notification', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(25)
+    expect(names).toHaveLength(28)
     expect(names).toEqual(
       expect.arrayContaining([
         'send_sms_notification',
@@ -388,7 +388,7 @@ describe('send_sms_notification', () => {
     expect(sendSmsNotificationTool.name).toBe('send_sms_notification')
 
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'You have twenty-five tools available right now:',
+      'You have twenty-eight tools available right now:',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_sms_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')
