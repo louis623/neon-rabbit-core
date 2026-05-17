@@ -18,6 +18,7 @@ export function GET() {
         qrAssets: {
           approvedFlyerPath: qrManifest.approvedFlyer.path,
           contentType: qrManifest.approvedFlyer.contentType,
+          displayTarget: qrManifest.displayTarget,
           displayUrl: qrManifest.displayUrl,
           provider: qrManifest.provider,
           qrMode: qrManifest.qrMode,

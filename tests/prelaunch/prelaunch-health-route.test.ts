@@ -37,6 +37,7 @@ describe('GET /api/prelaunch/health', () => {
           approvedFlyerPath:
             '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
           contentType: 'image/png',
+          displayTarget: 'www.yoursparklesuite.com/prelaunch#waitlist',
           displayUrl: 'www.yoursparklesuite.com/prelaunch',
           provider: 'none',
           qrMode: 'approved_static_flyer_with_embedded_qr',
@@ -97,6 +98,9 @@ describe('GET /api/prelaunch/health', () => {
     expect(payload.readiness.liveActionsEnabled).toBe(false)
     expect(payload.readiness.qrAssets.provider).toBe('none')
     expect(payload.readiness.qrAssets.requiresExternalQrProvider).toBe(false)
+    expect(payload.readiness.qrAssets.displayTarget).toBe(
+      'www.yoursparklesuite.com/prelaunch#waitlist',
+    )
     expect(payload.readiness.qrAssets.targetUrl).toBe(
       'https://staging.yoursparklesuite.com/prelaunch?utm_source=sparkle_suite_qr&utm_medium=flyer&utm_campaign=prelaunch_waitlist&utm_content=tiktok_brand_image_v1#waitlist',
     )
