@@ -10,6 +10,7 @@ import { buildCameraQualityPrep } from '@/lib/prelaunch/camera-quality-prep'
 import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { buildScribeReadiness } from '@/lib/prelaunch/scribe-readiness'
+import { buildPrelaunchOperatorHandoffBrief } from '@/lib/prelaunch/operator-handoff'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
@@ -336,6 +337,13 @@ export function PrelaunchIntakeReviewPageContent({
                 submission,
                 gateReadiness,
               )
+              const operatorHandoffBrief = buildPrelaunchOperatorHandoffBrief({
+                submission,
+                gateReadiness,
+                nextReviewBullets: operatorReadiness.items.map(
+                  (item) => `${item.label}: ${item.detail}`,
+                ),
+              })
               const photographyKitPrep = buildPhotographyKitPrep(submission)
               const cameraQualityPrep = buildCameraQualityPrep(submission)
               const scribeReadiness = buildScribeReadiness(submission)
@@ -377,6 +385,37 @@ export function PrelaunchIntakeReviewPageContent({
                         ))}
                       </div>
                     </section>
+                <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4 text-sm">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      {operatorHandoffBrief.title}
+                    </p>
+                    <h3 className="font-semibold text-slate-950">
+                      {operatorHandoffBrief.status}
+                    </h3>
+                  </div>
+                  <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3 font-mono text-xs leading-5 text-slate-800">
+                    {operatorHandoffBrief.lines.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                    <p className="mt-3 font-sans font-semibold text-slate-600">
+                      Next review
+                    </p>
+                    <ul className="mt-1 list-disc space-y-1 pl-4 font-sans">
+                      {operatorHandoffBrief.nextReviewBullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 font-sans font-semibold text-slate-600">
+                      Guardrails
+                    </p>
+                    <ul className="mt-1 list-disc space-y-1 pl-4 font-sans">
+                      {operatorHandoffBrief.guardrails.map((guardrail) => (
+                        <li key={guardrail}>{guardrail}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <p className="text-sm text-slate-500">

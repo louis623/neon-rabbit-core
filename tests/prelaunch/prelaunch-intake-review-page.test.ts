@@ -133,6 +133,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('sparkle-suite-qr-flyer-example-one')
     expect(html).not.toContain('api.qrserver.com')
     expect(html).toContain('Run Scout')
+    expect(html).toContain('Operator handoff brief')
+    expect(html).toContain('Owner/business: Jamie Hart - Jamie Hart Jewelry')
+    expect(html).toContain('No live SMS send.')
+    expect(html).toContain('No kit fulfillment approval.')
+    expect(html).not.toContain('Send SMS')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
   })
 
@@ -303,6 +308,56 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Order camera')
     expect(html).not.toContain('Approve shipment')
     expect(html).not.toContain('Collect kit fee')
+  })
+
+  it('keeps the internal operator page free of live action commands', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [
+          {
+            ...submission,
+            latestScribeTranscriptRun: {
+              runKey: 'scribe_hook:intake-1:drive-file-123',
+              status: 'queued',
+              triggerSource: 'google_meet_gemini_transcript',
+              model: 'gemini_transcript_hook_v1',
+              summary: 'Gemini transcript captured; Scribe processing is queued.',
+              errorMessage: null,
+              createdAt: '2026-05-13T17:00:00Z',
+              driveFileId: 'drive-file-123',
+              driveFileUrl: null,
+              meetUrl: null,
+              meetingTitle: 'Sparkle Suite discovery call - Jamie Hart',
+              transcriptCharCount: 248,
+              speakerCount: 2,
+              decisionCount: 1,
+              actionItemCount: 1,
+              clientPreferenceCount: 1,
+              scribeStatus: 'queued',
+              statusForScribe: 'ready_for_scribe',
+              speakerNames: ['Louis', 'Jamie'],
+              preview: null,
+              signals: {
+                decisions: [],
+                clientPreferences: [],
+                actionItems: ['send the SignWell agreement.'],
+                openQuestions: ['Can we keep my current team name?'],
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(html).not.toContain('Send SMS')
+    expect(html).not.toContain('Attach +19044383050')
+    expect(html).not.toContain('Send agreement')
+    expect(html).not.toContain('Collect payment')
+    expect(html).not.toContain('Run live Scribe')
+    expect(html).not.toContain('Write profile automatically')
+    expect(html).not.toContain('Order camera')
+    expect(html).not.toContain('Approve shipment')
+    expect(html).not.toContain('Call external QR provider')
   })
 
   it('renders the latest saved Scout run on each intake card', () => {
@@ -645,6 +700,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Transcript signals')
+    expect(html).toContain('Transcript open questions need operator follow-up')
+    expect(html).toContain(
+      '1 open question is visible before Scribe brief generation.',
+    )
     expect(html).toContain('Open questions')
     expect(html).toContain('Can we keep my current team name?')
     expect(html).not.toContain('Scribe follow-up brief')

@@ -61,8 +61,11 @@ export function validatePrelaunchWaitlistInput(
       'A valid email is required.',
     )
   }
-  if (!phone) {
-    throw errors.INVALID_INPUT('phone required', 'Phone is required.')
+  if (input.smsConsent && !phone) {
+    throw errors.INVALID_INPUT(
+      'phone required for sms consent',
+      'Phone is required if you want launch updates by text.',
+    )
   }
   if (!rawTiktokHandle) {
     throw errors.INVALID_INPUT(
@@ -74,12 +77,6 @@ export function validatePrelaunchWaitlistInput(
     throw errors.INVALID_INPUT(
       'team rep name required',
       'Team rep name is required.',
-    )
-  }
-  if (!input.smsConsent) {
-    throw errors.INVALID_INPUT(
-      'sms consent required',
-      'Please agree to get launch updates by text.',
     )
   }
   if (!input.emailConsent) {
@@ -98,7 +95,7 @@ export function validatePrelaunchWaitlistInput(
       : `@${rawTiktokHandle}`,
     teamRepName,
     setupPain: setupPain || undefined,
-    smsConsent: true,
+    smsConsent: input.smsConsent,
     emailConsent: true,
   }
 }
@@ -111,7 +108,7 @@ export function buildPrelaunchWaitlistInsert(
   return {
     name: validated.name,
     email: validated.email,
-    phone: validated.phone,
+    phone: validated.phone || null,
     tiktok_handle: validated.tiktokHandle,
     team_rep_name: validated.teamRepName,
     setup_pain: validated.setupPain ?? null,

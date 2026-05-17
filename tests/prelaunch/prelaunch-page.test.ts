@@ -53,11 +53,16 @@ describe('Sparkle Suite prelaunch page', () => {
     expect(html).toContain('What part of your current setup feels the most patchwork?')
     expect(html).toContain('Text me updates.')
     expect(html).toContain('Email me updates.')
+    expect(html).toContain('optional SMS consent box is unchecked by default')
     expect(html).toContain('Message frequency may vary')
     expect(html).toContain('Reply STOP to')
     expect(html).toContain('HELP for help')
+    expect(html).toContain('href="/privacy-policy"')
+    expect(html).toContain('href="/terms-and-conditions"')
     expect(html).toContain('Privacy Policy')
     expect(html).toContain('Terms and Conditions')
+    expect(html).toContain('id="waitlist-sms-consent"')
+    expect(html).not.toContain('id="waitlist-sms-consent" required')
     expect(prelaunchContent.waitlistSuccessTitle).toBe(
       "Thank you, friend. We've got you.",
     )

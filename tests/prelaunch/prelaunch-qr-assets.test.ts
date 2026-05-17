@@ -51,6 +51,9 @@ describe('prelaunch QR assets', () => {
     expect(manifest.provider).toBe('none')
     expect(manifest.requiresExternalQrProvider).toBe(false)
     expect(manifest.displayUrl).toBe('www.yoursparklesuite.com/prelaunch')
+    expect(manifest.displayTarget).toBe(
+      'www.yoursparklesuite.com/prelaunch#waitlist',
+    )
     expect(manifest.approvedFlyer.path).toBe(
       '/sparkle-suite-social/exports/sparkle-suite-qr-flyer-tiktok-brand-image-v1.png',
     )

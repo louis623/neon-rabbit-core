@@ -183,11 +183,11 @@ export const prelaunchContent = {
     },
   },
   waitlistSmsConsentLabel:
-    "Text me updates. I'm okay receiving occasional SMS about Sparkle Suite and launch updates. Reply STOP to opt out anytime.",
+    'Text me updates. This optional SMS consent box is unchecked by default. By checking it, I agree to receive occasional Sparkle Suite launch updates by text. Reply STOP to opt out anytime.',
   waitlistEmailConsentLabel:
     "Email me updates. Send me practical updates when there's something worth knowing.",
   waitlistConsentNote:
-    "We'll send practical updates when there's something worth knowing.",
+    "We'll send practical updates by email, and by text only if you choose SMS.",
   waitlistSubmitLabel: 'Join the Waitlist',
   waitlistSubmittingLabel: 'Saving your spot...',
   waitlistErrorFallback:
@@ -195,7 +195,7 @@ export const prelaunchContent = {
   waitlistSuccessEyebrow: "You're on the list",
   waitlistSuccessTitle: 'Thank you, friend. We\'ve got you.',
   waitlistSuccessBody:
-    "We'll reach out by email and text when Sparkle Suite is ready. Until then, your spot is saved.",
+    "We'll reach out using the updates you chose when Sparkle Suite is ready. Until then, your spot is saved.",
   footerEyebrow: 'A note from the team',
   footerHeading: "We're building this carefully.",
   footerBody:

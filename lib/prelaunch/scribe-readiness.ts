@@ -69,6 +69,21 @@ export function buildScribeReadiness(
   ]
 
   if (!transcriptRun.scribeBrief) {
+    const transcriptOpenQuestionCount = transcriptRun.signals.openQuestions.length
+
+    if (transcriptOpenQuestionCount > 0) {
+      items.push({
+        label: 'Transcript open questions need operator follow-up',
+        detail: `${formatCount(
+          transcriptOpenQuestionCount,
+          'open question',
+        )} ${
+          transcriptOpenQuestionCount === 1 ? 'is' : 'are'
+        } visible before Scribe brief generation.`,
+        status: 'review',
+      })
+    }
+
     items.push({
       label: 'Scribe brief missing',
       detail:

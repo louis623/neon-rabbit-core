@@ -31,15 +31,33 @@ describe('validatePrelaunchWaitlistInput', () => {
     })
   })
 
-  it('requires explicit SMS and email consent', () => {
+  it('allows joining the waitlist by email without optional SMS consent', () => {
+    const result = validatePrelaunchWaitlistInput({
+      name: 'Jamie Hart',
+      email: 'jamie@example.com',
+      phone: '',
+      tiktokHandle: '@jamieh',
+      teamRepName: 'Lindsey',
+      smsConsent: false,
+      emailConsent: true,
+    })
+
+    expect(result).toMatchObject({
+      phone: '',
+      smsConsent: false,
+      emailConsent: true,
+    })
+  })
+
+  it('requires a phone number only when SMS consent is selected', () => {
     expect(() =>
       validatePrelaunchWaitlistInput({
         name: 'Jamie Hart',
         email: 'jamie@example.com',
-        phone: '303-555-0123',
+        phone: '',
         tiktokHandle: '@jamieh',
         teamRepName: 'Lindsey',
-        smsConsent: false,
+        smsConsent: true,
         emailConsent: true,
       }),
     ).toThrow(ServiceError)
@@ -67,6 +85,25 @@ describe('validatePrelaunchWaitlistInput', () => {
       sms_consent: true,
       email_consent: true,
       source: 'prelaunch_site',
+    })
+  })
+
+  it('builds an email-only waitlist insert with no phone or SMS consent', () => {
+    const insert = buildPrelaunchWaitlistInsert({
+      name: 'Jamie Hart',
+      email: 'jamie@example.com',
+      phone: '',
+      tiktokHandle: '@jamieh',
+      teamRepName: 'Lindsey',
+      setupPain: '',
+      smsConsent: false,
+      emailConsent: true,
+    })
+
+    expect(insert).toMatchObject({
+      phone: null,
+      sms_consent: false,
+      email_consent: true,
     })
   })
 })

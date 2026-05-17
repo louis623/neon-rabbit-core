@@ -3,6 +3,7 @@ export const APPROVED_PRELAUNCH_QR_FLYER_ASSET_PATH =
 
 const DEFAULT_PRELAUNCH_BASE_URL = 'https://www.yoursparklesuite.com'
 const PRELAUNCH_QR_DISPLAY_URL = 'www.yoursparklesuite.com/prelaunch'
+const PRELAUNCH_QR_DISPLAY_TARGET = 'www.yoursparklesuite.com/prelaunch#waitlist'
 
 const QR_CAMPAIGN = {
   id: 'sparkle_suite_prelaunch_waitlist_qr',
@@ -46,6 +47,7 @@ export function getApprovedPrelaunchQrManifest({
     campaign: QR_CAMPAIGN,
     targetUrl: buildPrelaunchQrTargetUrl({ baseUrl }),
     displayUrl: PRELAUNCH_QR_DISPLAY_URL,
+    displayTarget: PRELAUNCH_QR_DISPLAY_TARGET,
     qrMode: 'approved_static_flyer_with_embedded_qr',
     provider: 'none',
     requiresExternalQrProvider: false,

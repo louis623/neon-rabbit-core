@@ -189,7 +189,7 @@ describe('POST /api/prelaunch/waitlist', () => {
     })
   })
 
-  it('returns a validation error for missing consent', async () => {
+  it('returns a validation error for missing email consent', async () => {
     const response = await POST(
       new Request('http://localhost/api/prelaunch/waitlist', {
         method: 'POST',
@@ -200,8 +200,8 @@ describe('POST /api/prelaunch/waitlist', () => {
           phone: '303-555-0123',
           tiktokHandle: '@jamiehart',
           teamRepName: 'Lindsey',
-          smsConsent: false,
-          emailConsent: true,
+          smsConsent: true,
+          emailConsent: false,
         }),
       }),
     )
@@ -209,8 +209,55 @@ describe('POST /api/prelaunch/waitlist', () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: 'INVALID_INPUT',
-      error: 'Please agree to get launch updates by text.',
+      error: 'Please agree to get launch updates by email.',
     })
+  })
+
+  it('stores an email-only waitlist signup without SMS consent', async () => {
+    const singleMock = vi.fn().mockResolvedValueOnce({
+      data: {
+        id: 'waitlist-email-only',
+        name: 'Jamie Hart',
+        email: 'jamie@example.com',
+      },
+      error: null,
+    })
+    const selectMock = vi.fn(() => ({ single: singleMock }))
+    insertMock.mockReturnValueOnce({ select: selectMock })
+    sendPrelaunchWaitlistWelcomeEmailMock.mockResolvedValueOnce({
+      status: 'skipped',
+      reason: 'resend_not_configured',
+    })
+    updateEqMock.mockResolvedValueOnce({ error: null })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/waitlist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Jamie Hart',
+          email: 'jamie@example.com',
+          phone: '',
+          tiktokHandle: '@jamiehart',
+          teamRepName: 'Lindsey',
+          smsConsent: false,
+          emailConsent: true,
+        }),
+      }),
+    )
+
+    expect(insertMock).toHaveBeenCalledWith({
+      name: 'Jamie Hart',
+      email: 'jamie@example.com',
+      phone: null,
+      tiktok_handle: '@jamiehart',
+      team_rep_name: 'Lindsey',
+      setup_pain: null,
+      sms_consent: false,
+      email_consent: true,
+      source: 'prelaunch_site',
+    })
+    expect(response.status).toBe(201)
   })
 
   it('rejects a bot-trap submission before writing to the waitlist', async () => {

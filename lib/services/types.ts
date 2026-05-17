@@ -502,7 +502,7 @@ export interface PrelaunchWaitlistInput {
 export interface PrelaunchWaitlistInsert {
   name: string
   email: string
-  phone: string
+  phone: string | null
   tiktok_handle: string
   team_rep_name: string
   setup_pain: string | null

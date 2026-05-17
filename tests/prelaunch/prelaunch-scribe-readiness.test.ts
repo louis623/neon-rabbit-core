@@ -154,6 +154,28 @@ describe('buildScribeReadiness', () => {
     })
   })
 
+  it('surfaces transcript open questions before a Scribe brief exists', () => {
+    const readiness = buildScribeReadiness(
+      makeSubmission({
+        latestScribeTranscriptRun: makeTranscriptRun({
+          signals: {
+            decisions: [],
+            clientPreferences: [],
+            actionItems: [],
+            openQuestions: ['Can we keep my current team name?'],
+          },
+        }),
+      }),
+    )
+
+    expect(readiness.status).toBe('review')
+    expect(readiness.items).toContainEqual({
+      label: 'Transcript open questions need operator follow-up',
+      detail: '1 open question is visible before Scribe brief generation.',
+      status: 'review',
+    })
+  })
+
   it('keeps briefs with open questions or warnings incomplete for operator follow-up', () => {
     const readiness = buildScribeReadiness(
       makeSubmission({

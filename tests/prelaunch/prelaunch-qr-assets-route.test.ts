@@ -26,6 +26,7 @@ describe('GET /api/prelaunch/qr-assets', () => {
       targetUrl:
         'https://staging.yoursparklesuite.com/prelaunch?utm_source=sparkle_suite_qr&utm_medium=flyer&utm_campaign=prelaunch_waitlist&utm_content=tiktok_brand_image_v1#waitlist',
       displayUrl: 'www.yoursparklesuite.com/prelaunch',
+      displayTarget: 'www.yoursparklesuite.com/prelaunch#waitlist',
       qrMode: 'approved_static_flyer_with_embedded_qr',
       provider: 'none',
       requiresExternalQrProvider: false,
