@@ -1,54 +1,77 @@
-# Thumper Spike Cost Benchmark
+# Thumper Cost Benchmark
 
 Built for Phase 1 Task 1.0 Deliverable 7. Replaces the Gemini-report estimate
 of $0.0017/message for Phase 1 budget modelling.
 
-> **Status:** the `/spike` route was promoted to `/thumper` in Task 1.1
-> (commit `feat(thumper): Task 1.1 — promote spike to production route +
-> Guardian/Enforcer hooks`). The benchmark driver below was originally
-> wired to `/api/thumper/spike`; if you re-run it after Task 1.1, swap that
-> path for `/api/thumper`. Production responses now also carry the
-> `x-thumper-run-id` header for log correlation.
+> Status: the `/spike` route was promoted to `/thumper` in Task 1.1. The
+> benchmark driver now targets the production `/api/thumper` route and records
+> the `x-thumper-run-id` response header for server-log correlation.
 
-## Generation approach
+## Generation Approach
 
-`prompts.json` was authored by hand to approximate a realistic Thumper
-conversation mix. The 60/30/10 split (conversational / read-tool / HITL) is a
-**planning baseline**, not an empirical observation — real rep conversation
-distributions will need to be sampled from production logs once Phase 1 ships.
+`prompts.json` is a hand-authored prompt pool that approximates a realistic
+Thumper conversation mix. Its current 21 prompts are close to the planned
+60/30/10 split for conversational / read-tool / HITL prompts.
+
+The driver expands that pool into the full Phase 1.0 benchmark shape:
+
+- 100 cold prompts, each as turn 1 of a fresh conversation.
+- 100 warm prompts, arranged as 20 conversations with 5 turns each.
+- Warm conversations exclude HITL prompts because approval flows need a human
+  approval response and would otherwise measure an approval stop, not a normal
+  multi-turn assistant exchange.
+
+The split is a planning baseline, not an empirical observation. Real rep
+conversation distributions should be sampled from production logs after launch.
 
 ## Files
 
-- `prompts.json` — 40 hand-authored prompts. Each has `{ kind, text }` where
-  `kind ∈ { 'conversational', 'read', 'hitl' }`.
-- `run-benchmark.ts` — driver. Hits the spike route via authenticated HTTP
-  (signInWithPassword against the test rep), signs in, sends prompts, records
-  per-prompt tokens + USD. Retries on 429 with exponential backoff. After
-  Task 1.1, point this at `/api/thumper` (the production route).
+- `prompts.json` - hand-authored prompt pool. Each prompt has `{ kind, text }`
+  where `kind` is one of `conversational`, `read`, or `hitl`.
+- `run-benchmark.ts` - driver. Authenticates as the seeded test rep, sends the
+  benchmark plan to `/api/thumper`, retries on 429 with exponential backoff,
+  records per-prompt success, latency, and route run IDs, then writes
+  `spike/benchmark-results-<timestamp>.json`.
 
 ## Running
 
+Before running a serious benchmark, refetch current Anthropic pricing and
+update the placeholder `PRICING` block in `run-benchmark.ts`.
+
 ```bash
-# Strip cache-test padding FIRST — set in .env.local or inline
-SPIKE_BENCHMARK_CACHE_MODE=stripped npx tsx spike/run-benchmark.ts
+# Defaults to NEXT_PUBLIC_APP_URL from .env.local, then http://localhost:3000.
+# Use THUMPER_BENCHMARK_BASE_URL to force a deployed preview/production URL.
+THUMPER_BENCHMARK_BASE_URL=https://sparkle-suite.vercel.app npx tsx spike/run-benchmark.ts
 
 # Output: spike/benchmark-results-<timestamp>.json
 ```
 
-## Notes on sample size
+Optional sizing overrides:
 
-The spike ran a **lean 20-prompt sample** (10 cold + 10 warm) rather than the
-plan's 200 because:
+```bash
+THUMPER_BENCHMARK_COLD_PROMPTS=10 THUMPER_BENCHMARK_WARM_CONVERSATIONS=2 THUMPER_BENCHMARK_WARM_TURNS=5 npx tsx spike/run-benchmark.ts
+```
 
-1. The org rate limit is 50,000 input tokens per minute. With a 4.5K-token
-   system prompt, each request consumes ~5K input tokens; the theoretical
-   max throughput is ~10 requests/min. A 200-prompt run would take 20+ real
-   minutes plus retry backoff, and in practice we observed rate-limit
-   triggers during dev testing that cooled the run further.
-2. The 20-prompt numbers are sufficient to prove the per-message cost order
-   of magnitude; the full 200-prompt baseline should be re-run when the
-   org's rate limit is bumped or from a separate benchmark box.
+`SPIKE_BENCHMARK_BASE_URL` is still accepted as a legacy alias for the base URL.
 
-The findings doc records the 20-prompt numbers AND documents the
-extrapolation methodology so the number can be refined without re-running
-the whole harness.
+## Token And Cost Accounting
+
+The driver drains the SSE stream and records the `x-thumper-run-id` header for
+each request. Authoritative token usage and cache accounting still come from
+server-side `[thumper] streamText finish` log entries:
+
+- `totalUsage.inputTokens`
+- `totalUsage.outputTokens`
+- `totalUsage.inputTokenDetails.cacheReadTokens`
+- `totalUsage.inputTokenDetails.cacheWriteTokens`
+
+Join the benchmark result file to the server logs by `runId` to produce final
+cost aggregates. The local result file keeps token/USD fields nullable until
+that join is done.
+
+## Notes On Runtime
+
+The original spike ran a lean sample rather than the full benchmark because the
+org rate limit was 50,000 input tokens per minute. With a multi-thousand-token
+system prompt, a full 200-prompt run can take 30-60 minutes with retry backoff.
+Run it as a dedicated session, ideally off-peak or after a rate-limit increase.

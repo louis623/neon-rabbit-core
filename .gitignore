@@ -61,3 +61,6 @@ supabase/.temp/
 
 # Attack #5 transcript dumps (ephemeral test output)
 tests/thumper/attack-5-results/
+
+# Thumper benchmark result dumps (ephemeral until summarized)
+spike/benchmark-results-*.json
