@@ -2,6 +2,14 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
+import {
+  DEFAULT_REP_MEMORY_SOURCE,
+  DEFAULT_REP_MEMORY_TYPE,
+  REP_MEMORY_SOURCES,
+  REP_MEMORY_TYPES,
+  type RepMemorySource,
+  type RepMemoryType,
+} from '@/lib/nic-nac/memory'
 import type { ToolDefinition } from './types'
 
 const DEFAULT_LIMIT = 5
@@ -15,6 +23,8 @@ type RepNoteRow = {
   id: string
   summary: string
   conversation_date: string
+  memory_type?: RepMemoryType | null
+  memory_source?: RepMemorySource | null
 }
 
 function normalizeLimit(limit: number | undefined): number {
@@ -39,7 +49,7 @@ export function makeReadRecentRepNotesTool(ctx: {
       try {
         const { data, error } = await ctx.supabase
           .from('rep_notes')
-          .select('id, summary, conversation_date')
+          .select('id, summary, conversation_date, memory_type, memory_source')
           .eq('rep_id', ctx.repId)
           .order('conversation_date', { ascending: false })
           .limit(normalizedLimit)
@@ -52,6 +62,8 @@ export function makeReadRecentRepNotesTool(ctx: {
           noteId: note.id,
           summary: note.summary,
           conversationDate: note.conversation_date,
+          memoryType: normalizeMemoryType(note.memory_type),
+          memorySource: normalizeMemorySource(note.memory_source),
         }))
 
         return {
@@ -83,6 +95,20 @@ export function makeReadRecentRepNotesTool(ctx: {
       }
     },
   })
+}
+
+function normalizeMemoryType(value: RepMemoryType | null | undefined): RepMemoryType {
+  return value && REP_MEMORY_TYPES.includes(value)
+    ? value
+    : DEFAULT_REP_MEMORY_TYPE
+}
+
+function normalizeMemorySource(
+  value: RepMemorySource | null | undefined,
+): RepMemorySource {
+  return value && REP_MEMORY_SOURCES.includes(value)
+    ? value
+    : DEFAULT_REP_MEMORY_SOURCE
 }
 
 export const readRecentRepNotesTool: ToolDefinition = {

@@ -15,6 +15,7 @@ import {
   makeReadRecentRepNotesTool,
   readRecentRepNotesTool,
 } from '@/lib/nic-nac/tools/read-recent-rep-notes'
+import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
 
 interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
@@ -78,11 +79,45 @@ describe('rep note tools', () => {
       rep_id: 'rep-1',
       summary,
       conversation_date: '2026-05-01T15:45:00.000Z',
+      memory_type: 'general',
+      memory_source: 'automatic_high_signal',
     })
     expect(result).toEqual({
       saved: true,
       summaryPreview: summary.slice(0, 100),
       conversationDate: '2026-05-01T15:45:00.000Z',
+      memoryType: 'general',
+      memorySource: 'automatic_high_signal',
+    })
+  })
+
+  it('write_rep_note stores explicit memory category metadata when supplied', async () => {
+    const chain = makeInsertChain({
+      data: {
+        conversation_date: '2026-05-01T15:45:00.000Z',
+      },
+      error: null,
+    })
+    const from = vi.fn(() => chain.api)
+    const tool = makeWriteRepNoteTool(makeCtx({ from })) as unknown as ToolDef
+
+    const result = await tool.execute({
+      summary: 'Rep likes a no-hype reminder 30 minutes before TikTok shows.',
+      conversationDate: '2026-05-01T15:45:00.000Z',
+      memoryType: 'preference',
+      memorySource: 'explicit',
+    })
+
+    expect(chain.spies.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        memory_type: 'preference',
+        memory_source: 'explicit',
+      }),
+    )
+    expect(result).toMatchObject({
+      saved: true,
+      memoryType: 'preference',
+      memorySource: 'explicit',
     })
   })
 
@@ -120,11 +155,15 @@ describe('rep note tools', () => {
           id: 'note-2',
           summary: 'Most recent',
           conversation_date: '2026-05-01T15:45:00.000Z',
+          memory_type: 'follow_up',
+          memory_source: 'automatic_high_signal',
         },
         {
           id: 'note-1',
           summary: 'Older note',
           conversation_date: '2026-04-30T18:00:00.000Z',
+          memory_type: 'preference',
+          memory_source: 'explicit',
         },
       ],
       error: null,
@@ -149,11 +188,15 @@ describe('rep note tools', () => {
           noteId: 'note-2',
           summary: 'Most recent',
           conversationDate: '2026-05-01T15:45:00.000Z',
+          memoryType: 'follow_up',
+          memorySource: 'automatic_high_signal',
         },
         {
           noteId: 'note-1',
           summary: 'Older note',
           conversationDate: '2026-04-30T18:00:00.000Z',
+          memoryType: 'preference',
+          memorySource: 'explicit',
         },
       ],
     })
@@ -203,5 +246,12 @@ describe('rep note tools', () => {
     expect(readRecentRepNotesTool.name).toBe('read_recent_rep_notes')
     expect(writeRepNoteTool.readOnly).toBe(false)
     expect(writeRepNoteTool.name).toBe('write_rep_note')
+  })
+
+  it('teaches Nic-Nac the launch memory categories and guarded source', () => {
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('memoryType as preference')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('customer_pattern')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('memorySource as explicit')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain("memorySource:'guarded'")
   })
 })

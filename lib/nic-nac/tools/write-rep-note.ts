@@ -2,11 +2,19 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
+import {
+  DEFAULT_REP_MEMORY_SOURCE,
+  DEFAULT_REP_MEMORY_TYPE,
+  REP_MEMORY_SOURCES,
+  REP_MEMORY_TYPES,
+} from '@/lib/nic-nac/memory'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
   summary: z.string().min(1),
   conversationDate: z.string().min(1),
+  memoryType: z.enum(REP_MEMORY_TYPES).default(DEFAULT_REP_MEMORY_TYPE),
+  memorySource: z.enum(REP_MEMORY_SOURCES).default(DEFAULT_REP_MEMORY_SOURCE),
 })
 
 const SUMMARY_PREVIEW_LIMIT = 100
@@ -30,7 +38,12 @@ export function makeWriteRepNoteTool(ctx: {
       "Write a memory note for the authenticated rep's conversation history. " +
       'Use this internally to save a concise conversation summary.',
     inputSchema,
-    execute: async ({ summary, conversationDate }) => {
+    execute: async ({
+      summary,
+      conversationDate,
+      memoryType = DEFAULT_REP_MEMORY_TYPE,
+      memorySource = DEFAULT_REP_MEMORY_SOURCE,
+    }) => {
       const summaryPreview = previewSummary(summary)
 
       try {
@@ -40,8 +53,10 @@ export function makeWriteRepNoteTool(ctx: {
             rep_id: ctx.repId,
             summary,
             conversation_date: conversationDate,
+            memory_type: memoryType,
+            memory_source: memorySource,
           })
-          .select('conversation_date')
+          .select('conversation_date, memory_type, memory_source')
           .single()
 
         if (error || !data) {
@@ -53,6 +68,8 @@ export function makeWriteRepNoteTool(ctx: {
           saved: true,
           summaryPreview,
           conversationDate: row.conversation_date,
+          memoryType,
+          memorySource,
         }
       } catch (err) {
         try {
