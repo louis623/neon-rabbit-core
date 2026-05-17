@@ -27,6 +27,7 @@ import {
   findActionableApproval,
   type ActionableApproval,
 } from '@/lib/thumper/hitl-state'
+import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'thumper_last_conversation'
@@ -314,6 +315,7 @@ export default function ThumperClient() {
 }
 
 function ChatBody({
+  conversationId,
   transport,
   initialMessages,
   onChatStateChange,
@@ -436,6 +438,7 @@ function ChatBody({
     error,
     regenerate,
     clearError,
+    setMessages,
   } = useChat({
     transport,
     messages: initialMessages,
@@ -480,6 +483,48 @@ function ChatBody({
     [messages]
   )
   const hasPendingApproval = actionableApproval !== null
+
+  const refreshConversationMessages = useCallback(async () => {
+    if (!conversationId || status !== 'ready' || hasPendingApproval) return
+
+    const res = await fetch(`/api/thumper/conversation/${conversationId}`, {
+      credentials: 'include',
+    })
+    if (!res.ok) return
+
+    const body = (await res.json().catch(() => null)) as
+      | { messages?: UIMessage[] }
+      | null
+    if (!body?.messages) return
+
+    setMessages((current) => mergeServerMessages(current, body.messages ?? []))
+  }, [conversationId, hasPendingApproval, setMessages, status])
+
+  useEffect(() => {
+    if (!conversationId || status !== 'ready' || hasPendingApproval) return
+
+    const refreshIfIdle = () => {
+      if (document.visibilityState === 'hidden') return
+      void refreshConversationMessages()
+    }
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshConversationMessages()
+      }
+    }
+
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    window.addEventListener('focus', refreshIfIdle)
+    window.addEventListener('online', refreshIfIdle)
+    const intervalId = window.setInterval(refreshIfIdle, 45_000)
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      window.removeEventListener('focus', refreshIfIdle)
+      window.removeEventListener('online', refreshIfIdle)
+      window.clearInterval(intervalId)
+    }
+  }, [conversationId, hasPendingApproval, refreshConversationMessages, status])
 
   // Push streaming + HITL state up so the parent can disable the New button.
   useEffect(() => {

@@ -95,7 +95,7 @@ describe('POST /api/amethyst/trade-requests', () => {
     })
   })
 
-  it('still returns 201 when the Thumper notification follow-up fails', async () => {
+  it('still returns 201 when the Nic-Nac notification follow-up fails', async () => {
     submitTradeRequestMock.mockResolvedValueOnce({
       requestId: 'request-1',
       listingId: 'listing-1',

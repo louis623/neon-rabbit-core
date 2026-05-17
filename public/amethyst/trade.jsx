@@ -52,6 +52,7 @@ const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
   ? window.AMETHYST_TRADE_BOARD_LISTINGS
   : [];
 const TRADE_REQUEST_ENDPOINT = "/api/amethyst/trade-requests";
+const TRADE_BOARD_ENDPOINT = "/api/amethyst/trade-board";
 const DEFAULT_TRADE_REQUEST_ERROR = "We couldn't submit that request. Please try again.";
 
 function isExternalHref(href) {
@@ -325,6 +326,17 @@ async function submitTradeRequestRequest(payload) {
   }
 
   return body;
+}
+
+async function fetchTradeBoardListings() {
+  const response = await fetch(TRADE_BOARD_ENDPOINT, {
+    headers: { accept: "application/json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) return null;
+  const body = await response.json().catch(() => null);
+  return Array.isArray(body?.listings) ? body.listings : null;
 }
 
 function countActiveTradeBoardFilters(filters) {
@@ -1089,14 +1101,15 @@ function App() {
   const [requestPending, setRequestPending] = useState(false);
   const [requestError, setRequestError] = useState("");
   const [submittedListingIds, setSubmittedListingIds] = useState([]);
+  const [liveListings, setLiveListings] = useState(BOOTSTRAP_LISTINGS);
   const [filters, setFilters] = useState(getInitialTradeFilters);
   const [collectionSearch, setCollectionSearch] = useState("");
   const [secondaryFiltersOpen, setSecondaryFiltersOpen] = useState(false);
   const [queueOpen, setQueueOpen] = useState(false);
 
   const bootstrappedListings = useMemo(
-    () => BOOTSTRAP_LISTINGS.map(normalizeBootstrapPiece).filter(Boolean),
-    [],
+    () => liveListings.map(normalizeBootstrapPiece).filter(Boolean),
+    [liveListings],
   );
   const samples = useMemo(() => {
     if (bootstrappedListings.length > 0) {
@@ -1171,6 +1184,32 @@ function App() {
     if (queueOpen) body.classList.add("modal-open");
   }, [queueOpen, t]);
 
+  const refreshTradeBoardListings = async () => {
+    const listings = await fetchTradeBoardListings();
+    if (listings) setLiveListings(listings);
+  };
+
+  useEffect(() => {
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "hidden") return;
+      void refreshTradeBoardListings();
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshTradeBoardListings();
+      }
+    };
+
+    refreshIfVisible();
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    window.addEventListener("focus", refreshIfVisible);
+
+    return () => {
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.removeEventListener("focus", refreshIfVisible);
+    };
+  }, []);
+
   const applyPreset = (presetName) => {
     const presetValues = PRESETS[presetName];
     if (!presetValues) return;
@@ -1190,6 +1229,7 @@ function App() {
 
     try {
       await submitTradeRequestRequest(payload);
+      await refreshTradeBoardListings();
       setSubmittedListingIds((current) =>
         current.includes(payload.listingId) ? current : [...current, payload.listingId],
       );

@@ -32,6 +32,8 @@ const WORKSPACE_SECTIONS = [
   { key: 'account', label: 'Account', subtitle: 'Billing, wallet, and site analytics' },
 ] as const
 
+const TRADE_WORKSPACE_REFRESH_MS = 45_000
+
 type WorkspaceSectionKey = (typeof WORKSPACE_SECTIONS)[number]['key']
 
 export type RosterFilter =
@@ -1586,6 +1588,33 @@ export function DashboardPlaceholder() {
       loadAnalytics(),
     ])
   }
+
+  useEffect(() => {
+    if (activeSection !== 'trade-board') return
+
+    const refreshIfTradeBoardActive = () => {
+      if (document.visibilityState === 'hidden') return
+      void refreshTradeWorkspace()
+    }
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshTradeWorkspace()
+      }
+    }
+
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    window.addEventListener('focus', refreshIfTradeBoardActive)
+    const intervalId = window.setInterval(
+      refreshIfTradeBoardActive,
+      TRADE_WORKSPACE_REFRESH_MS,
+    )
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      window.removeEventListener('focus', refreshIfTradeBoardActive)
+      window.clearInterval(intervalId)
+    }
+  }, [activeSection])
 
   async function handleQuickAddListing() {
     if (!quickAddItemNumber.trim()) {

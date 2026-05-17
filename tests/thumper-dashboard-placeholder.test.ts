@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import {
   AccountBillingCard,
@@ -299,6 +301,20 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Account')
     expect(html).toContain('Request inbox')
     expect(html).toContain('Fulfillment queue')
+  })
+
+  it('wires idle refresh hooks for the trade workspace', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/thumper/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('TRADE_WORKSPACE_REFRESH_MS')
+    expect(source).toContain("activeSection !== 'trade-board'")
+    expect(source).toContain("document.addEventListener('visibilitychange'")
+    expect(source).toContain("window.addEventListener('focus'")
+    expect(source).toContain('window.setInterval(')
+    expect(source).toContain('refreshIfTradeBoardActive')
   })
 
   it('filters the roster down to opted-out customers', () => {
