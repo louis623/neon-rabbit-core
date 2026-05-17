@@ -6,7 +6,7 @@ type EnvLike = Record<string, string | undefined>
 export type PrelaunchGateReadinessStatus = 'blocked' | 'disabled'
 
 export interface PrelaunchGateReadinessItem {
-  key: 'agreement' | 'start_work_fee' | 'launch_fee'
+  key: 'sms_campaign' | 'agreement' | 'start_work_fee' | 'launch_fee'
   label: string
   status: PrelaunchGateReadinessStatus
   displayStatus: string
@@ -24,6 +24,14 @@ export function getPrelaunchGateReadiness(
   const launchPriceId = getPrelaunchPaymentGatePriceId('launch_fee', env)
 
   return [
+    {
+      key: 'sms_campaign',
+      label: 'SMS campaign',
+      status: 'blocked',
+      displayStatus: 'Pending Telnyx review',
+      detail:
+        'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+    },
     signWellConfig
       ? {
           key: 'agreement',

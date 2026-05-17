@@ -46,6 +46,14 @@ describe('GET /api/prelaunch/health', () => {
         },
         gates: [
           {
+            key: 'sms_campaign',
+            label: 'SMS campaign',
+            status: 'blocked',
+            displayStatus: 'Pending Telnyx review',
+            detail:
+              'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+          },
+          {
             key: 'agreement',
             label: 'Agreement gate',
             status: 'blocked',
@@ -93,6 +101,11 @@ describe('GET /api/prelaunch/health', () => {
       'https://staging.yoursparklesuite.com/prelaunch?utm_source=sparkle_suite_qr&utm_medium=flyer&utm_campaign=prelaunch_waitlist&utm_content=tiktok_brand_image_v1#waitlist',
     )
     expect(payload.readiness.gates).toEqual([
+      expect.objectContaining({
+        key: 'sms_campaign',
+        status: 'blocked',
+        displayStatus: 'Pending Telnyx review',
+      }),
       expect.objectContaining({
         key: 'agreement',
         status: 'disabled',

@@ -6,6 +6,14 @@ describe('prelaunch gate readiness', () => {
   it('marks all launch gates blocked when provider config is missing', () => {
     expect(getPrelaunchGateReadiness({})).toEqual([
       {
+        key: 'sms_campaign',
+        label: 'SMS campaign',
+        status: 'blocked',
+        displayStatus: 'Pending Telnyx review',
+        detail:
+          'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+      },
+      {
         key: 'agreement',
         label: 'Agreement gate',
         status: 'blocked',
@@ -39,6 +47,14 @@ describe('prelaunch gate readiness', () => {
         STRIPE_PRICE_LAUNCH_FEE: 'price_launch_123',
       }),
     ).toEqual([
+      {
+        key: 'sms_campaign',
+        label: 'SMS campaign',
+        status: 'blocked',
+        displayStatus: 'Pending Telnyx review',
+        detail:
+          'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+      },
       {
         key: 'agreement',
         label: 'Agreement gate',

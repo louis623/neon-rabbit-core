@@ -12,6 +12,14 @@ import type { PrelaunchScribeBrief } from '@/lib/prelaunch/scribe'
 
 const gateReadiness: PrelaunchGateReadinessItem[] = [
   {
+    key: 'sms_campaign',
+    label: 'SMS campaign',
+    status: 'blocked',
+    displayStatus: 'Pending Telnyx review',
+    detail:
+      'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+  },
+  {
     key: 'agreement',
     label: 'Agreement gate',
     status: 'blocked',
@@ -157,7 +165,7 @@ describe('buildPrelaunchOperatorHandoffBrief', () => {
     )
     expect(brief.lines).toContain('Scout: not run yet')
     expect(brief.lines).toContain(
-      'Gate reminder: Agreement gate - SignWell not configured; Start work fee - Stripe price missing',
+      'Gate reminder: SMS campaign - Pending Telnyx review; Agreement gate - SignWell not configured; Start work fee - Stripe price missing',
     )
     expect(brief.nextReviewBullets).toEqual([
       'Resolve phone_only_setup before any launch handoff.',
