@@ -3,10 +3,11 @@
 //   2. Import and push it into REGISTRY below
 // No route.ts changes needed.
 //
-// buildAllTools(ctx) returns the ToolSet that streamText expects, with each
-// tool wrapped in:
+// buildAllTools(ctx) returns the full ToolSet that streamText expects.
+// buildToolsForIntents(ctx, intents) returns a scoped ToolSet for one turn.
+// Both paths wrap tools in:
 //   withErrorHandling( { name, ctx, readOnly }, withTelemetry(name, ctx, raw) )
-// Composition order matters — see the header comments in each wrapper.
+// Composition order matters - see the header comments in each wrapper.
 
 import type { Tool, ToolSet } from 'ai'
 import { listMyTradeBoardTool } from './list-my-trade-board'
@@ -72,12 +73,223 @@ const REGISTRY: ToolDefinition[] = [
   customerAudienceTool,
 ]
 
+export type NicNacToolIntent =
+  | 'memory'
+  | 'show_memory'
+  | 'trade_board'
+  | 'trade_requests'
+  | 'fulfillment'
+  | 'catalog'
+  | 'calendar'
+  | 'site'
+  | 'notification'
+  | 'audience'
+
+const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
+  memory: ['read_recent_rep_notes', 'write_rep_note'],
+  show_memory: [
+    'get_show_session_context',
+    'start_show_session',
+    'record_show_session_event',
+  ],
+  trade_board: [
+    'list_my_trade_board',
+    'remove_listing',
+    'restore_listing',
+    'add_listing',
+    'update_listing',
+    'search_jewelry_database',
+  ],
+  trade_requests: [
+    'get_trade_requests',
+    'approve_trade',
+    'reject_trade',
+    'get_trade_history',
+  ],
+  fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
+  catalog: ['search_jewelry_database'],
+  calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show'],
+  site: ['update_banner_text', 'update_streaming_links', 'update_site_setting'],
+  notification: [
+    'send_sms_notification',
+    'send_email_notification',
+    'get_notification_preferences',
+    'get_customer_audience',
+  ],
+  audience: ['get_customer_audience', 'get_notification_preferences'],
+}
+
+const REGISTRY_BY_NAME = new Map(REGISTRY.map((def) => [def.name, def]))
+
+export function getToolIntentsForText(text: string): NicNacToolIntent[] {
+  const normalized = text.toLowerCase()
+  const intents: NicNacToolIntent[] = []
+  const add = (intent: NicNacToolIntent) => {
+    if (!intents.includes(intent)) intents.push(intent)
+  }
+  const hasAny = (patterns: RegExp[]) =>
+    patterns.some((pattern) => pattern.test(normalized))
+
+  if (
+    hasAny([
+      /\blive\b/,
+      /\bshow\b/,
+      /post[- ]?show/,
+      /after the live/,
+      /current[- ]?show/,
+      /\bfollow[- ]?up\b/,
+      /\bpromise\b/,
+      /\bremember\b/,
+      /\bqueue\b/,
+    ])
+  ) {
+    add(
+      hasAny([/\blive\b/, /\bshow\b/, /after the live/, /current[- ]?show/])
+        ? 'show_memory'
+        : 'memory',
+    )
+  }
+
+  if (
+    hasAny([
+      /\bboard\b/,
+      /\blisting\b/,
+      /\blistings\b/,
+      /\bpiece\b/,
+      /\bitem number\b/,
+      /\btake down\b/,
+      /\bremove\b/,
+      /\brestore\b/,
+      /\badd\b.*\bboard\b/,
+      /\binventory\b/,
+    ])
+  ) {
+    add('trade_board')
+  }
+
+  if (
+    hasAny([
+      /\btrade request/,
+      /\bpending request/,
+      /\boffer\b/,
+      /\bapprove\b/,
+      /\breject\b/,
+      /\bdeny\b/,
+      /\btrade history\b/,
+      /\btraded\b/,
+    ])
+  ) {
+    add('trade_requests')
+  }
+
+  if (hasAny([/\bfulfillment\b/, /\bship\b/, /\bshipped\b/, /\btracking\b/])) {
+    add('fulfillment')
+  }
+
+  if (hasAny([/\bsearch\b/, /\blook up\b/, /\bfind\b/, /\bcatalog\b/])) {
+    add('catalog')
+  }
+
+  if (
+    hasAny([
+      /\bcalendar\b/,
+      /\bschedule\b/,
+      /\bupcoming\b/,
+      /\bmove\b.*\bshow\b/,
+      /\bcancel\b.*\bshow\b/,
+      /\brecurring\b/,
+    ])
+  ) {
+    add('calendar')
+  }
+
+  if (
+    hasAny([
+      /\bbanner\b/,
+      /\bstreaming link/,
+      /\bsite\b/,
+      /\bprofile\b/,
+      /\btagline\b/,
+      /\bticker\b/,
+      /\bteam name\b/,
+      /\bsocial\b/,
+    ])
+  ) {
+    add('site')
+  }
+
+  if (hasAny([/\bsms\b/, /\btext\b/, /\bemail\b/, /\bnotify\b/])) {
+    add('notification')
+  }
+
+  if (
+    hasAny([
+      /\bcustomer list\b/,
+      /\bsubscriber/,
+      /\baudience\b/,
+      /\bopt[- ]?in\b/,
+      /\bcan receive\b/,
+    ])
+  ) {
+    add('audience')
+  }
+
+  return intents.length ? intents : ['memory']
+}
+
+type RoutableMessage = {
+  id?: string
+  role?: string
+  parts?: Array<{
+    type?: string
+    text?: string
+  }>
+}
+
+export function getToolIntentsForMessages(
+  messages: RoutableMessage[],
+): NicNacToolIntent[] {
+  const latestUser = [...messages].reverse().find((message) => message.role === 'user')
+  const text = latestUser?.parts
+    ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('\n')
+
+  return getToolIntentsForText(text ?? '')
+}
+
+export function listToolNamesForIntents(intents: NicNacToolIntent[]): string[] {
+  const names: string[] = []
+  for (const intent of intents) {
+    for (const name of TOOL_PACKS[intent]) {
+      if (!names.includes(name)) names.push(name)
+    }
+  }
+  return names
+}
+
+export function buildToolsForIntents(
+  ctx: ToolContext,
+  intents: NicNacToolIntent[],
+): ToolSet {
+  const definitions = listToolNamesForIntents(intents).map((name) => {
+    const def = REGISTRY_BY_NAME.get(name)
+    if (!def) throw new Error(`[nic-nac] unknown routed tool name: ${name}`)
+    return def
+  })
+  return buildToolSet(ctx, definitions)
+}
+
 export function buildAllTools(ctx: ToolContext): ToolSet {
-  // Fail loudly on duplicate tool names — Object.fromEntries silently
+  return buildToolSet(ctx, REGISTRY)
+}
+
+function buildToolSet(ctx: ToolContext, definitions: ToolDefinition[]): ToolSet {
+  // Fail loudly on duplicate tool names. Object.fromEntries silently
   // overwrites, which would let a buggy registry ship without warning.
   const seen = new Set<string>()
   const dupes: string[] = []
-  for (const def of REGISTRY) {
+  for (const def of definitions) {
     if (seen.has(def.name)) dupes.push(def.name)
     seen.add(def.name)
   }
@@ -85,12 +297,12 @@ export function buildAllTools(ctx: ToolContext): ToolSet {
     throw new Error(`[nic-nac] duplicate tool names in REGISTRY: ${dupes.join(', ')}`)
   }
 
-  const entries: Array<[string, Tool]> = REGISTRY.map((def) => {
+  const entries: Array<[string, Tool]> = definitions.map((def) => {
     const built = def.build(ctx) as Tool & { needsApproval?: boolean }
     const inner = withTelemetry(def.name, ctx, built)
     const outer = withErrorHandling({ name: def.name, ctx, readOnly: def.readOnly }, inner)
     // Dev-time safety net: assert metadata survived wrapping. If a future
-    // wrapper change drops needsApproval, HITL silently breaks — catch it here.
+    // wrapper change drops needsApproval, HITL silently breaks.
     if ((outer as { needsApproval?: boolean }).needsApproval !== built.needsApproval) {
       throw new Error(`[nic-nac] needsApproval lost during wrapping for ${def.name}`)
     }

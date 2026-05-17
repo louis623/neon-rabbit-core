@@ -29,7 +29,10 @@ import {
   checkpointAssistant,
   recordApprovalEvent,
 } from '@/lib/nic-nac/persistence'
-import { buildAllTools } from '@/lib/nic-nac/tools'
+import {
+  buildToolsForIntents,
+  getToolIntentsForMessages,
+} from '@/lib/nic-nac/tools'
 import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
@@ -195,9 +198,27 @@ export async function POST(request: Request) {
     })
   }
 
-  const tools = buildAllTools({ repId, supabase, conversationId, runId })
+  const toolIntents = getToolIntentsForMessages(messages)
+  const tools = buildToolsForIntents(
+    { repId, supabase, conversationId, runId },
+    toolIntents,
+  )
+  const activeToolNames = Object.keys(tools)
+  console.info('[nic-nac] tool routing', {
+    runId,
+    conversationId,
+    intents: toolIntents,
+    toolCount: activeToolNames.length,
+    tools: activeToolNames,
+  })
 
   const modelMessages = await convertToModelMessages(messages)
+  const systemPrompt = `${NIC_NAC_SYSTEM_PROMPT}
+
+# Active tools for this turn
+
+Only these tools are available on this turn: ${activeToolNames.join(', ')}.
+If a tool described above is not in this list, do not call it on this turn. Answer naturally or ask the rep a short follow-up.`
 
   // Server-owned ThinkingIndicator phase stream. The route emits transient
   // `data-thinking` signals so the client never has to sniff `parts`. State:
@@ -238,7 +259,7 @@ export async function POST(request: Request) {
 
       const result = streamText({
         model: anthropic('claude-haiku-4-5-20251001'),
-        system: NIC_NAC_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: modelMessages,
         tools,
         stopWhen: stepCountIs(5),
