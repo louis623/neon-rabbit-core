@@ -171,6 +171,7 @@ Vercel status:
 
 - Development has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
 - Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
+- Protected Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal.
 - Production is intentionally not set until production Stripe key mode is verified or Louis explicitly approves production test-mode setup.
 
 ### 6. Stripe local checkout and portal route smoke
