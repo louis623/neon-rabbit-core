@@ -153,9 +153,18 @@ Do not capture passwords, provider keys, request headers, Vercel bypass values, 
 - SignWell boundary: sandbox payload smoke passed with `send_email=false`; no live agreement was sent.
 - Screenshots: none captured.
 
+### 2026-05-18 protected preview CLI pass / browser blocker
+
+- Target: protected preview `https://sparkle-suite-axv0mxr74-louis-2849s-projects.vercel.app`.
+- CLI pass/fail: passed through authenticated `vercel curl` using `npm run smoke:preview:vercel-curl`.
+- CLI result: protected preview returned the demo rep from `/api/nic-nac/me`, rendered the `/nic-nac` shell, created a Stripe test checkout session, and created a Stripe test billing portal session.
+- Browser pass/fail: blocked by Vercel Deployment Protection before the Sparkle Suite login page.
+- Browser result: opening `/login` redirected to Vercel login. Complete Louis/Vercel SSO in the browser session or use an approved private protection bypass before repeating Walkthrough D in-browser.
+- Screenshots: none captured.
+
 ## Handoff status
 
 - Command-side smoke is documented in `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
 - Launch readiness summary is documented in `docs/sparkle-suite/launch-readiness-2026-05-18.md`.
-- Remaining browser work is protected preview verification with Louis/Vercel SSO or an approved preview access path.
+- Remaining browser work is protected preview in-browser verification after Louis/Vercel SSO or an approved preview access path.
 - Provider sends and paid provider calls remain parked behind explicit Louis approval.

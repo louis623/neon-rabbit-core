@@ -196,8 +196,39 @@ Vercel status:
 
 - Development has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
 - Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
-- Protected Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal.
+- Latest protected Preview `https://sparkle-suite-axv0mxr74-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:preview:vercel-curl`.
 - Production is intentionally not set until production Stripe key mode is verified or Louis explicitly approves production test-mode setup.
+
+### Protected preview CLI route smoke
+
+Use this when Vercel Deployment Protection blocks normal HTTP smoke but the Vercel CLI is authenticated locally:
+
+```powershell
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-axv0mxr74-louis-2849s-projects.vercel.app'
+npm run smoke:preview:vercel-curl
+```
+
+What it does:
+
+- Signs in with the demo account using Supabase auth.
+- Calls the protected preview through authenticated `vercel curl`.
+- Verifies `/api/nic-nac/me`, `/nic-nac`, `/api/stripe/create-checkout`, and `/api/stripe/create-portal-session`.
+- Creates Stripe test-mode checkout and portal sessions only.
+- Writes no session cookie or provider secret to the repo.
+- Does not charge a card or send live provider traffic.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `DEMO_REP_PASSWORD`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Stop point:
+
+- If `vercel curl` cannot access the deployment, complete Vercel SSO in the browser session or use an approved private protection bypass path.
+- Keep browser checkout as a separate walkthrough; this CLI smoke proves protected preview routes, not full browser SSO.
 
 ### 6. Stripe local checkout and portal route smoke
 

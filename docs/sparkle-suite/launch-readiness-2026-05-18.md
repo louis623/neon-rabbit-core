@@ -18,6 +18,7 @@
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
+- Latest protected Vercel Preview `https://sparkle-suite-axv0mxr74-louis-2849s-projects.vercel.app` passed `npm run smoke:preview:vercel-curl`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
 - Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
@@ -36,13 +37,13 @@
 
 - First demo login smoke uses the built-in demo password unless `DEMO_REP_PASSWORD` is set. Rotate or set a custom demo password before sharing the account outside Louis.
 - Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet; verify production `STRIPE_SECRET_KEY` mode or explicitly approve production test-mode setup before adding it there.
-- Protected preview browser checkout walkthrough is documented but still needs a final browser pass with Louis/Vercel SSO and test-mode Stripe only.
-- Vercel Deployment Protection remains enabled for browser access; CLI smoke can use authenticated `vercel curl`, while browser walkthrough still needs Louis/Vercel SSO.
+- Protected preview browser checkout walkthrough is documented but still needs a final in-browser pass with Louis/Vercel SSO and test-mode Stripe only.
+- Vercel Deployment Protection remains enabled for browser access; authenticated `vercel curl` smoke passes on the latest preview, while browser walkthrough still needs Louis/Vercel SSO or an approved private bypass path.
 - SignWell browser walkthrough/live send is still not approved. Keep `SIGNWELL_ALLOW_LIVE_SEND` unset unless Louis explicitly approves recipient, template, and timing.
 
 ## P2 post-launch polish
 
-- Protected preview browser walkthrough remains before first-client pilot.
+- Protected preview in-browser walkthrough remains before first-client pilot.
 - Add a compact admin view link list for the demo rep once Louis chooses the first-user launch scope.
 
 ## Provider status
@@ -56,5 +57,5 @@
 ## Recommended first-user launch scope
 
 - Launch with one seeded demo rep first.
-- Local restored smoke and local browser walkthrough have passed; next first-client readiness gate is protected preview browser verification.
+- Local restored smoke, local browser walkthrough, and protected preview CLI route smoke have passed; next first-client readiness gate is protected preview in-browser verification.
 - Keep SMS live sends, live SignWell sends, live Stripe charges, and paid Nic-Nac smoke out of the first pass unless Louis approves each provider scope separately.
