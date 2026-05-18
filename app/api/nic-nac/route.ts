@@ -38,6 +38,11 @@ import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { decideAssistantMessageId } from '@/lib/nic-nac/hitl-state'
 import { selectMessagesForModel } from '@/lib/nic-nac/model-context'
+import {
+  logNicNacRun,
+  normalizeRunUsage,
+  type NicNacRunUsage,
+} from '@/lib/nic-nac/run-telemetry'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -78,6 +83,7 @@ function extractApprovalResponses(
 
 export async function POST(request: Request) {
   const runId = randomUUID()
+  const runStartedAt = Date.now()
   const responseHeaders = { 'x-nic-nac-run-id': runId }
 
   let ctx
@@ -229,6 +235,8 @@ export async function POST(request: Request) {
     intents: toolIntents,
     activeToolNames,
   })
+  let runUsage: NicNacRunUsage | undefined
+  let streamErrorMessage: string | undefined
 
   // Server-owned ThinkingIndicator phase stream. The route emits transient
   // `data-thinking` signals so the client never has to sniff `parts`. State:
@@ -298,16 +306,19 @@ export async function POST(request: Request) {
           activeToolCalls = Math.max(0, activeToolCalls - 1)
         },
         onError: async (err) => {
+          streamErrorMessage =
+            (err as { error?: Error })?.error?.message ?? String(err)
           console.error('[nic-nac] streamText error:', err)
           await logIncident({
             errorType: 'streamtext_error',
             repId,
             conversationId,
             severity: 'error',
-            details: { runId, message: (err as { error?: Error })?.error?.message ?? String(err) },
+            details: { runId, message: streamErrorMessage },
           })
         },
         onFinish: (event) => {
+          runUsage = normalizeRunUsage(event.totalUsage)
           console.log('[nic-nac] streamText finish', {
             runId,
             rep: rep.email,
@@ -366,6 +377,25 @@ export async function POST(request: Request) {
             parts: responseMessage.parts,
           })
         }
+        await logNicNacRun({
+          runId,
+          repId,
+          conversationId,
+          model: 'claude-haiku-4-5-20251001',
+          status: streamErrorMessage ? 'error' : isAborted ? 'aborted' : 'complete',
+          latencyMs: Date.now() - runStartedAt,
+          intents: toolIntents,
+          toolNames: activeToolNames,
+          modelContext: {
+            originalMessageCount: messages.length,
+            modelMessageCount: modelContext.messages.length,
+            droppedMessageCount: modelContext.droppedMessageCount,
+            estimatedTokens: modelContext.estimatedTokens,
+            wasCompacted: modelContext.wasCompacted,
+          },
+          usage: runUsage,
+          errorMessage: streamErrorMessage,
+        })
       } catch (err) {
         console.error('[nic-nac] persistence onFinish error:', err)
         await logIncident({
