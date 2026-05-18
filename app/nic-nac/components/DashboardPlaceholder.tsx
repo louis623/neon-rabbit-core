@@ -196,7 +196,7 @@ const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const FILTER_OPTIONS: Array<{ value: RosterFilter; label: string }> = [
   { value: 'all', label: 'All customers' },
-  { value: 'sms_reachable', label: 'SMS reachable' },
+  { value: 'sms_reachable', label: 'SMS opted in' },
   { value: 'email_reachable', label: 'Email reachable' },
   { value: 'opted_out', label: 'Opted out' },
 ]
@@ -604,7 +604,7 @@ export function getCustomerDuplicateSummary(
 
 export function getCustomerChannelStatuses(customer: CustomerAudienceMember) {
   const sms = customer.canReceiveSms
-    ? 'Reachable'
+    ? 'SMS opted in'
     : customer.stopKeywordReceivedAt || customer.smsOptedOutAt
       ? 'Opted out'
       : customer.smsConsent
@@ -648,7 +648,7 @@ function getCustomerBadges(customer: CustomerAudienceMember) {
     []
 
   if (customer.canReceiveSms) {
-    badges.push({ tone: 'positive', text: 'SMS reachable' })
+    badges.push({ tone: 'positive', text: 'SMS opted in' })
   } else if (customer.stopKeywordReceivedAt) {
     badges.push({ tone: 'warning', text: 'STOP received' })
   } else if (customer.smsOptedOutAt) {
@@ -3496,7 +3496,7 @@ export function WalletSummaryCard({
           </span>
         </div>
         <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Messages this month</span>
+          <span className={styles.metricLabel}>Tracked texts this month</span>
           <span className={styles.metricValue}>
             {summary.messagesSentThisMonth}
           </span>
@@ -3597,7 +3597,7 @@ export function WalletSummaryCard({
         <div className={styles.walletSettingsTitle}>Billing reference</div>
         <div className={styles.walletReferenceList}>
           <span className={styles.timelineItem}>
-            Each text costs {formatWalletAmount(SMS_CHARGE_MILS)}
+            Approved SMS sends cost {formatWalletAmount(SMS_CHARGE_MILS)}
           </span>
           <span className={styles.timelineItem}>
             Minimum wallet load is {formatWalletAmount(summary.minimumLoadAmountMils)}

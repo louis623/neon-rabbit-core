@@ -252,6 +252,14 @@ export const errors = {
         "SMS delivery isn't configured in this environment yet. If this keeps happening, let Louis know.",
       statusCode: 503,
     }),
+  SMS_CAMPAIGN_PENDING: () =>
+    new ServiceError({
+      code: 'SMS_CAMPAIGN_PENDING',
+      message: 'Telnyx 10DLC campaign approval is pending',
+      userMessage:
+        "SMS sending is blocked until the Telnyx 10DLC campaign is approved. I can help draft the text, but I can't send it yet.",
+      statusCode: 503,
+    }),
   INSUFFICIENT_SMS_WALLET: () =>
     new ServiceError({
       code: 'INSUFFICIENT_SMS_WALLET',

@@ -34,7 +34,7 @@ describe('get_notification_preferences', () => {
       message:
         'Notification preferences will be available once SMS and email notifications launch in a future update. Stay tuned!',
     })
-    expect(getNotificationPreferencesTool.readOnly).toBe(false)
+    expect(getNotificationPreferencesTool.readOnly).toBe(true)
     expect(getNotificationPreferencesTool.name).toBe(
       'get_notification_preferences',
     )

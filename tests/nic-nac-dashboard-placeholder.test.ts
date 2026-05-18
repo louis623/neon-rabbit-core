@@ -370,7 +370,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Jamie Lane')
     expect(html).toContain('+15555550101')
     expect(html).toContain('jamie@example.com')
-    expect(html).toContain('SMS reachable')
+    expect(html).toContain('SMS opted in')
     expect(html).toContain('Email reachable')
     expect(html).toContain('STOP received')
     expect(html).toContain('Joined 2026-05-05')
@@ -382,7 +382,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Fresh consent must come from the customer.')
     expect(html).toContain('SMS status')
     expect(html).toContain('Email status')
-    expect(html).toContain('Reachable')
+    expect(html).toContain('SMS opted in')
     expect(html).toContain('Opted out')
     expect(html).toContain('Consent captured 2026-05-04')
     expect(html).toContain('STOP received 2026-05-05')
@@ -439,7 +439,7 @@ describe('DashboardPlaceholder', () => {
 
   it('derives clear per-channel statuses and timeline entries', () => {
     expect(getCustomerChannelStatuses(READY_STATE.customers[0])).toEqual({
-      sms: 'Reachable',
+      sms: 'SMS opted in',
       email: 'Reachable',
     })
     expect(getCustomerChannelStatuses(READY_STATE.customers[1])).toEqual({
@@ -503,7 +503,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$24.99')
     expect(html).toContain('Texts left')
     expect(html).toContain('2776')
-    expect(html).toContain('Messages this month')
+    expect(html).toContain('Tracked texts this month')
     expect(html).toContain('7')
     expect(html).toContain('SMS spend')
     expect(html).toContain('$0.06')
@@ -520,7 +520,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Reload amount')
     expect(html).toContain('Save settings')
     expect(html).toContain('Billing reference')
-    expect(html).toContain('Each text costs $0.009')
+    expect(html).toContain('Approved SMS sends cost $0.009')
     expect(html).toContain('Minimum wallet load is $25.00')
     expect(html).toContain('Reload history')
   })

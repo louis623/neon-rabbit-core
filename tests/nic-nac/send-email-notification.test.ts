@@ -310,7 +310,7 @@ describe('send_email_notification', () => {
     expect(sendEmailNotificationTool.name).toBe('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Manual SMS and email sends are screened for prohibited recruiting language before they go out.',
+      'SMS sending is blocked until Telnyx 10DLC campaign approval.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'Email notifications are coming soon!',

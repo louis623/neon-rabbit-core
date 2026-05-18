@@ -72,8 +72,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.`,
 
   notification: `Notification tools:
-- send_sms_notification and send_email_notification are one-off SMS or email tools for a single customer only.
-- bulk SMS/email campaigns are not live. Show reminders and subscriber blasts are not live.
+- SMS sending is blocked until Telnyx 10DLC campaign approval. If a rep asks to text someone, explain that you can draft the text but cannot send it yet.
+- send_email_notification is a one-off email tool for a single customer only.
+- bulk SMS/email campaigns are not live. SMS sends, show reminders, and subscriber blasts are not live.
 - get_notification_preferences is a future-facing stub. Do not pretend preferences are editable yet.
 - Screen for prohibited recruiting language before sending.`,
 

@@ -28,7 +28,7 @@ export function makeGetNotificationPreferencesTool(_ctx?: {
 
 export const getNotificationPreferencesTool: ToolDefinition = {
   name: 'get_notification_preferences',
-  readOnly: false,
+  readOnly: true,
   build: (ctx) =>
     makeGetNotificationPreferencesTool({
       repId: ctx.repId,

@@ -28,6 +28,7 @@ interface ToolDef {
 const originalFetch = global.fetch
 const originalTelnyxApiKey = process.env.TELNYX_API_KEY
 const originalTelnyxSmsFrom = process.env.TELNYX_SMS_FROM
+const originalSmsCampaignApproved = process.env.SPARKLE_SMS_CAMPAIGN_APPROVED
 
 function makeCtx() {
   return {
@@ -51,19 +52,56 @@ function makeAllowedSendCountSelect() {
   return vi.fn(() => ({ eq: eqRep }))
 }
 
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key]
+  } else {
+    process.env[key] = value
+  }
+}
+
 beforeEach(() => {
   createAdminClientMock.mockReset()
   deductSmsChargeMock.mockReset()
   refundSmsChargeMock.mockReset()
   global.fetch = originalFetch
-  process.env.TELNYX_API_KEY = originalTelnyxApiKey
-  process.env.TELNYX_SMS_FROM = originalTelnyxSmsFrom
+  restoreEnv('TELNYX_API_KEY', originalTelnyxApiKey)
+  restoreEnv('TELNYX_SMS_FROM', originalTelnyxSmsFrom)
+  restoreEnv('SPARKLE_SMS_CAMPAIGN_APPROVED', originalSmsCampaignApproved)
 })
 
 describe('send_sms_notification', () => {
+  it('blocks SMS while 10DLC approval is pending even when Telnyx credentials exist', async () => {
+    process.env.TELNYX_API_KEY = 'telnyx-api-key'
+    process.env.TELNYX_SMS_FROM = '+15551230000'
+    delete process.env.SPARKLE_SMS_CAMPAIGN_APPROVED
+
+    const fetchMock = vi.fn()
+    global.fetch = fetchMock as typeof fetch
+
+    const tool = makeSendSmsNotificationTool(makeCtx()) as unknown as ToolDef
+
+    await expect(
+      tool.execute({
+        recipientPhone: '+15551112222',
+        message: 'Reminder for tonight.',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'SMS_CAMPAIGN_PENDING',
+      userMessage:
+        "SMS sending is blocked until the Telnyx 10DLC campaign is approved. I can help draft the text, but I can't send it yet.",
+    })
+
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(deductSmsChargeMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('blocks a fourth manual text inside the rolling weekly window', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const gte = vi.fn().mockResolvedValue({
       count: 3,
@@ -115,6 +153,7 @@ describe('send_sms_notification', () => {
   it('blocks the send when the SMS wallet is too low before any log insert or Telnyx call', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insert = vi.fn()
@@ -157,6 +196,7 @@ describe('send_sms_notification', () => {
   it('blocks prohibited recruiting language before wallet debit or Telnyx send', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const insertSingle = vi.fn().mockResolvedValue({
       data: { id: 'log-blocked-1' },
@@ -201,9 +241,10 @@ describe('send_sms_notification', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('sends a real SMS, deducts the wallet, and records the queued send', async () => {
+  it('sends an approved SMS, deducts the wallet, and records the queued send', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insertSingle = vi.fn().mockResolvedValue({
@@ -297,6 +338,7 @@ describe('send_sms_notification', () => {
   it('refunds the wallet and marks the log failed when Telnyx rejects the send', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insertSingle = vi.fn().mockResolvedValue({
@@ -355,6 +397,7 @@ describe('send_sms_notification', () => {
   it('returns a tool error when Telnyx is not configured', async () => {
     delete process.env.TELNYX_API_KEY
     delete process.env.TELNYX_SMS_FROM
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
 
     const tool = makeSendSmsNotificationTool(makeCtx()) as unknown as ToolDef
 
@@ -394,7 +437,10 @@ describe('send_sms_notification', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_notification_preferences')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Manual SMS and email sends are screened for prohibited recruiting language before they go out.',
+      'SMS sending is blocked until Telnyx 10DLC campaign approval.',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not call this while 10DLC approval is pending.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'SMS notifications are coming soon!',
