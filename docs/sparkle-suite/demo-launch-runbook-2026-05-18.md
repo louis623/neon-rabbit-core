@@ -313,6 +313,45 @@ Stop point:
 - If `api_base_url_mode` is not the expected sandbox/dry-run target for the environment, stop and confirm the SignWell base URL before any further provider work.
 - Do not enable `SIGNWELL_ALLOW_LIVE_SEND=true` or send a live agreement without Louis explicitly approving the recipient, template, and timing.
 
+### 8. SignWell live preflight, non-sending
+
+Use this only after Louis has approved the intended recipient, template, and send window for preflight. This does not send the agreement and must run with `SIGNWELL_ALLOW_LIVE_SEND` unset.
+
+Command:
+
+```powershell
+npm run smoke:signwell:live-preflight
+```
+
+What it does:
+
+- Builds a live-like SignWell payload for the approved recipient and template context.
+- Confirms `send_email=false`.
+- Confirms `test_mode=false` so the payload shape matches a live send boundary without emailing anyone.
+- Reports SignWell base URL mode without printing the base URL, API key, or template ID.
+- Confirms `SIGNWELL_ALLOW_LIVE_SEND` is false during preflight.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `SIGNWELL_API_KEY`
+- `SIGNWELL_API_BASE_URL`
+- `SIGNWELL_TEMPLATE_ID`
+- `SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL`
+- `SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME`
+- `SIGNWELL_LIVE_APPROVED_SEND_WINDOW`
+
+Latest result:
+
+- `npm run smoke:signwell:live-preflight` passed on 2026-05-18 for `louis+sparkle-demo@neonrabbit.net`.
+
+Stop point:
+
+- If `SIGNWELL_ALLOW_LIVE_SEND=true`, stop and unset it before preflight.
+- If `send_email` is not false, stop.
+- If the recipient, template, or send window has not been approved in the current launch context, stop.
+- A real SignWell send remains a separate Louis approval step.
+
 ## Not safe without approval
 
 Do not run these during the normal demo launch walkthrough:

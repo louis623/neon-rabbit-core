@@ -7,6 +7,7 @@ import {
   buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
   getPrelaunchSignWellConfig,
+  getPrelaunchSignWellLiveSendMode,
 } from '@/lib/prelaunch/signwell'
 import {
   buildDemoSeedPlan,
@@ -25,6 +26,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'stripe_local_routes',
   'protected_preview_routes',
   'signwell_sandbox',
+  'signwell_live_preflight',
   'nic_nac_paid',
 ] as const
 
@@ -48,6 +50,12 @@ export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
 export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
   'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
 export const DEFAULT_PAID_SMOKE_MAX_REQUESTS = 20
+export const SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL_ENV =
+  'SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL'
+export const SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME_ENV =
+  'SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME'
+export const SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV =
+  'SIGNWELL_LIVE_APPROVED_SEND_WINDOW'
 
 type SmokeRisk = 'none' | 'local_app' | 'db_write' | 'test_provider' | 'paid_provider'
 
@@ -340,6 +348,29 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'signwell_live_preflight':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'SIGNWELL_API_KEY',
+          'SIGNWELL_API_BASE_URL',
+          'SIGNWELL_TEMPLATE_ID',
+          SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL_ENV,
+          SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME_ENV,
+          SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV,
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'signwell_live_preflight',
+            label:
+              'Build a live-like non-sending SignWell payload after recipient, template, and send window are approved.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
     case 'nic_nac_paid':
       return {
         category,
@@ -450,6 +481,30 @@ function buildProviderReadinessError(
     if (missing.length === 0) return null
 
     return `SignWell readiness blocked: missing ${missing.join(', ')}.`
+  }
+
+  if (plan.category === 'signwell_live_preflight') {
+    const missing = missingEnvNames(env, [
+      'SIGNWELL_API_KEY',
+      'SIGNWELL_API_BASE_URL',
+      'SIGNWELL_TEMPLATE_ID',
+      SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL_ENV,
+      SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME_ENV,
+      SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV,
+    ])
+    const errors: string[] = []
+
+    if (missing.length > 0) {
+      errors.push(`SignWell live preflight blocked: missing ${missing.join(', ')}.`)
+    }
+
+    if (env.SIGNWELL_ALLOW_LIVE_SEND?.trim() === 'true') {
+      errors.push(
+        'SIGNWELL_ALLOW_LIVE_SEND must stay unset during signwell_live_preflight; final live send approval is a separate step.',
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
   }
 
   return null
@@ -655,6 +710,55 @@ export async function runDemoSmoke(
           id: 'signwell_sandbox_payload',
           ok: payload.send_email === false,
           detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}; template_id=present; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'signwell_live_preflight') {
+    const config = getPrelaunchSignWellConfig(env)
+    if (!config) {
+      return {
+        category: plan.category,
+        ok: false,
+        results: [
+          {
+            id: 'signwell_live_preflight',
+            ok: false,
+            detail: 'SignWell live preflight configuration is incomplete.',
+          },
+        ],
+      }
+    }
+
+    const approvedRecipientEmail =
+      env[SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL_ENV]?.trim() ?? demoEmail
+    const liveSendMode = getPrelaunchSignWellLiveSendMode(env)
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: config.templateId,
+      recipient: {
+        name: approvedRecipientEmail,
+        email: approvedRecipientEmail,
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'live-preflight',
+        waitlistId: 'live-preflight',
+        operatorRepId: null,
+      }),
+      mode: 'dry_run',
+    })
+
+    const ok = payload.send_email === false && payload.test_mode === false
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'signwell_live_preflight',
+          ok,
+          detail: `SignWell live preflight ready for approved recipient ${approvedRecipientEmail}; send_email=${String(payload.send_email)}; test_mode=${String(payload.test_mode)}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}; live_send_allow_flag=${String(liveSendMode.allowLiveSend)}`,
         },
       ],
     }

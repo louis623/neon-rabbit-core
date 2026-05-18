@@ -17,6 +17,7 @@
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",
     "smoke:launch:restored": "tsx scripts/smoke-demo-readiness.ts --launch --categories local_static,local_app,stripe_test,stripe_local_routes,signwell_sandbox --json --write-report",
     "smoke:launch:preview-protected": "tsx scripts/smoke-demo-readiness.ts --launch --target preview --categories protected_preview_routes --json --write-report",
+    "smoke:signwell:live-preflight": "tsx scripts/smoke-demo-readiness.ts --category signwell_live_preflight --json",
     "smoke:preview:vercel-curl": "tsx scripts/smoke-protected-preview-routes.ts",
     "qa:amethyst": "npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-trade-template.test.ts && npm run verify:amethyst-links",
     "verify:amethyst-links": "tsx scripts/verify-amethyst-links.ts",

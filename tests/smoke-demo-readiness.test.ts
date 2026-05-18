@@ -40,6 +40,7 @@ describe('demo launch smoke readiness plan', () => {
       'stripe_local_routes',
       'protected_preview_routes',
       'signwell_sandbox',
+      'signwell_live_preflight',
       'nic_nac_paid',
     ] as const
 
@@ -218,6 +219,80 @@ describe('demo launch smoke readiness plan', () => {
       detail:
         'built sandbox payload for demo@example.com with send_email=false; template_id=present; api_base_url_mode=production',
     })
+  })
+
+  it('keeps SignWell live preflight explicit and non-sending', async () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_live_preflight' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('signwell_live_preflight')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'signwell_live_preflight',
+        risk: 'test_provider',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      SIGNWELL_API_KEY: 'signwell_api_key',
+      SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+      SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+      SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL: 'demo@example.com',
+      SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME: 'Sparkle Suite Service Agreement',
+      SIGNWELL_LIVE_APPROVED_SEND_WINDOW: 'Louis approval only',
+    })
+
+    expect(result).toEqual({
+      category: 'signwell_live_preflight',
+      ok: true,
+      results: [
+        {
+          id: 'signwell_live_preflight',
+          ok: true,
+          detail:
+            'SignWell live preflight ready for approved recipient demo@example.com; send_email=false; test_mode=false; api_base_url_mode=production; live_send_allow_flag=false',
+        },
+      ],
+    })
+    expect(JSON.stringify(result)).not.toContain('template_secret_demo')
+  })
+
+  it('blocks SignWell live preflight until recipient, template, and timing are approved', () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_live_preflight' })
+
+    expect(
+      validateDemoSmokePlan(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+      }),
+    ).toEqual([
+      'SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL is required for signwell_live_preflight smoke.',
+      'SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME is required for signwell_live_preflight smoke.',
+      'SIGNWELL_LIVE_APPROVED_SEND_WINDOW is required for signwell_live_preflight smoke.',
+      'SignWell live preflight blocked: missing SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL, SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME, SIGNWELL_LIVE_APPROVED_SEND_WINDOW.',
+    ])
+  })
+
+  it('fails SignWell live preflight if the live-send allow flag is armed', () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_live_preflight' })
+
+    expect(
+      validateDemoSmokePlan(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+        SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL: 'demo@example.com',
+        SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME: 'Sparkle Suite Service Agreement',
+        SIGNWELL_LIVE_APPROVED_SEND_WINDOW: 'Louis approval only',
+        SIGNWELL_ALLOW_LIVE_SEND: 'true',
+      }),
+    ).toContain(
+      'SIGNWELL_ALLOW_LIVE_SEND must stay unset during signwell_live_preflight; final live send approval is a separate step.',
+    )
   })
 
   it('reports SignWell sandbox base URL mode without exposing configured values', async () => {
