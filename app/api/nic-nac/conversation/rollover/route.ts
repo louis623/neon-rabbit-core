@@ -8,6 +8,7 @@ import {
 } from '@/lib/nic-nac/persistence'
 import { findActionableApproval } from '@/lib/nic-nac/hitl-state'
 import { buildNicNacRolloverMessages } from '@/lib/nic-nac/rollover'
+import { logNicNacRollover } from '@/lib/nic-nac/rollover-telemetry'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
     conversationId,
     repId,
     messages,
+  })
+  await logNicNacRollover({
+    repId,
+    sourceConversationId,
+    destinationConversationId: conversationId,
+    carriedMessageCount: messages.length,
   })
 
   return NextResponse.json({
