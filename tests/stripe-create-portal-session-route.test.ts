@@ -60,4 +60,39 @@ describe('POST /api/stripe/create-portal-session', () => {
       url: 'https://billing.stripe.test/session_123',
     })
   })
+
+  it('refuses portal creation with an actionable error when Stripe env is missing', async () => {
+    stripeEnabledMock.mockReturnValue(false)
+
+    const response = await POST()
+
+    expect(getAuthenticatedRepMock).not.toHaveBeenCalled()
+    expect(getStripeMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'STRIPE_CONFIGURATION_MISSING',
+      error: 'Stripe is not configured.',
+      action:
+        'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, and NEXT_PUBLIC_APP_URL before opening the billing portal.',
+    })
+  })
+
+  it('refuses portal creation when the authenticated rep has no Stripe customer id', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      rep: {
+        stripe_customer_id: null,
+      },
+    })
+
+    const response = await POST()
+
+    expect(getStripeMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: 'STRIPE_CUSTOMER_MISSING',
+      error: 'No Stripe customer found.',
+      action: 'Start a subscription checkout before opening the billing portal.',
+    })
+  })
 })

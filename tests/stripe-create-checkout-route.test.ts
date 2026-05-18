@@ -103,6 +103,90 @@ describe('POST /api/stripe/create-checkout', () => {
     expect(response.status).toBe(200)
   })
 
+  it('refuses checkout with an actionable error when Stripe env is missing', async () => {
+    stripeEnabledMock.mockReturnValue(false)
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
+    )
+
+    expect(getAuthenticatedRepMock).not.toHaveBeenCalled()
+    expect(getStripeMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'STRIPE_CONFIGURATION_MISSING',
+      error: 'Stripe is not configured.',
+      action:
+        'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, and STRIPE_PRICE_MONTHLY before starting checkout.',
+    })
+  })
+
+  it('uses the authenticated rep identity instead of request-supplied identity', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-authenticated',
+      rep: { id: 'rep-authenticated' },
+    })
+    createAdminClientMock.mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            in: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({ data: null }),
+              })),
+            })),
+          })),
+        })),
+      })),
+    })
+    getPriceIdMock.mockReturnValue('price_monthly')
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_auth')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_123',
+      url: 'https://checkout.stripe.test/cs_123',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          repId: 'rep-attacker',
+          planType: 'monthly',
+        }),
+      }),
+    )
+
+    expect(getOrCreateStripeCustomerMock).toHaveBeenCalledWith('rep-authenticated')
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          rep_id: 'rep-authenticated',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            rep_id: 'rep-authenticated',
+          }),
+        }),
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
   it('rejects non-monthly plan requests', async () => {
     stripeEnabledMock.mockReturnValue(true)
     getAuthenticatedRepMock.mockResolvedValueOnce({

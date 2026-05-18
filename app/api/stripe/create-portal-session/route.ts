@@ -5,14 +5,29 @@ import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 
 export async function POST() {
   if (!stripeEnabled()) {
-    return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 })
+    return NextResponse.json(
+      {
+        code: 'STRIPE_CONFIGURATION_MISSING',
+        error: 'Stripe is not configured.',
+        action:
+          'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, and NEXT_PUBLIC_APP_URL before opening the billing portal.',
+      },
+      { status: 503 },
+    )
   }
 
   try {
     const { rep } = await getAuthenticatedRep()
 
     if (!rep.stripe_customer_id) {
-      return NextResponse.json({ error: 'No Stripe customer found — subscribe first' }, { status: 400 })
+      return NextResponse.json(
+        {
+          code: 'STRIPE_CUSTOMER_MISSING',
+          error: 'No Stripe customer found.',
+          action: 'Start a subscription checkout before opening the billing portal.',
+        },
+        { status: 400 },
+      )
     }
 
     const stripe = getStripe()

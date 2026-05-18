@@ -7,7 +7,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: Request) {
   if (!stripeEnabled()) {
-    return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 })
+    return NextResponse.json(
+      {
+        code: 'STRIPE_CONFIGURATION_MISSING',
+        error: 'Stripe is not configured.',
+        action:
+          'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, and STRIPE_PRICE_MONTHLY before starting checkout.',
+      },
+      { status: 503 },
+    )
   }
 
   try {
