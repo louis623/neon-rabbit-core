@@ -5,7 +5,7 @@ import { config } from 'dotenv'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const DEMO_SEED_TAG = '__sparkle_demo_seed_v1'
-const DEFAULT_DEMO_PASSWORD = 'SparkleDemo2026!'
+export const DEFAULT_DEMO_PASSWORD = 'SparkleDemo2026!'
 
 type RepSeed = {
   email: string

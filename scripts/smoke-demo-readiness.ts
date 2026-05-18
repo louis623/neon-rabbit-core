@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { config } from 'dotenv'
+import { createClient } from '@supabase/supabase-js'
 import {
   buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
@@ -7,6 +9,7 @@ import {
 } from '@/lib/prelaunch/signwell'
 import {
   buildDemoSeedPlan,
+  DEFAULT_DEMO_PASSWORD,
   seedDemoRep,
   type DemoSeedPlan,
   type DemoSeedResult,
@@ -74,6 +77,17 @@ export interface DemoSmokeReport {
 
 interface DemoSmokeRunDependencies {
   seedDemoRep?: (plan: DemoSeedPlan) => Promise<DemoSeedResult>
+  verifyDemoRepLogin?: (
+    env: Record<string, string | undefined>,
+    email: string,
+  ) => Promise<DemoLoginVerification>
+}
+
+interface DemoLoginVerification {
+  repCount: number
+  listingCount: number
+  showCount: number
+  audienceCount: number
 }
 
 interface BuildDemoSmokePlanOptions {
@@ -115,6 +129,7 @@ export function buildDemoSmokePlan(
         requiredEnv: [
           DEMO_EMAIL_ENV,
           'NEXT_PUBLIC_SUPABASE_URL',
+          'NEXT_PUBLIC_SUPABASE_ANON_KEY',
           'SUPABASE_SERVICE_ROLE_KEY',
         ],
         excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
@@ -266,7 +281,9 @@ export async function runDemoSmoke(
 
   if (plan.category === 'supabase_demo') {
     const runSeed = dependencies.seedDemoRep ?? seedDemoRep
+    const verifyLogin = dependencies.verifyDemoRepLogin ?? verifyDemoRepLogin
     const seedResult = await runSeed(demoPlan)
+    const loginResult = await verifyLogin(env, demoEmail)
 
     return {
       category: plan.category,
@@ -276,6 +293,11 @@ export async function runDemoSmoke(
           id: 'supabase_demo_seed_check',
           ok: true,
           detail: `seeded rep=${seedResult.repId} settings=1 designs=${seedResult.designIds.length} listings=${seedResult.listingIds.length} shows=${seedResult.showIds.length} audience=${seedResult.audienceIds.length}`,
+        },
+        {
+          id: 'supabase_demo_login_check',
+          ok: true,
+          detail: `demo login can read reps=${loginResult.repCount} listings=${loginResult.listingCount} shows=${loginResult.showCount} audience=${loginResult.audienceCount}`,
         },
       ],
     }
@@ -356,6 +378,52 @@ export async function runDemoSmoke(
   }
 }
 
+async function verifyDemoRepLogin(
+  env: Record<string, string | undefined>,
+  email: string,
+): Promise<DemoLoginVerification> {
+  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !anonKey) {
+    throw new Error('Supabase URL and anon key are required for demo login verification.')
+  }
+
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email,
+    password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
+  })
+  if (signInError) {
+    throw new Error(`Demo rep sign-in failed: ${signInError.message}`)
+  }
+
+  const countVisibleRows = async (table: string): Promise<number> => {
+    const { count, error } = await client
+      .from(table)
+      .select('id', { count: 'exact', head: true })
+    if (error) {
+      throw new Error(`Failed to count ${table}: ${error.message}`)
+    }
+    return count ?? 0
+  }
+
+  const countedTables = await Promise.all([
+    countVisibleRows('reps'),
+    countVisibleRows('trade_listings'),
+    countVisibleRows('calendar_events'),
+    countVisibleRows('customer_audience'),
+  ])
+
+  return {
+    repCount: countedTables[0],
+    listingCount: countedTables[1],
+    showCount: countedTables[2],
+    audienceCount: countedTables[3],
+  }
+}
+
 export function parseDemoSmokeArgs(args: string[]): DemoSmokeCategory {
   return parseDemoSmokeOptions(args).category
 }
@@ -430,6 +498,7 @@ function printResults(runResult: DemoSmokeRunResult) {
 }
 
 async function main() {
+  config({ path: '.env.local', quiet: true })
   const options = parseDemoSmokeOptions(process.argv.slice(2))
   const plan = buildDemoSmokePlan({ category: options.category })
   if (!options.json) {

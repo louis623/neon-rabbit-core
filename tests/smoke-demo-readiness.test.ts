@@ -124,6 +124,7 @@ describe('demo launch smoke readiness plan', () => {
       {
         DEMO_REP_EMAIL: 'demo@example.com',
         NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
         SUPABASE_SERVICE_ROLE_KEY: 'service_role_key',
       },
       {
@@ -135,6 +136,12 @@ describe('demo launch smoke readiness plan', () => {
           showIds: ['show-1', 'show-2'],
           audienceIds: ['audience-1', 'audience-2', 'audience-3', 'audience-4', 'audience-5'],
         }),
+        verifyDemoRepLogin: async () => ({
+          repCount: 1,
+          listingCount: 10,
+          showCount: 2,
+          audienceCount: 5,
+        }),
       },
     )
 
@@ -144,6 +151,11 @@ describe('demo launch smoke readiness plan', () => {
       ok: true,
       detail:
         'seeded rep=rep-demo settings=1 designs=10 listings=10 shows=2 audience=5',
+    })
+    expect(result.results).toContainEqual({
+      id: 'supabase_demo_login_check',
+      ok: true,
+      detail: 'demo login can read reps=1 listings=10 shows=2 audience=5',
     })
   })
 
