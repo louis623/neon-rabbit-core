@@ -236,6 +236,13 @@ Required env:
 - `SIGNWELL_API_BASE_URL`
 - `SIGNWELL_TEMPLATE_ID`
 
+Vercel status:
+
+- Development has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID`.
+- Preview for `codex/sparkle-cross-phase-hardening` has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID`.
+- Template ID source is the reusable SignWell template `Service Agreement Template_ Sparkle Suite (2)`.
+- `npm run smoke:demo -- --category signwell_sandbox --json` passed locally with `send_email=false`.
+
 Stop point:
 
 - If this does not report `send_email=false`, stop.

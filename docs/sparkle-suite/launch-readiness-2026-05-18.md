@@ -16,7 +16,8 @@
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
-- `npm run smoke:demo -- --category signwell_sandbox --json` can build a non-sending sandbox payload when SignWell sandbox env and `DEMO_REP_EMAIL` are present.
+- Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
+- `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
 
 ## P0 launch blockers
@@ -33,7 +34,7 @@
 - Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet; verify production `STRIPE_SECRET_KEY` mode or explicitly approve production test-mode setup before adding it there.
 - Browser checkout walkthrough is still pending, but the local API route smoke has verified checkout and portal session creation in test mode.
 - Vercel Deployment Protection remains enabled for browser access; CLI smoke can use authenticated `vercel curl`, while browser walkthrough still needs Louis/Vercel SSO.
-- SignWell sandbox payload still needs `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in the target environment.
+- SignWell browser walkthrough/live send is still not approved. Keep `SIGNWELL_ALLOW_LIVE_SEND` unset unless Louis explicitly approves recipient, template, and timing.
 
 ## P2 post-launch polish
 
@@ -43,7 +44,7 @@
 ## Provider status
 
 - Stripe: test-mode route readiness implemented; live mode parked behind explicit approval.
-- SignWell: sandbox/dry-run payload readiness implemented; live send parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.
+- SignWell: sandbox/dry-run payload readiness implemented and passed; live send parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.
 - Telnyx: live SMS parked until 10DLC approval and number attachment.
 - Nic-Nac: paid smoke parked behind explicit paid-smoke env gates and request cap.
 - Supabase: demo seed and login/read smoke passed for `louis+sparkle-demo@neonrabbit.net`; visible counts were reps=1, listings=10, shows=2, audience=5.
@@ -51,5 +52,5 @@
 ## Recommended first-user launch scope
 
 - Launch with one seeded demo rep first.
-- Smoke order now completed through Stripe local checkout/portal route smoke; next launch-path check is SignWell sandbox payload with the final template id.
+- Smoke order now completed through SignWell sandbox payload smoke.
 - Keep SMS live sends, live SignWell sends, live Stripe charges, and paid Nic-Nac smoke out of the first pass unless Louis approves each provider scope separately.
