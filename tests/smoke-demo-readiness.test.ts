@@ -38,6 +38,7 @@ describe('demo launch smoke readiness plan', () => {
       'supabase_demo',
       'stripe_test',
       'stripe_local_routes',
+      'protected_preview_routes',
       'signwell_sandbox',
       'nic_nac_paid',
     ] as const
@@ -110,6 +111,62 @@ describe('demo launch smoke readiness plan', () => {
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
+  })
+
+  it('keeps protected preview route smoke explicit and out of default launch smoke', () => {
+    const plan = buildDemoSmokePlan({ category: 'protected_preview_routes' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('protected_preview_routes')
+    expect(plan.requiredEnv).toEqual([
+      'DEMO_REP_EMAIL',
+      'DEMO_REP_PASSWORD',
+      'NEXT_PUBLIC_APP_URL',
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    ])
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'protected_preview_routes',
+        risk: 'test_provider',
+        run: 'planned',
+      }),
+    )
+  })
+
+  it('runs protected preview routes through the launch smoke harness when selected', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'protected_preview_routes' }),
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_REP_PASSWORD: 'demo-password',
+        NEXT_PUBLIC_APP_URL: 'https://preview.example.vercel.app',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+      },
+      {
+        runProtectedPreviewRouteSmoke: async () => ({
+          ok: true,
+          target: 'https://preview.example.vercel.app',
+          rep: 'Launch Demo Rep',
+          shell: true,
+          checkout: true,
+          portal: true,
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'protected_preview_routes',
+      ok: true,
+      results: [
+        {
+          id: 'protected_preview_routes',
+          ok: true,
+          detail:
+            'protected preview target=https://preview.example.vercel.app rep=Launch Demo Rep shell=true checkout=true portal=true',
+        },
+      ],
+    })
   })
 
   it('requires the demo account email for demo-specific smoke categories', () => {
@@ -482,6 +539,23 @@ describe('demo launch smoke readiness plan', () => {
       categories: ['local_static', 'stripe_test'],
       json: true,
       writeReport: true,
+    })
+  })
+
+  it('parses protected preview routes as an explicit launch smoke category', () => {
+    expect(
+      parseLaunchSmokeOptions([
+        '--target',
+        'preview',
+        '--categories',
+        'protected_preview_routes',
+        '--json',
+      ]),
+    ).toEqual({
+      target: 'preview',
+      categories: ['protected_preview_routes'],
+      json: true,
+      writeReport: false,
     })
   })
 

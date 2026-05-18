@@ -15,6 +15,7 @@ import {
   type DemoSeedPlan,
   type DemoSeedResult,
 } from '@/scripts/seed-demo-rep'
+import { runProtectedPreviewRouteSmoke } from '@/scripts/smoke-protected-preview-routes'
 
 export const DEMO_SMOKE_CATEGORIES = [
   'local_static',
@@ -22,6 +23,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'supabase_demo',
   'stripe_test',
   'stripe_local_routes',
+  'protected_preview_routes',
   'signwell_sandbox',
   'nic_nac_paid',
 ] as const
@@ -124,6 +126,9 @@ export interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<StripeLocalRouteVerification>
+  runProtectedPreviewRouteSmoke?: (
+    env: Record<string, string | undefined>,
+  ) => Promise<ProtectedPreviewRouteSmokeResult>
 }
 
 interface LaunchSmokeRunDependencies extends DemoSmokeRunDependencies {
@@ -150,6 +155,15 @@ interface LocalAppVerification {
 interface StripeLocalRouteVerification {
   checkoutSessionUrl: string
   portalSessionUrl: string
+}
+
+interface ProtectedPreviewRouteSmokeResult {
+  ok: boolean
+  target: string
+  rep: string
+  shell: boolean
+  checkout: boolean
+  portal: boolean
 }
 
 interface BuildDemoSmokePlanOptions {
@@ -281,6 +295,27 @@ export function buildDemoSmokePlan(
             id: 'stripe_local_checkout_and_portal',
             label:
               'Create Stripe test-mode checkout and portal sessions through the running local app.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'protected_preview_routes':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'DEMO_REP_PASSWORD',
+          'NEXT_PUBLIC_APP_URL',
+          'NEXT_PUBLIC_SUPABASE_URL',
+          'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'protected_preview_routes',
+            label:
+              'Verify protected preview demo auth, Nic-Nac shell, and Stripe test checkout/portal routes through authenticated Vercel curl.',
             risk: 'test_provider',
             run: 'planned',
           },
@@ -558,6 +593,24 @@ export async function runDemoSmoke(
           id: 'stripe_local_checkout_and_portal',
           ok: true,
           detail: `Stripe test checkout session ready=${String(Boolean(stripeResult.checkoutSessionUrl))}; portal session ready=${String(Boolean(stripeResult.portalSessionUrl))}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'protected_preview_routes') {
+    const runProtectedPreview =
+      dependencies.runProtectedPreviewRouteSmoke ?? runProtectedPreviewRouteSmoke
+    const previewResult = await runProtectedPreview(env)
+
+    return {
+      category: plan.category,
+      ok: previewResult.ok,
+      results: [
+        {
+          id: 'protected_preview_routes',
+          ok: previewResult.ok,
+          detail: `protected preview target=${previewResult.target} rep=${previewResult.rep} shell=${String(previewResult.shell)} checkout=${String(previewResult.checkout)} portal=${String(previewResult.portal)}`,
         },
       ],
     }
