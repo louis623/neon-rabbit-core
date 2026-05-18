@@ -204,6 +204,17 @@ describe('Nic-Nac show sessions', () => {
           conversationDate: '2026-05-17T23:00:00.000Z',
         },
       ],
+      liveQueueSnapshot: {
+        syncCode: 'SYNC123',
+        queue: ['Jamie', 'Ari'],
+        queueLength: 2,
+        currentCustomer: 'Jamie',
+        onDeckCustomer: 'Ari',
+        lastUpdated: '2026-05-18T20:10:00.000Z',
+        ageSeconds: 30,
+        staleAfterSeconds: 180,
+        isFresh: true,
+      },
     })
 
     expect(context.activeSession?.id).toBe('session-2')
@@ -216,6 +227,46 @@ describe('Nic-Nac show sessions', () => {
     expect(context.memory.previousShowSummaries).toEqual([
       'Show 1 ended with two customer follow-ups.',
     ])
+    expect(context.liveQueueSnapshot).toMatchObject({
+      syncCode: 'SYNC123',
+      currentCustomer: 'Jamie',
+      onDeckCustomer: 'Ari',
+      isFresh: true,
+    })
     expect(JSON.stringify(context)).not.toContain('Other rep private')
+  })
+
+  it('does not attach a queue snapshot from another show anchor', () => {
+    const context = buildNicNacShowSessionContext({
+      repId: 'rep-1',
+      activeSession: {
+        id: 'session-2',
+        repId: 'rep-1',
+        calendarEventId: null,
+        liveQueueSyncCode: 'SYNC123',
+        status: 'active',
+        startedAt: '2026-05-18T20:00:00.000Z',
+        endedAt: null,
+        summary: null,
+        metadata: {},
+        createdAt: '2026-05-18T20:00:00.000Z',
+        updatedAt: '2026-05-18T20:00:00.000Z',
+      },
+      recentEvents: [],
+      memoryNotes: [],
+      liveQueueSnapshot: {
+        syncCode: 'OTHER',
+        queue: ['Other'],
+        queueLength: 1,
+        currentCustomer: 'Other',
+        onDeckCustomer: null,
+        lastUpdated: '2026-05-18T20:10:00.000Z',
+        ageSeconds: 30,
+        staleAfterSeconds: 180,
+        isFresh: true,
+      },
+    })
+
+    expect(context.liveQueueSnapshot).toBeNull()
   })
 })

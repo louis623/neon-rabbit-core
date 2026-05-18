@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  assertPaidSmokeAllowed,
   buildBenchmarkPlan,
+  countBenchmarkPlanRequests,
+  DEFAULT_PAID_SMOKE_MAX_REQUESTS,
+  NIC_NAC_PAID_SMOKE_ALLOW_FLAG,
+  NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
   normalizeBaseUrl,
   NIC_NAC_BENCHMARK_PATH,
   type Prompt,
@@ -36,5 +41,46 @@ describe('Nic-Nac benchmark plan', () => {
     expect(normalizeBaseUrl('https://sparkle-suite.vercel.app///')).toBe(
       'https://sparkle-suite.vercel.app'
     )
+  })
+
+  it('blocks paid smoke runs unless explicitly allowed and capped', () => {
+    const plan = buildBenchmarkPlan(prompts, {
+      coldPromptCount: 2,
+      warmConversationCount: 1,
+      warmTurnsPerConversation: 2,
+    })
+
+    expect(countBenchmarkPlanRequests(plan)).toBe(4)
+    expect(() => assertPaidSmokeAllowed(plan, {})).toThrow(
+      `${NIC_NAC_PAID_SMOKE_ALLOW_FLAG}=true is required`,
+    )
+    expect(
+      assertPaidSmokeAllowed(plan, {
+        [NIC_NAC_PAID_SMOKE_ALLOW_FLAG]: 'true',
+      }),
+    ).toEqual({
+      requestCount: 4,
+      maxRequests: DEFAULT_PAID_SMOKE_MAX_REQUESTS,
+    })
+  })
+
+  it('requires an explicit higher cap before large paid smoke runs', () => {
+    const plan = buildBenchmarkPlan(prompts, {
+      coldPromptCount: 100,
+      warmConversationCount: 20,
+      warmTurnsPerConversation: 5,
+    })
+
+    expect(() =>
+      assertPaidSmokeAllowed(plan, {
+        [NIC_NAC_PAID_SMOKE_ALLOW_FLAG]: 'true',
+      }),
+    ).toThrow(`${NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV}=20`)
+    expect(
+      assertPaidSmokeAllowed(plan, {
+        [NIC_NAC_PAID_SMOKE_ALLOW_FLAG]: 'true',
+        [NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV]: '200',
+      }),
+    ).toEqual({ requestCount: 200, maxRequests: 200 })
   })
 })

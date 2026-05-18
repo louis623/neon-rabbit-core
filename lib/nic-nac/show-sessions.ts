@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { getLiveQueueSnapshot } from '@/lib/services/live-queue'
+import type { LiveQueueSnapshot } from '@/lib/services/types'
 import type { RepMemorySource, RepMemoryType } from './memory'
 
 export const NIC_NAC_SHOW_EVENT_TYPES = [
@@ -101,6 +103,7 @@ export interface BuildNicNacShowSessionContextInput {
   activeSession: NicNacShowSession | null
   recentEvents: NicNacShowSessionEvent[]
   memoryNotes: NicNacShowMemoryNote[]
+  liveQueueSnapshot?: LiveQueueSnapshot | null
 }
 
 export interface LoadNicNacShowSessionContextOptions {
@@ -241,6 +244,10 @@ export function buildNicNacShowSessionContext(
 
   return {
     activeSession,
+    liveQueueSnapshot:
+      activeSession && input.liveQueueSnapshot?.syncCode === activeSession.liveQueueSyncCode
+        ? input.liveQueueSnapshot
+        : null,
     recentEvents,
     memory: {
       preferences: memoryNotes
@@ -303,6 +310,13 @@ export async function loadNicNacShowSessionContext(
     : null
 
   let recentEvents: NicNacShowSessionEvent[] = []
+  const liveQueueSnapshot = activeSession
+    ? await getLiveQueueSnapshot(supabase, {
+        repId,
+        syncCode: activeSession.liveQueueSyncCode,
+      })
+    : null
+
   if (activeSession) {
     const { data: eventData, error: eventError } = await supabase
       .from('nic_nac_show_session_events')
@@ -355,6 +369,7 @@ export async function loadNicNacShowSessionContext(
   return buildNicNacShowSessionContext({
     repId,
     activeSession,
+    liveQueueSnapshot,
     recentEvents,
     memoryNotes,
   })

@@ -60,8 +60,11 @@ const API_BASE = normalizeBaseUrl(
 )
 const REP_EMAIL = 'testrep@neonrabbit.net'
 const REP_PASSWORD =
-  process.env.NIC_NAC_BENCHMARK_REP_PASSWORD ??
-  Buffer.from('VGh1bXBlclNwaWtlMjAyNkRldiE=', 'base64').toString('utf8')
+  process.env.NIC_NAC_BENCHMARK_REP_PASSWORD ?? process.env.NIC_NAC_DEV_PASSWORD
+export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
+export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
+  'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
+export const DEFAULT_PAID_SMOKE_MAX_REQUESTS = 20
 
 // Current Anthropic Haiku 4.5 pricing (per 1M tokens):
 // MUST refetch before a serious run. These are placeholders based on the last
@@ -83,6 +86,53 @@ export function normalizeBaseUrl(value: string): string {
 
 function parsePositiveIntEnv(name: string, fallback: number): number {
   const raw = process.env[name]
+  if (!raw) return fallback
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer; received ${raw}`)
+  }
+  return parsed
+}
+
+export function countBenchmarkPlanRequests(plan: BenchmarkPlan): number {
+  return (
+    plan.cold.length +
+    plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0)
+  )
+}
+
+export function assertPaidSmokeAllowed(
+  plan: BenchmarkPlan,
+  env: Record<string, string | undefined> = process.env,
+) {
+  const requestCount = countBenchmarkPlanRequests(plan)
+  const maxRequests = parsePositiveIntEnvFrom(
+    env,
+    NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+    DEFAULT_PAID_SMOKE_MAX_REQUESTS,
+  )
+
+  if (env[NIC_NAC_PAID_SMOKE_ALLOW_FLAG] !== 'true') {
+    throw new Error(
+      `${NIC_NAC_PAID_SMOKE_ALLOW_FLAG}=true is required before running paid Nic-Nac smoke calls; planned requests=${requestCount}.`,
+    )
+  }
+
+  if (requestCount > maxRequests) {
+    throw new Error(
+      `Planned Nic-Nac smoke requests (${requestCount}) exceed ${NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV}=${maxRequests}.`,
+    )
+  }
+
+  return { requestCount, maxRequests }
+}
+
+function parsePositiveIntEnvFrom(
+  env: Record<string, string | undefined>,
+  name: string,
+  fallback: number,
+): number {
+  const raw = env[name]
   if (!raw) return fallback
   const parsed = Number.parseInt(raw, 10)
   if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -142,10 +192,14 @@ async function main() {
       DEFAULT_BENCHMARK_OPTIONS.warmTurnsPerConversation
     ),
   })
+  const guard = assertPaidSmokeAllowed(plan)
 
   console.log(
-    `[bench] target=${API_BASE}${NIC_NAC_BENCHMARK_PATH} cold=${plan.cold.length} warm=${plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0)}`
+    `[bench] target=${API_BASE}${NIC_NAC_BENCHMARK_PATH} requests=${guard.requestCount}/${guard.maxRequests} cold=${plan.cold.length} warm=${plan.warmConversations.reduce((sum, turns) => sum + turns.length, 0)}`
   )
+  if (!REP_PASSWORD) {
+    throw new Error('NIC_NAC_BENCHMARK_REP_PASSWORD is required for paid smoke')
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -507,6 +507,18 @@ export interface SiteAnalyticsDashboardResult {
   operationalSnapshot: SiteAnalyticsOperationalSnapshot
 }
 
+export interface LiveQueueSnapshot {
+  syncCode: string
+  queue: string[]
+  queueLength: number
+  currentCustomer: string | null
+  onDeckCustomer: string | null
+  lastUpdated: string | null
+  ageSeconds: number | null
+  staleAfterSeconds: number
+  isFresh: boolean
+}
+
 export interface PrelaunchWaitlistInput {
   name: string
   email: string
