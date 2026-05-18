@@ -18,8 +18,8 @@
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
-- Latest protected Vercel Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` passed `npm run smoke:launch:preview-protected`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
-- `npm run smoke:launch:preview-protected` passed on 2026-05-18 for the latest protected preview; report: `.local/launch-smoke-results/launch-preview-2026-05-18T22-46-13-690Z.json`.
+- Most recently smoke-tested protected Vercel Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` passed `npm run smoke:launch:preview-protected`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
+- `npm run smoke:launch:preview-protected` passed on 2026-05-18 for the most recently smoke-tested protected preview; report: `.local/launch-smoke-results/launch-preview-2026-05-18T22-46-13-690Z.json`.
 - Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
@@ -41,7 +41,7 @@ flowchart LR
 
   B -. "PASS: local_static, local_app, stripe_test, stripe_local_routes, signwell_sandbox" .-> B1["Done"]
   C -. "PASS: login, Nic-Nac shell, demo data, test checkout, test portal" .-> C1["Done"]
-  D -. "PASS: latest protected preview via vercel curl" .-> D1["Done"]
+  D -. "PASS: protected preview via vercel curl" .-> D1["Done"]
   E -. "CURRENT GATE: needs Louis/Vercel SSO or approved preview access" .-> E1["Next"]
   G -. "PARKED: live SMS, live SignWell, live Stripe, paid Nic-Nac need explicit approval" .-> G1["Later"]
 ```
