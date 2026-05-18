@@ -24,6 +24,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'supabase_demo',
   'stripe_test',
   'stripe_local_routes',
+  'stripe_live_preflight',
   'protected_preview_routes',
   'signwell_sandbox',
   'signwell_live_preflight',
@@ -45,6 +46,10 @@ export type LaunchSmokeTarget = 'local' | 'preview'
 
 export const DEFAULT_DEMO_SMOKE_CATEGORY: DemoSmokeCategory = 'local_static'
 export const STRIPE_LIVE_SMOKE_CONFIRM_ENV = 'STRIPE_LIVE_SMOKE_CONFIRMED'
+export const STRIPE_LIVE_APPROVED_PRICE_ID_ENV = 'STRIPE_LIVE_APPROVED_PRICE_ID'
+export const STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV =
+  'STRIPE_LIVE_APPROVED_SMOKE_PATH'
+export const STRIPE_LIVE_APPROVED_AT_ENV = 'STRIPE_LIVE_APPROVED_AT'
 export const VERCEL_PROTECTION_BYPASS_ENV = 'VERCEL_PROTECTION_BYPASS'
 export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
 export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
@@ -308,6 +313,30 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'stripe_live_preflight':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'STRIPE_SECRET_KEY',
+          'STRIPE_WEBHOOK_SECRET',
+          'STRIPE_PRICE_MONTHLY',
+          'NEXT_PUBLIC_APP_URL',
+          STRIPE_LIVE_APPROVED_PRICE_ID_ENV,
+          STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV,
+          STRIPE_LIVE_APPROVED_AT_ENV,
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'stripe_live_preflight',
+            label:
+              'Validate live Stripe subscription config and approval gates without creating checkout or charging a card.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
     case 'protected_preview_routes':
       return {
         category,
@@ -469,6 +498,51 @@ function buildProviderReadinessError(
     if (missing.length === 0) return null
 
     return `Stripe local route smoke blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)}.`
+  }
+
+  if (plan.category === 'stripe_live_preflight') {
+    const missing = missingEnvNames(env, [
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'STRIPE_PRICE_MONTHLY',
+      'NEXT_PUBLIC_APP_URL',
+      STRIPE_LIVE_APPROVED_PRICE_ID_ENV,
+      STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV,
+      STRIPE_LIVE_APPROVED_AT_ENV,
+    ])
+    const errors: string[] = []
+    const keyMode = getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)
+
+    if (missing.length > 0) {
+      errors.push(
+        `Stripe live preflight blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${keyMode}.`,
+      )
+    }
+
+    if (keyMode !== 'live') {
+      errors.push(
+        `Stripe live preflight requires STRIPE_SECRET_KEY mode=live; current mode=${keyMode}.`,
+      )
+    }
+
+    if (
+      env.STRIPE_PRICE_MONTHLY?.trim() &&
+      env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV]?.trim() &&
+      env.STRIPE_PRICE_MONTHLY.trim() !==
+        env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV]?.trim()
+    ) {
+      errors.push(
+        'STRIPE_PRICE_MONTHLY must match STRIPE_LIVE_APPROVED_PRICE_ID for stripe_live_preflight.',
+      )
+    }
+
+    if (env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() === 'true') {
+      errors.push(
+        'STRIPE_LIVE_SMOKE_CONFIRMED must stay unset during stripe_live_preflight; final live checkout approval is a separate step.',
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
   }
 
   if (plan.category === 'signwell_sandbox') {
@@ -648,6 +722,29 @@ export async function runDemoSmoke(
           id: 'stripe_local_checkout_and_portal',
           ok: true,
           detail: `Stripe test checkout session ready=${String(Boolean(stripeResult.checkoutSessionUrl))}; portal session ready=${String(Boolean(stripeResult.portalSessionUrl))}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'stripe_live_preflight') {
+    const appUrlHost = new URL(env.NEXT_PUBLIC_APP_URL ?? '').hostname
+    const keyMode = getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)
+    const ok =
+      keyMode === 'live' &&
+      Boolean(env.STRIPE_WEBHOOK_SECRET) &&
+      Boolean(env.STRIPE_PRICE_MONTHLY) &&
+      env.STRIPE_PRICE_MONTHLY === env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV] &&
+      env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() !== 'true'
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'stripe_live_preflight',
+          ok,
+          detail: `Stripe live preflight ready; key_mode=${keyMode}; price_id=${ok ? 'approved_match' : 'not_ready'}; app_url_host=${appUrlHost}; webhook_secret=${env.STRIPE_WEBHOOK_SECRET ? 'present' : 'missing'}; live_smoke_confirmed=${String(env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() === 'true')}; checkout_created=false`,
         },
       ],
     }

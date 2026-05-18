@@ -38,6 +38,7 @@ describe('demo launch smoke readiness plan', () => {
       'supabase_demo',
       'stripe_test',
       'stripe_local_routes',
+      'stripe_live_preflight',
       'protected_preview_routes',
       'signwell_sandbox',
       'signwell_live_preflight',
@@ -112,6 +113,92 @@ describe('demo launch smoke readiness plan', () => {
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
+  })
+
+  it('keeps Stripe live preflight explicit and does not create checkout sessions', async () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_live_preflight' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('stripe_live_preflight')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'stripe_live_preflight',
+        risk: 'test_provider',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      STRIPE_SECRET_KEY: 'sk_live_super_secret',
+      STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+      STRIPE_PRICE_MONTHLY: 'price_live_123',
+      NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
+      STRIPE_LIVE_APPROVED_PRICE_ID: 'price_live_123',
+      STRIPE_LIVE_APPROVED_SMOKE_PATH: 'manual checkout open only; no payment submission',
+      STRIPE_LIVE_APPROVED_AT: '2026-05-18T18:00:00-04:00',
+    })
+
+    expect(result).toEqual({
+      category: 'stripe_live_preflight',
+      ok: true,
+      results: [
+        {
+          id: 'stripe_live_preflight',
+          ok: true,
+          detail:
+            'Stripe live preflight ready; key_mode=live; price_id=approved_match; app_url_host=www.yoursparklesuite.com; webhook_secret=present; live_smoke_confirmed=false; checkout_created=false',
+        },
+      ],
+    })
+    expect(JSON.stringify(result)).not.toContain('sk_live_super_secret')
+    expect(JSON.stringify(result)).not.toContain('whsec_super_secret')
+    expect(JSON.stringify(result)).not.toContain('price_live_123')
+  })
+
+  it('blocks Stripe live preflight until live price and smoke path are approved', () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_live_preflight' })
+
+    expect(
+      validateDemoSmokePlan(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        STRIPE_SECRET_KEY: 'sk_live_super_secret',
+        STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+        NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
+      }),
+    ).toEqual([
+      'STRIPE_PRICE_MONTHLY is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_PRICE_ID is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_SMOKE_PATH is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_AT is required for stripe_live_preflight smoke.',
+      'Stripe live preflight blocked: missing STRIPE_PRICE_MONTHLY, STRIPE_LIVE_APPROVED_PRICE_ID, STRIPE_LIVE_APPROVED_SMOKE_PATH, STRIPE_LIVE_APPROVED_AT; STRIPE_SECRET_KEY mode=live.',
+    ])
+  })
+
+  it('fails Stripe live preflight for test keys, price mismatch, or armed live smoke flag', () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_live_preflight' })
+
+    const errors = validateDemoSmokePlan(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      STRIPE_SECRET_KEY: 'sk_test_super_secret',
+      STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+      STRIPE_PRICE_MONTHLY: 'price_live_actual',
+      NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
+      STRIPE_LIVE_APPROVED_PRICE_ID: 'price_live_approved',
+      STRIPE_LIVE_APPROVED_SMOKE_PATH: 'manual checkout open only',
+      STRIPE_LIVE_APPROVED_AT: '2026-05-18T18:00:00-04:00',
+      STRIPE_LIVE_SMOKE_CONFIRMED: 'true',
+    })
+    const serializedErrors = errors.join(' ')
+
+    expect(serializedErrors).toContain(
+      'Stripe live preflight requires STRIPE_SECRET_KEY mode=live; current mode=test.',
+    )
+    expect(serializedErrors).toContain(
+      'STRIPE_PRICE_MONTHLY must match STRIPE_LIVE_APPROVED_PRICE_ID for stripe_live_preflight.',
+    )
+    expect(serializedErrors).toContain(
+      'STRIPE_LIVE_SMOKE_CONFIRMED must stay unset during stripe_live_preflight; final live checkout approval is a separate step.',
+    )
   })
 
   it('keeps protected preview route smoke explicit and out of default launch smoke', () => {

@@ -198,7 +198,46 @@ Vercel status:
 - Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
 - Most recently smoke-tested protected Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:launch:preview-protected`.
 - The same preview has passed the opt-in aggregate launch category through `npm run smoke:launch:preview-protected`.
-- Production is intentionally not set until production Stripe key mode is verified or Louis explicitly approves production test-mode setup.
+- Production live preflight was attempted on 2026-05-18 without creating checkout or charge traffic. It is blocked because Production currently reports Stripe key mode `test` and is missing `STRIPE_PRICE_MONTHLY` plus a matching approved live price.
+
+### Stripe live preflight, no checkout
+
+Command:
+
+```powershell
+npm run smoke:stripe:live-preflight
+```
+
+What it does:
+
+- Validates live Stripe launch config shape without calling Stripe and without creating a Checkout Session.
+- Requires `STRIPE_SECRET_KEY` mode `live`.
+- Requires `STRIPE_PRICE_MONTHLY` to match `STRIPE_LIVE_APPROVED_PRICE_ID`.
+- Requires an approved live smoke path and approval timestamp.
+- Confirms `STRIPE_LIVE_SMOKE_CONFIRMED` is not set during preflight.
+- Reports only key mode, host, and present/missing status; it does not print Stripe secrets, webhook secrets, or price IDs.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_MONTHLY`
+- `NEXT_PUBLIC_APP_URL`
+- `STRIPE_LIVE_APPROVED_PRICE_ID`
+- `STRIPE_LIVE_APPROVED_SMOKE_PATH`
+- `STRIPE_LIVE_APPROVED_AT`
+
+Latest result:
+
+- `npm run smoke:stripe:live-preflight` was attempted on 2026-05-18 and blocked before any checkout or charge because Production Stripe key mode was `test` and production monthly price/approved live price were missing.
+
+Stop point:
+
+- If key mode is not `live`, stop.
+- If the production monthly price does not match the approved live price ID, stop.
+- If `STRIPE_LIVE_SMOKE_CONFIRMED=true`, stop during preflight; that flag belongs only to a separately approved final live checkout smoke.
+- Do not create a live Checkout Session or submit payment details without Louis approving the exact live path and amount.
 
 ### Protected preview CLI route smoke
 
