@@ -19,6 +19,6 @@ export function buildNicNacRolloverMessages(
   const tail = messages.slice(-Math.max(1, limit))
   return tail.map((message, index) => ({
     ...message,
-    id: `rollover-${index}-${message.id}`,
+    id: `rollover-${index}-${message.id.slice(-64)}`,
   }))
 }

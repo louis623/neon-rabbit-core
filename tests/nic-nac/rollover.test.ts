@@ -40,4 +40,17 @@ describe('Nic-Nac conversation rollover', () => {
     expect(shouldStartNicNacRollover({ rolloverRecommended: false })).toBe(false)
     expect(shouldStartNicNacRollover({ rolloverRecommended: true })).toBe(true)
   })
+
+  it('keeps generated rollover ids bounded across repeated rollovers', () => {
+    let messages = Array.from({ length: 12 }, (_, index) =>
+      message(`m${index}`, index % 2 === 0 ? 'user' : 'assistant'),
+    )
+
+    for (let index = 0; index < 80; index++) {
+      messages = buildNicNacRolloverMessages(messages)
+    }
+
+    expect(new Set(messages.map((m) => m.id)).size).toBe(messages.length)
+    expect(Math.max(...messages.map((m) => m.id.length))).toBeLessThanOrEqual(80)
+  })
 })

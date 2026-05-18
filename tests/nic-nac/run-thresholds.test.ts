@@ -37,4 +37,40 @@ describe('Nic-Nac run thresholds', () => {
       'high_estimated_context',
     ])
   })
+
+  it('recommends rollover when context compaction drops even one message', () => {
+    expect(
+      evaluateNicNacRunThresholds({
+        latencyMs: 1_000,
+        inputTokens: 2_000,
+        totalTokens: 2_100,
+        estimatedContextTokens: 2_000,
+        contextCompacted: true,
+        droppedMessageCount: 1,
+      }),
+    ).toEqual({
+      rolloverRecommended: true,
+      reasons: ['context_compacted'],
+    })
+  })
+
+  it('treats the estimated context token threshold as an exact boundary', () => {
+    expect(
+      evaluateNicNacRunThresholds({
+        latencyMs: 1_000,
+        estimatedContextTokens: 19_999,
+        contextCompacted: false,
+        droppedMessageCount: 0,
+      }).reasons,
+    ).not.toContain('high_estimated_context')
+
+    expect(
+      evaluateNicNacRunThresholds({
+        latencyMs: 1_000,
+        estimatedContextTokens: 20_000,
+        contextCompacted: false,
+        droppedMessageCount: 0,
+      }).reasons,
+    ).toContain('high_estimated_context')
+  })
 })
