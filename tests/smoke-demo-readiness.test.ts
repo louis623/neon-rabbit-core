@@ -27,6 +27,7 @@ describe('demo launch smoke readiness plan', () => {
       'local_app',
       'supabase_demo',
       'stripe_test',
+      'stripe_local_routes',
       'signwell_sandbox',
       'nic_nac_paid',
     ] as const
@@ -73,6 +74,29 @@ describe('demo launch smoke readiness plan', () => {
 
     expect(errors).toContain(
       'Stripe readiness blocked: missing STRIPE_PRICE_MONTHLY; STRIPE_SECRET_KEY mode=test.',
+    )
+    expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
+    expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
+  })
+
+  it('summarizes blocked Stripe local route smoke without exposing key values', () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_local_routes' })
+
+    const errors = validateDemoSmokePlan(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      DEMO_REP_PASSWORD: 'demo-password',
+      NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+      STRIPE_SECRET_KEY: 'sk_test_super_secret',
+      STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+    })
+
+    expect(errors).toContain(
+      'STRIPE_PRICE_MONTHLY is required for stripe_local_routes smoke.',
+    )
+    expect(errors).toContain(
+      'Stripe local route smoke blocked: missing STRIPE_PRICE_MONTHLY; STRIPE_SECRET_KEY mode=test.',
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
@@ -237,6 +261,36 @@ describe('demo launch smoke readiness plan', () => {
       ok: true,
       detail:
         'local app authenticated as Launch Demo Rep <demo@example.com>; Nic-Nac shell rendered',
+    })
+  })
+
+  it('can verify Stripe checkout and portal routes with an injected route runner', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'stripe_local_routes' }),
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_REP_PASSWORD: 'demo-password',
+        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+        STRIPE_SECRET_KEY: 'sk_test_secret',
+        STRIPE_WEBHOOK_SECRET: 'whsec_secret',
+        STRIPE_PRICE_MONTHLY: 'price_test',
+      },
+      {
+        verifyStripeLocalRoutes: async () => ({
+          checkoutSessionUrl: 'https://checkout.stripe.test/session',
+          portalSessionUrl: 'https://billing.stripe.test/session',
+        }),
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toContainEqual({
+      id: 'stripe_local_checkout_and_portal',
+      ok: true,
+      detail:
+        'Stripe test checkout session ready=true; portal session ready=true',
     })
   })
 

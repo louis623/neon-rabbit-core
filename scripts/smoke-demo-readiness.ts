@@ -20,6 +20,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'local_app',
   'supabase_demo',
   'stripe_test',
+  'stripe_local_routes',
   'signwell_sandbox',
   'nic_nac_paid',
 ] as const
@@ -86,6 +87,10 @@ interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<LocalAppVerification>
+  verifyStripeLocalRoutes?: (
+    env: Record<string, string | undefined>,
+    email: string,
+  ) => Promise<StripeLocalRouteVerification>
 }
 
 interface DemoLoginVerification {
@@ -99,6 +104,11 @@ interface LocalAppVerification {
   repEmail: string
   repDisplayName: string
   nicNacShellRendered: boolean
+}
+
+interface StripeLocalRouteVerification {
+  checkoutSessionUrl: string
+  portalSessionUrl: string
 }
 
 interface BuildDemoSmokePlanOptions {
@@ -194,6 +204,30 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'stripe_local_routes':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'DEMO_REP_PASSWORD',
+          'NEXT_PUBLIC_APP_URL',
+          'NEXT_PUBLIC_SUPABASE_URL',
+          'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+          'STRIPE_SECRET_KEY',
+          'STRIPE_WEBHOOK_SECRET',
+          'STRIPE_PRICE_MONTHLY',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'stripe_local_checkout_and_portal',
+            label:
+              'Create Stripe test-mode checkout and portal sessions through the running local app.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
     case 'signwell_sandbox':
       return {
         category,
@@ -248,7 +282,7 @@ export function validateDemoSmokePlan(
   }
 
   if (
-    plan.category === 'stripe_test' &&
+    (plan.category === 'stripe_test' || plan.category === 'stripe_local_routes') &&
     env.STRIPE_SECRET_KEY?.startsWith('sk_live_') &&
     env[STRIPE_LIVE_SMOKE_CONFIRM_ENV] !== 'true'
   ) {
@@ -296,6 +330,21 @@ function buildProviderReadinessError(
     if (missing.length === 0) return null
 
     return `Stripe readiness blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)}.`
+  }
+
+  if (plan.category === 'stripe_local_routes') {
+    const missing = missingEnvNames(env, [
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'STRIPE_PRICE_MONTHLY',
+      'NEXT_PUBLIC_APP_URL',
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    ])
+
+    if (missing.length === 0) return null
+
+    return `Stripe local route smoke blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)}.`
   }
 
   if (plan.category === 'signwell_sandbox') {
@@ -433,6 +482,24 @@ export async function runDemoSmoke(
           detail: isTestKey
             ? 'Stripe test-mode configuration is present.'
             : 'Stripe test smoke requires STRIPE_SECRET_KEY to start with sk_test_.',
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'stripe_local_routes') {
+    const verifyStripeRoutes =
+      dependencies.verifyStripeLocalRoutes ?? verifyStripeLocalRoutesSmoke
+    const stripeResult = await verifyStripeRoutes(env, demoEmail)
+
+    return {
+      category: plan.category,
+      ok: true,
+      results: [
+        {
+          id: 'stripe_local_checkout_and_portal',
+          ok: true,
+          detail: `Stripe test checkout session ready=${String(Boolean(stripeResult.checkoutSessionUrl))}; portal session ready=${String(Boolean(stripeResult.portalSessionUrl))}`,
         },
       ],
     }
@@ -592,6 +659,88 @@ async function verifyLocalAppSmoke(
     repDisplayName: me.rep?.display_name ?? 'unknown rep',
     nicNacShellRendered: pageText.includes('Nic-Nac'),
   }
+}
+
+async function verifyStripeLocalRoutesSmoke(
+  env: Record<string, string | undefined>,
+  email: string,
+): Promise<StripeLocalRouteVerification> {
+  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const appUrl = env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '')
+  if (!supabaseUrl || !anonKey || !appUrl) {
+    throw new Error('Supabase URL, anon key, and app URL are required.')
+  }
+
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email,
+    password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
+  })
+  if (signInError) {
+    throw new Error(`Demo Stripe route sign-in failed: ${signInError.message}`)
+  }
+
+  const {
+    data: { session },
+  } = await client.auth.getSession()
+  if (!session) {
+    throw new Error('No demo session after Stripe route sign-in.')
+  }
+
+  const supabaseRef = new URL(supabaseUrl).hostname.split('.')[0]
+  const cookie = `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
+  const checkoutResponse = await fetch(`${appUrl}/api/stripe/create-checkout`, {
+    method: 'POST',
+    headers: {
+      cookie,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ planType: 'monthly' }),
+  })
+  const checkoutPayload =
+    await readJsonResponse<StripeRouteSmokeResponse>(checkoutResponse)
+  if (!checkoutResponse.ok || !checkoutPayload.url) {
+    throw new Error(
+      `/api/stripe/create-checkout returned ${checkoutResponse.status}: ${checkoutPayload.error ?? checkoutPayload.action ?? 'missing checkout URL'}`,
+    )
+  }
+
+  const portalResponse = await fetch(`${appUrl}/api/stripe/create-portal-session`, {
+    method: 'POST',
+    headers: { cookie },
+  })
+  const portalPayload =
+    await readJsonResponse<StripeRouteSmokeResponse>(portalResponse)
+  if (!portalResponse.ok || !portalPayload.url) {
+    throw new Error(
+      `/api/stripe/create-portal-session returned ${portalResponse.status}: ${portalPayload.error ?? portalPayload.action ?? 'missing portal URL'}`,
+    )
+  }
+
+  return {
+    checkoutSessionUrl: checkoutPayload.url,
+    portalSessionUrl: portalPayload.url,
+  }
+}
+
+interface StripeRouteSmokeResponse {
+  url?: string
+  error?: string
+  action?: string
+}
+
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    const body = await response.text()
+    throw new Error(
+      `Expected JSON from ${response.url}; received ${response.status} ${contentType || 'unknown content type'}: ${body.slice(0, 80)}`,
+    )
+  }
+  return (await response.json()) as T
 }
 
 export function parseDemoSmokeArgs(args: string[]): DemoSmokeCategory {

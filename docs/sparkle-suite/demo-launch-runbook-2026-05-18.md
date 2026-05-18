@@ -167,7 +167,44 @@ Stop point:
 - If `STRIPE_SECRET_KEY` starts with `sk_live_`, stop. Do not set `STRIPE_LIVE_SMOKE_CONFIRMED=true` unless Louis explicitly approves a live Stripe smoke.
 - Any browser checkout or portal walkthrough is a separate approval step after this config check passes.
 
-### 6. SignWell sandbox payload smoke
+### 6. Stripe local checkout and portal route smoke
+
+Command:
+
+```powershell
+$env:NEXT_PUBLIC_APP_URL='http://localhost:3000'
+$env:STRIPE_PRICE_MONTHLY='price_1TYTAZHRBK3pZpO2b6WQ8kUl'
+npm run smoke:demo -- --category stripe_local_routes --json
+```
+
+What it does:
+
+- Signs in with the demo account.
+- Calls the running app's `/api/stripe/create-checkout` route.
+- Calls the running app's `/api/stripe/create-portal-session` route.
+- Creates Stripe test-mode checkout and portal sessions only.
+- May create or reuse a Stripe test customer for the demo rep.
+- Does not charge a card.
+- Does not run live Stripe.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `DEMO_REP_PASSWORD`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_MONTHLY`
+
+Stop point:
+
+- If `STRIPE_SECRET_KEY` is not test mode, stop.
+- If the app was already running before `STRIPE_PRICE_MONTHLY` was set, restart the local app with the env value before running this smoke.
+- If the billing portal route fails, check Stripe test portal configuration before moving to a browser checkout walkthrough.
+
+### 7. SignWell sandbox payload smoke
 
 Command:
 
@@ -231,8 +268,9 @@ Also do not do these without separate approval:
 5. Confirm the dashboard opens and demo rows are visible.
 6. Run `stripe:demo-price` with test keys only if `STRIPE_PRICE_MONTHLY` is missing.
 7. Run `stripe_test` with test keys only.
-8. Run `signwell_sandbox` with sandbox/dry-run settings only.
-9. Stop and record blockers before any live-provider action.
+8. Run `stripe_local_routes` against a running app started with the Stripe env.
+9. Run `signwell_sandbox` with sandbox/dry-run settings only.
+10. Stop and record blockers before any live-provider action.
 
 ## Pass notes to capture
 
