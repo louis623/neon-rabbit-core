@@ -20,7 +20,7 @@ Do not write the demo password, provider keys, Vercel bypass values, Stripe sess
 ## Surfaces
 
 - Local app: `http://localhost:3000`
-- Deployed protected preview already smoke-tested by CLI: `https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app`
+- Deployed protected preview already smoke-tested by CLI: `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app`
 - Login path: `/login`
 - Rep workspace path: `/nic-nac`
 - Billing controls: `/nic-nac`, Account tab, Account Billing card
@@ -155,7 +155,7 @@ Do not capture passwords, provider keys, request headers, Vercel bypass values, 
 
 ### 2026-05-18 protected preview CLI pass / browser blocker
 
-- Target: protected preview `https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app`.
+- Target: protected preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app`.
 - CLI pass/fail: passed through authenticated `vercel curl` using `npm run smoke:preview:vercel-curl`.
 - CLI result: protected preview returned the demo rep from `/api/nic-nac/me`, rendered the `/nic-nac` shell, created a Stripe test checkout session, and created a Stripe test billing portal session.
 - Browser pass/fail: blocked by Vercel Deployment Protection before the Sparkle Suite login page.

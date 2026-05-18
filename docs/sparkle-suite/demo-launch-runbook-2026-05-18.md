@@ -196,7 +196,7 @@ Vercel status:
 
 - Development has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
 - Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
-- Latest protected Preview `https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:preview:vercel-curl`.
+- Latest protected Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:launch:preview-protected`.
 - The same preview has passed the opt-in aggregate launch category through `npm run smoke:launch:preview-protected`.
 - Production is intentionally not set until production Stripe key mode is verified or Louis explicitly approves production test-mode setup.
 
@@ -205,14 +205,14 @@ Vercel status:
 Use this when Vercel Deployment Protection blocks normal HTTP smoke but the Vercel CLI is authenticated locally:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app'
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app'
 npm run smoke:preview:vercel-curl
 ```
 
 The same check is also available through the aggregate launch smoke harness as an explicit preview-only category:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app'
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app'
 npm run smoke:launch:preview-protected
 ```
 
