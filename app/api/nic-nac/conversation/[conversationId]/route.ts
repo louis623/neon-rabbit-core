@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { loadConversationForClient, getConversationOwner } from '@/lib/nic-nac/persistence'
+import { getLatestNicNacRunHealth } from '@/lib/nic-nac/run-telemetry'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,6 +31,9 @@ export async function GET(
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const messages = await loadConversationForClient(supabase, conversationId)
-  return NextResponse.json({ conversationId, messages })
+  const [messages, runHealth] = await Promise.all([
+    loadConversationForClient(supabase, conversationId),
+    getLatestNicNacRunHealth(repId, conversationId),
+  ])
+  return NextResponse.json({ conversationId, messages, runHealth })
 }

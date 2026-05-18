@@ -20,6 +20,19 @@ export type NicNacRunModelContext = {
   wasCompacted: boolean
 }
 
+export type NicNacRunHealth = {
+  runId: string
+  status: NicNacRunStatus
+  createdAt: string
+  latencyMs: number
+  inputTokens: number | null
+  totalTokens: number | null
+  estimatedContextTokens: number
+  contextCompacted: boolean
+  rolloverRecommended: boolean
+  rolloverReasons: string[]
+}
+
 export function normalizeRunUsage(usage: unknown): NicNacRunUsage {
   const u = usage as {
     inputTokens?: number
@@ -92,5 +105,69 @@ export async function logNicNacRun(args: {
     }
   } catch (err) {
     console.error('[nic-nac] logNicNacRun exception:', err)
+  }
+}
+
+export async function getLatestNicNacRunHealth(
+  repId: string,
+  conversationId: string,
+): Promise<NicNacRunHealth | null> {
+  try {
+    const supabase = createAdminClient()
+    const { data, error } = await supabase
+      .from('nic_nac_runs')
+      .select(
+        [
+          'run_id',
+          'status',
+          'created_at',
+          'latency_ms',
+          'input_tokens',
+          'total_tokens',
+          'estimated_context_tokens',
+          'context_compacted',
+          'rollover_recommended',
+          'rollover_reasons',
+        ].join(','),
+      )
+      .eq('rep_id', repId)
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[nic-nac] getLatestNicNacRunHealth failed:', error)
+      return null
+    }
+    if (!data) return null
+    const row = data as unknown as {
+      run_id: string
+      status: NicNacRunStatus
+      created_at: string
+      latency_ms: number
+      input_tokens: number | null
+      total_tokens: number | null
+      estimated_context_tokens: number
+      context_compacted: boolean
+      rollover_recommended: boolean
+      rollover_reasons: string[] | null
+    }
+
+    return {
+      runId: row.run_id,
+      status: row.status,
+      createdAt: row.created_at,
+      latencyMs: row.latency_ms,
+      inputTokens: row.input_tokens ?? null,
+      totalTokens: row.total_tokens ?? null,
+      estimatedContextTokens: row.estimated_context_tokens,
+      contextCompacted: row.context_compacted,
+      rolloverRecommended: row.rollover_recommended,
+      rolloverReasons: row.rollover_reasons ?? [],
+    }
+  } catch (err) {
+    console.error('[nic-nac] getLatestNicNacRunHealth exception:', err)
+    return null
   }
 }
