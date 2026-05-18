@@ -7,7 +7,7 @@ export function NicNacGlyph({ size = 22 }: { size?: number }) {
       style={{ width: size, height: size, fontSize: Math.round(size * 0.6) }}
       aria-hidden="true"
     >
-      T
+      N
     </span>
   )
 }

@@ -28,6 +28,10 @@ import {
   type ActionableApproval,
 } from '@/lib/nic-nac/hitl-state'
 import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
+import {
+  shouldStartNicNacRollover,
+  type NicNacConversationRunHealth,
+} from '@/lib/nic-nac/rollover'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'nic_nac_last_conversation'
@@ -51,6 +55,17 @@ function getInitialDesktopMatch() {
 
 interface ApprovalResponseFn {
   (args: { id: string; approved: boolean; reason?: string }): void
+}
+
+type ConversationHydrateResponse = {
+  conversationId?: string
+  messages?: UIMessage[]
+  runHealth?: NicNacConversationRunHealth
+}
+
+type ConversationRolloverResponse = {
+  conversationId?: string
+  messages?: UIMessage[]
 }
 
 export default function NicNacClient() {
@@ -82,6 +97,65 @@ export default function NicNacClient() {
     isStreaming: boolean
     hasPendingApproval: boolean
   }>({ isStreaming: false, hasPendingApproval: false })
+  const chatStateRef = useRef(chatState)
+  const [rolloverInFlight, setRolloverInFlight] = useState(false)
+  const rolloverInFlightRef = useRef(false)
+
+  useEffect(() => {
+    chatStateRef.current = chatState
+  }, [chatState])
+
+  const activateConversation = useCallback(
+    (next: string, messages?: UIMessage[]) => {
+      setConversationId(next)
+      if (messages) {
+        setHistoryState({
+          conversationId: next,
+          messages,
+          error: null,
+        })
+      }
+      if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next)
+      const qs = new URLSearchParams(Array.from(searchParams.entries()))
+      qs.set('c', next)
+      router.replace(`/nic-nac?${qs.toString()}`)
+    },
+    [router, searchParams],
+  )
+
+  const rolloverConversation = useCallback(
+    async (sourceConversationId: string) => {
+      const currentChatState = chatStateRef.current
+      if (
+        rolloverInFlightRef.current ||
+        currentChatState.isStreaming ||
+        currentChatState.hasPendingApproval
+      ) {
+        return false
+      }
+      rolloverInFlightRef.current = true
+      setRolloverInFlight(true)
+      try {
+        const res = await fetch('/api/nic-nac/conversation/rollover', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ conversationId: sourceConversationId }),
+        })
+        if (!res.ok) return false
+        const body = (await res.json().catch(() => null)) as
+          | ConversationRolloverResponse
+          | null
+        if (!body?.conversationId || !body.messages) return false
+        activateConversation(body.conversationId, body.messages)
+        return true
+      } finally {
+        rolloverInFlightRef.current = false
+        setRolloverInFlight(false)
+      }
+    },
+    [activateConversation],
+  )
 
   // Resolve conversationId via URL → /latest → fresh UUID. localStorage is
   // written for cache consistency but no longer read during init — DB is the
@@ -172,8 +246,14 @@ export default function NicNacClient() {
           })
           return
         }
-        const body = await res.json()
+        const body = (await res.json()) as ConversationHydrateResponse
         if (cancelled) return
+        if (
+          shouldStartNicNacRollover(body.runHealth) &&
+          (await rolloverConversation(conversationId))
+        ) {
+          return
+        }
         setHistoryState({
           conversationId,
           messages: (body.messages ?? []) as UIMessage[],
@@ -191,7 +271,7 @@ export default function NicNacClient() {
     return () => {
       cancelled = true
     }
-  }, [conversationId])
+  }, [conversationId, rolloverConversation])
 
   // Desktop Escape minimizes (only if no HITL pending).
   useEffect(() => {
@@ -233,15 +313,10 @@ export default function NicNacClient() {
   // ChatBody re-mounts via key={conversationId} so useChat resets cleanly.
   const handleNewConversation = useCallback(() => {
     if (chatState.isStreaming || chatState.hasPendingApproval) return
-    const next = newConversationId()
-    setConversationId(next)
-    if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next)
-    const qs = new URLSearchParams(Array.from(searchParams.entries()))
-    qs.set('c', next)
-    router.replace(`/nic-nac?${qs.toString()}`)
-  }, [chatState, router, searchParams])
+    activateConversation(newConversationId(), [])
+  }, [activateConversation, chatState])
 
-  const newDisabled = chatState.isStreaming || chatState.hasPendingApproval
+  const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
 
   const chatContent = isReady ? (
     <ChatBody
@@ -250,6 +325,7 @@ export default function NicNacClient() {
       transport={transport!}
       initialMessages={initialMessages!}
       onChatStateChange={setChatState}
+      onRolloverRecommended={rolloverConversation}
       resetSignal={conversationId!}
     />
   ) : initResolveError ? (
@@ -319,11 +395,13 @@ function ChatBody({
   transport,
   initialMessages,
   onChatStateChange,
+  onRolloverRecommended,
 }: {
   conversationId: string
   transport: DefaultChatTransport<UIMessage>
   initialMessages: UIMessage[]
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
+  onRolloverRecommended: (conversationId: string) => Promise<boolean>
   resetSignal: string
 }) {
   // Server-owned ThinkingIndicator state machine. The server emits transient
@@ -493,12 +571,16 @@ function ChatBody({
     if (!res.ok) return
 
     const body = (await res.json().catch(() => null)) as
-      | { messages?: UIMessage[] }
+      | ConversationHydrateResponse
       | null
     if (!body?.messages) return
+    if (shouldStartNicNacRollover(body.runHealth)) {
+      void onRolloverRecommended(conversationId)
+      return
+    }
 
     setMessages((current) => mergeServerMessages(current, body.messages ?? []))
-  }, [conversationId, hasPendingApproval, setMessages, status])
+  }, [conversationId, hasPendingApproval, onRolloverRecommended, setMessages, status])
 
   useEffect(() => {
     if (!conversationId || status !== 'ready' || hasPendingApproval) return

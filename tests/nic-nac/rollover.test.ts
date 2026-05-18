@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { UIMessage } from 'ai'
-import { buildNicNacRolloverMessages } from '@/lib/nic-nac/rollover'
+import {
+  buildNicNacRolloverMessages,
+  shouldStartNicNacRollover,
+} from '@/lib/nic-nac/rollover'
 
 function message(id: string, role: 'user' | 'assistant'): UIMessage {
   return {
@@ -30,5 +33,11 @@ describe('Nic-Nac conversation rollover', () => {
       'rollover-4-m18',
       'rollover-5-m19',
     ])
+  })
+
+  it('starts rollover only when run health explicitly recommends it', () => {
+    expect(shouldStartNicNacRollover(null)).toBe(false)
+    expect(shouldStartNicNacRollover({ rolloverRecommended: false })).toBe(false)
+    expect(shouldStartNicNacRollover({ rolloverRecommended: true })).toBe(true)
   })
 })
