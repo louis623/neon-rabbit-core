@@ -14,6 +14,7 @@
 - `npm run stripe:demo-price -- --json` created Stripe test monthly price `price_1TYTAZHRBK3pZpO2b6WQ8kUl` without checkout or charge.
 - `npm run smoke:demo -- --category stripe_test --json` passed when `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` was set in the shell.
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
+- Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` can build a non-sending sandbox payload when SignWell sandbox env and `DEMO_REP_EMAIL` are present.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
 
@@ -28,7 +29,7 @@
 
 - First demo login smoke uses the built-in demo password unless `DEMO_REP_PASSWORD` is set. Rotate or set a custom demo password before sharing the account outside Louis.
 - Stripe test-mode checkout/portal still needs a Louis-approved demo rep credential and configured test keys for an end-to-end browser smoke.
-- Persist `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in the intended local/Vercel test environment before browser checkout smoke.
+- Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet; verify production `STRIPE_SECRET_KEY` mode or explicitly approve production test-mode setup before adding it there.
 - Browser checkout walkthrough is still pending, but the local API route smoke has verified checkout and portal session creation in test mode.
 - SignWell sandbox payload still needs `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in the target environment.
 

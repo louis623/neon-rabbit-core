@@ -167,6 +167,12 @@ Stop point:
 - If `STRIPE_SECRET_KEY` starts with `sk_live_`, stop. Do not set `STRIPE_LIVE_SMOKE_CONFIRMED=true` unless Louis explicitly approves a live Stripe smoke.
 - Any browser checkout or portal walkthrough is a separate approval step after this config check passes.
 
+Vercel status:
+
+- Development has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
+- Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
+- Production is intentionally not set until production Stripe key mode is verified or Louis explicitly approves production test-mode setup.
+
 ### 6. Stripe local checkout and portal route smoke
 
 Command:
