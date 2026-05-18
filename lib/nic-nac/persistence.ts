@@ -99,6 +99,28 @@ export async function insertUserMessage(
   if (error) throw error
 }
 
+export async function insertConversationMessages(
+  supabase: SupabaseClient,
+  args: {
+    conversationId: string
+    repId: string
+    messages: UIMessage[]
+  },
+): Promise<void> {
+  if (args.messages.length === 0) return
+  const { error } = await supabase.from('nic_nac_conversations').insert(
+    args.messages.map((message) => ({
+      conversation_id: args.conversationId,
+      message_id: message.id,
+      rep_id: args.repId,
+      role: message.role,
+      parts: message.parts ?? [],
+      status: 'complete',
+    })),
+  )
+  if (error) throw error
+}
+
 export async function reserveAssistantMessage(
   supabase: SupabaseClient,
   args: {
