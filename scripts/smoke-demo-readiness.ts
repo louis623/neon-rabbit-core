@@ -327,6 +327,24 @@ function getStripeSecretKeyMode(secretKey: string | undefined): 'missing' | 'tes
   return 'unknown'
 }
 
+function getSignWellApiBaseUrlMode(
+  apiBaseUrl: string | undefined,
+): 'missing' | 'sandbox' | 'production' | 'local' | 'unknown' {
+  if (!apiBaseUrl?.trim()) return 'missing'
+
+  try {
+    const hostname = new URL(apiBaseUrl).hostname.toLowerCase()
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return 'local'
+    if (hostname.includes('sandbox') || hostname.includes('test')) return 'sandbox'
+    if (hostname === 'www.signwell.com' || hostname === 'signwell.com') {
+      return 'production'
+    }
+    return 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
 export async function runDemoSmoke(
   plan: DemoSmokePlan,
   env: Record<string, string | undefined> = process.env,
@@ -458,7 +476,7 @@ export async function runDemoSmoke(
         {
           id: 'signwell_sandbox_payload',
           ok: payload.send_email === false,
-          detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}`,
+          detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}; template_id=present; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
         },
       ],
     }

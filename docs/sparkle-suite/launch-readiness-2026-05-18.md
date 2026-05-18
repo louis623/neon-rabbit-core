@@ -11,6 +11,8 @@
 - `npm run smoke:demo -- --category local_static --json` emits a machine-readable report without env secrets or dotenv noise.
 - `npm run smoke:demo -- --category supabase_demo --json` has been run for `louis+sparkle-demo@neonrabbit.net`; it seeded the account and verified demo login/read access.
 - `npm run smoke:demo -- --category local_app --json` has been run against `http://localhost:3000`; it verified `/api/nic-nac/me` and the `/nic-nac` shell for the demo rep.
+- `npm run stripe:demo-price -- --json` created Stripe test monthly price `price_1TYTAZHRBK3pZpO2b6WQ8kUl` without checkout or charge.
+- `npm run smoke:demo -- --category stripe_test --json` passed when `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` was set in the shell.
 - `npm run smoke:demo -- --category signwell_sandbox --json` can build a non-sending sandbox payload when SignWell sandbox env and `DEMO_REP_EMAIL` are present.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
 
@@ -25,7 +27,7 @@
 
 - First demo login smoke uses the built-in demo password unless `DEMO_REP_PASSWORD` is set. Rotate or set a custom demo password before sharing the account outside Louis.
 - Stripe test-mode checkout/portal still needs a Louis-approved demo rep credential and configured test keys for an end-to-end browser smoke.
-- Stripe test-mode config smoke is currently blocked on `STRIPE_PRICE_MONTHLY`; the configured Stripe key mode is test.
+- Persist `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in the intended local/Vercel test environment before browser checkout smoke.
 - SignWell sandbox payload still needs `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in the target environment.
 
 ## P2 post-launch polish
@@ -44,5 +46,5 @@
 ## Recommended first-user launch scope
 
 - Launch with one seeded demo rep first.
-- Smoke order now completed through `local_app`; next launch-path checks are Stripe test-mode config with `STRIPE_PRICE_MONTHLY` and SignWell sandbox payload with the final template id.
+- Smoke order now completed through Stripe test-only price setup/config smoke; next launch-path check is SignWell sandbox payload with the final template id.
 - Keep SMS live sends, live SignWell sends, live Stripe charges, and paid Nic-Nac smoke out of the first pass unless Louis approves each provider scope separately.

@@ -124,8 +124,29 @@ describe('demo launch smoke readiness plan', () => {
     expect(result.results).toContainEqual({
       id: 'signwell_sandbox_payload',
       ok: true,
-      detail: 'built sandbox payload for demo@example.com with send_email=false',
+      detail:
+        'built sandbox payload for demo@example.com with send_email=false; template_id=present; api_base_url_mode=production',
     })
+  })
+
+  it('reports SignWell sandbox base URL mode without exposing configured values', async () => {
+    const result = await runDemoSmoke(buildDemoSmokePlan({ category: 'signwell_sandbox' }), {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      SIGNWELL_API_KEY: 'signwell_api_key',
+      SIGNWELL_API_BASE_URL: 'https://sandbox.signwell.example.test/api/v1',
+      SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+    })
+
+    const serialized = JSON.stringify(result)
+
+    expect(result.results).toContainEqual({
+      id: 'signwell_sandbox_payload',
+      ok: true,
+      detail:
+        'built sandbox payload for demo@example.com with send_email=false; template_id=present; api_base_url_mode=sandbox',
+    })
+    expect(serialized).not.toContain('template_secret_demo')
+    expect(serialized).not.toContain('sandbox.signwell.example.test')
   })
 
   it('requires a SignWell template id before sandbox payload smoke', () => {

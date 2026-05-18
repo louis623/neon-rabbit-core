@@ -11,6 +11,7 @@
     "lint": "eslint",
     "docs:import-neon-rabbit": "tsx scripts/import-neon-rabbit-drive-docs.ts",
     "photo:process-queue": "tsx scripts/process-photo-enhancement-queue.ts",
+    "stripe:demo-price": "tsx scripts/prepare-stripe-demo-price.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "qa:amethyst": "npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-trade-template.test.ts && npm run verify:amethyst-links",
     "verify:amethyst-links": "tsx scripts/verify-amethyst-links.ts",

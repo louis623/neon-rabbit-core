@@ -109,7 +109,36 @@ Stop point:
 
 - If this fails, stop before provider checks. The demo account is seeded, but the local app login path is not ready.
 
-### 4. Stripe test-mode config smoke
+### 4. Stripe test monthly price setup
+
+Command:
+
+```powershell
+npm run stripe:demo-price
+```
+
+What it does:
+
+- Uses only `STRIPE_SECRET_KEY` from `.env.local` or the current shell.
+- Refuses to run unless `STRIPE_SECRET_KEY` starts with `sk_test_`.
+- Finds or creates a Stripe test monthly price named `Sparkle Suite Launch Demo (test only)`.
+- Prints the exact `STRIPE_PRICE_MONTHLY=price_...` line to set locally.
+- Does not create a checkout session.
+- Does not charge a card.
+- Does not decide production pricing.
+
+Optional overrides:
+
+```powershell
+npm run stripe:demo-price -- --amount-cents 100 --currency usd --json
+```
+
+Stop point:
+
+- If the command says the Stripe key mode is `live`, stop. Do not use live Stripe keys for demo price setup.
+- After it prints `STRIPE_PRICE_MONTHLY=...`, put that value in the local shell or `.env.local`, then run the config smoke below.
+
+### 5. Stripe test-mode config smoke
 
 Command:
 
@@ -138,7 +167,7 @@ Stop point:
 - If `STRIPE_SECRET_KEY` starts with `sk_live_`, stop. Do not set `STRIPE_LIVE_SMOKE_CONFIRMED=true` unless Louis explicitly approves a live Stripe smoke.
 - Any browser checkout or portal walkthrough is a separate approval step after this config check passes.
 
-### 5. SignWell sandbox payload smoke
+### 6. SignWell sandbox payload smoke
 
 Command:
 
@@ -150,6 +179,7 @@ What it does:
 
 - Builds a SignWell sandbox/dry-run agreement payload for `louis+sparkle-demo@neonrabbit.net`.
 - Confirms the payload has `send_email=false`.
+- Reports `template_id=present` and an `api_base_url_mode` value without printing the template ID, API key, or base URL.
 - Does not send a live agreement.
 - Does not email the recipient from SignWell.
 
@@ -163,6 +193,7 @@ Required env:
 Stop point:
 
 - If this does not report `send_email=false`, stop.
+- If `api_base_url_mode` is not the expected sandbox/dry-run target for the environment, stop and confirm the SignWell base URL before any further provider work.
 - Do not enable `SIGNWELL_ALLOW_LIVE_SEND=true` or send a live agreement without Louis explicitly approving the recipient, template, and timing.
 
 ## Not safe without approval
@@ -198,9 +229,10 @@ Also do not do these without separate approval:
 3. Run `local_app` against the running local app.
 4. Manually log in as `louis+sparkle-demo@neonrabbit.net` using the password Louis controls.
 5. Confirm the dashboard opens and demo rows are visible.
-6. Run `stripe_test` with test keys only.
-7. Run `signwell_sandbox` with sandbox/dry-run settings only.
-8. Stop and record blockers before any live-provider action.
+6. Run `stripe:demo-price` with test keys only if `STRIPE_PRICE_MONTHLY` is missing.
+7. Run `stripe_test` with test keys only.
+8. Run `signwell_sandbox` with sandbox/dry-run settings only.
+9. Stop and record blockers before any live-provider action.
 
 ## Pass notes to capture
 
