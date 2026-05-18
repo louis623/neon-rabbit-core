@@ -18,13 +18,32 @@
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
-- Latest protected Vercel Preview `https://sparkle-suite-axv0mxr74-louis-2849s-projects.vercel.app` passed `npm run smoke:preview:vercel-curl`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
+- Latest protected Vercel Preview `https://sparkle-suite-oxcgqq991-louis-2849s-projects.vercel.app` passed `npm run smoke:preview:vercel-curl`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
 - Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
 - `npm run smoke:launch:restored` passed on 2026-05-18 for `local_static`, `local_app`, `stripe_test`, `stripe_local_routes`, and `signwell_sandbox`; report: `.local/launch-smoke-results/launch-local-2026-05-18T21-54-56-095Z.json`.
 - Local browser walkthrough passed on 2026-05-18 for demo login, `/nic-nac` shell, Trade Board demo data, Calendar demo shows, customer roster, Account Billing, Stripe test checkout cancel/return, and Stripe test billing portal reachability/return by browser back.
 - Account Billing now exposes Stripe portal access when a Stripe test customer exists before subscription activation, so the local browser smoke can verify the portal without completing a checkout charge.
+
+## Launch path map
+
+```mermaid
+flowchart LR
+  A["Build launch path"] --> B["Local automated smoke"]
+  B --> C["Local browser walkthrough"]
+  C --> D["Protected preview CLI route smoke"]
+  D --> E["Protected preview in-browser walkthrough"]
+  E --> F["First-client pilot"]
+  F --> G["Controlled provider live checks"]
+  G --> H["Broader launch"]
+
+  B -. "PASS: local_static, local_app, stripe_test, stripe_local_routes, signwell_sandbox" .-> B1["Done"]
+  C -. "PASS: login, Nic-Nac shell, demo data, test checkout, test portal" .-> C1["Done"]
+  D -. "PASS: latest protected preview via vercel curl" .-> D1["Done"]
+  E -. "CURRENT GATE: needs Louis/Vercel SSO or approved preview access" .-> E1["Next"]
+  G -. "PARKED: live SMS, live SignWell, live Stripe, paid Nic-Nac need explicit approval" .-> G1["Later"]
+```
 
 ## P0 launch blockers
 
