@@ -18,19 +18,26 @@ export function makeStartShowSessionTool(ctx: {
   return tool({
     description:
       "Start or replace the authenticated rep's current live-show session state. " +
-      'Use when the rep says the live show is starting or you need a durable current-show object.',
+      'Use when the rep says the live show is starting or you need a durable current-show object. ' +
+      'If no calendarEventId or liveQueueSyncCode is available, call this anyway; Nic-Nac will auto-anchor the session to the current conversation.',
     inputSchema,
-    execute: async ({ calendarEventId, liveQueueSyncCode, metadata }) =>
-      startNicNacShowSession(ctx.supabase, {
+    execute: async ({ calendarEventId, liveQueueSyncCode, metadata }) => {
+      const needsAutoAnchor = !calendarEventId && !liveQueueSyncCode
+      const resolvedSyncCode = needsAutoAnchor
+        ? `NIC-NAC-AUTO-${ctx.conversationId}`
+        : liveQueueSyncCode
+      return startNicNacShowSession(ctx.supabase, {
         repId: ctx.repId,
         calendarEventId,
-        liveQueueSyncCode,
+        liveQueueSyncCode: resolvedSyncCode,
         metadata: {
           ...(metadata ?? {}),
+          ...(needsAutoAnchor ? { autoAnchor: true } : {}),
           conversationId: ctx.conversationId,
           runId: ctx.runId,
         },
-      }),
+      })
+    },
   })
 }
 

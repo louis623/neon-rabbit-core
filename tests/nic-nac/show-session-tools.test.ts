@@ -80,6 +80,32 @@ describe('Nic-Nac show-session tools', () => {
     expect(result).toMatchObject({ id: 'session-1', status: 'active' })
   })
 
+  it('auto-anchors a show session when no calendar or live queue id is available', async () => {
+    startNicNacShowSessionMock.mockResolvedValueOnce({
+      id: 'session-1',
+      repId: 'rep-1',
+      status: 'active',
+      liveQueueSyncCode: 'NIC-NAC-AUTO-conv-1',
+    })
+    const tool = makeStartShowSessionTool(makeCtx()) as unknown as ToolDef
+
+    await tool.execute({})
+
+    expect(startNicNacShowSessionMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      {
+        repId: 'rep-1',
+        calendarEventId: undefined,
+        liveQueueSyncCode: 'NIC-NAC-AUTO-conv-1',
+        metadata: {
+          autoAnchor: true,
+          conversationId: 'conv-1',
+          runId: 'run-1',
+        },
+      },
+    )
+  })
+
   it('records a show-session event with conversation and run correlation', async () => {
     recordNicNacShowSessionEventMock.mockResolvedValueOnce({
       id: 'event-row-1',
