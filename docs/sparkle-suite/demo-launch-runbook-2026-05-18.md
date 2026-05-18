@@ -34,6 +34,22 @@ npm run smoke:launch -- --categories local_static,stripe_test --json --write-rep
 
 Add categories only as the matching env and stop points are ready. `smoke:launch` refuses the paid Nic-Nac category and writes reports to `.local/launch-smoke-results` when `--write-report` is set.
 
+After the current demo password and local SignWell sandbox env are restored, use the restored-env batch smoke:
+
+```powershell
+npm run smoke:launch:restored
+```
+
+Run that batch only after:
+
+- `DEMO_REP_EMAIL` is set to the demo rep.
+- The current demo password is set locally as `DEMO_REP_PASSWORD`, or the demo password has been intentionally rotated by running `npm run seed:demo-rep` with a fresh `DEMO_REP_PASSWORD`.
+- `STRIPE_SECRET_KEY` is test mode and `STRIPE_PRICE_MONTHLY` is set to the test price.
+- `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` are restored locally for sandbox/dry-run smoke.
+- The local app is running at `http://localhost:3000` with the same env.
+
+This batch intentionally skips `supabase_demo` so demo database refresh remains an explicit step.
+
 ## Safe smoke order
 
 ### 1. Local static smoke
@@ -87,6 +103,7 @@ Stop point:
 
 - This writes demo database data. Run it only when Louis is ready to seed or refresh the demo account.
 - If login verification fails, stop before browser walkthrough or provider checks.
+- If login verification fails with invalid credentials, set the current `DEMO_REP_PASSWORD` locally or intentionally rotate the demo password by running `npm run seed:demo-rep` with both `DEMO_REP_EMAIL` and a fresh `DEMO_REP_PASSWORD` set in the local shell.
 
 ### 3. Local app login smoke
 

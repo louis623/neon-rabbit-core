@@ -4,7 +4,9 @@ import {
   buildDemoSmokeReport,
   buildLaunchSmokeReport,
   buildSmokeHttpError,
+  buildDemoCredentialFailureMessage,
   DEFAULT_DEMO_SMOKE_CATEGORY,
+  formatSmokeCliError,
   isVercelDeploymentProtectionResponse,
   parseLaunchSmokeOptions,
   parseDemoSmokeOptions,
@@ -270,6 +272,30 @@ describe('demo launch smoke readiness plan', () => {
       detail:
         'local app authenticated as Launch Demo Rep <demo@example.com>; Nic-Nac shell rendered',
     })
+  })
+
+  it('explains demo credential failures without leaking the attempted password', () => {
+    const message = buildDemoCredentialFailureMessage(
+      'Demo local app sign-in failed',
+      'Invalid login credentials',
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_REP_PASSWORD: 'super-secret-demo-password',
+      },
+    )
+
+    expect(message).toContain('Invalid login credentials')
+    expect(message).toContain('DEMO_REP_PASSWORD')
+    expect(message).toContain('scripts/seed-demo-rep.ts')
+    expect(message).toContain('demo@example.com')
+    expect(message).not.toContain('super-secret-demo-password')
+  })
+
+  it('formats CLI errors as operator messages without stack traces', () => {
+    const formatted = formatSmokeCliError(new Error('Demo local app sign-in failed'))
+
+    expect(formatted).toBe('[smoke:demo] Demo local app sign-in failed')
+    expect(formatted).not.toContain('at ')
   })
 
   it('can verify Stripe checkout and portal routes with an injected route runner', async () => {

@@ -165,6 +165,23 @@ const BASE_EXCLUDED_LIVE_ACTIONS = [
 
 const DEMO_EMAIL_ENV = 'DEMO_REP_EMAIL'
 
+export function buildDemoCredentialFailureMessage(
+  context: string,
+  providerMessage: string,
+  env: Record<string, string | undefined>,
+): string {
+  const email = env[DEMO_EMAIL_ENV]?.trim()
+  const emailHint = email ? ` for ${email}` : ''
+  const safeProviderMessage = redactEnvSecrets(providerMessage, env)
+
+  return `${context}: ${safeProviderMessage}. To restore demo auth${emailHint}, set ${DEMO_EMAIL_ENV} and a fresh DEMO_REP_PASSWORD only in the local shell, then run npx tsx scripts/seed-demo-rep.ts. Existing demo auth users are rotated only when DEMO_REP_PASSWORD is explicitly set; do not put the password in docs, commits, screenshots, or chat.`
+}
+
+export function formatSmokeCliError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  return `[smoke:demo] ${message}`
+}
+
 export function buildDemoSmokePlan(
   options: BuildDemoSmokePlanOptions = {},
 ): DemoSmokePlan {
@@ -622,7 +639,13 @@ async function verifyDemoRepLogin(
     password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
   })
   if (signInError) {
-    throw new Error(`Demo rep sign-in failed: ${signInError.message}`)
+    throw new Error(
+      buildDemoCredentialFailureMessage(
+        'Demo rep sign-in failed',
+        signInError.message,
+        env,
+      ),
+    )
   }
 
   const countVisibleRows = async (table: string): Promise<number> => {
@@ -669,7 +692,13 @@ async function verifyLocalAppSmoke(
     password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
   })
   if (signInError) {
-    throw new Error(`Demo local app sign-in failed: ${signInError.message}`)
+    throw new Error(
+      buildDemoCredentialFailureMessage(
+        'Demo local app sign-in failed',
+        signInError.message,
+        env,
+      ),
+    )
   }
 
   const {
@@ -726,7 +755,13 @@ async function verifyStripeLocalRoutesSmoke(
     password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
   })
   if (signInError) {
-    throw new Error(`Demo Stripe route sign-in failed: ${signInError.message}`)
+    throw new Error(
+      buildDemoCredentialFailureMessage(
+        'Demo Stripe route sign-in failed',
+        signInError.message,
+        env,
+      ),
+    )
   }
 
   const {
@@ -1099,7 +1134,7 @@ async function main() {
 const entrypoint = process.argv[1] ? path.resolve(process.argv[1]) : null
 if (entrypoint === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(error)
-    process.exit(1)
+    console.error(formatSmokeCliError(error))
+    process.exitCode = 1
   })
 }
