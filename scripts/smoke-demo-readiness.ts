@@ -28,6 +28,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'protected_preview_routes',
   'signwell_sandbox',
   'signwell_live_preflight',
+  'nic_nac_paid_preflight',
   'nic_nac_paid',
 ] as const
 
@@ -54,6 +55,11 @@ export const VERCEL_PROTECTION_BYPASS_ENV = 'VERCEL_PROTECTION_BYPASS'
 export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
 export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
   'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
+export const NIC_NAC_PAID_SMOKE_SCOPE_ENV = 'NIC_NAC_PAID_SMOKE_SCOPE'
+export const NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS_ENV =
+  'NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS'
+export const NIC_NAC_PAID_SMOKE_APPROVED_AT_ENV =
+  'NIC_NAC_PAID_SMOKE_APPROVED_AT'
 export const DEFAULT_PAID_SMOKE_MAX_REQUESTS = 20
 export const SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL_ENV =
   'SIGNWELL_LIVE_APPROVED_RECIPIENT_EMAIL'
@@ -400,6 +406,27 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'nic_nac_paid_preflight':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          NIC_NAC_PAID_SMOKE_SCOPE_ENV,
+          NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS_ENV,
+          NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+          NIC_NAC_PAID_SMOKE_APPROVED_AT_ENV,
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'nic_nac_paid_preflight',
+            label:
+              'Validate paid Nic-Nac smoke scope and request cap without calling paid providers.',
+            risk: 'paid_provider',
+            run: 'planned',
+          },
+        ],
+      }
     case 'nic_nac_paid':
       return {
         category,
@@ -575,6 +602,56 @@ function buildProviderReadinessError(
     if (env.SIGNWELL_ALLOW_LIVE_SEND?.trim() === 'true') {
       errors.push(
         'SIGNWELL_ALLOW_LIVE_SEND must stay unset during signwell_live_preflight; final live send approval is a separate step.',
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
+  }
+
+  if (plan.category === 'nic_nac_paid_preflight') {
+    const missing = missingEnvNames(env, [
+      NIC_NAC_PAID_SMOKE_SCOPE_ENV,
+      NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS_ENV,
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+      NIC_NAC_PAID_SMOKE_APPROVED_AT_ENV,
+    ])
+    const errors: string[] = []
+    const approvedRequests = parsePositiveIntEnv(
+      env,
+      NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS_ENV,
+      0,
+    )
+    const maxRequests = parsePositiveIntEnv(
+      env,
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+      0,
+    )
+
+    if (missing.length > 0) {
+      errors.push(`Nic-Nac paid preflight blocked: missing ${missing.join(', ')}.`)
+    }
+
+    if (typeof approvedRequests === 'string') {
+      errors.push(approvedRequests)
+    }
+
+    if (typeof maxRequests === 'string') {
+      errors.push(maxRequests)
+    }
+
+    if (
+      typeof approvedRequests === 'number' &&
+      typeof maxRequests === 'number' &&
+      approvedRequests > maxRequests
+    ) {
+      errors.push(
+        `Approved Nic-Nac paid smoke requests (${approvedRequests}) exceed ${NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV}=${maxRequests}.`,
+      )
+    }
+
+    if (env[NIC_NAC_PAID_SMOKE_ALLOW_FLAG]?.trim() === 'true') {
+      errors.push(
+        'NIC_NAC_ALLOW_PAID_SMOKE must stay unset during nic_nac_paid_preflight; final paid provider run approval is a separate step.',
       )
     }
 
@@ -856,6 +933,37 @@ export async function runDemoSmoke(
           id: 'signwell_live_preflight',
           ok,
           detail: `SignWell live preflight ready for approved recipient ${approvedRecipientEmail}; send_email=${String(payload.send_email)}; test_mode=${String(payload.test_mode)}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}; live_send_allow_flag=${String(liveSendMode.allowLiveSend)}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'nic_nac_paid_preflight') {
+    const approvedRequests = parsePositiveIntEnv(
+      env,
+      NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS_ENV,
+      0,
+    )
+    const maxRequests = parsePositiveIntEnv(
+      env,
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+      0,
+    )
+    const ok =
+      typeof approvedRequests === 'number' &&
+      typeof maxRequests === 'number' &&
+      approvedRequests > 0 &&
+      approvedRequests <= maxRequests &&
+      env[NIC_NAC_PAID_SMOKE_ALLOW_FLAG]?.trim() !== 'true'
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'nic_nac_paid_preflight',
+          ok,
+          detail: `Nic-Nac paid preflight ready; approved_requests=${String(approvedRequests)}; max_requests=${String(maxRequests)}; allow_flag=${String(env[NIC_NAC_PAID_SMOKE_ALLOW_FLAG]?.trim() === 'true')}; paid_calls_executed=false`,
         },
       ],
     }

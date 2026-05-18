@@ -42,6 +42,7 @@ describe('demo launch smoke readiness plan', () => {
       'protected_preview_routes',
       'signwell_sandbox',
       'signwell_live_preflight',
+      'nic_nac_paid_preflight',
       'nic_nac_paid',
     ] as const
 
@@ -278,6 +279,74 @@ describe('demo launch smoke readiness plan', () => {
         [NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV]: '4',
       }),
     ).toEqual([])
+  })
+
+  it('keeps paid Nic-Nac preflight explicit without executing provider calls', async () => {
+    const plan = buildDemoSmokePlan({ category: 'nic_nac_paid_preflight' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('nic_nac_paid_preflight')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'nic_nac_paid_preflight',
+        risk: 'paid_provider',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      NIC_NAC_PAID_SMOKE_SCOPE: 'one harmless launch-path prompt',
+      NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS: '1',
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS: '1',
+      NIC_NAC_PAID_SMOKE_APPROVED_AT: '2026-05-18T19:00:00-04:00',
+    })
+
+    expect(result).toEqual({
+      category: 'nic_nac_paid_preflight',
+      ok: true,
+      results: [
+        {
+          id: 'nic_nac_paid_preflight',
+          ok: true,
+          detail:
+            'Nic-Nac paid preflight ready; approved_requests=1; max_requests=1; allow_flag=false; paid_calls_executed=false',
+        },
+      ],
+    })
+  })
+
+  it('blocks paid Nic-Nac preflight until scope and request count are approved', () => {
+    const plan = buildDemoSmokePlan({ category: 'nic_nac_paid_preflight' })
+
+    const errors = validateDemoSmokePlan(plan, { DEMO_REP_EMAIL: 'demo@example.com' })
+
+    expect(errors).toEqual([
+      'NIC_NAC_PAID_SMOKE_SCOPE is required for nic_nac_paid_preflight smoke.',
+      'NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS is required for nic_nac_paid_preflight smoke.',
+      'NIC_NAC_PAID_SMOKE_MAX_REQUESTS is required for nic_nac_paid_preflight smoke.',
+      'NIC_NAC_PAID_SMOKE_APPROVED_AT is required for nic_nac_paid_preflight smoke.',
+      'Nic-Nac paid preflight blocked: missing NIC_NAC_PAID_SMOKE_SCOPE, NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS, NIC_NAC_PAID_SMOKE_MAX_REQUESTS, NIC_NAC_PAID_SMOKE_APPROVED_AT.',
+    ])
+  })
+
+  it('fails paid Nic-Nac preflight when request approval exceeds the cap or the allow flag is armed', () => {
+    const plan = buildDemoSmokePlan({ category: 'nic_nac_paid_preflight' })
+    const errors = validateDemoSmokePlan(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      NIC_NAC_PAID_SMOKE_SCOPE: 'five prompts',
+      NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS: '5',
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS: '4',
+      NIC_NAC_PAID_SMOKE_APPROVED_AT: '2026-05-18T19:00:00-04:00',
+      NIC_NAC_ALLOW_PAID_SMOKE: 'true',
+    })
+    const serializedErrors = errors.join(' ')
+
+    expect(serializedErrors).toContain(
+      'Approved Nic-Nac paid smoke requests (5) exceed NIC_NAC_PAID_SMOKE_MAX_REQUESTS=4.',
+    )
+    expect(serializedErrors).toContain(
+      'NIC_NAC_ALLOW_PAID_SMOKE must stay unset during nic_nac_paid_preflight; final paid provider run approval is a separate step.',
+    )
   })
 
   it('runs local static checks against the demo seed plan shape', async () => {

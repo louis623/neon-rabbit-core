@@ -410,6 +410,37 @@ Approval needed first:
 - `NIC_NAC_PAID_SMOKE_MAX_REQUESTS` is set to an agreed cap.
 - The result destination and cost expectation are clear.
 
+Safe preflight only:
+
+```powershell
+npm run smoke:nic-nac:paid-preflight
+```
+
+What it does:
+
+- Validates the approved paid-smoke scope and request cap.
+- Confirms the approved request count does not exceed `NIC_NAC_PAID_SMOKE_MAX_REQUESTS`.
+- Confirms `NIC_NAC_ALLOW_PAID_SMOKE` is false during preflight.
+- Does not call Nic-Nac, Anthropic, or any paid provider.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `NIC_NAC_PAID_SMOKE_SCOPE`
+- `NIC_NAC_PAID_SMOKE_APPROVED_REQUESTS`
+- `NIC_NAC_PAID_SMOKE_MAX_REQUESTS`
+- `NIC_NAC_PAID_SMOKE_APPROVED_AT`
+
+Latest result:
+
+- `npm run smoke:nic-nac:paid-preflight` passed on 2026-05-18 with approved requests capped at 1 and `paid_calls_executed=false`.
+
+Stop point:
+
+- If the approved request count is above the max request cap, stop.
+- If `NIC_NAC_ALLOW_PAID_SMOKE=true`, stop during preflight; that flag belongs only to a separately approved paid provider run.
+- Do not run `spike/run-benchmark.ts` or `nic_nac_paid` until Louis approves the exact prompt scope, target URL, result destination, and request count.
+
 Also do not do these without separate approval:
 
 - Send any SMS or attach `+19044383050`.
