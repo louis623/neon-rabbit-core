@@ -162,8 +162,7 @@ export async function getAccountBillingDashboard(args: {
   const canManageBilling = Boolean(
     stripeConfigured &&
       args.stripeCustomerId &&
-      subscription &&
-      subscription.status !== 'cancelled',
+      (!subscription || subscription.status !== 'cancelled'),
   )
   const canStartSubscription = !subscription || subscription.status === 'cancelled'
 

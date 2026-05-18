@@ -141,9 +141,21 @@ Do not capture passwords, provider keys, request headers, Vercel bypass values, 
 - Return URL state for Stripe checkout and portal: not reached.
 - Screenshots: none captured.
 
+### 2026-05-18 local browser pass
+
+- Target: local app at `http://localhost:3000`.
+- Browser used: Codex in-app browser.
+- Pass/fail: passed for local login, Nic-Nac shell, demo dashboard data, Account Billing, Stripe test checkout cancel/return, and Stripe test billing portal reachability/return by browser back.
+- Result: demo login succeeded for `louis+sparkle-demo@neonrabbit.net`, `/nic-nac` rendered the Nic-Nac shell, Trade Board showed 10 live demo pieces, Calendar showed `Friday Fizz Preview` and `Sunday Sparkle Reset`, Messages/customer roster showed 5 customers, and Account Billing showed local analytics counts for 10 listings, 2 upcoming shows, and 5 reachable customers.
+- Stripe checkout result: `Start monthly subscription` opened Stripe Checkout on `checkout.stripe.com` in sandbox mode for the Sparkle Suite Launch Demo test monthly plan. No payment details were entered. The Stripe back/cancel path returned to `/nic-nac?billing=subscription-cancelled`, and the UI showed the cancelled checkout message.
+- Stripe portal result: Account Billing exposed `Manage billing and cancel` after the test checkout created a Stripe test customer. The billing portal opened on `billing.stripe.com`; browser back returned to the local app with the Nic-Nac shell still usable. The portal did not expose a readable return link to the automation layer, so the observed return path was browser back rather than `?billing=portal-returned`.
+- Aggregate safe smoke result: `npm run smoke:launch:restored` wrote `.local/launch-smoke-results/launch-local-2026-05-18T21-54-56-095Z.json` and passed `local_static`, `local_app`, `stripe_test`, `stripe_local_routes`, and `signwell_sandbox`.
+- SignWell boundary: sandbox payload smoke passed with `send_email=false`; no live agreement was sent.
+- Screenshots: none captured.
+
 ## Handoff status
 
 - Command-side smoke is documented in `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
 - Launch readiness summary is documented in `docs/sparkle-suite/launch-readiness-2026-05-18.md`.
-- Remaining browser work is manual/Chrome-assisted verification of the local app and protected preview after the current demo password is provided in the local environment or the demo password is explicitly rotated.
+- Remaining browser work is protected preview verification with Louis/Vercel SSO or an approved preview access path.
 - Provider sends and paid provider calls remain parked behind explicit Louis approval.

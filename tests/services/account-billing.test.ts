@@ -147,4 +147,46 @@ describe('account billing service', () => {
     expect(result.canStartSubscription).toBe(false)
     expect(result.canManageBilling).toBe(true)
   })
+
+  it('allows billing portal access when a Stripe customer exists before subscription activation', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(true)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: null,
+      error: null,
+    })
+
+    const stripeMock = {
+      customers: {
+        retrieve: vi.fn().mockResolvedValue({
+          invoice_settings: {
+            default_payment_method: null,
+          },
+        }),
+      },
+      invoices: {
+        list: vi.fn().mockResolvedValue({ data: [] }),
+      },
+    }
+    vi.mocked(getStripe).mockReturnValue(stripeMock as never)
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'subscriptions') return subscriptionsChain.api
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: 'cus_123',
+    })
+
+    expect(result.subscription).toBe(null)
+    expect(result.paymentMethod).toBe(null)
+    expect(result.invoices).toEqual([])
+    expect(result.canStartSubscription).toBe(true)
+    expect(result.canManageBilling).toBe(true)
+  })
 })
