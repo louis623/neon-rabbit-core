@@ -1,10 +1,16 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import {
-  assertPaidSmokeAllowed,
-  type BenchmarkPlan,
-  type Prompt,
-} from '@/spike/run-benchmark'
+  buildPrelaunchSignWellAgreementPayload,
+  buildPrelaunchSignWellMetadata,
+  getPrelaunchSignWellConfig,
+} from '@/lib/prelaunch/signwell'
+import {
+  buildDemoSeedPlan,
+  seedDemoRep,
+  type DemoSeedPlan,
+  type DemoSeedResult,
+} from '@/scripts/seed-demo-rep'
 
 export const DEMO_SMOKE_CATEGORIES = [
   'local_static',
@@ -18,6 +24,10 @@ export type DemoSmokeCategory = (typeof DEMO_SMOKE_CATEGORIES)[number]
 
 export const DEFAULT_DEMO_SMOKE_CATEGORY: DemoSmokeCategory = 'local_static'
 export const STRIPE_LIVE_SMOKE_CONFIRM_ENV = 'STRIPE_LIVE_SMOKE_CONFIRMED'
+export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
+export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
+  'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
+export const DEFAULT_PAID_SMOKE_MAX_REQUESTS = 20
 
 type SmokeRisk = 'none' | 'db_write' | 'test_provider' | 'paid_provider'
 
@@ -33,6 +43,37 @@ export interface DemoSmokePlan {
   requiredEnv: string[]
   actions: DemoSmokeAction[]
   excludedLiveActions: string[]
+}
+
+export interface DemoSmokeResult {
+  id: string
+  ok: boolean
+  detail: string
+}
+
+export interface DemoSmokeRunResult {
+  category: DemoSmokeCategory
+  ok: boolean
+  results: DemoSmokeResult[]
+}
+
+export interface DemoSmokeOptions {
+  category: DemoSmokeCategory
+  json: boolean
+}
+
+export interface DemoSmokeReport {
+  generatedAt: string
+  plan: {
+    category: DemoSmokeCategory
+    actions: DemoSmokeAction[]
+    excludedLiveActions: string[]
+  }
+  result: DemoSmokeRunResult
+}
+
+interface DemoSmokeRunDependencies {
+  seedDemoRep?: (plan: DemoSeedPlan) => Promise<DemoSeedResult>
 }
 
 interface BuildDemoSmokePlanOptions {
@@ -109,7 +150,12 @@ export function buildDemoSmokePlan(
     case 'signwell_sandbox':
       return {
         category,
-        requiredEnv: [DEMO_EMAIL_ENV, 'SIGNWELL_API_KEY', 'SIGNWELL_API_BASE_URL'],
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'SIGNWELL_API_KEY',
+          'SIGNWELL_API_BASE_URL',
+          'SIGNWELL_TEMPLATE_ID',
+        ],
         excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
         actions: [
           {
@@ -160,17 +206,161 @@ export function validateDemoSmokePlan(
   }
 
   if (plan.category === 'nic_nac_paid') {
-    try {
-      assertPaidSmokeAllowed(buildPaidNicNacSmokePlan(), env)
-    } catch (error) {
-      errors.push((error as Error).message)
+    const requestCount = countPaidNicNacSmokeRequests()
+    const maxRequests = parsePositiveIntEnv(
+      env,
+      NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV,
+      DEFAULT_PAID_SMOKE_MAX_REQUESTS,
+    )
+
+    if (typeof maxRequests === 'string') {
+      errors.push(maxRequests)
+    } else if (env[NIC_NAC_PAID_SMOKE_ALLOW_FLAG] !== 'true') {
+      errors.push(
+        `${NIC_NAC_PAID_SMOKE_ALLOW_FLAG}=true is required before running paid Nic-Nac smoke calls; planned requests=${requestCount}.`,
+      )
+    } else if (requestCount > maxRequests) {
+      errors.push(
+        `Planned Nic-Nac smoke requests (${requestCount}) exceed ${NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV}=${maxRequests}.`,
+      )
     }
   }
 
   return errors
 }
 
+export async function runDemoSmoke(
+  plan: DemoSmokePlan,
+  env: Record<string, string | undefined> = process.env,
+  dependencies: DemoSmokeRunDependencies = {},
+): Promise<DemoSmokeRunResult> {
+  const validationErrors = validateDemoSmokePlan(plan, env)
+  if (validationErrors.length > 0) {
+    return {
+      category: plan.category,
+      ok: false,
+      results: validationErrors.map((error) => ({
+        id: 'validation',
+        ok: false,
+        detail: error,
+      })),
+    }
+  }
+
+  const demoEmail = env[DEMO_EMAIL_ENV] ?? 'local-static-demo@example.com'
+  const demoPlan = buildDemoSeedPlan({ email: demoEmail })
+
+  if (plan.category === 'local_static') {
+    return {
+      category: plan.category,
+      ok: true,
+      results: [
+        {
+          id: 'local_static_seed_plan',
+          ok: true,
+          detail: `demo seed plan has ${demoPlan.upcomingShows.length} shows, ${demoPlan.listings.length} listings, and ${demoPlan.audienceMembers.length} audience members`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'supabase_demo') {
+    const runSeed = dependencies.seedDemoRep ?? seedDemoRep
+    const seedResult = await runSeed(demoPlan)
+
+    return {
+      category: plan.category,
+      ok: true,
+      results: [
+        {
+          id: 'supabase_demo_seed_check',
+          ok: true,
+          detail: `seeded rep=${seedResult.repId} settings=1 designs=${seedResult.designIds.length} listings=${seedResult.listingIds.length} shows=${seedResult.showIds.length} audience=${seedResult.audienceIds.length}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'stripe_test') {
+    const isTestKey = env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ?? false
+    return {
+      category: plan.category,
+      ok: isTestKey,
+      results: [
+        {
+          id: 'stripe_test_config',
+          ok: isTestKey,
+          detail: isTestKey
+            ? 'Stripe test-mode configuration is present.'
+            : 'Stripe test smoke requires STRIPE_SECRET_KEY to start with sk_test_.',
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'signwell_sandbox') {
+    const config = getPrelaunchSignWellConfig(env)
+    if (!config) {
+      return {
+        category: plan.category,
+        ok: false,
+        results: [
+          {
+            id: 'signwell_sandbox_payload',
+            ok: false,
+            detail: 'SignWell sandbox configuration is incomplete.',
+          },
+        ],
+      }
+    }
+
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: config.templateId,
+      recipient: {
+        name: 'Launch Demo Rep',
+        email: demoEmail,
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'demo-smoke',
+        waitlistId: 'demo-smoke',
+        operatorRepId: null,
+      }),
+      mode: 'sandbox',
+    })
+
+    return {
+      category: plan.category,
+      ok: payload.send_email === false,
+      results: [
+        {
+          id: 'signwell_sandbox_payload',
+          ok: payload.send_email === false,
+          detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}`,
+        },
+      ],
+    }
+  }
+
+  return {
+    category: plan.category,
+    ok: false,
+    results: [
+      {
+        id: 'nic_nac_paid_guarded_requests',
+        ok: false,
+        detail:
+          'Paid Nic-Nac smoke is guarded; run the benchmark script only after explicit approval and request cap.',
+      },
+    ],
+  }
+}
+
 export function parseDemoSmokeArgs(args: string[]): DemoSmokeCategory {
+  return parseDemoSmokeOptions(args).category
+}
+
+export function parseDemoSmokeOptions(args: string[]): DemoSmokeOptions {
   const categoryFlagIndex = args.findIndex((arg) => arg === '--category')
   const rawCategory =
     categoryFlagIndex >= 0 ? args[categoryFlagIndex + 1] : DEFAULT_DEMO_SMOKE_CATEGORY
@@ -181,19 +371,43 @@ export function parseDemoSmokeArgs(args: string[]): DemoSmokeCategory {
     )
   }
 
-  return rawCategory as DemoSmokeCategory
+  return {
+    category: rawCategory as DemoSmokeCategory,
+    json: args.includes('--json'),
+  }
 }
 
-function buildPaidNicNacSmokePlan(): BenchmarkPlan {
-  const prompt: Prompt = {
-    kind: 'conversational',
-    text: 'Demo readiness smoke: summarize my upcoming show plan.',
-  }
-
+export function buildDemoSmokeReport(
+  plan: DemoSmokePlan,
+  result: DemoSmokeRunResult,
+): DemoSmokeReport {
   return {
-    cold: [prompt, prompt],
-    warmConversations: [[prompt, prompt]],
+    generatedAt: new Date().toISOString(),
+    plan: {
+      category: plan.category,
+      actions: plan.actions,
+      excludedLiveActions: plan.excludedLiveActions,
+    },
+    result,
   }
+}
+
+function countPaidNicNacSmokeRequests(): number {
+  return 4
+}
+
+function parsePositiveIntEnv(
+  env: Record<string, string | undefined>,
+  name: string,
+  fallback: number,
+): number | string {
+  const raw = env[name]
+  if (!raw) return fallback
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return `${name} must be a positive integer; received ${raw}`
+  }
+  return parsed
 }
 
 function printPlan(plan: DemoSmokePlan) {
@@ -208,10 +422,19 @@ function printPlan(plan: DemoSmokePlan) {
   }
 }
 
+function printResults(runResult: DemoSmokeRunResult) {
+  console.log('[smoke:demo] results:')
+  for (const result of runResult.results) {
+    console.log(`  - ${result.ok ? 'ok' : 'fail'} ${result.id}: ${result.detail}`)
+  }
+}
+
 async function main() {
-  const category = parseDemoSmokeArgs(process.argv.slice(2))
-  const plan = buildDemoSmokePlan({ category })
-  printPlan(plan)
+  const options = parseDemoSmokeOptions(process.argv.slice(2))
+  const plan = buildDemoSmokePlan({ category: options.category })
+  if (!options.json) {
+    printPlan(plan)
+  }
 
   const errors = validateDemoSmokePlan(plan)
   if (errors.length > 0) {
@@ -221,7 +444,20 @@ async function main() {
     process.exit(1)
   }
 
-  console.log('[smoke:demo] readiness checks passed for selected category.')
+  const runResult = await runDemoSmoke(plan)
+  if (options.json) {
+    console.log(JSON.stringify(buildDemoSmokeReport(plan, runResult), null, 2))
+  } else {
+    printResults(runResult)
+  }
+
+  if (!runResult.ok) {
+    process.exit(1)
+  }
+
+  if (!options.json) {
+    console.log('[smoke:demo] readiness checks passed for selected category.')
+  }
 }
 
 const entrypoint = process.argv[1] ? path.resolve(process.argv[1]) : null

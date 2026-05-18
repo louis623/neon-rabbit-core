@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildDemoSmokePlan,
+  buildDemoSmokeReport,
   DEFAULT_DEMO_SMOKE_CATEGORY,
+  parseDemoSmokeOptions,
+  runDemoSmoke,
   validateDemoSmokePlan,
 } from '@/scripts/smoke-demo-readiness'
 import {
@@ -78,5 +81,93 @@ describe('demo launch smoke readiness plan', () => {
         [NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV]: '4',
       }),
     ).toEqual([])
+  })
+
+  it('runs local static checks against the demo seed plan shape', async () => {
+    const result = await runDemoSmoke(buildDemoSmokePlan({ category: 'local_static' }), {})
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toContainEqual({
+      id: 'local_static_seed_plan',
+      ok: true,
+      detail: 'demo seed plan has 2 shows, 10 listings, and 5 audience members',
+    })
+  })
+
+  it('runs SignWell sandbox smoke by building a non-sending payload', async () => {
+    const result = await runDemoSmoke(buildDemoSmokePlan({ category: 'signwell_sandbox' }), {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      SIGNWELL_API_KEY: 'signwell_api_key',
+      SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+      SIGNWELL_TEMPLATE_ID: 'template_demo',
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toContainEqual({
+      id: 'signwell_sandbox_payload',
+      ok: true,
+      detail: 'built sandbox payload for demo@example.com with send_email=false',
+    })
+  })
+
+  it('requires a SignWell template id before sandbox payload smoke', () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_sandbox' })
+
+    expect(validateDemoSmokePlan(plan, { DEMO_REP_EMAIL: 'demo@example.com' })).toContain(
+      'SIGNWELL_TEMPLATE_ID is required for signwell_sandbox smoke.',
+    )
+  })
+
+  it('can execute the Supabase demo seed through an injected seed runner', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'supabase_demo' }),
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        SUPABASE_SERVICE_ROLE_KEY: 'service_role_key',
+      },
+      {
+        seedDemoRep: async () => ({
+          repId: 'rep-demo',
+          siteSettingsId: 'settings-demo',
+          designIds: Array.from({ length: 10 }, (_, index) => `design-${index}`),
+          listingIds: Array.from({ length: 10 }, (_, index) => `listing-${index}`),
+          showIds: ['show-1', 'show-2'],
+          audienceIds: ['audience-1', 'audience-2', 'audience-3', 'audience-4', 'audience-5'],
+        }),
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toContainEqual({
+      id: 'supabase_demo_seed_check',
+      ok: true,
+      detail:
+        'seeded rep=rep-demo settings=1 designs=10 listings=10 shows=2 audience=5',
+    })
+  })
+
+  it('can build a machine-readable smoke report without leaking env secrets', async () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_sandbox' })
+    const result = await runDemoSmoke(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      SIGNWELL_API_KEY: 'super_secret_signwell_key',
+      SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+      SIGNWELL_TEMPLATE_ID: 'template_demo',
+    })
+
+    const report = buildDemoSmokeReport(plan, result)
+    const serialized = JSON.stringify(report)
+
+    expect(report.result.ok).toBe(true)
+    expect(serialized).not.toContain('super_secret_signwell_key')
+    expect(serialized).not.toContain('SIGNWELL_API_KEY')
+  })
+
+  it('parses json output mode for runnable launch smoke reports', () => {
+    expect(parseDemoSmokeOptions(['--category', 'local_static', '--json'])).toEqual({
+      category: 'local_static',
+      json: true,
+    })
   })
 })

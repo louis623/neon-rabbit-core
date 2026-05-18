@@ -65,7 +65,7 @@ type AudienceMemberSeed = {
   marketingConsent: boolean
 }
 
-type DemoSeedPlan = {
+export type DemoSeedPlan = {
   rep: RepSeed
   siteSettings: SiteSettingsSeed
   upcomingShows: ShowSeed[]
@@ -91,6 +91,15 @@ type DemoCalendarEventRow = {
   featured_collections: string[]
   status: ShowSeed['status']
   recurrence_group_id: null
+}
+
+export type DemoSeedResult = {
+  repId: string
+  siteSettingsId: string
+  designIds: string[]
+  listingIds: string[]
+  showIds: string[]
+  audienceIds: string[]
 }
 
 export function getRequiredDemoRepEmail(env: Record<string, string | undefined>) {
@@ -365,7 +374,7 @@ async function ensureAuthUser(email: string) {
   return { id: created.user.id, created: true }
 }
 
-async function seedDemoRep(plan: DemoSeedPlan) {
+export async function seedDemoRep(plan: DemoSeedPlan): Promise<DemoSeedResult> {
   const admin = createAdminClient()
   const authUser = await ensureAuthUser(plan.rep.email)
   console.log(`[seed-demo] ${authUser.created ? 'created' : 'reused'} auth user ${authUser.id}`)
