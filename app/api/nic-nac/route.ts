@@ -33,7 +33,7 @@ import {
   buildToolsForIntents,
   getToolIntentsForMessages,
 } from '@/lib/nic-nac/tools'
-import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
+import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { decideAssistantMessageId } from '@/lib/nic-nac/hitl-state'
@@ -213,12 +213,10 @@ export async function POST(request: Request) {
   })
 
   const modelMessages = await convertToModelMessages(messages)
-  const systemPrompt = `${NIC_NAC_SYSTEM_PROMPT}
-
-# Active tools for this turn
-
-Only these tools are available on this turn: ${activeToolNames.join(', ')}.
-If a tool described above is not in this list, do not call it on this turn. Answer naturally or ask the rep a short follow-up.`
+  const systemPrompt = buildNicNacSystemPrompt({
+    intents: toolIntents,
+    activeToolNames,
+  })
 
   // Server-owned ThinkingIndicator phase stream. The route emits transient
   // `data-thinking` signals so the client never has to sniff `parts`. State:
