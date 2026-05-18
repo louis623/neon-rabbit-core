@@ -83,6 +83,8 @@ describe('Nic-Nac run telemetry', () => {
       dropped_message_count: 30,
       estimated_context_tokens: 5_500,
       context_compacted: true,
+      rollover_recommended: true,
+      rollover_reasons: ['context_compacted'],
       error_message: null,
     })
   })

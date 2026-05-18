@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { evaluateNicNacRunThresholds } from '@/lib/nic-nac/run-thresholds'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 
 export type NicNacRunStatus = 'complete' | 'aborted' | 'error'
@@ -53,6 +54,14 @@ export async function logNicNacRun(args: {
   errorMessage?: string
 }): Promise<void> {
   try {
+    const thresholds = evaluateNicNacRunThresholds({
+      latencyMs: args.latencyMs,
+      inputTokens: args.usage?.inputTokens,
+      totalTokens: args.usage?.totalTokens,
+      estimatedContextTokens: args.modelContext.estimatedTokens,
+      contextCompacted: args.modelContext.wasCompacted,
+      droppedMessageCount: args.modelContext.droppedMessageCount,
+    })
     const supabase = createAdminClient()
     const { error } = await supabase.from('nic_nac_runs').insert({
       run_id: args.runId,
@@ -74,6 +83,8 @@ export async function logNicNacRun(args: {
       dropped_message_count: args.modelContext.droppedMessageCount,
       estimated_context_tokens: args.modelContext.estimatedTokens,
       context_compacted: args.modelContext.wasCompacted,
+      rollover_recommended: thresholds.rolloverRecommended,
+      rollover_reasons: thresholds.reasons,
       error_message: args.errorMessage ?? null,
     })
     if (error) {
