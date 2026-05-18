@@ -24,6 +24,7 @@ describe('demo launch smoke readiness plan', () => {
   it('excludes live SMS sends from every category', () => {
     const categories = [
       'local_static',
+      'local_app',
       'supabase_demo',
       'stripe_test',
       'signwell_sandbox',
@@ -58,6 +59,23 @@ describe('demo launch smoke readiness plan', () => {
         STRIPE_PRICE_MONTHLY: 'price_123',
       }),
     ).toContain('STRIPE_LIVE_SMOKE_CONFIRMED=true is required when STRIPE_SECRET_KEY is live.')
+  })
+
+  it('summarizes blocked Stripe readiness without exposing key values', () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_test' })
+
+    const errors = validateDemoSmokePlan(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      NEXT_PUBLIC_APP_URL: 'https://app.example.com',
+      STRIPE_SECRET_KEY: 'sk_test_super_secret',
+      STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+    })
+
+    expect(errors).toContain(
+      'Stripe readiness blocked: missing STRIPE_PRICE_MONTHLY; STRIPE_SECRET_KEY mode=test.',
+    )
+    expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
+    expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
   })
 
   it('requires the demo account email for demo-specific smoke categories', () => {
@@ -118,6 +136,20 @@ describe('demo launch smoke readiness plan', () => {
     )
   })
 
+  it('summarizes blocked SignWell readiness without exposing configured secrets', () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_sandbox' })
+
+    const errors = validateDemoSmokePlan(plan, {
+      DEMO_REP_EMAIL: 'demo@example.com',
+      SIGNWELL_API_KEY: 'signwell_super_secret',
+    })
+
+    expect(errors).toContain(
+      'SignWell readiness blocked: missing SIGNWELL_API_BASE_URL, SIGNWELL_TEMPLATE_ID.',
+    )
+    expect(JSON.stringify(errors)).not.toContain('signwell_super_secret')
+  })
+
   it('can execute the Supabase demo seed through an injected seed runner', async () => {
     const result = await runDemoSmoke(
       buildDemoSmokePlan({ category: 'supabase_demo' }),
@@ -156,6 +188,34 @@ describe('demo launch smoke readiness plan', () => {
       id: 'supabase_demo_login_check',
       ok: true,
       detail: 'demo login can read reps=1 listings=10 shows=2 audience=5',
+    })
+  })
+
+  it('can verify the running local app with an injected app smoke runner', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'local_app' }),
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_REP_PASSWORD: 'demo-password',
+        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+      },
+      {
+        verifyLocalApp: async () => ({
+          repEmail: 'demo@example.com',
+          repDisplayName: 'Launch Demo Rep',
+          nicNacShellRendered: true,
+        }),
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toContainEqual({
+      id: 'local_app_login_route',
+      ok: true,
+      detail:
+        'local app authenticated as Launch Demo Rep <demo@example.com>; Nic-Nac shell rendered',
     })
   })
 

@@ -17,6 +17,7 @@ import {
 
 export const DEMO_SMOKE_CATEGORIES = [
   'local_static',
+  'local_app',
   'supabase_demo',
   'stripe_test',
   'signwell_sandbox',
@@ -32,7 +33,7 @@ export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
   'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
 export const DEFAULT_PAID_SMOKE_MAX_REQUESTS = 20
 
-type SmokeRisk = 'none' | 'db_write' | 'test_provider' | 'paid_provider'
+type SmokeRisk = 'none' | 'local_app' | 'db_write' | 'test_provider' | 'paid_provider'
 
 export interface DemoSmokeAction {
   id: string
@@ -81,6 +82,10 @@ interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<DemoLoginVerification>
+  verifyLocalApp?: (
+    env: Record<string, string | undefined>,
+    email: string,
+  ) => Promise<LocalAppVerification>
 }
 
 interface DemoLoginVerification {
@@ -88,6 +93,12 @@ interface DemoLoginVerification {
   listingCount: number
   showCount: number
   audienceCount: number
+}
+
+interface LocalAppVerification {
+  repEmail: string
+  repDisplayName: string
+  nicNacShellRendered: boolean
 }
 
 interface BuildDemoSmokePlanOptions {
@@ -119,6 +130,27 @@ export function buildDemoSmokePlan(
             id: 'local_static_plan',
             label: 'Validate launch smoke categories and provider guards.',
             risk: 'none',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'local_app':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'DEMO_REP_PASSWORD',
+          'NEXT_PUBLIC_APP_URL',
+          'NEXT_PUBLIC_SUPABASE_URL',
+          'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'local_app_login_route',
+            label:
+              'Verify the running local app authenticates the demo rep and renders Nic-Nac.',
+            risk: 'local_app',
             run: 'planned',
           },
         ],
@@ -210,6 +242,11 @@ export function validateDemoSmokePlan(
     }
   }
 
+  const providerReadinessError = buildProviderReadinessError(plan, env)
+  if (providerReadinessError) {
+    errors.push(providerReadinessError)
+  }
+
   if (
     plan.category === 'stripe_test' &&
     env.STRIPE_SECRET_KEY?.startsWith('sk_live_') &&
@@ -244,6 +281,52 @@ export function validateDemoSmokePlan(
   return errors
 }
 
+function buildProviderReadinessError(
+  plan: DemoSmokePlan,
+  env: Record<string, string | undefined>,
+): string | null {
+  if (plan.category === 'stripe_test') {
+    const missing = missingEnvNames(env, [
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'STRIPE_PRICE_MONTHLY',
+      'NEXT_PUBLIC_APP_URL',
+    ])
+
+    if (missing.length === 0) return null
+
+    return `Stripe readiness blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)}.`
+  }
+
+  if (plan.category === 'signwell_sandbox') {
+    const missing = missingEnvNames(env, [
+      'SIGNWELL_API_KEY',
+      'SIGNWELL_API_BASE_URL',
+      'SIGNWELL_TEMPLATE_ID',
+    ])
+
+    if (missing.length === 0) return null
+
+    return `SignWell readiness blocked: missing ${missing.join(', ')}.`
+  }
+
+  return null
+}
+
+function missingEnvNames(
+  env: Record<string, string | undefined>,
+  names: string[],
+): string[] {
+  return names.filter((name) => !env[name]?.trim())
+}
+
+function getStripeSecretKeyMode(secretKey: string | undefined): 'missing' | 'test' | 'live' | 'unknown' {
+  if (!secretKey?.trim()) return 'missing'
+  if (secretKey.startsWith('sk_test_')) return 'test'
+  if (secretKey.startsWith('sk_live_')) return 'live'
+  return 'unknown'
+}
+
 export async function runDemoSmoke(
   plan: DemoSmokePlan,
   env: Record<string, string | undefined> = process.env,
@@ -274,6 +357,23 @@ export async function runDemoSmoke(
           id: 'local_static_seed_plan',
           ok: true,
           detail: `demo seed plan has ${demoPlan.upcomingShows.length} shows, ${demoPlan.listings.length} listings, and ${demoPlan.audienceMembers.length} audience members`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'local_app') {
+    const verifyLocalApp = dependencies.verifyLocalApp ?? verifyLocalAppSmoke
+    const appResult = await verifyLocalApp(env, demoEmail)
+
+    return {
+      category: plan.category,
+      ok: appResult.nicNacShellRendered,
+      results: [
+        {
+          id: 'local_app_login_route',
+          ok: appResult.nicNacShellRendered,
+          detail: `local app authenticated as ${appResult.repDisplayName} <${appResult.repEmail}>; Nic-Nac shell ${appResult.nicNacShellRendered ? 'rendered' : 'missing'}`,
         },
       ],
     }
@@ -421,6 +521,58 @@ async function verifyDemoRepLogin(
     listingCount: countedTables[1],
     showCount: countedTables[2],
     audienceCount: countedTables[3],
+  }
+}
+
+async function verifyLocalAppSmoke(
+  env: Record<string, string | undefined>,
+  email: string,
+): Promise<LocalAppVerification> {
+  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const appUrl = env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '')
+  if (!supabaseUrl || !anonKey || !appUrl) {
+    throw new Error('Supabase URL, anon key, and app URL are required.')
+  }
+
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email,
+    password: env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
+  })
+  if (signInError) {
+    throw new Error(`Demo local app sign-in failed: ${signInError.message}`)
+  }
+
+  const {
+    data: { session },
+  } = await client.auth.getSession()
+  if (!session) {
+    throw new Error('No demo session after local app sign-in.')
+  }
+
+  const supabaseRef = new URL(supabaseUrl).hostname.split('.')[0]
+  const cookie = `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
+  const meResponse = await fetch(`${appUrl}/api/nic-nac/me`, { headers: { cookie } })
+  if (!meResponse.ok) {
+    throw new Error(`/api/nic-nac/me returned ${meResponse.status}.`)
+  }
+  const me = (await meResponse.json()) as {
+    rep?: { email?: string; display_name?: string }
+  }
+
+  const pageResponse = await fetch(`${appUrl}/nic-nac`, { headers: { cookie } })
+  const pageText = await pageResponse.text()
+  if (!pageResponse.ok) {
+    throw new Error(`/nic-nac returned ${pageResponse.status}.`)
+  }
+
+  return {
+    repEmail: me.rep?.email ?? email,
+    repDisplayName: me.rep?.display_name ?? 'unknown rep',
+    nicNacShellRendered: pageText.includes('Nic-Nac'),
   }
 }
 
