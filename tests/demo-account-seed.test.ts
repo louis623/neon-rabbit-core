@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   buildDemoSeedPlan,
   buildDemoCalendarEventRows,
+  getDemoRepPassword,
+  shouldUpdateExistingDemoPassword,
   getRequiredDemoRepEmail,
 } from '@/scripts/seed-demo-rep'
 
@@ -49,6 +51,17 @@ describe('demo account seed plan', () => {
     expect(getRequiredDemoRepEmail({ DEMO_REP_EMAIL: 'demo@example.com' })).toBe(
       'demo@example.com',
     )
+  })
+
+  it('uses a provided demo password without resetting existing users by default', () => {
+    expect(getDemoRepPassword({})).toBe('SparkleDemo2026!')
+    expect(getDemoRepPassword({ DEMO_REP_PASSWORD: 'SharedDemo2026!' })).toBe(
+      'SharedDemo2026!',
+    )
+    expect(shouldUpdateExistingDemoPassword({})).toBe(false)
+    expect(
+      shouldUpdateExistingDemoPassword({ DEMO_REP_PASSWORD: 'SharedDemo2026!' }),
+    ).toBe(true)
   })
 
   it('keeps seeded show descriptions realistic in calendar rows', () => {

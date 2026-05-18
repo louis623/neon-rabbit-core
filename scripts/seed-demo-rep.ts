@@ -110,6 +110,16 @@ export function getRequiredDemoRepEmail(env: Record<string, string | undefined>)
   return email
 }
 
+export function getDemoRepPassword(env: Record<string, string | undefined>) {
+  return env.DEMO_REP_PASSWORD?.trim() || DEFAULT_DEMO_PASSWORD
+}
+
+export function shouldUpdateExistingDemoPassword(
+  env: Record<string, string | undefined>,
+) {
+  return Boolean(env.DEMO_REP_PASSWORD?.trim())
+}
+
 function daysFrom(now: Date, days: number, hourUtc: number) {
   const date = new Date(now)
   date.setUTCDate(date.getUTCDate() + days)
@@ -351,16 +361,19 @@ export function buildDemoSeedPlan(input: { email: string; now?: Date }): DemoSee
 
 async function ensureAuthUser(email: string) {
   const admin = createAdminClient()
-  const password = process.env.DEMO_REP_PASSWORD ?? DEFAULT_DEMO_PASSWORD
+  const password = getDemoRepPassword(process.env)
   const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
   if (error) throw new Error(`Failed to list auth users: ${error.message}`)
 
   const existing = data.users.find((user) => user.email?.toLowerCase() === email)
   if (existing) {
-    const { error: updateError } = await admin.auth.admin.updateUserById(existing.id, {
-      password,
-      email_confirm: true,
-    })
+    const updates = shouldUpdateExistingDemoPassword(process.env)
+      ? { password, email_confirm: true }
+      : { email_confirm: true }
+    const { error: updateError } = await admin.auth.admin.updateUserById(
+      existing.id,
+      updates,
+    )
     if (updateError) throw new Error(`Failed to update auth user: ${updateError.message}`)
     return { id: existing.id, created: false }
   }
