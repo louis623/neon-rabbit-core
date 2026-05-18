@@ -203,11 +203,13 @@ Required env:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_MONTHLY`
+- Optional for protected Vercel previews: `VERCEL_PROTECTION_BYPASS`
 
 Stop point:
 
 - If `STRIPE_SECRET_KEY` is not test mode, stop.
 - If the app was already running before `STRIPE_PRICE_MONTHLY` was set, restart the local app with the env value before running this smoke.
+- If the preview reports Vercel deployment protection, either complete Vercel SSO in the browser session or set `VERCEL_PROTECTION_BYPASS` locally before deployed preview smoke.
 - If the billing portal route fails, check Stripe test portal configuration before moving to a browser checkout walkthrough.
 
 ### 7. SignWell sandbox payload smoke

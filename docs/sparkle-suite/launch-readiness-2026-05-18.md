@@ -31,6 +31,7 @@
 - Stripe test-mode checkout/portal still needs a Louis-approved demo rep credential and configured test keys for an end-to-end browser smoke.
 - Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet; verify production `STRIPE_SECRET_KEY` mode or explicitly approve production test-mode setup before adding it there.
 - Browser checkout walkthrough is still pending, but the local API route smoke has verified checkout and portal session creation in test mode.
+- Deployed Preview exists and is Ready, but Vercel Deployment Protection blocks unauthenticated smoke until Louis completes SSO or provides/configures `VERCEL_PROTECTION_BYPASS`.
 - SignWell sandbox payload still needs `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in the target environment.
 
 ## P2 post-launch polish

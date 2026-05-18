@@ -29,6 +29,7 @@ export type DemoSmokeCategory = (typeof DEMO_SMOKE_CATEGORIES)[number]
 
 export const DEFAULT_DEMO_SMOKE_CATEGORY: DemoSmokeCategory = 'local_static'
 export const STRIPE_LIVE_SMOKE_CONFIRM_ENV = 'STRIPE_LIVE_SMOKE_CONFIRMED'
+export const VERCEL_PROTECTION_BYPASS_ENV = 'VERCEL_PROTECTION_BYPASS'
 export const NIC_NAC_PAID_SMOKE_ALLOW_FLAG = 'NIC_NAC_ALLOW_PAID_SMOKE'
 export const NIC_NAC_PAID_SMOKE_MAX_REQUESTS_ENV =
   'NIC_NAC_PAID_SMOKE_MAX_REQUESTS'
@@ -640,18 +641,23 @@ async function verifyLocalAppSmoke(
 
   const supabaseRef = new URL(supabaseUrl).hostname.split('.')[0]
   const cookie = `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
-  const meResponse = await fetch(`${appUrl}/api/nic-nac/me`, { headers: { cookie } })
+  const meResponse = await fetch(
+    withVercelProtectionBypass(`${appUrl}/api/nic-nac/me`, env),
+    { headers: { cookie } },
+  )
   if (!meResponse.ok) {
-    throw new Error(`/api/nic-nac/me returned ${meResponse.status}.`)
+    throw await buildSmokeHttpError('/api/nic-nac/me', meResponse)
   }
   const me = (await meResponse.json()) as {
     rep?: { email?: string; display_name?: string }
   }
 
-  const pageResponse = await fetch(`${appUrl}/nic-nac`, { headers: { cookie } })
+  const pageResponse = await fetch(withVercelProtectionBypass(`${appUrl}/nic-nac`, env), {
+    headers: { cookie },
+  })
   const pageText = await pageResponse.text()
   if (!pageResponse.ok) {
-    throw new Error(`/nic-nac returned ${pageResponse.status}.`)
+    throw await buildSmokeHttpError('/nic-nac', pageResponse)
   }
 
   return {
@@ -692,7 +698,7 @@ async function verifyStripeLocalRoutesSmoke(
 
   const supabaseRef = new URL(supabaseUrl).hostname.split('.')[0]
   const cookie = `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`
-  const checkoutResponse = await fetch(`${appUrl}/api/stripe/create-checkout`, {
+  const checkoutResponse = await fetch(withVercelProtectionBypass(`${appUrl}/api/stripe/create-checkout`, env), {
     method: 'POST',
     headers: {
       cookie,
@@ -708,7 +714,7 @@ async function verifyStripeLocalRoutesSmoke(
     )
   }
 
-  const portalResponse = await fetch(`${appUrl}/api/stripe/create-portal-session`, {
+  const portalResponse = await fetch(withVercelProtectionBypass(`${appUrl}/api/stripe/create-portal-session`, env), {
     method: 'POST',
     headers: { cookie },
   })
@@ -736,11 +742,57 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('application/json')) {
     const body = await response.text()
+    if (isVercelDeploymentProtectionResponse(response, body)) {
+      throw new Error(
+        `Vercel deployment protection blocked ${response.url}; set ${VERCEL_PROTECTION_BYPASS_ENV} or complete Vercel SSO before deployed preview smoke.`,
+      )
+    }
     throw new Error(
       `Expected JSON from ${response.url}; received ${response.status} ${contentType || 'unknown content type'}: ${body.slice(0, 80)}`,
     )
   }
   return (await response.json()) as T
+}
+
+export async function buildSmokeHttpError(
+  pathname: string,
+  response: Response,
+): Promise<Error> {
+  const contentType = response.headers.get('content-type') ?? ''
+  const body = await response.text()
+  if (isVercelDeploymentProtectionResponse(response, body)) {
+    return new Error(
+      `Vercel deployment protection blocked ${pathname}; set ${VERCEL_PROTECTION_BYPASS_ENV} or complete Vercel SSO before deployed preview smoke.`,
+    )
+  }
+  return new Error(
+    `${pathname} returned ${response.status}${contentType ? ` (${contentType})` : ''}.`,
+  )
+}
+
+export function withVercelProtectionBypass(
+  rawUrl: string,
+  env: Record<string, string | undefined>,
+): string {
+  const bypass = env[VERCEL_PROTECTION_BYPASS_ENV]?.trim()
+  if (!bypass) return rawUrl
+
+  const url = new URL(rawUrl)
+  url.searchParams.set('x-vercel-set-bypass-cookie', 'true')
+  url.searchParams.set('x-vercel-protection-bypass', bypass)
+  return url.toString()
+}
+
+export function isVercelDeploymentProtectionResponse(
+  response: Response,
+  body: string,
+): boolean {
+  return (
+    response.status === 401 &&
+    response.headers.get('server')?.toLowerCase().includes('vercel') === true &&
+    body.includes('Authentication Required') &&
+    body.includes('Vercel Authentication')
+  )
 }
 
 export function parseDemoSmokeArgs(args: string[]): DemoSmokeCategory {

@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 import {
   buildDemoSmokePlan,
   buildDemoSmokeReport,
+  buildSmokeHttpError,
   DEFAULT_DEMO_SMOKE_CATEGORY,
+  isVercelDeploymentProtectionResponse,
   parseDemoSmokeOptions,
   runDemoSmoke,
   validateDemoSmokePlan,
+  VERCEL_PROTECTION_BYPASS_ENV,
+  withVercelProtectionBypass,
 } from '@/scripts/smoke-demo-readiness'
 import {
   NIC_NAC_PAID_SMOKE_ALLOW_FLAG,
@@ -292,6 +296,39 @@ describe('demo launch smoke readiness plan', () => {
       detail:
         'Stripe test checkout session ready=true; portal session ready=true',
     })
+  })
+
+  it('detects protected Vercel previews without leaking bypass values', async () => {
+    const response = new Response(
+      '<title>Authentication Required</title><a>Vercel Authentication</a>',
+      {
+        status: 401,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          server: 'Vercel',
+        },
+      },
+    )
+
+    expect(isVercelDeploymentProtectionResponse(response, await response.clone().text())).toBe(
+      true,
+    )
+    await expect(buildSmokeHttpError('/api/nic-nac/me', response)).resolves.toEqual(
+      new Error(
+        `Vercel deployment protection blocked /api/nic-nac/me; set ${VERCEL_PROTECTION_BYPASS_ENV} or complete Vercel SSO before deployed preview smoke.`,
+      ),
+    )
+  })
+
+  it('adds a Vercel protection bypass token to smoke URLs without changing the base URL', () => {
+    const url = withVercelProtectionBypass('https://preview.example.com/nic-nac?tab=home', {
+      [VERCEL_PROTECTION_BYPASS_ENV]: 'bypass_secret',
+    })
+
+    expect(url).toContain('https://preview.example.com/nic-nac?')
+    expect(url).toContain('tab=home')
+    expect(url).toContain('x-vercel-set-bypass-cookie=true')
+    expect(url).toContain('x-vercel-protection-bypass=bypass_secret')
   })
 
   it('can build a machine-readable smoke report without leaking env secrets', async () => {
