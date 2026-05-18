@@ -37,6 +37,7 @@ import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { decideAssistantMessageId } from '@/lib/nic-nac/hitl-state'
+import { selectMessagesForModel } from '@/lib/nic-nac/model-context'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -212,7 +213,18 @@ export async function POST(request: Request) {
     tools: activeToolNames,
   })
 
-  const modelMessages = await convertToModelMessages(messages)
+  const modelContext = selectMessagesForModel(messages)
+  if (modelContext.wasCompacted) {
+    console.info('[nic-nac] model context compacted', {
+      runId,
+      conversationId,
+      originalMessageCount: messages.length,
+      modelMessageCount: modelContext.messages.length,
+      droppedMessageCount: modelContext.droppedMessageCount,
+      estimatedTokens: modelContext.estimatedTokens,
+    })
+  }
+  const modelMessages = await convertToModelMessages(modelContext.messages)
   const systemPrompt = buildNicNacSystemPrompt({
     intents: toolIntents,
     activeToolNames,
