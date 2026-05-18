@@ -18,13 +18,13 @@ export const PROVIDER_RECOVERY_CONTRACTS: ProviderRecoveryContract[] = [
       'Operator route returns a disabled/not-configured response before any SignWell send attempt.',
   },
   {
-    id: 'signwell.send-disabled',
+    id: 'signwell.live-send-blocked',
     sourceLabel: '/api/prelaunch/signwell/agreement',
-    expectedCode: 'SIGNWELL_SEND_NOT_ENABLED',
+    expectedCode: 'SIGNWELL_LIVE_SEND_BLOCKED',
     testFile: 'tests/prelaunch/prelaunch-signwell-route.test.ts',
     liveProviderRequired: false,
     notes:
-      'Operator route remains parked after config exists until legal/template review explicitly enables sends.',
+      'Operator route remains parked after config exists unless an explicit live-send flag enables sends.',
   },
   {
     id: 'payment-gates.price-not-configured',

@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 
 import {
+  buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
   getPrelaunchSignWellConfig,
+  getPrelaunchSignWellLiveSendMode,
   normalizePrelaunchAgreementGateType,
 } from '@/lib/prelaunch/signwell'
 import {
@@ -25,6 +27,7 @@ function parseAgreementGatePayload(body: unknown) {
   const record = body as Record<string, unknown>
   const gateType = normalizePrelaunchAgreementGateType(record.gateType)
   const intakeId = readString(record, 'intakeId')
+  const liveSend = record.liveSend === true
 
   if (!gateType) {
     return {
@@ -42,6 +45,16 @@ function parseAgreementGatePayload(body: unknown) {
     gateType,
     intakeId,
     waitlistId: readString(record, 'waitlistId'),
+    liveSend,
+  }
+}
+
+function getOperatorRecipient(operator: Awaited<ReturnType<typeof getAuthenticatedOperator>>) {
+  const rep = operator.rep as typeof operator.rep & { name?: string | null }
+
+  return {
+    name: rep.display_name || rep.name || rep.email,
+    email: rep.email,
   }
 }
 
@@ -76,22 +89,48 @@ export async function POST(request: Request) {
           code: 'SIGNWELL_NOT_CONFIGURED',
           error: 'SignWell agreement sending is not configured yet.',
           gateType: payload.gateType,
+          mode: 'dry_run',
           metadata,
         },
         { status: 503 },
       )
     }
 
+    if (payload.liveSend) {
+      const liveSendMode = getPrelaunchSignWellLiveSendMode()
+
+      if (!liveSendMode.allowLiveSend) {
+        return NextResponse.json(
+          {
+            code: 'SIGNWELL_LIVE_SEND_BLOCKED',
+            error:
+              'Live SignWell agreement sending requires SIGNWELL_ALLOW_LIVE_SEND=true.',
+            gateType: payload.gateType,
+            mode: liveSendMode.mode,
+            templateId: config.templateId,
+            metadata,
+          },
+          { status: 403 },
+        )
+      }
+    }
+
+    const agreementPayload = buildPrelaunchSignWellAgreementPayload({
+      templateId: config.templateId,
+      recipient: getOperatorRecipient(operator),
+      metadata,
+      mode: 'sandbox',
+    })
+
     return NextResponse.json(
       {
-        code: 'SIGNWELL_SEND_NOT_ENABLED',
-        error:
-          'SignWell agreement sending is waiting for final legal/template review.',
+        code: 'SIGNWELL_SANDBOX_PAYLOAD_READY',
         gateType: payload.gateType,
+        mode: 'sandbox',
         templateId: config.templateId,
-        metadata,
+        agreementPayload,
       },
-      { status: 501 },
+      { status: 200 },
     )
   } catch (error) {
     if (error instanceof SyntaxError) {

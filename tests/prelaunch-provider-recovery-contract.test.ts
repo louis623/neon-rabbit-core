@@ -14,8 +14,8 @@ describe('provider-free recovery contracts', () => {
       'payment-gates.checkout-disabled',
       'payment-gates.price-not-configured',
       'photoroom.provider-failed',
+      'signwell.live-send-blocked',
       'signwell.not-configured',
-      'signwell.send-disabled',
       'sms.not-configured',
       'sms.telnyx-reject-refund',
     ])

@@ -23,6 +23,7 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
     delete process.env.SIGNWELL_API_BASE_URL
     delete process.env.SIGNWELL_TEMPLATE_ID
     delete process.env.SIGNWELL_SEND_ENABLED
+    delete process.env.SIGNWELL_ALLOW_LIVE_SEND
   })
 
   it('returns not_configured before SignWell send configuration exists', async () => {
@@ -48,6 +49,7 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
       code: 'SIGNWELL_NOT_CONFIGURED',
       error: 'SignWell agreement sending is not configured yet.',
       gateType: 'service_agreement',
+      mode: 'dry_run',
       metadata: {
         platform: 'sparkle_suite',
         agreement_gate: 'service_agreement',
@@ -59,7 +61,100 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
     })
   })
 
-  it('keeps agreement sending disabled even after SignWell config is present', async () => {
+  it('refuses a live SignWell send unless the explicit allow flag is set', async () => {
+    process.env.SIGNWELL_API_KEY = 'signwell_api_key'
+    process.env.SIGNWELL_API_BASE_URL = 'https://www.signwell.com/api/v1'
+    process.env.SIGNWELL_TEMPLATE_ID = 'template_123'
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'operator-rep-1',
+      rep: { email: 'louis@neonrabbit.net' },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/signwell/agreement', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'service_agreement',
+          intakeId: 'intake-1',
+          liveSend: true,
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      code: 'SIGNWELL_LIVE_SEND_BLOCKED',
+      error:
+        'Live SignWell agreement sending requires SIGNWELL_ALLOW_LIVE_SEND=true.',
+      gateType: 'service_agreement',
+      mode: 'live_blocked',
+      templateId: 'template_123',
+      metadata: {
+        platform: 'sparkle_suite',
+        agreement_gate: 'service_agreement',
+        sparkle_suite_agreement_gate: 'true',
+        intake_submission_id: 'intake-1',
+        waitlist_id: null,
+        operator_rep_id: 'operator-rep-1',
+      },
+    })
+  })
+
+  it('builds a sandbox agreement payload for a demo rep without sending email', async () => {
+    process.env.SIGNWELL_API_KEY = 'signwell_api_key'
+    process.env.SIGNWELL_API_BASE_URL = 'https://www.signwell.com/api/v1'
+    process.env.SIGNWELL_TEMPLATE_ID = 'template_123'
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'demo-rep-1',
+      rep: {
+        name: 'Demo Rep',
+        email: 'demo.rep@example.com',
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/signwell/agreement', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'service_agreement',
+          intakeId: 'intake-demo',
+          waitlistId: 'waitlist-demo',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      code: 'SIGNWELL_SANDBOX_PAYLOAD_READY',
+      gateType: 'service_agreement',
+      mode: 'sandbox',
+      templateId: 'template_123',
+      agreementPayload: {
+        test_mode: true,
+        template_id: 'template_123',
+        send_email: false,
+        recipients: [
+          {
+            id: 'sparkle_suite_rep',
+            name: 'Demo Rep',
+            email: 'demo.rep@example.com',
+          },
+        ],
+        metadata: {
+          platform: 'sparkle_suite',
+          agreement_gate: 'service_agreement',
+          sparkle_suite_agreement_gate: 'true',
+          intake_submission_id: 'intake-demo',
+          waitlist_id: 'waitlist-demo',
+          operator_rep_id: 'demo-rep-1',
+        },
+      },
+    })
+  })
+
+  it('does not return a live email or send claim unless live send is explicitly enabled', async () => {
     process.env.SIGNWELL_API_KEY = 'signwell_api_key'
     process.env.SIGNWELL_API_BASE_URL = 'https://www.signwell.com/api/v1'
     process.env.SIGNWELL_TEMPLATE_ID = 'template_123'
@@ -79,22 +174,14 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
       }),
     )
 
-    expect(response.status).toBe(501)
-    await expect(response.json()).resolves.toEqual({
-      code: 'SIGNWELL_SEND_NOT_ENABLED',
-      error:
-        'SignWell agreement sending is waiting for final legal/template review.',
-      gateType: 'service_agreement',
-      templateId: 'template_123',
-      metadata: {
-        platform: 'sparkle_suite',
-        agreement_gate: 'service_agreement',
-        sparkle_suite_agreement_gate: 'true',
-        intake_submission_id: 'intake-1',
-        waitlist_id: null,
-        operator_rep_id: 'operator-rep-1',
-      },
-    })
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    const serializedBody = JSON.stringify(body).toLowerCase()
+
+    expect(body.mode).toBe('sandbox')
+    expect(serializedBody).not.toContain('"sent"')
+    expect(serializedBody).not.toContain('"emailed"')
+    expect(serializedBody).not.toContain('"live"')
   })
 
   it('rejects unsupported agreement gates before doing provider work', async () => {

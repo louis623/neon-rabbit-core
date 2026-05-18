@@ -5,11 +5,23 @@ export type PrelaunchAgreementGateType =
 
 type EnvLike = Record<string, string | undefined>
 
+export type PrelaunchSignWellMode = 'sandbox' | 'dry_run' | 'live_blocked'
+
 interface PrelaunchSignWellMetadataOptions {
   gateType: PrelaunchAgreementGateType
   intakeId: string
   waitlistId?: string | null
   operatorRepId?: string | null
+}
+
+interface PrelaunchSignWellAgreementPayloadOptions {
+  templateId: string
+  recipient: {
+    name?: string | null
+    email: string
+  }
+  metadata: ReturnType<typeof buildPrelaunchSignWellMetadata>
+  mode: Extract<PrelaunchSignWellMode, 'sandbox' | 'dry_run'>
 }
 
 export function normalizePrelaunchAgreementGateType(value: unknown) {
@@ -31,6 +43,18 @@ export function getPrelaunchSignWellConfig(env: EnvLike = process.env) {
   }
 }
 
+export function getPrelaunchSignWellLiveSendMode(env: EnvLike = process.env): {
+  allowLiveSend: boolean
+  mode: Extract<PrelaunchSignWellMode, 'sandbox' | 'live_blocked'>
+} {
+  const allowLiveSend = env.SIGNWELL_ALLOW_LIVE_SEND?.trim() === 'true'
+
+  return {
+    allowLiveSend,
+    mode: allowLiveSend ? 'sandbox' : 'live_blocked',
+  }
+}
+
 export function buildPrelaunchSignWellMetadata({
   gateType,
   intakeId,
@@ -44,5 +68,26 @@ export function buildPrelaunchSignWellMetadata({
     intake_submission_id: intakeId,
     waitlist_id: waitlistId?.trim() || null,
     operator_rep_id: operatorRepId?.trim() || null,
+  }
+}
+
+export function buildPrelaunchSignWellAgreementPayload({
+  templateId,
+  recipient,
+  metadata,
+  mode,
+}: PrelaunchSignWellAgreementPayloadOptions) {
+  return {
+    test_mode: mode !== 'dry_run',
+    template_id: templateId,
+    send_email: false,
+    recipients: [
+      {
+        id: 'sparkle_suite_rep',
+        name: recipient.name?.trim() || recipient.email,
+        email: recipient.email,
+      },
+    ],
+    metadata,
   }
 }

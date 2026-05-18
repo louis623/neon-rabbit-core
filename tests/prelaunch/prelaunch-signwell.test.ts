@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
+  getPrelaunchSignWellLiveSendMode,
   getPrelaunchSignWellConfig,
   normalizePrelaunchAgreementGateType,
 } from '@/lib/prelaunch/signwell'
@@ -51,5 +53,67 @@ describe('prelaunch SignWell agreement gate', () => {
       waitlist_id: 'waitlist-1',
       operator_rep_id: 'rep-1',
     })
+  })
+
+  it('keeps live SignWell sending disabled unless the explicit allow flag is set', () => {
+    expect(getPrelaunchSignWellLiveSendMode({})).toEqual({
+      allowLiveSend: false,
+      mode: 'live_blocked',
+    })
+    expect(
+      getPrelaunchSignWellLiveSendMode({
+        SIGNWELL_SEND_ENABLED: 'true',
+      }),
+    ).toEqual({
+      allowLiveSend: false,
+      mode: 'live_blocked',
+    })
+    expect(
+      getPrelaunchSignWellLiveSendMode({
+        SIGNWELL_ALLOW_LIVE_SEND: 'true',
+      }),
+    ).toEqual({
+      allowLiveSend: true,
+      mode: 'sandbox',
+    })
+  })
+
+  it('builds a non-sending sandbox agreement payload for a demo rep', () => {
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: 'template_demo',
+      recipient: {
+        name: 'Demo Rep',
+        email: 'demo.rep@example.com',
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'intake-demo',
+        waitlistId: 'waitlist-demo',
+        operatorRepId: 'rep-demo',
+      }),
+      mode: 'sandbox',
+    })
+
+    expect(payload).toEqual({
+      test_mode: true,
+      template_id: 'template_demo',
+      send_email: false,
+      recipients: [
+        {
+          id: 'sparkle_suite_rep',
+          name: 'Demo Rep',
+          email: 'demo.rep@example.com',
+        },
+      ],
+      metadata: {
+        platform: 'sparkle_suite',
+        agreement_gate: 'service_agreement',
+        sparkle_suite_agreement_gate: 'true',
+        intake_submission_id: 'intake-demo',
+        waitlist_id: 'waitlist-demo',
+        operator_rep_id: 'rep-demo',
+      },
+    })
+    expect(JSON.stringify(payload).toLowerCase()).not.toContain('sent')
   })
 })
