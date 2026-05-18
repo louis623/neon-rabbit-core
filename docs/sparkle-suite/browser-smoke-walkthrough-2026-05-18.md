@@ -128,9 +128,22 @@ For each walkthrough, record:
 
 Do not capture passwords, provider keys, request headers, Vercel bypass values, Stripe session IDs, SignWell template IDs, or live customer/payment details.
 
+## Completed walkthrough results
+
+### 2026-05-18 local browser attempt
+
+- Target: local app at `http://localhost:3000`.
+- Browser used: Codex in-app browser.
+- Pass/fail: blocked before the Stripe checkout and billing portal browser steps.
+- Result: `/nic-nac` rendered the Nic-Nac shell, but the workspace was not authenticated for the demo rep. The page showed loading placeholders for the board data and the embedded Nic-Nac panel reported `Not signed in - visit /login and come back.`
+- Follow-up command result: `local_app` and `stripe_local_routes` smoke attempts stopped at Supabase sign-in with `Invalid login credentials` when using the repo's built-in demo credential in memory.
+- Aggregate safe smoke result: `npm run smoke:launch -- --categories local_static,stripe_test,signwell_sandbox --json --write-report` wrote `.local/launch-smoke-results/launch-local-2026-05-18T20-02-36-150Z.json`; `local_static` and `stripe_test` passed, while `signwell_sandbox` was blocked by missing local SignWell env names.
+- Return URL state for Stripe checkout and portal: not reached.
+- Screenshots: none captured.
+
 ## Handoff status
 
 - Command-side smoke is documented in `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
 - Launch readiness summary is documented in `docs/sparkle-suite/launch-readiness-2026-05-18.md`.
-- Remaining browser work is manual/Chrome-assisted verification of the local app and protected preview.
+- Remaining browser work is manual/Chrome-assisted verification of the local app and protected preview after the current demo password is provided in the local environment or the demo password is explicitly rotated.
 - Provider sends and paid provider calls remain parked behind explicit Louis approval.
