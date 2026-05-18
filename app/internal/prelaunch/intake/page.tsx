@@ -5,6 +5,7 @@ import {
   PrelaunchIntakeReviewPageContent,
 } from './_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
+import { loadPrelaunchWaitlistReviewLeads } from '@/lib/prelaunch/waitlist-review'
 import {
   AuthError,
   getAuthenticatedOperator,
@@ -47,11 +48,15 @@ export default async function InternalPrelaunchIntakePage({
 
   const query = searchParams ? await searchParams : {}
   const activeLane = normalizePrelaunchIntakeReviewLane(query.lane)
-  const submissions = await loadPrelaunchIntakeReviewSubmissions()
+  const [submissions, waitlistLeads] = await Promise.all([
+    loadPrelaunchIntakeReviewSubmissions(),
+    loadPrelaunchWaitlistReviewLeads(),
+  ])
   return (
     <PrelaunchIntakeReviewPageContent
       activeLane={activeLane}
       submissions={submissions}
+      waitlistLeads={waitlistLeads}
     />
   )
 }

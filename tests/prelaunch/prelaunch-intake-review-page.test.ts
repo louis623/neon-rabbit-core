@@ -9,6 +9,7 @@ import {
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
+import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 
 const submission: PrelaunchIntakeReviewSubmission = {
   id: 'intake-1',
@@ -52,6 +53,26 @@ const gateEnvKeys = [
   'STRIPE_PRICE_START_WORK_FEE',
   'STRIPE_PRICE_LAUNCH_FEE',
 ] as const
+
+const waitlistLead: PrelaunchWaitlistReviewLead = {
+  id: 'waitlist-kim',
+  name: 'Kim Hart',
+  email: 'kim@example.com',
+  phone: '919-555-0101',
+  tiktokHandle: '@kimslivejewelry',
+  teamRepName: 'Lindsey',
+  setupPain: 'Getting my live setup organized',
+  smsConsent: true,
+  emailConsent: true,
+  leadStatus: 'new',
+  welcomeEmailStatus: 'sent',
+  welcomeEmailSentAt: '2026-05-13T20:26:34.729Z',
+  welcomeEmailError: null,
+  handoffStatus: 'not_started',
+  warmupStatus: 'not_started',
+  intakeSubmissionId: null,
+  createdAt: '2026-05-13T20:26:34.527Z',
+}
 
 function snapshotGateEnv() {
   return Object.fromEntries(
@@ -156,6 +177,37 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('No kit fulfillment approval.')
     expect(html).not.toContain('Send SMS')
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
+  })
+
+  it('renders waitlist leads with confirmation email status', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        submissions: [],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-failed',
+            name: 'Morgan Lee',
+            email: 'morgan@example.com',
+            welcomeEmailStatus: 'failed',
+            welcomeEmailSentAt: null,
+            welcomeEmailError: 'Resend rejected the message.',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Waitlist signups')
+    expect(html).toContain('2 waitlist leads')
+    expect(html).toContain('1 confirmation sent')
+    expect(html).toContain('Kim Hart')
+    expect(html).toContain('kim@example.com')
+    expect(html).toContain('Lindsey')
+    expect(html).toContain('Confirmation sent')
+    expect(html).toContain('Morgan Lee')
+    expect(html).toContain('Confirmation failed')
+    expect(html).toContain('Resend rejected the message.')
   })
 
   it('renders operator priority lanes and filters by the active lane', () => {
