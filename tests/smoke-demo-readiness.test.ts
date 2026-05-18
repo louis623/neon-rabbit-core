@@ -2,11 +2,15 @@ import { describe, expect, it } from 'vitest'
 import {
   buildDemoSmokePlan,
   buildDemoSmokeReport,
+  buildLaunchSmokeReport,
   buildSmokeHttpError,
   DEFAULT_DEMO_SMOKE_CATEGORY,
   isVercelDeploymentProtectionResponse,
+  parseLaunchSmokeOptions,
   parseDemoSmokeOptions,
+  runLaunchSmoke,
   runDemoSmoke,
+  SAFE_LAUNCH_SMOKE_CATEGORIES,
   validateDemoSmokePlan,
   VERCEL_PROTECTION_BYPASS_ENV,
   withVercelProtectionBypass,
@@ -353,5 +357,121 @@ describe('demo launch smoke readiness plan', () => {
       category: 'local_static',
       json: true,
     })
+  })
+
+  it('runs the safe launch smoke categories in order and summarizes the result', async () => {
+    const seenCategories: string[] = []
+
+    const report = await runLaunchSmoke(
+      {
+        target: 'local',
+        categories: ['local_static', 'local_app', 'stripe_test'],
+        json: true,
+        writeReport: false,
+      },
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_REP_PASSWORD: 'demo-password',
+        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
+        STRIPE_SECRET_KEY: 'sk_test_secret',
+        STRIPE_WEBHOOK_SECRET: 'whsec_secret',
+        STRIPE_PRICE_MONTHLY: 'price_test',
+      },
+      {
+        runCategory: async (plan) => {
+          seenCategories.push(plan.category)
+          return {
+            category: plan.category,
+            ok: true,
+            results: [{ id: `${plan.category}_ok`, ok: true, detail: 'ok' }],
+          }
+        },
+      },
+    )
+
+    expect(seenCategories).toEqual(['local_static', 'local_app', 'stripe_test'])
+    expect(report.ok).toBe(true)
+    expect(report.target).toBe('local')
+    expect(report.categories.map((category) => category.category)).toEqual([
+      'local_static',
+      'local_app',
+      'stripe_test',
+    ])
+  })
+
+  it('captures launch smoke category failures without leaking env secrets', async () => {
+    const report = await runLaunchSmoke(
+      {
+        target: 'preview',
+        categories: ['stripe_test', 'signwell_sandbox'],
+        json: true,
+        writeReport: false,
+      },
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        STRIPE_SECRET_KEY: 'sk_test_super_secret',
+        SIGNWELL_API_KEY: 'super_secret_signwell_key',
+      },
+      {
+        runCategory: async (plan) => {
+          if (plan.category === 'stripe_test') {
+            throw new Error('provider route failed with sk_test_super_secret')
+          }
+
+          return runDemoSmoke(plan, {
+            DEMO_REP_EMAIL: 'demo@example.com',
+            SIGNWELL_API_KEY: 'super_secret_signwell_key',
+          })
+        },
+      },
+    )
+
+    const serialized = JSON.stringify(report)
+
+    expect(report.ok).toBe(false)
+    expect(report.categories).toContainEqual(
+      expect.objectContaining({
+        category: 'stripe_test',
+        ok: false,
+      }),
+    )
+    expect(serialized).not.toContain('sk_test_super_secret')
+    expect(serialized).not.toContain('super_secret_signwell_key')
+  })
+
+  it('parses launch smoke options for target, category subset, and report writing', () => {
+    expect(
+      parseLaunchSmokeOptions([
+        '--target',
+        'preview',
+        '--categories',
+        'local_static,stripe_test',
+        '--json',
+        '--write-report',
+      ]),
+    ).toEqual({
+      target: 'preview',
+      categories: ['local_static', 'stripe_test'],
+      json: true,
+      writeReport: true,
+    })
+  })
+
+  it('builds a machine-readable launch report without env configuration', () => {
+    const report = buildLaunchSmokeReport({
+      target: 'local',
+      categories: SAFE_LAUNCH_SMOKE_CATEGORIES.map((category) => ({
+        category,
+        ok: true,
+        results: [{ id: `${category}_ok`, ok: true, detail: 'ok' }],
+      })),
+    })
+
+    expect(report.ok).toBe(true)
+    expect(report.categories).toHaveLength(SAFE_LAUNCH_SMOKE_CATEGORIES.length)
+    expect(JSON.stringify(report)).not.toContain('SIGNWELL_API_KEY')
+    expect(JSON.stringify(report)).not.toContain('STRIPE_SECRET_KEY')
   })
 })

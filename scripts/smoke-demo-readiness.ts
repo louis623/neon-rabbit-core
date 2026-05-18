@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 import {
@@ -26,6 +27,17 @@ export const DEMO_SMOKE_CATEGORIES = [
 ] as const
 
 export type DemoSmokeCategory = (typeof DEMO_SMOKE_CATEGORIES)[number]
+
+export const SAFE_LAUNCH_SMOKE_CATEGORIES = [
+  'local_static',
+  'supabase_demo',
+  'local_app',
+  'stripe_test',
+  'stripe_local_routes',
+  'signwell_sandbox',
+] as const satisfies readonly DemoSmokeCategory[]
+
+export type LaunchSmokeTarget = 'local' | 'preview'
 
 export const DEFAULT_DEMO_SMOKE_CATEGORY: DemoSmokeCategory = 'local_static'
 export const STRIPE_LIVE_SMOKE_CONFIRM_ENV = 'STRIPE_LIVE_SMOKE_CONFIRMED'
@@ -78,7 +90,27 @@ export interface DemoSmokeReport {
   result: DemoSmokeRunResult
 }
 
-interface DemoSmokeRunDependencies {
+export interface LaunchSmokeOptions {
+  target: LaunchSmokeTarget
+  categories: DemoSmokeCategory[]
+  json: boolean
+  writeReport: boolean
+}
+
+export interface LaunchSmokeCategoryReport {
+  category: DemoSmokeCategory
+  ok: boolean
+  results: DemoSmokeResult[]
+}
+
+export interface LaunchSmokeReport {
+  generatedAt: string
+  target: LaunchSmokeTarget
+  ok: boolean
+  categories: LaunchSmokeCategoryReport[]
+}
+
+export interface DemoSmokeRunDependencies {
   seedDemoRep?: (plan: DemoSeedPlan) => Promise<DemoSeedResult>
   verifyDemoRepLogin?: (
     env: Record<string, string | undefined>,
@@ -92,6 +124,14 @@ interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<StripeLocalRouteVerification>
+}
+
+interface LaunchSmokeRunDependencies extends DemoSmokeRunDependencies {
+  runCategory?: (
+    plan: DemoSmokePlan,
+    env: Record<string, string | undefined>,
+    dependencies: DemoSmokeRunDependencies,
+  ) => Promise<DemoSmokeRunResult>
 }
 
 interface DemoLoginVerification {
@@ -816,6 +856,46 @@ export function parseDemoSmokeOptions(args: string[]): DemoSmokeOptions {
   }
 }
 
+export function parseLaunchSmokeOptions(args: string[]): LaunchSmokeOptions {
+  const targetFlagIndex = args.findIndex((arg) => arg === '--target')
+  const rawTarget =
+    targetFlagIndex >= 0 ? args[targetFlagIndex + 1] : 'local'
+  if (rawTarget !== 'local' && rawTarget !== 'preview') {
+    throw new Error('--target must be one of: local, preview')
+  }
+
+  const categoriesFlagIndex = args.findIndex((arg) => arg === '--categories')
+  const categories =
+    categoriesFlagIndex >= 0
+      ? args[categoriesFlagIndex + 1]
+          ?.split(',')
+          .map((category) => category.trim())
+          .filter(Boolean) ?? []
+      : [...SAFE_LAUNCH_SMOKE_CATEGORIES]
+
+  if (categories.length === 0) {
+    throw new Error('--categories must include at least one smoke category')
+  }
+
+  for (const category of categories) {
+    if (!DEMO_SMOKE_CATEGORIES.includes(category as DemoSmokeCategory)) {
+      throw new Error(
+        `--categories must only include: ${DEMO_SMOKE_CATEGORIES.join(', ')}`,
+      )
+    }
+    if (category === 'nic_nac_paid') {
+      throw new Error('launch smoke cannot include nic_nac_paid')
+    }
+  }
+
+  return {
+    target: rawTarget,
+    categories: categories as DemoSmokeCategory[],
+    json: args.includes('--json'),
+    writeReport: args.includes('--write-report'),
+  }
+}
+
 export function buildDemoSmokeReport(
   plan: DemoSmokePlan,
   result: DemoSmokeRunResult,
@@ -829,6 +909,94 @@ export function buildDemoSmokeReport(
     },
     result,
   }
+}
+
+export function buildLaunchSmokeReport(input: {
+  target: LaunchSmokeTarget
+  categories: LaunchSmokeCategoryReport[]
+}): LaunchSmokeReport {
+  return {
+    generatedAt: new Date().toISOString(),
+    target: input.target,
+    ok: input.categories.every((category) => category.ok),
+    categories: input.categories,
+  }
+}
+
+export async function runLaunchSmoke(
+  options: LaunchSmokeOptions,
+  env: Record<string, string | undefined> = process.env,
+  dependencies: LaunchSmokeRunDependencies = {},
+): Promise<LaunchSmokeReport> {
+  const categoryReports: LaunchSmokeCategoryReport[] = []
+  const runCategory = dependencies.runCategory ?? runDemoSmoke
+
+  for (const category of options.categories) {
+    const plan = buildDemoSmokePlan({ category })
+
+    try {
+      const result = await runCategory(plan, env, dependencies)
+      categoryReports.push({
+        category,
+        ok: result.ok,
+        results: result.results.map((smokeResult) => ({
+          ...smokeResult,
+          detail: redactEnvSecrets(smokeResult.detail, env),
+        })),
+      })
+    } catch (error) {
+      categoryReports.push({
+        category,
+        ok: false,
+        results: [
+          {
+            id: 'exception',
+            ok: false,
+            detail: redactEnvSecrets(
+              error instanceof Error ? error.message : String(error),
+              env,
+            ),
+          },
+        ],
+      })
+    }
+  }
+
+  return buildLaunchSmokeReport({
+    target: options.target,
+    categories: categoryReports,
+  })
+}
+
+export async function writeLaunchSmokeReport(
+  report: LaunchSmokeReport,
+): Promise<string> {
+  const outputDir = path.join('.local', 'launch-smoke-results')
+  await mkdir(outputDir, { recursive: true })
+  const safeTimestamp = report.generatedAt.replace(/[:.]/g, '-')
+  const outputPath = path.join(
+    outputDir,
+    `launch-${report.target}-${safeTimestamp}.json`,
+  )
+  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+  return outputPath
+}
+
+function redactEnvSecrets(
+  text: string,
+  env: Record<string, string | undefined>,
+): string {
+  let redacted = text
+  for (const [name, value] of Object.entries(env)) {
+    if (!value || value.length < 4) continue
+    if (!isSensitiveEnvName(name)) continue
+    redacted = redacted.split(value).join(`[redacted:${name}]`)
+  }
+  return redacted
+}
+
+function isSensitiveEnvName(name: string): boolean {
+  return /(?:KEY|SECRET|TOKEN|PASSWORD|BYPASS)/.test(name)
 }
 
 function countPaidNicNacSmokeRequests(): number {
@@ -870,7 +1038,35 @@ function printResults(runResult: DemoSmokeRunResult) {
 
 async function main() {
   config({ path: '.env.local', quiet: true })
-  const options = parseDemoSmokeOptions(process.argv.slice(2))
+  const args = process.argv.slice(2)
+  if (args.includes('--launch')) {
+    const options = parseLaunchSmokeOptions(args)
+    const report = await runLaunchSmoke(options)
+    const writtenReportPath = options.writeReport
+      ? await writeLaunchSmokeReport(report)
+      : null
+
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2))
+    } else {
+      console.log(`[smoke:launch] target=${report.target}`)
+      for (const category of report.categories) {
+        console.log(
+          `  - ${category.ok ? 'ok' : 'fail'} ${category.category}: ${category.results.map((result) => result.detail).join('; ')}`,
+        )
+      }
+      if (writtenReportPath) {
+        console.log(`[smoke:launch] wrote ${writtenReportPath}`)
+      }
+    }
+
+    if (!report.ok) {
+      process.exit(1)
+    }
+    return
+  }
+
+  const options = parseDemoSmokeOptions(args)
   const plan = buildDemoSmokePlan({ category: options.category })
   if (!options.json) {
     printPlan(plan)

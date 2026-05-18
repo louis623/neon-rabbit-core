@@ -26,6 +26,14 @@ Use `--json` when you want a compact report for notes:
 npm run smoke:demo -- --category local_static --json
 ```
 
+Use the aggregate launch smoke when you want one repeatable report across safe launch categories:
+
+```powershell
+npm run smoke:launch -- --categories local_static,stripe_test --json --write-report
+```
+
+Add categories only as the matching env and stop points are ready. `smoke:launch` refuses the paid Nic-Nac category and writes reports to `.local/launch-smoke-results` when `--write-report` is set.
+
 ## Safe smoke order
 
 ### 1. Local static smoke
@@ -286,7 +294,9 @@ Also do not do these without separate approval:
 7. Run `stripe_test` with test keys only.
 8. Run `stripe_local_routes` against a running app started with the Stripe env.
 9. Run `signwell_sandbox` with sandbox/dry-run settings only.
-10. Stop and record blockers before any live-provider action.
+10. Run `smoke:launch` with the categories that passed individually, using `--json --write-report`.
+11. Follow `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md` for the manual browser pass.
+12. Stop and record blockers before any live-provider action.
 
 ## Pass notes to capture
 

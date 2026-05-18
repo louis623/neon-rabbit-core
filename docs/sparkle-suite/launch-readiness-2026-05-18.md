@@ -3,6 +3,7 @@
 ## Ready for demo
 
 - Operator runbook: `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
+- Browser smoke walkthrough: `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md`.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.
 - SignWell agreement onboarding can build a sandbox payload and blocks live sends unless `SIGNWELL_ALLOW_LIVE_SEND=true`.
@@ -13,6 +14,7 @@
 - `npm run smoke:demo -- --category local_app --json` has been run against `http://localhost:3000`; it verified `/api/nic-nac/me` and the `/nic-nac` shell for the demo rep.
 - `npm run stripe:demo-price -- --json` created Stripe test monthly price `price_1TYTAZHRBK3pZpO2b6WQ8kUl` without checkout or charge.
 - `npm run smoke:demo -- --category stripe_test --json` passed when `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` was set in the shell.
+- `npm run smoke:launch -- --categories local_static,stripe_test --json --write-report` is available for a repeatable safe aggregate smoke report.
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
@@ -32,7 +34,7 @@
 - First demo login smoke uses the built-in demo password unless `DEMO_REP_PASSWORD` is set. Rotate or set a custom demo password before sharing the account outside Louis.
 - Stripe test-mode checkout/portal still needs a Louis-approved demo rep credential and configured test keys for an end-to-end browser smoke.
 - Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet; verify production `STRIPE_SECRET_KEY` mode or explicitly approve production test-mode setup before adding it there.
-- Browser checkout walkthrough is still pending, but the local API route smoke has verified checkout and portal session creation in test mode.
+- Browser checkout walkthrough is documented but still needs a final manual pass with Louis/Vercel SSO and test-mode Stripe only.
 - Vercel Deployment Protection remains enabled for browser access; CLI smoke can use authenticated `vercel curl`, while browser walkthrough still needs Louis/Vercel SSO.
 - SignWell browser walkthrough/live send is still not approved. Keep `SIGNWELL_ALLOW_LIVE_SEND` unset unless Louis explicitly approves recipient, template, and timing.
 
