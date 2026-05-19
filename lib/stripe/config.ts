@@ -6,6 +6,9 @@ const stripeEnvSchema = z.object({
   STRIPE_PRICE_MONTHLY: z.string().startsWith('price_').optional(),
   STRIPE_PRICE_QUARTERLY: z.string().startsWith('price_').optional(),
   STRIPE_PRICE_ANNUAL: z.string().startsWith('price_').optional(),
+  STRIPE_PRICE_BUILD_FEE: z.string().startsWith('price_').optional(),
+  STRIPE_PRICE_FOUNDER_MONTHLY: z.string().startsWith('price_').optional(),
+  STRIPE_PRICE_STANDARD_MONTHLY: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_APP_URL: z.string().url(),
 })
 
@@ -61,6 +64,19 @@ export function getPriceId(planType: string): string | undefined {
     annual: config.STRIPE_PRICE_ANNUAL,
   }
   return map[planType]
+}
+
+export function getSparkleSuitePriceIds(): {
+  buildFee?: string
+  founderMonthly?: string
+  standardMonthly?: string
+} {
+  const config = getStripeConfig()
+  return {
+    buildFee: config?.STRIPE_PRICE_BUILD_FEE,
+    founderMonthly: config?.STRIPE_PRICE_FOUNDER_MONTHLY,
+    standardMonthly: config?.STRIPE_PRICE_STANDARD_MONTHLY,
+  }
 }
 
 export function getAppUrl(): string {

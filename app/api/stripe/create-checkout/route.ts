@@ -1,9 +1,28 @@
 import { NextResponse } from 'next/server'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
-import { getPriceId, getAppUrl } from '@/lib/stripe/config'
+import { getAppUrl, getSparkleSuitePriceIds } from '@/lib/stripe/config'
+import { buildSparkleSuiteCheckoutPricing } from '@/lib/stripe/sparkle-suite-pricing'
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+const STRIPE_PRICE_SETUP_ACTION =
+  'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
+
+async function countPaidSubscriptionStarts(
+  admin: ReturnType<typeof createAdminClient>,
+): Promise<number> {
+  const { count, error } = await admin
+    .from('subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .in('status', ['active', 'trialing', 'past_due', 'cancelled', 'paused'])
+
+  if (error) {
+    throw error
+  }
+
+  return count ?? 0
+}
 
 export async function POST(request: Request) {
   if (!stripeEnabled()) {
@@ -11,15 +30,14 @@ export async function POST(request: Request) {
       {
         code: 'STRIPE_CONFIGURATION_MISSING',
         error: 'Stripe is not configured.',
-        action:
-          'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, and STRIPE_PRICE_MONTHLY before starting checkout.',
+        action: STRIPE_PRICE_SETUP_ACTION,
       },
       { status: 503 },
     )
   }
 
   try {
-    const { repId, rep } = await getAuthenticatedRep()
+    const { repId } = await getAuthenticatedRep()
     const body = await request.json().catch(() => ({}))
     const requestedPlanType =
       typeof body?.planType === 'string' ? body.planType.trim() : ''
@@ -30,11 +48,6 @@ export async function POST(request: Request) {
         { error: 'Invalid planType — monthly is the only supported plan.' },
         { status: 400 },
       )
-    }
-
-    const priceId = getPriceId(planType)
-    if (!priceId) {
-      return NextResponse.json({ error: `Price not configured for plan: ${planType}` }, { status: 400 })
     }
 
     // Check for existing active subscription (Finding 16)
@@ -54,23 +67,40 @@ export async function POST(request: Request) {
       )
     }
 
+    const pricing = buildSparkleSuiteCheckoutPricing({
+      paidSubscriptionStarts: await countPaidSubscriptionStarts(admin),
+      priceIds: getSparkleSuitePriceIds(),
+    })
+    if (!pricing.ok) {
+      return NextResponse.json(
+        {
+          error: 'Sparkle Suite checkout prices are not configured.',
+          missingEnv: pricing.missingEnv,
+          action: STRIPE_PRICE_SETUP_ACTION,
+        },
+        { status: 400 },
+      )
+    }
+
     const customerId = await getOrCreateStripeCustomer(repId)
 
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: pricing.lineItems,
       success_url: `${getAppUrl()}/nic-nac?billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${getAppUrl()}/nic-nac?billing=subscription-cancelled`,
       metadata: {
         rep_id: repId,
         plan_type: planType,
+        ...pricing.metadata,
       },
       subscription_data: {
         metadata: {
           rep_id: repId,
           plan_type: planType,
+          ...pricing.metadata,
         },
       },
     })

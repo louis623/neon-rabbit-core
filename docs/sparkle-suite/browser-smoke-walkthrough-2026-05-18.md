@@ -32,7 +32,7 @@ For a protected Vercel preview, sign in through Vercel SSO in the browser sessio
 
 1. Confirm the target environment is test/sandbox only for Stripe and SignWell.
 2. Confirm the demo account was seeded and login smoke passed, per `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
-3. For local browser smoke, start the local app with the same environment used by the passing route smoke, including test `STRIPE_PRICE_MONTHLY`.
+3. For local browser smoke, start the local app with the same environment used by the passing route smoke, including test `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY`.
 4. Keep browser devtools Network open enough to confirm redirects and statuses, but do not preserve secret-bearing request headers in screenshots.
 
 ## Walkthrough A - Local app

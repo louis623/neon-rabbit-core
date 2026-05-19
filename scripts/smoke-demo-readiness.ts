@@ -47,7 +47,14 @@ export type LaunchSmokeTarget = 'local' | 'preview'
 
 export const DEFAULT_DEMO_SMOKE_CATEGORY: DemoSmokeCategory = 'local_static'
 export const STRIPE_LIVE_SMOKE_CONFIRM_ENV = 'STRIPE_LIVE_SMOKE_CONFIRMED'
-export const STRIPE_LIVE_APPROVED_PRICE_ID_ENV = 'STRIPE_LIVE_APPROVED_PRICE_ID'
+export const STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID_ENV =
+  'STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID'
+export const STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID_ENV =
+  'STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID'
+export const STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID_ENV =
+  'STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID'
+export const STRIPE_LIVE_APPROVED_PRICE_ID_ENV =
+  STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID_ENV
 export const STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV =
   'STRIPE_LIVE_APPROVED_SMOKE_PATH'
 export const STRIPE_LIVE_APPROVED_AT_ENV = 'STRIPE_LIVE_APPROVED_AT'
@@ -197,6 +204,16 @@ const BASE_EXCLUDED_LIVE_ACTIONS = [
 ]
 
 const DEMO_EMAIL_ENV = 'DEMO_REP_EMAIL'
+const STRIPE_SPARKLE_SUITE_PRICE_ENVS = [
+  'STRIPE_PRICE_BUILD_FEE',
+  'STRIPE_PRICE_FOUNDER_MONTHLY',
+  'STRIPE_PRICE_STANDARD_MONTHLY',
+] as const
+const STRIPE_LIVE_APPROVED_PRICE_ENVS = [
+  STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID_ENV,
+  STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID_ENV,
+  STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID_ENV,
+] as const
 
 export function buildDemoCredentialFailureMessage(
   context: string,
@@ -282,7 +299,7 @@ export function buildDemoSmokePlan(
           DEMO_EMAIL_ENV,
           'STRIPE_SECRET_KEY',
           'STRIPE_WEBHOOK_SECRET',
-          'STRIPE_PRICE_MONTHLY',
+          ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
           'NEXT_PUBLIC_APP_URL',
         ],
         excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
@@ -306,7 +323,7 @@ export function buildDemoSmokePlan(
           'NEXT_PUBLIC_SUPABASE_ANON_KEY',
           'STRIPE_SECRET_KEY',
           'STRIPE_WEBHOOK_SECRET',
-          'STRIPE_PRICE_MONTHLY',
+          ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
         ],
         excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
         actions: [
@@ -326,9 +343,9 @@ export function buildDemoSmokePlan(
           DEMO_EMAIL_ENV,
           'STRIPE_SECRET_KEY',
           'STRIPE_WEBHOOK_SECRET',
-          'STRIPE_PRICE_MONTHLY',
+          ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
           'NEXT_PUBLIC_APP_URL',
-          STRIPE_LIVE_APPROVED_PRICE_ID_ENV,
+          ...STRIPE_LIVE_APPROVED_PRICE_ENVS,
           STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV,
           STRIPE_LIVE_APPROVED_AT_ENV,
         ],
@@ -503,7 +520,7 @@ function buildProviderReadinessError(
     const missing = missingEnvNames(env, [
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
-      'STRIPE_PRICE_MONTHLY',
+      ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
       'NEXT_PUBLIC_APP_URL',
     ])
 
@@ -516,7 +533,7 @@ function buildProviderReadinessError(
     const missing = missingEnvNames(env, [
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
-      'STRIPE_PRICE_MONTHLY',
+      ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
       'NEXT_PUBLIC_APP_URL',
       'NEXT_PUBLIC_SUPABASE_URL',
       'NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -531,9 +548,9 @@ function buildProviderReadinessError(
     const missing = missingEnvNames(env, [
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
-      'STRIPE_PRICE_MONTHLY',
+      ...STRIPE_SPARKLE_SUITE_PRICE_ENVS,
       'NEXT_PUBLIC_APP_URL',
-      STRIPE_LIVE_APPROVED_PRICE_ID_ENV,
+      ...STRIPE_LIVE_APPROVED_PRICE_ENVS,
       STRIPE_LIVE_APPROVED_SMOKE_PATH_ENV,
       STRIPE_LIVE_APPROVED_AT_ENV,
     ])
@@ -553,13 +570,10 @@ function buildProviderReadinessError(
     }
 
     if (
-      env.STRIPE_PRICE_MONTHLY?.trim() &&
-      env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV]?.trim() &&
-      env.STRIPE_PRICE_MONTHLY.trim() !==
-        env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV]?.trim()
+      !stripeLiveApprovedPricesMatch(env)
     ) {
       errors.push(
-        'STRIPE_PRICE_MONTHLY must match STRIPE_LIVE_APPROVED_PRICE_ID for stripe_live_preflight.',
+        'Stripe live price ids must match their approved live price ids for stripe_live_preflight.',
       )
     }
 
@@ -666,6 +680,28 @@ function missingEnvNames(
   names: string[],
 ): string[] {
   return names.filter((name) => !env[name]?.trim())
+}
+
+function stripeLiveApprovedPricesMatch(
+  env: Record<string, string | undefined>,
+): boolean {
+  const pairs = [
+    ['STRIPE_PRICE_BUILD_FEE', STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID_ENV],
+    [
+      'STRIPE_PRICE_FOUNDER_MONTHLY',
+      STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID_ENV,
+    ],
+    [
+      'STRIPE_PRICE_STANDARD_MONTHLY',
+      STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID_ENV,
+    ],
+  ] as const
+
+  return pairs.every(([actualName, approvedName]) => {
+    const actual = env[actualName]?.trim()
+    const approved = env[approvedName]?.trim()
+    return !actual || !approved || actual === approved
+  })
 }
 
 function getStripeSecretKeyMode(secretKey: string | undefined): 'missing' | 'test' | 'live' | 'unknown' {
@@ -810,8 +846,8 @@ export async function runDemoSmoke(
     const ok =
       keyMode === 'live' &&
       Boolean(env.STRIPE_WEBHOOK_SECRET) &&
-      Boolean(env.STRIPE_PRICE_MONTHLY) &&
-      env.STRIPE_PRICE_MONTHLY === env[STRIPE_LIVE_APPROVED_PRICE_ID_ENV] &&
+      STRIPE_SPARKLE_SUITE_PRICE_ENVS.every((name) => Boolean(env[name])) &&
+      stripeLiveApprovedPricesMatch(env) &&
       env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() !== 'true'
 
     return {
@@ -821,7 +857,7 @@ export async function runDemoSmoke(
         {
           id: 'stripe_live_preflight',
           ok,
-          detail: `Stripe live preflight ready; key_mode=${keyMode}; price_id=${ok ? 'approved_match' : 'not_ready'}; app_url_host=${appUrlHost}; webhook_secret=${env.STRIPE_WEBHOOK_SECRET ? 'present' : 'missing'}; live_smoke_confirmed=${String(env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() === 'true')}; checkout_created=false`,
+          detail: `Stripe live preflight ready; key_mode=${keyMode}; price_ids=${ok ? 'approved_match' : 'not_ready'}; app_url_host=${appUrlHost}; webhook_secret=${env.STRIPE_WEBHOOK_SECRET ? 'present' : 'missing'}; live_smoke_confirmed=${String(env[STRIPE_LIVE_SMOKE_CONFIRM_ENV]?.trim() === 'true')}; checkout_created=false`,
         },
       ],
     }

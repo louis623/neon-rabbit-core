@@ -5,25 +5,54 @@ import Stripe from 'stripe'
 
 const STRIPE_API_VERSION = '2026-03-25.dahlia'
 
-export const DEFAULT_STRIPE_DEMO_PRICE = {
-  lookupKey: 'sparkle_suite_launch_demo_monthly_test',
-  productName: 'Sparkle Suite Launch Demo (test only)',
-  amountCents: 100,
-  currency: 'usd',
-  interval: 'month',
-} as const
+export const DEFAULT_STRIPE_DEMO_PRICES = [
+  {
+    key: 'buildFee',
+    envName: 'STRIPE_PRICE_BUILD_FEE',
+    lookupKey: 'sparkle_suite_launch_demo_build_fee_test',
+    productName: 'Sparkle Suite build fee (test only)',
+    amountCents: 4999,
+    currency: 'usd',
+    interval: null,
+  },
+  {
+    key: 'founderMonthly',
+    envName: 'STRIPE_PRICE_FOUNDER_MONTHLY',
+    lookupKey: 'sparkle_suite_launch_demo_founder_monthly_test',
+    productName: 'Sparkle Suite Founding Rep Monthly (test only)',
+    amountCents: 4999,
+    currency: 'usd',
+    interval: 'month',
+  },
+  {
+    key: 'standardMonthly',
+    envName: 'STRIPE_PRICE_STANDARD_MONTHLY',
+    lookupKey: 'sparkle_suite_launch_demo_standard_monthly_test',
+    productName: 'Sparkle Suite Standard Monthly (test only)',
+    amountCents: 7499,
+    currency: 'usd',
+    interval: 'month',
+  },
+] as const
+
+export const DEFAULT_STRIPE_DEMO_PRICE = DEFAULT_STRIPE_DEMO_PRICES[1]
 
 type StripeSecretKeyMode = 'missing' | 'test' | 'live' | 'unknown'
 type StripeDemoPriceAction = 'found' | 'created'
+type StripeDemoPriceKey = (typeof DEFAULT_STRIPE_DEMO_PRICES)[number]['key']
 
 export interface StripeDemoPriceOptions {
   secretKey: string | undefined
-  lookupKey: string
-  productName: string
-  amountCents: number
-  currency: string
-  interval: 'month'
   json: boolean
+  prices: Array<{
+    key: StripeDemoPriceKey
+    envName: string
+    lookupKey: string
+    productName: string
+    amountCents: number
+    currency: string
+    interval: 'month' | null
+  }>
 }
 
 interface StripePriceLike {
@@ -45,10 +74,10 @@ interface StripePriceClient {
       params: {
         currency: string
         unit_amount: number
-        recurring: { interval: 'month' }
         lookup_key: string
         product_data: { name: string }
         metadata: Record<string, string>
+        recurring?: { interval: 'month' }
       },
       options: { idempotencyKey: string },
     ) => Promise<StripePriceLike>
@@ -56,15 +85,20 @@ interface StripePriceClient {
 }
 
 export interface StripeDemoPriceResult {
-  ok: true
   action: StripeDemoPriceAction
-  mode: 'test'
   priceId: string
   lookupKey: string
+  envName: string
   amountCents: number
   currency: string
-  interval: 'month'
-  envLine: string
+  interval: 'month' | null
+}
+
+export interface StripeDemoPricesResult {
+  ok: true
+  mode: 'test'
+  prices: StripeDemoPriceResult[]
+  envLines: string[]
 }
 
 export function getStripeSecretKeyMode(
@@ -82,24 +116,22 @@ export function parseStripeDemoPriceOptions(
 ): StripeDemoPriceOptions {
   return {
     secretKey: env.STRIPE_SECRET_KEY,
-    lookupKey:
-      readStringFlag(args, '--lookup-key') ??
-      env.STRIPE_DEMO_MONTHLY_LOOKUP_KEY ??
-      DEFAULT_STRIPE_DEMO_PRICE.lookupKey,
-    productName:
-      readStringFlag(args, '--product-name') ??
-      env.STRIPE_DEMO_PRODUCT_NAME ??
-      DEFAULT_STRIPE_DEMO_PRICE.productName,
-    amountCents:
-      readPositiveIntFlag(args, '--amount-cents') ??
-      readPositiveIntEnv(env, 'STRIPE_DEMO_MONTHLY_AMOUNT_CENTS') ??
-      DEFAULT_STRIPE_DEMO_PRICE.amountCents,
-    currency:
-      readStringFlag(args, '--currency') ??
-      env.STRIPE_DEMO_MONTHLY_CURRENCY ??
-      DEFAULT_STRIPE_DEMO_PRICE.currency,
-    interval: 'month',
     json: args.includes('--json'),
+    prices: DEFAULT_STRIPE_DEMO_PRICES.map((price) => ({
+      ...price,
+      lookupKey:
+        readStringFlag(args, `--${toKebabCase(price.key)}-lookup-key`) ??
+        env[`STRIPE_DEMO_${toSnakeCase(price.key)}_LOOKUP_KEY`] ??
+        price.lookupKey,
+      amountCents:
+        readPositiveIntFlag(args, `--${toKebabCase(price.key)}-amount-cents`) ??
+        readPositiveIntEnv(env, `STRIPE_DEMO_${toSnakeCase(price.key)}_AMOUNT_CENTS`) ??
+        price.amountCents,
+      currency:
+        readStringFlag(args, `--${toKebabCase(price.key)}-currency`) ??
+        env[`STRIPE_DEMO_${toSnakeCase(price.key)}_CURRENCY`] ??
+        price.currency,
+    })),
   }
 }
 
@@ -115,64 +147,91 @@ export function validateStripeDemoPriceOptions(
     )
   }
 
-  if (!options.lookupKey.trim()) {
-    errors.push('Stripe demo monthly lookup key is required.')
-  }
+  for (const price of options.prices) {
+    if (!price.lookupKey.trim()) {
+      errors.push(`${price.envName} demo lookup key is required.`)
+    }
 
-  if (!options.productName.trim()) {
-    errors.push('Stripe demo product name is required.')
-  }
+    if (!price.productName.trim()) {
+      errors.push(`${price.envName} demo product name is required.`)
+    }
 
-  if (!Number.isInteger(options.amountCents) || options.amountCents <= 0) {
-    errors.push('Stripe demo monthly amount must be a positive integer number of cents.')
-  }
+    if (!Number.isInteger(price.amountCents) || price.amountCents <= 0) {
+      errors.push(`${price.envName} demo amount must be a positive integer number of cents.`)
+    }
 
-  if (!/^[a-z]{3}$/.test(options.currency)) {
-    errors.push('Stripe demo monthly currency must be a three-letter lowercase code.')
+    if (!/^[a-z]{3}$/.test(price.currency)) {
+      errors.push(`${price.envName} demo currency must be a three-letter lowercase code.`)
+    }
   }
 
   return errors
 }
 
-export async function ensureStripeDemoMonthlyPrice(
+export async function ensureStripeDemoPrices(
   stripe: StripePriceClient,
   options: StripeDemoPriceOptions,
-): Promise<StripeDemoPriceResult> {
-  const existing = await stripe.prices.list({
-    lookup_keys: [options.lookupKey],
-    active: true,
-    limit: 1,
-  })
-  const price = existing.data[0]
-  const action: StripeDemoPriceAction = price ? 'found' : 'created'
-  const ensuredPrice =
-    price ??
-    (await stripe.prices.create(
-      {
-        currency: options.currency,
-        unit_amount: options.amountCents,
-        recurring: { interval: options.interval },
-        lookup_key: options.lookupKey,
-        product_data: { name: options.productName },
-        metadata: {
-          sparkle_suite_launch: 'demo_smoke',
-          production_pricing: 'false',
-        },
+): Promise<StripeDemoPricesResult> {
+  const prices: StripeDemoPriceResult[] = []
+
+  for (const priceOptions of options.prices) {
+    const existing = await stripe.prices.list({
+      lookup_keys: [priceOptions.lookupKey],
+      active: true,
+      limit: 1,
+    })
+    const price = existing.data[0]
+    const action: StripeDemoPriceAction = price ? 'found' : 'created'
+    const createParams = {
+      currency: priceOptions.currency,
+      unit_amount: priceOptions.amountCents,
+      lookup_key: priceOptions.lookupKey,
+      product_data: { name: priceOptions.productName },
+      metadata: {
+        sparkle_suite_launch: 'demo_smoke',
+        production_pricing: 'false',
+        sparkle_suite_price_role: priceOptions.key,
       },
-      { idempotencyKey: `sparkle-suite-demo-price-${options.lookupKey}` },
-    ))
+      ...(priceOptions.interval
+        ? { recurring: { interval: priceOptions.interval } }
+        : {}),
+    }
+    const ensuredPrice =
+      price ??
+      (await stripe.prices.create(
+        createParams,
+        { idempotencyKey: `sparkle-suite-demo-price-${priceOptions.lookupKey}` },
+      ))
+
+    prices.push({
+      action,
+      priceId: ensuredPrice.id,
+      lookupKey: priceOptions.lookupKey,
+      envName: priceOptions.envName,
+      amountCents: ensuredPrice.unit_amount ?? priceOptions.amountCents,
+      currency: ensuredPrice.currency,
+      interval: ensuredPrice.recurring?.interval === 'month' ? 'month' : null,
+    })
+  }
 
   return {
     ok: true,
-    action,
     mode: 'test',
-    priceId: ensuredPrice.id,
-    lookupKey: options.lookupKey,
-    amountCents: ensuredPrice.unit_amount ?? options.amountCents,
-    currency: ensuredPrice.currency,
-    interval: 'month',
-    envLine: `STRIPE_PRICE_MONTHLY=${ensuredPrice.id}`,
+    prices,
+    envLines: prices.map((price) => `${price.envName}=${price.priceId}`),
   }
+}
+
+export async function ensureStripeDemoMonthlyPrice(
+  stripe: StripePriceClient,
+  options: StripeDemoPriceOptions,
+): Promise<StripeDemoPriceResult & { envLine: string }> {
+  const result = await ensureStripeDemoPrices(stripe, {
+    ...options,
+    prices: options.prices.filter((price) => price.key === 'founderMonthly'),
+  })
+  const price = result.prices[0]
+  return { ...price, envLine: `${price.envName}=${price.priceId}` }
 }
 
 function readStringFlag(args: string[], name: string): string | undefined {
@@ -199,14 +258,27 @@ function readPositiveIntEnv(
   return Number.isInteger(parsed) && parsed > 0 ? parsed : Number.NaN
 }
 
-function printResult(result: StripeDemoPriceResult) {
-  console.log(
-    `[stripe:demo-price] ${result.action} test monthly price ${result.priceId}`,
-  )
-  console.log(
-    `[stripe:demo-price] ${result.amountCents} ${result.currency.toUpperCase()} cents/month; test-only smoke price, not production pricing.`,
-  )
-  console.log(result.envLine)
+function toSnakeCase(value: string): string {
+  return value.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()
+}
+
+function toKebabCase(value: string): string {
+  return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+}
+
+function printResult(result: StripeDemoPricesResult) {
+  for (const price of result.prices) {
+    const cadence = price.interval ? `/${price.interval}` : ' one-time'
+    console.log(
+      `[stripe:demo-price] ${price.action} ${price.envName} ${price.priceId}`,
+    )
+    console.log(
+      `[stripe:demo-price] ${price.amountCents} ${price.currency.toUpperCase()} cents${cadence}; test-only smoke price, not production pricing.`,
+    )
+  }
+  for (const envLine of result.envLines) {
+    console.log(envLine)
+  }
 }
 
 async function main() {
@@ -224,7 +296,7 @@ async function main() {
     apiVersion: STRIPE_API_VERSION,
     typescript: true,
   })
-  const result = await ensureStripeDemoMonthlyPrice(stripe, options)
+  const result = await ensureStripeDemoPrices(stripe, options)
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2))

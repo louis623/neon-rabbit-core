@@ -44,7 +44,7 @@ Run that batch only after:
 
 - `DEMO_REP_EMAIL` is set to the demo rep.
 - The current demo password is set locally as `DEMO_REP_PASSWORD`, or the demo password has been intentionally rotated by running `npm run seed:demo-rep` with a fresh `DEMO_REP_PASSWORD`.
-- `STRIPE_SECRET_KEY` is test mode and `STRIPE_PRICE_MONTHLY` is set to the test price.
+- `STRIPE_SECRET_KEY` is test mode and `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` are set to test prices.
 - `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` are restored locally for sandbox/dry-run smoke.
 - The local app is running at `http://localhost:3000` with the same env.
 
@@ -134,7 +134,7 @@ Stop point:
 
 - If this fails, stop before provider checks. The demo account is seeded, but the local app login path is not ready.
 
-### 4. Stripe test monthly price setup
+### 4. Stripe test itemized price setup
 
 Command:
 
@@ -146,8 +146,8 @@ What it does:
 
 - Uses only `STRIPE_SECRET_KEY` from `.env.local` or the current shell.
 - Refuses to run unless `STRIPE_SECRET_KEY` starts with `sk_test_`.
-- Finds or creates a Stripe test monthly price named `Sparkle Suite Launch Demo (test only)`.
-- Prints the exact `STRIPE_PRICE_MONTHLY=price_...` line to set locally.
+- Finds or creates three Stripe test prices: `Sparkle Suite build fee (test only)`, `Sparkle Suite Founding Rep Monthly (test only)`, and `Sparkle Suite Standard Monthly (test only)`.
+- Prints the exact `STRIPE_PRICE_BUILD_FEE=price_...`, `STRIPE_PRICE_FOUNDER_MONTHLY=price_...`, and `STRIPE_PRICE_STANDARD_MONTHLY=price_...` lines to set locally.
 - Does not create a checkout session.
 - Does not charge a card.
 - Does not decide production pricing.
@@ -155,13 +155,13 @@ What it does:
 Optional overrides:
 
 ```powershell
-npm run stripe:demo-price -- --amount-cents 100 --currency usd --json
+npm run stripe:demo-price -- --json
 ```
 
 Stop point:
 
 - If the command says the Stripe key mode is `live`, stop. Do not use live Stripe keys for demo price setup.
-- After it prints `STRIPE_PRICE_MONTHLY=...`, put that value in the local shell or `.env.local`, then run the config smoke below.
+- After it prints the three `STRIPE_PRICE_...` lines, put those values in the local shell or `.env.local`, then run the config smoke below.
 
 ### 5. Stripe test-mode config smoke
 
@@ -184,7 +184,9 @@ Required env:
 - `DEMO_REP_EMAIL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_MONTHLY`
+- `STRIPE_PRICE_BUILD_FEE`
+- `STRIPE_PRICE_FOUNDER_MONTHLY`
+- `STRIPE_PRICE_STANDARD_MONTHLY`
 - `NEXT_PUBLIC_APP_URL`
 
 Stop point:
@@ -194,11 +196,10 @@ Stop point:
 
 Vercel status:
 
-- Development has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
-- Preview for `codex/sparkle-cross-phase-hardening` has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`.
+- Development and Preview previously had only `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`; replace that single-price setup with `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` before the next Stripe route smoke.
 - Most recently smoke-tested protected Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:launch:preview-protected`.
 - The same preview has passed the opt-in aggregate launch category through `npm run smoke:launch:preview-protected`.
-- Production live preflight was attempted on 2026-05-18 without creating checkout or charge traffic. It is blocked because Production currently reports Stripe key mode `test` and is missing `STRIPE_PRICE_MONTHLY` plus a matching approved live price.
+- Production live preflight was attempted on 2026-05-18 without creating checkout or charge traffic. It is blocked because Production currently reports Stripe key mode `test` and is missing approved live build-fee, founder monthly, and standard monthly prices.
 
 ### Stripe live preflight, no checkout
 
@@ -212,7 +213,7 @@ What it does:
 
 - Validates live Stripe launch config shape without calling Stripe and without creating a Checkout Session.
 - Requires `STRIPE_SECRET_KEY` mode `live`.
-- Requires `STRIPE_PRICE_MONTHLY` to match `STRIPE_LIVE_APPROVED_PRICE_ID`.
+- Requires `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` to match their corresponding approved live price ids.
 - Requires an approved live smoke path and approval timestamp.
 - Confirms `STRIPE_LIVE_SMOKE_CONFIRMED` is not set during preflight.
 - Reports only key mode, host, and present/missing status; it does not print Stripe secrets, webhook secrets, or price IDs.
@@ -222,9 +223,13 @@ Required env:
 - `DEMO_REP_EMAIL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_MONTHLY`
+- `STRIPE_PRICE_BUILD_FEE`
+- `STRIPE_PRICE_FOUNDER_MONTHLY`
+- `STRIPE_PRICE_STANDARD_MONTHLY`
 - `NEXT_PUBLIC_APP_URL`
-- `STRIPE_LIVE_APPROVED_PRICE_ID`
+- `STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID`
+- `STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID`
+- `STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID`
 - `STRIPE_LIVE_APPROVED_SMOKE_PATH`
 - `STRIPE_LIVE_APPROVED_AT`
 
@@ -283,7 +288,9 @@ Command:
 
 ```powershell
 $env:NEXT_PUBLIC_APP_URL='http://localhost:3000'
-$env:STRIPE_PRICE_MONTHLY='price_1TYTAZHRBK3pZpO2b6WQ8kUl'
+$env:STRIPE_PRICE_BUILD_FEE='price_test_build_fee'
+$env:STRIPE_PRICE_FOUNDER_MONTHLY='price_test_founder_monthly'
+$env:STRIPE_PRICE_STANDARD_MONTHLY='price_test_standard_monthly'
 npm run smoke:demo -- --category stripe_local_routes --json
 ```
 
@@ -306,13 +313,15 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_MONTHLY`
+- `STRIPE_PRICE_BUILD_FEE`
+- `STRIPE_PRICE_FOUNDER_MONTHLY`
+- `STRIPE_PRICE_STANDARD_MONTHLY`
 - Optional for protected Vercel previews: `VERCEL_PROTECTION_BYPASS`
 
 Stop point:
 
 - If `STRIPE_SECRET_KEY` is not test mode, stop.
-- If the app was already running before `STRIPE_PRICE_MONTHLY` was set, restart the local app with the env value before running this smoke.
+- If the app was already running before the three `STRIPE_PRICE_...` values were set, restart the local app with those env values before running this smoke.
 - If the preview reports Vercel deployment protection, either complete Vercel SSO in the browser session or set `VERCEL_PROTECTION_BYPASS` locally before deployed preview smoke.
 - If the billing portal route fails, check Stripe test portal configuration before moving to a browser checkout walkthrough.
 
@@ -455,7 +464,7 @@ Also do not do these without separate approval:
 3. Run `local_app` against the running local app.
 4. Manually log in as `louis+sparkle-demo@neonrabbit.net` using the password Louis controls.
 5. Confirm the dashboard opens and demo rows are visible.
-6. Run `stripe:demo-price` with test keys only if `STRIPE_PRICE_MONTHLY` is missing.
+6. Run `stripe:demo-price` with test keys only if any of `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, or `STRIPE_PRICE_STANDARD_MONTHLY` is missing.
 7. Run `stripe_test` with test keys only.
 8. Run `stripe_local_routes` against a running app started with the Stripe env.
 9. Run `signwell_sandbox` with sandbox/dry-run settings only.

@@ -12,18 +12,18 @@
 - `npm run smoke:demo -- --category local_static --json` emits a machine-readable report without env secrets or dotenv noise.
 - `npm run smoke:demo -- --category supabase_demo --json` has been run for `louis+sparkle-demo@neonrabbit.net`; it seeded the account and verified demo login/read access.
 - `npm run smoke:demo -- --category local_app --json` has been run against `http://localhost:3000`; it verified `/api/nic-nac/me` and the `/nic-nac` shell for the demo rep.
-- `npm run stripe:demo-price -- --json` created Stripe test monthly price `price_1TYTAZHRBK3pZpO2b6WQ8kUl` without checkout or charge.
-- `npm run smoke:demo -- --category stripe_test --json` passed when `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` was set in the shell.
+- `npm run stripe:demo-price -- --json` now prepares three Stripe test prices without checkout or charge: `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY`.
+- `npm run smoke:demo -- --category stripe_test --json` now requires all three itemized Stripe price ids so checkout can show the `Sparkle Suite build fee` separately from the monthly subscription.
 - `npm run smoke:launch -- --categories local_static,stripe_test --json --write-report` is available for a repeatable safe aggregate smoke report.
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
-- Vercel env now has `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
+- Vercel Development and Preview previously had only `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`; this is no longer sufficient for itemized paid launch checkout. Install `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` before the next Stripe route smoke.
 - Protected Vercel Preview `https://sparkle-suite-2chlrqw8y-louis-2849s-projects.vercel.app` passed demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session smoke through authenticated `vercel curl`.
 - Most recently smoke-tested protected Vercel Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` passed `npm run smoke:launch:preview-protected`, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
 - `npm run smoke:launch:preview-protected` passed on 2026-05-18 for the most recently smoke-tested protected preview; report: `.local/launch-smoke-results/launch-preview-2026-05-18T22-46-13-690Z.json`.
 - Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:signwell:live-preflight` passed on 2026-05-18 for `louis+sparkle-demo@neonrabbit.net`, building a live-like non-sending payload with `send_email=false`, `test_mode=false`, production SignWell base URL mode, and `SIGNWELL_ALLOW_LIVE_SEND` unset.
-- `npm run smoke:stripe:live-preflight` is available and was attempted on 2026-05-18 without creating checkout or charge traffic; it is blocked because Production currently has Stripe key mode `test` and is missing `STRIPE_PRICE_MONTHLY` plus the matching approved live price.
+- `npm run smoke:stripe:live-preflight` is available and was attempted on 2026-05-18 without creating checkout or charge traffic; it is blocked because Production currently has Stripe key mode `test` and is missing the three approved live price ids for build fee, founder monthly, and standard monthly checkout.
 - `npm run smoke:nic-nac:paid-preflight` passed on 2026-05-18 with approved requests capped at 1, `NIC_NAC_ALLOW_PAID_SMOKE` unset, and `paid_calls_executed=false`.
 - `npm run smoke:demo -- --category stripe_test --json` validates test-mode Stripe config without creating a checkout session.
 - `npm run smoke:launch:restored` passed on 2026-05-18 for `local_static`, `local_app`, `stripe_test`, `stripe_local_routes`, and `signwell_sandbox`; report: `.local/launch-smoke-results/launch-local-2026-05-18T21-54-56-095Z.json`.
@@ -52,14 +52,14 @@ flowchart LR
 ## P0 launch blockers
 
 - Telnyx 10DLC approval is still pending. Do not attach `+19044383050` or send live SMS until campaign approval and number attachment are confirmed.
-- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test` and no production monthly price; a real live checkout smoke still needs explicit Louis approval for key mode, price, path, and amount.
+- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test` and no production itemized price set; a real live checkout smoke still needs explicit Louis approval for key mode, build-fee price, founder monthly price, standard monthly price, path, and amount.
 - Live SignWell sends are not approved. Sandbox/dry-run payloads and live preflight are ready, but real agreements require explicit Louis approval.
 - Paid Nic-Nac provider smoke preflight passed with a 1-request cap, but actual paid calls remain blocked until `NIC_NAC_ALLOW_PAID_SMOKE=true` is set for a separately approved run.
 
 ## P1 onboarding blockers
 
 - First demo login smoke uses the built-in demo password unless `DEMO_REP_PASSWORD` is set. Rotate or set a custom demo password before sharing the account outside Louis.
-- Production Vercel `STRIPE_PRICE_MONTHLY` is intentionally not set yet, and live preflight saw production Stripe key mode `test`; verify or install live Stripe production config before any live checkout smoke.
+- Production Vercel itemized Stripe prices are intentionally not set yet, and live preflight saw production Stripe key mode `test`; verify or install live Stripe production config before any live checkout smoke.
 - Protected preview browser checkout walkthrough is documented but still needs a final in-browser pass with Louis/Vercel SSO and test-mode Stripe only.
 - Vercel Deployment Protection remains enabled for browser access; authenticated `vercel curl` smoke passes on the latest preview, while browser walkthrough still needs Louis/Vercel SSO or an approved private bypass path.
 - SignWell live preflight has passed. Keep `SIGNWELL_ALLOW_LIVE_SEND` unset unless Louis explicitly approves recipient, template, and timing for a real send.
@@ -71,7 +71,7 @@ flowchart LR
 
 ## Provider status
 
-- Stripe: test-mode route readiness implemented; live preflight exists and is currently blocked by production key mode `test` plus missing production monthly price/approved live price.
+- Stripe: itemized test-mode route readiness is implemented in code; live preflight exists and is currently blocked by production key mode `test` plus missing production build-fee, founder monthly, and standard monthly price approvals.
 - SignWell: sandbox/dry-run payload and live preflight readiness implemented and passed with `send_email=false`; live send remains parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.
 - Telnyx: live SMS parked until 10DLC approval and number attachment.
 - Nic-Nac: paid smoke preflight passed with a 1-request cap and no provider calls; actual paid smoke remains parked behind explicit paid-smoke env gates and final approval.

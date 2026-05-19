@@ -71,7 +71,9 @@ describe('demo launch smoke readiness plan', () => {
       validateDemoSmokePlan(plan, {
         DEMO_REP_EMAIL: 'demo@example.com',
         STRIPE_SECRET_KEY: 'sk_live_123',
-        STRIPE_PRICE_MONTHLY: 'price_123',
+        STRIPE_PRICE_BUILD_FEE: 'price_build',
+        STRIPE_PRICE_FOUNDER_MONTHLY: 'price_founder',
+        STRIPE_PRICE_STANDARD_MONTHLY: 'price_standard',
       }),
     ).toContain('STRIPE_LIVE_SMOKE_CONFIRMED=true is required when STRIPE_SECRET_KEY is live.')
   })
@@ -87,7 +89,7 @@ describe('demo launch smoke readiness plan', () => {
     })
 
     expect(errors).toContain(
-      'Stripe readiness blocked: missing STRIPE_PRICE_MONTHLY; STRIPE_SECRET_KEY mode=test.',
+      'Stripe readiness blocked: missing STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, STRIPE_PRICE_STANDARD_MONTHLY; STRIPE_SECRET_KEY mode=test.',
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
@@ -107,10 +109,10 @@ describe('demo launch smoke readiness plan', () => {
     })
 
     expect(errors).toContain(
-      'STRIPE_PRICE_MONTHLY is required for stripe_local_routes smoke.',
+      'STRIPE_PRICE_BUILD_FEE is required for stripe_local_routes smoke.',
     )
     expect(errors).toContain(
-      'Stripe local route smoke blocked: missing STRIPE_PRICE_MONTHLY; STRIPE_SECRET_KEY mode=test.',
+      'Stripe local route smoke blocked: missing STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, STRIPE_PRICE_STANDARD_MONTHLY; STRIPE_SECRET_KEY mode=test.',
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
@@ -132,9 +134,13 @@ describe('demo launch smoke readiness plan', () => {
       DEMO_REP_EMAIL: 'demo@example.com',
       STRIPE_SECRET_KEY: 'sk_live_super_secret',
       STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
-      STRIPE_PRICE_MONTHLY: 'price_live_123',
+      STRIPE_PRICE_BUILD_FEE: 'price_live_build',
+      STRIPE_PRICE_FOUNDER_MONTHLY: 'price_live_founder',
+      STRIPE_PRICE_STANDARD_MONTHLY: 'price_live_standard',
       NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
-      STRIPE_LIVE_APPROVED_PRICE_ID: 'price_live_123',
+      STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID: 'price_live_build',
+      STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID: 'price_live_founder',
+      STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID: 'price_live_standard',
       STRIPE_LIVE_APPROVED_SMOKE_PATH: 'manual checkout open only; no payment submission',
       STRIPE_LIVE_APPROVED_AT: '2026-05-18T18:00:00-04:00',
     })
@@ -147,13 +153,13 @@ describe('demo launch smoke readiness plan', () => {
           id: 'stripe_live_preflight',
           ok: true,
           detail:
-            'Stripe live preflight ready; key_mode=live; price_id=approved_match; app_url_host=www.yoursparklesuite.com; webhook_secret=present; live_smoke_confirmed=false; checkout_created=false',
+            'Stripe live preflight ready; key_mode=live; price_ids=approved_match; app_url_host=www.yoursparklesuite.com; webhook_secret=present; live_smoke_confirmed=false; checkout_created=false',
         },
       ],
     })
     expect(JSON.stringify(result)).not.toContain('sk_live_super_secret')
     expect(JSON.stringify(result)).not.toContain('whsec_super_secret')
-    expect(JSON.stringify(result)).not.toContain('price_live_123')
+    expect(JSON.stringify(result)).not.toContain('price_live_build')
   })
 
   it('blocks Stripe live preflight until live price and smoke path are approved', () => {
@@ -167,11 +173,15 @@ describe('demo launch smoke readiness plan', () => {
         NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
       }),
     ).toEqual([
-      'STRIPE_PRICE_MONTHLY is required for stripe_live_preflight smoke.',
-      'STRIPE_LIVE_APPROVED_PRICE_ID is required for stripe_live_preflight smoke.',
+      'STRIPE_PRICE_BUILD_FEE is required for stripe_live_preflight smoke.',
+      'STRIPE_PRICE_FOUNDER_MONTHLY is required for stripe_live_preflight smoke.',
+      'STRIPE_PRICE_STANDARD_MONTHLY is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID is required for stripe_live_preflight smoke.',
+      'STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID is required for stripe_live_preflight smoke.',
       'STRIPE_LIVE_APPROVED_SMOKE_PATH is required for stripe_live_preflight smoke.',
       'STRIPE_LIVE_APPROVED_AT is required for stripe_live_preflight smoke.',
-      'Stripe live preflight blocked: missing STRIPE_PRICE_MONTHLY, STRIPE_LIVE_APPROVED_PRICE_ID, STRIPE_LIVE_APPROVED_SMOKE_PATH, STRIPE_LIVE_APPROVED_AT; STRIPE_SECRET_KEY mode=live.',
+      'Stripe live preflight blocked: missing STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, STRIPE_PRICE_STANDARD_MONTHLY, STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID, STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID, STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID, STRIPE_LIVE_APPROVED_SMOKE_PATH, STRIPE_LIVE_APPROVED_AT; STRIPE_SECRET_KEY mode=live.',
     ])
   })
 
@@ -182,9 +192,13 @@ describe('demo launch smoke readiness plan', () => {
       DEMO_REP_EMAIL: 'demo@example.com',
       STRIPE_SECRET_KEY: 'sk_test_super_secret',
       STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
-      STRIPE_PRICE_MONTHLY: 'price_live_actual',
+      STRIPE_PRICE_BUILD_FEE: 'price_live_build_actual',
+      STRIPE_PRICE_FOUNDER_MONTHLY: 'price_live_founder_actual',
+      STRIPE_PRICE_STANDARD_MONTHLY: 'price_live_standard_actual',
       NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
-      STRIPE_LIVE_APPROVED_PRICE_ID: 'price_live_approved',
+      STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID: 'price_live_build_approved',
+      STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID: 'price_live_founder_approved',
+      STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID: 'price_live_standard_approved',
       STRIPE_LIVE_APPROVED_SMOKE_PATH: 'manual checkout open only',
       STRIPE_LIVE_APPROVED_AT: '2026-05-18T18:00:00-04:00',
       STRIPE_LIVE_SMOKE_CONFIRMED: 'true',
@@ -195,7 +209,7 @@ describe('demo launch smoke readiness plan', () => {
       'Stripe live preflight requires STRIPE_SECRET_KEY mode=live; current mode=test.',
     )
     expect(serializedErrors).toContain(
-      'STRIPE_PRICE_MONTHLY must match STRIPE_LIVE_APPROVED_PRICE_ID for stripe_live_preflight.',
+      'Stripe live price ids must match their approved live price ids for stripe_live_preflight.',
     )
     expect(serializedErrors).toContain(
       'STRIPE_LIVE_SMOKE_CONFIRMED must stay unset during stripe_live_preflight; final live checkout approval is a separate step.',
@@ -597,7 +611,9 @@ describe('demo launch smoke readiness plan', () => {
         NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
         STRIPE_SECRET_KEY: 'sk_test_secret',
         STRIPE_WEBHOOK_SECRET: 'whsec_secret',
-        STRIPE_PRICE_MONTHLY: 'price_test',
+        STRIPE_PRICE_BUILD_FEE: 'price_test_build',
+        STRIPE_PRICE_FOUNDER_MONTHLY: 'price_test_founder',
+        STRIPE_PRICE_STANDARD_MONTHLY: 'price_test_standard',
       },
       {
         verifyStripeLocalRoutes: async () => ({
@@ -691,7 +707,9 @@ describe('demo launch smoke readiness plan', () => {
         NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon_key',
         STRIPE_SECRET_KEY: 'sk_test_secret',
         STRIPE_WEBHOOK_SECRET: 'whsec_secret',
-        STRIPE_PRICE_MONTHLY: 'price_test',
+        STRIPE_PRICE_BUILD_FEE: 'price_test_build',
+        STRIPE_PRICE_FOUNDER_MONTHLY: 'price_test_founder',
+        STRIPE_PRICE_STANDARD_MONTHLY: 'price_test_standard',
       },
       {
         runCategory: async (plan) => {
