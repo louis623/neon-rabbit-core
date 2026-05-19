@@ -18,9 +18,11 @@ describe('Sparkle Suite prelaunch intake page', () => {
     expect(html).toContain('I agree to get intake follow-up by text.')
     expect(html).toContain('I agree to get intake follow-up by email.')
     expect(html).toContain('Submit Intake')
+    expect(html).toContain('Back to Waitlist')
+    expect(html).toContain('href="/prelaunch#waitlist"')
+    expect(html).not.toContain('href="#waitlist"')
     expect(html).not.toContain('Collect payment')
     expect(html).not.toContain('Send agreement')
     expect(html).not.toContain('Send SMS')
   })
 })
-

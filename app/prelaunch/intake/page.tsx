@@ -22,8 +22,7 @@ export default function PrelaunchIntakePage() {
   return (
     <main className="prelaunch-shell">
       <PrelaunchIntakeForm />
-      <PrelaunchFooter />
+      <PrelaunchFooter ctaHref="/prelaunch#waitlist" ctaLabel="Back to Waitlist" />
     </main>
   )
 }
-
