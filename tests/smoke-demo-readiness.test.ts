@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   buildDemoSmokePlan,
   buildDemoSmokeReport,
@@ -41,6 +41,7 @@ describe('demo launch smoke readiness plan', () => {
       'stripe_live_preflight',
       'protected_preview_routes',
       'signwell_sandbox',
+      'signwell_provider_sandbox',
       'signwell_live_preflight',
       'nic_nac_paid_preflight',
       'nic_nac_paid',
@@ -426,6 +427,90 @@ describe('demo launch smoke readiness plan', () => {
       ],
     })
     expect(JSON.stringify(result)).not.toContain('template_secret_demo')
+  })
+
+  it('keeps SignWell provider sandbox smoke explicit and non-sending', async () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_provider_sandbox' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('signwell_provider_sandbox')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'signwell_provider_sandbox',
+        risk: 'test_provider',
+        run: 'planned',
+      }),
+    )
+
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 'document_123',
+            recipients: [{ id: 'sparkle_suite_rep' }],
+          }),
+          { status: 201 },
+        ),
+      )
+
+    try {
+      const result = await runDemoSmoke(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        SIGNWELL_API_KEY: 'signwell_secret_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+        SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER: 'Customer',
+        SIGNWELL_SANDBOX_PROVIDER_CALL: 'true',
+      })
+
+      expect(result).toEqual({
+        category: 'signwell_provider_sandbox',
+        ok: true,
+        results: [
+          {
+            id: 'signwell_provider_sandbox',
+            ok: true,
+            detail:
+              'SignWell sandbox provider call created test document=present; provider_status=201; recipient_count=1; send_email=false; test_mode=true; api_base_url_mode=production',
+          },
+        ],
+      })
+      expect(JSON.stringify(result)).not.toContain('signwell_secret_key')
+      expect(JSON.stringify(result)).not.toContain('template_secret_demo')
+
+      const requestBody = JSON.parse(
+        String(fetchMock.mock.calls[0]?.[1]?.body),
+      ) as Record<string, unknown>
+      expect(requestBody).toMatchObject({
+        test_mode: true,
+        send_email: false,
+        template_id: 'template_secret_demo',
+      })
+      expect(requestBody.recipients).toEqual([
+        expect.objectContaining({
+          placeholder_name: 'Customer',
+          email: 'demo@example.com',
+        }),
+      ])
+    } finally {
+      fetchMock.mockRestore()
+    }
+  })
+
+  it('blocks SignWell provider sandbox until the provider-call flag is set', () => {
+    const plan = buildDemoSmokePlan({ category: 'signwell_provider_sandbox' })
+
+    expect(
+      validateDemoSmokePlan(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        SIGNWELL_API_KEY: 'signwell_secret_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_secret_demo',
+      }),
+    ).toEqual([
+      'SIGNWELL_SANDBOX_PROVIDER_CALL is required for signwell_provider_sandbox smoke.',
+      'SignWell readiness blocked: missing SIGNWELL_SANDBOX_PROVIDER_CALL. SIGNWELL_SANDBOX_PROVIDER_CALL=true is required for signwell_provider_sandbox smoke.',
+    ])
   })
 
   it('blocks SignWell live preflight until recipient, template, and timing are approved', () => {

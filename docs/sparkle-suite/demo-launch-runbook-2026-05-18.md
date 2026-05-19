@@ -371,7 +371,47 @@ Stop point:
 - If `api_base_url_mode` is not the expected sandbox/dry-run target for the environment, stop and confirm the SignWell base URL before any further provider work.
 - Do not enable `SIGNWELL_ALLOW_LIVE_SEND=true` or send a live agreement without Louis explicitly approving the recipient, template, and timing.
 
-### 8. SignWell live preflight, non-sending
+### 8a. SignWell sandbox provider smoke, non-sending
+
+Use this only when the local shell has real SignWell sandbox/test credentials restored. This makes one SignWell API request and creates a test-mode document, but keeps `send_email=false`.
+
+Command:
+
+```powershell
+$env:SIGNWELL_SANDBOX_PROVIDER_CALL='true'
+npm run smoke:signwell:sandbox-provider
+Remove-Item Env:\SIGNWELL_SANDBOX_PROVIDER_CALL
+```
+
+What it does:
+
+- Calls SignWell's create-from-template API using the configured template.
+- Requires `test_mode=true` and `send_email=false` before making the provider call.
+- Reports only provider status, whether a document id was present, recipient count, and base URL mode.
+- Does not print the API key, base URL, template ID, document ID, embedded signing URL, or recipient email details beyond the demo address already documented.
+- Does not send a live agreement email.
+
+Required env:
+
+- `DEMO_REP_EMAIL`
+- `SIGNWELL_API_KEY`
+- `SIGNWELL_API_BASE_URL`
+- `SIGNWELL_TEMPLATE_ID`
+- `SIGNWELL_SANDBOX_PROVIDER_CALL=true`
+- Optional: `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER` if the SignWell template placeholder is not `sparkle_suite_rep`.
+
+Latest result:
+
+- Attempted on 2026-05-19 after implementation. The run stopped before provider contact because local SignWell env values were not available; the ignored Vercel preview env pull showed the names but no local values to load. No SignWell API request was made.
+
+Stop point:
+
+- If any SignWell env value is missing, stop before provider contact.
+- If `SIGNWELL_ALLOW_LIVE_SEND=true`, stop and unset it.
+- If the template placeholder name does not match the SignWell template, set `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER` and retry once.
+- Do not use this for a live send. A real SignWell email remains a separate Louis approval step.
+
+### 8b. SignWell live preflight, non-sending
 
 Use this only after Louis has approved the intended recipient, template, and send window for preflight. This does not send the agreement and must run with `SIGNWELL_ALLOW_LIVE_SEND` unset.
 

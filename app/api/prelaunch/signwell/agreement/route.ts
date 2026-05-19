@@ -117,6 +117,7 @@ export async function POST(request: Request) {
 
     const agreementPayload = buildPrelaunchSignWellAgreementPayload({
       templateId: config.templateId,
+      recipientPlaceholderName: config.recipientPlaceholderName,
       recipient: getOperatorRecipient(operator),
       metadata,
       mode: 'sandbox',

@@ -8,6 +8,7 @@ import {
   buildPrelaunchSignWellMetadata,
   getPrelaunchSignWellConfig,
   getPrelaunchSignWellLiveSendMode,
+  submitPrelaunchSignWellSandboxAgreement,
 } from '@/lib/prelaunch/signwell'
 import {
   buildDemoSeedPlan,
@@ -27,6 +28,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'stripe_live_preflight',
   'protected_preview_routes',
   'signwell_sandbox',
+  'signwell_provider_sandbox',
   'signwell_live_preflight',
   'nic_nac_paid_preflight',
   'nic_nac_paid',
@@ -74,6 +76,8 @@ export const SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME_ENV =
   'SIGNWELL_LIVE_APPROVED_TEMPLATE_NAME'
 export const SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV =
   'SIGNWELL_LIVE_APPROVED_SEND_WINDOW'
+export const SIGNWELL_SANDBOX_PROVIDER_CALL_ENV =
+  'SIGNWELL_SANDBOX_PROVIDER_CALL'
 
 type SmokeRisk = 'none' | 'local_app' | 'db_write' | 'test_provider' | 'paid_provider'
 
@@ -400,6 +404,27 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'signwell_provider_sandbox':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_EMAIL_ENV,
+          'SIGNWELL_API_KEY',
+          'SIGNWELL_API_BASE_URL',
+          'SIGNWELL_TEMPLATE_ID',
+          SIGNWELL_SANDBOX_PROVIDER_CALL_ENV,
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'signwell_provider_sandbox',
+            label:
+              'Create one SignWell test-mode document from the configured template with send_email=false.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
     case 'signwell_live_preflight':
       return {
         category,
@@ -586,16 +611,43 @@ function buildProviderReadinessError(
     return errors.length > 0 ? errors.join(' ') : null
   }
 
-  if (plan.category === 'signwell_sandbox') {
+  if (
+    plan.category === 'signwell_sandbox' ||
+    plan.category === 'signwell_provider_sandbox'
+  ) {
     const missing = missingEnvNames(env, [
       'SIGNWELL_API_KEY',
       'SIGNWELL_API_BASE_URL',
       'SIGNWELL_TEMPLATE_ID',
+      ...(plan.category === 'signwell_provider_sandbox'
+        ? [SIGNWELL_SANDBOX_PROVIDER_CALL_ENV]
+        : []),
     ])
+    const errors: string[] = []
 
-    if (missing.length === 0) return null
+    if (missing.length > 0) {
+      errors.push(`SignWell readiness blocked: missing ${missing.join(', ')}.`)
+    }
 
-    return `SignWell readiness blocked: missing ${missing.join(', ')}.`
+    if (
+      plan.category === 'signwell_provider_sandbox' &&
+      env[SIGNWELL_SANDBOX_PROVIDER_CALL_ENV]?.trim() !== 'true'
+    ) {
+      errors.push(
+        `${SIGNWELL_SANDBOX_PROVIDER_CALL_ENV}=true is required for signwell_provider_sandbox smoke.`,
+      )
+    }
+
+    if (
+      plan.category === 'signwell_provider_sandbox' &&
+      env.SIGNWELL_ALLOW_LIVE_SEND?.trim() === 'true'
+    ) {
+      errors.push(
+        'SIGNWELL_ALLOW_LIVE_SEND must stay unset during signwell_provider_sandbox smoke.',
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
   }
 
   if (plan.category === 'signwell_live_preflight') {
@@ -899,6 +951,7 @@ export async function runDemoSmoke(
 
     const payload = buildPrelaunchSignWellAgreementPayload({
       templateId: config.templateId,
+      recipientPlaceholderName: config.recipientPlaceholderName,
       recipient: {
         name: 'Launch Demo Rep',
         email: demoEmail,
@@ -925,6 +978,60 @@ export async function runDemoSmoke(
     }
   }
 
+  if (plan.category === 'signwell_provider_sandbox') {
+    const config = getPrelaunchSignWellConfig(env)
+    if (!config) {
+      return {
+        category: plan.category,
+        ok: false,
+        results: [
+          {
+            id: 'signwell_provider_sandbox',
+            ok: false,
+            detail: 'SignWell sandbox provider configuration is incomplete.',
+          },
+        ],
+      }
+    }
+
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: config.templateId,
+      recipientPlaceholderName: config.recipientPlaceholderName,
+      recipient: {
+        name: 'Launch Demo Rep',
+        email: demoEmail,
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'demo-provider-smoke',
+        waitlistId: 'demo-provider-smoke',
+        operatorRepId: null,
+      }),
+      mode: 'sandbox',
+    })
+    const providerResult = await submitPrelaunchSignWellSandboxAgreement({
+      config,
+      agreementPayload: payload,
+    })
+    const ok =
+      providerResult.testMode === true &&
+      providerResult.sendEmail === false &&
+      providerResult.providerStatus >= 200 &&
+      providerResult.providerStatus < 300
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'signwell_provider_sandbox',
+          ok,
+          detail: `SignWell sandbox provider call created test document=${providerResult.documentId ? 'present' : 'missing'}; provider_status=${providerResult.providerStatus}; recipient_count=${providerResult.recipientCount}; send_email=${String(providerResult.sendEmail)}; test_mode=${String(providerResult.testMode)}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
+        },
+      ],
+    }
+  }
+
   if (plan.category === 'signwell_live_preflight') {
     const config = getPrelaunchSignWellConfig(env)
     if (!config) {
@@ -946,6 +1053,7 @@ export async function runDemoSmoke(
     const liveSendMode = getPrelaunchSignWellLiveSendMode(env)
     const payload = buildPrelaunchSignWellAgreementPayload({
       templateId: config.templateId,
+      recipientPlaceholderName: config.recipientPlaceholderName,
       recipient: {
         name: approvedRecipientEmail,
         email: approvedRecipientEmail,

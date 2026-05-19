@@ -138,6 +138,7 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
         recipients: [
           {
             id: 'sparkle_suite_rep',
+            placeholder_name: 'sparkle_suite_rep',
             name: 'Demo Rep',
             email: 'demo.rep@example.com',
           },

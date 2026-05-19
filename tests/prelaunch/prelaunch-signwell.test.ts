@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildPrelaunchSignWellAgreementPayload,
@@ -6,6 +6,8 @@ import {
   getPrelaunchSignWellLiveSendMode,
   getPrelaunchSignWellConfig,
   normalizePrelaunchAgreementGateType,
+  PrelaunchSignWellProviderError,
+  submitPrelaunchSignWellSandboxAgreement,
 } from '@/lib/prelaunch/signwell'
 
 describe('prelaunch SignWell agreement gate', () => {
@@ -34,6 +36,20 @@ describe('prelaunch SignWell agreement gate', () => {
       apiKey: 'signwell_api_key',
       apiBaseUrl: 'https://www.signwell.com/api/v1',
       templateId: 'template_123',
+      recipientPlaceholderName: 'sparkle_suite_rep',
+    })
+    expect(
+      getPrelaunchSignWellConfig({
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_TEMPLATE_ID: 'template_123',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER: 'Customer',
+      }),
+    ).toEqual({
+      apiKey: 'signwell_api_key',
+      apiBaseUrl: 'https://www.signwell.com/api/v1',
+      templateId: 'template_123',
+      recipientPlaceholderName: 'Customer',
     })
   })
 
@@ -101,6 +117,7 @@ describe('prelaunch SignWell agreement gate', () => {
       recipients: [
         {
           id: 'sparkle_suite_rep',
+          placeholder_name: 'sparkle_suite_rep',
           name: 'Demo Rep',
           email: 'demo.rep@example.com',
         },
@@ -115,5 +132,129 @@ describe('prelaunch SignWell agreement gate', () => {
       },
     })
     expect(JSON.stringify(payload).toLowerCase()).not.toContain('sent')
+  })
+
+  it('submits a SignWell sandbox provider request without sending email', async () => {
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: 'template_demo',
+      recipientPlaceholderName: 'Customer',
+      recipient: {
+        name: 'Demo Rep',
+        email: 'demo.rep@example.com',
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'intake-demo',
+        waitlistId: 'waitlist-demo',
+        operatorRepId: 'rep-demo',
+      }),
+      mode: 'sandbox',
+    })
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          id: 'document_123',
+          recipients: [{ id: 'sparkle_suite_rep' }],
+        }),
+        { status: 201 },
+      ),
+    )
+
+    const result = await submitPrelaunchSignWellSandboxAgreement({
+      config: {
+        apiKey: 'signwell_secret_key',
+        apiBaseUrl: 'https://www.signwell.com/api/v1/',
+        templateId: 'template_demo',
+        recipientPlaceholderName: 'Customer',
+      },
+      agreementPayload: payload,
+      fetchImpl,
+    })
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://www.signwell.com/api/v1/document_templates/documents',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'signwell_secret_key',
+        },
+        body: JSON.stringify(payload),
+      },
+    )
+    expect(result).toEqual({
+      providerStatus: 201,
+      documentId: 'document_123',
+      recipientCount: 1,
+      testMode: true,
+      sendEmail: false,
+    })
+  })
+
+  it('refuses provider requests that are not sandbox non-sends', async () => {
+    const payload = {
+      ...buildPrelaunchSignWellAgreementPayload({
+        templateId: 'template_demo',
+        recipient: {
+          name: 'Demo Rep',
+          email: 'demo.rep@example.com',
+        },
+        metadata: buildPrelaunchSignWellMetadata({
+          gateType: 'service_agreement',
+          intakeId: 'intake-demo',
+        }),
+        mode: 'sandbox',
+      }),
+      test_mode: false,
+    }
+
+    await expect(
+      submitPrelaunchSignWellSandboxAgreement({
+        config: {
+          apiKey: 'signwell_secret_key',
+          apiBaseUrl: 'https://www.signwell.com/api/v1',
+          templateId: 'template_demo',
+          recipientPlaceholderName: 'Customer',
+        },
+        agreementPayload: payload,
+        fetchImpl: vi.fn(),
+      }),
+    ).rejects.toThrow(PrelaunchSignWellProviderError)
+  })
+
+  it('summarizes SignWell provider errors without exposing response body details', async () => {
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: 'template_demo',
+      recipient: {
+        name: 'Demo Rep',
+        email: 'demo.rep@example.com',
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'intake-demo',
+      }),
+      mode: 'sandbox',
+    })
+
+    await expect(
+      submitPrelaunchSignWellSandboxAgreement({
+        config: {
+          apiKey: 'signwell_secret_key',
+          apiBaseUrl: 'https://www.signwell.com/api/v1',
+          templateId: 'template_demo',
+          recipientPlaceholderName: 'Customer',
+        },
+        agreementPayload: payload,
+        fetchImpl: vi.fn(async () =>
+          new Response(
+            JSON.stringify({
+              error: 'secret response detail',
+              email: 'demo.rep@example.com',
+            }),
+            { status: 422 },
+          ),
+        ),
+      }),
+    ).rejects.toThrow('SignWell sandbox provider call failed with status 422.')
   })
 })
