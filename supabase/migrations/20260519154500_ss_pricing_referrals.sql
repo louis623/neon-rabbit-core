@@ -68,6 +68,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_reps_referral_code_unique
   ON reps (upper(referral_code))
   WHERE referral_code IS NOT NULL;
 
+ALTER TABLE subscriptions
+  ADD COLUMN IF NOT EXISTS pricing_tier TEXT,
+  ADD COLUMN IF NOT EXISTS founder_sequence INTEGER,
+  ADD COLUMN IF NOT EXISTS build_fee_charged BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS founder_rate_months INTEGER,
+  ADD COLUMN IF NOT EXISTS build_fee_price_id TEXT,
+  ADD COLUMN IF NOT EXISTS monthly_price_id TEXT;
+
 CREATE TABLE IF NOT EXISTS rep_referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   referrer_rep_id UUID NOT NULL REFERENCES reps(id) ON DELETE CASCADE,

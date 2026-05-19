@@ -49,6 +49,14 @@ function mapStripeStatus(s: string): string {
   return 'active'
 }
 
+function parsePositiveIntMetadata(
+  value: string | undefined,
+): number | null {
+  if (!value) return null
+  const parsed = Number.parseInt(value, 10)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+}
+
 async function isEventProcessed(eventId: string): Promise<boolean> {
   const admin = createAdminClient()
   const { data } = await admin
@@ -306,6 +314,14 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
 
   const repId = session.metadata?.rep_id
   const planType = session.metadata?.plan_type
+  const pricingTier = session.metadata?.pricing_tier
+  const founderSequence = parsePositiveIntMetadata(
+    session.metadata?.founder_sequence,
+  )
+  const founderRateMonths = parsePositiveIntMetadata(
+    session.metadata?.founder_rate_months,
+  )
+  const buildFeeCharged = session.metadata?.build_fee_charged === 'true'
   if (!repId) {
     logStripeEvent('error', event, { phase: 'checkout_completed', error: 'Missing rep_id in metadata' })
     return
@@ -325,7 +341,11 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
 
   await admin
     .from('reps')
-    .update({ stripe_customer_id: customerId })
+    .update({
+      stripe_customer_id: customerId,
+      ...(pricingTier ? { pricing_tier: pricingTier } : {}),
+      ...(founderSequence ? { founder_sequence: founderSequence } : {}),
+    })
     .eq('id', repId)
 
   const { error } = await admin
@@ -335,6 +355,12 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
       stripe_subscription_id: subscription.id,
       stripe_customer_id: customerId,
       plan_tier: planType ?? 'monthly',
+      pricing_tier: pricingTier ?? null,
+      founder_sequence: founderSequence,
+      build_fee_charged: buildFeeCharged,
+      founder_rate_months: founderRateMonths,
+      build_fee_price_id: session.metadata?.build_fee_price_id ?? null,
+      monthly_price_id: session.metadata?.monthly_price_id ?? null,
       status: mapStripeStatus(subscription.status),
       current_period_start: new Date(period.start * 1000).toISOString(),
       current_period_end: new Date(period.end * 1000).toISOString(),

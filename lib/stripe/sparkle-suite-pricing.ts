@@ -26,6 +26,8 @@ export interface SparkleSuiteCheckoutPricingReady {
     founder_sequence: string
     build_fee_charged: 'true'
     founder_rate_months: string
+    build_fee_price_id: string
+    monthly_price_id: string
   }
 }
 
@@ -80,6 +82,8 @@ export function buildSparkleSuiteCheckoutPricing({
       founder_sequence: founderSequence ? String(founderSequence) : '',
       build_fee_charged: 'true',
       founder_rate_months: tier === 'founder' ? '12' : '',
+      build_fee_price_id: priceIds.buildFee as string,
+      monthly_price_id: monthlyPrice as string,
     },
   }
 }

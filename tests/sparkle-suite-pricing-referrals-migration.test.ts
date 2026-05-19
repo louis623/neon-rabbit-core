@@ -26,6 +26,14 @@ describe('Sparkle Suite pricing and referrals migration', () => {
     expect(sql).toContain('UNIQUE (referred_rep_id)')
   })
 
+  it('snapshots Stripe checkout pricing metadata on subscriptions', () => {
+    expect(sql).toContain('ALTER TABLE subscriptions')
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS pricing_tier TEXT')
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS build_fee_charged BOOLEAN')
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS build_fee_price_id TEXT')
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS monthly_price_id TEXT')
+  })
+
   it('keeps referral codes separate from live queue sync code storage', () => {
     expect(sql).not.toContain('live_queue')
     expect(sql).not.toContain('sync_code')

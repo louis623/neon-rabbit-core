@@ -31,6 +31,8 @@ describe('Sparkle Suite checkout pricing', () => {
         founder_sequence: '20',
         build_fee_charged: 'true',
         founder_rate_months: '12',
+        build_fee_price_id: 'price_build_fee',
+        monthly_price_id: 'price_founder_monthly',
       },
     })
   })
@@ -54,6 +56,8 @@ describe('Sparkle Suite checkout pricing', () => {
         founder_sequence: '',
         build_fee_charged: 'true',
         founder_rate_months: '',
+        build_fee_price_id: 'price_build_fee',
+        monthly_price_id: 'price_standard_monthly',
       },
     })
   })
