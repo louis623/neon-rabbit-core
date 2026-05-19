@@ -135,6 +135,7 @@ describe('POST /api/prelaunch/signwell/agreement', () => {
         test_mode: true,
         template_id: 'template_123',
         send_email: false,
+        draft: true,
         recipients: [
           {
             id: 'sparkle_suite_rep',

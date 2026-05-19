@@ -544,7 +544,7 @@ describe('demo launch smoke readiness plan', () => {
       id: 'signwell_sandbox_payload',
       ok: true,
       detail:
-        'built sandbox payload for demo@example.com with send_email=false; template_id=present; api_base_url_mode=production',
+        'built sandbox payload for demo@example.com with send_email=false; draft=true; template_id=present; placeholder=sparkle_suite_rep; metadata_keys=platform,agreement_gate,sparkle_suite_agreement_gate,intake_submission_id,waitlist_id; api_base_url_mode=production',
     })
   })
 
@@ -578,7 +578,7 @@ describe('demo launch smoke readiness plan', () => {
           id: 'signwell_live_preflight',
           ok: true,
           detail:
-            'SignWell live preflight ready for approved recipient demo@example.com; send_email=false; test_mode=false; api_base_url_mode=production; live_send_allow_flag=false',
+            'SignWell live preflight ready for approved recipient demo@example.com; send_email=false; draft=true; test_mode=false; placeholder=sparkle_suite_rep; metadata_keys=platform,agreement_gate,sparkle_suite_agreement_gate,intake_submission_id,waitlist_id; api_base_url_mode=production; live_send_allow_flag=false',
         },
       ],
     })
@@ -627,7 +627,7 @@ describe('demo launch smoke readiness plan', () => {
             id: 'signwell_provider_sandbox',
             ok: true,
             detail:
-              'SignWell sandbox provider call created test document=present; provider_status=201; recipient_count=1; send_email=false; test_mode=true; api_base_url_mode=production',
+              'SignWell sandbox provider call created test document=present; provider_status=201; recipient_count=1; send_email=false; draft=true; test_mode=true; placeholder=Customer; metadata_keys=platform,agreement_gate,sparkle_suite_agreement_gate,intake_submission_id,waitlist_id; api_base_url_mode=production',
           },
         ],
       })
@@ -640,6 +640,7 @@ describe('demo launch smoke readiness plan', () => {
       expect(requestBody).toMatchObject({
         test_mode: true,
         send_email: false,
+        draft: true,
         template_id: 'template_secret_demo',
       })
       expect(requestBody.recipients).toEqual([
@@ -720,7 +721,7 @@ describe('demo launch smoke readiness plan', () => {
       id: 'signwell_sandbox_payload',
       ok: true,
       detail:
-        'built sandbox payload for demo@example.com with send_email=false; template_id=present; api_base_url_mode=sandbox',
+        'built sandbox payload for demo@example.com with send_email=false; draft=true; template_id=present; placeholder=sparkle_suite_rep; metadata_keys=platform,agreement_gate,sparkle_suite_agreement_gate,intake_submission_id,waitlist_id; api_base_url_mode=sandbox',
     })
     expect(serialized).not.toContain('template_secret_demo')
     expect(serialized).not.toContain('sandbox.signwell.example.test')

@@ -7,6 +7,7 @@ import {
   getPrelaunchSignWellConfig,
   normalizePrelaunchAgreementGateType,
   PrelaunchSignWellProviderError,
+  summarizeSignWellProviderErrorBody,
   submitPrelaunchSignWellSandboxAgreement,
 } from '@/lib/prelaunch/signwell'
 
@@ -114,6 +115,7 @@ describe('prelaunch SignWell agreement gate', () => {
       test_mode: true,
       template_id: 'template_demo',
       send_email: false,
+      draft: true,
       recipients: [
         {
           id: 'sparkle_suite_rep',
@@ -188,6 +190,30 @@ describe('prelaunch SignWell agreement gate', () => {
       recipientCount: 1,
       testMode: true,
       sendEmail: false,
+      draft: true,
+    })
+  })
+
+  it('omits null metadata values from the provider payload', () => {
+    const payload = buildPrelaunchSignWellAgreementPayload({
+      templateId: 'template_demo',
+      recipient: {
+        email: 'demo.rep@example.com',
+      },
+      metadata: buildPrelaunchSignWellMetadata({
+        gateType: 'service_agreement',
+        intakeId: 'intake-demo',
+        waitlistId: null,
+        operatorRepId: null,
+      }),
+      mode: 'sandbox',
+    })
+
+    expect(payload.metadata).toEqual({
+      platform: 'sparkle_suite',
+      agreement_gate: 'service_agreement',
+      sparkle_suite_agreement_gate: 'true',
+      intake_submission_id: 'intake-demo',
     })
   })
 
@@ -222,7 +248,38 @@ describe('prelaunch SignWell agreement gate', () => {
     ).rejects.toThrow(PrelaunchSignWellProviderError)
   })
 
-  it('summarizes SignWell provider errors without exposing response body details', async () => {
+  it('refuses provider requests that could send instead of staying as drafts', async () => {
+    const payload = {
+      ...buildPrelaunchSignWellAgreementPayload({
+        templateId: 'template_demo',
+        recipient: {
+          name: 'Demo Rep',
+          email: 'demo.rep@example.com',
+        },
+        metadata: buildPrelaunchSignWellMetadata({
+          gateType: 'service_agreement',
+          intakeId: 'intake-demo',
+        }),
+        mode: 'sandbox',
+      }),
+      draft: false,
+    }
+
+    await expect(
+      submitPrelaunchSignWellSandboxAgreement({
+        config: {
+          apiKey: 'signwell_secret_key',
+          apiBaseUrl: 'https://www.signwell.com/api/v1',
+          templateId: 'template_demo',
+          recipientPlaceholderName: 'Customer',
+        },
+        agreementPayload: payload,
+        fetchImpl: vi.fn(),
+      }),
+    ).rejects.toThrow('SignWell sandbox provider smoke requires draft=true.')
+  })
+
+  it('summarizes SignWell provider errors with redacted response hints', async () => {
     const payload = buildPrelaunchSignWellAgreementPayload({
       templateId: 'template_demo',
       recipient: {
@@ -255,6 +312,19 @@ describe('prelaunch SignWell agreement gate', () => {
           ),
         ),
       }),
-    ).rejects.toThrow('SignWell sandbox provider call failed with status 422.')
+    ).rejects.toThrow(
+      'SignWell sandbox provider call failed with status 422. Provider detail: keys=error,email; messages=secret response detail.',
+    )
+  })
+
+  it('redacts provider error messages before exposing diagnostics', () => {
+    expect(
+      summarizeSignWellProviderErrorBody({
+        error:
+          'Recipient demo.rep@example.com could not use template 11111111-2222-3333-4444-555555555555.',
+      }),
+    ).toBe(
+      'keys=error; messages=Recipient [email] could not use template [uuid].',
+    )
   })
 })

@@ -1227,14 +1227,16 @@ export async function runDemoSmoke(
       mode: 'sandbox',
     })
 
+    const metadataKeys = Object.keys(payload.metadata).join(',')
+
     return {
       category: plan.category,
-      ok: payload.send_email === false,
+      ok: payload.send_email === false && payload.draft === true,
       results: [
         {
           id: 'signwell_sandbox_payload',
-          ok: payload.send_email === false,
-          detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}; template_id=present; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
+          ok: payload.send_email === false && payload.draft === true,
+          detail: `built sandbox payload for ${demoEmail} with send_email=${String(payload.send_email)}; draft=${String(payload.draft)}; template_id=present; placeholder=${config.recipientPlaceholderName}; metadata_keys=${metadataKeys}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
         },
       ],
     }
@@ -1278,8 +1280,10 @@ export async function runDemoSmoke(
     const ok =
       providerResult.testMode === true &&
       providerResult.sendEmail === false &&
+      providerResult.draft === true &&
       providerResult.providerStatus >= 200 &&
       providerResult.providerStatus < 300
+    const metadataKeys = Object.keys(payload.metadata).join(',')
 
     return {
       category: plan.category,
@@ -1288,7 +1292,7 @@ export async function runDemoSmoke(
         {
           id: 'signwell_provider_sandbox',
           ok,
-          detail: `SignWell sandbox provider call created test document=${providerResult.documentId ? 'present' : 'missing'}; provider_status=${providerResult.providerStatus}; recipient_count=${providerResult.recipientCount}; send_email=${String(providerResult.sendEmail)}; test_mode=${String(providerResult.testMode)}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
+          detail: `SignWell sandbox provider call created test document=${providerResult.documentId ? 'present' : 'missing'}; provider_status=${providerResult.providerStatus}; recipient_count=${providerResult.recipientCount}; send_email=${String(providerResult.sendEmail)}; draft=${String(providerResult.draft)}; test_mode=${String(providerResult.testMode)}; placeholder=${config.recipientPlaceholderName}; metadata_keys=${metadataKeys}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
         },
       ],
     }
@@ -1329,7 +1333,11 @@ export async function runDemoSmoke(
       mode: 'dry_run',
     })
 
-    const ok = payload.send_email === false && payload.test_mode === false
+    const ok =
+      payload.send_email === false &&
+      payload.draft === true &&
+      payload.test_mode === false
+    const metadataKeys = Object.keys(payload.metadata).join(',')
 
     return {
       category: plan.category,
@@ -1338,7 +1346,7 @@ export async function runDemoSmoke(
         {
           id: 'signwell_live_preflight',
           ok,
-          detail: `SignWell live preflight ready for approved recipient ${approvedRecipientEmail}; send_email=${String(payload.send_email)}; test_mode=${String(payload.test_mode)}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}; live_send_allow_flag=${String(liveSendMode.allowLiveSend)}`,
+          detail: `SignWell live preflight ready for approved recipient ${approvedRecipientEmail}; send_email=${String(payload.send_email)}; draft=${String(payload.draft)}; test_mode=${String(payload.test_mode)}; placeholder=${config.recipientPlaceholderName}; metadata_keys=${metadataKeys}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}; live_send_allow_flag=${String(liveSendMode.allowLiveSend)}`,
         },
       ],
     }

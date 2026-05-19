@@ -10,7 +10,7 @@
 - `npm run smoke:stripe:webhook-local-signature` now proves the running local app accepts a correctly signed Stripe webhook payload without contacting Stripe or changing subscription state.
 - `npm run stripe:live-prices -- --env-file <ignored-production-env> --json` is available for finding approved live build-fee, founder monthly, and standard monthly prices once a live Stripe key is installed; creating missing live prices requires `--apply` plus an approval timestamp.
 - SignWell agreement onboarding can build a sandbox payload and blocks live sends unless `SIGNWELL_ALLOW_LIVE_SEND=true`.
-- SignWell sandbox provider smoke is implemented as `npm run smoke:signwell:sandbox-provider`; it requires `SIGNWELL_SANDBOX_PROVIDER_CALL=true`, `test_mode=true`, and `send_email=false`.
+- SignWell sandbox provider smoke is implemented as `npm run smoke:signwell:sandbox-provider`; it requires `SIGNWELL_SANDBOX_PROVIDER_CALL=true`, `test_mode=true`, `draft=true`, and `send_email=false`.
 - Demo account seed planning is repeatable by `DEMO_REP_EMAIL`, includes 2 upcoming shows, 10 listings, 5 audience members, and no live-provider actions.
 - `npm run smoke:demo -- --category local_static` now executes a provider-free static smoke check against the demo seed shape.
 - `npm run smoke:demo -- --category local_static --json` emits a machine-readable report without env secrets or dotenv noise.
@@ -26,7 +26,7 @@
 - Most recently smoke-tested protected Vercel Preview `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app` passed with a temporary rotated demo password, verifying demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session through authenticated `vercel curl`.
 - `npm run smoke:launch:preview-temp-demo -- --target https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app` passed on 2026-05-19 for the most recently smoke-tested protected preview; report: `.local/launch-smoke-results/launch-preview-2026-05-19T18-26-00-116Z.json`.
 - Production deploy `https://sparkle-suite-nomj5q272-louis-2849s-projects.vercel.app` is aliased to `https://www.yoursparklesuite.com` and passed public-domain route smoke for demo auth, Nic-Nac shell, Stripe test checkout session, and Stripe test portal session; report: `.local/launch-smoke-results/launch-preview-2026-05-19T20-21-18-744Z.json`.
-- Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`.
+- Vercel env now has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` in Development and Preview for `codex/sparkle-cross-phase-hardening`; `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Client` is set in Development, branch Preview, and Production.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed for `louis+sparkle-demo@neonrabbit.net`, building a non-sending payload with `send_email=false`.
 - `npm run smoke:signwell:live-preflight` passed on 2026-05-18 for `louis+sparkle-demo@neonrabbit.net`, building a live-like non-sending payload with `send_email=false`, `test_mode=false`, production SignWell base URL mode, and `SIGNWELL_ALLOW_LIVE_SEND` unset.
 - `npm run smoke:stripe:live-preflight` is available and was attempted on 2026-05-18 without creating checkout or charge traffic; it is blocked because Production currently has Stripe key mode `test` and is missing the three approved live price ids for build fee, founder monthly, and standard monthly checkout.
@@ -52,7 +52,7 @@ flowchart LR
   C -. "PASS: login, Nic-Nac shell, demo data, test checkout, test portal" .-> C1["Done"]
   D -. "PASS: protected preview via vercel curl" .-> D1["Done"]
   E -. "CURRENT GATE: needs Louis/Vercel SSO or approved preview access" .-> E1["Next"]
-  G -. "PARTIAL: SignWell sandbox hit 422; one paid Nic-Nac request passed; live SMS/SignWell/Stripe still gated" .-> G1["Later"]
+  G -. "PARTIAL: SignWell sandbox provider passed; one paid Nic-Nac request passed; live SMS/SignWell/Stripe still gated" .-> G1["Later"]
 ```
 
 ## P0 launch blockers
@@ -94,7 +94,7 @@ flowchart LR
 - Supabase schema application completed on 2026-05-19. Local remote-history placeholder migrations were added for previously remote-only versions (`021`, `023`, `025`, `030`, `034`, `035`, `036`, `037`) so `supabase db push` could safely apply `20260513172454_ss_prelaunch_payment_gates.sql` and `20260519154500_ss_pricing_referrals.sql`. Verification passed for `reps.referral_code`, subscription pricing metadata columns, `sparkle_suite_intake_submissions.referral_code`, and `rep_referrals`.
 - Fresh Vercel Preview deployed on 2026-05-19: `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`. Build passed. Protected preview route smoke passed after rotating a temporary demo password in-memory; do not put demo passwords in docs, commits, screenshots, or chat.
 - SignWell: sandbox/dry-run payload and live preflight readiness implemented and passed with `send_email=false`; live send remains parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.
-- SignWell sandbox provider contact was attempted with Development env on 2026-05-19 after Louis approval. Two test-mode, non-email provider attempts returned HTTP 422, including one retry with `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Customer`; no live agreement email was sent.
+- SignWell sandbox provider contact passed on 2026-05-19 after a read-only template fetch showed the template recipient placeholder is `Client`. The successful provider smoke created a test-mode draft document with `send_email=false`, `draft=true`, `test_mode=true`, and no live agreement email.
 - Telnyx: live SMS parked until 10DLC approval and number attachment.
 - Nic-Nac: one approved paid public-domain smoke request ran on 2026-05-19 against `https://www.yoursparklesuite.com/api/nic-nac` with a $5 stop cap; it returned HTTP 200, produced a stream, and stopped after exactly one request.
 - Supabase: demo seed and login/read smoke passed for `louis+sparkle-demo@neonrabbit.net`; visible counts were reps=1, listings=10, shows=2, audience=5.

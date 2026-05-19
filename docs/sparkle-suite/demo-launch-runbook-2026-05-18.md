@@ -474,6 +474,7 @@ Vercel status:
 
 - Development has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID`.
 - Preview for `codex/sparkle-cross-phase-hardening` has `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID`.
+- Development, Preview for `codex/sparkle-cross-phase-hardening`, and Production have `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Client`.
 - Template ID source is the reusable SignWell template `Service Agreement Template_ Sparkle Suite (2)`.
 - `npm run smoke:demo -- --category signwell_sandbox --json` passed locally with `send_email=false`.
 
@@ -485,7 +486,7 @@ Stop point:
 
 ### 10. SignWell sandbox provider smoke, non-sending
 
-Use this only when the local shell has real SignWell sandbox/test credentials restored. This makes one SignWell API request and creates a test-mode document, but keeps `send_email=false`.
+Use this only when the local shell has real SignWell sandbox/test credentials restored. This makes one SignWell API request and creates a test-mode draft document, but keeps `send_email=false`.
 
 Command:
 
@@ -498,8 +499,8 @@ Remove-Item Env:\SIGNWELL_SANDBOX_PROVIDER_CALL
 What it does:
 
 - Calls SignWell's create-from-template API using the configured template.
-- Requires `test_mode=true` and `send_email=false` before making the provider call.
-- Reports only provider status, whether a document id was present, recipient count, and base URL mode.
+- Requires `test_mode=true`, `draft=true`, and `send_email=false` before making the provider call.
+- Reports only provider status, whether a document id was present, recipient count, draft/send/test booleans, placeholder name, metadata keys, and base URL mode.
 - Does not print the API key, base URL, template ID, document ID, embedded signing URL, or recipient email details beyond the demo address already documented.
 - Does not send a live agreement email.
 
@@ -510,11 +511,11 @@ Required env:
 - `SIGNWELL_API_BASE_URL`
 - `SIGNWELL_TEMPLATE_ID`
 - `SIGNWELL_SANDBOX_PROVIDER_CALL=true`
-- Optional: `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER` if the SignWell template placeholder is not `sparkle_suite_rep`.
+- `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Client`
 
 Latest result:
 
-- Attempted twice on 2026-05-19 after Louis approved provider contact and Development SignWell env was loaded. Both test-mode, non-email provider calls returned HTTP 422, including one retry with `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Customer`. No live agreement email was sent.
+- Attempted on 2026-05-19 after Louis approved provider contact and Development SignWell env was loaded. The first attempts returned HTTP 422 because the template placeholder was not `sparkle_suite_rep` or `Customer`; redacted diagnostics reported `missing_placeholder_names`. A read-only template fetch showed the placeholder is `Client`, and `npm run smoke:signwell:sandbox-provider` then passed with provider status `201`, `send_email=false`, `draft=true`, `test_mode=true`, and no live agreement email.
 
 Stop point:
 

@@ -27,21 +27,31 @@ interface PrelaunchSignWellAgreementPayloadOptions {
   mode: Extract<PrelaunchSignWellMode, 'sandbox' | 'dry_run'>
 }
 
+type PrelaunchSignWellAgreementPayload = ReturnType<
+  typeof buildPrelaunchSignWellAgreementPayload
+>
+
 export interface PrelaunchSignWellSandboxSubmitResult {
   providerStatus: number
   documentId: string | null
   recipientCount: number
   testMode: true
   sendEmail: false
+  draft: true
 }
 
 export class PrelaunchSignWellProviderError extends Error {
   status?: number
+  safeProviderDetail?: string
 
-  constructor(message: string, options: { status?: number } = {}) {
+  constructor(
+    message: string,
+    options: { status?: number; safeProviderDetail?: string } = {},
+  ) {
     super(message)
     this.name = 'PrelaunchSignWellProviderError'
     this.status = options.status
+    this.safeProviderDetail = options.safeProviderDetail
   }
 }
 
@@ -95,6 +105,14 @@ export function buildPrelaunchSignWellMetadata({
   }
 }
 
+function buildProviderMetadata(
+  metadata: ReturnType<typeof buildPrelaunchSignWellMetadata>,
+) {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value !== null),
+  ) as Record<string, string>
+}
+
 export function buildPrelaunchSignWellAgreementPayload({
   templateId,
   recipientPlaceholderName,
@@ -106,6 +124,7 @@ export function buildPrelaunchSignWellAgreementPayload({
     test_mode: mode !== 'dry_run',
     template_id: templateId,
     send_email: false,
+    draft: true,
     recipients: [
       {
         id: 'sparkle_suite_rep',
@@ -116,7 +135,7 @@ export function buildPrelaunchSignWellAgreementPayload({
         email: recipient.email,
       },
     ],
-    metadata,
+    metadata: buildProviderMetadata(metadata),
   }
 }
 
@@ -140,9 +159,90 @@ async function readJsonObject(response: Response) {
   }
 }
 
+function redactProviderMessage(value: string) {
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .replace(
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
+      '[uuid]',
+    )
+    .replace(/\b(?:tmpl|template|doc|document|price|whsec)_[A-Za-z0-9_-]+\b/g, '[id]')
+    .slice(0, 180)
+}
+
+function collectProviderMessages(
+  value: unknown,
+  messages: string[],
+  allowStrings = false,
+) {
+  if (messages.length >= 4) return
+
+  if (typeof value === 'string') {
+    if (!allowStrings) return
+    const redacted = redactProviderMessage(value.trim())
+    if (redacted) messages.push(redacted)
+    return
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectProviderMessages(item, messages, allowStrings)
+    return
+  }
+
+  if (value && typeof value === 'object') {
+    for (const [key, nestedValue] of Object.entries(value)) {
+      const isErrorContainer = ['error', 'errors'].includes(key.toLowerCase())
+      if (
+        isErrorContainer ||
+        ['message', 'messages', 'detail', 'details'].includes(key.toLowerCase())
+      ) {
+        collectProviderMessages(nestedValue, messages, true)
+      }
+    }
+  }
+}
+
+function collectProviderErrorFields(
+  value: unknown,
+  fields: string[],
+  prefix = '',
+) {
+  if (fields.length >= 8) return
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+
+  for (const [key, nestedValue] of Object.entries(value)) {
+    const safeKey = key.replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 60)
+    const path = prefix ? `${prefix}.${safeKey}` : safeKey
+    if (!['error', 'errors', 'message', 'messages', 'detail', 'details'].includes(safeKey.toLowerCase())) {
+      fields.push(path)
+    }
+    collectProviderErrorFields(nestedValue, fields, path)
+  }
+}
+
+export function summarizeSignWellProviderErrorBody(
+  body: Record<string, unknown> | null,
+) {
+  if (!body) return null
+
+  const keys = Object.keys(body).slice(0, 8)
+  const messages: string[] = []
+  collectProviderMessages(body, messages)
+  const fields: string[] = []
+  collectProviderErrorFields(body.errors, fields)
+
+  return [
+    keys.length > 0 ? `keys=${keys.join(',')}` : null,
+    fields.length > 0 ? `error_fields=${fields.join(',')}` : null,
+    messages.length > 0 ? `messages=${messages.join(' | ')}` : null,
+  ]
+    .filter(Boolean)
+    .join('; ')
+}
+
 export async function submitPrelaunchSignWellSandboxAgreement(input: {
   config: NonNullable<ReturnType<typeof getPrelaunchSignWellConfig>>
-  agreementPayload: ReturnType<typeof buildPrelaunchSignWellAgreementPayload>
+  agreementPayload: PrelaunchSignWellAgreementPayload
   fetchImpl?: typeof fetch
 }): Promise<PrelaunchSignWellSandboxSubmitResult> {
   if (input.agreementPayload.test_mode !== true) {
@@ -153,6 +253,11 @@ export async function submitPrelaunchSignWellSandboxAgreement(input: {
   if (input.agreementPayload.send_email !== false) {
     throw new PrelaunchSignWellProviderError(
       'SignWell sandbox provider smoke requires send_email=false.',
+    )
+  }
+  if (input.agreementPayload.draft !== true) {
+    throw new PrelaunchSignWellProviderError(
+      'SignWell sandbox provider smoke requires draft=true.',
     )
   }
 
@@ -174,9 +279,15 @@ export async function submitPrelaunchSignWellSandboxAgreement(input: {
   const body = await readJsonObject(response)
 
   if (!response.ok) {
+    const safeProviderDetail = summarizeSignWellProviderErrorBody(body)
     throw new PrelaunchSignWellProviderError(
-      `SignWell sandbox provider call failed with status ${response.status}.`,
-      { status: response.status },
+      [
+        `SignWell sandbox provider call failed with status ${response.status}.`,
+        safeProviderDetail ? `Provider detail: ${safeProviderDetail}.` : null,
+      ]
+        .filter(Boolean)
+        .join(' '),
+      { status: response.status, safeProviderDetail: safeProviderDetail ?? undefined },
     )
   }
 
@@ -189,5 +300,6 @@ export async function submitPrelaunchSignWellSandboxAgreement(input: {
     recipientCount: recipients.length,
     testMode: true,
     sendEmail: false,
+    draft: true,
   }
 }
