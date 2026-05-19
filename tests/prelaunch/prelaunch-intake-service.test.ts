@@ -26,6 +26,7 @@ describe('validatePrelaunchIntakeInput', () => {
       brandVibe: 'polished and warm',
       colorPreferences: 'plum and pearl',
       specialRequests: 'Needs help organizing show links',
+      referralCode: ' ss-k7m4q9 ',
       smsConsent: true,
       emailConsent: true,
     })
@@ -48,6 +49,7 @@ describe('validatePrelaunchIntakeInput', () => {
       brandVibe: 'polished and warm',
       colorPreferences: 'plum and pearl',
       specialRequests: 'Needs help organizing show links',
+      referralCode: 'SS-K7M4Q9',
       smsConsent: true,
       emailConsent: true,
     })
@@ -120,6 +122,7 @@ describe('validatePrelaunchIntakeInput', () => {
       brandVibe: '',
       colorPreferences: '',
       specialRequests: '',
+      referralCode: 'ss-r2p8tx',
       smsConsent: true,
       emailConsent: true,
     })
@@ -142,6 +145,7 @@ describe('validatePrelaunchIntakeInput', () => {
       brand_vibe: null,
       color_preferences: null,
       special_requests: null,
+      referral_code: 'SS-R2P8TX',
       sms_consent: true,
       email_consent: true,
       prequalification_status: 'needs_review',

@@ -34,6 +34,12 @@ describe('Sparkle Suite pricing and referrals migration', () => {
     expect(sql).toContain('ADD COLUMN IF NOT EXISTS monthly_price_id TEXT')
   })
 
+  it('stores submitted referral codes from the public intake flow', () => {
+    expect(sql).toContain('ALTER TABLE sparkle_suite_intake_submissions')
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS referral_code TEXT')
+    expect(sql).toContain('idx_sparkle_suite_intake_referral_code')
+  })
+
   it('keeps referral codes separate from live queue sync code storage', () => {
     expect(sql).not.toContain('live_queue')
     expect(sql).not.toContain('sync_code')

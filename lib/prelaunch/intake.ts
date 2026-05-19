@@ -1,4 +1,5 @@
 import { errors } from '@/lib/services/errors'
+import { normalizeSparkleSuiteReferralCode } from '@/lib/services/sparkle-suite-referrals'
 import type {
   PrelaunchIntakeInput,
   PrelaunchIntakeInsert,
@@ -153,6 +154,7 @@ export function parsePrelaunchIntakeInput(value: unknown): PrelaunchIntakeInput 
       body.colorPreferences ?? body.color_preferences,
     ),
     specialRequests: readString(body.specialRequests ?? body.special_requests),
+    referralCode: readString(body.referralCode ?? body.referral_code),
     smsConsent: readBoolean(body.smsConsent ?? body.sms_consent),
     emailConsent: readBoolean(body.emailConsent ?? body.email_consent),
   }
@@ -174,6 +176,9 @@ export function validatePrelaunchIntakeInput(
   const teamName = optionalText(input.teamName)
   const currentSetup = input.currentSetup.trim()
   const setupGoal = input.setupGoal.trim()
+  const referralCode = input.referralCode
+    ? normalizeSparkleSuiteReferralCode(input.referralCode)
+    : undefined
 
   if (!fullName) {
     throw errors.INVALID_INPUT('fullName required', 'Name is required.')
@@ -254,6 +259,7 @@ export function validatePrelaunchIntakeInput(
     brandVibe: optionalText(input.brandVibe),
     colorPreferences: optionalText(input.colorPreferences),
     specialRequests: optionalText(input.specialRequests),
+    referralCode: referralCode ?? undefined,
     smsConsent: true,
     emailConsent: true,
   }
@@ -299,6 +305,7 @@ export function buildPrelaunchIntakeInsert(
     brand_vibe: validated.brandVibe ?? null,
     color_preferences: validated.colorPreferences ?? null,
     special_requests: validated.specialRequests ?? null,
+    referral_code: validated.referralCode ?? null,
     sms_consent: validated.smsConsent,
     email_consent: validated.emailConsent,
     prequalification_status: getPrequalificationStatus(fitFlags),

@@ -79,6 +79,7 @@ export function PrelaunchIntakeForm() {
                 brandVibe: readFormValue(formData, 'brandVibe'),
                 colorPreferences: readFormValue(formData, 'colorPreferences'),
                 specialRequests: readFormValue(formData, 'specialRequests'),
+                referralCode: readFormValue(formData, 'referralCode'),
                 website: readFormValue(formData, 'website'),
                 smsConsent: formData.get('smsConsent') === 'on',
                 emailConsent: formData.get('emailConsent') === 'on',
@@ -142,6 +143,15 @@ export function PrelaunchIntakeForm() {
               className="prelaunch-input"
               name="businessName"
               required
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-semibold text-[var(--prelaunch-plum-ink)]">
+            Referral code
+            <input
+              autoComplete="off"
+              className="prelaunch-input"
+              name="referralCode"
+              placeholder="SS-K7M4Q9"
             />
           </label>
           <div className="grid gap-5 sm:grid-cols-3">

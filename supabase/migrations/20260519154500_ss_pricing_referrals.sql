@@ -76,6 +76,13 @@ ALTER TABLE subscriptions
   ADD COLUMN IF NOT EXISTS build_fee_price_id TEXT,
   ADD COLUMN IF NOT EXISTS monthly_price_id TEXT;
 
+ALTER TABLE sparkle_suite_intake_submissions
+  ADD COLUMN IF NOT EXISTS referral_code TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_sparkle_suite_intake_referral_code
+  ON sparkle_suite_intake_submissions(upper(referral_code))
+  WHERE referral_code IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS rep_referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   referrer_rep_id UUID NOT NULL REFERENCES reps(id) ON DELETE CASCADE,

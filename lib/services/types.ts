@@ -566,6 +566,7 @@ export interface PrelaunchIntakeInput {
   brandVibe?: string
   colorPreferences?: string
   specialRequests?: string
+  referralCode?: string
   smsConsent: boolean
   emailConsent: boolean
 }
@@ -588,6 +589,7 @@ export interface PrelaunchIntakeValidated {
   brandVibe?: string
   colorPreferences?: string
   specialRequests?: string
+  referralCode?: string
   smsConsent: true
   emailConsent: true
 }
@@ -612,6 +614,7 @@ export interface PrelaunchIntakeInsert {
   brand_vibe: string | null
   color_preferences: string | null
   special_requests: string | null
+  referral_code: string | null
   sms_consent: boolean
   email_consent: boolean
   prequalification_status: PrelaunchPrequalificationStatus
