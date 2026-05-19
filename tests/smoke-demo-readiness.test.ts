@@ -38,6 +38,7 @@ describe('demo launch smoke readiness plan', () => {
       'supabase_demo',
       'stripe_test',
       'stripe_local_routes',
+      'stripe_webhook_test_config',
       'stripe_live_preflight',
       'protected_preview_routes',
       'signwell_sandbox',
@@ -117,6 +118,99 @@ describe('demo launch smoke readiness plan', () => {
     )
     expect(JSON.stringify(errors)).not.toContain('sk_test_super_secret')
     expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
+  })
+
+  it('keeps Stripe webhook config smoke read-only and test-mode only', async () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_webhook_test_config' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('stripe_webhook_test_config')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'stripe_webhook_test_config',
+        risk: 'test_provider',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(
+      plan,
+      {
+        STRIPE_SECRET_KEY: 'sk_test_super_secret',
+        STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+        NEXT_PUBLIC_APP_URL: 'https://preview.example.vercel.app',
+      },
+      {
+        verifyStripeWebhookTestConfig: async () => ({
+          targetHost: 'preview.example.vercel.app',
+          endpointMatched: true,
+          endpointStatus: 'enabled',
+          missingEvents: [],
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'stripe_webhook_test_config',
+      ok: true,
+      results: [
+        {
+          id: 'stripe_webhook_test_config',
+          ok: true,
+          detail:
+            'Stripe test webhook endpoint matched=true; endpoint_status=enabled; target_host=preview.example.vercel.app; missing_events=none; provider_call=list_webhook_endpoints',
+        },
+      ],
+    })
+    expect(JSON.stringify(result)).not.toContain('sk_test_super_secret')
+    expect(JSON.stringify(result)).not.toContain('whsec_super_secret')
+  })
+
+  it('reports missing Stripe webhook events without exposing webhook secrets', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'stripe_webhook_test_config' }),
+      {
+        STRIPE_SECRET_KEY: 'sk_test_super_secret',
+        STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+        NEXT_PUBLIC_APP_URL: 'https://preview.example.vercel.app',
+      },
+      {
+        verifyStripeWebhookTestConfig: async () => ({
+          targetHost: 'preview.example.vercel.app',
+          endpointMatched: true,
+          endpointStatus: 'enabled',
+          missingEvents: ['checkout.session.completed'],
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'stripe_webhook_test_config',
+      ok: false,
+      results: [
+        {
+          id: 'stripe_webhook_test_config',
+          ok: false,
+          detail:
+            'Stripe test webhook endpoint matched=true; endpoint_status=enabled; target_host=preview.example.vercel.app; missing_events=checkout.session.completed; provider_call=list_webhook_endpoints',
+        },
+      ],
+    })
+    expect(JSON.stringify(result)).not.toContain('whsec_super_secret')
+  })
+
+  it('blocks Stripe webhook config smoke for live keys', () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_webhook_test_config' })
+
+    const errors = validateDemoSmokePlan(plan, {
+      STRIPE_SECRET_KEY: 'sk_live_super_secret',
+      STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+      NEXT_PUBLIC_APP_URL: 'https://www.yoursparklesuite.com',
+    })
+
+    expect(errors).toContain(
+      'Stripe webhook config smoke requires STRIPE_SECRET_KEY mode=test; current mode=live.',
+    )
+    expect(JSON.stringify(errors)).not.toContain('sk_live_super_secret')
   })
 
   it('keeps Stripe live preflight explicit and does not create checkout sessions', async () => {

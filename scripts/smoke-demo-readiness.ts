@@ -3,6 +3,7 @@ import path from 'node:path'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import Stripe from 'stripe'
 import {
   buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
@@ -25,6 +26,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'supabase_demo',
   'stripe_test',
   'stripe_local_routes',
+  'stripe_webhook_test_config',
   'stripe_live_preflight',
   'protected_preview_routes',
   'signwell_sandbox',
@@ -78,6 +80,7 @@ export const SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV =
   'SIGNWELL_LIVE_APPROVED_SEND_WINDOW'
 export const SIGNWELL_SANDBOX_PROVIDER_CALL_ENV =
   'SIGNWELL_SANDBOX_PROVIDER_CALL'
+export const STRIPE_WEBHOOK_EXPECTED_URL_ENV = 'STRIPE_WEBHOOK_EXPECTED_URL'
 
 type SmokeRisk = 'none' | 'local_app' | 'db_write' | 'test_provider' | 'paid_provider'
 
@@ -156,6 +159,9 @@ export interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<StripeLocalRouteVerification>
+  verifyStripeWebhookTestConfig?: (
+    env: Record<string, string | undefined>,
+  ) => Promise<StripeWebhookConfigVerification>
   runProtectedPreviewRouteSmoke?: (
     env: Record<string, string | undefined>,
   ) => Promise<ProtectedPreviewRouteSmokeResult>
@@ -185,6 +191,13 @@ interface LocalAppVerification {
 interface StripeLocalRouteVerification {
   checkoutSessionUrl: string
   portalSessionUrl: string
+}
+
+interface StripeWebhookConfigVerification {
+  targetHost: string
+  endpointMatched: boolean
+  endpointStatus: string | null
+  missingEvents: string[]
 }
 
 interface ProtectedPreviewRouteSmokeResult {
@@ -217,6 +230,13 @@ const STRIPE_LIVE_APPROVED_PRICE_ENVS = [
   STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID_ENV,
   STRIPE_LIVE_APPROVED_FOUNDER_MONTHLY_PRICE_ID_ENV,
   STRIPE_LIVE_APPROVED_STANDARD_MONTHLY_PRICE_ID_ENV,
+] as const
+const STRIPE_REQUIRED_WEBHOOK_EVENTS = [
+  'checkout.session.completed',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'invoice.payment_succeeded',
+  'invoice.payment_failed',
 ] as const
 
 export function buildDemoCredentialFailureMessage(
@@ -335,6 +355,25 @@ export function buildDemoSmokePlan(
             id: 'stripe_local_checkout_and_portal',
             label:
               'Create Stripe test-mode checkout and portal sessions through the running local app.',
+            risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'stripe_webhook_test_config':
+      return {
+        category,
+        requiredEnv: [
+          'STRIPE_SECRET_KEY',
+          'STRIPE_WEBHOOK_SECRET',
+          'NEXT_PUBLIC_APP_URL',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'stripe_webhook_test_config',
+            label:
+              'List Stripe test webhook endpoints and verify the target app webhook is enabled for handled events.',
             risk: 'test_provider',
             run: 'planned',
           },
@@ -504,7 +543,11 @@ export function validateDemoSmokePlan(
   }
 
   if (
-    (plan.category === 'stripe_test' || plan.category === 'stripe_local_routes') &&
+    (
+      plan.category === 'stripe_test' ||
+      plan.category === 'stripe_local_routes' ||
+      plan.category === 'stripe_webhook_test_config'
+    ) &&
     env.STRIPE_SECRET_KEY?.startsWith('sk_live_') &&
     env[STRIPE_LIVE_SMOKE_CONFIRM_ENV] !== 'true'
   ) {
@@ -567,6 +610,30 @@ function buildProviderReadinessError(
     if (missing.length === 0) return null
 
     return `Stripe local route smoke blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)}.`
+  }
+
+  if (plan.category === 'stripe_webhook_test_config') {
+    const missing = missingEnvNames(env, [
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'NEXT_PUBLIC_APP_URL',
+    ])
+    const keyMode = getStripeSecretKeyMode(env.STRIPE_SECRET_KEY)
+    const errors: string[] = []
+
+    if (missing.length > 0) {
+      errors.push(
+        `Stripe webhook config smoke blocked: missing ${missing.join(', ')}; STRIPE_SECRET_KEY mode=${keyMode}.`,
+      )
+    }
+
+    if (keyMode !== 'test') {
+      errors.push(
+        `Stripe webhook config smoke requires STRIPE_SECRET_KEY mode=test; current mode=${keyMode}.`,
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
   }
 
   if (plan.category === 'stripe_live_preflight') {
@@ -763,6 +830,64 @@ function getStripeSecretKeyMode(secretKey: string | undefined): 'missing' | 'tes
   return 'unknown'
 }
 
+function buildStripeWebhookExpectedUrl(
+  env: Record<string, string | undefined>,
+) {
+  const explicit = env[STRIPE_WEBHOOK_EXPECTED_URL_ENV]?.trim()
+  if (explicit) return explicit
+
+  const appUrl = env.NEXT_PUBLIC_APP_URL?.trim()
+  if (!appUrl) return null
+
+  try {
+    return new URL('/api/stripe/webhook', appUrl).toString()
+  } catch {
+    return null
+  }
+}
+
+function getWebhookTargetHost(expectedUrl: string | null) {
+  if (!expectedUrl) return 'invalid'
+  try {
+    return new URL(expectedUrl).host
+  } catch {
+    return 'invalid'
+  }
+}
+
+function endpointIncludesRequiredEvents(endpoint: Stripe.WebhookEndpoint) {
+  const enabledEvents = new Set(endpoint.enabled_events ?? [])
+  if (enabledEvents.has('*')) return []
+  return STRIPE_REQUIRED_WEBHOOK_EVENTS.filter(
+    (eventName) => !enabledEvents.has(eventName),
+  )
+}
+
+export async function verifyStripeWebhookTestConfig(
+  env: Record<string, string | undefined> = process.env,
+): Promise<StripeWebhookConfigVerification> {
+  const expectedUrl = buildStripeWebhookExpectedUrl(env)
+  if (!expectedUrl) {
+    throw new Error(
+      `Unable to build Stripe webhook expected URL from NEXT_PUBLIC_APP_URL or ${STRIPE_WEBHOOK_EXPECTED_URL_ENV}.`,
+    )
+  }
+
+  const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-03-25.dahlia',
+  })
+  const endpoints = await stripe.webhookEndpoints.list({ limit: 100 })
+  const endpoint = endpoints.data.find((candidate) => candidate.url === expectedUrl)
+  const missingEvents = endpoint ? endpointIncludesRequiredEvents(endpoint) : []
+
+  return {
+    targetHost: getWebhookTargetHost(expectedUrl),
+    endpointMatched: Boolean(endpoint),
+    endpointStatus: endpoint?.status ?? null,
+    missingEvents,
+  }
+}
+
 function getSignWellApiBaseUrlMode(
   apiBaseUrl: string | undefined,
 ): 'missing' | 'sandbox' | 'production' | 'local' | 'unknown' {
@@ -887,6 +1012,28 @@ export async function runDemoSmoke(
           id: 'stripe_local_checkout_and_portal',
           ok: true,
           detail: `Stripe test checkout session ready=${String(Boolean(stripeResult.checkoutSessionUrl))}; portal session ready=${String(Boolean(stripeResult.portalSessionUrl))}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'stripe_webhook_test_config') {
+    const verifyWebhookConfig =
+      dependencies.verifyStripeWebhookTestConfig ?? verifyStripeWebhookTestConfig
+    const webhookResult = await verifyWebhookConfig(env)
+    const ok =
+      webhookResult.endpointMatched &&
+      webhookResult.endpointStatus === 'enabled' &&
+      webhookResult.missingEvents.length === 0
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'stripe_webhook_test_config',
+          ok,
+          detail: `Stripe test webhook endpoint matched=${String(webhookResult.endpointMatched)}; endpoint_status=${webhookResult.endpointStatus ?? 'missing'}; target_host=${webhookResult.targetHost}; missing_events=${webhookResult.missingEvents.length === 0 ? 'none' : webhookResult.missingEvents.join(',')}; provider_call=list_webhook_endpoints`,
         },
       ],
     }

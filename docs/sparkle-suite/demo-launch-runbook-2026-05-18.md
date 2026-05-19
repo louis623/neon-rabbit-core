@@ -335,7 +335,44 @@ Stop point:
 - If the preview reports Vercel deployment protection, either complete Vercel SSO in the browser session or set `VERCEL_PROTECTION_BYPASS` locally before deployed preview smoke.
 - If the billing portal route fails, check Stripe test portal configuration before moving to a browser checkout walkthrough.
 
-### 7. SignWell sandbox payload smoke
+### 7. Stripe test webhook config smoke
+
+Command:
+
+```powershell
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app'
+npm run smoke:stripe:webhook-test-config
+Remove-Item Env:\NEXT_PUBLIC_APP_URL
+```
+
+What it does:
+
+- Lists Stripe test-mode webhook endpoints.
+- Checks whether the target app has an enabled `/api/stripe/webhook` endpoint.
+- Checks whether that endpoint is subscribed to the Stripe events Sparkle Suite handles for subscription launch.
+- Does not create checkout sessions.
+- Does not submit payment details.
+- Does not create charges.
+- Does not use live Stripe keys.
+
+Required env:
+
+- `STRIPE_SECRET_KEY` with `sk_test_`.
+- `STRIPE_WEBHOOK_SECRET`.
+- `NEXT_PUBLIC_APP_URL`.
+- Optional: `STRIPE_WEBHOOK_EXPECTED_URL` if the Stripe endpoint should differ from `NEXT_PUBLIC_APP_URL + /api/stripe/webhook`.
+
+Latest result:
+
+- `npm run smoke:stripe:webhook-test-config` was run on 2026-05-19 for `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`. It made a read-only Stripe test-mode webhook endpoint list call and reported `endpoint matched=false`; no matching Stripe test webhook endpoint exists for the latest preview URL yet.
+
+Stop point:
+
+- If `STRIPE_SECRET_KEY` is live mode, stop.
+- If `endpoint matched=false`, configure a Stripe test webhook endpoint for the intended target before claiming checkout completion/webhook readiness.
+- If `missing_events` is not `none`, update the Stripe test webhook endpoint event subscriptions before completing a payment-flow smoke.
+
+### 8. SignWell sandbox payload smoke
 
 Command:
 
@@ -517,10 +554,11 @@ Also do not do these without separate approval:
 6. Run `stripe:demo-price` with test keys only if any of `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, or `STRIPE_PRICE_STANDARD_MONTHLY` is missing.
 7. Run `stripe_test` with test keys only.
 8. Run `stripe_local_routes` against a running app started with the Stripe env.
-9. Run `signwell_sandbox` with sandbox/dry-run settings only.
-10. Run `smoke:launch` with the categories that passed individually, using `--json --write-report`.
-11. Follow `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md` for the manual browser pass.
-12. Stop and record blockers before any live-provider action.
+9. Run `smoke:stripe:webhook-test-config` against the target app URL and stop if the endpoint is missing or missing required events.
+10. Run `signwell_sandbox` with sandbox/dry-run settings only.
+11. Run `smoke:launch` with the categories that passed individually, using `--json --write-report`.
+12. Follow `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md` for the manual browser pass.
+13. Stop and record blockers before any live-provider action.
 
 ## Pass notes to capture
 
