@@ -179,6 +179,44 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('&quot;intakeId&quot;: &quot;intake-1&quot;')
   })
 
+  it('renders the intake surface as the Sparkle Suite Control Center', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [
+          {
+            ...submission,
+            handoffStatus: 'meeting_ready',
+            scoutInputStatus: 'generated',
+          },
+          {
+            ...submission,
+            id: 'intake-2',
+            email: 'morgan@example.com',
+            prequalificationStatus: 'qualified',
+            fitFlags: [],
+            handoffStatus: 'converted',
+          },
+        ],
+        waitlistLeads: [waitlistLead],
+      }),
+    )
+
+    expect(html).toContain('Sparkle Suite Control Center')
+    expect(html).toContain('Client intake')
+    expect(html).toContain('Start at the beginning of the client pipeline')
+    expect(html).toContain('Client intake pipeline')
+    expect(html).toContain('New intake')
+    expect(html).toContain('Start work ready')
+    expect(html).toContain('Payment pending')
+    expect(html).toContain('Agreement pending')
+    expect(html).toContain('Build ready')
+    expect(html).toContain('/control-center/intake?lane=failed_scout')
+    expect(html).toContain('/control-center/intake?lane=meeting_ready')
+    expect(html).not.toContain('/internal/prelaunch/intake?lane=failed_scout')
+  })
+
   it('renders waitlist leads with confirmation email status', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

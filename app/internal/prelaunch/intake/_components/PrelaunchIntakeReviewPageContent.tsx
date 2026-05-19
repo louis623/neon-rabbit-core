@@ -18,6 +18,8 @@ interface PrelaunchIntakeReviewPageContentProps {
   submissions: PrelaunchIntakeReviewSubmission[]
   waitlistLeads?: PrelaunchWaitlistReviewLead[]
   activeLane?: PrelaunchIntakeReviewLane | null
+  basePath?: string
+  surface?: 'prelaunch_review' | 'control_center'
 }
 
 interface OperatorReadinessItem {
@@ -95,8 +97,8 @@ function formatScoutInputStatus(value: string) {
   return formatLabel(value)
 }
 
-function formatLaneHref(lane: PrelaunchIntakeReviewLane | null) {
-  return lane ? `/internal/prelaunch/intake?lane=${lane}` : '/internal/prelaunch/intake'
+function formatLaneHref(lane: PrelaunchIntakeReviewLane | null, basePath: string) {
+  return lane ? `${basePath}?lane=${lane}` : basePath
 }
 
 function hasBlockedGate(gateReadiness: PrelaunchGateReadinessItem[]) {
@@ -314,9 +316,12 @@ function BriefList({
 
 export function PrelaunchIntakeReviewPageContent({
   activeLane = null,
+  basePath = '/internal/prelaunch/intake',
   submissions,
+  surface = 'prelaunch_review',
   waitlistLeads = [],
 }: PrelaunchIntakeReviewPageContentProps) {
+  const isControlCenter = surface === 'control_center'
   const total = submissions.length
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
@@ -350,22 +355,64 @@ export function PrelaunchIntakeReviewPageContent({
   const qrManifest = getApprovedPrelaunchQrManifest({
     baseUrl: process.env.NEXT_PUBLIC_APP_URL,
   })
+  const pipelineStages = [
+    {
+      label: 'New intake',
+      count: submissions.filter(
+        (submission) => submission.intakeStatus === 'submitted',
+      ).length,
+      detail: 'Fresh client profiles',
+    },
+    {
+      label: 'Needs review',
+      count: needsReview,
+      detail: 'Fit flags or incomplete setup',
+    },
+    {
+      label: 'Meeting ready',
+      count: meetingReady,
+      detail: 'Discovery call handoff',
+    },
+    {
+      label: 'Start work ready',
+      count: submissions.filter(
+        (submission) => submission.handoffStatus === 'converted',
+      ).length,
+      detail: 'Operator-approved next step',
+    },
+    {
+      label: 'Payment pending',
+      count: 0,
+      detail: 'Stripe test slice next',
+    },
+    {
+      label: 'Agreement pending',
+      count: 0,
+      detail: 'SignWell sandbox slice next',
+    },
+    {
+      label: 'Build ready',
+      count: 0,
+      detail: 'After payment and agreement',
+    },
+  ]
 
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <header className="flex flex-col gap-3 border-b border-slate-200 pb-6">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Sparkle Suite
+            {isControlCenter ? 'Sparkle Suite Control Center' : 'Sparkle Suite'}
           </p>
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                Prelaunch intake review
+                {isControlCenter ? 'Client intake' : 'Prelaunch intake review'}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Review submitted rep fit checks, spot handoff blockers, and
-                copy Scout-ready context for the next onboarding step.
+                {isControlCenter
+                  ? 'Start at the beginning of the client pipeline: review new leads, confirm the next human action, and keep provider gates visible before start work.'
+                  : 'Review submitted rep fit checks, spot handoff blockers, and copy Scout-ready context for the next onboarding step.'}
               </p>
             </div>
             <a
@@ -448,6 +495,41 @@ export function PrelaunchIntakeReviewPageContent({
             </div>
           ))}
         </section>
+
+        {isControlCenter ? (
+          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Client intake pipeline
+                </p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-950">
+                  Intake is the first launch-path chapter
+                </h2>
+              </div>
+              <p className="max-w-lg text-sm leading-6 text-slate-600">
+                Later stages stay visible here as placeholders until their
+                Stripe, SignWell, and build-readiness slices are wired to real
+                status.
+              </p>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {pipelineStages.map((stage) => (
+                <div
+                  className="rounded-md border border-slate-200 bg-slate-50 p-3"
+                  key={stage.label}
+                >
+                  <p className="text-sm font-semibold text-slate-950">
+                    {stage.count} {stage.label}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {stage.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -547,7 +629,7 @@ export function PrelaunchIntakeReviewPageContent({
             {activeLaneConfig ? (
               <a
                 className="text-sm font-semibold text-slate-600 hover:text-slate-950"
-                href={formatLaneHref(null)}
+                href={formatLaneHref(null, basePath)}
               >
                 Clear lane
               </a>
@@ -561,7 +643,7 @@ export function PrelaunchIntakeReviewPageContent({
                     ? 'border-slate-950 bg-slate-950 text-white'
                     : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-slate-300 hover:bg-slate-100'
                 }`}
-                href={formatLaneHref(lane.key)}
+                href={formatLaneHref(lane.key, basePath)}
                 key={lane.key}
               >
                 <p className="text-sm font-semibold">
