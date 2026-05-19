@@ -199,7 +199,7 @@ Vercel status:
 - Development and Preview previously had only `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`; replace that single-price setup with `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` before the next Stripe route smoke.
 - Most recently smoke-tested protected Preview `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal after a temporary demo password rotation.
 - The same preview has passed the opt-in aggregate launch category through `npm run smoke:launch:preview-protected`.
-- Production live preflight was attempted on 2026-05-18 without creating checkout or charge traffic. It is blocked because Production currently reports Stripe key mode `test` and is missing approved live build-fee, founder monthly, and standard monthly prices.
+- Production has itemized test-mode prices set for the build fee, founder monthly, and standard monthly checkout path. Live price creation was attempted with the approved helper on 2026-05-19 and stopped safely because Production currently reports Stripe key mode `test`.
 
 ### Stripe live preflight, no checkout
 
@@ -238,6 +238,7 @@ Latest result:
 
 - `npm run smoke:stripe:live-preflight` was attempted on 2026-05-18 and blocked before any checkout or charge because Production Stripe key mode was `test` and production monthly price/approved live price were missing.
 - Founder step-up scheduling was implemented on 2026-05-19 and covered by focused webhook tests; live readiness still depends on installing approved live Stripe prices and running the separately approved live preflight/smoke path.
+- `npm run stripe:live-prices -- --env-file .local\vercel-production.env --json` was attempted on 2026-05-19 and stopped safely because Production `STRIPE_SECRET_KEY` is still test mode. No live Stripe prices were created.
 
 Stop point:
 
@@ -245,6 +246,37 @@ Stop point:
 - If the production monthly price does not match the approved live price ID, stop.
 - If `STRIPE_LIVE_SMOKE_CONFIRMED=true`, stop during preflight; that flag belongs only to a separately approved final live checkout smoke.
 - Do not create a live Checkout Session or submit payment details without Louis approving the exact live path and amount.
+
+### Stripe live price provider setup, no checkout
+
+Use this only after live Stripe production keys are intentionally installed. The default command lists/fails safely and does not create missing prices.
+
+Read-only command:
+
+```powershell
+npm run stripe:live-prices -- --env-file .local\vercel-production.env --json
+```
+
+Provider-write command:
+
+```powershell
+npm run stripe:live-prices -- --env-file .local\vercel-production.env --apply --approved-at <approval-timestamp> --json
+```
+
+What it does:
+
+- Requires `STRIPE_SECRET_KEY` mode `live`; it stops on test, missing, or unknown keys.
+- Calls live Stripe to find active prices by lookup key.
+- Fails if an existing live lookup key points at a price with the wrong amount, currency, or one-time/monthly cadence.
+- Creates missing live prices only when both `--apply` and `--approved-at` are present.
+- Prints the live price IDs and the matching `STRIPE_PRICE_*` and `STRIPE_LIVE_APPROVED_*` env lines when prices exist.
+- Does not create Checkout Sessions, submit payment details, create charges, send invoices, or contact reps.
+
+Stop point:
+
+- If live keys are not installed, stop.
+- If an existing lookup-key price mismatches the approved $49.99 build fee, $49.99 founder monthly, or $74.99 standard monthly terms, stop and correct the Stripe dashboard before using the env lines.
+- Do not run the provider-write command until Louis approves the live Stripe key, price creation, exact amounts, and timestamp for this step.
 
 ### Protected preview CLI route smoke
 
@@ -368,7 +400,7 @@ Latest result:
 
 - `npm run stripe:ensure-test-webhook -- --target https://www.yoursparklesuite.com --apply --write-secret-file .local\stripe-test-webhook-www.secret --json` created the Stripe test-mode endpoint for `https://www.yoursparklesuite.com/api/stripe/webhook` on 2026-05-19. The generated webhook secret was written only to the ignored `.local` file and was not printed.
 - `npm run smoke:stripe:webhook-test-config` then passed for `https://www.yoursparklesuite.com`, reporting `endpoint matched=true`, `endpoint_status=enabled`, and `missing_events=none`.
-- Installing that generated webhook secret into Vercel Production was blocked pending explicit Louis approval because replacing a production webhook secret can break verification until the matching deploy is live. Do not overwrite `STRIPE_WEBHOOK_SECRET` in Production without approving that exact step and the redeploy/promotion plan.
+- Louis approved installing the generated test webhook secret into Vercel Production on 2026-05-19. Production was redeployed from clean commit `5606fb0`, and public-domain route smoke then passed against `https://www.yoursparklesuite.com` for demo auth, Nic-Nac shell, Stripe test checkout session creation, and Stripe test billing portal session creation.
 
 Stop point:
 
@@ -482,7 +514,7 @@ Required env:
 
 Latest result:
 
-- Attempted on 2026-05-19 after implementation. The run stopped before provider contact because local SignWell env values were not available; the ignored Vercel preview env pull showed the names but no local values to load. No SignWell API request was made.
+- Attempted twice on 2026-05-19 after Louis approved provider contact and Development SignWell env was loaded. Both test-mode, non-email provider calls returned HTTP 422, including one retry with `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER=Customer`. No live agreement email was sent.
 
 Stop point:
 
@@ -573,6 +605,7 @@ Required env:
 Latest result:
 
 - `npm run smoke:nic-nac:paid-preflight` passed on 2026-05-18 with approved requests capped at 1 and `paid_calls_executed=false`.
+- One approved paid public-domain Nic-Nac request ran on 2026-05-19 against `https://www.yoursparklesuite.com/api/nic-nac` with Louis's $5 stop cap. It returned HTTP 200 with a streamed response and a run id, then stopped after exactly one request.
 
 Stop point:
 
