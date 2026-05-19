@@ -1,0 +1,3 @@
+-- Remote history placeholder.
+-- This version exists in the linked Supabase migration table but was removed
+-- from neon-rabbit-core after the VAC backend was moved out of core.
