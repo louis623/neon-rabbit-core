@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { createHmac } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
@@ -27,6 +28,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'stripe_test',
   'stripe_local_routes',
   'stripe_webhook_test_config',
+  'stripe_webhook_local_signature',
   'stripe_live_preflight',
   'protected_preview_routes',
   'signwell_sandbox',
@@ -44,6 +46,7 @@ export const SAFE_LAUNCH_SMOKE_CATEGORIES = [
   'local_app',
   'stripe_test',
   'stripe_local_routes',
+  'stripe_webhook_local_signature',
   'signwell_sandbox',
 ] as const satisfies readonly DemoSmokeCategory[]
 
@@ -162,6 +165,9 @@ export interface DemoSmokeRunDependencies {
   verifyStripeWebhookTestConfig?: (
     env: Record<string, string | undefined>,
   ) => Promise<StripeWebhookConfigVerification>
+  verifyStripeLocalWebhookSignature?: (
+    env: Record<string, string | undefined>,
+  ) => Promise<StripeLocalWebhookSignatureVerification>
   runProtectedPreviewRouteSmoke?: (
     env: Record<string, string | undefined>,
   ) => Promise<ProtectedPreviewRouteSmokeResult>
@@ -198,6 +204,12 @@ interface StripeWebhookConfigVerification {
   endpointMatched: boolean
   endpointStatus: string | null
   missingEvents: string[]
+}
+
+interface StripeLocalWebhookSignatureVerification {
+  status: number
+  received: boolean
+  deduplicated: boolean
 }
 
 interface ProtectedPreviewRouteSmokeResult {
@@ -375,6 +387,24 @@ export function buildDemoSmokePlan(
             label:
               'List Stripe test webhook endpoints and verify the target app webhook is enabled for handled events.',
             risk: 'test_provider',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'stripe_webhook_local_signature':
+      return {
+        category,
+        requiredEnv: [
+          'STRIPE_WEBHOOK_SECRET',
+          'NEXT_PUBLIC_APP_URL',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'stripe_webhook_local_signature',
+            label:
+              'Post a correctly signed unhandled Stripe test webhook event to the running local app.',
+            risk: 'local_app',
             run: 'planned',
           },
         ],
@@ -636,6 +666,17 @@ function buildProviderReadinessError(
     return errors.length > 0 ? errors.join(' ') : null
   }
 
+  if (plan.category === 'stripe_webhook_local_signature') {
+    const missing = missingEnvNames(env, [
+      'STRIPE_WEBHOOK_SECRET',
+      'NEXT_PUBLIC_APP_URL',
+    ])
+
+    if (missing.length === 0) return null
+
+    return `Stripe local webhook signature smoke blocked: missing ${missing.join(', ')}.`
+  }
+
   if (plan.category === 'stripe_live_preflight') {
     const missing = missingEnvNames(env, [
       'STRIPE_SECRET_KEY',
@@ -888,6 +929,60 @@ export async function verifyStripeWebhookTestConfig(
   }
 }
 
+function buildStripeWebhookLocalSmokeEvent() {
+  return {
+    id: `evt_smoke_${Date.now()}`,
+    object: 'event',
+    api_version: '2026-03-25.dahlia',
+    created: Math.floor(Date.now() / 1000),
+    data: {
+      object: {
+        id: 'smoke_local_signature',
+        object: 'application',
+      },
+    },
+    livemode: false,
+    pending_webhooks: 1,
+    request: {
+      id: null,
+      idempotency_key: null,
+    },
+    type: 'application.updated',
+  }
+}
+
+export async function verifyStripeLocalWebhookSignature(
+  env: Record<string, string | undefined> = process.env,
+): Promise<StripeLocalWebhookSignatureVerification> {
+  const appUrl = env.NEXT_PUBLIC_APP_URL?.trim()
+  if (!appUrl) throw new Error('NEXT_PUBLIC_APP_URL is required.')
+
+  const payload = JSON.stringify(buildStripeWebhookLocalSmokeEvent())
+  const timestamp = Math.floor(Date.now() / 1000)
+  const signature = createHmac('sha256', env.STRIPE_WEBHOOK_SECRET!)
+    .update(`${timestamp}.${payload}`)
+    .digest('hex')
+  const header = `t=${timestamp},v1=${signature}`
+  const response = await fetch(`${appUrl.replace(/\/+$/, '')}/api/stripe/webhook`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': header,
+    },
+    body: payload,
+  })
+  const body = await readJsonResponse<{
+    received?: unknown
+    deduplicated?: unknown
+  }>(response)
+
+  return {
+    status: response.status,
+    received: body.received === true,
+    deduplicated: body.deduplicated === true,
+  }
+}
+
 function getSignWellApiBaseUrlMode(
   apiBaseUrl: string | undefined,
 ): 'missing' | 'sandbox' | 'production' | 'local' | 'unknown' {
@@ -1034,6 +1129,26 @@ export async function runDemoSmoke(
           id: 'stripe_webhook_test_config',
           ok,
           detail: `Stripe test webhook endpoint matched=${String(webhookResult.endpointMatched)}; endpoint_status=${webhookResult.endpointStatus ?? 'missing'}; target_host=${webhookResult.targetHost}; missing_events=${webhookResult.missingEvents.length === 0 ? 'none' : webhookResult.missingEvents.join(',')}; provider_call=list_webhook_endpoints`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'stripe_webhook_local_signature') {
+    const verifyLocalWebhook =
+      dependencies.verifyStripeLocalWebhookSignature ??
+      verifyStripeLocalWebhookSignature
+    const webhookResult = await verifyLocalWebhook(env)
+    const ok = webhookResult.status === 200 && webhookResult.received
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'stripe_webhook_local_signature',
+          ok,
+          detail: `Stripe local webhook signature accepted=${String(webhookResult.received)}; status=${webhookResult.status}; deduplicated=${String(webhookResult.deduplicated)}; event_type=application.updated; subscription_state_changed=false; provider_call=none`,
         },
       ],
     }

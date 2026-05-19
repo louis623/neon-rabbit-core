@@ -372,7 +372,45 @@ Stop point:
 - If `endpoint matched=false`, configure a Stripe test webhook endpoint for the intended target before claiming checkout completion/webhook readiness.
 - If `missing_events` is not `none`, update the Stripe test webhook endpoint event subscriptions before completing a payment-flow smoke.
 
-### 8. SignWell sandbox payload smoke
+### 8. Stripe local signed webhook smoke
+
+Use this against the running local app after the local Stripe env is restored. This proves the app accepts a correctly signed Stripe webhook payload without contacting Stripe.
+
+Command:
+
+```powershell
+$env:NEXT_PUBLIC_APP_URL='http://localhost:3000'
+npm run smoke:stripe:webhook-local-signature
+Remove-Item Env:\NEXT_PUBLIC_APP_URL
+```
+
+What it does:
+
+- Builds a synthetic Stripe test event locally.
+- Signs it with `STRIPE_WEBHOOK_SECRET`.
+- Posts it to `/api/stripe/webhook` on the running app.
+- Uses an unhandled event type so no subscription state is changed.
+- Does not call Stripe.
+- Does not create checkout sessions.
+- Does not create charges.
+
+Required env:
+
+- `STRIPE_WEBHOOK_SECRET`.
+- `NEXT_PUBLIC_APP_URL`.
+- The running app must already have complete Stripe and Supabase env available.
+
+Latest result:
+
+- `npm run smoke:stripe:webhook-local-signature` passed on 2026-05-19 against `http://localhost:3000`, returning `accepted=true`, `status=200`, `subscription_state_changed=false`, and `provider_call=none`.
+
+Stop point:
+
+- If the local app is not running, start it with the restored env first.
+- If the route returns `Invalid signature`, verify the local app and the smoke command are using the same `STRIPE_WEBHOOK_SECRET`.
+- This does not replace the Stripe webhook endpoint config smoke; it only proves the app route and signature path work locally.
+
+### 9. SignWell sandbox payload smoke
 
 Command:
 
@@ -408,7 +446,7 @@ Stop point:
 - If `api_base_url_mode` is not the expected sandbox/dry-run target for the environment, stop and confirm the SignWell base URL before any further provider work.
 - Do not enable `SIGNWELL_ALLOW_LIVE_SEND=true` or send a live agreement without Louis explicitly approving the recipient, template, and timing.
 
-### 8a. SignWell sandbox provider smoke, non-sending
+### 10. SignWell sandbox provider smoke, non-sending
 
 Use this only when the local shell has real SignWell sandbox/test credentials restored. This makes one SignWell API request and creates a test-mode document, but keeps `send_email=false`.
 
@@ -448,7 +486,7 @@ Stop point:
 - If the template placeholder name does not match the SignWell template, set `SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER` and retry once.
 - Do not use this for a live send. A real SignWell email remains a separate Louis approval step.
 
-### 8b. SignWell live preflight, non-sending
+### 11. SignWell live preflight, non-sending
 
 Use this only after Louis has approved the intended recipient, template, and send window for preflight. This does not send the agreement and must run with `SIGNWELL_ALLOW_LIVE_SEND` unset.
 
@@ -555,10 +593,11 @@ Also do not do these without separate approval:
 7. Run `stripe_test` with test keys only.
 8. Run `stripe_local_routes` against a running app started with the Stripe env.
 9. Run `smoke:stripe:webhook-test-config` against the target app URL and stop if the endpoint is missing or missing required events.
-10. Run `signwell_sandbox` with sandbox/dry-run settings only.
-11. Run `smoke:launch` with the categories that passed individually, using `--json --write-report`.
-12. Follow `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md` for the manual browser pass.
-13. Stop and record blockers before any live-provider action.
+10. Run `smoke:stripe:webhook-local-signature` against the running local app.
+11. Run `signwell_sandbox` with sandbox/dry-run settings only.
+12. Run `smoke:launch` with the categories that passed individually, using `--json --write-report`.
+13. Follow `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md` for the manual browser pass.
+14. Stop and record blockers before any live-provider action.
 
 ## Pass notes to capture
 

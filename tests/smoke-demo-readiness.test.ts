@@ -39,6 +39,7 @@ describe('demo launch smoke readiness plan', () => {
       'stripe_test',
       'stripe_local_routes',
       'stripe_webhook_test_config',
+      'stripe_webhook_local_signature',
       'stripe_live_preflight',
       'protected_preview_routes',
       'signwell_sandbox',
@@ -211,6 +212,67 @@ describe('demo launch smoke readiness plan', () => {
       'Stripe webhook config smoke requires STRIPE_SECRET_KEY mode=test; current mode=live.',
     )
     expect(JSON.stringify(errors)).not.toContain('sk_live_super_secret')
+  })
+
+  it('posts a signed local webhook smoke without changing subscription state', async () => {
+    const plan = buildDemoSmokePlan({ category: 'stripe_webhook_local_signature' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).toContain(
+      'stripe_webhook_local_signature',
+    )
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'stripe_webhook_local_signature',
+        risk: 'local_app',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(
+      plan,
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+      },
+      {
+        verifyStripeLocalWebhookSignature: async () => ({
+          status: 200,
+          received: true,
+          deduplicated: false,
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'stripe_webhook_local_signature',
+      ok: true,
+      results: [
+        {
+          id: 'stripe_webhook_local_signature',
+          ok: true,
+          detail:
+            'Stripe local webhook signature accepted=true; status=200; deduplicated=false; event_type=application.updated; subscription_state_changed=false; provider_call=none',
+        },
+      ],
+    })
+    expect(JSON.stringify(result)).not.toContain('whsec_super_secret')
+  })
+
+  it('summarizes blocked local webhook signature smoke without exposing secrets', () => {
+    const errors = validateDemoSmokePlan(
+      buildDemoSmokePlan({ category: 'stripe_webhook_local_signature' }),
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_super_secret',
+      },
+    )
+
+    expect(errors).toContain(
+      'NEXT_PUBLIC_APP_URL is required for stripe_webhook_local_signature smoke.',
+    )
+    expect(errors).toContain(
+      'Stripe local webhook signature smoke blocked: missing NEXT_PUBLIC_APP_URL.',
+    )
+    expect(JSON.stringify(errors)).not.toContain('whsec_super_secret')
   })
 
   it('keeps Stripe live preflight explicit and does not create checkout sessions', async () => {
