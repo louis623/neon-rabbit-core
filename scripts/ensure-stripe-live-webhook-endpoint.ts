@@ -272,7 +272,7 @@ function createStripeWebhookEndpointClient(secretKey: string): StripeLiveWebhook
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   if (args.envFile) {
-    config({ path: args.envFile, quiet: true })
+    config({ path: args.envFile, quiet: true, override: true })
   } else {
     config({ path: '.env.local', quiet: true })
   }

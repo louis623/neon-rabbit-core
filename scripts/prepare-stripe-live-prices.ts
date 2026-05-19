@@ -305,7 +305,7 @@ async function main() {
   const args = process.argv.slice(2)
   const parsed = parseStripeLivePricesOptions(args)
   if (parsed.envFile) {
-    config({ path: parsed.envFile, quiet: true })
+    config({ path: parsed.envFile, quiet: true, override: true })
   } else {
     config({ path: '.env.local', quiet: true })
   }
