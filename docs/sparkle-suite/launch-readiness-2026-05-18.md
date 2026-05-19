@@ -56,7 +56,7 @@ flowchart LR
 
 - Telnyx 10DLC approval is still pending. Do not attach `+19044383050` or send live SMS until campaign approval and number attachment are confirmed.
 - Live Stripe readiness is not claimed. Production currently has Stripe key mode `test` and no production itemized price set; a real live checkout smoke still needs explicit Louis approval for key mode, build-fee price, founder monthly price, standard monthly price, path, and amount.
-- Stripe test webhook readiness is not yet claimed for the latest protected preview. The read-only endpoint check found no matching Stripe test webhook endpoint for `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app/api/stripe/webhook`.
+- Stripe test webhook endpoint configuration now exists for `https://www.yoursparklesuite.com/api/stripe/webhook`, but production webhook verification is not claimed until Louis explicitly approves installing the generated webhook secret into Vercel Production and redeploying/promoting the matching build.
 - Live SignWell sends are not approved. Sandbox/dry-run payloads and live preflight are ready, but real agreements require explicit Louis approval.
 - Paid Nic-Nac provider smoke preflight passed with a 1-request cap, but actual paid calls remain blocked until `NIC_NAC_ALLOW_PAID_SMOKE=true` is set for a separately approved run.
 
@@ -82,7 +82,9 @@ flowchart LR
   - `STRIPE_PRICE_STANDARD_MONTHLY=price_1TYqHzHRBK3pZpO2wZPbJ1QH`
 - Vercel Development and branch Preview for `codex/sparkle-cross-phase-hardening` now have those three Stripe test price env vars. Production was not changed.
 - `npm run smoke:launch -- --categories local_static,stripe_test --json --write-report` passed on 2026-05-19 with the itemized Stripe test prices; report: `.local/launch-smoke-results/launch-local-2026-05-19T16-20-01-436Z.json`.
-- `npm run smoke:stripe:webhook-test-config` ran on 2026-05-19 for `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`; it made a read-only Stripe test-mode webhook endpoint list call and reported `endpoint matched=false`, so webhook callback readiness remains blocked until a matching Stripe test endpoint exists with the required events.
+- `npm run stripe:ensure-test-webhook -- --target https://www.yoursparklesuite.com --apply --write-secret-file .local\stripe-test-webhook-www.secret --json` created the Stripe test-mode endpoint for `https://www.yoursparklesuite.com/api/stripe/webhook` on 2026-05-19 with the required subscription events. The generated secret is stored only in ignored local storage.
+- `npm run smoke:stripe:webhook-test-config` passed on 2026-05-19 for `https://www.yoursparklesuite.com`, reporting `endpoint matched=true`, `endpoint_status=enabled`, and `missing_events=none`.
+- Installing the generated test webhook secret into Vercel Production was intentionally stopped pending explicit Louis approval for replacing `STRIPE_WEBHOOK_SECRET` and redeploying/promoting production.
 - `npm run smoke:stripe:webhook-local-signature` passed on 2026-05-19 against `http://localhost:3000`, using a synthetic signed Stripe event with `provider_call=none` and `subscription_state_changed=false`.
 - Supabase schema application completed on 2026-05-19. Local remote-history placeholder migrations were added for previously remote-only versions (`021`, `023`, `025`, `030`, `034`, `035`, `036`, `037`) so `supabase db push` could safely apply `20260513172454_ss_prelaunch_payment_gates.sql` and `20260519154500_ss_pricing_referrals.sql`. Verification passed for `reps.referral_code`, subscription pricing metadata columns, `sparkle_suite_intake_submissions.referral_code`, and `rep_referrals`.
 - Fresh Vercel Preview deployed on 2026-05-19: `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`. Build passed. Protected preview route smoke passed after rotating a temporary demo password in-memory; do not put demo passwords in docs, commits, screenshots, or chat.

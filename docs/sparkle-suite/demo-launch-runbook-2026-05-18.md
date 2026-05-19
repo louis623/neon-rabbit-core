@@ -340,7 +340,7 @@ Stop point:
 Command:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app'
+$env:NEXT_PUBLIC_APP_URL='https://www.yoursparklesuite.com'
 npm run smoke:stripe:webhook-test-config
 Remove-Item Env:\NEXT_PUBLIC_APP_URL
 ```
@@ -364,13 +364,16 @@ Required env:
 
 Latest result:
 
-- `npm run smoke:stripe:webhook-test-config` was run on 2026-05-19 for `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`. It made a read-only Stripe test-mode webhook endpoint list call and reported `endpoint matched=false`; no matching Stripe test webhook endpoint exists for the latest preview URL yet.
+- `npm run stripe:ensure-test-webhook -- --target https://www.yoursparklesuite.com --apply --write-secret-file .local\stripe-test-webhook-www.secret --json` created the Stripe test-mode endpoint for `https://www.yoursparklesuite.com/api/stripe/webhook` on 2026-05-19. The generated webhook secret was written only to the ignored `.local` file and was not printed.
+- `npm run smoke:stripe:webhook-test-config` then passed for `https://www.yoursparklesuite.com`, reporting `endpoint matched=true`, `endpoint_status=enabled`, and `missing_events=none`.
+- Installing that generated webhook secret into Vercel Production was blocked pending explicit Louis approval because replacing a production webhook secret can break verification until the matching deploy is live. Do not overwrite `STRIPE_WEBHOOK_SECRET` in Production without approving that exact step and the redeploy/promotion plan.
 
 Stop point:
 
 - If `STRIPE_SECRET_KEY` is live mode, stop.
 - If `endpoint matched=false`, configure a Stripe test webhook endpoint for the intended target before claiming checkout completion/webhook readiness.
 - If `missing_events` is not `none`, update the Stripe test webhook endpoint event subscriptions before completing a payment-flow smoke.
+- If the endpoint was just created, install its generated webhook secret into the target Vercel environment only after Louis approves the target environment and deploy plan.
 
 ### 8. Stripe local signed webhook smoke
 

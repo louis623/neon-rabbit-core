@@ -12,6 +12,7 @@
     "docs:import-neon-rabbit": "tsx scripts/import-neon-rabbit-drive-docs.ts",
     "photo:process-queue": "tsx scripts/process-photo-enhancement-queue.ts",
     "stripe:demo-price": "tsx scripts/prepare-stripe-demo-price.ts",
+    "stripe:ensure-test-webhook": "tsx scripts/ensure-stripe-test-webhook-endpoint.ts",
     "seed:demo-rep": "tsx scripts/seed-demo-rep.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",
