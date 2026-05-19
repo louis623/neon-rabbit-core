@@ -17,6 +17,7 @@
 - `npm run smoke:demo -- --category local_app --json` has been run against `http://localhost:3000`; it verified `/api/nic-nac/me` and the `/nic-nac` shell for the demo rep.
 - `npm run stripe:demo-price -- --json` now prepares three Stripe test prices without checkout or charge: `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY`.
 - `npm run smoke:demo -- --category stripe_test --json` now requires all three itemized Stripe price ids so checkout can show the `Sparkle Suite build fee` separately from the monthly subscription.
+- Founder checkout webhook handling now creates a Stripe subscription schedule so the first 20 reps receive 12 paid months at the founder monthly price and then step up to the standard monthly price.
 - `npm run smoke:launch -- --categories local_static,stripe_test --json --write-report` is available for a repeatable safe aggregate smoke report.
 - `npm run smoke:demo -- --category stripe_local_routes --json` passed against `http://localhost:3000`, creating Stripe test-mode checkout and portal sessions only.
 - Vercel Development and Preview previously had only `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`; this is no longer sufficient for itemized paid launch checkout. Install `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` before the next Stripe route smoke.
@@ -55,7 +56,7 @@ flowchart LR
 ## P0 launch blockers
 
 - Telnyx 10DLC approval is still pending. Do not attach `+19044383050` or send live SMS until campaign approval and number attachment are confirmed.
-- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test` and no production itemized price set; a real live checkout smoke still needs explicit Louis approval for key mode, build-fee price, founder monthly price, standard monthly price, path, and amount.
+- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test` and no production itemized price set; a real live checkout smoke still needs explicit Louis approval for key mode, build-fee price, founder monthly price, standard monthly price, public path, and amount.
 - Stripe test webhook endpoint configuration now exists for `https://www.yoursparklesuite.com/api/stripe/webhook`, but production webhook verification is not claimed until Louis explicitly approves installing the generated webhook secret into Vercel Production and redeploying/promoting the matching build.
 - Live SignWell sends are not approved. Sandbox/dry-run payloads and live preflight are ready, but real agreements require explicit Louis approval.
 - Paid Nic-Nac provider smoke preflight passed with a 1-request cap, but actual paid calls remain blocked until `NIC_NAC_ALLOW_PAID_SMOKE=true` is set for a separately approved run.
@@ -75,7 +76,7 @@ flowchart LR
 
 ## Provider status
 
-- Stripe: itemized test-mode route readiness is implemented in code; live preflight exists and is currently blocked by production key mode `test` plus missing production build-fee, founder monthly, and standard monthly price approvals.
+- Stripe: itemized test-mode route readiness is implemented in code; founder subscriptions now schedule the month-13 step-up to standard monthly pricing. Live preflight exists and is currently blocked by production key mode `test` plus missing production build-fee, founder monthly, and standard monthly price approvals.
 - Stripe test prices created on 2026-05-19 without checkout or charge:
   - `STRIPE_PRICE_BUILD_FEE=price_1TYqHyHRBK3pZpO26Zaoo3Yp`
   - `STRIPE_PRICE_FOUNDER_MONTHLY=price_1TYqHyHRBK3pZpO2ARvGqX7b`
@@ -86,6 +87,7 @@ flowchart LR
 - `npm run smoke:stripe:webhook-test-config` passed on 2026-05-19 for `https://www.yoursparklesuite.com`, reporting `endpoint matched=true`, `endpoint_status=enabled`, and `missing_events=none`.
 - Installing the generated test webhook secret into Vercel Production was intentionally stopped pending explicit Louis approval for replacing `STRIPE_WEBHOOK_SECRET` and redeploying/promoting production.
 - `npm run smoke:stripe:webhook-local-signature` passed on 2026-05-19 against `http://localhost:3000`, using a synthetic signed Stripe event with `provider_call=none` and `subscription_state_changed=false`.
+- `tests/stripe-webhook-route.test.ts` now verifies founder checkout creates a Stripe subscription schedule with 12 founder monthly iterations followed by the standard monthly price, and stores the schedule id on the subscription row.
 - Supabase schema application completed on 2026-05-19. Local remote-history placeholder migrations were added for previously remote-only versions (`021`, `023`, `025`, `030`, `034`, `035`, `036`, `037`) so `supabase db push` could safely apply `20260513172454_ss_prelaunch_payment_gates.sql` and `20260519154500_ss_pricing_referrals.sql`. Verification passed for `reps.referral_code`, subscription pricing metadata columns, `sparkle_suite_intake_submissions.referral_code`, and `rep_referrals`.
 - Fresh Vercel Preview deployed on 2026-05-19: `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`. Build passed. Protected preview route smoke passed after rotating a temporary demo password in-memory; do not put demo passwords in docs, commits, screenshots, or chat.
 - SignWell: sandbox/dry-run payload and live preflight readiness implemented and passed with `send_email=false`; live send remains parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.

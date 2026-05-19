@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/client'
-import { getStripeConfig } from '@/lib/stripe/config'
+import { getSparkleSuitePriceIds, getStripeConfig } from '@/lib/stripe/config'
 import { stripeCentsToWalletMils } from '@/lib/services/wallet-units'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -55,6 +55,82 @@ function parsePositiveIntMetadata(
   if (!value) return null
   const parsed = Number.parseInt(value, 10)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+}
+
+function getSubscriptionScheduleId(subscription: Stripe.Subscription): string | null {
+  if (!subscription.schedule) return null
+  return typeof subscription.schedule === 'string'
+    ? subscription.schedule
+    : subscription.schedule.id
+}
+
+async function ensureFounderStepUpSchedule({
+  stripe,
+  subscription,
+  repId,
+  founderSequence,
+  founderRateMonths,
+  founderMonthlyPriceId,
+  periodStart,
+}: {
+  stripe: Stripe
+  subscription: Stripe.Subscription
+  repId: string
+  founderSequence: number | null
+  founderRateMonths: number | null
+  founderMonthlyPriceId: string | null
+  periodStart: number
+}): Promise<string | null> {
+  if (!founderRateMonths) return null
+  if (!founderMonthlyPriceId) {
+    throw new Error('Founder checkout is missing monthly price metadata.')
+  }
+
+  const standardMonthlyPriceId = getSparkleSuitePriceIds().standardMonthly
+  if (!standardMonthlyPriceId) {
+    throw new Error('STRIPE_PRICE_STANDARD_MONTHLY is required for founder step-up scheduling.')
+  }
+
+  const metadata = {
+    rep_id: repId,
+    pricing_tier: 'founder',
+    founder_sequence: founderSequence ? String(founderSequence) : '',
+    founder_rate_months: String(founderRateMonths),
+  }
+  const existingScheduleId = getSubscriptionScheduleId(subscription)
+  const schedule = existingScheduleId
+    ? await stripe.subscriptionSchedules.retrieve(existingScheduleId)
+    : await stripe.subscriptionSchedules.create({
+        from_subscription: subscription.id,
+        metadata,
+      })
+  const phaseStart = schedule.current_phase?.start_date ?? periodStart
+
+  await stripe.subscriptionSchedules.update(schedule.id, {
+    end_behavior: 'release',
+    phases: [
+      {
+        start_date: phaseStart,
+        duration: {
+          interval: 'month',
+          interval_count: founderRateMonths,
+        },
+        items: [{ price: founderMonthlyPriceId, quantity: 1 }],
+        metadata,
+      },
+      {
+        items: [{ price: standardMonthlyPriceId, quantity: 1 }],
+        metadata: {
+          ...metadata,
+          pricing_tier: 'standard',
+          founder_step_up_from: 'founder',
+        },
+      },
+    ],
+    metadata,
+  })
+
+  return schedule.id
 }
 
 async function isEventProcessed(eventId: string): Promise<boolean> {
@@ -337,6 +413,18 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
     : subscription.customer.id
 
   const period = getSubscriptionPeriod(subscription)
+  const subscriptionScheduleId =
+    pricingTier === 'founder'
+      ? await ensureFounderStepUpSchedule({
+          stripe,
+          subscription,
+          repId,
+          founderSequence,
+          founderRateMonths,
+          founderMonthlyPriceId: session.metadata?.monthly_price_id ?? null,
+          periodStart: period.start,
+        })
+      : null
   const admin = createAdminClient()
 
   await admin
@@ -353,6 +441,7 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
     .upsert({
       rep_id: repId,
       stripe_subscription_id: subscription.id,
+      stripe_subscription_schedule_id: subscriptionScheduleId,
       stripe_customer_id: customerId,
       plan_tier: planType ?? 'monthly',
       pricing_tier: pricingTier ?? null,

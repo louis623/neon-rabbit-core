@@ -214,6 +214,7 @@ What it does:
 - Validates live Stripe launch config shape without calling Stripe and without creating a Checkout Session.
 - Requires `STRIPE_SECRET_KEY` mode `live`.
 - Requires `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` to match their corresponding approved live price ids.
+- Confirms checkout is itemized as the `Sparkle Suite build fee` plus monthly service price; founder checkouts schedule the standard monthly price after 12 paid months.
 - Requires an approved live smoke path and approval timestamp.
 - Confirms `STRIPE_LIVE_SMOKE_CONFIRMED` is not set during preflight.
 - Reports only key mode, host, and present/missing status; it does not print Stripe secrets, webhook secrets, or price IDs.
@@ -236,6 +237,7 @@ Required env:
 Latest result:
 
 - `npm run smoke:stripe:live-preflight` was attempted on 2026-05-18 and blocked before any checkout or charge because Production Stripe key mode was `test` and production monthly price/approved live price were missing.
+- Founder step-up scheduling was implemented on 2026-05-19 and covered by focused webhook tests; live readiness still depends on installing approved live Stripe prices and running the separately approved live preflight/smoke path.
 
 Stop point:
 

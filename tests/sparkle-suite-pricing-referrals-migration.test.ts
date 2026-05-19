@@ -6,9 +6,14 @@ const migrationPath = path.join(
   process.cwd(),
   'supabase/migrations/20260519154500_ss_pricing_referrals.sql',
 )
+const founderScheduleMigrationPath = path.join(
+  process.cwd(),
+  'supabase/migrations/20260519192500_ss_founder_schedule_tracking.sql',
+)
 
 describe('Sparkle Suite pricing and referrals migration', () => {
   const sql = readFileSync(migrationPath, 'utf8')
+  const founderScheduleSql = readFileSync(founderScheduleMigrationPath, 'utf8')
 
   it('stores public referral and pricing assignment fields on reps', () => {
     expect(sql).toContain('ALTER TABLE reps')
@@ -43,5 +48,13 @@ describe('Sparkle Suite pricing and referrals migration', () => {
   it('keeps referral codes separate from live queue sync code storage', () => {
     expect(sql).not.toContain('live_queue')
     expect(sql).not.toContain('sync_code')
+  })
+
+  it('tracks Stripe subscription schedules used for founder price step-up', () => {
+    expect(founderScheduleSql).toContain('ALTER TABLE subscriptions')
+    expect(founderScheduleSql).toContain(
+      'ADD COLUMN IF NOT EXISTS stripe_subscription_schedule_id TEXT',
+    )
+    expect(founderScheduleSql).toContain('idx_subscriptions_stripe_schedule')
   })
 })
