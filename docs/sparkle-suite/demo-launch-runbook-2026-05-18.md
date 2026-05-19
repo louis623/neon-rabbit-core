@@ -4,7 +4,7 @@ Operator: Louis
 
 Demo account email: `louis+sparkle-demo@neonrabbit.net`
 
-Do not put the demo password in this file, chat, tickets, commits, screenshots, or terminal history. If a smoke needs `DEMO_REP_PASSWORD`, set it only in the local shell or `.env.local` you control.
+Do not put the demo password in this file, chat, tickets, commits, screenshots, or terminal history. For internal preview route smoke, prefer the temporary-password helper so Louis does not need to know, type, or store the credential during build testing.
 
 ## Before starting
 
@@ -43,7 +43,7 @@ npm run smoke:launch:restored
 Run that batch only after:
 
 - `DEMO_REP_EMAIL` is set to the demo rep.
-- The current demo password is set locally as `DEMO_REP_PASSWORD`, or the demo password has been intentionally rotated by running `npm run seed:demo-rep` with a fresh `DEMO_REP_PASSWORD`.
+- The current demo password is set locally as `DEMO_REP_PASSWORD`, or a temporary password has been intentionally rotated by the preview smoke helper.
 - `STRIPE_SECRET_KEY` is test mode and `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` are set to test prices.
 - `SIGNWELL_API_KEY`, `SIGNWELL_API_BASE_URL`, and `SIGNWELL_TEMPLATE_ID` are restored locally for sandbox/dry-run smoke.
 - The local app is running at `http://localhost:3000` with the same env.
@@ -103,7 +103,7 @@ Stop point:
 
 - This writes demo database data. Run it only when Louis is ready to seed or refresh the demo account.
 - If login verification fails, stop before browser walkthrough or provider checks.
-- If login verification fails with invalid credentials, set the current `DEMO_REP_PASSWORD` locally or intentionally rotate the demo password by running `npm run seed:demo-rep` with both `DEMO_REP_EMAIL` and a fresh `DEMO_REP_PASSWORD` set in the local shell.
+- If login verification fails with invalid credentials, set the current `DEMO_REP_PASSWORD` locally or use the preview temporary-password helper for protected preview route smoke. Avoid pasting a demo password into docs, chat, or terminal history.
 
 ### 3. Local app login smoke
 
@@ -197,7 +197,7 @@ Stop point:
 Vercel status:
 
 - Development and Preview previously had only `STRIPE_PRICE_MONTHLY=price_1TYTAZHRBK3pZpO2b6WQ8kUl`; replace that single-price setup with `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, and `STRIPE_PRICE_STANDARD_MONTHLY` before the next Stripe route smoke.
-- Most recently smoke-tested protected Preview `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal through `npm run smoke:launch:preview-protected`.
+- Most recently smoke-tested protected Preview `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app` has passed authenticated CLI smoke for demo auth, Nic-Nac shell, Stripe test checkout, and Stripe test portal after a temporary demo password rotation.
 - The same preview has passed the opt-in aggregate launch category through `npm run smoke:launch:preview-protected`.
 - Production live preflight was attempted on 2026-05-18 without creating checkout or charge traffic. It is blocked because Production currently reports Stripe key mode `test` and is missing approved live build-fee, founder monthly, and standard monthly prices.
 
@@ -249,16 +249,24 @@ Stop point:
 Use this when Vercel Deployment Protection blocks normal HTTP smoke but the Vercel CLI is authenticated locally:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app'
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app'
 npm run smoke:preview:vercel-curl
 ```
 
 The same check is also available through the aggregate launch smoke harness as an explicit preview-only category:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app'
+$env:NEXT_PUBLIC_APP_URL='https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app'
 npm run smoke:launch:preview-protected
 ```
+
+If the current demo password is unknown during internal testing, use the passwordless operator path instead:
+
+```powershell
+npm run smoke:launch:preview-temp-demo -- --target https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app
+```
+
+That command generates a temporary password in memory, rotates the demo rep, runs the protected preview route smoke, writes a launch smoke report, and does not print the password.
 
 What it does:
 
@@ -276,6 +284,8 @@ Required env:
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+`DEMO_REP_PASSWORD` is not required when using `smoke:launch:preview-temp-demo`, because the helper creates it for the run.
 
 Stop point:
 
@@ -462,7 +472,7 @@ Also do not do these without separate approval:
 1. Run `local_static`.
 2. Run `supabase_demo` only when ready to refresh demo data.
 3. Run `local_app` against the running local app.
-4. Manually log in as `louis+sparkle-demo@neonrabbit.net` using the password Louis controls.
+4. Manually log in as `louis+sparkle-demo@neonrabbit.net` only after a stable demo password has been intentionally set for browser testing; for route smoke, use the temporary-password helper instead.
 5. Confirm the dashboard opens and demo rows are visible.
 6. Run `stripe:demo-price` with test keys only if any of `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, or `STRIPE_PRICE_STANDARD_MONTHLY` is missing.
 7. Run `stripe_test` with test keys only.

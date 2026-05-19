@@ -17,6 +17,7 @@
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",
     "smoke:launch:restored": "tsx scripts/smoke-demo-readiness.ts --launch --categories local_static,local_app,stripe_test,stripe_local_routes,signwell_sandbox --json --write-report",
     "smoke:launch:preview-protected": "tsx scripts/smoke-demo-readiness.ts --launch --target preview --categories protected_preview_routes --json --write-report",
+    "smoke:launch:preview-temp-demo": "tsx scripts/smoke-preview-with-temporary-demo-password.ts",
     "smoke:signwell:live-preflight": "tsx scripts/smoke-demo-readiness.ts --category signwell_live_preflight --json",
     "smoke:stripe:live-preflight": "tsx scripts/smoke-demo-readiness.ts --category stripe_live_preflight --json",
     "smoke:nic-nac:paid-preflight": "tsx scripts/smoke-demo-readiness.ts --category nic_nac_paid_preflight --json",

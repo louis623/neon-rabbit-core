@@ -20,7 +20,7 @@ Do not write the demo password, provider keys, Vercel bypass values, Stripe sess
 ## Surfaces
 
 - Local app: `http://localhost:3000`
-- Deployed protected preview already smoke-tested by CLI: `https://sparkle-suite-47lykmafd-louis-2849s-projects.vercel.app`
+- Deployed protected preview already smoke-tested by CLI: `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`
 - Login path: `/login`
 - Rep workspace path: `/nic-nac`
 - Billing controls: `/nic-nac`, Account tab, Account Billing card
@@ -38,7 +38,7 @@ For a protected Vercel preview, sign in through Vercel SSO in the browser sessio
 ## Walkthrough A - Local app
 
 1. Open `http://localhost:3000/login`.
-2. Log in as `louis+sparkle-demo@neonrabbit.net` using the password Louis controls.
+2. Log in as `louis+sparkle-demo@neonrabbit.net` only after a stable browser-testing password has been intentionally set. The route smoke can use a temporary rotated password without exposing it.
 3. Navigate to `http://localhost:3000/nic-nac`.
 4. Verify the page renders the Nic-Nac shell and identifies the workspace as the demo rep context.
 5. Verify dashboard/demo data is visible:
@@ -160,6 +160,16 @@ Do not capture passwords, provider keys, request headers, Vercel bypass values, 
 - CLI result: protected preview returned the demo rep from `/api/nic-nac/me`, rendered the `/nic-nac` shell, created a Stripe test checkout session, and created a Stripe test billing portal session.
 - Browser pass/fail: blocked by Vercel Deployment Protection before the Sparkle Suite login page.
 - Browser result: opening `/login` redirected to Vercel login. Complete Louis/Vercel SSO in the browser session or use an approved private protection bypass before repeating Walkthrough D in-browser.
+- Screenshots: none captured.
+
+### 2026-05-19 protected preview CLI pass
+
+- Target: protected preview `https://sparkle-suite-lxmbprga8-louis-2849s-projects.vercel.app`.
+- CLI pass/fail: passed through authenticated `vercel curl` after rotating a temporary demo password for the smoke run.
+- CLI result: protected preview returned the demo rep from `/api/nic-nac/me`, rendered the `/nic-nac` shell, created a Stripe test checkout session, and created a Stripe test billing portal session.
+- Stripe result: test-mode session creation only. No payment details were entered, no charge was created, and no live Stripe traffic was used.
+- Report: `.local/launch-smoke-results/launch-preview-2026-05-19T18-26-00-116Z.json`.
+- Browser pass/fail: still pending for in-browser Vercel SSO/protected-preview access.
 - Screenshots: none captured.
 
 ## Handoff status
