@@ -516,6 +516,7 @@ Required env:
 Latest result:
 
 - Attempted on 2026-05-19 after Louis approved provider contact and Development SignWell env was loaded. The first attempts returned HTTP 422 because the template placeholder was not `sparkle_suite_rep` or `Customer`; redacted diagnostics reported `missing_placeholder_names`. A read-only template fetch showed the placeholder is `Client`, and `npm run smoke:signwell:sandbox-provider` then passed with provider status `201`, `send_email=false`, `draft=true`, `test_mode=true`, and no live agreement email.
+- Production deploy `https://sparkle-suite-172smwbr3-louis-2849s-projects.vercel.app` from clean commit `e7826cf` is aliased to `https://www.yoursparklesuite.com`; public-domain route smoke passed afterward with report `.local\launch-smoke-results\launch-preview-2026-05-19T21-16-46-317Z.json`.
 
 Stop point:
 

@@ -151,6 +151,7 @@ Do not capture passwords, provider keys, request headers, Vercel bypass values, 
 - Stripe portal result: Account Billing exposed `Manage billing and cancel` after the test checkout created a Stripe test customer. The billing portal opened on `billing.stripe.com`; browser back returned to the local app with the Nic-Nac shell still usable. The portal did not expose a readable return link to the automation layer, so the observed return path was browser back rather than `?billing=portal-returned`.
 - Aggregate safe smoke result: `npm run smoke:launch:restored` wrote `.local/launch-smoke-results/launch-local-2026-05-18T21-54-56-095Z.json` and passed `local_static`, `local_app`, `stripe_test`, `stripe_local_routes`, and `signwell_sandbox`.
 - SignWell boundary: sandbox payload smoke passed with `send_email=false`; sandbox provider smoke later passed with `send_email=false`, `draft=true`, `test_mode=true`, and placeholder `Client`; no live agreement email was sent.
+- Production route smoke after SignWell hardening: `npm run smoke:launch:preview-temp-demo -- --target https://www.yoursparklesuite.com` passed on 2026-05-19; report `.local\launch-smoke-results\launch-preview-2026-05-19T21-16-46-317Z.json`.
 - Screenshots: none captured.
 
 ### 2026-05-18 protected preview CLI pass / browser blocker
