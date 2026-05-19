@@ -9,6 +9,7 @@
 - `npm run smoke:stripe:webhook-test-config` now checks Stripe test-mode webhook endpoint configuration with a read-only provider call.
 - `npm run smoke:stripe:webhook-local-signature` now proves the running local app accepts a correctly signed Stripe webhook payload without contacting Stripe or changing subscription state.
 - `npm run stripe:live-prices -- --env-file <ignored-production-env> --json` is available for finding approved live build-fee, founder monthly, and standard monthly prices once a live Stripe key is installed; creating missing live prices requires `--apply` plus an approval timestamp.
+- `npm run stripe:ensure-live-webhook -- --env-file <ignored-production-env> --target https://www.yoursparklesuite.com --json` is available for live webhook endpoint readiness once a live Stripe key is installed; creating/updating a live webhook endpoint requires `--apply` plus an approval timestamp.
 - SignWell agreement onboarding can build a sandbox payload and blocks live sends unless `SIGNWELL_ALLOW_LIVE_SEND=true`.
 - SignWell sandbox provider smoke is implemented as `npm run smoke:signwell:sandbox-provider`; it requires `SIGNWELL_SANDBOX_PROVIDER_CALL=true`, `test_mode=true`, `draft=true`, and `send_email=false`.
 - Demo account seed planning is repeatable by `DEMO_REP_EMAIL`, includes 2 upcoming shows, 10 listings, 5 audience members, and no live-provider actions.
@@ -59,7 +60,7 @@ flowchart LR
 ## P0 launch blockers
 
 - Telnyx 10DLC approval is still pending. Do not attach `+19044383050` or send live SMS until campaign approval and number attachment are confirmed.
-- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test`; live price creation is blocked until Louis installs or provides the live Stripe secret/publishable keys. The approved live price helper is ready for the $49.99 build fee, $49.99 founder monthly, and $74.99 standard monthly prices.
+- Live Stripe readiness is not claimed. Production currently has Stripe key mode `test`; live price and live webhook setup are blocked until Louis installs or provides the live Stripe secret/publishable keys. The guarded helpers are ready for the $49.99 build fee, $49.99 founder monthly, $74.99 standard monthly prices, and the production live webhook endpoint.
 - Stripe test webhook endpoint configuration now exists for `https://www.yoursparklesuite.com/api/stripe/webhook`. Louis approved installing the generated secret into Vercel Production on 2026-05-19, Production was redeployed from clean commit `5606fb0`, and public-domain route smoke passed afterward.
 - Live SignWell sends are not approved. Sandbox/dry-run payloads and live preflight are ready, but real agreements require explicit Louis approval.
 - One paid Nic-Nac public-domain smoke request has run under Louis's $5 stop cap and passed. Any additional paid Nic-Nac requests still need an explicit scope/request-count approval.
@@ -80,6 +81,7 @@ flowchart LR
 ## Provider status
 
 - Stripe: itemized test-mode route readiness is implemented in code; founder subscriptions now schedule the month-13 step-up to standard monthly pricing. Live preflight exists and is currently blocked by production key mode `test` plus missing production build-fee, founder monthly, and standard monthly price approvals.
+- Stripe live webhook setup helper is available as `npm run stripe:ensure-live-webhook`; it defaults to read-only and requires `--apply` plus an approval timestamp before creating or updating a live webhook endpoint.
 - Stripe test prices created on 2026-05-19 without checkout or charge:
   - `STRIPE_PRICE_BUILD_FEE=price_1TYqHyHRBK3pZpO26Zaoo3Yp`
   - `STRIPE_PRICE_FOUNDER_MONTHLY=price_1TYqHyHRBK3pZpO2ARvGqX7b`

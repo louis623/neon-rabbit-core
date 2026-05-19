@@ -14,6 +14,7 @@
     "stripe:demo-price": "tsx scripts/prepare-stripe-demo-price.ts",
     "stripe:live-prices": "tsx scripts/prepare-stripe-live-prices.ts",
     "stripe:ensure-test-webhook": "tsx scripts/ensure-stripe-test-webhook-endpoint.ts",
+    "stripe:ensure-live-webhook": "tsx scripts/ensure-stripe-live-webhook-endpoint.ts",
     "seed:demo-rep": "tsx scripts/seed-demo-rep.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",

@@ -278,6 +278,37 @@ Stop point:
 - If an existing lookup-key price mismatches the approved $49.99 build fee, $49.99 founder monthly, or $74.99 standard monthly terms, stop and correct the Stripe dashboard before using the env lines.
 - Do not run the provider-write command until Louis approves the live Stripe key, price creation, exact amounts, and timestamp for this step.
 
+### Stripe live webhook provider setup, no checkout
+
+Use this only after the live Stripe secret key is intentionally installed in the local shell or ignored env file. This prepares the live Stripe webhook endpoint for `https://www.yoursparklesuite.com/api/stripe/webhook`; it does not create Checkout Sessions, charges, invoices, or subscriptions.
+
+Read-only command:
+
+```powershell
+npm run stripe:ensure-live-webhook -- --env-file .local\vercel-production.env --target https://www.yoursparklesuite.com --json
+```
+
+Provider-write command:
+
+```powershell
+npm run stripe:ensure-live-webhook -- --env-file .local\vercel-production.env --target https://www.yoursparklesuite.com --apply --approved-at <approval-timestamp> --write-secret-file .local\stripe-live-webhook-www.secret --json
+```
+
+What it does:
+
+- Requires `STRIPE_SECRET_KEY` mode `live`; it stops on test, missing, or unknown keys.
+- Calls live Stripe to find an enabled webhook endpoint for `/api/stripe/webhook`.
+- Creates or updates the live webhook endpoint only when both `--apply` and `--approved-at` are present.
+- Requires the same subscription launch events used by the app: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, and `invoice.payment_failed`.
+- Writes the live webhook signing secret only to ignored `.local` storage when Stripe returns a new secret; it does not print the secret.
+
+Stop point:
+
+- If live keys are not installed, stop.
+- If an existing live webhook endpoint is missing events, run the provider-write command only after Louis approves the endpoint update.
+- If Stripe does not return a signing secret, stop and retrieve/regenerate the live webhook secret from the Stripe dashboard before replacing `STRIPE_WEBHOOK_SECRET`.
+- Do not replace Production `STRIPE_WEBHOOK_SECRET` until the matching live endpoint secret is available and a redeploy plan is ready.
+
 ### Protected preview CLI route smoke
 
 Use this when Vercel Deployment Protection blocks normal HTTP smoke but the Vercel CLI is authenticated locally:
