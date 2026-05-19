@@ -72,6 +72,13 @@ flowchart LR
 ## Provider status
 
 - Stripe: itemized test-mode route readiness is implemented in code; live preflight exists and is currently blocked by production key mode `test` plus missing production build-fee, founder monthly, and standard monthly price approvals.
+- Stripe test prices created on 2026-05-19 without checkout or charge:
+  - `STRIPE_PRICE_BUILD_FEE=price_1TYqHyHRBK3pZpO26Zaoo3Yp`
+  - `STRIPE_PRICE_FOUNDER_MONTHLY=price_1TYqHyHRBK3pZpO2ARvGqX7b`
+  - `STRIPE_PRICE_STANDARD_MONTHLY=price_1TYqHzHRBK3pZpO2wZPbJ1QH`
+- Vercel Development and branch Preview for `codex/sparkle-cross-phase-hardening` now have those three Stripe test price env vars. Production was not changed.
+- `npm run smoke:launch -- --categories local_static,stripe_test --json --write-report` passed on 2026-05-19 with the itemized Stripe test prices; report: `.local/launch-smoke-results/launch-local-2026-05-19T16-20-01-436Z.json`.
+- Supabase schema application is blocked: `supabase db push --dry-run` reports remote migration versions missing locally (`021`, `023`, `025`, `030`, `034`, `035`, `036`, `037`), and direct `supabase db query --linked --file supabase/migrations/20260519154500_ss_pricing_referrals.sql` returned `401 Unauthorized`. Do not redeploy the referral-intake code until the linked database has the new pricing/referral columns and `rep_referrals` table.
 - SignWell: sandbox/dry-run payload and live preflight readiness implemented and passed with `send_email=false`; live send remains parked behind `SIGNWELL_ALLOW_LIVE_SEND=true` and explicit approval.
 - Telnyx: live SMS parked until 10DLC approval and number attachment.
 - Nic-Nac: paid smoke preflight passed with a 1-request cap and no provider calls; actual paid smoke remains parked behind explicit paid-smoke env gates and final approval.
