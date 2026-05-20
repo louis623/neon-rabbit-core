@@ -205,8 +205,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
 
     expect(html).toContain('Sparkle Suite Control Center')
     expect(html).toContain('Client intake')
-    expect(html).toContain('Open intake form')
-    expect(html).toContain('href="/prelaunch/intake"')
+    expect(html).toContain('View public page')
+    expect(html).toContain('href="/prelaunch"')
+    expect(html).not.toContain('Open intake form')
+    expect(html).not.toContain('href="/prelaunch/intake"')
     expect(html).toContain('Start at the beginning of the client pipeline')
     expect(html).toContain('Client intake pipeline')
     expect(html).toContain('New intake')

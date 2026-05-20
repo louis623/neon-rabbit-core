@@ -5,7 +5,7 @@
 - Operator runbook: `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
 - Browser smoke walkthrough: `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md`.
 - Sparkle Suite Control Center intake foundation now exists at `/control-center/intake`, reusing the existing operator-gated prelaunch intake data, Scout/Scribe visibility, and launch-gate readiness.
-- Direct client intake now exists at `/prelaunch/intake`, exposing the full intake form without changing the public waitlist landing page at `/prelaunch`.
+- The public prelaunch path stays low-friction at `/prelaunch`; `/prelaunch/intake` redirects back to `/prelaunch` so the internal setup-intake form is not presented as a public prelaunch signup step.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.
 - `npm run smoke:stripe:webhook-test-config` now checks Stripe test-mode webhook endpoint configuration with a read-only provider call.

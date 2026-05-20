@@ -415,22 +415,12 @@ export function PrelaunchIntakeReviewPageContent({
                   : 'Review submitted rep fit checks, spot handoff blockers, and copy Scout-ready context for the next onboarding step.'}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {isControlCenter ? (
-                <a
-                  className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:border-slate-700 hover:bg-slate-700"
-                  href="/prelaunch/intake"
-                >
-                  Open intake form
-                </a>
-              ) : null}
-              <a
-                className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                href="/prelaunch"
-              >
-                View public page
-              </a>
-            </div>
+            <a
+              className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+              href="/prelaunch"
+            >
+              View public page
+            </a>
           </div>
         </header>
 

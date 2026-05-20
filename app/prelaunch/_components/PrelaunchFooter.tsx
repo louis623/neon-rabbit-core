@@ -1,15 +1,7 @@
 import { prelaunchContent } from '@/lib/prelaunch/content'
 import { SparkleSeal } from './PrelaunchVisuals'
 
-interface PrelaunchFooterProps {
-  ctaHref?: string
-  ctaLabel?: string
-}
-
-export function PrelaunchFooter({
-  ctaHref = '#waitlist',
-  ctaLabel = prelaunchContent.primaryCtaLabel,
-}: PrelaunchFooterProps) {
+export function PrelaunchFooter() {
   return (
     <>
       <section className="ss-closing">
@@ -20,8 +12,8 @@ export function PrelaunchFooter({
             We're building this carefully. <em>The polished edge is on the way.</em>
           </h2>
           <p>Join the waitlist and be first to know when Sparkle Suite is ready.</p>
-          <a className="ss-btn ss-btn--primary" href={ctaHref}>
-            {ctaLabel}
+          <a className="ss-btn ss-btn--primary" href="#waitlist">
+            {prelaunchContent.primaryCtaLabel}
             <span aria-hidden="true" className="ss-arrow">
               &rarr;
             </span>
