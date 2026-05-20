@@ -106,6 +106,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(normalizePrelaunchWaitlistReviewView('contact_batch')).toBe(
       'contact_batch',
     )
+    expect(normalizePrelaunchWaitlistReviewView('contacted')).toBe('contacted')
     expect(
       normalizePrelaunchWaitlistReviewView(['contact_batch']),
     ).toBe('contact_batch')
@@ -216,6 +217,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             email: 'selected@example.com',
             leadStatus: 'contact_batch_selected',
           },
+          {
+            ...waitlistLead,
+            id: 'waitlist-contacted',
+            name: 'Contacted Lead',
+            email: 'contacted@example.com',
+            leadStatus: 'contacted',
+          },
         ],
       }),
     )
@@ -230,6 +238,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Client intake pipeline')
     expect(html).toContain('New prelaunch lead')
     expect(html).toContain('1 Contact batch')
+    expect(html).toContain('1 Contacted')
     expect(html).toContain('Contact batch')
     expect(html).toContain('Meeting scheduled')
     expect(html).toContain('Conversation complete')
@@ -239,9 +248,12 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Agreement pending')
     expect(html).toContain('Build ready')
     expect(html).toContain('Contact batch view')
+    expect(html).toContain('Contacted view')
     expect(html).toContain('1 selected')
+    expect(html).toContain('1 contacted')
     expect(html).toContain('1 ready to select')
     expect(html).toContain('href="/control-center/intake?waitlist=contact_batch"')
+    expect(html).toContain('href="/control-center/intake?waitlist=contacted"')
     expect(html).toContain('Select for contact batch')
     expect(html).toContain(
       'action="/api/control-center/intake/waitlist-contact-batch"',
@@ -293,6 +305,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('selected@example.com')
     expect(html).toContain('Selected for contact batch')
     expect(html).toContain('Manual contact batch roster')
+    expect(html).toContain('Mark contacted')
+    expect(html).toContain(
+      'action="/api/control-center/intake/waitlist-contact-progress"',
+    )
     expect(html).toContain('Name: Selected Lead')
     expect(html).toContain('Email: selected@example.com')
     expect(html).toContain('Phone: 919-555-0101')
@@ -302,6 +318,46 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Setup notes: Getting my live setup organized')
     expect(html).not.toContain('Kim Hart')
     expect(html).not.toContain('Name: Kim Hart')
+    expect(html).not.toContain('Select for contact batch')
+  })
+
+  it('filters Control Center waitlist leads to contacted outreach', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        activeWaitlistView: 'contacted',
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-selected',
+            name: 'Selected Lead',
+            email: 'selected@example.com',
+            leadStatus: 'contact_batch_selected',
+          },
+          {
+            ...waitlistLead,
+            id: 'waitlist-contacted',
+            name: 'Contacted Lead',
+            email: 'contacted@example.com',
+            leadStatus: 'contacted',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Showing contacted outreach')
+    expect(html).toContain('Contacted Lead')
+    expect(html).toContain('contacted@example.com')
+    expect(html).toContain('Contacted')
+    expect(html).toContain(
+      'Manual outreach has happened. Next step is operator-led scheduling or follow-up notes.',
+    )
+    expect(html).not.toContain('Kim Hart')
+    expect(html).not.toContain('Selected Lead')
+    expect(html).not.toContain('Mark contacted')
     expect(html).not.toContain('Select for contact batch')
   })
 

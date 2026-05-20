@@ -36,7 +36,7 @@ export type PrelaunchIntakeReviewLane =
   | 'meeting_ready'
   | 'gate_blocked'
 
-export type PrelaunchWaitlistReviewView = 'contact_batch'
+export type PrelaunchWaitlistReviewView = 'contact_batch' | 'contacted'
 
 const PRELAUNCH_INTAKE_LANES: Array<{
   key: PrelaunchIntakeReviewLane
@@ -83,7 +83,7 @@ export function normalizePrelaunchWaitlistReviewView(
   value: string | string[] | undefined,
 ): PrelaunchWaitlistReviewView | null {
   const view = Array.isArray(value) ? value[0] : value
-  return view === 'contact_batch' ? view : null
+  return view === 'contact_batch' || view === 'contacted' ? view : null
 }
 
 function formatValue(value: string | null | undefined) {
@@ -216,6 +216,14 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
     }
   }
 
+  if (lead.leadStatus === 'contacted') {
+    return {
+      label: 'Contacted',
+      detail:
+        'Manual outreach has happened. Next step is operator-led scheduling or follow-up notes.',
+    }
+  }
+
   if (lead.intakeSubmissionId) {
     return {
       label: 'Continue intake handoff',
@@ -252,6 +260,10 @@ function isWaitlistLeadSelectedForContactBatch(
   lead: PrelaunchWaitlistReviewLead,
 ) {
   return lead.leadStatus === 'contact_batch_selected'
+}
+
+function isWaitlistLeadContacted(lead: PrelaunchWaitlistReviewLead) {
+  return lead.leadStatus === 'contacted'
 }
 
 function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
@@ -423,9 +435,12 @@ export function PrelaunchIntakeReviewPageContent({
   const contactBatchSelected = waitlistLeads.filter(
     isWaitlistLeadSelectedForContactBatch,
   ).length
+  const contactedLeads = waitlistLeads.filter(isWaitlistLeadContacted).length
   const visibleWaitlistLeads =
     activeWaitlistView === 'contact_batch'
       ? waitlistLeads.filter(isWaitlistLeadSelectedForContactBatch)
+      : activeWaitlistView === 'contacted'
+        ? waitlistLeads.filter(isWaitlistLeadContacted)
       : waitlistLeads
   const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
@@ -482,6 +497,18 @@ export function PrelaunchIntakeReviewPageContent({
         'Future draft messaging can help here, but this stage is manual for now.',
       tools: 'Control Center, email drafts, SMS drafts later.',
       hardStops: 'Do not send live SMS until Telnyx approval is complete.',
+    },
+    {
+      label: 'Contacted',
+      count: contactedLeads,
+      detail: 'Manual outreach contacted',
+      description: 'Louis has reached out and can work scheduling manually.',
+      instructions:
+        'Keep follow-up human-led for now; capture any scheduled meeting in the operator notes or intake flow later.',
+      automation:
+        'No calendar booking, email, or SMS automation is triggered by this status.',
+      tools: 'Control Center and manual outreach notes.',
+      hardStops: 'Do not auto-book meetings until the calendar workflow is built.',
     },
     {
       label: 'Meeting scheduled',
@@ -750,15 +777,17 @@ export function PrelaunchIntakeReviewPageContent({
               <h2 className="mt-1 text-lg font-semibold text-slate-950">
                 {activeWaitlistView === 'contact_batch'
                   ? 'Showing contact batch'
-                  : formatCount(waitlistLeads.length, 'waitlist lead')}
+                  : activeWaitlistView === 'contacted'
+                    ? 'Showing contacted outreach'
+                    : formatCount(waitlistLeads.length, 'waitlist lead')}
               </h2>
             </div>
             <div className="text-sm font-semibold text-emerald-700">
               <p>{formatCount(confirmationSent, 'confirmation')} sent</p>
               {isControlCenter ? (
                 <p className="mt-1 text-xs font-semibold text-slate-500">
-                  {contactBatchSelected} selected / {contactBatchReady} ready to
-                  select
+                  {contactBatchSelected} selected / {contactedLeads} contacted /{' '}
+                  {contactBatchReady} ready to select
                 </p>
               ) : null}
             </div>
@@ -784,6 +813,16 @@ export function PrelaunchIntakeReviewPageContent({
                 href={formatWaitlistViewHref('contact_batch', basePath)}
               >
                 Contact batch view
+              </a>
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView === 'contacted'
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
+                href={formatWaitlistViewHref('contacted', basePath)}
+              >
+                Contacted view
               </a>
             </div>
           ) : null}
@@ -811,6 +850,8 @@ export function PrelaunchIntakeReviewPageContent({
                 const nextAction = buildWaitlistLeadNextAction(lead)
                 const isReadyForContactBatch =
                   isWaitlistLeadReadyForContactBatch(lead)
+                const isSelectedForContactBatch =
+                  isWaitlistLeadSelectedForContactBatch(lead)
 
                 return (
                   <article
@@ -879,6 +920,28 @@ export function PrelaunchIntakeReviewPageContent({
                           type="submit"
                         >
                           Select for contact batch
+                        </button>
+                      </form>
+                    ) : null}
+                    {isControlCenter &&
+                    activeWaitlistView === 'contact_batch' &&
+                    isSelectedForContactBatch ? (
+                      <form
+                        action="/api/control-center/intake/waitlist-contact-progress"
+                        className="mt-3"
+                        method="post"
+                      >
+                        <input name="leadId" type="hidden" value={lead.id} />
+                        <input
+                          name="returnTo"
+                          type="hidden"
+                          value={formatWaitlistViewHref('contacted', basePath)}
+                        />
+                        <button
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                          type="submit"
+                        >
+                          Mark contacted
                         </button>
                       </form>
                     ) : null}
