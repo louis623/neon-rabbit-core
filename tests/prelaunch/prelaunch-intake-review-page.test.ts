@@ -211,11 +211,32 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('href="/prelaunch/intake"')
     expect(html).toContain('Start at the beginning of the client pipeline')
     expect(html).toContain('Client intake pipeline')
-    expect(html).toContain('New intake')
+    expect(html).toContain('New prelaunch lead')
+    expect(html).toContain('Contact batch')
+    expect(html).toContain('Meeting scheduled')
+    expect(html).toContain('Conversation complete')
+    expect(html).toContain('Setup profile drafted')
     expect(html).toContain('Start work ready')
     expect(html).toContain('Payment pending')
     expect(html).toContain('Agreement pending')
     expect(html).toContain('Build ready')
+    expect(html).toContain('Description:')
+    expect(html).toContain('Louis does:')
+    expect(html).toContain('Automation:')
+    expect(html).toContain('Tools:')
+    expect(html).toContain('Hard stop:')
+    expect(html).toContain(
+      'The waitlist form saves the lead and tracks welcome email status.',
+    )
+    expect(html).toContain(
+      'Google Meet transcript, Scribe, Scout, Control Center.',
+    )
+    expect(html).toContain(
+      'No live Stripe charge or live SignWell agreement without explicit approval.',
+    )
+    expect(html).toContain(
+      'Do not affect live queue shows, attach SMS numbers, or run live-provider actions early.',
+    )
     expect(html).toContain('/control-center/intake?lane=failed_scout')
     expect(html).toContain('/control-center/intake?lane=meeting_ready')
     expect(html).not.toContain('/internal/prelaunch/intake?lane=failed_scout')

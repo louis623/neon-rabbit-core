@@ -357,43 +357,121 @@ export function PrelaunchIntakeReviewPageContent({
   })
   const pipelineStages = [
     {
-      label: 'New intake',
-      count: submissions.filter(
-        (submission) => submission.intakeStatus === 'submitted',
-      ).length,
-      detail: 'Fresh client profiles',
+      label: 'New prelaunch lead',
+      count: waitlistLeads.length,
+      detail: 'Low-friction waitlist signup',
+      description: 'Someone joined the simple prelaunch list.',
+      instructions:
+        'Review the lead, leave them on the list, or include them in the next contact batch.',
+      automation:
+        'The waitlist form saves the lead and tracks welcome email status.',
+      tools: 'Prelaunch waitlist form, Supabase waitlist, Control Center.',
+      hardStops:
+        'No live SMS, payment, SignWell, or referral-code workflow during prelaunch.',
     },
     {
-      label: 'Needs review',
-      count: needsReview,
-      detail: 'Fit flags or incomplete setup',
+      label: 'Contact batch',
+      count: 0,
+      detail: 'Louis works the list manually',
+      description: 'A selected group is ready for outreach.',
+      instructions:
+        'Send approved email or text outreach only for the batch you choose.',
+      automation:
+        'Future draft messaging can help here, but this stage is manual for now.',
+      tools: 'Control Center, email drafts, SMS drafts later.',
+      hardStops: 'Do not send live SMS until Telnyx approval is complete.',
     },
     {
-      label: 'Meeting ready',
+      label: 'Meeting scheduled',
+      count: 0,
+      detail: '30-minute Google Meet',
+      description: 'The lead has a setup conversation booked.',
+      instructions:
+        'Keep meetings to 30 minutes or less and use the call to understand their current customer flow.',
+      automation:
+        'Calendar booking automation is planned later; prelaunch scheduling stays operator-led.',
+      tools: 'Google Calendar and Google Meet later.',
+      hardStops: 'Do not auto-book meetings until the calendar workflow is built.',
+    },
+    {
+      label: 'Conversation complete',
       count: meetingReady,
-      detail: 'Discovery call handoff',
+      detail: 'Transcript handoff available',
+      description:
+        'The meeting happened and transcript/context can become setup notes.',
+      instructions:
+        'Confirm the transcript belongs to the lead before using it for setup decisions.',
+      automation:
+        'Scribe transcript hooks and Scout context can help draft the internal setup profile.',
+      tools: 'Google Meet transcript, Scribe, Scout, Control Center.',
+      hardStops:
+        'No automatic profile writeback, payment, or SignWell send from transcript alone.',
+    },
+    {
+      label: 'Setup profile drafted',
+      count: scoutGenerated,
+      detail: 'Agent-assisted internal profile',
+      description:
+        'Nic-Nac, Scout, and Scribe context can help summarize what we know.',
+      instructions:
+        'Review the draft, correct anything fuzzy, and decide whether this person should move forward.',
+      automation:
+        'Agent context is assistive only; Louis approves the customer fit and setup profile.',
+      tools: 'Nic-Nac, Scout, Scribe, Control Center.',
+      hardStops: 'Do not treat agent output as legal, billing, or launch approval.',
     },
     {
       label: 'Start work ready',
       count: submissions.filter(
         (submission) => submission.handoffStatus === 'converted',
       ).length,
-      detail: 'Operator-approved next step',
+      detail: 'Louis-approved next step',
+      description: 'Louis has decided the lead is a good fit to start work.',
+      instructions:
+        'Move one person at a time into the Start Work flow when payment and agreement checks are ready.',
+      automation:
+        'Stripe and SignWell helpers exist, but live actions remain approval-gated.',
+      tools: 'Stripe test mode, SignWell sandbox, Control Center.',
+      hardStops:
+        'No live Stripe charge or live SignWell agreement without explicit approval.',
     },
     {
       label: 'Payment pending',
       count: 0,
       detail: 'Stripe test slice next',
+      description:
+        'The build fee and monthly subscription flow will be itemized and tested.',
+      instructions:
+        'Use Stripe test mode first and confirm the invoice/checkout items are clear.',
+      automation:
+        'Stripe checkout and webhook helpers are present; live setup is guarded.',
+      tools: 'Stripe, Stripe webhook smoke, launch smoke harness.',
+      hardStops: 'No live checkout, charge, or invoice until approved.',
     },
     {
       label: 'Agreement pending',
       count: 0,
       detail: 'SignWell sandbox slice next',
+      description: 'The service agreement is prepared after Start Work is approved.',
+      instructions:
+        'Use sandbox/draft agreement checks until a real recipient and send window are approved.',
+      automation:
+        'SignWell sandbox payload and provider smoke are available without sending live email.',
+      tools: 'SignWell sandbox, agreement route, launch smoke harness.',
+      hardStops: 'No live SignWell send without explicit approval.',
     },
     {
       label: 'Build ready',
       count: 0,
       detail: 'After payment and agreement',
+      description: 'The client is ready for buildout only after the gates pass.',
+      instructions:
+        'Start the account build from the approved setup profile and keep live queue work parked until ready.',
+      automation:
+        'Nic-Nac and setup context support buildout after the customer is approved.',
+      tools: 'Nic-Nac, Control Center, future build workflow.',
+      hardStops:
+        'Do not affect live queue shows, attach SMS numbers, or run live-provider actions early.',
     },
   ]
 
@@ -513,7 +591,7 @@ export function PrelaunchIntakeReviewPageContent({
                 status.
               </p>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {pipelineStages.map((stage) => (
                 <div
                   className="rounded-md border border-slate-200 bg-slate-50 p-3"
@@ -525,6 +603,36 @@ export function PrelaunchIntakeReviewPageContent({
                   <p className="mt-1 text-xs leading-5 text-slate-500">
                     {stage.detail}
                   </p>
+                  <div className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
+                    <p>
+                      <span className="font-semibold text-slate-800">
+                        Description:
+                      </span>{' '}
+                      {stage.description}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">
+                        Louis does:
+                      </span>{' '}
+                      {stage.instructions}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">
+                        Automation:
+                      </span>{' '}
+                      {stage.automation}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">
+                        Tools:
+                      </span>{' '}
+                      {stage.tools}
+                    </p>
+                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
+                      <span className="font-semibold">Hard stop:</span>{' '}
+                      {stage.hardStops}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
