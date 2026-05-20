@@ -212,6 +212,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Start at the beginning of the client pipeline')
     expect(html).toContain('Client intake pipeline')
     expect(html).toContain('New prelaunch lead')
+    expect(html).toContain('1 Contact batch')
     expect(html).toContain('Contact batch')
     expect(html).toContain('Meeting scheduled')
     expect(html).toContain('Conversation complete')

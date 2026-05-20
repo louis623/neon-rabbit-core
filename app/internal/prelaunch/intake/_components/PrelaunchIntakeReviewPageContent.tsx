@@ -223,6 +223,15 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
   }
 }
 
+function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
+  return (
+    lead.welcomeEmailStatus === 'sent' &&
+    lead.handoffStatus === 'not_started' &&
+    lead.leadStatus !== 'closed' &&
+    !lead.intakeSubmissionId
+  )
+}
+
 function buildOperatorReadiness(
   submission: PrelaunchIntakeReviewSubmission,
   gates: PrelaunchGateReadinessItem[],
@@ -359,6 +368,9 @@ export function PrelaunchIntakeReviewPageContent({
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
   ).length
+  const contactBatchReady = waitlistLeads.filter(
+    isWaitlistLeadReadyForContactBatch,
+  ).length
   const needsReview = submissions.filter(
     (submission) => submission.prequalificationStatus === 'needs_review',
   ).length
@@ -404,7 +416,7 @@ export function PrelaunchIntakeReviewPageContent({
     },
     {
       label: 'Contact batch',
-      count: 0,
+      count: contactBatchReady,
       detail: 'Louis works the list manually',
       description: 'A selected group is ready for outreach.',
       instructions:
