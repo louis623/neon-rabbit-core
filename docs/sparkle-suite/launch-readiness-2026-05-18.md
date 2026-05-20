@@ -9,6 +9,7 @@
 - Control Center operators can mark eligible prelaunch leads as selected for a manual contact batch. This only updates the waitlist `lead_status`; it does not send email, SMS, Stripe checkout, SignWell agreements, or live queue actions.
 - Control Center waitlist now has an `All leads` / `Contact batch view` filter plus a read-only manual roster so selected prelaunch leads can be worked as a group before any outreach automation exists.
 - Control Center operators can mark selected batch leads as `contacted` after manual outreach. This is another state-only waitlist update with a dedicated `Contacted view`; it does not send provider traffic or advance calendar, Stripe, SignWell, SMS, or live queue work.
+- Control Center operators can mark contacted leads as `meeting_scheduled` after Louis manually books the setup conversation. This only updates waitlist state and keeps calendar invites, transcript capture, SMS, email, Stripe, SignWell, and live queue actions operator-led.
 - The public prelaunch path stays low-friction at `/prelaunch`; `/prelaunch/intake` redirects back to `/prelaunch` so the internal setup-intake form is not presented as a public prelaunch signup step.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.

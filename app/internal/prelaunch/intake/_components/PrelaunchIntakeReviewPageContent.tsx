@@ -36,7 +36,10 @@ export type PrelaunchIntakeReviewLane =
   | 'meeting_ready'
   | 'gate_blocked'
 
-export type PrelaunchWaitlistReviewView = 'contact_batch' | 'contacted'
+export type PrelaunchWaitlistReviewView =
+  | 'contact_batch'
+  | 'contacted'
+  | 'meeting_scheduled'
 
 const PRELAUNCH_INTAKE_LANES: Array<{
   key: PrelaunchIntakeReviewLane
@@ -83,7 +86,11 @@ export function normalizePrelaunchWaitlistReviewView(
   value: string | string[] | undefined,
 ): PrelaunchWaitlistReviewView | null {
   const view = Array.isArray(value) ? value[0] : value
-  return view === 'contact_batch' || view === 'contacted' ? view : null
+  return view === 'contact_batch' ||
+    view === 'contacted' ||
+    view === 'meeting_scheduled'
+    ? view
+    : null
 }
 
 function formatValue(value: string | null | undefined) {
@@ -224,6 +231,14 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
     }
   }
 
+  if (lead.leadStatus === 'meeting_scheduled') {
+    return {
+      label: 'Meeting scheduled',
+      detail:
+        'A manual setup conversation is on the calendar. Keep the calendar invite and transcript capture operator-led.',
+    }
+  }
+
   if (lead.intakeSubmissionId) {
     return {
       label: 'Continue intake handoff',
@@ -264,6 +279,10 @@ function isWaitlistLeadSelectedForContactBatch(
 
 function isWaitlistLeadContacted(lead: PrelaunchWaitlistReviewLead) {
   return lead.leadStatus === 'contacted'
+}
+
+function isWaitlistLeadMeetingScheduled(lead: PrelaunchWaitlistReviewLead) {
+  return lead.leadStatus === 'meeting_scheduled'
 }
 
 function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
@@ -436,11 +455,16 @@ export function PrelaunchIntakeReviewPageContent({
     isWaitlistLeadSelectedForContactBatch,
   ).length
   const contactedLeads = waitlistLeads.filter(isWaitlistLeadContacted).length
+  const meetingScheduledLeads = waitlistLeads.filter(
+    isWaitlistLeadMeetingScheduled,
+  ).length
   const visibleWaitlistLeads =
     activeWaitlistView === 'contact_batch'
       ? waitlistLeads.filter(isWaitlistLeadSelectedForContactBatch)
       : activeWaitlistView === 'contacted'
         ? waitlistLeads.filter(isWaitlistLeadContacted)
+        : activeWaitlistView === 'meeting_scheduled'
+          ? waitlistLeads.filter(isWaitlistLeadMeetingScheduled)
       : waitlistLeads
   const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
@@ -512,7 +536,7 @@ export function PrelaunchIntakeReviewPageContent({
     },
     {
       label: 'Meeting scheduled',
-      count: 0,
+      count: meetingScheduledLeads,
       detail: '30-minute Google Meet',
       description: 'The lead has a setup conversation booked.',
       instructions:
@@ -779,6 +803,8 @@ export function PrelaunchIntakeReviewPageContent({
                   ? 'Showing contact batch'
                   : activeWaitlistView === 'contacted'
                     ? 'Showing contacted outreach'
+                    : activeWaitlistView === 'meeting_scheduled'
+                      ? 'Showing scheduled meetings'
                     : formatCount(waitlistLeads.length, 'waitlist lead')}
               </h2>
             </div>
@@ -787,7 +813,8 @@ export function PrelaunchIntakeReviewPageContent({
               {isControlCenter ? (
                 <p className="mt-1 text-xs font-semibold text-slate-500">
                   {contactBatchSelected} selected / {contactedLeads} contacted /{' '}
-                  {contactBatchReady} ready to select
+                  {meetingScheduledLeads} meeting scheduled / {contactBatchReady}{' '}
+                  ready to select
                 </p>
               ) : null}
             </div>
@@ -824,6 +851,16 @@ export function PrelaunchIntakeReviewPageContent({
               >
                 Contacted view
               </a>
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView === 'meeting_scheduled'
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
+                href={formatWaitlistViewHref('meeting_scheduled', basePath)}
+              >
+                Meeting scheduled view
+              </a>
             </div>
           ) : null}
           {isControlCenter &&
@@ -852,6 +889,7 @@ export function PrelaunchIntakeReviewPageContent({
                   isWaitlistLeadReadyForContactBatch(lead)
                 const isSelectedForContactBatch =
                   isWaitlistLeadSelectedForContactBatch(lead)
+                const isContacted = isWaitlistLeadContacted(lead)
 
                 return (
                   <article
@@ -942,6 +980,31 @@ export function PrelaunchIntakeReviewPageContent({
                           type="submit"
                         >
                           Mark contacted
+                        </button>
+                      </form>
+                    ) : null}
+                    {isControlCenter &&
+                    activeWaitlistView === 'contacted' &&
+                    isContacted ? (
+                      <form
+                        action="/api/control-center/intake/waitlist-meeting-scheduled"
+                        className="mt-3"
+                        method="post"
+                      >
+                        <input name="leadId" type="hidden" value={lead.id} />
+                        <input
+                          name="returnTo"
+                          type="hidden"
+                          value={formatWaitlistViewHref(
+                            'meeting_scheduled',
+                            basePath,
+                          )}
+                        />
+                        <button
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                          type="submit"
+                        >
+                          Mark meeting scheduled
                         </button>
                       </form>
                     ) : null}
