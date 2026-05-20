@@ -657,7 +657,7 @@ export function PrelaunchIntakeReviewPageContent({
                     </p>
                     <p>
                       <span className="font-semibold text-slate-800">
-                        Tools:
+                        Skills/plugins:
                       </span>{' '}
                       {stage.tools}
                     </p>

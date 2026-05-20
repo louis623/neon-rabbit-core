@@ -223,7 +223,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Description:')
     expect(html).toContain('Louis does:')
     expect(html).toContain('Automation:')
-    expect(html).toContain('Tools:')
+    expect(html).toContain('Skills/plugins:')
     expect(html).toContain('Hard stop:')
     expect(html).toContain(
       'The waitlist form saves the lead and tracks welcome email status.',
