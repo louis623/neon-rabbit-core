@@ -42,6 +42,7 @@ export type PrelaunchWaitlistReviewView =
   | 'meeting_scheduled'
   | 'conversation_complete'
   | 'setup_profile_drafted'
+  | 'start_work_ready'
 
 const PRELAUNCH_INTAKE_LANES: Array<{
   key: PrelaunchIntakeReviewLane
@@ -92,7 +93,8 @@ export function normalizePrelaunchWaitlistReviewView(
     view === 'contacted' ||
     view === 'meeting_scheduled' ||
     view === 'conversation_complete' ||
-    view === 'setup_profile_drafted'
+    view === 'setup_profile_drafted' ||
+    view === 'start_work_ready'
     ? view
     : null
 }
@@ -259,6 +261,14 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
     }
   }
 
+  if (lead.leadStatus === 'start_work_ready') {
+    return {
+      label: 'Start Work ready',
+      detail:
+        'Louis approved this profile for the Start Work lane. Keep Stripe, SignWell, build readiness, and live queue actions behind their own gates.',
+    }
+  }
+
   if (lead.intakeSubmissionId) {
     return {
       label: 'Continue intake handoff',
@@ -313,6 +323,10 @@ function isWaitlistLeadSetupProfileDrafted(
   lead: PrelaunchWaitlistReviewLead,
 ) {
   return lead.leadStatus === 'setup_profile_drafted'
+}
+
+function isWaitlistLeadStartWorkReady(lead: PrelaunchWaitlistReviewLead) {
+  return lead.leadStatus === 'start_work_ready'
 }
 
 function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
@@ -494,6 +508,9 @@ export function PrelaunchIntakeReviewPageContent({
   const setupProfileDraftedLeads = waitlistLeads.filter(
     isWaitlistLeadSetupProfileDrafted,
   ).length
+  const startWorkReadyLeads = waitlistLeads.filter(
+    isWaitlistLeadStartWorkReady,
+  ).length
   const visibleWaitlistLeads =
     activeWaitlistView === 'contact_batch'
       ? waitlistLeads.filter(isWaitlistLeadSelectedForContactBatch)
@@ -505,6 +522,8 @@ export function PrelaunchIntakeReviewPageContent({
             ? waitlistLeads.filter(isWaitlistLeadConversationComplete)
             : activeWaitlistView === 'setup_profile_drafted'
               ? waitlistLeads.filter(isWaitlistLeadSetupProfileDrafted)
+              : activeWaitlistView === 'start_work_ready'
+                ? waitlistLeads.filter(isWaitlistLeadStartWorkReady)
               : waitlistLeads
   const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
@@ -849,6 +868,8 @@ export function PrelaunchIntakeReviewPageContent({
                         ? 'Showing completed conversations'
                         : activeWaitlistView === 'setup_profile_drafted'
                           ? 'Showing drafted setup profiles'
+                          : activeWaitlistView === 'start_work_ready'
+                            ? 'Showing Start Work ready leads'
                           : formatCount(waitlistLeads.length, 'waitlist lead')}
               </h2>
             </div>
@@ -859,7 +880,8 @@ export function PrelaunchIntakeReviewPageContent({
                   {contactBatchSelected} selected / {contactedLeads} contacted /{' '}
                   {meetingScheduledLeads} meeting scheduled / {contactBatchReady}{' '}
                   ready to select / {conversationCompleteLeads} conversation
-                  complete / {setupProfileDraftedLeads} setup profile drafted
+                  complete / {setupProfileDraftedLeads} setup profile drafted /{' '}
+                  {startWorkReadyLeads} start work ready
                 </p>
               ) : null}
             </div>
@@ -929,6 +951,16 @@ export function PrelaunchIntakeReviewPageContent({
               >
                 Setup profile drafted view
               </a>
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView === 'start_work_ready'
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
+                href={formatWaitlistViewHref('start_work_ready', basePath)}
+              >
+                Start work ready view
+              </a>
             </div>
           ) : null}
           {isControlCenter &&
@@ -962,6 +994,8 @@ export function PrelaunchIntakeReviewPageContent({
                   isWaitlistLeadMeetingScheduled(lead)
                 const isConversationComplete =
                   isWaitlistLeadConversationComplete(lead)
+                const isSetupProfileDrafted =
+                  isWaitlistLeadSetupProfileDrafted(lead)
 
                 return (
                   <article
@@ -1127,6 +1161,31 @@ export function PrelaunchIntakeReviewPageContent({
                           type="submit"
                         >
                           Mark setup profile drafted
+                        </button>
+                      </form>
+                    ) : null}
+                    {isControlCenter &&
+                    activeWaitlistView === 'setup_profile_drafted' &&
+                    isSetupProfileDrafted ? (
+                      <form
+                        action="/api/control-center/intake/waitlist-start-work-ready"
+                        className="mt-3"
+                        method="post"
+                      >
+                        <input name="leadId" type="hidden" value={lead.id} />
+                        <input
+                          name="returnTo"
+                          type="hidden"
+                          value={formatWaitlistViewHref(
+                            'start_work_ready',
+                            basePath,
+                          )}
+                        />
+                        <button
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                          type="submit"
+                        >
+                          Mark Start Work ready
                         </button>
                       </form>
                     ) : null}
