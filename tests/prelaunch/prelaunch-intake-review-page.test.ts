@@ -110,6 +110,9 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(normalizePrelaunchWaitlistReviewView('meeting_scheduled')).toBe(
       'meeting_scheduled',
     )
+    expect(normalizePrelaunchWaitlistReviewView('conversation_complete')).toBe(
+      'conversation_complete',
+    )
     expect(
       normalizePrelaunchWaitlistReviewView(['contact_batch']),
     ).toBe('contact_batch')
@@ -234,6 +237,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             email: 'meeting@example.com',
             leadStatus: 'meeting_scheduled',
           },
+          {
+            ...waitlistLead,
+            id: 'waitlist-conversation',
+            name: 'Conversation Lead',
+            email: 'conversation@example.com',
+            leadStatus: 'conversation_complete',
+          },
         ],
       }),
     )
@@ -250,6 +260,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('1 Contact batch')
     expect(html).toContain('1 Contacted')
     expect(html).toContain('1 Meeting scheduled')
+    expect(html).toContain('1 Conversation complete')
     expect(html).toContain('Contact batch')
     expect(html).toContain('Meeting scheduled')
     expect(html).toContain('Conversation complete')
@@ -261,14 +272,19 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Contact batch view')
     expect(html).toContain('Contacted view')
     expect(html).toContain('Meeting scheduled view')
+    expect(html).toContain('Conversation complete view')
     expect(html).toContain('1 selected')
     expect(html).toContain('1 contacted')
     expect(html).toContain('1 meeting scheduled')
+    expect(html).toContain('1 conversation complete')
     expect(html).toContain('1 ready to select')
     expect(html).toContain('href="/control-center/intake?waitlist=contact_batch"')
     expect(html).toContain('href="/control-center/intake?waitlist=contacted"')
     expect(html).toContain(
       'href="/control-center/intake?waitlist=meeting_scheduled"',
+    )
+    expect(html).toContain(
+      'href="/control-center/intake?waitlist=conversation_complete"',
     )
     expect(html).toContain('Select for contact batch')
     expect(html).toContain(
@@ -367,6 +383,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             email: 'meeting@example.com',
             leadStatus: 'meeting_scheduled',
           },
+          {
+            ...waitlistLead,
+            id: 'waitlist-conversation',
+            name: 'Conversation Lead',
+            email: 'conversation@example.com',
+            leadStatus: 'conversation_complete',
+          },
         ],
       }),
     )
@@ -420,11 +443,56 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Meeting Lead')
     expect(html).toContain('meeting@example.com')
     expect(html).toContain('Meeting scheduled')
+    expect(html).toContain('Mark conversation complete')
+    expect(html).toContain(
+      'action="/api/control-center/intake/waitlist-conversation-complete"',
+    )
     expect(html).toContain(
       'A manual setup conversation is on the calendar. Keep the calendar invite and transcript capture operator-led.',
     )
     expect(html).not.toContain('Kim Hart')
     expect(html).not.toContain('Contacted Lead')
+    expect(html).not.toContain('Conversation Lead')
+    expect(html).not.toContain('Mark meeting scheduled')
+  })
+
+  it('filters Control Center waitlist leads to completed conversations', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        activeWaitlistView: 'conversation_complete',
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-meeting',
+            name: 'Meeting Lead',
+            email: 'meeting@example.com',
+            leadStatus: 'meeting_scheduled',
+          },
+          {
+            ...waitlistLead,
+            id: 'waitlist-conversation',
+            name: 'Conversation Lead',
+            email: 'conversation@example.com',
+            leadStatus: 'conversation_complete',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Showing completed conversations')
+    expect(html).toContain('Conversation Lead')
+    expect(html).toContain('conversation@example.com')
+    expect(html).toContain('Conversation complete')
+    expect(html).toContain(
+      'The setup conversation is complete. Keep transcript import, profile drafting, and Start Work decisions operator-led.',
+    )
+    expect(html).not.toContain('Kim Hart')
+    expect(html).not.toContain('Meeting Lead')
+    expect(html).not.toContain('Mark conversation complete')
     expect(html).not.toContain('Mark meeting scheduled')
   })
 
