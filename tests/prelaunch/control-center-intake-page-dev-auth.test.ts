@@ -1,0 +1,113 @@
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const getAuthenticatedOperatorMock = vi.fn()
+const loadPrelaunchIntakeReviewSubmissionsMock = vi.fn()
+const loadPrelaunchWaitlistReviewLeadsMock = vi.fn()
+const redirectMock = vi.fn((target: string) => {
+  throw new Error(`redirect:${target}`)
+})
+
+const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
+  MockAuthError: class MockAuthError extends Error {},
+  MockOperatorAuthError: class MockOperatorAuthError extends Error {},
+}))
+
+vi.mock('next/navigation', () => ({
+  redirect: (target: string) => redirectMock(target),
+}))
+
+vi.mock('@/lib/supabase/operator-auth', () => ({
+  AuthError: MockAuthError,
+  OperatorAuthError: MockOperatorAuthError,
+  getAuthenticatedOperator: (...args: unknown[]) =>
+    getAuthenticatedOperatorMock(...args),
+}))
+
+vi.mock('@/lib/prelaunch/intake-review-query', () => ({
+  loadPrelaunchIntakeReviewSubmissions: (...args: unknown[]) =>
+    loadPrelaunchIntakeReviewSubmissionsMock(...args),
+}))
+
+vi.mock('@/lib/prelaunch/waitlist-review', () => ({
+  loadPrelaunchWaitlistReviewLeads: (...args: unknown[]) =>
+    loadPrelaunchWaitlistReviewLeadsMock(...args),
+}))
+
+vi.mock(
+  '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent',
+  () => ({
+    normalizePrelaunchIntakeReviewLane: (value: unknown) => value ?? null,
+    normalizePrelaunchWaitlistReviewView: (value: unknown) => value ?? null,
+    PrelaunchIntakeReviewPageContent: (props: {
+      surface: string
+      basePath: string
+    }) =>
+      createElement(
+        'main',
+        null,
+        `${props.surface} at ${props.basePath}`,
+      ),
+  }),
+)
+
+import SparkleSuiteControlCenterIntakePage from '@/app/control-center/intake/page'
+
+describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
+  const originalBypass = process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
+
+  beforeEach(() => {
+    getAuthenticatedOperatorMock.mockReset()
+    loadPrelaunchIntakeReviewSubmissionsMock.mockReset()
+    loadPrelaunchWaitlistReviewLeadsMock.mockReset()
+    redirectMock.mockClear()
+    loadPrelaunchIntakeReviewSubmissionsMock.mockResolvedValue([])
+    loadPrelaunchWaitlistReviewLeadsMock.mockResolvedValue([])
+  })
+
+  afterEach(() => {
+    if (originalBypass === undefined) {
+      delete process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
+    } else {
+      process.env.CONTROL_CENTER_DEV_AUTH_BYPASS = originalBypass
+    }
+  })
+
+  it('renders the Control Center intake page without auth when dev bypass is enabled', async () => {
+    process.env.CONTROL_CENTER_DEV_AUTH_BYPASS = 'true'
+    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+      new MockAuthError('missing session'),
+    )
+
+    const page = await SparkleSuiteControlCenterIntakePage({
+      searchParams: Promise.resolve({
+        waitlist: 'contact_batch',
+      }),
+    })
+    const html = renderToStaticMarkup(page)
+
+    expect(getAuthenticatedOperatorMock).not.toHaveBeenCalled()
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(html).toContain('control_center at /control-center/intake')
+    expect(loadPrelaunchIntakeReviewSubmissionsMock).toHaveBeenCalledOnce()
+    expect(loadPrelaunchWaitlistReviewLeadsMock).toHaveBeenCalledOnce()
+  })
+
+  it('still redirects unauthenticated requests when dev bypass is disabled', async () => {
+    delete process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
+    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+      new MockAuthError('missing session'),
+    )
+
+    await expect(
+      SparkleSuiteControlCenterIntakePage({
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('redirect:/login')
+
+    expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
+    expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
+    expect(loadPrelaunchWaitlistReviewLeadsMock).not.toHaveBeenCalled()
+  })
+})

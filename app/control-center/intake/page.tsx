@@ -23,30 +23,42 @@ interface SparkleSuiteControlCenterIntakePageProps {
   }>
 }
 
+function isControlCenterDevAuthBypassEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.CONTROL_CENTER_DEV_AUTH_BYPASS === 'true'
+  )
+}
+
 export default async function SparkleSuiteControlCenterIntakePage({
   searchParams,
 }: SparkleSuiteControlCenterIntakePageProps) {
-  try {
-    await getAuthenticatedOperator()
-  } catch (error) {
-    if (error instanceof AuthError) {
-      redirect('/login')
-    }
+  if (!isControlCenterDevAuthBypassEnabled()) {
+    try {
+      await getAuthenticatedOperator()
+    } catch (error) {
+      if (error instanceof AuthError) {
+        redirect('/login')
+      }
 
-    if (error instanceof OperatorAuthError) {
-      return (
-        <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-950">
-          <section className="mx-auto max-w-xl rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
-            <h1 className="text-2xl font-semibold">Operator access required</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              The Sparkle Suite Control Center is limited to internal operators.
-            </p>
-          </section>
-        </main>
-      )
-    }
+      if (error instanceof OperatorAuthError) {
+        return (
+          <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-950">
+            <section className="mx-auto max-w-xl rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+              <h1 className="text-2xl font-semibold">
+                Operator access required
+              </h1>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                The Sparkle Suite Control Center is limited to internal
+                operators.
+              </p>
+            </section>
+          </main>
+        )
+      }
 
-    throw error
+      throw error
+    }
   }
 
   const query = searchParams ? await searchParams : {}
