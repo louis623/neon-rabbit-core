@@ -268,8 +268,17 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('kim@example.com')
     expect(html).toContain('Lindsey')
     expect(html).toContain('Confirmation sent')
+    expect(html).toContain('Next action')
+    expect(html).toContain('Ready for contact batch')
+    expect(html).toContain(
+      'This lead can be considered for the next approved email or text outreach batch.',
+    )
     expect(html).toContain('Morgan Lee')
     expect(html).toContain('Confirmation failed')
+    expect(html).toContain('Fix confirmation email')
+    expect(html).toContain(
+      'The lead was saved, but the welcome email failed.',
+    )
     expect(html).toContain('Resend rejected the message.')
   })
 

@@ -190,6 +190,39 @@ function formatWelcomeEmailStatus(status: string) {
   return 'Confirmation pending'
 }
 
+function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
+  if (lead.intakeSubmissionId) {
+    return {
+      label: 'Continue intake handoff',
+      detail:
+        'This waitlist lead is already linked to an intake record. Review the intake card before any Start Work action.',
+    }
+  }
+
+  if (lead.welcomeEmailStatus === 'failed') {
+    return {
+      label: 'Fix confirmation email',
+      detail:
+        'The lead was saved, but the welcome email failed. Review the error before putting this person in a contact batch.',
+    }
+  }
+
+  if (lead.welcomeEmailStatus === 'skipped') {
+    return {
+      label: 'Review before outreach',
+      detail:
+        'The lead was saved without a confirmation email. Keep them on the list until you choose the next manual contact batch.',
+    }
+  }
+
+  return {
+    label: 'Ready for contact batch',
+    detail: lead.smsConsent
+      ? 'This lead can be considered for the next approved email or text outreach batch.'
+      : 'This lead is email-only for now. Do not use SMS outreach unless consent is captured later.',
+  }
+}
+
 function buildOperatorReadiness(
   submission: PrelaunchIntakeReviewSubmission,
   gates: PrelaunchGateReadinessItem[],
@@ -660,11 +693,14 @@ export function PrelaunchIntakeReviewPageContent({
             </p>
           ) : (
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {waitlistLeads.map((lead) => (
-                <article
-                  className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
-                  key={lead.id}
-                >
+              {waitlistLeads.map((lead) => {
+                const nextAction = buildWaitlistLeadNextAction(lead)
+
+                return (
+                  <article
+                    className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
+                    key={lead.id}
+                  >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="font-semibold text-slate-950">
@@ -700,6 +736,17 @@ export function PrelaunchIntakeReviewPageContent({
                       {lead.intakeSubmissionId ? 'linked' : 'not started'}
                     </span>
                   </div>
+                  <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Next action
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {nextAction.label}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                      {nextAction.detail}
+                    </p>
+                  </div>
                   {lead.setupPain ? (
                     <p className="mt-3 rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
                       {lead.setupPain}
@@ -717,7 +764,8 @@ export function PrelaunchIntakeReviewPageContent({
                       : ''}
                   </p>
                 </article>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
