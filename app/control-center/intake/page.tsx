@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import {
   normalizePrelaunchIntakeReviewLane,
+  normalizePrelaunchWaitlistReviewView,
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
@@ -16,7 +17,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 interface SparkleSuiteControlCenterIntakePageProps {
-  searchParams?: Promise<{ lane?: string | string[] }>
+  searchParams?: Promise<{
+    lane?: string | string[]
+    waitlist?: string | string[]
+  }>
 }
 
 export default async function SparkleSuiteControlCenterIntakePage({
@@ -47,6 +51,7 @@ export default async function SparkleSuiteControlCenterIntakePage({
 
   const query = searchParams ? await searchParams : {}
   const activeLane = normalizePrelaunchIntakeReviewLane(query.lane)
+  const activeWaitlistView = normalizePrelaunchWaitlistReviewView(query.waitlist)
   const [submissions, waitlistLeads] = await Promise.all([
     loadPrelaunchIntakeReviewSubmissions(),
     loadPrelaunchWaitlistReviewLeads(),
@@ -55,6 +60,7 @@ export default async function SparkleSuiteControlCenterIntakePage({
   return (
     <PrelaunchIntakeReviewPageContent
       activeLane={activeLane}
+      activeWaitlistView={activeWaitlistView}
       basePath="/control-center/intake"
       submissions={submissions}
       surface="control_center"
@@ -62,4 +68,3 @@ export default async function SparkleSuiteControlCenterIntakePage({
     />
   )
 }
-

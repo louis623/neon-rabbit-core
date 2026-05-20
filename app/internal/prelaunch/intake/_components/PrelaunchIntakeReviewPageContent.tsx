@@ -18,6 +18,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   submissions: PrelaunchIntakeReviewSubmission[]
   waitlistLeads?: PrelaunchWaitlistReviewLead[]
   activeLane?: PrelaunchIntakeReviewLane | null
+  activeWaitlistView?: PrelaunchWaitlistReviewView | null
   basePath?: string
   surface?: 'prelaunch_review' | 'control_center'
 }
@@ -34,6 +35,8 @@ export type PrelaunchIntakeReviewLane =
   | 'missing_transcript'
   | 'meeting_ready'
   | 'gate_blocked'
+
+export type PrelaunchWaitlistReviewView = 'contact_batch'
 
 const PRELAUNCH_INTAKE_LANES: Array<{
   key: PrelaunchIntakeReviewLane
@@ -76,6 +79,13 @@ export function normalizePrelaunchIntakeReviewLane(
     : null
 }
 
+export function normalizePrelaunchWaitlistReviewView(
+  value: string | string[] | undefined,
+): PrelaunchWaitlistReviewView | null {
+  const view = Array.isArray(value) ? value[0] : value
+  return view === 'contact_batch' ? view : null
+}
+
 function formatValue(value: string | null | undefined) {
   return value?.trim() || 'Not provided'
 }
@@ -99,6 +109,13 @@ function formatScoutInputStatus(value: string) {
 
 function formatLaneHref(lane: PrelaunchIntakeReviewLane | null, basePath: string) {
   return lane ? `${basePath}?lane=${lane}` : basePath
+}
+
+function formatWaitlistViewHref(
+  view: PrelaunchWaitlistReviewView | null,
+  basePath: string,
+) {
+  return view ? `${basePath}?waitlist=${view}` : basePath
 }
 
 function hasBlockedGate(gateReadiness: PrelaunchGateReadinessItem[]) {
@@ -231,6 +248,12 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
   }
 }
 
+function isWaitlistLeadSelectedForContactBatch(
+  lead: PrelaunchWaitlistReviewLead,
+) {
+  return lead.leadStatus === 'contact_batch_selected'
+}
+
 function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
   return (
     lead.welcomeEmailStatus === 'sent' &&
@@ -238,6 +261,23 @@ function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
     lead.leadStatus === 'new' &&
     !lead.intakeSubmissionId
   )
+}
+
+function buildContactBatchRoster(leads: PrelaunchWaitlistReviewLead[]) {
+  return leads
+    .map((lead, index) =>
+      [
+        `Lead ${index + 1}`,
+        `Name: ${lead.name}`,
+        `Email: ${lead.email}`,
+        `Phone: ${formatValue(lead.phone)}`,
+        `SMS consent: ${lead.smsConsent ? 'yes' : 'no'}`,
+        `TikTok: ${lead.tiktokHandle}`,
+        `Team rep: ${lead.teamRepName}`,
+        `Setup notes: ${formatValue(lead.setupPain)}`,
+      ].join('\n'),
+    )
+    .join('\n\n')
 }
 
 function buildOperatorReadiness(
@@ -366,6 +406,7 @@ function BriefList({
 
 export function PrelaunchIntakeReviewPageContent({
   activeLane = null,
+  activeWaitlistView = null,
   basePath = '/internal/prelaunch/intake',
   submissions,
   surface = 'prelaunch_review',
@@ -379,6 +420,14 @@ export function PrelaunchIntakeReviewPageContent({
   const contactBatchReady = waitlistLeads.filter(
     isWaitlistLeadReadyForContactBatch,
   ).length
+  const contactBatchSelected = waitlistLeads.filter(
+    isWaitlistLeadSelectedForContactBatch,
+  ).length
+  const visibleWaitlistLeads =
+    activeWaitlistView === 'contact_batch'
+      ? waitlistLeads.filter(isWaitlistLeadSelectedForContactBatch)
+      : waitlistLeads
+  const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
     (submission) => submission.prequalificationStatus === 'needs_review',
   ).length
@@ -424,7 +473,7 @@ export function PrelaunchIntakeReviewPageContent({
     },
     {
       label: 'Contact batch',
-      count: contactBatchReady,
+      count: contactBatchSelected,
       detail: 'Louis works the list manually',
       description: 'A selected group is ready for outreach.',
       instructions:
@@ -699,21 +748,66 @@ export function PrelaunchIntakeReviewPageContent({
                 Waitlist signups
               </p>
               <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                {formatCount(waitlistLeads.length, 'waitlist lead')}
+                {activeWaitlistView === 'contact_batch'
+                  ? 'Showing contact batch'
+                  : formatCount(waitlistLeads.length, 'waitlist lead')}
               </h2>
             </div>
-            <p className="text-sm font-semibold text-emerald-700">
-              {formatCount(confirmationSent, 'confirmation')} sent
-            </p>
+            <div className="text-sm font-semibold text-emerald-700">
+              <p>{formatCount(confirmationSent, 'confirmation')} sent</p>
+              {isControlCenter ? (
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  {contactBatchSelected} selected / {contactBatchReady} ready to
+                  select
+                </p>
+              ) : null}
+            </div>
           </div>
-          {waitlistLeads.length === 0 ? (
+          {isControlCenter ? (
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView
+                    ? 'border-slate-200 bg-slate-50 text-slate-700'
+                    : 'border-slate-950 bg-slate-950 text-white'
+                }`}
+                href={formatWaitlistViewHref(null, basePath)}
+              >
+                All leads
+              </a>
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView === 'contact_batch'
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
+                href={formatWaitlistViewHref('contact_batch', basePath)}
+              >
+                Contact batch view
+              </a>
+            </div>
+          ) : null}
+          {isControlCenter &&
+          activeWaitlistView === 'contact_batch' &&
+          visibleWaitlistLeads.length > 0 ? (
+            <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                Manual contact batch roster
+              </p>
+              <pre className="mt-3 whitespace-pre-wrap rounded-md border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700">
+                {contactBatchRoster}
+              </pre>
+            </div>
+          ) : null}
+          {visibleWaitlistLeads.length === 0 ? (
             <p className="mt-4 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-              New waitlist form submissions will appear here as soon as the
-              signup automation saves them.
+              {activeWaitlistView === 'contact_batch'
+                ? 'No leads are selected for the manual contact batch yet.'
+                : 'New waitlist form submissions will appear here as soon as the signup automation saves them.'}
             </p>
           ) : (
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {waitlistLeads.map((lead) => {
+              {visibleWaitlistLeads.map((lead) => {
                 const nextAction = buildWaitlistLeadNextAction(lead)
                 const isReadyForContactBatch =
                   isWaitlistLeadReadyForContactBatch(lead)

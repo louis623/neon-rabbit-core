@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import {
   normalizePrelaunchIntakeReviewLane,
+  normalizePrelaunchWaitlistReviewView,
   PrelaunchIntakeReviewPageContent,
 } from './_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
@@ -16,7 +17,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 interface InternalPrelaunchIntakePageProps {
-  searchParams?: Promise<{ lane?: string | string[] }>
+  searchParams?: Promise<{
+    lane?: string | string[]
+    waitlist?: string | string[]
+  }>
 }
 
 export default async function InternalPrelaunchIntakePage({
@@ -48,6 +52,7 @@ export default async function InternalPrelaunchIntakePage({
 
   const query = searchParams ? await searchParams : {}
   const activeLane = normalizePrelaunchIntakeReviewLane(query.lane)
+  const activeWaitlistView = normalizePrelaunchWaitlistReviewView(query.waitlist)
   const [submissions, waitlistLeads] = await Promise.all([
     loadPrelaunchIntakeReviewSubmissions(),
     loadPrelaunchWaitlistReviewLeads(),
@@ -55,6 +60,7 @@ export default async function InternalPrelaunchIntakePage({
   return (
     <PrelaunchIntakeReviewPageContent
       activeLane={activeLane}
+      activeWaitlistView={activeWaitlistView}
       submissions={submissions}
       waitlistLeads={waitlistLeads}
     />

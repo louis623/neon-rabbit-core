@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   normalizePrelaunchIntakeReviewLane,
+  normalizePrelaunchWaitlistReviewView,
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
@@ -102,6 +103,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
     expect(normalizePrelaunchIntakeReviewLane('unknown')).toBeNull()
     expect(normalizePrelaunchIntakeReviewLane(undefined)).toBeNull()
+    expect(normalizePrelaunchWaitlistReviewView('contact_batch')).toBe(
+      'contact_batch',
+    )
+    expect(
+      normalizePrelaunchWaitlistReviewView(['contact_batch']),
+    ).toBe('contact_batch')
+    expect(normalizePrelaunchWaitlistReviewView('unknown')).toBeNull()
   })
 
   it('renders operator summary counts and intake cards', () => {
@@ -199,7 +207,16 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             handoffStatus: 'converted',
           },
         ],
-        waitlistLeads: [waitlistLead],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-selected',
+            name: 'Selected Lead',
+            email: 'selected@example.com',
+            leadStatus: 'contact_batch_selected',
+          },
+        ],
       }),
     )
 
@@ -221,7 +238,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Payment pending')
     expect(html).toContain('Agreement pending')
     expect(html).toContain('Build ready')
-    expect(html).toContain('1 Contact batch')
+    expect(html).toContain('Contact batch view')
+    expect(html).toContain('1 selected')
+    expect(html).toContain('1 ready to select')
+    expect(html).toContain('href="/control-center/intake?waitlist=contact_batch"')
     expect(html).toContain('Select for contact batch')
     expect(html).toContain(
       'action="/api/control-center/intake/waitlist-contact-batch"',
@@ -246,6 +266,43 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('/control-center/intake?lane=failed_scout')
     expect(html).toContain('/control-center/intake?lane=meeting_ready')
     expect(html).not.toContain('/internal/prelaunch/intake?lane=failed_scout')
+  })
+
+  it('filters Control Center waitlist leads to the selected contact batch', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        activeWaitlistView: 'contact_batch',
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-selected',
+            name: 'Selected Lead',
+            email: 'selected@example.com',
+            leadStatus: 'contact_batch_selected',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Showing contact batch')
+    expect(html).toContain('Selected Lead')
+    expect(html).toContain('selected@example.com')
+    expect(html).toContain('Selected for contact batch')
+    expect(html).toContain('Manual contact batch roster')
+    expect(html).toContain('Name: Selected Lead')
+    expect(html).toContain('Email: selected@example.com')
+    expect(html).toContain('Phone: 919-555-0101')
+    expect(html).toContain('SMS consent: yes')
+    expect(html).toContain('TikTok: @kimslivejewelry')
+    expect(html).toContain('Team rep: Lindsey')
+    expect(html).toContain('Setup notes: Getting my live setup organized')
+    expect(html).not.toContain('Kim Hart')
+    expect(html).not.toContain('Name: Kim Hart')
+    expect(html).not.toContain('Select for contact batch')
   })
 
   it('renders waitlist leads with confirmation email status', () => {
