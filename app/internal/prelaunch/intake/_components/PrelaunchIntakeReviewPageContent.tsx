@@ -191,6 +191,14 @@ function formatWelcomeEmailStatus(status: string) {
 }
 
 function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
+  if (lead.leadStatus === 'contact_batch_selected') {
+    return {
+      label: 'Selected for contact batch',
+      detail:
+        'This lead is queued for the next manual outreach batch. Review the batch before sending anything.',
+    }
+  }
+
   if (lead.intakeSubmissionId) {
     return {
       label: 'Continue intake handoff',
@@ -227,7 +235,7 @@ function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
   return (
     lead.welcomeEmailStatus === 'sent' &&
     lead.handoffStatus === 'not_started' &&
-    lead.leadStatus !== 'closed' &&
+    lead.leadStatus === 'new' &&
     !lead.intakeSubmissionId
   )
 }
@@ -707,6 +715,8 @@ export function PrelaunchIntakeReviewPageContent({
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {waitlistLeads.map((lead) => {
                 const nextAction = buildWaitlistLeadNextAction(lead)
+                const isReadyForContactBatch =
+                  isWaitlistLeadReadyForContactBatch(lead)
 
                 return (
                   <article
@@ -758,6 +768,26 @@ export function PrelaunchIntakeReviewPageContent({
                     <p className="mt-1 text-xs leading-5 text-slate-600">
                       {nextAction.detail}
                     </p>
+                    {isControlCenter && isReadyForContactBatch ? (
+                      <form
+                        action="/api/control-center/intake/waitlist-contact-batch"
+                        className="mt-3"
+                        method="post"
+                      >
+                        <input name="leadId" type="hidden" value={lead.id} />
+                        <input
+                          name="returnTo"
+                          type="hidden"
+                          value={basePath}
+                        />
+                        <button
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                          type="submit"
+                        >
+                          Select for contact batch
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
                   {lead.setupPain ? (
                     <p className="mt-3 rounded-md bg-white p-3 text-xs leading-5 text-slate-700">

@@ -6,6 +6,7 @@
 - Browser smoke walkthrough: `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md`.
 - Sparkle Suite Control Center intake foundation now exists at `/control-center/intake`, reusing the existing operator-gated prelaunch intake data, Scout/Scribe visibility, and launch-gate readiness.
 - Control Center intake now shows read-only pipeline guidance plus waitlist next-action cues, including a live count of leads ready for the next contact batch without sending email, SMS, Stripe, or SignWell actions.
+- Control Center operators can mark eligible prelaunch leads as selected for a manual contact batch. This only updates the waitlist `lead_status`; it does not send email, SMS, Stripe checkout, SignWell agreements, or live queue actions.
 - The public prelaunch path stays low-friction at `/prelaunch`; `/prelaunch/intake` redirects back to `/prelaunch` so the internal setup-intake form is not presented as a public prelaunch signup step.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.

@@ -221,6 +221,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Payment pending')
     expect(html).toContain('Agreement pending')
     expect(html).toContain('Build ready')
+    expect(html).toContain('1 Contact batch')
+    expect(html).toContain('Select for contact batch')
+    expect(html).toContain(
+      'action="/api/control-center/intake/waitlist-contact-batch"',
+    )
     expect(html).toContain('Description:')
     expect(html).toContain('Louis does:')
     expect(html).toContain('Automation:')
