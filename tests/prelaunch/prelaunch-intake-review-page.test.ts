@@ -113,6 +113,9 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(normalizePrelaunchWaitlistReviewView('conversation_complete')).toBe(
       'conversation_complete',
     )
+    expect(normalizePrelaunchWaitlistReviewView('setup_profile_drafted')).toBe(
+      'setup_profile_drafted',
+    )
     expect(
       normalizePrelaunchWaitlistReviewView(['contact_batch']),
     ).toBe('contact_batch')
@@ -244,6 +247,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             email: 'conversation@example.com',
             leadStatus: 'conversation_complete',
           },
+          {
+            ...waitlistLead,
+            id: 'waitlist-profile',
+            name: 'Profile Lead',
+            email: 'profile@example.com',
+            leadStatus: 'setup_profile_drafted',
+          },
         ],
       }),
     )
@@ -273,10 +283,12 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Contacted view')
     expect(html).toContain('Meeting scheduled view')
     expect(html).toContain('Conversation complete view')
+    expect(html).toContain('Setup profile drafted view')
     expect(html).toContain('1 selected')
     expect(html).toContain('1 contacted')
     expect(html).toContain('1 meeting scheduled')
     expect(html).toContain('1 conversation complete')
+    expect(html).toContain('1 setup profile drafted')
     expect(html).toContain('1 ready to select')
     expect(html).toContain('href="/control-center/intake?waitlist=contact_batch"')
     expect(html).toContain('href="/control-center/intake?waitlist=contacted"')
@@ -285,6 +297,9 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
     expect(html).toContain(
       'href="/control-center/intake?waitlist=conversation_complete"',
+    )
+    expect(html).toContain(
+      'href="/control-center/intake?waitlist=setup_profile_drafted"',
     )
     expect(html).toContain('Select for contact batch')
     expect(html).toContain(
@@ -390,6 +405,13 @@ describe('PrelaunchIntakeReviewPageContent', () => {
             email: 'conversation@example.com',
             leadStatus: 'conversation_complete',
           },
+          {
+            ...waitlistLead,
+            id: 'waitlist-profile',
+            name: 'Profile Lead',
+            email: 'profile@example.com',
+            leadStatus: 'setup_profile_drafted',
+          },
         ],
       }),
     )
@@ -487,13 +509,58 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Conversation Lead')
     expect(html).toContain('conversation@example.com')
     expect(html).toContain('Conversation complete')
+    expect(html).toContain('Mark setup profile drafted')
+    expect(html).toContain(
+      'action="/api/control-center/intake/waitlist-setup-profile-drafted"',
+    )
     expect(html).toContain(
       'The setup conversation is complete. Keep transcript import, profile drafting, and Start Work decisions operator-led.',
     )
     expect(html).not.toContain('Kim Hart')
     expect(html).not.toContain('Meeting Lead')
+    expect(html).not.toContain('Profile Lead')
     expect(html).not.toContain('Mark conversation complete')
     expect(html).not.toContain('Mark meeting scheduled')
+  })
+
+  it('filters Control Center waitlist leads to drafted setup profiles', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        activeWaitlistView: 'setup_profile_drafted',
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        waitlistLeads: [
+          waitlistLead,
+          {
+            ...waitlistLead,
+            id: 'waitlist-conversation',
+            name: 'Conversation Lead',
+            email: 'conversation@example.com',
+            leadStatus: 'conversation_complete',
+          },
+          {
+            ...waitlistLead,
+            id: 'waitlist-profile',
+            name: 'Profile Lead',
+            email: 'profile@example.com',
+            leadStatus: 'setup_profile_drafted',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Showing drafted setup profiles')
+    expect(html).toContain('Profile Lead')
+    expect(html).toContain('profile@example.com')
+    expect(html).toContain('Setup profile drafted')
+    expect(html).toContain(
+      'A manual setup profile draft exists for operator review. Keep Start Work, payment, agreement, and build decisions separate.',
+    )
+    expect(html).not.toContain('Kim Hart')
+    expect(html).not.toContain('Conversation Lead')
+    expect(html).not.toContain('Mark setup profile drafted')
+    expect(html).not.toContain('Mark conversation complete')
   })
 
   it('renders waitlist leads with confirmation email status', () => {

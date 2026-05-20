@@ -41,6 +41,7 @@ export type PrelaunchWaitlistReviewView =
   | 'contacted'
   | 'meeting_scheduled'
   | 'conversation_complete'
+  | 'setup_profile_drafted'
 
 const PRELAUNCH_INTAKE_LANES: Array<{
   key: PrelaunchIntakeReviewLane
@@ -90,7 +91,8 @@ export function normalizePrelaunchWaitlistReviewView(
   return view === 'contact_batch' ||
     view === 'contacted' ||
     view === 'meeting_scheduled' ||
-    view === 'conversation_complete'
+    view === 'conversation_complete' ||
+    view === 'setup_profile_drafted'
     ? view
     : null
 }
@@ -249,6 +251,14 @@ function buildWaitlistLeadNextAction(lead: PrelaunchWaitlistReviewLead) {
     }
   }
 
+  if (lead.leadStatus === 'setup_profile_drafted') {
+    return {
+      label: 'Setup profile drafted',
+      detail:
+        'A manual setup profile draft exists for operator review. Keep Start Work, payment, agreement, and build decisions separate.',
+    }
+  }
+
   if (lead.intakeSubmissionId) {
     return {
       label: 'Continue intake handoff',
@@ -297,6 +307,12 @@ function isWaitlistLeadMeetingScheduled(lead: PrelaunchWaitlistReviewLead) {
 
 function isWaitlistLeadConversationComplete(lead: PrelaunchWaitlistReviewLead) {
   return lead.leadStatus === 'conversation_complete'
+}
+
+function isWaitlistLeadSetupProfileDrafted(
+  lead: PrelaunchWaitlistReviewLead,
+) {
+  return lead.leadStatus === 'setup_profile_drafted'
 }
 
 function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
@@ -475,6 +491,9 @@ export function PrelaunchIntakeReviewPageContent({
   const conversationCompleteLeads = waitlistLeads.filter(
     isWaitlistLeadConversationComplete,
   ).length
+  const setupProfileDraftedLeads = waitlistLeads.filter(
+    isWaitlistLeadSetupProfileDrafted,
+  ).length
   const visibleWaitlistLeads =
     activeWaitlistView === 'contact_batch'
       ? waitlistLeads.filter(isWaitlistLeadSelectedForContactBatch)
@@ -484,7 +503,9 @@ export function PrelaunchIntakeReviewPageContent({
           ? waitlistLeads.filter(isWaitlistLeadMeetingScheduled)
           : activeWaitlistView === 'conversation_complete'
             ? waitlistLeads.filter(isWaitlistLeadConversationComplete)
-      : waitlistLeads
+            : activeWaitlistView === 'setup_profile_drafted'
+              ? waitlistLeads.filter(isWaitlistLeadSetupProfileDrafted)
+              : waitlistLeads
   const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
     (submission) => submission.prequalificationStatus === 'needs_review',
@@ -826,7 +847,9 @@ export function PrelaunchIntakeReviewPageContent({
                       ? 'Showing scheduled meetings'
                       : activeWaitlistView === 'conversation_complete'
                         ? 'Showing completed conversations'
-                    : formatCount(waitlistLeads.length, 'waitlist lead')}
+                        : activeWaitlistView === 'setup_profile_drafted'
+                          ? 'Showing drafted setup profiles'
+                          : formatCount(waitlistLeads.length, 'waitlist lead')}
               </h2>
             </div>
             <div className="text-sm font-semibold text-emerald-700">
@@ -836,7 +859,7 @@ export function PrelaunchIntakeReviewPageContent({
                   {contactBatchSelected} selected / {contactedLeads} contacted /{' '}
                   {meetingScheduledLeads} meeting scheduled / {contactBatchReady}{' '}
                   ready to select / {conversationCompleteLeads} conversation
-                  complete
+                  complete / {setupProfileDraftedLeads} setup profile drafted
                 </p>
               ) : null}
             </div>
@@ -893,6 +916,19 @@ export function PrelaunchIntakeReviewPageContent({
               >
                 Conversation complete view
               </a>
+              <a
+                className={`rounded-md border px-3 py-2 ${
+                  activeWaitlistView === 'setup_profile_drafted'
+                    ? 'border-slate-950 bg-slate-950 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
+                href={formatWaitlistViewHref(
+                  'setup_profile_drafted',
+                  basePath,
+                )}
+              >
+                Setup profile drafted view
+              </a>
             </div>
           ) : null}
           {isControlCenter &&
@@ -924,6 +960,8 @@ export function PrelaunchIntakeReviewPageContent({
                 const isContacted = isWaitlistLeadContacted(lead)
                 const isMeetingScheduled =
                   isWaitlistLeadMeetingScheduled(lead)
+                const isConversationComplete =
+                  isWaitlistLeadConversationComplete(lead)
 
                 return (
                   <article
@@ -1064,6 +1102,31 @@ export function PrelaunchIntakeReviewPageContent({
                           type="submit"
                         >
                           Mark conversation complete
+                        </button>
+                      </form>
+                    ) : null}
+                    {isControlCenter &&
+                    activeWaitlistView === 'conversation_complete' &&
+                    isConversationComplete ? (
+                      <form
+                        action="/api/control-center/intake/waitlist-setup-profile-drafted"
+                        className="mt-3"
+                        method="post"
+                      >
+                        <input name="leadId" type="hidden" value={lead.id} />
+                        <input
+                          name="returnTo"
+                          type="hidden"
+                          value={formatWaitlistViewHref(
+                            'setup_profile_drafted',
+                            basePath,
+                          )}
+                        />
+                        <button
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                          type="submit"
+                        >
+                          Mark setup profile drafted
                         </button>
                       </form>
                     ) : null}
