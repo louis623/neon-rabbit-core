@@ -35,6 +35,7 @@ describe('demo launch smoke readiness plan', () => {
     const categories = [
       'local_static',
       'local_app',
+      'prelaunch_demo_seed',
       'supabase_demo',
       'stripe_test',
       'stripe_local_routes',
@@ -435,6 +436,66 @@ describe('demo launch smoke readiness plan', () => {
     expect(validateDemoSmokePlan(plan, {})).toContain(
       'DEMO_REP_EMAIL is required for supabase_demo smoke.',
     )
+  })
+
+  it('keeps the prelaunch demo seed guarded and out of default launch smoke', () => {
+    const plan = buildDemoSmokePlan({ category: 'prelaunch_demo_seed' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('prelaunch_demo_seed')
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'prelaunch_demo_seed',
+        risk: 'db_write',
+        run: 'planned',
+      }),
+    )
+    expect(validateDemoSmokePlan(plan, {})).toContain(
+      'DEMO_PRELAUNCH_SEED_CONFIRMED is required for prelaunch_demo_seed smoke.',
+    )
+    expect(
+      validateDemoSmokePlan(plan, {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        SUPABASE_SERVICE_ROLE_KEY: 'service_role_key',
+      }),
+    ).toContain(
+      'DEMO_PRELAUNCH_SEED_CONFIRMED=true is required before creating demo prelaunch data.',
+    )
+  })
+
+  it('can execute the guarded prelaunch seed through an injected seed runner', async () => {
+    const result = await runDemoSmoke(
+      buildDemoSmokePlan({ category: 'prelaunch_demo_seed' }),
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        DEMO_PRELAUNCH_SEED_CONFIRMED: 'true',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://supabase.test',
+        SUPABASE_SERVICE_ROLE_KEY: 'service_role_key',
+      },
+      {
+        seedDemoPrelaunch: async () => ({
+          waitlistId: 'waitlist-demo',
+          launchBuildId: 'build-demo',
+          setupProfileId: 'profile-demo',
+          leadEmail: 'demo@example.com',
+          leadStatus: 'start_work_ready',
+          setupProfileStatus: 'ready',
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'prelaunch_demo_seed',
+      ok: true,
+      results: [
+        {
+          id: 'prelaunch_demo_seed',
+          ok: true,
+          detail:
+            'seeded prelaunch demo waitlist=waitlist-demo build=build-demo profile=profile-demo lead=demo@example.com lead_status=start_work_ready setup_profile_status=ready provider_actions=none',
+        },
+      ],
+    })
   })
 
   it('reuses the paid Nic-Nac smoke guard before any paid calls are allowed', () => {

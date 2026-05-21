@@ -19,11 +19,19 @@ import {
   type DemoSeedPlan,
   type DemoSeedResult,
 } from '@/scripts/seed-demo-rep'
+import {
+  buildDemoPrelaunchSeedPlan,
+  DEMO_PRELAUNCH_SEED_CONFIRM_ENV,
+  seedDemoPrelaunch,
+  type DemoPrelaunchSeedPlan,
+  type DemoPrelaunchSeedResult,
+} from '@/scripts/seed-demo-prelaunch'
 import { runProtectedPreviewRouteSmoke } from '@/scripts/smoke-protected-preview-routes'
 
 export const DEMO_SMOKE_CATEGORIES = [
   'local_static',
   'local_app',
+  'prelaunch_demo_seed',
   'supabase_demo',
   'stripe_test',
   'stripe_local_routes',
@@ -150,6 +158,10 @@ export interface LaunchSmokeReport {
 
 export interface DemoSmokeRunDependencies {
   seedDemoRep?: (plan: DemoSeedPlan) => Promise<DemoSeedResult>
+  seedDemoPrelaunch?: (
+    plan: DemoPrelaunchSeedPlan,
+    env: Record<string, string | undefined>,
+  ) => Promise<DemoPrelaunchSeedResult>
   verifyDemoRepLogin?: (
     env: Record<string, string | undefined>,
     email: string,
@@ -323,6 +335,26 @@ export function buildDemoSmokePlan(
           {
             id: 'supabase_demo_seed_check',
             label: 'Check the configured demo rep seed can run idempotently.',
+            risk: 'db_write',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'prelaunch_demo_seed':
+      return {
+        category,
+        requiredEnv: [
+          DEMO_PRELAUNCH_SEED_CONFIRM_ENV,
+          'DEMO_REP_EMAIL',
+          'NEXT_PUBLIC_SUPABASE_URL',
+          'SUPABASE_SERVICE_ROLE_KEY',
+        ],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'prelaunch_demo_seed',
+            label:
+              'Create or update one provider-free demo waitlist lead, launch build, and setup profile.',
             risk: 'db_write',
             run: 'planned',
           },
@@ -565,6 +597,15 @@ export function validateDemoSmokePlan(
     if (!env[name]) {
       errors.push(`${name} is required for ${plan.category} smoke.`)
     }
+  }
+
+  if (
+    plan.category === 'prelaunch_demo_seed' &&
+    env[DEMO_PRELAUNCH_SEED_CONFIRM_ENV] !== 'true'
+  ) {
+    errors.push(
+      `${DEMO_PRELAUNCH_SEED_CONFIRM_ENV}=true is required before creating demo prelaunch data.`,
+    )
   }
 
   const providerReadinessError = buildProviderReadinessError(plan, env)
@@ -1072,6 +1113,23 @@ export async function runDemoSmoke(
           id: 'supabase_demo_login_check',
           ok: true,
           detail: `demo login can read reps=${loginResult.repCount} listings=${loginResult.listingCount} shows=${loginResult.showCount} audience=${loginResult.audienceCount}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'prelaunch_demo_seed') {
+    const runSeed = dependencies.seedDemoPrelaunch ?? seedDemoPrelaunch
+    const seedResult = await runSeed(buildDemoPrelaunchSeedPlan(env), env)
+
+    return {
+      category: plan.category,
+      ok: true,
+      results: [
+        {
+          id: 'prelaunch_demo_seed',
+          ok: true,
+          detail: `seeded prelaunch demo waitlist=${seedResult.waitlistId} build=${seedResult.launchBuildId} profile=${seedResult.setupProfileId} lead=${seedResult.leadEmail} lead_status=${seedResult.leadStatus} setup_profile_status=${seedResult.setupProfileStatus} provider_actions=none`,
         },
       ],
     }
