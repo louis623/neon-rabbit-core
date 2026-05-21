@@ -127,7 +127,10 @@ export function buildPrelaunchLaunchBuildReadiness(
 ) {
   const blockers: string[] = []
 
-  if (input.setupProfileStatus !== 'drafted') {
+  if (
+    input.setupProfileStatus !== 'drafted' &&
+    input.setupProfileStatus !== 'ready'
+  ) {
     blockers.push('Setup profile needs operator review.')
   }
 

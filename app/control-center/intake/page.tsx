@@ -6,6 +6,7 @@ import {
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
+import { loadPrelaunchLaunchChecksByBuildIds } from '@/lib/prelaunch/launch-checks'
 import { loadPrelaunchLaunchBuilds } from '@/lib/prelaunch/launch-builds'
 import { loadPrelaunchLaunchSetupProfilesByBuildIds } from '@/lib/prelaunch/setup-profiles'
 import { loadPrelaunchWaitlistReviewLeads } from '@/lib/prelaunch/waitlist-review'
@@ -74,12 +75,16 @@ export default async function SparkleSuiteControlCenterIntakePage({
   const launchSetupProfiles = await loadPrelaunchLaunchSetupProfilesByBuildIds(
     launchBuilds.map((build) => build.id),
   )
+  const launchChecks = await loadPrelaunchLaunchChecksByBuildIds(
+    launchBuilds.map((build) => build.id),
+  )
 
   return (
     <PrelaunchIntakeReviewPageContent
       activeLane={activeLane}
       activeWaitlistView={activeWaitlistView}
       basePath="/control-center/intake"
+      launchChecks={launchChecks}
       launchBuilds={launchBuilds}
       launchSetupProfiles={launchSetupProfiles}
       submissions={submissions}

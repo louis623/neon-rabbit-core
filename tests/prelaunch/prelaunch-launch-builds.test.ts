@@ -239,4 +239,24 @@ describe('prelaunch launch builds', () => {
       ],
     })
   })
+
+  it('treats a ready setup profile as clear while later launch gates stay blocked', () => {
+    expect(
+      buildPrelaunchLaunchBuildReadiness({
+        setupProfileStatus: 'ready',
+        paymentGateStatus: 'disabled',
+        agreementGateStatus: 'disabled',
+        buildCheckStatus: 'not_started',
+        productionRosterStatus: 'not_started',
+      }),
+    ).toEqual({
+      status: 'blocked',
+      blockers: [
+        'Payment gate is disabled.',
+        'Agreement gate is disabled.',
+        'Build checks have not started.',
+        'Production roster is not connected.',
+      ],
+    })
+  })
 })

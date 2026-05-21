@@ -2,6 +2,10 @@ import {
   buildPrelaunchScoutInput,
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
+import {
+  buildPrelaunchLaunchCheckItems,
+  type PrelaunchLaunchCheck,
+} from '@/lib/prelaunch/launch-checks'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
@@ -23,6 +27,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   activeLane?: PrelaunchIntakeReviewLane | null
   activeWaitlistView?: PrelaunchWaitlistReviewView | null
   basePath?: string
+  launchChecks?: PrelaunchLaunchCheck[]
   launchBuilds?: PrelaunchLaunchBuild[]
   launchSetupProfiles?: PrelaunchLaunchSetupProfile[]
   surface?: 'prelaunch_review' | 'control_center'
@@ -485,6 +490,7 @@ export function PrelaunchIntakeReviewPageContent({
   activeLane = null,
   activeWaitlistView = null,
   basePath = '/internal/prelaunch/intake',
+  launchChecks = [],
   launchBuilds = [],
   launchSetupProfiles = [],
   submissions,
@@ -498,6 +504,14 @@ export function PrelaunchIntakeReviewPageContent({
         (profile) => profile.launchBuildId === activeLaunchBuild.id,
       ) ?? null
     : null
+  const activeLaunchCheckItems = activeLaunchBuild
+    ? buildPrelaunchLaunchCheckItems(
+        activeLaunchBuild.id,
+        launchChecks.filter(
+          (check) => check.launchBuildId === activeLaunchBuild.id,
+        ),
+      )
+    : []
   const total = submissions.length
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
@@ -1043,6 +1057,87 @@ export function PrelaunchIntakeReviewPageContent({
                   Save setup profile
                 </button>
               </form>
+            ) : null}
+            {activeLaunchBuild ? (
+              <section
+                className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
+                id="launch-checks"
+              >
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Launch checks
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      Build readiness checklist
+                    </h3>
+                  </div>
+                  <p className="max-w-sm text-xs leading-5 text-slate-600">
+                    Passing these checks does not move this build to production.
+                  </p>
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  {activeLaunchCheckItems.map((check) => (
+                    <form
+                      action="/api/control-center/intake/launch-check"
+                      className="rounded-md border border-slate-200 bg-white p-3"
+                      key={check.checkKey}
+                      method="post"
+                    >
+                      <input
+                        name="launchBuildId"
+                        type="hidden"
+                        value={activeLaunchBuild.id}
+                      />
+                      <input
+                        name="checkKey"
+                        type="hidden"
+                        value={check.checkKey}
+                      />
+                      <input
+                        name="returnTo"
+                        type="hidden"
+                        value={`${basePath}#launch-checks`}
+                      />
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">
+                            {check.label}
+                          </p>
+                          {check.detail ? (
+                            <p className="mt-1 text-xs leading-5 text-slate-600">
+                              {check.detail}
+                            </p>
+                          ) : null}
+                        </div>
+                        <select
+                          className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-700"
+                          defaultValue={check.status}
+                          name="status"
+                        >
+                          <option value="not_started">Not started</option>
+                          <option value="blocked">Blocked</option>
+                          <option value="passed">Passed</option>
+                        </select>
+                      </div>
+                      <label className="mt-3 block text-xs font-semibold text-slate-700">
+                        Notes
+                        <textarea
+                          className="mt-1 min-h-20 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                          defaultValue={check.notes}
+                          name="notes"
+                        />
+                      </label>
+                      <button
+                        className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                        type="submit"
+                      >
+                        Save check
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              </section>
             ) : null}
           </section>
         ) : null}

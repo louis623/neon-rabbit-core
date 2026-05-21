@@ -10,6 +10,7 @@ import {
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
+import type { PrelaunchLaunchCheck } from '@/lib/prelaunch/launch-checks'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
@@ -114,6 +115,18 @@ const launchSetupProfile: PrelaunchLaunchSetupProfile = {
   status: 'draft',
   createdAt: '2026-05-21T21:00:00Z',
   updatedAt: '2026-05-21T21:01:00Z',
+}
+
+const launchCheck: PrelaunchLaunchCheck = {
+  id: 'check-1',
+  launchBuildId: 'build-1',
+  checkKey: 'setup_profile_ready',
+  label: 'Setup profile ready',
+  status: 'passed',
+  notes: 'Profile reviewed.',
+  checkedAt: '2026-05-21T22:00:00Z',
+  createdAt: '2026-05-21T21:55:00Z',
+  updatedAt: '2026-05-21T22:00:00Z',
 }
 
 function snapshotGateEnv() {
@@ -793,6 +806,30 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Save setup profile')
     expect(html).not.toContain('Send setup profile')
     expect(html).not.toContain('Charge')
+  })
+
+  it('renders launch checks for the active build without live actions', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [launchBuild],
+        launchChecks: [launchCheck],
+        launchSetupProfiles: [launchSetupProfile],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Launch checks')
+    expect(html).toContain('Setup profile ready')
+    expect(html).toContain('Profile reviewed.')
+    expect(html).toContain('Site shell review')
+    expect(html).toContain('action="/api/control-center/intake/launch-check"')
+    expect(html).toContain('name="checkKey"')
+    expect(html).toContain('Save check')
+    expect(html).not.toContain('Launch client')
+    expect(html).not.toContain('Move to production roster')
   })
 
   it('renders waitlist leads with confirmation email status', () => {
