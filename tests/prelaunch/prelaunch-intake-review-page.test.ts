@@ -874,6 +874,29 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Charge card')
   })
 
+  it('renders the production roster connector without provisioning accounts', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [launchBuild],
+        launchSetupProfiles: [launchSetupProfile],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Connect production roster')
+    expect(html).toContain(
+      'action="/api/control-center/intake/production-roster"',
+    )
+    expect(html).toContain('Existing rep ID')
+    expect(html).toContain('Save roster connection')
+    expect(html).not.toContain('Create production account')
+    expect(html).not.toContain('Send invite')
+    expect(html).not.toContain('Launch client')
+  })
+
   it('renders waitlist leads with confirmation email status', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

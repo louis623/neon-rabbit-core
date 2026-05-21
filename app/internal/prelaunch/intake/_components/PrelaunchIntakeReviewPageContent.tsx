@@ -1249,7 +1249,9 @@ export function PrelaunchIntakeReviewPageContent({
                   Client roster
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                  No production clients yet
+                  {activeLaunchBuild?.repId
+                    ? '1 production client connected'
+                    : 'No production clients yet'}
                 </h2>
               </div>
               <p className="max-w-lg text-sm leading-6 text-slate-600">
@@ -1259,13 +1261,68 @@ export function PrelaunchIntakeReviewPageContent({
             </div>
             <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-950">
-                No active clients
+                {activeLaunchBuild?.repId
+                  ? activeLaunchBuild.leadName
+                  : 'No active clients'}
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-600">
-                Production roster will show client health, services, agent
-                touchpoints, and open flags.
+                {activeLaunchBuild?.repId
+                  ? `Connected rep ID: ${activeLaunchBuild.repId}`
+                  : 'Production roster will show client health, services, agent touchpoints, and open flags.'}
               </p>
             </div>
+            {activeLaunchBuild && !activeLaunchBuild.repId ? (
+              <form
+                action="/api/control-center/intake/production-roster"
+                className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
+                method="post"
+              >
+                <input
+                  name="launchBuildId"
+                  type="hidden"
+                  value={activeLaunchBuild.id}
+                />
+                <input name="returnTo" type="hidden" value={`${basePath}#reps`} />
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Connect production roster
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      Link an existing rep account
+                    </h3>
+                  </div>
+                  <p className="max-w-sm text-xs leading-5 text-slate-600">
+                    This only links an existing rep row. It does not create an
+                    account, send an invite, or launch the client.
+                  </p>
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Existing rep ID
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      name="repId"
+                      required
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Notes
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      defaultValue="Existing demo rep account confirmed."
+                      name="notes"
+                    />
+                  </label>
+                </div>
+                <button
+                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                  type="submit"
+                >
+                  Save roster connection
+                </button>
+              </form>
+            ) : null}
           </section>
         ) : null}
 
