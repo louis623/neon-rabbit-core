@@ -6,6 +6,10 @@ import {
   buildPrelaunchLaunchCheckItems,
   type PrelaunchLaunchCheck,
 } from '@/lib/prelaunch/launch-checks'
+import {
+  buildPrelaunchLaunchGateItems,
+  type PrelaunchLaunchGate,
+} from '@/lib/prelaunch/launch-gates'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
@@ -28,6 +32,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   activeWaitlistView?: PrelaunchWaitlistReviewView | null
   basePath?: string
   launchChecks?: PrelaunchLaunchCheck[]
+  launchGates?: PrelaunchLaunchGate[]
   launchBuilds?: PrelaunchLaunchBuild[]
   launchSetupProfiles?: PrelaunchLaunchSetupProfile[]
   surface?: 'prelaunch_review' | 'control_center'
@@ -491,6 +496,7 @@ export function PrelaunchIntakeReviewPageContent({
   activeWaitlistView = null,
   basePath = '/internal/prelaunch/intake',
   launchChecks = [],
+  launchGates = [],
   launchBuilds = [],
   launchSetupProfiles = [],
   submissions,
@@ -510,6 +516,12 @@ export function PrelaunchIntakeReviewPageContent({
         launchChecks.filter(
           (check) => check.launchBuildId === activeLaunchBuild.id,
         ),
+      )
+    : []
+  const activeLaunchGateItems = activeLaunchBuild
+    ? buildPrelaunchLaunchGateItems(
+        activeLaunchBuild.id,
+        launchGates.filter((gate) => gate.launchBuildId === activeLaunchBuild.id),
       )
     : []
   const total = submissions.length
@@ -1057,6 +1069,89 @@ export function PrelaunchIntakeReviewPageContent({
                   Save setup profile
                 </button>
               </form>
+            ) : null}
+            {activeLaunchBuild ? (
+              <section
+                className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
+                id="launch-gates"
+              >
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Payment and agreement gates
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      Internal launch gate review
+                    </h3>
+                  </div>
+                  <p className="max-w-sm text-xs leading-5 text-slate-600">
+                    Operator-only status. This does not call Stripe or SignWell.
+                  </p>
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  {activeLaunchGateItems.map((gate) => (
+                    <form
+                      action="/api/control-center/intake/launch-gate"
+                      className="rounded-md border border-slate-200 bg-white p-3"
+                      key={gate.gateKey}
+                      method="post"
+                    >
+                      <input
+                        name="launchBuildId"
+                        type="hidden"
+                        value={activeLaunchBuild.id}
+                      />
+                      <input
+                        name="gateKey"
+                        type="hidden"
+                        value={gate.gateKey}
+                      />
+                      <input
+                        name="returnTo"
+                        type="hidden"
+                        value={`${basePath}#launch-gates`}
+                      />
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">
+                            {gate.label}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-slate-600">
+                            {gate.detail}
+                          </p>
+                          <p className="mt-2 text-xs font-semibold text-slate-500">
+                            {gate.mode === 'test'
+                              ? 'test mode only'
+                              : 'sandbox only'}
+                          </p>
+                        </div>
+                        <select
+                          className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-700"
+                          defaultValue={gate.status}
+                          name="status"
+                        >
+                          <option value="disabled">Disabled</option>
+                          <option value="ready">Ready</option>
+                        </select>
+                      </div>
+                      <label className="mt-3 block text-xs font-semibold text-slate-700">
+                        Notes
+                        <textarea
+                          className="mt-1 min-h-20 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                          defaultValue={gate.notes}
+                          name="notes"
+                        />
+                      </label>
+                      <button
+                        className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                        type="submit"
+                      >
+                        Save gate
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              </section>
             ) : null}
             {activeLaunchBuild ? (
               <section

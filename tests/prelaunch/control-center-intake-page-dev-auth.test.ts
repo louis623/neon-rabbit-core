@@ -6,6 +6,7 @@ const getAuthenticatedOperatorMock = vi.fn()
 const loadPrelaunchIntakeReviewSubmissionsMock = vi.fn()
 const loadPrelaunchLaunchChecksByBuildIdsMock = vi.fn()
 const loadPrelaunchLaunchBuildsMock = vi.fn()
+const loadPrelaunchLaunchGatesByBuildIdsMock = vi.fn()
 const loadPrelaunchLaunchSetupProfilesByBuildIdsMock = vi.fn()
 const loadPrelaunchWaitlistReviewLeadsMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
@@ -43,6 +44,11 @@ vi.mock('@/lib/prelaunch/launch-checks', () => ({
     loadPrelaunchLaunchChecksByBuildIdsMock(...args),
 }))
 
+vi.mock('@/lib/prelaunch/launch-gates', () => ({
+  loadPrelaunchLaunchGatesByBuildIds: (...args: unknown[]) =>
+    loadPrelaunchLaunchGatesByBuildIdsMock(...args),
+}))
+
 vi.mock('@/lib/prelaunch/setup-profiles', () => ({
   loadPrelaunchLaunchSetupProfilesByBuildIds: (...args: unknown[]) =>
     loadPrelaunchLaunchSetupProfilesByBuildIdsMock(...args),
@@ -60,6 +66,7 @@ vi.mock(
     normalizePrelaunchWaitlistReviewView: (value: unknown) => value ?? null,
     PrelaunchIntakeReviewPageContent: (props: {
       launchChecks?: unknown[]
+      launchGates?: unknown[]
       launchSetupProfiles?: unknown[]
       surface: string
       basePath: string
@@ -82,11 +89,13 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     loadPrelaunchIntakeReviewSubmissionsMock.mockReset()
     loadPrelaunchLaunchChecksByBuildIdsMock.mockReset()
     loadPrelaunchLaunchBuildsMock.mockReset()
+    loadPrelaunchLaunchGatesByBuildIdsMock.mockReset()
     loadPrelaunchLaunchSetupProfilesByBuildIdsMock.mockReset()
     loadPrelaunchWaitlistReviewLeadsMock.mockReset()
     redirectMock.mockClear()
     loadPrelaunchIntakeReviewSubmissionsMock.mockResolvedValue([])
     loadPrelaunchLaunchChecksByBuildIdsMock.mockResolvedValue([])
+    loadPrelaunchLaunchGatesByBuildIdsMock.mockResolvedValue([])
     loadPrelaunchLaunchBuildsMock.mockResolvedValue([
       { id: 'build-1', leadName: 'Demo Lead' },
     ])
@@ -123,6 +132,9 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(loadPrelaunchLaunchChecksByBuildIdsMock).toHaveBeenCalledWith([
       'build-1',
     ])
+    expect(loadPrelaunchLaunchGatesByBuildIdsMock).toHaveBeenCalledWith([
+      'build-1',
+    ])
     expect(
       loadPrelaunchLaunchSetupProfilesByBuildIdsMock,
     ).toHaveBeenCalledWith(['build-1'])
@@ -145,6 +157,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchChecksByBuildIdsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchBuildsMock).not.toHaveBeenCalled()
+    expect(loadPrelaunchLaunchGatesByBuildIdsMock).not.toHaveBeenCalled()
     expect(
       loadPrelaunchLaunchSetupProfilesByBuildIdsMock,
     ).not.toHaveBeenCalled()

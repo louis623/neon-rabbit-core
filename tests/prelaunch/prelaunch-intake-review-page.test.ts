@@ -11,6 +11,7 @@ import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/int
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
 import type { PrelaunchLaunchCheck } from '@/lib/prelaunch/launch-checks'
+import type { PrelaunchLaunchGate } from '@/lib/prelaunch/launch-gates'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
@@ -127,6 +128,19 @@ const launchCheck: PrelaunchLaunchCheck = {
   checkedAt: '2026-05-21T22:00:00Z',
   createdAt: '2026-05-21T21:55:00Z',
   updatedAt: '2026-05-21T22:00:00Z',
+}
+
+const launchGate: PrelaunchLaunchGate = {
+  id: 'gate-1',
+  launchBuildId: 'build-1',
+  gateKey: 'payment',
+  label: 'Payment gate',
+  mode: 'test',
+  status: 'ready',
+  notes: 'Stripe test config reviewed.',
+  updatedByRepId: null,
+  createdAt: '2026-05-21T22:10:00Z',
+  updatedAt: '2026-05-21T22:11:00Z',
 }
 
 function snapshotGateEnv() {
@@ -830,6 +844,34 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Save check')
     expect(html).not.toContain('Launch client')
     expect(html).not.toContain('Move to production roster')
+  })
+
+  it('renders payment and agreement gates without provider actions', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [launchBuild],
+        launchChecks: [launchCheck],
+        launchGates: [launchGate],
+        launchSetupProfiles: [launchSetupProfile],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Payment and agreement gates')
+    expect(html).toContain('Payment gate')
+    expect(html).toContain('Agreement gate')
+    expect(html).toContain('Stripe test config reviewed.')
+    expect(html).toContain('action="/api/control-center/intake/launch-gate"')
+    expect(html).toContain('name="gateKey"')
+    expect(html).toContain('Save gate')
+    expect(html).toContain('test mode only')
+    expect(html).toContain('sandbox only')
+    expect(html).not.toContain('Create Stripe checkout')
+    expect(html).not.toContain('Send SignWell')
+    expect(html).not.toContain('Charge card')
   })
 
   it('renders waitlist leads with confirmation email status', () => {
