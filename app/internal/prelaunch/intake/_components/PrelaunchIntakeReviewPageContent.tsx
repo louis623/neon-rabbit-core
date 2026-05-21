@@ -339,23 +339,6 @@ function isWaitlistLeadReadyForContactBatch(lead: PrelaunchWaitlistReviewLead) {
   )
 }
 
-function buildContactBatchRoster(leads: PrelaunchWaitlistReviewLead[]) {
-  return leads
-    .map((lead, index) =>
-      [
-        `Lead ${index + 1}`,
-        `Name: ${lead.name}`,
-        `Email: ${lead.email}`,
-        `Phone: ${formatValue(lead.phone)}`,
-        `SMS consent: ${lead.smsConsent ? 'yes' : 'no'}`,
-        `TikTok: ${lead.tiktokHandle}`,
-        `Team rep: ${lead.teamRepName}`,
-        `Setup notes: ${formatValue(lead.setupPain)}`,
-      ].join('\n'),
-    )
-    .join('\n\n')
-}
-
 function summarizeSnapshotNames(leads: PrelaunchWaitlistReviewLead[]) {
   if (leads.length === 0) return 'No info'
 
@@ -535,7 +518,6 @@ export function PrelaunchIntakeReviewPageContent({
               : activeWaitlistView === 'start_work_ready'
                 ? waitlistLeads.filter(isWaitlistLeadStartWorkReady)
               : waitlistLeads
-  const contactBatchRoster = buildContactBatchRoster(visibleWaitlistLeads)
   const needsReview = submissions.filter(
     (submission) => submission.prequalificationStatus === 'needs_review',
   ).length
@@ -1030,18 +1012,6 @@ export function PrelaunchIntakeReviewPageContent({
               </a>
             </div>
           ) : null}
-          {isControlCenter &&
-          activeWaitlistView === 'contact_batch' &&
-          visibleWaitlistLeads.length > 0 ? (
-            <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                Manual contact batch roster
-              </p>
-              <pre className="mt-3 whitespace-pre-wrap rounded-md border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700">
-                {contactBatchRoster}
-              </pre>
-            </div>
-          ) : null}
           {visibleWaitlistLeads.length === 0 ? (
             <p className="mt-4 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
               {activeWaitlistView === 'contact_batch'
@@ -1069,211 +1039,275 @@ export function PrelaunchIntakeReviewPageContent({
                     className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
                     key={lead.id}
                   >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h3 className="font-semibold text-slate-950">
-                        {lead.name}
-                      </h3>
-                      <p className="mt-1 text-xs font-semibold text-slate-600">
-                        {lead.email}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-600">
-                        {lead.tiktokHandle} / Team rep: {lead.teamRepName}
-                      </p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          Lead overview
+                        </p>
+                        <h3 className="mt-1 font-semibold text-slate-950">
+                          {lead.name}
+                        </h3>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">
+                          Joined {formatDate(lead.createdAt)}
+                        </p>
+                      </div>
+                      <div
+                        className={`inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold ${welcomeEmailStatusClass(
+                          lead.welcomeEmailStatus,
+                        )}`}
+                      >
+                        {lead.welcomeEmailStatus === 'sent' ? (
+                          <span
+                            aria-hidden="true"
+                            className="h-2 w-2 rounded-full bg-current"
+                          />
+                        ) : null}
+                        <span>
+                          {formatWelcomeEmailStatus(lead.welcomeEmailStatus)}
+                        </span>
+                      </div>
                     </div>
-                    <div
-                      className={`inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold ${welcomeEmailStatusClass(
-                        lead.welcomeEmailStatus,
-                      )}`}
+                    <details
+                      aria-label={`Waitlist details for ${lead.name}`}
+                      className="mt-3 rounded-md border border-slate-200 bg-white"
                     >
-                      {lead.welcomeEmailStatus === 'sent' ? (
-                        <span
-                          aria-hidden="true"
-                          className="h-2 w-2 rounded-full bg-current"
-                        />
-                      ) : null}
-                      <span>{formatWelcomeEmailStatus(lead.welcomeEmailStatus)}</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                    <span>Lead status: {formatLabel(lead.leadStatus)}</span>
-                    <span>Handoff: {formatLabel(lead.handoffStatus)}</span>
-                    <span>SMS consent: {lead.smsConsent ? 'yes' : 'no'}</span>
-                    <span>
-                      Intake:{' '}
-                      {lead.intakeSubmissionId ? 'linked' : 'not started'}
-                    </span>
-                  </div>
-                  <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      Next action
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {nextAction.label}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
-                      {nextAction.detail}
-                    </p>
-                    {isControlCenter && isReadyForContactBatch ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-contact-batch"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={basePath}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Select for contact batch
-                        </button>
-                      </form>
-                    ) : null}
-                    {isControlCenter &&
-                    activeWaitlistView === 'contact_batch' &&
-                    isSelectedForContactBatch ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-contact-progress"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={formatWaitlistViewHref('contacted', basePath)}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Mark contacted
-                        </button>
-                      </form>
-                    ) : null}
-                    {isControlCenter &&
-                    activeWaitlistView === 'contacted' &&
-                    isContacted ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-meeting-scheduled"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={formatWaitlistViewHref(
-                            'meeting_scheduled',
-                            basePath,
-                          )}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Mark meeting scheduled
-                        </button>
-                      </form>
-                    ) : null}
-                    {isControlCenter &&
-                    activeWaitlistView === 'meeting_scheduled' &&
-                    isMeetingScheduled ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-conversation-complete"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={formatWaitlistViewHref(
-                            'conversation_complete',
-                            basePath,
-                          )}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Mark conversation complete
-                        </button>
-                      </form>
-                    ) : null}
-                    {isControlCenter &&
-                    activeWaitlistView === 'conversation_complete' &&
-                    isConversationComplete ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-setup-profile-drafted"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={formatWaitlistViewHref(
-                            'setup_profile_drafted',
-                            basePath,
-                          )}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Mark setup profile drafted
-                        </button>
-                      </form>
-                    ) : null}
-                    {isControlCenter &&
-                    activeWaitlistView === 'setup_profile_drafted' &&
-                    isSetupProfileDrafted ? (
-                      <form
-                        action="/api/control-center/intake/waitlist-start-work-ready"
-                        className="mt-3"
-                        method="post"
-                      >
-                        <input name="leadId" type="hidden" value={lead.id} />
-                        <input
-                          name="returnTo"
-                          type="hidden"
-                          value={formatWaitlistViewHref(
-                            'start_work_ready',
-                            basePath,
-                          )}
-                        />
-                        <button
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                          type="submit"
-                        >
-                          Mark Start Work ready
-                        </button>
-                      </form>
-                    ) : null}
-                  </div>
-                  {lead.setupPain ? (
-                    <p className="mt-3 rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
-                      {lead.setupPain}
-                    </p>
-                  ) : null}
-                  {lead.welcomeEmailError ? (
-                    <p className="mt-3 rounded-md border border-red-100 bg-white p-3 text-xs leading-5 text-red-700">
-                      {lead.welcomeEmailError}
-                    </p>
-                  ) : null}
-                  <p className="mt-3 text-xs font-semibold text-slate-500">
-                    Joined {formatDate(lead.createdAt)}
-                    {lead.welcomeEmailSentAt
-                      ? ` / Confirmation ${formatDate(lead.welcomeEmailSentAt)}`
-                      : ''}
-                  </p>
-                </article>
+                      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                        Details
+                      </summary>
+                      <div className="border-t border-slate-200 p-3">
+                        <div className="grid gap-3 text-xs text-slate-600 sm:grid-cols-2">
+                          <div>
+                            <p className="font-semibold uppercase tracking-[0.12em] text-slate-500">
+                              Contact details
+                            </p>
+                            <p className="mt-1 font-semibold text-slate-800">
+                              {lead.email}
+                            </p>
+                            <p className="mt-1">{lead.phone}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold uppercase tracking-[0.12em] text-slate-500">
+                              Source
+                            </p>
+                            <p className="mt-1">{lead.tiktokHandle}</p>
+                            <p className="mt-1">
+                              Team rep: {lead.teamRepName}
+                            </p>
+                          </div>
+                          <span>Lead status: {formatLabel(lead.leadStatus)}</span>
+                          <span>Handoff: {formatLabel(lead.handoffStatus)}</span>
+                          <span>
+                            SMS consent: {lead.smsConsent ? 'yes' : 'no'}
+                          </span>
+                          <span>
+                            Intake:{' '}
+                            {lead.intakeSubmissionId
+                              ? 'linked'
+                              : 'not started'}
+                          </span>
+                          {lead.welcomeEmailSentAt ? (
+                            <span>
+                              Confirmation:{' '}
+                              {formatDate(lead.welcomeEmailSentAt)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                            Next action
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950">
+                            {nextAction.label}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-slate-600">
+                            {nextAction.detail}
+                          </p>
+                          {isControlCenter && isReadyForContactBatch ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-contact-batch"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={basePath}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Select for contact batch
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'contact_batch' &&
+                          isSelectedForContactBatch ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-contact-progress"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={formatWaitlistViewHref(
+                                  'contacted',
+                                  basePath,
+                                )}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Mark contacted
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'contacted' &&
+                          isContacted ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-meeting-scheduled"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={formatWaitlistViewHref(
+                                  'meeting_scheduled',
+                                  basePath,
+                                )}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Mark meeting scheduled
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'meeting_scheduled' &&
+                          isMeetingScheduled ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-conversation-complete"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={formatWaitlistViewHref(
+                                  'conversation_complete',
+                                  basePath,
+                                )}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Mark conversation complete
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'conversation_complete' &&
+                          isConversationComplete ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-setup-profile-drafted"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={formatWaitlistViewHref(
+                                  'setup_profile_drafted',
+                                  basePath,
+                                )}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Mark setup profile drafted
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'setup_profile_drafted' &&
+                          isSetupProfileDrafted ? (
+                            <form
+                              action="/api/control-center/intake/waitlist-start-work-ready"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="leadId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={formatWaitlistViewHref(
+                                  'start_work_ready',
+                                  basePath,
+                                )}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Mark Start Work ready
+                              </button>
+                            </form>
+                          ) : null}
+                        </div>
+                        {lead.setupPain ? (
+                          <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-700">
+                            <p className="font-semibold uppercase tracking-[0.12em] text-slate-500">
+                              Setup notes
+                            </p>
+                            <p className="mt-1">{lead.setupPain}</p>
+                          </div>
+                        ) : null}
+                        {lead.welcomeEmailError ? (
+                          <p className="mt-3 rounded-md border border-red-100 bg-white p-3 text-xs leading-5 text-red-700">
+                            {lead.welcomeEmailError}
+                          </p>
+                        ) : null}
+                      </div>
+                    </details>
+                  </article>
                 )
               })}
             </div>

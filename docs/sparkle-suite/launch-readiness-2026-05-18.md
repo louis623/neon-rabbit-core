@@ -15,6 +15,7 @@
 - Control Center operators can mark drafted setup profiles as `start_work_ready` after Louis approves the profile for the Start Work decision lane. This only records waitlist state; Stripe, SignWell, build readiness, payment collection, agreements, and live queue work remain behind their own explicit gates.
 - Control Center intake now starts with a compact company snapshot row for Comms, Needs attention, Leads, Reps, In build, Monthly net, and PMCS. The first version uses trusted intake/waitlist counts where available and shows `Please connect` for sources that are not wired yet.
 - Control Center also includes a Client Roster placeholder for production clients after launch; expanded client dossiers are intentionally future work.
+- Control Center waitlist cards now default to a compact lead overview: name, joined date, and confirmation status. Operator details and state-only actions stay available behind each card's expandable details area.
 - The public prelaunch path stays low-friction at `/prelaunch`; `/prelaunch/intake` redirects back to `/prelaunch` so the internal setup-intake form is not presented as a public prelaunch signup step.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.
