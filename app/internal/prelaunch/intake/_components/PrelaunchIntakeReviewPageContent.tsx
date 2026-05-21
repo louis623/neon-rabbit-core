@@ -355,6 +355,15 @@ function buildContactBatchRoster(leads: PrelaunchWaitlistReviewLead[]) {
     .join('\n\n')
 }
 
+function summarizeSnapshotNames(leads: PrelaunchWaitlistReviewLead[]) {
+  if (leads.length === 0) return 'No info'
+
+  const names = leads.slice(0, 2).map((lead) => lead.name)
+  const remaining = leads.length - names.length
+
+  return remaining > 0 ? `${names.join(', ')} +${remaining}` : names.join(', ')
+}
+
 function buildOperatorReadiness(
   submission: PrelaunchIntakeReviewSubmission,
   gates: PrelaunchGateReadinessItem[],
@@ -539,6 +548,62 @@ export function PrelaunchIntakeReviewPageContent({
     (submission) => submission.handoffStatus === 'meeting_ready',
   ).length
   const gateReadiness = getPrelaunchGateReadiness()
+  const needsAttention = submissions.filter(
+    (submission) =>
+      submissionMatchesLane(submission, 'needs_review', gateReadiness) ||
+      submissionMatchesLane(submission, 'failed_scout', gateReadiness) ||
+      submissionMatchesLane(submission, 'missing_transcript', gateReadiness) ||
+      submissionMatchesLane(submission, 'gate_blocked', gateReadiness),
+  ).length
+  const inBuildLeads = waitlistLeads.filter(isWaitlistLeadStartWorkReady)
+  const companySnapshotTiles = [
+    {
+      label: 'Comms',
+      value: 'Please connect',
+      detail: 'Comms center',
+      href: `${basePath}#comms`,
+    },
+    {
+      label: 'Needs attention',
+      value: formatCount(needsAttention, 'flag'),
+      detail: 'Review queue',
+      href: formatLaneHref('needs_review', basePath),
+    },
+    {
+      label: 'Leads',
+      value: waitlistLeads.length.toString(),
+      detail: 'Waitlist',
+      href: formatWaitlistViewHref(null, basePath),
+    },
+    {
+      label: 'Reps',
+      value: 'Please connect',
+      detail: 'Production roster',
+      href: `${basePath}#reps`,
+    },
+    {
+      label: 'In build',
+      value:
+        inBuildLeads.length > 0 ? inBuildLeads.length.toString() : 'No info',
+      detail:
+        inBuildLeads.length > 0
+          ? `Ready onboarding: ${summarizeSnapshotNames(inBuildLeads)}`
+          : 'Ready for onboarding',
+      href: formatWaitlistViewHref('start_work_ready', basePath),
+    },
+    {
+      label: 'Monthly net',
+      value: 'Please connect',
+      detail: 'Revenue - expenses',
+      href: `${basePath}#monthly-net`,
+    },
+    {
+      label: 'PMCS',
+      value: 'Please connect',
+      detail: 'Systems check',
+      href: `${basePath}#pmcs`,
+    },
+  ]
   const activeLaneConfig =
     PRELAUNCH_INTAKE_LANES.find((lane) => lane.key === activeLane) ?? null
   const visibleSubmissions = activeLaneConfig
@@ -713,6 +778,46 @@ export function PrelaunchIntakeReviewPageContent({
             </a>
           </div>
         </header>
+
+        {isControlCenter ? (
+          <section
+            aria-label="Company snapshot"
+            className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Company snapshot
+                </p>
+                <h2 className="mt-1 text-base font-semibold text-slate-950">
+                  Morning command-post glance
+                </h2>
+              </div>
+              <p className="text-xs font-semibold text-slate-500">
+                Please connect = source not wired
+              </p>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7">
+              {companySnapshotTiles.map((tile) => (
+                <a
+                  className="min-h-28 rounded-md border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-slate-300 hover:bg-slate-100"
+                  href={tile.href}
+                  key={tile.label}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {tile.label}
+                  </p>
+                  <p className="mt-2 text-xl font-semibold leading-6 text-slate-950">
+                    {tile.value}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">
+                    {tile.detail}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -272,6 +272,26 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Client intake')
     expect(html).toContain('View public page')
     expect(html).toContain('href="/prelaunch"')
+    expect(html).toContain('Company snapshot')
+    expect(html).toContain('Comms')
+    expect(html).toContain('Please connect')
+    expect(html).toContain('Needs attention')
+    expect(html).toContain('2 flags')
+    expect(html).toContain('Leads')
+    expect(html).toContain('7')
+    expect(html).toContain('Reps')
+    expect(html).toContain('In build')
+    expect(html).toContain('Start Work Lead')
+    expect(html).toContain('Monthly net')
+    expect(html).toContain('PMCS')
+    expect(html).toContain('href="/control-center/intake#comms"')
+    expect(html).toContain('href="/control-center/intake?lane=needs_review"')
+    expect(html).toContain('href="/control-center/intake#reps"')
+    expect(html).toContain(
+      'href="/control-center/intake?waitlist=start_work_ready"',
+    )
+    expect(html).toContain('href="/control-center/intake#monthly-net"')
+    expect(html).toContain('href="/control-center/intake#pmcs"')
     expect(html).not.toContain('Open intake form')
     expect(html).not.toContain('href="/prelaunch/intake"')
     expect(html).toContain('Start at the beginning of the client pipeline')
@@ -628,6 +648,26 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Profile Lead')
     expect(html).not.toContain('Mark Start Work ready')
     expect(html).not.toContain('Mark setup profile drafted')
+  })
+
+  it('renders no info for the connected build tile when no leads are ready for onboarding', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        waitlistLeads: [
+          {
+            ...waitlistLead,
+            leadStatus: 'new',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('In build')
+    expect(html).toContain('No info')
+    expect(html).toContain('Ready for onboarding')
   })
 
   it('renders waitlist leads with confirmation email status', () => {
