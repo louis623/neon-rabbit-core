@@ -562,24 +562,28 @@ export function PrelaunchIntakeReviewPageContent({
       value: 'Please connect',
       detail: 'Comms center',
       href: `${basePath}#comms`,
+      status: 'alert',
     },
     {
       label: 'Needs attention',
       value: formatCount(needsAttention, 'flag'),
       detail: 'Review queue',
       href: formatLaneHref('needs_review', basePath),
+      status: needsAttention > 0 ? 'alert' : 'neutral',
     },
     {
       label: 'Leads',
       value: waitlistLeads.length.toString(),
       detail: 'Waitlist',
       href: formatWaitlistViewHref(null, basePath),
+      status: 'neutral',
     },
     {
       label: 'Reps',
       value: 'Please connect',
       detail: 'Production roster',
       href: `${basePath}#reps`,
+      status: 'alert',
     },
     {
       label: 'In build',
@@ -590,18 +594,21 @@ export function PrelaunchIntakeReviewPageContent({
           ? `Ready onboarding: ${summarizeSnapshotNames(inBuildLeads)}`
           : 'Ready for onboarding',
       href: formatWaitlistViewHref('start_work_ready', basePath),
+      status: 'neutral',
     },
     {
       label: 'Monthly net',
       value: 'Please connect',
       detail: 'Revenue - expenses',
       href: `${basePath}#monthly-net`,
+      status: 'alert',
     },
     {
       label: 'PMCS',
       value: 'Please connect',
       detail: 'Systems check',
       href: `${basePath}#pmcs`,
+      status: 'alert',
     },
   ]
   const activeLaneConfig =
@@ -797,24 +804,37 @@ export function PrelaunchIntakeReviewPageContent({
                 Please connect = source not wired
               </p>
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7">
-              {companySnapshotTiles.map((tile) => (
-                <a
-                  className="min-h-28 rounded-md border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-slate-300 hover:bg-slate-100"
-                  href={tile.href}
-                  key={tile.label}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    {tile.label}
-                  </p>
-                  <p className="mt-2 text-xl font-semibold leading-6 text-slate-950">
-                    {tile.value}
-                  </p>
-                  <p className="mt-2 text-xs leading-5 text-slate-600">
-                    {tile.detail}
-                  </p>
-                </a>
-              ))}
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-12">
+              {companySnapshotTiles.map((tile, index) => {
+                const tileClass =
+                  tile.status === 'alert'
+                    ? 'border-red-200 bg-red-50 text-red-950 hover:border-red-300 hover:bg-red-100'
+                    : 'border-slate-200 bg-slate-50 text-slate-950 hover:border-slate-300 hover:bg-slate-100'
+                const valueClass =
+                  tile.status === 'alert' ? 'text-red-700' : 'text-slate-950'
+                const spanClass =
+                  index < 3 ? 'lg:col-span-4' : 'lg:col-span-3'
+
+                return (
+                  <a
+                    className={`min-h-24 rounded-md border p-3 text-left transition ${spanClass} ${tileClass}`}
+                    href={tile.href}
+                    key={tile.label}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {tile.label}
+                    </p>
+                    <p
+                      className={`mt-2 text-xl font-semibold leading-6 ${valueClass}`}
+                    >
+                      {tile.value}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">
+                      {tile.detail}
+                    </p>
+                  </a>
+                )
+              })}
             </div>
           </section>
         ) : null}
