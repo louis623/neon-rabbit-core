@@ -80,6 +80,130 @@ a {
   color: inherit;
 }
 
+.control-center-surface {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface {
+  background: #07111f;
+  color: #e5edf7;
+  color-scheme: dark;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-white {
+  background-color: #0f172a;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-slate-50 {
+  background-color: #111827;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-slate-100 {
+  background-color: #1f2937;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-slate-200,
+html[data-control-center-theme="dark"] .control-center-surface .border-slate-300 {
+  border-color: #334155;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-950,
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-900,
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-800 {
+  color: #e2e8f0;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-700,
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-600 {
+  color: #cbd5e1;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-slate-500 {
+  color: #94a3b8;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-pink-50 {
+  background-color: #281326;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-pink-100,
+html[data-control-center-theme="dark"] .control-center-surface .border-pink-200 {
+  border-color: #7e225f;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-pink-700,
+html[data-control-center-theme="dark"] .control-center-surface .text-pink-800 {
+  color: #f9a8d4;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-red-50 {
+  background-color: #3a1117;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-red-200,
+html[data-control-center-theme="dark"] .control-center-surface .border-red-300 {
+  border-color: #b91c1c;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-red-950,
+html[data-control-center-theme="dark"] .control-center-surface .text-red-900,
+html[data-control-center-theme="dark"] .control-center-surface .text-red-700 {
+  color: #fecaca;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-amber-50 {
+  background-color: #2d200d;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-amber-200 {
+  border-color: #92400e;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-amber-900 {
+  color: #fde68a;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-emerald-50 {
+  background-color: #0d2c22;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-emerald-200 {
+  border-color: #047857;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-emerald-900,
+html[data-control-center-theme="dark"] .control-center-surface .text-emerald-700 {
+  color: #a7f3d0;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-sky-50 {
+  background-color: #0c2638;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-sky-200 {
+  border-color: #0369a1;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-sky-900 {
+  color: #bae6fd;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .bg-violet-50,
+html[data-control-center-theme="dark"] .control-center-surface .bg-fuchsia-50 {
+  background-color: #25153b;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .border-violet-200 {
+  border-color: #6d28d9;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .text-violet-700,
+html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700 {
+  color: #ddd6fe;
+}
+
 .prelaunch-page {
   min-height: 100vh;
   background:

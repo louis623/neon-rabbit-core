@@ -158,6 +158,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     restoreGateEnv(originalEnv)
 
     expect(html).toContain('Prelaunch intake review')
+    expect(html).not.toContain('Control Center theme')
+    expect(html).not.toContain('control-center-surface')
     expect(html).toContain('3 total')
     expect(html).toContain('2 needs review')
     expect(html).toContain('1 qualified')
@@ -269,6 +271,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Sparkle Suite Control Center')
+    expect(html).toContain('control-center-surface')
+    expect(html).toContain('Control Center theme')
+    expect(html).toContain('Light mode')
+    expect(html).toContain('Dark mode')
     expect(html).toContain('Client intake')
     expect(html).toContain('View public page')
     expect(html).toContain('href="/prelaunch"')

@@ -12,6 +12,7 @@ import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
 import { buildScribeReadiness } from '@/lib/prelaunch/scribe-readiness'
 import { buildPrelaunchOperatorHandoffBrief } from '@/lib/prelaunch/operator-handoff'
+import { ControlCenterThemeToggle } from './ControlCenterThemeToggle'
 import { PrelaunchScoutRunButton } from './PrelaunchScoutRunButton'
 
 interface PrelaunchIntakeReviewPageContentProps {
@@ -760,7 +761,11 @@ export function PrelaunchIntakeReviewPageContent({
   ]
 
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8">
+    <main
+      className={`min-h-screen bg-slate-50 px-5 py-8 text-slate-950 sm:px-8 ${
+        isControlCenter ? 'control-center-surface' : ''
+      }`}
+    >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <header className="flex flex-col gap-3 border-b border-slate-200 pb-6">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -777,12 +782,15 @@ export function PrelaunchIntakeReviewPageContent({
                   : 'Review submitted rep fit checks, spot handoff blockers, and copy Scout-ready context for the next onboarding step.'}
               </p>
             </div>
-            <a
-              className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-              href="/prelaunch"
-            >
-              View public page
-            </a>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {isControlCenter ? <ControlCenterThemeToggle /> : null}
+              <a
+                className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                href="/prelaunch"
+              >
+                View public page
+              </a>
+            </div>
           </div>
         </header>
 
