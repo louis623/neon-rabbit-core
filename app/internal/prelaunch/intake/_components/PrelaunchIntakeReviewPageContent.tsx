@@ -630,48 +630,46 @@ export function PrelaunchIntakeReviewPageContent({
     : getApprovedPrelaunchQrManifest({
         baseUrl: process.env.NEXT_PUBLIC_APP_URL,
       })
-  const pipelineStages = [
+  const activeWorkItems = [
     {
-      label: 'New prelaunch lead',
-      count: waitlistLeads.length,
-      detail: 'All waitlist leads',
-      href: formatWaitlistViewHref(null, basePath),
+      label: 'Active client',
+      value: 'No active client',
+      detail: 'Build slot is open',
+      anchor: 'active-client',
+      href: `${basePath}#active-client`,
+      status: 'neutral',
     },
     {
-      label: 'Contact batch',
-      count: contactBatchSelected,
-      detail: 'Selected for outreach',
-      href: formatWaitlistViewHref('contact_batch', basePath),
+      label: 'Current phase',
+      value: 'No info',
+      detail: 'Build phase appears after client selection',
+      anchor: 'current-phase',
+      href: `${basePath}#current-phase`,
+      status: 'neutral',
     },
     {
-      label: 'Contacted',
-      count: contactedLeads,
-      detail: 'Outreach happened',
-      href: formatWaitlistViewHref('contacted', basePath),
+      label: 'Agent touchpoint',
+      value: 'Please connect',
+      detail: 'Future agent handoffs and PMCS notes',
+      anchor: 'agent-touchpoint',
+      href: `${basePath}#pmcs`,
+      status: 'alert',
     },
     {
-      label: 'Meeting scheduled',
-      count: meetingScheduledLeads,
-      detail: 'Call is on calendar',
-      href: formatWaitlistViewHref('meeting_scheduled', basePath),
+      label: 'Attention',
+      value: 'No info',
+      detail: 'Stuck work or Louis action will land here',
+      anchor: 'attention',
+      href: `${basePath}#comms`,
+      status: 'neutral',
     },
     {
-      label: 'Conversation complete',
-      count: conversationCompleteLeads,
-      detail: 'Ready for setup notes',
-      href: formatWaitlistViewHref('conversation_complete', basePath),
-    },
-    {
-      label: 'Setup drafted',
-      count: setupProfileDraftedLeads,
-      detail: 'Profile needs review',
-      href: formatWaitlistViewHref('setup_profile_drafted', basePath),
-    },
-    {
-      label: 'Start work ready',
-      count: startWorkReadyLeads,
-      detail: 'Approved to begin',
+      label: 'Next action',
+      value: 'Select one lead when ready to start onboarding',
+      detail: 'Start from the ready list',
+      anchor: 'next-action',
       href: formatWaitlistViewHref('start_work_ready', basePath),
+      status: 'neutral',
     },
   ]
 
@@ -693,7 +691,7 @@ export function PrelaunchIntakeReviewPageContent({
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {isControlCenter
-                  ? 'Start at the beginning of the client pipeline: review new leads, confirm the next human action, and keep provider gates visible before start work.'
+                  ? 'Review new leads, keep the active build visible, and spot where agent or human attention is needed before Start Work.'
                   : 'Review submitted rep fit checks, spot handoff blockers, and copy Scout-ready context for the next onboarding step.'}
               </p>
             </div>
@@ -843,34 +841,79 @@ export function PrelaunchIntakeReviewPageContent({
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Client intake pipeline
+                  Active work board
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                  Prelaunch path
+                  Current build watch
                 </h2>
               </div>
               <p className="max-w-lg text-sm leading-6 text-slate-600">
-                Quick map from waitlist lead to Start Work.
+                One client at a time: who is moving, what agent is touching it,
+                and whether anything is stuck.
               </p>
             </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
-              {pipelineStages.map((stage) => (
-                <a
-                  className="min-h-24 rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-slate-100"
-                  href={stage.href}
-                  key={stage.label}
-                >
-                  <p className="text-2xl font-semibold leading-7 text-slate-950">
-                    {stage.count}
-                  </p>
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    {stage.label}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    {stage.detail}
-                  </p>
-                </a>
-              ))}
+            <div className="mt-4 grid gap-2 md:grid-cols-5">
+              {activeWorkItems.map((item) => {
+                const itemClass =
+                  item.status === 'alert'
+                    ? 'border-red-200 bg-red-50 text-red-950 hover:border-red-300 hover:bg-red-100'
+                    : 'border-slate-200 bg-slate-50 text-slate-950 hover:border-slate-300 hover:bg-slate-100'
+                const valueClass =
+                  item.status === 'alert' ? 'text-red-700' : 'text-slate-950'
+
+                return (
+                  <a
+                    className={`min-h-28 rounded-md border p-3 transition ${itemClass}`}
+                    href={item.href}
+                    id={item.anchor}
+                    key={item.label}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {item.label}
+                    </p>
+                    <p
+                      className={`mt-2 text-base font-semibold leading-6 ${valueClass}`}
+                    >
+                      {item.value}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">
+                      {item.detail}
+                    </p>
+                  </a>
+                )
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {isControlCenter ? (
+          <section
+            aria-label="Client roster"
+            className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+            id="reps"
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Client roster
+                </p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-950">
+                  No production clients yet
+                </h2>
+              </div>
+              <p className="max-w-lg text-sm leading-6 text-slate-600">
+                Clients move here after launch. Open a client later for the
+                full status dossier.
+              </p>
+            </div>
+            <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-950">
+                No active clients
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Production roster will show client health, services, agent
+                touchpoints, and open flags.
+              </p>
             </div>
           </section>
         ) : null}

@@ -5,7 +5,7 @@
 - Operator runbook: `docs/sparkle-suite/demo-launch-runbook-2026-05-18.md`.
 - Browser smoke walkthrough: `docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md`.
 - Sparkle Suite Control Center intake foundation now exists at `/control-center/intake`, reusing the existing operator-gated prelaunch intake data, Scout/Scribe visibility, and launch-gate readiness.
-- Control Center intake now shows read-only pipeline guidance plus waitlist next-action cues, including a live count of leads ready for the next contact batch without sending email, SMS, Stripe, or SignWell actions.
+- Control Center intake now uses an Active Work Board skeleton instead of a count-heavy pipeline scoreboard, keeping the current build, agent touchpoint, attention state, and next action visible without sending email, SMS, Stripe, or SignWell actions.
 - Control Center operators can mark eligible prelaunch leads as selected for a manual contact batch. This only updates the waitlist `lead_status`; it does not send email, SMS, Stripe checkout, SignWell agreements, or live queue actions.
 - Control Center waitlist now has an `All leads` / `Contact batch view` filter plus a read-only manual roster so selected prelaunch leads can be worked as a group before any outreach automation exists.
 - Control Center operators can mark selected batch leads as `contacted` after manual outreach. This is another state-only waitlist update with a dedicated `Contacted view`; it does not send provider traffic or advance calendar, Stripe, SignWell, SMS, or live queue work.
@@ -14,6 +14,7 @@
 - Control Center operators can mark conversation-complete waitlist leads as `setup_profile_drafted` after a manual setup profile draft exists. This only records waitlist state; profile writeback, Start Work decisions, payment, agreements, build readiness, and live queue work remain separate operator-led steps.
 - Control Center operators can mark drafted setup profiles as `start_work_ready` after Louis approves the profile for the Start Work decision lane. This only records waitlist state; Stripe, SignWell, build readiness, payment collection, agreements, and live queue work remain behind their own explicit gates.
 - Control Center intake now starts with a compact company snapshot row for Comms, Needs attention, Leads, Reps, In build, Monthly net, and PMCS. The first version uses trusted intake/waitlist counts where available and shows `Please connect` for sources that are not wired yet.
+- Control Center also includes a Client Roster placeholder for production clients after launch; expanded client dossiers are intentionally future work.
 - The public prelaunch path stays low-friction at `/prelaunch`; `/prelaunch/intake` redirects back to `/prelaunch` so the internal setup-intake form is not presented as a public prelaunch signup step.
 - Stripe subscription checkout and billing portal routes now return actionable configuration errors and use the authenticated rep identity for checkout metadata.
 - Stripe webhook handling has focused coverage for signature-gated subscription updates.
