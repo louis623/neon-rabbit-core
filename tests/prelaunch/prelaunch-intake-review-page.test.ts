@@ -313,19 +313,25 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('href="/prelaunch/intake"')
     expect(html).toContain('Start at the beginning of the client pipeline')
     expect(html).toContain('Client intake pipeline')
+    expect(html).toContain('Prelaunch path')
+    expect(html).toContain('Quick map from waitlist lead to Start Work.')
     expect(html).toContain('New prelaunch lead')
-    expect(html).toContain('1 Contact batch')
-    expect(html).toContain('1 Contacted')
-    expect(html).toContain('1 Meeting scheduled')
-    expect(html).toContain('1 Conversation complete')
+    expect(html).toContain('All waitlist leads')
     expect(html).toContain('Contact batch')
+    expect(html).toContain('Selected for outreach')
+    expect(html).toContain('Contacted')
+    expect(html).toContain('Outreach happened')
     expect(html).toContain('Meeting scheduled')
+    expect(html).toContain('Call is on calendar')
     expect(html).toContain('Conversation complete')
-    expect(html).toContain('Setup profile drafted')
+    expect(html).toContain('Ready for setup notes')
+    expect(html).toContain('Setup drafted')
+    expect(html).toContain('Profile needs review')
     expect(html).toContain('Start work ready')
-    expect(html).toContain('Payment pending')
-    expect(html).toContain('Agreement pending')
-    expect(html).toContain('Build ready')
+    expect(html).toContain('Approved to begin')
+    expect(html).not.toContain('Payment pending')
+    expect(html).not.toContain('Agreement pending')
+    expect(html).not.toContain('Build ready')
     expect(html).toContain('Contact batch view')
     expect(html).toContain('Contacted view')
     expect(html).toContain('Meeting scheduled view')
@@ -357,21 +363,15 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       'action="/api/control-center/intake/waitlist-contact-batch"',
     )
-    expect(html).toContain('Description:')
-    expect(html).toContain('Louis does:')
-    expect(html).toContain('Automation:')
-    expect(html).toContain('Skills/plugins:')
-    expect(html).toContain('Hard stop:')
-    expect(html).toContain(
+    expect(html).not.toContain('Description:')
+    expect(html).not.toContain('Louis does:')
+    expect(html).not.toContain('Automation:')
+    expect(html).not.toContain('Skills/plugins:')
+    expect(html).not.toContain('Hard stop:')
+    expect(html).not.toContain(
       'The waitlist form saves the lead and tracks welcome email status.',
     )
-    expect(html).toContain(
-      'Google Meet transcript, Scribe, Scout, Control Center.',
-    )
-    expect(html).toContain(
-      'No live Stripe charge or live SignWell agreement without explicit approval.',
-    )
-    expect(html).toContain(
+    expect(html).not.toContain(
       'Do not affect live queue shows, attach SMS numbers, or run live-provider actions early.',
     )
     expect(html).toContain('/control-center/intake?lane=failed_scout')

@@ -634,131 +634,44 @@ export function PrelaunchIntakeReviewPageContent({
     {
       label: 'New prelaunch lead',
       count: waitlistLeads.length,
-      detail: 'Low-friction waitlist signup',
-      description: 'Someone joined the simple prelaunch list.',
-      instructions:
-        'Review the lead, leave them on the list, or include them in the next contact batch.',
-      automation:
-        'The waitlist form saves the lead and tracks welcome email status.',
-      tools: 'Prelaunch waitlist form, Supabase waitlist, Control Center.',
-      hardStops:
-        'No live SMS, payment, SignWell, or referral-code workflow during prelaunch.',
+      detail: 'All waitlist leads',
+      href: formatWaitlistViewHref(null, basePath),
     },
     {
       label: 'Contact batch',
       count: contactBatchSelected,
-      detail: 'Louis works the list manually',
-      description: 'A selected group is ready for outreach.',
-      instructions:
-        'Send approved email or text outreach only for the batch you choose.',
-      automation:
-        'Future draft messaging can help here, but this stage is manual for now.',
-      tools: 'Control Center, email drafts, SMS drafts later.',
-      hardStops: 'Do not send live SMS until Telnyx approval is complete.',
+      detail: 'Selected for outreach',
+      href: formatWaitlistViewHref('contact_batch', basePath),
     },
     {
       label: 'Contacted',
       count: contactedLeads,
-      detail: 'Manual outreach contacted',
-      description: 'Louis has reached out and can work scheduling manually.',
-      instructions:
-        'Keep follow-up human-led for now; capture any scheduled meeting in the operator notes or intake flow later.',
-      automation:
-        'No calendar booking, email, or SMS automation is triggered by this status.',
-      tools: 'Control Center and manual outreach notes.',
-      hardStops: 'Do not auto-book meetings until the calendar workflow is built.',
+      detail: 'Outreach happened',
+      href: formatWaitlistViewHref('contacted', basePath),
     },
     {
       label: 'Meeting scheduled',
       count: meetingScheduledLeads,
-      detail: '30-minute Google Meet',
-      description: 'The lead has a setup conversation booked.',
-      instructions:
-        'Keep meetings to 30 minutes or less and use the call to understand their current customer flow.',
-      automation:
-        'Calendar booking automation is planned later; prelaunch scheduling stays operator-led.',
-      tools: 'Google Calendar and Google Meet later.',
-      hardStops: 'Do not auto-book meetings until the calendar workflow is built.',
+      detail: 'Call is on calendar',
+      href: formatWaitlistViewHref('meeting_scheduled', basePath),
     },
     {
       label: 'Conversation complete',
-      count: meetingReady,
-      detail: 'Transcript handoff available',
-      description:
-        'The meeting happened and transcript/context can become setup notes.',
-      instructions:
-        'Confirm the transcript belongs to the lead before using it for setup decisions.',
-      automation:
-        'Scribe transcript hooks and Scout context can help draft the internal setup profile.',
-      tools: 'Google Meet transcript, Scribe, Scout, Control Center.',
-      hardStops:
-        'No automatic profile writeback, payment, or SignWell send from transcript alone.',
+      count: conversationCompleteLeads,
+      detail: 'Ready for setup notes',
+      href: formatWaitlistViewHref('conversation_complete', basePath),
     },
     {
-      label: 'Setup profile drafted',
-      count: scoutGenerated,
-      detail: 'Agent-assisted internal profile',
-      description:
-        'Nic-Nac, Scout, and Scribe context can help summarize what we know.',
-      instructions:
-        'Review the draft, correct anything fuzzy, and decide whether this person should move forward.',
-      automation:
-        'Agent context is assistive only; Louis approves the customer fit and setup profile.',
-      tools: 'Nic-Nac, Scout, Scribe, Control Center.',
-      hardStops: 'Do not treat agent output as legal, billing, or launch approval.',
+      label: 'Setup drafted',
+      count: setupProfileDraftedLeads,
+      detail: 'Profile needs review',
+      href: formatWaitlistViewHref('setup_profile_drafted', basePath),
     },
     {
       label: 'Start work ready',
-      count: submissions.filter(
-        (submission) => submission.handoffStatus === 'converted',
-      ).length,
-      detail: 'Louis-approved next step',
-      description: 'Louis has decided the lead is a good fit to start work.',
-      instructions:
-        'Move one person at a time into the Start Work flow when payment and agreement checks are ready.',
-      automation:
-        'Stripe and SignWell helpers exist, but live actions remain approval-gated.',
-      tools: 'Stripe test mode, SignWell sandbox, Control Center.',
-      hardStops:
-        'No live Stripe charge or live SignWell agreement without explicit approval.',
-    },
-    {
-      label: 'Payment pending',
-      count: 0,
-      detail: 'Stripe test slice next',
-      description:
-        'The build fee and monthly subscription flow will be itemized and tested.',
-      instructions:
-        'Use Stripe test mode first and confirm the invoice/checkout items are clear.',
-      automation:
-        'Stripe checkout and webhook helpers are present; live setup is guarded.',
-      tools: 'Stripe, Stripe webhook smoke, launch smoke harness.',
-      hardStops: 'No live checkout, charge, or invoice until approved.',
-    },
-    {
-      label: 'Agreement pending',
-      count: 0,
-      detail: 'SignWell sandbox slice next',
-      description: 'The service agreement is prepared after Start Work is approved.',
-      instructions:
-        'Use sandbox/draft agreement checks until a real recipient and send window are approved.',
-      automation:
-        'SignWell sandbox payload and provider smoke are available without sending live email.',
-      tools: 'SignWell sandbox, agreement route, launch smoke harness.',
-      hardStops: 'No live SignWell send without explicit approval.',
-    },
-    {
-      label: 'Build ready',
-      count: 0,
-      detail: 'After payment and agreement',
-      description: 'The client is ready for buildout only after the gates pass.',
-      instructions:
-        'Start the account build from the approved setup profile and keep live queue work parked until ready.',
-      automation:
-        'Nic-Nac and setup context support buildout after the customer is approved.',
-      tools: 'Nic-Nac, Control Center, future build workflow.',
-      hardStops:
-        'Do not affect live queue shows, attach SMS numbers, or run live-provider actions early.',
+      count: startWorkReadyLeads,
+      detail: 'Approved to begin',
+      href: formatWaitlistViewHref('start_work_ready', basePath),
     },
   ]
 
@@ -933,58 +846,30 @@ export function PrelaunchIntakeReviewPageContent({
                   Client intake pipeline
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                  Intake is the first launch-path chapter
+                  Prelaunch path
                 </h2>
               </div>
               <p className="max-w-lg text-sm leading-6 text-slate-600">
-                Later stages stay visible here as placeholders until their
-                Stripe, SignWell, and build-readiness slices are wired to real
-                status.
+                Quick map from waitlist lead to Start Work.
               </p>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
               {pipelineStages.map((stage) => (
-                <div
-                  className="rounded-md border border-slate-200 bg-slate-50 p-3"
+                <a
+                  className="min-h-24 rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-slate-100"
+                  href={stage.href}
                   key={stage.label}
                 >
-                  <p className="text-sm font-semibold text-slate-950">
-                    {stage.count} {stage.label}
+                  <p className="text-2xl font-semibold leading-7 text-slate-950">
+                    {stage.count}
+                  </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {stage.label}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-slate-500">
                     {stage.detail}
                   </p>
-                  <div className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
-                    <p>
-                      <span className="font-semibold text-slate-800">
-                        Description:
-                      </span>{' '}
-                      {stage.description}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-800">
-                        Louis does:
-                      </span>{' '}
-                      {stage.instructions}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-800">
-                        Automation:
-                      </span>{' '}
-                      {stage.automation}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-800">
-                        Skills/plugins:
-                      </span>{' '}
-                      {stage.tools}
-                    </p>
-                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
-                      <span className="font-semibold">Hard stop:</span>{' '}
-                      {stage.hardStops}
-                    </p>
-                  </div>
-                </div>
+                </a>
               ))}
             </div>
           </section>
