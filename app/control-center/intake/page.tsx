@@ -7,6 +7,7 @@ import {
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
 import { loadPrelaunchLaunchBuilds } from '@/lib/prelaunch/launch-builds'
+import { loadPrelaunchLaunchSetupProfilesByBuildIds } from '@/lib/prelaunch/setup-profiles'
 import { loadPrelaunchWaitlistReviewLeads } from '@/lib/prelaunch/waitlist-review'
 import {
   AuthError,
@@ -70,6 +71,9 @@ export default async function SparkleSuiteControlCenterIntakePage({
     loadPrelaunchWaitlistReviewLeads(),
     loadPrelaunchLaunchBuilds(),
   ])
+  const launchSetupProfiles = await loadPrelaunchLaunchSetupProfilesByBuildIds(
+    launchBuilds.map((build) => build.id),
+  )
 
   return (
     <PrelaunchIntakeReviewPageContent
@@ -77,6 +81,7 @@ export default async function SparkleSuiteControlCenterIntakePage({
       activeWaitlistView={activeWaitlistView}
       basePath="/control-center/intake"
       launchBuilds={launchBuilds}
+      launchSetupProfiles={launchSetupProfiles}
       submissions={submissions}
       surface="control_center"
       waitlistLeads={waitlistLeads}

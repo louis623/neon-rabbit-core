@@ -4,6 +4,7 @@ import {
 } from '@/lib/prelaunch/intake-review'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
+import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
 import {
   getPrelaunchGateReadiness,
   type PrelaunchGateReadinessItem,
@@ -23,6 +24,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   activeWaitlistView?: PrelaunchWaitlistReviewView | null
   basePath?: string
   launchBuilds?: PrelaunchLaunchBuild[]
+  launchSetupProfiles?: PrelaunchLaunchSetupProfile[]
   surface?: 'prelaunch_review' | 'control_center'
 }
 
@@ -484,12 +486,18 @@ export function PrelaunchIntakeReviewPageContent({
   activeWaitlistView = null,
   basePath = '/internal/prelaunch/intake',
   launchBuilds = [],
+  launchSetupProfiles = [],
   submissions,
   surface = 'prelaunch_review',
   waitlistLeads = [],
 }: PrelaunchIntakeReviewPageContentProps) {
   const isControlCenter = surface === 'control_center'
   const activeLaunchBuild = launchBuilds[0] ?? null
+  const activeLaunchSetupProfile = activeLaunchBuild
+    ? launchSetupProfiles.find(
+        (profile) => profile.launchBuildId === activeLaunchBuild.id,
+      ) ?? null
+    : null
   const total = submissions.length
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
@@ -906,6 +914,135 @@ export function PrelaunchIntakeReviewPageContent({
                   </ul>
                 ) : null}
               </div>
+            ) : null}
+            {activeLaunchBuild ? (
+              <form
+                action="/api/control-center/intake/setup-profile"
+                className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm"
+                method="post"
+              >
+                <input
+                  name="launchBuildId"
+                  type="hidden"
+                  value={activeLaunchBuild.id}
+                />
+                <input
+                  name="returnTo"
+                  type="hidden"
+                  value={`${basePath}#active-client`}
+                />
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Setup profile
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      {activeLaunchSetupProfile
+                        ? activeLaunchSetupProfile.businessName
+                        : 'Create setup profile'}
+                    </h3>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                    Status
+                    <select
+                      className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-xs"
+                      defaultValue={activeLaunchSetupProfile?.status ?? 'draft'}
+                      name="status"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="ready">Ready</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Business name
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.businessName ??
+                        activeLaunchBuild.leadName
+                      }
+                      name="businessName"
+                      required
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Primary social URL
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.primarySocialUrl ?? ''
+                      }
+                      name="primarySocialUrl"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Secondary social URL
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.secondarySocialUrl ?? ''
+                      }
+                      name="secondarySocialUrl"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Shop URL
+                    <input
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      defaultValue={activeLaunchSetupProfile?.shopUrl ?? ''}
+                      name="shopUrl"
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Public site goal
+                    <textarea
+                      className="mt-1 min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.publicSiteGoal ?? ''
+                      }
+                      name="publicSiteGoal"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Brand notes
+                    <textarea
+                      className="mt-1 min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                      defaultValue={activeLaunchSetupProfile?.brandNotes ?? ''}
+                      name="brandNotes"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Must-have launch notes
+                    <textarea
+                      className="mt-1 min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.mustHaveLaunchNotes ?? ''
+                      }
+                      name="mustHaveLaunchNotes"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Open questions
+                    <textarea
+                      className="mt-1 min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                      defaultValue={
+                        activeLaunchSetupProfile?.openQuestions.join('\n') ?? ''
+                      }
+                      name="openQuestions"
+                    />
+                  </label>
+                </div>
+                <button
+                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                  type="submit"
+                >
+                  Save setup profile
+                </button>
+              </form>
             ) : null}
           </section>
         ) : null}

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const getAuthenticatedOperatorMock = vi.fn()
 const loadPrelaunchIntakeReviewSubmissionsMock = vi.fn()
 const loadPrelaunchLaunchBuildsMock = vi.fn()
+const loadPrelaunchLaunchSetupProfilesByBuildIdsMock = vi.fn()
 const loadPrelaunchWaitlistReviewLeadsMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
@@ -36,6 +37,11 @@ vi.mock('@/lib/prelaunch/launch-builds', () => ({
     loadPrelaunchLaunchBuildsMock(...args),
 }))
 
+vi.mock('@/lib/prelaunch/setup-profiles', () => ({
+  loadPrelaunchLaunchSetupProfilesByBuildIds: (...args: unknown[]) =>
+    loadPrelaunchLaunchSetupProfilesByBuildIdsMock(...args),
+}))
+
 vi.mock('@/lib/prelaunch/waitlist-review', () => ({
   loadPrelaunchWaitlistReviewLeads: (...args: unknown[]) =>
     loadPrelaunchWaitlistReviewLeadsMock(...args),
@@ -47,6 +53,7 @@ vi.mock(
     normalizePrelaunchIntakeReviewLane: (value: unknown) => value ?? null,
     normalizePrelaunchWaitlistReviewView: (value: unknown) => value ?? null,
     PrelaunchIntakeReviewPageContent: (props: {
+      launchSetupProfiles?: unknown[]
       surface: string
       basePath: string
     }) =>
@@ -67,10 +74,14 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     getAuthenticatedOperatorMock.mockReset()
     loadPrelaunchIntakeReviewSubmissionsMock.mockReset()
     loadPrelaunchLaunchBuildsMock.mockReset()
+    loadPrelaunchLaunchSetupProfilesByBuildIdsMock.mockReset()
     loadPrelaunchWaitlistReviewLeadsMock.mockReset()
     redirectMock.mockClear()
     loadPrelaunchIntakeReviewSubmissionsMock.mockResolvedValue([])
-    loadPrelaunchLaunchBuildsMock.mockResolvedValue([])
+    loadPrelaunchLaunchBuildsMock.mockResolvedValue([
+      { id: 'build-1', leadName: 'Demo Lead' },
+    ])
+    loadPrelaunchLaunchSetupProfilesByBuildIdsMock.mockResolvedValue([])
     loadPrelaunchWaitlistReviewLeadsMock.mockResolvedValue([])
   })
 
@@ -100,6 +111,9 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(html).toContain('control_center at /control-center/intake')
     expect(loadPrelaunchIntakeReviewSubmissionsMock).toHaveBeenCalledOnce()
     expect(loadPrelaunchLaunchBuildsMock).toHaveBeenCalledOnce()
+    expect(
+      loadPrelaunchLaunchSetupProfilesByBuildIdsMock,
+    ).toHaveBeenCalledWith(['build-1'])
     expect(loadPrelaunchWaitlistReviewLeadsMock).toHaveBeenCalledOnce()
   })
 
@@ -118,6 +132,9 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
     expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchBuildsMock).not.toHaveBeenCalled()
+    expect(
+      loadPrelaunchLaunchSetupProfilesByBuildIdsMock,
+    ).not.toHaveBeenCalled()
     expect(loadPrelaunchWaitlistReviewLeadsMock).not.toHaveBeenCalled()
   })
 })

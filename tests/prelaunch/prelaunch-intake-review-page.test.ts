@@ -11,6 +11,7 @@ import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/int
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
 import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
+import type { PrelaunchLaunchSetupProfile } from '@/lib/prelaunch/setup-profiles'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 
 const submission: PrelaunchIntakeReviewSubmission = {
@@ -97,6 +98,22 @@ const launchBuild: PrelaunchLaunchBuild = {
   ],
   createdAt: '2026-05-21T20:00:00Z',
   updatedAt: '2026-05-21T20:01:00Z',
+}
+
+const launchSetupProfile: PrelaunchLaunchSetupProfile = {
+  id: 'profile-1',
+  launchBuildId: 'build-1',
+  businessName: 'Sparkle Demo Shop',
+  publicSiteGoal: 'Launch a clean live shopping hub.',
+  primarySocialUrl: 'https://example.com/social',
+  secondarySocialUrl: null,
+  shopUrl: null,
+  brandNotes: 'Bright, practical, friendly.',
+  mustHaveLaunchNotes: 'Start with profile and show links.',
+  openQuestions: ['Confirm logo.', 'Confirm launch date.'],
+  status: 'draft',
+  createdAt: '2026-05-21T21:00:00Z',
+  updatedAt: '2026-05-21T21:01:00Z',
 }
 
 function snapshotGateEnv() {
@@ -752,6 +769,30 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Agreement gate is disabled.')
     expect(html).toContain('Build checks have not started.')
     expect(html).not.toContain('Build slot is open')
+  })
+
+  it('renders the setup profile editor for the active launch build', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [launchBuild],
+        launchSetupProfiles: [launchSetupProfile],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Setup profile')
+    expect(html).toContain('Sparkle Demo Shop')
+    expect(html).toContain('Launch a clean live shopping hub.')
+    expect(html).toContain('Confirm logo.')
+    expect(html).toContain('action="/api/control-center/intake/setup-profile"')
+    expect(html).toContain('name="launchBuildId"')
+    expect(html).toContain('value="build-1"')
+    expect(html).toContain('Save setup profile')
+    expect(html).not.toContain('Send setup profile')
+    expect(html).not.toContain('Charge')
   })
 
   it('renders waitlist leads with confirmation email status', () => {
