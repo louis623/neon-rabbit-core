@@ -625,9 +625,11 @@ export function PrelaunchIntakeReviewPageContent({
       submissionMatchesLane(submission, lane.key, gateReadiness),
     ).length,
   }))
-  const qrManifest = getApprovedPrelaunchQrManifest({
-    baseUrl: process.env.NEXT_PUBLIC_APP_URL,
-  })
+  const qrManifest = isControlCenter
+    ? null
+    : getApprovedPrelaunchQrManifest({
+        baseUrl: process.env.NEXT_PUBLIC_APP_URL,
+      })
   const pipelineStages = [
     {
       label: 'New prelaunch lead',
@@ -847,56 +849,58 @@ export function PrelaunchIntakeReviewPageContent({
           </section>
         ) : null}
 
-        <section className="rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pink-700">
-                Approved QR flyer
-              </p>
-              <p className="mt-2 max-w-3xl leading-6 text-slate-700">
-                Use this approved image-first flyer for QR promotion work. It
-                points to the public waitlist target below.
-              </p>
-              <p className="mt-3 break-all rounded-md bg-white p-3 text-xs font-semibold text-slate-700">
-                Canonical waitlist target: {qrManifest.targetUrl}
-              </p>
-              <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                <div className="rounded-md bg-white p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
-                    QR verification steps
-                  </p>
-                  <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
-                    {qrManifest.verificationSteps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-md bg-white p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
-                    Provider status
-                  </p>
-                  <p className="mt-2 text-xs leading-5 text-slate-700">
-                    No external QR provider is required. Use{' '}
-                    {qrManifest.displayUrl} with the approved static PNG.
-                  </p>
-                  <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
-                    {qrManifest.blockedActions.map((action) => (
-                      <li key={action}>{action}</li>
-                    ))}
-                  </ul>
+        {qrManifest ? (
+          <section className="rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pink-700">
+                  Approved QR flyer
+                </p>
+                <p className="mt-2 max-w-3xl leading-6 text-slate-700">
+                  Use this approved image-first flyer for QR promotion work. It
+                  points to the public waitlist target below.
+                </p>
+                <p className="mt-3 break-all rounded-md bg-white p-3 text-xs font-semibold text-slate-700">
+                  Canonical waitlist target: {qrManifest.targetUrl}
+                </p>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-md bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
+                      QR verification steps
+                    </p>
+                    <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
+                      {qrManifest.verificationSteps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-md bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-pink-700">
+                      Provider status
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-700">
+                      No external QR provider is required. Use{' '}
+                      {qrManifest.displayUrl} with the approved static PNG.
+                    </p>
+                    <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-700">
+                      {qrManifest.blockedActions.map((action) => (
+                        <li key={action}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
+              <a
+                className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-pink-200 bg-white px-4 text-sm font-semibold text-pink-800 shadow-sm transition hover:border-pink-300 hover:bg-pink-100"
+                href={qrManifest.approvedFlyer.path}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open approved flyer
+              </a>
             </div>
-            <a
-              className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-pink-200 bg-white px-4 text-sm font-semibold text-pink-800 shadow-sm transition hover:border-pink-300 hover:bg-pink-100"
-              href={qrManifest.approvedFlyer.path}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Open approved flyer
-            </a>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <section
           aria-label="Intake summary"
