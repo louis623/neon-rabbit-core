@@ -902,26 +902,28 @@ export function PrelaunchIntakeReviewPageContent({
           </section>
         ) : null}
 
-        <section
-          aria-label="Intake summary"
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {[
-            [`${total} total`, 'Submitted intake forms'],
-            [`${needsReview} needs review`, 'Fit flags or incomplete setup'],
-            [`${qualified} qualified`, 'No current fit flags'],
-            [`${scoutGenerated} Scout generated`, 'Saved Scout output'],
-            [`${meetingReady} meeting ready`, 'Transcript handoff queued'],
-          ].map(([value, label]) => (
-            <div
-              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-              key={label}
-            >
-              <p className="text-2xl font-semibold text-slate-950">{value}</p>
-              <p className="mt-1 text-sm text-slate-500">{label}</p>
-            </div>
-          ))}
-        </section>
+        {!isControlCenter ? (
+          <section
+            aria-label="Intake summary"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            {[
+              [`${total} total`, 'Submitted intake forms'],
+              [`${needsReview} needs review`, 'Fit flags or incomplete setup'],
+              [`${qualified} qualified`, 'No current fit flags'],
+              [`${scoutGenerated} Scout generated`, 'Saved Scout output'],
+              [`${meetingReady} meeting ready`, 'Transcript handoff queued'],
+            ].map(([value, label]) => (
+              <div
+                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+                key={label}
+              >
+                <p className="text-2xl font-semibold text-slate-950">{value}</p>
+                <p className="mt-1 text-sm text-slate-500">{label}</p>
+              </div>
+            ))}
+          </section>
+        ) : null}
 
         {isControlCenter ? (
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
