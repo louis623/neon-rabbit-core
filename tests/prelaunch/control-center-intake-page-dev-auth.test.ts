@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedOperatorMock = vi.fn()
 const loadPrelaunchIntakeReviewSubmissionsMock = vi.fn()
+const loadPrelaunchLaunchBuildsMock = vi.fn()
 const loadPrelaunchWaitlistReviewLeadsMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
@@ -28,6 +29,11 @@ vi.mock('@/lib/supabase/operator-auth', () => ({
 vi.mock('@/lib/prelaunch/intake-review-query', () => ({
   loadPrelaunchIntakeReviewSubmissions: (...args: unknown[]) =>
     loadPrelaunchIntakeReviewSubmissionsMock(...args),
+}))
+
+vi.mock('@/lib/prelaunch/launch-builds', () => ({
+  loadPrelaunchLaunchBuilds: (...args: unknown[]) =>
+    loadPrelaunchLaunchBuildsMock(...args),
 }))
 
 vi.mock('@/lib/prelaunch/waitlist-review', () => ({
@@ -60,9 +66,11 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
     loadPrelaunchIntakeReviewSubmissionsMock.mockReset()
+    loadPrelaunchLaunchBuildsMock.mockReset()
     loadPrelaunchWaitlistReviewLeadsMock.mockReset()
     redirectMock.mockClear()
     loadPrelaunchIntakeReviewSubmissionsMock.mockResolvedValue([])
+    loadPrelaunchLaunchBuildsMock.mockResolvedValue([])
     loadPrelaunchWaitlistReviewLeadsMock.mockResolvedValue([])
   })
 
@@ -91,6 +99,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(redirectMock).not.toHaveBeenCalled()
     expect(html).toContain('control_center at /control-center/intake')
     expect(loadPrelaunchIntakeReviewSubmissionsMock).toHaveBeenCalledOnce()
+    expect(loadPrelaunchLaunchBuildsMock).toHaveBeenCalledOnce()
     expect(loadPrelaunchWaitlistReviewLeadsMock).toHaveBeenCalledOnce()
   })
 
@@ -108,6 +117,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
 
     expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
     expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
+    expect(loadPrelaunchLaunchBuildsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchWaitlistReviewLeadsMock).not.toHaveBeenCalled()
   })
 })

@@ -3,6 +3,7 @@ import {
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
+import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import {
   getPrelaunchGateReadiness,
   type PrelaunchGateReadinessItem,
@@ -21,6 +22,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   activeLane?: PrelaunchIntakeReviewLane | null
   activeWaitlistView?: PrelaunchWaitlistReviewView | null
   basePath?: string
+  launchBuilds?: PrelaunchLaunchBuild[]
   surface?: 'prelaunch_review' | 'control_center'
 }
 
@@ -113,6 +115,11 @@ function formatDate(value: string) {
 
 function formatLabel(value: string | null | undefined) {
   return value?.replaceAll('_', ' ') ?? 'Not provided'
+}
+
+function formatTitleLabel(value: string | null | undefined) {
+  const label = formatLabel(value)
+  return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
 function formatScoutInputStatus(value: string) {
@@ -476,11 +483,13 @@ export function PrelaunchIntakeReviewPageContent({
   activeLane = null,
   activeWaitlistView = null,
   basePath = '/internal/prelaunch/intake',
+  launchBuilds = [],
   submissions,
   surface = 'prelaunch_review',
   waitlistLeads = [],
 }: PrelaunchIntakeReviewPageContentProps) {
   const isControlCenter = surface === 'control_center'
+  const activeLaunchBuild = launchBuilds[0] ?? null
   const total = submissions.length
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
@@ -615,19 +624,23 @@ export function PrelaunchIntakeReviewPageContent({
   const activeWorkItems = [
     {
       label: 'Active client',
-      value: 'No active client',
-      detail: 'Build slot is open',
+      value: activeLaunchBuild?.leadName ?? 'No active client',
+      detail: activeLaunchBuild ? 'Draft launch build' : 'Build slot is open',
       anchor: 'active-client',
       href: `${basePath}#active-client`,
-      status: 'neutral',
+      status: activeLaunchBuild?.status === 'blocked' ? 'alert' : 'neutral',
     },
     {
       label: 'Current phase',
-      value: 'No info',
-      detail: 'Build phase appears after client selection',
+      value: activeLaunchBuild
+        ? formatTitleLabel(activeLaunchBuild.stage)
+        : 'No info',
+      detail: activeLaunchBuild
+        ? formatTitleLabel(activeLaunchBuild.status)
+        : 'Build phase appears after client selection',
       anchor: 'current-phase',
       href: `${basePath}#current-phase`,
-      status: 'neutral',
+      status: activeLaunchBuild?.status === 'blocked' ? 'alert' : 'neutral',
     },
     {
       label: 'Agent touchpoint',
@@ -639,16 +652,23 @@ export function PrelaunchIntakeReviewPageContent({
     },
     {
       label: 'Attention',
-      value: 'No info',
-      detail: 'Stuck work or Louis action will land here',
+      value: activeLaunchBuild?.blockers[0] ?? 'No info',
+      detail: activeLaunchBuild
+        ? formatCount(activeLaunchBuild.blockers.length, 'blocker')
+        : 'Stuck work or Louis action will land here',
       anchor: 'attention',
       href: `${basePath}#comms`,
-      status: 'neutral',
+      status:
+        activeLaunchBuild && activeLaunchBuild.blockers.length > 0
+          ? 'alert'
+          : 'neutral',
     },
     {
       label: 'Next action',
-      value: 'Select one lead when ready to start onboarding',
-      detail: 'Start from the ready list',
+      value: activeLaunchBuild
+        ? 'Clear blockers before launch checks'
+        : 'Select one lead when ready to start onboarding',
+      detail: activeLaunchBuild ? activeLaunchBuild.leadEmail : 'Start from the ready list',
       anchor: 'next-action',
       href: formatWaitlistViewHref('start_work_ready', basePath),
       status: 'neutral',
@@ -865,6 +885,28 @@ export function PrelaunchIntakeReviewPageContent({
                 )
               })}
             </div>
+            {activeLaunchBuild ? (
+              <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                  Draft launch build
+                </p>
+                <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="font-semibold text-slate-950">
+                    {activeLaunchBuild.leadName}
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">
+                    {formatTitleLabel(activeLaunchBuild.status)}
+                  </p>
+                </div>
+                {activeLaunchBuild.blockers.length > 0 ? (
+                  <ul className="mt-3 space-y-1 text-xs leading-5 text-amber-950">
+                    {activeLaunchBuild.blockers.map((blocker) => (
+                      <li key={blocker}>{blocker}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
           </section>
         ) : null}
 
@@ -1033,6 +1075,7 @@ export function PrelaunchIntakeReviewPageContent({
                   isWaitlistLeadConversationComplete(lead)
                 const isSetupProfileDrafted =
                   isWaitlistLeadSetupProfileDrafted(lead)
+                const isStartWorkReady = isWaitlistLeadStartWorkReady(lead)
 
                 return (
                   <article
@@ -1288,6 +1331,33 @@ export function PrelaunchIntakeReviewPageContent({
                                 type="submit"
                               >
                                 Mark Start Work ready
+                              </button>
+                            </form>
+                          ) : null}
+                          {isControlCenter &&
+                          activeWaitlistView === 'start_work_ready' &&
+                          isStartWorkReady &&
+                          !activeLaunchBuild ? (
+                            <form
+                              action="/api/control-center/intake/launch-build-draft"
+                              className="mt-3"
+                              method="post"
+                            >
+                              <input
+                                name="waitlistId"
+                                type="hidden"
+                                value={lead.id}
+                              />
+                              <input
+                                name="returnTo"
+                                type="hidden"
+                                value={basePath}
+                              />
+                              <button
+                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                type="submit"
+                              >
+                                Create launch build draft
                               </button>
                             </form>
                           ) : null}

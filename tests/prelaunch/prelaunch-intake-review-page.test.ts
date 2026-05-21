@@ -10,6 +10,7 @@ import {
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
+import type { PrelaunchLaunchBuild } from '@/lib/prelaunch/launch-builds'
 import type { PrelaunchWaitlistReviewLead } from '@/lib/prelaunch/waitlist-review'
 
 const submission: PrelaunchIntakeReviewSubmission = {
@@ -73,6 +74,29 @@ const waitlistLead: PrelaunchWaitlistReviewLead = {
   warmupStatus: 'not_started',
   intakeSubmissionId: null,
   createdAt: '2026-05-13T20:26:34.527Z',
+}
+
+const launchBuild: PrelaunchLaunchBuild = {
+  id: 'build-1',
+  waitlistId: 'waitlist-start-work',
+  intakeSubmissionId: null,
+  repId: null,
+  stage: 'draft',
+  status: 'blocked',
+  leadName: 'Start Work Lead',
+  leadEmail: 'startwork@example.com',
+  setupProfileStatus: 'drafted',
+  paymentGateStatus: 'disabled',
+  agreementGateStatus: 'disabled',
+  buildCheckStatus: 'not_started',
+  productionRosterStatus: 'not_started',
+  blockers: [
+    'Payment gate is disabled.',
+    'Agreement gate is disabled.',
+    'Build checks have not started.',
+  ],
+  createdAt: '2026-05-21T20:00:00Z',
+  updatedAt: '2026-05-21T20:01:00Z',
 }
 
 function snapshotGateEnv() {
@@ -671,6 +695,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       'Louis approved this profile for the Start Work lane. Keep Stripe, SignWell, build readiness, and live queue actions behind their own gates.',
     )
+    expect(html).toContain('Create launch build draft')
+    expect(html).toContain(
+      'action="/api/control-center/intake/launch-build-draft"',
+    )
     expect(html).not.toContain('Kim Hart')
     expect(html).not.toContain('Profile Lead')
     expect(html).not.toContain('Mark Start Work ready')
@@ -695,6 +723,35 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('In build')
     expect(html).toContain('No info')
     expect(html).toContain('Ready for onboarding')
+  })
+
+  it('renders draft launch builds in the active work board', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [launchBuild],
+        waitlistLeads: [
+          {
+            ...waitlistLead,
+            id: 'waitlist-start-work',
+            name: 'Start Work Lead',
+            email: 'startwork@example.com',
+            leadStatus: 'start_work_ready',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('Active work board')
+    expect(html).toContain('Start Work Lead')
+    expect(html).toContain('Draft launch build')
+    expect(html).toContain('Blocked')
+    expect(html).toContain('Payment gate is disabled.')
+    expect(html).toContain('Agreement gate is disabled.')
+    expect(html).toContain('Build checks have not started.')
+    expect(html).not.toContain('Build slot is open')
   })
 
   it('renders waitlist leads with confirmation email status', () => {

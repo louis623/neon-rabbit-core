@@ -6,6 +6,7 @@ import {
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
+import { loadPrelaunchLaunchBuilds } from '@/lib/prelaunch/launch-builds'
 import { loadPrelaunchWaitlistReviewLeads } from '@/lib/prelaunch/waitlist-review'
 import {
   AuthError,
@@ -64,9 +65,10 @@ export default async function SparkleSuiteControlCenterIntakePage({
   const query = searchParams ? await searchParams : {}
   const activeLane = normalizePrelaunchIntakeReviewLane(query.lane)
   const activeWaitlistView = normalizePrelaunchWaitlistReviewView(query.waitlist)
-  const [submissions, waitlistLeads] = await Promise.all([
+  const [submissions, waitlistLeads, launchBuilds] = await Promise.all([
     loadPrelaunchIntakeReviewSubmissions(),
     loadPrelaunchWaitlistReviewLeads(),
+    loadPrelaunchLaunchBuilds(),
   ])
 
   return (
@@ -74,6 +76,7 @@ export default async function SparkleSuiteControlCenterIntakePage({
       activeLane={activeLane}
       activeWaitlistView={activeWaitlistView}
       basePath="/control-center/intake"
+      launchBuilds={launchBuilds}
       submissions={submissions}
       surface="control_center"
       waitlistLeads={waitlistLeads}
