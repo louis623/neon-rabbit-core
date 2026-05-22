@@ -6,6 +6,7 @@ import {
   buildPrelaunchLaunchCheckItems,
   type PrelaunchLaunchCheck,
 } from '@/lib/prelaunch/launch-checks'
+import type { PrelaunchAgreementDocument } from '@/lib/prelaunch/agreement-documents'
 import {
   buildPrelaunchLaunchGateItems,
   type PrelaunchLaunchGate,
@@ -31,6 +32,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   waitlistLeads?: PrelaunchWaitlistReviewLead[]
   activeLane?: PrelaunchIntakeReviewLane | null
   activeWaitlistView?: PrelaunchWaitlistReviewView | null
+  agreementDocuments?: PrelaunchAgreementDocument[]
   basePath?: string
   launchChecks?: PrelaunchLaunchCheck[]
   launchGates?: PrelaunchLaunchGate[]
@@ -258,6 +260,18 @@ function welcomeEmailStatusClass(status: string) {
 function safeSmokeStatusClass(status: string) {
   if (status === 'ready') return 'border-emerald-200 bg-emerald-50 text-emerald-900'
   if (status === 'guarded') return 'border-sky-200 bg-sky-50 text-sky-900'
+
+  return 'border-amber-200 bg-amber-50 text-amber-900'
+}
+
+function agreementDocumentStatusClass(status: string) {
+  if (status === 'signed') return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+  if (status === 'failed' || status === 'voided') {
+    return 'border-red-200 bg-red-50 text-red-900'
+  }
+  if (status === 'created' || status === 'sent') {
+    return 'border-sky-200 bg-sky-50 text-sky-900'
+  }
 
   return 'border-amber-200 bg-amber-50 text-amber-900'
 }
@@ -524,6 +538,7 @@ function BriefList({
 export function PrelaunchIntakeReviewPageContent({
   activeLane = null,
   activeWaitlistView = null,
+  agreementDocuments = [],
   basePath = '/internal/prelaunch/intake',
   launchChecks = [],
   launchGates = [],
@@ -555,6 +570,11 @@ export function PrelaunchIntakeReviewPageContent({
         launchGates.filter((gate) => gate.launchBuildId === activeLaunchBuild.id),
       )
     : []
+  const activeAgreementDocument = activeLaunchBuild
+    ? agreementDocuments.find(
+        (document) => document.launchBuildId === activeLaunchBuild.id,
+      ) ?? null
+    : null
   const total = submissions.length
   const confirmationSent = waitlistLeads.filter(
     (lead) => lead.welcomeEmailStatus === 'sent',
@@ -1214,6 +1234,101 @@ export function PrelaunchIntakeReviewPageContent({
                     </form>
                   ))}
                 </div>
+                <form
+                  action="/api/control-center/intake/agreement-document"
+                  className="mt-4 rounded-md border border-slate-200 bg-white p-3"
+                  method="post"
+                >
+                  <input
+                    name="launchBuildId"
+                    type="hidden"
+                    value={activeLaunchBuild.id}
+                  />
+                  <input
+                    name="returnTo"
+                    type="hidden"
+                    value={`${basePath}#launch-gates`}
+                  />
+                  <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Agreement draft tracker
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                        Records which SignWell template belongs to this build.
+                        This does not send or create a live agreement.
+                      </p>
+                    </div>
+                    <div
+                      className={`rounded-md border px-3 py-2 text-xs font-semibold ${agreementDocumentStatusClass(
+                        activeAgreementDocument?.status ?? 'draft',
+                      )}`}
+                    >
+                      {activeAgreementDocument
+                        ? formatTitleLabel(activeAgreementDocument.status)
+                        : 'Not recorded'}
+                    </div>
+                  </div>
+                  {activeAgreementDocument ? (
+                    <dl className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          Template
+                        </dt>
+                        <dd>{activeAgreementDocument.templateLabel}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          Pricing
+                        </dt>
+                        <dd>{formatLabel(activeAgreementDocument.pricingCohort)}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          Recipient
+                        </dt>
+                        <dd>{activeAgreementDocument.recipientEmail}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          SignWell document
+                        </dt>
+                        <dd className="break-all">
+                          {activeAgreementDocument.providerDocumentId ??
+                            'Draft tracker only'}
+                        </dd>
+                      </div>
+                    </dl>
+                  ) : null}
+                  <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                    <label className="text-xs font-semibold text-slate-700">
+                      SignWell document ID
+                      <input
+                        className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                        defaultValue={
+                          activeAgreementDocument?.providerDocumentId ?? ''
+                        }
+                        name="providerDocumentId"
+                        placeholder="Optional sandbox document ID"
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-slate-700">
+                      Notes
+                      <input
+                        className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                        defaultValue={activeAgreementDocument?.notes ?? ''}
+                        name="notes"
+                        placeholder="Sandbox draft, no send"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                    type="submit"
+                  >
+                    Record agreement draft
+                  </button>
+                </form>
               </section>
             ) : null}
             {activeLaunchBuild ? (

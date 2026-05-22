@@ -1,0 +1,269 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const fromMock = vi.fn()
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    from: fromMock,
+  }),
+}))
+
+import {
+  createPrelaunchAgreementDraftTracker,
+  getPrelaunchAgreementTemplateSnapshot,
+  loadPrelaunchAgreementDocumentsByBuildIds,
+  normalizePrelaunchAgreementDocumentRows,
+} from '@/lib/prelaunch/agreement-documents'
+
+describe('prelaunch agreement documents', () => {
+  beforeEach(() => {
+    fromMock.mockReset()
+  })
+
+  it('captures the configured reusable template and pricing cohort', () => {
+    expect(
+      getPrelaunchAgreementTemplateSnapshot({
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_first_20',
+      }),
+    ).toEqual({
+      templateId: 'template_first_20',
+      templateLabel: 'Sparkle Suite service agreement',
+      pricingCohort: 'founder_first_20',
+    })
+
+    expect(
+      getPrelaunchAgreementTemplateSnapshot({
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_standard',
+        SIGNWELL_TEMPLATE_LABEL: 'Sparkle Suite standard agreement',
+        SPARKLE_SUITE_AGREEMENT_PRICING_COHORT: 'standard',
+      }),
+    ).toMatchObject({
+      templateId: 'template_standard',
+      templateLabel: 'Sparkle Suite standard agreement',
+      pricingCohort: 'standard',
+    })
+  })
+
+  it('normalizes agreement document rows', () => {
+    expect(
+      normalizePrelaunchAgreementDocumentRows([
+        {
+          id: 'agreement-1',
+          launch_build_id: 'build-1',
+          waitlist_id: 'waitlist-1',
+          intake_submission_id: 'intake-1',
+          provider: 'signwell',
+          mode: 'sandbox',
+          gate_type: 'service_agreement',
+          status: 'created',
+          template_id: 'template_123',
+          template_label: 'Sparkle Suite agreement',
+          pricing_cohort: 'founder_first_20',
+          provider_document_id: 'document_123',
+          recipient_name: 'Demo Lead',
+          recipient_email: 'demo@example.com',
+          send_email: false,
+          draft: true,
+          test_mode: true,
+          provider_status: 201,
+          signed_at: null,
+          signed_pdf_url: null,
+          notes: 'Sandbox draft only.',
+          metadata: {},
+          updated_by_rep_id: 'operator-1',
+          created_at: '2026-05-22T12:00:00Z',
+          updated_at: '2026-05-22T12:01:00Z',
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'agreement-1',
+        launchBuildId: 'build-1',
+        waitlistId: 'waitlist-1',
+        intakeSubmissionId: 'intake-1',
+        provider: 'signwell',
+        mode: 'sandbox',
+        gateType: 'service_agreement',
+        status: 'created',
+        templateId: 'template_123',
+        templateLabel: 'Sparkle Suite agreement',
+        pricingCohort: 'founder_first_20',
+        providerDocumentId: 'document_123',
+        recipientName: 'Demo Lead',
+        recipientEmail: 'demo@example.com',
+        sendEmail: false,
+        draft: true,
+        testMode: true,
+        providerStatus: 201,
+        signedAt: null,
+        signedPdfUrl: null,
+        notes: 'Sandbox draft only.',
+        updatedByRepId: 'operator-1',
+        createdAt: '2026-05-22T12:00:00Z',
+        updatedAt: '2026-05-22T12:01:00Z',
+      },
+    ])
+  })
+
+  it('loads current agreement documents by launch build id', async () => {
+    const selectMock = vi.fn()
+    const inMock = vi.fn()
+    const orderMock = vi.fn()
+
+    fromMock.mockReturnValueOnce({ select: selectMock })
+    selectMock.mockReturnValueOnce({ in: inMock })
+    inMock.mockReturnValueOnce({ order: orderMock })
+    orderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'agreement-1',
+          launch_build_id: 'build-1',
+          waitlist_id: 'waitlist-1',
+          intake_submission_id: 'intake-1',
+          provider: 'signwell',
+          mode: 'sandbox',
+          gate_type: 'service_agreement',
+          status: 'draft',
+          template_id: 'template_123',
+          template_label: 'Sparkle Suite agreement',
+          pricing_cohort: 'founder_first_20',
+          provider_document_id: null,
+          recipient_name: 'Demo Lead',
+          recipient_email: 'demo@example.com',
+          send_email: false,
+          draft: true,
+          test_mode: true,
+          provider_status: null,
+          signed_at: null,
+          signed_pdf_url: null,
+          notes: '',
+          metadata: {},
+          updated_by_rep_id: null,
+          created_at: '2026-05-22T12:00:00Z',
+          updated_at: '2026-05-22T12:01:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const documents = await loadPrelaunchAgreementDocumentsByBuildIds(['build-1'])
+
+    expect(fromMock).toHaveBeenCalledWith('sparkle_suite_agreement_documents')
+    expect(inMock).toHaveBeenCalledWith('launch_build_id', ['build-1'])
+    expect(orderMock).toHaveBeenCalledWith('updated_at', { ascending: false })
+    expect(documents[0].launchBuildId).toBe('build-1')
+  })
+
+  it('treats a missing agreement documents table as empty while migrations catch up', async () => {
+    const selectMock = vi.fn()
+    const inMock = vi.fn()
+    const orderMock = vi.fn()
+
+    fromMock.mockReturnValueOnce({ select: selectMock })
+    selectMock.mockReturnValueOnce({ in: inMock })
+    inMock.mockReturnValueOnce({ order: orderMock })
+    orderMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: 'PGRST205',
+        message:
+          "Could not find the table 'public.sparkle_suite_agreement_documents' in the schema cache",
+      },
+    })
+
+    await expect(
+      loadPrelaunchAgreementDocumentsByBuildIds(['build-1']),
+    ).resolves.toEqual([])
+  })
+
+  it('upserts a sandbox draft tracker without sending anything', async () => {
+    const buildSelectMock = vi.fn()
+    const buildEqMock = vi.fn()
+    const buildSingleMock = vi.fn()
+    const upsertMock = vi.fn()
+    const upsertSelectMock = vi.fn()
+    const upsertSingleMock = vi.fn()
+
+    fromMock
+      .mockReturnValueOnce({ select: buildSelectMock })
+      .mockReturnValueOnce({ upsert: upsertMock })
+    buildSelectMock.mockReturnValueOnce({ eq: buildEqMock })
+    buildEqMock.mockReturnValueOnce({ single: buildSingleMock })
+    buildSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        lead_name: 'Demo Lead',
+        lead_email: 'demo@example.com',
+      },
+      error: null,
+    })
+    upsertMock.mockReturnValueOnce({ select: upsertSelectMock })
+    upsertSelectMock.mockReturnValueOnce({ single: upsertSingleMock })
+    upsertSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'agreement-1',
+        launch_build_id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        provider: 'signwell',
+        mode: 'sandbox',
+        gate_type: 'service_agreement',
+        status: 'created',
+        template_id: 'template_123',
+        template_label: 'Sparkle Suite service agreement',
+        pricing_cohort: 'founder_first_20',
+        provider_document_id: 'document_123',
+        recipient_name: 'Demo Lead',
+        recipient_email: 'demo@example.com',
+        send_email: false,
+        draft: true,
+        test_mode: true,
+        provider_status: 201,
+        signed_at: null,
+        signed_pdf_url: null,
+        notes: 'Sandbox only.',
+        metadata: {},
+        updated_by_rep_id: 'operator-1',
+        created_at: '2026-05-22T12:00:00Z',
+        updated_at: '2026-05-22T12:01:00Z',
+      },
+      error: null,
+    })
+
+    const document = await createPrelaunchAgreementDraftTracker({
+      launchBuildId: 'build-1',
+      operatorRepId: 'operator-1',
+      providerDocumentId: 'document_123',
+      providerStatus: 201,
+      notes: 'Sandbox only.',
+      env: {
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_123',
+      },
+    })
+
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        launch_build_id: 'build-1',
+        status: 'created',
+        template_id: 'template_123',
+        pricing_cohort: 'founder_first_20',
+        provider_document_id: 'document_123',
+        recipient_email: 'demo@example.com',
+        send_email: false,
+        draft: true,
+        test_mode: true,
+        provider_status: 201,
+      }),
+      { onConflict: 'launch_build_id,provider,mode,gate_type' },
+    )
+    expect(document.providerDocumentId).toBe('document_123')
+  })
+})

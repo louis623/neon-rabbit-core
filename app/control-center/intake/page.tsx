@@ -5,6 +5,7 @@ import {
   normalizePrelaunchWaitlistReviewView,
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
+import { loadPrelaunchAgreementDocumentsByBuildIds } from '@/lib/prelaunch/agreement-documents'
 import { loadPrelaunchIntakeReviewSubmissions } from '@/lib/prelaunch/intake-review-query'
 import { loadPrelaunchLaunchChecksByBuildIds } from '@/lib/prelaunch/launch-checks'
 import { loadPrelaunchLaunchGatesByBuildIds } from '@/lib/prelaunch/launch-gates'
@@ -83,6 +84,9 @@ export default async function SparkleSuiteControlCenterIntakePage({
   const launchGates = await loadPrelaunchLaunchGatesByBuildIds(
     launchBuilds.map((build) => build.id),
   )
+  const agreementDocuments = await loadPrelaunchAgreementDocumentsByBuildIds(
+    launchBuilds.map((build) => build.id),
+  )
 
   return (
     <PrelaunchIntakeReviewPageContent
@@ -92,6 +96,7 @@ export default async function SparkleSuiteControlCenterIntakePage({
       launchChecks={launchChecks}
       launchGates={launchGates}
       launchBuilds={launchBuilds}
+      agreementDocuments={agreementDocuments}
       launchSetupProfiles={launchSetupProfiles}
       safeSmokeStatus={buildPrelaunchSafeSmokeStatus({
         activeLaunchBuild: launchBuilds[0] ?? null,

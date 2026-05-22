@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedOperatorMock = vi.fn()
+const loadPrelaunchAgreementDocumentsByBuildIdsMock = vi.fn()
 const loadPrelaunchIntakeReviewSubmissionsMock = vi.fn()
 const loadPrelaunchLaunchChecksByBuildIdsMock = vi.fn()
 const loadPrelaunchLaunchBuildsMock = vi.fn()
@@ -27,6 +28,11 @@ vi.mock('@/lib/supabase/operator-auth', () => ({
   OperatorAuthError: MockOperatorAuthError,
   getAuthenticatedOperator: (...args: unknown[]) =>
     getAuthenticatedOperatorMock(...args),
+}))
+
+vi.mock('@/lib/prelaunch/agreement-documents', () => ({
+  loadPrelaunchAgreementDocumentsByBuildIds: (...args: unknown[]) =>
+    loadPrelaunchAgreementDocumentsByBuildIdsMock(...args),
 }))
 
 vi.mock('@/lib/prelaunch/intake-review-query', () => ({
@@ -86,6 +92,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
 
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
+    loadPrelaunchAgreementDocumentsByBuildIdsMock.mockReset()
     loadPrelaunchIntakeReviewSubmissionsMock.mockReset()
     loadPrelaunchLaunchChecksByBuildIdsMock.mockReset()
     loadPrelaunchLaunchBuildsMock.mockReset()
@@ -94,6 +101,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     loadPrelaunchWaitlistReviewLeadsMock.mockReset()
     redirectMock.mockClear()
     loadPrelaunchIntakeReviewSubmissionsMock.mockResolvedValue([])
+    loadPrelaunchAgreementDocumentsByBuildIdsMock.mockResolvedValue([])
     loadPrelaunchLaunchChecksByBuildIdsMock.mockResolvedValue([])
     loadPrelaunchLaunchGatesByBuildIdsMock.mockResolvedValue([])
     loadPrelaunchLaunchBuildsMock.mockResolvedValue([
@@ -135,6 +143,9 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(loadPrelaunchLaunchGatesByBuildIdsMock).toHaveBeenCalledWith([
       'build-1',
     ])
+    expect(loadPrelaunchAgreementDocumentsByBuildIdsMock).toHaveBeenCalledWith([
+      'build-1',
+    ])
     expect(
       loadPrelaunchLaunchSetupProfilesByBuildIdsMock,
     ).toHaveBeenCalledWith(['build-1'])
@@ -155,6 +166,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
 
     expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
     expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
+    expect(loadPrelaunchAgreementDocumentsByBuildIdsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchChecksByBuildIdsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchBuildsMock).not.toHaveBeenCalled()
     expect(loadPrelaunchLaunchGatesByBuildIdsMock).not.toHaveBeenCalled()

@@ -8,6 +8,7 @@ import {
   PrelaunchIntakeReviewPageContent,
 } from '@/app/internal/prelaunch/intake/_components/PrelaunchIntakeReviewPageContent'
 import { PrelaunchScoutRecommendationResult } from '@/app/internal/prelaunch/intake/_components/PrelaunchScoutRunButton'
+import type { PrelaunchAgreementDocument } from '@/lib/prelaunch/agreement-documents'
 import type { PrelaunchScoutOutput } from '@/lib/prelaunch/scout'
 import type { PrelaunchIntakeReviewSubmission } from '@/lib/prelaunch/intake-review'
 import type { PrelaunchLaunchCheck } from '@/lib/prelaunch/launch-checks'
@@ -141,6 +142,33 @@ const launchGate: PrelaunchLaunchGate = {
   updatedByRepId: null,
   createdAt: '2026-05-21T22:10:00Z',
   updatedAt: '2026-05-21T22:11:00Z',
+}
+
+const agreementDocument: PrelaunchAgreementDocument = {
+  id: 'agreement-1',
+  launchBuildId: 'build-1',
+  waitlistId: 'waitlist-start-work',
+  intakeSubmissionId: null,
+  provider: 'signwell',
+  mode: 'sandbox',
+  gateType: 'service_agreement',
+  status: 'draft',
+  templateId: 'template_123',
+  templateLabel: 'Sparkle Suite service agreement',
+  pricingCohort: 'founder_first_20',
+  providerDocumentId: null,
+  recipientName: 'Start Work Lead',
+  recipientEmail: 'startwork@example.com',
+  sendEmail: false,
+  draft: true,
+  testMode: true,
+  providerStatus: null,
+  signedAt: null,
+  signedPdfUrl: null,
+  notes: 'Demo-only sandbox draft tracker.',
+  updatedByRepId: null,
+  createdAt: '2026-05-22T14:00:00Z',
+  updatedAt: '2026-05-22T14:01:00Z',
 }
 
 function snapshotGateEnv() {
@@ -912,6 +940,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         submissions: [],
         launchBuilds: [launchBuild],
         launchChecks: [launchCheck],
+        agreementDocuments: [agreementDocument],
         launchGates: [launchGate],
         launchSetupProfiles: [launchSetupProfile],
         waitlistLeads: [],
@@ -925,6 +954,14 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('action="/api/control-center/intake/launch-gate"')
     expect(html).toContain('name="gateKey"')
     expect(html).toContain('Save gate')
+    expect(html).toContain('Agreement draft tracker')
+    expect(html).toContain('Sparkle Suite service agreement')
+    expect(html).toContain('founder first 20')
+    expect(html).toContain('Draft tracker only')
+    expect(html).toContain(
+      'action="/api/control-center/intake/agreement-document"',
+    )
+    expect(html).toContain('Record agreement draft')
     expect(html).toContain('test mode only')
     expect(html).toContain('sandbox only')
     expect(html).not.toContain('Create Stripe checkout')
