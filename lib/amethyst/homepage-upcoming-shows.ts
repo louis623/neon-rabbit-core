@@ -1,5 +1,6 @@
 import { listMyShows } from '@/lib/services/calendar'
 import type { CalendarEvent } from '@/lib/services/types'
+import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface AmethystHomepageEventCode {
@@ -196,20 +197,14 @@ export async function loadAmethystHomepageUpcomingShows(
     return defaultAmethystHomepageEvents
   }
 
-  const previewEmail =
-    process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL ||
-    process.env.AMETHYST_TRADE_PREVIEW_EMAIL ||
-    'testrep@neonrabbit.net'
-
   try {
     const admin = createAdminClient()
-    const { data: rep, error: repError } = await admin
-      .from('reps')
-      .select('id, streaming_links')
-      .eq('email', previewEmail)
-      .maybeSingle()
+    const rep = await resolveAmethystPreviewRep(admin, {
+      env: process.env,
+      select: 'id, email, streaming_links',
+    })
 
-    if (repError || !rep?.id) {
+    if (!rep?.id) {
       return defaultAmethystHomepageEvents
     }
 

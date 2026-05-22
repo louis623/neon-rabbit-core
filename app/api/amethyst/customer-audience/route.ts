@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { ServiceError } from '@/lib/services/errors'
 import { createCustomerAudienceSignup } from '@/lib/services/customer-audience'
 import type { CustomerAudienceSignupInput } from '@/lib/services/types'
@@ -63,26 +64,14 @@ async function parseSignupPayload(
   }
 }
 
-function getPreviewRepEmail() {
-  return (
-    process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL ||
-    process.env.AMETHYST_TRADE_PREVIEW_EMAIL ||
-    'testrep@neonrabbit.net'
-  )
-}
-
 export async function POST(request: Request) {
   try {
     const payload = await parseSignupPayload(request)
     const admin = createAdminClient()
-
-    const { data: rep, error: repError } = await admin
-      .from('reps')
-      .select('id')
-      .eq('email', getPreviewRepEmail())
-      .maybeSingle()
-
-    if (repError) throw repError
+    const rep = await resolveAmethystPreviewRep(admin, {
+      env: process.env,
+      select: 'id, email',
+    })
 
     if (!rep?.id) {
       return NextResponse.json(

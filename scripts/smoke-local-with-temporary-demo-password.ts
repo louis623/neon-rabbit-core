@@ -24,6 +24,7 @@ const LOCAL_TEMP_DEMO_SMOKE_CATEGORIES = [
   'local_static',
   'supabase_demo',
   'local_app',
+  'local_product',
   'stripe_test',
   'stripe_local_routes',
   'stripe_webhook_local_signature',

@@ -1,0 +1,119 @@
+export const DEFAULT_AMETHYST_PREVIEW_EMAIL = 'testrep@neonrabbit.net'
+
+interface AmethystPreviewRep {
+  id: string
+  email: string
+  streaming_links?: unknown
+}
+
+interface ResolveAmethystPreviewRepOptions {
+  env?: Record<string, string | undefined>
+  select?: string
+}
+
+type PreviewAdminClient = {
+  from(table: string): {
+    select(columns: string): unknown
+  }
+}
+
+function cleanEmail(value: string | undefined) {
+  return value?.trim().toLowerCase() || null
+}
+
+function getCandidateEmails(env: Record<string, string | undefined>) {
+  return [
+    cleanEmail(env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL),
+    cleanEmail(env.AMETHYST_TRADE_PREVIEW_EMAIL),
+    cleanEmail(env.DEMO_REP_EMAIL),
+  ].filter((value): value is string => Boolean(value))
+}
+
+async function loadRepByEmail(
+  admin: PreviewAdminClient,
+  email: string,
+  select: string,
+): Promise<AmethystPreviewRep | null> {
+  const query = admin.from('reps').select(select) as {
+    eq(column: string, value: string): {
+      maybeSingle(): Promise<{ data: AmethystPreviewRep | null; error: unknown }>
+    }
+  }
+  const { data, error } = await query.eq('email', email).maybeSingle()
+  if (error) throw error
+  return data ?? null
+}
+
+async function loadRepById(
+  admin: PreviewAdminClient,
+  repId: string,
+  select: string,
+): Promise<AmethystPreviewRep | null> {
+  const query = admin.from('reps').select(select) as {
+    eq(column: string, value: string): {
+      maybeSingle(): Promise<{ data: AmethystPreviewRep | null; error: unknown }>
+    }
+  }
+  const { data, error } = await query.eq('id', repId).maybeSingle()
+  if (error) throw error
+  return data ?? null
+}
+
+async function loadLatestReadyLaunchRepId(admin: PreviewAdminClient) {
+  const query = admin.from('sparkle_suite_launch_builds').select('rep_id') as {
+    eq(column: string, value: string): {
+      eq(column: string, value: string): {
+        not(column: string, operator: string, value: null): {
+          order(
+            column: string,
+            options: { ascending: boolean },
+          ): {
+            limit(count: number): {
+              maybeSingle(): Promise<{
+                data: { rep_id: string | null } | null
+                error: unknown
+              }>
+            }
+          }
+        }
+      }
+    }
+  }
+  const { data, error } = await query
+    .eq('stage', 'ready_for_launch')
+    .eq('status', 'ready')
+    .not('rep_id', 'is', null)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.rep_id?.trim() || null
+}
+
+export async function resolveAmethystPreviewRep(
+  admin: PreviewAdminClient,
+  options: ResolveAmethystPreviewRepOptions = {},
+): Promise<AmethystPreviewRep | null> {
+  const env = options.env ?? process.env
+  const select = options.select ?? 'id, email'
+
+  for (const email of getCandidateEmails(env)) {
+    const rep = await loadRepByEmail(admin, email, select)
+    if (rep) return rep
+  }
+
+  let launchRepId: string | null = null
+  try {
+    launchRepId = await loadLatestReadyLaunchRepId(admin)
+  } catch {
+    launchRepId = null
+  }
+
+  if (launchRepId) {
+    const rep = await loadRepById(admin, launchRepId, select)
+    if (rep) return rep
+  }
+
+  return loadRepByEmail(admin, DEFAULT_AMETHYST_PREVIEW_EMAIL, select)
+}

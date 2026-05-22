@@ -31,6 +31,7 @@ import { runProtectedPreviewRouteSmoke } from '@/scripts/smoke-protected-preview
 export const DEMO_SMOKE_CATEGORIES = [
   'local_static',
   'local_app',
+  'local_product',
   'prelaunch_demo_seed',
   'supabase_demo',
   'stripe_test',
@@ -52,6 +53,7 @@ export const SAFE_LAUNCH_SMOKE_CATEGORIES = [
   'local_static',
   'supabase_demo',
   'local_app',
+  'local_product',
   'stripe_test',
   'stripe_local_routes',
   'stripe_webhook_local_signature',
@@ -171,6 +173,9 @@ export interface DemoSmokeRunDependencies {
     env: Record<string, string | undefined>,
     email: string,
   ) => Promise<LocalAppVerification>
+  verifyLocalProduct?: (
+    env: Record<string, string | undefined>,
+  ) => Promise<LocalProductVerification>
   verifyStripeLocalRoutes?: (
     env: Record<string, string | undefined>,
     email: string,
@@ -205,6 +210,15 @@ interface LocalAppVerification {
   repEmail: string
   repDisplayName: string
   nicNacShellRendered: boolean
+}
+
+interface LocalProductVerification {
+  homepage: boolean
+  trade: boolean
+  join: boolean
+  homepageTemplate: boolean
+  tradeTemplate: boolean
+  joinTemplate: boolean
 }
 
 interface StripeLocalRouteVerification {
@@ -317,6 +331,21 @@ export function buildDemoSmokePlan(
             id: 'local_app_login_route',
             label:
               'Verify the running local app authenticates the demo rep and renders Nic-Nac.',
+            risk: 'local_app',
+            run: 'planned',
+          },
+        ],
+      }
+    case 'local_product':
+      return {
+        category,
+        requiredEnv: ['NEXT_PUBLIC_APP_URL'],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'local_product_routes',
+            label:
+              'Verify the customer-facing product pages and bootstrap routes load locally.',
             risk: 'local_app',
             run: 'planned',
           },
@@ -1095,6 +1124,25 @@ export async function runDemoSmoke(
     }
   }
 
+  if (plan.category === 'local_product') {
+    const verifyLocalProduct =
+      dependencies.verifyLocalProduct ?? verifyLocalProductSmoke
+    const productResult = await verifyLocalProduct(env)
+    const ok = Object.values(productResult).every(Boolean)
+
+    return {
+      category: plan.category,
+      ok,
+      results: [
+        {
+          id: 'local_product_routes',
+          ok,
+          detail: `public product routes homepage=${String(productResult.homepage)} trade=${String(productResult.trade)} join=${String(productResult.join)} homepage_template=${String(productResult.homepageTemplate)} trade_template=${String(productResult.tradeTemplate)} join_template=${String(productResult.joinTemplate)}`,
+        },
+      ],
+    }
+  }
+
   if (plan.category === 'supabase_demo') {
     const runSeed = dependencies.seedDemoRep ?? seedDemoRep
     const verifyLogin = dependencies.verifyDemoRepLogin ?? verifyDemoRepLogin
@@ -1568,6 +1616,52 @@ async function verifyLocalAppSmoke(
     repEmail: me.rep?.email ?? email,
     repDisplayName: me.rep?.display_name ?? 'unknown rep',
     nicNacShellRendered: pageText.includes('Nic-Nac'),
+  }
+}
+
+async function verifyLocalProductSmoke(
+  env: Record<string, string | undefined>,
+): Promise<LocalProductVerification> {
+  const appUrl = env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '')
+  if (!appUrl) {
+    throw new Error('App URL is required for local product smoke.')
+  }
+
+  async function checkText(pathname: string, expected: string) {
+    const response = await fetch(withVercelProtectionBypass(`${appUrl}${pathname}`, env))
+    if (!response.ok) {
+      throw await buildSmokeHttpError(pathname, response)
+    }
+    const text = await response.text()
+    return text.includes(expected)
+  }
+
+  const [
+    homepage,
+    trade,
+    join,
+    homepageTemplate,
+    tradeTemplate,
+    joinTemplate,
+  ] = await Promise.all([
+    checkText('/amethyst/Homepage.html', '/api/amethyst/homepage-template'),
+    checkText('/amethyst/Trade.html', '/api/amethyst/trade-template'),
+    checkText('/amethyst/Join.html', '/api/amethyst/join-template'),
+    checkText(
+      '/api/amethyst/homepage-template',
+      'window.AMETHYST_HOMEPAGE_TEMPLATE_DATA',
+    ),
+    checkText('/api/amethyst/trade-template', 'window.AMETHYST_TRADE_TEMPLATE_DATA'),
+    checkText('/api/amethyst/join-template', 'window.AMETHYST_JOIN_TEMPLATE_DATA'),
+  ])
+
+  return {
+    homepage,
+    trade,
+    join,
+    homepageTemplate,
+    tradeTemplate,
+    joinTemplate,
   }
 }
 

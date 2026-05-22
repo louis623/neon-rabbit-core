@@ -1,5 +1,6 @@
 import type { TradeListingWithDesign } from '@/lib/services/types'
 import { getMyBoard } from '@/lib/services/trade-board'
+import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type AmethystTradeBoardTier = 'everyday' | 'diamond' | 'unicorn'
@@ -147,18 +148,14 @@ export async function loadAmethystTradeBoardPreviewListings(
     return defaultAmethystTradeBoardListings
   }
 
-  const previewEmail =
-    process.env.AMETHYST_TRADE_PREVIEW_EMAIL || 'testrep@neonrabbit.net'
-
   try {
     const admin = createAdminClient()
-    const { data: rep, error: repError } = await admin
-      .from('reps')
-      .select('id')
-      .eq('email', previewEmail)
-      .maybeSingle()
+    const rep = await resolveAmethystPreviewRep(admin, {
+      env: process.env,
+      select: 'id, email',
+    })
 
-    if (repError || !rep?.id) {
+    if (!rep?.id) {
       return defaultAmethystTradeBoardListings
     }
 

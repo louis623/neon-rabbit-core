@@ -35,6 +35,7 @@ describe('demo launch smoke readiness plan', () => {
     const categories = [
       'local_static',
       'local_app',
+      'local_product',
       'prelaunch_demo_seed',
       'supabase_demo',
       'stripe_test',
@@ -876,6 +877,50 @@ describe('demo launch smoke readiness plan', () => {
       ok: true,
       detail:
         'local app authenticated as Launch Demo Rep <demo@example.com>; Nic-Nac shell rendered',
+    })
+  })
+
+  it('can verify the public product shell with an injected product smoke runner', async () => {
+    const plan = buildDemoSmokePlan({ category: 'local_product' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).toContain('local_product')
+    expect(plan.requiredEnv).toEqual(['NEXT_PUBLIC_APP_URL'])
+    expect(plan.actions).toContainEqual(
+      expect.objectContaining({
+        id: 'local_product_routes',
+        risk: 'local_app',
+        run: 'planned',
+      }),
+    )
+
+    const result = await runDemoSmoke(
+      plan,
+      {
+        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+      },
+      {
+        verifyLocalProduct: async () => ({
+          homepage: true,
+          trade: true,
+          join: true,
+          homepageTemplate: true,
+          tradeTemplate: true,
+          joinTemplate: true,
+        }),
+      },
+    )
+
+    expect(result).toEqual({
+      category: 'local_product',
+      ok: true,
+      results: [
+        {
+          id: 'local_product_routes',
+          ok: true,
+          detail:
+            'public product routes homepage=true trade=true join=true homepage_template=true trade_template=true join_template=true',
+        },
+      ],
     })
   })
 

@@ -71,6 +71,7 @@ describe('local launch smoke temporary demo password helper', () => {
         'local_static',
         'supabase_demo',
         'local_app',
+        'local_product',
         'stripe_test',
         'stripe_local_routes',
         'stripe_webhook_local_signature',

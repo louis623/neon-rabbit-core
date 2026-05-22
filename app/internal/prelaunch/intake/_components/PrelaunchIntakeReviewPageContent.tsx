@@ -1529,6 +1529,39 @@ export function PrelaunchIntakeReviewPageContent({
                   : 'Production roster will show client health, services, agent touchpoints, and open flags.'}
               </p>
             </div>
+            {activeLaunchBuild?.repId ? (
+              <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Demo smoke links
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                  <a
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
+                    href="/nic-nac"
+                  >
+                    Nic-Nac
+                  </a>
+                  <a
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
+                    href="/amethyst/Homepage.html"
+                  >
+                    Public homepage
+                  </a>
+                  <a
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
+                    href="/amethyst/Trade.html"
+                  >
+                    Trade board
+                  </a>
+                  <a
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
+                    href="/amethyst/Join.html"
+                  >
+                    Join page
+                  </a>
+                </div>
+              </div>
+            ) : null}
             {activeLaunchBuild && !activeLaunchBuild.repId ? (
               <form
                 action="/api/control-center/intake/production-roster"
