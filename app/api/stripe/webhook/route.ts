@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/stripe/client'
 import { getSparkleSuitePriceIds, getStripeConfig } from '@/lib/stripe/config'
 import { stripeCentsToWalletMils } from '@/lib/services/wallet-units'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { upsertPrelaunchLaunchGate } from '@/lib/prelaunch/launch-gates'
 
 export const dynamic = 'force-dynamic'
 
@@ -377,12 +378,88 @@ async function handlePaymentIntentRequiresAction(event: Stripe.Event) {
 
 // --- Event Handlers ---
 
+function getCheckoutPaymentIntentId(session: Stripe.Checkout.Session) {
+  if (!session.payment_intent) return null
+  return typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent.id
+}
+
+async function handlePrelaunchPaymentGateCheckout(
+  event: Stripe.Event,
+  session: Stripe.Checkout.Session,
+) {
+  const launchBuildId = session.metadata?.launch_build_id ?? null
+  const gateType = session.metadata?.payment_gate ?? 'start_work_fee'
+  const now = new Date().toISOString()
+  const admin = createAdminClient()
+
+  if (session.payment_status !== 'paid') {
+    await admin
+      .from('sparkle_suite_payment_gates')
+      .update({
+        status: 'failed',
+        failed_at: now,
+        updated_at: now,
+      })
+      .eq('stripe_checkout_session_id', session.id)
+
+    logStripeEvent('warn', event, {
+      phase: 'prelaunch_payment_gate_checkout',
+      checkout_session_id: session.id,
+      payment_status: session.payment_status,
+    })
+    return
+  }
+
+  const { error } = await admin
+    .from('sparkle_suite_payment_gates')
+    .update({
+      status: 'paid',
+      stripe_payment_intent_id: getCheckoutPaymentIntentId(session),
+      stripe_customer_id:
+        typeof session.customer === 'string' ? session.customer : null,
+      amount_cents: session.amount_total,
+      currency: session.currency ?? 'usd',
+      livemode: session.livemode,
+      paid_at: now,
+      updated_at: now,
+    })
+    .eq('stripe_checkout_session_id', session.id)
+
+  if (error) throw error
+
+  if (launchBuildId) {
+    await upsertPrelaunchLaunchGate(
+      {
+        launchBuildId,
+        gateKey: 'payment',
+        status: 'ready',
+        notes: `Stripe checkout ${session.id} paid for ${gateType}.`,
+        operatorRepId: null,
+      },
+      admin,
+    )
+  }
+
+  logStripeEvent('info', event, {
+    phase: 'prelaunch_payment_gate_checkout',
+    checkout_session_id: session.id,
+    launch_build_id: launchBuildId,
+  })
+}
+
 async function handleCheckoutCompleted(event: Stripe.Event) {
   const session = event.data.object as Stripe.Checkout.Session
 
   // Wallet loads are mode='payment', so they must be handled BEFORE the subscription-only early return.
   if (session.metadata?.wallet_load === 'true') {
     await handleWalletLoad(event, session)
+    return
+  }
+
+  if (session.metadata?.sparkle_suite_payment_gate === 'true') {
+    await handlePrelaunchPaymentGateCheckout(event, session)
     return
   }
 

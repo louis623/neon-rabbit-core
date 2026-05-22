@@ -1179,7 +1179,8 @@ export function PrelaunchIntakeReviewPageContent({
                     </h3>
                   </div>
                   <p className="max-w-sm text-xs leading-5 text-slate-600">
-                    Operator-only status. This does not call Stripe or SignWell.
+                    Stripe checkout can email the customer a test-mode payment
+                    link. Gate status updates when the webhook confirms payment.
                   </p>
                 </div>
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -1245,6 +1246,40 @@ export function PrelaunchIntakeReviewPageContent({
                     </form>
                   ))}
                 </div>
+                <form
+                  action="/api/prelaunch/payment-gates/checkout"
+                  className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3"
+                  method="post"
+                >
+                  <input
+                    name="launchBuildId"
+                    type="hidden"
+                    value={activeLaunchBuild.id}
+                  />
+                  <input name="gateType" type="hidden" value="start_work_fee" />
+                  <input
+                    name="returnTo"
+                    type="hidden"
+                    value={`${basePath}#launch-gates`}
+                  />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-950">
+                        Send Stripe test checkout
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-emerald-800">
+                        Emails {activeLaunchBuild.leadEmail} a Stripe test-mode
+                        checkout link for the Start Work payment gate.
+                      </p>
+                    </div>
+                    <button
+                      className="inline-flex min-h-9 items-center justify-center rounded-md border border-emerald-300 bg-white px-3 text-xs font-semibold text-emerald-900 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100"
+                      type="submit"
+                    >
+                      Send checkout email
+                    </button>
+                  </div>
+                </form>
                 <form
                   action="/api/control-center/intake/agreement-document"
                   className="mt-4 rounded-md border border-slate-200 bg-white p-3"
@@ -1394,6 +1429,14 @@ export function PrelaunchIntakeReviewPageContent({
                       Create SignWell test draft
                     </button>
                     <button
+                      className="inline-flex min-h-9 items-center justify-center rounded-md border border-indigo-300 bg-indigo-50 px-3 text-xs font-semibold text-indigo-900 shadow-sm transition hover:border-indigo-400 hover:bg-indigo-100"
+                      name="sendTestAgreement"
+                      type="submit"
+                      value="true"
+                    >
+                      Send test agreement email
+                    </button>
+                    <button
                       className="inline-flex min-h-9 items-center justify-center rounded-md border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-900 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100"
                       name="markSigned"
                       type="submit"
@@ -1405,8 +1448,9 @@ export function PrelaunchIntakeReviewPageContent({
                   <p className="mt-2 text-xs leading-5 text-slate-500">
                     Test draft creation requires the sandbox guard flag. It
                     keeps test mode on, keeps the document as a draft, and
-                    leaves email disabled. Recording a test signature marks the
-                    sandbox agreement gate ready.
+                    leaves email disabled. Test agreement email sends through
+                    SignWell test mode. Recording a test signature marks the
+                    agreement gate ready.
                   </p>
                 </form>
               </section>
@@ -1635,7 +1679,8 @@ export function PrelaunchIntakeReviewPageContent({
                 </div>
                 <p className="mt-3 text-xs leading-5 text-slate-500">
                   Account creation uses the customer email on this build,
-                  confirms the auth user, and does not email credentials.
+                  confirms the auth user, and sends the account-ready email
+                  without exposing the temporary password.
                 </p>
                 <button
                   className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
@@ -1945,11 +1990,36 @@ export function PrelaunchIntakeReviewPageContent({
                                   basePath,
                                 )}
                               />
+                              <label className="mt-3 block text-xs font-semibold text-slate-700">
+                                Consult date/time
+                                <input
+                                  className="mt-1 min-h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                                  name="consultScheduledAt"
+                                  placeholder="May 22, 2026 at 4:00 PM ET"
+                                  required
+                                />
+                              </label>
+                              <label className="mt-2 block text-xs font-semibold text-slate-700">
+                                Meeting link
+                                <input
+                                  className="mt-1 min-h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                                  name="consultMeetingUrl"
+                                  placeholder="https://meet.google.com/..."
+                                  type="url"
+                                />
+                              </label>
+                              <label className="mt-2 block text-xs font-semibold text-slate-700">
+                                Notes for the customer email
+                                <textarea
+                                  className="mt-1 min-h-16 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal leading-6 text-slate-950"
+                                  name="consultNotes"
+                                />
+                              </label>
                               <button
-                                className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                                className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
                                 type="submit"
                               >
-                                Mark meeting scheduled
+                                Schedule consult
                               </button>
                             </form>
                           ) : null}

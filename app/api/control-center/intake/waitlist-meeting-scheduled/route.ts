@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { buildPrelaunchConsultScheduledEmailContent } from '@/lib/prelaunch/email-content'
+import { sendPrelaunchEmail } from '@/lib/prelaunch/waitlist-email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -31,6 +33,9 @@ async function parsePayload(request: Request) {
 
     return {
       leadId: readString(body.leadId),
+      consultScheduledAt: readString(body.consultScheduledAt),
+      consultMeetingUrl: readString(body.consultMeetingUrl),
+      consultNotes: readString(body.consultNotes),
       returnTo: sanitizeReturnTo(readString(body.returnTo)),
       wantsJson: true,
     }
@@ -40,6 +45,9 @@ async function parsePayload(request: Request) {
 
   return {
     leadId: readString(form.get('leadId')),
+    consultScheduledAt: readString(form.get('consultScheduledAt')),
+    consultMeetingUrl: readString(form.get('consultMeetingUrl')),
+    consultNotes: readString(form.get('consultNotes')),
     returnTo: sanitizeReturnTo(readString(form.get('returnTo'))),
     wantsJson: false,
   }
@@ -75,18 +83,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'leadId is required.' }, { status: 400 })
     }
 
+    if (!payload.consultScheduledAt) {
+      return NextResponse.json(
+        { error: 'consultScheduledAt is required.' },
+        { status: 400 },
+      )
+    }
+
     const admin = createAdminClient()
+    const handoffNotes = [
+      `Consult scheduled: ${payload.consultScheduledAt}`,
+      payload.consultMeetingUrl
+        ? `Meeting link: ${payload.consultMeetingUrl}`
+        : null,
+      payload.consultNotes ? `Notes: ${payload.consultNotes}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n')
     const { data, error } = await admin
       .from('sparkle_suite_waitlist')
       .update({
         lead_status: 'meeting_scheduled',
+        handoff_notes: handoffNotes,
         updated_at: new Date().toISOString(),
       })
       .eq('id', payload.leadId)
       .eq('lead_status', 'contacted')
       .eq('handoff_status', 'not_started')
       .is('intake_submission_id', null)
-      .select('id, lead_status')
+      .select('id, lead_status, name, email')
       .single()
 
     if (error) {
@@ -97,6 +122,18 @@ export async function POST(request: Request) {
           : 'Failed to update this waitlist lead.'
 
       return NextResponse.json({ error: message }, { status })
+    }
+
+    if (typeof data.email === 'string' && data.email.trim()) {
+      await sendPrelaunchEmail({
+        email: data.email,
+        content: buildPrelaunchConsultScheduledEmailContent({
+          name: typeof data.name === 'string' ? data.name : data.email,
+          scheduledAt: payload.consultScheduledAt,
+          meetingUrl: payload.consultMeetingUrl,
+          notes: payload.consultNotes,
+        }),
+      })
     }
 
     return jsonOrRedirect(request, {

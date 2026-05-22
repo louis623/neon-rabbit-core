@@ -7,6 +7,7 @@ import {
   getPrelaunchSignWellLiveSendMode,
   PrelaunchSignWellProviderError,
   submitPrelaunchSignWellSandboxAgreement,
+  submitPrelaunchSignWellTestAgreementEmail,
   type PrelaunchAgreementGateType,
 } from '@/lib/prelaunch/signwell'
 
@@ -85,6 +86,14 @@ interface CreatePrelaunchAgreementDraftInput {
 }
 
 interface CreatePrelaunchSignWellSandboxDraftInput {
+  launchBuildId: string
+  operatorRepId?: string | null
+  notes?: string | null
+  env?: Record<string, string | undefined>
+  fetchImpl?: typeof fetch
+}
+
+interface SendPrelaunchSignWellTestAgreementInput {
   launchBuildId: string
   operatorRepId?: string | null
   notes?: string | null
@@ -388,6 +397,96 @@ export async function createPrelaunchSignWellSandboxDraftForBuild(
 
   return {
     agreementDocument,
+    providerResult,
+  }
+}
+
+export async function sendPrelaunchSignWellTestAgreementForBuild(
+  input: SendPrelaunchSignWellTestAgreementInput,
+  admin: AdminClient = createAdminClient(),
+) {
+  const env = input.env ?? process.env
+  const launchBuildId = cleanRequiredString(
+    input.launchBuildId,
+    'launchBuildId',
+  )
+  const config = getPrelaunchSignWellConfig(env)
+
+  if (!config) {
+    throw new Error('SignWell agreement template is not configured.')
+  }
+
+  const build = await loadAgreementLaunchBuild(launchBuildId, admin)
+  const template = getPrelaunchAgreementTemplateSnapshot(env)
+  if (!template) throw new Error('SignWell agreement template is not configured.')
+
+  const metadata = buildPrelaunchSignWellMetadata({
+    gateType: 'service_agreement',
+    intakeId: build.intake_submission_id ?? launchBuildId,
+    waitlistId: build.waitlist_id,
+    operatorRepId: input.operatorRepId ?? null,
+  })
+  const agreementPayload = buildPrelaunchSignWellAgreementPayload({
+    templateId: config.templateId,
+    recipientPlaceholderName: config.recipientPlaceholderName,
+    recipient: {
+      name: build.lead_name,
+      email: build.lead_email,
+    },
+    metadata,
+    mode: 'sandbox',
+  })
+  const providerResult = await submitPrelaunchSignWellTestAgreementEmail({
+    config,
+    agreementPayload,
+    fetchImpl: input.fetchImpl,
+  })
+
+  if (!providerResult.documentId) {
+    throw new PrelaunchSignWellProviderError(
+      'SignWell test agreement email returned no document id.',
+      { status: providerResult.providerStatus },
+    )
+  }
+
+  const { data, error } = await admin
+    .from('sparkle_suite_agreement_documents')
+    .upsert(
+      {
+        launch_build_id: build.id,
+        waitlist_id: build.waitlist_id,
+        intake_submission_id: build.intake_submission_id,
+        provider: 'signwell',
+        mode: 'sandbox',
+        gate_type: 'service_agreement',
+        status: 'sent',
+        template_id: template.templateId,
+        template_label: template.templateLabel,
+        pricing_cohort: template.pricingCohort,
+        provider_document_id: providerResult.documentId,
+        recipient_name: build.lead_name,
+        recipient_email: build.lead_email,
+        send_email: true,
+        draft: false,
+        test_mode: true,
+        provider_status: providerResult.providerStatus,
+        notes:
+          cleanOptionalText(input.notes) ||
+          'SignWell test-mode agreement email sent.',
+        metadata,
+        updated_by_rep_id: input.operatorRepId ?? null,
+      },
+      { onConflict: 'launch_build_id,provider,mode,gate_type' },
+    )
+    .select(PRELAUNCH_AGREEMENT_DOCUMENT_SELECT)
+    .single()
+
+  if (error) throw error
+
+  return {
+    agreementDocument: normalizePrelaunchAgreementDocumentRows([
+      data as unknown as PrelaunchAgreementDocumentRow,
+    ])[0],
     providerResult,
   }
 }

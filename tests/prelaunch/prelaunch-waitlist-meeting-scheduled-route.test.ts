@@ -68,7 +68,10 @@ describe('POST /api/control-center/intake/waitlist-meeting-scheduled', () => {
         {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ leadId: 'waitlist-1' }),
+          body: JSON.stringify({
+            leadId: 'waitlist-1',
+            consultScheduledAt: 'May 22, 2026 at 4:00 PM ET',
+          }),
         },
       ),
     )
@@ -76,13 +79,14 @@ describe('POST /api/control-center/intake/waitlist-meeting-scheduled', () => {
     expect(fromMock).toHaveBeenCalledWith('sparkle_suite_waitlist')
     expect(updateMock).toHaveBeenCalledWith({
       lead_status: 'meeting_scheduled',
+      handoff_notes: 'Consult scheduled: May 22, 2026 at 4:00 PM ET',
       updated_at: expect.any(String),
     })
     expect(eqIdMock).toHaveBeenCalledWith('id', 'waitlist-1')
     expect(eqLeadStatusMock).toHaveBeenCalledWith('lead_status', 'contacted')
     expect(eqHandoffMock).toHaveBeenCalledWith('handoff_status', 'not_started')
     expect(isIntakeMock).toHaveBeenCalledWith('intake_submission_id', null)
-    expect(selectMock).toHaveBeenCalledWith('id, lead_status')
+    expect(selectMock).toHaveBeenCalledWith('id, lead_status, name, email')
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       ok: true,
@@ -103,6 +107,7 @@ describe('POST /api/control-center/intake/waitlist-meeting-scheduled', () => {
 
     const form = new FormData()
     form.set('leadId', 'waitlist-1')
+    form.set('consultScheduledAt', 'May 22, 2026 at 4:00 PM ET')
     form.set('returnTo', '/control-center/intake?waitlist=meeting_scheduled')
 
     const response = await POST(
@@ -117,6 +122,7 @@ describe('POST /api/control-center/intake/waitlist-meeting-scheduled', () => {
 
     expect(updateMock).toHaveBeenCalledWith({
       lead_status: 'meeting_scheduled',
+      handoff_notes: 'Consult scheduled: May 22, 2026 at 4:00 PM ET',
       updated_at: expect.any(String),
     })
     expect(response.status).toBe(303)
@@ -165,13 +171,17 @@ describe('POST /api/control-center/intake/waitlist-meeting-scheduled', () => {
         {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ leadId: 'waitlist-1' }),
+          body: JSON.stringify({
+            leadId: 'waitlist-1',
+            consultScheduledAt: 'May 22, 2026 at 4:00 PM ET',
+          }),
         },
       ),
     )
 
     expect(updateMock).toHaveBeenCalledWith({
       lead_status: 'meeting_scheduled',
+      handoff_notes: 'Consult scheduled: May 22, 2026 at 4:00 PM ET',
       updated_at: expect.any(String),
     })
     expect(eqLeadStatusMock).toHaveBeenCalledWith('lead_status', 'contacted')

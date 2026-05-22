@@ -36,8 +36,8 @@ export interface PrelaunchSignWellSandboxSubmitResult {
   documentId: string | null
   recipientCount: number
   testMode: true
-  sendEmail: false
-  draft: true
+  sendEmail: boolean
+  draft: boolean
 }
 
 export class PrelaunchSignWellProviderError extends Error {
@@ -301,5 +301,56 @@ export async function submitPrelaunchSignWellSandboxAgreement(input: {
     testMode: true,
     sendEmail: false,
     draft: true,
+  }
+}
+
+export async function submitPrelaunchSignWellTestAgreementEmail(input: {
+  config: NonNullable<ReturnType<typeof getPrelaunchSignWellConfig>>
+  agreementPayload: PrelaunchSignWellAgreementPayload
+  fetchImpl?: typeof fetch
+}): Promise<PrelaunchSignWellSandboxSubmitResult> {
+  const agreementPayload = {
+    ...input.agreementPayload,
+    test_mode: true,
+    send_email: true,
+    draft: false,
+  }
+  const fetchImpl = input.fetchImpl ?? fetch
+  const response = await fetchImpl(
+    buildSignWellApiUrl(input.config.apiBaseUrl, '/document_templates/documents'),
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': input.config.apiKey,
+      },
+      body: JSON.stringify(agreementPayload),
+    },
+  )
+  const body = await readJsonObject(response)
+
+  if (!response.ok) {
+    const safeProviderDetail = summarizeSignWellProviderErrorBody(body)
+    throw new PrelaunchSignWellProviderError(
+      [
+        `SignWell test agreement email failed with status ${response.status}.`,
+        safeProviderDetail ? `Provider detail: ${safeProviderDetail}.` : null,
+      ]
+        .filter(Boolean)
+        .join(' '),
+      { status: response.status, safeProviderDetail: safeProviderDetail ?? undefined },
+    )
+  }
+
+  const documentId = typeof body?.id === 'string' ? body.id : null
+  const recipients = Array.isArray(body?.recipients) ? body.recipients : []
+
+  return {
+    providerStatus: response.status,
+    documentId,
+    recipientCount: recipients.length,
+    testMode: true,
+    sendEmail: true,
+    draft: false,
   }
 }

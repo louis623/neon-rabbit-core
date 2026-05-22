@@ -1,4 +1,5 @@
 import { getResendConfig, isResendEnabled } from '@/lib/resend/config'
+import type { SparkleSuitePrelaunchEmailContent } from '@/lib/prelaunch/email-content'
 import { buildPrelaunchWaitlistWelcomeEmailContent } from '@/lib/prelaunch/email-content'
 
 export type PrelaunchWaitlistWelcomeEmailResult =
@@ -33,9 +34,10 @@ function getResendErrorMessage(payload: unknown) {
   return null
 }
 
-export async function sendPrelaunchWaitlistWelcomeEmail(
-  input: PrelaunchWaitlistWelcomeEmailInput,
-): Promise<PrelaunchWaitlistWelcomeEmailResult> {
+export async function sendPrelaunchEmail(input: {
+  email: string
+  content: SparkleSuitePrelaunchEmailContent
+}): Promise<PrelaunchWaitlistWelcomeEmailResult> {
   if (!isResendEnabled()) {
     return { status: 'skipped', reason: 'resend_not_configured' }
   }
@@ -46,7 +48,6 @@ export async function sendPrelaunchWaitlistWelcomeEmail(
   }
 
   const recipientEmail = input.email.trim().toLowerCase()
-  const content = buildPrelaunchWaitlistWelcomeEmailContent(input.name)
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -58,8 +59,8 @@ export async function sendPrelaunchWaitlistWelcomeEmail(
       body: JSON.stringify({
         from: resendConfig.RESEND_FROM_EMAIL,
         to: [recipientEmail],
-        subject: content.subject,
-        text: content.text,
+        subject: input.content.subject,
+        text: input.content.text,
       }),
     })
 
@@ -81,4 +82,13 @@ export async function sendPrelaunchWaitlistWelcomeEmail(
       error: error instanceof Error ? error.message : 'Unknown Resend error',
     }
   }
+}
+
+export async function sendPrelaunchWaitlistWelcomeEmail(
+  input: PrelaunchWaitlistWelcomeEmailInput,
+): Promise<PrelaunchWaitlistWelcomeEmailResult> {
+  return sendPrelaunchEmail({
+    email: input.email,
+    content: buildPrelaunchWaitlistWelcomeEmailContent(input.name),
+  })
 }

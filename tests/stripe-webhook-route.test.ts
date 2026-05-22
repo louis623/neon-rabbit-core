@@ -4,6 +4,7 @@ const getStripeConfigMock = vi.fn()
 const getSparkleSuitePriceIdsMock = vi.fn()
 const getStripeMock = vi.fn()
 const createAdminClientMock = vi.fn()
+const upsertPrelaunchLaunchGateMock = vi.fn()
 
 vi.mock('@/lib/stripe/config', () => ({
   getStripeConfig: (...args: unknown[]) => getStripeConfigMock(...args),
@@ -19,6 +20,11 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: (...args: unknown[]) => createAdminClientMock(...args),
 }))
 
+vi.mock('@/lib/prelaunch/launch-gates', () => ({
+  upsertPrelaunchLaunchGate: (...args: unknown[]) =>
+    upsertPrelaunchLaunchGateMock(...args),
+}))
+
 import { POST } from '@/app/api/stripe/webhook/route'
 
 describe('POST /api/stripe/webhook', () => {
@@ -27,6 +33,7 @@ describe('POST /api/stripe/webhook', () => {
     getSparkleSuitePriceIdsMock.mockReset()
     getStripeMock.mockReset()
     createAdminClientMock.mockReset()
+    upsertPrelaunchLaunchGateMock.mockReset()
     getStripeConfigMock.mockReturnValue({
       STRIPE_WEBHOOK_SECRET: 'whsec_test',
     })
@@ -250,6 +257,101 @@ describe('POST /api/stripe/webhook', () => {
     )
     expect(insertEventMock).toHaveBeenCalledWith({
       id: 'evt_checkout',
+      event_type: 'checkout.session.completed',
+    })
+  })
+
+  it('marks a prelaunch payment gate paid after a verified Stripe checkout', async () => {
+    const paymentGateEqMock = vi.fn().mockResolvedValue({ error: null })
+    const paymentGateUpdateMock = vi.fn(() => ({ eq: paymentGateEqMock }))
+    const insertEventMock = vi.fn().mockResolvedValue({ error: null })
+    const admin = {
+      from: vi.fn((table: string) => {
+        if (table === 'stripe_events') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({ data: null }),
+              })),
+            })),
+            insert: insertEventMock,
+          }
+        }
+
+        if (table === 'sparkle_suite_payment_gates') {
+          return {
+            update: paymentGateUpdateMock,
+          }
+        }
+
+        throw new Error(`unexpected table ${table}`)
+      }),
+    }
+    const event = {
+      id: 'evt_prelaunch_gate',
+      type: 'checkout.session.completed',
+      livemode: false,
+      created: 1_779_120_000,
+      data: {
+        object: {
+          id: 'cs_prelaunch_gate',
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: 'pi_prelaunch_gate',
+          customer: 'cus_prelaunch_gate',
+          amount_total: 50000,
+          currency: 'usd',
+          livemode: false,
+          metadata: {
+            sparkle_suite_payment_gate: 'true',
+            payment_gate: 'start_work_fee',
+            launch_build_id: 'build-1',
+          },
+        },
+      },
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    upsertPrelaunchLaunchGateMock.mockResolvedValueOnce({ id: 'gate-1' })
+    getStripeMock.mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue(event),
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': 'verified_sig' },
+        body: JSON.stringify({ id: 'evt_prelaunch_gate' }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(paymentGateUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'paid',
+        stripe_payment_intent_id: 'pi_prelaunch_gate',
+        stripe_customer_id: 'cus_prelaunch_gate',
+        amount_cents: 50000,
+        livemode: false,
+        paid_at: expect.any(String),
+      }),
+    )
+    expect(paymentGateEqMock).toHaveBeenCalledWith(
+      'stripe_checkout_session_id',
+      'cs_prelaunch_gate',
+    )
+    expect(upsertPrelaunchLaunchGateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        launchBuildId: 'build-1',
+        gateKey: 'payment',
+        status: 'ready',
+      }),
+      admin,
+    )
+    expect(insertEventMock).toHaveBeenCalledWith({
+      id: 'evt_prelaunch_gate',
       event_type: 'checkout.session.completed',
     })
   })

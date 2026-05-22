@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { buildPrelaunchConsultOutreachEmailContent } from '@/lib/prelaunch/email-content'
+import { sendPrelaunchEmail } from '@/lib/prelaunch/waitlist-email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -86,7 +88,7 @@ export async function POST(request: Request) {
       .eq('lead_status', 'contact_batch_selected')
       .eq('handoff_status', 'not_started')
       .is('intake_submission_id', null)
-      .select('id, lead_status')
+      .select('id, lead_status, name, email')
       .single()
 
     if (error) {
@@ -97,6 +99,15 @@ export async function POST(request: Request) {
           : 'Failed to update this waitlist lead.'
 
       return NextResponse.json({ error: message }, { status })
+    }
+
+    if (typeof data.email === 'string' && data.email.trim()) {
+      await sendPrelaunchEmail({
+        email: data.email,
+        content: buildPrelaunchConsultOutreachEmailContent(
+          typeof data.name === 'string' ? data.name : data.email,
+        ),
+      })
     }
 
     return jsonOrRedirect(request, {

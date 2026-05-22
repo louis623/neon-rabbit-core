@@ -592,7 +592,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Contacted Lead')
     expect(html).toContain('contacted@example.com')
     expect(html).toContain('Contacted')
-    expect(html).toContain('Mark meeting scheduled')
+    expect(html).toContain('Schedule consult')
+    expect(html).toContain('Consult date/time')
     expect(html).toContain(
       'action="/api/control-center/intake/waitlist-meeting-scheduled"',
     )
@@ -1003,7 +1004,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Record test signature')
     expect(html).toContain('Signed PDF URL')
     expect(html).toContain('Blank uses the current time')
-    expect(html).toContain('marks the sandbox agreement gate ready')
+    expect(html).toContain('marks the agreement gate ready')
+    expect(html).toContain('Send test agreement email')
     expect(html).toContain('keeps test mode on')
     expect(html).toContain('test mode only')
     expect(html).toContain('sandbox only')

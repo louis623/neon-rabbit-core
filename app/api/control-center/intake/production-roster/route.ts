@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { buildPrelaunchAccountReadyEmailContent } from '@/lib/prelaunch/email-content'
+import { sendPrelaunchEmail } from '@/lib/prelaunch/waitlist-email'
 import { preparePrelaunchClientAccountForLaunchBuild } from '@/lib/prelaunch/client-account'
 import { connectPrelaunchLaunchBuildToProductionRep } from '@/lib/prelaunch/production-roster'
 import {
@@ -104,6 +106,19 @@ export async function POST(request: Request) {
       notes: payload.notes,
       operatorRepId: operator.repId,
     })
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000'
+    if (build.leadEmail) {
+      await sendPrelaunchEmail({
+        email: build.leadEmail,
+        content: buildPrelaunchAccountReadyEmailContent({
+          name: build.leadName || build.leadEmail,
+          accountUrl: `${appUrl.replace(/\/+$/, '')}/nic-nac?c=${encodeURIComponent(
+            repId,
+          )}`,
+        }),
+      })
+    }
 
     if (!payload.wantsJson) {
       return NextResponse.redirect(new URL(payload.returnTo, request.url), 303)

@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedOperatorMock = vi.fn()
+const checkoutCreateMock = vi.fn()
+const sendPrelaunchEmailMock = vi.fn()
+const paymentGateInsertMock = vi.fn()
+const launchBuildSingleMock = vi.fn()
+const launchBuildEqMock = vi.fn(() => ({ single: launchBuildSingleMock }))
+const launchBuildSelectMock = vi.fn(() => ({ eq: launchBuildEqMock }))
+const fromMock = vi.fn((table: string) => {
+  if (table === 'sparkle_suite_launch_builds') {
+    return { select: launchBuildSelectMock }
+  }
+
+  return { insert: paymentGateInsertMock }
+})
 
 const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
   MockAuthError: class MockAuthError extends Error {},
@@ -14,13 +27,46 @@ vi.mock('@/lib/supabase/operator-auth', () => ({
     getAuthenticatedOperatorMock(...args),
 }))
 
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    from: fromMock,
+  }),
+}))
+
+vi.mock('@/lib/stripe/client', () => ({
+  stripeEnabled: () => true,
+  getStripe: () => ({
+    checkout: {
+      sessions: {
+        create: checkoutCreateMock,
+      },
+    },
+  }),
+}))
+
+vi.mock('@/lib/stripe/config', () => ({
+  getAppUrl: () => 'http://localhost:3000',
+}))
+
+vi.mock('@/lib/prelaunch/waitlist-email', () => ({
+  sendPrelaunchEmail: (...args: unknown[]) => sendPrelaunchEmailMock(...args),
+}))
+
 import { POST } from '@/app/api/prelaunch/payment-gates/checkout/route'
 
 describe('POST /api/prelaunch/payment-gates/checkout', () => {
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
+    checkoutCreateMock.mockReset()
+    sendPrelaunchEmailMock.mockReset()
+    paymentGateInsertMock.mockReset()
+    launchBuildSingleMock.mockReset()
+    launchBuildEqMock.mockClear()
+    launchBuildSelectMock.mockClear()
+    fromMock.mockClear()
     delete process.env.STRIPE_PRICE_START_WORK_FEE
     delete process.env.STRIPE_PRICE_LAUNCH_FEE
+    delete process.env.STRIPE_PRICE_BUILD_FEE
   })
 
   it('returns not_configured before a Stripe price ID exists for the gate', async () => {
@@ -81,12 +127,35 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
     })
   })
 
-  it('keeps checkout disabled even after a price ID is configured', async () => {
+  it('creates a Stripe test checkout and emails the customer when a price ID is configured', async () => {
     process.env.STRIPE_PRICE_START_WORK_FEE = 'price_start_123'
     getAuthenticatedOperatorMock.mockResolvedValueOnce({
       repId: 'operator-rep-1',
       rep: { email: 'louis@neonrabbit.net' },
     })
+    launchBuildSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: null,
+        lead_name: 'Sparkle Customer',
+        lead_email: 'customer@example.com',
+      },
+      error: null,
+    })
+    checkoutCreateMock.mockResolvedValueOnce({
+      id: 'cs_test_123',
+      url: 'https://checkout.stripe.test/session',
+      customer: null,
+      amount_total: 50000,
+      currency: 'usd',
+      livemode: false,
+    })
+    sendPrelaunchEmailMock.mockResolvedValueOnce({
+      status: 'sent',
+      providerId: 'email-1',
+    })
+    paymentGateInsertMock.mockResolvedValueOnce({ error: null })
 
     const response = await POST(
       new Request('http://localhost/api/prelaunch/payment-gates/checkout', {
@@ -94,26 +163,41 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           gateType: 'start_work_fee',
-          intakeId: 'intake-1',
+          launchBuildId: 'build-1',
         }),
       }),
     )
 
-    expect(response.status).toBe(501)
-    await expect(response.json()).resolves.toEqual({
-      code: 'PAYMENT_GATE_CHECKOUT_NOT_ENABLED',
-      error:
-        'Payment gate checkout is waiting for final Stripe price review.',
-      gateType: 'start_work_fee',
-      priceId: 'price_start_123',
-      metadata: {
-        platform: 'sparkle_suite',
-        payment_gate: 'start_work_fee',
+    expect(checkoutCreateMock).toHaveBeenCalledWith({
+      mode: 'payment',
+      customer_email: 'customer@example.com',
+      line_items: [{ price: 'price_start_123', quantity: 1 }],
+      success_url:
+        'http://localhost:3000/prelaunch/payment/success?session_id=%7BCHECKOUT_SESSION_ID%7D',
+      cancel_url: 'http://localhost:3000/prelaunch/payment/cancelled',
+      metadata: expect.objectContaining({
         sparkle_suite_payment_gate: 'true',
-        intake_submission_id: 'intake-1',
-        waitlist_id: null,
-        operator_rep_id: 'operator-rep-1',
-      },
+        payment_gate: 'start_work_fee',
+        launch_build_id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        lead_email: 'customer@example.com',
+      }),
+    })
+    expect(paymentGateInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gate_type: 'start_work_fee',
+        status: 'checkout_created',
+        launch_build_id: 'build-1',
+        stripe_checkout_session_id: 'cs_test_123',
+        checkout_email_status: 'sent',
+      }),
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      code: 'PAYMENT_GATE_CHECKOUT_CREATED',
+      checkoutSessionId: 'cs_test_123',
+      checkoutUrl: 'https://checkout.stripe.test/session',
     })
   })
 

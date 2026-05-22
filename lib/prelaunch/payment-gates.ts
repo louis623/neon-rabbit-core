@@ -20,6 +20,12 @@ const PRICE_ENV_BY_GATE_TYPE: Record<PrelaunchPaymentGateType, string> = {
   launch_fee: 'STRIPE_PRICE_LAUNCH_FEE',
 }
 
+const FALLBACK_PRICE_ENV_BY_GATE_TYPE: Partial<
+  Record<PrelaunchPaymentGateType, string>
+> = {
+  start_work_fee: 'STRIPE_PRICE_BUILD_FEE',
+}
+
 export function normalizePrelaunchPaymentGateType(value: unknown) {
   if (typeof value !== 'string') return null
   return PRELAUNCH_PAYMENT_GATE_TYPES.find((type) => type === value) ?? null
@@ -29,7 +35,13 @@ export function getPrelaunchPaymentGatePriceId(
   gateType: PrelaunchPaymentGateType,
   env: EnvLike = process.env,
 ) {
-  return env[PRICE_ENV_BY_GATE_TYPE[gateType]]?.trim() || null
+  return (
+    env[PRICE_ENV_BY_GATE_TYPE[gateType]]?.trim() ||
+    (FALLBACK_PRICE_ENV_BY_GATE_TYPE[gateType]
+      ? env[FALLBACK_PRICE_ENV_BY_GATE_TYPE[gateType]]?.trim()
+      : '') ||
+    null
+  )
 }
 
 export function buildPrelaunchPaymentGateMetadata({

@@ -5,6 +5,7 @@ import {
   createPrelaunchSignWellSandboxDraftForBuild,
   isPrelaunchSignWellSandboxDraftCreateEnabled,
   recordPrelaunchAgreementSigned,
+  sendPrelaunchSignWellTestAgreementForBuild,
 } from '@/lib/prelaunch/agreement-documents'
 import {
   AuthError,
@@ -51,6 +52,7 @@ async function parsePayload(request: Request) {
       providerDocumentId: readString(body.providerDocumentId),
       providerStatus: readProviderStatus(body.providerStatus),
       createSandboxDraft: readBoolean(body.createSandboxDraft),
+      sendTestAgreement: readBoolean(body.sendTestAgreement),
       markSigned: readBoolean(body.markSigned),
       signedAt: readString(body.signedAt),
       signedPdfUrl: readString(body.signedPdfUrl),
@@ -67,6 +69,7 @@ async function parsePayload(request: Request) {
     providerDocumentId: readString(form.get('providerDocumentId')),
     providerStatus: readProviderStatus(form.get('providerStatus')),
     createSandboxDraft: readBoolean(form.get('createSandboxDraft')),
+    sendTestAgreement: readBoolean(form.get('sendTestAgreement')),
     markSigned: readBoolean(form.get('markSigned')),
     signedAt: readString(form.get('signedAt')),
     signedPdfUrl: readString(form.get('signedPdfUrl')),
@@ -114,6 +117,26 @@ export async function POST(request: Request) {
       return NextResponse.json({
         ok: true,
         code: 'SIGNWELL_SANDBOX_DRAFT_CREATED',
+        agreementDocument,
+        providerResult,
+      })
+    }
+
+    if (payload.sendTestAgreement) {
+      const { agreementDocument, providerResult } =
+        await sendPrelaunchSignWellTestAgreementForBuild({
+          launchBuildId: payload.launchBuildId,
+          operatorRepId: operator.repId,
+          notes: payload.notes,
+        })
+
+      if (!payload.wantsJson) {
+        return NextResponse.redirect(new URL(payload.returnTo, request.url), 303)
+      }
+
+      return NextResponse.json({
+        ok: true,
+        code: 'SIGNWELL_TEST_AGREEMENT_SENT',
         agreementDocument,
         providerResult,
       })

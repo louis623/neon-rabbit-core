@@ -85,7 +85,7 @@ describe('POST /api/control-center/intake/waitlist-contact-progress', () => {
     )
     expect(eqHandoffMock).toHaveBeenCalledWith('handoff_status', 'not_started')
     expect(isIntakeMock).toHaveBeenCalledWith('intake_submission_id', null)
-    expect(selectMock).toHaveBeenCalledWith('id, lead_status')
+    expect(selectMock).toHaveBeenCalledWith('id, lead_status, name, email')
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       ok: true,
