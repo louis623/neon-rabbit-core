@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', payload.leadId)
-      .eq('welcome_email_status', 'sent')
+      .in('welcome_email_status', ['sent', 'skipped'])
       .eq('handoff_status', 'not_started')
       .is('intake_submission_id', null)
       .eq('lead_status', 'new')

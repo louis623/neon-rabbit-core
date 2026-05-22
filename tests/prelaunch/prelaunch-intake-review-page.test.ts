@@ -410,13 +410,11 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('keep the active build visible')
     expect(html).toContain('Active work board')
     expect(html).toContain('Current build watch')
-    expect(html).toContain('Demo run launcher')
-    expect(html).toContain('Create/refresh demo run')
-    expect(html).toContain(
+    expect(html).not.toContain('Demo run launcher')
+    expect(html).not.toContain('Create/refresh demo run')
+    expect(html).not.toContain(
       'action="/api/control-center/intake/demo-launch-flow"',
     )
-    expect(html).toContain('louis+sparkle-demo@neonrabbit.net')
-    expect(html).toContain('No SMS, email, live SignWell send, Stripe charge')
     expect(html).toContain('One client at a time')
     expect(html).toContain('Active client')
     expect(html).toContain('No active client')

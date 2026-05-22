@@ -72,25 +72,16 @@ async function loadProductionRosterRep(repId: string, admin: AdminClient) {
   return data as unknown as ProductionRosterRepRow
 }
 
-function assertDemoRosterConnectAllowed(
-  build: LaunchBuildRosterGateRow,
-  rep: ProductionRosterRepRow,
-) {
-  const demoRepEmail = process.env.DEMO_REP_EMAIL?.trim().toLowerCase()
-  const leadEmail = build.lead_email.trim().toLowerCase()
-  const leadName = build.lead_name.trim().toLowerCase()
-
-  if (demoRepEmail && rep.email.trim().toLowerCase() !== demoRepEmail) {
-    throw new Error('Only the configured demo rep can be connected here.')
-  }
-
+function assertProductionRosterConnectAllowed(build: LaunchBuildRosterGateRow) {
   if (
-    !demoRepEmail &&
-    !leadEmail.endsWith('@yoursparklesuite.com') &&
-    !leadEmail.includes('demo') &&
-    !leadName.includes('demo')
+    build.setup_profile_status !== 'ready' ||
+    build.payment_gate_status !== 'ready' ||
+    build.agreement_gate_status !== 'ready' ||
+    build.build_check_status !== 'passed'
   ) {
-    throw new Error('Only demo launch builds can be connected here.')
+    throw new Error(
+      'Production roster requires setup, payment, agreement, and build checks to be ready.',
+    )
   }
 }
 
@@ -108,7 +99,7 @@ export async function connectPrelaunchLaunchBuildToProductionRep(
     loadProductionRosterRep(repId, admin),
   ])
 
-  assertDemoRosterConnectAllowed(gateRow, rep)
+  assertProductionRosterConnectAllowed(gateRow)
 
   const readiness = buildPrelaunchLaunchBuildReadiness({
     setupProfileStatus: gateRow.setup_profile_status,

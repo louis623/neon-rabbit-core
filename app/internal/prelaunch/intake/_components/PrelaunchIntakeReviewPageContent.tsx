@@ -1035,62 +1035,6 @@ export function PrelaunchIntakeReviewPageContent({
                 </div>
               </section>
             ) : null}
-            <form
-              action="/api/control-center/intake/demo-launch-flow"
-              className="mt-4 rounded-md border border-sky-200 bg-sky-50 p-4 text-sm"
-              method="post"
-            >
-              <input name="returnTo" type="hidden" value={`${basePath}#reps`} />
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
-                    Demo run launcher
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-slate-950">
-                    Create a fake account path
-                  </h3>
-                </div>
-                <p className="max-w-sm text-xs leading-5 text-slate-600">
-                  No SMS, email, live SignWell send, Stripe charge, calendar
-                  invite, or paid Nic-Nac call.
-                </p>
-              </div>
-              <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                <label className="text-xs font-semibold text-slate-700">
-                  Demo rep email
-                  <input
-                    className="mt-1 min-h-10 w-full rounded-md border border-sky-200 bg-white px-3 text-sm font-normal text-slate-950"
-                    defaultValue="louis+sparkle-demo@neonrabbit.net"
-                    name="demoRepEmail"
-                    required
-                  />
-                </label>
-                <label className="text-xs font-semibold text-slate-700">
-                  Fake lead name
-                  <input
-                    className="mt-1 min-h-10 w-full rounded-md border border-sky-200 bg-white px-3 text-sm font-normal text-slate-950"
-                    defaultValue="Sparkle Demo Lead"
-                    name="leadName"
-                    required
-                  />
-                </label>
-                <label className="text-xs font-semibold text-slate-700">
-                  Fake business name
-                  <input
-                    className="mt-1 min-h-10 w-full rounded-md border border-sky-200 bg-white px-3 text-sm font-normal text-slate-950"
-                    defaultValue="Sparkle Demo Shop"
-                    name="businessName"
-                    required
-                  />
-                </label>
-              </div>
-              <button
-                className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-sky-300 bg-white px-4 text-sm font-semibold text-sky-900 shadow-sm transition hover:border-sky-400 hover:bg-sky-100"
-                type="submit"
-              >
-                Create/refresh demo run
-              </button>
-            </form>
             {activeLaunchBuild ? (
               <form
                 action="/api/control-center/intake/setup-profile"
