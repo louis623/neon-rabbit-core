@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 import { loadAmethystTradeBoardPreviewListings } from '@/lib/amethyst/trade-board-listings'
 import { buildAmethystTradeBootstrapScript } from '@/lib/amethyst/trade-template-data'
 
-export async function GET() {
+export async function GET(request: Request) {
+  const repId = resolveAmethystRequestRepId(request)
   const [listings, templateData] = await Promise.all([
-    loadAmethystTradeBoardPreviewListings(),
-    loadAmethystPreviewTemplateData(),
+    loadAmethystTradeBoardPreviewListings({ repId }),
+    loadAmethystPreviewTemplateData({ repId }),
   ])
 
   return new NextResponse(

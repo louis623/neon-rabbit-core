@@ -25,6 +25,7 @@ interface PreviewTemplateDataDependencies {
 
 interface LoadPreviewTemplateDataOptions {
   env?: Record<string, string | undefined>
+  repId?: string | null
   dependencies?: PreviewTemplateDataDependencies
 }
 
@@ -147,6 +148,48 @@ function buildLegalDisclaimer(businessName: string, context: 'homepage' | 'trade
   return `${businessName} is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC.${tradeNote}`
 }
 
+function withCustomerTarget(href: string, repId: string | null | undefined) {
+  const cleanedRepId = repId?.trim()
+  if (!cleanedRepId || !href.startsWith('/amethyst/')) return href
+
+  const separator = href.includes('?') ? '&' : '?'
+  return `${href}${separator}c=${encodeURIComponent(cleanedRepId)}`
+}
+
+function applyCustomerTarget(
+  data: AmethystPreviewTemplateData,
+  repId: string | null | undefined,
+): AmethystPreviewTemplateData {
+  return {
+    homepage: {
+      ...data.homepage,
+      joinTeamUrl: withCustomerTarget(data.homepage.joinTeamUrl, repId),
+      footerLinks: {
+        ...data.homepage.footerLinks,
+        tradeBoard: withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
+      },
+    },
+    trade: {
+      ...data.trade,
+      footerLinks: {
+        ...data.trade.footerLinks,
+        home: withCustomerTarget(data.trade.footerLinks.home, repId),
+        tradeBoard: withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
+        joinTeam: withCustomerTarget(data.trade.footerLinks.joinTeam, repId),
+      },
+    },
+    join: {
+      ...data.join,
+      footerLinks: {
+        ...data.join.footerLinks,
+        home: withCustomerTarget(data.join.footerLinks.home, repId),
+        tradeBoard: withCustomerTarget(data.join.footerLinks.tradeBoard, repId),
+        joinTeam: withCustomerTarget(data.join.footerLinks.joinTeam, repId),
+      },
+    },
+  }
+}
+
 export function mapPreviewSettingsToHomepageTemplateData(
   settings: SiteSettingsDashboardResult,
   extras: PreviewRepExtras = {},
@@ -267,6 +310,7 @@ export async function loadAmethystPreviewTemplateData(
     const rep = await (dependencies.resolveAmethystPreviewRep ??
       resolveAmethystPreviewRep)(admin, {
       env,
+      repId: options.repId,
       select: 'id, email, shop_link, streaming_links',
     })
 
@@ -279,11 +323,11 @@ export async function loadAmethystPreviewTemplateData(
       streamingLinks: rep.streaming_links,
     }
 
-    return {
+    return applyCustomerTarget({
       homepage: mapPreviewSettingsToHomepageTemplateData(settings, extras),
       trade: mapPreviewSettingsToTradeTemplateData(settings, extras),
       join: mapPreviewSettingsToJoinTemplateData(settings, extras),
-    }
+    }, options.repId)
   } catch {
     return defaultPreviewTemplateData
   }

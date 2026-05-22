@@ -138,9 +138,16 @@ export function mapTradeListingToAmethystTradeBoardListing(
   }
 }
 
+interface LoadAmethystTradeBoardPreviewListingsOptions {
+  limit?: number
+  repId?: string | null
+}
+
 export async function loadAmethystTradeBoardPreviewListings(
-  limit = 18,
+  options: LoadAmethystTradeBoardPreviewListingsOptions = {},
 ): Promise<AmethystTradeBoardListing[]> {
+  const limit = options.limit ?? 18
+
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -152,6 +159,7 @@ export async function loadAmethystTradeBoardPreviewListings(
     const admin = createAdminClient()
     const rep = await resolveAmethystPreviewRep(admin, {
       env: process.env,
+      repId: options.repId,
       select: 'id, email',
     })
 

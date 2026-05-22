@@ -19,9 +19,13 @@ describe('GET /api/amethyst/trade-board', () => {
       { id: 'listing-1', name: 'Birthday Bloom Ring' },
     ])
 
-    const response = await GET()
+    const response = await GET(
+      new Request('http://localhost/api/amethyst/trade-board?c=rep-1'),
+    )
 
-    expect(loadAmethystTradeBoardPreviewListingsMock).toHaveBeenCalledWith()
+    expect(loadAmethystTradeBoardPreviewListingsMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+    })
     expect(response.headers.get('cache-control')).toBe('no-store')
     await expect(response.json()).resolves.toEqual({
       listings: [{ id: 'listing-1', name: 'Birthday Bloom Ring' }],

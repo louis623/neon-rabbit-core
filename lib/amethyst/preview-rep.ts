@@ -9,6 +9,7 @@ interface AmethystPreviewRep {
 
 interface ResolveAmethystPreviewRepOptions {
   env?: Record<string, string | undefined>
+  repId?: string | null
   select?: string
 }
 
@@ -98,6 +99,12 @@ export async function resolveAmethystPreviewRep(
 ): Promise<AmethystPreviewRep | null> {
   const env = options.env ?? process.env
   const select = options.select ?? 'id, email'
+  const repId = options.repId?.trim()
+
+  if (repId) {
+    const rep = await loadRepById(admin, repId, select)
+    if (rep) return rep
+  }
 
   for (const email of getCandidateEmails(env)) {
     const rep = await loadRepByEmail(admin, email, select)

@@ -1537,25 +1537,33 @@ export function PrelaunchIntakeReviewPageContent({
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
-                    href="/nic-nac"
+                    href={`/nic-nac?c=${encodeURIComponent(
+                      activeLaunchBuild.repId,
+                    )}`}
                   >
                     Nic-Nac
                   </a>
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
-                    href="/amethyst/Homepage.html"
+                    href={`/amethyst/Homepage.html?c=${encodeURIComponent(
+                      activeLaunchBuild.repId,
+                    )}`}
                   >
                     Public homepage
                   </a>
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
-                    href="/amethyst/Trade.html"
+                    href={`/amethyst/Trade.html?c=${encodeURIComponent(
+                      activeLaunchBuild.repId,
+                    )}`}
                   >
                     Trade board
                   </a>
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
-                    href="/amethyst/Join.html"
+                    href={`/amethyst/Join.html?c=${encodeURIComponent(
+                      activeLaunchBuild.repId,
+                    )}`}
                   >
                     Join page
                   </a>

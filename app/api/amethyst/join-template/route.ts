@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 
 import { buildAmethystJoinBootstrapScript } from '@/lib/amethyst/join-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 
-export async function GET() {
-  const templateData = await loadAmethystPreviewTemplateData()
+export async function GET(request: Request) {
+  const repId = resolveAmethystRequestRepId(request)
+  const templateData = await loadAmethystPreviewTemplateData({ repId })
 
   return new NextResponse(buildAmethystJoinBootstrapScript(templateData.join), {
     headers: {

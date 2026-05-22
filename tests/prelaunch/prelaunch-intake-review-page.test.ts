@@ -857,10 +857,10 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Review production roster')
     expect(html).toContain('href="/control-center/intake#reps"')
     expect(html).toContain('Live account links')
-    expect(html).toContain('href="/nic-nac"')
-    expect(html).toContain('href="/amethyst/Homepage.html"')
-    expect(html).toContain('href="/amethyst/Trade.html"')
-    expect(html).toContain('href="/amethyst/Join.html"')
+    expect(html).toContain('href="/nic-nac?c=rep-1"')
+    expect(html).toContain('href="/amethyst/Homepage.html?c=rep-1"')
+    expect(html).toContain('href="/amethyst/Trade.html?c=rep-1"')
+    expect(html).toContain('href="/amethyst/Join.html?c=rep-1"')
   })
 
   it('renders a compact safe smoke status without provider actions', () => {

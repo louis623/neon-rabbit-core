@@ -63,6 +63,35 @@ function makeAdminClient({
 }
 
 describe('Amethyst preview rep resolver', () => {
+  it('uses an explicit rep id before preview email fallbacks', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+      repsById: {
+        'rep-target': {
+          id: 'rep-target',
+          email: 'target@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        repId: 'rep-target',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-target',
+      email: 'target@example.com',
+    })
+  })
+
   it('prefers explicit Amethyst preview email over the demo rep email', async () => {
     const admin = makeAdminClient({
       repsByEmail: {

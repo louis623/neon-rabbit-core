@@ -106,6 +106,49 @@ describe('Amethyst preview template data', () => {
     expect(data.join).toBe(defaultAmethystJoinTemplateData)
   })
 
+  it('passes an explicit customer rep target into the resolver', async () => {
+    const createAdminClientMock = vi.fn(() => ({ from: vi.fn() }))
+    const resolveAmethystPreviewRep = vi.fn(async () => ({
+      id: 'rep-target',
+      email: 'target@example.com',
+      shop_link: 'https://example.com/shop',
+      streaming_links: {},
+    }))
+    const getSiteSettingsDashboard = vi.fn(async () => demoSettings)
+
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-target',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient:
+          createAdminClientMock as unknown as typeof createAdminClient,
+        resolveAmethystPreviewRep,
+        getSiteSettingsDashboard,
+      },
+    })
+
+    expect(resolveAmethystPreviewRep).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        repId: 'rep-target',
+        select: 'id, email, shop_link, streaming_links',
+      }),
+    )
+    expect(data.homepage.joinTeamUrl).toBe('/amethyst/Join.html?c=rep-target')
+    expect(data.homepage.footerLinks.tradeBoard).toBe(
+      '/amethyst/Trade.html?c=rep-target',
+    )
+    expect(data.trade.footerLinks.home).toBe(
+      '/amethyst/Homepage.html?c=rep-target',
+    )
+    expect(data.join.footerLinks.tradeBoard).toBe(
+      '/amethyst/Trade.html?c=rep-target',
+    )
+  })
+
   it('falls back to defaults when lookup fails', async () => {
     const data = await loadAmethystPreviewTemplateData({
       env: {
