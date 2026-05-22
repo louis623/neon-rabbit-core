@@ -4,6 +4,7 @@ const getAuthenticatedOperatorMock = vi.fn()
 const createPrelaunchAgreementDraftTrackerMock = vi.fn()
 const createPrelaunchSignWellSandboxDraftForBuildMock = vi.fn()
 const isPrelaunchSignWellSandboxDraftCreateEnabledMock = vi.fn()
+const recordPrelaunchAgreementSignedMock = vi.fn()
 
 const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
   MockAuthError: class MockAuthError extends Error {},
@@ -24,6 +25,8 @@ vi.mock('@/lib/prelaunch/agreement-documents', () => ({
     createPrelaunchSignWellSandboxDraftForBuildMock(...args),
   isPrelaunchSignWellSandboxDraftCreateEnabled: (...args: unknown[]) =>
     isPrelaunchSignWellSandboxDraftCreateEnabledMock(...args),
+  recordPrelaunchAgreementSigned: (...args: unknown[]) =>
+    recordPrelaunchAgreementSignedMock(...args),
 }))
 
 import { POST } from '@/app/api/control-center/intake/agreement-document/route'
@@ -34,6 +37,7 @@ describe('POST /api/control-center/intake/agreement-document', () => {
     createPrelaunchAgreementDraftTrackerMock.mockReset()
     createPrelaunchSignWellSandboxDraftForBuildMock.mockReset()
     isPrelaunchSignWellSandboxDraftCreateEnabledMock.mockReset()
+    recordPrelaunchAgreementSignedMock.mockReset()
     isPrelaunchSignWellSandboxDraftCreateEnabledMock.mockReturnValue(false)
   })
 
@@ -209,6 +213,60 @@ describe('POST /api/control-center/intake/agreement-document', () => {
       code: 'SIGNWELL_SANDBOX_DRAFT_BLOCKED',
       error:
         'SignWell sandbox draft creation requires SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED=true.',
+    })
+  })
+
+  it('records an operator-only signed agreement proof without provider actions', async () => {
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'operator-1',
+      rep: { email: 'louis@neonrabbit.net' },
+    })
+    recordPrelaunchAgreementSignedMock.mockResolvedValueOnce({
+      id: 'agreement-1',
+      launchBuildId: 'build-1',
+      status: 'signed',
+      signedAt: '2026-05-22T15:00:00Z',
+      signedPdfUrl: 'https://storage.example/signed.pdf',
+      draft: false,
+      testMode: true,
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/control-center/intake/agreement-document', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          launchBuildId: 'build-1',
+          markSigned: true,
+          signedAt: '2026-05-22T15:00:00Z',
+          signedPdfUrl: 'https://storage.example/signed.pdf',
+          notes: 'Signed proof received.',
+        }),
+      }),
+    )
+
+    expect(createPrelaunchAgreementDraftTrackerMock).not.toHaveBeenCalled()
+    expect(createPrelaunchSignWellSandboxDraftForBuildMock).not.toHaveBeenCalled()
+    expect(recordPrelaunchAgreementSignedMock).toHaveBeenCalledWith({
+      launchBuildId: 'build-1',
+      operatorRepId: 'operator-1',
+      signedAt: '2026-05-22T15:00:00Z',
+      signedPdfUrl: 'https://storage.example/signed.pdf',
+      notes: 'Signed proof received.',
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      code: 'AGREEMENT_SIGNATURE_RECORDED',
+      agreementDocument: {
+        id: 'agreement-1',
+        launchBuildId: 'build-1',
+        status: 'signed',
+        signedAt: '2026-05-22T15:00:00Z',
+        signedPdfUrl: 'https://storage.example/signed.pdf',
+        draft: false,
+        testMode: true,
+      },
     })
   })
 

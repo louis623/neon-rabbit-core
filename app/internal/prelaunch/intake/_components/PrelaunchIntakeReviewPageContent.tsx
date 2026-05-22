@@ -1298,6 +1298,31 @@ export function PrelaunchIntakeReviewPageContent({
                             'Draft tracker only'}
                         </dd>
                       </div>
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          Signed at
+                        </dt>
+                        <dd>{activeAgreementDocument.signedAt ?? 'Not signed'}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-slate-500">
+                          Signed PDF
+                        </dt>
+                        <dd className="break-all">
+                          {activeAgreementDocument.signedPdfUrl ? (
+                            <a
+                              className="text-sky-700 underline-offset-2 hover:underline"
+                              href={activeAgreementDocument.signedPdfUrl}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              Open stored proof
+                            </a>
+                          ) : (
+                            'Not stored'
+                          )}
+                        </dd>
+                      </div>
                     </dl>
                   ) : null}
                   <div className="mt-3 grid gap-3 lg:grid-cols-2">
@@ -1321,6 +1346,24 @@ export function PrelaunchIntakeReviewPageContent({
                         placeholder="Sandbox draft, no send"
                       />
                     </label>
+                    <label className="text-xs font-semibold text-slate-700">
+                      Signed PDF URL
+                      <input
+                        className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                        defaultValue={activeAgreementDocument?.signedPdfUrl ?? ''}
+                        name="signedPdfUrl"
+                        placeholder="Optional stored signed PDF URL"
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-slate-700">
+                      Signed at
+                      <input
+                        className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                        defaultValue={activeAgreementDocument?.signedAt ?? ''}
+                        name="signedAt"
+                        placeholder="Blank uses the current time"
+                      />
+                    </label>
                   </div>
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <button
@@ -1338,6 +1381,14 @@ export function PrelaunchIntakeReviewPageContent({
                       value="true"
                     >
                       Create SignWell test draft
+                    </button>
+                    <button
+                      className="inline-flex min-h-9 items-center justify-center rounded-md border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-900 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100"
+                      name="markSigned"
+                      type="submit"
+                      value="true"
+                    >
+                      Record test signature
                     </button>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-slate-500">

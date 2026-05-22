@@ -91,6 +91,14 @@ interface CreatePrelaunchSignWellSandboxDraftInput {
   fetchImpl?: typeof fetch
 }
 
+interface RecordPrelaunchAgreementSignedInput {
+  launchBuildId: string
+  operatorRepId?: string | null
+  signedAt?: string | null
+  signedPdfUrl?: string | null
+  notes?: string | null
+}
+
 interface AgreementLaunchBuildRow {
   id: string
   waitlist_id: string | null
@@ -381,4 +389,40 @@ export async function createPrelaunchSignWellSandboxDraftForBuild(
     agreementDocument,
     providerResult,
   }
+}
+
+export async function recordPrelaunchAgreementSigned(
+  input: RecordPrelaunchAgreementSignedInput,
+  admin: AdminClient = createAdminClient(),
+): Promise<PrelaunchAgreementDocument> {
+  const launchBuildId = cleanRequiredString(
+    input.launchBuildId,
+    'launchBuildId',
+  )
+  const signedAt =
+    cleanOptionalText(input.signedAt) || new Date().toISOString()
+  const signedPdfUrl = cleanOptionalText(input.signedPdfUrl) || null
+
+  const { data, error } = await admin
+    .from('sparkle_suite_agreement_documents')
+    .update({
+      status: 'signed',
+      signed_at: signedAt,
+      signed_pdf_url: signedPdfUrl,
+      draft: false,
+      notes: cleanOptionalText(input.notes),
+      updated_by_rep_id: input.operatorRepId ?? null,
+    })
+    .eq('launch_build_id', launchBuildId)
+    .eq('provider', 'signwell')
+    .eq('mode', 'sandbox')
+    .eq('gate_type', 'service_agreement')
+    .select(PRELAUNCH_AGREEMENT_DOCUMENT_SELECT)
+    .single()
+
+  if (error) throw error
+
+  return normalizePrelaunchAgreementDocumentRows([
+    data as unknown as PrelaunchAgreementDocumentRow,
+  ])[0]
 }

@@ -15,6 +15,7 @@ import {
   isPrelaunchSignWellSandboxDraftCreateEnabled,
   loadPrelaunchAgreementDocumentsByBuildIds,
   normalizePrelaunchAgreementDocumentRows,
+  recordPrelaunchAgreementSigned,
 } from '@/lib/prelaunch/agreement-documents'
 
 describe('prelaunch agreement documents', () => {
@@ -431,5 +432,79 @@ describe('prelaunch agreement documents', () => {
       'SignWell sandbox draft creation requires SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED=true.',
     )
     expect(fromMock).not.toHaveBeenCalled()
+  })
+
+  it('records a sandbox agreement as signed without opening launch gates', async () => {
+    const updateMock = vi.fn()
+    const launchBuildEqMock = vi.fn()
+    const providerEqMock = vi.fn()
+    const modeEqMock = vi.fn()
+    const gateTypeEqMock = vi.fn()
+    const selectMock = vi.fn()
+    const singleMock = vi.fn()
+
+    fromMock.mockReturnValueOnce({ update: updateMock })
+    updateMock.mockReturnValueOnce({ eq: launchBuildEqMock })
+    launchBuildEqMock.mockReturnValueOnce({ eq: providerEqMock })
+    providerEqMock.mockReturnValueOnce({ eq: modeEqMock })
+    modeEqMock.mockReturnValueOnce({ eq: gateTypeEqMock })
+    gateTypeEqMock.mockReturnValueOnce({ select: selectMock })
+    selectMock.mockReturnValueOnce({ single: singleMock })
+    singleMock.mockResolvedValueOnce({
+      data: {
+        id: 'agreement-1',
+        launch_build_id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        provider: 'signwell',
+        mode: 'sandbox',
+        gate_type: 'service_agreement',
+        status: 'signed',
+        template_id: 'template_123',
+        template_label: 'Sparkle Suite service agreement',
+        pricing_cohort: 'founder_first_20',
+        provider_document_id: 'document_123',
+        recipient_name: 'Demo Lead',
+        recipient_email: 'demo@example.com',
+        send_email: false,
+        draft: false,
+        test_mode: true,
+        provider_status: 201,
+        signed_at: '2026-05-22T15:00:00Z',
+        signed_pdf_url: 'https://storage.example/signed.pdf',
+        notes: 'Signed proof received.',
+        metadata: {},
+        updated_by_rep_id: 'operator-1',
+        created_at: '2026-05-22T12:00:00Z',
+        updated_at: '2026-05-22T15:01:00Z',
+      },
+      error: null,
+    })
+
+    const document = await recordPrelaunchAgreementSigned({
+      launchBuildId: 'build-1',
+      operatorRepId: 'operator-1',
+      signedAt: '2026-05-22T15:00:00Z',
+      signedPdfUrl: 'https://storage.example/signed.pdf',
+      notes: 'Signed proof received.',
+    })
+
+    expect(updateMock).toHaveBeenCalledWith({
+      status: 'signed',
+      signed_at: '2026-05-22T15:00:00Z',
+      signed_pdf_url: 'https://storage.example/signed.pdf',
+      draft: false,
+      notes: 'Signed proof received.',
+      updated_by_rep_id: 'operator-1',
+    })
+    expect(launchBuildEqMock).toHaveBeenCalledWith('launch_build_id', 'build-1')
+    expect(providerEqMock).toHaveBeenCalledWith('provider', 'signwell')
+    expect(modeEqMock).toHaveBeenCalledWith('mode', 'sandbox')
+    expect(gateTypeEqMock).toHaveBeenCalledWith(
+      'gate_type',
+      'service_agreement',
+    )
+    expect(document.status).toBe('signed')
+    expect(document.signedPdfUrl).toBe('https://storage.example/signed.pdf')
   })
 })

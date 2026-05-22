@@ -4,6 +4,7 @@ import {
   createPrelaunchAgreementDraftTracker,
   createPrelaunchSignWellSandboxDraftForBuild,
   isPrelaunchSignWellSandboxDraftCreateEnabled,
+  recordPrelaunchAgreementSigned,
 } from '@/lib/prelaunch/agreement-documents'
 import {
   AuthError,
@@ -50,6 +51,9 @@ async function parsePayload(request: Request) {
       providerDocumentId: readString(body.providerDocumentId),
       providerStatus: readProviderStatus(body.providerStatus),
       createSandboxDraft: readBoolean(body.createSandboxDraft),
+      markSigned: readBoolean(body.markSigned),
+      signedAt: readString(body.signedAt),
+      signedPdfUrl: readString(body.signedPdfUrl),
       notes: readString(body.notes),
       returnTo: '/control-center/intake',
       wantsJson: true,
@@ -63,6 +67,9 @@ async function parsePayload(request: Request) {
     providerDocumentId: readString(form.get('providerDocumentId')),
     providerStatus: readProviderStatus(form.get('providerStatus')),
     createSandboxDraft: readBoolean(form.get('createSandboxDraft')),
+    markSigned: readBoolean(form.get('markSigned')),
+    signedAt: readString(form.get('signedAt')),
+    signedPdfUrl: readString(form.get('signedPdfUrl')),
     notes: readString(form.get('notes')),
     returnTo: sanitizeReturnTo(readString(form.get('returnTo'))),
     wantsJson: false,
@@ -109,6 +116,26 @@ export async function POST(request: Request) {
         code: 'SIGNWELL_SANDBOX_DRAFT_CREATED',
         agreementDocument,
         providerResult,
+      })
+    }
+
+    if (payload.markSigned) {
+      const agreementDocument = await recordPrelaunchAgreementSigned({
+        launchBuildId: payload.launchBuildId,
+        operatorRepId: operator.repId,
+        signedAt: payload.signedAt,
+        signedPdfUrl: payload.signedPdfUrl,
+        notes: payload.notes,
+      })
+
+      if (!payload.wantsJson) {
+        return NextResponse.redirect(new URL(payload.returnTo, request.url), 303)
+      }
+
+      return NextResponse.json({
+        ok: true,
+        code: 'AGREEMENT_SIGNATURE_RECORDED',
+        agreementDocument,
       })
     }
 
