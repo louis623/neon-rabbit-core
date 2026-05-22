@@ -798,6 +798,64 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Build slot is open')
   })
 
+  it('renders a compact safe smoke status without provider actions', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [
+          {
+            ...launchBuild,
+            repId: 'rep-demo',
+            status: 'ready',
+            blockers: [],
+          },
+        ],
+        safeSmokeStatus: [
+          {
+            key: 'demo_account',
+            label: 'Demo account',
+            status: 'ready',
+            detail: 'Sparkle Demo Lead is connected and ready for local demo smoke.',
+          },
+          {
+            key: 'stripe_test',
+            label: 'Stripe test mode',
+            status: 'ready',
+            detail:
+              'Test key, webhook secret, and Sparkle Suite test prices are present.',
+          },
+          {
+            key: 'signwell_sandbox',
+            label: 'SignWell sandbox',
+            status: 'blocked',
+            detail:
+              'Missing SIGNWELL_API_KEY, SIGNWELL_API_BASE_URL, SIGNWELL_TEMPLATE_ID.',
+          },
+          {
+            key: 'live_actions',
+            label: 'Live actions',
+            status: 'guarded',
+            detail:
+              'SMS, live SignWell sends, live Stripe charges, calendar invites, and paid Nic-Nac calls stay off.',
+          },
+        ],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Safe smoke status')
+    expect(html).toContain('Demo account')
+    expect(html).toContain('Stripe test mode')
+    expect(html).toContain('SignWell sandbox')
+    expect(html).toContain('Missing SIGNWELL_API_KEY')
+    expect(html).toContain('Live actions')
+    expect(html).not.toContain('Create Stripe checkout')
+    expect(html).not.toContain('Send SignWell')
+    expect(html).not.toContain('Charge card')
+  })
+
   it('renders the setup profile editor for the active launch build', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {

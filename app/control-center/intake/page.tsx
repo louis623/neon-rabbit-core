@@ -10,6 +10,7 @@ import { loadPrelaunchLaunchChecksByBuildIds } from '@/lib/prelaunch/launch-chec
 import { loadPrelaunchLaunchGatesByBuildIds } from '@/lib/prelaunch/launch-gates'
 import { loadPrelaunchLaunchBuilds } from '@/lib/prelaunch/launch-builds'
 import { loadPrelaunchLaunchSetupProfilesByBuildIds } from '@/lib/prelaunch/setup-profiles'
+import { buildPrelaunchSafeSmokeStatus } from '@/lib/prelaunch/safe-smoke-status'
 import { loadPrelaunchWaitlistReviewLeads } from '@/lib/prelaunch/waitlist-review'
 import {
   AuthError,
@@ -92,6 +93,9 @@ export default async function SparkleSuiteControlCenterIntakePage({
       launchGates={launchGates}
       launchBuilds={launchBuilds}
       launchSetupProfiles={launchSetupProfiles}
+      safeSmokeStatus={buildPrelaunchSafeSmokeStatus({
+        activeLaunchBuild: launchBuilds[0] ?? null,
+      })}
       submissions={submissions}
       surface="control_center"
       waitlistLeads={waitlistLeads}

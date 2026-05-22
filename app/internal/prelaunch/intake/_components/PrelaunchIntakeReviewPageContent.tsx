@@ -17,6 +17,7 @@ import {
   getPrelaunchGateReadiness,
   type PrelaunchGateReadinessItem,
 } from '@/lib/prelaunch/gate-readiness'
+import type { PrelaunchSafeSmokeStatusItem } from '@/lib/prelaunch/safe-smoke-status'
 import { buildCameraQualityPrep } from '@/lib/prelaunch/camera-quality-prep'
 import { buildPhotographyKitPrep } from '@/lib/prelaunch/photography-kit-prep'
 import { getApprovedPrelaunchQrManifest } from '@/lib/prelaunch/qr-assets'
@@ -35,6 +36,7 @@ interface PrelaunchIntakeReviewPageContentProps {
   launchGates?: PrelaunchLaunchGate[]
   launchBuilds?: PrelaunchLaunchBuild[]
   launchSetupProfiles?: PrelaunchLaunchSetupProfile[]
+  safeSmokeStatus?: PrelaunchSafeSmokeStatusItem[]
   surface?: 'prelaunch_review' | 'control_center'
 }
 
@@ -251,6 +253,13 @@ function welcomeEmailStatusClass(status: string) {
   if (status === 'skipped') return 'border-amber-200 bg-amber-50 text-amber-900'
 
   return 'border-slate-200 bg-slate-100 text-slate-700'
+}
+
+function safeSmokeStatusClass(status: string) {
+  if (status === 'ready') return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+  if (status === 'guarded') return 'border-sky-200 bg-sky-50 text-sky-900'
+
+  return 'border-amber-200 bg-amber-50 text-amber-900'
 }
 
 function formatWelcomeEmailStatus(status: string) {
@@ -520,6 +529,7 @@ export function PrelaunchIntakeReviewPageContent({
   launchGates = [],
   launchBuilds = [],
   launchSetupProfiles = [],
+  safeSmokeStatus = [],
   submissions,
   surface = 'prelaunch_review',
   waitlistLeads = [],
@@ -957,6 +967,42 @@ export function PrelaunchIntakeReviewPageContent({
                   </ul>
                 ) : null}
               </div>
+            ) : null}
+            {safeSmokeStatus.length > 0 ? (
+              <section className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Safe smoke status
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      Demo readiness snapshot
+                    </h3>
+                  </div>
+                  <p className="max-w-sm text-xs leading-5 text-slate-600">
+                    Read-only checks for the demo path. No provider actions run
+                    from this panel.
+                  </p>
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-4">
+                  {safeSmokeStatus.map((item) => (
+                    <div
+                      className={`rounded-md border p-3 ${safeSmokeStatusClass(
+                        item.status,
+                      )}`}
+                      key={item.key}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold">{item.label}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+                          {formatTitleLabel(item.status)}
+                        </p>
+                      </div>
+                      <p className="mt-2 text-xs leading-5">{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             ) : null}
             {activeLaunchBuild ? (
               <form
