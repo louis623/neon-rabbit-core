@@ -92,6 +92,7 @@ export const SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV =
 export const SIGNWELL_SANDBOX_PROVIDER_CALL_ENV =
   'SIGNWELL_SANDBOX_PROVIDER_CALL'
 export const STRIPE_WEBHOOK_EXPECTED_URL_ENV = 'STRIPE_WEBHOOK_EXPECTED_URL'
+const DEFAULT_LOCAL_LAUNCH_APP_URL = 'http://localhost:3000'
 
 type SmokeRisk = 'none' | 'local_app' | 'db_write' | 'test_provider' | 'paid_provider'
 
@@ -1799,18 +1800,26 @@ export async function runLaunchSmoke(
 ): Promise<LaunchSmokeReport> {
   const categoryReports: LaunchSmokeCategoryReport[] = []
   const runCategory = dependencies.runCategory ?? runDemoSmoke
+  const launchEnv =
+    options.target === 'local'
+      ? {
+          ...env,
+          NEXT_PUBLIC_APP_URL:
+            env.NEXT_PUBLIC_LOCAL_APP_URL?.trim() || DEFAULT_LOCAL_LAUNCH_APP_URL,
+        }
+      : env
 
   for (const category of options.categories) {
     const plan = buildDemoSmokePlan({ category })
 
     try {
-      const result = await runCategory(plan, env, dependencies)
+      const result = await runCategory(plan, launchEnv, dependencies)
       categoryReports.push({
         category,
         ok: result.ok,
         results: result.results.map((smokeResult) => ({
           ...smokeResult,
-          detail: redactEnvSecrets(smokeResult.detail, env),
+          detail: redactEnvSecrets(smokeResult.detail, launchEnv),
         })),
       })
     } catch (error) {
@@ -1823,7 +1832,7 @@ export async function runLaunchSmoke(
             ok: false,
             detail: redactEnvSecrets(
               error instanceof Error ? error.message : String(error),
-              env,
+              launchEnv,
             ),
           },
         ],

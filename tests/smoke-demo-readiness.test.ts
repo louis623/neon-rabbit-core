@@ -1036,6 +1036,38 @@ describe('demo launch smoke readiness plan', () => {
     ])
   })
 
+  it('pins local launch smoke to localhost even when the env app URL points at a deployment', async () => {
+    const seenAppUrls: string[] = []
+
+    await runLaunchSmoke(
+      {
+        target: 'local',
+        categories: ['local_app', 'stripe_webhook_local_signature'],
+        json: true,
+        writeReport: false,
+      },
+      {
+        DEMO_REP_EMAIL: 'demo@example.com',
+        NEXT_PUBLIC_APP_URL: 'https://preview.example.com',
+      },
+      {
+        runCategory: async (plan, env) => {
+          seenAppUrls.push(`${plan.category}:${env.NEXT_PUBLIC_APP_URL}`)
+          return {
+            category: plan.category,
+            ok: true,
+            results: [{ id: `${plan.category}_ok`, ok: true, detail: 'ok' }],
+          }
+        },
+      },
+    )
+
+    expect(seenAppUrls).toEqual([
+      'local_app:http://localhost:3000',
+      'stripe_webhook_local_signature:http://localhost:3000',
+    ])
+  })
+
   it('captures launch smoke category failures without leaking env secrets', async () => {
     const report = await runLaunchSmoke(
       {
