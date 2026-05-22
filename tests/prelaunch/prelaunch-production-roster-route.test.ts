@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedOperatorMock = vi.fn()
 const connectPrelaunchLaunchBuildToProductionRepMock = vi.fn()
+const preparePrelaunchClientAccountForLaunchBuildMock = vi.fn()
 
 const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
   MockAuthError: class MockAuthError extends Error {},
@@ -20,12 +21,18 @@ vi.mock('@/lib/prelaunch/production-roster', () => ({
     connectPrelaunchLaunchBuildToProductionRepMock(...args),
 }))
 
+vi.mock('@/lib/prelaunch/client-account', () => ({
+  preparePrelaunchClientAccountForLaunchBuild: (...args: unknown[]) =>
+    preparePrelaunchClientAccountForLaunchBuildMock(...args),
+}))
+
 import { POST } from '@/app/api/control-center/intake/production-roster/route'
 
 describe('POST /api/control-center/intake/production-roster', () => {
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
     connectPrelaunchLaunchBuildToProductionRepMock.mockReset()
+    preparePrelaunchClientAccountForLaunchBuildMock.mockReset()
   })
 
   it('connects an existing rep to the launch build without creating accounts', async () => {
@@ -64,6 +71,62 @@ describe('POST /api/control-center/intake/production-roster', () => {
         id: 'build-1',
         repId: 'rep-1',
         status: 'ready',
+      },
+    })
+  })
+
+  it('can create the real client account shell before connecting the roster', async () => {
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'operator-1',
+      rep: { email: 'louis@neonrabbit.net' },
+    })
+    preparePrelaunchClientAccountForLaunchBuildMock.mockResolvedValueOnce({
+      repId: 'rep-created',
+      email: 'customer@example.com',
+      sentInvite: false,
+    })
+    connectPrelaunchLaunchBuildToProductionRepMock.mockResolvedValueOnce({
+      id: 'build-1',
+      repId: 'rep-created',
+      status: 'ready',
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/control-center/intake/production-roster', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          launchBuildId: 'build-1',
+          createClientAccount: true,
+          temporaryPassword: 'RealCustomerTemp2026!',
+          notes: 'Customer account prepared.',
+        }),
+      }),
+    )
+
+    expect(preparePrelaunchClientAccountForLaunchBuildMock).toHaveBeenCalledWith({
+      launchBuildId: 'build-1',
+      temporaryPassword: 'RealCustomerTemp2026!',
+      operatorRepId: 'operator-1',
+    })
+    expect(connectPrelaunchLaunchBuildToProductionRepMock).toHaveBeenCalledWith({
+      launchBuildId: 'build-1',
+      repId: 'rep-created',
+      notes: 'Customer account prepared.',
+      operatorRepId: 'operator-1',
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      build: {
+        id: 'build-1',
+        repId: 'rep-created',
+        status: 'ready',
+      },
+      clientAccount: {
+        repId: 'rep-created',
+        email: 'customer@example.com',
+        sentInvite: false,
       },
     })
   })

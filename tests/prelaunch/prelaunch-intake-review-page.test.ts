@@ -411,6 +411,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Active work board')
     expect(html).toContain('Current build watch')
     expect(html).not.toContain('Demo run launcher')
+    expect(html).not.toContain('Demo path is clear')
+    expect(html).not.toContain('Smoke test the demo account')
     expect(html).not.toContain('Create/refresh demo run')
     expect(html).not.toContain(
       'action="/api/control-center/intake/demo-launch-flow"',
@@ -854,7 +856,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Production roster is connected')
     expect(html).toContain('Review production roster')
     expect(html).toContain('href="/control-center/intake#reps"')
-    expect(html).toContain('Demo smoke links')
+    expect(html).toContain('Live account links')
     expect(html).toContain('href="/nic-nac"')
     expect(html).toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('href="/amethyst/Trade.html"')
@@ -878,9 +880,9 @@ describe('PrelaunchIntakeReviewPageContent', () => {
         safeSmokeStatus: [
           {
             key: 'demo_account',
-            label: 'Demo account',
+            label: 'Client account',
             status: 'ready',
-            detail: 'Sparkle Demo Lead is connected and ready for local demo smoke.',
+            detail: 'Sparkle Demo Lead is connected and ready for local smoke.',
           },
           {
             key: 'stripe_test',
@@ -909,7 +911,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     )
 
     expect(html).toContain('Safe smoke status')
-    expect(html).toContain('Demo account')
+    expect(html).toContain('Client account')
     expect(html).toContain('Stripe test mode')
     expect(html).toContain('SignWell sandbox')
     expect(html).toContain('Missing SIGNWELL_API_KEY')
@@ -1010,7 +1012,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Charge card')
   })
 
-  it('renders the production roster connector without provisioning accounts', () => {
+  it('renders the production roster connector with real client account preparation', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
         basePath: '/control-center/intake',
@@ -1027,8 +1029,9 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       'action="/api/control-center/intake/production-roster"',
     )
     expect(html).toContain('Existing rep ID')
+    expect(html).toContain('Create client account')
+    expect(html).toContain('Temporary password')
     expect(html).toContain('Save roster connection')
-    expect(html).not.toContain('Create production account')
     expect(html).not.toContain('Send invite')
     expect(html).not.toContain('Launch client')
   })

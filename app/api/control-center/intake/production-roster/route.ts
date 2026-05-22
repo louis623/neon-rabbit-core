@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { preparePrelaunchClientAccountForLaunchBuild } from '@/lib/prelaunch/client-account'
 import { connectPrelaunchLaunchBuildToProductionRep } from '@/lib/prelaunch/production-roster'
 import {
   AuthError,
@@ -12,6 +13,10 @@ export const dynamic = 'force-dynamic'
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function readBoolean(value: unknown) {
+  return value === true || value === 'true' || value === 'on'
 }
 
 function isJsonRequest(request: Request) {
@@ -32,6 +37,8 @@ async function parsePayload(request: Request) {
     return {
       launchBuildId: readString(body.launchBuildId),
       repId: readString(body.repId),
+      createClientAccount: readBoolean(body.createClientAccount),
+      temporaryPassword: readString(body.temporaryPassword),
       notes: readString(body.notes),
       returnTo: '/control-center/intake',
       wantsJson: true,
@@ -43,6 +50,8 @@ async function parsePayload(request: Request) {
   return {
     launchBuildId: readString(form.get('launchBuildId')),
     repId: readString(form.get('repId')),
+    createClientAccount: readBoolean(form.get('createClientAccount')),
+    temporaryPassword: readString(form.get('temporaryPassword')),
     notes: readString(form.get('notes')),
     returnTo: sanitizeReturnTo(readString(form.get('returnTo'))),
     wantsJson: false,
@@ -61,7 +70,28 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!payload.repId) {
+    let repId = payload.repId
+    let clientAccount: Awaited<
+      ReturnType<typeof preparePrelaunchClientAccountForLaunchBuild>
+    > | null = null
+
+    if (payload.createClientAccount) {
+      if (!payload.temporaryPassword) {
+        return NextResponse.json(
+          { error: 'temporaryPassword is required.' },
+          { status: 400 },
+        )
+      }
+
+      clientAccount = await preparePrelaunchClientAccountForLaunchBuild({
+        launchBuildId: payload.launchBuildId,
+        temporaryPassword: payload.temporaryPassword,
+        operatorRepId: operator.repId,
+      })
+      repId = clientAccount.repId
+    }
+
+    if (!repId) {
       return NextResponse.json(
         { error: 'repId is required.' },
         { status: 400 },
@@ -70,7 +100,7 @@ export async function POST(request: Request) {
 
     const build = await connectPrelaunchLaunchBuildToProductionRep({
       launchBuildId: payload.launchBuildId,
-      repId: payload.repId,
+      repId,
       notes: payload.notes,
       operatorRepId: operator.repId,
     })
@@ -79,7 +109,9 @@ export async function POST(request: Request) {
       return NextResponse.redirect(new URL(payload.returnTo, request.url), 303)
     }
 
-    return NextResponse.json({ ok: true, build })
+    return NextResponse.json(
+      clientAccount ? { ok: true, build, clientAccount } : { ok: true, build },
+    )
   } catch (error) {
     if (error instanceof SyntaxError) {
       return NextResponse.json(

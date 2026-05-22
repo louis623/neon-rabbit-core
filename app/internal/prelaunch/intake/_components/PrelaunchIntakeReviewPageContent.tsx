@@ -155,7 +155,7 @@ function formatActiveBuildPhase(build: PrelaunchLaunchBuild | null) {
 function formatActiveBuildDetail(build: PrelaunchLaunchBuild | null) {
   if (!build) return 'Build slot is open'
   if (build.stage === 'ready_for_launch') return 'Production roster is connected'
-  if (build.status === 'ready') return 'Demo path is clear'
+  if (build.status === 'ready') return 'Ready for local smoke'
   if (build.blockers.length > 0) return 'Clear blockers before continuing'
   return 'Moving through setup'
 }
@@ -163,7 +163,7 @@ function formatActiveBuildDetail(build: PrelaunchLaunchBuild | null) {
 function formatActiveBuildNextAction(build: PrelaunchLaunchBuild | null) {
   if (!build) return 'Select one lead when ready to start onboarding'
   if (build.stage === 'ready_for_launch') return 'Review production roster'
-  if (build.status === 'ready') return 'Smoke test the demo account'
+  if (build.status === 'ready') return 'Smoke test the client account'
   if (build.blockers.length > 0) return 'Clear blockers'
   return 'Keep setup moving'
 }
@@ -1007,11 +1007,11 @@ export function PrelaunchIntakeReviewPageContent({
                       Safe smoke status
                     </p>
                     <h3 className="mt-1 text-base font-semibold text-slate-950">
-                      Demo readiness snapshot
+                      Launch readiness snapshot
                     </h3>
                   </div>
                   <p className="max-w-sm text-xs leading-5 text-slate-600">
-                    Read-only checks for the demo path. No provider actions run
+                    Read-only checks for the real launch path. No provider actions run
                     from this panel.
                   </p>
                 </div>
@@ -1532,7 +1532,7 @@ export function PrelaunchIntakeReviewPageContent({
             {activeLaunchBuild?.repId ? (
               <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Demo smoke links
+                  Live account links
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                   <a
@@ -1584,8 +1584,8 @@ export function PrelaunchIntakeReviewPageContent({
                     </h3>
                   </div>
                   <p className="max-w-sm text-xs leading-5 text-slate-600">
-                    This only links an existing rep row. It does not create an
-                    account, send an invite, or launch the client.
+                    Link an existing rep row, or create the client account shell
+                    from this ready build. This does not send an invite.
                   </p>
                 </div>
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -1594,7 +1594,7 @@ export function PrelaunchIntakeReviewPageContent({
                     <input
                       className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
                       name="repId"
-                      required
+                      placeholder="Use this when the rep already exists"
                     />
                   </label>
                   <label className="text-xs font-semibold text-slate-700">
@@ -1605,7 +1605,30 @@ export function PrelaunchIntakeReviewPageContent({
                       name="notes"
                     />
                   </label>
+                  <label className="flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
+                    <input
+                      className="h-4 w-4 rounded border-slate-300"
+                      name="createClientAccount"
+                      type="checkbox"
+                      value="true"
+                    />
+                    Create client account
+                  </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Temporary password
+                    <input
+                      autoComplete="new-password"
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      name="temporaryPassword"
+                      placeholder="Required only when creating account"
+                      type="password"
+                    />
+                  </label>
                 </div>
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Account creation uses the customer email on this build,
+                  confirms the auth user, and does not email credentials.
+                </p>
                 <button
                   className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
                   type="submit"

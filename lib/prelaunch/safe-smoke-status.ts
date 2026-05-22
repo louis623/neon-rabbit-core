@@ -43,32 +43,32 @@ function missingEnvKeys(
   return keys.filter((key) => !env[key]?.trim())
 }
 
-function buildDemoAccountStatus(
+function buildClientAccountStatus(
   activeLaunchBuild: ActiveLaunchBuildSmokeSummary | null,
 ): PrelaunchSafeSmokeStatusItem {
   if (!activeLaunchBuild) {
     return {
       key: 'demo_account',
-      label: 'Demo account',
+      label: 'Client account',
       status: 'blocked',
-      detail: 'No active build is ready for demo smoke yet.',
+      detail: 'No active build is ready for local smoke yet.',
     }
   }
 
   if (activeLaunchBuild.status === 'ready' && activeLaunchBuild.repId) {
     return {
       key: 'demo_account',
-      label: 'Demo account',
+      label: 'Client account',
       status: 'ready',
-      detail: `${activeLaunchBuild.leadName} is connected and ready for local demo smoke.`,
+      detail: `${activeLaunchBuild.leadName} is connected and ready for local smoke.`,
     }
   }
 
   return {
     key: 'demo_account',
-    label: 'Demo account',
+    label: 'Client account',
     status: 'blocked',
-    detail: `${activeLaunchBuild.leadName} still has build blockers to clear before demo smoke.`,
+    detail: `${activeLaunchBuild.leadName} still has build blockers to clear before local smoke.`,
   }
 }
 
@@ -124,7 +124,7 @@ export function buildPrelaunchSafeSmokeStatus({
   env = process.env,
 }: BuildPrelaunchSafeSmokeStatusInput): PrelaunchSafeSmokeStatusItem[] {
   return [
-    buildDemoAccountStatus(activeLaunchBuild),
+    buildClientAccountStatus(activeLaunchBuild),
     buildStripeTestStatus(env),
     buildSignWellSandboxStatus(env),
     {

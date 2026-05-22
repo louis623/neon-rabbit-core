@@ -63,8 +63,8 @@ export const DEFAULT_PRELAUNCH_LAUNCH_CHECKS: PrelaunchLaunchCheckDefinition[] =
   },
   {
     key: 'demo_account_review',
-    label: 'Demo account review',
-    detail: 'Demo account can open the working Sparkle Suite surface.',
+    label: 'Client account review',
+    detail: 'Client account can open the working Sparkle Suite surface.',
   },
   {
     key: 'operator_final_review',

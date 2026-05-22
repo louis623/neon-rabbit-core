@@ -12,9 +12,9 @@ describe('prelaunch safe smoke status', () => {
     ).toEqual([
       {
         key: 'demo_account',
-        label: 'Demo account',
+        label: 'Client account',
         status: 'blocked',
-        detail: 'No active build is ready for demo smoke yet.',
+        detail: 'No active build is ready for local smoke yet.',
       },
       {
         key: 'stripe_test',
@@ -62,9 +62,9 @@ describe('prelaunch safe smoke status', () => {
     ).toEqual([
       {
         key: 'demo_account',
-        label: 'Demo account',
+        label: 'Client account',
         status: 'ready',
-        detail: 'Sparkle Demo Lead is connected and ready for local demo smoke.',
+        detail: 'Sparkle Demo Lead is connected and ready for local smoke.',
       },
       {
         key: 'stripe_test',
