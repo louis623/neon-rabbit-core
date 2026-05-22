@@ -434,7 +434,7 @@ describe('prelaunch agreement documents', () => {
     expect(fromMock).not.toHaveBeenCalled()
   })
 
-  it('records a sandbox agreement as signed without opening launch gates', async () => {
+  it('records a sandbox agreement as signed and marks the agreement gate ready', async () => {
     const updateMock = vi.fn()
     const launchBuildEqMock = vi.fn()
     const providerEqMock = vi.fn()
@@ -442,8 +442,20 @@ describe('prelaunch agreement documents', () => {
     const gateTypeEqMock = vi.fn()
     const selectMock = vi.fn()
     const singleMock = vi.fn()
+    const gateUpsertMock = vi.fn()
+    const gateSelectMock = vi.fn()
+    const gateSingleMock = vi.fn()
+    const buildSelectMock = vi.fn()
+    const buildEqMock = vi.fn()
+    const buildSingleMock = vi.fn()
+    const buildUpdateMock = vi.fn()
+    const buildUpdateEqMock = vi.fn()
 
-    fromMock.mockReturnValueOnce({ update: updateMock })
+    fromMock
+      .mockReturnValueOnce({ update: updateMock })
+      .mockReturnValueOnce({ upsert: gateUpsertMock })
+      .mockReturnValueOnce({ select: buildSelectMock })
+      .mockReturnValueOnce({ update: buildUpdateMock })
     updateMock.mockReturnValueOnce({ eq: launchBuildEqMock })
     launchBuildEqMock.mockReturnValueOnce({ eq: providerEqMock })
     providerEqMock.mockReturnValueOnce({ eq: modeEqMock })
@@ -480,6 +492,37 @@ describe('prelaunch agreement documents', () => {
       },
       error: null,
     })
+    gateUpsertMock.mockReturnValueOnce({ select: gateSelectMock })
+    gateSelectMock.mockReturnValueOnce({ single: gateSingleMock })
+    gateSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'gate-1',
+        launch_build_id: 'build-1',
+        gate_key: 'agreement',
+        label: 'Agreement gate',
+        mode: 'sandbox',
+        status: 'ready',
+        notes: 'Signed proof received.',
+        updated_by_rep_id: 'operator-1',
+        created_at: '2026-05-22T12:00:00Z',
+        updated_at: '2026-05-22T15:01:00Z',
+      },
+      error: null,
+    })
+    buildSelectMock.mockReturnValueOnce({ eq: buildEqMock })
+    buildEqMock.mockReturnValueOnce({ single: buildSingleMock })
+    buildSingleMock.mockResolvedValueOnce({
+      data: {
+        setup_profile_status: 'ready',
+        payment_gate_status: 'ready',
+        agreement_gate_status: 'disabled',
+        build_check_status: 'not_started',
+        production_roster_status: 'not_started',
+      },
+      error: null,
+    })
+    buildUpdateMock.mockReturnValueOnce({ eq: buildUpdateEqMock })
+    buildUpdateEqMock.mockResolvedValueOnce({ error: null })
 
     const document = await recordPrelaunchAgreementSigned({
       launchBuildId: 'build-1',
@@ -503,6 +546,20 @@ describe('prelaunch agreement documents', () => {
     expect(gateTypeEqMock).toHaveBeenCalledWith(
       'gate_type',
       'service_agreement',
+    )
+    expect(gateUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        launch_build_id: 'build-1',
+        gate_key: 'agreement',
+        status: 'ready',
+        notes: 'Signed proof received.',
+      }),
+      { onConflict: 'launch_build_id,gate_key' },
+    )
+    expect(buildUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agreement_gate_status: 'ready',
+      }),
     )
     expect(document.status).toBe('signed')
     expect(document.signedPdfUrl).toBe('https://storage.example/signed.pdf')

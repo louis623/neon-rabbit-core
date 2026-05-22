@@ -966,6 +966,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Record test signature')
     expect(html).toContain('Signed PDF URL')
     expect(html).toContain('Blank uses the current time')
+    expect(html).toContain('marks the sandbox agreement gate ready')
     expect(html).toContain('keeps test mode on')
     expect(html).toContain('test mode only')
     expect(html).toContain('sandbox only')

@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { upsertPrelaunchLaunchGate } from '@/lib/prelaunch/launch-gates'
 import {
   buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
@@ -422,7 +423,22 @@ export async function recordPrelaunchAgreementSigned(
 
   if (error) throw error
 
-  return normalizePrelaunchAgreementDocumentRows([
+  const agreementDocument = normalizePrelaunchAgreementDocumentRows([
     data as unknown as PrelaunchAgreementDocumentRow,
   ])[0]
+
+  await upsertPrelaunchLaunchGate(
+    {
+      launchBuildId,
+      gateKey: 'agreement',
+      status: 'ready',
+      notes:
+        cleanOptionalText(input.notes) ||
+        'Sandbox agreement signature recorded.',
+      operatorRepId: input.operatorRepId ?? null,
+    },
+    admin,
+  )
+
+  return agreementDocument
 }

@@ -1394,7 +1394,8 @@ export function PrelaunchIntakeReviewPageContent({
                   <p className="mt-2 text-xs leading-5 text-slate-500">
                     Test draft creation requires the sandbox guard flag. It
                     keeps test mode on, keeps the document as a draft, and
-                    leaves email disabled.
+                    leaves email disabled. Recording a test signature marks the
+                    sandbox agreement gate ready.
                   </p>
                 </form>
               </section>
