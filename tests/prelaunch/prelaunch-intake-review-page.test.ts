@@ -962,6 +962,8 @@ describe('PrelaunchIntakeReviewPageContent', () => {
       'action="/api/control-center/intake/agreement-document"',
     )
     expect(html).toContain('Record agreement draft')
+    expect(html).toContain('Create SignWell test draft')
+    expect(html).toContain('keeps test mode on')
     expect(html).toContain('test mode only')
     expect(html).toContain('sandbox only')
     expect(html).not.toContain('Create Stripe checkout')

@@ -1,7 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
+  buildPrelaunchSignWellAgreementPayload,
   buildPrelaunchSignWellMetadata,
   getPrelaunchSignWellConfig,
+  getPrelaunchSignWellLiveSendMode,
+  PrelaunchSignWellProviderError,
+  submitPrelaunchSignWellSandboxAgreement,
   type PrelaunchAgreementGateType,
 } from '@/lib/prelaunch/signwell'
 
@@ -79,6 +83,14 @@ interface CreatePrelaunchAgreementDraftInput {
   env?: Record<string, string | undefined>
 }
 
+interface CreatePrelaunchSignWellSandboxDraftInput {
+  launchBuildId: string
+  operatorRepId?: string | null
+  notes?: string | null
+  env?: Record<string, string | undefined>
+  fetchImpl?: typeof fetch
+}
+
 interface AgreementLaunchBuildRow {
   id: string
   waitlist_id: string | null
@@ -149,6 +161,15 @@ export function getPrelaunchAgreementTemplateSnapshot(
       env.SPARKLE_SUITE_AGREEMENT_PRICING_COHORT?.trim() ||
       'founder_first_20',
   }
+}
+
+export function isPrelaunchSignWellSandboxDraftCreateEnabled(
+  env: Record<string, string | undefined> = process.env,
+) {
+  return (
+    env.SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED?.trim() === 'true' ||
+    env.SIGNWELL_SANDBOX_PROVIDER_CALL?.trim() === 'true'
+  )
 }
 
 export function normalizePrelaunchAgreementDocumentRows(
@@ -283,4 +304,81 @@ export async function createPrelaunchAgreementDraftTracker(
   return normalizePrelaunchAgreementDocumentRows([
     data as unknown as PrelaunchAgreementDocumentRow,
   ])[0]
+}
+
+export async function createPrelaunchSignWellSandboxDraftForBuild(
+  input: CreatePrelaunchSignWellSandboxDraftInput,
+  admin: AdminClient = createAdminClient(),
+) {
+  const env = input.env ?? process.env
+  const launchBuildId = cleanRequiredString(
+    input.launchBuildId,
+    'launchBuildId',
+  )
+
+  if (!isPrelaunchSignWellSandboxDraftCreateEnabled(env)) {
+    throw new Error(
+      'SignWell sandbox draft creation requires SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED=true.',
+    )
+  }
+
+  if (getPrelaunchSignWellLiveSendMode(env).allowLiveSend) {
+    throw new Error(
+      'SignWell sandbox draft creation must run with live sending disabled.',
+    )
+  }
+
+  const config = getPrelaunchSignWellConfig(env)
+  if (!config) {
+    throw new Error('SignWell agreement template is not configured.')
+  }
+
+  const build = await loadAgreementLaunchBuild(launchBuildId, admin)
+  const metadata = buildPrelaunchSignWellMetadata({
+    gateType: 'service_agreement',
+    intakeId: build.intake_submission_id ?? launchBuildId,
+    waitlistId: build.waitlist_id,
+    operatorRepId: input.operatorRepId ?? null,
+  })
+  const agreementPayload = buildPrelaunchSignWellAgreementPayload({
+    templateId: config.templateId,
+    recipientPlaceholderName: config.recipientPlaceholderName,
+    recipient: {
+      name: build.lead_name,
+      email: build.lead_email,
+    },
+    metadata,
+    mode: 'sandbox',
+  })
+  const providerResult = await submitPrelaunchSignWellSandboxAgreement({
+    config,
+    agreementPayload,
+    fetchImpl: input.fetchImpl,
+  })
+
+  if (!providerResult.documentId) {
+    throw new PrelaunchSignWellProviderError(
+      'SignWell sandbox provider returned no document id.',
+      { status: providerResult.providerStatus },
+    )
+  }
+
+  const agreementDocument = await createPrelaunchAgreementDraftTracker(
+    {
+      launchBuildId,
+      operatorRepId: input.operatorRepId ?? null,
+      providerDocumentId: providerResult.documentId,
+      providerStatus: providerResult.providerStatus,
+      notes:
+        cleanOptionalText(input.notes) ||
+        'SignWell test-mode draft created. Email disabled.',
+      env,
+    },
+    admin,
+  )
+
+  return {
+    agreementDocument,
+    providerResult,
+  }
 }

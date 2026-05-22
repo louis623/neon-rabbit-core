@@ -1322,12 +1322,29 @@ export function PrelaunchIntakeReviewPageContent({
                       />
                     </label>
                   </div>
-                  <button
-                    className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
-                    type="submit"
-                  >
-                    Record agreement draft
-                  </button>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <button
+                      className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
+                      name="createSandboxDraft"
+                      type="submit"
+                      value="false"
+                    >
+                      Record agreement draft
+                    </button>
+                    <button
+                      className="inline-flex min-h-9 items-center justify-center rounded-md border border-sky-300 bg-sky-50 px-3 text-xs font-semibold text-sky-900 shadow-sm transition hover:border-sky-400 hover:bg-sky-100"
+                      name="createSandboxDraft"
+                      type="submit"
+                      value="true"
+                    >
+                      Create SignWell test draft
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    Test draft creation requires the sandbox guard flag. It
+                    keeps test mode on, keeps the document as a draft, and
+                    leaves email disabled.
+                  </p>
                 </form>
               </section>
             ) : null}

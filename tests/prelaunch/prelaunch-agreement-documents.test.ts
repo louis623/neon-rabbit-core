@@ -10,7 +10,9 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 import {
   createPrelaunchAgreementDraftTracker,
+  createPrelaunchSignWellSandboxDraftForBuild,
   getPrelaunchAgreementTemplateSnapshot,
+  isPrelaunchSignWellSandboxDraftCreateEnabled,
   loadPrelaunchAgreementDocumentsByBuildIds,
   normalizePrelaunchAgreementDocumentRows,
 } from '@/lib/prelaunch/agreement-documents'
@@ -46,6 +48,20 @@ describe('prelaunch agreement documents', () => {
       templateLabel: 'Sparkle Suite standard agreement',
       pricingCohort: 'standard',
     })
+  })
+
+  it('keeps sandbox draft creation behind an explicit guard flag', () => {
+    expect(isPrelaunchSignWellSandboxDraftCreateEnabled({})).toBe(false)
+    expect(
+      isPrelaunchSignWellSandboxDraftCreateEnabled({
+        SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED: 'true',
+      }),
+    ).toBe(true)
+    expect(
+      isPrelaunchSignWellSandboxDraftCreateEnabled({
+        SIGNWELL_SANDBOX_PROVIDER_CALL: 'true',
+      }),
+    ).toBe(true)
   })
 
   it('normalizes agreement document rows', () => {
@@ -265,5 +281,155 @@ describe('prelaunch agreement documents', () => {
       { onConflict: 'launch_build_id,provider,mode,gate_type' },
     )
     expect(document.providerDocumentId).toBe('document_123')
+  })
+
+  it('creates a SignWell test-mode draft for a launch build and saves the returned document id', async () => {
+    const firstBuildSelectMock = vi.fn()
+    const firstBuildEqMock = vi.fn()
+    const firstBuildSingleMock = vi.fn()
+    const secondBuildSelectMock = vi.fn()
+    const secondBuildEqMock = vi.fn()
+    const secondBuildSingleMock = vi.fn()
+    const upsertMock = vi.fn()
+    const upsertSelectMock = vi.fn()
+    const upsertSingleMock = vi.fn()
+    const fetchImpl = vi.fn<typeof fetch>(async () =>
+      new Response(
+        JSON.stringify({
+          id: 'document_123',
+          recipients: [{ id: 'sparkle_suite_rep' }],
+        }),
+        { status: 201 },
+      ),
+    )
+
+    fromMock
+      .mockReturnValueOnce({ select: firstBuildSelectMock })
+      .mockReturnValueOnce({ select: secondBuildSelectMock })
+      .mockReturnValueOnce({ upsert: upsertMock })
+    firstBuildSelectMock.mockReturnValueOnce({ eq: firstBuildEqMock })
+    firstBuildEqMock.mockReturnValueOnce({ single: firstBuildSingleMock })
+    firstBuildSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        lead_name: 'Demo Lead',
+        lead_email: 'demo@example.com',
+      },
+      error: null,
+    })
+    secondBuildSelectMock.mockReturnValueOnce({ eq: secondBuildEqMock })
+    secondBuildEqMock.mockReturnValueOnce({ single: secondBuildSingleMock })
+    secondBuildSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        lead_name: 'Demo Lead',
+        lead_email: 'demo@example.com',
+      },
+      error: null,
+    })
+    upsertMock.mockReturnValueOnce({ select: upsertSelectMock })
+    upsertSelectMock.mockReturnValueOnce({ single: upsertSingleMock })
+    upsertSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'agreement-1',
+        launch_build_id: 'build-1',
+        waitlist_id: 'waitlist-1',
+        intake_submission_id: 'intake-1',
+        provider: 'signwell',
+        mode: 'sandbox',
+        gate_type: 'service_agreement',
+        status: 'created',
+        template_id: 'template_123',
+        template_label: 'Sparkle Suite service agreement',
+        pricing_cohort: 'founder_first_20',
+        provider_document_id: 'document_123',
+        recipient_name: 'Demo Lead',
+        recipient_email: 'demo@example.com',
+        send_email: false,
+        draft: true,
+        test_mode: true,
+        provider_status: 201,
+        signed_at: null,
+        signed_pdf_url: null,
+        notes: 'SignWell test-mode draft created. Email disabled.',
+        metadata: {},
+        updated_by_rep_id: 'operator-1',
+        created_at: '2026-05-22T12:00:00Z',
+        updated_at: '2026-05-22T12:01:00Z',
+      },
+      error: null,
+    })
+
+    const result = await createPrelaunchSignWellSandboxDraftForBuild({
+      launchBuildId: 'build-1',
+      operatorRepId: 'operator-1',
+      env: {
+        SIGNWELL_API_KEY: 'signwell_api_key',
+        SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+        SIGNWELL_TEMPLATE_ID: 'template_123',
+        SIGNWELL_TEMPLATE_RECIPIENT_PLACEHOLDER: 'Client',
+        SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED: 'true',
+      },
+      fetchImpl,
+    })
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://www.signwell.com/api/v1/document_templates/documents',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"send_email":false'),
+      }),
+    )
+    const fetchRequest = fetchImpl.mock.calls[0]?.[1] as
+      | { body?: BodyInit | null }
+      | undefined
+    expect(typeof fetchRequest?.body).toBe('string')
+    expect(JSON.parse(fetchRequest?.body as string)).toMatchObject({
+      test_mode: true,
+      send_email: false,
+      draft: true,
+      template_id: 'template_123',
+      recipients: [
+        {
+          placeholder_name: 'Client',
+          name: 'Demo Lead',
+          email: 'demo@example.com',
+        },
+      ],
+    })
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'created',
+        provider_document_id: 'document_123',
+        provider_status: 201,
+        send_email: false,
+        draft: true,
+        test_mode: true,
+      }),
+      { onConflict: 'launch_build_id,provider,mode,gate_type' },
+    )
+    expect(result.agreementDocument.providerDocumentId).toBe('document_123')
+    expect(result.providerResult.sendEmail).toBe(false)
+  })
+
+  it('refuses to create a SignWell sandbox draft when the guard flag is off', async () => {
+    await expect(
+      createPrelaunchSignWellSandboxDraftForBuild({
+        launchBuildId: 'build-1',
+        env: {
+          SIGNWELL_API_KEY: 'signwell_api_key',
+          SIGNWELL_API_BASE_URL: 'https://www.signwell.com/api/v1',
+          SIGNWELL_TEMPLATE_ID: 'template_123',
+        },
+        fetchImpl: vi.fn(),
+      }),
+    ).rejects.toThrow(
+      'SignWell sandbox draft creation requires SIGNWELL_SANDBOX_DRAFT_CREATE_ENABLED=true.',
+    )
+    expect(fromMock).not.toHaveBeenCalled()
   })
 })
