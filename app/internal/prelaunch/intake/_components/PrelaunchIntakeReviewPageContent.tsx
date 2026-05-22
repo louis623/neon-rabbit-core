@@ -146,6 +146,7 @@ function formatScoutInputStatus(value: string) {
 
 function formatActiveBuildPhase(build: PrelaunchLaunchBuild | null) {
   if (!build) return 'No info'
+  if (build.stage === 'ready_for_launch') return 'Ready for launch'
   if (build.status === 'ready') return 'Ready to build'
   if (build.blockers.length > 0) return 'Needs attention'
   return 'In progress'
@@ -153,6 +154,7 @@ function formatActiveBuildPhase(build: PrelaunchLaunchBuild | null) {
 
 function formatActiveBuildDetail(build: PrelaunchLaunchBuild | null) {
   if (!build) return 'Build slot is open'
+  if (build.stage === 'ready_for_launch') return 'Production roster is connected'
   if (build.status === 'ready') return 'Demo path is clear'
   if (build.blockers.length > 0) return 'Clear blockers before continuing'
   return 'Moving through setup'
@@ -160,9 +162,18 @@ function formatActiveBuildDetail(build: PrelaunchLaunchBuild | null) {
 
 function formatActiveBuildNextAction(build: PrelaunchLaunchBuild | null) {
   if (!build) return 'Select one lead when ready to start onboarding'
+  if (build.stage === 'ready_for_launch') return 'Review production roster'
   if (build.status === 'ready') return 'Smoke test the demo account'
   if (build.blockers.length > 0) return 'Clear blockers'
   return 'Keep setup moving'
+}
+
+function formatActiveBuildNextHref(
+  build: PrelaunchLaunchBuild | null,
+  basePath: string,
+) {
+  if (build?.stage === 'ready_for_launch') return `${basePath}#reps`
+  return formatWaitlistViewHref('start_work_ready', basePath)
 }
 
 function formatLaneHref(lane: PrelaunchIntakeReviewLane | null, basePath: string) {
@@ -751,7 +762,7 @@ export function PrelaunchIntakeReviewPageContent({
       value: formatActiveBuildNextAction(activeLaunchBuild),
       detail: activeLaunchBuild ? activeLaunchBuild.leadEmail : 'Start from the ready list',
       anchor: 'next-action',
-      href: formatWaitlistViewHref('start_work_ready', basePath),
+      href: formatActiveBuildNextHref(activeLaunchBuild, basePath),
       status: 'neutral',
     },
   ]

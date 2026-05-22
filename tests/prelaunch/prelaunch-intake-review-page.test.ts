@@ -826,6 +826,31 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).not.toContain('Build slot is open')
   })
 
+  it('labels a connected ready demo build as ready for launch', () => {
+    const html = renderToStaticMarkup(
+      createElement(PrelaunchIntakeReviewPageContent, {
+        basePath: '/control-center/intake',
+        surface: 'control_center',
+        submissions: [],
+        launchBuilds: [
+          {
+            ...launchBuild,
+            repId: 'rep-1',
+            stage: 'ready_for_launch',
+            status: 'ready',
+            blockers: [],
+          },
+        ],
+        waitlistLeads: [],
+      }),
+    )
+
+    expect(html).toContain('Ready for launch')
+    expect(html).toContain('Production roster is connected')
+    expect(html).toContain('Review production roster')
+    expect(html).toContain('href="/control-center/intake#reps"')
+  })
+
   it('renders a compact safe smoke status without provider actions', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
