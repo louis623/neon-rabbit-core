@@ -140,6 +140,27 @@ function formatScoutInputStatus(value: string) {
   return formatLabel(value)
 }
 
+function formatActiveBuildPhase(build: PrelaunchLaunchBuild | null) {
+  if (!build) return 'No info'
+  if (build.status === 'ready') return 'Ready to build'
+  if (build.blockers.length > 0) return 'Needs attention'
+  return 'In progress'
+}
+
+function formatActiveBuildDetail(build: PrelaunchLaunchBuild | null) {
+  if (!build) return 'Build slot is open'
+  if (build.status === 'ready') return 'Demo path is clear'
+  if (build.blockers.length > 0) return 'Clear blockers before continuing'
+  return 'Moving through setup'
+}
+
+function formatActiveBuildNextAction(build: PrelaunchLaunchBuild | null) {
+  if (!build) return 'Select one lead when ready to start onboarding'
+  if (build.status === 'ready') return 'Smoke test the demo account'
+  if (build.blockers.length > 0) return 'Clear blockers'
+  return 'Keep setup moving'
+}
+
 function formatLaneHref(lane: PrelaunchIntakeReviewLane | null, basePath: string) {
   return lane ? `${basePath}?lane=${lane}` : basePath
 }
@@ -659,16 +680,14 @@ export function PrelaunchIntakeReviewPageContent({
     {
       label: 'Active client',
       value: activeLaunchBuild?.leadName ?? 'No active client',
-      detail: activeLaunchBuild ? 'Draft launch build' : 'Build slot is open',
+      detail: formatActiveBuildDetail(activeLaunchBuild),
       anchor: 'active-client',
       href: `${basePath}#active-client`,
       status: activeLaunchBuild?.status === 'blocked' ? 'alert' : 'neutral',
     },
     {
       label: 'Current phase',
-      value: activeLaunchBuild
-        ? formatTitleLabel(activeLaunchBuild.stage)
-        : 'No info',
+      value: formatActiveBuildPhase(activeLaunchBuild),
       detail: activeLaunchBuild
         ? formatTitleLabel(activeLaunchBuild.status)
         : 'Build phase appears after client selection',
@@ -699,9 +718,7 @@ export function PrelaunchIntakeReviewPageContent({
     },
     {
       label: 'Next action',
-      value: activeLaunchBuild
-        ? 'Clear blockers before launch checks'
-        : 'Select one lead when ready to start onboarding',
+      value: formatActiveBuildNextAction(activeLaunchBuild),
       detail: activeLaunchBuild ? activeLaunchBuild.leadEmail : 'Start from the ready list',
       anchor: 'next-action',
       href: formatWaitlistViewHref('start_work_ready', basePath),
@@ -922,7 +939,7 @@ export function PrelaunchIntakeReviewPageContent({
             {activeLaunchBuild ? (
               <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
-                  Draft launch build
+                  {formatActiveBuildPhase(activeLaunchBuild)}
                 </p>
                 <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <p className="font-semibold text-slate-950">
@@ -1741,7 +1758,7 @@ export function PrelaunchIntakeReviewPageContent({
                                 className="inline-flex min-h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
                                 type="submit"
                               >
-                                Create launch build draft
+                                Start active build
                               </button>
                             </form>
                           ) : null}

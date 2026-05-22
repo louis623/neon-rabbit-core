@@ -739,7 +739,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain(
       'Louis approved this profile for the Start Work lane. Keep Stripe, SignWell, build readiness, and live queue actions behind their own gates.',
     )
-    expect(html).toContain('Create launch build draft')
+    expect(html).toContain('Start active build')
     expect(html).toContain(
       'action="/api/control-center/intake/launch-build-draft"',
     )
@@ -769,7 +769,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
     expect(html).toContain('Ready for onboarding')
   })
 
-  it('renders draft launch builds in the active work board', () => {
+  it('renders active builds in the active work board', () => {
     const html = renderToStaticMarkup(
       createElement(PrelaunchIntakeReviewPageContent, {
         basePath: '/control-center/intake',
@@ -790,7 +790,7 @@ describe('PrelaunchIntakeReviewPageContent', () => {
 
     expect(html).toContain('Active work board')
     expect(html).toContain('Start Work Lead')
-    expect(html).toContain('Draft launch build')
+    expect(html).toContain('Needs attention')
     expect(html).toContain('Blocked')
     expect(html).toContain('Payment gate is disabled.')
     expect(html).toContain('Agreement gate is disabled.')
