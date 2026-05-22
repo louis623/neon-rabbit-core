@@ -3,6 +3,7 @@ export const DEFAULT_AMETHYST_PREVIEW_EMAIL = 'testrep@neonrabbit.net'
 interface AmethystPreviewRep {
   id: string
   email: string
+  shop_link?: string | null
   streaming_links?: unknown
 }
 
