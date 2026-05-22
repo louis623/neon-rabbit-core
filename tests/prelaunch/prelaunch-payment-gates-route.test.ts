@@ -173,8 +173,8 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
       customer_email: 'customer@example.com',
       line_items: [{ price: 'price_start_123', quantity: 1 }],
       success_url:
-        'http://localhost:3000/prelaunch/payment/success?session_id=%7BCHECKOUT_SESSION_ID%7D',
-      cancel_url: 'http://localhost:3000/prelaunch/payment/cancelled',
+        'http://localhost/prelaunch/payment/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost/prelaunch/payment/cancelled',
       metadata: expect.objectContaining({
         sparkle_suite_payment_gate: 'true',
         payment_gate: 'start_work_fee',

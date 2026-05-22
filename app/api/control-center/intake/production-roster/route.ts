@@ -113,9 +113,7 @@ export async function POST(request: Request) {
         email: build.leadEmail,
         content: buildPrelaunchAccountReadyEmailContent({
           name: build.leadName || build.leadEmail,
-          accountUrl: `${appUrl.replace(/\/+$/, '')}/nic-nac?c=${encodeURIComponent(
-            repId,
-          )}`,
+          accountUrl: `${appUrl.replace(/\/+$/, '')}/nic-nac`,
         }),
       })
     }

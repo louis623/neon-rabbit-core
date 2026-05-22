@@ -8,7 +8,6 @@ import {
 } from '@/lib/prelaunch/payment-gates'
 import { sendPrelaunchEmail } from '@/lib/prelaunch/waitlist-email'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
-import { getAppUrl } from '@/lib/stripe/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -129,14 +128,6 @@ async function loadPaymentGateSubject(input: {
   throw new Error('A launch build or waitlist lead is required for checkout.')
 }
 
-function buildCheckoutReturnUrl(path: string, params: Record<string, string>) {
-  const url = new URL(path, getAppUrl())
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value)
-  }
-  return url.toString()
-}
-
 function toStripeMetadata(metadata: Record<string, string | null | undefined>) {
   return Object.fromEntries(
     Object.entries(metadata).filter(
@@ -207,14 +198,13 @@ export async function POST(request: Request) {
       lead_email: subject.email,
     }
     const stripe = getStripe()
+    const requestOrigin = new URL(request.url).origin
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: subject.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: buildCheckoutReturnUrl('/prelaunch/payment/success', {
-        session_id: '{CHECKOUT_SESSION_ID}',
-      }),
-      cancel_url: buildCheckoutReturnUrl('/prelaunch/payment/cancelled', {}),
+      success_url: `${requestOrigin}/prelaunch/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${requestOrigin}/prelaunch/payment/cancelled`,
       metadata: toStripeMetadata(finalMetadata),
     })
 

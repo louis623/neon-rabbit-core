@@ -1,4 +1,5 @@
 import { AuthError, getAuthenticatedRep } from './auth'
+import { createAdminClient } from './admin'
 
 export class OperatorAuthError extends Error {
   constructor(message: string) {
@@ -16,8 +17,42 @@ function getOperatorEmails() {
     .filter(Boolean)
 }
 
+function isControlCenterDevAuthBypassEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.CONTROL_CENTER_DEV_AUTH_BYPASS === 'true'
+  )
+}
+
+async function getDevBypassOperator() {
+  const email = getOperatorEmails()[0] ?? 'louis@neonrabbit.net'
+  const admin = createAdminClient()
+  const { data: rep, error } = await admin
+    .from('reps')
+    .select('id, auth_user_id, email, display_name, stripe_customer_id')
+    .eq('email', email)
+    .single()
+
+  if (error || !rep) {
+    throw new AuthError('Dev operator rep not found')
+  }
+
+  return { repId: rep.id as string, rep }
+}
+
 export async function getAuthenticatedOperator() {
-  const context = await getAuthenticatedRep()
+  let context: Awaited<ReturnType<typeof getAuthenticatedRep>>
+
+  try {
+    context = await getAuthenticatedRep()
+  } catch (error) {
+    if (error instanceof AuthError && isControlCenterDevAuthBypassEnabled()) {
+      context = await getDevBypassOperator()
+    } else {
+      throw error
+    }
+  }
+
   const email = context.rep.email.trim().toLowerCase()
 
   if (!getOperatorEmails().includes(email)) {

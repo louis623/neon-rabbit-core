@@ -443,7 +443,7 @@ export async function runCustomerFlowSmoke(
     },
     links: {
       controlCenter: '/control-center/intake',
-      nicNac: `/nic-nac?c=${repId}`,
+      nicNac: '/nic-nac',
       homepage: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
       joinPage: '/amethyst/Join.html',

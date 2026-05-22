@@ -1,4 +1,32 @@
-export default function PrelaunchPaymentSuccessPage() {
+import { syncPrelaunchPaymentGateFromCheckoutSession } from '@/lib/prelaunch/payment-gate-sync'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+interface PrelaunchPaymentSuccessPageProps {
+  searchParams?: Promise<{
+    session_id?: string | string[]
+  }>
+}
+
+function readSessionId(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+export default async function PrelaunchPaymentSuccessPage({
+  searchParams,
+}: PrelaunchPaymentSuccessPageProps) {
+  const query = searchParams ? await searchParams : {}
+  const sessionId = readSessionId(query.session_id)
+  const syncResult = sessionId
+    ? await syncPrelaunchPaymentGateFromCheckoutSession(sessionId).catch(
+        (error) => {
+          console.error('[prelaunch/payment/success] Sync failed:', error)
+          return null
+        },
+      )
+    : null
+
   return (
     <main className="prelaunch-page">
       <section className="prelaunch-section">
@@ -17,6 +45,11 @@ export default function PrelaunchPaymentSuccessPage() {
               Your Sparkle Suite checkout is complete. We will confirm the
               agreement, build checks, and launch handoff before your account
               goes live.
+            </p>
+            <p className="mt-4 text-sm font-semibold text-[var(--prelaunch-muted)]">
+              {syncResult?.ok
+                ? 'Payment gate confirmed.'
+                : 'Payment is processing. We will confirm it before build work continues.'}
             </p>
           </div>
         </div>
