@@ -1,3 +1,4 @@
+import { buildPrelaunchLaunchBuildReadiness } from '@/lib/prelaunch/launch-builds'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -49,6 +50,13 @@ export interface UpsertPrelaunchLaunchSetupProfileInput {
   status?: PrelaunchLaunchSetupProfileStatus
 }
 
+interface LaunchBuildReadinessRow {
+  payment_gate_status: 'not_started' | 'disabled' | 'ready'
+  agreement_gate_status: 'not_started' | 'disabled' | 'ready'
+  build_check_status: 'not_started' | 'passed'
+  production_roster_status: 'not_started' | 'connected'
+}
+
 export const PRELAUNCH_LAUNCH_SETUP_PROFILE_SELECT = [
   'id',
   'launch_build_id',
@@ -97,6 +105,23 @@ function isMissingSchemaTable(error: unknown) {
     'code' in error &&
     error.code === 'PGRST205'
   )
+}
+
+async function loadLaunchBuildReadinessRow(
+  launchBuildId: string,
+  admin: AdminClient,
+) {
+  const { data, error } = await admin
+    .from('sparkle_suite_launch_builds')
+    .select(
+      'payment_gate_status, agreement_gate_status, build_check_status, production_roster_status',
+    )
+    .eq('id', launchBuildId)
+    .single()
+
+  if (error) throw error
+
+  return data as unknown as LaunchBuildReadinessRow
 }
 
 export function normalizePrelaunchLaunchSetupProfileRows(
@@ -177,11 +202,23 @@ export async function upsertPrelaunchLaunchSetupProfile(
 
   if (error) throw error
 
+  const setupProfileStatus = status === 'ready' ? 'ready' : 'drafted'
+  const gateRow = await loadLaunchBuildReadinessRow(launchBuildId, admin)
+  const readiness = buildPrelaunchLaunchBuildReadiness({
+    setupProfileStatus,
+    paymentGateStatus: gateRow.payment_gate_status,
+    agreementGateStatus: gateRow.agreement_gate_status,
+    buildCheckStatus: gateRow.build_check_status,
+    productionRosterStatus: gateRow.production_roster_status,
+  })
+
   const { error: buildError } = await admin
     .from('sparkle_suite_launch_builds')
     .update({
-      setup_profile_status: status === 'ready' ? 'ready' : 'drafted',
+      setup_profile_status: setupProfileStatus,
       stage: 'setup_profile',
+      status: readiness.status,
+      blockers: readiness.blockers,
     })
     .eq('id', launchBuildId)
 

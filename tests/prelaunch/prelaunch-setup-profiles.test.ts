@@ -124,11 +124,14 @@ describe('prelaunch launch setup profiles', () => {
     const upsertMock = vi.fn()
     const selectMock = vi.fn()
     const singleMock = vi.fn()
+    const buildSelectMock = vi.fn()
+    const buildSingleMock = vi.fn()
     const updateMock = vi.fn()
     const eqMock = vi.fn()
 
     fromMock
       .mockReturnValueOnce({ upsert: upsertMock })
+      .mockReturnValueOnce({ select: buildSelectMock })
       .mockReturnValueOnce({ update: updateMock })
     upsertMock.mockReturnValueOnce({ select: selectMock })
     selectMock.mockReturnValueOnce({ single: singleMock })
@@ -147,6 +150,17 @@ describe('prelaunch launch setup profiles', () => {
         status: 'ready',
         created_at: '2026-05-21T21:00:00Z',
         updated_at: '2026-05-21T21:01:00Z',
+      },
+      error: null,
+    })
+    buildSelectMock.mockReturnValueOnce({ eq: eqMock })
+    eqMock.mockReturnValueOnce({ single: buildSingleMock })
+    buildSingleMock.mockResolvedValueOnce({
+      data: {
+        payment_gate_status: 'disabled',
+        agreement_gate_status: 'disabled',
+        build_check_status: 'not_started',
+        production_roster_status: 'not_started',
       },
       error: null,
     })
@@ -181,9 +195,20 @@ describe('prelaunch launch setup profiles', () => {
       { onConflict: 'launch_build_id' },
     )
     expect(fromMock).toHaveBeenNthCalledWith(2, 'sparkle_suite_launch_builds')
+    expect(buildSelectMock).toHaveBeenCalledWith(
+      'payment_gate_status, agreement_gate_status, build_check_status, production_roster_status',
+    )
+    expect(fromMock).toHaveBeenNthCalledWith(3, 'sparkle_suite_launch_builds')
     expect(updateMock).toHaveBeenCalledWith({
       setup_profile_status: 'ready',
       stage: 'setup_profile',
+      status: 'blocked',
+      blockers: [
+        'Payment gate is disabled.',
+        'Agreement gate is disabled.',
+        'Build checks have not started.',
+        'Production roster is not connected.',
+      ],
     })
     expect(eqMock).toHaveBeenCalledWith('id', 'build-1')
     expect(profile.status).toBe('ready')
