@@ -5,41 +5,46 @@
 
 :root {
   /* Accents */
-  --nic-nac-accent: #C4A0E8;
-  --nic-nac-accent-hover: #B48EDB;
-  --nic-nac-accent-pressed: #A47CCD;
+  --nic-nac-accent: #EE2C9B;
+  --nic-nac-accent-hover: #D91D89;
+  --nic-nac-accent-pressed: #B91673;
+  --nic-nac-accent-soft: #FFD4EA;
+  --nic-nac-mint: #BFF4E0;
+  --nic-nac-gold: #FFE3A8;
   --nic-nac-destructive: #DC2626;
   --nic-nac-destructive-hover: #B91C1C;
   --nic-nac-destructive-pressed: #991B1B;
 
   /* Surfaces */
-  --nic-nac-surface-primary: #FAFAFC;
+  --nic-nac-surface-primary: #FFFDFB;
   --nic-nac-surface-primary-solid: #FFFFFF;
-  --nic-nac-surface-dashboard: #F6F7F9;
-  --nic-nac-surface-dashboard-placeholder: #ECEEF2;
-  --nic-nac-surface-rep-message: #F1EAFB;
+  --nic-nac-surface-dashboard: #FCF8F6;
+  --nic-nac-surface-dashboard-placeholder: #F6EDE8;
+  --nic-nac-surface-rep-message: #FFF6FA;
   --nic-nac-surface-nic-nac-message: #FFFFFF;
   --nic-nac-surface-input: #FFFFFF;
-  --nic-nac-surface-input-disabled: #F4F5F8;
+  --nic-nac-surface-input-disabled: #F6EDE8;
   --nic-nac-surface-error: #FEF2F2;
+  --nic-nac-panel: #36221D;
+  --nic-nac-panel-text: #F6E7DA;
 
   /* Borders */
-  --nic-nac-border: #E6E8EC;
-  --nic-nac-border-strong: #D4D7DD;
-  --nic-nac-border-input-focus: #C4A0E8;
+  --nic-nac-border: rgba(64, 41, 36, 0.12);
+  --nic-nac-border-strong: rgba(64, 41, 36, 0.2);
+  --nic-nac-border-input-focus: #EE2C9B;
   --nic-nac-border-error: #FECACA;
 
   /* Text */
-  --nic-nac-text-primary: #1A1C20;
-  --nic-nac-text-secondary: #5A5F6A;
-  --nic-nac-text-muted: #8A8F9A;
-  --nic-nac-text-placeholder: #A8ACB6;
+  --nic-nac-text-primary: #402924;
+  --nic-nac-text-secondary: #775D57;
+  --nic-nac-text-muted: #A48882;
+  --nic-nac-text-placeholder: #B99B94;
   --nic-nac-text-inverse: #FFFFFF;
-  --nic-nac-text-on-accent: #1A1C20;
+  --nic-nac-text-on-accent: #FFFFFF;
   --nic-nac-text-error: #991B1B;
 
   /* Focus ring */
-  --nic-nac-focus-ring: #C4A0E8;
+  --nic-nac-focus-ring: #EE2C9B;
 }
 
 /* Streaming dot pulse — used by StreamingBubble.module.css via composition */

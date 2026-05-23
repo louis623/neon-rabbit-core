@@ -1,14 +1,16 @@
 .main {
   min-height: 100vh;
-  background: var(--nic-nac-surface-dashboard);
-  padding: 24px;
+  background:
+    radial-gradient(circle at 86% 4%, rgba(255, 212, 234, 0.72), transparent 24rem),
+    linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 54%, #fffdfc 100%);
+  padding: 22px 30px 42px;
 }
 
 .topbar {
-  min-height: 48px;
+  min-height: 50px;
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .topbarCopy {
@@ -18,22 +20,24 @@
 }
 
 .brand {
-  font-family: 'Geist', system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--nic-nac-text-primary);
 }
 
 .topbarSubtitle {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
+  font-weight: 500;
   color: var(--nic-nac-text-secondary);
 }
 
 .workspaceShell {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1180px;
 }
 
 .workspaceSidebar {
@@ -42,27 +46,29 @@
   top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 16px;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 22px;
   background:
-    radial-gradient(circle at top right, rgba(95, 214, 167, 0.12), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    radial-gradient(circle at top right, rgba(255, 212, 234, 0.7), transparent 52%),
+    rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: 0 18px 42px rgba(64, 41, 36, 0.06);
 }
 
 .workspaceSidebarTitle {
-  font-family: 'Geist', system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--nic-nac-text-primary);
 }
 
 .workspaceSidebarIntro {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--nic-nac-text-secondary);
+  margin-bottom: 4px;
 }
 
 .workspaceNav {
@@ -77,22 +83,31 @@
   gap: 4px;
   width: 100%;
   text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   padding: 12px 14px;
   cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
 }
 
 .workspaceNavButtonActive {
-  border-color: rgba(157, 232, 199, 0.24);
-  background: rgba(95, 214, 167, 0.12);
+  border-color: rgba(238, 44, 155, 0.16);
+  background: linear-gradient(135deg, rgba(255, 246, 250, 0.98), rgba(191, 244, 224, 0.32));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+}
+
+.workspaceNavButton:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .workspaceNavLabel {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--nic-nac-text-primary);
 }
 
@@ -107,6 +122,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .workspaceSectionStack {
@@ -117,17 +133,20 @@
 
 .workspaceIntroCard,
 .workspacePanel {
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 42px rgba(64, 41, 36, 0.05);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+}
+
+.workspaceIntroCard {
+  background:
+    linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.8)),
+    radial-gradient(circle at 96% 16%, rgba(238, 44, 155, 0.14), transparent 18rem);
 }
 
 .workspaceSectionHeader {
@@ -140,26 +159,35 @@
 
 .workspaceSectionGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
   gap: 16px;
+  align-items: start;
 }
 
 .workspaceFormRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: end;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  border-radius: 16px;
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
+  padding: 14px;
 }
 
 .workspaceCheckbox {
   display: flex;
   align-items: start;
   gap: 8px;
-  max-width: 360px;
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.4;
   color: var(--nic-nac-text-secondary);
+}
+
+.workspaceCheckbox input {
+  accent-color: var(--nic-nac-accent);
+  margin-top: 2px;
 }
 
 .tradeList {
@@ -173,9 +201,10 @@
   grid-template-columns: minmax(0, 1.4fr) auto auto;
   gap: 12px;
   align-items: center;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
 }
 
 .tradeIdentity {
@@ -239,16 +268,19 @@
 }
 
 .cardTitle {
-  font-family: 'Geist', system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 24px;
+  line-height: 1.08;
+  font-weight: 700;
   color: var(--nic-nac-text-primary);
 }
 
 .cardSubtitle {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
+  line-height: 1.55;
   color: var(--nic-nac-text-secondary);
+  max-width: 64ch;
 }
 
 .cardFill {
@@ -340,29 +372,38 @@
 
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .metricBlock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  min-width: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.84));
+  border: 1px solid var(--nic-nac-border);
+  padding: 12px;
 }
 
 .metricLabel {
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
   color: var(--nic-nac-text-secondary);
 }
 
 .metricValue {
-  font-family: 'Geist', system-ui, sans-serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
   color: var(--nic-nac-text-primary);
+  overflow-wrap: anywhere;
 }
 
 .rosterMetaRow {
@@ -391,7 +432,8 @@
   width: fit-content;
   border-radius: 999px;
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 11px;
   color: var(--nic-nac-text-secondary);
@@ -407,6 +449,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .sortField {
@@ -418,6 +461,7 @@
 .searchLabel {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
+  font-weight: 600;
   color: var(--nic-nac-text-secondary);
 }
 
@@ -429,13 +473,21 @@
 
 .searchInput {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  min-width: 0;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
   color: var(--nic-nac-text-primary);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
-  padding: 10px 12px;
+  line-height: 1.2;
+  padding: 11px 12px;
+}
+
+.searchInput:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
 }
 
 .sortSelect {
@@ -585,15 +637,21 @@
 }
 
 .actionButton {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--nic-nac-text-primary);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--nic-nac-text-primary);
+  background: var(--nic-nac-text-primary);
+  color: var(--nic-nac-text-inverse);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
+  font-weight: 700;
   line-height: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
+}
+
+.actionButton:hover {
+  background: var(--nic-nac-accent);
+  border-color: var(--nic-nac-accent);
 }
 
 .actionButton:disabled {
@@ -603,14 +661,15 @@
 
 .helperButton,
 .helperLink {
-  border: 1px solid rgba(157, 232, 199, 0.22);
+  border: 1px solid rgba(238, 44, 155, 0.2);
   border-radius: 999px;
-  background: rgba(95, 214, 167, 0.08);
-  color: #9de8c7;
+  background: rgba(255, 212, 234, 0.38);
+  color: var(--nic-nac-text-primary);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
+  font-weight: 700;
   line-height: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
   text-decoration: none;
   cursor: pointer;
 }
@@ -623,43 +682,48 @@
 }
 
 .statusBadgePositive {
-  background: rgba(95, 214, 167, 0.14);
-  color: #9de8c7;
+  background: rgba(191, 244, 224, 0.58);
+  color: #275345;
 }
 
 .statusBadgeWarning {
-  background: rgba(255, 183, 77, 0.14);
-  color: #ffd08a;
+  background: rgba(255, 227, 168, 0.62);
+  color: #6a4b12;
 }
 
 .statusBadgeNeutral {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--nic-nac-surface-primary);
   color: var(--nic-nac-text-secondary);
 }
 
 .emptyState {
-  border-radius: 10px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.74));
+  border: 1px dashed rgba(238, 44, 155, 0.22);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
+  line-height: 1.5;
   color: var(--nic-nac-text-secondary);
 }
 
 .actionError {
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 12px 14px;
-  background: rgba(255, 124, 124, 0.12);
-  color: #ffb4b4;
+  background: #fff0f5;
+  border: 1px solid rgba(238, 44, 155, 0.16);
+  color: #9b174f;
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
 }
 
 .helperMessage {
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 12px 14px;
-  background: rgba(95, 214, 167, 0.12);
-  color: #9de8c7;
+  background: rgba(191, 244, 224, 0.48);
+  border: 1px solid rgba(39, 83, 69, 0.12);
+  color: #275345;
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
 }
@@ -954,7 +1018,7 @@
   width: 72%;
   height: 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(64, 41, 36, 0.1);
   margin: 14px 12px 0;
 }
 
@@ -962,8 +1026,23 @@
   width: 46%;
   height: 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(64, 41, 36, 0.08);
   margin: 10px 12px 0;
+}
+
+@media (max-width: 1180px) {
+  .main {
+    padding: 20px 24px 36px;
+  }
+
+  .workspaceShell {
+    grid-template-columns: 244px minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .workspaceSectionGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 840px) {

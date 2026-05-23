@@ -1985,7 +1985,7 @@ export function DashboardPlaceholder() {
         <aside className={styles.workspaceSidebar}>
           <div className={styles.workspaceSidebarTitle}>Dashboard</div>
           <div className={styles.workspaceSidebarIntro}>
-            Trade Board is the default status view. Ask Nic-Nac to do the heavy lifting when you need more than the fallback buttons.
+            Start with the Trade Board, then ask Nic-Nac when you want help doing the work with you.
           </div>
           <nav className={styles.workspaceNav}>
             {WORKSPACE_SECTIONS.map((section) => (
@@ -2196,7 +2196,7 @@ function TradeBoardWorkspaceCard({
           <div>
             <div className={styles.cardTitle}>Trade Board</div>
             <div className={styles.cardSubtitle}>
-              This is the status layer. The fallback buttons below keep you unblocked when Nic-Nac is unavailable, but they are intentionally lighter than the full chat flow.
+              Track active pieces, requests, fulfillment, and trade history from one place.
             </div>
           </div>
           <span className={styles.rosterTag}>Default landing section</span>
@@ -2326,7 +2326,9 @@ function TradeBoardWorkspaceCard({
                   ))
                 ) : (
                   <div className={styles.emptyState}>
-                    No board listings match this search yet.
+                    {tradeBoardSearchQuery.trim()
+                      ? 'No board listings match this search yet.'
+                      : 'No pieces on your board yet. Add your first item above.'}
                   </div>
                 )}
               </div>

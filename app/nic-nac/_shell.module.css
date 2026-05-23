@@ -1,6 +1,7 @@
 .root {
   min-height: 100vh;
-  background: var(--nic-nac-surface-dashboard);
+  background:
+    linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 52%, #fffdfc 100%);
   font-family: 'Geist', system-ui, sans-serif;
   color: var(--nic-nac-text-primary);
 }

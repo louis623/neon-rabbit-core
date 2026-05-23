@@ -49,8 +49,7 @@ function newAttachmentId() {
 }
 
 function getInitialDesktopMatch() {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+  return true
 }
 
 interface ApprovalResponseFn {
@@ -215,6 +214,7 @@ export default function NicNacClient() {
 
   useEffect(() => {
     const mq = window.matchMedia(DESKTOP_MEDIA_QUERY)
+    setIsDesktop(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
