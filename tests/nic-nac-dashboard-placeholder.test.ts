@@ -29,6 +29,7 @@ import {
   getEstimatedTextsRemaining,
   getShowCalendarMetrics,
   calculateBusinessCalculator,
+  calculateSingleShowCalculator,
   formatWalletAmount,
   needsFreshOptIn,
   sortRosterCustomers,
@@ -591,10 +592,25 @@ describe('DashboardPlaceholder', () => {
     expect(result.estimatedMarginPercent).toBe(20.94)
   })
 
+  it('calculates a single show take-home estimate', () => {
+    const result = calculateSingleShowCalculator({
+      showSales: 1600,
+      commissionRate: 25,
+      showExpenses: 45,
+    })
+
+    expect(result.grossCommission).toBe(400)
+    expect(result.estimatedShowTakeHome).toBe(355)
+    expect(result.expenseImpactPercent).toBe(11.25)
+    expect(result.estimatedMarginPercent).toBe(22.19)
+  })
+
   it('renders the business calculator with inputs and strategic outputs', () => {
     const html = renderToStaticMarkup(createElement(BusinessCalculatorCard))
 
     expect(html).toContain('Business Calculator')
+    expect(html).toContain('Monthly Planner')
+    expect(html).toContain('Single Show')
     expect(html).toContain('Average show sales')
     expect(html).toContain('Shows per month')
     expect(html).toContain('Estimated monthly take-home')

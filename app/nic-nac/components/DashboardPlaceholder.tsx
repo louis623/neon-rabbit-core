@@ -247,6 +247,12 @@ export type BusinessCalculatorInput = {
   monthlyProfitGoal: number
 }
 
+export type SingleShowCalculatorInput = {
+  showSales: number
+  commissionRate: number
+  showExpenses: number
+}
+
 export function calculateBusinessCalculator(input: BusinessCalculatorInput) {
   const showsPerMonth = Math.max(0, input.showsPerMonth)
   const commissionRate = Math.max(0, input.commissionRate) / 100
@@ -274,6 +280,25 @@ export function calculateBusinessCalculator(input: BusinessCalculatorInput) {
     estimatedMonthlyTakeHome: roundMoney(estimatedMonthlyTakeHome),
     salesNeededPerMonthForGoal: roundMoney(salesNeededPerMonthForGoal),
     salesNeededPerShowForGoal: roundMoney(salesNeededPerShowForGoal),
+    estimatedMarginPercent: roundPercent(estimatedMarginPercent),
+  }
+}
+
+export function calculateSingleShowCalculator(input: SingleShowCalculatorInput) {
+  const commissionRate = Math.max(0, input.commissionRate) / 100
+  const showSales = Math.max(0, input.showSales)
+  const showExpenses = Math.max(0, input.showExpenses)
+  const grossCommission = showSales * commissionRate
+  const estimatedShowTakeHome = grossCommission - showExpenses
+  const expenseImpactPercent =
+    grossCommission > 0 ? (showExpenses / grossCommission) * 100 : 0
+  const estimatedMarginPercent =
+    showSales > 0 ? (estimatedShowTakeHome / showSales) * 100 : 0
+
+  return {
+    grossCommission: roundMoney(grossCommission),
+    estimatedShowTakeHome: roundMoney(estimatedShowTakeHome),
+    expenseImpactPercent: roundPercent(expenseImpactPercent),
     estimatedMarginPercent: roundPercent(estimatedMarginPercent),
   }
 }
@@ -3174,6 +3199,12 @@ const DEFAULT_BUSINESS_CALCULATOR_INPUT: BusinessCalculatorInput = {
   monthlyProfitGoal: 2500,
 }
 
+const DEFAULT_SINGLE_SHOW_CALCULATOR_INPUT: SingleShowCalculatorInput = {
+  showSales: 1200,
+  commissionRate: 25,
+  showExpenses: 30,
+}
+
 const BUSINESS_CALCULATOR_FIELDS: Array<{
   key: keyof BusinessCalculatorInput
   label: string
@@ -3190,15 +3221,45 @@ const BUSINESS_CALCULATOR_FIELDS: Array<{
   { key: 'monthlyProfitGoal', label: 'Monthly take-home goal', prefix: '$', min: 0, step: 50 },
 ]
 
+const SINGLE_SHOW_CALCULATOR_FIELDS: Array<{
+  key: keyof SingleShowCalculatorInput
+  label: string
+  prefix?: string
+  suffix?: string
+  min?: number
+  step?: number
+}> = [
+  { key: 'showSales', label: 'Show sales', prefix: '$', min: 0, step: 25 },
+  { key: 'commissionRate', label: 'Commission rate', suffix: '%', min: 0, step: 1 },
+  { key: 'showExpenses', label: 'Show expenses', prefix: '$', min: 0, step: 5 },
+]
+
+type BusinessCalculatorTab = 'monthly' | 'single-show'
+
 export function BusinessCalculatorCard() {
   const [input, setInput] = useState<BusinessCalculatorInput>(
     DEFAULT_BUSINESS_CALCULATOR_INPUT,
   )
+  const [singleShowInput, setSingleShowInput] =
+    useState<SingleShowCalculatorInput>(DEFAULT_SINGLE_SHOW_CALCULATOR_INPUT)
+  const [activeTab, setActiveTab] = useState<BusinessCalculatorTab>('monthly')
   const result = calculateBusinessCalculator(input)
+  const singleShowResult = calculateSingleShowCalculator(singleShowInput)
 
   function updateInput(key: keyof BusinessCalculatorInput, value: string) {
     const next = Number.parseFloat(value)
     setInput((current) => ({
+      ...current,
+      [key]: Number.isFinite(next) ? next : 0,
+    }))
+  }
+
+  function updateSingleShowInput(
+    key: keyof SingleShowCalculatorInput,
+    value: string,
+  ) {
+    const next = Number.parseFloat(value)
+    setSingleShowInput((current) => ({
       ...current,
       [key]: Number.isFinite(next) ? next : 0,
     }))
@@ -3219,6 +3280,32 @@ export function BusinessCalculatorCard() {
         </div>
       </div>
 
+      <div className={styles.calculatorTabs} role="tablist" aria-label="Calculator mode">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'monthly'}
+          className={`${styles.calculatorTabButton} ${
+            activeTab === 'monthly' ? styles.calculatorTabButtonActive : ''
+          }`}
+          onClick={() => setActiveTab('monthly')}
+        >
+          Monthly Planner
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'single-show'}
+          className={`${styles.calculatorTabButton} ${
+            activeTab === 'single-show' ? styles.calculatorTabButtonActive : ''
+          }`}
+          onClick={() => setActiveTab('single-show')}
+        >
+          Single Show
+        </button>
+      </div>
+
+      {activeTab === 'monthly' ? (
       <div className={styles.calculatorLayout}>
         <div className={styles.workspacePanel}>
           <div className={styles.walletSettingsTitle}>Your numbers</div>
@@ -3285,6 +3372,66 @@ export function BusinessCalculatorCard() {
           </div>
         </div>
       </div>
+      ) : (
+        <div className={styles.calculatorLayout}>
+          <div className={styles.workspacePanel}>
+            <div className={styles.walletSettingsTitle}>Show numbers</div>
+            <div className={styles.calculatorInputGrid}>
+              {SINGLE_SHOW_CALCULATOR_FIELDS.map((field) => (
+                <label key={field.key} className={styles.calculatorField}>
+                  <span className={styles.searchLabel}>{field.label}</span>
+                  <span className={styles.calculatorInputShell}>
+                    {field.prefix ? (
+                      <span className={styles.calculatorAdornment}>{field.prefix}</span>
+                    ) : null}
+                    <input
+                      type="number"
+                      aria-label={field.label}
+                      min={field.min}
+                      step={field.step}
+                      className={`${styles.calculatorInput} ph-no-capture`}
+                      value={singleShowInput[field.key]}
+                      onChange={(event) =>
+                        updateSingleShowInput(field.key, event.target.value)
+                      }
+                    />
+                    {field.suffix ? (
+                      <span className={styles.calculatorAdornment}>{field.suffix}</span>
+                    ) : null}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.workspacePanel}>
+            <div className={styles.walletSettingsTitle}>Single show estimate</div>
+            <div className={styles.calculatorResultList}>
+              <CalculatorResultRow
+                label="Estimated show take-home"
+                value={formatCalculatorMoney(singleShowResult.estimatedShowTakeHome)}
+                strong
+              />
+              <CalculatorResultRow
+                label="Gross commission"
+                value={formatCalculatorMoney(singleShowResult.grossCommission)}
+              />
+              <CalculatorResultRow
+                label="Expense impact"
+                value={`${singleShowResult.expenseImpactPercent.toFixed(2)}%`}
+              />
+              <CalculatorResultRow
+                label="Effective margin"
+                value={`${singleShowResult.estimatedMarginPercent.toFixed(2)}%`}
+              />
+            </div>
+            <div className={styles.helperNote}>
+              Use this after a specific show to sanity-check what the show likely
+              produced before broader monthly expenses.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

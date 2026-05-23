@@ -451,6 +451,36 @@
   align-items: start;
 }
 
+.calculatorTabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 4px;
+}
+
+.calculatorTabButton {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--nic-nac-text-secondary);
+  cursor: pointer;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 8px 12px;
+}
+
+.calculatorTabButtonActive {
+  background: var(--nic-nac-text-primary);
+  color: var(--nic-nac-text-inverse);
+}
+
 .calculatorInputGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
