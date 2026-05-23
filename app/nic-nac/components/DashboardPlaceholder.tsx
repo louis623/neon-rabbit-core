@@ -109,6 +109,11 @@ type TradeBoardState = {
   board?: BoardResult
 }
 
+type RepProfileState = {
+  status: 'loading' | 'ready' | 'error'
+  repId?: string
+}
+
 type TradeBoardActionState = {
   pendingKey: string | null
   error: string | null
@@ -172,6 +177,12 @@ type AudienceResponsePayload = {
 type CalendarResponsePayload = {
   upcomingEvents: CalendarEvent[]
   recentEvents: CalendarEvent[]
+}
+
+type MeResponsePayload = {
+  rep?: {
+    id?: string
+  }
 }
 
 type WalletResponsePayload = WalletDashboardResult
@@ -491,6 +502,16 @@ export function getAccountBillingBannerMessage(search: string) {
   return null
 }
 
+export function buildCustomerTradeBoardHref(repId?: string | null) {
+  const cleanedRepId = repId?.trim()
+  if (!cleanedRepId) return '/amethyst/Trade.html'
+  return `/amethyst/Trade.html?c=${encodeURIComponent(cleanedRepId)}`
+}
+
+export function getTradeListingPhotoUrl(listing: TradeListingWithDesign) {
+  return listing.listing_photo_url ?? listing.design.canonical_photo_url
+}
+
 export function getAutoRechargeAmountOptions(
   summary: WalletDashboardResult,
   thresholdCents: number,
@@ -791,6 +812,9 @@ export function getCustomerRecoveryActions(customer: CustomerAudienceMember) {
 export function DashboardPlaceholder() {
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>('trade-board')
+  const [repProfileState, setRepProfileState] = useState<RepProfileState>({
+    status: 'loading',
+  })
   const [audienceState, setAudienceState] = useState<AudienceState>({
     status: 'loading',
   })
@@ -889,6 +913,22 @@ export function DashboardPlaceholder() {
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
   const [supportSubject, setSupportSubject] = useState('Need help from Neon Rabbit')
   const [supportBody, setSupportBody] = useState('')
+
+  async function loadRepProfile(signal?: AbortSignal) {
+    const response = await fetch('/api/nic-nac/me', {
+      credentials: 'include',
+      signal,
+    })
+    if (!response.ok) {
+      throw new Error(`rep profile request failed: ${response.status}`)
+    }
+
+    const payload = (await response.json()) as MeResponsePayload
+    setRepProfileState({
+      status: 'ready',
+      repId: payload.rep?.id,
+    })
+  }
 
   async function loadAudience(signal?: AbortSignal) {
     const response = await fetch('/api/nic-nac/customer-audience?limit=25', {
@@ -1122,6 +1162,11 @@ export function DashboardPlaceholder() {
 
     ;(async () => {
       await Promise.all([
+        loadRepProfile(controller.signal).catch((error) => {
+          if (cancelled) return
+          if ((error as { name?: string }).name === 'AbortError') return
+          setRepProfileState({ status: 'error' })
+        }),
         loadAudience(controller.signal).catch((error) => {
           if (cancelled) return
           if ((error as { name?: string }).name === 'AbortError') return
@@ -2107,6 +2152,7 @@ export function DashboardPlaceholder() {
                 handleTradeRequestDecision(requestId, 'reject')
               }
               onAdvanceFulfillment={handleAdvanceFulfillment}
+              customerBoardHref={buildCustomerTradeBoardHref(repProfileState.repId)}
             />
           ) : null}
 
@@ -2227,7 +2273,7 @@ function getNextFulfillmentStatus(status: FulfillmentQueueItem['status']) {
   return null
 }
 
-function TradeBoardWorkspaceCard({
+export function TradeBoardWorkspaceCard({
   tradeBoardState,
   visibleListings,
   tradeBoardSearchQuery,
@@ -2245,9 +2291,10 @@ function TradeBoardWorkspaceCard({
   onApproveRequest,
   onRejectRequest,
   onAdvanceFulfillment,
+  customerBoardHref = buildCustomerTradeBoardHref(),
 }: {
   tradeBoardState: TradeBoardState
-  visibleListings: TradeListingWithDesign[]
+  visibleListings?: TradeListingWithDesign[]
   tradeBoardSearchQuery: string
   onTradeBoardSearchQueryChange: (value: string) => void
   quickAddItemNumber: string
@@ -2266,9 +2313,10 @@ function TradeBoardWorkspaceCard({
     requestId: string,
     nextStatus: 'shipped' | 'completed',
   ) => void
+  customerBoardHref?: string
 }) {
   const boardSummary = tradeBoardState.board?.summary
-  const boardListings = visibleListings
+  const boardListings = visibleListings ?? tradeBoardState.board?.listings ?? []
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
   const history = tradeHistoryState.history
@@ -2283,7 +2331,17 @@ function TradeBoardWorkspaceCard({
               Track active pieces, requests, fulfillment, and trade history from one place.
             </div>
           </div>
-          <span className={styles.rosterTag}>Default landing section</span>
+          <div className={styles.headerActions}>
+            <a
+              className={styles.helperLink}
+              href={customerBoardHref}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View customer board
+            </a>
+            <span className={styles.rosterTag}>Default landing section</span>
+          </div>
         </div>
         {actionState.error ? <div className={styles.actionError}>{actionState.error}</div> : null}
         {actionState.helperMessage ? (
@@ -2372,16 +2430,32 @@ function TradeBoardWorkspaceCard({
                   placeholder="Search by item number, design, or collection"
                 />
               </label>
-              <div className={styles.tradeList}>
+              <div className={styles.tradePieceGrid}>
                 {boardListings.length > 0 ? (
                   boardListings.map((listing) => (
-                    <div key={listing.id} className={styles.tradeRow}>
-                      <div className={styles.tradeIdentity}>
+                    <div key={listing.id} className={styles.tradePieceCard}>
+                      <div className={styles.tradePieceMedia}>
+                        {getTradeListingPhotoUrl(listing) ? (
+                          <img
+                            className={styles.tradePieceImage}
+                            src={getTradeListingPhotoUrl(listing) ?? undefined}
+                            alt={listing.design.design_name}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className={styles.tradePieceFallback}>
+                            {listing.design.type_prefix}
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.tradePieceBody}>
                         <div className={styles.customerName}>
                           {listing.design.design_name}
                         </div>
-                        <div className={styles.customerDate}>
+                        <div className={styles.tradePieceMetaLine}>
                           {listing.design.item_number}
+                          {' '}
+                          {listing.design.type_prefix}
                           {listing.design.collection?.name
                             ? ` · ${listing.design.collection.name}`
                             : ''}
