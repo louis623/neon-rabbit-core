@@ -12,6 +12,7 @@ import {
   CustomerRosterCard,
   SiteSettingsCard,
   ShowCalendarCard,
+  TeamManagementCard,
   WalletSummaryCard,
   buildShowCalendarCells,
   buildCustomerSparkleSiteHref,
@@ -374,6 +375,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')
     expect(html).toContain('Business Calculator')
+    expect(html).toContain('Team Management')
     expect(html).toContain('Messages')
     expect(html).toContain('Site Settings')
     expect(html).toContain('Help &amp; Resources')
@@ -381,6 +383,27 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Request inbox')
     expect(html).toContain('Fulfillment queue')
     expect(html).not.toContain('I confirm I own the piece')
+  })
+
+  it('renders the locked team management add-on skeleton', () => {
+    const html = renderToStaticMarkup(createElement(TeamManagementCard))
+
+    expect(html).toContain('Team Management')
+    expect(html).toContain('Paid add-on locked')
+    expect(html).toContain('Upgrade to manage your team on this platform.')
+    expect(html).toContain('href="/prelaunch"')
+    expect(html).toContain('Team member intake')
+    expect(html).toContain('Name')
+    expect(html).toContain('Phone number')
+    expect(html).toContain('Email')
+    expect(html).toContain('Team name')
+    expect(html).toContain('Social link 1')
+    expect(html).toContain('Social link 2')
+    expect(html).toContain('Social link 3')
+    expect(html).toContain('Team directory')
+    expect(html).toContain('Onboarding website messages')
+    expect(html).toContain('Reply composer')
+    expect(html).toContain('disabled=""')
   })
 
   it('formats the workspace header rep/show and extension ID labels', () => {

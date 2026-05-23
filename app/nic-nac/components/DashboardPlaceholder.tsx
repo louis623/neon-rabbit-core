@@ -28,6 +28,7 @@ const WORKSPACE_SECTIONS = [
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
   { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home' },
+  { key: 'team-management', label: 'Team Management', subtitle: 'Paid add-on for team onboarding and messages', locked: true },
   { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools' },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
   { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
@@ -2229,21 +2230,33 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             Start with the Trade Board, then ask Nic-Nac when you want help doing the work with you.
           </div>
           <nav className={styles.workspaceNav}>
-            {WORKSPACE_SECTIONS.map((section) => (
-              <button
-                key={section.key}
-                type="button"
-                className={`${styles.workspaceNavButton} ${
-                  activeSection === section.key
-                    ? styles.workspaceNavButtonActive
-                    : ''
-                }`}
-                onClick={() => setActiveSection(section.key)}
-              >
-                <span className={styles.workspaceNavLabel}>{section.label}</span>
-                <span className={styles.workspaceNavSubtitle}>{section.subtitle}</span>
-              </button>
-            ))}
+            {WORKSPACE_SECTIONS.map((section) => {
+              const isLockedSection = 'locked' in section && section.locked
+              return (
+                <button
+                  key={section.key}
+                  type="button"
+                  className={`${styles.workspaceNavButton} ${
+                    activeSection === section.key
+                      ? styles.workspaceNavButtonActive
+                      : ''
+                  } ${
+                    isLockedSection ? styles.workspaceNavButtonLocked : ''
+                  }`}
+                  onClick={() => setActiveSection(section.key)}
+                >
+                  <span className={styles.workspaceNavLabelRow}>
+                    <span className={styles.workspaceNavLabel}>{section.label}</span>
+                    {isLockedSection ? (
+                      <span className={styles.workspaceNavLockTag}>Locked</span>
+                    ) : null}
+                  </span>
+                  <span className={styles.workspaceNavSubtitle}>
+                    {section.subtitle}
+                  </span>
+                </button>
+              )
+            })}
           </nav>
         </aside>
         <section className={styles.workspaceContent}>
@@ -2294,6 +2307,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           {activeSection === 'business-calculator' ? (
             <div className={styles.workspaceSectionStack}>
               <BusinessCalculatorCard />
+            </div>
+          ) : null}
+
+          {activeSection === 'team-management' ? (
+            <div className={styles.workspaceSectionStack}>
+              <TeamManagementCard />
             </div>
           ) : null}
 
@@ -3629,6 +3648,90 @@ export function BusinessCalculatorCard() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+export function TeamManagementCard() {
+  return (
+    <div className={styles.workspacePanel}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Team Management</div>
+          <div className={styles.cardSubtitle}>
+            Upgrade to manage team members, onboarding site messages, and replies
+            from this workspace.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>Paid add-on locked</span>
+      </div>
+
+      <div className={styles.teamUpgradeNotice}>
+        <span>Upgrade to manage your team on this platform.</span>
+        <a className={styles.helperLink} href="/prelaunch">
+          View upgrade options
+        </a>
+      </div>
+
+      <div className={styles.teamManagementGrid}>
+        <section className={styles.teamManagementPanel}>
+          <div className={styles.walletSettingsTitle}>Team member intake</div>
+          <div className={styles.teamInputGrid}>
+            {[
+              'Name',
+              'Phone number',
+              'Email',
+              'Team name',
+              'Social link 1',
+              'Social link 2',
+              'Social link 3',
+            ].map((label) => (
+              <label key={label} className={styles.searchField}>
+                <span className={styles.searchLabel}>{label}</span>
+                <input
+                  className={`${styles.searchInput} ph-no-capture`}
+                  placeholder={label}
+                  disabled
+                />
+              </label>
+            ))}
+          </div>
+          <button type="button" className={styles.actionButton} disabled>
+            Save team member (locked)
+          </button>
+        </section>
+
+        <section className={styles.teamManagementPanel}>
+          <div className={styles.walletSettingsTitle}>Team directory</div>
+          <div className={styles.emptyState}>
+            Team members will appear here after the add-on is unlocked.
+          </div>
+        </section>
+
+        <section className={styles.teamManagementPanel}>
+          <div className={styles.workspaceSectionHeader}>
+            <div className={styles.walletSettingsTitle}>
+              Onboarding website messages
+            </div>
+            <span className={styles.rosterTag}>Not wired yet</span>
+          </div>
+          <div className={styles.teamMessagePreview}>
+            New-rep questions from onboarding websites will land here when this
+            add-on is connected.
+          </div>
+          <label className={styles.searchField}>
+            <span className={styles.searchLabel}>Reply composer</span>
+            <textarea
+              className={`${styles.siteSettingsTextarea} ph-no-capture`}
+              placeholder="Write a reply after the add-on is unlocked"
+              disabled
+            />
+          </label>
+          <button type="button" className={styles.actionButton} disabled>
+            Send reply (locked)
+          </button>
+        </section>
+      </div>
     </div>
   )
 }
