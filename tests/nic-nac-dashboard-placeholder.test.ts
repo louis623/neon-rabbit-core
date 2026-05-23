@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 
 import {
   AccountBillingCard,
+  BusinessCalculatorCard,
   DashboardPlaceholder,
   CustomerRosterCard,
   SiteSettingsCard,
@@ -27,6 +28,7 @@ import {
   getCustomerTimeline,
   getEstimatedTextsRemaining,
   getShowCalendarMetrics,
+  calculateBusinessCalculator,
   formatWalletAmount,
   needsFreshOptIn,
   sortRosterCustomers,
@@ -296,6 +298,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Trade Board')
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')
+    expect(html).toContain('Business Calculator')
     expect(html).toContain('Messages')
     expect(html).toContain('Site Settings')
     expect(html).toContain('Help &amp; Resources')
@@ -568,6 +571,34 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$99.00')
     expect(html).toContain('Manage billing and cancel')
     expect(html).toContain('Opened Stripe billing portal.')
+  })
+
+  it('calculates show and monthly take-home estimates from manual inputs', () => {
+    const result = calculateBusinessCalculator({
+      averageShowSales: 1200,
+      commissionRate: 25,
+      showsPerMonth: 8,
+      perShowExpenses: 30,
+      monthlyExpenses: 150,
+      monthlyProfitGoal: 2500,
+    })
+
+    expect(result.grossSalesPerMonth).toBe(9600)
+    expect(result.takeHomePerShowBeforeMonthlyExpenses).toBe(270)
+    expect(result.estimatedMonthlyTakeHome).toBe(2010)
+    expect(result.salesNeededPerMonthForGoal).toBe(11560)
+    expect(result.salesNeededPerShowForGoal).toBe(1445)
+    expect(result.estimatedMarginPercent).toBe(20.94)
+  })
+
+  it('renders the business calculator with inputs and strategic outputs', () => {
+    const html = renderToStaticMarkup(createElement(BusinessCalculatorCard))
+
+    expect(html).toContain('Business Calculator')
+    expect(html).toContain('Average show sales')
+    expect(html).toContain('Shows per month')
+    expect(html).toContain('Estimated monthly take-home')
+    expect(html).toContain('Sales needed per show')
   })
 
   it('formats wallet amounts and estimated texts for display', () => {

@@ -27,6 +27,7 @@ const WORKSPACE_SECTIONS = [
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
+  { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home' },
   { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools' },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
   { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
@@ -235,6 +236,54 @@ function formatCompactDateTime(value: string | null) {
 
 function formatTradeMoney(value: number | null | undefined) {
   return typeof value === 'number' ? `$${value.toFixed(2)}` : 'MSRP unavailable'
+}
+
+export type BusinessCalculatorInput = {
+  averageShowSales: number
+  commissionRate: number
+  showsPerMonth: number
+  perShowExpenses: number
+  monthlyExpenses: number
+  monthlyProfitGoal: number
+}
+
+export function calculateBusinessCalculator(input: BusinessCalculatorInput) {
+  const showsPerMonth = Math.max(0, input.showsPerMonth)
+  const commissionRate = Math.max(0, input.commissionRate) / 100
+  const grossSalesPerMonth = input.averageShowSales * showsPerMonth
+  const grossCommissionPerShow = input.averageShowSales * commissionRate
+  const takeHomePerShowBeforeMonthlyExpenses =
+    grossCommissionPerShow - input.perShowExpenses
+  const estimatedMonthlyTakeHome =
+    takeHomePerShowBeforeMonthlyExpenses * showsPerMonth - input.monthlyExpenses
+  const salesNeededPerMonthForGoal =
+    commissionRate > 0
+      ? (input.monthlyProfitGoal + input.monthlyExpenses + input.perShowExpenses * showsPerMonth) /
+        commissionRate
+      : 0
+  const salesNeededPerShowForGoal =
+    showsPerMonth > 0 ? salesNeededPerMonthForGoal / showsPerMonth : 0
+  const estimatedMarginPercent =
+    grossSalesPerMonth > 0 ? (estimatedMonthlyTakeHome / grossSalesPerMonth) * 100 : 0
+
+  return {
+    grossSalesPerMonth: roundMoney(grossSalesPerMonth),
+    takeHomePerShowBeforeMonthlyExpenses: roundMoney(
+      takeHomePerShowBeforeMonthlyExpenses,
+    ),
+    estimatedMonthlyTakeHome: roundMoney(estimatedMonthlyTakeHome),
+    salesNeededPerMonthForGoal: roundMoney(salesNeededPerMonthForGoal),
+    salesNeededPerShowForGoal: roundMoney(salesNeededPerShowForGoal),
+    estimatedMarginPercent: roundPercent(estimatedMarginPercent),
+  }
+}
+
+function roundMoney(value: number) {
+  return Math.round(value * 100) / 100
+}
+
+function roundPercent(value: number) {
+  return Math.round(value * 100) / 100
 }
 
 export function filterRosterCustomers(
@@ -2053,6 +2102,12 @@ export function DashboardPlaceholder() {
             </div>
           ) : null}
 
+          {activeSection === 'business-calculator' ? (
+            <div className={styles.workspaceSectionStack}>
+              <BusinessCalculatorCard />
+            </div>
+          ) : null}
+
           {activeSection === 'messages' ? (
             <div className={styles.workspaceSectionStack}>
               <MessagesCenterCard
@@ -3108,6 +3163,159 @@ export function SiteSettingsCard({
       </div>
     </div>
   )
+}
+
+const DEFAULT_BUSINESS_CALCULATOR_INPUT: BusinessCalculatorInput = {
+  averageShowSales: 1200,
+  commissionRate: 25,
+  showsPerMonth: 8,
+  perShowExpenses: 30,
+  monthlyExpenses: 150,
+  monthlyProfitGoal: 2500,
+}
+
+const BUSINESS_CALCULATOR_FIELDS: Array<{
+  key: keyof BusinessCalculatorInput
+  label: string
+  prefix?: string
+  suffix?: string
+  min?: number
+  step?: number
+}> = [
+  { key: 'averageShowSales', label: 'Average show sales', prefix: '$', min: 0, step: 25 },
+  { key: 'commissionRate', label: 'Commission rate', suffix: '%', min: 0, step: 1 },
+  { key: 'showsPerMonth', label: 'Shows per month', min: 0, step: 1 },
+  { key: 'perShowExpenses', label: 'Per-show expenses', prefix: '$', min: 0, step: 5 },
+  { key: 'monthlyExpenses', label: 'Monthly expenses', prefix: '$', min: 0, step: 10 },
+  { key: 'monthlyProfitGoal', label: 'Monthly take-home goal', prefix: '$', min: 0, step: 50 },
+]
+
+export function BusinessCalculatorCard() {
+  const [input, setInput] = useState<BusinessCalculatorInput>(
+    DEFAULT_BUSINESS_CALCULATOR_INPUT,
+  )
+  const result = calculateBusinessCalculator(input)
+
+  function updateInput(key: keyof BusinessCalculatorInput, value: string) {
+    const next = Number.parseFloat(value)
+    setInput((current) => ({
+      ...current,
+      [key]: Number.isFinite(next) ? next : 0,
+    }))
+  }
+
+  return (
+    <div className={styles.workspaceSectionStack}>
+      <div className={styles.workspaceIntroCard}>
+        <div className={styles.workspaceSectionHeader}>
+          <div>
+            <div className={styles.cardTitle}>Business Calculator</div>
+            <div className={styles.cardSubtitle}>
+              Estimate show take-home, monthly take-home, and the sales pace needed
+              to hit a goal.
+            </div>
+          </div>
+          <span className={styles.rosterTag}>Manual estimate</span>
+        </div>
+      </div>
+
+      <div className={styles.calculatorLayout}>
+        <div className={styles.workspacePanel}>
+          <div className={styles.walletSettingsTitle}>Your numbers</div>
+          <div className={styles.calculatorInputGrid}>
+            {BUSINESS_CALCULATOR_FIELDS.map((field) => (
+              <label key={field.key} className={styles.calculatorField}>
+                <span className={styles.searchLabel}>{field.label}</span>
+                <span className={styles.calculatorInputShell}>
+                  {field.prefix ? (
+                    <span className={styles.calculatorAdornment}>{field.prefix}</span>
+                  ) : null}
+                  <input
+                    type="number"
+                    aria-label={field.label}
+                    min={field.min}
+                    step={field.step}
+                    className={`${styles.calculatorInput} ph-no-capture`}
+                    value={input[field.key]}
+                    onChange={(event) => updateInput(field.key, event.target.value)}
+                  />
+                  {field.suffix ? (
+                    <span className={styles.calculatorAdornment}>{field.suffix}</span>
+                  ) : null}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.workspacePanel}>
+          <div className={styles.walletSettingsTitle}>Estimate</div>
+          <div className={styles.calculatorResultList}>
+            <CalculatorResultRow
+              label="Estimated take-home per show"
+              value={formatCalculatorMoney(
+                result.takeHomePerShowBeforeMonthlyExpenses,
+              )}
+            />
+            <CalculatorResultRow
+              label="Estimated monthly take-home"
+              value={formatCalculatorMoney(result.estimatedMonthlyTakeHome)}
+              strong
+            />
+            <CalculatorResultRow
+              label="Monthly gross volume"
+              value={formatCalculatorMoney(result.grossSalesPerMonth)}
+            />
+            <CalculatorResultRow
+              label="Estimated margin"
+              value={`${result.estimatedMarginPercent.toFixed(2)}%`}
+            />
+            <CalculatorResultRow
+              label="Sales needed per show"
+              value={formatCalculatorMoney(result.salesNeededPerShowForGoal)}
+            />
+            <CalculatorResultRow
+              label="Sales needed per month"
+              value={formatCalculatorMoney(result.salesNeededPerMonthForGoal)}
+            />
+          </div>
+          <div className={styles.helperNote}>
+            Estimates use the numbers entered here only. Actual payouts, inventory,
+            taxes, fees, and policies can vary.
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CalculatorResultRow({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string
+  value: string
+  strong?: boolean
+}) {
+  return (
+    <div
+      className={`${styles.calculatorResultRow} ${
+        strong ? styles.calculatorResultRowStrong : ''
+      }`}
+    >
+      <span className={styles.calculatorResultLabel}>{label}</span>
+      <span className={styles.calculatorResultValue}>{value}</span>
+    </div>
+  )
+}
+
+function formatCalculatorMoney(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
 export function AccountBillingCard({
