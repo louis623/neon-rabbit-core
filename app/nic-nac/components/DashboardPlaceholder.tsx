@@ -508,6 +508,12 @@ export function buildCustomerTradeBoardHref(repId?: string | null) {
   return `/amethyst/Trade.html?c=${encodeURIComponent(cleanedRepId)}`
 }
 
+export function buildCustomerSparkleSiteHref(repId?: string | null) {
+  const cleanedRepId = repId?.trim()
+  if (!cleanedRepId) return '/amethyst/Homepage.html'
+  return `/amethyst/Homepage.html?c=${encodeURIComponent(cleanedRepId)}`
+}
+
 export function getTradeListingPhotoUrl(listing: TradeListingWithDesign) {
   return listing.listing_photo_url ?? listing.design.canonical_photo_url
 }
@@ -809,7 +815,12 @@ export function getCustomerRecoveryActions(customer: CustomerAudienceMember) {
   ]
 }
 
-export function DashboardPlaceholder() {
+export type DashboardPlaceholderProps = {
+  repIdOverride?: string
+}
+
+export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
+  const { repIdOverride } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>('trade-board')
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
@@ -2078,6 +2089,9 @@ export function DashboardPlaceholder() {
         .toLowerCase()
         .includes(tradeBoardSearchQuery.trim().toLowerCase()),
     ) ?? []
+  const customerSparkleSiteHref = buildCustomerSparkleSiteHref(
+    repIdOverride ?? repProfileState.repId,
+  )
 
   return (
     <main className={styles.main}>
@@ -2089,6 +2103,14 @@ export function DashboardPlaceholder() {
             <span className={styles.topbarSubtitle}>Sparkle Suite workspace</span>
           </div>
         </div>
+        <a
+          className={styles.liveSiteButton}
+          href={customerSparkleSiteHref}
+          target="_blank"
+          rel="noreferrer"
+        >
+          View live site
+        </a>
       </header>
       <div className={styles.workspaceShell}>
         <aside className={styles.workspaceSidebar}>

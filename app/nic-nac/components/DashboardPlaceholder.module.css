@@ -10,7 +10,11 @@
   min-height: 50px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 20px;
+  max-width: 1180px;
+  width: 100%;
 }
 
 .topbarCopy {
@@ -45,6 +49,31 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--nic-nac-text-secondary);
+}
+
+.liveSiteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  max-width: 100%;
+  border-radius: 999px;
+  border: 1px solid var(--nic-nac-text-primary);
+  background: var(--nic-nac-text-primary);
+  color: var(--nic-nac-text-inverse);
+  box-shadow: 0 12px 28px rgba(64, 41, 36, 0.12);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 11px 18px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.liveSiteButton:hover {
+  background: var(--nic-nac-accent);
+  border-color: var(--nic-nac-accent);
 }
 
 .workspaceShell {
@@ -1382,6 +1411,11 @@
 }
 
 @media (max-width: 840px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .workspaceShell {
     grid-template-columns: 1fr;
   }

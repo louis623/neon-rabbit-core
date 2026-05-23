@@ -14,6 +14,7 @@ import {
   ShowCalendarCard,
   WalletSummaryCard,
   buildShowCalendarCells,
+  buildCustomerSparkleSiteHref,
   getAutoRechargeAmountOptions,
   getAutoRechargeDraft,
   getAutoRechargeThresholdOptions,
@@ -360,6 +361,8 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Sparkle Suite workspace')
+    expect(html).toContain('View live site')
+    expect(html).toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
     expect(html).toContain('Trade Board')
     expect(html).toContain('Jewelry Library')
@@ -431,6 +434,13 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Rose Quartz Stack')
     expect(html).toContain('ST200')
     expect(html).toContain('ST')
+  })
+
+  it('builds the rep customer-facing Sparkle Suite homepage link', () => {
+    expect(buildCustomerSparkleSiteHref()).toBe('/amethyst/Homepage.html')
+    expect(buildCustomerSparkleSiteHref('rep-1')).toBe(
+      '/amethyst/Homepage.html?c=rep-1',
+    )
   })
 
   it('filters the roster down to opted-out customers', () => {
