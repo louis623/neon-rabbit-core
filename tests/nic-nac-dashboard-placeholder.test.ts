@@ -32,6 +32,7 @@ import {
   getShowCalendarMetrics,
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
+  buildTradeBoardFetchUrl,
   formatWalletAmount,
   needsFreshOptIn,
   sortRosterCustomers,
@@ -428,12 +429,59 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('href="/amethyst/Trade.html?c=rep-1"')
     expect(html).toContain('target="_blank"')
     expect(html).toContain('src="https://cdn.example.com/sapphire-halo.jpg"')
+    expect(html).toContain('aria-label="Active trade board pieces"')
     expect(html).toContain('alt="Sapphire Halo"')
     expect(html).toContain('Sapphire Halo')
     expect(html).toContain('RG100')
     expect(html).toContain('Rose Quartz Stack')
     expect(html).toContain('ST200')
     expect(html).toContain('ST')
+  })
+
+  it('renders a load more control when more active board listings can be fetched', () => {
+    const html = renderToStaticMarkup(
+      createElement(TradeBoardWorkspaceCard, {
+        tradeBoardState: TRADE_BOARD_READY_STATE,
+        tradeRequestsState: { status: 'ready', requests: [] },
+        fulfillmentQueueState: { status: 'ready', items: [] },
+        tradeHistoryState: {
+          status: 'ready',
+          history: {
+            items: [],
+            summary: {
+              totalCompleted: 0,
+              totalMsrpTraded: 0,
+              avgFulfillmentDays: null,
+              topDesign: null,
+              repeatCustomers: [],
+            },
+          },
+        },
+        tradeBoardSearchQuery: '',
+        onTradeBoardSearchQueryChange: () => {},
+        quickAddItemNumber: '',
+        onQuickAddItemNumberChange: () => {},
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+        onQuickAddListing: () => {},
+        onRemoveListing: () => {},
+        onApproveRequest: () => {},
+        onRejectRequest: () => {},
+        onAdvanceFulfillment: () => {},
+        hasMoreListings: true,
+        onLoadMoreListings: () => {},
+      }),
+    )
+
+    expect(html).toContain('Load more')
+  })
+
+  it('builds active trade board fetch URLs with limit and offset', () => {
+    expect(buildTradeBoardFetchUrl()).toBe(
+      '/api/nic-nac/trade-board?status=available&limit=12',
+    )
+    expect(buildTradeBoardFetchUrl({ offset: 24 })).toBe(
+      '/api/nic-nac/trade-board?status=available&limit=12&offset=24',
+    )
   })
 
   it('keeps removed listings out of the active trade board cards', () => {

@@ -251,16 +251,20 @@
 }
 
 .tradePieceGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 4px;
+  overscroll-behavior: contain;
 }
 
 .tradePieceCard {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr) auto;
   gap: 12px;
-  align-items: start;
+  align-items: center;
   border-radius: 14px;
   padding: 12px;
   background: var(--nic-nac-surface-primary);
@@ -268,8 +272,8 @@
 }
 
 .tradePieceMedia {
-  grid-row: span 3;
-  width: 72px;
+  grid-row: span 2;
+  width: 64px;
   aspect-ratio: 1;
   border-radius: 12px;
   overflow: hidden;
@@ -338,7 +342,11 @@
 
 .tradePieceCard .tradeMeta,
 .tradePieceCard .actionRow {
-  justify-content: flex-start;
+  justify-content: flex-end;
+}
+
+.tradePieceCard .actionRow {
+  grid-column: 3;
 }
 
 .resourceList {
@@ -983,6 +991,30 @@
   cursor: default;
 }
 
+.secondaryActionButton {
+  width: 100%;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 999px;
+  background: var(--nic-nac-surface-primary);
+  color: var(--nic-nac-text-primary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.secondaryActionButton:hover {
+  border-color: rgba(238, 44, 155, 0.34);
+  background: rgba(255, 212, 234, 0.28);
+}
+
+.secondaryActionButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .helperButton,
 .helperLink {
   max-width: 100%;
@@ -1434,6 +1466,20 @@
 
   .tradeRow {
     grid-template-columns: 1fr;
+  }
+
+  .tradePieceCard {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .tradePieceMedia {
+    width: 56px;
+  }
+
+  .tradePieceCard .tradeMeta,
+  .tradePieceCard .actionRow {
+    grid-column: 2;
+    justify-content: flex-start;
   }
 
   .metricGrid {

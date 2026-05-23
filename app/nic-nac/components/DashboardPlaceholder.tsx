@@ -35,6 +35,42 @@ const WORKSPACE_SECTIONS = [
 ] as const
 
 const TRADE_WORKSPACE_REFRESH_MS = 45_000
+const TRADE_BOARD_PAGE_SIZE = 12
+
+export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
+  const params = new URLSearchParams({
+    status: 'available',
+    limit: String(TRADE_BOARD_PAGE_SIZE),
+  })
+  if (options.offset && options.offset > 0) {
+    params.set('offset', String(options.offset))
+  }
+  return `/api/nic-nac/trade-board?${params.toString()}`
+}
+
+function mergeTradeBoardResults(
+  current: BoardResult | undefined,
+  next: BoardResult,
+): BoardResult {
+  if (!current) return next
+
+  const typeBreakdown = { ...current.summary.typeBreakdown }
+  for (const [type, count] of Object.entries(next.summary.typeBreakdown)) {
+    typeBreakdown[type as keyof typeof typeBreakdown] =
+      (typeBreakdown[type as keyof typeof typeBreakdown] ?? 0) + count
+  }
+
+  return {
+    listings: [...current.listings, ...next.listings],
+    summary: {
+      totalPieces: current.summary.totalPieces + next.summary.totalPieces,
+      totalMsrp: current.summary.totalMsrp + next.summary.totalMsrp,
+      pendingRequestCount:
+        current.summary.pendingRequestCount + next.summary.pendingRequestCount,
+      typeBreakdown,
+    },
+  }
+}
 
 type WorkspaceSectionKey = (typeof WORKSPACE_SECTIONS)[number]['key']
 
@@ -107,6 +143,7 @@ type AccountBillingActionState = {
 type TradeBoardState = {
   status: 'loading' | 'ready' | 'error'
   board?: BoardResult
+  hasMoreListings?: boolean
 }
 
 type RepProfileState = {
@@ -1020,8 +1057,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
-  async function loadTradeBoard(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/trade-board?status=available&limit=12', {
+  async function loadTradeBoard(
+    signal?: AbortSignal,
+    options: { offset?: number; append?: boolean } = {},
+  ) {
+    const response = await fetch(buildTradeBoardFetchUrl({ offset: options.offset }), {
       credentials: 'include',
       signal,
     })
@@ -1030,9 +1070,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     const payload = (await response.json()) as TradeBoardResponsePayload
-    setTradeBoardState({
-      status: 'ready',
-      board: payload,
+    setTradeBoardState((current) => {
+      const board = options.append
+        ? mergeTradeBoardResults(current.board, payload)
+        : payload
+      return {
+        status: 'ready',
+        board,
+        hasMoreListings: payload.listings.length === TRADE_BOARD_PAGE_SIZE,
+      }
     })
   }
 
@@ -1718,6 +1764,35 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     ])
   }
 
+  async function handleLoadMoreTradeListings() {
+    const offset = tradeBoardState.board?.listings.length ?? 0
+    if (offset <= 0) return
+
+    setTradeBoardActionState({
+      pendingKey: 'load-more-listings',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      await loadTradeBoard(undefined, { offset, append: true })
+      setTradeBoardActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: null,
+      })
+    } catch (error) {
+      setTradeBoardActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to load more listings right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
   useEffect(() => {
     if (activeSection !== 'trade-board') return
 
@@ -2160,6 +2235,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               }
               onAdvanceFulfillment={handleAdvanceFulfillment}
               customerBoardHref={buildCustomerTradeBoardHref(repProfileState.repId)}
+              hasMoreListings={tradeBoardState.hasMoreListings === true}
+              onLoadMoreListings={handleLoadMoreTradeListings}
             />
           ) : null}
 
@@ -2297,6 +2374,8 @@ export function TradeBoardWorkspaceCard({
   onRejectRequest,
   onAdvanceFulfillment,
   customerBoardHref = buildCustomerTradeBoardHref(),
+  hasMoreListings = false,
+  onLoadMoreListings,
 }: {
   tradeBoardState: TradeBoardState
   visibleListings?: TradeListingWithDesign[]
@@ -2317,6 +2396,8 @@ export function TradeBoardWorkspaceCard({
     nextStatus: 'shipped' | 'completed',
   ) => void
   customerBoardHref?: string
+  hasMoreListings?: boolean
+  onLoadMoreListings?: () => void
 }) {
   const boardSummary = tradeBoardState.board?.summary
   const boardListings = (visibleListings ?? tradeBoardState.board?.listings ?? []).filter(
@@ -2423,7 +2504,10 @@ export function TradeBoardWorkspaceCard({
                   placeholder="Search by item number, design, or collection"
                 />
               </label>
-              <div className={styles.tradePieceGrid}>
+              <div
+                className={styles.tradePieceGrid}
+                aria-label="Active trade board pieces"
+              >
                 {boardListings.length > 0 ? (
                   boardListings.map((listing) => (
                     <div key={listing.id} className={styles.tradePieceCard}>
@@ -2483,6 +2567,18 @@ export function TradeBoardWorkspaceCard({
                   </div>
                 )}
               </div>
+              {hasMoreListings && !tradeBoardSearchQuery.trim() ? (
+                <button
+                  type="button"
+                  className={styles.secondaryActionButton}
+                  disabled={actionState.pendingKey === 'load-more-listings'}
+                  onClick={onLoadMoreListings}
+                >
+                  {actionState.pendingKey === 'load-more-listings'
+                    ? 'Loading...'
+                    : 'Load more'}
+                </button>
+              ) : null}
             </>
           ) : (
             <div className={styles.cardFill}>
