@@ -9,7 +9,7 @@
 @media (min-width: 1024px) {
   .root {
     /* Reserve space for the fixed-right Nic-Nac column on desktop. */
-    padding-right: 400px;
+    padding-right: var(--nic-nac-column-width);
   }
   .rootMinimized {
     padding-right: 0;

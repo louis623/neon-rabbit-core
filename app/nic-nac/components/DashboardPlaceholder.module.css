@@ -3,7 +3,7 @@
   background:
     radial-gradient(circle at 86% 4%, rgba(255, 212, 234, 0.72), transparent 24rem),
     linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 54%, #fffdfc 100%);
-  padding: 22px 30px 42px;
+  padding: 22px 28px 42px;
 }
 
 .topbar {
@@ -35,9 +35,10 @@
 
 .workspaceShell {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(220px, 264px) minmax(0, 1fr);
+  gap: 24px;
   max-width: 1180px;
+  width: 100%;
 }
 
 .workspaceSidebar {
@@ -123,6 +124,7 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  container-type: inline-size;
 }
 
 .workspaceSectionStack {
@@ -141,6 +143,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
 .workspaceIntroCard {
@@ -159,7 +162,7 @@
 
 .workspaceSectionGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
+  grid-template-columns: minmax(300px, 1.18fr) minmax(240px, 0.82fr);
   gap: 16px;
   align-items: start;
 }
@@ -372,7 +375,7 @@
 
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr));
   gap: 10px;
 }
 
@@ -386,6 +389,7 @@
     linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.84));
   border: 1px solid var(--nic-nac-border);
   padding: 12px;
+  overflow: hidden;
 }
 
 .metricLabel {
@@ -395,6 +399,7 @@
   letter-spacing: 0.06em;
   line-height: 1.25;
   color: var(--nic-nac-text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .metricValue {
@@ -430,13 +435,16 @@
 
 .rosterTag {
   width: fit-content;
+  max-width: 100%;
   border-radius: 999px;
   padding: 4px 10px;
   background: var(--nic-nac-surface-primary);
   border: 1px solid var(--nic-nac-border);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 11px;
+  line-height: 1.25;
   color: var(--nic-nac-text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .filterBar {
@@ -474,6 +482,8 @@
 .searchInput {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--nic-nac-border-strong);
   border-radius: 12px;
   background: var(--nic-nac-surface-input);
@@ -637,6 +647,7 @@
 }
 
 .actionButton {
+  max-width: 100%;
   border: 1px solid var(--nic-nac-text-primary);
   border-radius: 999px;
   background: var(--nic-nac-text-primary);
@@ -644,9 +655,10 @@
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.2;
   padding: 10px 14px;
   cursor: pointer;
+  white-space: normal;
 }
 
 .actionButton:hover {
@@ -661,6 +673,7 @@
 
 .helperButton,
 .helperLink {
+  max-width: 100%;
   border: 1px solid rgba(238, 44, 155, 0.2);
   border-radius: 999px;
   background: rgba(255, 212, 234, 0.38);
@@ -668,10 +681,11 @@
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.2;
   padding: 10px 14px;
   text-decoration: none;
   cursor: pointer;
+  white-space: normal;
 }
 
 .statusBadge {
@@ -697,6 +711,8 @@
 }
 
 .emptyState {
+  max-width: 100%;
+  box-sizing: border-box;
   border-radius: 16px;
   padding: 18px;
   background:
@@ -1030,14 +1046,34 @@
   margin: 10px 12px 0;
 }
 
+@container (max-width: 620px) {
+  .workspaceSectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspaceSectionHeader {
+    align-items: stretch;
+  }
+
+  .workspaceSectionHeader .rosterTag {
+    align-self: flex-start;
+  }
+}
+
+@container (max-width: 360px) {
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1180px) {
   .main {
     padding: 20px 24px 36px;
   }
 
   .workspaceShell {
-    grid-template-columns: 244px minmax(0, 1fr);
-    gap: 22px;
+    grid-template-columns: minmax(210px, 244px) minmax(0, 1fr);
+    gap: 20px;
   }
 
   .workspaceSectionGrid {

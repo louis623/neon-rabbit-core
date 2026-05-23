@@ -27,6 +27,7 @@
   --nic-nac-surface-error: #FEF2F2;
   --nic-nac-panel: #36221D;
   --nic-nac-panel-text: #F6E7DA;
+  --nic-nac-column-width: 380px;
 
   /* Borders */
   --nic-nac-border: rgba(64, 41, 36, 0.12);
