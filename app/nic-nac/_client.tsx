@@ -24,6 +24,12 @@ import { NicNacGlyph } from './components/NicNacGlyph'
 import { NicNacMobileShell } from './components/NicNacMobileShell'
 import { compressImage } from '@/lib/nic-nac/image-compress'
 import {
+  buildConversationStateUrl,
+  getConversationIdFromSearch,
+  putConversationIdInSearch,
+  readJsonResponse,
+} from '@/lib/nic-nac/client-conversation-routing'
+import {
   findActionableApproval,
   type ActionableApproval,
 } from '@/lib/nic-nac/hitl-state'
@@ -115,9 +121,11 @@ export default function NicNacClient() {
         })
       }
       if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next)
-      const qs = new URLSearchParams(Array.from(searchParams.entries()))
-      qs.set('c', next)
-      router.replace(`/nic-nac?${qs.toString()}`)
+      const nextSearch = putConversationIdInSearch(
+        new URLSearchParams(Array.from(searchParams.entries())).toString(),
+        next,
+      )
+      router.replace(`/nic-nac?${nextSearch}`)
     },
     [router, searchParams],
   )
@@ -135,14 +143,17 @@ export default function NicNacClient() {
       rolloverInFlightRef.current = true
       setRolloverInFlight(true)
       try {
-        const res = await fetch('/api/nic-nac/conversation/rollover', {
+        const res = await fetch('/api/nic-nac/conversation-rollover', {
           method: 'POST',
           credentials: 'include',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ conversationId: sourceConversationId }),
         })
         if (!res.ok) return false
-        const body = (await res.json().catch(() => null)) as
+        const body = (await readJsonResponse(
+          res,
+          'conversation rollover',
+        ).catch(() => null)) as
           | ConversationRolloverResponse
           | null
         if (!body?.conversationId || !body.messages) return false
@@ -164,7 +175,9 @@ export default function NicNacClient() {
     let cancelled = false
     ;(async () => {
       setInitResolveError(null)
-      const urlId = searchParams.get('c')
+      const urlId = getConversationIdFromSearch(
+        new URLSearchParams(Array.from(searchParams.entries())).toString(),
+      )
       if (urlId) {
         if (cancelled) return
         setConversationId(urlId)
@@ -172,7 +185,7 @@ export default function NicNacClient() {
         return
       }
       try {
-        const res = await fetch('/api/nic-nac/conversation/latest', {
+        const res = await fetch(buildConversationStateUrl(), {
           credentials: 'include',
           signal: controller.signal,
         })
@@ -192,14 +205,19 @@ export default function NicNacClient() {
           setInitResolveError("Couldn't load your conversation.")
           return
         }
-        const body = (await res.json()) as { conversationId: string | null }
+        const body = await readJsonResponse<{ conversationId: string | null }>(
+          res,
+          'latest conversation',
+        )
         const resolved = body?.conversationId ?? null
         const id = resolved ?? newConversationId()
         setConversationId(id)
         if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, id)
-        const qs = new URLSearchParams(Array.from(searchParams.entries()))
-        qs.set('c', id)
-        router.replace(`/nic-nac?${qs.toString()}`)
+        const nextSearch = putConversationIdInSearch(
+          new URLSearchParams(Array.from(searchParams.entries())).toString(),
+          id,
+        )
+        router.replace(`/nic-nac?${nextSearch}`)
       } catch (err) {
         if (cancelled) return
         if ((err as { name?: string })?.name === 'AbortError') return
@@ -226,7 +244,7 @@ export default function NicNacClient() {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/nic-nac/conversation/${conversationId}`, {
+        const res = await fetch(buildConversationStateUrl(conversationId), {
           credentials: 'include',
         })
         if (cancelled) return
@@ -246,7 +264,18 @@ export default function NicNacClient() {
           })
           return
         }
-        const body = (await res.json()) as ConversationHydrateResponse
+        if (!res.ok) {
+          setHistoryState({
+            conversationId,
+            messages: null,
+            error: `Couldn't load conversation history (${res.status}).`,
+          })
+          return
+        }
+        const body = await readJsonResponse<ConversationHydrateResponse>(
+          res,
+          'conversation history',
+        )
         if (cancelled) return
         if (
           shouldStartNicNacRollover(body.runHealth) &&
@@ -565,12 +594,15 @@ function ChatBody({
   const refreshConversationMessages = useCallback(async () => {
     if (!conversationId || status !== 'ready' || hasPendingApproval) return
 
-    const res = await fetch(`/api/nic-nac/conversation/${conversationId}`, {
+    const res = await fetch(buildConversationStateUrl(conversationId), {
       credentials: 'include',
     })
     if (!res.ok) return
 
-    const body = (await res.json().catch(() => null)) as
+    const body = (await readJsonResponse<ConversationHydrateResponse>(
+      res,
+      'conversation history',
+    ).catch(() => null)) as
       | ConversationHydrateResponse
       | null
     if (!body?.messages) return
