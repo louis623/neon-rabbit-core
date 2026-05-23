@@ -33,6 +33,8 @@ import {
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
+  formatExtensionRepId,
+  formatHeaderRepShow,
   formatWalletAmount,
   needsFreshOptIn,
   sortRosterCustomers,
@@ -361,7 +363,10 @@ describe('DashboardPlaceholder', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
     expect(html).toContain('Sparkle Suite')
-    expect(html).toContain('Sparkle Suite workspace')
+    expect(html).toContain('Workspace')
+    expect(html).not.toContain('Sparkle Suite workspace')
+    expect(html).toContain('Rep / show')
+    expect(html).toContain('Extension ID')
     expect(html).toContain('View live site')
     expect(html).toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -376,6 +381,18 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Request inbox')
     expect(html).toContain('Fulfillment queue')
     expect(html).not.toContain('I confirm I own the piece')
+  })
+
+  it('formats the workspace header rep/show and extension ID labels', () => {
+    expect(formatHeaderRepShow('Louis', 'Sparkle by Sasha')).toBe(
+      'Louis / Sparkle by Sasha',
+    )
+    expect(formatHeaderRepShow('', 'Sparkle by Sasha')).toBe('Sparkle by Sasha')
+    expect(formatHeaderRepShow(undefined, undefined)).toBe('Rep info loading')
+    expect(formatExtensionRepId('8242049c-58bc-47d4-aa7a-bee2dfb7c62f')).toBe(
+      '8242049c-58bc-47d4-aa7a-bee2dfb7c62f',
+    )
+    expect(formatExtensionRepId(undefined)).toBe('Waiting for rep ID')
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {

@@ -21,6 +21,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .brandSeal {
@@ -49,6 +50,57 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--nic-nac-text-secondary);
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.topbarInfoPill {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 42px;
+  max-width: 220px;
+  border-radius: 999px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.62);
+  padding: 8px 14px;
+  box-shadow: 0 10px 22px rgba(64, 41, 36, 0.06);
+  min-width: 0;
+}
+
+.topbarInfoLabel {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--nic-nac-text-secondary);
+  text-transform: uppercase;
+}
+
+.topbarInfoValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--nic-nac-text-primary);
+}
+
+.topbarInfoValueCode {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 10px;
+  font-family: 'Geist Mono', 'Courier New', monospace;
+  line-height: 1.15;
 }
 
 .liveSiteButton {
@@ -1446,6 +1498,17 @@
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .topbarActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .topbarInfoPill {
+    flex: 1 1 190px;
+    max-width: none;
   }
 
   .workspaceShell {

@@ -48,6 +48,20 @@ export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
   return `/api/nic-nac/trade-board?${params.toString()}`
 }
 
+export function formatHeaderRepShow(
+  displayName?: string | null,
+  businessName?: string | null,
+) {
+  const rep = displayName?.trim()
+  const show = businessName?.trim()
+  if (rep && show) return `${rep} / ${show}`
+  return rep || show || 'Rep info loading'
+}
+
+export function formatExtensionRepId(repId?: string | null) {
+  return repId?.trim() || 'Waiting for rep ID'
+}
+
 function mergeTradeBoardResults(
   current: BoardResult | undefined,
   next: BoardResult,
@@ -149,6 +163,7 @@ type TradeBoardState = {
 type RepProfileState = {
   status: 'loading' | 'ready' | 'error'
   repId?: string
+  displayName?: string
 }
 
 type TradeBoardActionState = {
@@ -219,6 +234,7 @@ type CalendarResponsePayload = {
 type MeResponsePayload = {
   rep?: {
     id?: string
+    display_name?: string
   }
 }
 
@@ -973,6 +989,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setRepProfileState({
       status: 'ready',
       repId: payload.rep?.id,
+      displayName: payload.rep?.display_name,
     })
   }
 
@@ -2168,6 +2185,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const customerSparkleSiteHref = buildCustomerSparkleSiteHref(
     repIdOverride ?? repProfileState.repId,
   )
+  const headerRepShow = formatHeaderRepShow(
+    siteSettingsState.settings?.displayName ?? repProfileState.displayName,
+    siteSettingsState.settings?.businessName,
+  )
+  const headerExtensionId = formatExtensionRepId(repIdOverride ?? repProfileState.repId)
 
   return (
     <main className={styles.main}>
@@ -2176,17 +2198,29 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           <SparkleSeal className={styles.brandSeal} />
           <div className={styles.brandText}>
             <span className={styles.brand}>Sparkle Suite</span>
-            <span className={styles.topbarSubtitle}>Sparkle Suite workspace</span>
+            <span className={styles.topbarSubtitle}>Workspace</span>
           </div>
         </div>
-        <a
-          className={styles.liveSiteButton}
-          href={customerSparkleSiteHref}
-          target="_blank"
-          rel="noreferrer"
-        >
-          View live site
-        </a>
+        <div className={styles.topbarActions}>
+          <div className={styles.topbarInfoPill}>
+            <span className={styles.topbarInfoLabel}>Rep / show</span>
+            <span className={styles.topbarInfoValue}>{headerRepShow}</span>
+          </div>
+          <div className={styles.topbarInfoPill}>
+            <span className={styles.topbarInfoLabel}>Extension ID</span>
+            <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
+              {headerExtensionId}
+            </span>
+          </div>
+          <a
+            className={styles.liveSiteButton}
+            href={customerSparkleSiteHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View live site
+          </a>
+        </div>
       </header>
       <div className={styles.workspaceShell}>
         <aside className={styles.workspaceSidebar}>
