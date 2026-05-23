@@ -185,7 +185,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toContain('.hp-trade-preview-link:active')
   })
 
-  it('wires the customer trade request submission flow with request-time clickwrap', () => {
+  it('wires the customer trade request submission flow without a trade checkbox', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
       'utf8',
@@ -195,7 +195,6 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('<label>Your name</label>')
     expect(jsx).toContain('<label>Describe your revealed piece</label>')
     expect(jsx).toContain('placeholder="Collection, jewelry type, and any details you know."')
-    expect(jsx).toContain('type="checkbox"')
     expect(jsx).toContain('/api/amethyst/trade-requests')
     expect(jsx).toContain('/api/amethyst/trade-board')
     expect(jsx).toContain('function fetchTradeBoardListings')
@@ -203,7 +202,9 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('TRADE_BOARD_REFRESH_MS')
     expect(jsx).toContain('window.setInterval(refreshIfVisible')
     expect(jsx).toContain('window.clearInterval')
-    expect(jsx).toContain('clickwrapAcknowledged')
+    expect(jsx).not.toContain('clickwrapAcknowledged')
+    expect(jsx).not.toContain('acceptedTerms')
+    expect(jsx).not.toContain('tp-sheet-consent')
     expect(jsx).toContain('setSubmittedListingIds')
     expect(jsx).not.toContain('type="file"')
   })

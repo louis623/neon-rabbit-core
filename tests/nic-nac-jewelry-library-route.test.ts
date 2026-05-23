@@ -77,14 +77,12 @@ describe('jewelry library route', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: 'RG100',
-          clickwrapAccepted: true,
         }),
       }),
     )
 
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
-      clickwrapAccepted: true,
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: undefined,
@@ -115,7 +113,6 @@ describe('jewelry library route', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: 'RG100',
-          clickwrapAccepted: true,
           listingPhotoUrl: 'https://dropbox.example.com/ring.png',
         }),
       }),
@@ -128,7 +125,6 @@ describe('jewelry library route', () => {
     })
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
-      clickwrapAccepted: true,
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',

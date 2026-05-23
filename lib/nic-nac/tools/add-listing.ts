@@ -1,8 +1,7 @@
 // Tool: add_listing — write. Adds one or more pieces to the rep's trade board.
 // Two modes: single (one item number) and batch (an array of items). Handles
 // NEEDS_FULL_INFO (unknown design) by creating the design first when the rep
-// supplies the new-design fields on a follow-up call. Clickwrap acceptance is
-// the rep's confirmation gate (no HITL approval dialog).
+// supplies the new-design fields on a follow-up call.
 //
 // Service-role client: addListing/addListingBatch/createDesign all require
 // admin permissions for jewelry_designs.times_listed UPDATE and INSERT on
@@ -59,7 +58,6 @@ const batchItem = z.object({
 
 const inputSchema = z.object({
   mode: z.enum(['single', 'batch']),
-  clickwrapAccepted: z.boolean(),
   // Single-mode top-level fields. itemNumber is optional in the schema so
   // batch-mode calls can omit it; runtime validates presence per mode.
   itemNumber: z.string().optional(),
@@ -501,7 +499,6 @@ async function runSingle(
   try {
     result = await addListing(admin, ctx.repId, {
       itemNumber,
-      clickwrapAccepted: true,
       collectionName: input.collectionName,
       repNotes: input.repNotes,
       tradePreferences: input.tradePreferences,
@@ -611,7 +608,6 @@ async function runBatch(
   try {
     result = await addListingBatch(admin, ctx.repId, {
       items: processedItems,
-      clickwrapAccepted: true,
     })
   } catch (err) {
     explainServiceError(err)
@@ -677,23 +673,14 @@ export function makeAddListingTool(ctx: {
   return tool({
     description:
       "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
-      "Requires clickwrap acceptance — the rep must confirm in conversation that they own the piece, the listing details are accurate, and that final trade decisions stay with them before this is set true. MSRP is reference data, not the trade-parity engine. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
-      "If the resolved item exists in the jewelry database, pass mode:'single', itemNumber, clickwrapAccepted for one piece, or mode:'batch', items[], clickwrapAccepted for several pieces at once. " +
+      "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
       "If the item isn't in the database, the tool returns needsAction:'create_design'. Use vision to extract designName, then confirm collectionName with the rep before retrying — never autofill the collection from vision alone. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,
     execute: async (input) => {
       const admin = createAdminClient()
-
-      if (!input.clickwrapAccepted) {
-        throw new NicNacToolError({
-          code: 'CLICKWRAP_REQUIRED',
-          userMessage:
-            'Before I list this, I need you to confirm you own the piece, the listing details are accurate, and that final trade decisions stay with you. MSRP is reference data, not the trade-parity engine.',
-        })
-      }
 
       if (input.mode === 'single') {
         return await runSingle(input, ctx, admin)

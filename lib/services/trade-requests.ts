@@ -49,9 +49,6 @@ export async function submitTradeRequest(
   input: SubmitTradeRequestInput
 ): Promise<SubmitTradeRequestResult> {
   if (!input.listingId) throw errors.MISSING_ITEM_INPUT()
-  if (!input.clickwrapAcknowledged) {
-    throw errors.CLICKWRAP_REQUIRED('request')
-  }
   if (!input.customerName?.trim()) {
     throw errors.INVALID_INPUT('customerName required', 'I need a customer name to submit that.')
   }

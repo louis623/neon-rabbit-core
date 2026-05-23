@@ -908,8 +908,6 @@ export function DashboardPlaceholder() {
   })
   const [tradeBoardSearchQuery, setTradeBoardSearchQuery] = useState('')
   const [quickAddItemNumber, setQuickAddItemNumber] = useState('')
-  const [quickAddClickwrapAccepted, setQuickAddClickwrapAccepted] =
-    useState(false)
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
   const [supportSubject, setSupportSubject] = useState('Need help from Neon Rabbit')
   const [supportBody, setSupportBody] = useState('')
@@ -1746,16 +1744,6 @@ export function DashboardPlaceholder() {
       return
     }
 
-    if (!quickAddClickwrapAccepted) {
-      setTradeBoardActionState({
-        pendingKey: null,
-        error:
-          'Confirm the trade terms checkbox before using the dashboard fallback add.',
-        helperMessage: null,
-      })
-      return
-    }
-
     setTradeBoardActionState({
       pendingKey: 'quick-add',
       error: null,
@@ -1769,7 +1757,6 @@ export function DashboardPlaceholder() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: quickAddItemNumber,
-          clickwrapAccepted: true,
         }),
       })
 
@@ -1971,7 +1958,6 @@ export function DashboardPlaceholder() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber,
-          clickwrapAccepted: true,
         }),
       })
       const payload = (await response.json().catch(() => null)) as
@@ -2137,8 +2123,6 @@ export function DashboardPlaceholder() {
               onTradeBoardSearchQueryChange={setTradeBoardSearchQuery}
               quickAddItemNumber={quickAddItemNumber}
               onQuickAddItemNumberChange={setQuickAddItemNumber}
-              quickAddClickwrapAccepted={quickAddClickwrapAccepted}
-              onQuickAddClickwrapAcceptedChange={setQuickAddClickwrapAccepted}
               actionState={tradeBoardActionState}
               tradeRequestsState={tradeRequestsState}
               fulfillmentQueueState={fulfillmentQueueState}
@@ -2280,8 +2264,6 @@ export function TradeBoardWorkspaceCard({
   onTradeBoardSearchQueryChange,
   quickAddItemNumber,
   onQuickAddItemNumberChange,
-  quickAddClickwrapAccepted,
-  onQuickAddClickwrapAcceptedChange,
   actionState,
   tradeRequestsState,
   fulfillmentQueueState,
@@ -2299,8 +2281,6 @@ export function TradeBoardWorkspaceCard({
   onTradeBoardSearchQueryChange: (value: string) => void
   quickAddItemNumber: string
   onQuickAddItemNumberChange: (value: string) => void
-  quickAddClickwrapAccepted: boolean
-  onQuickAddClickwrapAcceptedChange: (next: boolean) => void
   actionState: TradeBoardActionState
   tradeRequestsState: TradeRequestsState
   fulfillmentQueueState: FulfillmentQueueState
@@ -2396,18 +2376,6 @@ export function TradeBoardWorkspaceCard({
                     }
                     placeholder="RG100"
                   />
-                </label>
-                <label className={styles.workspaceCheckbox}>
-                  <input
-                    type="checkbox"
-                    checked={quickAddClickwrapAccepted}
-                    onChange={(event) =>
-                      onQuickAddClickwrapAcceptedChange(event.target.checked)
-                    }
-                  />
-                  <span>
-                    I confirm I own the piece and the listing details are accurate.
-                  </span>
                 </label>
                 <button
                   type="button"

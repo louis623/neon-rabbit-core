@@ -62,7 +62,6 @@ describe('POST /api/amethyst/trade-requests', () => {
           listingId: 'listing-1',
           customerName: 'Jamie',
           customerDescription: 'Birthday ring, size 8',
-          clickwrapAcknowledged: true,
         }),
       }),
     )
@@ -74,7 +73,6 @@ describe('POST /api/amethyst/trade-requests', () => {
         listingId: 'listing-1',
         customerName: 'Jamie',
         customerDescription: 'Birthday ring, size 8',
-        clickwrapAcknowledged: true,
       }),
     )
     expect(getTradeRequestNotificationSummaryMock).toHaveBeenCalledWith(
@@ -128,7 +126,6 @@ describe('POST /api/amethyst/trade-requests', () => {
           listingId: 'listing-1',
           customerName: 'Jamie',
           customerDescription: 'Birthday ring, size 8',
-          clickwrapAcknowledged: true,
         }),
       }),
     )
@@ -153,7 +150,6 @@ describe('POST /api/amethyst/trade-requests', () => {
           listingId: 'listing-1',
           customerName: 'Jamie',
           customerDescription: 'Birthday ring, size 8',
-          clickwrapAcknowledged: true,
         }),
       }),
     )

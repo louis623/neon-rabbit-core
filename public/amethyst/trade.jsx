@@ -839,17 +839,15 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
 function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repName }) {
   const [name, setName] = useState("");
   const [offering, setOffering] = useState("");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     setName("");
     setOffering("");
-    setAcceptedTerms(false);
   }, [piece?.id, success]);
 
   const trimmedName = name.trim();
   const trimmedOffering = offering.trim();
-  const canSubmit = Boolean(trimmedName && trimmedOffering && acceptedTerms && !pending);
+  const canSubmit = Boolean(trimmedName && trimmedOffering && !pending);
 
   if (!piece && !success) return null;
 
@@ -894,7 +892,6 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               listingId: piece.id,
               customerName: trimmedName,
               customerDescription: trimmedOffering,
-              clickwrapAcknowledged: acceptedTerms,
             });
           }}
         >
@@ -917,17 +914,6 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               required
             />
           </div>
-          <label className="tp-sheet-consent">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(event) => setAcceptedTerms(event.target.checked)}
-            />
-            <span>
-              I agree this trade request is my own decision and that it will be reviewed by{" "}
-              <strong>{repName}</strong>, an Independent Bomb Party Representative.
-            </span>
-          </label>
           {error && (
             <div className="tp-sheet-error" role="alert">
               {error}

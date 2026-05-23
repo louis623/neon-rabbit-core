@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ServiceError } from '@/lib/services/errors'
 import { submitTradeRequest } from '@/lib/services/trade-requests'
 
 describe('submitTradeRequest', () => {
@@ -13,22 +12,7 @@ describe('submitTradeRequest', () => {
     rpc.mockReset()
   })
 
-  it('requires clickwrap acknowledgement before submitting', async () => {
-    await expect(
-      submitTradeRequest(supabase as never, {
-        listingId: 'listing-1',
-        customerName: 'Jamie',
-        customerDescription: 'Birthday ring, size 8',
-        clickwrapAcknowledged: false,
-      }),
-    ).rejects.toMatchObject({
-      code: 'CLICKWRAP_REQUIRED',
-    } satisfies Partial<ServiceError>)
-
-    expect(rpc).not.toHaveBeenCalled()
-  })
-
-  it('calls rpc_submit_trade_request and returns the request ids', async () => {
+  it('calls rpc_submit_trade_request and returns the request ids without checkbox acknowledgement', async () => {
     rpc.mockResolvedValueOnce({
       data: { request_id: 'request-1', listing_id: 'listing-1' },
       error: null,
@@ -39,7 +23,6 @@ describe('submitTradeRequest', () => {
         listingId: 'listing-1',
         customerName: 'Jamie',
         customerDescription: 'Birthday ring, size 8',
-        clickwrapAcknowledged: true,
       }),
     ).resolves.toEqual({
       requestId: 'request-1',

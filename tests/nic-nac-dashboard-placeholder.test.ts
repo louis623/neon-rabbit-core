@@ -371,6 +371,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Account')
     expect(html).toContain('Request inbox')
     expect(html).toContain('Fulfillment queue')
+    expect(html).not.toContain('I confirm I own the piece')
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {
@@ -410,8 +411,6 @@ describe('DashboardPlaceholder', () => {
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
         onQuickAddItemNumberChange: () => {},
-        quickAddClickwrapAccepted: false,
-        onQuickAddClickwrapAcceptedChange: () => {},
         actionState: { pendingKey: null, error: null, helperMessage: null },
         onQuickAddListing: () => {},
         onRemoveListing: () => {},

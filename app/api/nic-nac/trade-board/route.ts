@@ -149,7 +149,6 @@ export async function POST(request: Request) {
       : undefined
     const result = await addListing(createAdminClient(), repId, {
       itemNumber,
-      clickwrapAccepted: body?.clickwrapAccepted === true,
       repNotes: typeof body?.repNotes === 'string' ? body.repNotes : undefined,
       tradePreferences:
         typeof body?.tradePreferences === 'string' ? body.tradePreferences : undefined,

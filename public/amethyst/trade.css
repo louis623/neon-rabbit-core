@@ -1047,18 +1047,6 @@ body.tradepage h4 {
   border-color: var(--hp-primary);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--hp-primary) 16%, transparent);
 }
-.tp-sheet-consent {
-  display: flex;
-  gap: 10px;
-  font-size: 11px;
-  color: var(--fg-muted);
-  line-height: 1.5;
-  background: var(--hp-bg);
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  padding: 12px;
-}
-.tp-sheet-consent input { margin-top: 2px; }
 .tp-sheet-error {
   border: 1px solid color-mix(in oklab, #b42318 28%, var(--border));
   background: color-mix(in oklab, #b42318 10%, white);

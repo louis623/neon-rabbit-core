@@ -98,7 +98,7 @@ export interface GetMyBoardFilters {
 
 export interface AddListingInput {
   itemNumber: string
-  clickwrapAccepted: boolean
+  clickwrapAccepted?: boolean
   collectionName?: string
   repNotes?: string
   tradePreferences?: string
@@ -123,7 +123,7 @@ export interface BatchListingItem {
 
 export interface AddListingBatchInput {
   items: BatchListingItem[]
-  clickwrapAccepted: boolean
+  clickwrapAccepted?: boolean
 }
 
 export interface AddListingBatchResult {
@@ -240,7 +240,7 @@ export interface SubmitTradeRequestInput {
   listingId: string
   customerName: string
   customerDescription: string
-  clickwrapAcknowledged: boolean
+  clickwrapAcknowledged?: boolean
 }
 
 export interface SubmitTradeRequestResult {

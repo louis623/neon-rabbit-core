@@ -94,7 +94,7 @@ describe('trade board route', () => {
     expect(response.status).toBe(200)
   })
 
-  it('adds a listing through the admin-backed fallback action', async () => {
+  it('adds a listing through the admin-backed fallback action without a confirmation checkbox', async () => {
     getAuthenticatedRepMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
@@ -114,7 +114,6 @@ describe('trade board route', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: 'RG100',
-          clickwrapAccepted: true,
           repNotes: 'Front table piece',
         }),
       }),
@@ -122,7 +121,6 @@ describe('trade board route', () => {
 
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
-      clickwrapAccepted: true,
       repNotes: 'Front table piece',
       tradePreferences: undefined,
       listingPhotoUrl: undefined,
@@ -225,7 +223,6 @@ describe('trade board route', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: 'RG100',
-          clickwrapAccepted: true,
           listingPhotoUrl: 'https://dropbox.example.com/ring.png',
         }),
       }),
@@ -238,7 +235,6 @@ describe('trade board route', () => {
     })
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
-      clickwrapAccepted: true,
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',

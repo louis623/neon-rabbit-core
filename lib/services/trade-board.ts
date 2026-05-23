@@ -455,7 +455,6 @@ export async function addListing(
   input: AddListingInput
 ): Promise<AddListingResult> {
   if (!repId) throw errors.UNAUTHORIZED('repId required')
-  if (!input.clickwrapAccepted) throw errors.CLICKWRAP_REQUIRED()
   if (!input.itemNumber) throw errors.MISSING_ITEM_INPUT()
 
   const resolved = await resolveItemNumber(supabase, input.itemNumber)
@@ -540,7 +539,6 @@ export async function addListingBatch(
   input: AddListingBatchInput
 ): Promise<AddListingBatchResult> {
   if (!repId) throw errors.UNAUTHORIZED('repId required')
-  if (!input.clickwrapAccepted) throw errors.CLICKWRAP_REQUIRED()
   if (!input.items || input.items.length === 0) {
     return { added: [], pending: { needCollection: [], needFullInfo: [] } }
   }

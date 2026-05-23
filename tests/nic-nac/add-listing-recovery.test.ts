@@ -962,51 +962,34 @@ describe('add_listing — NEEDS_COLLECTION recovery payload', () => {
   })
 })
 
-describe('add_listing — clickwrap gate (sanity)', () => {
-  it('rejects when clickwrapAccepted is false before touching the service layer', async () => {
+describe('add_listing - direct listing without ownership clickwrap', () => {
+  it('does not ask for ownership confirmation before touching the service layer', async () => {
+    addListingMock.mockResolvedValueOnce({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'DR-1',
+      designName: 'Demo Ring',
+      status: 'available',
+    })
     const tool = makeTool()
-    await expect(
-      tool.execute({
-        mode: 'single',
-        itemNumber: 'DR-1',
-        clickwrapAccepted: false,
-      }),
-    ).rejects.toThrow(/own the piece/)
-    expect(addListingMock).not.toHaveBeenCalled()
+
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'DR-1',
+      clickwrapAccepted: false,
+    })
+
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'DR-1',
+    })
+    expect(addListingMock).toHaveBeenCalledWith(
+      {},
+      'rep-1',
+      expect.not.objectContaining({ clickwrapAccepted: expect.anything() }),
+    )
     expect(createDesignMock).not.toHaveBeenCalled()
-  })
-
-  it('uses the fuller Phase 3.6 certification language in the clickwrap rejection', async () => {
-    const tool = makeTool()
-    await expect(
-      tool.execute({
-        mode: 'single',
-        itemNumber: 'DR-1',
-        clickwrapAccepted: false,
-      }),
-    ).rejects.toMatchObject({
-      userMessage: expect.stringContaining('listing details are accurate'),
-    })
-
-    await expect(
-      tool.execute({
-        mode: 'single',
-        itemNumber: 'DR-1',
-        clickwrapAccepted: false,
-      }),
-    ).rejects.toMatchObject({
-      userMessage: expect.stringContaining('final trade decisions stay with you'),
-    })
-
-    await expect(
-      tool.execute({
-        mode: 'single',
-        itemNumber: 'DR-1',
-        clickwrapAccepted: false,
-      }),
-    ).rejects.toMatchObject({
-      userMessage: expect.stringContaining('MSRP is reference data'),
-    })
   })
 })
 

@@ -18,7 +18,6 @@ export async function POST(request: Request) {
       customerName: typeof body?.customerName === 'string' ? body.customerName : '',
       customerDescription:
         typeof body?.customerDescription === 'string' ? body.customerDescription : '',
-      clickwrapAcknowledged: Boolean(body?.clickwrapAcknowledged),
     })
 
     try {

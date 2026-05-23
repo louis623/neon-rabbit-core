@@ -36,7 +36,8 @@ describe('Nic-Nac routed system prompt', () => {
     })
 
     expect(prompt).toContain('remove_listing requires the approval dialog')
-    expect(prompt).toContain('clickwrapAccepted')
+    expect(prompt).not.toContain('clickwrapAccepted')
+    expect(prompt).not.toContain('they own the piece')
     expect(prompt).toContain('recovery window')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')

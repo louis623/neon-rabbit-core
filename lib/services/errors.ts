@@ -81,8 +81,8 @@ export const errors = {
           : 'clickwrap acceptance required before listing',
       userMessage:
         context === 'request'
-          ? 'You need to accept the trade terms before I can submit that request.'
-          : 'You need to confirm you own the piece, the listing details are accurate, and that final trade decisions stay with you before I can list it. MSRP is reference data, not the trade-parity engine.',
+          ? 'That trade request could not be submitted yet.'
+          : 'That listing could not be added yet.',
     }),
   LISTING_NOT_FOUND: (detail?: string) =>
     new ServiceError({
