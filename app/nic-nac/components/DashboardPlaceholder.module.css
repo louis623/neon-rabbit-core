@@ -15,8 +15,22 @@
 
 .topbarCopy {
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandSeal {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  color: var(--nic-nac-accent);
+  filter: drop-shadow(0 8px 16px rgba(238, 44, 155, 0.14));
+}
+
+.brandText {
+  display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .brand {
@@ -29,7 +43,7 @@
 .topbarSubtitle {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--nic-nac-text-secondary);
 }
 
@@ -358,37 +372,71 @@
 }
 
 .accountBillingCard {
-  min-height: 120px;
   margin-top: 4px;
-  border-radius: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--nic-nac-border);
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+.accountSummaryList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+}
+
+.accountSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  border-radius: 12px;
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
+  padding: 10px 12px;
+}
+
+.accountSummaryLabel {
+  flex: 0 0 auto;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--nic-nac-text-secondary);
+}
+
+.accountSummaryValue {
+  min-width: 0;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--nic-nac-text-primary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 8px;
 }
 
 .metricBlock {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  border-radius: 16px;
+  border-radius: 12px;
   background:
     linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.84));
   border: 1px solid var(--nic-nac-border);
-  padding: 12px;
+  padding: 10px 12px;
   overflow: hidden;
 }
 
@@ -403,9 +451,9 @@
 }
 
 .metricValue {
-  font-family: var(--font-prelaunch-display), Georgia, serif;
-  font-size: 28px;
-  line-height: 1;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 19px;
+  line-height: 1.15;
   font-weight: 700;
   color: var(--nic-nac-text-primary);
   overflow-wrap: anywhere;

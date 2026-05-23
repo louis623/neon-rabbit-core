@@ -291,7 +291,8 @@ describe('DashboardPlaceholder', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
     expect(html).toContain('Sparkle Suite')
-    expect(html).toContain('Nic-Nac workspace')
+    expect(html).toContain('Sparkle Suite workspace')
+    expect(html).toContain('viewBox="0 0 64 64"')
     expect(html).toContain('Trade Board')
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')

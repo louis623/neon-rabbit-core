@@ -20,6 +20,7 @@ import type {
   WalletTransactionSummary,
 } from '@/lib/services/types'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
+import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
@@ -1977,8 +1978,11 @@ export function DashboardPlaceholder() {
     <main className={styles.main}>
       <header className={styles.topbar}>
         <div className={styles.topbarCopy}>
-          <span className={styles.brand}>Sparkle Suite</span>
-          <span className={styles.topbarSubtitle}>Nic-Nac workspace</span>
+          <SparkleSeal className={styles.brandSeal} />
+          <div className={styles.brandText}>
+            <span className={styles.brand}>Sparkle Suite</span>
+            <span className={styles.topbarSubtitle}>Sparkle Suite workspace</span>
+          </div>
         </div>
       </header>
       <div className={styles.workspaceShell}>
@@ -3146,25 +3150,23 @@ export function AccountBillingCard({
 
   return (
     <div className={styles.accountBillingCard}>
-      <div className={styles.metricGrid}>
-        <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Plan</span>
-          <span className={styles.metricValue}>Monthly plan</span>
+      <div className={styles.accountSummaryList}>
+        <div className={styles.accountSummaryRow}>
+          <span className={styles.accountSummaryLabel}>Plan</span>
+          <span className={styles.accountSummaryValue}>Monthly plan</span>
         </div>
-        <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Status</span>
-          <span className={styles.metricValue}>{subscriptionStatus}</span>
+        <div className={styles.accountSummaryRow}>
+          <span className={styles.accountSummaryLabel}>Status</span>
+          <span className={styles.accountSummaryValue}>{subscriptionStatus}</span>
         </div>
-        <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Billing cycle</span>
-          <span className={styles.metricValue}>Cancel anytime</span>
+        <div className={styles.accountSummaryRow}>
+          <span className={styles.accountSummaryLabel}>Billing cycle</span>
+          <span className={styles.accountSummaryValue}>Cancel anytime</span>
         </div>
-        <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Next date</span>
-          <span className={styles.metricValue}>
-            {formatAccountBillingDate(
-              summary.subscription?.currentPeriodEnd ?? null,
-            )}
+        <div className={styles.accountSummaryRow}>
+          <span className={styles.accountSummaryLabel}>Next date</span>
+          <span className={styles.accountSummaryValue}>
+            {formatAccountBillingDate(summary.subscription?.currentPeriodEnd ?? null)}
           </span>
         </div>
       </div>
