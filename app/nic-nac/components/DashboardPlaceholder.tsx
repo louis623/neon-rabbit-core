@@ -3144,63 +3144,49 @@ export function AccountBillingCard({
   const subscriptionStatus = summary.subscription
     ? summary.subscription.status.replace('_', ' ')
     : 'No active subscription'
+  const subscriptionTitle = summary.subscription
+    ? subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)
+    : 'Not active yet'
+  const nextBillingDate = formatAccountBillingDate(
+    summary.subscription?.currentPeriodEnd ?? null,
+  )
+  const subscriptionDetail = summary.subscription
+    ? summary.subscription.cancelAtPeriodEnd
+      ? `Scheduled to end ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
+      : `Renews through ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
+    : 'Monthly billing is available when you are ready.'
   const paymentMethodLabel = summary.paymentMethod
     ? `${summary.paymentMethod.brand} ending in ${summary.paymentMethod.last4}`
     : 'No card on file yet.'
 
   return (
     <div className={styles.accountBillingCard}>
-      <div className={styles.accountSummaryList}>
-        <div className={styles.accountSummaryRow}>
-          <span className={styles.accountSummaryLabel}>Plan</span>
-          <span className={styles.accountSummaryValue}>Monthly plan</span>
+      <div className={styles.accountBillingHeader}>
+        <div>
+          <div className={styles.walletSettingsTitle}>Billing</div>
+          <div className={styles.accountMuted}>Monthly plan - Cancel anytime</div>
         </div>
-        <div className={styles.accountSummaryRow}>
-          <span className={styles.accountSummaryLabel}>Status</span>
-          <span className={styles.accountSummaryValue}>{subscriptionStatus}</span>
-        </div>
-        <div className={styles.accountSummaryRow}>
-          <span className={styles.accountSummaryLabel}>Billing cycle</span>
-          <span className={styles.accountSummaryValue}>Cancel anytime</span>
-        </div>
-        <div className={styles.accountSummaryRow}>
-          <span className={styles.accountSummaryLabel}>Next date</span>
-          <span className={styles.accountSummaryValue}>
-            {formatAccountBillingDate(summary.subscription?.currentPeriodEnd ?? null)}
-          </span>
-        </div>
+        <span className={styles.accountStatusBadge}>{subscriptionTitle}</span>
       </div>
 
-      <div className={styles.siteSettingsSection}>
-        <div className={styles.walletSettingsTitle}>Subscription status</div>
-        <div className={styles.walletTransactionList}>
-          <div className={styles.walletTransactionRow}>
-            <div className={styles.walletTransactionCopy}>
-              <span className={styles.walletTransactionTitle}>Active</span>
-              <span className={styles.walletTransactionDate}>
-                {summary.subscription
-                  ? summary.subscription.cancelAtPeriodEnd
-                    ? `Scheduled to end ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
-                    : `Renews through ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
-                  : 'Monthly billing is available when you are ready.'}
-              </span>
-            </div>
-            <span className={styles.timelineItem}>Monthly</span>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.siteSettingsSection}>
-        <div className={styles.walletSettingsTitle}>Payment method</div>
-        <div className={styles.walletTransactionRow}>
+      <div className={styles.accountDetailList}>
+        <div className={styles.accountDetailRow}>
           <div className={styles.walletTransactionCopy}>
-            <span className={styles.walletTransactionTitle}>{paymentMethodLabel}</span>
+            <span className={styles.walletTransactionTitle}>Subscription</span>
+            <span className={styles.walletTransactionDate}>{subscriptionDetail}</span>
+          </div>
+          <span className={styles.accountDetailValue}>{nextBillingDate}</span>
+        </div>
+        <div className={styles.accountDetailRow}>
+          <div className={styles.walletTransactionCopy}>
+            <span className={styles.walletTransactionTitle}>Payment method</span>
             <span className={styles.walletTransactionDate}>
               {summary.paymentMethod
                 ? `Expires ${String(summary.paymentMethod.expMonth).padStart(2, '0')}/${summary.paymentMethod.expYear}`
                 : 'Add or update your card in Stripe.'}
             </span>
           </div>
+          <span className={styles.accountDetailValue}>{paymentMethodLabel}</span>
         </div>
       </div>
 

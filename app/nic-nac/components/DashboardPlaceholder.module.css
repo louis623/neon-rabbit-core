@@ -373,49 +373,72 @@
 
 .accountBillingCard {
   margin-top: 4px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.62);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
   border: 1px solid var(--nic-nac-border);
-  padding: 14px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
 
-.accountSummaryList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  gap: 8px;
-}
-
-.accountSummaryRow {
+.accountBillingHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-  border-radius: 12px;
-  background: var(--nic-nac-surface-primary);
-  border: 1px solid var(--nic-nac-border);
-  padding: 10px 12px;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--nic-nac-border);
 }
 
-.accountSummaryLabel {
-  flex: 0 0 auto;
+.accountMuted {
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-transform: uppercase;
+  font-size: 12px;
+  line-height: 1.45;
   color: var(--nic-nac-text-secondary);
 }
 
-.accountSummaryValue {
+.accountStatusBadge {
+  flex: 0 0 auto;
+  max-width: 52%;
+  border-radius: 999px;
+  border: 1px solid rgba(238, 44, 155, 0.2);
+  background: rgba(255, 246, 250, 0.78);
+  padding: 6px 10px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--nic-nac-text-primary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.accountDetailList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.accountDetailRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
+  gap: 18px;
+  align-items: start;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(64, 41, 36, 0.08);
+}
+
+.accountDetailRow:last-child {
+  border-bottom: 0;
+}
+
+.accountDetailValue {
   min-width: 0;
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.35;
   color: var(--nic-nac-text-primary);
   text-align: right;
   overflow-wrap: anywhere;
