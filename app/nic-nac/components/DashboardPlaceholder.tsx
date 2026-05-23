@@ -1021,7 +1021,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadTradeBoard(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/trade-board?limit=12', {
+    const response = await fetch('/api/nic-nac/trade-board?status=available&limit=12', {
       credentials: 'include',
       signal,
     })
@@ -2084,6 +2084,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
   const visibleTradeListings =
     tradeBoardState.board?.listings.filter((listing) =>
+      listing.status === 'available' &&
       [listing.design.item_number, listing.design.design_name, listing.design.collection?.name ?? '']
         .join(' ')
         .toLowerCase()
@@ -2318,7 +2319,9 @@ export function TradeBoardWorkspaceCard({
   customerBoardHref?: string
 }) {
   const boardSummary = tradeBoardState.board?.summary
-  const boardListings = visibleListings ?? tradeBoardState.board?.listings ?? []
+  const boardListings = (visibleListings ?? tradeBoardState.board?.listings ?? []).filter(
+    (listing) => listing.status === 'available',
+  )
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
   const history = tradeHistoryState.history

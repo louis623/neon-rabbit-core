@@ -251,7 +251,7 @@ describe('trade listing recovery service', () => {
     expect(thirtyDay.update).toHaveBeenCalled()
   })
 
-  it('hides expired removed listings from board reads using the configured window', async () => {
+  it('hides removed listings from default board reads', async () => {
     const boardQuery = new ThenableQuery({
       data: [
         makeListing({
@@ -285,9 +285,45 @@ describe('trade listing recovery service', () => {
       { now: fixedNow, recoveryWindowDays: 7 },
     )
 
+    expect(board.listings.map((listing) => listing.id)).toEqual(['available'])
+  })
+
+  it('shows only recoverable removed listings when explicitly reading removed listings', async () => {
+    const boardQuery = new ThenableQuery({
+      data: [
+        makeListing({
+          id: 'recoverable',
+          deleted_at: '2026-05-12T12:00:00.000Z',
+        }),
+        makeListing({
+          id: 'expired',
+          deleted_at: '2026-05-01T12:00:00.000Z',
+        }),
+        makeListing({
+          id: 'available',
+          status: 'available',
+          deleted_at: null,
+          removal_reason: null,
+        }),
+      ],
+      error: null,
+    })
+    const requestCountQuery = new ThenableQuery({ count: 0, error: null })
+    const from = vi.fn((table: string) => {
+      if (table === 'trade_listings') return { select: vi.fn(() => boardQuery) }
+      if (table === 'trade_requests') return { select: vi.fn(() => requestCountQuery) }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const board = await getMyBoard(
+      { from } as never,
+      'rep-1',
+      { statusFilter: 'removed' },
+      { now: fixedNow, recoveryWindowDays: 7 },
+    )
+
     expect(board.listings.map((listing) => listing.id)).toEqual([
       'recoverable',
-      'available',
     ])
   })
 

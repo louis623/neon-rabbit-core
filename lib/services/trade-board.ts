@@ -136,8 +136,11 @@ function isRemovedListingInsideRecoveryWindow(
 function shouldIncludeListingInBoardRead(
   listing: Pick<TradeListingWithDesign, 'status' | 'deleted_at'>,
   options: Required<TradeListingRecoveryOptions>,
+  statusFilter?: ListingStatus,
 ): boolean {
+  if (statusFilter && listing.status !== statusFilter) return false
   if (listing.status !== 'removed') return true
+  if (statusFilter !== 'removed') return false
   return isRemovedListingInsideRecoveryWindow(listing.deleted_at, options)
 }
 
@@ -196,7 +199,13 @@ export async function getMyBoard(
       return { ...row, design } as TradeListingWithDesign
     })
     .filter((l): l is TradeListingWithDesign => l !== null)
-    .filter((l) => shouldIncludeListingInBoardRead(l, resolvedRecoveryOptions))
+    .filter((l) =>
+      shouldIncludeListingInBoardRead(
+        l,
+        resolvedRecoveryOptions,
+        filters.statusFilter,
+      ),
+    )
 
   const filteredByCollection = filters.collectionFilter
     ? listings.filter((l) => l.design.collection?.name === filters.collectionFilter)

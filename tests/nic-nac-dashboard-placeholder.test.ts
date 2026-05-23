@@ -436,6 +436,60 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('ST')
   })
 
+  it('keeps removed listings out of the active trade board cards', () => {
+    const html = renderToStaticMarkup(
+      createElement(TradeBoardWorkspaceCard, {
+        tradeBoardState: {
+          status: 'ready',
+          board: {
+            ...TRADE_BOARD_READY_STATE.board,
+            listings: [
+              ...TRADE_BOARD_READY_STATE.board.listings,
+              {
+                ...TRADE_BOARD_READY_STATE.board.listings[0],
+                id: 'listing-removed',
+                status: 'removed' as const,
+                design: {
+                  ...TRADE_BOARD_READY_STATE.board.listings[0].design,
+                  item_number: 'RG999',
+                  design_name: 'Removed Clutter Piece',
+                },
+              },
+            ],
+          },
+        },
+        tradeRequestsState: { status: 'ready', requests: [] },
+        fulfillmentQueueState: { status: 'ready', items: [] },
+        tradeHistoryState: {
+          status: 'ready',
+          history: {
+            items: [],
+            summary: {
+              totalCompleted: 0,
+              totalMsrpTraded: 0,
+              avgFulfillmentDays: null,
+              topDesign: null,
+              repeatCustomers: [],
+            },
+          },
+        },
+        tradeBoardSearchQuery: '',
+        onTradeBoardSearchQueryChange: () => {},
+        quickAddItemNumber: '',
+        onQuickAddItemNumberChange: () => {},
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+        onQuickAddListing: () => {},
+        onRemoveListing: () => {},
+        onApproveRequest: () => {},
+        onRejectRequest: () => {},
+        onAdvanceFulfillment: () => {},
+      }),
+    )
+
+    expect(html).not.toContain('Removed Clutter Piece')
+    expect(html).not.toContain('RG999')
+  })
+
   it('builds the rep customer-facing Sparkle Suite homepage link', () => {
     expect(buildCustomerSparkleSiteHref()).toBe('/amethyst/Homepage.html')
     expect(buildCustomerSparkleSiteHref('rep-1')).toBe(
