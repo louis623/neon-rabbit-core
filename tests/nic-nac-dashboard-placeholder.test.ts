@@ -367,7 +367,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Workspace')
     expect(html).not.toContain('Sparkle Suite workspace')
     expect(html).toContain('Rep / show')
-    expect(html).toContain('Extension ID')
+    expect(html).toContain('Extension code')
     expect(html).toContain('View live site')
     expect(html).toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -406,16 +406,17 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('disabled=""')
   })
 
-  it('formats the workspace header rep/show and extension ID labels', () => {
+  it('formats the workspace header rep/show and extension code labels', () => {
     expect(formatHeaderRepShow('Louis', 'Sparkle by Sasha')).toBe(
       'Louis / Sparkle by Sasha',
     )
     expect(formatHeaderRepShow('', 'Sparkle by Sasha')).toBe('Sparkle by Sasha')
     expect(formatHeaderRepShow(undefined, undefined)).toBe('Rep info loading')
     expect(formatExtensionRepId('8242049c-58bc-47d4-aa7a-bee2dfb7c62f')).toBe(
-      '8242049c-58bc-47d4-aa7a-bee2dfb7c62f',
+      '916574',
     )
-    expect(formatExtensionRepId(undefined)).toBe('Waiting for rep ID')
+    expect(formatExtensionRepId('123456')).toBe('123456')
+    expect(formatExtensionRepId(undefined)).toBe('Waiting for code')
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {

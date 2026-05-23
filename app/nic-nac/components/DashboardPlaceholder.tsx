@@ -60,7 +60,17 @@ export function formatHeaderRepShow(
 }
 
 export function formatExtensionRepId(repId?: string | null) {
-  return repId?.trim() || 'Waiting for rep ID'
+  const rawId = repId?.trim()
+  if (!rawId) return 'Waiting for code'
+  if (/^\d{6}$/.test(rawId)) return rawId
+
+  let hash = 2166136261
+  for (const char of rawId) {
+    hash ^= char.charCodeAt(0)
+    hash = Math.imul(hash, 16777619) >>> 0
+  }
+
+  return String(hash % 1_000_000).padStart(6, '0')
 }
 
 function mergeTradeBoardResults(
@@ -2208,7 +2218,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             <span className={styles.topbarInfoValue}>{headerRepShow}</span>
           </div>
           <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Extension ID</span>
+            <span className={styles.topbarInfoLabel}>Extension code</span>
             <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
               {headerExtensionId}
             </span>

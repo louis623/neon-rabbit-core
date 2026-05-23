@@ -96,11 +96,11 @@
 }
 
 .topbarInfoValueCode {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  font-size: 10px;
+  white-space: nowrap;
+  font-size: 14px;
   font-family: 'Geist Mono', 'Courier New', monospace;
-  line-height: 1.15;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
 }
 
 .liveSiteButton {
