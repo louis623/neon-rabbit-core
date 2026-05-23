@@ -15,7 +15,11 @@ function makeResolveSupabase(row: Record<string, unknown> | null) {
   }
 }
 
-function makeBatchSupabase() {
+function makeBatchSupabase(
+  options: {
+    existingListings?: Array<{ design_id: string }>
+  } = {},
+) {
   const designLookup = vi.fn().mockResolvedValue({
     data: [
       {
@@ -27,12 +31,24 @@ function makeBatchSupabase() {
     ],
     error: null,
   })
-  const existingLookup = vi.fn().mockResolvedValue({ data: [], error: null })
-  const insertSelect = vi.fn().mockResolvedValue({
-    data: [{ id: 'listing-1', design_id: 'design-1', status: 'available' }],
-    error: null,
+  const existingLookup = vi
+    .fn()
+    .mockResolvedValue({ data: options.existingListings ?? [], error: null })
+  let insertedRows: Array<Record<string, unknown>> = []
+  const insertSelect = vi.fn().mockImplementation(() =>
+    Promise.resolve({
+      data: insertedRows.map((row, index) => ({
+        id: `listing-${index + 1}`,
+        design_id: row.design_id,
+        status: row.status,
+      })),
+      error: null,
+    }),
+  )
+  const insert = vi.fn((rows: Array<Record<string, unknown>>) => {
+    insertedRows = rows
+    return { select: insertSelect }
   })
-  const insert = vi.fn().mockReturnValue({ select: insertSelect })
   const timesListedLookup = vi.fn().mockResolvedValue({
     data: { times_listed: 2 },
     error: null,
@@ -92,7 +108,11 @@ function makeBatchSupabase() {
   }
 }
 
-function makeAddListingWithCollectionSupabase() {
+function makeAddListingWithCollectionSupabase(
+  options: {
+    existingListing?: Record<string, unknown> | null
+  } = {},
+) {
   const resolveMaybeSingle = vi.fn().mockResolvedValue({
     data: {
       id: 'design-1',
@@ -154,7 +174,7 @@ function makeAddListingWithCollectionSupabase() {
     .mockImplementationOnce(timesListedUpdate)
 
   const duplicateMaybeSingle = vi.fn().mockResolvedValue({
-    data: null,
+    data: options.existingListing ?? null,
     error: null,
   })
   const duplicateChain: Record<string, unknown> = {
@@ -240,7 +260,7 @@ describe('addListingBatch', () => {
     vi.useRealTimers()
   })
 
-  it('deduplicates repeated item numbers inside the same batch request before insert', async () => {
+  it('adds repeated item numbers inside the same batch as separate listings', async () => {
     const { client, spies } = makeBatchSupabase()
 
     const result = await addListingBatch(client, 'rep-1', {
@@ -252,16 +272,35 @@ describe('addListingBatch', () => {
     })
 
     expect(spies.insert).toHaveBeenCalledTimes(1)
-    expect(spies.insert.mock.calls[0][0]).toHaveLength(1)
+    expect(spies.insert.mock.calls[0][0]).toHaveLength(2)
     expect(spies.insert.mock.calls[0][0][0]).toMatchObject({
       rep_id: 'rep-1',
       design_id: 'design-1',
     })
-    expect(result.added).toHaveLength(1)
+    expect(spies.insert.mock.calls[0][0][1]).toMatchObject({
+      rep_id: 'rep-1',
+      design_id: 'design-1',
+    })
+    expect(result.added).toHaveLength(2)
     expect(result.added[0]).toMatchObject({
       itemNumber: 'RG31452',
       designName: 'Celeste Ring',
     })
+  })
+
+  it('adds another available listing even when the rep already has that design available', async () => {
+    const { client, spies } = makeBatchSupabase({
+      existingListings: [{ design_id: 'design-1' }],
+    })
+
+    const result = await addListingBatch(client, 'rep-1', {
+      clickwrapAccepted: true,
+      items: [{ itemNumber: 'RG31452' }],
+    })
+
+    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(spies.insert.mock.calls[0][0]).toHaveLength(1)
+    expect(result.added).toHaveLength(1)
   })
 })
 
@@ -294,5 +333,20 @@ describe('addListing', () => {
       itemNumber: 'RG31452',
       designName: 'Celeste Ring',
     })
+  })
+
+  it('adds another available listing when the rep already has the same design on the board', async () => {
+    const { client, spies } = makeAddListingWithCollectionSupabase({
+      existingListing: { id: 'listing-existing' },
+    })
+
+    const result = await addListing(client, 'rep-1', {
+      itemNumber: 'RG31452',
+      clickwrapAccepted: true,
+      collectionName: 'Lustre',
+    })
+
+    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(result.listingId).toBe('listing-1')
   })
 })

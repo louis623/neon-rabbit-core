@@ -129,15 +129,13 @@ async function writeAuditIsolated(args: {
   }
 }
 
-// Look up the most recent user-uploaded image part in this conversation and
-// return its client-compressed data URL plus any persisted dimensions. Returns
-// null if no image part is found in any complete user message — caller is
-// responsible for surfacing MISSING_PIECE_PHOTO. Mirrors the persistence.ts
-// pattern of ordering by created_at DESC with id as the deterministic
-// tiebreaker so timestamp collisions don't pick the wrong message.
+// Look up a user-uploaded image part in this conversation and return its
+// client-compressed data URL. Within one message, the last image wins so a
+// jewelry photo can beat a label/info-card photo uploaded before it.
 async function resolvePhotoFromConversation(ctx: {
   supabase: SupabaseClient
   conversationId: string
+  latestUserMessageOnly?: boolean
 }): Promise<{
   imageDataUrl: string
 } | null> {
@@ -150,14 +148,15 @@ async function resolvePhotoFromConversation(ctx: {
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
   if (error) throw error
-  for (const row of data ?? []) {
+  const rows = ctx.latestUserMessageOnly ? (data ?? []).slice(0, 1) : (data ?? [])
+  for (const row of rows) {
     const parts = row.parts as Array<{
       type?: string
       mediaType?: string
       url?: string
     }> | null
     if (!parts) continue
-    const imagePart = parts.find(
+    const imagePart = [...parts].reverse().find(
       (p) =>
         p?.type === 'file' &&
         typeof p.mediaType === 'string' &&
@@ -494,6 +493,25 @@ async function runSingle(
       ).photoUrl
     } catch (err) {
       explainServiceError(err)
+    }
+  } else if (!designName) {
+    const resolvedListingPhoto = await resolvePhotoFromConversation({
+      supabase: ctx.supabase,
+      conversationId: ctx.conversationId,
+      latestUserMessageOnly: true,
+    })
+    if (resolvedListingPhoto) {
+      try {
+        processedListingPhotoUrl = (
+          await processRepListingPhotoUrl({
+            repId: ctx.repId,
+            sourceImageUrl: resolvedListingPhoto.imageDataUrl,
+            filenameStem: `${itemNumber}-listing-photo`,
+          })
+        ).photoUrl
+      } catch (err) {
+        explainServiceError(err)
+      }
     }
   }
   try {

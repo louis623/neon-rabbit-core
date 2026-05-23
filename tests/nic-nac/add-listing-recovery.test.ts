@@ -113,7 +113,7 @@ interface AddListingToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(supabase: unknown = {} as never): AddListingToolDef {
+function makeTool(supabase: unknown = makeConversationLookupMock([])): AddListingToolDef {
   return makeAddListingTool({
     repId: 'rep-1',
     supabase: supabase as never,
@@ -347,6 +347,54 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       listingPhotoUrl: 'https://cdn.example.com/listings/rep-1/ring-enhanced.png',
     })
   })
+
+  it('uses the latest image in the current user message as the listing photo for existing designs', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER76003',
+      designName: 'The Elodie Luxe',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/elodie-jewelry.png',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Please add to my trade board' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER76003',
+      clickwrapAccepted: true,
+    })
+
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'data:image/jpeg;base64,SkVXRUw=',
+      filenameStem: 'ER76003-listing-photo',
+    })
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      listingPhotoUrl: 'https://cdn.example.com/listings/rep-1/elodie-jewelry.png',
+    })
+  })
 })
 
 describe('add_listing — vision-first photo extraction (Task 1.5B closure)', () => {
@@ -434,6 +482,66 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
         passed: true,
         score: 100,
       },
+    })
+  })
+
+  it('prefers the latest image part when label and jewelry photos are uploaded together', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'NEW-101',
+      designName: 'Pearl Drop Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'NEW-101',
+      collectionId: 'coll-1',
+      collectionName: 'Lustre',
+      typePrefix: 'ER',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/jewelry.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/jewelry.jpg',
+      signedUrl: 'https://signed.example.com/jewelry',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'add this' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'NEW-101',
+      clickwrapAccepted: true,
+      designName: 'Pearl Drop Earrings',
+      collectionName: 'Lustre',
+    })
+
+    expect(uploadJewelryPhotoMock.mock.calls[0][1]).toBe(
+      'data:image/png;base64,SkVXRUw=',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/jewelry.jpg',
     })
   })
 

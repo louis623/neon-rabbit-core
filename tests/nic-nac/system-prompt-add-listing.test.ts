@@ -24,4 +24,13 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'NEEDS_COLLECTION as a hard limitation',
     )
   })
+
+  it('treats duplicate item numbers as separate physical listings', () => {
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'A rep can own multiple physical pieces with the same item number',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'create one listing per physical piece',
+    )
+  })
 })

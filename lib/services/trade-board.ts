@@ -478,18 +478,6 @@ export async function addListing(
     )
   }
 
-  // Duplicate check: rep already has an available listing for this design.
-  const { data: existing, error: dupErr } = await supabase
-    .from('trade_listings')
-    .select('id')
-    .eq('rep_id', repId)
-    .eq('design_id', resolved.design.id)
-    .eq('status', 'available')
-    .limit(1)
-    .maybeSingle()
-  if (dupErr) throw dupErr
-  if (existing) throw errors.DUPLICATE_LISTING(input.itemNumber)
-
   const usesCanonicalPhoto = !input.listingPhotoUrl
   const { data: inserted, error: insErr } = await supabase
     .from('trade_listings')
@@ -543,29 +531,17 @@ export async function addListingBatch(
     return { added: [], pending: { needCollection: [], needFullInfo: [] } }
   }
 
-  const dedupedItems = new Map<string, BatchListingItem>()
+  const normalizedItems: BatchListingItem[] = []
   for (const item of input.items) {
     const itemNumber = normalizeItemNumber(item.itemNumber)
     if (!itemNumber) continue
 
-    const existing = dedupedItems.get(itemNumber)
-    if (!existing) {
-      dedupedItems.set(itemNumber, {
-        ...item,
-        itemNumber,
-      })
-      continue
-    }
-
-    dedupedItems.set(itemNumber, {
+    normalizedItems.push({
+      ...item,
       itemNumber,
-      repNotes: existing.repNotes ?? item.repNotes,
-      tradePreferences: existing.tradePreferences ?? item.tradePreferences,
-      listingPhotoUrl: existing.listingPhotoUrl ?? item.listingPhotoUrl,
     })
   }
 
-  const normalizedItems = Array.from(dedupedItems.values())
   if (normalizedItems.length === 0) {
     return { added: [], pending: { needCollection: [], needFullInfo: [] } }
   }
@@ -622,20 +598,7 @@ export async function addListingBatch(
     return { added: [], pending: { needCollection, needFullInfo } }
   }
 
-  // Skip duplicates within the rep's existing available listings.
-  const designIds = ready.map((r) => r.designId)
-  const { data: existing } = await supabase
-    .from('trade_listings')
-    .select('design_id')
-    .eq('rep_id', repId)
-    .eq('status', 'available')
-    .in('design_id', designIds)
-  const dupSet = new Set<string>(((existing ?? []) as Array<{ design_id: string }>).map((e) => e.design_id))
-
-  const toInsert = ready.filter((r) => !dupSet.has(r.designId))
-  if (toInsert.length === 0) {
-    return { added: [], pending: { needCollection, needFullInfo } }
-  }
+  const toInsert = ready
 
   const nowIso = new Date().toISOString()
   const insertRows = toInsert.map((r) => ({
@@ -655,26 +618,34 @@ export async function addListingBatch(
     .select('id, design_id, status')
   if (insErr) throw insErr
 
-  // Bump times_listed per design (one update per design).
+  // Bump times_listed by physical listing count per design.
+  const listingCountsByDesign = new Map<string, number>()
   for (const r of toInsert) {
+    listingCountsByDesign.set(
+      r.designId,
+      (listingCountsByDesign.get(r.designId) ?? 0) + 1,
+    )
+  }
+  for (const [designId, listingCount] of listingCountsByDesign) {
     const { data: designRow } = await supabase
       .from('jewelry_designs')
       .select('times_listed')
-      .eq('id', r.designId)
+      .eq('id', designId)
       .maybeSingle()
     if (designRow) {
       await supabase
         .from('jewelry_designs')
         .update({
-          times_listed: ((designRow.times_listed as number | null) ?? 0) + 1,
+          times_listed:
+            ((designRow.times_listed as number | null) ?? 0) + listingCount,
           updated_at: nowIso,
         })
-        .eq('id', r.designId)
+        .eq('id', designId)
     }
   }
 
-  const added: AddListingResult[] = (inserted ?? []).map((row) => {
-    const r = toInsert.find((x) => x.designId === row.design_id)!
+  const added: AddListingResult[] = (inserted ?? []).map((row, index) => {
+    const r = toInsert[index] ?? toInsert.find((x) => x.designId === row.design_id)!
     return {
       listingId: row.id as string,
       designId: r.designId,
