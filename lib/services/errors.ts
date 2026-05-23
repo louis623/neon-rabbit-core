@@ -1,12 +1,13 @@
 // Service-layer errors. ServiceError is the canonical class for new code.
 // TradeBoardError is preserved as a subclass so the existing tool handlers
 // (lib/nic-nac/tools/list-my-trade-board.ts, lib/nic-nac/tools/remove-listing.ts)
-// keep working without code changes â€” they do `instanceof TradeBoardError` and
+// keep working without code changes - they do `instanceof TradeBoardError` and
 // read `err.code`. Both checks survive subclassing.
 //
 // Tool handlers translate ServiceError to the assistant tool error at the route boundary
 // (see lib/nic-nac/errors.ts). The service layer never references
-// tool error class; that's the rule that lets the same service back both the`r`n// chat assistant and HTTP dashboard entry points.
+// tool error class; that's the rule that lets the same service back both the
+// chat assistant and HTTP dashboard entry points.
 
 export class ServiceError extends Error {
   readonly code: string
@@ -32,7 +33,7 @@ export class ServiceError extends Error {
 }
 
 // Backward-compat for existing trade-board tool handlers. The legacy two-arg
-// constructor signature (code, message) MUST be preserved â€” see the live
+// constructor signature (code, message) MUST be preserved - see the live
 // throw sites in `removeListing` below and the original implementation history.
 // Empty subclass keeps `instanceof TradeBoardError` working for code that
 // already imports the name.
@@ -112,7 +113,7 @@ export const errors = {
   INVALID_STATUS_TRANSITION: (from: string, to: string) =>
     new ServiceError({
       code: 'INVALID_STATUS_TRANSITION',
-      message: `invalid status transition: ${from} â†’ ${to}`,
+      message: `invalid status transition: ${from} -> ${to}`,
       userMessage: `I can't move that from "${from}" to "${to}".`,
     }),
   LISTING_RECOVERY_EXPIRED: (days: 7 | 30) =>
@@ -129,7 +130,7 @@ export const errors = {
     new ServiceError({
       code: 'AMBIGUOUS_CUSTOMER',
       message: `more than one fulfillment matches customer "${name}"`,
-      userMessage: `Multiple customers named "${name}" â€” can you give me a request ID?`,
+      userMessage: `Multiple customers named "${name}" - can you give me a request ID?`,
     }),
   FULFILLMENT_NOT_FOUND: () =>
     new ServiceError({
@@ -160,7 +161,7 @@ export const errors = {
     new ServiceError({
       code: 'NEEDS_FULL_INFO',
       message: `no design found for item ${itemNumber}`,
-      userMessage: `I don't have ${itemNumber} on file yet â€” I'll need the design name and a photo.`,
+      userMessage: `I don't have ${itemNumber} on file yet - I'll need the design name and a photo.`,
     }),
   EVENT_NOT_FOUND: () =>
     new ServiceError({
@@ -174,7 +175,7 @@ export const errors = {
       code: 'EVENT_NOT_EDITABLE',
       message: 'event is not in scheduled status and cannot be modified',
       userMessage:
-        'That show has already started, finished, or been cancelled â€” I can only edit upcoming scheduled shows.',
+        'That show has already started, finished, or been cancelled - I can only edit upcoming scheduled shows.',
       statusCode: 409,
     }),
   EVENT_NOT_CANCELLABLE: () =>
@@ -188,7 +189,7 @@ export const errors = {
     new ServiceError({
       code: 'EVENT_TIME_PAST',
       message: 'event time must be in the future',
-      userMessage: 'That time is in the past â€” when do you actually want to schedule it?',
+      userMessage: 'That time is in the past - when do you actually want to schedule it?',
       statusCode: 400,
     }),
   MISSING_PLATFORM: () =>
@@ -196,7 +197,7 @@ export const errors = {
       code: 'MISSING_PLATFORM',
       message: 'platform is required for a show',
       userMessage:
-        'Where are you streaming? I need the platform â€” Facebook Live, TikTok, Instagram, etc.',
+        'Where are you streaming? I need the platform - Facebook Live, TikTok, Instagram, etc.',
       statusCode: 400,
     }),
   MISSING_EVENT_TIME: () =>
