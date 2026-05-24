@@ -121,11 +121,11 @@ export interface AmethystJoinTweakDefaults {
 }
 
 export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
-  repName: 'Sasha Patel',
+  repName: 'Jane',
   repCity: 'Chicago',
   repState: 'Illinois',
-  businessName: 'Sparkle by Sasha',
-  teamName: 'Team Velvet Hour',
+  businessName: "Jane's Sparkle Party",
+  teamName: "Jane's Sparkle Party",
   promoText:
     'November Promo: New reps get a guaranteed Diamond in their first launch pack.',
   heroPitch:
@@ -143,7 +143,7 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   footerTagline:
     'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
   legalDisclaimer:
-    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. Any agreements formed between site visitors and the rep are solely between those parties, not Bomb Party LLC and not the platform.',
+    "Jane's Sparkle Party is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. Any agreements formed between site visitors and the rep are solely between those parties, not Bomb Party LLC and not the platform.",
   repSocialLinks: {
     tiktok: 'https://www.tiktok.com',
     website: 'https://bombparty.com/?ref=sparklebysasha',
@@ -239,7 +239,7 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   ],
   faqAnswers: {
     whatIsTeam:
-      "Team Velvet Hour is a tight-knit team of independent Bomb Party reps led by Sasha Patel. We're a group of women running our own businesses on our own terms, sharing what works, cheering each other on, and having a ridiculous amount of fun doing live jewelry reveals.",
+      "Jane's Sparkle Party is a tight-knit team of independent Bomb Party reps led by Jane. We're a group of women running our own businesses on our own terms, sharing what works, cheering each other on, and having a ridiculous amount of fun doing live jewelry reveals.",
     cost:
       "Bomb Party starter packs typically run $169-$249 and include sample jewelry boxes plus business tools to get you started. The exact options change with current promotions, so tap the join button and you'll see the latest packs available.",
     experience:

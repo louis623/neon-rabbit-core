@@ -72,14 +72,14 @@ describe('Amethyst join page template data wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Learn how to join Sparkle by Sasha and build a Bomb Party business with practical support from an active team." />',
+      '<meta name="description" content="Learn how to join Jane\'s Sparkle Party and build a Bomb Party business with practical support from an active team." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Join.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Sparkle by Sasha - Join the Team" />',
+      '<meta property="og:title" content="Jane\'s Sparkle Party - Join the Team" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })

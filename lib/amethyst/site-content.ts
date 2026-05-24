@@ -103,7 +103,7 @@ export interface AmethystSiteContent {
 export const defaultAmethystSiteContent: AmethystSiteContent = {
   repName: 'Rep Name',
   businessName: 'Show Name',
-  teamName: 'Team Velvet Hour',
+  teamName: "Jane's Sparkle Party",
   heroEyebrow: 'Live reveals · every Tuesday · 8pm local time',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:

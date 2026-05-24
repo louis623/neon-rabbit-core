@@ -13,25 +13,25 @@ describe('Amethyst public metadata helpers', () => {
     expect(metadata).toEqual({
       page: 'homepage',
       path: '/amethyst/Homepage.html',
-      title: 'Sparkle by Sasha - Live jewelry reveals',
+      title: "Jane's Sparkle Party - Live jewelry reveals",
       description:
-        'Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha.',
+        "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
       robots: 'index,follow',
       canonicalUrl: 'https://www.yoursparklesuite.com/amethyst/Homepage.html',
       openGraph: {
         type: 'website',
         siteName: 'Sparkle Suite',
-        title: 'Sparkle by Sasha - Live jewelry reveals',
+        title: "Jane's Sparkle Party - Live jewelry reveals",
         description:
-          'Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha.',
+          "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
         url: 'https://www.yoursparklesuite.com/amethyst/Homepage.html',
         image: 'https://www.yoursparklesuite.com/opengraph-image',
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'Sparkle by Sasha - Live jewelry reveals',
+        title: "Jane's Sparkle Party - Live jewelry reveals",
         description:
-          'Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha.',
+          "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
         image: 'https://www.yoursparklesuite.com/opengraph-image',
       },
     })
@@ -45,13 +45,13 @@ describe('Amethyst public metadata helpers', () => {
     expect(tags).toEqual([
       {
         tag: 'title',
-        text: 'Sparkle by Sasha - Trade Board',
+        text: "Jane's Sparkle Party - Trade Board",
       },
       {
         tag: 'meta',
         name: 'description',
         content:
-          'Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers.',
+          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',
@@ -76,13 +76,13 @@ describe('Amethyst public metadata helpers', () => {
       {
         tag: 'meta',
         property: 'og:title',
-        content: 'Sparkle by Sasha - Trade Board',
+        content: "Jane's Sparkle Party - Trade Board",
       },
       {
         tag: 'meta',
         property: 'og:description',
         content:
-          'Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers.',
+          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',
@@ -102,13 +102,13 @@ describe('Amethyst public metadata helpers', () => {
       {
         tag: 'meta',
         name: 'twitter:title',
-        content: 'Sparkle by Sasha - Trade Board',
+        content: "Jane's Sparkle Party - Trade Board",
       },
       {
         tag: 'meta',
         name: 'twitter:description',
         content:
-          'Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers.',
+          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',

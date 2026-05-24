@@ -112,7 +112,7 @@ export interface AmethystHomepageTweakDefaults {
 export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData = {
   repName: 'Rep Name',
   businessName: 'Show Name',
-  teamName: 'Team Velvet Hour',
+  teamName: "Jane's Sparkle Party",
   tagline: 'Live jewelry reveals every Tuesday - joy you can hold.',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:

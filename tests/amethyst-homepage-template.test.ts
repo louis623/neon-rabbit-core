@@ -62,14 +62,14 @@ describe('Amethyst homepage template data wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha." />',
+      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane\'s Sparkle Party." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Homepage.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Sparkle by Sasha - Live jewelry reveals" />',
+      '<meta property="og:title" content="Jane\'s Sparkle Party - Live jewelry reveals" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })

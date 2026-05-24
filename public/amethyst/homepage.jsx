@@ -974,7 +974,7 @@ function JoinCta() {
   return (
     <section className="hp-join-cta" id="join-team">
       <div className="hp-join-cta-inner">
-        <div className="hp-join-eyebrow">Sparkle by Sasha · Team Velvet Hour</div>
+        <div className="hp-join-eyebrow">Jane's Sparkle Party · Jane's Sparkle Party</div>
         <h2 className="hp-join-title">Want to do this too?</h2>
         <p className="hp-join-sub">
           Join my team. I'll show you how I built a real business doing live jewelry reveals on my own schedule —
@@ -1039,7 +1039,7 @@ function Footer({ businessName }) {
           <span><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Accessibility</a></span>
         </div>
         <p>
-          Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
+          Jane's Sparkle Party is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
           This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names,
           trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board
           listings are sold by the rep and not by Bomb Party LLC.

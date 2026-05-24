@@ -65,21 +65,21 @@ export const AMETHYST_PUBLIC_PAGES: Record<
 > = {
   homepage: {
     path: '/amethyst/Homepage.html',
-    title: 'Sparkle by Sasha - Live jewelry reveals',
+    title: "Jane's Sparkle Party - Live jewelry reveals",
     description:
-      'Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha.',
+      "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
   },
   trade: {
     path: '/amethyst/Trade.html',
-    title: 'Sparkle by Sasha - Trade Board',
+    title: "Jane's Sparkle Party - Trade Board",
     description:
-      'Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers.',
+      "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
   },
   join: {
     path: '/amethyst/Join.html',
-    title: 'Sparkle by Sasha - Join the Team',
+    title: "Jane's Sparkle Party - Join the Team",
     description:
-      'Learn how to join Sparkle by Sasha and build a Bomb Party business with practical support from an active team.',
+      "Learn how to join Jane's Sparkle Party and build a Bomb Party business with practical support from an active team.",
   },
 }
 

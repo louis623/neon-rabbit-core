@@ -148,14 +148,14 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers." />',
+      '<meta name="description" content="Browse Jane\'s Sparkle Party trade board listings and request fair jewelry trades from live reveal customers." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Sparkle by Sasha - Trade Board" />',
+      '<meta property="og:title" content="Jane\'s Sparkle Party - Trade Board" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })

@@ -8,11 +8,11 @@ const {
 } = window;
 
 const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
-  teamName: "Team Velvet Hour",
-  repName: "Sasha Patel",
+  teamName: "Jane's Sparkle Party",
+  repName: "Jane",
   repCity: "Chicago",
   repState: "Illinois",
-  businessName: "Sparkle by Sasha",
+  businessName: "Jane's Sparkle Party",
   teamMemberCount: 6,
   showPromo: true,
   promoText: "November Promo: New reps get a guaranteed Diamond in their first launch pack.",
