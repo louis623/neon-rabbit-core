@@ -182,6 +182,66 @@ async function resolvePhotoFromConversation(ctx: {
   return null
 }
 
+function batchRepeatsOneItem(input: ToolInput) {
+  if (input.mode !== 'batch' || !input.items || input.items.length < 2) return false
+  const firstItemNumber = input.items[0]?.itemNumber?.trim().toUpperCase()
+  if (!firstItemNumber) return false
+  return input.items.every(
+    (item) => item.itemNumber?.trim().toUpperCase() === firstItemNumber,
+  )
+}
+
+function textHasExplicitQuantity(text: string) {
+  return (
+    /\b(qty|quantity|count|copies|pieces|units|all|both|pair|several|multiple)\b/i.test(
+      text,
+    ) ||
+    /\b(two|three|four|five|six|seven|eight|nine|ten)\b/i.test(text) ||
+    /\b\d+\b/.test(text.replace(/[A-Z]{1,3}\d{3,}/gi, ''))
+  )
+}
+
+async function latestUserMessageHasExplicitQuantity(ctx: {
+  supabase: SupabaseClient
+  conversationId: string
+}): Promise<boolean | null> {
+  let data: { parts?: unknown } | null | undefined
+  let error: unknown
+  try {
+    ;({ data, error } = await ctx.supabase
+      .from('nic_nac_conversations')
+      .select('parts')
+      .eq('conversation_id', ctx.conversationId)
+      .eq('role', 'user')
+      .eq('status', 'complete')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle())
+  } catch (err) {
+    if (err instanceof TypeError) return null
+    throw err
+  }
+  if (error) throw error
+
+  const parts = data?.parts as Array<{ type?: string; text?: string }> | null
+  const text = (parts ?? [])
+    .filter((part) => part?.type === 'text' && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('\n')
+  return textHasExplicitQuantity(text)
+}
+
+async function shouldCollapseRepeatedBatchToSingle(
+  input: ToolInput,
+  ctx: { supabase: SupabaseClient; conversationId: string },
+) {
+  if (!batchRepeatsOneItem(input)) return false
+  const latestHasQuantity = await latestUserMessageHasExplicitQuantity(ctx)
+  if (latestHasQuantity === null) return false
+  return !latestHasQuantity
+}
+
 async function runSingle(
   input: ToolInput,
   ctx: {
@@ -861,6 +921,18 @@ export function makeAddListingTool(ctx: {
 
       if (input.mode === 'single') {
         return await runSingle(input, ctx, admin)
+      }
+      if (await shouldCollapseRepeatedBatchToSingle(input, ctx)) {
+        const firstItem = input.items?.[0]
+        return await runSingle(
+          {
+            ...firstItem,
+            mode: 'single',
+            itemNumber: firstItem?.itemNumber,
+          },
+          ctx,
+          admin,
+        )
       }
       return await runBatch(input, ctx, admin)
     },

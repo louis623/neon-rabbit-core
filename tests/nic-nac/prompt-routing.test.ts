@@ -42,6 +42,8 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('If add_listing is active and the rep provides a missing field')
     expect(prompt).toContain('do not say add_listing is unavailable')
     expect(prompt).toContain('A rep can own multiple physical pieces with the same item number')
+    expect(prompt).toContain('Quantity comes from the latest rep message')
+    expect(prompt).toContain('For current board questions, answer only from the latest list_my_trade_board result')
     expect(prompt).toContain("mode:'batch'")
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')

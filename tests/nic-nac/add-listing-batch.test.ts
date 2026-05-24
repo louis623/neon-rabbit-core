@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const addListingMock = vi.fn()
 const addListingBatchMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 
 vi.mock('@/lib/services/trade-board', () => ({
-  addListing: vi.fn(),
+  addListing: (...args: unknown[]) => addListingMock(...args),
   addListingBatch: (...args: unknown[]) => addListingBatchMock(...args),
 }))
 
@@ -37,15 +38,41 @@ interface ToolDef {
 }
 
 function makeTool(): ToolDef {
+  const supabase = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            eq: () => ({
+              order: () => ({
+                order: () => ({
+                  limit: () => ({
+                    maybeSingle: async () => ({
+                      data: {
+                        parts: [{ type: 'text', text: 'Add ER76003 to my board' }],
+                      },
+                      error: null,
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      }),
+    }),
+  }
+
   return makeAddListingTool({
     repId: 'rep-1',
-    supabase: {} as never,
+    supabase: supabase as never,
     conversationId: 'conv-1',
     runId: 'run-1',
   }) as unknown as ToolDef
 }
 
 beforeEach(() => {
+  addListingMock.mockReset()
   addListingBatchMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
@@ -187,6 +214,34 @@ describe('add_listing — batch mode', () => {
       actionType: 'add_listing',
       repId: 'rep-1',
       targetListingId: 'listing-2',
+    })
+  })
+
+  it('collapses repeated same-item batches when the latest rep message has no quantity', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER76003',
+      designName: 'The Elodie Luxe',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool()
+    const result = await tool.execute({
+      mode: 'batch',
+      items: [{ itemNumber: 'ER76003' }, { itemNumber: 'ER76003' }],
+    })
+
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+    expect(addListingBatchMock).not.toHaveBeenCalled()
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      itemNumber: 'ER76003',
+    })
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'ER76003',
     })
   })
 })

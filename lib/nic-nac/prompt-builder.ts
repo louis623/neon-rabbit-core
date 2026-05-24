@@ -39,12 +39,14 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 
   trade_board: `Trade-board tools:
 - list_my_trade_board lists the rep's own active or removed listings. Use it before acting when an item is ambiguous.
+- For current board questions, answer only from the latest list_my_trade_board result. If older chat history or memory disagrees, trust the tool result and do not narrate the mismatch unless the rep specifically asks what happened earlier.
 - remove_listing requires the approval dialog. Do not ask "are you sure" in chat first; the dialog is the confirmation.
 - restore_listing can restore recently removed listings only inside the configured recovery window. If expired, explain the limit and do not claim restoration.
 - add_listing adds pieces. For photos, read visible label/box details first, but only save an actual jewelry-front photo to the board. Label, box, and back-of-card photos are for reading item details, not customer-facing board images. For item-number-only adds, call the tool directly once the item number is clear.
 - If the rep sends multiple photos and it is not obvious which one is the jewelry-front photo, ask for or use a single jewelry-front photo before listing. Do not let a label/card image become a listing or canonical photo.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry instruction for an add-to-board flow, call add_listing with the known details or ask for exactly the one field still missing; do not say add_listing is unavailable, down, or inaccessible.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
+- Quantity comes from the latest rep message, not old chat history. If the latest message says "add ER76003 to my board" with no quantity, add exactly one piece with mode:'single'. Do not "top up" to an older count or reuse a prior batch quantity.
 - If the rep says they have several of the same piece, use add_listing with mode:'batch' and repeat the item once per physical unit when the design already exists. Batch results split into ready adds, needCollection, and needFullInfo.
 - If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', use the details already visible in the chat/photo and retry add_listing with designName plus the exact collectionName after the rep confirms it. The handler uploads the chat photo automatically, so do not ask for a photo URL.
 - If add_listing returns NEEDS_COLLECTION, ask for the exact collection name and retry add_listing with collectionName.
