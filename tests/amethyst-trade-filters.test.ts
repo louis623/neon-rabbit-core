@@ -23,6 +23,7 @@ const listings: AmethystTradeBoardListing[] = [
     glyph: 'B',
     tier: 'diamond',
     photoUrl: null,
+    photoSource: 'missing',
   },
   {
     id: 'listing-2',
@@ -37,6 +38,7 @@ const listings: AmethystTradeBoardListing[] = [
     glyph: 'V',
     tier: 'everyday',
     photoUrl: null,
+    photoSource: 'missing',
   },
   {
     id: 'listing-3',
@@ -51,6 +53,7 @@ const listings: AmethystTradeBoardListing[] = [
     glyph: 'A',
     tier: 'unicorn',
     photoUrl: null,
+    photoSource: 'missing',
   },
 ]
 

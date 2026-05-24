@@ -583,6 +583,14 @@ export function getTradeListingPhotoUrl(listing: TradeListingWithDesign) {
   return listing.listing_photo_url ?? listing.design.canonical_photo_url
 }
 
+export function getTradeListingPhotoSourceLabel(listing: TradeListingWithDesign) {
+  if (listing.listing_photo_url) return 'custom listing photo'
+  if (listing.design.canonical_photo_url && listing.uses_canonical_photo) {
+    return 'catalog photo'
+  }
+  return 'no photo yet'
+}
+
 export function getAutoRechargeAmountOptions(
   summary: WalletDashboardResult,
   thresholdCents: number,
@@ -1850,8 +1858,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }, [activeSection])
 
   useEffect(() => {
-    if (activeSection !== 'trade-board') return
-
     const refreshAfterNicNacMutation = (event: Event) => {
       const detail = (event as CustomEvent<{ topic?: string }>).detail
       if (detail?.topic !== 'trade') return
@@ -1869,7 +1875,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         refreshAfterNicNacMutation,
       )
     }
-  }, [activeSection])
+  }, [])
 
   async function handleQuickAddListing() {
     if (!quickAddItemNumber.trim()) {
@@ -2485,6 +2491,9 @@ export function TradeBoardWorkspaceCard({
   hasMoreListings?: boolean
   onLoadMoreListings?: () => void
 }) {
+  const [previewListing, setPreviewListing] = useState<TradeListingWithDesign | null>(
+    null,
+  )
   const boardSummary = tradeBoardState.board?.summary
   const boardListings = (visibleListings ?? tradeBoardState.board?.listings ?? []).filter(
     (listing) => listing.status === 'available',
@@ -2595,22 +2604,31 @@ export function TradeBoardWorkspaceCard({
                 aria-label="Active trade board pieces"
               >
                 {boardListings.length > 0 ? (
-                  boardListings.map((listing) => (
+                  boardListings.map((listing) => {
+                    const photoUrl = getTradeListingPhotoUrl(listing)
+                    return (
                     <div key={listing.id} className={styles.tradePieceCard}>
-                      <div className={styles.tradePieceMedia}>
-                        {getTradeListingPhotoUrl(listing) ? (
-                          <img
-                            className={styles.tradePieceImage}
-                            src={getTradeListingPhotoUrl(listing) ?? undefined}
-                            alt={listing.design.design_name}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className={styles.tradePieceFallback}>
-                            {listing.design.type_prefix}
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        type="button"
+                        className={styles.tradePieceMediaButton}
+                        aria-label={`Open image preview for ${listing.design.design_name}`}
+                        onClick={() => setPreviewListing(listing)}
+                      >
+                        <span className={styles.tradePieceMedia}>
+                          {photoUrl ? (
+                            <img
+                              className={styles.tradePieceImage}
+                              src={photoUrl}
+                              alt={listing.design.design_name}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span className={styles.tradePieceFallback}>
+                              {listing.design.type_prefix}
+                            </span>
+                          )}
+                        </span>
+                      </button>
                       <div className={styles.tradePieceBody}>
                         <div className={styles.customerName}>
                           {listing.design.design_name}
@@ -2623,6 +2641,9 @@ export function TradeBoardWorkspaceCard({
                             ? ` · ${listing.design.collection.name}`
                             : ''}
                           {listing.listed_at ? ` · Listed ${formatCompactDate(listing.listed_at)}` : ''}
+                        </div>
+                        <div className={styles.helperNote}>
+                          Image source: {getTradeListingPhotoSourceLabel(listing)}
                         </div>
                       </div>
                       <div className={styles.tradeMeta}>
@@ -2644,7 +2665,7 @@ export function TradeBoardWorkspaceCard({
                         </button>
                       </div>
                     </div>
-                  ))
+                  )})
                 ) : (
                   <div className={styles.emptyState}>
                     {tradeBoardSearchQuery.trim()
@@ -2664,6 +2685,48 @@ export function TradeBoardWorkspaceCard({
                     ? 'Loading...'
                     : 'Load more'}
                 </button>
+              ) : null}
+              {previewListing ? (
+                <div
+                  className={styles.imagePreviewMask}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={`${previewListing.design.design_name} image preview`}
+                  onClick={() => setPreviewListing(null)}
+                >
+                  <div
+                    className={styles.imagePreviewDialog}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      className={styles.imagePreviewClose}
+                      aria-label="Close image preview"
+                      onClick={() => setPreviewListing(null)}
+                    >
+                      x
+                    </button>
+                    <div className={styles.imagePreviewFrame}>
+                      {getTradeListingPhotoUrl(previewListing) ? (
+                        <img
+                          src={getTradeListingPhotoUrl(previewListing) ?? undefined}
+                          alt={previewListing.design.design_name}
+                          className={styles.imagePreviewImage}
+                        />
+                      ) : (
+                        <div className={styles.tradePieceFallback}>
+                          {previewListing.design.type_prefix}
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.walletSettingsTitle}>
+                      {previewListing.design.design_name}
+                    </div>
+                    <div className={styles.helperNote}>
+                      Image source: {getTradeListingPhotoSourceLabel(previewListing)}
+                    </div>
+                  </div>
+                </div>
               ) : null}
             </>
           ) : (

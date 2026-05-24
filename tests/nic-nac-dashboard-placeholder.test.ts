@@ -443,6 +443,8 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('refreshAfterNicNacMutation')
     expect(source).toContain("detail?.topic !== 'trade'")
     expect(source).toContain('void refreshTradeWorkspace()')
+    expect(source).toContain('window.addEventListener(\n      NIC_NAC_WORKSPACE_REFRESH_EVENT')
+    expect(source).not.toContain("if (activeSection !== 'trade-board') return\n\n    const refreshAfterNicNacMutation")
   })
 
   it('renders the trade board as visual piece cards with a customer preview link', () => {
@@ -482,6 +484,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('href="/amethyst/Trade.html?c=rep-1"')
     expect(html).toContain('target="_blank"')
     expect(html).toContain('src="https://cdn.example.com/sapphire-halo.jpg"')
+    expect(html).toContain('Image source: custom listing photo')
+    expect(html).toContain('Image source: no photo yet')
+    expect(html).toContain('Open image preview for Sapphire Halo')
+    expect(html).toContain('type="button"')
     expect(html).toContain('aria-label="Active trade board pieces"')
     expect(html).toContain('alt="Sapphire Halo"')
     expect(html).toContain('Sapphire Halo')

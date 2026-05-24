@@ -97,8 +97,39 @@ describe('Amethyst trade page template wiring', () => {
       msrp: 88,
       tier: 'diamond',
       photoUrl: 'https://cdn.example.com/listing-photo.jpg',
+      photoSource: 'listing',
     })
     expect(mapped.note).toContain('Item-for-item only')
+  })
+
+  it('marks canonical and missing photo source without exposing internal labels on the customer card', () => {
+    expect(
+      mapTradeListingToAmethystTradeBoardListing(
+        makeTradeListing({
+          listing_photo_url: null,
+          uses_canonical_photo: true,
+        }),
+      ),
+    ).toMatchObject({
+      photoUrl: 'https://cdn.example.com/canonical-photo.jpg',
+      photoSource: 'canonical',
+    })
+
+    expect(
+      mapTradeListingToAmethystTradeBoardListing(
+        makeTradeListing({
+          listing_photo_url: null,
+          uses_canonical_photo: true,
+          design: {
+            ...makeTradeListing().design,
+            canonical_photo_url: null,
+          },
+        }),
+      ),
+    ).toMatchObject({
+      photoUrl: null,
+      photoSource: 'missing',
+    })
   })
 
   it('loads the runtime bootstrap script before the locked trade-page export', () => {

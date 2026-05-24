@@ -30,7 +30,7 @@ export function classifyJewelryPhotoSemantics(
   const reasons: string[] = []
   const tinySubject = input.subjectCoverage < 0.08
   const smallSubject =
-    input.subjectCoverage >= 0.12 && input.subjectCoverage < 0.22
+    input.subjectCoverage >= 0.025 && input.subjectCoverage < 0.22
   const packagingDominates =
     input.backgroundDistractionRisk >= 0.65 ||
     input.backgroundUniformity <= 0.35 ||
@@ -53,9 +53,9 @@ export function classifyJewelryPhotoSemantics(
   const clearSmallCropCandidate =
     smallSubject &&
     input.subjectCentered &&
-    input.detailConfidence >= 0.75 &&
+    input.detailConfidence >= 0.7 &&
     input.blurRisk <= 0.25 &&
-    input.detailRisk <= 0.25 &&
+    input.detailRisk <= 0.3 &&
     input.backgroundDistractionRisk <= 0.25 &&
     input.backgroundCleanliness >= 0.75
 

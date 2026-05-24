@@ -5,6 +5,7 @@ import { executePhotoEnhancement } from '@/lib/services/photo-enhancement'
 import { inspectEnhancedPhotoOutput } from '@/lib/services/photo-enhancement-qa'
 import { analyzeServerImageQuality } from '@/lib/services/server-image-quality'
 import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
+import { createGuardedJewelryPhotoCrop } from '@/lib/services/jewelry-photo-crop'
 import { uploadJewelryPhoto } from '@/lib/services/storage'
 
 export interface ProcessRepListingPhotoUrlInput {
@@ -17,7 +18,7 @@ export interface ProcessRepListingPhotoUrlResult {
   photoUrl: string
   originalPhotoUrl: string
   enhancedPhotoUrl: string | null
-  selectedSource: 'original' | 'enhanced'
+  selectedSource: 'original' | 'enhanced' | 'cropped' | 'cropped_enhanced'
   preflight: ReturnType<typeof assessJewelryPhotoPreflight>
   image: {
     contentType: string
@@ -98,7 +99,17 @@ export async function processRepListingPhotoUrl(
     subjectCoverage: metadata.subjectCoverage,
     subjectCentered: metadata.subjectCentered,
   })
-  if (!preflight.passed) {
+  const crop = semantic.canAttemptCrop
+    ? await createGuardedJewelryPhotoCrop({
+        bytes: fetched.bytes,
+        analysis: metadata,
+      })
+    : null
+  const selectedBytes = crop?.bytes ?? fetched.bytes
+  const selectedMetadata = crop?.analysis ?? metadata
+  const selectedPreflight = crop?.preflight ?? preflight
+
+  if (!selectedPreflight.passed) {
     throw errors.LISTING_PHOTO_PREFLIGHT_FAILED(preflight.coachingMessages)
   }
 
@@ -107,26 +118,33 @@ export async function processRepListingPhotoUrl(
     toDataUrl(metadata.contentType, fetched.bytes),
     `${input.filenameStem}-source`,
   )
+  const croppedPhotoUrl = crop
+    ? await uploadJewelryPhoto(
+        input.repId,
+        toDataUrl(selectedMetadata.contentType, selectedBytes),
+        `${input.filenameStem}-cropped`,
+      )
+    : null
 
   const baseResult: ProcessRepListingPhotoUrlResult = {
-    photoUrl: originalPhotoUrl,
+    photoUrl: croppedPhotoUrl ?? originalPhotoUrl,
     originalPhotoUrl,
     enhancedPhotoUrl: null,
-    selectedSource: 'original',
-    preflight,
+    selectedSource: crop ? 'cropped' : 'original',
+    preflight: selectedPreflight,
     image: {
-      contentType: metadata.contentType,
-      width: metadata.width,
-      height: metadata.height,
-      blurRisk: metadata.blurRisk,
-      lightingRisk: metadata.lightingRisk,
-      detailRisk: metadata.detailRisk,
-      backgroundDistractionRisk: metadata.backgroundDistractionRisk,
-      subjectCoverage: metadata.subjectCoverage,
-      subjectCentered: metadata.subjectCentered,
-      detailConfidence: metadata.detailConfidence,
-      backgroundUniformity: metadata.backgroundUniformity,
-      backgroundCleanliness: metadata.backgroundCleanliness,
+      contentType: selectedMetadata.contentType,
+      width: selectedMetadata.width,
+      height: selectedMetadata.height,
+      blurRisk: selectedMetadata.blurRisk,
+      lightingRisk: selectedMetadata.lightingRisk,
+      detailRisk: selectedMetadata.detailRisk,
+      backgroundDistractionRisk: selectedMetadata.backgroundDistractionRisk,
+      subjectCoverage: selectedMetadata.subjectCoverage,
+      subjectCentered: selectedMetadata.subjectCentered,
+      detailConfidence: selectedMetadata.detailConfidence,
+      backgroundUniformity: selectedMetadata.backgroundUniformity,
+      backgroundCleanliness: selectedMetadata.backgroundCleanliness,
     },
     enhancement: {
       attempted: false,
@@ -142,7 +160,7 @@ export async function processRepListingPhotoUrl(
     const enhanced = await executePhotoEnhancement(
       {
         assetId: `${input.repId}:${input.filenameStem}`,
-        sourceImageUrl: originalPhotoUrl,
+        sourceImageUrl: baseResult.photoUrl,
         output: {
           format: 'png',
           background: 'white',
@@ -211,7 +229,7 @@ export async function processRepListingPhotoUrl(
       ...baseResult,
       photoUrl: enhancedPhotoUrl,
       enhancedPhotoUrl,
-      selectedSource: 'enhanced',
+      selectedSource: crop ? 'cropped_enhanced' : 'enhanced',
       enhancement: {
         attempted: true,
         selected: true,

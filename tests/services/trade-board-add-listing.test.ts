@@ -1,7 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const analyzeServerImageQualityMock = vi.fn()
+
+vi.mock('@/lib/services/server-image-quality', () => ({
+  analyzeServerImageQuality: (...args: unknown[]) =>
+    analyzeServerImageQualityMock(...args),
+}))
+
 import { addListing, addListingBatch } from '@/lib/services/trade-board'
 import { resolveItemNumber } from '@/lib/services/jewelry-database'
+
+const LABEL_CARD_ANALYSIS = {
+  contentType: 'image/jpeg',
+  width: 768,
+  height: 1024,
+  blurRisk: 0.059,
+  lightingRisk: 0.235,
+  detailRisk: 0,
+  backgroundDistractionRisk: 0.801,
+  subjectCoverage: 0.042,
+  subjectCentered: false,
+  detailConfidence: 1,
+  backgroundUniformity: 0.231,
+  backgroundCleanliness: 0.178,
+}
 
 function makeResolveSupabase(row: Record<string, unknown> | null) {
   const maybeSingle = vi.fn().mockResolvedValue({ data: row, error: null })
@@ -18,6 +40,7 @@ function makeResolveSupabase(row: Record<string, unknown> | null) {
 function makeBatchSupabase(
   options: {
     existingListings?: Array<{ design_id: string }>
+    canonicalPhotoUrl?: string | null
   } = {},
 ) {
   const designLookup = vi.fn().mockResolvedValue({
@@ -27,6 +50,7 @@ function makeBatchSupabase(
         item_number: 'RG31452',
         design_name: 'Celeste Ring',
         collection_id: 'collection-1',
+        canonical_photo_url: options.canonicalPhotoUrl ?? null,
       },
     ],
     error: null,
@@ -111,6 +135,7 @@ function makeBatchSupabase(
 function makeAddListingWithCollectionSupabase(
   options: {
     existingListing?: Record<string, unknown> | null
+    canonicalPhotoUrl?: string | null
   } = {},
 ) {
   const resolveMaybeSingle = vi.fn().mockResolvedValue({
@@ -121,7 +146,7 @@ function makeAddListingWithCollectionSupabase(
       material: 'Sterling Silver',
       main_stone: 'Topaz',
       bp_msrp: 42,
-      canonical_photo_url: null,
+      canonical_photo_url: options.canonicalPhotoUrl ?? null,
       type_prefix: 'RG',
       collection_id: null,
       collection: null,
@@ -258,6 +283,7 @@ describe('resolveItemNumber', () => {
 describe('addListingBatch', () => {
   beforeEach(() => {
     vi.useRealTimers()
+    analyzeServerImageQualityMock.mockReset()
   })
 
   it('adds repeated item numbers inside the same batch as separate listings', async () => {
@@ -301,6 +327,28 @@ describe('addListingBatch', () => {
     expect(spies.insert).toHaveBeenCalledTimes(1)
     expect(spies.insert.mock.calls[0][0]).toHaveLength(1)
     expect(result.added).toHaveLength(1)
+  })
+
+  it('blocks batch canonical fallback when an existing design photo looks like packaging', async () => {
+    const { client, spies } = makeBatchSupabase({
+      canonicalPhotoUrl: 'https://cdn.example.com/card-back.jpg',
+    })
+    analyzeServerImageQualityMock.mockResolvedValueOnce(LABEL_CARD_ANALYSIS)
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(Buffer.from([1, 2, 3]), { status: 200 }),
+    )
+
+    await expect(
+      addListingBatch(client, 'rep-1', {
+        clickwrapAccepted: true,
+        items: [{ itemNumber: 'RG31452' }],
+      }),
+    ).rejects.toMatchObject({
+      code: 'CANONICAL_PHOTO_NOT_JEWELRY',
+      userMessage: expect.stringContaining('actual jewelry photo'),
+    })
+    expect(spies.insert).not.toHaveBeenCalled()
+    fetchSpy.mockRestore()
   })
 })
 
@@ -348,5 +396,28 @@ describe('addListing', () => {
 
     expect(spies.insert).toHaveBeenCalledTimes(1)
     expect(result.listingId).toBe('listing-1')
+  })
+
+  it('blocks canonical fallback when an existing design photo looks like packaging', async () => {
+    const { client, spies } = makeAddListingWithCollectionSupabase({
+      canonicalPhotoUrl: 'https://cdn.example.com/card-back.jpg',
+    })
+    analyzeServerImageQualityMock.mockResolvedValueOnce(LABEL_CARD_ANALYSIS)
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(Buffer.from([1, 2, 3]), { status: 200 }),
+    )
+
+    await expect(
+      addListing(client, 'rep-1', {
+        itemNumber: 'RG31452',
+        clickwrapAccepted: true,
+        collectionName: 'Lustre',
+      }),
+    ).rejects.toMatchObject({
+      code: 'CANONICAL_PHOTO_NOT_JEWELRY',
+      userMessage: expect.stringContaining('actual jewelry photo'),
+    })
+    expect(spies.insert).not.toHaveBeenCalled()
+    fetchSpy.mockRestore()
   })
 })

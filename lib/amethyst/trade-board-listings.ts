@@ -18,6 +18,7 @@ export interface AmethystTradeBoardListing {
   glyph: string
   tier: AmethystTradeBoardTier
   photoUrl: string | null
+  photoSource: 'listing' | 'canonical' | 'missing'
 }
 
 const TYPE_LABELS = {
@@ -45,6 +46,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     glyph: 'B',
     tier: 'diamond',
     photoUrl: null,
+    photoSource: 'missing',
   },
   {
     id: 'trade-velvet-necklace',
@@ -59,6 +61,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     glyph: 'V',
     tier: 'everyday',
     photoUrl: null,
+    photoSource: 'missing',
   },
   {
     id: 'trade-petal-earrings',
@@ -73,6 +76,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     glyph: 'P',
     tier: 'everyday',
     photoUrl: null,
+    photoSource: 'missing',
   },
   {
     id: 'trade-aurora-stack',
@@ -87,8 +91,21 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     glyph: 'A',
     tier: 'unicorn',
     photoUrl: null,
+    photoSource: 'missing',
   },
 ]
+
+export function getTradeBoardPhotoSource(
+  listing: Pick<TradeListingWithDesign, 'listing_photo_url' | 'uses_canonical_photo'> & {
+    design: Pick<TradeListingWithDesign['design'], 'canonical_photo_url'>
+  },
+): AmethystTradeBoardListing['photoSource'] {
+  if (listing.listing_photo_url) return 'listing'
+  if (listing.design.canonical_photo_url && listing.uses_canonical_photo) {
+    return 'canonical'
+  }
+  return 'missing'
+}
 
 function inferTradeBoardTier(listing: TradeListingWithDesign): AmethystTradeBoardTier {
   // Until rarity becomes an explicit field, keep inference conservative and
@@ -135,6 +152,7 @@ export function mapTradeListingToAmethystTradeBoardListing(
     glyph: displayName.charAt(0).toUpperCase() || '?',
     tier: inferTradeBoardTier(listing),
     photoUrl: listing.listing_photo_url || listing.design.canonical_photo_url,
+    photoSource: getTradeBoardPhotoSource(listing),
   }
 }
 

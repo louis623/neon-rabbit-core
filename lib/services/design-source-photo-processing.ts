@@ -5,6 +5,7 @@ import {
   type ServerImageQualityAnalysis,
 } from '@/lib/services/server-image-quality'
 import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
+import { createGuardedJewelryPhotoCrop } from '@/lib/services/jewelry-photo-crop'
 import {
   uploadJewelryPhoto,
   uploadStagedOriginalPhoto,
@@ -30,6 +31,7 @@ export interface DesignSourcePhotoResult {
   }
   preflight: ReturnType<typeof assessJewelryPhotoPreflight>
   analysis: ServerImageQualityAnalysis
+  selectedSource: 'original' | 'cropped'
 }
 
 function isDataUrl(value: string): boolean {
@@ -116,11 +118,21 @@ export async function prepareDesignSourcePhoto(
     subjectCoverage: analysis.subjectCoverage,
     subjectCentered: analysis.subjectCentered,
   })
-  if (!preflight.passed) {
+  const crop = semantic.canAttemptCrop
+    ? await createGuardedJewelryPhotoCrop({
+        bytes: fetched.bytes,
+        analysis,
+      })
+    : null
+  const selectedBytes = crop?.bytes ?? fetched.bytes
+  const selectedAnalysis = crop?.analysis ?? analysis
+  const selectedPreflight = crop?.preflight ?? preflight
+
+  if (!selectedPreflight.passed) {
     throw new ServiceError({
       code: 'PHOTO_PREFLIGHT_FAILED',
-      message: `piece photo preflight failed: ${preflight.coachingMessages.join(' ')}`,
-      userMessage: `That photo needs one more try before I can list it. ${preflight.coachingMessages.join(' ')}`.trim(),
+      message: `piece photo preflight failed: ${selectedPreflight.coachingMessages.join(' ')}`,
+      userMessage: `That photo needs one more try before I can list it. ${selectedPreflight.coachingMessages.join(' ')}`.trim(),
       statusCode: 422,
     })
   }
@@ -129,6 +141,9 @@ export async function prepareDesignSourcePhoto(
     analysis.contentType || fetched.contentType,
     fetched.bytes,
   )
+  const selectedDataUrl = crop
+    ? toDataUrl(selectedAnalysis.contentType, selectedBytes)
+    : normalizedDataUrl
   const stagedOriginal = await uploadStagedOriginalPhoto(
     input.repId,
     normalizedDataUrl,
@@ -136,14 +151,15 @@ export async function prepareDesignSourcePhoto(
   )
   const publicPhotoUrl = await uploadJewelryPhoto(
     input.repId,
-    normalizedDataUrl,
-    `${input.filenameStem}-source`,
+    selectedDataUrl,
+    crop ? `${input.filenameStem}-cropped` : `${input.filenameStem}-source`,
   )
 
   return {
     publicPhotoUrl,
     stagedOriginal,
-    preflight,
-    analysis,
+    preflight: selectedPreflight,
+    analysis: selectedAnalysis,
+    selectedSource: crop ? 'cropped' : 'original',
   }
 }
