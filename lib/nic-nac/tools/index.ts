@@ -246,6 +246,8 @@ type RoutableMessage = {
   role?: string
   parts?: Array<{
     type?: string
+    mediaType?: string
+    url?: string
     text?: string
   }>
 }
@@ -324,12 +326,21 @@ function isTradeBoardContinuation(
   messages: RoutableMessage[],
   latestText: string,
 ): boolean {
+  const latestUser = [...messages].reverse().find((message) => message.role === 'user')
   const priorMessages = messages.slice(0, -1)
   const previousAssistant = [...priorMessages]
     .reverse()
     .find((message) => message.role === 'assistant')
   const previousAssistantText = getMessageText(previousAssistant)
-  if (!isContextualFollowUp(latestText, previousAssistantText)) return false
+  const latestHasImage = hasImagePart(latestUser)
+  const isPhotoFollowUp =
+    latestHasImage &&
+    /photo|picture|image|label|upload|database|data\s*base|missing/i.test(
+      previousAssistantText,
+    )
+  if (!isContextualFollowUp(latestText, previousAssistantText) && !isPhotoFollowUp) {
+    return false
+  }
 
   const recentText = priorMessages
     .slice(-6)
@@ -345,6 +356,18 @@ function isTradeBoardContinuation(
 
 function wordCount(text: string): number {
   return text.split(/\s+/).filter(Boolean).length
+}
+
+function hasImagePart(message: RoutableMessage | undefined): boolean {
+  return (
+    message?.parts?.some(
+      (part) =>
+        part.type === 'file' &&
+        typeof part.mediaType === 'string' &&
+        part.mediaType.startsWith('image/') &&
+        typeof part.url === 'string',
+    ) ?? false
+  )
 }
 
 export function listToolNamesForIntents(intents: NicNacToolIntent[]): string[] {

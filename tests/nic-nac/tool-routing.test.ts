@@ -238,4 +238,50 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
+
+  it('keeps trade-board tools for photo-only follow-ups during add-listing recovery', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Please add NK18149, The Harper Necklace, to my trade board. I have 4 of this item.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "NK18149 isn't in the database yet. I still need a photo to complete the database entry.",
+          },
+        ],
+      },
+      {
+        id: 'photo',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,AAAA',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,BBBB',
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
 })

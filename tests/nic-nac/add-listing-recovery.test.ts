@@ -18,7 +18,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ServiceError, errors } from '@/lib/services/errors'
 
 const addListingMock = vi.fn()
+const addListingBatchMock = vi.fn()
 const createDesignMock = vi.fn()
+const resolveItemNumberMock = vi.fn()
 const updateCanonicalPhotoMock = vi.fn()
 const uploadJewelryPhotoMock = vi.fn()
 const uploadStagedOriginalPhotoMock = vi.fn()
@@ -53,11 +55,12 @@ function makeCleanAnalysis(overrides: Partial<Record<string, unknown>> = {}) {
 
 vi.mock('@/lib/services/trade-board', () => ({
   addListing: (...args: unknown[]) => addListingMock(...args),
-  addListingBatch: vi.fn(),
+  addListingBatch: (...args: unknown[]) => addListingBatchMock(...args),
 }))
 
 vi.mock('@/lib/services/jewelry-database', () => ({
   createDesign: (...args: unknown[]) => createDesignMock(...args),
+  resolveItemNumber: (...args: unknown[]) => resolveItemNumberMock(...args),
   updateCanonicalPhoto: (...args: unknown[]) => updateCanonicalPhotoMock(...args),
   updatePhotoPipelineState: (...args: unknown[]) =>
     updatePhotoPipelineStateMock(...args),
@@ -159,7 +162,10 @@ function makeConversationLookupMock(rows: Array<{ parts: unknown }>) {
 
 beforeEach(() => {
   addListingMock.mockReset()
+  addListingBatchMock.mockReset()
   createDesignMock.mockReset()
+  resolveItemNumberMock.mockReset()
+  resolveItemNumberMock.mockResolvedValue({ found: false })
   updateCanonicalPhotoMock.mockReset()
   uploadJewelryPhotoMock.mockReset()
   uploadStagedOriginalPhotoMock.mockReset()
@@ -306,6 +312,46 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
   })
 
+  it('does not try to recreate an existing catalog design when recovery fields are present', async () => {
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      hasCollection: true,
+      design: {
+        id: 'design-existing',
+        itemNumber: 'NK18149',
+        designName: 'The Harper Necklace',
+      },
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'NK18149',
+      designName: 'The Harper Necklace',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool()
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'NK18149',
+      designName: 'The Harper Necklace',
+      collectionName: 'April Birthday',
+    })
+
+    expect(createDesignMock).not.toHaveBeenCalled()
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      itemNumber: 'NK18149',
+      collectionName: 'April Birthday',
+    })
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      createdNewDesign: false,
+    })
+  })
+
   it('processes a rep-level custom listing photo before creating the board listing', async () => {
     fetchMock.mockResolvedValueOnce(makeImageResponse(new Uint8Array([4, 5, 6])))
     createDesignMock.mockResolvedValueOnce({
@@ -399,11 +445,6 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
 
 describe('add_listing — vision-first photo extraction (Task 1.5B closure)', () => {
   it('uploads the most recent user-uploaded image from chat and passes its public URL into createDesign', async () => {
-    // The handler enters the create-design path on the first call (gated on
-    // `if (designName)`), so addListing is only called ONCE, after the design
-    // is created. Do NOT pre-queue a NEEDS_FULL_INFO rejection — it would be
-    // consumed by this single call and the success path would fail for the
-    // wrong reason.
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-1',
       designId: 'design-1',
@@ -542,6 +583,147 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     expect(createDesignMock.mock.calls[0][1]).toMatchObject({
       piecePhotoUrl:
         'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/jewelry.jpg',
+    })
+  })
+
+  it('recovers a batch of same-item new designs by creating the design once and adding each physical unit', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK18149',
+      designName: 'The Harper Necklace',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    addListingBatchMock
+      .mockResolvedValueOnce({
+        added: [],
+        pending: {
+          needCollection: [],
+          needFullInfo: [
+            { itemNumber: 'NK18149' },
+            { itemNumber: 'NK18149' },
+            { itemNumber: 'NK18149' },
+            { itemNumber: 'NK18149' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        added: [
+          {
+            listingId: 'listing-2',
+            designId: 'design-1',
+            itemNumber: 'NK18149',
+            designName: 'The Harper Necklace',
+            status: 'available',
+            usesCanonicalPhoto: true,
+          },
+          {
+            listingId: 'listing-3',
+            designId: 'design-1',
+            itemNumber: 'NK18149',
+            designName: 'The Harper Necklace',
+            status: 'available',
+            usesCanonicalPhoto: true,
+          },
+          {
+            listingId: 'listing-4',
+            designId: 'design-1',
+            itemNumber: 'NK18149',
+            designName: 'The Harper Necklace',
+            status: 'available',
+            usesCanonicalPhoto: true,
+          },
+        ],
+        pending: { needCollection: [], needFullInfo: [] },
+      })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'NK18149',
+      collectionId: 'coll-1',
+      collectionName: 'April Birthday',
+      typePrefix: 'NK',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/harper.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/harper.jpg',
+      signedUrl: 'https://signed.example.com/harper',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+    const result = await tool.execute({
+      mode: 'batch',
+      items: [
+        {
+          itemNumber: 'NK18149',
+          designName: 'The Harper Necklace',
+          collectionName: 'April Birthday',
+        },
+        {
+          itemNumber: 'NK18149',
+          designName: 'The Harper Necklace',
+          collectionName: 'April Birthday',
+        },
+        {
+          itemNumber: 'NK18149',
+          designName: 'The Harper Necklace',
+          collectionName: 'April Birthday',
+        },
+        {
+          itemNumber: 'NK18149',
+          designName: 'The Harper Necklace',
+          collectionName: 'April Birthday',
+        },
+      ],
+    })
+
+    expect(createDesignMock).toHaveBeenCalledTimes(1)
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'NK18149',
+      designName: 'The Harper Necklace',
+      collectionName: 'April Birthday',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/harper.jpg',
+    })
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+    expect(addListingBatchMock).toHaveBeenCalledTimes(2)
+    expect(addListingBatchMock.mock.calls[1][2]).toMatchObject({
+      items: [
+        { itemNumber: 'NK18149' },
+        { itemNumber: 'NK18149' },
+        { itemNumber: 'NK18149' },
+      ],
+    })
+    expect(result).toMatchObject({
+      mode: 'batch',
+      added: [
+        { listingId: 'listing-1', itemNumber: 'NK18149' },
+        { listingId: 'listing-2', itemNumber: 'NK18149' },
+        { listingId: 'listing-3', itemNumber: 'NK18149' },
+        { listingId: 'listing-4', itemNumber: 'NK18149' },
+      ],
+      summary: {
+        addedCount: 4,
+        needFullInfoCount: 0,
+      },
     })
   })
 

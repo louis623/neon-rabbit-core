@@ -15,6 +15,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { addListing, addListingBatch } from '@/lib/services/trade-board'
 import {
   createDesign,
+  resolveItemNumber,
   updateCanonicalPhoto,
   updatePhotoPipelineState,
 } from '@/lib/services/jewelry-database'
@@ -222,6 +223,50 @@ async function runSingle(
         userMessage:
           "I also need a collection name for new pieces — without a collection I can create the design but can't list it.",
       })
+    }
+
+    // Recovery fields can arrive after the design has already been created by
+    // another attempt. Use a read-only catalog lookup before creating so stale
+    // retries do not duplicate catalog designs.
+    if (!input.listingPhotoUrl) {
+      try {
+        const existingDesign = await resolveItemNumber(admin, itemNumber)
+        if (existingDesign.found) {
+          const existingResult = await addListing(admin, ctx.repId, {
+            itemNumber,
+            collectionName,
+            repNotes: input.repNotes,
+            tradePreferences: input.tradePreferences,
+          })
+          await writeAuditIsolated({
+            actionType: 'add_listing',
+            repId: ctx.repId,
+            targetListingId: existingResult.listingId,
+            beforeState: { itemNumber, repId: ctx.repId, status: '' },
+            afterState: {
+              listingId: existingResult.listingId,
+              designId: existingResult.designId,
+              itemNumber: existingResult.itemNumber,
+              repId: ctx.repId,
+              status: existingResult.status,
+            },
+            conversationId: ctx.conversationId,
+            runId: ctx.runId,
+          })
+          return {
+            mode: 'single' as const,
+            listingId: existingResult.listingId,
+            designId: existingResult.designId,
+            itemNumber: existingResult.itemNumber,
+            designName: existingResult.designName,
+            status: existingResult.status,
+            usesCanonicalPhoto: existingResult.usesCanonicalPhoto,
+            createdNewDesign: false,
+          }
+        }
+      } catch (err) {
+        explainServiceError(err)
+      }
     }
 
     let resolvedPhotoUrl: string | null = piecePhotoUrl?.trim() || null
@@ -585,7 +630,12 @@ async function runSingle(
 
 async function runBatch(
   input: ToolInput,
-  ctx: { repId: string; conversationId: string; runId: string },
+  ctx: {
+    repId: string
+    conversationId: string
+    runId: string
+    supabase: SupabaseClient
+  },
   admin: SupabaseClient,
 ) {
   const { items } = input
@@ -633,6 +683,102 @@ async function runBatch(
 
   // Audit each successful add. Loop, not Promise.all — one audit failure
   // must not cascade to siblings, and each call is already isolated.
+  const recoveredNewDesignAdds: Array<{
+    listingId: string
+    itemNumber: string
+    designName: string
+    status: string
+  }> = []
+  if (result.pending.needFullInfo.length > 0) {
+    const pendingByItem = new Set(
+      result.pending.needFullInfo.map((p) => p.itemNumber),
+    )
+    const recoveredItemNumbers = new Set<string>()
+    const retryItems: typeof processedItems = []
+
+    for (const itemNumber of pendingByItem) {
+      const candidates = items.filter((item) => item.itemNumber === itemNumber)
+      const recoveryItem = candidates.find(
+        (item) => item.designName?.trim() && item.collectionName?.trim(),
+      )
+      if (!recoveryItem) continue
+
+      const firstResult = await runSingle(
+        {
+          mode: 'single',
+          itemNumber: recoveryItem.itemNumber,
+          repNotes: recoveryItem.repNotes,
+          tradePreferences: recoveryItem.tradePreferences,
+          listingPhotoUrl: recoveryItem.listingPhotoUrl,
+          designName: recoveryItem.designName,
+          piecePhotoUrl: recoveryItem.piecePhotoUrl,
+          material: recoveryItem.material,
+          mainStone: recoveryItem.mainStone,
+          bpMsrp: recoveryItem.bpMsrp,
+          collectionName: recoveryItem.collectionName,
+          specialFeatures: recoveryItem.specialFeatures,
+          lengthInfo: recoveryItem.lengthInfo,
+        },
+        ctx,
+        admin,
+      )
+
+      if ('listingId' in firstResult) {
+        recoveredNewDesignAdds.push({
+          listingId: firstResult.listingId,
+          itemNumber: firstResult.itemNumber,
+          designName: firstResult.designName,
+          status: firstResult.status,
+        })
+        recoveredItemNumbers.add(itemNumber)
+        retryItems.push(
+          ...candidates.slice(1).map((item) => ({
+            itemNumber: item.itemNumber,
+            repNotes: item.repNotes,
+            tradePreferences: item.tradePreferences,
+            listingPhotoUrl: undefined,
+          })),
+        )
+      }
+    }
+
+    if (retryItems.length > 0) {
+      let retryResult: Awaited<ReturnType<typeof addListingBatch>>
+      try {
+        retryResult = await addListingBatch(admin, ctx.repId, {
+          items: retryItems,
+        })
+      } catch (err) {
+        explainServiceError(err)
+      }
+      result = {
+        added: [...result.added, ...retryResult.added],
+        pending: {
+          needCollection: [
+            ...result.pending.needCollection,
+            ...retryResult.pending.needCollection,
+          ],
+          needFullInfo: [
+            ...result.pending.needFullInfo.filter(
+              (p) => !recoveredItemNumbers.has(p.itemNumber),
+            ),
+            ...retryResult.pending.needFullInfo,
+          ],
+        },
+      }
+    } else if (recoveredItemNumbers.size > 0) {
+      result = {
+        ...result,
+        pending: {
+          ...result.pending,
+          needFullInfo: result.pending.needFullInfo.filter(
+            (p) => !recoveredItemNumbers.has(p.itemNumber),
+          ),
+        },
+      }
+    }
+  }
+
   for (const r of result.added) {
     await writeAuditIsolated({
       actionType: 'add_listing',
@@ -653,12 +799,15 @@ async function runBatch(
 
   return {
     mode: 'batch' as const,
-    added: result.added.map((r) => ({
-      listingId: r.listingId,
-      itemNumber: r.itemNumber,
-      designName: r.designName,
-      status: r.status,
-    })),
+    added: [
+      ...recoveredNewDesignAdds,
+      ...result.added.map((r) => ({
+        listingId: r.listingId,
+        itemNumber: r.itemNumber,
+        designName: r.designName,
+        status: r.status,
+      })),
+    ],
     pending: {
       needCollection: result.pending.needCollection.map((p) => ({
         itemNumber: p.itemNumber,
@@ -674,7 +823,7 @@ async function runBatch(
       })),
     },
     summary: {
-      addedCount: result.added.length,
+      addedCount: recoveredNewDesignAdds.length + result.added.length,
       needCollectionCount: result.pending.needCollection.length,
       needFullInfoCount: result.pending.needFullInfo.length,
       note: 'Items already on your board are silently skipped — they are not in this report.',
