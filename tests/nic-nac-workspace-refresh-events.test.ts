@@ -1,0 +1,102 @@
+import { describe, expect, it } from 'vitest'
+import type { UIMessage } from 'ai'
+
+import {
+  getWorkspaceRefreshPartKey,
+  getWorkspaceRefreshTopicsFromMessages,
+  isTradeWorkspaceMutationPart,
+} from '@/lib/nic-nac/workspace-refresh-events'
+
+function assistantWithToolPart(part: unknown): UIMessage {
+  return {
+    id: 'assistant-1',
+    role: 'assistant',
+    parts: [part],
+  } as UIMessage
+}
+
+describe('Nic-Nac workspace refresh events', () => {
+  it('requests a trade workspace refresh after add_listing creates a listing', () => {
+    const messages = [
+      assistantWithToolPart({
+        type: 'tool-add_listing',
+        state: 'output-available',
+        output: {
+          mode: 'single',
+          listingId: 'listing-1',
+          itemNumber: 'NK18149',
+        },
+      }),
+    ]
+
+    expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['trade'])
+  })
+
+  it('requests one trade refresh after add_listing batch adds physical units', () => {
+    const messages = [
+      assistantWithToolPart({
+        type: 'tool-add_listing',
+        state: 'output-available',
+        output: {
+          mode: 'batch',
+          added: [
+            { listingId: 'listing-1', itemNumber: 'NK18149' },
+            { listingId: 'listing-2', itemNumber: 'NK18149' },
+          ],
+        },
+      }),
+    ]
+
+    expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['trade'])
+  })
+
+  it('does not refresh for add_listing recovery prompts that did not mutate the board', () => {
+    expect(
+      isTradeWorkspaceMutationPart({
+        type: 'tool-add_listing',
+        state: 'output-available',
+        output: {
+          needsAction: 'create_design',
+          itemNumber: 'NK18149',
+        },
+      }),
+    ).toBe(false)
+  })
+
+  it('does not refresh for tool errors such as photo preflight failures', () => {
+    expect(
+      isTradeWorkspaceMutationPart({
+        type: 'tool-add_listing',
+        state: 'output-available',
+        output: {
+          code: 'PHOTO_PREFLIGHT_FAILED',
+          message: 'That photo needs one more try.',
+        },
+      }),
+    ).toBe(false)
+  })
+
+  it('requests a trade refresh for other successful trade write tools', () => {
+    expect(
+      isTradeWorkspaceMutationPart({
+        type: 'tool-remove_listing',
+        state: 'output-available',
+        output: {
+          listingId: 'listing-1',
+        },
+      }),
+    ).toBe(true)
+  })
+
+  it('builds stable part keys so the client dispatches each mutation once', () => {
+    const message = assistantWithToolPart({
+      type: 'tool-add_listing',
+      state: 'output-available',
+      output: { listingId: 'listing-1' },
+    })
+
+    expect(getWorkspaceRefreshPartKey(message, message.parts[0], 0)).toBe(
+      'assistant-1:0:tool-add_listing:output-available',
+    )
+  })
+})

@@ -433,6 +433,18 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('refreshIfTradeBoardActive')
   })
 
+  it('wires Nic-Nac mutation refresh events into the trade workspace', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('NIC_NAC_WORKSPACE_REFRESH_EVENT')
+    expect(source).toContain('refreshAfterNicNacMutation')
+    expect(source).toContain("detail?.topic !== 'trade'")
+    expect(source).toContain('void refreshTradeWorkspace()')
+  })
+
   it('renders the trade board as visual piece cards with a customer preview link', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {

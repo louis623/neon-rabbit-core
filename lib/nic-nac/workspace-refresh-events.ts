@@ -1,0 +1,80 @@
+import type { UIMessage } from 'ai'
+
+export const NIC_NAC_WORKSPACE_REFRESH_EVENT = 'nic-nac:workspace-refresh'
+
+export type NicNacWorkspaceRefreshTopic = 'trade'
+
+const TRADE_WRITE_TOOL_TYPES = new Set([
+  'tool-add_listing',
+  'tool-remove_listing',
+  'tool-restore_listing',
+  'tool-update_listing',
+  'tool-approve_trade',
+  'tool-reject_trade',
+  'tool-update_fulfillment_status',
+])
+
+type ToolPartLike = {
+  type?: string
+  state?: string
+  output?: unknown
+}
+
+export function getWorkspaceRefreshTopicsFromMessages(
+  messages: UIMessage[],
+): NicNacWorkspaceRefreshTopic[] {
+  const topics = new Set<NicNacWorkspaceRefreshTopic>()
+
+  for (const message of messages) {
+    for (const part of message.parts ?? []) {
+      if (isTradeWorkspaceMutationPart(part as ToolPartLike)) {
+        topics.add('trade')
+      }
+    }
+  }
+
+  return [...topics]
+}
+
+export function getWorkspaceRefreshPartKey(
+  message: UIMessage,
+  part: unknown,
+  index: number,
+) {
+  const toolPart = part as ToolPartLike
+  return `${message.id}:${index}:${toolPart.type ?? 'unknown'}:${toolPart.state ?? 'unknown'}`
+}
+
+export function isTradeWorkspaceMutationPart(part: ToolPartLike) {
+  if (!part.type || !TRADE_WRITE_TOOL_TYPES.has(part.type)) return false
+  if (part.state !== 'output-available') return false
+  if (isToolErrorOutput(part.output)) return false
+
+  if (part.type === 'tool-add_listing') {
+    return addListingOutputMutatedBoard(part.output)
+  }
+
+  return true
+}
+
+function isToolErrorOutput(output: unknown) {
+  return (
+    typeof output === 'object' &&
+    output !== null &&
+    typeof (output as { code?: unknown }).code === 'string'
+  )
+}
+
+function addListingOutputMutatedBoard(output: unknown) {
+  if (typeof output !== 'object' || output === null) return false
+  const result = output as {
+    listingId?: unknown
+    added?: unknown
+    needsAction?: unknown
+  }
+  if (result.needsAction) return false
+  if (typeof result.listingId === 'string' && result.listingId.length > 0) {
+    return true
+  }
+  return Array.isArray(result.added) && result.added.length > 0
+}

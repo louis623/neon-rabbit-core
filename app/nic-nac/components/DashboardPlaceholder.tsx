@@ -20,6 +20,7 @@ import type {
   WalletTransactionSummary,
 } from '@/lib/services/types'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
+import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import styles from './DashboardPlaceholder.module.css'
 
@@ -1845,6 +1846,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       document.removeEventListener('visibilitychange', refreshWhenVisible)
       window.removeEventListener('focus', refreshIfTradeBoardActive)
       window.clearInterval(intervalId)
+    }
+  }, [activeSection])
+
+  useEffect(() => {
+    if (activeSection !== 'trade-board') return
+
+    const refreshAfterNicNacMutation = (event: Event) => {
+      const detail = (event as CustomEvent<{ topic?: string }>).detail
+      if (detail?.topic !== 'trade') return
+      if (document.visibilityState === 'hidden') return
+      void refreshTradeWorkspace()
+    }
+
+    window.addEventListener(
+      NIC_NAC_WORKSPACE_REFRESH_EVENT,
+      refreshAfterNicNacMutation,
+    )
+    return () => {
+      window.removeEventListener(
+        NIC_NAC_WORKSPACE_REFRESH_EVENT,
+        refreshAfterNicNacMutation,
+      )
     }
   }, [activeSection])
 

@@ -38,6 +38,11 @@ import {
   shouldStartNicNacRollover,
   type NicNacConversationRunHealth,
 } from '@/lib/nic-nac/rollover'
+import {
+  getWorkspaceRefreshPartKey,
+  isTradeWorkspaceMutationPart,
+  NIC_NAC_WORKSPACE_REFRESH_EVENT,
+} from '@/lib/nic-nac/workspace-refresh-events'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'nic_nac_last_conversation'
@@ -577,6 +582,7 @@ function ChatBody({
   } | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const prevStatusRef = useRef<typeof status>(status)
+  const announcedWorkspaceRefreshPartsRef = useRef<Set<string>>(new Set())
 
   const isStreaming = status === 'streaming' || status === 'submitted'
   // Actionable only if the LAST assistant message has an approval-requested
@@ -639,6 +645,29 @@ function ChatBody({
       window.clearInterval(intervalId)
     }
   }, [conversationId, hasPendingApproval, refreshConversationMessages, status])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let shouldRefreshTrade = false
+    for (const message of messages) {
+      for (const [index, part] of (message.parts ?? []).entries()) {
+        if (!isTradeWorkspaceMutationPart(part as never)) continue
+        const key = getWorkspaceRefreshPartKey(message, part, index)
+        if (announcedWorkspaceRefreshPartsRef.current.has(key)) continue
+        announcedWorkspaceRefreshPartsRef.current.add(key)
+        shouldRefreshTrade = true
+      }
+    }
+
+    if (shouldRefreshTrade) {
+      window.dispatchEvent(
+        new CustomEvent(NIC_NAC_WORKSPACE_REFRESH_EVENT, {
+          detail: { topic: 'trade' },
+        }),
+      )
+    }
+  }, [messages])
 
   // Push streaming + HITL state up so the parent can disable the New button.
   useEffect(() => {
