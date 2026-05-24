@@ -23,6 +23,7 @@ import { NicNacColumn } from './components/NicNacColumn'
 import { NicNacGlyph } from './components/NicNacGlyph'
 import { NicNacMobileShell } from './components/NicNacMobileShell'
 import { compressImage } from '@/lib/nic-nac/image-compress'
+import { orderResolvedAttachments } from '@/lib/nic-nac/client-attachments'
 import {
   buildConversationStateUrl,
   getConversationIdFromSearch,
@@ -820,27 +821,31 @@ function ChatBody({
     }
     const slice = list.slice(0, remainingSlots)
     const failed: string[] = []
-    const accepted: InputAttachment[] = []
-    await Promise.all(
-      slice.map(async (file) => {
+    const results = await Promise.all(
+      slice.map(async (file, index) => {
         try {
           const compressed = await compressImage(file)
-          accepted.push({
-            id: newAttachmentId(),
-            dataUrl: compressed.dataUrl,
-            mediaType: 'image/jpeg',
-            width: compressed.width,
-            height: compressed.height,
-            blurRisk: compressed.blurRisk,
-            lightingRisk: compressed.lightingRisk,
-            subjectCoverage: compressed.subjectCoverage,
-            subjectCentered: compressed.subjectCentered,
-          })
+          return {
+            index,
+            attachment: {
+              id: newAttachmentId(),
+              dataUrl: compressed.dataUrl,
+              mediaType: 'image/jpeg' as const,
+              width: compressed.width,
+              height: compressed.height,
+              blurRisk: compressed.blurRisk,
+              lightingRisk: compressed.lightingRisk,
+              subjectCoverage: compressed.subjectCoverage,
+              subjectCentered: compressed.subjectCentered,
+            },
+          }
         } catch {
           failed.push(file.name || 'image')
+          return null
         }
       })
     )
+    const accepted: InputAttachment[] = orderResolvedAttachments(results)
     if (accepted.length > 0) {
       setAttachments((prev) => [...prev, ...accepted].slice(0, MAX_ATTACHMENTS))
     }

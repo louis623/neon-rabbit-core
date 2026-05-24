@@ -157,13 +157,22 @@ async function resolvePhotoFromConversation(ctx: {
       url?: string
     }> | null
     if (!parts) continue
-    const imagePart = [...parts].reverse().find(
+    const imageParts = parts.filter(
       (p) =>
         p?.type === 'file' &&
         typeof p.mediaType === 'string' &&
         p.mediaType.startsWith('image/') &&
         typeof p.url === 'string',
     )
+    if (imageParts.length === 0) continue
+    if (imageParts.length > 1) {
+      throw new NicNacToolError({
+        code: 'PHOTO_CHOICE_REQUIRED',
+        userMessage:
+          'I see more than one photo here, so I need the actual jewelry photo before I save anything to the board. Send just the jewelry-front photo, or tell me which attached image is the jewelry photo.',
+      })
+    }
+    const imagePart = imageParts[0]
     if (imagePart?.url) {
       return {
         imageDataUrl: imagePart.url,
@@ -842,6 +851,7 @@ export function makeAddListingTool(ctx: {
       "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
+      "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. If multiple chat photos are present, ask for one clear jewelry-front photo before writing. " +
       "If the item isn't in the database, the tool returns needsAction:'create_design'. Use vision to extract designName, then confirm collectionName with the rep before retrying — never autofill the collection from vision alone. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",

@@ -394,7 +394,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     })
   })
 
-  it('uses the latest image in the current user message as the listing photo for existing designs', async () => {
+  it('uses the only image in the current user message as the listing photo for existing designs', async () => {
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-1',
       designId: 'design-1',
@@ -411,11 +411,6 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       {
         parts: [
           { type: 'text', text: 'Please add to my trade board' },
-          {
-            type: 'file',
-            mediaType: 'image/jpeg',
-            url: 'data:image/jpeg;base64,TEFCRUw=',
-          },
           {
             type: 'file',
             mediaType: 'image/jpeg',
@@ -440,6 +435,40 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     expect(addListingMock.mock.calls[0][2]).toMatchObject({
       listingPhotoUrl: 'https://cdn.example.com/listings/rep-1/elodie-jewelry.png',
     })
+  })
+
+  it('does not guess a listing photo when a label/card photo and jewelry photo are both present', async () => {
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Please add to my trade board' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER76003',
+        clickwrapAccepted: true,
+      }),
+    ).rejects.toMatchObject({
+      code: 'PHOTO_CHOICE_REQUIRED',
+      userMessage: expect.stringContaining('actual jewelry photo'),
+    })
+    expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
+    expect(addListingMock).not.toHaveBeenCalled()
   })
 })
 
@@ -526,7 +555,7 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     })
   })
 
-  it('prefers the latest image part when label and jewelry photos are uploaded together', async () => {
+  it('uses the only chat image as the new canonical design photo', async () => {
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-1',
       designId: 'design-1',
@@ -557,11 +586,6 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
           {
             type: 'file',
             mediaType: 'image/jpeg',
-            url: 'data:image/jpeg;base64,TEFCRUw=',
-          },
-          {
-            type: 'file',
-            mediaType: 'image/jpeg',
             url: 'data:image/jpeg;base64,SkVXRUw=',
           },
         ],
@@ -584,6 +608,44 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
       piecePhotoUrl:
         'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/jewelry.jpg',
     })
+  })
+
+  it('does not create a new canonical design photo from an ambiguous multi-photo chat message', async () => {
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'add this' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'NEW-101',
+        clickwrapAccepted: true,
+        designName: 'Pearl Drop Earrings',
+        collectionName: 'Lustre',
+      }),
+    ).rejects.toMatchObject({
+      code: 'PHOTO_CHOICE_REQUIRED',
+      userMessage: expect.stringContaining('actual jewelry photo'),
+    })
+    expect(uploadJewelryPhotoMock).not.toHaveBeenCalled()
+    expect(uploadStagedOriginalPhotoMock).not.toHaveBeenCalled()
+    expect(createDesignMock).not.toHaveBeenCalled()
+    expect(addListingMock).not.toHaveBeenCalled()
   })
 
   it('recovers a batch of same-item new designs by creating the design once and adding each physical unit', async () => {
@@ -655,11 +717,6 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     const supabaseMock = makeConversationLookupMock([
       {
         parts: [
-          {
-            type: 'file',
-            mediaType: 'image/jpeg',
-            url: 'data:image/jpeg;base64,TEFCRUw=',
-          },
           {
             type: 'file',
             mediaType: 'image/jpeg',

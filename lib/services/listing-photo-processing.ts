@@ -4,6 +4,7 @@ import { assessJewelryPhotoPreflight } from '@/lib/services/jewelry-photo-prefli
 import { executePhotoEnhancement } from '@/lib/services/photo-enhancement'
 import { inspectEnhancedPhotoOutput } from '@/lib/services/photo-enhancement-qa'
 import { analyzeServerImageQuality } from '@/lib/services/server-image-quality'
+import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
 import { uploadJewelryPhoto } from '@/lib/services/storage'
 
 export interface ProcessRepListingPhotoUrlInput {
@@ -74,6 +75,18 @@ export async function processRepListingPhotoUrl(
   const fetchImpl = options.fetch ?? fetch
   const fetched = await fetchImageBytes(input, fetchImpl)
   const metadata = await analyzeServerImageQuality(fetched.bytes)
+  const semantic = classifyJewelryPhotoSemantics(metadata)
+  if (semantic.role === 'label_or_packaging') {
+    throw new ServiceError({
+      code: 'LISTING_PHOTO_NOT_JEWELRY',
+      message: `listing photo appears to be packaging or a label: ${semantic.reasons.join(
+        '; ',
+      )}`,
+      userMessage:
+        'I need the actual jewelry photo before I can save that listing photo. This image looks more like packaging, a label, or the back of the card.',
+      statusCode: 422,
+    })
+  }
 
   const preflight = assessJewelryPhotoPreflight({
     width: metadata.width,

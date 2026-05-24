@@ -4,6 +4,7 @@ import {
   analyzeServerImageQuality,
   type ServerImageQualityAnalysis,
 } from '@/lib/services/server-image-quality'
+import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
 import {
   uploadJewelryPhoto,
   uploadStagedOriginalPhoto,
@@ -93,6 +94,18 @@ export async function prepareDesignSourcePhoto(
         : await fetchRemoteImage(input.sourceImageUrl, fetchImpl)
 
   const analysis = await analyzeServerImageQuality(fetched.bytes)
+  const semantic = classifyJewelryPhotoSemantics(analysis)
+  if (semantic.role === 'label_or_packaging') {
+    throw new ServiceError({
+      code: 'PIECE_PHOTO_NOT_JEWELRY',
+      message: `piece photo appears to be packaging or a label: ${semantic.reasons.join(
+        '; ',
+      )}`,
+      userMessage:
+        'I need the actual jewelry photo before I can create that piece. This image looks more like packaging, a label, or the back of the card.',
+      statusCode: 422,
+    })
+  }
   const preflight = assessJewelryPhotoPreflight({
     width: analysis.width,
     height: analysis.height,
