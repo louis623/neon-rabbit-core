@@ -39,6 +39,8 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).not.toContain('clickwrapAccepted')
     expect(prompt).not.toContain('they own the piece')
     expect(prompt).toContain('recovery window')
+    expect(prompt).toContain('If add_listing is active and the rep provides a missing field')
+    expect(prompt).toContain('do not say add_listing is unavailable')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')
     expect(prompt.length).toBeLessThan(9_000)

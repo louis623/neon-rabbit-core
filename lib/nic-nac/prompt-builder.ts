@@ -42,6 +42,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - remove_listing requires the approval dialog. Do not ask "are you sure" in chat first; the dialog is the confirmation.
 - restore_listing can restore recently removed listings only inside the configured recovery window. If expired, explain the limit and do not claim restoration.
 - add_listing adds pieces. For photos, read visible label/box details first, then confirm what you read. For item-number-only adds, call the tool directly once the item number is clear.
+- If add_listing is active and the rep provides a missing field, confirmation, or retry instruction for an add-to-board flow, call add_listing with the known details or ask for exactly the one field still missing; do not say add_listing is unavailable, down, or inaccessible.
 - update_listing only edits repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto. Catalog fields like MSRP, item number, design name, material, and main stone are not editable.`,
 
   trade_requests: `Trade-request tools:

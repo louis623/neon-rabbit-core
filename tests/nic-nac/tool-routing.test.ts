@@ -10,6 +10,7 @@ import {
   getToolIntentsForMessages,
   getToolIntentsForText,
   listToolNamesForIntents,
+  shouldRequireToolCallForMessages,
 } from '@/lib/nic-nac/tools'
 
 function makeCtx() {
@@ -94,5 +95,80 @@ describe('Nic-Nac tool routing', () => {
     ])
 
     expect(intents).toEqual(['show_memory'])
+  })
+
+  it('keeps trade-board tools available for a short missing-field follow-up', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Please add this necklace to my trade board.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "I can see the item number and details, but I need the collection. What collection is it from?",
+          },
+        ],
+      },
+      {
+        id: 'collection',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'It is from the April 2026 birthday collection.',
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools available for a yes/no confirmation follow-up', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Please add this necklace to my trade board.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'I can try adding it without a custom photo and use the canonical design image instead.',
+          },
+        ],
+      },
+      {
+        id: 'confirm',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Yes, do that.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 })

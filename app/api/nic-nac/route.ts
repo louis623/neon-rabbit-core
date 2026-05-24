@@ -32,6 +32,7 @@ import {
 import {
   buildToolsForIntents,
   getToolIntentsForMessages,
+  shouldRequireToolCallForMessages,
 } from '@/lib/nic-nac/tools'
 import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
@@ -206,6 +207,7 @@ export async function POST(request: Request) {
   }
 
   const toolIntents = getToolIntentsForMessages(messages)
+  const requireToolCall = shouldRequireToolCallForMessages(messages, toolIntents)
   const tools = buildToolsForIntents(
     { repId, supabase, conversationId, runId },
     toolIntents,
@@ -217,6 +219,7 @@ export async function POST(request: Request) {
     intents: toolIntents,
     toolCount: activeToolNames.length,
     tools: activeToolNames,
+    requireToolCall,
   })
 
   const modelContext = selectMessagesForModel(messages)
@@ -280,6 +283,9 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: modelMessages,
         tools,
+        prepareStep: ({ steps }) => ({
+          toolChoice: requireToolCall && steps.length === 0 ? 'required' : 'auto',
+        }),
         stopWhen: stepCountIs(5),
         providerOptions: {
           anthropic: {

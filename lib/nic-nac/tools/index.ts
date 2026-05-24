@@ -250,12 +250,73 @@ export function getToolIntentsForMessages(
   messages: RoutableMessage[],
 ): NicNacToolIntent[] {
   const latestUser = [...messages].reverse().find((message) => message.role === 'user')
-  const text = latestUser?.parts
-    ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
-    .map((part) => part.text)
+  const text = getMessageText(latestUser)
+
+  const latestIntents = getToolIntentsForText(text ?? '')
+  if (!latestIntents.includes('memory')) return latestIntents
+  if (!isContextualFollowUp(text ?? '')) return latestIntents
+
+  const recentText = messages
+    .slice(-6, -1)
+    .flatMap((message) =>
+      message.parts
+        ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text) ?? [],
+    )
+    .join('\n')
+  const recentIntents = getToolIntentsForText(recentText)
+    .filter((intent) => intent !== 'memory')
+
+  return recentIntents.length ? recentIntents : latestIntents
+}
+
+function isContextualFollowUp(text: string): boolean {
+  const normalized = text.trim().toLowerCase()
+  if (!normalized) return false
+
+  return [
+    /^(it|this|that|they|those|he|she)\b/,
+    /\bcollection\b/,
+    /\bsize\b/,
+    /\bcolor\b/,
+    /\bmaterial\b/,
+    /\bitem\s*(number|#)\b/,
+    /\bmsrp\b/,
+    /^(yes|yeah|yep|sure|ok|okay|please|do that|go ahead)\b/,
+    /\bdo that\b/,
+    /\bgo ahead\b/,
+    /\bcanonical\b/,
+    /\bcustom photo\b/,
+  ].some((pattern) => pattern.test(normalized))
+}
+
+export function shouldRequireToolCallForMessages(
+  messages: RoutableMessage[],
+  intents: NicNacToolIntent[],
+): boolean {
+  if (!intents.includes('trade_board')) return false
+
+  const latestUser = [...messages].reverse().find((message) => message.role === 'user')
+  const latestText = getMessageText(latestUser)
+  if (!isContextualFollowUp(latestText)) return false
+
+  const recentText = messages
+    .slice(-6, -1)
+    .flatMap((message) =>
+      message.parts
+        ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text) ?? [],
+    )
     .join('\n')
 
-  return getToolIntentsForText(text ?? '')
+  return getToolIntentsForText(recentText).includes('trade_board')
+}
+
+function getMessageText(message: RoutableMessage | undefined): string {
+  return message?.parts
+    ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('\n') ?? ''
 }
 
 export function listToolNamesForIntents(intents: NicNacToolIntent[]): string[] {
