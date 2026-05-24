@@ -171,4 +171,71 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
+
+  it('routes physical inventory add language to trade-board tools', () => {
+    const intents = getToolIntentsForText('I have 4 of this item to add')
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+  })
+
+  it('keeps trade-board tools for terse collection-name replies', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: 'trade board listing' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "NK18149 isn't in the database yet. What's the collection name for The Harper Necklace?",
+          },
+        ],
+      },
+      {
+        id: 'collection',
+        role: 'user',
+        parts: [{ type: 'text', text: 'April Birthday' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when the rep asks to add the missing design to the database', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: 'trade board listing' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "NK18149 isn't in the database yet. I need the design name, photo, and collection name.",
+          },
+        ],
+      },
+      {
+        id: 'create',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add it to the data base' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
 })

@@ -90,7 +90,6 @@ describe('add_listing — batch mode', () => {
     expect(addListingBatchMock).toHaveBeenCalledTimes(1)
     expect(addListingBatchMock.mock.calls[0][1]).toBe('rep-1')
     expect(addListingBatchMock.mock.calls[0][2]).toEqual({
-      clickwrapAccepted: true,
       items: [
         {
           itemNumber: 'RG31452',

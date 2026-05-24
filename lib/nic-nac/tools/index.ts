@@ -157,11 +157,15 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\blistings\b/,
       /\bpiece\b/,
       /\bitem number\b/,
+      /\badd\b.*\b(item|piece|listing|inventory)\b/,
+      /\b(item|piece|listing|inventory)\b.*\badd\b/,
       /\btake down\b/,
       /\bremove\b/,
       /\brestore\b/,
       /\badd\b.*\bboard\b/,
       /\binventory\b/,
+      /\bsame item\b/,
+      /\b\d+\s+of\s+(this|the|that|same)\s+item\b/,
     ])
   ) {
     add('trade_board')
@@ -254,7 +258,7 @@ export function getToolIntentsForMessages(
 
   const latestIntents = getToolIntentsForText(text ?? '')
   if (!latestIntents.includes('memory')) return latestIntents
-  if (!isContextualFollowUp(text ?? '')) return latestIntents
+  if (!isTradeBoardContinuation(messages, text ?? '')) return latestIntents
 
   const recentText = messages
     .slice(-6, -1)
@@ -270,7 +274,7 @@ export function getToolIntentsForMessages(
   return recentIntents.length ? recentIntents : latestIntents
 }
 
-function isContextualFollowUp(text: string): boolean {
+function isContextualFollowUp(text: string, previousAssistantText = ''): boolean {
   const normalized = text.trim().toLowerCase()
   if (!normalized) return false
 
@@ -287,7 +291,15 @@ function isContextualFollowUp(text: string): boolean {
     /\bgo ahead\b/,
     /\bcanonical\b/,
     /\bcustom photo\b/,
+    /\bdata\s*base\b/,
+    /\bdatabase\b/,
   ].some((pattern) => pattern.test(normalized))
+    || (
+      wordCount(normalized) <= 8 &&
+      /collection|photo|picture|design|database|data\s*base|missing|what .*from/i.test(
+        previousAssistantText,
+      )
+    )
 }
 
 export function shouldRequireToolCallForMessages(
@@ -298,10 +310,29 @@ export function shouldRequireToolCallForMessages(
 
   const latestUser = [...messages].reverse().find((message) => message.role === 'user')
   const latestText = getMessageText(latestUser)
-  if (!isContextualFollowUp(latestText)) return false
+  return isTradeBoardContinuation(messages, latestText)
+}
 
-  const recentText = messages
-    .slice(-6, -1)
+function getMessageText(message: RoutableMessage | undefined): string {
+  return message?.parts
+    ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('\n') ?? ''
+}
+
+function isTradeBoardContinuation(
+  messages: RoutableMessage[],
+  latestText: string,
+): boolean {
+  const priorMessages = messages.slice(0, -1)
+  const previousAssistant = [...priorMessages]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  const previousAssistantText = getMessageText(previousAssistant)
+  if (!isContextualFollowUp(latestText, previousAssistantText)) return false
+
+  const recentText = priorMessages
+    .slice(-6)
     .flatMap((message) =>
       message.parts
         ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
@@ -312,11 +343,8 @@ export function shouldRequireToolCallForMessages(
   return getToolIntentsForText(recentText).includes('trade_board')
 }
 
-function getMessageText(message: RoutableMessage | undefined): string {
-  return message?.parts
-    ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
-    .map((part) => part.text)
-    .join('\n') ?? ''
+function wordCount(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length
 }
 
 export function listToolNamesForIntents(intents: NicNacToolIntent[]): string[] {

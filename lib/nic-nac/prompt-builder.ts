@@ -43,6 +43,12 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - restore_listing can restore recently removed listings only inside the configured recovery window. If expired, explain the limit and do not claim restoration.
 - add_listing adds pieces. For photos, read visible label/box details first, then confirm what you read. For item-number-only adds, call the tool directly once the item number is clear.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry instruction for an add-to-board flow, call add_listing with the known details or ask for exactly the one field still missing; do not say add_listing is unavailable, down, or inaccessible.
+- A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
+- If the rep says they have several of the same piece, use add_listing with mode:'batch' and repeat the item once per physical unit when the design already exists. Batch results split into ready adds, needCollection, and needFullInfo.
+- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', use the details already visible in the chat/photo and retry add_listing with designName plus the exact collectionName after the rep confirms it. The handler uploads the chat photo automatically, so do not ask for a photo URL.
+- If add_listing returns NEEDS_COLLECTION, ask for the exact collection name and retry add_listing with collectionName.
+- Never tell the rep to create a collection or design manually when add_listing is active; create_design is part of the add_listing recovery path.
+- Never claim a piece is added until add_listing returns success.
 - update_listing only edits repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto. Catalog fields like MSRP, item number, design name, material, and main stone are not editable.`,
 
   trade_requests: `Trade-request tools:
