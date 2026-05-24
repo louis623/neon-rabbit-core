@@ -32,6 +32,8 @@ const demoSettings: SiteSettingsDashboardResult = {
   heroAnimationType: 'zoom',
   teamName: 'Sparkle Demo Circle',
   showJoinPage: true,
+  customerSiteTemplate: 'amethyst',
+  appearancePreset: 'softGlam',
   socialHandles: {
     tiktok: '@sparklesuitedemo',
     instagram: '@sparklesuitedemo',
@@ -101,6 +103,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
+    expect(data.appearancePreset).toBe('amethyst')
     expect(data.homepage).toBe(defaultAmethystHomepageTemplateData)
     expect(data.trade).toBe(defaultAmethystTradeTemplateData)
     expect(data.join).toBe(defaultAmethystJoinTemplateData)
@@ -141,6 +144,7 @@ describe('Amethyst preview template data', () => {
     expect(data.homepage.footerLinks.tradeBoard).toBe(
       '/amethyst/Trade.html?c=rep-target',
     )
+    expect(data.appearancePreset).toBe('softGlam')
     expect(data.trade.footerLinks.home).toBe(
       '/amethyst/Homepage.html?c=rep-target',
     )
@@ -163,6 +167,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
+    expect(data.appearancePreset).toBe('amethyst')
     expect(data.homepage).toBe(defaultAmethystHomepageTemplateData)
     expect(data.trade).toBe(defaultAmethystTradeTemplateData)
     expect(data.join).toBe(defaultAmethystJoinTemplateData)

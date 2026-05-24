@@ -2,6 +2,10 @@ import {
   defaultAmethystTradeBoardListings,
   type AmethystTradeBoardListing,
 } from './trade-board-listings'
+import {
+  applyAmethystAppearancePreset,
+  type AmethystAppearancePresetId,
+} from './appearance-presets'
 
 export interface AmethystTradeSocialLink {
   label: string
@@ -204,15 +208,16 @@ const lockedTweakDefaults: Omit<
 
 export function buildAmethystTradeTweakDefaults(
   data: AmethystTradeTemplateData,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystTradeTweakDefaults {
-  return {
+  return applyAmethystAppearancePreset({
     repName: data.repName,
     businessName: data.businessName,
     tickerTopText: data.tickerTopText,
     tradeHeroTitle: data.tradeHeroTitle,
     tradeHeroSub: data.tradeHeroSub,
     ...lockedTweakDefaults,
-  }
+  }, appearancePreset)
 }
 
 function safeScriptJson(value: unknown) {
@@ -222,8 +227,9 @@ function safeScriptJson(value: unknown) {
 export function buildAmethystTradeBootstrapScript(
   data: AmethystTradeTemplateData = defaultAmethystTradeTemplateData,
   listings: AmethystTradeBoardListing[] = defaultAmethystTradeBoardListings,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ) {
-  const defaults = buildAmethystTradeTweakDefaults(data)
+  const defaults = buildAmethystTradeTweakDefaults(data, appearancePreset)
 
   return [
     `window.AMETHYST_TRADE_TEMPLATE_DATA = ${safeScriptJson(data)};`,

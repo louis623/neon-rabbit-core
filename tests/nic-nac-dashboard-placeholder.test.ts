@@ -254,6 +254,8 @@ const SITE_SETTINGS_READY_STATE = {
     heroAnimationType: 'pan' as const,
     teamName: 'Moonstone Squad',
     showJoinPage: true,
+    customerSiteTemplate: 'amethyst' as const,
+    appearancePreset: 'amethyst' as const,
     socialHandles: {
       instagram: '@sparklebysasha',
       facebook: 'sparklebysasha',
@@ -829,6 +831,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Ticker text')
     expect(html).toContain('Hero image URL')
     expect(html).toContain('Hero animation')
+    expect(html).toContain('Site appearance')
+    expect(html).toContain('Amethyst')
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')

@@ -1,3 +1,8 @@
+import {
+  applyAmethystAppearancePreset,
+  type AmethystAppearancePresetId,
+} from './appearance-presets'
+
 export interface AmethystJoinSocialLink {
   label: string
   shortLabel: string
@@ -300,8 +305,9 @@ const lockedTweakDefaults: Omit<
 
 export function buildAmethystJoinTweakDefaults(
   data: AmethystJoinTemplateData,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystJoinTweakDefaults {
-  return {
+  return applyAmethystAppearancePreset({
     teamName: data.teamName,
     repName: data.repName,
     repCity: data.repCity,
@@ -315,7 +321,7 @@ export function buildAmethystJoinTweakDefaults(
     bpReferralUrl: data.bpReferralUrl,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
-  }
+  }, appearancePreset)
 }
 
 function safeScriptJson(value: unknown) {
@@ -324,8 +330,9 @@ function safeScriptJson(value: unknown) {
 
 export function buildAmethystJoinBootstrapScript(
   data: AmethystJoinTemplateData = defaultAmethystJoinTemplateData,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ) {
-  const defaults = buildAmethystJoinTweakDefaults(data)
+  const defaults = buildAmethystJoinTweakDefaults(data, appearancePreset)
 
   return [
     `window.AMETHYST_JOIN_TEMPLATE_DATA = ${safeScriptJson(data)};`,

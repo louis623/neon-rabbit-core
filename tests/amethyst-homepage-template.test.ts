@@ -151,6 +151,20 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('/amethyst/Unsubscribe.html')
   })
 
+  it('keeps signup submission state scoped to the signup form so the homepage can fresh-load', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const aboutStart = jsx.indexOf('function AboutSection')
+    const signupStart = jsx.indexOf('function Signup')
+    const aboutSectionSource = jsx.slice(aboutStart, signupStart)
+
+    expect(aboutStart).toBeGreaterThan(-1)
+    expect(signupStart).toBeGreaterThan(aboutStart)
+    expect(aboutSectionSource).not.toContain('submitState')
+  })
+
   it('ships a public unsubscribe export alongside the homepage', () => {
     const html = readFileSync(
       resolve(process.cwd(), 'public/amethyst/Unsubscribe.html'),

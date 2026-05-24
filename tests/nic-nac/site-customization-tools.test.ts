@@ -145,6 +145,8 @@ describe('site customization tools', () => {
         hero_animation_type: 'pan',
         team_name: null,
         show_join_page: false,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'softGlam',
       },
       error: null,
     })
@@ -169,6 +171,8 @@ describe('site customization tools', () => {
       tagline: 'Fresh drops daily',
       heroAnimationType: 'pan',
       showJoinPage: false,
+      customerSiteTemplate: 'not-a-real-template',
+      appearancePreset: 'softGlam',
       socialHandles: {
         instagram: '@sparklesquad',
       },
@@ -178,6 +182,8 @@ describe('site customization tools', () => {
       tagline: 'Fresh drops daily',
       hero_animation_type: 'pan',
       show_join_page: false,
+      customer_site_template: 'amethyst',
+      appearance_preset: 'softGlam',
     })
     expect(siteSettingsChain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
     expect(repsChain.spies.update).toHaveBeenCalledWith({
@@ -191,12 +197,16 @@ describe('site customization tools', () => {
         'tagline',
         'heroAnimationType',
         'showJoinPage',
+        'customerSiteTemplate',
+        'appearancePreset',
         'socialHandles',
       ],
       updated: {
         tagline: 'Fresh drops daily',
         heroAnimationType: 'pan',
         showJoinPage: false,
+        customerSiteTemplate: 'amethyst',
+        appearancePreset: 'softGlam',
         socialHandles: {
           instagram: '@sparklesquad',
         },
@@ -232,5 +242,7 @@ describe('site customization registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_site_setting')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('banner text')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('social handles')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('appearancePreset')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Amethyst')
   })
 })

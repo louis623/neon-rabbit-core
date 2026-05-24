@@ -8,6 +8,10 @@ import {
   type AmethystHomepageTemplateData,
 } from './homepage-template-data'
 import {
+  DEFAULT_AMETHYST_APPEARANCE_PRESET,
+  type AmethystAppearancePresetId,
+} from './appearance-presets'
+import {
   defaultAmethystJoinTemplateData,
   type AmethystJoinTemplateData,
 } from './join-template-data'
@@ -35,12 +39,14 @@ interface PreviewRepExtras {
 }
 
 export interface AmethystPreviewTemplateData {
+  appearancePreset: AmethystAppearancePresetId
   homepage: AmethystHomepageTemplateData
   trade: AmethystTradeTemplateData
   join: AmethystJoinTemplateData
 }
 
 const defaultPreviewTemplateData: AmethystPreviewTemplateData = {
+  appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
   homepage: defaultAmethystHomepageTemplateData,
   trade: defaultAmethystTradeTemplateData,
   join: defaultAmethystJoinTemplateData,
@@ -161,6 +167,7 @@ function applyCustomerTarget(
   repId: string | null | undefined,
 ): AmethystPreviewTemplateData {
   return {
+    appearancePreset: data.appearancePreset,
     homepage: {
       ...data.homepage,
       joinTeamUrl: withCustomerTarget(data.homepage.joinTeamUrl, repId),
@@ -324,6 +331,7 @@ export async function loadAmethystPreviewTemplateData(
     }
 
     return applyCustomerTarget({
+      appearancePreset: settings.appearancePreset,
       homepage: mapPreviewSettingsToHomepageTemplateData(settings, extras),
       trade: mapPreviewSettingsToTradeTemplateData(settings, extras),
       join: mapPreviewSettingsToJoinTemplateData(settings, extras),

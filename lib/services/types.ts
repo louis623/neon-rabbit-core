@@ -350,6 +350,13 @@ export interface WalletDashboardResult {
 }
 
 export type HeroAnimationType = 'zoom' | 'pan'
+export type CustomerSiteTemplate = 'amethyst'
+export type SiteAppearancePreset =
+  | 'amethyst'
+  | 'editorial'
+  | 'softGlam'
+  | 'sparkleParty'
+  | 'maximum'
 
 export interface SiteSettingsDashboardResult {
   displayName: string
@@ -365,6 +372,8 @@ export interface SiteSettingsDashboardResult {
   heroAnimationType: HeroAnimationType
   teamName: string
   showJoinPage: boolean
+  customerSiteTemplate: CustomerSiteTemplate
+  appearancePreset: SiteAppearancePreset
   socialHandles: Record<string, string>
 }
 
@@ -382,6 +391,8 @@ export interface UpdateSiteSettingsDashboardInput {
   heroAnimationType?: HeroAnimationType
   teamName?: string
   showJoinPage?: boolean
+  customerSiteTemplate?: string
+  appearancePreset?: SiteAppearancePreset | string
   socialHandles?: Record<string, string>
 }
 

@@ -806,9 +806,6 @@ function AboutSection({ repName }) {
                 Add a final paragraph about your schedule, what makes your page special, or what you love most about helping
                 customers find pieces they get excited to wear.
               </p>
-              {submitState.message ? (
-                <p className={`hp-signup-status ${submitState.status}`}>{submitState.message}</p>
-              ) : null}
             </div>
           </div>
 

@@ -2,6 +2,10 @@ import {
   defaultAmethystHomepageEvents,
   type AmethystHomepageEventCard,
 } from './homepage-upcoming-shows'
+import {
+  applyAmethystAppearancePreset,
+  type AmethystAppearancePresetId,
+} from './appearance-presets'
 
 export interface AmethystHomepageMediaSlot {
   typeLabel: string
@@ -223,8 +227,9 @@ const lockedTweakDefaults: Omit<
 
 export function buildAmethystHomepageTweakDefaults(
   data: AmethystHomepageTemplateData,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystHomepageTweakDefaults {
-  return {
+  return applyAmethystAppearancePreset({
     repName: data.repName,
     businessName: data.businessName,
     tagline: data.tagline,
@@ -232,7 +237,7 @@ export function buildAmethystHomepageTweakDefaults(
     heroSub: data.heroSub,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
-  }
+  }, appearancePreset)
 }
 
 function safeScriptJson(value: unknown) {
@@ -242,8 +247,9 @@ function safeScriptJson(value: unknown) {
 export function buildAmethystHomepageBootstrapScript(
   data: AmethystHomepageTemplateData = defaultAmethystHomepageTemplateData,
   events: AmethystHomepageEventCard[] = defaultAmethystHomepageEvents,
+  appearancePreset?: AmethystAppearancePresetId | string | null,
 ) {
-  const defaults = buildAmethystHomepageTweakDefaults(data)
+  const defaults = buildAmethystHomepageTweakDefaults(data, appearancePreset)
 
   return [
     `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(data)};`,

@@ -8,10 +8,16 @@ export async function GET(request: Request) {
   const repId = resolveAmethystRequestRepId(request)
   const templateData = await loadAmethystPreviewTemplateData({ repId })
 
-  return new NextResponse(buildAmethystJoinBootstrapScript(templateData.join), {
-    headers: {
-      'content-type': 'application/javascript; charset=utf-8',
-      'cache-control': 'no-store',
+  return new NextResponse(
+    buildAmethystJoinBootstrapScript(
+      templateData.join,
+      templateData.appearancePreset,
+    ),
+    {
+      headers: {
+        'content-type': 'application/javascript; charset=utf-8',
+        'cache-control': 'no-store',
+      },
     },
-  })
+  )
 }

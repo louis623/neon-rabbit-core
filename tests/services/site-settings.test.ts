@@ -80,6 +80,8 @@ describe('site settings service', () => {
       heroAnimationType: 'zoom',
       teamName: '',
       showJoinPage: true,
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'amethyst',
       socialHandles: {
         instagram: '@sparklebysasha',
       },
@@ -98,6 +100,8 @@ describe('site settings service', () => {
         hero_animation_type: 'pan',
         team_name: 'Moonstone Squad',
         show_join_page: false,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'softGlam',
       },
       error: null,
     })
@@ -137,6 +141,8 @@ describe('site settings service', () => {
       heroAnimationType: 'pan',
       teamName: 'Moonstone Squad',
       showJoinPage: false,
+      customerSiteTemplate: 'not-a-real-template',
+      appearancePreset: 'softGlam',
       socialHandles: {
         instagram: '@sparklebysasha',
         facebook: 'sparklebysasha',
@@ -156,6 +162,8 @@ describe('site settings service', () => {
         hero_animation_type: 'pan',
         team_name: 'Moonstone Squad',
         show_join_page: false,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'softGlam',
       },
       { onConflict: 'rep_id' },
     )
@@ -175,5 +183,63 @@ describe('site settings service', () => {
     })
     expect(result.showJoinPage).toBe(false)
     expect(result.heroAnimationType).toBe('pan')
+    expect(result.customerSiteTemplate).toBe('amethyst')
+    expect(result.appearancePreset).toBe('softGlam')
+  })
+
+  it('lets Nic-Nac save only the customer-site appearance preset', async () => {
+    const siteSettingsChain = makeUpsertSingle({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: null,
+        hero_image_url: null,
+        hero_animation_type: 'zoom',
+        team_name: null,
+        show_join_page: true,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'sparkleParty',
+      },
+      error: null,
+    })
+    const repsChain = makeSelectSingle({
+      data: {
+        display_name: 'Jane',
+        business_name: "Jane's Sparkle Party",
+        email: 'jane@example.com',
+        phone: null,
+        social_handles: null,
+      },
+      error: null,
+    })
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'site_settings') return siteSettingsChain.api
+        if (table === 'reps') return repsChain.api
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const result = await updateSiteSettingsDashboard(supabase as never, 'rep-1', {
+      appearancePreset: 'sparkleParty',
+    })
+
+    expect(siteSettingsChain.spies.upsert).toHaveBeenCalledWith(
+      {
+        rep_id: 'rep-1',
+        appearance_preset: 'sparkleParty',
+      },
+      { onConflict: 'rep_id' },
+    )
+    expect(repsChain.spies.select).toHaveBeenCalled()
+    expect(result).toMatchObject({
+      displayName: 'Jane',
+      businessName: "Jane's Sparkle Party",
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'sparkleParty',
+    })
   })
 })

@@ -1,5 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ServiceError, errors } from '@/lib/services/errors'
+import {
+  normalizeAmethystAppearancePreset,
+  normalizeCustomerSiteTemplate,
+} from '@/lib/amethyst/appearance-presets'
 import type {
   HeroAnimationType,
   SiteSettingsDashboardResult,
@@ -16,6 +20,8 @@ type SiteSettingsRow = {
   hero_animation_type: string | null
   team_name: string | null
   show_join_page: boolean | null
+  customer_site_template: string | null
+  appearance_preset: string | null
 }
 
 type RepProfileRow = {
@@ -27,7 +33,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -89,6 +95,12 @@ function buildDashboardResult(args: {
     ),
     teamName: normalizeText(args.siteSettings?.team_name),
     showJoinPage: args.siteSettings?.show_join_page ?? true,
+    customerSiteTemplate: normalizeCustomerSiteTemplate(
+      args.siteSettings?.customer_site_template,
+    ),
+    appearancePreset: normalizeAmethystAppearancePreset(
+      args.siteSettings?.appearance_preset,
+    ),
     socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
   }
 }
@@ -191,6 +203,16 @@ export async function updateSiteSettingsDashboard(
   if (input.showJoinPage !== undefined) {
     siteSettingsPatch.show_join_page = input.showJoinPage
   }
+  if (input.customerSiteTemplate !== undefined) {
+    siteSettingsPatch.customer_site_template = normalizeCustomerSiteTemplate(
+      input.customerSiteTemplate,
+    )
+  }
+  if (input.appearancePreset !== undefined) {
+    siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(
+      input.appearancePreset,
+    )
+  }
 
   if (input.displayName !== undefined) {
     repPatch.display_name = normalizeText(input.displayName)
@@ -267,10 +289,22 @@ export async function updateSiteSettingsDashboard(
   }
 
   if (!repProfileRow) {
-    throw errors.INVALID_INPUT(
-      'rep profile fields required for dashboard save',
-      'Please refresh and try saving again.',
-    )
+    const { data, error } = await supabase
+      .from('reps')
+      .select(REP_PROFILE_SELECT)
+      .eq('id', repId)
+      .single()
+
+    if (error || !data) {
+      throw toServiceError(
+        'REP_PROFILE_LOOKUP_FAILED',
+        'failed to load rep profile after site settings save',
+        "I couldn't reload your profile after saving.",
+        error ?? new Error('rep profile row missing after site settings save'),
+      )
+    }
+
+    repProfileRow = data as RepProfileRow
   }
 
   return buildDashboardResult({

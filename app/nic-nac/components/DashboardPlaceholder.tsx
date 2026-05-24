@@ -13,6 +13,7 @@ import type {
   RepMessagesDashboardResult,
   SiteSettingsDashboardResult,
   SiteAnalyticsDashboardResult,
+  SiteAppearancePreset,
   TradeHistoryResult,
   TradeListingWithDesign,
   TradeRequestWithListing,
@@ -290,6 +291,17 @@ const SOCIAL_HANDLE_FIELDS = [
   { key: 'facebook', label: 'Facebook' },
   { key: 'tiktok', label: 'TikTok' },
   { key: 'youtube', label: 'YouTube' },
+]
+
+const SITE_APPEARANCE_PRESET_OPTIONS: Array<{
+  value: SiteAppearancePreset
+  label: string
+}> = [
+  { value: 'amethyst', label: 'Amethyst' },
+  { value: 'editorial', label: 'Editorial' },
+  { value: 'softGlam', label: 'Soft Glam' },
+  { value: 'sparkleParty', label: 'Sparkle Party' },
+  { value: 'maximum', label: 'Maximum' },
 ]
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
@@ -3415,6 +3427,36 @@ export function SiteSettingsCard({
       <div className={styles.siteSettingsSection}>
         <div className={styles.walletSettingsTitle}>Branding and visuals</div>
         <div className={styles.siteSettingsGrid}>
+          <label className={styles.sortField}>
+            <span className={styles.sortLabel}>Site template</span>
+            <select
+              className={styles.sortSelect}
+              value={draft.customerSiteTemplate}
+              onChange={() =>
+                onDraftChange?.({ customerSiteTemplate: 'amethyst' })
+              }
+            >
+              <option value="amethyst">Amethyst</option>
+            </select>
+          </label>
+          <label className={styles.sortField}>
+            <span className={styles.sortLabel}>Site appearance</span>
+            <select
+              className={styles.sortSelect}
+              value={draft.appearancePreset}
+              onChange={(event) =>
+                onDraftChange?.({
+                  appearancePreset: event.target.value as SiteAppearancePreset,
+                })
+              }
+            >
+              {SITE_APPEARANCE_PRESET_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className={styles.searchField}>
             <span className={styles.searchLabel}>Team name</span>
             <input

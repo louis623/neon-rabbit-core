@@ -13,7 +13,11 @@ export async function GET(request: Request) {
   ])
 
   return new NextResponse(
-    buildAmethystHomepageBootstrapScript(templateData.homepage, events),
+    buildAmethystHomepageBootstrapScript(
+      templateData.homepage,
+      events,
+      templateData.appearancePreset,
+    ),
     {
       headers: {
         'content-type': 'application/javascript; charset=utf-8',

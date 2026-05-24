@@ -48,6 +48,8 @@ describe('site settings route', () => {
       heroAnimationType: 'zoom',
       teamName: 'Moonstone Squad',
       showJoinPage: true,
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'amethyst',
       socialHandles: { instagram: '@sparklebysasha' },
     })
 
@@ -72,6 +74,8 @@ describe('site settings route', () => {
       heroAnimationType: 'zoom',
       teamName: 'Moonstone Squad',
       showJoinPage: true,
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'amethyst',
       socialHandles: { instagram: '@sparklebysasha' },
     })
   })
@@ -96,6 +100,8 @@ describe('site settings route', () => {
       heroAnimationType: 'zoom',
       teamName: 'Moonstone Squad',
       showJoinPage: true,
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'softGlam',
       socialHandles: { instagram: '@sparklebysasha' },
     })
 
@@ -113,6 +119,8 @@ describe('site settings route', () => {
       heroAnimationType: 'zoom',
       teamName: 'Moonstone Squad',
       showJoinPage: true,
+      customerSiteTemplate: 'amethyst',
+      appearancePreset: 'softGlam',
       socialHandles: { instagram: '@sparklebysasha' },
     }
 
@@ -146,6 +154,8 @@ describe('site settings route', () => {
         heroAnimationType: 'zoom',
         teamName: 'Moonstone Squad',
         showJoinPage: true,
+        customerSiteTemplate: 'amethyst',
+        appearancePreset: 'softGlam',
         socialHandles: { instagram: '@sparklebysasha' },
       },
     })

@@ -2,6 +2,10 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import {
+  normalizeAmethystAppearancePreset,
+  normalizeCustomerSiteTemplate,
+} from '@/lib/amethyst/appearance-presets'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -14,6 +18,10 @@ const inputSchema = z.object({
   heroAnimationType: z.enum(['zoom', 'pan']).optional(),
   teamName: z.string().optional(),
   showJoinPage: z.boolean().optional(),
+  customerSiteTemplate: z.string().optional(),
+  appearancePreset: z
+    .enum(['amethyst', 'editorial', 'softGlam', 'sparkleParty', 'maximum'])
+    .optional(),
   socialHandles: z.record(z.string(), z.string().min(1)).optional(),
 })
 
@@ -27,6 +35,8 @@ type SiteSettingsRow = {
   hero_animation_type: string | null
   team_name: string | null
   show_join_page: boolean | null
+  customer_site_template: string | null
+  appearance_preset: string | null
 }
 
 type RepsSocialHandlesRow = {
@@ -49,7 +59,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, hero image, hero animation, team name, join-page visibility, and social handles.',
+      'This can patch banner, ticker, tagline, hero image, hero animation, team name, join-page visibility, the approved Amethyst appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -61,6 +71,8 @@ export function makeUpdateSiteSettingTool(ctx: {
       heroAnimationType,
       teamName,
       showJoinPage,
+      customerSiteTemplate,
+      appearancePreset,
       socialHandles,
     }) => {
       const hasAnyPatch =
@@ -73,6 +85,8 @@ export function makeUpdateSiteSettingTool(ctx: {
         heroAnimationType !== undefined ||
         teamName !== undefined ||
         showJoinPage !== undefined ||
+        customerSiteTemplate !== undefined ||
+        appearancePreset !== undefined ||
         socialHandles !== undefined
 
       if (!hasAnyPatch) {
@@ -95,6 +109,14 @@ export function makeUpdateSiteSettingTool(ctx: {
       }
       if (teamName !== undefined) siteSettingsPatch.team_name = teamName
       if (showJoinPage !== undefined) siteSettingsPatch.show_join_page = showJoinPage
+      if (customerSiteTemplate !== undefined) {
+        siteSettingsPatch.customer_site_template =
+          normalizeCustomerSiteTemplate(customerSiteTemplate)
+      }
+      if (appearancePreset !== undefined) {
+        siteSettingsPatch.appearance_preset =
+          normalizeAmethystAppearancePreset(appearancePreset)
+      }
 
       const updatedFields: string[] = []
       const updated: Record<string, unknown> = {}
@@ -105,7 +127,7 @@ export function makeUpdateSiteSettingTool(ctx: {
           .update(siteSettingsPatch)
           .eq('rep_id', ctx.repId)
           .select(
-            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page',
+            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset',
           )
           .single()
 
@@ -152,6 +174,18 @@ export function makeUpdateSiteSettingTool(ctx: {
         if (showJoinPage !== undefined) {
           updatedFields.push('showJoinPage')
           updated.showJoinPage = row.show_join_page
+        }
+        if (customerSiteTemplate !== undefined) {
+          updatedFields.push('customerSiteTemplate')
+          updated.customerSiteTemplate = normalizeCustomerSiteTemplate(
+            row.customer_site_template,
+          )
+        }
+        if (appearancePreset !== undefined) {
+          updatedFields.push('appearancePreset')
+          updated.appearancePreset = normalizeAmethystAppearancePreset(
+            row.appearance_preset,
+          )
         }
       }
 
