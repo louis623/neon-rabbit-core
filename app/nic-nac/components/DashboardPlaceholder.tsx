@@ -23,6 +23,7 @@ import type {
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
+import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
@@ -301,8 +302,11 @@ const SITE_APPEARANCE_PRESET_OPTIONS: Array<{
   { value: 'editorial', label: 'Editorial' },
   { value: 'softGlam', label: 'Soft Glam' },
   { value: 'sparkleParty', label: 'Sparkle Party' },
+  { value: 'sparkle_suite_morganite', label: 'Sparkle Suite/Morganite' },
   { value: 'maximum', label: 'Maximum' },
 ]
+
+const SITE_SKIN_GALLERY_FEATURED_CODE = 'SS-01'
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -3174,32 +3178,89 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
           </div>
         </div>
       </div>
-      {state.status === 'ready' && state.resources ? (
-        <div className={styles.resourceList}>
-          {state.resources.map((resource) => (
-            <div key={resource.id} className={styles.resourceCard}>
-              <div className={styles.badgeRow}>
-                <span className={styles.rosterTag}>{resource.category}</span>
-              </div>
-              <div className={styles.customerName}>{resource.title}</div>
-              <div className={styles.helperNote}>{resource.summary}</div>
-              <div className={styles.customerDate}>{resource.body}</div>
-              <div className={styles.actionRow}>
-                {resource.quickActions.map((action) => (
-                  <span key={`${resource.id}-${action}`} className={styles.timelineItem}>
-                    {action}
-                  </span>
-                ))}
-              </div>
+      {
+        <>
+          <div className={styles.siteSettingsSection}>
+            <div className={styles.calendarHeader}>
+              <div className={styles.walletSettingsTitle}>Skin gallery</div>
+              <span className={styles.rosterTag}>
+                Featured {SITE_SKIN_GALLERY_FEATURED_CODE}
+              </span>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className={styles.cardFill}>
-          <div className={styles.loadingLine} />
-          <div className={styles.loadingLineShort} />
-        </div>
-      )}
+            <div className={styles.skinGallery}>
+              {AMETHYST_SKIN_CARDS.map((skin) => (
+                <div key={skin.id} className={styles.skinCard}>
+                  <div className={styles.skinCardHeader}>
+                    <span className={styles.rosterTag}>{skin.code}</span>
+                    <span className={styles.customerName}>{skin.label}</span>
+                  </div>
+                  <div className={styles.skinPreview} aria-hidden="true">
+                    <span
+                      className={styles.skinPreviewHero}
+                      style={{ background: skin.swatches[0]?.value }}
+                    />
+                    <span
+                      className={styles.skinPreviewCard}
+                      style={{
+                        borderColor: skin.swatches[1]?.value,
+                        background: skin.swatches[2]?.value,
+                      }}
+                    />
+                  </div>
+                  <div className={styles.helperNote}>{skin.description}</div>
+                  <div className={styles.skinSwatches}>
+                    {skin.swatches.map((swatch) => (
+                      <span
+                        key={`${skin.id}-${swatch.label}`}
+                        className={styles.skinSwatch}
+                        style={{ background: swatch.value }}
+                        title={`${swatch.label}: ${swatch.value}`}
+                      />
+                    ))}
+                  </div>
+                  <div className={styles.timelineList}>
+                    <span className={styles.timelineItem}>
+                      {skin.headingFont} / {skin.bodyFont}
+                    </span>
+                    <span className={styles.timelineItem}>{skin.surfaceNote}</span>
+                    <span className={styles.timelineItem}>{skin.motionNote}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {state.status === 'ready' && state.resources ? (
+            <div className={styles.resourceList}>
+              {state.resources.map((resource) => (
+                <div key={resource.id} className={styles.resourceCard}>
+                  <div className={styles.badgeRow}>
+                    <span className={styles.rosterTag}>{resource.category}</span>
+                  </div>
+                  <div className={styles.customerName}>{resource.title}</div>
+                  <div className={styles.helperNote}>{resource.summary}</div>
+                  <div className={styles.customerDate}>{resource.body}</div>
+                  <div className={styles.actionRow}>
+                    {resource.quickActions.map((action) => (
+                      <span key={`${resource.id}-${action}`} className={styles.timelineItem}>
+                        {action}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : state.status === 'error' ? (
+            <div className={styles.emptyState}>
+              Help resources are temporarily unavailable.
+            </div>
+          ) : (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          )}
+        </>
+      }
     </div>
   )
 }

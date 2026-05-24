@@ -2304,6 +2304,63 @@ body.bg-mesh {
     var(--hp-bg);
 }
 
+body.bg-suite-paper {
+  --fg: #402924;
+  --fg-muted: #775d57;
+  --border: rgba(64, 41, 36, 0.12);
+  background:
+    radial-gradient(circle at 12% 4%, rgba(255, 212, 234, 0.62), transparent 26rem),
+    linear-gradient(135deg, var(--hp-bg) 0%, #fffaf8 48%, var(--bg-deep) 100%);
+}
+
+body.bg-suite-paper .hp-header {
+  background: rgba(54, 34, 29, 0.96);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+body.bg-suite-paper .hp-hero-media,
+body.bg-suite-paper .jp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(64, 41, 36, 0.08) 0%, rgba(64, 41, 36, 0.46) 74%, rgba(64, 41, 36, 0.82) 100%),
+    radial-gradient(circle at 18% 18%, rgba(255, 174, 214, 0.64), transparent 32rem),
+    linear-gradient(135deg, #ffeaf3 0%, #f7ddd4 48%, #402924 100%);
+}
+
+body.surface-warm-paper .hp-event-card,
+body.surface-warm-paper .hp-wibp-card,
+body.surface-warm-paper .hp-trade-card,
+body.surface-warm-paper .hp-signup-card,
+body.surface-warm-paper .tp-lrq-rail,
+body.surface-warm-paper .tp-filters,
+body.surface-warm-paper .tp-card,
+body.surface-warm-paper .tp-card-expand,
+body.surface-warm-paper .jp-hero-card,
+body.surface-warm-paper .jp-team-card,
+body.surface-warm-paper .jp-benefit-card,
+body.surface-warm-paper .jp-final-card {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(64, 41, 36, 0.12);
+  box-shadow: 0 18px 42px rgba(64, 41, 36, 0.08);
+}
+
+body.btn-suite-lift .hp-btn-primary:hover,
+body.btn-suite-lift .hp-btn-outline:hover,
+body.btn-suite-lift .hp-shop-btn:hover,
+body.btn-suite-lift .tp-card:hover,
+body.btn-suite-lift .tp-card-expand-cta:hover,
+body.btn-suite-lift .jp-team-card:hover,
+body.btn-suite-lift .jp-benefit-card:hover,
+body.btn-suite-lift .jp-spot-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(238, 44, 155, 0.16);
+}
+
+body.soft-pink-lift .tp-card.unicorn,
+body.soft-pink-lift .tp-card.diamond {
+  border-color: rgba(238, 44, 155, 0.2);
+  box-shadow: 0 14px 34px rgba(238, 44, 155, 0.1);
+}
+
 /* Cursor effects */
 body.cursor-sparkle, body.cursor-sparkle * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M14 2 L16 12 L26 14 L16 16 L14 26 L12 16 L2 14 L12 12 Z' fill='%23D209E3' stroke='white' stroke-width='1.5'/></svg>") 14 14, auto !important;

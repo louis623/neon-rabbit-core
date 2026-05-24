@@ -146,7 +146,7 @@ describe('site customization tools', () => {
         team_name: null,
         show_join_page: false,
         customer_site_template: 'amethyst',
-        appearance_preset: 'softGlam',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       error: null,
     })
@@ -172,7 +172,7 @@ describe('site customization tools', () => {
       heroAnimationType: 'pan',
       showJoinPage: false,
       customerSiteTemplate: 'not-a-real-template',
-      appearancePreset: 'softGlam',
+      appearancePreset: 'SS-01',
       socialHandles: {
         instagram: '@sparklesquad',
       },
@@ -183,7 +183,7 @@ describe('site customization tools', () => {
       hero_animation_type: 'pan',
       show_join_page: false,
       customer_site_template: 'amethyst',
-      appearance_preset: 'softGlam',
+      appearance_preset: 'sparkle_suite_morganite',
     })
     expect(siteSettingsChain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
     expect(repsChain.spies.update).toHaveBeenCalledWith({
@@ -206,7 +206,7 @@ describe('site customization tools', () => {
         heroAnimationType: 'pan',
         showJoinPage: false,
         customerSiteTemplate: 'amethyst',
-        appearancePreset: 'softGlam',
+        appearancePreset: 'sparkle_suite_morganite',
         socialHandles: {
           instagram: '@sparklesquad',
         },
@@ -244,5 +244,7 @@ describe('site customization registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('social handles')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('appearancePreset')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Amethyst')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('SS-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Sparkle Suite/Morganite')
   })
 })

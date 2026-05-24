@@ -356,6 +356,7 @@ export type SiteAppearancePreset =
   | 'editorial'
   | 'softGlam'
   | 'sparkleParty'
+  | 'sparkle_suite_morganite'
   | 'maximum'
 
 export interface SiteSettingsDashboardResult {

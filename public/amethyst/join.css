@@ -5,7 +5,7 @@
 body.joinpage {
   background: var(--hp-bg);
   color: var(--fg);
-  font-family: var(--font-sans);
+  font-family: var(--hp-body-font);
   margin: 0;
   min-height: 100vh;
 }

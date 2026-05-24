@@ -33,7 +33,7 @@ const demoSettings: SiteSettingsDashboardResult = {
   teamName: 'Sparkle Demo Circle',
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
-  appearancePreset: 'softGlam',
+  appearancePreset: 'sparkle_suite_morganite',
   socialHandles: {
     tiktok: '@sparklesuitedemo',
     instagram: '@sparklesuitedemo',
@@ -144,7 +144,7 @@ describe('Amethyst preview template data', () => {
     expect(data.homepage.footerLinks.tradeBoard).toBe(
       '/amethyst/Trade.html?c=rep-target',
     )
-    expect(data.appearancePreset).toBe('softGlam')
+    expect(data.appearancePreset).toBe('sparkle_suite_morganite')
     expect(data.trade.footerLinks.home).toBe(
       '/amethyst/Homepage.html?c=rep-target',
     )

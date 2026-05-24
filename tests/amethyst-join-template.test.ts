@@ -127,6 +127,22 @@ describe('Amethyst join page template data wiring', () => {
     expect(css).toContain('margin: 0 auto;')
   })
 
+  it('ships the Sparkle Suite/Morganite skin in the local join preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Join.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('sparkle_suite_morganite')
+    expect(jsx).toContain('Sparkle Suite/Morganite')
+    expect(html).toContain('DM+Sans')
+    expect(html).toContain('Playfair+Display')
+  })
+
   it('includes localized wrappers and a Bomb Party IDS link on the join page', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/join.jsx'),

@@ -216,6 +216,22 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toContain('.hp-trade-preview-link:active')
   })
 
+  it('ships the Sparkle Suite/Morganite skin in the local trade preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Trade.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('sparkle_suite_morganite')
+    expect(jsx).toContain('Sparkle Suite/Morganite')
+    expect(html).toContain('DM+Sans')
+    expect(html).toContain('Playfair+Display')
+  })
+
   it('wires the customer trade request submission flow without a trade checkbox', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),

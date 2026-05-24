@@ -6,6 +6,7 @@ import {
   normalizeAmethystAppearancePreset,
   normalizeCustomerSiteTemplate,
 } from '@/lib/amethyst/appearance-presets'
+import { normalizeAmethystSkinSelection } from '@/lib/amethyst/skin-cards'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -19,9 +20,7 @@ const inputSchema = z.object({
   teamName: z.string().optional(),
   showJoinPage: z.boolean().optional(),
   customerSiteTemplate: z.string().optional(),
-  appearancePreset: z
-    .enum(['amethyst', 'editorial', 'softGlam', 'sparkleParty', 'maximum'])
-    .optional(),
+  appearancePreset: z.string().optional(),
   socialHandles: z.record(z.string(), z.string().min(1)).optional(),
 })
 
@@ -115,7 +114,7 @@ export function makeUpdateSiteSettingTool(ctx: {
       }
       if (appearancePreset !== undefined) {
         siteSettingsPatch.appearance_preset =
-          normalizeAmethystAppearancePreset(appearancePreset)
+          normalizeAmethystSkinSelection(appearancePreset)
       }
 
       const updatedFields: string[] = []

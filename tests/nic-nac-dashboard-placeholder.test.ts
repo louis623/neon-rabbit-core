@@ -833,6 +833,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Hero animation')
     expect(html).toContain('Site appearance')
     expect(html).toContain('Amethyst')
+    expect(html).toContain('Sparkle Suite/Morganite')
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
@@ -858,6 +859,18 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$99.00')
     expect(html).toContain('Manage billing and cancel')
     expect(html).toContain('Opened Stripe billing portal.')
+  })
+
+  it('renders static skin browsing cards for low-cost appearance selection', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('AMETHYST_SKIN_CARDS')
+    expect(source).toContain('Skin gallery')
+    expect(source).toContain('skin.code')
+    expect(source).toContain('SS-01')
   })
 
   it('calculates show and monthly take-home estimates from manual inputs', () => {

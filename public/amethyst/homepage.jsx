@@ -39,6 +39,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   accentColor: "#FF1AC2",
   bgTone: "lavender",
   headingFont: "italiana",
+  bodyFont: "inter",
   headingWeight: 600,
   shapeRadius: "soft",
   density: "regular",
@@ -192,6 +193,13 @@ const PRESETS = {
     tradeFlair: "holo-unicorn", cursorEffect: "sparkle", saturation: 130,
     bgTone: "warm", primaryColor: "#5C0EFF", accentColor: "#FF1AC2",
   },
+  sparkle_suite_morganite: {
+    sparkleLevel: "subtle", bgTreatment: "suite-paper", cardSurface: "warm-paper",
+    textureOverlay: "none", buttonEnergy: "suite-lift", ctaEmphasis: "standard",
+    tradeFlair: "soft-pink-lift", cursorEffect: "default", saturation: 104,
+    bgTone: "suiteBlush", primaryColor: "#ee2c9b", accentColor: "#ff4cae",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 500,
+  },
   maximum: {
     sparkleLevel: "maximum", bgTreatment: "aurora", cardSurface: "holographic",
     textureOverlay: "sparkle", buttonEnergy: "wiggle", ctaEmphasis: "pulse",
@@ -210,12 +218,16 @@ const TONES = {
   paper:    { bg: "#FAF7F2", elevated: "#FFFFFF", deep: "#F0EAE0" },
   midnight: { bg: "#1A0F2E", elevated: "#241640", deep: "#100828" },
   neon:     { bg: "#FFE6FA", elevated: "#FFF0FD", deep: "#FFD1F2" },
+  suiteBlush: { bg: "#fcf8f6", elevated: "#fffefd", deep: "#f6ede8" },
 };
 
 const FONTS = {
   vend: '"Vend Sans", "Inter", system-ui, sans-serif',
+  inter: '"Inter", system-ui, sans-serif',
   serif: '"Fraunces", "Domine", Georgia, serif',
   italiana: '"Italiana", "Playfair Display", serif',
+  playfair: '"Playfair Display", Georgia, serif',
+  dmSans: '"DM Sans", "Inter", system-ui, sans-serif',
   bubbly: '"Quicksand", "Nunito", system-ui, sans-serif',
   chunky: '"Archivo Black", "Inter", sans-serif',
 };
@@ -1111,6 +1123,7 @@ function App() {
     root.style.setProperty("--primary", t.primaryColor);
     root.style.setProperty("--accent", t.accentColor);
     root.style.setProperty("--hp-display-font", FONTS[t.headingFont] || FONTS.vend);
+    root.style.setProperty("--hp-body-font", FONTS[t.bodyFont] || FONTS.vend);
     root.style.setProperty("--hp-heading-weight", t.headingWeight);
     root.style.setProperty("--hp-saturation", (t.saturation || 100) / 100);
     root.style.setProperty("--ticker-speed", t.tickerSpeed);
@@ -1124,14 +1137,18 @@ function App() {
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
     if (t.bgTreatment === "aurora") body.classList.add("fx-aurora");
+    if (t.bgTreatment === "suite-paper") body.classList.add("bg-suite-paper");
     if (t.cardSurface === "glass") body.classList.add("surface-glass");
     if (t.cardSurface === "holographic") body.classList.add("fx-holographic");
+    if (t.cardSurface === "warm-paper") body.classList.add("surface-warm-paper");
     if (t.textureOverlay === "grain") body.classList.add("tex-grain");
     if (t.textureOverlay === "sparkle") body.classList.add("tex-sparkle");
     if (t.buttonEnergy === "bouncy") body.classList.add("btn-bouncy");
     if (t.buttonEnergy === "wiggle") body.classList.add("btn-wiggle");
+    if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
     if (t.ctaEmphasis === "pulse") body.classList.add("cta-pulse");
     if (t.tradeFlair === "holo-unicorn") body.classList.add("holo-unicorn");
+    if (t.tradeFlair === "soft-pink-lift") body.classList.add("soft-pink-lift");
     if (t.cursorEffect === "sparkle") body.classList.add("cursor-sparkle");
     if (t.density === "compact") body.classList.add("density-compact");
     if (t.density === "spacious") body.classList.add("density-spacious");
@@ -1224,6 +1241,7 @@ function App() {
               { value: "editorial", label: "Editorial" },
               { value: "softGlam", label: "Soft Glam" },
               { value: "sparkleParty", label: "Sparkle Party" },
+              { value: "sparkle_suite_morganite", label: "Sparkle Suite/Morganite" },
               { value: "maximum", label: "Maximum" },
             ]}
           />
@@ -1278,6 +1296,7 @@ function App() {
               { value: "mesh", label: "Gradient mesh" },
               { value: "confetti", label: "Confetti dots" },
               { value: "aurora", label: "Aurora hero" },
+              { value: "suite-paper", label: "Suite paper" },
             ]}
           />
           <TweakSelect
@@ -1288,6 +1307,7 @@ function App() {
               { value: "matte", label: "Matte" },
               { value: "glass", label: "Glass" },
               { value: "holographic", label: "Holographic" },
+              { value: "warm-paper", label: "Warm paper" },
             ]}
           />
           <TweakSelect
@@ -1323,6 +1343,7 @@ function App() {
               { value: "paper", label: "Paper" },
               { value: "neon", label: "Neon pink" },
               { value: "midnight", label: "Midnight" },
+              { value: "suiteBlush", label: "Suite blush" },
             ]}
           />
           <TweakColor
@@ -1353,6 +1374,7 @@ function App() {
               { value: "vend", label: "Vend Sans (default)" },
               { value: "serif", label: "Editorial serif" },
               { value: "italiana", label: "Glam serif" },
+              { value: "playfair", label: "Playfair polish" },
               { value: "bubbly", label: "Bubbly rounded" },
               { value: "chunky", label: "Chunky display" },
             ]}

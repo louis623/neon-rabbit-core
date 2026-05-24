@@ -96,6 +96,7 @@ export interface AmethystHomepageTweakDefaults {
   accentColor: string
   bgTone: string
   headingFont: string
+  bodyFont: string
   headingWeight: number
   shapeRadius: string
   density: string
@@ -208,6 +209,7 @@ const lockedTweakDefaults: Omit<
   accentColor: '#FF1AC2',
   bgTone: 'lavender',
   headingFont: 'italiana',
+  bodyFont: 'inter',
   headingWeight: 600,
   shapeRadius: 'soft',
   density: 'regular',

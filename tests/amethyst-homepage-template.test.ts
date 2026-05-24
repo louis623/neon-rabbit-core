@@ -165,6 +165,22 @@ describe('Amethyst homepage template data wiring', () => {
     expect(aboutSectionSource).not.toContain('submitState')
   })
 
+  it('ships the Sparkle Suite/Morganite skin in the local homepage preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Homepage.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('sparkle_suite_morganite')
+    expect(jsx).toContain('Sparkle Suite/Morganite')
+    expect(html).toContain('DM+Sans')
+    expect(html).toContain('Playfair+Display')
+  })
+
   it('ships a public unsubscribe export alongside the homepage', () => {
     const html = readFileSync(
       resolve(process.cwd(), 'public/amethyst/Unsubscribe.html'),

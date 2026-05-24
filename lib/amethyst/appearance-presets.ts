@@ -5,6 +5,7 @@ export const AMETHYST_APPEARANCE_PRESET_IDS = [
   'editorial',
   'softGlam',
   'sparkleParty',
+  'sparkle_suite_morganite',
   'maximum',
 ] as const
 
@@ -24,6 +25,7 @@ export interface AmethystAppearancePreset {
     accentColor: string
     bgTone: string
     headingFont: string
+    bodyFont: string
     headingWeight: number
     shapeRadius: string
     density: string
@@ -53,6 +55,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       accentColor: '#FF1AC2',
       bgTone: 'lavender',
       headingFont: 'italiana',
+      bodyFont: 'inter',
       headingWeight: 600,
       shapeRadius: 'soft',
       density: 'regular',
@@ -77,6 +80,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       accentColor: '#D209E3',
       bgTone: 'lavender',
       headingFont: 'italiana',
+      bodyFont: 'inter',
       headingWeight: 600,
       shapeRadius: 'soft',
       density: 'regular',
@@ -101,6 +105,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       accentColor: '#D209E3',
       bgTone: 'lavender',
       headingFont: 'italiana',
+      bodyFont: 'inter',
       headingWeight: 600,
       shapeRadius: 'soft',
       density: 'regular',
@@ -125,6 +130,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       accentColor: '#FF1AC2',
       bgTone: 'warm',
       headingFont: 'italiana',
+      bodyFont: 'inter',
       headingWeight: 600,
       shapeRadius: 'soft',
       density: 'regular',
@@ -140,6 +146,32 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       tickerSpeed: 0.6,
     },
   },
+  sparkle_suite_morganite: {
+    id: 'sparkle_suite_morganite',
+    label: 'Sparkle Suite/Morganite',
+    description:
+      'Sparkle Suite polish with blush paper, plum ink, and refined pink accents.',
+    values: {
+      primaryColor: '#ee2c9b',
+      accentColor: '#ff4cae',
+      bgTone: 'suiteBlush',
+      headingFont: 'playfair',
+      bodyFont: 'dmSans',
+      headingWeight: 500,
+      shapeRadius: 'soft',
+      density: 'regular',
+      saturation: 104,
+      sparkleLevel: 'subtle',
+      bgTreatment: 'suite-paper',
+      cardSurface: 'warm-paper',
+      textureOverlay: 'none',
+      buttonEnergy: 'suite-lift',
+      ctaEmphasis: 'standard',
+      tradeFlair: 'soft-pink-lift',
+      cursorEffect: 'default',
+      tickerSpeed: 0.6,
+    },
+  },
   maximum: {
     id: 'maximum',
     label: 'Maximum',
@@ -149,6 +181,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       accentColor: '#FF00CC',
       bgTone: 'neon',
       headingFont: 'italiana',
+      bodyFont: 'inter',
       headingWeight: 600,
       shapeRadius: 'soft',
       density: 'regular',

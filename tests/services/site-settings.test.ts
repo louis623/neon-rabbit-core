@@ -242,4 +242,57 @@ describe('site settings service', () => {
       appearancePreset: 'sparkleParty',
     })
   })
+
+  it('saves the Sparkle Suite/Morganite skin while keeping the customer-site template Amethyst', async () => {
+    const siteSettingsChain = makeUpsertSingle({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: null,
+        hero_image_url: null,
+        hero_animation_type: 'zoom',
+        team_name: null,
+        show_join_page: true,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'sparkle_suite_morganite',
+      },
+      error: null,
+    })
+    const repsChain = makeSelectSingle({
+      data: {
+        display_name: 'Jane',
+        business_name: "Jane's Sparkle Party",
+        email: 'jane@example.com',
+        phone: null,
+        social_handles: null,
+      },
+      error: null,
+    })
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'site_settings') return siteSettingsChain.api
+        if (table === 'reps') return repsChain.api
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const result = await updateSiteSettingsDashboard(supabase as never, 'rep-1', {
+      customerSiteTemplate: 'some-other-template',
+      appearancePreset: 'sparkle_suite_morganite',
+    })
+
+    expect(siteSettingsChain.spies.upsert).toHaveBeenCalledWith(
+      {
+        rep_id: 'rep-1',
+        customer_site_template: 'amethyst',
+        appearance_preset: 'sparkle_suite_morganite',
+      },
+      { onConflict: 'rep_id' },
+    )
+    expect(result.customerSiteTemplate).toBe('amethyst')
+    expect(result.appearancePreset).toBe('sparkle_suite_morganite')
+  })
 })

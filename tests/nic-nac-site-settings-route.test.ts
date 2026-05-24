@@ -101,7 +101,7 @@ describe('site settings route', () => {
       teamName: 'Moonstone Squad',
       showJoinPage: true,
       customerSiteTemplate: 'amethyst',
-      appearancePreset: 'softGlam',
+      appearancePreset: 'sparkle_suite_morganite',
       socialHandles: { instagram: '@sparklebysasha' },
     })
 
@@ -120,7 +120,7 @@ describe('site settings route', () => {
       teamName: 'Moonstone Squad',
       showJoinPage: true,
       customerSiteTemplate: 'amethyst',
-      appearancePreset: 'softGlam',
+      appearancePreset: 'sparkle_suite_morganite',
       socialHandles: { instagram: '@sparklebysasha' },
     }
 
@@ -155,7 +155,7 @@ describe('site settings route', () => {
         teamName: 'Moonstone Squad',
         showJoinPage: true,
         customerSiteTemplate: 'amethyst',
-        appearancePreset: 'softGlam',
+        appearancePreset: 'sparkle_suite_morganite',
         socialHandles: { instagram: '@sparklebysasha' },
       },
     })
