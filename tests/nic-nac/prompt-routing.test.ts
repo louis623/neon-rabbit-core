@@ -64,9 +64,13 @@ describe('Nic-Nac routed system prompt', () => {
       ],
     })
 
-    expect(prompt).toContain('SMS sending is blocked until Telnyx 10DLC campaign approval')
+    expect(prompt).toContain(
+      'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
+    )
     expect(prompt).toContain('can draft the text but cannot send it yet')
-    expect(prompt).toContain('Do not claim live SMS delivery')
+    expect(prompt).toContain(
+      'Do not claim live SMS delivery unless the actual send tool returns success.',
+    )
     expect(prompt).toContain('bulk SMS/email campaigns are not live')
     expect(prompt).toContain('No payment collection')
   })

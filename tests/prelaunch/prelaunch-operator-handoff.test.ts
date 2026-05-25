@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { buildPrelaunchOperatorHandoffBrief } from '@/lib/prelaunch/operator-handoff'
+import { getPrelaunchGateReadiness } from '@/lib/prelaunch/gate-readiness'
 import type {
   PrelaunchGateReadinessItem,
 } from '@/lib/prelaunch/gate-readiness'
@@ -204,6 +205,19 @@ describe('buildPrelaunchOperatorHandoffBrief', () => {
     )
     expect(JSON.stringify(brief)).not.toContain('Send agreement')
     expect(JSON.stringify(brief)).not.toContain('Collect payment')
+  })
+
+  it('uses approved SMS gate text when campaign approval is complete', () => {
+    const brief = buildPrelaunchOperatorHandoffBrief({
+      submission: makeSubmission(),
+      gateReadiness: getPrelaunchGateReadiness({
+        SPARKLE_SMS_CAMPAIGN_APPROVED: 'true',
+      }),
+    })
+
+    expect(brief.lines).toContain(
+      'Gate reminder: SMS campaign - Number assignment pending; Agreement gate - SignWell not configured; Start work fee - Stripe price missing; Launch fee - Stripe price missing',
+    )
   })
 
   it('includes Scribe brief warnings and explicit read-only guardrails', () => {

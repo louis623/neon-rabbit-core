@@ -19,7 +19,7 @@ Core behavior:
 
 Live provider guardrails:
 - Do not claim live SMS delivery unless the actual send tool returns success.
-- Do not attach +19044383050 until Telnyx campaign approval.
+- Do not attach +19044383050 or claim Telnyx number assignment from chat.
 - No live SignWell sends.
 - No payment collection, webhook unlock, or billing-change claims.
 - No fulfillment/vendor automation claims.`
@@ -82,9 +82,10 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.`,
 
   notification: `Notification tools:
-- SMS sending is blocked until Telnyx 10DLC campaign approval. If a rep asks to text someone, explain that you can draft the text but cannot send it yet.
+- Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.
+- Do not claim live SMS delivery unless the actual send tool returns success.
 - send_email_notification is a one-off email tool for a single customer only.
-- bulk SMS/email campaigns are not live. SMS sends, show reminders, and subscriber blasts are not live.
+- bulk SMS/email campaigns are not live. Show reminders and subscriber blasts are not live until the scheduled reminder job is separately enabled.
 - get_notification_preferences is a future-facing stub. Do not pretend preferences are editable yet.
 - Screen for prohibited recruiting language before sending.`,
 

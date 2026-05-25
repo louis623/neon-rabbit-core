@@ -100,7 +100,7 @@ describe('pre-show reminders', () => {
         eventId: 'event-1',
         eventTime: '2026-05-17T20:30:00.000Z',
         message:
-          'Reminder: Sunday Sparkles starts at 2026-05-17T20:30:00.000Z on TikTok.',
+          'Sparkle Suite: Reminder - Sunday Sparkles starts soon on TikTok. Reply STOP to unsubscribe or HELP for help. Msg&data rates may apply.',
         recipient: '+15555550101',
         repId: 'rep-1',
         scheduledFor: '2026-05-17T20:00:00.000Z',

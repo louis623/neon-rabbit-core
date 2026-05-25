@@ -276,6 +276,9 @@ describe('calendar registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('applyToSeries: true')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('about six months ahead')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Sending show reminders')
   })
 

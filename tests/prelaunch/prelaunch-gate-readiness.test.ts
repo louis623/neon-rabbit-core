@@ -3,6 +3,63 @@ import { describe, expect, it } from 'vitest'
 import { getPrelaunchGateReadiness } from '@/lib/prelaunch/gate-readiness'
 
 describe('prelaunch gate readiness', () => {
+  it('shows Telnyx review pending before campaign approval', () => {
+    const items = getPrelaunchGateReadiness({})
+
+    expect(items[0]).toMatchObject({
+      key: 'sms_campaign',
+      status: 'blocked',
+      displayStatus: 'Pending Telnyx review',
+      detail:
+        'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+    })
+  })
+
+  it('shows number assignment pending after campaign approval', () => {
+    const items = getPrelaunchGateReadiness({
+      SPARKLE_SMS_CAMPAIGN_APPROVED: 'true',
+    })
+
+    expect(items[0]).toMatchObject({
+      key: 'sms_campaign',
+      status: 'blocked',
+      displayStatus: 'Number assignment pending',
+      detail:
+        'Telnyx campaign C7BAANX is active, but no sending number has been assigned and verified yet.',
+    })
+  })
+
+  it('shows handset smoke pending after number assignment', () => {
+    const items = getPrelaunchGateReadiness({
+      SPARKLE_SMS_CAMPAIGN_APPROVED: 'true',
+      SPARKLE_SMS_NUMBER_ASSIGNED: 'true',
+    })
+
+    expect(items[0]).toMatchObject({
+      key: 'sms_campaign',
+      status: 'blocked',
+      displayStatus: 'Handset smoke pending',
+      detail:
+        'Telnyx number assignment is complete; live SMS still waits for a controlled handset smoke test.',
+    })
+  })
+
+  it('shows SMS ready after approval, assignment, and handset smoke', () => {
+    const items = getPrelaunchGateReadiness({
+      SPARKLE_SMS_CAMPAIGN_APPROVED: 'true',
+      SPARKLE_SMS_NUMBER_ASSIGNED: 'true',
+      SPARKLE_SMS_HANDSET_SMOKE_PASSED: 'true',
+    })
+
+    expect(items[0]).toMatchObject({
+      key: 'sms_campaign',
+      status: 'disabled',
+      displayStatus: 'Provider verified',
+      detail:
+        'Telnyx campaign, number assignment, and handset smoke are verified; automated sends still require per-feature enablement.',
+    })
+  })
+
   it('marks all launch gates blocked when provider config is missing', () => {
     expect(getPrelaunchGateReadiness({})).toEqual([
       {

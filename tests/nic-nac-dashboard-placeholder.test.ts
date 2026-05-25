@@ -908,11 +908,54 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Soft Glam')
     expect(html).not.toContain('Sparkle Party')
     expect(html).not.toContain('Maximum')
+    expect(html).toContain(
+      'Your workspace preview updates right away. Tap Save site settings to update your customer site.',
+    )
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).toContain('Save site settings')
+    expect(html).toContain('No unsaved changes')
+    expect(html).toContain('disabled=""')
     expect(html).toContain('Site settings saved.')
+  })
+
+  it('shows a dirty-state cue and enabled save control for changed site settings drafts', () => {
+    const html = renderToStaticMarkup(
+      createElement(SiteSettingsCard, {
+        state: SITE_SETTINGS_READY_STATE,
+        draft: {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          tagline: 'Fresh draft tagline',
+        },
+        actionState: { pending: false, error: null, helperMessage: null },
+        onSave: () => {},
+      }),
+    )
+
+    expect(html).toContain('Unsaved changes')
+    expect(html).toContain('Save site settings')
+    expect(html).not.toContain('No unsaved changes')
+    expect(html).not.toContain('disabled=""')
+  })
+
+  it('keeps the site settings save area sticky and touch-friendly on mobile', () => {
+    const styles = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(styles).toContain('.siteSettingsSaveBar')
+    expect(styles).toContain('position: sticky')
+    expect(styles).toContain('env(safe-area-inset-bottom)')
+    expect(styles).toContain('.siteSettingsSaveButton')
+    expect(styles).toContain('min-height: 44px')
+    expect(styles).toContain('@media (hover: none), (pointer: coarse)')
+    expect(styles).toMatch(/@media\s+\(max-width:\s*840px\)[\s\S]*?\.siteSettingsSaveBar[\s\S]*?bottom:\s*calc\(96px \+ env\(safe-area-inset-bottom\)\);/)
+    expect(styles).toMatch(/@media\s+\(max-width:\s*840px\)[\s\S]*?\.siteSettingsSaveButton[\s\S]*?width:\s*100%;/)
   })
 
   it('renders the account billing card with monthly status, payment method, and invoice history', () => {

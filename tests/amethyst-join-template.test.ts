@@ -9,6 +9,28 @@ import {
 } from '@/lib/amethyst/join-template-data'
 
 describe('Amethyst join page template data wiring', () => {
+  it('ships mobile hero typography safeguards for narrow customer screens', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.css'),
+      'utf8',
+    )
+
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-card[\s\S]*?box-sizing:\s*border-box;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-inner[\s\S]*?width:\s*100vw;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-inner[\s\S]*?margin-inline:\s*calc\(50% - 50vw\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-card[\s\S]*?width:\s*calc\(100vw - 48px\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-card[\s\S]*?max-width:\s*340px;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-title[\s\S]*?font-size:\s*clamp\(32px,\s*9\.6vw,\s*44px\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-title[\s\S]*?max-width:\s*10ch;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-title[\s\S]*?overflow-wrap:\s*anywhere;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-promo[\s\S]*?max-width:\s*100%;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-promo[\s\S]*?display:\s*flex;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-promo[\s\S]*?box-sizing:\s*border-box;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-promo[\s\S]*?white-space:\s*normal;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-pitch[\s\S]*?overflow-wrap:\s*anywhere;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.jp-hero-pitch[\s\S]*?max-width:\s*24ch;/)
+  })
+
   it('maps structured editable content into the locked join-page tweak defaults', () => {
     const defaults = buildAmethystJoinTweakDefaults(
       defaultAmethystJoinTemplateData,

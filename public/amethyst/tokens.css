@@ -82,9 +82,16 @@
    ============================================================ */
 * { box-sizing: border-box; }
 
+html {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  max-width: 100%;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);

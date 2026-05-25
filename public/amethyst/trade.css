@@ -68,6 +68,33 @@ body.tradepage h4 {
   text-align: center;
 }
 
+@media (max-width: 640px) {
+  .tp-hero {
+    padding: 48px 0 32px;
+  }
+
+  .tp-hero-inner {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 0 20px;
+  }
+
+  .tp-hero-title {
+    font-size: clamp(32px, 9.6vw, 44px);
+    line-height: 1.12;
+    width: 100%;
+    max-width: 10ch;
+    overflow-wrap: anywhere;
+  }
+
+  .tp-hero-sub {
+    max-width: 24ch;
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ---------- Two-column layout ---------- */
 .tp-board {
   padding: 16px 0 80px;
@@ -230,7 +257,11 @@ body.tradepage h4 {
   border-bottom: 1px solid var(--border);
 }
 @media (max-width: 900px) {
-  .tp-drawer { display: block; }
+  .tp-drawer {
+    display: block;
+    top: var(--hp-mobile-sticky-drawer-top);
+    z-index: 70;
+  }
   .tp-lrq-rail { display: none; }
 }
 .tp-drawer-bar {
@@ -340,6 +371,12 @@ body.tradepage h4 {
   border-bottom: 1px solid var(--border);
   padding: 14px 0;
   margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+  .tp-filters {
+    top: var(--hp-mobile-sticky-filters-top);
+    z-index: 60;
+  }
 }
 .tp-filters-topline {
   display: flex;
@@ -814,6 +851,9 @@ body.tradepage h4 {
 @media (max-width: 700px) {
   .tp-card-expand { grid-template-columns: 1fr; }
   .tp-filter-grid { grid-template-columns: 1fr; }
+  .tp-filters {
+    position: static;
+  }
   .tp-filters-topline {
     flex-direction: column;
     align-items: stretch;
@@ -1251,3 +1291,55 @@ body.tradepage h4 {
   line-height: 1.6;
 }
 .tp-legal strong { color: var(--fg); font-weight: 600; }
+
+@media (pointer: coarse) {
+  .tp-drawer-bar,
+  .tp-drawer-toggle,
+  .tp-filter-link,
+  .tp-filter-toggle,
+  .tp-filter-pill,
+  .tp-filter-sort,
+  .tp-filter-chip,
+  .tp-filter-drop,
+  .tp-card,
+  .tp-card-expand-cta,
+  .tp-sheet-submit,
+  .tp-empty-reset {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .tp-card-close,
+  .tp-sheet-close {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-card,
+  .tp-drawer-chev,
+  .tp-drawer-body,
+  .tp-filter-pill,
+  .tp-card-expand-cta,
+  .tp-faq-q .chev,
+  .tp-faq-a {
+    transition: none !important;
+  }
+
+  .tp-lrq-head .live-dot,
+  .tp-drawer-bar .live-dot,
+  .tp-card.unicorn,
+  .tp-card-expand-mask,
+  .tp-card-expand,
+  .tp-sheet-mask,
+  .tp-sheet {
+    animation: none !important;
+  }
+
+  .tp-card:hover,
+  .tp-card-expand-cta:hover {
+    transform: none !important;
+  }
+}

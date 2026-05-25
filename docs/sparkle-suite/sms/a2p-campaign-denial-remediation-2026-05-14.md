@@ -402,3 +402,22 @@ Recommended next review sequence before spending another fee:
 4. Capture screenshots of the public waitlist and legal pages after the current code changes are deployed.
 5. Send the final draft to `10dlcquestions@telnyx.com` or support and ask whether the KYC identity line resolves rejection `710` before paying for a new review, if Telnyx will answer.
 6. Submit only after the KYC identity, public evidence, and samples all match.
+
+## Live Telnyx portal update - 2026-05-25
+
+Observed in Telnyx portal after Louis reported approval:
+
+- Brand `Sparkle Suite` is verified.
+- Brand TCR ID is `B6LGQP3`.
+- Campaign `4b30019e-140e-f6e9-0a95-4b5e0a73c301` / `C7BAANX` is active.
+- The previous rejection reason still appears in the detail screen as history, but current campaign status is active.
+- Assigned numbers remain `0`.
+- Messaging profile `Sparkle Suite SMS` is enabled.
+- The profile contains `+1-904-438-3050`.
+- The assignment screen shows `+1-904-438-3050` as the only assignable local active messaging-enabled number.
+
+Updated diagnosis:
+
+- The KYC/brand remediation appears to have succeeded.
+- Live SMS is still not complete because Telnyx requires an active 10DLC campaign to have an assigned phone number before sending.
+- Do not call SMS live until the number assignment is complete and a controlled handset smoke test succeeds.

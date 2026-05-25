@@ -17,6 +17,10 @@
   --hp-heading-tracking: -0.01em;
   --hp-saturation: 1;
   --hp-density: 1;
+  --hp-mobile-sticky-ticker-top: 0px;
+  --hp-mobile-sticky-trade-top: 76px;
+  --hp-mobile-sticky-drawer-top: 154px;
+  --hp-mobile-sticky-filters-top: 198px;
 }
 
 body.homepage {
@@ -287,6 +291,52 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   box-shadow: 0 0 6px rgba(210, 9, 227, 0.4);
 }
 
+@media (max-width: 640px) {
+  .hp-header {
+    position: relative;
+  }
+
+  .hp-header-inner {
+    padding-inline: 12px;
+  }
+
+  .hp-header-nav {
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  .hp-header-link {
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+
+  .hp-shop-btn {
+    min-height: 44px;
+  }
+
+  .hp-ticker {
+    top: var(--hp-mobile-sticky-ticker-top);
+    overflow-x: clip;
+    contain: paint;
+  }
+
+  .hp-ticker-row {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .hp-ticker-label {
+    min-width: 124px;
+    padding: 0 22px 0 14px;
+  }
+
+  .hp-ticker-track {
+    min-width: max-content;
+    padding-left: 132px;
+    gap: 24px;
+  }
+}
+
 /* ============================================================
    Hero (HE2 full-bleed)
    ============================================================ */
@@ -460,6 +510,32 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
 
 @media (max-width: 900px) {
   .hp-hero-inner { padding-bottom: 56px; }
+}
+
+@media (max-width: 640px) {
+  .hp-hero-inner {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 72px 20px 56px;
+  }
+
+  .hp-hero-media.placeholder::after {
+    align-items: flex-start;
+    padding: 46px 24px 0;
+    text-align: center;
+  }
+
+  .hp-hero-headline {
+    font-size: clamp(36px, 10.5vw, 48px);
+    line-height: 1.06;
+    max-width: 11ch;
+    overflow-wrap: anywhere;
+  }
+
+  .hp-hero-sub {
+    max-width: 100%;
+  }
 }
 
 /* Watch live dropdown */
@@ -732,6 +808,22 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   }
   .hp-trade-preview-link {
     justify-self: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .hp-trade-preview {
+    top: var(--hp-mobile-sticky-trade-top);
+  }
+
+  .hp-trade-preview-inner {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .hp-trade-preview-items {
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
   }
 }
 
@@ -2770,10 +2862,57 @@ body.density-spacious { --hp-section-pad: 128px; }
 body.shape-sharp { --hp-radius-card: 0px; }
 body.shape-soft { --hp-radius-card: 24px; }
 
+@media (pointer: coarse) {
+  .hp-header-link,
+  .hp-shop-btn,
+  .hp-btn-primary,
+  .hp-btn-outline,
+  .hp-stream-btn,
+  .hp-watch-option,
+  .hp-trade-preview-pill,
+  .hp-trade-preview-link {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .hp-queue-modal-close {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hp-ticker-track,
+  .hp-pulse,
+  .hp-queue-modal-mask,
+  .hp-queue-modal,
+  .hp-hero-side-label .live-pip,
+  .hp-btn-outline .live-pip,
+  .hp-trade-preview-head .live-dot,
+  body.tex-sparkle::before,
+  body.holo-unicorn .hp-trade-card:has(.hp-trade-tier.unicorn),
+  body.btn-bouncy .hp-btn-primary:hover,
+  body.btn-bouncy .hp-btn-outline:hover,
+  body.btn-wiggle .hp-btn-primary:hover,
+  body.cta-pulse .hp-btn-primary:not(.outline) {
+    animation: none !important;
+  }
+
+  .hp-header-link:hover,
+  .hp-shop-btn:hover,
+  .hp-btn-primary:hover,
+  .hp-btn-outline:hover,
+  .hp-trade-preview-link:hover,
+  .hp-trade-preview-link:active {
+    transform: none !important;
   }
 }

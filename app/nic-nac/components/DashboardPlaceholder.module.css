@@ -1681,6 +1681,42 @@
   padding: 12px;
 }
 
+.siteSettingsPreviewNote {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--nic-nac-text-secondary);
+}
+
+.siteSettingsSaveBar {
+  position: sticky;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: var(--nic-nac-surface-primary-solid);
+  box-shadow: 0 14px 32px var(--workspace-panel-shadow);
+  padding: 10px;
+}
+
+.siteSettingsSaveStatus {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--nic-nac-text-secondary);
+}
+
+.siteSettingsSaveButton {
+  min-height: 44px;
+  padding-inline: 18px;
+}
+
 .siteSettingsTextarea {
   width: 100%;
   min-height: 88px;
@@ -1952,6 +1988,12 @@
   }
 }
 
+@media (hover: none), (pointer: coarse) {
+  .siteSettingsSaveButton {
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 1180px) {
   .main {
     padding: 20px 24px 36px;
@@ -2045,6 +2087,19 @@
 
   .siteSettingsToggleGrid {
     grid-template-columns: 1fr;
+  }
+
+  .siteSettingsSaveBar {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    align-items: stretch;
+  }
+
+  .siteSettingsSaveStatus {
+    width: 100%;
+  }
+
+  .siteSettingsSaveButton {
+    width: 100%;
   }
 
   .calendarPanels {

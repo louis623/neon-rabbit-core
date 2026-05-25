@@ -13,6 +13,54 @@ export interface PrelaunchGateReadinessItem {
   detail: string
 }
 
+function buildSmsCampaignGate(env: EnvLike): PrelaunchGateReadinessItem {
+  const campaignApproved = env.SPARKLE_SMS_CAMPAIGN_APPROVED === 'true'
+  const numberAssigned = env.SPARKLE_SMS_NUMBER_ASSIGNED === 'true'
+  const handsetSmokePassed = env.SPARKLE_SMS_HANDSET_SMOKE_PASSED === 'true'
+
+  if (!campaignApproved) {
+    return {
+      key: 'sms_campaign',
+      label: 'SMS campaign',
+      status: 'blocked',
+      displayStatus: 'Pending Telnyx review',
+      detail:
+        'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
+    }
+  }
+
+  if (!numberAssigned) {
+    return {
+      key: 'sms_campaign',
+      label: 'SMS campaign',
+      status: 'blocked',
+      displayStatus: 'Number assignment pending',
+      detail:
+        'Telnyx campaign C7BAANX is active, but no sending number has been assigned and verified yet.',
+    }
+  }
+
+  if (!handsetSmokePassed) {
+    return {
+      key: 'sms_campaign',
+      label: 'SMS campaign',
+      status: 'blocked',
+      displayStatus: 'Handset smoke pending',
+      detail:
+        'Telnyx number assignment is complete; live SMS still waits for a controlled handset smoke test.',
+    }
+  }
+
+  return {
+    key: 'sms_campaign',
+    label: 'SMS campaign',
+    status: 'disabled',
+    displayStatus: 'Provider verified',
+    detail:
+      'Telnyx campaign, number assignment, and handset smoke are verified; automated sends still require per-feature enablement.',
+  }
+}
+
 export function getPrelaunchGateReadiness(
   env: EnvLike = process.env,
 ): PrelaunchGateReadinessItem[] {
@@ -24,14 +72,7 @@ export function getPrelaunchGateReadiness(
   const launchPriceId = getPrelaunchPaymentGatePriceId('launch_fee', env)
 
   return [
-    {
-      key: 'sms_campaign',
-      label: 'SMS campaign',
-      status: 'blocked',
-      displayStatus: 'Pending Telnyx review',
-      detail:
-        'Live SMS is blocked until campaign approval, number attachment, and real handset smoke succeed.',
-    },
+    buildSmsCampaignGate(env),
     signWellConfig
       ? {
           key: 'agreement',

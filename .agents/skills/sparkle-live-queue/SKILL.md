@@ -179,3 +179,19 @@ Edge Function live-queue-sync: POST with x-sync-key header. Body: { sync_code, q
 ## Standing Rules
 
 Main branch only. Regenerate CODEBASE_SNAPSHOT.md at end of every session. Commit and push.
+
+## Chrome Web Store Release Checklist
+
+Repo-complete is not Web-Store-complete. Any rep-facing change under `/chrome-extension/` MUST complete this release loop before the work is considered done:
+
+1. Bump `chrome-extension/manifest.json` version.
+2. Package a new zip from `/chrome-extension/`.
+3. Verify the zip contains every changed extension file, including helper scripts such as `queue-filter.js`.
+4. Run the Live Queue tests and the three content-script safety scans above.
+5. Upload the package to the existing Chrome Web Store item, not a new listing.
+6. Submit the draft for review.
+7. Record the submitted version and review status in Open Brain / NR HQ.
+8. After approval, verify from a real Web Store-installed copy, not only the repo or an unpacked build.
+9. Keep an emergency unpacked-install zip ready for live-show incidents while Chrome Web Store review is pending.
+
+Lesson source: May 18, 2026 Brittany Party Filter incident. The repo had Party Filter support from May 11, but the Web Store package still served the pre-filter `1.0.0` build until the `1.0.1` update was submitted.

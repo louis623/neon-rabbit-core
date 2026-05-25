@@ -12,6 +12,17 @@ function readLimit(url: URL) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
+function readMode(url: URL) {
+  const mode = url.searchParams.get('mode')?.trim().toLowerCase()
+  if (!mode || mode === 'dry-run') return { dryRun: true, error: null }
+  if (mode === 'live') return { dryRun: false, error: null }
+  return { dryRun: true, error: 'mode must be dry-run or live.' }
+}
+
+function arePreShowSmsSendsEnabled() {
+  return process.env.SPARKLE_PRE_SHOW_SMS_ENABLED === 'true'
+}
+
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET?.trim()
   if (!secret) {
@@ -33,7 +44,8 @@ export async function GET(request: Request) {
   const authError = isAuthorized(request)
   if (authError) return authError
 
-  const limit = readLimit(new URL(request.url))
+  const url = new URL(request.url)
+  const limit = readLimit(url)
   if (limit === null) {
     return NextResponse.json(
       { error: 'limit must be a positive whole number.' },
@@ -41,9 +53,15 @@ export async function GET(request: Request) {
     )
   }
 
+  const mode = readMode(url)
+  if (mode.error) {
+    return NextResponse.json({ error: mode.error }, { status: 400 })
+  }
+
   const result = await processDuePreShowReminders(createAdminClient(), {
     limit: limit ?? 25,
-    dryRun: true,
+    dryRun: mode.dryRun,
+    liveSendsEnabled: arePreShowSmsSendsEnabled(),
   })
 
   return NextResponse.json({

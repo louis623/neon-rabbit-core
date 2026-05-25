@@ -3414,6 +3414,14 @@ export function SiteSettingsCard({
     )
   }
 
+  const hasUnsavedChanges =
+    JSON.stringify(draft) !== JSON.stringify(state.settings)
+  const saveStatusText = actionState?.pending
+    ? 'Saving...'
+    : hasUnsavedChanges
+      ? 'Unsaved changes'
+      : 'No unsaved changes'
+
   return (
     <div className={styles.siteSettingsCard}>
       <div className={styles.calendarHeader}>
@@ -3551,6 +3559,10 @@ export function SiteSettingsCard({
                 </option>
               ))}
             </select>
+            <span className={styles.siteSettingsPreviewNote}>
+              Your workspace preview updates right away. Tap Save site settings to
+              update your customer site.
+            </span>
           </label>
           <label className={styles.searchField}>
             <span className={styles.searchLabel}>Team name</span>
@@ -3625,12 +3637,13 @@ export function SiteSettingsCard({
         <div className={styles.helperMessage}>{statusMessage}</div>
       ) : null}
 
-      <div className={styles.actionRow}>
+      <div className={styles.siteSettingsSaveBar}>
+        <span className={styles.siteSettingsSaveStatus}>{saveStatusText}</span>
         <button
           type="button"
-          className={styles.actionButton}
+          className={`${styles.actionButton} ${styles.siteSettingsSaveButton}`}
           onClick={() => onSave?.()}
-          disabled={actionState?.pending}
+          disabled={actionState?.pending || !hasUnsavedChanges}
         >
           {actionState?.pending ? 'Saving…' : 'Save site settings'}
         </button>

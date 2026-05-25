@@ -120,7 +120,8 @@ function mapAudience(row: CustomerAudienceRow): CustomerAudienceMember {
 
 function buildMessage(event: CalendarEvent): string {
   const title = event.title?.trim() || 'Your live show'
-  return `Reminder: ${title} starts at ${event.eventTime} on ${event.platform}.`
+  const platform = event.platform.trim() || 'the live show'
+  return `Sparkle Suite: Reminder - ${title} starts soon on ${platform}. Reply STOP to unsubscribe or HELP for help. Msg&data rates may apply.`
 }
 
 export function buildPreShowReminderPlans(

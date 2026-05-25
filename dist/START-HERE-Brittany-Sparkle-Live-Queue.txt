@@ -1,0 +1,43 @@
+Hi Brittany,
+
+These steps will install the updated Sparkle Suite Live Queue extension with the Party Filter boxes.
+
+Important: Please do these steps after your show, not while customers are watching.
+
+1. Download the attached zip file.
+
+2. Right-click the zip file and choose "Extract All".
+
+3. Click "Extract".
+
+4. Open Google Chrome.
+
+5. In the address bar at the top, type:
+   chrome://extensions
+
+6. Press Enter.
+
+7. In the top right, turn on "Developer mode".
+
+8. Remove the old Sparkle Suite Live Queue extension if it is still there.
+
+9. Click "Load unpacked".
+
+10. Select the folder you extracted from the zip file.
+    Important: Select the folder, not a single file.
+
+11. Click "Select Folder".
+
+12. Pin/open the Sparkle Suite icon.
+
+13. Enter your sync code:
+    BWB-5819
+
+14. Go to your Bomb Party live party orders page:
+    https://myoffice.bombparty.com/live-party-orders
+
+15. Open the Sparkle Suite icon again.
+
+16. You should now see "Party Filter" with checkboxes for the parties.
+
+If you get stuck, stop there and Louis will help you on screen share.

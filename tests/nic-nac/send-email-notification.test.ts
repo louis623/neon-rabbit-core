@@ -310,7 +310,7 @@ describe('send_email_notification', () => {
     expect(sendEmailNotificationTool.name).toBe('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'SMS sending is blocked until Telnyx 10DLC campaign approval.',
+      'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'Email notifications are coming soon!',

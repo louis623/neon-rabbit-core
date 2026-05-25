@@ -437,10 +437,10 @@ describe('send_sms_notification', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_notification_preferences')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'SMS sending is blocked until Telnyx 10DLC campaign approval.',
+      'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Do not call this while 10DLC approval is pending.',
+      'Do not call this before number assignment and handset smoke proof are complete.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'SMS notifications are coming soon!',

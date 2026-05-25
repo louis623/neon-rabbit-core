@@ -45,6 +45,29 @@ function makeTradeListing(
 }
 
 describe('Amethyst trade page template wiring', () => {
+  it('ships mobile sticky and coarse pointer CSS safeguards for the trade board', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-drawer[\s\S]*?top:\s*var\(--hp-mobile-sticky-drawer-top\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-filters[\s\S]*?top:\s*var\(--hp-mobile-sticky-filters-top\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*static;/)
+    expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-filter-pill[\s\S]*?min-height:\s*44px;/)
+    expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-card-close[\s\S]*?min-width:\s*44px;/)
+    expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-card-expand-mask[\s\S]*?animation:\s*none\s*!important;/)
+    expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-faq-a[\s\S]*?transition:\s*none\s*!important;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?font-size:\s*clamp\(32px,\s*9\.6vw,\s*44px\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-inner[\s\S]*?width:\s*100vw;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-inner[\s\S]*?margin-inline:\s*calc\(50% - 50vw\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?max-width:\s*10ch;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?overflow-wrap:\s*anywhere;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-sub[\s\S]*?width:\s*100%;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-sub[\s\S]*?max-width:\s*24ch;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-sub[\s\S]*?overflow-wrap:\s*anywhere;/)
+  })
+
   it('maps structured editable content into the locked trade-page tweak defaults', () => {
     const defaults = buildAmethystTradeTweakDefaults(
       defaultAmethystTradeTemplateData,

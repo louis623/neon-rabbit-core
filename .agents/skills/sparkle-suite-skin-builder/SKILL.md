@@ -38,6 +38,7 @@ For rep-facing copy or Sparkle Suite brand language, also use `sparkle-suite-mas
 
 3. Mock the skin before implementation when visual direction is not already locked.
    - Use the browser visual companion or a lightweight local mockup.
+   - When Louis asks to see a skin, preview, branding card, card, or direction before approval, show the reference artifact from `.superpowers/brainstorm/.../content` in the same workflow used for Morganite and Black Diamond, not a registry card or one-off image.
    - Show the same Amethyst page structure in different clothes.
    - Ask for approval before production edits.
 
