@@ -120,6 +120,72 @@ describe('POST /api/amethyst/customer-audience', () => {
     })
   })
 
+  it('creates the signup for the explicit customer-site target from the query string', async () => {
+    const { client, spies } = makeAdminClient({ repId: 'jane-rep' })
+    createAdminClientMock.mockReturnValue(client)
+
+    const response = await POST(
+      new Request('http://localhost/api/amethyst/customer-audience?c=jane-rep', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: 'Louis',
+          lastName: 'Phase Five Smoke',
+          email: 'smoke@example.com',
+          phone: '(555) 555-0199',
+          smsConsent: true,
+          emailConsent: true,
+          marketingConsent: true,
+        }),
+      }),
+    )
+
+    expect(spies.eq).toHaveBeenCalledWith('id', 'jane-rep')
+    expect(spies.eq).not.toHaveBeenCalledWith('email', expect.any(String))
+    expect(spies.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'jane-rep',
+        name: 'Louis Phase Five Smoke',
+      }),
+    )
+    expect(response.status).toBe(201)
+  })
+
+  it('creates the signup for the public page target from the referer', async () => {
+    const { client, spies } = makeAdminClient({ repId: 'referer-rep' })
+    createAdminClientMock.mockReturnValue(client)
+
+    const response = await POST(
+      new Request('http://localhost/api/amethyst/customer-audience', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          referer: 'http://localhost/amethyst/Homepage.html?c=referer-rep',
+        },
+        body: JSON.stringify({
+          firstName: 'Louis',
+          lastName: 'Phase Five Smoke',
+          email: 'smoke@example.com',
+          phone: '(555) 555-0199',
+          smsConsent: true,
+          emailConsent: true,
+          marketingConsent: true,
+        }),
+      }),
+    )
+
+    expect(spies.eq).toHaveBeenCalledWith('id', 'referer-rep')
+    expect(spies.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'referer-rep',
+        name: 'Louis Phase Five Smoke',
+      }),
+    )
+    expect(response.status).toBe(201)
+  })
+
   it('rejects payloads that do not select at least one contact channel', async () => {
     const { client, spies } = makeAdminClient()
     createAdminClientMock.mockReturnValue(client)
