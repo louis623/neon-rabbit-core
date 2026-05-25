@@ -103,7 +103,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
-    expect(data.appearancePreset).toBe('amethyst')
+    expect(data.appearancePreset).toBe('sparkle_suite_morganite')
     expect(data.homepage).toBe(defaultAmethystHomepageTemplateData)
     expect(data.trade).toBe(defaultAmethystTradeTemplateData)
     expect(data.join).toBe(defaultAmethystJoinTemplateData)
@@ -167,7 +167,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
-    expect(data.appearancePreset).toBe('amethyst')
+    expect(data.appearancePreset).toBe('sparkle_suite_morganite')
     expect(data.homepage).toBe(defaultAmethystHomepageTemplateData)
     expect(data.trade).toBe(defaultAmethystTradeTemplateData)
     expect(data.join).toBe(defaultAmethystJoinTemplateData)

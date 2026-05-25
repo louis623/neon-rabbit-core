@@ -353,11 +353,13 @@ export type HeroAnimationType = 'zoom' | 'pan'
 export type CustomerSiteTemplate = 'amethyst'
 export type SiteAppearancePreset =
   | 'amethyst'
-  | 'editorial'
-  | 'softGlam'
-  | 'sparkleParty'
   | 'sparkle_suite_morganite'
-  | 'maximum'
+  | 'black_diamond'
+  | 'rose_gold'
+  | 'garnet'
+  | 'amber'
+  | 'velvet'
+  | 'rose_quartz'
 
 export interface SiteSettingsDashboardResult {
   displayName: string

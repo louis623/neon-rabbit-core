@@ -213,6 +213,122 @@ describe('site customization tools', () => {
       },
     })
   })
+
+  it('update_site_setting lets Nic-Nac apply Black Diamond by skin code', async () => {
+    const siteSettingsChain = makeUpdateChain({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: null,
+        hero_image_url: null,
+        hero_animation_type: 'zoom',
+        team_name: null,
+        show_join_page: true,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'black_diamond',
+      },
+      error: null,
+    })
+    const from = vi.fn(() => siteSettingsChain.api)
+    const tool = makeUpdateSiteSettingTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({
+      appearancePreset: 'BD-01',
+    })
+
+    expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
+      appearance_preset: 'black_diamond',
+    })
+    expect(result).toEqual({
+      updatedFields: ['appearancePreset'],
+      updated: {
+        appearancePreset: 'black_diamond',
+      },
+    })
+  })
+
+  it('update_site_setting lets Nic-Nac apply Rose Gold by skin code', async () => {
+    const siteSettingsChain = makeUpdateChain({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: null,
+        hero_image_url: null,
+        hero_animation_type: 'zoom',
+        team_name: null,
+        show_join_page: true,
+        customer_site_template: 'amethyst',
+        appearance_preset: 'rose_gold',
+      },
+      error: null,
+    })
+    const from = vi.fn(() => siteSettingsChain.api)
+    const tool = makeUpdateSiteSettingTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({
+      appearancePreset: 'RG-01',
+    })
+
+    expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
+      appearance_preset: 'rose_gold',
+    })
+    expect(result).toEqual({
+      updatedFields: ['appearancePreset'],
+      updated: {
+        appearancePreset: 'rose_gold',
+      },
+    })
+  })
+
+  it.each([
+    ['GN-01', 'garnet'],
+    ['AB-01', 'amber'],
+    ['VE-01', 'velvet'],
+    ['RQ-01', 'rose_quartz'],
+  ])('update_site_setting lets Nic-Nac apply %s by skin code', async (code, preset) => {
+    const siteSettingsChain = makeUpdateChain({
+      data: {
+        banner_text: null,
+        banner_visible: false,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: null,
+        hero_image_url: null,
+        hero_animation_type: 'zoom',
+        team_name: null,
+        show_join_page: true,
+        customer_site_template: 'amethyst',
+        appearance_preset: preset,
+      },
+      error: null,
+    })
+    const from = vi.fn(() => siteSettingsChain.api)
+    const tool = makeUpdateSiteSettingTool(
+      makeCtx({ from }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({
+      appearancePreset: code,
+    })
+
+    expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
+      appearance_preset: preset,
+    })
+    expect(result).toEqual({
+      updatedFields: ['appearancePreset'],
+      updated: {
+        appearancePreset: preset,
+      },
+    })
+  })
 })
 
 describe('site customization registry and prompt wiring', () => {
@@ -246,5 +362,17 @@ describe('site customization registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Amethyst')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('SS-01')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Sparkle Suite/Morganite')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('BD-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Black Diamond')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('RG-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Rose Gold')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('GN-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Garnet')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('AB-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Amber')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('VE-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Velvet')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('RQ-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Rose Quartz')
   })
 })

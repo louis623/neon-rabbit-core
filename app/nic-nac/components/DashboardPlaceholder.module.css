@@ -1,9 +1,229 @@
 .main {
+  --workspace-accent: #ee2c9b;
+  --workspace-accent-hover: #d91d89;
+  --workspace-accent-soft: rgba(255, 212, 234, 0.72);
+  --workspace-bg-start: #fffdfc;
+  --workspace-bg-mid: #fcf8f6;
+  --workspace-bg-end: #fffdfc;
+  --workspace-surface-dashboard: #fcf8f6;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.78);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff6fa;
+  --workspace-surface-input: #fffafc;
+  --workspace-border: rgba(64, 41, 36, 0.12);
+  --workspace-border-strong: rgba(64, 41, 36, 0.2);
+  --workspace-border-input-focus: rgba(238, 44, 155, 0.42);
+  --workspace-text-primary: #402924;
+  --workspace-text-secondary: #775d57;
+  --workspace-text-inverse: #ffffff;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 246, 250, 0.98),
+    rgba(191, 244, 224, 0.32)
+  );
+  --workspace-sidebar-glow: rgba(255, 212, 234, 0.7);
+  --workspace-panel-shadow: rgba(64, 41, 36, 0.06);
+  --workspace-button-shadow: rgba(64, 41, 36, 0.12);
+  --nic-nac-accent: var(--workspace-accent);
+  --nic-nac-surface-dashboard: var(--workspace-surface-dashboard);
+  --nic-nac-surface-primary: var(--workspace-surface-primary);
+  --nic-nac-surface-primary-solid: var(--workspace-surface-primary-solid);
+  --nic-nac-surface-dashboard-placeholder: var(--workspace-surface-dashboard-placeholder);
+  --nic-nac-surface-input: var(--workspace-surface-input);
+  --nic-nac-border: var(--workspace-border);
+  --nic-nac-border-strong: var(--workspace-border-strong);
+  --nic-nac-border-input-focus: var(--workspace-border-input-focus);
+  --nic-nac-text-primary: var(--workspace-text-primary);
+  --nic-nac-text-secondary: var(--workspace-text-secondary);
+  --nic-nac-text-inverse: var(--workspace-text-inverse);
   min-height: 100vh;
   background:
-    radial-gradient(circle at 86% 4%, rgba(255, 212, 234, 0.72), transparent 24rem),
-    linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 54%, #fffdfc 100%);
+    radial-gradient(circle at 86% 4%, var(--workspace-accent-soft), transparent 24rem),
+    linear-gradient(
+      180deg,
+      var(--workspace-bg-start) 0%,
+      var(--workspace-bg-mid) 54%,
+      var(--workspace-bg-end) 100%
+    );
   padding: 22px 28px 42px;
+}
+
+.main[data-workspace-skin='sparkle_suite_morganite'] {
+  --workspace-accent: #ee2c9b;
+  --workspace-accent-hover: #d91d89;
+  --workspace-accent-soft: rgba(255, 188, 217, 0.62);
+  --workspace-bg-start: #fffdfc;
+  --workspace-bg-mid: #fbf3f1;
+  --workspace-bg-end: #fffaf8;
+  --workspace-surface-dashboard: #fbf3f1;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.82);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff4f8;
+  --workspace-surface-input: #fffafb;
+  --workspace-border: rgba(84, 51, 55, 0.14);
+  --workspace-border-strong: rgba(84, 51, 55, 0.24);
+  --workspace-border-input-focus: rgba(238, 44, 155, 0.42);
+  --workspace-text-primary: #402924;
+  --workspace-text-secondary: #7b5f62;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 246, 250, 0.98),
+    rgba(255, 229, 238, 0.62)
+  );
+  --workspace-sidebar-glow: rgba(255, 188, 217, 0.64);
+}
+
+.main[data-workspace-skin='black_diamond'] {
+  --workspace-accent: #d4af37;
+  --workspace-accent-hover: #f4cf62;
+  --workspace-accent-soft: rgba(212, 175, 55, 0.18);
+  --workspace-bg-start: #151312;
+  --workspace-bg-mid: #221d1d;
+  --workspace-bg-end: #100f10;
+  --workspace-surface-dashboard: #221d1d;
+  --workspace-surface-primary: rgba(34, 30, 30, 0.86);
+  --workspace-surface-primary-solid: #211d1d;
+  --workspace-surface-dashboard-placeholder: rgba(255, 255, 255, 0.06);
+  --workspace-surface-input: rgba(255, 255, 255, 0.08);
+  --workspace-border: rgba(244, 207, 98, 0.22);
+  --workspace-border-strong: rgba(244, 207, 98, 0.34);
+  --workspace-border-input-focus: rgba(0, 217, 255, 0.42);
+  --workspace-text-primary: #f8efe4;
+  --workspace-text-secondary: #d8cbbd;
+  --workspace-text-inverse: #141111;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.22),
+    rgba(0, 217, 255, 0.12)
+  );
+  --workspace-sidebar-glow: rgba(212, 175, 55, 0.16);
+  --workspace-panel-shadow: rgba(0, 0, 0, 0.26);
+  --workspace-button-shadow: rgba(0, 0, 0, 0.3);
+}
+
+.main[data-workspace-skin='rose_gold'] {
+  --workspace-accent: #e04f73;
+  --workspace-accent-hover: #c73b5e;
+  --workspace-accent-soft: rgba(245, 198, 109, 0.3);
+  --workspace-bg-start: #fffaf7;
+  --workspace-bg-mid: #fff1ed;
+  --workspace-bg-end: #fffdf8;
+  --workspace-surface-dashboard: #fff1ed;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.82);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff5f1;
+  --workspace-surface-input: #fffafa;
+  --workspace-border: rgba(161, 90, 76, 0.16);
+  --workspace-border-strong: rgba(161, 90, 76, 0.26);
+  --workspace-border-input-focus: rgba(224, 79, 115, 0.42);
+  --workspace-text-primary: #4a2d2a;
+  --workspace-text-secondary: #846561;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 245, 241, 0.98),
+    rgba(245, 198, 109, 0.22)
+  );
+  --workspace-sidebar-glow: rgba(245, 198, 109, 0.24);
+}
+
+.main[data-workspace-skin='garnet'] {
+  --workspace-accent: #b91c1c;
+  --workspace-accent-hover: #920000;
+  --workspace-accent-soft: rgba(185, 28, 28, 0.14);
+  --workspace-bg-start: #fffafa;
+  --workspace-bg-mid: #fff0f0;
+  --workspace-bg-end: #fffbfa;
+  --workspace-surface-dashboard: #fff0f0;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.82);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff4f4;
+  --workspace-surface-input: #fffafa;
+  --workspace-border: rgba(146, 0, 0, 0.14);
+  --workspace-border-strong: rgba(146, 0, 0, 0.24);
+  --workspace-border-input-focus: rgba(185, 28, 28, 0.42);
+  --workspace-text-primary: #431c1c;
+  --workspace-text-secondary: #7c5858;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 246, 246, 0.98),
+    rgba(185, 28, 28, 0.12)
+  );
+  --workspace-sidebar-glow: rgba(185, 28, 28, 0.12);
+}
+
+.main[data-workspace-skin='amber'] {
+  --workspace-accent: #f97316;
+  --workspace-accent-hover: #d95f0c;
+  --workspace-accent-soft: rgba(249, 115, 22, 0.18);
+  --workspace-bg-start: #fffdf6;
+  --workspace-bg-mid: #fff2df;
+  --workspace-bg-end: #fffcf4;
+  --workspace-surface-dashboard: #fff2df;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.82);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff7eb;
+  --workspace-surface-input: #fffaf3;
+  --workspace-border: rgba(118, 26, 0, 0.14);
+  --workspace-border-strong: rgba(118, 26, 0, 0.24);
+  --workspace-border-input-focus: rgba(249, 115, 22, 0.42);
+  --workspace-text-primary: #401f10;
+  --workspace-text-secondary: #7e5b43;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 247, 235, 0.98),
+    rgba(249, 115, 22, 0.12)
+  );
+  --workspace-sidebar-glow: rgba(249, 115, 22, 0.14);
+}
+
+.main[data-workspace-skin='velvet'] {
+  --workspace-accent: #9333ea;
+  --workspace-accent-hover: #7e22ce;
+  --workspace-accent-soft: rgba(147, 51, 234, 0.2);
+  --workspace-bg-start: #fbf8ff;
+  --workspace-bg-mid: #f1e7ff;
+  --workspace-bg-end: #fffaff;
+  --workspace-surface-dashboard: #f1e7ff;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.84);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #f8f0ff;
+  --workspace-surface-input: #fdfaff;
+  --workspace-border: rgba(99, 0, 185, 0.16);
+  --workspace-border-strong: rgba(99, 0, 185, 0.26);
+  --workspace-border-input-focus: rgba(147, 51, 234, 0.42);
+  --workspace-text-primary: #332044;
+  --workspace-text-secondary: #725b84;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(248, 240, 255, 0.98),
+    rgba(147, 51, 234, 0.12)
+  );
+  --workspace-sidebar-glow: rgba(147, 51, 234, 0.16);
+}
+
+.main[data-workspace-skin='rose_quartz'] {
+  --workspace-accent: #e879f9;
+  --workspace-accent-hover: #d946ef;
+  --workspace-accent-soft: rgba(232, 121, 249, 0.18);
+  --workspace-bg-start: #fffaff;
+  --workspace-bg-mid: #ffeefb;
+  --workspace-bg-end: #fffafe;
+  --workspace-surface-dashboard: #ffeefb;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.84);
+  --workspace-surface-primary-solid: #ffffff;
+  --workspace-surface-dashboard-placeholder: #fff4fd;
+  --workspace-surface-input: #fffbff;
+  --workspace-border: rgba(99, 20, 110, 0.14);
+  --workspace-border-strong: rgba(99, 20, 110, 0.24);
+  --workspace-border-input-focus: rgba(232, 121, 249, 0.42);
+  --workspace-text-primary: #3d1d43;
+  --workspace-text-secondary: #805988;
+  --workspace-nav-active: linear-gradient(
+    135deg,
+    rgba(255, 244, 253, 0.98),
+    rgba(232, 121, 249, 0.14)
+  );
+  --workspace-sidebar-glow: rgba(232, 121, 249, 0.14);
 }
 
 .topbar {
@@ -29,7 +249,7 @@
   height: 34px;
   flex: 0 0 auto;
   color: var(--nic-nac-accent);
-  filter: drop-shadow(0 8px 16px rgba(238, 44, 155, 0.14));
+  filter: drop-shadow(0 8px 16px var(--workspace-accent-soft));
 }
 
 .brandText {
@@ -69,9 +289,9 @@
   max-width: 220px;
   border-radius: 999px;
   border: 1px solid var(--nic-nac-border);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--workspace-surface-primary);
   padding: 8px 14px;
-  box-shadow: 0 10px 22px rgba(64, 41, 36, 0.06);
+  box-shadow: 0 10px 22px var(--workspace-panel-shadow);
   min-width: 0;
 }
 
@@ -113,7 +333,7 @@
   border: 1px solid var(--nic-nac-text-primary);
   background: var(--nic-nac-text-primary);
   color: var(--nic-nac-text-inverse);
-  box-shadow: 0 12px 28px rgba(64, 41, 36, 0.12);
+  box-shadow: 0 12px 28px var(--workspace-button-shadow);
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 800;
@@ -124,8 +344,8 @@
 }
 
 .liveSiteButton:hover {
-  background: var(--nic-nac-accent);
-  border-color: var(--nic-nac-accent);
+  background: var(--workspace-accent-hover);
+  border-color: var(--workspace-accent-hover);
 }
 
 .workspaceShell {
@@ -146,10 +366,10 @@
   padding: 18px 16px;
   border-radius: 22px;
   background:
-    radial-gradient(circle at top right, rgba(255, 212, 234, 0.7), transparent 52%),
-    rgba(255, 255, 255, 0.58);
+    radial-gradient(circle at top right, var(--workspace-sidebar-glow), transparent 52%),
+    var(--workspace-surface-primary);
   border: 1px solid var(--nic-nac-border);
-  box-shadow: 0 18px 42px rgba(64, 41, 36, 0.06);
+  box-shadow: 0 18px 42px var(--workspace-panel-shadow);
 }
 
 .workspaceSidebarTitle {
@@ -191,8 +411,8 @@
 }
 
 .workspaceNavButtonActive {
-  border-color: rgba(238, 44, 155, 0.16);
-  background: linear-gradient(135deg, rgba(255, 246, 250, 0.98), rgba(191, 244, 224, 0.32));
+  border-color: var(--workspace-border-strong);
+  background: var(--workspace-nav-active);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
 }
 

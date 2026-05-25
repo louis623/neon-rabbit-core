@@ -31,9 +31,11 @@ import {
   getCustomerTimeline,
   getEstimatedTextsRemaining,
   getShowCalendarMetrics,
+  getWorkspaceSkinPreset,
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
+  type DashboardPlaceholderProps,
   formatExtensionRepId,
   formatHeaderRepShow,
   formatWalletAmount,
@@ -419,6 +421,68 @@ describe('DashboardPlaceholder', () => {
     )
     expect(formatExtensionRepId('123456')).toBe('123456')
     expect(formatExtensionRepId(undefined)).toBe('Waiting for code')
+  })
+
+  it('derives the workspace skin from the current site settings draft first', () => {
+    expect(getWorkspaceSkinPreset()).toBe('sparkle_suite_morganite')
+    expect(
+      getWorkspaceSkinPreset({
+        ...SITE_SETTINGS_READY_STATE.settings,
+        appearancePreset: 'velvet',
+      }),
+    ).toBe('velvet')
+    expect(
+      getWorkspaceSkinPreset(
+        {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          appearancePreset: 'rose_gold',
+        },
+        {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          appearancePreset: 'black_diamond',
+        },
+      ),
+    ).toBe('black_diamond')
+    expect(
+      getWorkspaceSkinPreset({
+        ...SITE_SETTINGS_READY_STATE.settings,
+        appearancePreset: 'softGlam' as never,
+      }),
+    ).toBe('sparkle_suite_morganite')
+  })
+
+  it('marks the workspace shell with the normalized site appearance preset', () => {
+    const html = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        initialSiteSettings: {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          appearancePreset: 'velvet',
+        },
+      }),
+    )
+
+    expect(html).toContain('data-workspace-skin="velvet"')
+    expect(html).not.toContain('data-nic-nac-skin="velvet"')
+  })
+
+  it('keeps workspace skin tokens scoped away from Nic-Nac brand tokens', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const styles = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(source).toContain('data-workspace-skin={workspaceSkinPreset}')
+    expect(styles).toContain(".main[data-workspace-skin='velvet']")
+    expect(styles).toContain('--workspace-accent')
+    expect(styles).not.toContain('--nic-nac-accent: #9333EA')
+    expect(styles).not.toContain(".main[data-workspace-skin='velvet'] .nic")
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {
@@ -834,6 +898,16 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Site appearance')
     expect(html).toContain('Amethyst')
     expect(html).toContain('Sparkle Suite/Morganite')
+    expect(html).toContain('Black Diamond')
+    expect(html).toContain('Rose Gold')
+    expect(html).toContain('Garnet')
+    expect(html).toContain('Amber')
+    expect(html).toContain('Velvet')
+    expect(html).toContain('Rose Quartz')
+    expect(html).not.toContain('Editorial')
+    expect(html).not.toContain('Soft Glam')
+    expect(html).not.toContain('Sparkle Party')
+    expect(html).not.toContain('Maximum')
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
@@ -871,6 +945,12 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('Skin gallery')
     expect(source).toContain('skin.code')
     expect(source).toContain('SS-01')
+    expect(source).toContain('BD-01')
+    expect(source).toContain('RG-01')
+    expect(source).toContain('GN-01')
+    expect(source).toContain('AB-01')
+    expect(source).toContain('VE-01')
+    expect(source).toContain('RQ-01')
   })
 
   it('calculates show and monthly take-home estimates from manual inputs', () => {

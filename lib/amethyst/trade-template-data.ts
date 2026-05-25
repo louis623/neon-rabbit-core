@@ -195,7 +195,7 @@ const lockedTweakDefaults: Omit<
   shapeRadius: 'soft',
   density: 'regular',
   saturation: 90,
-  preset: 'sparkleParty',
+  preset: 'amethyst',
   sparkleLevel: 'glittery',
   bgTreatment: 'confetti',
   cardSurface: 'holographic',

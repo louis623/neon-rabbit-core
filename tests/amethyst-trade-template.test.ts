@@ -232,6 +232,75 @@ describe('Amethyst trade page template wiring', () => {
     expect(html).toContain('Playfair+Display')
   })
 
+  it('ships the Black Diamond skin in the local trade preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Trade.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('black_diamond')
+    expect(jsx).toContain('Black Diamond')
+    expect(html).toContain('DM+Sans')
+    expect(html).toContain('Playfair+Display')
+  })
+
+  it('ships the Rose Gold skin in the local trade preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Trade.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('rose_gold')
+    expect(jsx).toContain('Rose Gold')
+    expect(html).toContain('DM+Sans')
+    expect(html).toContain('Playfair+Display')
+  })
+
+  it('ships the approved batch skins in the local trade preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const html = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Trade.html'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('garnet')
+    expect(jsx).toContain('Garnet')
+    expect(jsx).toContain('amber')
+    expect(jsx).toContain('Amber')
+    expect(jsx).toContain('velvet')
+    expect(jsx).toContain('Velvet')
+    expect(jsx).toContain('rose_quartz')
+    expect(jsx).toContain('Rose Quartz')
+    expect(html).toContain('Bitter')
+    expect(html).toContain('Nunito')
+  })
+
+  it('does not ship legacy placeholder skins in the local trade preset picker', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).not.toContain('value: "editorial"')
+    expect(jsx).not.toContain('value: "softGlam"')
+    expect(jsx).not.toContain('value: "sparkleParty"')
+    expect(jsx).not.toContain('value: "maximum", label: "Maximum"')
+    expect(jsx).not.toContain('label: "Editorial"')
+    expect(jsx).not.toContain('label: "Soft Glam"')
+    expect(jsx).not.toContain('label: "Sparkle Party"')
+  })
+
   it('wires the customer trade request submission flow without a trade checkbox', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),

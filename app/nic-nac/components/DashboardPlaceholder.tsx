@@ -23,6 +23,7 @@ import type {
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
+import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import styles from './DashboardPlaceholder.module.css'
 
@@ -299,14 +300,24 @@ const SITE_APPEARANCE_PRESET_OPTIONS: Array<{
   label: string
 }> = [
   { value: 'amethyst', label: 'Amethyst' },
-  { value: 'editorial', label: 'Editorial' },
-  { value: 'softGlam', label: 'Soft Glam' },
-  { value: 'sparkleParty', label: 'Sparkle Party' },
   { value: 'sparkle_suite_morganite', label: 'Sparkle Suite/Morganite' },
-  { value: 'maximum', label: 'Maximum' },
+  { value: 'black_diamond', label: 'Black Diamond' },
+  { value: 'rose_gold', label: 'Rose Gold' },
+  { value: 'garnet', label: 'Garnet' },
+  { value: 'amber', label: 'Amber' },
+  { value: 'velvet', label: 'Velvet' },
+  { value: 'rose_quartz', label: 'Rose Quartz' },
 ]
 
-const SITE_SKIN_GALLERY_FEATURED_CODE = 'SS-01'
+const SITE_SKIN_GALLERY_FEATURED_CODES = [
+  'SS-01',
+  'BD-01',
+  'RG-01',
+  'GN-01',
+  'AB-01',
+  'VE-01',
+  'RQ-01',
+] as const
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -554,6 +565,15 @@ export function getSiteSettingsDraft(
     ...settings,
     socialHandles: { ...settings.socialHandles },
   }
+}
+
+export function getWorkspaceSkinPreset(
+  settings?: Pick<SiteSettingsDashboardResult, 'appearancePreset'> | null,
+  draft?: Pick<SiteSettingsDraft, 'appearancePreset'> | null,
+): SiteAppearancePreset {
+  return normalizeAmethystAppearancePreset(
+    draft?.appearancePreset ?? settings?.appearancePreset,
+  )
 }
 
 export function formatAccountBillingAmount(amountCents: number) {
@@ -906,10 +926,11 @@ export function getCustomerRecoveryActions(customer: CustomerAudienceMember) {
 
 export type DashboardPlaceholderProps = {
   repIdOverride?: string
+  initialSiteSettings?: SiteSettingsDashboardResult
 }
 
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
-  const { repIdOverride } = props
+  const { repIdOverride, initialSiteSettings } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>('trade-board')
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
@@ -938,9 +959,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [calendarState, setCalendarState] = useState<CalendarState>({
     status: 'loading',
   })
-  const [siteSettingsState, setSiteSettingsState] = useState<SiteSettingsState>({
-    status: 'loading',
-  })
+  const [siteSettingsState, setSiteSettingsState] = useState<SiteSettingsState>(
+    initialSiteSettings
+      ? {
+          status: 'ready',
+          settings: initialSiteSettings,
+        }
+      : {
+          status: 'loading',
+        },
+  )
   const [accountBillingState, setAccountBillingState] =
     useState<AccountBillingState>({
       status: 'loading',
@@ -966,7 +994,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [autoRechargeDraft, setAutoRechargeDraft] =
     useState<WalletAutoRechargeDraft | null>(null)
   const [siteSettingsDraft, setSiteSettingsDraft] =
-    useState<SiteSettingsDraft | null>(null)
+    useState<SiteSettingsDraft | null>(
+      initialSiteSettings ? getSiteSettingsDraft(initialSiteSettings) : null,
+    )
   const [tradeBoardState, setTradeBoardState] = useState<TradeBoardState>({
     status: 'loading',
   })
@@ -2246,9 +2276,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     siteSettingsState.settings?.businessName,
   )
   const headerExtensionId = formatExtensionRepId(repIdOverride ?? repProfileState.repId)
+  const workspaceSkinPreset = getWorkspaceSkinPreset(
+    siteSettingsState.settings,
+    siteSettingsDraft,
+  )
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} data-workspace-skin={workspaceSkinPreset}>
       <header className={styles.topbar}>
         <div className={styles.topbarCopy}>
           <SparkleSeal className={styles.brandSeal} />
@@ -3184,7 +3218,7 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
             <div className={styles.calendarHeader}>
               <div className={styles.walletSettingsTitle}>Skin gallery</div>
               <span className={styles.rosterTag}>
-                Featured {SITE_SKIN_GALLERY_FEATURED_CODE}
+                Featured {SITE_SKIN_GALLERY_FEATURED_CODES.join(' / ')}
               </span>
             </div>
             <div className={styles.skinGallery}>

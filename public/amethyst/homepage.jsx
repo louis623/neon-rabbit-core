@@ -44,7 +44,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   shapeRadius: "soft",
   density: "regular",
   saturation: 130,
-  preset: "sparkleParty",
+  preset: "amethyst",
   sparkleLevel: "glittery",
   bgTreatment: "confetti",
   cardSurface: "holographic",
@@ -175,23 +175,12 @@ const LIVE_QUEUE_ENTRIES = LIVE_QUEUE_NAMES.map((name, index) => ({
 // Preset combos
 // ============================================================
 const PRESETS = {
-  editorial: {
-    sparkleLevel: "subtle", bgTreatment: "clean", cardSurface: "matte",
-    textureOverlay: "none", buttonEnergy: "calm", ctaEmphasis: "standard",
-    tradeFlair: "clean", cursorEffect: "default", saturation: 100,
-    bgTone: "lavender", primaryColor: "#480DDF", accentColor: "#D209E3",
-  },
-  softGlam: {
-    sparkleLevel: "glittery", bgTreatment: "mesh", cardSurface: "glass",
-    textureOverlay: "sparkle", buttonEnergy: "bouncy", ctaEmphasis: "pulse",
-    tradeFlair: "tier-glow", cursorEffect: "default", saturation: 110,
-    bgTone: "lavender", primaryColor: "#480DDF", accentColor: "#D209E3",
-  },
-  sparkleParty: {
-    sparkleLevel: "maximum", bgTreatment: "confetti", cardSurface: "glass",
-    textureOverlay: "sparkle", buttonEnergy: "bouncy", ctaEmphasis: "pulse",
+  amethyst: {
+    sparkleLevel: "glittery", bgTreatment: "confetti", cardSurface: "holographic",
+    textureOverlay: "sparkle", buttonEnergy: "calm", ctaEmphasis: "standard",
     tradeFlair: "holo-unicorn", cursorEffect: "sparkle", saturation: 130,
-    bgTone: "warm", primaryColor: "#5C0EFF", accentColor: "#FF1AC2",
+    bgTone: "lavender", primaryColor: "#5C0EFF", accentColor: "#FF1AC2",
+    headingFont: "italiana", bodyFont: "inter", headingWeight: 600,
   },
   sparkle_suite_morganite: {
     sparkleLevel: "subtle", bgTreatment: "suite-paper", cardSurface: "warm-paper",
@@ -200,11 +189,47 @@ const PRESETS = {
     bgTone: "suiteBlush", primaryColor: "#ee2c9b", accentColor: "#ff4cae",
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 500,
   },
-  maximum: {
-    sparkleLevel: "maximum", bgTreatment: "aurora", cardSurface: "holographic",
-    textureOverlay: "sparkle", buttonEnergy: "wiggle", ctaEmphasis: "pulse",
-    tradeFlair: "holo-unicorn", cursorEffect: "sparkle", saturation: 150,
-    bgTone: "neon", primaryColor: "#3300FF", accentColor: "#FF00CC",
+  black_diamond: {
+    sparkleLevel: "glittery", bgTreatment: "black-velvet", cardSurface: "dark-metallic",
+    textureOverlay: "sparkle", buttonEnergy: "diamond-lift", ctaEmphasis: "standard",
+    tradeFlair: "cyan-diamond", cursorEffect: "default", saturation: 112,
+    bgTone: "blackDiamond", primaryColor: "#d4af37", accentColor: "#00d9ff",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+  },
+  rose_gold: {
+    sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
+    textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
+    tradeFlair: "champagne-rose", cursorEffect: "default", saturation: 108,
+    bgTone: "roseGold", primaryColor: "#e04f73", accentColor: "#f5c66d",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+  },
+  garnet: {
+    sparkleLevel: "subtle", bgTreatment: "garnet-shell", cardSurface: "blush-shell",
+    textureOverlay: "none", buttonEnergy: "garnet-lift", ctaEmphasis: "standard",
+    tradeFlair: "ruby-polish", cursorEffect: "default", saturation: 112,
+    bgTone: "garnet", primaryColor: "#B91C1C", accentColor: "#920000",
+    headingFont: "boska", bodyFont: "switzer", headingWeight: 600,
+  },
+  amber: {
+    sparkleLevel: "subtle", bgTreatment: "amber-paper", cardSurface: "sunlit-pearl",
+    textureOverlay: "none", buttonEnergy: "amber-pop", ctaEmphasis: "standard",
+    tradeFlair: "citrine-glow", cursorEffect: "default", saturation: 116,
+    bgTone: "amber", primaryColor: "#F97316", accentColor: "#761A00",
+    headingFont: "melodrama", bodyFont: "nunito", headingWeight: 600,
+  },
+  velvet: {
+    sparkleLevel: "glittery", bgTreatment: "velvet-orchid", cardSurface: "plush-orchid",
+    textureOverlay: "sparkle", buttonEnergy: "velvet-lift", ctaEmphasis: "standard",
+    tradeFlair: "orchid-gloss", cursorEffect: "default", saturation: 110,
+    bgTone: "velvet", primaryColor: "#9333EA", accentColor: "#6300B9",
+    headingFont: "bitter", bodyFont: "archivo", headingWeight: 600,
+  },
+  rose_quartz: {
+    sparkleLevel: "glittery", bgTreatment: "quartz-paper", cardSurface: "pink-quartz",
+    textureOverlay: "sparkle", buttonEnergy: "quartz-pop", ctaEmphasis: "standard",
+    tradeFlair: "pink-spark", cursorEffect: "default", saturation: 114,
+    bgTone: "roseQuartz", primaryColor: "#E879F9", accentColor: "#63146E",
+    headingFont: "sharpie", bodyFont: "ranade", headingWeight: 600,
   },
 };
 
@@ -219,6 +244,12 @@ const TONES = {
   midnight: { bg: "#1A0F2E", elevated: "#241640", deep: "#100828" },
   neon:     { bg: "#FFE6FA", elevated: "#FFF0FD", deep: "#FFD1F2" },
   suiteBlush: { bg: "#fcf8f6", elevated: "#fffefd", deep: "#f6ede8" },
+  blackDiamond: { bg: "#080808", elevated: "#15110f", deep: "#030303" },
+  roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
+  garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
+  amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
+  velvet: { bg: "#FFE8FF", elevated: "#fff7ff", deep: "#f7c9ff" },
+  roseQuartz: { bg: "#FAFAFA", elevated: "#fff7ff", deep: "#ffd8ff" },
 };
 
 const FONTS = {
@@ -228,6 +259,14 @@ const FONTS = {
   italiana: '"Italiana", "Playfair Display", serif',
   playfair: '"Playfair Display", Georgia, serif',
   dmSans: '"DM Sans", "Inter", system-ui, sans-serif',
+  boska: '"Boska", "Playfair Display", Georgia, serif',
+  switzer: '"Switzer", "DM Sans", "Inter", system-ui, sans-serif',
+  melodrama: '"Melodrama", "Playfair Display", Georgia, serif',
+  nunito: '"Nunito", "DM Sans", system-ui, sans-serif',
+  bitter: '"Bitter", Georgia, serif',
+  archivo: '"Archivo", "DM Sans", system-ui, sans-serif',
+  sharpie: '"Sharpie", "Quicksand", system-ui, sans-serif',
+  ranade: '"Ranade", "Nunito", system-ui, sans-serif',
   bubbly: '"Quicksand", "Nunito", system-ui, sans-serif',
   chunky: '"Archivo Black", "Inter", sans-serif',
 };
@@ -1138,17 +1177,41 @@ function App() {
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
     if (t.bgTreatment === "aurora") body.classList.add("fx-aurora");
     if (t.bgTreatment === "suite-paper") body.classList.add("bg-suite-paper");
+    if (t.bgTreatment === "black-velvet") body.classList.add("bg-black-velvet");
+    if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
+    if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
+    if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
+    if (t.bgTreatment === "velvet-orchid") body.classList.add("bg-velvet-orchid");
+    if (t.bgTreatment === "quartz-paper") body.classList.add("bg-quartz-paper");
     if (t.cardSurface === "glass") body.classList.add("surface-glass");
     if (t.cardSurface === "holographic") body.classList.add("fx-holographic");
     if (t.cardSurface === "warm-paper") body.classList.add("surface-warm-paper");
+    if (t.cardSurface === "dark-metallic") body.classList.add("surface-dark-metallic");
+    if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
+    if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
+    if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
+    if (t.cardSurface === "plush-orchid") body.classList.add("surface-plush-orchid");
+    if (t.cardSurface === "pink-quartz") body.classList.add("surface-pink-quartz");
     if (t.textureOverlay === "grain") body.classList.add("tex-grain");
     if (t.textureOverlay === "sparkle") body.classList.add("tex-sparkle");
     if (t.buttonEnergy === "bouncy") body.classList.add("btn-bouncy");
     if (t.buttonEnergy === "wiggle") body.classList.add("btn-wiggle");
     if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
+    if (t.buttonEnergy === "diamond-lift") body.classList.add("btn-diamond-lift");
+    if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
+    if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
+    if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
+    if (t.buttonEnergy === "velvet-lift") body.classList.add("btn-velvet-lift");
+    if (t.buttonEnergy === "quartz-pop") body.classList.add("btn-quartz-pop");
     if (t.ctaEmphasis === "pulse") body.classList.add("cta-pulse");
     if (t.tradeFlair === "holo-unicorn") body.classList.add("holo-unicorn");
     if (t.tradeFlair === "soft-pink-lift") body.classList.add("soft-pink-lift");
+    if (t.tradeFlair === "cyan-diamond") body.classList.add("cyan-diamond");
+    if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
+    if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
+    if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
+    if (t.tradeFlair === "orchid-gloss") body.classList.add("orchid-gloss");
+    if (t.tradeFlair === "pink-spark") body.classList.add("pink-spark");
     if (t.cursorEffect === "sparkle") body.classList.add("cursor-sparkle");
     if (t.density === "compact") body.classList.add("density-compact");
     if (t.density === "spacious") body.classList.add("density-spacious");
@@ -1238,11 +1301,14 @@ function App() {
             value={t.preset}
             onChange={applyPreset}
             options={[
-              { value: "editorial", label: "Editorial" },
-              { value: "softGlam", label: "Soft Glam" },
-              { value: "sparkleParty", label: "Sparkle Party" },
+              { value: "amethyst", label: "Amethyst" },
               { value: "sparkle_suite_morganite", label: "Sparkle Suite/Morganite" },
-              { value: "maximum", label: "Maximum" },
+              { value: "black_diamond", label: "Black Diamond" },
+              { value: "rose_gold", label: "Rose Gold" },
+              { value: "garnet", label: "Garnet" },
+              { value: "amber", label: "Amber" },
+              { value: "velvet", label: "Velvet" },
+              { value: "rose_quartz", label: "Rose Quartz" },
             ]}
           />
         </TweakSection>
@@ -1297,6 +1363,7 @@ function App() {
               { value: "confetti", label: "Confetti dots" },
               { value: "aurora", label: "Aurora hero" },
               { value: "suite-paper", label: "Suite paper" },
+              { value: "rose-gold-paper", label: "Rose gold paper" },
             ]}
           />
           <TweakSelect
@@ -1308,6 +1375,7 @@ function App() {
               { value: "glass", label: "Glass" },
               { value: "holographic", label: "Holographic" },
               { value: "warm-paper", label: "Warm paper" },
+              { value: "pearl-rose", label: "Pearl rose" },
             ]}
           />
           <TweakSelect
@@ -1344,6 +1412,7 @@ function App() {
               { value: "neon", label: "Neon pink" },
               { value: "midnight", label: "Midnight" },
               { value: "suiteBlush", label: "Suite blush" },
+              { value: "roseGold", label: "Rose gold" },
             ]}
           />
           <TweakColor

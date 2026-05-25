@@ -2361,6 +2361,402 @@ body.soft-pink-lift .tp-card.diamond {
   box-shadow: 0 14px 34px rgba(238, 44, 155, 0.1);
 }
 
+body.bg-black-velvet {
+  --fg: #f9f3ec;
+  --fg-muted: #d7c3b9;
+  --border: rgba(212, 175, 55, 0.24);
+  color: var(--fg);
+  background:
+    radial-gradient(circle at 14% 8%, rgba(212, 175, 55, 0.22), transparent 28rem),
+    radial-gradient(circle at 86% 12%, rgba(0, 217, 255, 0.13), transparent 22rem),
+    linear-gradient(135deg, #050505 0%, #14100e 48%, #080808 100%);
+}
+
+body.bg-black-velvet .hp-header {
+  background: rgba(8, 8, 8, 0.96);
+  border-bottom-color: rgba(0, 217, 255, 0.2);
+}
+
+body.bg-black-velvet .hp-logo-mark,
+body.bg-black-velvet .hp-header-brand,
+body.bg-black-velvet .hp-hero-headline,
+body.bg-black-velvet .tp-hero-title,
+body.bg-black-velvet .jp-hero-title {
+  background: linear-gradient(90deg, #d4af37, #f4c2c2 52%, #d4af37);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+body.bg-black-velvet .hp-hero-media,
+body.bg-black-velvet .jp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.06) 0%, rgba(5, 5, 5, 0.48) 72%, rgba(5, 5, 5, 0.86) 100%),
+    radial-gradient(circle at 34% 24%, rgba(244, 194, 194, 0.42), transparent 16rem),
+    radial-gradient(circle at 74% 58%, rgba(0, 217, 255, 0.2), transparent 14rem),
+    linear-gradient(135deg, #080808 0%, #2a1810 52%, #050505 100%);
+}
+
+body.surface-dark-metallic .hp-event-card,
+body.surface-dark-metallic .hp-wibp-card,
+body.surface-dark-metallic .hp-trade-card,
+body.surface-dark-metallic .hp-signup-card,
+body.surface-dark-metallic .tp-lrq-rail,
+body.surface-dark-metallic .tp-filters,
+body.surface-dark-metallic .tp-card,
+body.surface-dark-metallic .tp-card-expand,
+body.surface-dark-metallic .jp-hero-card,
+body.surface-dark-metallic .jp-team-card,
+body.surface-dark-metallic .jp-benefit-card,
+body.surface-dark-metallic .jp-final-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+  border-color: rgba(212, 175, 55, 0.26);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.34);
+}
+
+body.bg-black-velvet .hp-btn-primary,
+body.bg-black-velvet .hp-shop-btn,
+body.bg-black-velvet .tp-card-expand-cta,
+body.bg-black-velvet .jp-spot-btn {
+  background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
+  color: #080808;
+  border-color: transparent;
+}
+
+body.bg-black-velvet .hp-btn-outline,
+body.bg-black-velvet .hp-btn-watch,
+body.bg-black-velvet .tp-filter-chip {
+  border-color: rgba(0, 217, 255, 0.45);
+  color: #e8fbff;
+  background: rgba(0, 217, 255, 0.08);
+}
+
+body.btn-diamond-lift .hp-btn-primary:hover,
+body.btn-diamond-lift .hp-btn-outline:hover,
+body.btn-diamond-lift .hp-shop-btn:hover,
+body.btn-diamond-lift .tp-card:hover,
+body.btn-diamond-lift .tp-card-expand-cta:hover,
+body.btn-diamond-lift .jp-team-card:hover,
+body.btn-diamond-lift .jp-benefit-card:hover,
+body.btn-diamond-lift .jp-spot-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 42px rgba(212, 175, 55, 0.22);
+}
+
+body.cyan-diamond .tp-card.unicorn,
+body.cyan-diamond .tp-card.diamond,
+body.cyan-diamond .hp-trade-card {
+  border-color: rgba(0, 217, 255, 0.34);
+  box-shadow: 0 16px 36px rgba(0, 217, 255, 0.12);
+}
+
+body.bg-rose-gold-paper {
+  --fg: #2b1717;
+  --fg-muted: #7e5457;
+  --border: rgba(159, 18, 57, 0.16);
+  background:
+    radial-gradient(circle at 12% 9%, rgba(249, 168, 212, 0.44), transparent 25rem),
+    radial-gradient(circle at 84% 6%, rgba(245, 198, 109, 0.34), transparent 23rem),
+    linear-gradient(135deg, #fff7f8 0%, #fffefe 46%, #ffecef 100%);
+}
+
+body.bg-rose-gold-paper .hp-header {
+  background: rgba(23, 17, 17, 0.96);
+  border-bottom-color: rgba(245, 198, 109, 0.22);
+}
+
+body.bg-rose-gold-paper .hp-header-link[aria-current="page"],
+body.bg-rose-gold-paper .hp-shop-btn,
+body.bg-rose-gold-paper .hp-btn-primary,
+body.bg-rose-gold-paper .tp-card-expand-cta,
+body.bg-rose-gold-paper .jp-spot-btn {
+  background: linear-gradient(90deg, #e04f73, #f9a8d4, #f5c66d);
+  color: #311115;
+  border-color: transparent;
+  box-shadow: 0 14px 32px rgba(224, 79, 115, 0.2);
+}
+
+body.bg-rose-gold-paper .hp-hero-media,
+body.bg-rose-gold-paper .jp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(43, 23, 23, 0.06) 0%, rgba(43, 23, 23, 0.42) 72%, rgba(43, 23, 23, 0.78) 100%),
+    radial-gradient(circle at 22% 18%, rgba(249, 168, 212, 0.58), transparent 25rem),
+    radial-gradient(circle at 76% 56%, rgba(245, 198, 109, 0.5), transparent 19rem),
+    linear-gradient(135deg, #fffafa 0%, #fbd2dc 48%, #7f1d1d 100%);
+}
+
+body.bg-rose-gold-paper .hp-hero-headline,
+body.bg-rose-gold-paper .tp-hero-title,
+body.bg-rose-gold-paper .jp-hero-title {
+  background: linear-gradient(90deg, #fff8f9, #ffe8ec 48%, #f5c66d);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+body.bg-rose-gold-paper .hp-btn-outline,
+body.bg-rose-gold-paper .hp-btn-watch,
+body.bg-rose-gold-paper .tp-filter-chip {
+  border-color: rgba(255, 255, 255, 0.62);
+  color: #fff8f9;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+body.surface-pearl-rose .hp-event-card,
+body.surface-pearl-rose .hp-wibp-card,
+body.surface-pearl-rose .hp-trade-card,
+body.surface-pearl-rose .hp-signup-card,
+body.surface-pearl-rose .tp-lrq-rail,
+body.surface-pearl-rose .tp-filters,
+body.surface-pearl-rose .tp-card,
+body.surface-pearl-rose .tp-card-expand,
+body.surface-pearl-rose .jp-hero-card,
+body.surface-pearl-rose .jp-team-card,
+body.surface-pearl-rose .jp-benefit-card,
+body.surface-pearl-rose .jp-final-card {
+  background: rgba(255, 250, 250, 0.84);
+  border-color: rgba(159, 18, 57, 0.16);
+  box-shadow: 0 18px 50px rgba(159, 18, 57, 0.08);
+}
+
+body.btn-rose-gold-lift .hp-btn-primary:hover,
+body.btn-rose-gold-lift .hp-btn-outline:hover,
+body.btn-rose-gold-lift .hp-shop-btn:hover,
+body.btn-rose-gold-lift .tp-card:hover,
+body.btn-rose-gold-lift .tp-card-expand-cta:hover,
+body.btn-rose-gold-lift .jp-team-card:hover,
+body.btn-rose-gold-lift .jp-benefit-card:hover,
+body.btn-rose-gold-lift .jp-spot-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 38px rgba(224, 79, 115, 0.18);
+}
+
+body.champagne-rose .tp-card.unicorn,
+body.champagne-rose .tp-card.diamond,
+body.champagne-rose .hp-trade-card {
+  border-color: rgba(245, 198, 109, 0.44);
+  box-shadow: 0 16px 36px rgba(224, 79, 115, 0.12);
+}
+
+body.bg-garnet-shell {
+  background:
+    radial-gradient(circle at 14% 10%, rgba(255, 145, 128, 0.34), transparent 24rem),
+    radial-gradient(circle at 86% 6%, rgba(185, 28, 28, 0.18), transparent 22rem),
+    linear-gradient(135deg, #ffe5dd 0%, #fff8f5 48%, #ffd0c4 100%);
+}
+
+body.bg-amber-paper {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.2), transparent 24rem),
+    radial-gradient(circle at 84% 12%, rgba(255, 183, 129, 0.36), transparent 22rem),
+    linear-gradient(135deg, #fafafa 0%, #fff8f0 48%, #ffe4cf 100%);
+}
+
+body.bg-velvet-orchid {
+  background:
+    radial-gradient(circle at 15% 8%, rgba(251, 150, 255, 0.34), transparent 24rem),
+    radial-gradient(circle at 84% 12%, rgba(99, 0, 185, 0.2), transparent 22rem),
+    linear-gradient(135deg, #ffe8ff 0%, #fff7ff 48%, #f7c9ff 100%);
+}
+
+body.bg-quartz-paper {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(232, 121, 249, 0.24), transparent 23rem),
+    radial-gradient(circle at 82% 12%, rgba(255, 176, 255, 0.34), transparent 22rem),
+    linear-gradient(135deg, #fafafa 0%, #fff8ff 48%, #ffd8ff 100%);
+}
+
+body.bg-garnet-shell .hp-header,
+body.bg-amber-paper .hp-header,
+body.bg-velvet-orchid .hp-header,
+body.bg-quartz-paper .hp-header {
+  background: rgba(255, 255, 255, 0.78);
+  border-bottom-color: rgba(80, 56, 52, 0.14);
+}
+
+body.bg-garnet-shell .hp-header-link[aria-current="page"],
+body.bg-garnet-shell .hp-shop-btn,
+body.bg-garnet-shell .hp-btn-primary,
+body.bg-garnet-shell .tp-card-expand-cta,
+body.bg-garnet-shell .jp-spot-btn {
+  background: linear-gradient(135deg, #b91c1c, #920000);
+  color: #fff7f2;
+}
+
+body.bg-amber-paper .hp-header-link[aria-current="page"],
+body.bg-amber-paper .hp-shop-btn,
+body.bg-amber-paper .hp-btn-primary,
+body.bg-amber-paper .tp-card-expand-cta,
+body.bg-amber-paper .jp-spot-btn {
+  background: linear-gradient(135deg, #f97316, #761a00);
+  color: #fffaf5;
+}
+
+body.bg-velvet-orchid .hp-header-link[aria-current="page"],
+body.bg-velvet-orchid .hp-shop-btn,
+body.bg-velvet-orchid .hp-btn-primary,
+body.bg-velvet-orchid .tp-card-expand-cta,
+body.bg-velvet-orchid .jp-spot-btn {
+  background: linear-gradient(135deg, #9333ea, #6300b9);
+  color: #fff7ff;
+}
+
+body.bg-quartz-paper .hp-header-link[aria-current="page"],
+body.bg-quartz-paper .hp-shop-btn,
+body.bg-quartz-paper .hp-btn-primary,
+body.bg-quartz-paper .tp-card-expand-cta,
+body.bg-quartz-paper .jp-spot-btn {
+  background: linear-gradient(135deg, #e879f9, #63146e);
+  color: #fff7ff;
+}
+
+body.surface-blush-shell .hp-event-card,
+body.surface-blush-shell .hp-wibp-card,
+body.surface-blush-shell .hp-trade-card,
+body.surface-blush-shell .hp-signup-card,
+body.surface-blush-shell .tp-lrq-rail,
+body.surface-blush-shell .tp-filters,
+body.surface-blush-shell .tp-card,
+body.surface-blush-shell .tp-card-expand,
+body.surface-blush-shell .jp-hero-card,
+body.surface-blush-shell .jp-team-card,
+body.surface-blush-shell .jp-benefit-card,
+body.surface-blush-shell .jp-final-card {
+  background: rgba(255, 248, 245, 0.86);
+  border-color: rgba(185, 28, 28, 0.2);
+  box-shadow: 0 18px 48px rgba(146, 0, 0, 0.09);
+}
+
+body.surface-sunlit-pearl .hp-event-card,
+body.surface-sunlit-pearl .hp-wibp-card,
+body.surface-sunlit-pearl .hp-trade-card,
+body.surface-sunlit-pearl .hp-signup-card,
+body.surface-sunlit-pearl .tp-lrq-rail,
+body.surface-sunlit-pearl .tp-filters,
+body.surface-sunlit-pearl .tp-card,
+body.surface-sunlit-pearl .tp-card-expand,
+body.surface-sunlit-pearl .jp-hero-card,
+body.surface-sunlit-pearl .jp-team-card,
+body.surface-sunlit-pearl .jp-benefit-card,
+body.surface-sunlit-pearl .jp-final-card {
+  background: rgba(255, 250, 245, 0.88);
+  border-color: rgba(249, 115, 22, 0.2);
+  box-shadow: 0 18px 48px rgba(118, 26, 0, 0.08);
+}
+
+body.surface-plush-orchid .hp-event-card,
+body.surface-plush-orchid .hp-wibp-card,
+body.surface-plush-orchid .hp-trade-card,
+body.surface-plush-orchid .hp-signup-card,
+body.surface-plush-orchid .tp-lrq-rail,
+body.surface-plush-orchid .tp-filters,
+body.surface-plush-orchid .tp-card,
+body.surface-plush-orchid .tp-card-expand,
+body.surface-plush-orchid .jp-hero-card,
+body.surface-plush-orchid .jp-team-card,
+body.surface-plush-orchid .jp-benefit-card,
+body.surface-plush-orchid .jp-final-card {
+  background: rgba(255, 247, 255, 0.88);
+  border-color: rgba(147, 51, 234, 0.2);
+  box-shadow: 0 18px 48px rgba(99, 0, 185, 0.1);
+}
+
+body.surface-pink-quartz .hp-event-card,
+body.surface-pink-quartz .hp-wibp-card,
+body.surface-pink-quartz .hp-trade-card,
+body.surface-pink-quartz .hp-signup-card,
+body.surface-pink-quartz .tp-lrq-rail,
+body.surface-pink-quartz .tp-filters,
+body.surface-pink-quartz .tp-card,
+body.surface-pink-quartz .tp-card-expand,
+body.surface-pink-quartz .jp-hero-card,
+body.surface-pink-quartz .jp-team-card,
+body.surface-pink-quartz .jp-benefit-card,
+body.surface-pink-quartz .jp-final-card {
+  background: rgba(255, 250, 255, 0.88);
+  border-color: rgba(232, 121, 249, 0.22);
+  box-shadow: 0 18px 48px rgba(99, 20, 110, 0.08);
+}
+
+body.btn-garnet-lift .hp-btn-primary:hover,
+body.btn-garnet-lift .hp-btn-outline:hover,
+body.btn-garnet-lift .hp-shop-btn:hover,
+body.btn-garnet-lift .tp-card:hover,
+body.btn-garnet-lift .tp-card-expand-cta:hover,
+body.btn-garnet-lift .jp-team-card:hover,
+body.btn-garnet-lift .jp-benefit-card:hover,
+body.btn-garnet-lift .jp-spot-btn:hover,
+body.btn-amber-pop .hp-btn-primary:hover,
+body.btn-amber-pop .hp-btn-outline:hover,
+body.btn-amber-pop .hp-shop-btn:hover,
+body.btn-amber-pop .tp-card:hover,
+body.btn-amber-pop .tp-card-expand-cta:hover,
+body.btn-amber-pop .jp-team-card:hover,
+body.btn-amber-pop .jp-benefit-card:hover,
+body.btn-amber-pop .jp-spot-btn:hover,
+body.btn-velvet-lift .hp-btn-primary:hover,
+body.btn-velvet-lift .hp-btn-outline:hover,
+body.btn-velvet-lift .hp-shop-btn:hover,
+body.btn-velvet-lift .tp-card:hover,
+body.btn-velvet-lift .tp-card-expand-cta:hover,
+body.btn-velvet-lift .jp-team-card:hover,
+body.btn-velvet-lift .jp-benefit-card:hover,
+body.btn-velvet-lift .jp-spot-btn:hover,
+body.btn-quartz-pop .hp-btn-primary:hover,
+body.btn-quartz-pop .hp-btn-outline:hover,
+body.btn-quartz-pop .hp-shop-btn:hover,
+body.btn-quartz-pop .tp-card:hover,
+body.btn-quartz-pop .tp-card-expand-cta:hover,
+body.btn-quartz-pop .jp-team-card:hover,
+body.btn-quartz-pop .jp-benefit-card:hover,
+body.btn-quartz-pop .jp-spot-btn:hover {
+  transform: translateY(-2px);
+}
+
+body.btn-garnet-lift .hp-btn-primary:hover,
+body.btn-garnet-lift .tp-card:hover {
+  box-shadow: 0 18px 38px rgba(185, 28, 28, 0.18);
+}
+
+body.btn-amber-pop .hp-btn-primary:hover,
+body.btn-amber-pop .tp-card:hover {
+  box-shadow: 0 18px 38px rgba(249, 115, 22, 0.2);
+}
+
+body.btn-velvet-lift .hp-btn-primary:hover,
+body.btn-velvet-lift .tp-card:hover {
+  box-shadow: 0 18px 38px rgba(147, 51, 234, 0.18);
+}
+
+body.btn-quartz-pop .hp-btn-primary:hover,
+body.btn-quartz-pop .tp-card:hover {
+  box-shadow: 0 18px 38px rgba(232, 121, 249, 0.18);
+}
+
+body.ruby-polish .tp-card.unicorn,
+body.ruby-polish .tp-card.diamond,
+body.ruby-polish .hp-trade-card {
+  border-color: rgba(255, 145, 128, 0.5);
+}
+
+body.citrine-glow .tp-card.unicorn,
+body.citrine-glow .tp-card.diamond,
+body.citrine-glow .hp-trade-card {
+  border-color: rgba(255, 183, 129, 0.55);
+}
+
+body.orchid-gloss .tp-card.unicorn,
+body.orchid-gloss .tp-card.diamond,
+body.orchid-gloss .hp-trade-card {
+  border-color: rgba(251, 150, 255, 0.55);
+}
+
+body.pink-spark .tp-card.unicorn,
+body.pink-spark .tp-card.diamond,
+body.pink-spark .hp-trade-card {
+  border-color: rgba(255, 176, 255, 0.58);
+}
+
 /* Cursor effects */
 body.cursor-sparkle, body.cursor-sparkle * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M14 2 L16 12 L26 14 L16 16 L14 26 L12 16 L2 14 L12 12 Z' fill='%23D209E3' stroke='white' stroke-width='1.5'/></svg>") 14 14, auto !important;

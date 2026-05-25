@@ -292,7 +292,7 @@ const lockedTweakDefaults: Omit<
   shapeRadius: 'soft',
   density: 'compact',
   saturation: 110,
-  preset: 'softGlam',
+  preset: 'amethyst',
   sparkleLevel: 'glittery',
   bgTreatment: 'mesh',
   cardSurface: 'holographic',
