@@ -26,8 +26,8 @@ This runbook closes Phase 5 SMS/Email Automation without skipping live-provider 
 
 ## Approval Gates
 
-- [ ] Louis explicitly approved assigning +1-904-438-3050 to C7BAANX.
-- [ ] Telnyx assignment shows the number assigned to C7BAANX.
+- [x] Louis explicitly approved assigning +1-904-438-3050 to C7BAANX.
+- [x] Telnyx assignment shows the number assigned to C7BAANX.
 - [ ] Louis explicitly approved one live SMS smoke test.
 - [ ] Live SMS provider response recorded.
 - [ ] Handset receipt confirmed.
@@ -41,11 +41,15 @@ This runbook closes Phase 5 SMS/Email Automation without skipping live-provider 
 
 ### Telnyx Number Assignment
 
-- Timestamp:
-- Actor:
-- Method: portal/API
-- Result:
-- Assignment status:
+- Timestamp: 2026-05-25T19:54:03Z
+- Actor: Codex, after Louis approval in chat
+- Method: Telnyx 10DLC phone-number assignment API
+- Result: `+19044383050` assigned to campaign `4b30019e-140e-f6e9-0a95-4b5e0a73c301` / `C7BAANX`
+- Assignment status: `ASSIGNED`
+- T-Mobile mapping status: `ADDED`
+- Non-T-Mobile mapping status: `ADDED`
+- AT&T mapping status: `null` in Telnyx API response
+- Errors/failure reasons: `null`
 
 ### SMS Smoke
 
