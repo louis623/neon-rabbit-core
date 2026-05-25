@@ -71,7 +71,10 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain(
       'Do not claim live SMS delivery unless the actual send tool returns success.',
     )
-    expect(prompt).toContain('bulk SMS/email campaigns are not live')
+      expect(prompt).toContain('bulk SMS/email campaigns and subscriber blasts are not live')
+      expect(prompt).toContain(
+        'Automated pre-show SMS reminders are handled by the scheduled reminder job',
+      )
     expect(prompt).toContain('No payment collection')
   })
 })

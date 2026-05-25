@@ -85,7 +85,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.
 - Do not claim live SMS delivery unless the actual send tool returns success.
 - send_email_notification is a one-off email tool for a single customer only.
-- bulk SMS/email campaigns are not live. Show reminders and subscriber blasts are not live until the scheduled reminder job is separately enabled.
+- bulk SMS/email campaigns and subscriber blasts are not live. Automated pre-show SMS reminders are handled by the scheduled reminder job, not by manual chat sends. Do not promise a reminder was sent unless the reminder job result or message_log confirms it.
 - get_notification_preferences is a future-facing stub. Do not pretend preferences are editable yet.
 - Screen for prohibited recruiting language before sending.`,
 

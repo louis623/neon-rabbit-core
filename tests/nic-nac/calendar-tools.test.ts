@@ -279,7 +279,12 @@ describe('calendar registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
     )
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Sending show reminders')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Automated pre-show SMS reminders are handled by the scheduled reminder job',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not promise a reminder was sent unless the reminder job result or message_log confirms it.',
+    )
   })
 
   it('HITL copy includes custom cancel_show labels', () => {

@@ -488,7 +488,7 @@ describe('send_sms_notification', () => {
       'SMS notifications are coming soon!',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Sending show reminders or notifications to subscribers — Not yet.',
+      'Automated pre-show SMS reminders are handled by the scheduled reminder job',
     )
   })
 

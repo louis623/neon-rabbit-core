@@ -13,6 +13,7 @@ vi.mock('@/lib/services/pre-show-reminders', () => ({
 }))
 
 import { GET } from '@/app/api/internal/show-reminders/pre-show/route'
+import { GET as GET_LIVE } from '@/app/api/internal/show-reminders/pre-show/live/route'
 
 describe('GET /api/internal/show-reminders/pre-show', () => {
   beforeEach(() => {
@@ -179,6 +180,36 @@ describe('GET /api/internal/show-reminders/pre-show', () => {
     expect(processDuePreShowRemindersMock).toHaveBeenCalledWith(
       { marker: 'admin' },
       { limit: 25, dryRun: false, liveSendsEnabled: true },
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('runs live mode from the dedicated cron path when enabled', async () => {
+    process.env.CRON_SECRET = 'secret-123'
+    process.env.SPARKLE_PRE_SHOW_SMS_ENABLED = 'true'
+    createAdminClientMock.mockReturnValueOnce({ marker: 'admin' })
+    processDuePreShowRemindersMock.mockResolvedValueOnce({
+      dryRun: false,
+      plannedCount: 1,
+      sentCount: 1,
+      skippedCount: 0,
+      plans: [],
+      sends: [],
+      skipped: [],
+    })
+
+    const response = await GET_LIVE(
+      new Request(
+        'http://localhost/api/internal/show-reminders/pre-show/live?limit=7',
+        {
+          headers: { authorization: 'Bearer secret-123' },
+        },
+      ),
+    )
+
+    expect(processDuePreShowRemindersMock).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      { limit: 7, dryRun: false, liveSendsEnabled: true },
     )
     expect(response.status).toBe(200)
   })

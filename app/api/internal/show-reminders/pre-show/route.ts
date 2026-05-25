@@ -12,7 +12,10 @@ function readLimit(url: URL) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
-function readMode(url: URL) {
+function readMode(url: URL, forcedMode?: 'dry-run' | 'live') {
+  if (forcedMode === 'dry-run') return { dryRun: true, error: null }
+  if (forcedMode === 'live') return { dryRun: false, error: null }
+
   const mode = url.searchParams.get('mode')?.trim().toLowerCase()
   if (!mode || mode === 'dry-run') return { dryRun: true, error: null }
   if (mode === 'live') return { dryRun: false, error: null }
@@ -40,7 +43,10 @@ function isAuthorized(request: Request) {
   return null
 }
 
-export async function GET(request: Request) {
+export async function handlePreShowReminderRequest(
+  request: Request,
+  forcedMode?: 'dry-run' | 'live',
+) {
   const authError = isAuthorized(request)
   if (authError) return authError
 
@@ -53,7 +59,7 @@ export async function GET(request: Request) {
     )
   }
 
-  const mode = readMode(url)
+  const mode = readMode(url, forcedMode)
   if (mode.error) {
     return NextResponse.json({ error: mode.error }, { status: 400 })
   }
@@ -68,4 +74,8 @@ export async function GET(request: Request) {
     ok: true,
     result,
   })
+}
+
+export async function GET(request: Request) {
+  return handlePreShowReminderRequest(request)
 }
