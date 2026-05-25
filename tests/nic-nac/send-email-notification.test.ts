@@ -312,6 +312,9 @@ describe('send_email_notification', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
     )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'do not infer weekly cap status from the visible conversation',
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'Email notifications are coming soon!',
     )

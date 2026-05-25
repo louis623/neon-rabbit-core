@@ -478,6 +478,12 @@ describe('send_sms_notification', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Do not call this before number assignment and handset smoke proof are complete.',
     )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'do not infer weekly cap status from the visible conversation',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Never announce a cap block without the send tool returning that cap error.',
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'SMS notifications are coming soon!',
     )
