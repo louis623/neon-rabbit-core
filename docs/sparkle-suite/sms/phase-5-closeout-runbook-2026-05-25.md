@@ -87,6 +87,18 @@ This runbook closes Phase 5 SMS/Email Automation without skipping live-provider 
 - 2026-05-25: `npm run build` -> passed after running outside the sandbox so Next could fetch Google Fonts.
 - No Telnyx number assignment, live SMS, or live email action was performed during this implementation pass.
 
+### Vercel Environment Readiness
+
+- 2026-05-25: Production and branch preview `codex/sparkle-cross-phase-hardening` were updated for SMS smoke readiness.
+- `TELNYX_API_KEY` exists as a sensitive Vercel env var in production and branch preview.
+- `TELNYX_SMS_FROM` is set to `+19044383050` in production and branch preview.
+- `TELNYX_PUBLIC_KEY` exists in production and branch preview for webhook verification.
+- `SPARKLE_SMS_CAMPAIGN_APPROVED=true` in production and branch preview.
+- `SPARKLE_SMS_NUMBER_ASSIGNED=true` in production and branch preview.
+- `SPARKLE_SMS_HANDSET_SMOKE_PASSED=false` in production and branch preview until handset proof succeeds.
+- `SPARKLE_PRE_SHOW_SMS_ENABLED=false` in production and branch preview so automated pre-show reminders remain dry-run/disabled for live sends.
+- `RESEND_API_KEY` exists as a sensitive Vercel env var in production and preview, and `RESEND_FROM_EMAIL` is set in production and branch preview.
+
 ## Closeout Criteria
 
 Phase 5 can be marked complete only when:

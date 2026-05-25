@@ -261,6 +261,14 @@ export const errors = {
         "SMS sending is blocked until the Telnyx 10DLC campaign is approved. I can help draft the text, but I can't send it yet.",
       statusCode: 503,
     }),
+  SMS_NUMBER_NOT_ASSIGNED: () =>
+    new ServiceError({
+      code: 'SMS_NUMBER_NOT_ASSIGNED',
+      message: 'Telnyx SMS number is not assigned to the approved campaign',
+      userMessage:
+        "SMS sending is blocked until the approved Telnyx campaign has its sending number assigned. I can help draft the text, but I can't send it yet.",
+      statusCode: 503,
+    }),
   INSUFFICIENT_SMS_WALLET: () =>
     new ServiceError({
       code: 'INSUFFICIENT_SMS_WALLET',

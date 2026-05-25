@@ -22,6 +22,7 @@ function getCacheKey() {
     smsFrom: process.env.TELNYX_SMS_FROM ?? null,
     publicKey: process.env.TELNYX_PUBLIC_KEY ?? null,
     campaignApproved: process.env.SPARKLE_SMS_CAMPAIGN_APPROVED ?? null,
+    numberAssigned: process.env.SPARKLE_SMS_NUMBER_ASSIGNED ?? null,
     nextPhase: process.env.NEXT_PHASE ?? null,
     nodeEnv: process.env.NODE_ENV ?? null,
   })
@@ -29,6 +30,10 @@ function getCacheKey() {
 
 export function isTelnyxSmsCampaignApproved(): boolean {
   return process.env.SPARKLE_SMS_CAMPAIGN_APPROVED === 'true'
+}
+
+export function isTelnyxSmsNumberAssigned(): boolean {
+  return process.env.SPARKLE_SMS_NUMBER_ASSIGNED === 'true'
 }
 
 function loadTelnyxConfig(): { config: TelnyxEnv | null; enabled: boolean } {
@@ -42,7 +47,7 @@ function loadTelnyxConfig(): { config: TelnyxEnv | null; enabled: boolean } {
   if (result.success) {
     cached = {
       config: result.data,
-      enabled: isTelnyxSmsCampaignApproved(),
+      enabled: isTelnyxSmsCampaignApproved() && isTelnyxSmsNumberAssigned(),
       cacheKey,
     }
     return cached

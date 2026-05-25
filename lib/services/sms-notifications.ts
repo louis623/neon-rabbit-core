@@ -1,6 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendTelnyxSms } from '@/lib/telnyx/client'
-import { isTelnyxEnabled, isTelnyxSmsCampaignApproved } from '@/lib/telnyx/config'
+import {
+  isTelnyxEnabled,
+  isTelnyxSmsCampaignApproved,
+  isTelnyxSmsNumberAssigned,
+} from '@/lib/telnyx/config'
 import { assertMessageContentAllowed } from './message-content-screening'
 import { errors } from './errors'
 import { assertMessageSendAllowed } from './message-send-limits'
@@ -67,6 +71,10 @@ export async function sendSmsNotification(
 ): Promise<SendSmsNotificationResult> {
   if (!isTelnyxSmsCampaignApproved()) {
     throw errors.SMS_CAMPAIGN_PENDING()
+  }
+
+  if (!isTelnyxSmsNumberAssigned()) {
+    throw errors.SMS_NUMBER_NOT_ASSIGNED()
   }
 
   if (!isTelnyxEnabled()) {

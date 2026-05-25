@@ -29,6 +29,7 @@ const originalFetch = global.fetch
 const originalTelnyxApiKey = process.env.TELNYX_API_KEY
 const originalTelnyxSmsFrom = process.env.TELNYX_SMS_FROM
 const originalSmsCampaignApproved = process.env.SPARKLE_SMS_CAMPAIGN_APPROVED
+const originalSmsNumberAssigned = process.env.SPARKLE_SMS_NUMBER_ASSIGNED
 
 function makeCtx() {
   return {
@@ -68,6 +69,7 @@ beforeEach(() => {
   restoreEnv('TELNYX_API_KEY', originalTelnyxApiKey)
   restoreEnv('TELNYX_SMS_FROM', originalTelnyxSmsFrom)
   restoreEnv('SPARKLE_SMS_CAMPAIGN_APPROVED', originalSmsCampaignApproved)
+  restoreEnv('SPARKLE_SMS_NUMBER_ASSIGNED', originalSmsNumberAssigned)
 })
 
 describe('send_sms_notification', () => {
@@ -98,10 +100,39 @@ describe('send_sms_notification', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('blocks SMS after campaign approval until the Telnyx number is assigned', async () => {
+    process.env.TELNYX_API_KEY = 'telnyx-api-key'
+    process.env.TELNYX_SMS_FROM = '+15551230000'
+    process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    delete process.env.SPARKLE_SMS_NUMBER_ASSIGNED
+
+    const fetchMock = vi.fn()
+    global.fetch = fetchMock as typeof fetch
+
+    const tool = makeSendSmsNotificationTool(makeCtx()) as unknown as ToolDef
+
+    await expect(
+      tool.execute({
+        recipientPhone: '+15551112222',
+        message: 'Reminder for tonight.',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'SMS_NUMBER_NOT_ASSIGNED',
+      userMessage:
+        "SMS sending is blocked until the approved Telnyx campaign has its sending number assigned. I can help draft the text, but I can't send it yet.",
+    })
+
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(deductSmsChargeMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('blocks a fourth manual text inside the rolling weekly window', async () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const gte = vi.fn().mockResolvedValue({
       count: 3,
@@ -154,6 +185,7 @@ describe('send_sms_notification', () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insert = vi.fn()
@@ -197,6 +229,7 @@ describe('send_sms_notification', () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const insertSingle = vi.fn().mockResolvedValue({
       data: { id: 'log-blocked-1' },
@@ -245,6 +278,7 @@ describe('send_sms_notification', () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insertSingle = vi.fn().mockResolvedValue({
@@ -339,6 +373,7 @@ describe('send_sms_notification', () => {
     process.env.TELNYX_API_KEY = 'telnyx-api-key'
     process.env.TELNYX_SMS_FROM = '+15551230000'
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const select = makeAllowedSendCountSelect()
     const insertSingle = vi.fn().mockResolvedValue({
@@ -398,6 +433,7 @@ describe('send_sms_notification', () => {
     delete process.env.TELNYX_API_KEY
     delete process.env.TELNYX_SMS_FROM
     process.env.SPARKLE_SMS_CAMPAIGN_APPROVED = 'true'
+    process.env.SPARKLE_SMS_NUMBER_ASSIGNED = 'true'
 
     const tool = makeSendSmsNotificationTool(makeCtx()) as unknown as ToolDef
 
