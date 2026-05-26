@@ -10,6 +10,7 @@ import {
 import type { CancellationSmokeReport } from '@/lib/launch-readiness/cancellation-smoke'
 import type { LiveShowSmokeReport } from '@/lib/launch-readiness/live-show-smoke'
 import type { MultiRepIsolationReport } from '@/lib/launch-readiness/multi-rep-isolation-smoke'
+import type { OnboardingSmokeReport } from '@/lib/launch-readiness/onboarding-smoke'
 import type { LaunchSmokeReport, LaunchSmokeTarget } from '@/scripts/smoke-demo-readiness'
 
 export type LaunchReadinessProviderProofStatus =
@@ -33,6 +34,7 @@ export interface LaunchReadinessRenderedMobileSmoke {
 }
 
 type ComposedSmokeReport =
+  | OnboardingSmokeReport
   | LiveShowSmokeReport
   | CancellationSmokeReport
   | MultiRepIsolationReport
@@ -126,6 +128,7 @@ export interface LaunchReadinessReportArtifactOptions {
   writeReport?: boolean
   outputDir?: string
   launchSmokeReportPath?: string | null
+  onboardingReportPath?: string | null
   liveShowReportPath?: string | null
   cancellationReportPath?: string | null
   multiRepIsolationReportPath?: string | null
@@ -138,6 +141,7 @@ export interface ParsedLaunchReadinessReportArgs {
   json: boolean
   writeReport: boolean
   launchSmokeReportPath: string | null
+  onboardingReportPath: string | null
   liveShowReportPath: string | null
   cancellationReportPath: string | null
   multiRepIsolationReportPath: string | null
@@ -164,6 +168,7 @@ const PROVIDER_ACTIONS: LaunchReadinessProviderActions = {
 }
 
 const COMPOSED_JOURNEY_IDS = new Set<Phase11JourneyId>([
+  'onboarding',
   'live-show',
   'cancellation',
   'multi-rep-isolation',
@@ -357,6 +362,7 @@ export function parseLaunchReadinessReportArgs(
     json: false,
     writeReport: false,
     launchSmokeReportPath: null,
+    onboardingReportPath: null,
     liveShowReportPath: null,
     cancellationReportPath: null,
     multiRepIsolationReportPath: null,
@@ -378,6 +384,10 @@ export function parseLaunchReadinessReportArgs(
       }
       case '--launch-smoke-report':
         parsed.launchSmokeReportPath = readRequiredValue(args, index, arg)
+        index += 1
+        break
+      case '--onboarding-report':
+        parsed.onboardingReportPath = readRequiredValue(args, index, arg)
         index += 1
         break
       case '--live-show-report':
@@ -445,6 +455,7 @@ export async function runLaunchReadinessReportFromArtifacts(
 ): Promise<LaunchReadinessReportRunResult> {
   const [
     launchSmokeReport,
+    onboardingSmoke,
     liveShowSmoke,
     cancellationSmoke,
     multiRepIsolationSmoke,
@@ -453,6 +464,7 @@ export async function runLaunchReadinessReportFromArtifacts(
     options.launchSmokeReportPath
       ? readJsonArtifact<LaunchSmokeReport>(options.launchSmokeReportPath)
       : Promise.resolve(null),
+    readComposedSmoke(options.onboardingReportPath),
     readComposedSmoke(options.liveShowReportPath),
     readComposedSmoke(options.cancellationReportPath),
     readComposedSmoke(options.multiRepIsolationReportPath),
@@ -460,6 +472,7 @@ export async function runLaunchReadinessReportFromArtifacts(
   ])
 
   const composedSmokes: LaunchReadinessComposedSmokes = {}
+  if (onboardingSmoke) composedSmokes.onboarding = onboardingSmoke
   if (liveShowSmoke) composedSmokes['live-show'] = liveShowSmoke
   if (cancellationSmoke) composedSmokes.cancellation = cancellationSmoke
   if (multiRepIsolationSmoke) {

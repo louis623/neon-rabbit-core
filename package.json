@@ -19,6 +19,7 @@
     "seed:demo-launch-flow": "tsx scripts/seed-demo-launch-flow.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",
+    "smoke:onboarding:provider-free": "tsx scripts/run-onboarding-smoke.ts --write-report --json",
     "report:launch-readiness": "tsx scripts/run-launch-readiness-report.ts",
     "smoke:launch:restored": "tsx scripts/smoke-demo-readiness.ts --launch --categories local_static,local_app,stripe_test,stripe_local_routes,stripe_webhook_local_signature,signwell_sandbox --json --write-report",
     "smoke:launch:local-temp-demo": "tsx scripts/smoke-local-with-temporary-demo-password.ts",

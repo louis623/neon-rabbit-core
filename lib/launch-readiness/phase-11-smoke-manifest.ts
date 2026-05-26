@@ -39,16 +39,19 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     evidenceFiles: [
       'docs/sparkle-suite/demo-launch-runbook-2026-05-18.md',
       'docs/sparkle-suite/launch-readiness-2026-05-18.md',
+      'lib/launch-readiness/onboarding-smoke.ts',
+      'scripts/run-onboarding-smoke.ts',
+      'tests/onboarding-smoke.test.ts',
       'tests/prelaunch/demo-launch-flow-seed.test.ts',
       'tests/prelaunch/prelaunch-safe-smoke-status.test.ts',
     ],
     safeSmokeCommand: {
-      command: 'npm run smoke:demo -- --category local_static --json',
-      note: 'Provider-free static check for demo seed shape, category wiring, and launch guardrails.',
+      command: 'npm run smoke:onboarding:provider-free',
+      note: 'Provider-free composed onboarding smoke for intake, setup profile, launch gates, launch checks, and ready launch-build state.',
     },
     defaultProviderActions: [],
     nextAction:
-      'Add a composed provider-free onboarding smoke that walks intake, setup profile, gates, and ready launch-build state without sending provider traffic.',
+      'Attach a passing onboarding smoke artifact to the launch readiness report before launch signoff.',
   },
   {
     id: 'daily-workflow',

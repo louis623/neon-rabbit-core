@@ -13,8 +13,40 @@ import {
 import type { CancellationSmokeReport } from '@/lib/launch-readiness/cancellation-smoke'
 import type { LiveShowSmokeReport } from '@/lib/launch-readiness/live-show-smoke'
 import type { MultiRepIsolationReport } from '@/lib/launch-readiness/multi-rep-isolation-smoke'
+import type { OnboardingSmokeReport } from '@/lib/launch-readiness/onboarding-smoke'
 
 const generatedAt = new Date('2026-05-26T18:30:00.000Z')
+
+const onboardingCovered: OnboardingSmokeReport = {
+  ok: true,
+  target: 'local',
+  generatedAt: '2026-05-26T18:30:00.000Z',
+  onboardingState: 'ready',
+  leadEmail: 'demo@example.com',
+  providerActions: {
+    sendSms: false,
+    sendEmail: false,
+    sendSignWellLiveAgreement: false,
+    chargeStripe: false,
+    callPaidNicNac: false,
+    attachReservedPhone: false,
+  },
+  steps: [
+    {
+      id: 'launch_build_ready',
+      label: 'Launch build ready',
+      ok: true,
+      providerAction: false,
+      details: {
+        stage: 'ready_for_launch',
+        status: 'ready',
+      },
+    },
+  ],
+  nextEvidenceSuggestions: [
+    'Attach this report to the onboarding Phase 11 evidence bundle.',
+  ],
+}
 
 const liveShowCovered: LiveShowSmokeReport = {
   ok: true,
@@ -156,6 +188,11 @@ describe('launch readiness report runner', () => {
       generatedAt,
       target: 'local',
       composedSmokes: {
+        onboarding: {
+          artifactPath:
+            '.local/launch-readiness-results/onboarding-2026-05-26.json',
+          report: onboardingCovered,
+        },
         'live-show': {
           artifactPath:
             '.local/launch-readiness-results/live-show-2026-05-26.json',
@@ -177,11 +214,21 @@ describe('launch readiness report runner', () => {
     })
 
     expect(report.summary).toMatchObject({
-      covered: 4,
-      partial: 5,
+      covered: 5,
+      partial: 4,
       missing: 0,
       blocked: 0,
       ready: false,
+    })
+    expect(report.journeys.find((journey) => journey.id === 'onboarding')).toMatchObject({
+      status: 'covered',
+      smokeProof: {
+        ok: true,
+        artifactPath:
+          '.local/launch-readiness-results/onboarding-2026-05-26.json',
+        stepCount: 1,
+      },
+      blockedItems: [],
     })
     expect(report.journeys.find((journey) => journey.id === 'live-show')).toMatchObject({
       status: 'covered',
@@ -295,6 +342,8 @@ describe('launch readiness report runner', () => {
         'preview',
         '--launch-smoke-report',
         '.local/launch-smoke-results/launch-preview.json',
+        '--onboarding-report',
+        '.local/launch-readiness-results/onboarding.json',
         '--live-show-report',
         '.local/launch-readiness-results/live-show.json',
         '--rendered-mobile-report',
@@ -307,6 +356,7 @@ describe('launch readiness report runner', () => {
       json: true,
       writeReport: true,
       launchSmokeReportPath: '.local/launch-smoke-results/launch-preview.json',
+      onboardingReportPath: '.local/launch-readiness-results/onboarding.json',
       liveShowReportPath: '.local/launch-readiness-results/live-show.json',
       cancellationReportPath: null,
       multiRepIsolationReportPath: null,
@@ -318,6 +368,7 @@ describe('launch readiness report runner', () => {
       json: false,
       writeReport: false,
       launchSmokeReportPath: null,
+      onboardingReportPath: null,
       liveShowReportPath: null,
       cancellationReportPath: null,
       multiRepIsolationReportPath: null,
@@ -336,6 +387,7 @@ describe('launch readiness report runner', () => {
     const outputDir = await mkdtemp(join(tmpdir(), 'launch-readiness-inputs-'))
     try {
       const launchSmokePath = join(outputDir, 'launch-smoke.json')
+      const onboardingPath = join(outputDir, 'onboarding.json')
       const liveShowPath = join(outputDir, 'live-show.json')
       const renderedMobilePath = join(outputDir, 'rendered-mobile.json')
 
@@ -359,6 +411,9 @@ describe('launch readiness report runner', () => {
           ),
         ),
         import('node:fs/promises').then(({ writeFile }) =>
+          writeFile(onboardingPath, JSON.stringify(onboardingCovered), 'utf8'),
+        ),
+        import('node:fs/promises').then(({ writeFile }) =>
           writeFile(liveShowPath, JSON.stringify(liveShowCovered), 'utf8'),
         ),
         import('node:fs/promises').then(({ writeFile }) =>
@@ -376,6 +431,7 @@ describe('launch readiness report runner', () => {
       const result = await runLaunchReadinessReportFromArtifacts({
         generatedAt,
         launchSmokeReportPath: launchSmokePath,
+        onboardingReportPath: onboardingPath,
         liveShowReportPath: liveShowPath,
         renderedMobileReportPath: renderedMobilePath,
         writeReport: true,
@@ -386,6 +442,13 @@ describe('launch readiness report runner', () => {
         'launch-readiness-preview-2026-05-26T18-30-00-000Z.json',
       )
       expect(result.report.target).toBe('preview')
+      expect(result.report.journeys.find((journey) => journey.id === 'onboarding')).toMatchObject({
+        status: 'covered',
+        smokeProof: {
+          artifactPath: onboardingPath,
+          ok: true,
+        },
+      })
       expect(result.report.journeys.find((journey) => journey.id === 'live-show')).toMatchObject({
         status: 'covered',
         smokeProof: {
