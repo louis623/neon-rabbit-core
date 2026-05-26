@@ -4,5 +4,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  return handlePreShowReminderRequest(request, 'live')
+  return handlePreShowReminderRequest(request, 'live', {
+    noopWhenLiveDisabled: true,
+  })
 }

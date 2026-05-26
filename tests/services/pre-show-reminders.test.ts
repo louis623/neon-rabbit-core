@@ -108,6 +108,24 @@ describe('pre-show reminders', () => {
     ])
   })
 
+  it('normalizes local 10-digit customer phones before sending reminders', () => {
+    const plans = buildPreShowReminderPlans({
+      now: new Date('2026-05-17T20:00:00.000Z'),
+      leadMinutes: 30,
+      events: [makeEvent()],
+      audienceByRepId: {
+        'rep-1': [
+          makeAudience({
+            phone: '720-629-6507',
+          }),
+        ],
+      },
+    })
+
+    expect(plans).toHaveLength(1)
+    expect(plans[0].recipient).toBe('+17206296507')
+  })
+
   it('blocks live processing unless pre-show SMS sends are explicitly enabled', async () => {
     const sender = vi.fn()
 

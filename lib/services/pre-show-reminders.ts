@@ -124,6 +124,13 @@ function buildMessage(event: CalendarEvent): string {
   return `Sparkle Suite: Reminder - ${title} starts soon on ${platform}. Reply STOP to unsubscribe or HELP for help. Msg&data rates may apply.`
 }
 
+function normalizeReminderRecipient(phone: string): string {
+  const compact = phone.trim().replace(/[\s().-]/g, '')
+  if (/^\+[1-9]\d{7,14}$/.test(compact)) return compact
+  if (/^\d{10}$/.test(compact)) return `+1${compact}`
+  return compact
+}
+
 export function buildPreShowReminderPlans(
   input: BuildPreShowReminderPlansInput,
 ): PreShowReminderPlan[] {
@@ -149,7 +156,7 @@ export function buildPreShowReminderPlans(
         eventId: event.id,
         eventTime: event.eventTime,
         message: buildMessage(event),
-        recipient: customer.phone!,
+        recipient: normalizeReminderRecipient(customer.phone!),
         repId: event.repId,
         scheduledFor,
       }))

@@ -4,10 +4,6 @@
     {
       "path": "/api/internal/photo-enhancement/queue",
       "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/internal/show-reminders/pre-show/live",
-      "schedule": "*/10 * * * *"
     }
   ]
 }

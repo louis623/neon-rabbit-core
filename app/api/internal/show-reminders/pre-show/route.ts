@@ -46,6 +46,7 @@ function isAuthorized(request: Request) {
 export async function handlePreShowReminderRequest(
   request: Request,
   forcedMode?: 'dry-run' | 'live',
+  options: { noopWhenLiveDisabled?: boolean } = {},
 ) {
   const authError = isAuthorized(request)
   if (authError) return authError
@@ -64,10 +65,28 @@ export async function handlePreShowReminderRequest(
     return NextResponse.json({ error: mode.error }, { status: 400 })
   }
 
+  const liveSendsEnabled = arePreShowSmsSendsEnabled()
+  if (!mode.dryRun && !liveSendsEnabled && options.noopWhenLiveDisabled) {
+    return NextResponse.json({
+      ok: true,
+      result: {
+        dryRun: false,
+        liveSendsEnabled: false,
+        plannedCount: 0,
+        sentCount: 0,
+        skippedCount: 0,
+        plans: [],
+        sends: [],
+        skipped: [],
+        disabledReason: 'pre-show SMS sends are disabled',
+      },
+    })
+  }
+
   const result = await processDuePreShowReminders(createAdminClient(), {
     limit: limit ?? 25,
     dryRun: mode.dryRun,
-    liveSendsEnabled: arePreShowSmsSendsEnabled(),
+    liveSendsEnabled,
   })
 
   return NextResponse.json({

@@ -213,4 +213,34 @@ describe('GET /api/internal/show-reminders/pre-show', () => {
     )
     expect(response.status).toBe(200)
   })
+
+  it('lets the dedicated cron path no-op when the live gate is disabled', async () => {
+    process.env.CRON_SECRET = 'secret-123'
+
+    const response = await GET_LIVE(
+      new Request(
+        'http://localhost/api/internal/show-reminders/pre-show/live?limit=7',
+        {
+          headers: { authorization: 'Bearer secret-123' },
+        },
+      ),
+    )
+
+    expect(processDuePreShowRemindersMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      result: {
+        dryRun: false,
+        liveSendsEnabled: false,
+        plannedCount: 0,
+        sentCount: 0,
+        skippedCount: 0,
+        plans: [],
+        sends: [],
+        skipped: [],
+        disabledReason: 'pre-show SMS sends are disabled',
+      },
+    })
+  })
 })
