@@ -97,3 +97,30 @@ export function buildSparkleLlmsText(input: SparkleLlmsInput): string {
     '',
   ].join('\n')
 }
+
+export function buildDefaultSparkleLlmsText(origin: string | URL): string {
+  return buildSparkleLlmsText({
+    origin,
+    businessName: "Jane's Sparkle Party",
+    repName: 'Jane',
+    summary:
+      "Jane's Sparkle Party is a Sparkle Suite-powered customer site for live Bomb Party jewelry reveals, trade board browsing, and team information.",
+    publicPages: [
+      { title: 'Home', path: '/amethyst/Homepage.html' },
+      { title: 'Trade Board', path: '/amethyst/Trade.html' },
+      { title: 'Join Team', path: '/amethyst/Join.html' },
+    ],
+    glossary: [
+      {
+        term: 'Trade Board',
+        definition:
+          'A public customer board for browsing jewelry trade listings and requesting fair trades.',
+      },
+      {
+        term: 'Live reveal',
+        definition:
+          'A streamed Bomb Party jewelry opening where customers see pieces revealed live.',
+      },
+    ],
+  })
+}

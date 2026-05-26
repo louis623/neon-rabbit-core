@@ -9,6 +9,7 @@ import {
   formatSmokeCliError,
   isVercelDeploymentProtectionResponse,
   parseLaunchSmokeOptions,
+  PHOTOROOM_PROVIDER_PROOF_ENV,
   parseDemoSmokeOptions,
   runLaunchSmoke,
   runDemoSmoke,
@@ -46,6 +47,7 @@ describe('demo launch smoke readiness plan', () => {
       'protected_preview_routes',
       'signwell_sandbox',
       'signwell_provider_sandbox',
+      'photoroom_provider_proof',
       'signwell_live_preflight',
       'nic_nac_paid_preflight',
       'nic_nac_paid',
@@ -711,6 +713,65 @@ describe('demo launch smoke readiness plan', () => {
           email: 'demo@example.com',
         }),
       ])
+    } finally {
+      fetchMock.mockRestore()
+    }
+  })
+
+  it('keeps Photoroom provider proof blocked outside the default launch smoke', () => {
+    const plan = buildDemoSmokePlan({ category: 'photoroom_provider_proof' })
+
+    expect(SAFE_LAUNCH_SMOKE_CATEGORIES).not.toContain('photoroom_provider_proof')
+    expect(plan).toMatchObject({
+      category: 'photoroom_provider_proof',
+      requiredEnv: ['PHOTOROOM_API_KEY', PHOTOROOM_PROVIDER_PROOF_ENV],
+      actions: [
+        {
+          id: 'photoroom_provider_proof',
+          risk: 'test_provider',
+          run: 'blocked',
+        },
+      ],
+    })
+  })
+
+  it('blocks Photoroom provider proof until the explicit approval flag is set', () => {
+    const plan = buildDemoSmokePlan({ category: 'photoroom_provider_proof' })
+
+    expect(
+      validateDemoSmokePlan(plan, {
+        PHOTOROOM_API_KEY: 'photoroom_secret_key',
+      }),
+    ).toEqual([
+      'PHOTOROOM_PROVIDER_PROOF is required for photoroom_provider_proof smoke.',
+      'Photoroom provider proof blocked: missing PHOTOROOM_PROVIDER_PROOF. PHOTOROOM_PROVIDER_PROOF=true is required before any Photoroom provider proof call.',
+    ])
+  })
+
+  it('does not execute a Photoroom provider call even when the compact proof is approved', async () => {
+    const plan = buildDemoSmokePlan({ category: 'photoroom_provider_proof' })
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+
+    try {
+      const result = await runDemoSmoke(plan, {
+        PHOTOROOM_API_KEY: 'photoroom_secret_key',
+        PHOTOROOM_PROVIDER_PROOF: 'true',
+      })
+
+      expect(result).toEqual({
+        category: 'photoroom_provider_proof',
+        ok: false,
+        results: [
+          {
+            id: 'photoroom_provider_proof',
+            ok: false,
+            detail:
+              'Photoroom provider proof is guarded in this compact harness; provider_call=blocked; provider_actions=none',
+          },
+        ],
+      })
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(JSON.stringify(result)).not.toContain('photoroom_secret_key')
     } finally {
       fetchMock.mockRestore()
     }

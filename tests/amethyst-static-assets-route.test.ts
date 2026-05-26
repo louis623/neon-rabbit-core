@@ -16,6 +16,56 @@ describe('Amethyst static asset route', () => {
     await expect(response.text()).resolves.toContain('homepage.jsx')
   })
 
+  it('rewrites public HTML canonicals and share URLs for custom domains', async () => {
+    const response = await GET(
+      new Request('https://sparklebysasha.example/amethyst/Homepage.html'),
+      { params: Promise.resolve({ asset: ['Homepage.html'] }) },
+    )
+    const html = await response.text()
+
+    expect(html).toContain(
+      '<link rel="canonical" href="https://sparklebysasha.example/amethyst/Homepage.html" />',
+    )
+    expect(html).toContain(
+      '<meta property="og:url" content="https://sparklebysasha.example/amethyst/Homepage.html" />',
+    )
+    expect(html).toContain(
+      '<meta name="twitter:image" content="https://sparklebysasha.example/opengraph-image" />',
+    )
+  })
+
+  it('keeps local and preview Amethyst HTML on the default Sparkle Suite canonical origin', async () => {
+    const localResponse = await GET(
+      new Request('http://localhost:3001/amethyst/Trade.html'),
+      { params: Promise.resolve({ asset: ['Trade.html'] }) },
+    )
+    const previewResponse = await GET(
+      new Request('https://sparkle-suite-git-wave-3.vercel.app/amethyst/Join.html'),
+      { params: Promise.resolve({ asset: ['Join.html'] }) },
+    )
+
+    await expect(localResponse.text()).resolves.toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',
+    )
+    await expect(previewResponse.text()).resolves.toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Join.html" />',
+    )
+  })
+
+  it('injects host-aware JSON-LD into public Amethyst HTML responses', async () => {
+    const response = await GET(
+      new Request('https://sparklebysasha.example/amethyst/Join.html'),
+      { params: Promise.resolve({ asset: ['Join.html'] }) },
+    )
+    const html = await response.text()
+
+    expect(html).toContain('<script type="application/ld+json">')
+    expect(html).toContain(
+      '"@id":"https://sparklebysasha.example/amethyst/Join.html#webpage"',
+    )
+    expect(html).not.toContain('<script>alert')
+  })
+
   it('rejects path traversal outside the public Amethyst export folder', async () => {
     const response = await GET(
       new Request('http://localhost:3001/amethyst/../package.json'),

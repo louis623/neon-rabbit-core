@@ -64,8 +64,8 @@ describe('Sparkle Suite crawl and metadata signals', () => {
     )
   })
 
-  it('generates a focused sitemap for public prelaunch pages', () => {
-    expect(sitemap()).toEqual(
+  it('generates a focused sitemap for public prelaunch pages', async () => {
+    await expect(sitemap()).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           url: 'https://www.yoursparklesuite.com/prelaunch',
@@ -81,8 +81,8 @@ describe('Sparkle Suite crawl and metadata signals', () => {
     )
   })
 
-  it('allows public crawl paths while keeping utility paths out', () => {
-    expect(robots()).toEqual(
+  it('allows public crawl paths while keeping utility paths out', async () => {
+    await expect(robots()).resolves.toEqual(
       expect.objectContaining({
         sitemap: 'https://www.yoursparklesuite.com/sitemap.xml',
         rules: expect.arrayContaining([

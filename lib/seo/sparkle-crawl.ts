@@ -2,6 +2,13 @@ import type { MetadataRoute } from 'next'
 
 export const SPARKLE_PUBLIC_ORIGIN = 'https://www.yoursparklesuite.com'
 
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]'])
+const PREVIEW_HOST_SUFFIXES = ['.vercel.app', '.vercel.sh', '.now.sh']
+const DEFAULT_PUBLIC_HOSTS = new Set([
+  'www.yoursparklesuite.com',
+  'yoursparklesuite.com',
+])
+
 type SparklePublicRoute = {
   path: string
   changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']
@@ -38,6 +45,78 @@ export function normalizeSparkleOrigin(
   }
 
   return parsed.origin
+}
+
+function firstForwardedValue(value: string | null | undefined) {
+  return value?.split(',')[0]?.trim() || null
+}
+
+function normalizeSparkleHost(value: string | null | undefined) {
+  const candidate = firstForwardedValue(value)
+  if (!candidate) return null
+
+  try {
+    const parsed = new URL(
+      /^[a-z][a-z\d+\-.]*:\/\//i.test(candidate)
+        ? candidate
+        : `https://${candidate}`,
+    )
+    return parsed.hostname.trim().toLowerCase().replace(/\.$/, '') || null
+  } catch {
+    return null
+  }
+}
+
+function isLocalOrPreviewSparkleHost(host: string | null) {
+  if (!host) return true
+  if (LOCAL_HOSTS.has(host) || host.endsWith('.localhost')) return true
+
+  return PREVIEW_HOST_SUFFIXES.some(
+    (suffix) => host === suffix.slice(1) || host.endsWith(suffix),
+  )
+}
+
+function resolveRequestProtocol(
+  headers: Pick<Headers, 'get'>,
+  requestUrl?: string | URL,
+) {
+  const forwardedProtocol = firstForwardedValue(headers.get('x-forwarded-proto'))
+  if (forwardedProtocol === 'https' || forwardedProtocol === 'http') {
+    return `${forwardedProtocol}:`
+  }
+
+  if (requestUrl) {
+    try {
+      const parsed = new URL(requestUrl)
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+        return parsed.protocol
+      }
+    } catch {
+      return 'https:'
+    }
+  }
+
+  return 'https:'
+}
+
+export function resolveSparkleRequestOriginFromHeaders(
+  headers: Pick<Headers, 'get'>,
+  requestUrl?: string | URL,
+) {
+  const requestUrlHost = requestUrl ? new URL(requestUrl).host : null
+  const host = normalizeSparkleHost(
+    headers.get('x-forwarded-host') ?? headers.get('host') ?? requestUrlHost,
+  )
+
+  if (DEFAULT_PUBLIC_HOSTS.has(host ?? '') || isLocalOrPreviewSparkleHost(host)) {
+    return SPARKLE_PUBLIC_ORIGIN
+  }
+
+  return normalizeSparkleOrigin(`${resolveRequestProtocol(headers, requestUrl)}//${host}`)
+}
+
+export function resolveSparkleRequestOrigin(request: Request) {
+  return resolveSparkleRequestOriginFromHeaders(request.headers, request.url)
 }
 
 export function buildSparkleSitemap(

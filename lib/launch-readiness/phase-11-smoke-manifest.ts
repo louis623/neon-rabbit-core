@@ -136,6 +136,8 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     status: 'partial',
     evidenceFiles: [
       'docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md',
+      'lib/launch-readiness/cancellation-smoke.ts',
+      'tests/cancellation-smoke.test.ts',
       'tests/stripe-create-checkout-route.test.ts',
       'tests/stripe-create-portal-session-route.test.ts',
       'tests/stripe-webhook-route.test.ts',
@@ -143,18 +145,20 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
       'tests/nic-nac/calendar-tools.test.ts',
     ],
     safeSmokeCommand: {
-      command: 'npm exec vitest run tests/stripe-create-portal-session-route.test.ts tests/services/account-billing.test.ts tests/nic-nac/calendar-tools.test.ts',
-      note: 'Local tests for portal return state, billing summary, and show-cancellation approval boundaries.',
+      command: 'npm exec vitest run tests/cancellation-smoke.test.ts tests/stripe-create-portal-session-route.test.ts tests/services/account-billing.test.ts tests/nic-nac/calendar-tools.test.ts',
+      note: 'Provider-free cancellation smoke plus local tests for portal return state, billing summary, and show-cancellation approval boundaries.',
     },
     defaultProviderActions: [],
     nextAction:
-      'Add an offline cancellation smoke for subscription cancellation, end-of-period state, and no live Stripe calls.',
+      'Wire the provider-free cancellation smoke into launch smoke report artifacts before final launch signoff.',
   },
   {
     id: 'multi-rep-isolation',
     label: 'Multi-rep isolation',
     status: 'partial',
     evidenceFiles: [
+      'lib/launch-readiness/multi-rep-isolation-smoke.ts',
+      'tests/multi-rep-isolation-smoke.test.ts',
       'tests/nic-nac/attack-5-poisoned-rep-notes.test.ts',
       'tests/nic-nac/show-sessions.test.ts',
       'tests/nic-nac/trade-board-tools.test.ts',
@@ -163,12 +167,12 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
       'tests/amethyst-preview-rep.test.ts',
     ],
     safeSmokeCommand: {
-      command: 'npm exec vitest run tests/nic-nac/attack-5-poisoned-rep-notes.test.ts tests/nic-nac/show-sessions.test.ts tests/amethyst-request-rep-target.test.ts tests/amethyst-preview-rep.test.ts',
-      note: 'Focused isolation checks for rep-scoped memory, show context, and Amethyst target resolution.',
+      command: 'npm exec vitest run tests/multi-rep-isolation-smoke.test.ts tests/nic-nac/attack-5-poisoned-rep-notes.test.ts tests/nic-nac/show-sessions.test.ts tests/amethyst-request-rep-target.test.ts tests/amethyst-preview-rep.test.ts',
+      note: 'Provider-free two-rep smoke plus focused isolation checks for rep-scoped memory, show context, and Amethyst target resolution.',
     },
     defaultProviderActions: [],
     nextAction:
-      'Add a two-rep route-level smoke proving workspace and public-site data cannot cross between reps.',
+      'Run the two-rep smoke against route-level adapters once the launch report runner accepts composed Phase 11 smoke artifacts.',
   },
   {
     id: 'error-recovery',

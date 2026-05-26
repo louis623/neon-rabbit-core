@@ -1,7 +1,22 @@
 import type { MetadataRoute } from 'next'
+import { headers } from 'next/headers'
 
-import { buildSparkleSitemap } from '@/lib/seo/sparkle-crawl'
+import {
+  SPARKLE_PUBLIC_ORIGIN,
+  buildSparkleSitemap,
+  resolveSparkleRequestOriginFromHeaders,
+} from '@/lib/seo/sparkle-crawl'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return buildSparkleSitemap()
+export const dynamic = 'force-dynamic'
+
+async function resolveSitemapOrigin() {
+  try {
+    return resolveSparkleRequestOriginFromHeaders(await headers())
+  } catch {
+    return SPARKLE_PUBLIC_ORIGIN
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return buildSparkleSitemap(await resolveSitemapOrigin())
 }

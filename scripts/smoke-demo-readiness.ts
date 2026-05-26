@@ -42,6 +42,7 @@ export const DEMO_SMOKE_CATEGORIES = [
   'protected_preview_routes',
   'signwell_sandbox',
   'signwell_provider_sandbox',
+  'photoroom_provider_proof',
   'signwell_live_preflight',
   'nic_nac_paid_preflight',
   'nic_nac_paid',
@@ -93,6 +94,7 @@ export const SIGNWELL_LIVE_APPROVED_SEND_WINDOW_ENV =
   'SIGNWELL_LIVE_APPROVED_SEND_WINDOW'
 export const SIGNWELL_SANDBOX_PROVIDER_CALL_ENV =
   'SIGNWELL_SANDBOX_PROVIDER_CALL'
+export const PHOTOROOM_PROVIDER_PROOF_ENV = 'PHOTOROOM_PROVIDER_PROOF'
 export const STRIPE_WEBHOOK_EXPECTED_URL_ENV = 'STRIPE_WEBHOOK_EXPECTED_URL'
 const DEFAULT_LOCAL_LAUNCH_APP_URL = 'http://localhost:3000'
 
@@ -556,6 +558,21 @@ export function buildDemoSmokePlan(
           },
         ],
       }
+    case 'photoroom_provider_proof':
+      return {
+        category,
+        requiredEnv: ['PHOTOROOM_API_KEY', PHOTOROOM_PROVIDER_PROOF_ENV],
+        excludedLiveActions: BASE_EXCLUDED_LIVE_ACTIONS,
+        actions: [
+          {
+            id: 'photoroom_provider_proof',
+            label:
+              'Guard a future Photoroom provider proof behind explicit approval; this compact harness executes no provider call.',
+            risk: 'test_provider',
+            run: 'blocked',
+          },
+        ],
+      }
     case 'signwell_live_preflight':
       return {
         category,
@@ -823,6 +840,26 @@ function buildProviderReadinessError(
     ) {
       errors.push(
         'SIGNWELL_ALLOW_LIVE_SEND must stay unset during signwell_provider_sandbox smoke.',
+      )
+    }
+
+    return errors.length > 0 ? errors.join(' ') : null
+  }
+
+  if (plan.category === 'photoroom_provider_proof') {
+    const missing = missingEnvNames(env, [
+      'PHOTOROOM_API_KEY',
+      PHOTOROOM_PROVIDER_PROOF_ENV,
+    ])
+    const errors: string[] = []
+
+    if (missing.length > 0) {
+      errors.push(`Photoroom provider proof blocked: missing ${missing.join(', ')}.`)
+    }
+
+    if (env[PHOTOROOM_PROVIDER_PROOF_ENV]?.trim() !== 'true') {
+      errors.push(
+        `${PHOTOROOM_PROVIDER_PROOF_ENV}=true is required before any Photoroom provider proof call.`,
       )
     }
 
@@ -1400,6 +1437,21 @@ export async function runDemoSmoke(
           id: 'signwell_provider_sandbox',
           ok,
           detail: `SignWell sandbox provider call created test document=${providerResult.documentId ? 'present' : 'missing'}; provider_status=${providerResult.providerStatus}; recipient_count=${providerResult.recipientCount}; send_email=${String(providerResult.sendEmail)}; draft=${String(providerResult.draft)}; test_mode=${String(providerResult.testMode)}; placeholder=${config.recipientPlaceholderName}; metadata_keys=${metadataKeys}; api_base_url_mode=${getSignWellApiBaseUrlMode(config.apiBaseUrl)}`,
+        },
+      ],
+    }
+  }
+
+  if (plan.category === 'photoroom_provider_proof') {
+    return {
+      category: plan.category,
+      ok: false,
+      results: [
+        {
+          id: 'photoroom_provider_proof',
+          ok: false,
+          detail:
+            'Photoroom provider proof is guarded in this compact harness; provider_call=blocked; provider_actions=none',
         },
       ],
     }

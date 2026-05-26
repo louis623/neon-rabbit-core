@@ -5,6 +5,7 @@ import {
   buildSparkleRobots,
   buildSparkleSitemap,
   normalizeSparkleOrigin,
+  resolveSparkleRequestOrigin,
 } from '@/lib/seo/sparkle-crawl'
 
 describe('Sparkle Suite crawl helpers', () => {
@@ -50,6 +51,26 @@ describe('Sparkle Suite crawl helpers', () => {
         sitemap: 'https://sparklebysasha.example/sitemap.xml',
       }),
     )
+  })
+
+  it('resolves request hosts for crawl outputs while preserving local and preview defaults', () => {
+    expect(
+      resolveSparkleRequestOrigin(
+        new Request('https://sparklebysasha.example/sitemap.xml'),
+      ),
+    ).toBe('https://sparklebysasha.example')
+
+    expect(
+      resolveSparkleRequestOrigin(
+        new Request('https://sparkle-suite-git-wave-3.vercel.app/sitemap.xml'),
+      ),
+    ).toBe(SPARKLE_PUBLIC_ORIGIN)
+
+    expect(
+      resolveSparkleRequestOrigin(
+        new Request('http://localhost:3001/sitemap.xml'),
+      ),
+    ).toBe(SPARKLE_PUBLIC_ORIGIN)
   })
 
   it('rejects non-web origins before they can become crawl URLs', () => {

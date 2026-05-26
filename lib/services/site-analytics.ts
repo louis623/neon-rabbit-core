@@ -1,8 +1,136 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { ServiceError } from '@/lib/services/errors'
 import type {
   SiteAnalyticsDashboardResult,
   SiteAnalyticsOperationalSnapshot,
 } from '@/lib/services/types'
+
+export type SiteAnalyticsProvider = 'posthog'
+
+export interface SiteAnalyticsCaptureConfig {
+  enabled: boolean
+  provider: SiteAnalyticsProvider
+  hostConfigured?: boolean
+  privacy?: {
+    disablesIpCapture: boolean
+    masksSensitiveInputs: boolean
+    identifiesAfterLoginOnly: boolean
+  }
+}
+
+export interface SiteAnalyticsEvent {
+  name: string
+  distinctId: string
+  properties: Record<string, string | number | boolean | null>
+}
+
+export interface SiteAnalyticsCaptureAdapter {
+  capture(event: SiteAnalyticsEvent): Promise<void> | void
+}
+
+export type SiteAnalyticsCaptureResult =
+  | {
+      captured: true
+      provider: SiteAnalyticsProvider
+    }
+  | {
+      captured: false
+      provider: SiteAnalyticsProvider
+      reason: 'disabled' | 'adapter_missing'
+    }
+
+const SITE_ANALYTICS_PRIVACY = {
+  disablesIpCapture: true,
+  masksSensitiveInputs: true,
+  identifiesAfterLoginOnly: true,
+}
+
+const SENSITIVE_PROPERTY_NAME_PATTERN =
+  /(email|phone|name|address|password|secret|token|api[_-]?key|posthog)/i
+const EMAIL_VALUE_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i
+const PHONE_VALUE_PATTERN = /\+?\d[\d .()-]{7,}\d/
+const QUERY_PII_PATTERN = /[?&](email|phone|name|address)=/i
+
+export function getSiteAnalyticsCaptureConfig(
+  env: Record<string, string | undefined> = process.env,
+): SiteAnalyticsCaptureConfig {
+  return {
+    enabled:
+      env.SITE_ANALYTICS_CAPTURE_ENABLED?.trim() === 'true' &&
+      Boolean(env.NEXT_PUBLIC_POSTHOG_KEY?.trim()) &&
+      Boolean(env.NEXT_PUBLIC_POSTHOG_HOST?.trim()),
+    provider: 'posthog',
+    hostConfigured: Boolean(env.NEXT_PUBLIC_POSTHOG_HOST?.trim()),
+    privacy: SITE_ANALYTICS_PRIVACY,
+  }
+}
+
+export async function captureSiteAnalyticsEvent(args: {
+  adapter?: SiteAnalyticsCaptureAdapter
+  config?: SiteAnalyticsCaptureConfig
+  event: SiteAnalyticsEvent
+}): Promise<SiteAnalyticsCaptureResult> {
+  const config = args.config ?? getSiteAnalyticsCaptureConfig()
+
+  if (!config.enabled) {
+    return {
+      captured: false,
+      provider: config.provider,
+      reason: 'disabled',
+    }
+  }
+
+  assertSafeSiteAnalyticsEvent(args.event)
+
+  if (!args.adapter) {
+    return {
+      captured: false,
+      provider: config.provider,
+      reason: 'adapter_missing',
+    }
+  }
+
+  await args.adapter.capture(args.event)
+
+  return {
+    captured: true,
+    provider: config.provider,
+  }
+}
+
+function assertSafeSiteAnalyticsEvent(event: SiteAnalyticsEvent) {
+  if (
+    EMAIL_VALUE_PATTERN.test(event.distinctId) ||
+    PHONE_VALUE_PATTERN.test(event.distinctId)
+  ) {
+    throwBlockedAnalyticsEvent()
+  }
+
+  for (const [key, value] of Object.entries(event.properties)) {
+    if (SENSITIVE_PROPERTY_NAME_PATTERN.test(key)) {
+      throwBlockedAnalyticsEvent()
+    }
+
+    if (typeof value === 'string') {
+      if (
+        EMAIL_VALUE_PATTERN.test(value) ||
+        PHONE_VALUE_PATTERN.test(value) ||
+        QUERY_PII_PATTERN.test(value)
+      ) {
+        throwBlockedAnalyticsEvent()
+      }
+    }
+  }
+}
+
+function throwBlockedAnalyticsEvent(): never {
+  throw new ServiceError({
+    code: 'SITE_ANALYTICS_PII_BLOCKED',
+    message: 'analytics event contains blocked fields',
+    userMessage: 'That analytics event was blocked before capture.',
+    statusCode: 422,
+  })
+}
 
 async function countRows(
   supabase: SupabaseClient,
@@ -72,17 +200,11 @@ export async function getSiteAnalyticsDashboard(args: {
   supabase: SupabaseClient
   repId: string
 }): Promise<SiteAnalyticsDashboardResult> {
-  const configured = Boolean(
-    process.env.NEXT_PUBLIC_POSTHOG_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  )
+  const captureConfig = getSiteAnalyticsCaptureConfig()
 
   return {
-    configured,
-    privacy: {
-      disablesIpCapture: true,
-      masksSensitiveInputs: true,
-      identifiesAfterLoginOnly: true,
-    },
+    configured: captureConfig.enabled,
+    privacy: SITE_ANALYTICS_PRIVACY,
     overview: {
       pageViews30d: null,
       uniqueVisitors30d: null,
