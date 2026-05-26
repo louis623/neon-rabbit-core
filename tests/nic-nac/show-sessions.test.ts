@@ -27,6 +27,17 @@ function makeInsertChain<T>(response: { data: T | null; error: unknown }) {
   }
 }
 
+function makeMaybeSingleChain<T>(response: { data: T | null; error: unknown }) {
+  const maybeSingle = vi.fn().mockResolvedValue(response)
+  const eqRep = vi.fn(() => ({ maybeSingle }))
+  const eqId = vi.fn(() => ({ eq: eqRep }))
+  const select = vi.fn(() => ({ eq: eqId }))
+  return {
+    api: { select },
+    spies: { select, eqId, eqRep, maybeSingle },
+  }
+}
+
 describe('Nic-Nac show sessions', () => {
   it('starts a durable show session after closing any prior active session for the rep', async () => {
     const closeChain = makeUpdateChain({ error: null })
@@ -90,6 +101,10 @@ describe('Nic-Nac show sessions', () => {
   })
 
   it('records structured current-show events without calling any model or provider API', async () => {
+    const ownershipChain = makeMaybeSingleChain({
+      data: { id: 'session-1' },
+      error: null,
+    })
     const insertChain = makeInsertChain({
       data: {
         id: 'event-row-1',
@@ -105,7 +120,10 @@ describe('Nic-Nac show sessions', () => {
       },
       error: null,
     })
-    const from = vi.fn(() => insertChain.api)
+    const from = vi
+      .fn()
+      .mockReturnValueOnce(ownershipChain.api)
+      .mockReturnValueOnce(insertChain.api)
 
     const result = await recordNicNacShowSessionEvent(
       { from } as never,
@@ -121,7 +139,11 @@ describe('Nic-Nac show sessions', () => {
       },
     )
 
-    expect(from).toHaveBeenCalledWith('nic_nac_show_session_events')
+    expect(from).toHaveBeenNthCalledWith(1, 'nic_nac_show_sessions')
+    expect(ownershipChain.spies.select).toHaveBeenCalledWith('id')
+    expect(ownershipChain.spies.eqId).toHaveBeenCalledWith('id', 'session-1')
+    expect(ownershipChain.spies.eqRep).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(from).toHaveBeenNthCalledWith(2, 'nic_nac_show_session_events')
     expect(insertChain.spies.insert).toHaveBeenCalledWith({
       session_id: 'session-1',
       rep_id: 'rep-1',
@@ -137,6 +159,52 @@ describe('Nic-Nac show sessions', () => {
       eventType: 'follow_up',
       repId: 'rep-1',
     })
+  })
+
+  it('refuses to record a show-session event for a session the authenticated rep does not own', async () => {
+    const ownershipChain = makeMaybeSingleChain({
+      data: null,
+      error: null,
+    })
+    const insertChain = makeInsertChain({
+      data: {
+        id: 'event-row-1',
+        session_id: 'session-other-rep',
+        rep_id: 'rep-1',
+        event_type: 'follow_up',
+        summary: 'This should not be saved.',
+        payload: {},
+        conversation_id: null,
+        run_id: null,
+        occurred_at: '2026-05-17T21:10:00.000Z',
+        created_at: '2026-05-17T21:10:00.000Z',
+      },
+      error: null,
+    })
+    const from = vi.fn((table: string) =>
+      table === 'nic_nac_show_sessions' ? ownershipChain.api : insertChain.api,
+    )
+
+    await expect(
+      recordNicNacShowSessionEvent(
+        { from } as never,
+        {
+          sessionId: 'session-other-rep',
+          repId: 'rep-1',
+          eventType: 'follow_up',
+          summary: 'This should not be saved.',
+          occurredAt: new Date('2026-05-17T21:10:00.000Z'),
+        },
+      ),
+    ).rejects.toThrow('show session not found for authenticated rep')
+
+    expect(from).toHaveBeenCalledWith('nic_nac_show_sessions')
+    expect(ownershipChain.spies.eqId).toHaveBeenCalledWith(
+      'id',
+      'session-other-rep',
+    )
+    expect(ownershipChain.spies.eqRep).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(insertChain.spies.insert).not.toHaveBeenCalled()
   })
 
   it('builds a zero-credit two-show continuity context without cross-rep leakage', () => {

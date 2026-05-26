@@ -198,6 +198,16 @@ export async function recordNicNacShowSessionEvent(
 ): Promise<NicNacShowSessionEvent> {
   const occurredAt = (input.occurredAt ?? new Date()).toISOString()
 
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('nic_nac_show_sessions')
+    .select('id')
+    .eq('id', input.sessionId)
+    .eq('rep_id', input.repId)
+    .maybeSingle()
+
+  if (sessionError) throw sessionError
+  if (!sessionData) throw new Error('show session not found for authenticated rep')
+
   const { data, error } = await supabase
     .from('nic_nac_show_session_events')
     .insert({
