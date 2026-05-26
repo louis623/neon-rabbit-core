@@ -447,7 +447,7 @@ function Header({ businessName }) {
           <div className="hp-brand-name slot" data-slot="business name">{businessName}</div>
           <div className="hp-brand-sub">Live jewelry reveals</div>
         </div>
-        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop ?</a>
+        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop -&gt;</a>
       </div>
     </header>
   );
@@ -456,10 +456,10 @@ function Header({ businessName }) {
 function Ticker({ topText }) {
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
   const trades = [
-    { name: "OG Halo Bloom Ring", meta: "Ring � OG", tier: "" },
-    { name: "Birthday Spark Necklace", meta: "Necklace � Birthday", tier: "" },
-    { name: "North Star Pendant", meta: "Pendant � Spring Luxe", tier: "unicorn" },
-    { name: "Aurora Stack", meta: "Stack � Stacks", tier: "diamond" },
+    { name: "OG Halo Bloom Ring", meta: "Ring / OG", tier: "" },
+    { name: "Birthday Spark Necklace", meta: "Necklace / Birthday", tier: "" },
+    { name: "North Star Pendant", meta: "Pendant / Spring Luxe", tier: "unicorn" },
+    { name: "Aurora Stack", meta: "Stack / Stacks", tier: "diamond" },
   ];
 
   return (
@@ -478,7 +478,7 @@ function Ticker({ topText }) {
           {[...trades, ...trades, ...trades].map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
-              {trade.name} � {trade.meta}
+              {trade.name} - {trade.meta}
             </a>
           ))}
         </div>
@@ -543,7 +543,7 @@ function LiveQueueModal({ open, onClose, live }) {
             </h2>
           </div>
           <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close queue">
-            �
+            &times;
           </button>
         </div>
         {live ? (
@@ -806,7 +806,7 @@ function TradeCard({ piece, onTap, repName, tierVisible }) {
         <div className="tp-card-collection">{piece.collection}</div>
         <h3 className="tp-card-name slot" data-slot="design name">{piece.name}</h3>
         <div className="tp-card-meta">
-          <span>{piece.type}{piece.size ? ` � Size ${piece.size}` : ""}</span>
+          <span>{piece.type}{piece.size ? ` - Size ${piece.size}` : ""}</span>
           <span className="tp-card-msrp">Bomb Party MSRP <strong>{piece.msrp === null ? "TBD" : `$${piece.msrp}`}</strong></span>
         </div>
         <div className="tp-card-material">{piece.material}</div>
@@ -830,7 +830,7 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
   return (
     <div className="tp-card-expand-mask" onClick={onClose}>
       <div className="tp-card-expand" onClick={(event) => event.stopPropagation()}>
-        <button className="tp-card-close" onClick={onClose} aria-label="Close">�</button>
+        <button className="tp-card-close" onClick={onClose} aria-label="Close">&times;</button>
         <div className={`tp-card-expand-photo slot ${piece.photoUrl ? "has-photo" : ""}`} data-slot="jewelry photo">
           {piece.photoUrl ? (
             <img className="tp-card-expand-photo-img" src={piece.photoUrl} alt={piece.name} />
@@ -855,7 +855,7 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
             </div>
             <div>
               <dt>Jewelry type</dt>
-              <dd>{piece.type}{piece.size ? ` � Size ${piece.size}` : ""}</dd>
+              <dd>{piece.type}{piece.size ? ` - Size ${piece.size}` : ""}</dd>
             </div>
             <div>
               <dt>Material</dt>
@@ -906,9 +906,9 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
     return (
       <div className="tp-sheet-mask" onClick={pending ? undefined : onClose}>
         <div className="tp-sheet success" onClick={(event) => event.stopPropagation()}>
-          <button className="tp-sheet-close" onClick={onClose} aria-label="Close" disabled={pending}>�</button>
+          <button className="tp-sheet-close" onClick={onClose} aria-label="Close" disabled={pending}>&times;</button>
           <div className="tp-sheet-handle" />
-          <div className="tp-sheet-success-icon">?</div>
+          <div className="tp-sheet-success-icon">&#10003;</div>
           <h3 className="tp-sheet-success-title">Request sent.</h3>
           <p className="tp-sheet-success-body">
             <strong>{repName}</strong> will review your match after the show and follow up directly.
@@ -924,12 +924,12 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
   return (
     <div className="tp-sheet-mask" onClick={pending ? undefined : onClose}>
       <div className="tp-sheet" onClick={(event) => event.stopPropagation()}>
-        <button className="tp-sheet-close" onClick={onClose} aria-label="Close" disabled={pending}>�</button>
+        <button className="tp-sheet-close" onClick={onClose} aria-label="Close" disabled={pending}>&times;</button>
         <div className="tp-sheet-handle" />
         <div className="tp-sheet-eyebrow">Trade Request</div>
         <h3 className="tp-sheet-title">{piece.name}</h3>
         <div className="tp-sheet-piece">
-          {piece.collection} � {piece.type}{piece.size ? ` � Size ${piece.size}` : ""}
+          {piece.collection} - {piece.type}{piece.size ? ` - Size ${piece.size}` : ""}
         </div>
         <p className="tp-sheet-helper">
           Keep it simple. Tell <strong>{repName}</strong> what piece you revealed and the closest details you know.
@@ -989,7 +989,7 @@ function EmptyState({ repName }) {
       </p>
       <div className="tp-empty-next">
         <span className="live-dot" />
-        Next show: Tuesday � 8:00 PM CST
+        Next show: Tuesday - 8:00 PM CST
       </div>
     </div>
   );
@@ -1105,10 +1105,10 @@ function Footer({ businessName }) {
       </div>
       <div className="hp-footer-bottom">
         <div className="legal-row">
-          <span>� 2026 {businessName} � Powered by Sparkle Suite</span>
+          <span>&copy; 2026 {businessName} - Powered by Sparkle Suite</span>
           <span>
-            <a {...linkProps(FOOTER_LINKS.privacy || "#faq")}>Privacy</a> �{" "}
-            <a {...linkProps(FOOTER_LINKS.terms || "#faq")}>Terms</a> �{" "}
+            <a {...linkProps(FOOTER_LINKS.privacy || "#faq")}>Privacy</a> -{" "}
+            <a {...linkProps(FOOTER_LINKS.terms || "#faq")}>Terms</a> -{" "}
             <a {...linkProps(FOOTER_LINKS.accessibility || "#faq")}>Accessibility</a>
           </span>
         </div>

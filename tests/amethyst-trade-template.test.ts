@@ -213,6 +213,19 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toContain('.tp-filter-search')
   })
 
+  it('does not ship corrupted visible characters in the trade runtime copy', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).not.toMatch(/[�ï¿½]/)
+    expect(jsx).not.toContain('Shop ?')
+    expect(jsx).toContain('Shop -&gt;')
+    expect(jsx).toContain('Ring / OG')
+    expect(jsx).toContain('Next show: Tuesday - 8:00 PM CST')
+  })
+
   it('uses the shared sticky live reveal queue strip and modal trigger on trade', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
