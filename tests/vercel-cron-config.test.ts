@@ -33,5 +33,6 @@ describe('vercel cron config', () => {
     expect(workflow).toContain('*/10 * * * *')
     expect(workflow).toContain('/api/internal/show-reminders/pre-show/live')
     expect(workflow).toContain('SPARKLE_PRE_SHOW_CRON_SECRET')
+    expect(workflow).toContain('SPARKLE_PRE_SHOW_CRON_SECRET is not configured')
   })
 })
