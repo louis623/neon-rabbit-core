@@ -3,6 +3,50 @@ import { describe, expect, it } from 'vitest'
 import { getHelpResources } from '@/lib/services/help-resources'
 
 describe('help resources', () => {
+  it('covers the self-serve onboarding help hub categories and walkthrough video slots', () => {
+    const resources = getHelpResources()
+    const combinedText = resources
+      .map((resource) =>
+        [
+          resource.category,
+          resource.title,
+          resource.summary,
+          resource.body,
+          ...resource.quickActions,
+          resource.video?.title ?? '',
+          resource.video?.status ?? '',
+        ].join(' '),
+      )
+      .join(' ')
+
+    expect(combinedText).toContain('Getting started after purchase')
+    expect(combinedText).toContain('Meet Nic-Nac')
+    expect(combinedText).toContain('Backend workspace tour')
+    expect(combinedText).toContain('Editing the public site')
+    expect(combinedText).toContain('Adding and updating shows')
+    expect(combinedText).toContain('Managing trade board content')
+    expect(combinedText).toContain('Using the calculator')
+    expect(combinedText).toContain('Chrome extension and Live Queue overview')
+    expect(combinedText).toContain('Troubleshooting and escalation')
+
+    const requiredVideoResourceIds = [
+      'getting-started-after-purchase',
+      'meet-nic-nac',
+      'backend-workspace-tour',
+      'public-site-editing',
+      'shows-and-trade-board',
+      'calculator-walkthrough',
+      'chrome-extension-live-queue-overview',
+    ]
+
+    for (const resourceId of requiredVideoResourceIds) {
+      expect(resources.find((resource) => resource.id === resourceId)?.video).toMatchObject({
+        provider: 'youtube',
+        status: 'placeholder',
+      })
+    }
+  })
+
   it('surfaces Live Queue rollout guidance for rep-facing searches', () => {
     const liveQueueResources = getHelpResources('live queue')
     const combinedText = liveQueueResources

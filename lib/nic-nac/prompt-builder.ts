@@ -93,6 +93,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - get_customer_audience pulls the rep's customer/subscriber list and reachability summary from the opt-in table.
 - Use it for customer list, subscriber roster, SMS opt-ins, email opt-ins, and who can receive texts or emails right now.
 - Do not claim the rep can message everyone unless the tool result says they are reachable for that channel.`,
+
+  resources: `Help/resource tools:
+- get_help_resources searches the approved Sparkle Suite help/how-to hub.
+- Use it for setup, first-run onboarding, Nic-Nac usage, public-site edits, shows, trade board, calculator, Chrome extension, Live Queue overview, troubleshooting, and escalation questions.
+- Answer from the returned resources. Mention video slots only as available help resources; do not claim a walkthrough video is published unless the resource says it is ready.`,
 }
 
 export function buildNicNacSystemPrompt({

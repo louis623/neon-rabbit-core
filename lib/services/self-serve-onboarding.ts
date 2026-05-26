@@ -1,0 +1,67 @@
+export interface SelfServeOnboardingChecklistItem {
+  id: string
+  title: string
+  description: string
+  nicNacPrompt: string
+}
+
+export const SELF_SERVE_ONBOARDING_CHECKLIST: SelfServeOnboardingChecklistItem[] = [
+  {
+    id: 'business-profile',
+    title: 'Confirm business/profile basics',
+    description: 'Review your display name, business name, contact details, and rep-facing profile.',
+    nicNacPrompt: 'Ask Nic-Nac to help confirm my business/profile basics.',
+  },
+  {
+    id: 'skin-and-branding',
+    title: 'Choose or confirm the customer-site skin',
+    description: 'Pick the public-site look that best fits the rep brand before deeper edits.',
+    nicNacPrompt: 'Ask Nic-Nac to help choose or confirm my customer-site skin.',
+  },
+  {
+    id: 'public-links',
+    title: 'Add public links and social profiles',
+    description: 'Add TikTok, Facebook, Instagram, shopping, and other public links shoppers need.',
+    nicNacPrompt: 'Ask Nic-Nac to help add my public links and social profiles.',
+  },
+  {
+    id: 'site-copy',
+    title: 'Adjust site copy',
+    description: 'Tune banner text, ticker text, tagline, and other visible public-site copy.',
+    nicNacPrompt: 'Ask Nic-Nac to help adjust my site copy.',
+  },
+  {
+    id: 'shows',
+    title: 'Add or update shows',
+    description: 'Put upcoming lives and recurring shows into the calendar so timing stays current.',
+    nicNacPrompt: 'Ask Nic-Nac to help add or update my shows.',
+  },
+  {
+    id: 'trade-board',
+    title: 'Set up starter trade board content',
+    description: 'Add the first pieces customers can request and learn the listing status flow.',
+    nicNacPrompt: 'Ask Nic-Nac to help set up starter trade board content.',
+  },
+  {
+    id: 'calculator',
+    title: 'Learn the calculator',
+    description: 'Use the calculator to estimate monthly goals, show goals, costs, and take-home.',
+    nicNacPrompt: 'Ask Nic-Nac to show me how the calculator works.',
+  },
+  {
+    id: 'chrome-extension-live-queue',
+    title: 'Understand the Chrome extension and Live Queue',
+    description: 'Learn why the extension exists, what it syncs, and how to check Live Queue status.',
+    nicNacPrompt: 'Ask Nic-Nac to explain the Chrome extension and Live Queue.',
+  },
+  {
+    id: 'publish-readiness',
+    title: 'Review publish/share readiness',
+    description: 'Check the public site, help resources, and escalation path before sharing widely.',
+    nicNacPrompt: 'Ask Nic-Nac to review my publish/share readiness.',
+  },
+]
+
+export function getSelfServeOnboardingChecklist() {
+  return SELF_SERVE_ONBOARDING_CHECKLIST
+}

@@ -97,7 +97,7 @@ export function PrelaunchWaitlistForm() {
           <div className="ss-waitlist__intro">
             <span className="ss-eyebrow">{prelaunchContent.waitlistEyebrow}</span>
             <h2>
-              Be first in line when <em>Sparkle Suite</em> opens.
+              {prelaunchContent.waitlistHeading}
             </h2>
             <p>{prelaunchContent.waitlistBody}</p>
             <p className="ss-waitlist__small">{prelaunchContent.waitlistNote}</p>
@@ -167,7 +167,7 @@ export function PrelaunchWaitlistForm() {
                 />
                 <div className="ss-field">
                   <label htmlFor="waitlist-setup-pain">
-                    What part of your current setup feels the most patchwork?
+                    What would you want Sparkle Suite to clean up first?
                     <span className="ss-field__opt">- optional</span>
                   </label>
                   <textarea
@@ -232,8 +232,7 @@ export function PrelaunchWaitlistForm() {
                 {prelaunchContent.waitlistSuccessEyebrow}
               </span>
               <h3>
-                Thank you, <span className="ss-confirm__name">friend</span>.{' '}
-                <em>We've got you.</em>
+                {prelaunchContent.waitlistSuccessTitle}
               </h3>
               <p>{prelaunchContent.waitlistSuccessBody}</p>
             </div>

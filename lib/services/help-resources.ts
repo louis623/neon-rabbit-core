@@ -2,6 +2,113 @@ import type { HelpResource } from '@/lib/services/types'
 
 const HELP_RESOURCES: HelpResource[] = [
   {
+    id: 'getting-started-after-purchase',
+    category: 'Getting started',
+    title: 'Getting started after purchase',
+    summary: 'The first path after checkout: open the backend, meet Nic-Nac, and work through setup.',
+    body:
+      'After purchase, use your confirmation email to open the backend workspace. Nic-Nac will guide the setup checklist from inside the workspace, and this help hub holds the walkthroughs when you want to watch a step before doing it.',
+    quickActions: ['Open backend workspace', 'Start setup checklist', 'Watch setup walkthrough'],
+    video: {
+      title: 'Getting started / setup walkthrough',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'meet-nic-nac',
+    category: 'Nic-Nac',
+    title: 'Meet Nic-Nac and how to ask for help',
+    summary: 'How to use Nic-Nac as the first stop for setup, site edits, and workflow questions.',
+    body:
+      'Nic-Nac is your Sparkle Suite assistant inside the backend workspace. Ask plain-English questions, ask for help changing site settings, or ask what to do next. If something needs Louis or Neon Rabbit support, Nic-Nac should help gather the details for escalation.',
+    quickActions: ['Ask Nic-Nac what to do next', 'Ask for a site edit', 'Start an escalation'],
+    video: {
+      title: 'How to use Nic-Nac',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'backend-workspace-tour',
+    category: 'Backend workspace',
+    title: 'Backend workspace tour',
+    summary: 'Where the main Sparkle Suite tools live once the rep logs in.',
+    body:
+      'The backend workspace is the home base for setup, shows, trade board work, customer roster, calculator, billing, site settings, and help. Use the left-side workspace sections to move between tools, then ask Nic-Nac when you want help taking action.',
+    quickActions: ['Open workspace tour', 'Review workspace sections', 'Ask Nic-Nac for directions'],
+    video: {
+      title: 'Backend workspace tour',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'public-site-editing',
+    category: 'Site settings',
+    title: 'Editing the public site, copy, links, and skin',
+    summary: 'How to change the customer-facing details shoppers see first.',
+    body:
+      'Use Site Settings for public-facing updates such as display name, business name, banner text, ticker text, tagline, hero image, social links, join-page visibility, and skin preset. These changes should feel like normal setup, not a custom build request.',
+    quickActions: ['Open site settings', 'Choose skin preset', 'Update public links'],
+    video: {
+      title: 'Public site editing walkthrough',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'shows-and-trade-board',
+    category: 'Shows and trade board',
+    title: 'Adding and updating shows; Managing trade board content',
+    summary: 'How shows and trade board setup fit together before the rep goes live.',
+    body:
+      'Add upcoming shows in the calendar, then keep trade board pieces current so customers can request available pieces. Nic-Nac can help create shows, update show details, explain listing status, and guide trade request handling.',
+    quickActions: ['Add a show', 'Open trade board', 'Ask Nic-Nac to explain status'],
+    video: {
+      title: 'Shows and trade board walkthrough',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'calculator-walkthrough',
+    category: 'Calculator',
+    title: 'Using the calculator',
+    summary: 'How to estimate monthly and single-show goals from the backend workspace.',
+    body:
+      'The business calculator helps estimate show revenue, costs, inventory flow, and take-home planning. Use it as a planning guide, then adjust assumptions when your show cadence, order volume, or costs change.',
+    quickActions: ['Open calculator', 'Estimate monthly take-home', 'Estimate one show'],
+    video: {
+      title: 'Calculator walkthrough',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'chrome-extension-live-queue-overview',
+    category: 'Live Queue',
+    title: 'Chrome extension and Live Queue overview',
+    summary: 'Why the Chrome extension exists and how it supports the public Live Queue.',
+    body:
+      'The Chrome extension connects the Bomb Party Party Orders page to Sparkle Suite so the public site can show the live reveal queue. Reps do not need implementation details; they need to know why the extension is there, how to confirm it is on, and when to ask for help if the queue looks stale or empty.',
+    quickActions: ['Watch extension overview', 'Check extension status', 'Review Live Queue help'],
+    video: {
+      title: 'Chrome extension / Live Queue overview',
+      provider: 'youtube',
+      status: 'placeholder',
+    },
+  },
+  {
+    id: 'setup-troubleshooting-escalation',
+    category: 'Troubleshooting',
+    title: 'Troubleshooting and escalation',
+    summary: 'What to try first and when Nic-Nac should package the issue for Louis or support.',
+    body:
+      'Start by checking the relevant help resource, then ask Nic-Nac to walk through the setup step. Escalate only when the rep is blocked, something appears broken, or a change needs Neon Rabbit support. Include the page, account, action attempted, and any visible error.',
+    quickActions: ['Ask Nic-Nac to troubleshoot', 'Gather support details', 'Escalate to support'],
+  },
+  {
     id: 'trade-board-basics',
     category: 'Trade board',
     title: 'How the trade board works',
@@ -92,7 +199,15 @@ export function getHelpResources(query = ''): HelpResource[] {
   if (!normalized) return HELP_RESOURCES
 
   return HELP_RESOURCES.filter((resource) =>
-    [resource.category, resource.title, resource.summary, resource.body]
+    [
+      resource.category,
+      resource.title,
+      resource.summary,
+      resource.body,
+      ...resource.quickActions,
+      resource.video?.title ?? '',
+      resource.video?.status ?? '',
+    ]
       .join(' ')
       .toLowerCase()
       .includes(normalized),

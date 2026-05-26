@@ -8,10 +8,8 @@ export function PrelaunchFooter() {
         <div className="ss-wrap ss-closing__inner">
           <SparkleSeal className="ss-closing__seal" />
           <span className="ss-eyebrow">{prelaunchContent.footerEyebrow}</span>
-          <h2>
-            We're building this carefully. <em>The polished edge is on the way.</em>
-          </h2>
-          <p>Join the waitlist and be first to know when Sparkle Suite is ready.</p>
+          <h2>{prelaunchContent.footerHeading}</h2>
+          <p>{prelaunchContent.footerBody}</p>
           <a className="ss-btn ss-btn--primary" href="#waitlist">
             {prelaunchContent.primaryCtaLabel}
             <span aria-hidden="true" className="ss-arrow">
@@ -31,7 +29,7 @@ export function PrelaunchFooter() {
             <a href="/terms-and-conditions">Terms and Conditions</a>
           </nav>
           <div className="ss-foot__copy">
-            <div>Copyright 2026 Sparkle Suite - Coming Soon</div>
+            <div>Copyright 2026 Sparkle Suite</div>
             <div>{prelaunchContent.footerTagline}</div>
           </div>
         </div>

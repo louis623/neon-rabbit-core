@@ -38,6 +38,7 @@ import { sendSmsNotificationTool } from './send-sms-notification'
 import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { customerAudienceTool } from './get-customer-audience'
+import { getHelpResourcesTool } from './get-help-resources'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -71,6 +72,7 @@ const REGISTRY: ToolDefinition[] = [
   sendEmailNotificationTool,
   getNotificationPreferencesTool,
   customerAudienceTool,
+  getHelpResourcesTool,
 ]
 
 export type NicNacToolIntent =
@@ -84,6 +86,7 @@ export type NicNacToolIntent =
   | 'site'
   | 'notification'
   | 'audience'
+  | 'resources'
 
 const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   memory: ['read_recent_rep_notes', 'write_rep_note'],
@@ -117,6 +120,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'get_customer_audience',
   ],
   audience: ['get_customer_audience', 'get_notification_preferences'],
+  resources: ['get_help_resources'],
 }
 
 const REGISTRY_BY_NAME = new Map(REGISTRY.map((def) => [def.name, def]))
@@ -129,6 +133,16 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   }
   const hasAny = (patterns: RegExp[]) =>
     patterns.some((pattern) => pattern.test(normalized))
+  const asksForResourceHelp = hasAny([
+    /\bhow[- ]?to\b/,
+    /\bwalkthrough\b/,
+    /\bvideo\b/,
+    /\bwhere\b.*\b(help|resource|guide|walkthrough|video)\b/,
+    /\b(help|resource|guide|walkthrough|video)\b.*\b(where|find|show|watch)\b/,
+    /\bgetting started\b/,
+  ])
+
+  if (asksForResourceHelp) return ['resources']
 
   if (
     hasAny([
@@ -224,6 +238,25 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
 
   if (hasAny([/\bsms\b/, /\btext\b/, /\bemail\b/, /\bnotify\b/])) {
     add('notification')
+  }
+
+  if (
+    hasAny([
+      /\bhelp\b/,
+      /\bhow[- ]?to\b/,
+      /\bwalkthrough\b/,
+      /\bvideo\b/,
+      /\bsetup\b/,
+      /\bgetting started\b/,
+      /\bnic[- ]?nac\b/,
+      /\bcalculator\b/,
+      /\bchrome extension\b/,
+      /\blive queue\b/,
+      /\btroubleshoot/,
+      /\bescalat/,
+    ])
+  ) {
+    add('resources')
   }
 
   if (

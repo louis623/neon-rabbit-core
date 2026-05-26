@@ -108,7 +108,7 @@ describe('POST /api/stripe/create-checkout', () => {
       new Request('http://localhost/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ agreementAccepted: true }),
       }),
     )
 
@@ -128,6 +128,9 @@ describe('POST /api/stripe/create-checkout', () => {
           founder_sequence: '1',
           build_fee_charged: 'true',
           founder_rate_months: '12',
+          agreement_provider: 'clickwrap',
+          agreement_version: 'sparkle-suite-terms-2026-05-09',
+          signwell_required: 'false',
         }),
       }),
     )
@@ -165,7 +168,7 @@ describe('POST /api/stripe/create-checkout', () => {
       new Request('http://localhost/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ agreementAccepted: true }),
       }),
     )
 
@@ -193,7 +196,7 @@ describe('POST /api/stripe/create-checkout', () => {
       new Request('http://localhost/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ agreementAccepted: true }),
       }),
     )
 
@@ -243,6 +246,7 @@ describe('POST /api/stripe/create-checkout', () => {
         body: JSON.stringify({
           repId: 'rep-attacker',
           planType: 'monthly',
+          agreementAccepted: true,
         }),
       }),
     )
@@ -261,6 +265,29 @@ describe('POST /api/stripe/create-checkout', () => {
       }),
     )
     expect(response.status).toBe(200)
+  })
+
+  it('requires standard terms acceptance before creating checkout', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Accept the Sparkle Suite Terms and Conditions before checkout.',
+      agreementVersion: 'sparkle-suite-terms-2026-05-09',
+    })
+    expect(getStripeMock).not.toHaveBeenCalled()
   })
 
   it('rejects non-monthly plan requests', async () => {

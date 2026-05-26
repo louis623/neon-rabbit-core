@@ -375,6 +375,9 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('View live site')
     expect(html).toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
+    expect(html).toContain('Setup Checklist')
+    expect(html).toContain('Confirm business/profile basics')
+    expect(html).toContain('Understand the Chrome extension and Live Queue')
     expect(html).toContain('Trade Board')
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')
@@ -384,8 +387,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Site Settings')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
-    expect(html).toContain('Request inbox')
-    expect(html).toContain('Fulfillment queue')
+    expect(html).toContain('Listings, requests, queue, and history')
     expect(html).not.toContain('I confirm I own the piece')
   })
 
@@ -976,6 +978,31 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$99.00')
     expect(html).toContain('Manage billing and cancel')
     expect(html).toContain('Opened Stripe billing portal.')
+  })
+
+  it('renders terms acceptance before subscription checkout can start', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            paymentMethod: null,
+            invoices: [],
+            canStartSubscription: true,
+            canManageBilling: false,
+          },
+        },
+        agreementAccepted: false,
+      }),
+    )
+
+    expect(html).toContain('I have read and accept the Sparkle Suite')
+    expect(html).toContain('Terms and Conditions')
+    expect(html).toContain('href="/terms-and-conditions"')
+    expect(html).toContain('Start monthly subscription')
+    expect(html).toContain('disabled=""')
   })
 
   it('renders static skin browsing cards for low-cost appearance selection', () => {

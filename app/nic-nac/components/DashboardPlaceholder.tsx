@@ -21,6 +21,7 @@ import type {
   WalletTransactionSummary,
 } from '@/lib/services/types'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
+import { getSelfServeOnboardingChecklist } from '@/lib/services/self-serve-onboarding'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
@@ -28,6 +29,7 @@ import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
+  { key: 'setup-checklist', label: 'Setup Checklist', subtitle: 'First-run setup path with Nic-Nac' },
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
@@ -932,7 +934,7 @@ export type DashboardPlaceholderProps = {
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const { repIdOverride, initialSiteSettings } = props
   const [activeSection, setActiveSection] =
-    useState<WorkspaceSectionKey>('trade-board')
+    useState<WorkspaceSectionKey>('setup-checklist')
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
     status: 'loading',
   })
@@ -991,6 +993,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+  const [subscriptionAgreementAccepted, setSubscriptionAgreementAccepted] =
+    useState(false)
   const [autoRechargeDraft, setAutoRechargeDraft] =
     useState<WalletAutoRechargeDraft | null>(null)
   const [siteSettingsDraft, setSiteSettingsDraft] =
@@ -1798,7 +1802,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: action === 'subscribe' ? JSON.stringify({}) : undefined,
+        body:
+          action === 'subscribe'
+            ? JSON.stringify({ agreementAccepted: subscriptionAgreementAccepted })
+            : undefined,
       })
 
       const payload = (await response.json().catch(() => null)) as
@@ -2316,7 +2323,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         <aside className={styles.workspaceSidebar}>
           <div className={styles.workspaceSidebarTitle}>Dashboard</div>
           <div className={styles.workspaceSidebarIntro}>
-            Start with the Trade Board, then ask Nic-Nac when you want help doing the work with you.
+            Start with the setup checklist, then ask Nic-Nac when you want help doing the work with you.
           </div>
           <nav className={styles.workspaceNav}>
             {WORKSPACE_SECTIONS.map((section) => {
@@ -2349,6 +2356,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </nav>
         </aside>
         <section className={styles.workspaceContent}>
+          {activeSection === 'setup-checklist' ? (
+            <div className={styles.workspaceSectionStack}>
+              <SetupChecklistCard />
+            </div>
+          ) : null}
+
           {activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
@@ -2474,6 +2487,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onStartSubscription={() => handleAccountBillingAction('subscribe')}
                 onManageBilling={() => handleAccountBillingAction('manage')}
                 statusMessage={accountBillingActionState.helperMessage}
+                agreementAccepted={subscriptionAgreementAccepted}
+                onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
               />
               <WalletSummaryCard
                 state={walletState}
@@ -3273,6 +3288,18 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
                   <div className={styles.customerName}>{resource.title}</div>
                   <div className={styles.helperNote}>{resource.summary}</div>
                   <div className={styles.customerDate}>{resource.body}</div>
+                  {resource.video ? (
+                    <div className={styles.timelineList}>
+                      <span className={styles.timelineItem}>
+                        Video: {resource.video.title}
+                      </span>
+                      <span className={styles.timelineItem}>
+                        {resource.video.status === 'ready'
+                          ? 'Ready to watch'
+                          : 'Video slot ready'}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className={styles.actionRow}>
                     {resource.quickActions.map((action) => (
                       <span key={`${resource.id}-${action}`} className={styles.timelineItem}>
@@ -3295,6 +3322,38 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
           )}
         </>
       }
+    </div>
+  )
+}
+
+function SetupChecklistCard() {
+  const checklist = getSelfServeOnboardingChecklist()
+
+  return (
+    <div className={styles.workspacePanel}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Setup Checklist</div>
+          <div className={styles.cardSubtitle}>
+            First-run setup path for self-serve reps after purchase.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>Nic-Nac guided</span>
+      </div>
+      <div className={styles.resourceList}>
+        {checklist.map((item, index) => (
+          <div key={item.id} className={styles.resourceCard}>
+            <div className={styles.badgeRow}>
+              <span className={styles.rosterTag}>Step {index + 1}</span>
+            </div>
+            <div className={styles.customerName}>{item.title}</div>
+            <div className={styles.helperNote}>{item.description}</div>
+            <div className={styles.timelineList}>
+              <span className={styles.timelineItem}>{item.nicNacPrompt}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -4017,12 +4076,16 @@ export function AccountBillingCard({
   onStartSubscription,
   onManageBilling,
   statusMessage,
+  agreementAccepted = false,
+  onAgreementAcceptedChange,
 }: {
   state: AccountBillingState
   actionState?: AccountBillingActionState
   onStartSubscription?: () => void
   onManageBilling?: () => void
   statusMessage?: string | null
+  agreementAccepted?: boolean
+  onAgreementAcceptedChange?: (accepted: boolean) => void
 }) {
   if (state.status === 'error') {
     return (
@@ -4133,13 +4196,29 @@ export function AccountBillingCard({
         <div className={styles.helperMessage}>{statusMessage}</div>
       ) : null}
 
+      {summary.canStartSubscription ? (
+        <label className={styles.siteSettingsToggle}>
+          <input
+            type="checkbox"
+            checked={agreementAccepted}
+            onChange={(event) =>
+              onAgreementAcceptedChange?.(event.currentTarget.checked)
+            }
+          />
+          <span>
+            I have read and accept the Sparkle Suite{' '}
+            <a href="/terms-and-conditions">Terms and Conditions</a>.
+          </span>
+        </label>
+      ) : null}
+
       <div className={styles.actionRow}>
         {summary.canStartSubscription ? (
           <button
             type="button"
             className={styles.actionButton}
             onClick={() => onStartSubscription?.()}
-            disabled={actionState?.pendingAction !== null}
+            disabled={actionState?.pendingAction !== null || !agreementAccepted}
           >
             {actionState?.pendingAction === 'subscribe'
               ? 'Opening checkout…'

@@ -60,6 +60,25 @@ describe('Nic-Nac tool routing', () => {
     ])
   })
 
+  it('routes help, how-to, and setup questions to the read-only resources tool', () => {
+    const intents = getToolIntentsForText(
+      'Where is the how-to video for the calculator and Chrome extension setup?',
+    )
+
+    expect(intents).toEqual(['resources'])
+    expect(listToolNamesForIntents(intents)).toEqual(['get_help_resources'])
+  })
+
+  it.each([
+    'Where is the Live Queue walkthrough video?',
+    'Show me the how-to for editing my public site links.',
+  ])('keeps "%s" on the read-only resources tool', (text) => {
+    const intents = getToolIntentsForText(text)
+
+    expect(intents).toEqual(['resources'])
+    expect(listToolNamesForIntents(intents)).toEqual(['get_help_resources'])
+  })
+
   it('builds only the routed tools for a live-show turn', () => {
     const tools = buildToolsForIntents(makeCtx(), ['show_memory'])
 

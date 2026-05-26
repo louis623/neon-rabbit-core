@@ -10,17 +10,18 @@ describe('Sparkle Suite prelaunch page', () => {
     const html = renderToStaticMarkup(createElement(PrelaunchPage))
 
     expect(html).toContain('Sparkle Suite')
-    expect(html).toContain('Coming Soon')
-    expect(prelaunchContent.headline).toBe(
-      'A better customer experience starts with a better rep setup.',
-    )
-    expect(html).toContain('A better customer experience starts with a')
-    expect(html).toContain('better rep setup')
+    expect(html).toContain('Self-Serve Launch Flow')
+    expect(prelaunchContent.headline).toBe('Sparkle Suite')
+    expect(html).toContain('Sparkle Suite')
     expect(html).toContain(
-      'Sparkle Suite gives reps a more polished website, standout live show tools',
+      'Buy your workspace, accept the terms, and let Nic-Nac guide setup',
     )
-    expect(html).toContain('Join the Waitlist')
+    expect(html).toContain('Get Launch Access')
     expect(html).toContain('What Is Sparkle Suite?')
+    expect(html).toContain('Sales snippets')
+    expect(html).toContain('Short TikTok-style previews')
+    expect(html).not.toContain('setup walkthrough')
+    expect(html).not.toContain('how-to walkthrough')
     expect(html).toContain('Inside the suite')
     expect(html).toContain('V1 preview')
     expect(html).toContain('Why it stands out')
@@ -42,15 +43,15 @@ describe('Sparkle Suite prelaunch page', () => {
     expect(html).toContain('Built for reps who want to')
     expect(html).toContain('stand out.')
     expect(prelaunchContent.waitlistHeading).toBe(
-      'Be first in line when Sparkle Suite opens.',
+      'Get ready for self-serve launch access.',
     )
-    expect(html).toContain('Be first in line when')
+    expect(html).toContain('Get ready for self-serve launch access.')
     expect(html).toContain('Name')
     expect(html).toContain('Email')
     expect(html).toContain('Phone')
     expect(html).toContain('TikTok handle')
     expect(html).toContain('Team rep name')
-    expect(html).toContain('What part of your current setup feels the most patchwork?')
+    expect(html).toContain('What would you want Sparkle Suite to clean up first?')
     expect(html).toContain('Text me updates.')
     expect(html).toContain('Email me updates.')
     expect(html).toContain('optional SMS consent box is unchecked by default')
@@ -64,9 +65,9 @@ describe('Sparkle Suite prelaunch page', () => {
     expect(html).toContain('id="waitlist-sms-consent"')
     expect(html).not.toContain('id="waitlist-sms-consent" required')
     expect(prelaunchContent.waitlistSuccessTitle).toBe(
-      "Thank you, friend. We've got you.",
+      "You're on the launch list.",
     )
-    expect(prelaunchContent.footerHeading).toBe("We're building this carefully.")
+    expect(prelaunchContent.footerHeading).toBe('Built to sell first, train after purchase.')
     expect(html).not.toContain('One easier home for your Bomb Party business')
     expect(html).not.toContain('A polished website and rep-friendly tools designed to help you look professional')
     expect(html).not.toContain('Tell us where to send launch updates')

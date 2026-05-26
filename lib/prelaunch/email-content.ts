@@ -119,6 +119,32 @@ export function buildPrelaunchAccountReadyEmailContent(input: {
   }
 }
 
+export function buildSelfServePurchaseConfirmationEmailContent(input: {
+  name: string
+  backendUrl: string
+  publicSiteUrl?: string | null
+  helpUrl: string
+}): SparkleSuitePrelaunchEmailContent {
+  const recipientName = normalizeRecipientName(input.name)
+  const publicSiteUrl = input.publicSiteUrl?.trim()
+
+  return {
+    subject: 'Your Sparkle Suite workspace is ready',
+    text: buildPlainTextEmail([
+      `Hi ${recipientName},`,
+      'Thanks for purchasing Sparkle Suite. Your backend workspace is ready, and Nic-Nac will guide the rest of your setup from inside the workspace.',
+      `Open your backend workspace: ${input.backendUrl}`,
+      publicSiteUrl
+        ? `Your public Sparkle Suite site: ${publicSiteUrl}`
+        : 'Your public Sparkle Suite site link will appear in the workspace as soon as it is available.',
+      `Use the help/how-to hub for walkthroughs: ${input.helpUrl}`,
+      'Start with the setup walkthrough, then use the videos for Nic-Nac, site editing, shows, trade board, calculator, and the Chrome extension / Live Queue overview when you need them.',
+      'Louis only needs to step in if something gets escalated. Otherwise, Nic-Nac and the help/how-to hub are your first stop.',
+      'Sparkle Suite',
+    ]),
+  }
+}
+
 export function buildInitialPrelaunchNewsletterIssue(): SparkleSuitePrelaunchEmailContent {
   return {
     subject: 'A smoother rep setup starts with less patchwork',

@@ -484,6 +484,12 @@ export interface HelpResource {
   summary: string
   body: string
   quickActions: string[]
+  video?: {
+    title: string
+    provider: 'youtube'
+    status: 'placeholder' | 'ready'
+    url?: string
+  }
 }
 
 export interface SiteAnalyticsPrivacySummary {

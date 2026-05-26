@@ -5,6 +5,7 @@ import { buildSparkleSuiteCheckoutPricing } from '@/lib/stripe/sparkle-suite-pri
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getSelfServeAgreementVersion } from '@/lib/prelaunch/self-serve-agreement'
 
 const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
@@ -50,6 +51,16 @@ export async function POST(request: Request) {
       )
     }
 
+    if (body?.agreementAccepted !== true) {
+      return NextResponse.json(
+        {
+          error: 'Accept the Sparkle Suite Terms and Conditions before checkout.',
+          agreementVersion: getSelfServeAgreementVersion(),
+        },
+        { status: 400 },
+      )
+    }
+
     // Check for existing active subscription (Finding 16)
     const admin = createAdminClient()
     const { data: existing } = await admin
@@ -83,6 +94,11 @@ export async function POST(request: Request) {
     }
 
     const customerId = await getOrCreateStripeCustomer(repId)
+    const agreementMetadata = {
+      agreement_provider: 'clickwrap',
+      agreement_version: getSelfServeAgreementVersion(),
+      signwell_required: 'false',
+    }
 
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
@@ -94,12 +110,14 @@ export async function POST(request: Request) {
       metadata: {
         rep_id: repId,
         plan_type: planType,
+        ...agreementMetadata,
         ...pricing.metadata,
       },
       subscription_data: {
         metadata: {
           rep_id: repId,
           plan_type: planType,
+          ...agreementMetadata,
           ...pricing.metadata,
         },
       },

@@ -27,8 +27,7 @@ export function PrelaunchHero() {
               </span>
             </div>
             <h1 className="ss-hero__title">
-              A better customer experience starts with a{' '}
-              <em>better rep setup</em>.
+              {prelaunchContent.headline}
             </h1>
             <p className="ss-hero__sub">{prelaunchContent.body}</p>
             <div className="ss-hero__ctas">
