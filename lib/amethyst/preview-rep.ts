@@ -1,3 +1,5 @@
+import { getAmethystCustomDomainCandidates } from './host-routing'
+
 export const DEFAULT_AMETHYST_PREVIEW_EMAIL = 'testrep@neonrabbit.net'
 
 interface AmethystPreviewRep {
@@ -61,6 +63,21 @@ async function loadRepById(
   return data ?? null
 }
 
+async function loadRepByCustomDomain(
+  admin: PreviewAdminClient,
+  customDomain: string,
+  select: string,
+): Promise<AmethystPreviewRep | null> {
+  const query = admin.from('reps').select(select) as {
+    eq(column: string, value: string): {
+      maybeSingle(): Promise<{ data: AmethystPreviewRep | null; error: unknown }>
+    }
+  }
+  const { data, error } = await query.eq('custom_domain', customDomain).maybeSingle()
+  if (error) throw error
+  return data ?? null
+}
+
 async function loadLatestReadyLaunchRepId(admin: PreviewAdminClient) {
   const query = admin.from('sparkle_suite_launch_builds').select('rep_id') as {
     eq(column: string, value: string): {
@@ -104,6 +121,11 @@ export async function resolveAmethystPreviewRep(
   if (repId) {
     const rep = await loadRepById(admin, repId, select)
     if (rep) return rep
+
+    for (const customDomain of getAmethystCustomDomainCandidates(repId)) {
+      const customDomainRep = await loadRepByCustomDomain(admin, customDomain, select)
+      if (customDomainRep) return customDomainRep
+    }
   }
 
   for (const email of getCandidateEmails(env)) {

@@ -8,10 +8,12 @@ import {
 function makeAdminClient({
   repsByEmail = {},
   repsById = {},
+  repsByCustomDomain = {},
   latestLaunchRepId = null,
 }: {
   repsByEmail?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsById?: Record<string, { id: string; email: string; streaming_links?: unknown }>
+  repsByCustomDomain?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   latestLaunchRepId?: string | null
 }) {
   const repEq = vi.fn((column: string, value: string) => {
@@ -19,6 +21,15 @@ function makeAdminClient({
       return {
         maybeSingle: vi.fn().mockResolvedValue({
           data: repsByEmail[value] ?? null,
+          error: null,
+        }),
+      }
+    }
+
+    if (column === 'custom_domain') {
+      return {
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: repsByCustomDomain[value] ?? null,
           error: null,
         }),
       }
@@ -89,6 +100,58 @@ describe('Amethyst preview rep resolver', () => {
     ).resolves.toEqual({
       id: 'rep-target',
       email: 'target@example.com',
+    })
+  })
+
+  it('uses a matching custom domain before preview email fallbacks', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+      repsByCustomDomain: {
+        'sparklebysasha.example': {
+          id: 'rep-domain',
+          email: 'sasha@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        repId: 'SparkleBySasha.example',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-domain',
+      email: 'sasha@example.com',
+    })
+  })
+
+  it('falls back to preview reps when a host has no custom-domain match', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        repId: 'unknown.example',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-preview',
+      email: 'preview@example.com',
     })
   })
 

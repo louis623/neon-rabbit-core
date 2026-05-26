@@ -108,6 +108,7 @@ const launchSetupProfile: PrelaunchLaunchSetupProfile = {
   launchBuildId: 'build-1',
   businessName: 'Sparkle Demo Shop',
   publicSiteGoal: 'Launch a clean live shopping hub.',
+  customDomain: null,
   primarySocialUrl: 'https://example.com/social',
   secondarySocialUrl: null,
   shopUrl: null,

@@ -22,6 +22,10 @@ function readOptionalString(value: unknown) {
   return cleaned.length > 0 ? cleaned : null
 }
 
+function readOptionalDomain(value: unknown) {
+  return readOptionalString(value)?.toLowerCase() ?? null
+}
+
 function readOpenQuestions(value: unknown) {
   if (Array.isArray(value)) {
     return value
@@ -59,6 +63,7 @@ async function parsePayload(request: Request) {
       launchBuildId: readString(body.launchBuildId),
       businessName: readString(body.businessName),
       publicSiteGoal: readString(body.publicSiteGoal),
+      customDomain: readOptionalDomain(body.customDomain),
       primarySocialUrl: readOptionalString(body.primarySocialUrl),
       secondarySocialUrl: readOptionalString(body.secondarySocialUrl),
       shopUrl: readOptionalString(body.shopUrl),
@@ -77,6 +82,7 @@ async function parsePayload(request: Request) {
     launchBuildId: readString(form.get('launchBuildId')),
     businessName: readString(form.get('businessName')),
     publicSiteGoal: readString(form.get('publicSiteGoal')),
+    customDomain: readOptionalDomain(form.get('customDomain')),
     primarySocialUrl: readOptionalString(form.get('primarySocialUrl')),
     secondarySocialUrl: readOptionalString(form.get('secondarySocialUrl')),
     shopUrl: readOptionalString(form.get('shopUrl')),
@@ -112,6 +118,7 @@ export async function POST(request: Request) {
       launchBuildId: payload.launchBuildId,
       businessName: payload.businessName,
       publicSiteGoal: payload.publicSiteGoal,
+      customDomain: payload.customDomain,
       primarySocialUrl: payload.primarySocialUrl,
       secondarySocialUrl: payload.secondarySocialUrl,
       shopUrl: payload.shopUrl,

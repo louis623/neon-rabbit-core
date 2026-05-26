@@ -67,6 +67,7 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
     delete process.env.STRIPE_PRICE_START_WORK_FEE
     delete process.env.STRIPE_PRICE_LAUNCH_FEE
     delete process.env.STRIPE_PRICE_BUILD_FEE
+    delete process.env.SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED
   })
 
   it('returns not_configured before a Stripe price ID exists for the gate', async () => {
@@ -127,8 +128,87 @@ describe('POST /api/prelaunch/payment-gates/checkout', () => {
     })
   })
 
+  it('parks start-work checkout after price config until final review enables it', async () => {
+    process.env.STRIPE_PRICE_START_WORK_FEE = 'price_start_123'
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'operator-rep-1',
+      rep: { email: 'louis@neonrabbit.net' },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/payment-gates/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'start_work_fee',
+          intakeId: 'intake-1',
+          waitlistId: 'waitlist-1',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      code: 'PAYMENT_GATE_CHECKOUT_NOT_ENABLED',
+      error:
+        'Payment gate checkout requires SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED=true after final Stripe price review.',
+      gateType: 'start_work_fee',
+      metadata: {
+        platform: 'sparkle_suite',
+        payment_gate: 'start_work_fee',
+        sparkle_suite_payment_gate: 'true',
+        intake_submission_id: 'intake-1',
+        waitlist_id: 'waitlist-1',
+        operator_rep_id: 'operator-rep-1',
+      },
+    })
+    expect(checkoutCreateMock).not.toHaveBeenCalled()
+    expect(sendPrelaunchEmailMock).not.toHaveBeenCalled()
+    expect(paymentGateInsertMock).not.toHaveBeenCalled()
+  })
+
+  it('parks launch-fee checkout after price config until final review enables it', async () => {
+    process.env.STRIPE_PRICE_LAUNCH_FEE = 'price_launch_123'
+    getAuthenticatedOperatorMock.mockResolvedValueOnce({
+      repId: 'operator-rep-1',
+      rep: { email: 'louis@neonrabbit.net' },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/prelaunch/payment-gates/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          gateType: 'launch_fee',
+          intakeId: 'intake-1',
+          waitlistId: 'waitlist-1',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      code: 'PAYMENT_GATE_CHECKOUT_NOT_ENABLED',
+      error:
+        'Payment gate checkout requires SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED=true after final Stripe price review.',
+      gateType: 'launch_fee',
+      metadata: {
+        platform: 'sparkle_suite',
+        payment_gate: 'launch_fee',
+        sparkle_suite_payment_gate: 'true',
+        intake_submission_id: 'intake-1',
+        waitlist_id: 'waitlist-1',
+        operator_rep_id: 'operator-rep-1',
+      },
+    })
+    expect(checkoutCreateMock).not.toHaveBeenCalled()
+    expect(sendPrelaunchEmailMock).not.toHaveBeenCalled()
+    expect(paymentGateInsertMock).not.toHaveBeenCalled()
+  })
+
   it('creates a Stripe test checkout and emails the customer when a price ID is configured', async () => {
     process.env.STRIPE_PRICE_START_WORK_FEE = 'price_start_123'
+    process.env.SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED = 'true'
     getAuthenticatedOperatorMock.mockResolvedValueOnce({
       repId: 'operator-rep-1',
       rep: { email: 'louis@neonrabbit.net' },

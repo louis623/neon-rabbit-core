@@ -55,6 +55,36 @@ const HELP_RESOURCES: HelpResource[] = [
       'Site settings are for the fast public-facing tweaks shoppers notice first. Use them when your show cadence changes, your recruitment push changes, or you want cleaner branding without editing code.',
     quickActions: ['Open site settings', 'Update banner text', 'Hide join page'],
   },
+  {
+    id: 'live-queue-setup',
+    category: 'Live Queue',
+    title: 'Set up the Live Queue extension',
+    summary:
+      'How your sync code, Party Filter, and extension status work before a live show.',
+    body:
+      'The Live Queue extension reads your Bomb Party Party Orders page and sends unrevealed first names to your Sparkle Suite site. You enter your Sparkle Suite sync code in the extension once, then confirm the extension status is on and recently synced before you go live. Use Party Filter when you only want one party synced from a busy dashboard. Nic-Nac can help you find the right setup steps, but the rep confirms the sync code, chooses the Party Filter, and watches the status before show time.',
+    quickActions: ['Check extension status', 'Confirm sync code', 'Set Party Filter'],
+  },
+  {
+    id: 'live-queue-troubleshooting',
+    category: 'Live Queue',
+    title: 'Fix stale or empty Live Queue states',
+    summary:
+      'What to check when the queue is stale, empty, missing names, or not matching the show.',
+    body:
+      'A stale queue usually means the extension has not synced recently, Chrome is closed, the Bomb Party Party Orders tab is not open, or the saved sync code does not match Sparkle Suite. An empty queue can be correct when every order is revealed, no orders match the Party Filter, or the current party has no unrevealed rows. The rep should confirm the BP tab, extension status, sync code, and Party Filter first. If the queue is still stale or empty after that, ask Nic-Nac to help gather the status details for Louis or Neon Rabbit support.',
+    quickActions: ['Review stale queue', 'Review empty queue', 'Ask Nic-Nac for help'],
+  },
+  {
+    id: 'live-queue-rollout',
+    category: 'Live Queue',
+    title: 'Understand Web Store and unpacked install readiness',
+    summary:
+      'Why repo-ready extension work is separate from Chrome Web Store approval and rep rollout.',
+    body:
+      'The extension can be ready in the Sparkle Suite repo before every rep has the Web Store version. Web Store approval, rep rollout, and a verified installed copy are separate launch steps. During review, Louis or Neon Rabbit may provide an unpacked install for emergency or supervised testing, but reps should use the approved Web Store version for normal shows when it is available. Nic-Nac can explain the difference, while Louis or Neon Rabbit owns packaging, Web Store submission, approval checks, and rollout instructions.',
+    quickActions: ['Check Web Store status', 'Review unpacked install note', 'Ask Nic-Nac what to use'],
+  },
 ]
 
 export function getHelpResources(query = ''): HelpResource[] {

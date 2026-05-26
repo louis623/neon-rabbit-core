@@ -69,6 +69,7 @@ describe('prelaunch client account provisioning', () => {
       data: {
         business_name: 'Louis Live Sparkles',
         public_site_goal: 'A real public live shopping hub.',
+        custom_domain: 'louis.sparklesuite.test',
         primary_social_url: 'https://tiktok.com/@louis',
         secondary_social_url: 'https://instagram.com/louis',
         shop_url: 'https://example.com/shop',
@@ -117,6 +118,7 @@ describe('prelaunch client account provisioning', () => {
       email: 'louis+real@neonrabbit.net',
       display_name: 'Louis Sparkle',
       business_name: 'Louis Live Sparkles',
+      custom_domain: 'louis.sparklesuite.test',
       phone: null,
       shop_link: 'https://example.com/shop',
       streaming_links: {

@@ -31,6 +31,10 @@ interface ProductionRosterRepRow {
   email: string
 }
 
+interface ProductionRosterSetupProfileRow {
+  custom_domain: string | null
+}
+
 function cleanRequiredString(value: string, label: string) {
   const cleaned = value.trim()
 
@@ -43,6 +47,11 @@ function cleanRequiredString(value: string, label: string) {
 
 function cleanText(value: string | null | undefined) {
   return value?.trim() ?? ''
+}
+
+function cleanDomain(value: string | null | undefined) {
+  const cleaned = value?.trim().toLowerCase() ?? ''
+  return cleaned.length > 0 ? cleaned : null
 }
 
 async function loadLaunchBuildRosterGateRow(
@@ -70,6 +79,35 @@ async function loadProductionRosterRep(repId: string, admin: AdminClient) {
 
   if (error) throw error
   return data as unknown as ProductionRosterRepRow
+}
+
+async function loadProductionRosterSetupProfile(
+  launchBuildId: string,
+  admin: AdminClient,
+) {
+  const { data, error } = await admin
+    .from('sparkle_suite_launch_setup_profiles')
+    .select('custom_domain')
+    .eq('launch_build_id', launchBuildId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data as unknown as ProductionRosterSetupProfileRow | null
+}
+
+async function maybeUpdateRepCustomDomain(
+  repId: string,
+  customDomain: string | null,
+  admin: AdminClient,
+) {
+  if (!customDomain) return
+
+  const { error } = await admin
+    .from('reps')
+    .update({ custom_domain: customDomain })
+    .eq('id', repId)
+
+  if (error) throw error
 }
 
 function assertProductionRosterConnectAllowed(build: LaunchBuildRosterGateRow) {
@@ -100,6 +138,12 @@ export async function connectPrelaunchLaunchBuildToProductionRep(
   ])
 
   assertProductionRosterConnectAllowed(gateRow)
+  const profile = await loadProductionRosterSetupProfile(launchBuildId, admin)
+  await maybeUpdateRepCustomDomain(
+    rep.id,
+    cleanDomain(profile?.custom_domain),
+    admin,
+  )
 
   const readiness = buildPrelaunchLaunchBuildReadiness({
     setupProfileStatus: gateRow.setup_profile_status,

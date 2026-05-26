@@ -22,6 +22,7 @@ interface LaunchBuildClientAccountRow {
 interface LaunchSetupProfileClientAccountRow {
   business_name: string
   public_site_goal: string
+  custom_domain: string | null
   primary_social_url: string | null
   secondary_social_url: string | null
   shop_url: string | null
@@ -67,6 +68,10 @@ function cleanNullable(value: string | null | undefined) {
   return cleaned.length > 0 ? cleaned : null
 }
 
+function cleanDomain(value: string | null | undefined) {
+  return cleanNullable(value)?.toLowerCase() ?? null
+}
+
 function assertClientAccountAllowed(build: LaunchBuildClientAccountRow) {
   if (build.rep_id) {
     throw new Error('This launch build already has a client account connected.')
@@ -107,7 +112,7 @@ async function loadLaunchSetupProfileClientAccountRow(
   const { data, error } = await admin
     .from('sparkle_suite_launch_setup_profiles')
     .select(
-      'business_name, public_site_goal, primary_social_url, secondary_social_url, shop_url, brand_notes',
+      'business_name, public_site_goal, custom_domain, primary_social_url, secondary_social_url, shop_url, brand_notes',
     )
     .eq('launch_build_id', launchBuildId)
     .maybeSingle()
@@ -201,6 +206,7 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
       email,
       display_name: cleanRequiredString(build.lead_name, 'leadName'),
       business_name: businessName,
+      custom_domain: cleanDomain(profile?.custom_domain),
       phone: null,
       shop_link: cleanNullable(profile?.shop_url),
       streaming_links: {

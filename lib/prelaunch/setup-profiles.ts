@@ -10,6 +10,7 @@ export interface PrelaunchLaunchSetupProfileRow {
   launch_build_id: string
   business_name: string
   public_site_goal: string
+  custom_domain: string | null
   primary_social_url: string | null
   secondary_social_url: string | null
   shop_url: string | null
@@ -26,6 +27,7 @@ export interface PrelaunchLaunchSetupProfile {
   launchBuildId: string
   businessName: string
   publicSiteGoal: string
+  customDomain: string | null
   primarySocialUrl: string | null
   secondarySocialUrl: string | null
   shopUrl: string | null
@@ -41,6 +43,7 @@ export interface UpsertPrelaunchLaunchSetupProfileInput {
   launchBuildId: string
   businessName: string
   publicSiteGoal?: string
+  customDomain?: string | null
   primarySocialUrl?: string | null
   secondarySocialUrl?: string | null
   shopUrl?: string | null
@@ -62,6 +65,7 @@ export const PRELAUNCH_LAUNCH_SETUP_PROFILE_SELECT = [
   'launch_build_id',
   'business_name',
   'public_site_goal',
+  'custom_domain',
   'primary_social_url',
   'secondary_social_url',
   'shop_url',
@@ -76,6 +80,10 @@ export const PRELAUNCH_LAUNCH_SETUP_PROFILE_SELECT = [
 function cleanString(value: string | null | undefined) {
   const cleaned = value?.trim() ?? ''
   return cleaned.length > 0 ? cleaned : null
+}
+
+function cleanDomain(value: string | null | undefined) {
+  return cleanString(value)?.toLowerCase() ?? null
 }
 
 function cleanRequiredString(value: string, label: string) {
@@ -132,6 +140,7 @@ export function normalizePrelaunchLaunchSetupProfileRows(
     launchBuildId: row.launch_build_id,
     businessName: row.business_name,
     publicSiteGoal: row.public_site_goal,
+    customDomain: row.custom_domain,
     primarySocialUrl: row.primary_social_url,
     secondarySocialUrl: row.secondary_social_url,
     shopUrl: row.shop_url,
@@ -187,6 +196,7 @@ export async function upsertPrelaunchLaunchSetupProfile(
         launch_build_id: launchBuildId,
         business_name: businessName,
         public_site_goal: cleanText(input.publicSiteGoal),
+        custom_domain: cleanDomain(input.customDomain),
         primary_social_url: cleanString(input.primarySocialUrl),
         secondary_social_url: cleanString(input.secondarySocialUrl),
         shop_url: cleanString(input.shopUrl),

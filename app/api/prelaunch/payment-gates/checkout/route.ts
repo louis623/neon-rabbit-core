@@ -65,6 +65,13 @@ function sanitizeReturnTo(value: string) {
   return '/control-center/intake#launch-gates'
 }
 
+function paymentGateCheckoutEnabled() {
+  return (
+    process.env.SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED?.trim() ===
+    'true'
+  )
+}
+
 async function parseRequestPayload(request: Request) {
   if (isJsonRequest(request)) return parsePaymentGatePayload(await request.json())
 
@@ -171,6 +178,19 @@ export async function POST(request: Request) {
           metadata,
         },
         { status: 503 },
+      )
+    }
+
+    if (!paymentGateCheckoutEnabled()) {
+      return NextResponse.json(
+        {
+          code: 'PAYMENT_GATE_CHECKOUT_NOT_ENABLED',
+          error:
+            'Payment gate checkout requires SPARKLE_PRELAUNCH_PAYMENT_GATE_CHECKOUT_ENABLED=true after final Stripe price review.',
+          gateType: payload.gateType,
+          metadata,
+        },
+        { status: 403 },
       )
     }
 
