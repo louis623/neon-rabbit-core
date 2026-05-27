@@ -69,27 +69,101 @@ function SparkleIcon({ className }: { className?: string }) {
 }
 
 function ProductMiniScreen({
-  index,
   screen,
 }: {
-  index: number
   screen: ProductScreen
 }) {
+  const action =
+    screen.id === 'queue'
+      ? 'View full queue'
+      : screen.id === 'trade'
+        ? 'View all trades'
+        : screen.id === 'calendar'
+          ? 'Add to calendar'
+          : screen.id === 'email'
+            ? 'Manage emails'
+            : screen.id === 'sms'
+              ? 'Manage texts'
+              : 'Browse help'
+
   return (
     <article className={`sl-product-card sl-product-card--${screen.id}`}>
       <div className="sl-product-card__top">
         <SparkleIcon className="sl-product-card__icon" />
         <h3>{screen.title}</h3>
       </div>
-      <div className="sl-product-card__body">
-        <p className="sl-product-card__label">{screen.label}</p>
-        <p>{screen.body}</p>
-      </div>
+      <MiniScreenBody screen={screen} />
       <a href="#tools">
-        {index === 0 ? 'Next show saved' : index === 6 ? 'Browse help' : 'View details'}
+        {action}
         <span aria-hidden="true">-&gt;</span>
       </a>
     </article>
+  )
+}
+
+function MiniScreenBody({ screen }: { screen: ProductScreen }) {
+  if (screen.id === 'queue') {
+    return (
+      <div className="sl-product-card__body sl-mini-queue">
+        <div>
+          <span>Now serving</span>
+          <strong>{screen.body}</strong>
+          <b>12</b>
+        </div>
+        <div>
+          <span>Up next</span>
+          <strong>Amanda</strong>
+          <b>13</b>
+        </div>
+        <div>
+          <span>After that</span>
+          <strong>Jessica</strong>
+          <b>14</b>
+        </div>
+      </div>
+    )
+  }
+
+  if (screen.id === 'trade') {
+    return (
+      <div className="sl-product-card__body sl-mini-trades">
+        <div>
+          <strong>ISO</strong>
+          <span>Have</span>
+        </div>
+        <p>{screen.label}</p>
+        <p>ISO: Stackers</p>
+        <p>{screen.body}</p>
+      </div>
+    )
+  }
+
+  if (screen.id === 'calendar') {
+    return (
+      <div className="sl-product-card__body sl-mini-action">
+        <span>{screen.label}</span>
+        <strong>{screen.body}</strong>
+        <button type="button">Next show saved</button>
+      </div>
+    )
+  }
+
+  if (screen.id === 'email' || screen.id === 'sms') {
+    return (
+      <div className="sl-product-card__body sl-mini-action">
+        <span>{screen.label}</span>
+        <strong>{screen.body}</strong>
+        <button type="button">Reminder sent</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="sl-product-card__body sl-mini-action">
+      <span>{screen.label}</span>
+      <strong>{screen.body}</strong>
+      <button type="button">Ask a question</button>
+    </div>
   )
 }
 
@@ -111,13 +185,23 @@ function ProductScreenCascade() {
           <span>Join the List</span>
         </div>
         <div className="sl-browser-card__hero">
-          <h3>{hero.productHeadline}</h3>
-          <p>{hero.productSubhead}</p>
-          <span>Join the List</span>
+          <div>
+            <h3>{hero.productHeadline}</h3>
+            <p>{hero.productSubhead}</p>
+            <span>Join the List</span>
+          </div>
         </div>
         <div className="sl-browser-card__tiles">
-          {['Upcoming Shows', 'Live Queue', 'Trade Board', 'Get Updates'].map((tile) => (
-            <span key={tile}>{tile}</span>
+          {[
+            ['Upcoming Shows', 'See what is next'],
+            ['Live Queue', 'See your place'],
+            ['Trade Board', 'Give & get'],
+            ['Get Updates', 'Email & SMS'],
+          ].map(([tile, detail]) => (
+            <span key={tile}>
+              <strong>{tile}</strong>
+              <small>{detail}</small>
+            </span>
           ))}
         </div>
         <div className="sl-browser-card__show">
@@ -129,8 +213,8 @@ function ProductScreenCascade() {
       <div aria-hidden="true" className="sl-connector sl-connector--queue" />
       <div aria-hidden="true" className="sl-connector sl-connector--trade" />
       <div aria-hidden="true" className="sl-connector sl-connector--updates" />
-      {hero.screens.slice(1).map((screen, index) => (
-        <ProductMiniScreen index={index} key={screen.id} screen={screen} />
+      {hero.screens.slice(1).map((screen) => (
+        <ProductMiniScreen key={screen.id} screen={screen} />
       ))}
     </div>
   )
