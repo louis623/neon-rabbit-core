@@ -181,39 +181,77 @@ function ProductScreenCascade() {
         <article className="sl-browser-card sl-depth-object sl-depth-object--screen">
           <div className="sl-browser-card__chrome">
             <SparkleSeal className="sl-browser-card__seal" />
-            <nav aria-label="Example customer site navigation">
-              <span>Home</span>
-              <span>Live Shows</span>
-              <span>Trades</span>
-              <span>About</span>
-              <span>Contact</span>
+            <nav aria-label="Sparkle Suite workspace navigation">
+              <span>Shows</span>
+              <span>Queue</span>
+              <span className="is-active">Trade board</span>
+              <span>Updates</span>
+              <span>Nic-Nac</span>
             </nav>
-            <span>Join the List</span>
+            <span>Workspace</span>
           </div>
-          <div className="sl-browser-card__hero">
-            <div>
-              <h3>{hero.productHeadline}</h3>
-              <p>{hero.productSubhead}</p>
-              <span>Join the List</span>
-            </div>
-          </div>
-          <div className="sl-browser-card__tiles">
-            {[
-              ['Upcoming Shows', 'See what is next'],
-              ['Live Queue', 'See your place'],
-              ['Trade Board', 'Give & get'],
-              ['Get Updates', 'Email & SMS'],
-            ].map(([tile, detail]) => (
-              <span key={tile}>
-                <strong>{tile}</strong>
-                <small>{detail}</small>
-              </span>
-            ))}
-          </div>
-          <div className="sl-browser-card__show">
-            <span>Upcoming Live Shows</span>
-            <strong>Thursday, May 29 - 8:00 PM</strong>
-            <button type="button">Save My Spot</button>
+          <div
+            aria-label="Sparkle Suite workspace with the Trade board tab open"
+            className="sl-workspace-preview"
+          >
+            <aside className="sl-workspace-sidebar" aria-label="Workspace sections">
+              <SparkleSeal className="sl-workspace-sidebar__seal" />
+              <span>Home</span>
+              <span>Live shows</span>
+              <span>Live queue</span>
+              <span className="is-active">Trade board</span>
+              <span>Updates</span>
+            </aside>
+            <section className="sl-workspace-main">
+              <div className="sl-workspace-head">
+                <div>
+                  <span>Sparkle Suite workspace</span>
+                  <h3>Trade board</h3>
+                </div>
+                <button type="button">New trade</button>
+              </div>
+              <div className="sl-workspace-stats" aria-label="Trade board summary">
+                {[
+                  ['Open ISO', '8'],
+                  ['Matches', '3'],
+                  ['Pending', '5'],
+                ].map(([label, value]) => (
+                  <div className="sl-workspace-stat" key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="sl-trade-board-snapshot" aria-label="Trade board requests">
+                <div className="sl-trade-board-tabs" aria-hidden="true">
+                  <span className="is-active">ISO</span>
+                  <span>Have</span>
+                  <span>Pending</span>
+                </div>
+                {[
+                  ['ISO', 'Unicorn', 'Kayla', 'Open'],
+                  ['Have', 'Birthday', 'Amanda', 'Matched'],
+                  ['ISO', 'Stackers', 'Jessica', 'Pending'],
+                ].map(([type, item, rep, status]) => (
+                  <div className="sl-trade-row" key={`${type}-${item}`}>
+                    <b>{type}</b>
+                    <strong>{item}</strong>
+                    <span>{rep}</span>
+                    <em>{status}</em>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <aside className="sl-workspace-rail" aria-label="Workspace support">
+              <div className="sl-workspace-note">
+                <span>Nic-Nac</span>
+                <strong>Trade board looks tidy.</strong>
+              </div>
+              <div className="sl-workspace-reminder">
+                <span>Next live</span>
+                <strong>Thursday, 8 PM</strong>
+              </div>
+            </aside>
           </div>
         </article>
         <div aria-hidden="true" className="sl-connector sl-connector--queue" />

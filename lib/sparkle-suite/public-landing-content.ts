@@ -22,8 +22,8 @@ export const sparkleSuitePublicLandingContent = {
       'Sparkle Suite gives your customers a beautiful place to find your live shows, follow the queue, browse trades, get updates, and stay connected - all in one place.',
     primaryCta: { label: 'Get Sparkle Suite', href: '#pricing' },
     secondaryCta: { label: 'See What It Does', href: '#tools' },
-    productHeadline: 'We make live shopping easy to follow.',
-    productSubhead: 'Live Thursday 8 PM',
+    productHeadline: 'Trade board',
+    productSubhead: 'Sparkle Suite workspace',
     valueProps: [
       {
         title: 'Live shows',

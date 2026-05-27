@@ -65,6 +65,10 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('sl-depth-object--email')
     expect(html).toContain('sl-depth-object--sms')
     expect(html).toContain('sl-depth-object--nic-nac')
+    expect(html).toContain('Sparkle Suite workspace')
+    expect(html).toContain('Sparkle Suite workspace with the Trade board tab open')
+    expect(html).toContain('sl-workspace-preview')
+    expect(html).not.toContain('We make live shopping easy to follow.')
   })
 
   it('keeps the trademark and no-jewelry guardrails visible in rendered output', () => {
