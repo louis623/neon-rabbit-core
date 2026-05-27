@@ -1,0 +1,4 @@
+interface:
+  display_name: "CSS 3D Product Hero"
+  short_description: "Build dimensional product hero scenes."
+  default_prompt: "Use CSS 3D product hero guidance to design, implement, or review a dimensional product-led landing-page hero scene."
