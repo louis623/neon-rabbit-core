@@ -53,6 +53,20 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('class="sl-comparison"')
   })
 
+  it('renders the hero product mockup as a CSS 3D scene', () => {
+    const html = renderLanding()
+
+    expect(html).toContain('sl-product-scene')
+    expect(html).toContain('sl-product-stage')
+    expect(html).toContain('sl-depth-object--screen')
+    expect(html).toContain('sl-depth-object--queue')
+    expect(html).toContain('sl-depth-object--trade')
+    expect(html).toContain('sl-depth-object--calendar')
+    expect(html).toContain('sl-depth-object--email')
+    expect(html).toContain('sl-depth-object--sms')
+    expect(html).toContain('sl-depth-object--nic-nac')
+  })
+
   it('keeps the trademark and no-jewelry guardrails visible in rendered output', () => {
     const html = renderLanding()
     const heroEnd = html.indexOf('Less scattered. More polished.')

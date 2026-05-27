@@ -87,7 +87,9 @@ function ProductMiniScreen({
               : 'Browse help'
 
   return (
-    <article className={`sl-product-card sl-product-card--${screen.id}`}>
+    <article
+      className={`sl-product-card sl-depth-object sl-depth-object--${screen.id} sl-product-card--${screen.id}`}
+    >
       <div className="sl-product-card__top">
         <SparkleIcon className="sl-product-card__icon" />
         <h3>{screen.title}</h3>
@@ -171,51 +173,56 @@ function ProductScreenCascade() {
   const { hero } = sparkleSuitePublicLandingContent
 
   return (
-    <div aria-label="Sparkle Suite product previews" className="sl-product-universe sl-cascade">
-      <article className="sl-browser-card">
-        <div className="sl-browser-card__chrome">
-          <SparkleSeal className="sl-browser-card__seal" />
-          <nav aria-label="Example customer site navigation">
-            <span>Home</span>
-            <span>Live Shows</span>
-            <span>Trades</span>
-            <span>About</span>
-            <span>Contact</span>
-          </nav>
-          <span>Join the List</span>
-        </div>
-        <div className="sl-browser-card__hero">
-          <div>
-            <h3>{hero.productHeadline}</h3>
-            <p>{hero.productSubhead}</p>
+    <div
+      aria-label="Sparkle Suite product previews"
+      className="sl-product-universe sl-cascade sl-product-scene"
+    >
+      <div className="sl-product-stage">
+        <article className="sl-browser-card sl-depth-object sl-depth-object--screen">
+          <div className="sl-browser-card__chrome">
+            <SparkleSeal className="sl-browser-card__seal" />
+            <nav aria-label="Example customer site navigation">
+              <span>Home</span>
+              <span>Live Shows</span>
+              <span>Trades</span>
+              <span>About</span>
+              <span>Contact</span>
+            </nav>
             <span>Join the List</span>
           </div>
-        </div>
-        <div className="sl-browser-card__tiles">
-          {[
-            ['Upcoming Shows', 'See what is next'],
-            ['Live Queue', 'See your place'],
-            ['Trade Board', 'Give & get'],
-            ['Get Updates', 'Email & SMS'],
-          ].map(([tile, detail]) => (
-            <span key={tile}>
-              <strong>{tile}</strong>
-              <small>{detail}</small>
-            </span>
-          ))}
-        </div>
-        <div className="sl-browser-card__show">
-          <span>Upcoming Live Shows</span>
-          <strong>Thursday, May 29 - 8:00 PM</strong>
-          <button type="button">Save My Spot</button>
-        </div>
-      </article>
-      <div aria-hidden="true" className="sl-connector sl-connector--queue" />
-      <div aria-hidden="true" className="sl-connector sl-connector--trade" />
-      <div aria-hidden="true" className="sl-connector sl-connector--updates" />
-      {hero.screens.slice(1).map((screen) => (
-        <ProductMiniScreen key={screen.id} screen={screen} />
-      ))}
+          <div className="sl-browser-card__hero">
+            <div>
+              <h3>{hero.productHeadline}</h3>
+              <p>{hero.productSubhead}</p>
+              <span>Join the List</span>
+            </div>
+          </div>
+          <div className="sl-browser-card__tiles">
+            {[
+              ['Upcoming Shows', 'See what is next'],
+              ['Live Queue', 'See your place'],
+              ['Trade Board', 'Give & get'],
+              ['Get Updates', 'Email & SMS'],
+            ].map(([tile, detail]) => (
+              <span key={tile}>
+                <strong>{tile}</strong>
+                <small>{detail}</small>
+              </span>
+            ))}
+          </div>
+          <div className="sl-browser-card__show">
+            <span>Upcoming Live Shows</span>
+            <strong>Thursday, May 29 - 8:00 PM</strong>
+            <button type="button">Save My Spot</button>
+          </div>
+        </article>
+        <div aria-hidden="true" className="sl-connector sl-connector--queue" />
+        <div aria-hidden="true" className="sl-connector sl-connector--trade" />
+        <div aria-hidden="true" className="sl-connector sl-connector--updates" />
+        {hero.screens.slice(1).map((screen) => (
+          <ProductMiniScreen key={screen.id} screen={screen} />
+        ))}
+      </div>
     </div>
   )
 }
