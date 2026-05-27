@@ -1550,7 +1550,11 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-connector {
   border-top: 2px dashed rgba(238, 44, 155, 0.36);
   position: absolute;
-  transform: translate3d(0, 0, 70px);
+  transform:
+    translate3d(0, 0, 70px)
+    rotateX(7deg)
+    rotateY(-13deg)
+    rotateZ(-2deg);
   transform-style: preserve-3d;
   z-index: 1;
 }
@@ -1574,7 +1578,13 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 }
 
 .sparkle-landing .sl-product-card {
-  --sl-card-depth-transform: translate3d(0, 0, 90px);
+  --sl-card-plane-transform:
+    rotateX(7deg)
+    rotateY(-13deg)
+    rotateZ(-2deg);
+  --sl-card-depth-transform:
+    translate3d(0, 0, 90px)
+    var(--sl-card-plane-transform);
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(238, 44, 155, 0.22);
   border-radius: 14px;
@@ -1584,6 +1594,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   padding: 15px;
   position: absolute;
   transform: var(--sl-card-depth-transform);
+  transform-origin: 54% 46%;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -1601,9 +1612,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--queue {
   --sl-card-depth-transform:
     translate3d(0, 0, 175px)
-    rotateX(4deg)
-    rotateY(-9deg)
-    rotateZ(1.5deg);
+    var(--sl-card-plane-transform);
   right: 0;
   top: 42px;
 }
@@ -1611,9 +1620,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--trade {
   --sl-card-depth-transform:
     translate3d(0, 0, 140px)
-    rotateX(3deg)
-    rotateY(-7deg)
-    rotateZ(1deg);
+    var(--sl-card-plane-transform);
   right: 18px;
   top: 226px;
 }
@@ -1621,9 +1628,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--calendar {
   --sl-card-depth-transform:
     translate3d(0, 0, 120px)
-    rotateX(5deg)
-    rotateY(8deg)
-    rotateZ(3deg);
+    var(--sl-card-plane-transform);
   bottom: 76px;
   left: 72px;
 }
@@ -1631,9 +1636,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--email {
   --sl-card-depth-transform:
     translate3d(0, 0, 110px)
-    rotateX(4deg)
-    rotateY(3deg)
-    rotateZ(2deg);
+    var(--sl-card-plane-transform);
   bottom: 56px;
   left: 264px;
 }
@@ -1641,9 +1644,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--sms {
   --sl-card-depth-transform:
     translate3d(0, 0, 150px)
-    rotateX(5deg)
-    rotateY(-5deg)
-    rotateZ(2deg);
+    var(--sl-card-plane-transform);
   bottom: 44px;
   right: 210px;
 }
@@ -1651,9 +1652,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-landing .sl-product-card--nic-nac {
   --sl-card-depth-transform:
     translate3d(0, 0, 185px)
-    rotateX(5deg)
-    rotateY(-8deg)
-    rotateZ(2.5deg);
+    var(--sl-card-plane-transform);
   bottom: 24px;
   right: 0;
 }
