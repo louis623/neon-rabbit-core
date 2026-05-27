@@ -9,61 +9,92 @@ export const sparkleSuitePublicLandingContent = {
   brand: 'Sparkle Suite',
   nav: {
     links: [
-      { label: 'Tools', href: '#tools' },
-      { label: 'Customers', href: '#customers' },
+      { label: 'Features', href: '#tools' },
+      { label: 'How It Works', href: '#customers' },
+      { label: 'Examples', href: '#examples' },
+      { label: 'Help', href: '#faq' },
       { label: 'Pricing', href: '#pricing' },
-      { label: 'FAQ', href: '#faq' },
     ],
   },
   hero: {
-    headline: 'Make your live-show customer experience feel more polished.',
+    headline: 'Make your Bomb Party customer experience feel more polished.',
     body:
-      'Sparkle Suite gives your customers a beautiful place to find your shows, follow the queue, browse trades, get updates, and stay connected, while Nic-Nac helps you keep the setup moving inside Sparkle Suite.',
+      'Sparkle Suite gives your customers a beautiful place to find your live shows, follow the queue, browse trades, get updates, and stay connected - all in one place.',
     primaryCta: { label: 'Get Sparkle Suite', href: '#pricing' },
     secondaryCta: { label: 'See What It Does', href: '#tools' },
+    productHeadline: 'We make live shopping easy to follow.',
+    productSubhead: 'Live Thursday 8 PM',
+    valueProps: [
+      {
+        title: 'Live shows',
+        body: 'they can find',
+      },
+      {
+        title: 'Queue updates',
+        body: 'they can follow',
+      },
+      {
+        title: 'Trade board',
+        body: 'they can use',
+      },
+      {
+        title: 'Updates',
+        body: 'they actually get',
+      },
+      {
+        title: 'Support with',
+        body: 'Nic-Nac',
+      },
+    ],
     screens: [
       {
         id: 'site',
-        title: 'Customer site',
-        label: 'Live Thursday 8 PM',
-        body: 'Shows, queue, trades, and updates in one polished place.',
+        title: 'Upcoming Live Shows',
+        label: 'Thursday, May 29',
+        body: '8:00 PM',
       },
       {
         id: 'queue',
         title: 'Live queue',
-        label: 'Now serving: Kayla',
-        body: 'Up next: Amanda',
+        label: 'Now serving',
+        body: 'Kayla',
       },
       {
         id: 'trade',
         title: 'Trade board',
-        label: 'Wants and haves',
-        body: 'Cleaner trade requests without digging through messages.',
+        label: 'ISO: Unicorn',
+        body: 'Have: Birthday',
       },
       {
         id: 'calendar',
-        title: 'Live event calendar',
-        label: 'Next show saved',
-        body: 'Show times and featured details are easier to find.',
+        title: 'Live event',
+        label: 'Thursday, May 29',
+        body: '8:00 PM',
       },
       {
-        id: 'updates',
-        title: 'Customer updates',
-        label: 'Reminder sent',
-        body: 'Email and SMS follow-through when visibility matters.',
+        id: 'email',
+        title: 'Email updates',
+        label: 'Live Thursday 8 PM',
+        body: 'Reminder sent',
+      },
+      {
+        id: 'sms',
+        title: 'SMS updates',
+        label: 'Hi! Your spot is saved.',
+        body: 'Reminder sent',
       },
       {
         id: 'nic-nac',
-        title: 'Nic-Nac',
-        label: 'Ask Nic-Nac',
-        body: 'Practical Sparkle Suite setup and how-to help.',
+        title: 'Ask Nic-Nac',
+        label: "Hi! I'm Nic-Nac.",
+        body: 'How can I help?',
       },
     ],
   },
   comparison: {
     heading: 'Less scattered. More polished.',
     body:
-      'Sparkle Suite gives customers one clearer place to follow what is happening, instead of piecing it together from old posts, comments, links, and messages.',
+      'Give your customers one beautiful place to follow along.',
     beforeLabel: 'Before',
     before: [
       'Show details in posts',
@@ -165,7 +196,7 @@ export const sparkleSuitePublicLandingContent = {
     {
       question: 'Who is it for?',
       answer:
-        'Sparkle Suite is built for BP reps who want a cleaner customer experience and smoother live-show setup.',
+        'Sparkle Suite is built for Bomb Party reps who want a cleaner customer experience and smoother live-show setup.',
     },
     {
       question: 'What happens after I purchase?',

@@ -53,6 +53,21 @@ function LandingButton({
   )
 }
 
+function SparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24">
+      <path
+        d="M12 3v18M5 7h14M6 17h12M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  )
+}
+
 function ProductMiniScreen({
   index,
   screen,
@@ -62,19 +77,59 @@ function ProductMiniScreen({
 }) {
   return (
     <article className={`sl-product-card sl-product-card--${screen.id}`}>
-      <span className="sl-product-card__meta">{String(index + 1).padStart(2, '0')}</span>
-      <h3>{screen.title}</h3>
-      <p className="sl-product-card__label">{screen.label}</p>
-      <p>{screen.body}</p>
+      <div className="sl-product-card__top">
+        <SparkleIcon className="sl-product-card__icon" />
+        <h3>{screen.title}</h3>
+      </div>
+      <div className="sl-product-card__body">
+        <p className="sl-product-card__label">{screen.label}</p>
+        <p>{screen.body}</p>
+      </div>
+      <a href="#tools">
+        {index === 0 ? 'Next show saved' : index === 6 ? 'Browse help' : 'View details'}
+        <span aria-hidden="true">-&gt;</span>
+      </a>
     </article>
   )
 }
 
 function ProductScreenCascade() {
+  const { hero } = sparkleSuitePublicLandingContent
+
   return (
-    <div aria-label="Sparkle Suite product previews" className="sl-cascade">
-      <div className="sl-cascade__halo" />
-      {sparkleSuitePublicLandingContent.hero.screens.map((screen, index) => (
+    <div aria-label="Sparkle Suite product previews" className="sl-product-universe sl-cascade">
+      <article className="sl-browser-card">
+        <div className="sl-browser-card__chrome">
+          <SparkleSeal className="sl-browser-card__seal" />
+          <nav aria-label="Example customer site navigation">
+            <span>Home</span>
+            <span>Live Shows</span>
+            <span>Trades</span>
+            <span>About</span>
+            <span>Contact</span>
+          </nav>
+          <span>Join the List</span>
+        </div>
+        <div className="sl-browser-card__hero">
+          <h3>{hero.productHeadline}</h3>
+          <p>{hero.productSubhead}</p>
+          <span>Join the List</span>
+        </div>
+        <div className="sl-browser-card__tiles">
+          {['Upcoming Shows', 'Live Queue', 'Trade Board', 'Get Updates'].map((tile) => (
+            <span key={tile}>{tile}</span>
+          ))}
+        </div>
+        <div className="sl-browser-card__show">
+          <span>Upcoming Live Shows</span>
+          <strong>Thursday, May 29 - 8:00 PM</strong>
+          <button type="button">Save My Spot</button>
+        </div>
+      </article>
+      <div aria-hidden="true" className="sl-connector sl-connector--queue" />
+      <div aria-hidden="true" className="sl-connector sl-connector--trade" />
+      <div aria-hidden="true" className="sl-connector sl-connector--updates" />
+      {hero.screens.slice(1).map((screen, index) => (
         <ProductMiniScreen index={index} key={screen.id} screen={screen} />
       ))}
     </div>
@@ -95,29 +150,47 @@ function LandingHeader() {
           </a>
         ))}
       </nav>
+      <div className="sl-header__actions">
+        <a href="/login">Sign In</a>
+        <LandingButton href="#pricing" label="Get Sparkle Suite" />
+      </div>
     </header>
   )
 }
 
 function LandingHero() {
   const { hero } = sparkleSuitePublicLandingContent
+  const [headlineLead, headlineAccent = ''] = hero.headline.split('feel more ')
 
   return (
-    <section className="sl-hero" id="top">
-      <div className="sl-hero__copy">
-        <h1>{hero.headline}</h1>
-        <p>{hero.body}</p>
-        <div className="sl-actions">
-          <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
-          <LandingButton
-            href={hero.secondaryCta.href}
-            label={hero.secondaryCta.label}
-            variant="ghost"
-          />
+    <>
+      <section className="sl-hero" id="top">
+        <div className="sl-hero__copy">
+          <h1>
+            {headlineLead}feel more <em>{headlineAccent}</em>
+          </h1>
+          <p>{hero.body}</p>
+          <div className="sl-actions">
+            <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
+            <LandingButton
+              href={hero.secondaryCta.href}
+              label={hero.secondaryCta.label}
+              variant="ghost"
+            />
+          </div>
+          <div className="sl-value-row">
+            {hero.valueProps.map((item) => (
+              <article key={`${item.title}-${item.body}`}>
+                <SparkleIcon className="sl-value-row__icon" />
+                <strong>{item.title}</strong>
+                <span>{item.body}</span>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-      <ProductScreenCascade />
-    </section>
+        <ProductScreenCascade />
+      </section>
+    </>
   )
 }
 

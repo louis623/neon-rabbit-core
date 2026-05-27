@@ -16,7 +16,7 @@ function renderLanding() {
 describe('Sparkle Suite public landing page', () => {
   it('defines the approved hero, CTA, and section copy', () => {
     expect(sparkleSuitePublicLandingContent.hero.headline).toBe(
-      'Make your live-show customer experience feel more polished.',
+      'Make your Bomb Party customer experience feel more polished.',
     )
     expect(sparkleSuitePublicLandingContent.hero.primaryCta.label).toBe(
       'Get Sparkle Suite',
@@ -40,7 +40,8 @@ describe('Sparkle Suite public landing page', () => {
   it('renders every approved landing-page section', () => {
     const html = renderLanding()
 
-    expect(html).toContain('Make your live-show customer experience feel more polished.')
+    expect(html).toContain('Make your Bomb Party customer experience feel more')
+    expect(html).toContain('polished.')
     expect(html).toContain('Less scattered. More polished.')
     expect(html).toContain('The tools behind the smoother experience.')
     expect(html).toContain('Customers should know where to go.')
@@ -48,7 +49,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('Ready to make your customer experience feel more polished?')
     expect(html).toContain('Is Sparkle Suite affiliated with Bomb Party?')
     expect(html).toContain('class="sparkle-landing"')
-    expect(html).toContain('class="sl-cascade"')
+    expect(html).toContain('sl-cascade')
     expect(html).toContain('class="sl-comparison"')
   })
 
@@ -61,7 +62,6 @@ describe('Sparkle Suite public landing page', () => {
       'Sparkle Suite is an independent tool for reps. We are not affiliated with, endorsed by, sponsored by, or officially connected to Bomb Party.',
     )
     expect(html).toContain(sparkleSuitePublicLandingSafety.disclaimer)
-    expect(heroHtml).not.toContain('Bomb Party')
     expect(heroHtml).not.toContain('BB business')
     expect(heroHtml).not.toContain('launch flow')
     expect(heroHtml).not.toContain('backend')
@@ -76,7 +76,8 @@ describe('Sparkle Suite public landing page', () => {
   it('routes the root page to the public landing page without a redirect', () => {
     const html = renderToStaticMarkup(createElement(HomePage))
 
-    expect(html).toContain('Make your live-show customer experience feel more polished.')
+    expect(html).toContain('Make your Bomb Party customer experience feel more')
+    expect(html).toContain('polished.')
     expect(html).toContain('application/ld+json')
     expect(html).not.toContain('NEXT_REDIRECT')
   })
