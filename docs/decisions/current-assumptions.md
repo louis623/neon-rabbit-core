@@ -21,6 +21,7 @@ These are working assumptions for research only. They are not final product deci
 - Customer accounts should be global to Sparkle Suite, with optional relationships to reps.
 - Trust/reputation and moderation should be part of MVP design, even if the first build is small.
 - Customer collection items should point to canonical jewelry designs where possible, with a controlled uncataloged-piece workflow.
+- Matching should be rep-first: wishlist hits on rep dance floors / trade boards should notify customers and surface the rep's next show before relying on customer-to-customer matching.
 
 ## Explicit Non-Assumptions
 

@@ -12,7 +12,7 @@ The likely product center is:
 - collection display
 - trusted trade intent
 - jewelry discovery
-- rep lead generation
+- rep-first matching and lead generation
 - marketplace/community safety
 
 ## What Seems Decided
@@ -35,6 +35,7 @@ The likely product center is:
 - Customer-to-customer shipping differs from current rep fulfillment and probably needs its own logistics model.
 - Search and discovery will matter as much as posting.
 - Reps should benefit from the customer side, either as lead recipients, trusted sellers, moderators, revenue-share participants, or inventory sources.
+- Matching should check rep trade boards before customer-to-customer matches so customer demand flows back to the reps who feed and fund the ecosystem.
 
 ## Major Product Lanes
 
@@ -61,6 +62,18 @@ Research needs:
 - wanted-piece alerts
 - how reps appear in customer search results
 - how to avoid implying official Bomb Party catalog status
+
+### 2A. Rep-First Wishlist Matching
+
+When a customer's wishlist item appears on a rep's dance floor / trade board, Sparkle Suite should be able to notify that customer and show the rep's next scheduled show.
+
+Research needs:
+
+- matching wishlist items against active rep trade listings
+- notification channels and consent requirements
+- how to prioritize reps when multiple reps have the same wanted piece
+- how to show next-show information without turning the customer side into a checkout flow
+- whether customers can follow reps, collections, or specific pieces
 
 ### 3. Customer Trade Board
 

@@ -52,6 +52,7 @@ Charge for high-value discovery rather than trades.
 
 Possible paid features:
 
+- rep-first wishlist match alerts
 - instant alert when a wishlist piece appears
 - saved searches
 - "near-match" alerts
@@ -61,6 +62,7 @@ Possible paid features:
 Why it fits:
 
 - matching is a natural engine in this product
+- rep-first matching sends customer attention back to the active Sparkle Suite rep network
 - customers hunting specific pieces may pay for better discovery
 - no need to touch trade payments
 
