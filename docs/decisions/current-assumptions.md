@@ -22,6 +22,11 @@ These are working assumptions for research only. They are not final product deci
 - Trust/reputation and moderation should be part of MVP design, even if the first build is small.
 - Customer collection items should point to canonical jewelry designs where possible, with a controlled uncataloged-piece workflow.
 - Matching should be rep-first: wishlist hits on rep dance floors / trade boards should notify customers and surface the rep's next show before relying on customer-to-customer matching.
+- Customer monetization is leaning toward a two-tier model: Free and Plus.
+- Free customers can only add existing jewelry library records to collections and wishlists.
+- Plus customers can provide more information, customize profile/theme presentation, highlight collections, upload richer collection photos, and submit uncataloged pieces through Nic-Nac.
+- Trading eligibility may become a Plus-account trust feature, but the exact gate is not final.
+- A master Sparkle Suite rep live calendar may become a Plus feature.
 
 ## Explicit Non-Assumptions
 

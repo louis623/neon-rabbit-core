@@ -8,6 +8,8 @@ Initial pull date: 2026-05-28
 - Should customers log in through Sparkle Suite directly, through their rep's site, or both?
 - Is the customer side branded as Sparkle Suite, a sub-brand, or something customer-native?
 - Is this for all Bomb Party customers, only customers attached to Sparkle Suite reps, or invite-only early communities?
+- Is trading strictly Plus-only, or can Free accounts trade after lighter verification?
+- What exact customer information does Plus require before unlocking higher-trust features?
 
 ## Identity and Trust
 
@@ -24,6 +26,8 @@ Initial pull date: 2026-05-28
 - Should customer-uploaded photos be eligible to upgrade a canonical design photo?
 - Does item-number exact matching remain enough once customers participate?
 - How do we prevent duplicate, inaccurate, or malicious catalog entries?
+- Should only Plus accounts be able to submit uncataloged pieces through Nic-Nac?
+- What review process approves a Plus-submitted piece before it becomes part of the master jewelry library?
 
 ## Trading
 
@@ -50,6 +54,7 @@ Initial pull date: 2026-05-28
 - Can reps browse customer wanted lists to source inventory?
 - Do reps moderate communities tied to their customers or teams?
 - Does the customer platform increase the value of rep subscription, create a separate customer revenue stream, or both?
+- Should the master live event calendar be free, Plus-only, or partially visible to Free accounts with Plus alerts?
 
 ## Community and Moderation
 

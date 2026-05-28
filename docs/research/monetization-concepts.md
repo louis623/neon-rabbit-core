@@ -24,27 +24,67 @@ Watch-outs:
 
 - customer side needs clear value to reps, not just customer entertainment
 
-## 2. Customer Premium Collector Account
+## 2. Customer Plus Collector Account
 
-Free customers can browse, maintain a small collection, and use basic wishlist/trade features. Premium collectors pay for deeper collection tools.
+Current leaning as of 2026-05-28: two customer tiers, `Free` and `Plus`.
 
-Possible premium features:
+Free customers can browse, maintain a collection/wishlist from existing library items, and receive basic rep-first discovery value. Plus customers provide more customer information and unlock higher-trust, higher-expression features.
 
-- larger collection capacity
-- advanced wishlist alerts
-- private collection notes
-- collection value/rarity insights
-- early access to matching
-- enhanced profile/customization
+Possible Plus features:
+
+- eligibility to trade, if Plus becomes the trust gate
+- verified/check-mark style profile treatment
+- richer profile details
+- color/theme customization
+- highlighted collections
+- collection photos and more social-style presentation
+- ability to submit uncataloged jewelry through Nic-Nac
+- access to a master live event calendar for Sparkle Suite reps
+- advanced wishlist/matching alerts
+- collection value/rarity insights later
 
 Why it fits:
 
 - monetizes power collectors without blocking casual users
 - does not require payment processing between customers
+- gives Sparkle Suite a reason to collect more information before allowing higher-trust activity
+- protects the jewelry database by limiting customer-submitted additions to paying, more accountable accounts
 
 Watch-outs:
 
 - avoid making core trust/safety features premium-only
+- be careful that paid verification does not imply Sparkle Suite guarantees every trade
+- decide whether trading is Plus-only or whether Plus simply gets stronger visibility/trust
+
+### Free Account
+
+Free accounts should be useful enough to grow the network:
+
+- create a basic customer profile
+- browse the master jewelry library
+- add existing library pieces to collection
+- add existing library pieces to wishlist
+- receive limited rep-first matching or browse matches manually
+- follow reps or collections, if that becomes part of the model
+
+Free accounts should not be able to:
+
+- add new jewelry records to the master database
+- upload uncataloged piece photos for database inclusion
+- use higher-risk trade features unless explicitly allowed later
+
+### Plus Account
+
+Plus accounts become the more trusted collector tier:
+
+- provides more customer identity/context
+- can submit uncataloged pieces through Nic-Nac
+- can upload collection photos, subject to photo quality rules
+- can customize profile/theme presentation
+- can highlight collections
+- may access master live event calendar
+- may unlock trading eligibility or higher-trust trade status
+- may receive better matching/alerts
 
 ## 3. Matching and Alert Subscription
 
