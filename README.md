@@ -45,6 +45,8 @@ This repo is not for:
 - `docs/context/neon-rabbit-source-map.md`
 - `docs/research/initial-research-brief.md`
 - `docs/research/open-questions.md`
+- `docs/research/proof-of-ownership-and-trust.md`
+- `docs/research/monetization-concepts.md`
 - `docs/decisions/current-assumptions.md`
 
 ## Current Posture
