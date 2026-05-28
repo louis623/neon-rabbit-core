@@ -47,6 +47,7 @@ This repo is not for:
 - `docs/research/open-questions.md`
 - `docs/research/proof-of-ownership-and-trust.md`
 - `docs/research/monetization-concepts.md`
+- `docs/plans/2026-05-28-customer-platform-build-plan.md`
 - `docs/decisions/current-assumptions.md`
 
 ## Current Posture
