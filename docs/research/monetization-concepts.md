@@ -66,6 +66,7 @@ Free accounts should be useful enough to grow the network:
 - add existing library pieces to wishlist
 - receive limited rep-first matching or browse matches manually
 - follow reps or collections, if that becomes part of the model
+- browse the master Sparkle Suite rep live calendar
 
 Free accounts should not be able to:
 
@@ -83,8 +84,21 @@ Plus accounts become the more trusted collector tier:
 - can customize profile/theme presentation
 - can highlight collections
 - may access master live event calendar
+- can follow reps and save shows
+- can receive alerts when wishlist pieces match a rep board or upcoming show context
 - may unlock trading eligibility or higher-trust trade status
 - may receive better matching/alerts
+
+### Accepted Product Recommendation
+
+Do not make the master live event calendar fully Plus-only. The calendar should help route customer attention back to reps, so hiding it completely would work against the rep-first matching strategy.
+
+Recommended split:
+
+- Free: browse upcoming Sparkle Suite rep lives.
+- Plus: follow reps, save shows, receive alerts, and connect wishlist matches to rep board/show context.
+
+Plus as the gate for adding new jewelry to the database is the strongest early upgrade lever. It protects the master library from low-quality submissions while giving serious collectors a real reason to upgrade.
 
 ## 3. Matching and Alert Subscription
 

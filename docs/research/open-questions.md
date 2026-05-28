@@ -54,7 +54,7 @@ Initial pull date: 2026-05-28
 - Can reps browse customer wanted lists to source inventory?
 - Do reps moderate communities tied to their customers or teams?
 - Does the customer platform increase the value of rep subscription, create a separate customer revenue stream, or both?
-- Should the master live event calendar be free, Plus-only, or partially visible to Free accounts with Plus alerts?
+- What exact master live calendar features belong to Free browsing versus Plus follow/save/alert behavior?
 
 ## Community and Moderation
 

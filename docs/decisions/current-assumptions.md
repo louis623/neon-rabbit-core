@@ -26,7 +26,8 @@ These are working assumptions for research only. They are not final product deci
 - Free customers can only add existing jewelry library records to collections and wishlists.
 - Plus customers can provide more information, customize profile/theme presentation, highlight collections, upload richer collection photos, and submit uncataloged pieces through Nic-Nac.
 - Trading eligibility may become a Plus-account trust feature, but the exact gate is not final.
-- A master Sparkle Suite rep live calendar may become a Plus feature.
+- The master Sparkle Suite rep live calendar should not be fully Plus-only. Free customers should be able to browse upcoming lives, while Plus customers may follow reps, save shows, and receive wishlist/show alerts.
+- Plus-gated database submission is an accepted recommendation because it protects the master jewelry library while creating a meaningful upgrade reason.
 
 ## Explicit Non-Assumptions
 
