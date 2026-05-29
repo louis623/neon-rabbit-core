@@ -9,6 +9,7 @@ import LibraryPage from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
+import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
 
@@ -19,6 +20,7 @@ const routes = [
   ["live-shows", () => renderToStaticMarkup(createElement(LiveShowsPage))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
+  ["silver", () => renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")))],
 ] as const;
 
 describe("Sparkle Finder hub routes", () => {
@@ -104,6 +106,25 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Collector Essentials");
     expect(markup).toContain("Storage &amp; Display");
     expect(markup).toContain("Livestream Gear");
+  });
+
+  it("renders Silver profile and collection previews for Silver customers", () => {
+    const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
+
+    expect(markup).toContain("Silver Profile");
+    expect(markup).toContain("Sparkle Mama");
+    expect(markup).toContain("Rainbow Crown Ring");
+    expect(markup).toContain("Add to collection");
+    expect(markup).toContain("Add to watchlist");
+    expect(markup).toContain("Future catalog request path");
+  });
+
+  it("renders the Silver route upgrade prompt for Free customers", () => {
+    const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("free")));
+
+    expect(markup).toContain("Silver preview needed");
+    expect(markup).toContain("/auth/sign-in");
+    expect(markup).not.toContain("Profile form");
   });
 
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
