@@ -1,13 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fff8f4;
-  --foreground: #37202f;
-  --surface: #ffffff;
-  --surface-muted: #faece8;
-  --accent: #c85f83;
-  --accent-strong: #8f345f;
-  --border: #efc8c9;
+  --background: #fffaf7;
+  --foreground: #321827;
+  --sparkle-warm-bg: #fffaf7;
+  --sparkle-blush-bg: #fff3f0;
+  --sparkle-paper: #fffefd;
+  --sparkle-paper-soft: #fff8f5;
+  --sparkle-plum: #6f123d;
+  --sparkle-plum-deep: #431326;
+  --sparkle-ink-muted: #755365;
+  --sparkle-blush: #fde2dd;
+  --sparkle-rose: #df6f8d;
+  --sparkle-coral: #ef8b73;
+  --sparkle-border: #efc9c9;
+  --sparkle-border-strong: #e8aaa9;
+  --sparkle-shadow-sm: 0 8px 22px rgba(111, 18, 61, 0.08);
+  --sparkle-shadow-md: 0 18px 50px rgba(111, 18, 61, 0.12);
+  --sparkle-radius-sm: 0.5rem;
+  --sparkle-radius-md: 0.75rem;
+  --sparkle-radius-lg: 1rem;
+  --surface: var(--sparkle-paper);
+  --surface-muted: var(--sparkle-blush-bg);
+  --accent: var(--sparkle-rose);
+  --accent-strong: var(--sparkle-plum);
+  --border: var(--sparkle-border);
 }
 
 * {
@@ -22,8 +39,8 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(239, 200, 201, 0.42), transparent 28rem),
-    var(--background);
+    radial-gradient(circle at 8% 8%, rgba(239, 139, 115, 0.18), transparent 24rem),
+    linear-gradient(180deg, var(--sparkle-paper) 0%, var(--sparkle-warm-bg) 48%, var(--sparkle-blush-bg) 100%);
   color: var(--foreground);
   font-family: var(--font-dm-sans), Arial, sans-serif;
 }
@@ -43,4 +60,101 @@ select {
 ::selection {
   background: var(--accent);
   color: white;
+}
+
+.sparkle-finder-logo {
+  display: inline-flex;
+  min-width: 14.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--sparkle-plum-deep);
+}
+
+.sparkle-finder-seal {
+  position: relative;
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(239, 139, 115, 0.52);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 58%, rgba(253, 226, 221, 0.72) 100%);
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(255, 255, 255, 0.86),
+    inset 0 0 0 0.36rem rgba(239, 139, 115, 0.24),
+    var(--sparkle-shadow-sm);
+}
+
+.sparkle-finder-seal::after {
+  position: absolute;
+  top: 0.72rem;
+  right: 0.5rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 1px solid rgba(239, 139, 115, 0.72);
+  background: var(--sparkle-paper);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.sparkle-finder-seal__letters {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--sparkle-plum);
+}
+
+.sparkle-finder-logo__wordmark {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.sparkle-finder-logo__name {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--sparkle-plum-deep);
+}
+
+.sparkle-finder-logo__byline {
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--sparkle-coral);
+}
+
+.sparkle-finder-nav-shell {
+  min-height: 5.75rem;
+  border-bottom: 1px solid var(--sparkle-border);
+  background: rgba(255, 254, 253, 0.92);
+  box-shadow: 0 10px 34px rgba(111, 18, 61, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.sparkle-finder-nav-link {
+  display: inline-flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  color: var(--sparkle-plum-deep);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sparkle-finder-nav-link:hover {
+  color: var(--sparkle-plum);
+}
+
+.sparkle-finder-nav-link:focus-visible {
+  outline: 2px solid var(--sparkle-rose);
+  outline-offset: 3px;
 }

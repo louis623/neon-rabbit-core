@@ -1,4 +1,5 @@
-import { CalendarDays, Gem, Search, Sparkles } from "lucide-react";
+import { CalendarDays, Gem, Search } from "lucide-react";
+import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 
 const bootItems = [
   {
@@ -12,66 +13,50 @@ const bootItems = [
     icon: Gem,
   },
   {
-    title: "Nic-Nac assist",
-    body: "Bounded search support will arrive in the Silver workflow.",
+    title: "Silver Membership",
+    body: "Browse for free. Let Nic-Nac hunt for you with Silver.",
     icon: Search,
   },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen px-6 py-8 sm:px-10">
-      <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col justify-between gap-10 rounded-[2rem] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] p-6 shadow-[0_24px_80px_rgba(83,37,59,0.12)] backdrop-blur sm:p-10">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="grid size-12 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] font-[var(--font-playfair)] text-xl font-bold text-[var(--accent-strong)] shadow-sm">
-              SF
-            </div>
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                Sparkle Finder
-              </p>
-              <p className="text-sm text-[#765263]">by Sparkle Suite</p>
-            </div>
-          </div>
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-[var(--accent-strong)]">
-            <Sparkles aria-hidden="true" className="size-4" />
-            App scaffold online
-          </div>
-        </header>
-
-        <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
-          <div className="max-w-3xl">
-            <h1 className="font-[var(--font-playfair)] text-5xl font-semibold leading-[1.02] text-[#2f1a29] sm:text-6xl lg:text-7xl">
-              Sparkle Finder is booting.
+    <>
+      <SparkleFinderNav />
+      <main className="min-h-[calc(100vh-5.75rem)] px-5 py-8 sm:px-8">
+        <section className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+          <div className="max-w-3xl py-8 sm:py-14">
+            <p className="mb-4 text-sm font-bold text-[var(--sparkle-coral)]">Sparkle Finder by Sparkle Suite</p>
+            <h1 className="font-[var(--font-playfair)] text-5xl font-semibold leading-[1.02] text-[var(--sparkle-plum-deep)] sm:text-6xl lg:text-7xl">
+              Sparkle Finder foundation is online.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#765263]">
-              This starter homepage confirms the standalone Next.js app is ready for the V1 discovery hub build.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--sparkle-ink-muted)]">
+              The V1 discovery hub shell now has the brand tokens, seal, and primary navigation ready for the homepage build.
             </p>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 rounded-[var(--sparkle-radius-lg)] border border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.84)] p-4 shadow-[var(--sparkle-shadow-md)] backdrop-blur">
             {bootItems.map((item) => {
               const Icon = item.icon;
 
               return (
                 <article
                   key={item.title}
-                  className="flex gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_12px_34px_rgba(83,37,59,0.08)]"
+                  className="flex min-h-28 gap-4 rounded-[var(--sparkle-radius-md)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]"
                 >
-                  <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--surface-muted)] text-[var(--accent-strong)]">
+                  <div className="grid size-11 shrink-0 place-items-center rounded-full bg-[var(--sparkle-blush)] text-[var(--sparkle-plum)]">
                     <Icon aria-hidden="true" className="size-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-[#37202f]">{item.title}</h2>
-                    <p className="mt-1 text-sm leading-6 text-[#765263]">{item.body}</p>
+                    <h2 className="text-base font-bold text-[var(--sparkle-plum-deep)]">{item.title}</h2>
+                    <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">{item.body}</p>
                   </div>
                 </article>
               );
             })}
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </>
   );
 }
