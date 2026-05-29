@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { Crown, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Crown, Gem, Heart, MapPin, ShieldCheck } from "lucide-react";
+import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
+import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderEntitlements } from "@/lib/sparkle-finder/entitlements";
+import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CollectionItem, CustomerAccount, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
 
 export type SilverCollectionPreviewItem = CollectionItem & {
@@ -11,10 +14,13 @@ type SilverCollectorSpaceProps = {
   customer: CustomerAccount;
   profile?: SilverProfile;
   collectionItems: SilverCollectionPreviewItem[];
+  accountState?: SparkleFinderAccountState;
 };
 
-export function SilverCollectorSpace({ customer, profile, collectionItems }: SilverCollectorSpaceProps) {
+export function SilverCollectorSpace({ customer, profile, collectionItems, accountState }: SilverCollectorSpaceProps) {
   const entitlements = getSparkleFinderEntitlements(customer);
+  const nicNacAccountState = accountState ?? getLocalDevAuthState(customer.tier);
+  const nicNacPreviewItemId = collectionItems[0]?.jewelryItemId;
   const wishlistCount = collectionItems.filter((item) => item.state === "wishlist").length;
 
   return (
@@ -92,40 +98,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems }: Sil
           </div>
         </article>
 
-        <article className="grid rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)] sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center sm:gap-5 lg:grid-cols-1 lg:place-items-center lg:text-center">
-          <div className="mx-auto grid size-24 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
-            <Search aria-hidden="true" className="size-11" strokeWidth={1.55} />
-          </div>
-          <div className="mt-4 sm:mt-0 lg:mt-4">
-            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-              Nic-Nac, find this for me
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-              Browse for free. Let Nic-Nac hunt for you with Silver.
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-              Preview the focused find-this-for-me workflow for matching library pieces to rep-hosted boards and shows.
-            </p>
-            {entitlements.canUseNicNacFindRequests ? (
-              <Link
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] px-4 text-sm font-bold text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
-                href="/library"
-              >
-                <Sparkles aria-hidden="true" className="size-4" />
-                Preview Nic-Nac finder
-              </Link>
-            ) : (
-              <span
-                aria-disabled="true"
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-4 text-sm font-bold text-[var(--sparkle-ink-muted)]"
-                role="link"
-              >
-                <Sparkles aria-hidden="true" className="size-4" />
-                Silver finder preview
-              </span>
-            )}
-          </div>
-        </article>
+        <FindThisForMe accountState={nicNacAccountState} compact jewelryItemId={nicNacPreviewItemId} />
       </div>
     </section>
   );

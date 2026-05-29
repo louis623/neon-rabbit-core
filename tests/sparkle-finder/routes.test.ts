@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
 import DashboardPage from "../../app/(hub)/dashboard/page";
 import DiamondsUnicornsPage from "../../app/(hub)/diamonds-unicorns/page";
-import ItemDetailPage from "../../app/(hub)/library/[itemId]/page";
+import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import LibraryPage from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
@@ -59,7 +59,7 @@ describe("Sparkle Finder hub routes", () => {
 
   it("renders the item detail route with rep availability and focused Nic-Nac CTA", () => {
     const markup = renderToStaticMarkup(
-      createElement(ItemDetailPage, { params: { itemId: "jewel-rainbow-crown-ring" } }),
+      renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
     );
 
     expect(markup).toContain("Rainbow Crown Ring");
@@ -68,9 +68,19 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Exact item");
   });
 
+  it("renders the item detail Silver prompt for Free customers", () => {
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("free")),
+    );
+
+    expect(markup).toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
+    expect(markup).not.toContain("Exact item lead");
+    expect(markup).not.toContain("Next show");
+  });
+
   it("uses App Router notFound behavior for unknown library records", () => {
     expect(() =>
-      renderToStaticMarkup(createElement(ItemDetailPage, { params: { itemId: "jewel-missing" } })),
+      renderToStaticMarkup(renderItemDetailPageContent({ itemId: "jewel-missing" }, getLocalDevAuthState("silver"))),
     ).toThrow();
   });
 

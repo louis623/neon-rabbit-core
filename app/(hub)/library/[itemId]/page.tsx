@@ -1,7 +1,14 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { Gem, Search } from "lucide-react";
+import { Gem } from "lucide-react";
+import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
+import {
+  getLocalDevAuthState,
+  parseSparkleFinderAuthMode,
+  sparkleFinderAuthCookieName,
+} from "@/lib/sparkle-finder/auth";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
+import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 
 type ItemDetailPageProps = {
   params: {
@@ -9,7 +16,17 @@ type ItemDetailPageProps = {
   };
 };
 
-export default function ItemDetailPage({ params }: ItemDetailPageProps) {
+export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
+  const cookieStore = await cookies();
+  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+
+  return renderItemDetailPageContent(params, getLocalDevAuthState(authMode));
+}
+
+export function renderItemDetailPageContent(
+  params: ItemDetailPageProps["params"],
+  accountState: SparkleFinderAccountState,
+) {
   const item = getJewelryItemById(params.itemId);
 
   if (!item) {
@@ -31,7 +48,8 @@ export default function ItemDetailPage({ params }: ItemDetailPageProps) {
           {item.name}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          {item.itemNumber} · {item.jewelryType} · {item.bpLabel === "standard" ? "Standard library label" : `${capitalize(item.bpLabel)} label`}
+          {item.itemNumber} / {item.jewelryType} /{" "}
+          {item.bpLabel === "standard" ? "Standard library label" : `${capitalize(item.bpLabel)} label`}
         </p>
       </article>
 
@@ -46,14 +64,22 @@ export default function ItemDetailPage({ params }: ItemDetailPageProps) {
                 const rep = getRepById(match.repId);
 
                 return (
-                  <div className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3" key={match.listingId}>
+                  <div
+                    className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3"
+                    key={match.listingId}
+                  >
                     <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{rep?.businessName}</p>
                     <p className="mt-1 text-xs font-bold text-[var(--sparkle-coral)]">
                       {formatMatchType(match.matchType)}
                     </p>
-                    <Link className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={match.boardUrl}>
+                    <a
+                      className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+                      href={match.boardUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
                       Open rep board path
-                    </Link>
+                    </a>
                   </div>
                 );
               })
@@ -65,15 +91,7 @@ export default function ItemDetailPage({ params }: ItemDetailPageProps) {
           </div>
         </article>
 
-        <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-          <Search aria-hidden="true" className="size-8 text-[var(--sparkle-rose)]" />
-          <h2 className="mt-3 font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
-            Nic-Nac, find this for me
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Silver will use focused matching to look for exact item leads first, then same collection and type.
-          </p>
-        </article>
+        <FindThisForMe accountState={accountState} compact jewelryItemId={item.id} />
       </aside>
     </section>
   );

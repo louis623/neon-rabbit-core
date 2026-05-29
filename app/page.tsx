@@ -40,6 +40,7 @@ export default async function Home() {
         <HeroAndAgenda liveShows={liveShows} reps={reps} />
         {silverCustomer ? (
           <SilverCollectorSpace
+            accountState={accountState}
             collectionItems={silverCollectionItems}
             customer={silverCustomer}
             profile={silverProfile}
