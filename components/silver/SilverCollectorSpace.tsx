@@ -1,0 +1,198 @@
+import Link from "next/link";
+import { Crown, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { getSparkleFinderEntitlements } from "@/lib/sparkle-finder/entitlements";
+import type { CollectionItem, CustomerAccount, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
+
+export type SilverCollectionPreviewItem = CollectionItem & {
+  jewelryItem: JewelryItem;
+};
+
+type SilverCollectorSpaceProps = {
+  customer: CustomerAccount;
+  profile?: SilverProfile;
+  collectionItems: SilverCollectionPreviewItem[];
+};
+
+export function SilverCollectorSpace({ customer, profile, collectionItems }: SilverCollectorSpaceProps) {
+  const entitlements = getSparkleFinderEntitlements(customer);
+  const wishlistCount = collectionItems.filter((item) => item.state === "wishlist").length;
+
+  return (
+    <section className="border-b border-[var(--sparkle-border-strong)] bg-[rgba(255,254,253,0.96)]" id="silver">
+      <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[21rem_minmax(0,1fr)_25rem] lg:items-stretch lg:px-10">
+        <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
+          <div className="mb-3 flex items-center gap-3 text-[var(--sparkle-ink-muted)]">
+            <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
+            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight">Silver Membership</h2>
+          </div>
+
+          <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-4">
+            <div
+              aria-label={`${customer.displayName} avatar`}
+              className="grid size-20 shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#f1f1f1)] font-[var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
+            >
+              {getInitials(customer.displayName)}
+            </div>
+            <div className="min-w-0 pt-1">
+              <h3 className="truncate font-[var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                {customer.displayName}
+              </h3>
+              <p className="mt-1 inline-flex items-center gap-1 text-sm text-[var(--sparkle-ink-muted)]">
+                <MapPin aria-hidden="true" className="size-4" />
+                {customer.state}, USA
+              </p>
+              {profile?.tiktokHandle ? (
+                <p className="mt-1 truncate text-sm text-[var(--sparkle-ink-muted)]">{profile.tiktokHandle}</p>
+              ) : (
+                <p className="mt-1 truncate text-sm text-[var(--sparkle-ink-muted)]">TikTok handle not added</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 py-4">
+            <ProfileMetric icon={Gem} label="Collection" value={collectionItems.length} />
+            <ProfileMetric icon={Heart} label="Wishlist / watchlist" value={wishlistCount} />
+          </div>
+
+          {entitlements.canUseSilverProfileActions ? (
+            <Link
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] px-4 text-sm font-bold text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+              href="/silver"
+            >
+              View / Edit Profile
+            </Link>
+          ) : (
+            <span
+              aria-disabled="true"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-4 text-sm font-bold text-[var(--sparkle-ink-muted)]"
+              role="link"
+            >
+              Silver profile preview
+            </span>
+          )}
+        </article>
+
+        <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sparkle-coral)]">Your Silver Collector Space</p>
+              <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                My Collection Preview
+              </h2>
+            </div>
+            <span className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 py-1 text-xs font-bold text-[var(--sparkle-ink-muted)]">
+              All your sparkle, in one place.
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {collectionItems.map((item) => (
+              <CollectionPreviewCard key={item.id} item={item} />
+            ))}
+          </div>
+        </article>
+
+        <article className="grid rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)] sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center sm:gap-5 lg:grid-cols-1 lg:place-items-center lg:text-center">
+          <div className="mx-auto grid size-24 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+            <Search aria-hidden="true" className="size-11" strokeWidth={1.55} />
+          </div>
+          <div className="mt-4 sm:mt-0 lg:mt-4">
+            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+              Nic-Nac, find this for me
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+              Browse for free. Let Nic-Nac hunt for you with Silver.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+              Preview the focused find-this-for-me workflow for matching library pieces to rep-hosted boards and shows.
+            </p>
+            {entitlements.canUseNicNacFindRequests ? (
+              <Link
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] px-4 text-sm font-bold text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+                href="/library"
+              >
+                <Sparkles aria-hidden="true" className="size-4" />
+                Preview Nic-Nac finder
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-4 text-sm font-bold text-[var(--sparkle-ink-muted)]"
+                role="link"
+              >
+                <Sparkles aria-hidden="true" className="size-4" />
+                Silver finder preview
+              </span>
+            )}
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function ProfileMetric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Gem;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="flex min-h-14 items-center gap-3">
+      <Icon aria-hidden="true" className="size-6 shrink-0 text-[var(--sparkle-coral)]" strokeWidth={1.7} />
+      <div>
+        <p className="text-lg font-bold leading-none text-[var(--sparkle-plum-deep)]">{value}</p>
+        <p className="mt-1 text-xs leading-4 text-[var(--sparkle-ink-muted)]">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function CollectionPreviewCard({ item }: { item: SilverCollectionPreviewItem }) {
+  return (
+    <div className="min-h-44 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
+      <div className="grid aspect-[4/3] place-items-center rounded-[var(--sparkle-radius-sm)] border border-[rgba(239,201,201,0.72)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
+        <Gem aria-hidden="true" className="size-12" strokeWidth={1.4} />
+      </div>
+      <div className="mt-3 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-bold text-[var(--sparkle-plum-deep)]">{item.jewelryItem.name}</h3>
+          <p className="truncate text-xs leading-5 text-[var(--sparkle-ink-muted)]">{item.jewelryItem.collectionName}</p>
+        </div>
+        {item.isHighlighted ? <ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-[var(--sparkle-coral)]" /> : null}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StateBadge state={item.state} />
+        {item.isHighlighted ? <span className="rounded border border-[#e7be77] bg-[#fff3cf] px-3 py-1 text-xs font-bold text-[#704b11]">Highlighted</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function StateBadge({ state }: { state: CollectionItem["state"] }) {
+  const labelByState: Record<CollectionItem["state"], string> = {
+    owned: "Owned",
+    private_note_only: "Private note",
+    wishlist: "Wishlist",
+  };
+
+  const toneByState: Record<CollectionItem["state"], string> = {
+    owned: "border-[#a8d8d1] bg-[#e5fbf6] text-[#0f665d]",
+    private_note_only: "border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-ink-muted)]",
+    wishlist: "border-[#efb5c7] bg-[#fff0f5] text-[var(--sparkle-plum)]",
+  };
+
+  return <span className={`rounded border px-3 py-1 text-xs font-bold ${toneByState[state]}`}>{labelByState[state]}</span>;
+}
+
+function getInitials(displayName: string): string {
+  return displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
