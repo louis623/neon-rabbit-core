@@ -1,7 +1,8 @@
 import type { CustomerAccount, CustomerTier } from "./types";
+import type { SparkleFinderAccountState } from "./auth";
 
 export type SparkleFinderEntitlements = {
-  tier: CustomerTier;
+  tier: CustomerTier | "anonymous";
   canBrowseLibrary: boolean;
   canUseSilverProfileActions: boolean;
   canUseSilverCollectionActions: boolean;
@@ -18,6 +19,22 @@ export function getSparkleFinderEntitlements(customer: CustomerAccount): Sparkle
     canUseSilverCollectionActions: hasSilverAccess,
     canUseNicNacFindRequests: hasSilverAccess,
   };
+}
+
+export function getSparkleFinderAccountEntitlements(
+  accountState: SparkleFinderAccountState,
+): SparkleFinderEntitlements {
+  if (accountState.status === "anonymous") {
+    return {
+      tier: "anonymous",
+      canBrowseLibrary: false,
+      canUseSilverProfileActions: false,
+      canUseSilverCollectionActions: false,
+      canUseNicNacFindRequests: false,
+    };
+  }
+
+  return getSparkleFinderEntitlements(accountState.customer);
 }
 
 export function canUseSilverProfileActions(customer: CustomerAccount): boolean {

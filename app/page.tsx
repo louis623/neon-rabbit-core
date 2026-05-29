@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { HeroAndAgenda } from "@/components/home/HeroAndAgenda";
 import { SilverCollectorSpace } from "@/components/silver/SilverCollectorSpace";
@@ -11,8 +12,16 @@ import {
   getReps,
   getSilverProfileByCustomerId,
 } from "@/lib/sparkle-finder/service";
+import {
+  getLocalDevAuthState,
+  parseSparkleFinderAuthMode,
+  sparkleFinderAuthCookieName,
+} from "@/lib/sparkle-finder/auth";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+  const accountState = getLocalDevAuthState(authMode);
   const liveShows = getLiveShows();
   const reps = getReps();
   const affiliateShopItems = getAffiliateShopItems();
@@ -26,7 +35,7 @@ export default function Home() {
 
   return (
     <>
-      <SparkleFinderNav />
+      <SparkleFinderNav accountState={accountState} />
       <main>
         <HeroAndAgenda liveShows={liveShows} reps={reps} />
         {silverCustomer ? (

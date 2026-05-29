@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import { describe, expect, it } from "vitest";
-import HubLayout from "../../app/(hub)/layout";
+import { renderHubChrome } from "../../app/(hub)/layout";
 import DashboardPage from "../../app/(hub)/dashboard/page";
 import DiamondsUnicornsPage from "../../app/(hub)/diamonds-unicorns/page";
 import ItemDetailPage from "../../app/(hub)/library/[itemId]/page";
@@ -9,6 +9,7 @@ import LibraryPage from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
+import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
 
 const routes = [
@@ -23,7 +24,7 @@ const routes = [
 describe("Sparkle Finder hub routes", () => {
   it("renders the shared hub shell around dashboard content", () => {
     const markup = renderToStaticMarkup(
-      createElement(HubLayout, undefined, createElement(DashboardPage)),
+      renderHubChrome(createElement(DashboardPage), getLocalDevAuthState("silver")),
     );
 
     expect(markup).toContain("Sparkle Finder");
@@ -33,6 +34,16 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/live-shows");
     expect(markup).toContain("/diamonds-unicorns");
     expect(markup).toContain("/shop");
+  });
+
+  it("shows a sign-in wall for anonymous hub visitors", () => {
+    const markup = renderToStaticMarkup(
+      renderHubChrome(createElement(DashboardPage), getLocalDevAuthState("anonymous")),
+    );
+
+    expect(markup).toContain("Sign in to open Sparkle Finder");
+    expect(markup).toContain("/auth/sign-in");
+    expect(markup).not.toContain("Finder Dashboard");
   });
 
   it("renders library search and fixture-backed jewelry cards", () => {
