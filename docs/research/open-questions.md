@@ -4,32 +4,34 @@ Initial pull date: 2026-05-28
 
 ## Product Scope
 
-- Is the first customer-side MVP a collection showcase, a wishlist/search surface, a trade board, or a social feed?
+- What exact v1 feature slice ships first inside the secured discovery hub?
 - Should customers log in through Sparkle Suite directly, through their rep's site, or both?
-- Is the customer side branded as Sparkle Suite, a sub-brand, or something customer-native?
+- What URL/domain should `Sparkle Finder by Sparkle Suite` use?
 - Is this for all Bomb Party customers, only customers attached to Sparkle Suite reps, or invite-only early communities?
-- Is trading strictly Plus-only, or can Free accounts trade after lighter verification?
-- What exact customer information does Plus require before unlocking higher-trust features?
+- Should Silver Membership launch in v1 or shortly after the free discovery hub?
+- What exact customer information does Silver require for customer profile and collection features?
 
 ## Identity and Trust
 
 - What does a customer profile require at launch: name, email, phone, handle, location, preferred rep?
-- Do customers need verified phone/email before posting?
-- Do customer trade listings need proof-of-ownership?
+- Do customers need verified phone/email before using profile or collection features?
+- What report/ban process is needed for bad actors even while trading and posting are parked?
 - Should reputation be global, rep-scoped, transaction-scoped, or all three?
 - What happens when a user is reported by multiple customers or reps?
 
 ## Jewelry Data
 
-- Can customers map owned pieces to existing `jewelry_designs` records?
+- Can Silver customers map owned pieces to existing `jewelry_designs` records?
 - If a customer owns an uncataloged piece, who can create the canonical catalog record?
 - Should customer-uploaded photos be eligible to upgrade a canonical design photo?
 - Does item-number exact matching remain enough once customers participate?
 - How do we prevent duplicate, inaccurate, or malicious catalog entries?
-- Should only Plus accounts be able to submit uncataloged pieces through Nic-Nac?
-- What review process approves a Plus-submitted piece before it becomes part of the master jewelry library?
+- Should only Silver accounts be able to submit uncataloged pieces through Nic-Nac?
+- What review process approves a Silver-submitted piece before it becomes part of the master jewelry library?
 
 ## Trading
+
+Customer-to-customer trading is parked for v1. These questions are for a later revisit:
 
 - Are customer-to-customer trades item-for-item only at first?
 - Do the current same-collection and same-jewelry-type rules apply to customer-to-customer trades?
@@ -40,6 +42,8 @@ Initial pull date: 2026-05-28
 - What cancellation windows are allowed?
 
 ## Buy/Sell and Money
+
+Buy/sell is parked for v1. These questions are for a later revisit:
 
 - Should customer buy/sell exist at all in the first version?
 - If buy/sell exists, is it inquiry-only with payment handled off-platform?
@@ -54,9 +58,11 @@ Initial pull date: 2026-05-28
 - Can reps browse customer wanted lists to source inventory?
 - Do reps moderate communities tied to their customers or teams?
 - Does the customer platform increase the value of rep subscription, create a separate customer revenue stream, or both?
-- What exact master live calendar features belong to Free browsing versus Plus follow/save/alert behavior?
+- What exact master live calendar features belong to Free browsing versus Silver follow/save/alert behavior?
 
 ## Community and Moderation
+
+Message boards and social posting are parked for v1. These questions are for a later revisit:
 
 - What post types are allowed?
 - Are comments enabled at launch?

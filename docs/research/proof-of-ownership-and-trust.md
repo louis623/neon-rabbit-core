@@ -2,13 +2,15 @@
 
 Intent update: 2026-05-28
 
+2026-05-29 status: customer-to-customer trading is parked for v1. Keep this research as a later trust/safety reference only. Current v1 planning uses Silver Membership for customer profile and collection features, without customer trade workflows.
+
 ## Louis's Starting Position
 
 Keep proof of ownership simple. If a customer physically has the piece, that may be good enough at first. Heavy verification could make the product feel like work, and the customer-side platform should stay easy for both Sparkle Suite and customers.
 
 Bad actors should be identifiable through ratings, reporting, reputation, and moderation rather than forcing every honest customer through a difficult proof process.
 
-## Working Trade Rule
+## Parked Working Trade Rule
 
 Start with the same fairness rules as the rep trade board:
 
@@ -24,7 +26,7 @@ Example: April Birthday earrings can trade for April Birthday earrings. April Bi
 
 ### Level 0: Library-only Collection Item
 
-Customer selects a piece from the jewelry library and adds it to their collection or wishlist.
+Silver customer selects a piece from the jewelry library and adds it to their collection or wishlist/watchlist.
 
 Use for:
 

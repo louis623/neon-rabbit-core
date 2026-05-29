@@ -79,6 +79,10 @@ Silver features:
 
 - Nic-Nac Collector Assist
 - `Nic-Nac, find this for me` button on jewelry detail pages
+- customer profile
+- customer collection built from master jewelry library records
+- collection showcase/highlight areas
+- saved collection items and collector notes
 - Nic-Nac search across rep boards/dance floors
 - exact matches first, close matches second
 - matching reps and next-show context
@@ -320,6 +324,7 @@ High-intent moments:
 - no obvious manual match found
 - Diamonds & Unicorns page
 - rep board item detail
+- creating or expanding a personal collection
 - after repeated searches
 
 ### Rep Value Conversion
@@ -430,6 +435,8 @@ Customer metrics:
 - library searches
 - Diamonds & Unicorns views
 - affiliate clicks
+- Silver profile creations
+- Silver collection items saved
 - Silver trial starts
 - Silver paid conversions
 - Nic-Nac searches per Silver member

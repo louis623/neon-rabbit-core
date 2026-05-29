@@ -25,7 +25,8 @@ The future customer side is a collector/community surface for Bomb Party custome
 - traffic paths back to rep sites and shows
 - lightweight affiliate/shop layer for collector and live-streaming gear
 - optional Silver Membership for Nic-Nac Collector Assist
-- parked future expansion for customer profiles, collections, wishlists, trading, and community features
+- Silver customer profile and collection features
+- parked future expansion for customer-to-customer trading and community features
 
 ## Boundary
 
@@ -55,6 +56,7 @@ This repo is not for:
 - `docs/research/proof-of-ownership-and-trust.md`
 - `docs/research/monetization-concepts.md`
 - `docs/plans/2026-05-28-customer-platform-build-plan.md`
+- `docs/design/2026-05-29-homepage-mockup-direction.md`
 - `docs/business/2026-05-29-business-plan-and-revenue-model.md`
 - `docs/decisions/current-assumptions.md`
 - `docs/decisions/2026-05-29-sparkle-finder-branding.md`

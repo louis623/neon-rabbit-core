@@ -11,6 +11,7 @@ These are working assumptions for research only. They are not final product deci
 - The customer hub working name is Sparkle Finder.
 - Sparkle Finder should use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
 - Sparkle Finder should use the main Sparkle Suite brand system, not the Amethyst skin/template.
+- Sparkle Finder's preferred homepage/UI direction is mockup Concept 2: an editorial discovery hub with a `Today across Sparkle Suite` agenda panel.
 - The customer side is more than a trade board. For v1, it is a secured free discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
 - Current rep-side trade board rules are intentionally narrow.
@@ -32,6 +33,7 @@ These are working assumptions for research only. They are not final product deci
 - Silver pricing should target under $5/month, likely `$4.99/month`, because it should feel like less than a cup of coffee.
 - Paid Sparkle Suite reps should receive Silver access for free while their rep account is paid and active.
 - Customer-facing Nic-Nac may be a Silver feature for focused search assist: `Nic-Nac, find this for me`.
+- Customer profile and customer collection features should be Silver Membership features.
 - Affiliate/shop monetization should include both collector products and live-streaming gear/tools for reps.
 
 ## Explicit Non-Assumptions

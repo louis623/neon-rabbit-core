@@ -20,11 +20,11 @@
 - Do not create fake product screens or invented Sparkle Suite capabilities in public marketing.
 - Do not use buy/sell language in v1.
 - Do not build customer-to-customer trading in v1.
-- Do not build customer-to-customer trading in v1.
 - If paid customer membership is included, call it Silver Membership, not Plus.
 - Use `Sparkle Finder by Sparkle Suite` as the working product name.
 - Use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
 - Do not use the Amethyst skin/template as the Sparkle Finder brand.
+- Use homepage/UI mockup Concept 2 as the preferred direction: an editorial discovery hub with a `Today across Sparkle Suite` agenda panel.
 - Keep the customer side rep-positive: customer activity should send attention back to reps first.
 - Treat Bomb Party as an unaffiliated third-party ecosystem. Avoid visual or copy choices that imply official BP partnership.
 
@@ -96,11 +96,9 @@ Free onboarding steps:
 
 1. Create login.
 2. Confirm email.
-3. Create profile snapshot:
+3. Set basic account preferences:
    - display name
-   - state
-   - optional profile photo
-   - optional TikTok handle/link
+   - state for regional relevance
    - favorite jewelry type or collection interests
 4. Browse master Sparkle Suite rep live calendar.
 5. Browse aggregated rep trade boards / dance floors.
@@ -113,10 +111,11 @@ Free permissions:
 - browse aggregated rep trade boards / dance floors
 - browse master jewelry library
 - open individual rep sites and show paths
-- maintain a basic profile for future personalization
+- maintain basic account preferences for future personalization
 
 Free restrictions:
 
+- cannot create a full customer profile or personal collection
 - cannot initiate customer-to-customer trades
 - cannot list customer-owned pieces for trade
 - cannot submit uncataloged jewelry to the master database in v1
@@ -139,7 +138,8 @@ Hub modules:
 - master jewelry library browser
 - Diamonds & Unicorns Library
 - affiliate/shop area
-- customer profile/preferences
+- account preferences
+- Silver customer profile/collection entry point
 - future favorites/follows placeholder
 
 Primary hub actions:
@@ -149,7 +149,7 @@ Primary hub actions:
 - browse a rep's current trade board / dance floor
 - search library records
 - browse affiliate/shop recommendations
-- update profile/preferences
+- update account preferences
 
 ### Stage 4: Silver Membership And Nic-Nac Assist
 
@@ -164,6 +164,15 @@ Silver terms:
 - under-$5 pricing target
 - paid Sparkle Suite reps get Silver for free
 
+Silver personal collector features:
+
+- customer profile
+- profile photo and TikTok handle/link if desired
+- customer collection built from existing master jewelry library records
+- collection showcase/highlight areas
+- saved collection items and collector notes
+- privacy controls for profile and collection visibility
+
 Customer-facing Nic-Nac should help with:
 
 - orientation help
@@ -176,11 +185,11 @@ Customer-facing Nic-Nac should help with:
 - returning rep, board item, rep site link, and next-show context
 - saved searches/watchlist if included
 - email alerts when matching pieces appear if included
+- answer basic Sparkle Suite customer-feature questions
 
 Silver should not be broad unlimited chat. It should be a focused search concierge.
 
 Do not use unlimited AI wording. Use friendly language such as `generous monthly Nic-Nac search access`.
-- answer basic Sparkle Suite customer-feature questions
 
 Silver Nic-Nac:
 
@@ -188,7 +197,7 @@ Silver Nic-Nac:
 - reject bad photos with clear coaching
 - help map a customer piece to an existing library item
 - suggest better search terms
-- explain why a trade match is or is not valid
+- explain why a search result is or is not a likely match
 - help navigate profile/theme/collection highlighting
 - summarize wishlist matches and upcoming rep lives
 
@@ -232,12 +241,12 @@ Notification strategy is parked for v1. Start with authenticated browsing before
 Free library behavior:
 
 - browse/search/filter
-- add existing records to collection
-- add existing records to wishlist
 - view basic details and known rep availability
 
-Future Silver library behavior:
+Silver library behavior:
 
+- add existing records to collection
+- add existing records to wishlist/watchlist if included
 - submit uncataloged piece via Nic-Nac
 - upload customer photos for collection presentation
 - request review for new database entry
@@ -259,29 +268,32 @@ Operator/admin need:
 - approve/reject/merge flow
 - ability to keep a customer photo private to that customer's collection instead of promoting it to canonical library photo
 
-### Stage 7: Customer Collection And Wishlist
+### Stage 7: Silver Customer Profile, Collection, And Wishlist
 
-Collections and wishlists are parked for the first discovery-hub slice unless the first implementation has enough room to add them safely. If included, start with existing library records only.
+Customer profile and collection are Silver Membership features. They should not turn Sparkle Finder into a customer-to-customer trading product in v1.
 
-Future collection item states:
+Silver collection item states:
 
 - `owned`
 - `wishlist`
-- `available_to_trade`
 - `private_note_only`
 
-Free collection:
+Silver profile:
+
+- display name
+- state
+- optional profile photo
+- optional TikTok handle/link
+- collector interests
+- privacy settings
+
+Silver collection:
 
 - existing library items only
-- basic display
-- default profile style
-
-Future Silver collection:
-
 - collection photos
 - highlighted collections
-- profile/theme customization
-- uncataloged submission flow
+- optional profile/theme customization later
+- uncataloged submission flow through Nic-Nac if approved
 - richer notes and organization later
 
 Privacy:
@@ -387,14 +399,14 @@ Exit criteria:
 
 - build customer landing page in Sparkle Suite brand
 - add Free account signup
-- collect profile snapshot
+- collect basic account preferences
 - implement basic customer dashboard shell
 - add locked/login-gated previews for calendar, boards, and library
 
 Exit criteria:
 
 - lead can become a Free customer
-- Free customer can create profile and reach dashboard
+- Free customer can reach the discovery dashboard
 - copy stays inside Sparkle Suite brand guardrails
 
 ### Phase 2: Master Calendar And Rep Directory
@@ -471,6 +483,7 @@ Exit criteria:
 - target under-$5 monthly pricing
 - ensure cancel-anytime, access-through-end-of-paid-month behavior
 - comp Silver access for paid Sparkle Suite reps
+- add Silver customer profile and collection features
 - add `Nic-Nac, find this for me` from jewelry detail pages
 - bound customer-facing Nic-Nac usage
 - launch email alerts before SMS alerts
@@ -479,6 +492,7 @@ Exit criteria:
 
 - Silver terms are simple and monthly-only
 - paid reps receive Silver access without a separate customer payment
+- Silver customers can create a profile and save collection items from the master library
 - Nic-Nac search assist is focused on piece hunting, not open-ended chat
 
 ### Phase 8: Parked Customer Trading
@@ -511,12 +525,12 @@ Build the first usable slice in this order:
 
 1. Customer landing page.
 2. Free account creation.
-3. Profile snapshot.
+3. Basic account preferences.
 4. Master live calendar.
 5. Rep directory.
 6. Aggregated rep trade board / dance floor browser.
 7. Master jewelry library browsing.
-8. Silver Membership / Nic-Nac search assist if approved for v1.
+8. Silver Membership / customer profile / customer collection / Nic-Nac search assist if approved for v1.
 9. Affiliate/shop layer.
 
 Do not build customer-to-customer trading in v1. If customer-facing Nic-Nac is built, keep it focused on paid Silver search-assist behavior.

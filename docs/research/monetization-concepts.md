@@ -70,13 +70,16 @@ Possible Silver features:
 
 - Nic-Nac Collector Assist
 - `Nic-Nac, find this for me` button on jewelry detail pages
+- customer profile
+- customer collection built from master jewelry library records
+- collection showcase/highlight areas
+- saved collection items and collector notes
 - guided search across rep trade boards / dance floors
 - exact matches first, close matches second
 - rep and next-show context returned from the search
 - saved searches/watchlist
 - email alerts when watched pieces appear
 - saved reps/shows
-- future richer profile features if customer profiles return
 
 Why it fits:
 
@@ -97,12 +100,9 @@ Watch-outs:
 
 Free accounts should be useful enough to grow the network:
 
-- create a basic customer profile
+- create a login and basic account preferences
 - browse the master jewelry library
-- add existing library pieces to collection
-- add existing library pieces to wishlist
-- receive limited rep-first matching or browse matches manually
-- follow reps or collections, if that becomes part of the model
+- browse rep boards and matches manually
 - browse the master Sparkle Suite rep live calendar
 - use normal manual search and filters
 
@@ -110,12 +110,16 @@ Free accounts should not be able to:
 
 - add new jewelry records to the master database
 - upload uncataloged piece photos for database inclusion
+- create the personal customer profile or collection experience
 - use higher-risk trade features unless explicitly allowed later
 
 ### Silver Account
 
 Silver accounts become the paid convenience tier:
 
+- can create a customer profile
+- can build and display a personal collection from existing library records
+- can save collector notes and highlight collection areas
 - includes customer-facing Nic-Nac search assist
 - can use `find this for me` from library item pages
 - can follow reps and save shows
