@@ -1,4 +1,5 @@
 import type {
+  AffiliateShopItem,
   CollectionItem,
   CustomerAccount,
   JewelryItem,
@@ -7,6 +8,39 @@ import type {
   RepSummary,
   SilverProfile,
 } from "../sparkle-finder/types";
+
+export const sparkleFinderAffiliateShopItems: AffiliateShopItem[] = [
+  {
+    id: "shop-jewelry-care",
+    title: "Jewelry Care",
+    body: "Keep it shining",
+    category: "collector",
+  },
+  {
+    id: "shop-storage-display",
+    title: "Storage & Display",
+    body: "Organize in style",
+    category: "collector",
+  },
+  {
+    id: "shop-packaging",
+    title: "Packaging",
+    body: "Gift-ready supplies",
+    category: "collector",
+  },
+  {
+    id: "shop-livestream-gear",
+    title: "Livestream Gear",
+    body: "Lights, mics & more",
+    category: "livestream",
+  },
+  {
+    id: "shop-phone-tech",
+    title: "Phone & Tech",
+    body: "Stream setup basics",
+    category: "livestream",
+  },
+];
 
 export const sparkleFinderReps: RepSummary[] = [
   {

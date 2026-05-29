@@ -1,35 +1,20 @@
 import Link from "next/link";
 import { ArrowRight, Box, Gift, Headphones, PackageCheck, Smartphone, Sparkles } from "lucide-react";
+import type { AffiliateShopItem } from "@/lib/sparkle-finder/types";
 
-const affiliateItems = [
-  {
-    title: "Jewelry Care",
-    body: "Keep it shining",
-    icon: Sparkles,
-  },
-  {
-    title: "Storage & Display",
-    body: "Organize in style",
-    icon: Box,
-  },
-  {
-    title: "Packaging",
-    body: "Gift-ready supplies",
-    icon: Gift,
-  },
-  {
-    title: "Livestream Gear",
-    body: "Lights, mics & more",
-    icon: Headphones,
-  },
-  {
-    title: "Phone & Tech",
-    body: "Stream setup basics",
-    icon: Smartphone,
-  },
-];
+type AffiliateStripProps = {
+  items: AffiliateShopItem[];
+};
 
-export function AffiliateStrip() {
+const affiliateIcons: Record<AffiliateShopItem["id"], typeof Sparkles> = {
+  "shop-jewelry-care": Sparkles,
+  "shop-livestream-gear": Headphones,
+  "shop-packaging": Gift,
+  "shop-phone-tech": Smartphone,
+  "shop-storage-display": Box,
+};
+
+export function AffiliateStrip({ items }: AffiliateStripProps) {
   return (
     <section className="border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]" id="shop">
       <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[16rem_minmax(0,1fr)_13rem] lg:items-center lg:px-10">
@@ -44,12 +29,12 @@ export function AffiliateStrip() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0">
-          {affiliateItems.map((item) => {
-            const Icon = item.icon;
+          {items.map((item) => {
+            const Icon = affiliateIcons[item.id] ?? Sparkles;
 
             return (
               <article
-                key={item.title}
+                key={item.id}
                 className="flex min-h-20 items-center gap-3 border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] sm:rounded-[var(--sparkle-radius-sm)] lg:border-l lg:bg-transparent lg:shadow-none"
               >
                 <div className="grid size-11 shrink-0 place-items-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">

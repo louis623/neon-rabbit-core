@@ -89,6 +89,13 @@ export type NicNacFindResult = {
   confidenceLabel: string;
 };
 
+export type AffiliateShopItem = {
+  id: string;
+  title: string;
+  body: string;
+  category: "collector" | "livestream";
+};
+
 export type RepBoardMatch = NicNacFindResult & {
   jewelryItemId: string;
   matchedJewelryItemId: string;

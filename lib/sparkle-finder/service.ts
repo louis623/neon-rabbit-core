@@ -1,4 +1,5 @@
 import {
+  sparkleFinderAffiliateShopItems,
   sparkleFinderCollectionItems,
   sparkleFinderCustomers,
   sparkleFinderJewelryItems,
@@ -8,6 +9,7 @@ import {
   sparkleFinderSilverProfiles,
 } from "../fixtures/sparkle-finder-fixtures";
 import type {
+  AffiliateShopItem,
   BombPartyLabel,
   CollectionItem,
   CustomerAccount,
@@ -27,12 +29,20 @@ export function getLiveShows(): LiveShow[] {
   return cloneRecords(sparkleFinderLiveShows);
 }
 
+export function getLiveShowById(showId: string): LiveShow | undefined {
+  return cloneRecord(sparkleFinderLiveShows.find((show) => show.id === showId));
+}
+
 export function getRepBoardListings(): RepBoardListing[] {
   return cloneRecords(sparkleFinderRepBoardListings);
 }
 
 export function getJewelryItems(): JewelryItem[] {
   return cloneRecords(sparkleFinderJewelryItems);
+}
+
+export function getAffiliateShopItems(): AffiliateShopItem[] {
+  return cloneRecords(sparkleFinderAffiliateShopItems);
 }
 
 export function getCustomers(): CustomerAccount[] {
@@ -53,6 +63,10 @@ export function getCollectionItemsByCustomerId(customerId: string): CollectionIt
 
 export function getJewelryItemById(itemId: string): JewelryItem | undefined {
   return cloneRecord(sparkleFinderJewelryItems.find((item) => item.id === itemId));
+}
+
+export function getRepById(repId: string): RepSummary | undefined {
+  return cloneRecord(sparkleFinderReps.find((rep) => rep.id === repId));
 }
 
 export function getDiamondAndUnicornItems(): JewelryItem[] {

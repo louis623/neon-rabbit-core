@@ -1,12 +1,13 @@
+import Link from "next/link";
 import { BookOpen, Gem, ShoppingBag, UserRound, UsersRound, Video } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 
 const navItems = [
-  { label: "Library", href: "#library", icon: BookOpen },
-  { label: "Live Shows", href: "#live-shows", icon: Video },
-  { label: "Rep Boards", href: "#rep-boards", icon: UsersRound },
-  { label: "Diamonds & Unicorns", href: "#diamonds-unicorns", icon: Gem },
-  { label: "Shop", href: "#shop", icon: ShoppingBag },
+  { label: "Library", href: "/library", icon: BookOpen },
+  { label: "Live Shows", href: "/live-shows", icon: Video },
+  { label: "Rep Boards", href: "/rep-boards", icon: UsersRound },
+  { label: "Diamonds & Unicorns", href: "/diamonds-unicorns", icon: Gem },
+  { label: "Shop", href: "/shop", icon: ShoppingBag },
   { label: "Account", href: "#account", icon: UserRound },
 ];
 
@@ -22,10 +23,10 @@ export function SparkleFinderNav() {
 
               return (
                 <li key={item.label}>
-                  <a aria-label={item.label} className="sparkle-finder-nav-link px-3" href={item.href}>
+                  <Link aria-label={item.label} className="sparkle-finder-nav-link px-3" href={item.href}>
                     <Icon aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
                     <span>{item.label}</span>
-                  </a>
+                  </Link>
                 </li>
               );
             })}

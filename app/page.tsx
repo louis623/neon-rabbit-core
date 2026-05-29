@@ -4,6 +4,7 @@ import { SilverCollectorSpace } from "@/components/silver/SilverCollectorSpace";
 import { AffiliateStrip } from "@/components/shop/AffiliateStrip";
 import {
   getCollectionItemsByCustomerId,
+  getAffiliateShopItems,
   getCustomerById,
   getJewelryItemById,
   getLiveShows,
@@ -14,6 +15,7 @@ import {
 export default function Home() {
   const liveShows = getLiveShows();
   const reps = getReps();
+  const affiliateShopItems = getAffiliateShopItems();
   const silverCustomer = getCustomerById("customer-silver-sparkle-mama");
   const silverProfile = getSilverProfileByCustomerId("customer-silver-sparkle-mama");
   const silverCollectionItems = getCollectionItemsByCustomerId("customer-silver-sparkle-mama").flatMap((item) => {
@@ -34,7 +36,7 @@ export default function Home() {
             profile={silverProfile}
           />
         ) : null}
-        <AffiliateStrip />
+        <AffiliateStrip items={affiliateShopItems} />
       </main>
     </>
   );
