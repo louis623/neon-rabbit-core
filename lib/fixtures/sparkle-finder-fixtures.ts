@@ -51,7 +51,7 @@ export const sparkleFinderLiveShows: LiveShow[] = [
   {
     id: "show-maya-brunch",
     repId: "rep-maya",
-    startsAt: "2026-05-30T12:30:00-04:00",
+    startsAt: "2026-05-29T12:30:00-04:00",
     durationMinutes: 45,
     title: "Bright Finds Brunch",
     status: "scheduled",
@@ -60,7 +60,7 @@ export const sparkleFinderLiveShows: LiveShow[] = [
   {
     id: "show-kelli-glimmer",
     repId: "rep-kelli",
-    startsAt: "2026-05-30T16:30:00-04:00",
+    startsAt: "2026-05-29T16:30:00-04:00",
     durationMinutes: 45,
     title: "Glimmer Room",
     status: "scheduled",
