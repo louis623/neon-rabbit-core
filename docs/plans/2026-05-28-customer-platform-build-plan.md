@@ -24,7 +24,7 @@
 - Use `Sparkle Finder by Sparkle Suite` as the working product name.
 - Use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
 - Do not use the Amethyst skin/template as the Sparkle Finder brand.
-- Use homepage/UI mockup Concept 2 as the preferred direction: an editorial discovery hub with a `Today across Sparkle Suite` agenda panel.
+- Use the locked updated Concept 2 homepage/UI mockup as the final-product visual target: an editorial discovery hub with the `SF` circular seal, a `Today across Sparkle Suite` agenda panel, and an integrated Silver Collector Space.
 - Keep the customer side rep-positive: customer activity should send attention back to reps first.
 - Treat Bomb Party as an unaffiliated third-party ecosystem. Avoid visual or copy choices that imply official BP partnership.
 

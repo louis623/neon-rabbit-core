@@ -12,6 +12,8 @@ Brand relationship: `Sparkle Finder by Sparkle Suite`.
 
 The local mark should be an `SF` circular seal inspired by the Sparkle Suite `S` seal. The look and feel should follow the main Sparkle Suite brand system, not the Amethyst skin/template.
 
+The locked UI direction is the updated Concept 2 homepage mockup: an editorial Sparkle Finder discovery hub with the `SF` circular seal, `Today across Sparkle Suite` agenda panel, discovery cards, Silver Collector Space, customer profile preview, collection preview, and Nic-Nac `find this for me` module.
+
 ## Product Direction
 
 The future customer side is a collector/community surface for Bomb Party customers connected to the Sparkle Suite ecosystem. The recurring vision from Open Brain and local planning docs includes:

@@ -1,12 +1,17 @@
-# Homepage Mockup Direction
+# Locked Homepage And UI Direction
 
 Decision date: 2026-05-29
+Lock status: Approved by Louis as the expected final-product look
 
-## Selected Direction
+## Locked Direction
 
-Use image mockup Concept 2 as the preferred Sparkle Finder homepage/UI direction.
+Use the updated Concept 2 image mockup as the locked Sparkle Finder homepage/UI direction.
 
-Concept 2 works because it feels like a useful customer discovery hub immediately, not a generic marketing landing page. It should become the base direction for the first homepage and authenticated hub shell.
+Louis approved the logo, design, layout, and overall look and expects the final product to follow this direction closely. This should become the base visual target for the first homepage and authenticated hub shell.
+
+Reference image:
+
+![Sparkle Finder locked homepage concept](assets/sparkle-finder-locked-homepage-concept.png)
 
 ## Core Layout Idea
 
@@ -17,6 +22,10 @@ Concept 2 works because it feels like a useful customer discovery hub immediatel
 - `SF` circular seal inspired by the Sparkle Suite `S` seal
 - clear paths into live shows, rep boards/dance floors, jewelry library, and Diamonds & Unicorns
 - restrained Silver Membership strip that frames Nic-Nac as convenience, not required access
+- Silver Collector Space integrated into the homepage rather than treated as a separate advertisement
+- customer profile preview with display name, state, TikTok handle, collection count, and wishlist/watchlist count
+- compact personal collection preview with owned, wishlist, and highlighted states
+- Nic-Nac `find this for me` module next to the collector/library experience
 
 ## Free Experience On This Screen
 
@@ -52,3 +61,4 @@ Silver should include:
 - Do not use the Amethyst skin/template at this time.
 - Do not imply official Bomb Party partnership.
 - Do not make customer-to-customer trading part of the homepage promise.
+- Preserve the locked visual direction while correcting any generated mockup copy that conflicts with product guardrails. In particular, final production copy must avoid buy/sell language in v1.
