@@ -49,6 +49,7 @@ This repo is not for:
 - `docs/research/monetization-concepts.md`
 - `docs/plans/2026-05-28-customer-platform-build-plan.md`
 - `docs/decisions/current-assumptions.md`
+- `docs/decisions/customer-trade-workflow-decisions.md`
 
 ## Current Posture
 

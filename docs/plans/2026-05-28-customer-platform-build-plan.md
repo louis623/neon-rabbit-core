@@ -280,8 +280,9 @@ V1 trade stance:
 
 Trade eligibility recommendation:
 
-- Plus-only at first, or Free can browse while Plus can list/initiate.
-- Revisit after trust workflow research.
+- Free accounts can browse customer trade listings and the jewelry database.
+- Plus accounts are required to list items for customer-to-customer trade.
+- Plus accounts are required to initiate customer-to-customer trade proposals.
 
 Trade listing requirements:
 
@@ -450,6 +451,7 @@ Exit criteria:
 Exit criteria:
 
 - approved customer trade can be listed and matched under v1 rules
+- Free users can browse customer trade listings but cannot list or initiate customer-to-customer trades
 - no buy/sell or payment processing exists
 - moderation/reporting path exists before public launch
 
