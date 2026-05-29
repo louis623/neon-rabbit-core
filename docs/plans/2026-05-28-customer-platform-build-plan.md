@@ -34,6 +34,7 @@ Public visitors can see the landing page/teaser. Customers must create a free lo
 - master Sparkle Suite rep live calendar
 - aggregated rep trade boards / dance floors
 - master jewelry library
+- Diamonds & Unicorns Library as a highlighted rare/special view of the master jewelry library
 - rep discovery paths back to rep sites and shows
 
 Customer-to-customer trading, message boards, sponsored rep placement, future rep signup sales, and buy/sell marketplace behavior are parked.
@@ -133,6 +134,7 @@ Hub modules:
 - master live calendar
 - aggregated rep trade board / dance floor browser
 - master jewelry library browser
+- Diamonds & Unicorns Library
 - affiliate/shop area
 - customer profile/preferences
 - future favorites/follows placeholder
@@ -424,10 +426,14 @@ Exit criteria:
 - build search/filter UI
 - show library item detail pages
 - show known rep availability where available
+- add free Diamonds & Unicorns Library view that filters the master jewelry library to Bomb Party-labeled diamonds and unicorns
 
 Exit criteria:
 
 - logged-in customer can browse/search the master jewelry library
+- logged-in customer can browse a Diamonds & Unicorns Library view
+- Diamonds & Unicorns Library uses Bomb Party's own diamond/unicorn labels where present
+- no Sparkle Suite rarity scoring exists in v1
 - no customer can create canonical jewelry records
 
 ### Phase 5: Affiliate/Shop Layer

@@ -17,6 +17,7 @@ The future customer side is a collector/community surface for Bomb Party custome
 - master live calendar for Sparkle Suite reps
 - aggregated rep trade board / dance floor browsing
 - searchable jewelry library powered by the existing Sparkle Suite jewelry database
+- Diamonds & Unicorns Library powered by Bomb Party's own diamond/unicorn labels
 - traffic paths back to rep sites and shows
 - lightweight affiliate/shop layer for collector and live-streaming gear
 - optional Silver Membership for Nic-Nac Collector Assist

@@ -15,6 +15,7 @@ The first customer-side product should be a secured, free Sparkle Suite customer
 - authenticated rep live calendar across Sparkle Suite reps
 - authenticated aggregated rep trade board / dance floor browser
 - authenticated master jewelry library browsing
+- authenticated Diamonds & Unicorns Library browsing
 - paths back to individual rep sites, live shows, and rep trade boards
 - light customer profile/data capture for future leads and personalization
 - no customer-to-customer trading
@@ -31,6 +32,7 @@ Free logged-in customers can:
 - browse Sparkle Suite rep live calendars
 - browse aggregated rep trade boards / dance floors
 - browse the master jewelry library
+- browse Diamonds & Unicorns from the master jewelry library
 - discover reps in the Sparkle Suite ecosystem
 
 The login gate exists to:
@@ -62,6 +64,13 @@ V1 monetization should stay lightweight:
 - affiliate links for jewelry collector products
 - affiliate links for live-streaming gear and tools reps may want
 - future Sparkle Suite merch
+
+Diamonds & Unicorns Library:
+
+- free logged-in feature
+- offshoot view of the master jewelry library, not a separate database
+- uses Bomb Party's own diamond/unicorn labels where present
+- Sparkle Suite does not invent rarity ratings or rarity scoring
 
 Parked monetization:
 
