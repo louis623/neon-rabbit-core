@@ -57,6 +57,7 @@ This repo is not for:
 - `docs/research/open-questions.md`
 - `docs/research/proof-of-ownership-and-trust.md`
 - `docs/research/monetization-concepts.md`
+- `docs/handoffs/2026-05-29-session-close-sparkle-finder-planning.md`
 - `docs/plans/2026-05-28-customer-platform-build-plan.md`
 - `docs/superpowers/plans/2026-05-29-sparkle-finder-v1-build.md`
 - `docs/design/2026-05-29-homepage-mockup-direction.md`
