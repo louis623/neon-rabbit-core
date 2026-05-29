@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a product build roadmap, not a code-level implementation plan yet. Before writing production code, convert the relevant phase into a task-by-task implementation plan with exact files, tests, and commands.
 
-**Goal:** Build the customer/collector side of Sparkle Suite as a secured free discovery hub that drives customer traffic back to Sparkle Suite reps through live show discovery, aggregated rep trade board browsing, and master jewelry library browsing.
+**Goal:** Build Sparkle Finder, the customer/collector side of Sparkle Suite, as a secured free discovery hub that drives customer traffic back to Sparkle Suite reps through live show discovery, aggregated rep trade board browsing, and master jewelry library browsing.
 
 **Architecture:** Use this repo as the standalone customer-side product workspace. Preserve Sparkle Suite's public brand system from `C:\Users\louis\sparkle-suite-marketing\brand` and integrate with Sparkle Suite's existing jewelry database, rep trade boards, rep profiles, and live event/calendar data instead of duplicating those systems. Customer-only data should live in customer-specific tables/services, while canonical jewelry and rep listing data remain owned by Sparkle Suite core.
 
@@ -22,6 +22,9 @@
 - Do not build customer-to-customer trading in v1.
 - Do not build customer-to-customer trading in v1.
 - If paid customer membership is included, call it Silver Membership, not Plus.
+- Use `Sparkle Finder by Sparkle Suite` as the working product name.
+- Use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
+- Do not use the Amethyst skin/template as the Sparkle Finder brand.
 - Keep the customer side rep-positive: customer activity should send attention back to reps first.
 - Treat Bomb Party as an unaffiliated third-party ecosystem. Avoid visual or copy choices that imply official BP partnership.
 

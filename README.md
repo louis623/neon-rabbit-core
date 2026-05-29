@@ -6,7 +6,11 @@ This repo exists so research, source notes, planning questions, and eventual pro
 
 ## Working Name
 
-Use `Sparkle Suite Customer` as the neutral repo/project name for now. The user has also casually referred to the broader effort as the customer version of Sparkle Sweets/Sparkle Suite. Final product naming is intentionally not locked.
+Use `Sparkle Finder` as the working customer-facing product name.
+
+Brand relationship: `Sparkle Finder by Sparkle Suite`.
+
+The local mark should be an `SF` circular seal inspired by the Sparkle Suite `S` seal. The look and feel should follow the main Sparkle Suite brand system, not the Amethyst skin/template.
 
 ## Product Direction
 
@@ -53,6 +57,7 @@ This repo is not for:
 - `docs/plans/2026-05-28-customer-platform-build-plan.md`
 - `docs/business/2026-05-29-business-plan-and-revenue-model.md`
 - `docs/decisions/current-assumptions.md`
+- `docs/decisions/2026-05-29-sparkle-finder-branding.md`
 - `docs/decisions/customer-trade-workflow-decisions.md`
 
 ## Current Posture

@@ -4,7 +4,7 @@ Created: 2026-05-29
 
 ## Executive Summary
 
-Sparkle Suite Customer Hub is a secured, free-login discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, rep trade boards/dance floors, and the master jewelry library easier to discover in one place.
+Sparkle Finder is a secured, free-login discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, rep trade boards/dance floors, and the master jewelry library easier to discover in one place.
 
 The business model is intentionally light at launch:
 
@@ -36,6 +36,12 @@ Use the existing Sparkle Suite brand system:
 - soft, feminine without being sugary
 - premium without fake luxury
 - practical support over AI spectacle
+
+Working name and mark:
+
+- `Sparkle Finder by Sparkle Suite`
+- `SF` circular seal inspired by the Sparkle Suite `S` seal
+- main Sparkle Suite brand system, not the Amethyst skin/template
 
 ## V1 Product Scope
 

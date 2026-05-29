@@ -8,6 +8,9 @@ These are working assumptions for research only. They are not final product deci
 
 - The customer side is future scope and should be planned separately from the rep-side launch.
 - The customer side should not block active `neon-rabbit-core` launch work.
+- The customer hub working name is Sparkle Finder.
+- Sparkle Finder should use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
+- Sparkle Finder should use the main Sparkle Suite brand system, not the Amethyst skin/template.
 - The customer side is more than a trade board. For v1, it is a secured free discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
 - Current rep-side trade board rules are intentionally narrow.
