@@ -19,7 +19,7 @@ The first customer-side product should be a secured, free Sparkle Suite customer
 - light customer profile/data capture for future leads and personalization
 - no customer-to-customer trading
 - no customer buy/sell marketplace
-- no Plus tier in v1 unless a new decision reintroduces it
+- no Plus tier; paid customer membership should be called Silver Membership if included
 - no message board in v1
 
 ## Access Model
@@ -65,11 +65,20 @@ V1 monetization should stay lightweight:
 
 Parked monetization:
 
-- customer Plus tier
 - customer-to-customer trade fees
 - buy/sell marketplace fees
 - sponsored rep placements
 - future rep signup sales from the customer hub
+
+Silver Membership update:
+
+- Silver may be used for customer-facing Nic-Nac search assist
+- monthly only
+- no annual billing
+- cancel any time
+- active until the end of the paid month
+- under-$5/month target
+- paid Sparkle Suite reps receive Silver access for free
 
 ## Affiliate Shop Scope
 

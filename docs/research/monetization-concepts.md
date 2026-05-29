@@ -12,10 +12,11 @@ V1 stays free for customers and monetizes lightly:
 - affiliate links for jewelry collector products
 - affiliate links for live-streaming gear and tools reps may want
 - possible Sparkle Suite branded products later
+- optional Silver Membership if customer-facing Nic-Nac search assist is included or staged soon after launch
 
 V1 should not include:
 
-- customer Plus subscription
+- annual memberships
 - customer-to-customer trade fees
 - buy/sell marketplace fees
 - sponsored rep placement
@@ -41,39 +42,56 @@ Watch-outs:
 
 - customer side needs clear value to reps, not just customer entertainment
 
-## 2. Parked Customer Plus Collector Account
+## 2. Silver Membership
 
-Status as of 2026-05-29: parked for v1.
+Decision update as of 2026-05-29: rename `Plus` to `Silver Membership`.
 
-Earlier leaning was two customer tiers, `Free` and `Plus`.
+Silver is the first paid customer membership tier. Future tiers may use `Gold` and `Diamond`, but those are not part of v1.
 
-Free customers can browse, maintain a collection/wishlist from existing library items, and receive basic rep-first discovery value. Plus customers provide more customer information and unlock higher-trust, higher-expression features.
+Silver should be monthly only:
 
-Possible Plus features:
+- cancel any time
+- membership remains active until the end of the paid month
+- no annual billing
+- no yearly refund complexity
 
-- eligibility to trade, if Plus becomes the trust gate
-- verified/check-mark style profile treatment
-- richer profile details
-- color/theme customization
-- highlighted collections
-- collection photos and more social-style presentation
-- ability to submit uncataloged jewelry through Nic-Nac
-- access to a master live event calendar for Sparkle Suite reps
-- advanced wishlist/matching alerts
-- collection value/rarity insights later
+Pricing leaning:
+
+- keep it under $5/month if possible
+- recommended candidate: `$4.99/month`
+- positioning: less than a cup of coffee per month
+
+Sparkle Suite rep perk:
+
+- paid Sparkle Suite reps receive free Silver access while their rep account is paid and active
+- this gives reps a reason to use the customer hub and understand what customers experience
+
+Possible Silver features:
+
+- Nic-Nac Collector Assist
+- `Nic-Nac, find this for me` button on jewelry detail pages
+- guided search across rep trade boards / dance floors
+- exact matches first, close matches second
+- rep and next-show context returned from the search
+- saved searches/watchlist
+- email alerts when watched pieces appear
+- saved reps/shows
+- future richer profile features if customer profiles return
 
 Why it fits:
 
 - monetizes power collectors without blocking casual users
 - does not require payment processing between customers
-- gives Sparkle Suite a reason to collect more information before allowing higher-trust activity
-- protects the jewelry database by limiting customer-submitted additions to paying, more accountable accounts
+- monetizes convenience and speed rather than gating the hub itself
+- keeps normal browsing/search useful for Free users
+- creates a low-friction paid product around Nic-Nac's strongest customer value
 
 Watch-outs:
 
 - avoid making core trust/safety features premium-only
-- be careful that paid verification does not imply Sparkle Suite guarantees every trade
-- decide whether trading is Plus-only or whether Plus simply gets stronger visibility/trust
+- avoid unlimited AI wording
+- bound usage internally so AI cost stays predictable
+- make cancellation/end-of-month access terms clear
 
 ### Free Account
 
@@ -86,6 +104,7 @@ Free accounts should be useful enough to grow the network:
 - receive limited rep-first matching or browse matches manually
 - follow reps or collections, if that becomes part of the model
 - browse the master Sparkle Suite rep live calendar
+- use normal manual search and filters
 
 Free accounts should not be able to:
 
@@ -93,33 +112,28 @@ Free accounts should not be able to:
 - upload uncataloged piece photos for database inclusion
 - use higher-risk trade features unless explicitly allowed later
 
-### Plus Account
+### Silver Account
 
-Plus accounts become the more trusted collector tier:
+Silver accounts become the paid convenience tier:
 
-- provides more customer identity/context
-- can submit uncataloged pieces through Nic-Nac
-- can upload collection photos, subject to photo quality rules
-- can customize profile/theme presentation
-- can highlight collections
-- may access master live event calendar
+- includes customer-facing Nic-Nac search assist
+- can use `find this for me` from library item pages
 - can follow reps and save shows
 - can receive alerts when wishlist pieces match a rep board or upcoming show context
-- may unlock trading eligibility or higher-trust trade status
 - may receive better matching/alerts
 
 ### Accepted Product Recommendation
 
-Do not make the master live event calendar fully Plus-only. The calendar should help route customer attention back to reps, so hiding it completely would work against the rep-first matching strategy.
+Do not make the master live event calendar fully paid-only. The calendar should help route customer attention back to reps, so hiding it completely would work against the rep-first discovery strategy.
 
 Recommended split:
 
-- Free: browse upcoming Sparkle Suite rep lives.
-- Plus: follow reps, save shows, receive alerts, and connect wishlist matches to rep board/show context.
+- Free: browse upcoming Sparkle Suite rep lives, rep boards, and the library manually.
+- Silver: use Nic-Nac to hunt faster, save/follow, receive alerts, and connect wishlist/library items to rep board/show context.
 
-Plus as the gate for adding new jewelry to the database is the strongest early upgrade lever. It protects the master library from low-quality submissions while giving serious collectors a real reason to upgrade.
+Silver should be priced low enough that customers do not overthink it.
 
-## 3. Matching and Alert Subscription
+## 3. Nic-Nac Matching and Alert Subscription
 
 Charge for high-value discovery rather than trades.
 
@@ -142,6 +156,8 @@ Why it fits:
 Watch-outs:
 
 - SMS alerts require consent and messaging cost controls
+- email alerts are safer to launch first
+- usage should be capped or metered internally
 
 ## 4. Rep Lead/Intent Insights
 
@@ -196,7 +212,7 @@ Watch-outs:
 - keep affiliate recommendations honest and optional
 - disclose affiliate relationships
 
-## 6. Trade Safety Plus
+## 6. Parked Trade Safety Silver
 
 Keep basic trading free, but offer optional paid trust/safety upgrades later.
 

@@ -22,8 +22,11 @@ These are working assumptions for research only. They are not final product deci
 - Customer accounts should be global to Sparkle Suite, with optional relationships to reps.
 - Logged-in free customers can browse Sparkle Suite rep live calendars, aggregated rep trade boards/dance floors, and the master jewelry library.
 - Public visitors should see a landing/teaser only; the useful hub requires login.
-- Customer Plus is parked for v1.
-- Customer-facing Nic-Nac is parked for v1.
+- Customer paid membership should be called Silver Membership, not Plus.
+- Silver Membership is monthly only, cancel anytime, active until the end of the paid month, with no annual plan.
+- Silver pricing should target under $5/month, likely `$4.99/month`, because it should feel like less than a cup of coffee.
+- Paid Sparkle Suite reps should receive Silver access for free while their rep account is paid and active.
+- Customer-facing Nic-Nac may be a Silver feature for focused search assist: `Nic-Nac, find this for me`.
 - Affiliate/shop monetization should include both collector products and live-streaming gear/tools for reps.
 
 ## Explicit Non-Assumptions

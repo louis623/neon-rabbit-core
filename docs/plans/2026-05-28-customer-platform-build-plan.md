@@ -20,7 +20,8 @@
 - Do not create fake product screens or invented Sparkle Suite capabilities in public marketing.
 - Do not use buy/sell language in v1.
 - Do not build customer-to-customer trading in v1.
-- Do not build a customer Plus tier in v1 unless a later decision reintroduces it.
+- Do not build customer-to-customer trading in v1.
+- If paid customer membership is included, call it Silver Membership, not Plus.
 - Keep the customer side rep-positive: customer activity should send attention back to reps first.
 - Treat Bomb Party as an unaffiliated third-party ecosystem. Avoid visual or copy choices that imply official BP partnership.
 
@@ -35,7 +36,9 @@ Public visitors can see the landing page/teaser. Customers must create a free lo
 - master jewelry library
 - rep discovery paths back to rep sites and shows
 
-Customer-to-customer trading, customer Plus, message boards, sponsored rep placement, future rep signup sales, and buy/sell marketplace behavior are parked.
+Customer-to-customer trading, message boards, sponsored rep placement, future rep signup sales, and buy/sell marketplace behavior are parked.
+
+Silver Membership may be included or staged soon after launch if the customer-facing Nic-Nac search-assist scope is approved. Silver is monthly only, cancel anytime, and remains active until the end of the paid month. Paid Sparkle Suite reps receive Silver access for free as an account perk.
 
 The core v1 win is rep traffic. Reps should want to join Sparkle Suite because the customer hub gives them another discovery channel.
 
@@ -113,7 +116,7 @@ Free restrictions:
 - cannot initiate customer-to-customer trades
 - cannot list customer-owned pieces for trade
 - cannot submit uncataloged jewelry to the master database in v1
-- cannot access future premium features unless a later Plus tier is reintroduced
+- cannot access future premium features unless Silver Membership is active
 
 ### Stage 3: Authenticated Customer Hub
 
@@ -143,31 +146,38 @@ Primary hub actions:
 - browse affiliate/shop recommendations
 - update profile/preferences
 
-### Stage 4: Parked Plus And Nic-Nac Ideas
+### Stage 4: Silver Membership And Nic-Nac Assist
 
-Plus and customer-facing Nic-Nac are parked for v1, but the architecture should leave room for them.
+Silver Membership is the paid customer convenience tier if included in v1 or staged immediately after.
 
-Future customer-facing Nic-Nac could help with:
+Silver terms:
+
+- monthly only
+- no annual plan
+- cancel any time
+- active through the end of the paid month
+- under-$5 pricing target
+- paid Sparkle Suite reps get Silver for free
+
+Customer-facing Nic-Nac should help with:
 
 - orientation help
 - finding reps
 - understanding how the hub works
 - finding relevant live shows
 - browsing the jewelry library
-- future collection and wishlist support
+- `find this for me` searches from jewelry detail pages
+- scanning rep trade boards / dance floors for matching pieces
+- returning rep, board item, rep site link, and next-show context
+- saved searches/watchlist if included
+- email alerts when matching pieces appear if included
 
-Future Plus could include:
+Silver should not be broad unlimited chat. It should be a focused search concierge.
 
-- richer profile customization
-- save/follow reps and shows
-- alerts
-- customer-submitted jewelry candidates
-- limited customer-side Nic-Nac usage
-
-Do not build these in the first discovery-hub slice.
+Do not use unlimited AI wording. Use friendly language such as `generous monthly Nic-Nac search access`.
 - answer basic Sparkle Suite customer-feature questions
 
-Plus Nic-Nac:
+Silver Nic-Nac:
 
 - guide uncataloged piece submission
 - reject bad photos with clear coaching
@@ -221,7 +231,7 @@ Free library behavior:
 - add existing records to wishlist
 - view basic details and known rep availability
 
-Plus library behavior:
+Future Silver library behavior:
 
 - submit uncataloged piece via Nic-Nac
 - upload customer photos for collection presentation
@@ -229,7 +239,7 @@ Plus library behavior:
 
 Submission workflow:
 
-1. Plus customer searches existing library first.
+1. Silver customer searches existing library first.
 2. If no match, Nic-Nac starts a guided submission.
 3. Customer uploads jewelry photo.
 4. Nic-Nac checks photo quality and rejects poor photos.
@@ -261,7 +271,7 @@ Free collection:
 - basic display
 - default profile style
 
-Plus collection:
+Future Silver collection:
 
 - collection photos
 - highlighted collections
@@ -288,11 +298,11 @@ Future trade stance if reactivated:
 - same collection + same jewelry type
 - year does not matter where collection identity remains equivalent
 
-Previously captured trade eligibility:
+Previously captured and now-parked trade eligibility:
 
 - Free accounts can browse future customer trade listings and the jewelry database.
-- Plus accounts would be required to list items for customer-to-customer trade.
-- Plus accounts would be required to initiate customer-to-customer trade proposals.
+- Silver accounts would be required to list items for customer-to-customer trade if this is reactivated.
+- Silver accounts would be required to initiate customer-to-customer trade proposals if this is reactivated.
 
 This is parked with the rest of customer-to-customer trading.
 
@@ -324,7 +334,7 @@ Shipping/trade workflow needs separate design before build:
 Customer-owned data:
 
 - customer profiles
-- account tier and Plus subscription status
+- account tier and Silver membership status
 - profile theme settings
 - collection items
 - wishlist items
@@ -446,16 +456,21 @@ Exit criteria:
 - data model can support future matching and alerts
 - v1 still works as browsing-first hub
 
-### Phase 7: Parked Customer Plus/Nic-Nac Planning
+### Phase 7: Silver Membership / Nic-Nac Assist
 
-- revisit Plus only after v1 hub proves traffic value
-- define customer-facing Nic-Nac limits if needed
-- define paid/usage model later
+- add monthly Silver subscription if approved for v1
+- target under-$5 monthly pricing
+- ensure cancel-anytime, access-through-end-of-paid-month behavior
+- comp Silver access for paid Sparkle Suite reps
+- add `Nic-Nac, find this for me` from jewelry detail pages
+- bound customer-facing Nic-Nac usage
+- launch email alerts before SMS alerts
 
 Exit criteria:
 
-- no Plus billing is required for v1
-- no customer-facing Nic-Nac is required for v1
+- Silver terms are simple and monthly-only
+- paid reps receive Silver access without a separate customer payment
+- Nic-Nac search assist is focused on piece hunting, not open-ended chat
 
 ### Phase 8: Parked Customer Trading
 
@@ -469,8 +484,8 @@ Exit criteria:
 
 ## Immediate Next Decisions
 
-1. Is trading Plus-only for v1, or can Free accounts browse trade listings while Plus can list/initiate?
-2. What is the Plus pricing hypothesis?
+1. What customer-side public name should be used for this hub?
+2. Should Silver Membership launch in v1 or shortly after the free hub is live?
 3. Should the customer app share the same Supabase project as Sparkle Suite core from day one, or start with a separate project and read through APIs?
 4. What URL path/domain should the customer side use?
 5. What customer-side name do we use publicly: Sparkle Suite Customer, Sparkle Suite Collectors, Sparkle Suite Hub, or something else?
@@ -478,8 +493,8 @@ Exit criteria:
 Superseded by 2026-05-29 pivot:
 
 - customer-to-customer trading is parked
-- Plus pricing is not needed for v1
-- customer-side Nic-Nac is not needed for v1
+- Plus naming is retired in favor of Silver Membership
+- Silver pricing target is under $5/month
 
 ## First Build Recommendation
 
@@ -492,6 +507,7 @@ Build the first usable slice in this order:
 5. Rep directory.
 6. Aggregated rep trade board / dance floor browser.
 7. Master jewelry library browsing.
-8. Affiliate/shop layer.
+8. Silver Membership / Nic-Nac search assist if approved for v1.
+9. Affiliate/shop layer.
 
-Do not build customer-to-customer trading, Plus billing, or customer-facing Nic-Nac in v1.
+Do not build customer-to-customer trading in v1. If customer-facing Nic-Nac is built, keep it focused on paid Silver search-assist behavior.

@@ -19,7 +19,8 @@ The future customer side is a collector/community surface for Bomb Party custome
 - searchable jewelry library powered by the existing Sparkle Suite jewelry database
 - traffic paths back to rep sites and shows
 - lightweight affiliate/shop layer for collector and live-streaming gear
-- parked future expansion for customer profiles, collections, wishlists, trading, Plus, and community features
+- optional Silver Membership for Nic-Nac Collector Assist
+- parked future expansion for customer profiles, collections, wishlists, trading, and community features
 
 ## Boundary
 
