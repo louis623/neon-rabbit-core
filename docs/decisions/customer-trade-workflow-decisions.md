@@ -2,7 +2,9 @@
 
 Started: 2026-05-29
 
-This file captures customer-to-customer trade workflow decisions one at a time as Louis answers them.
+This file captures customer-to-customer trade workflow decisions.
+
+Status update on 2026-05-29: customer-to-customer trading is parked for v1. The decision below remains archived for a future revisit, but it should not drive the first customer hub build.
 
 ## Decision 1: Trading Eligibility
 

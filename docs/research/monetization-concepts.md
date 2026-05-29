@@ -1,8 +1,25 @@
 # Monetization Concepts
 
-Intent update: 2026-05-28
+Intent update: 2026-05-29
 
-Buy/sell is out of the first customer-side version. These ideas prioritize collection, wishlist, matching, library, and trade behavior first.
+Buy/sell and customer-to-customer trading are out of the first customer-side version. The first version is a secured free customer discovery hub that drives traffic to Sparkle Suite reps.
+
+## Current V1 Monetization Direction
+
+V1 stays free for customers and monetizes lightly:
+
+- careful Google AdSense placements
+- affiliate links for jewelry collector products
+- affiliate links for live-streaming gear and tools reps may want
+- possible Sparkle Suite branded products later
+
+V1 should not include:
+
+- customer Plus subscription
+- customer-to-customer trade fees
+- buy/sell marketplace fees
+- sponsored rep placement
+- future rep signup sales from the hub
 
 ## 1. Rep Subscription Value Expansion
 
@@ -24,9 +41,11 @@ Watch-outs:
 
 - customer side needs clear value to reps, not just customer entertainment
 
-## 2. Customer Plus Collector Account
+## 2. Parked Customer Plus Collector Account
 
-Current leaning as of 2026-05-28: two customer tiers, `Free` and `Plus`.
+Status as of 2026-05-29: parked for v1.
+
+Earlier leaning was two customer tiers, `Free` and `Plus`.
 
 Free customers can browse, maintain a collection/wishlist from existing library items, and receive basic rep-first discovery value. Plus customers provide more customer information and unlock higher-trust, higher-expression features.
 
@@ -147,7 +166,7 @@ Watch-outs:
 
 ## 5. Affiliate Revenue
 
-Offer optional links for collection photography gear and shipping supplies.
+Offer optional links for collection photography gear, collector supplies, and live-streaming gear/tools.
 
 Possible affiliate categories:
 
@@ -157,12 +176,20 @@ Possible affiliate categories:
 - label printers
 - shipping supplies
 - storage organizers
+- phone tripods
+- lights
+- microphones
+- webcams/cameras
+- streaming accessories
+- rep shipping/labeling tools
 
 Why it fits:
 
 - aligns with the photo-quality workflow
 - low operational burden
 - helps customers improve listings without Sparkle Suite shipping gear
+- gives reps useful gear paths if they use the customer hub too
+- every incremental affiliate path helps without making Sparkle Suite a marketplace
 
 Watch-outs:
 

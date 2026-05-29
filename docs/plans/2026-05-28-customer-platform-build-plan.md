@@ -2,11 +2,11 @@
 
 > **For agentic workers:** This is a product build roadmap, not a code-level implementation plan yet. Before writing production code, convert the relevant phase into a task-by-task implementation plan with exact files, tests, and commands.
 
-**Goal:** Build the customer/collector side of Sparkle Suite from public lead capture through Free account onboarding, Plus conversion, collection management, rep-first wishlist matching, limited Nic-Nac access, and future-safe trade-board integration.
+**Goal:** Build the customer/collector side of Sparkle Suite as a secured free discovery hub that drives customer traffic back to Sparkle Suite reps through live show discovery, aggregated rep trade board browsing, and master jewelry library browsing.
 
 **Architecture:** Use this repo as the standalone customer-side product workspace. Preserve Sparkle Suite's public brand system from `C:\Users\louis\sparkle-suite-marketing\brand` and integrate with Sparkle Suite's existing jewelry database, rep trade boards, rep profiles, and live event/calendar data instead of duplicating those systems. Customer-only data should live in customer-specific tables/services, while canonical jewelry and rep listing data remain owned by Sparkle Suite core.
 
-**Tech Stack Direction:** Next.js/React + TypeScript to match Sparkle Suite patterns, Supabase/Postgres for accounts and customer product data, Stripe for Plus subscription billing, existing Sparkle Suite styling tokens/brand rules, and a limited customer-facing Nic-Nac layer for onboarding, collection help, photo guidance, and feature navigation.
+**Tech Stack Direction:** Next.js/React + TypeScript to match Sparkle Suite patterns, Supabase/Postgres for authenticated customer accounts and customer hub data, existing Sparkle Suite styling tokens/brand rules, and read-through integration with Sparkle Suite core data for reps, live events, trade boards/dance floors, and the master jewelry database.
 
 ---
 
@@ -19,8 +19,25 @@
   - blush/warm-white/pink/plum palette from the production design kit
 - Do not create fake product screens or invented Sparkle Suite capabilities in public marketing.
 - Do not use buy/sell language in v1.
+- Do not build customer-to-customer trading in v1.
+- Do not build a customer Plus tier in v1 unless a later decision reintroduces it.
 - Keep the customer side rep-positive: customer activity should send attention back to reps first.
 - Treat Bomb Party as an unaffiliated third-party ecosystem. Avoid visual or copy choices that imply official BP partnership.
+
+## V1 Scope Pivot: Discovery Hub First
+
+As of 2026-05-29, v1 is not a customer-to-customer trade product. It is a secured, free customer discovery hub.
+
+Public visitors can see the landing page/teaser. Customers must create a free login to access the valuable hub areas:
+
+- master Sparkle Suite rep live calendar
+- aggregated rep trade boards / dance floors
+- master jewelry library
+- rep discovery paths back to rep sites and shows
+
+Customer-to-customer trading, customer Plus, message boards, sponsored rep placement, future rep signup sales, and buy/sell marketplace behavior are parked.
+
+The core v1 win is rep traffic. Reps should want to join Sparkle Suite because the customer hub gives them another discovery channel.
 
 ## Target Customer Journey
 
@@ -28,18 +45,18 @@
 
 Purpose:
 
-- explain the collector value without making it feel like generic SaaS
-- collect interest from customers who want collection tracking, wishlist matching, and safer trading
+- explain the customer hub value without making it feel like generic SaaS
+- collect interest from customers who want one easier place to find Sparkle Suite reps, lives, boards, and jewelry library records
 - route rep prospects back to the rep-facing Sparkle Suite path
 
 Core sections:
 
 - hero: collector-focused but Sparkle Suite branded
-- value strip: `Build your collection`, `Track your wishlist`, `Find rep board matches`, `Trade with clearer rules`
-- Free vs Plus comparison
+- value strip: `Find live shows`, `Browse rep boards`, `Explore the jewelry library`, `Discover Sparkle Suite reps`
+- free account explanation
 - master library preview
-- rep-first matching explanation
-- trust/safety promise
+- rep calendar/trade board preview
+- login value explanation
 - opt-in form / create Free account CTA
 
 Primary CTA:
@@ -48,7 +65,7 @@ Primary CTA:
 
 Secondary CTA:
 
-- `Explore What Plus Adds`
+- `See How It Helps Reps`
 
 Data captured:
 
@@ -63,9 +80,10 @@ Data captured:
 Free account intent:
 
 - grow the customer network
-- build wishlist demand data
-- let customers participate without friction
-- make the master library useful immediately
+- create a safer, more intentional browsing community
+- capture future customer leads and preferences
+- make rep calendars, rep boards, and the master library useful immediately
+- provide attribution and demand signals for future rep value
 
 Free onboarding steps:
 
@@ -77,84 +95,76 @@ Free onboarding steps:
    - optional profile photo
    - optional TikTok handle/link
    - favorite jewelry type or collection interests
-4. Start collection from existing master library records.
-5. Start wishlist from existing master library records.
-6. Browse master Sparkle Suite rep live calendar.
-7. See limited rep-first matches from wishlist to rep boards.
+4. Browse master Sparkle Suite rep live calendar.
+5. Browse aggregated rep trade boards / dance floors.
+6. Browse/search the master jewelry library.
+7. Open rep site/show/trade-board paths from hub cards.
 
 Free permissions:
 
-- browse master jewelry library
-- add existing library pieces to collection
-- add existing library pieces to wishlist
 - browse upcoming Sparkle Suite rep lives
-- browse basic rep-first matches
-- view own profile and collection
+- browse aggregated rep trade boards / dance floors
+- browse master jewelry library
+- open individual rep sites and show paths
+- maintain a basic profile for future personalization
 
 Free restrictions:
 
-- cannot submit uncataloged jewelry to the master database
-- cannot upload new canonical jewelry photos
-- cannot customize themes beyond default profile
-- cannot highlight collections
-- cannot use advanced alerts
-- cannot access trading unless later explicitly allowed
+- cannot initiate customer-to-customer trades
+- cannot list customer-owned pieces for trade
+- cannot submit uncataloged jewelry to the master database in v1
+- cannot access future premium features unless a later Plus tier is reintroduced
 
-### Stage 3: Plus Conversion
+### Stage 3: Authenticated Customer Hub
 
-Plus account intent:
+Hub intent:
 
-- monetize serious collectors
-- create a more accountable customer tier
-- protect the master jewelry database from low-quality public submissions
-- unlock richer collection/profile behavior
-- unlock more useful Nic-Nac guidance
+- give logged-in customers one place to browse Sparkle Suite rep activity
+- drive customers back to rep sites, shows, and trade boards
+- create a stronger reason for reps to join Sparkle Suite
+- collect future lead and demand data without building trade workflow yet
 
-Plus conversion triggers:
+Hub modules:
 
-- customer wants to submit a piece that is not in the library
-- customer wants advanced wishlist alerts
-- customer wants to save/follow reps and shows
-- customer wants profile themes/customization
-- customer wants to highlight a collection
-- customer wants richer collection photos
-- customer wants trading eligibility or stronger trade status
-- customer uses customer-side Nic-Nac beyond the free limit
+- rep directory
+- master live calendar
+- aggregated rep trade board / dance floor browser
+- master jewelry library browser
+- affiliate/shop area
+- customer profile/preferences
+- future favorites/follows placeholder
 
-Plus onboarding data:
+Primary hub actions:
 
-- verified email
-- verified phone if SMS alerts or trading are enabled
-- state required
-- shipping state/region for trade context, not full address at profile stage
-- agreement to trade rules and photo submission standards
-- acknowledgement that Sparkle Suite is not guaranteeing trades or handling payments/shipping in v1
+- view a rep's next show
+- open the rep's Sparkle Suite site
+- browse a rep's current trade board / dance floor
+- search library records
+- browse affiliate/shop recommendations
+- update profile/preferences
 
-Plus permissions:
+### Stage 4: Parked Plus And Nic-Nac Ideas
 
-- everything in Free
-- profile colors/themes within Sparkle Suite brand-safe options
-- highlighted collections
-- collection photo albums
-- submit uncataloged pieces through Nic-Nac photo workflow
-- save/follow reps
-- save shows
-- receive alerts when wishlist pieces match rep board/show context
-- advanced wishlist and matching controls
-- limited customer-facing Nic-Nac help
-- possible trading eligibility or higher-trust trade status
+Plus and customer-facing Nic-Nac are parked for v1, but the architecture should leave room for them.
 
-### Stage 4: Customer-Facing Nic-Nac
-
-Nic-Nac should be limited and practical on the customer side.
-
-Free Nic-Nac:
+Future customer-facing Nic-Nac could help with:
 
 - orientation help
-- how to add existing library pieces to collection
-- how to build a wishlist
-- explain Free vs Plus
-- explain trade rules
+- finding reps
+- understanding how the hub works
+- finding relevant live shows
+- browsing the jewelry library
+- future collection and wishlist support
+
+Future Plus could include:
+
+- richer profile customization
+- save/follow reps and shows
+- alerts
+- customer-submitted jewelry candidates
+- limited customer-side Nic-Nac usage
+
+Do not build these in the first discovery-hub slice.
 - answer basic Sparkle Suite customer-feature questions
 
 Plus Nic-Nac:
@@ -175,13 +185,13 @@ Nic-Nac restrictions:
 - no buy/sell facilitation in v1
 - no off-platform transaction guidance beyond safe, general reminders
 
-### Stage 5: Rep-First Matching
+### Stage 5: Rep-First Discovery And Future Matching
 
 Matching priority:
 
 1. Customer wishlist to active rep trade boards/dance floors.
 2. Show the matching rep and next live event/show.
-3. Let Plus customers follow/save/receive alerts.
+3. Let logged-in customers open rep site/show paths.
 4. If no rep match exists, surface customer-to-customer possibilities later.
 
 Data needed from Sparkle Suite core:
@@ -200,11 +210,7 @@ Match rules:
 - collection + jewelry type fallback only where design-level data is incomplete
 - do not imply the rep is obligated to trade or reserve without the rep's actual board flow
 
-Notification strategy:
-
-- Free: in-app/manual browse first
-- Plus: email alerts first
-- SMS alerts only with explicit consent and cost controls
+Notification strategy is parked for v1. Start with authenticated browsing before alerts.
 
 ### Stage 6: Master Jewelry Library
 
@@ -238,9 +244,11 @@ Operator/admin need:
 - approve/reject/merge flow
 - ability to keep a customer photo private to that customer's collection instead of promoting it to canonical library photo
 
-### Stage 7: Customer Collection
+### Stage 7: Customer Collection And Wishlist
 
-Collection item states:
+Collections and wishlists are parked for the first discovery-hub slice unless the first implementation has enough room to add them safely. If included, start with existing library records only.
+
+Future collection item states:
 
 - `owned`
 - `wishlist`
@@ -267,9 +275,11 @@ Privacy:
 - wishlist can be public or private
 - state can be shown as state only, never full address
 
-### Stage 8: Customer Trade Board
+### Stage 8: Parked Customer Trade Board
 
-V1 trade stance:
+Customer-to-customer trading is parked. Do not build this in v1.
+
+Future trade stance if reactivated:
 
 - no buy/sell
 - no cash
@@ -278,11 +288,13 @@ V1 trade stance:
 - same collection + same jewelry type
 - year does not matter where collection identity remains equivalent
 
-Trade eligibility recommendation:
+Previously captured trade eligibility:
 
-- Free accounts can browse customer trade listings and the jewelry database.
-- Plus accounts are required to list items for customer-to-customer trade.
-- Plus accounts are required to initiate customer-to-customer trade proposals.
+- Free accounts can browse future customer trade listings and the jewelry database.
+- Plus accounts would be required to list items for customer-to-customer trade.
+- Plus accounts would be required to initiate customer-to-customer trade proposals.
+
+This is parked with the rest of customer-to-customer trading.
 
 Trade listing requirements:
 
@@ -344,16 +356,16 @@ Integration rule:
 
 - finalize product name and URL strategy
 - decide whether customer auth lives in new repo only or shares auth/project with Sparkle Suite core
-- define Free/Plus feature matrix
-- define Plus price hypothesis
-- define customer terms/privacy additions
-- define no-buy/sell/no-escrow disclaimer
+- define secured free customer account model
+- define public-vs-login feature boundary
+- define customer terms/privacy additions for browsing, profile data, and affiliate links
+- define affiliate disclosure stance
 
 Exit criteria:
 
-- approved feature matrix
+- approved v1 discovery hub feature matrix
 - approved account journey
-- approved trust boundary
+- approved public/login boundary
 - approved data ownership map
 
 ### Phase 1: Public Landing And Free Signup
@@ -362,8 +374,7 @@ Exit criteria:
 - add Free account signup
 - collect profile snapshot
 - implement basic customer dashboard shell
-- add library browse entry point
-- add master calendar browse entry point
+- add locked/login-gated previews for calendar, boards, and library
 
 Exit criteria:
 
@@ -371,102 +382,90 @@ Exit criteria:
 - Free customer can create profile and reach dashboard
 - copy stays inside Sparkle Suite brand guardrails
 
-### Phase 2: Master Library And Collection/Wishlist
+### Phase 2: Master Calendar And Rep Directory
+
+- connect to Sparkle Suite rep profile/read model
+- connect to live event/calendar read model
+- build rep directory
+- build master live calendar
+- route users back to rep sites/show links
+
+Exit criteria:
+
+- logged-in customer can browse Sparkle Suite reps and upcoming lives
+- customer can open rep site/show paths
+
+### Phase 3: Aggregated Rep Trade Board Browser
+
+- connect to active rep trade board / dance floor read model
+- build aggregated board browser
+- filter by rep, collection, jewelry type, and status where available
+- route item interest back to the rep's board/site flow
+
+Exit criteria:
+
+- logged-in customer can browse current rep board inventory in one place
+- customer cannot initiate customer-to-customer trades
+- customer interest routes back to rep-owned flows
+
+### Phase 4: Master Jewelry Library Browse
 
 - connect to master jewelry library read model
 - build search/filter UI
-- add existing jewelry to collection
-- add existing jewelry to wishlist
-- create profile collection view
+- show library item detail pages
+- show known rep availability where available
 
 Exit criteria:
 
-- Free customer can build collection and wishlist using existing library items
-- no customer can create canonical jewelry records yet
+- logged-in customer can browse/search the master jewelry library
+- no customer can create canonical jewelry records
 
-### Phase 3: Rep-First Matching And Calendar Links
-
-- match wishlist to active rep board listings
-- show rep and next show context
-- let Free customers browse matches
-- let Plus customers save/follow reps and shows after Plus exists
-- define notification consent model
-
-Exit criteria:
-
-- customer wishlist can surface rep board matches
-- match detail routes customer attention back to the rep and next show
-
-### Phase 4: Plus Subscription And Premium Profile
-
-- add Stripe Plus subscription
-- add Plus onboarding data requirements
-- add profile theme options within Sparkle Suite brand
-- add highlighted collections
-- add collection photo albums
-- add saved reps/shows
-- add advanced matching settings
-
-Exit criteria:
-
-- Free customer can upgrade to Plus
-- Plus entitlements unlock and revoke cleanly
-- Plus user can personalize profile without breaking brand guardrails
-
-### Phase 5: Customer Nic-Nac
-
-- add limited customer-side Nic-Nac
-- create Free and Plus usage boundaries
-- support library search help, collection help, wishlist help
-- support Plus photo guidance and uncataloged submission
-- log customer-side Nic-Nac actions separately from rep-side Nic-Nac
-
-Exit criteria:
-
-- Nic-Nac helps customers without becoming an unrestricted chat surface
-- Plus user can start an uncataloged jewelry submission through guided flow
-
-### Phase 6: Customer-Submitted Jewelry Review
-
-- add Plus-only uncataloged piece submission
-- add photo quality checks
-- add operator review queue
-- add approve/reject/merge workflow
-- protect canonical library from direct public writes
-
-Exit criteria:
-
-- Plus submissions can become approved library candidates only after review
-- bad photos and duplicates can be rejected or merged
-
-### Phase 7: Customer Trade Board Design And First Build
-
-- finalize shipping/privacy/dispute workflow
-- build Plus-gated trade listing flow
-- enforce same collection + same jewelry type
-- add customer-to-customer match discovery
-- add rating/reporting
-- add trade status record
-
-Exit criteria:
-
-- approved customer trade can be listed and matched under v1 rules
-- Free users can browse customer trade listings but cannot list or initiate customer-to-customer trades
-- no buy/sell or payment processing exists
-- moderation/reporting path exists before public launch
-
-### Phase 8: Affiliates/Shop Layer
+### Phase 5: Affiliate/Shop Layer
 
 - add optional shop/affiliate area
-- start with light boxes, display stands, photo gear, shipping supplies, storage
+- include collector products
+- include live-streaming tools and gear for reps
 - disclose affiliate relationships
-- explore custom Sparkle Suite merch later
+- avoid making the shop look like a jewelry buy/sell marketplace
 
 Exit criteria:
 
 - shop is clearly optional
 - affiliate links are disclosed
-- no confusion with jewelry buy/sell marketplace
+- livestreaming/rep gear and collector gear are both represented
+
+### Phase 6: Future Favorites/Matching Prep
+
+- define saved reps/shows model
+- define wishlist/future matching model
+- define consent model for future alerts
+- do not send alerts in this phase unless separately approved
+
+Exit criteria:
+
+- data model can support future matching and alerts
+- v1 still works as browsing-first hub
+
+### Phase 7: Parked Customer Plus/Nic-Nac Planning
+
+- revisit Plus only after v1 hub proves traffic value
+- define customer-facing Nic-Nac limits if needed
+- define paid/usage model later
+
+Exit criteria:
+
+- no Plus billing is required for v1
+- no customer-facing Nic-Nac is required for v1
+
+### Phase 8: Parked Customer Trading
+
+- keep customer-to-customer trading out of v1
+- resume only after there is evidence the hub has customer activity worth extending
+
+Exit criteria:
+
+- no customer-to-customer trading is in the v1 build
+- prior trade decisions remain archived for a later revisit
 
 ## Immediate Next Decisions
 
@@ -474,7 +473,13 @@ Exit criteria:
 2. What is the Plus pricing hypothesis?
 3. Should the customer app share the same Supabase project as Sparkle Suite core from day one, or start with a separate project and read through APIs?
 4. What URL path/domain should the customer side use?
-5. What customer-side name do we use publicly: Sparkle Suite Customer, Sparkle Suite Collectors, Sparkle Suite Plus, or something else?
+5. What customer-side name do we use publicly: Sparkle Suite Customer, Sparkle Suite Collectors, Sparkle Suite Hub, or something else?
+
+Superseded by 2026-05-29 pivot:
+
+- customer-to-customer trading is parked
+- Plus pricing is not needed for v1
+- customer-side Nic-Nac is not needed for v1
 
 ## First Build Recommendation
 
@@ -483,10 +488,10 @@ Build the first usable slice in this order:
 1. Customer landing page.
 2. Free account creation.
 3. Profile snapshot.
-4. Master library browsing.
-5. Collection and wishlist from existing records.
-6. Rep-first wishlist matching with next-show context.
-7. Plus upgrade and Plus profile features.
-8. Customer Nic-Nac for collection help and Plus photo submissions.
+4. Master live calendar.
+5. Rep directory.
+6. Aggregated rep trade board / dance floor browser.
+7. Master jewelry library browsing.
+8. Affiliate/shop layer.
 
-Do not build the customer trade board until trust, shipping, dispute, and privacy workflow decisions are written down and approved.
+Do not build customer-to-customer trading, Plus billing, or customer-facing Nic-Nac in v1.

@@ -12,14 +12,14 @@ Use `Sparkle Suite Customer` as the neutral repo/project name for now. The user 
 
 The future customer side is a collector/community surface for Bomb Party customers connected to the Sparkle Suite ecosystem. The recurring vision from Open Brain and local planning docs includes:
 
-- collection showcase profiles
-- customer-to-customer trade listings
-- platform-wide master trade board
+- secured free customer discovery hub
+- Sparkle Suite rep directory
+- master live calendar for Sparkle Suite reps
+- aggregated rep trade board / dance floor browsing
 - searchable jewelry library powered by the existing Sparkle Suite jewelry database
-- buy/sell/trade marketplace exploration
-- reputation, trust, scam prevention, and dispute handling
-- possible rep revenue-share or lead-generation model
-- social/community feed for customers and collectors
+- traffic paths back to rep sites and shows
+- lightweight affiliate/shop layer for collector and live-streaming gear
+- parked future expansion for customer profiles, collections, wishlists, trading, Plus, and community features
 
 ## Boundary
 
@@ -27,6 +27,7 @@ This repo is for:
 
 - Open Brain and Neon Rabbit source collation
 - product research and competitive notes
+- v1 customer discovery hub planning
 - trust, compliance, marketplace, and operations research
 - customer-side architecture planning
 - future prototype plans after the research/design phase

@@ -8,7 +8,7 @@ These are working assumptions for research only. They are not final product deci
 
 - The customer side is future scope and should be planned separately from the rep-side launch.
 - The customer side should not block active `neon-rabbit-core` launch work.
-- The customer side is more than a trade board: it includes collections, community, marketplace/trading concepts, trust, and discovery.
+- The customer side is more than a trade board. For v1, it is a secured free discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
 - Current rep-side trade board rules are intentionally narrow.
 - Neon Rabbit has historically preferred not to be the money or shipping middleman for the rep trade board.
@@ -16,18 +16,15 @@ These are working assumptions for research only. They are not final product deci
 
 ## Assumptions That Need Validation
 
-- First customer MVP should likely be collection showcase + wishlist/search before customer-to-customer trade execution.
-- Customer buy/sell should likely start as inquiry-only or be deferred.
+- First customer MVP should be a secured free discovery hub, not collection showcase or customer-to-customer trading.
+- Customer buy/sell is deferred.
+- Customer-to-customer trading is deferred.
 - Customer accounts should be global to Sparkle Suite, with optional relationships to reps.
-- Trust/reputation and moderation should be part of MVP design, even if the first build is small.
-- Customer collection items should point to canonical jewelry designs where possible, with a controlled uncataloged-piece workflow.
-- Matching should be rep-first: wishlist hits on rep dance floors / trade boards should notify customers and surface the rep's next show before relying on customer-to-customer matching.
-- Customer monetization is leaning toward a two-tier model: Free and Plus.
-- Free customers can only add existing jewelry library records to collections and wishlists.
-- Plus customers can provide more information, customize profile/theme presentation, highlight collections, upload richer collection photos, and submit uncataloged pieces through Nic-Nac.
-- Customer-to-customer trading is Plus-only for listing and initiating trades. Free accounts can browse customer trade listings and the jewelry database.
-- The master Sparkle Suite rep live calendar should not be fully Plus-only. Free customers should be able to browse upcoming lives, while Plus customers may follow reps, save shows, and receive wishlist/show alerts.
-- Plus-gated database submission is an accepted recommendation because it protects the master jewelry library while creating a meaningful upgrade reason.
+- Logged-in free customers can browse Sparkle Suite rep live calendars, aggregated rep trade boards/dance floors, and the master jewelry library.
+- Public visitors should see a landing/teaser only; the useful hub requires login.
+- Customer Plus is parked for v1.
+- Customer-facing Nic-Nac is parked for v1.
+- Affiliate/shop monetization should include both collector products and live-streaming gear/tools for reps.
 
 ## Explicit Non-Assumptions
 
