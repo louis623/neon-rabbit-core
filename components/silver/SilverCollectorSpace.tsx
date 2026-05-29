@@ -24,7 +24,11 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
   const wishlistCount = collectionItems.filter((item) => item.state === "wishlist").length;
 
   return (
-    <section className="border-b border-[var(--sparkle-border-strong)] bg-[rgba(255,254,253,0.96)]" id="silver">
+    <section
+      className="border-b border-[var(--sparkle-border-strong)] bg-[rgba(255,254,253,0.96)]"
+      data-smoke="silver"
+      id="silver"
+    >
       <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[21rem_minmax(0,1fr)_25rem] lg:items-stretch lg:px-10">
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="mb-3 flex items-center gap-3 text-[var(--sparkle-ink-muted)]">

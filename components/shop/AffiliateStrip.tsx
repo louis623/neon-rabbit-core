@@ -16,7 +16,11 @@ const affiliateIcons: Record<AffiliateShopItem["id"], typeof Sparkles> = {
 
 export function AffiliateStrip({ items }: AffiliateStripProps) {
   return (
-    <section className="border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]" id="shop">
+    <section
+      className="border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]"
+      data-smoke="affiliate-strip"
+      id="shop"
+    >
       <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[16rem_minmax(0,1fr)_13rem] lg:items-center lg:px-10">
         <div className="flex items-center gap-4">
           <PackageCheck aria-hidden="true" className="size-9 shrink-0 text-[var(--sparkle-plum)]" strokeWidth={1.7} />

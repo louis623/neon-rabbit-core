@@ -30,7 +30,7 @@ const discoveryCards = [
 
 export function DiscoveryCards() {
   return (
-    <div className="relative z-10 mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="relative z-10 mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-smoke="discovery-cards">
       {discoveryCards.map((card) => {
         const Icon = card.icon;
 

@@ -20,7 +20,7 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: Spar
   const accountLabel = getAccountLabel(accountState);
 
   return (
-    <header className="sparkle-finder-nav-shell">
+    <header className="sparkle-finder-nav-shell" data-smoke="nav">
       <div className="mx-auto flex min-h-[5.75rem] w-full max-w-7xl flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:py-0">
         <SparkleFinderLogo />
         <nav aria-label="Sparkle Finder primary navigation" className="overflow-x-auto">

@@ -16,6 +16,7 @@ export function LiveShowAgenda({ liveShows, reps }: LiveShowAgendaProps) {
   return (
     <aside
       className="border-t border-[var(--sparkle-border)] bg-[rgba(255,243,240,0.68)] px-5 py-8 sm:px-8 lg:border-l lg:border-t-0 lg:px-6 lg:py-10"
+      data-smoke="agenda"
       id="live-shows"
     >
       <div className="mx-auto max-w-2xl lg:sticky lg:top-8">

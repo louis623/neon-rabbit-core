@@ -11,7 +11,10 @@ type HeroAndAgendaProps = {
 
 export function HeroAndAgenda({ liveShows, reps }: HeroAndAgendaProps) {
   return (
-    <section className="border-b border-[var(--sparkle-border-strong)] bg-[linear-gradient(180deg,rgba(255,254,253,0.96),rgba(255,248,245,0.9))]">
+    <section
+      className="border-b border-[var(--sparkle-border-strong)] bg-[linear-gradient(180deg,rgba(255,254,253,0.96),rgba(255,248,245,0.9))]"
+      data-smoke="hero"
+    >
       <div className="mx-auto grid w-full max-w-[112rem] lg:min-h-[calc(100vh-5.75rem-5.8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(26rem,0.98fr)]">
         <div className="relative overflow-hidden px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
           <DecorativeSparkles />
