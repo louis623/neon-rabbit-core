@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gem, LogIn, Search } from "lucide-react";
+import { Gem, LogIn, Search, UserRound } from "lucide-react";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
   createNoCredentialSupabaseAuthBoundary,
@@ -24,10 +24,18 @@ export default function SignInPage() {
               Sign in for local preview access
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              This development build uses fixture accounts, so no production credentials are needed. Free preview keeps
-              browsing available after sign-in, while Silver preview opens collection tools and focused Nic-Nac requests.
+              This development build uses fixture accounts, so no production credentials are needed. Guest preview keeps
+              the public view anonymous, Free preview opens the browsing hub, and Silver preview opens collection tools
+              and focused Nic-Nac requests.
             </p>
             <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-[var(--sparkle-paper)] px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+                href="/auth/preview/anonymous"
+              >
+                <UserRound aria-hidden="true" className="size-4" />
+                Continue as Guest
+              </Link>
               <Link
                 className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
                 href="/auth/preview/free"
@@ -56,6 +64,10 @@ export default function SignInPage() {
               </div>
             </div>
             <dl className="grid gap-3 text-sm">
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
+                <dt className="font-bold text-[var(--sparkle-plum-deep)]">Guest/public</dt>
+                <dd className="text-[var(--sparkle-ink-muted)]">anonymous</dd>
+              </div>
               <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
                 <dt className="font-bold text-[var(--sparkle-plum-deep)]">Free preview</dt>
                 <dd className="text-[var(--sparkle-ink-muted)]">{localFreeAccount.status}</dd>

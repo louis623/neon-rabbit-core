@@ -21,16 +21,16 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: Spar
 
   return (
     <header className="sparkle-finder-nav-shell" data-smoke="nav">
-      <div className="mx-auto flex min-h-[5.75rem] w-full max-w-7xl flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:py-0">
+      <div className="mx-auto flex min-h-[5.05rem] w-full max-w-[112rem] flex-col gap-3 px-5 py-3 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-10 lg:py-0">
         <SparkleFinderLogo />
-        <nav aria-label="Sparkle Finder primary navigation" className="overflow-x-auto">
-          <ul className="flex min-w-max items-center gap-3">
+        <nav aria-label="Sparkle Finder primary navigation" className="-mx-2 overflow-x-auto px-2 pb-1 lg:mx-0 lg:px-0 lg:pb-0">
+          <ul className="flex min-w-max items-center gap-2 lg:gap-3">
             {navItems.map((item) => {
               const Icon = item.icon;
 
               return (
                 <li key={item.label}>
-                  <Link aria-label={item.label} className="sparkle-finder-nav-link px-3" href={item.href}>
+                  <Link aria-label={item.label} className="sparkle-finder-nav-link px-2.5 sm:px-3" href={item.href}>
                     <Icon aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
                     <span>{item.label}</span>
                   </Link>
@@ -38,7 +38,7 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: Spar
               );
             })}
             <li>
-              <Link aria-label="Account" className="sparkle-finder-nav-link px-3" href="/auth/sign-in">
+              <Link aria-label="Account" className="sparkle-finder-nav-link px-2.5 sm:px-3" href="/auth/sign-in">
                 <UserRound aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
                 <span>{accountLabel}</span>
               </Link>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, ExternalLink } from "lucide-react";
+import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { JewelryItem, LiveShow, RepBoardListing, RepSummary } from "@/lib/sparkle-finder/types";
 
 type RepBoardGridProps = {
@@ -56,7 +57,7 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
               </Link>
               <a
                 className="inline-flex items-center gap-1 text-sm font-bold text-[var(--sparkle-plum)] hover:underline"
-                href={listing.boardUrl}
+                href={getLocalRepBoardHref(listing.boardUrl)}
               >
                 Open rep board <ExternalLink aria-hidden="true" className="size-3.5" />
               </a>

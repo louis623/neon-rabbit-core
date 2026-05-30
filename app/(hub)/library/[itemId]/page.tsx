@@ -7,24 +7,26 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
+import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 
 type ItemDetailPageProps = {
-  params: {
+  params: Promise<{
     itemId: string;
-  };
+  }>;
 };
 
 export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+  const resolvedParams = await params;
 
-  return renderItemDetailPageContent(params, getLocalDevAuthState(authMode));
+  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode));
 }
 
 export function renderItemDetailPageContent(
-  params: ItemDetailPageProps["params"],
+  params: Awaited<ItemDetailPageProps["params"]>,
   accountState: SparkleFinderAccountState,
 ) {
   const item = getJewelryItemById(params.itemId);
@@ -74,9 +76,7 @@ export function renderItemDetailPageContent(
                     </p>
                     <a
                       className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-                      href={match.boardUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
+                      href={getLocalRepBoardHref(match.boardUrl)}
                     >
                       Open rep board path
                     </a>

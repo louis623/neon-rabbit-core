@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CalendarClock, ExternalLink, Search, Sparkles } from "lucide-react";
+import { CalendarClock, Search, Sparkles } from "lucide-react";
 import { findNicNacMatchesForItem } from "@/lib/sparkle-finder/nic-nac";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
+import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { NicNacFindMatch } from "@/lib/sparkle-finder/nic-nac";
 
@@ -32,11 +33,10 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false }: 
     <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
       <div className={compact ? "grid gap-3" : "flex flex-wrap items-start justify-between gap-4"}>
         <div>
-          <div className="flex items-center gap-2 text-[var(--sparkle-rose)]">
-            <Search aria-hidden="true" className="size-7" strokeWidth={1.6} />
-            <p className="text-xs font-bold uppercase tracking-[0.16em]">Bounded Silver assist</p>
+          <div className="mx-auto mb-3 grid size-20 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)] text-[var(--sparkle-plum)]">
+            <Search aria-hidden="true" className="size-9" strokeWidth={1.5} />
           </div>
-          <h2 className="mt-2 font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Nic-Nac, find this for me
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
@@ -65,7 +65,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
   return (
     <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
       <div className={compact ? "grid gap-3" : "grid gap-4"}>
-        <div className="grid size-14 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+        <div className="mx-auto grid size-20 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)] text-[var(--sparkle-plum)]">
           <Sparkles aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </div>
         <div>
@@ -95,7 +95,7 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
   return (
     <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
       <div className={compact ? "grid gap-3" : "grid gap-4"}>
-        <div className="grid size-14 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+        <div className="mx-auto grid size-20 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)] text-[var(--sparkle-plum)]">
           <Search aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </div>
         <div>
@@ -137,24 +137,18 @@ function NicNacMatchCard({ match }: { match: NicNacFindMatch }) {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <a
+        <Link
           className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={match.listing.boardUrl}
-          rel="noopener noreferrer"
-          target="_blank"
+          href={getLocalRepBoardHref(match.listing.boardUrl)}
         >
           Open rep board path
-          <ExternalLink aria-hidden="true" className="size-4" />
-        </a>
-        <a
+        </Link>
+        <Link
           className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={match.rep.siteUrl}
-          rel="noopener noreferrer"
-          target="_blank"
+          href={getLocalRepHref(match.rep.siteUrl)}
         >
           Open rep profile
-          <ExternalLink aria-hidden="true" className="size-4" />
-        </a>
+        </Link>
       </div>
     </div>
   );

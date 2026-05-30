@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Crown, Gem, Heart, MapPin, ShieldCheck } from "lucide-react";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
@@ -29,22 +30,22 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
       data-smoke="silver"
       id="silver"
     >
-      <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[21rem_minmax(0,1fr)_25rem] lg:items-stretch lg:px-10">
+      <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-4 sm:px-8 lg:grid-cols-[19.5rem_minmax(0,1fr)_24rem] lg:items-stretch lg:px-10">
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="mb-3 flex items-center gap-3 text-[var(--sparkle-ink-muted)]">
-            <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
-            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight">Silver Membership</h2>
+            <Crown aria-hidden="true" className="size-6 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
+            <h2 className="font-[var(--font-playfair)] text-[1.35rem] font-semibold leading-tight">Silver Membership</h2>
           </div>
 
-          <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-4">
+          <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-3">
             <div
               aria-label={`${customer.displayName} avatar`}
-              className="grid size-20 shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#f1f1f1)] font-[var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
+              className="grid size-[4.5rem] shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#eeeeee)] font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
             >
               {getInitials(customer.displayName)}
             </div>
             <div className="min-w-0 pt-1">
-              <h3 className="truncate font-[var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+              <h3 className="truncate font-[var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
                 {customer.displayName}
               </h3>
               <p className="mt-1 inline-flex items-center gap-1 text-sm text-[var(--sparkle-ink-muted)]">
@@ -59,14 +60,14 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 py-4">
+          <div className="grid grid-cols-2 gap-3 py-3">
             <ProfileMetric icon={Gem} label="Collection" value={collectionItems.length} />
             <ProfileMetric icon={Heart} label="Wishlist / watchlist" value={wishlistCount} />
           </div>
 
           {entitlements.canUseSilverProfileActions ? (
             <Link
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] px-4 text-sm font-bold text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] px-4 text-sm font-bold text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
               href="/silver"
             >
               View / Edit Profile
@@ -85,8 +86,10 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sparkle-coral)]">Your Silver Collector Space</p>
-              <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+              <p className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                Your Silver Collector Space
+              </p>
+              <h2 className="mt-1 text-base font-medium leading-tight text-[var(--sparkle-plum-deep)]">
                 My Collection Preview
               </h2>
             </div>
@@ -95,8 +98,8 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
             </span>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {collectionItems.map((item) => (
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+            {collectionItems.slice(0, 6).map((item) => (
               <CollectionPreviewCard key={item.id} item={item} />
             ))}
           </div>
@@ -119,9 +122,9 @@ function ProfileMetric({
 }) {
   return (
     <div className="flex min-h-14 items-center gap-3">
-      <Icon aria-hidden="true" className="size-6 shrink-0 text-[var(--sparkle-coral)]" strokeWidth={1.7} />
+      <Icon aria-hidden="true" className="size-5 shrink-0 text-[var(--sparkle-coral)]" strokeWidth={1.7} />
       <div>
-        <p className="text-lg font-bold leading-none text-[var(--sparkle-plum-deep)]">{value}</p>
+        <p className="text-base font-bold leading-none text-[var(--sparkle-plum-deep)]">{value}</p>
         <p className="mt-1 text-xs leading-4 text-[var(--sparkle-ink-muted)]">{label}</p>
       </div>
     </div>
@@ -129,23 +132,39 @@ function ProfileMetric({
 }
 
 function CollectionPreviewCard({ item }: { item: SilverCollectionPreviewItem }) {
+  const gemColorByLabel = {
+    diamond: "#8fcfd5",
+    unicorn: "#c37ac6",
+    standard: "#e8899d",
+  } satisfies Record<SilverCollectionPreviewItem["jewelryItem"]["bpLabel"], string>;
+
   return (
-    <div className="min-h-44 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
-      <div className="grid aspect-[4/3] place-items-center rounded-[var(--sparkle-radius-sm)] border border-[rgba(239,201,201,0.72)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
-        <Gem aria-hidden="true" className="size-12" strokeWidth={1.4} />
+    <Link
+      className="group rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-2 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[var(--sparkle-shadow-sm)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+      href={`/library/${item.jewelryItemId}`}
+    >
+      <div
+        className="sparkle-jewel-tile grid aspect-[4/3] place-items-center rounded-[var(--sparkle-radius-sm)] border border-[rgba(239,201,201,0.72)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)]"
+        style={{ "--gem-color": gemColorByLabel[item.jewelryItem.bpLabel] } as CSSProperties}
+      >
+        <span
+          aria-hidden="true"
+          className="sparkle-jewel-piece"
+          data-kind={item.jewelryItem.jewelryType}
+        />
       </div>
-      <div className="mt-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-bold text-[var(--sparkle-plum-deep)]">{item.jewelryItem.name}</h3>
-          <p className="truncate text-xs leading-5 text-[var(--sparkle-ink-muted)]">{item.jewelryItem.collectionName}</p>
-        </div>
+      <div className="sr-only">
+        <h3>{item.jewelryItem.name}</h3>
+        <p>{item.jewelryItem.collectionName}</p>
+      </div>
+      <div className="mt-2 flex items-start justify-between gap-2">
         {item.isHighlighted ? <ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-[var(--sparkle-coral)]" /> : null}
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-1 flex flex-wrap gap-2">
         <StateBadge state={item.state} />
         {item.isHighlighted ? <span className="rounded border border-[#e7be77] bg-[#fff3cf] px-3 py-1 text-xs font-bold text-[#704b11]">Highlighted</span> : null}
       </div>
-    </div>
+    </Link>
   );
 }
 

@@ -21,7 +21,7 @@ export function AffiliateStrip({ items }: AffiliateStripProps) {
       data-smoke="affiliate-strip"
       id="shop"
     >
-      <div className="mx-auto grid max-w-[112rem] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[16rem_minmax(0,1fr)_13rem] lg:items-center lg:px-10">
+      <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-4 sm:px-8 lg:grid-cols-[16rem_minmax(0,1fr)_13rem] lg:items-center lg:px-10">
         <div className="flex items-center gap-4">
           <PackageCheck aria-hidden="true" className="size-9 shrink-0 text-[var(--sparkle-plum)]" strokeWidth={1.7} />
           <div>
@@ -39,9 +39,9 @@ export function AffiliateStrip({ items }: AffiliateStripProps) {
             return (
               <article
                 key={item.id}
-                className="flex min-h-20 items-center gap-3 border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] sm:rounded-[var(--sparkle-radius-sm)] lg:border-l lg:bg-transparent lg:shadow-none"
+                className="flex min-h-16 items-center gap-3 border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] sm:rounded-[var(--sparkle-radius-sm)] lg:border-l lg:bg-transparent lg:shadow-none"
               >
-                <div className="grid size-11 shrink-0 place-items-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+                <div className="grid size-10 shrink-0 place-items-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
                   <Icon aria-hidden="true" className="size-6" strokeWidth={1.7} />
                 </div>
                 <div className="min-w-0">

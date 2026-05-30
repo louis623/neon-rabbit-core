@@ -9,9 +9,12 @@ import LibraryPage from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
+import SignInPage from "../../app/auth/sign-in/page";
+import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
+import { getLocalRepBoardHref, getLocalRepHref } from "../../lib/sparkle-finder/route-hrefs";
 
 const routes = [
   ["dashboard", () => renderToStaticMarkup(createElement(DashboardPage))],
@@ -66,6 +69,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Sierra Sparkle Studio");
     expect(markup).toContain("Nic-Nac, find this for me");
     expect(markup).toContain("Exact item");
+    expect(markup).toContain("/rep-boards?listing=rainbow-crown");
+    expect(markup).not.toContain("sparklesuite.example");
   });
 
   it("renders the item detail Silver prompt for Free customers", () => {
@@ -97,9 +102,11 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("Rep Trade Boards / Dance Floors");
     expect(markup).toContain("Sierra Sparkle Studio");
+    expect(markup).toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("Offer Item");
     expect(markup).not.toContain("Swap With Customer");
     expect(markup).not.toContain("Post Message");
+    expect(markup).not.toContain("sparklesuite.example");
   });
 
   it("renders live show route content from fixture data", () => {
@@ -141,5 +148,103 @@ describe("Sparkle Finder hub routes", () => {
     const copy = routes.map(([, renderRoute]) => renderRoute()).join(" ");
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
+  });
+
+  it("does not render placeholder external Sparkle Suite URLs on hub route pages", () => {
+    const markup = [
+      ...routes.map(([, renderRoute]) => renderRoute()),
+      renderToStaticMarkup(
+        renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
+      ),
+      renderToStaticMarkup(createElement(SignInPage)),
+    ].join(" ");
+
+    expect(markup).not.toContain("sparklesuite.example");
+  });
+
+  it("renders sign-in choices for Guest, Free preview, and Silver preview", () => {
+    const markup = renderToStaticMarkup(createElement(SignInPage));
+
+    expect(markup).toContain("Guest preview keeps the public view anonymous");
+    expect(markup).toContain("Guest/public");
+    expect(markup).toContain("/auth/preview/anonymous");
+    expect(markup).toContain("/auth/preview/free");
+    expect(markup).toContain("/auth/preview/silver");
+    expect(markup).not.toContain("Free preview keeps Guest preview");
+  });
+
+  it("keeps local preview redirects on safe local request hosts", async () => {
+    const freeResponse = await previewAuthGET(
+      new Request("http://localhost:4310/auth/preview/free", {
+        headers: { host: "127.0.0.1:4310" },
+      }),
+      {
+        params: Promise.resolve({ mode: "free" }),
+      },
+    );
+    const silverResponse = await previewAuthGET(new Request("http://localhost:4310/auth/preview/silver"), {
+      params: Promise.resolve({ mode: "silver" }),
+    });
+    const anonymousResponse = await previewAuthGET(new Request("http://127.0.0.1:4310/auth/preview/anonymous"), {
+      params: Promise.resolve({ mode: "anonymous" }),
+    });
+
+    expect(freeResponse.headers.get("location")).toBe("http://127.0.0.1:4310/dashboard");
+    expect(silverResponse.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(anonymousResponse.headers.get("location")).toBe("http://127.0.0.1:4310/");
+  });
+
+  it("ignores an untrusted Host header when the request URL host is local", async () => {
+    const response = await previewAuthGET(
+      new Request("http://localhost:4310/auth/preview/free", {
+        headers: { host: "evil.example" },
+      }),
+      {
+        params: Promise.resolve({ mode: "free" }),
+      },
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("uses a fixed safe local fallback when Host and request URL are untrusted", async () => {
+    const response = await previewAuthGET(new Request("http://evil.example/auth/preview/free"), {
+      params: Promise.resolve({ mode: "free" }),
+    });
+
+    expect(response.headers.get("location")).toBe("http://127.0.0.1:4310/dashboard");
+  });
+
+  it("uses a safe local Host header even when the request URL host is untrusted", async () => {
+    const response = await previewAuthGET(
+      new Request("http://evil.example/auth/preview/free", {
+        headers: { host: "localhost:4310" },
+      }),
+      {
+        params: Promise.resolve({ mode: "free" }),
+      },
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("preserves bracketed IPv6 localhost Host redirects", async () => {
+    const response = await previewAuthGET(
+      new Request("http://localhost:4310/auth/preview/free", {
+        headers: { host: "[::1]:4310" },
+      }),
+      {
+        params: Promise.resolve({ mode: "free" }),
+      },
+    );
+
+    expect(response.headers.get("location")).toBe("http://[::1]:4310/dashboard");
+  });
+
+  it("maps fixture rep URLs to local route hrefs", () => {
+    expect(getLocalRepBoardHref("https://sparklesuite.example/reps/sierra/board/rainbow-crown")).toBe(
+      "/rep-boards?listing=rainbow-crown",
+    );
+    expect(getLocalRepHref("https://sparklesuite.example/reps/sierra")).toBe("/rep-boards?rep=sierra");
   });
 });
