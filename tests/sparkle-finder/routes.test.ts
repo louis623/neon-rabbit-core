@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
+import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
 import DashboardPage from "../../app/(hub)/dashboard/page";
 import DiamondsUnicornsPage from "../../app/(hub)/diamonds-unicorns/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
@@ -12,6 +13,14 @@ import ShopPage from "../../app/(hub)/shop/page";
 import SignInPage from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
+import {
+  affiliateDisclosureHref,
+  affiliateIssueReportHref,
+  affiliateIssueReportLabel,
+  affiliateLinkLabelCopy,
+  affiliateReviewActionCopy,
+  amazonAssociateDisclosure,
+} from "../../lib/sparkle-finder/affiliate-copy";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
 import { getLocalRepBoardHref, getLocalRepHref } from "../../lib/sparkle-finder/route-hrefs";
@@ -24,6 +33,10 @@ const routes = [
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
   ["silver", () => renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")))],
+] as const;
+
+const publicRoutes = [
+  ["affiliate-disclosure", () => renderToStaticMarkup(createElement(AffiliateDisclosurePage))],
 ] as const;
 
 describe("Sparkle Finder hub routes", () => {
@@ -125,6 +138,39 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Livestream Gear");
   });
 
+  it("renders shop affiliate disclosure and issue-reporting trust copy", () => {
+    const markup = renderToStaticMarkup(createElement(ShopPage));
+
+    expect(markup).toContain(affiliateLinkLabelCopy);
+    expect(markup).toContain(amazonAssociateDisclosure);
+    expect(markup).toContain(affiliateDisclosureHref);
+    expect(markup).toContain(affiliateIssueReportLabel);
+    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
+    expect(markup).toContain(affiliateReviewActionCopy);
+  });
+
+  it("does not render a shop self-link CTA on the shop route", () => {
+    const markup = renderToStaticMarkup(createElement(ShopPage));
+
+    expect(markup).not.toContain('href="/shop"');
+    expect(markup).not.toContain("Shop affiliate picks");
+  });
+
+  it("renders the public affiliate disclosure route with careful trust wording", () => {
+    const markup = renderToStaticMarkup(createElement(AffiliateDisclosurePage));
+
+    expect(markup).toContain("Affiliate Disclosure");
+    expect(markup).toContain("Sparkle Finder is a discovery hub");
+    expect(markup).toContain("not a jewelry marketplace");
+    expect(markup).toContain("not officially affiliated with Bomb Party");
+    expect(markup).toContain(amazonAssociateDisclosure);
+    expect(markup).toContain("clear and conspicuous");
+    expect(markup).toContain(affiliateLinkLabelCopy);
+    expect(markup).toContain(affiliateIssueReportLabel);
+    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
+    expect(markup).toContain(affiliateReviewActionCopy);
+  });
+
   it("renders Silver profile and collection previews for Silver customers", () => {
     const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
 
@@ -145,7 +191,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
-    const copy = routes.map(([, renderRoute]) => renderRoute()).join(" ");
+    const copy = [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" ");
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

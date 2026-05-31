@@ -1,12 +1,23 @@
 import Link from "next/link";
 import { ArrowRight, Box, Gift, Headphones, PackageCheck, Smartphone, Sparkles } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  affiliateDisclosureHref,
+  affiliateIssueReportEmail,
+  affiliateIssueReportHref,
+  affiliateIssueReportLabel,
+  affiliateLinkLabelCopy,
+  affiliateReviewActionCopy,
+  amazonAssociateDisclosure,
+} from "@/lib/sparkle-finder/affiliate-copy";
 import type { AffiliateShopItem } from "@/lib/sparkle-finder/types";
 
 type AffiliateStripProps = {
   items: AffiliateShopItem[];
+  showShopCta?: boolean;
 };
 
-const affiliateIcons: Record<AffiliateShopItem["id"], typeof Sparkles> = {
+const affiliateIcons: Partial<Record<string, LucideIcon>> = {
   "shop-jewelry-care": Sparkles,
   "shop-livestream-gear": Headphones,
   "shop-packaging": Gift,
@@ -14,7 +25,7 @@ const affiliateIcons: Record<AffiliateShopItem["id"], typeof Sparkles> = {
   "shop-storage-display": Box,
 };
 
-export function AffiliateStrip({ items }: AffiliateStripProps) {
+export function AffiliateStrip({ items, showShopCta = true }: AffiliateStripProps) {
   return (
     <section
       className="border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]"
@@ -28,7 +39,9 @@ export function AffiliateStrip({ items }: AffiliateStripProps) {
             <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               Collector Essentials
             </h2>
-            <p className="mt-1 text-sm leading-5 text-[var(--sparkle-ink-muted)]">Affiliate picks for your sparkle setup.</p>
+            <p className="mt-1 text-sm leading-5 text-[var(--sparkle-ink-muted)]">
+              Discovery categories for your sparkle setup.
+            </p>
           </div>
         </div>
 
@@ -53,13 +66,36 @@ export function AffiliateStrip({ items }: AffiliateStripProps) {
           })}
         </div>
 
-        <Link
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-transparent px-4 text-sm font-bold text-[var(--sparkle-rose)] transition hover:border-[var(--sparkle-border)] hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
-          href="/shop"
-        >
-          Shop affiliate picks
-          <ArrowRight aria-hidden="true" className="size-4" />
-        </Link>
+        <div className="grid gap-2">
+          {showShopCta ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-transparent px-4 text-sm font-bold text-[var(--sparkle-rose)] transition hover:border-[var(--sparkle-border)] hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+              href="/shop"
+            >
+              Shop affiliate picks
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          ) : null}
+          <Link
+            className="text-center text-xs font-bold text-[var(--sparkle-plum)] underline-offset-4 hover:underline"
+            href={affiliateDisclosureHref}
+          >
+            Affiliate disclosure
+          </Link>
+        </div>
+        <div className="grid gap-2 text-xs leading-5 text-[var(--sparkle-ink-muted)] lg:col-span-3">
+          <p>
+            Some future retailer links may be affiliate links and should be labeled near the link as {affiliateLinkLabelCopy}.{" "}
+            {amazonAssociateDisclosure}
+          </p>
+          <p>
+            {affiliateIssueReportLabel}: email{" "}
+            <a className="font-bold text-[var(--sparkle-plum)] underline-offset-4 hover:underline" href={affiliateIssueReportHref}>
+              {affiliateIssueReportEmail}
+            </a>{" "}
+            so Sparkle Finder can {affiliateReviewActionCopy}.
+          </p>
+        </div>
       </div>
     </section>
   );
