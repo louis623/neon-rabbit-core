@@ -74,6 +74,8 @@ Use this log for lightweight weekly operating notes. Keep entries short enough t
 - The docs are ready for topic planning, and the public disclosure route is live. No program applications, exact product selections, affiliate links, or app-data product changes happened in this session.
 - Connected `https://yoursparklefinder.com` and `https://www.yoursparklefinder.com` to the Vercel Sparkle Finder project. Verified both domains resolve to Vercel and HTTPS works.
 - Verified `https://yoursparklefinder.com/shop` and `https://yoursparklefinder.com/affiliate-disclosure` return HTTP 200 over HTTPS.
+- Louis completed the Amazon Associates application, tax information, and remaining profile setup. Amazon issued Associate ID `yoursparklefi-20`; treat Amazon as provisionally active until final program review/qualification requirements are satisfied.
+- Amazon links remain blocked until exact products pass the Louis review packet and each placement has nearby disclosure. No self-purchases, friend/family purchase requests, or casual sharing of affiliate links.
 
 ### Issue Reports
 
@@ -83,6 +85,6 @@ Use this log for lightweight weekly operating notes. Keep entries short enough t
 
 ### Next Week's Top 3 Actions
 
-1. Begin Amazon Associates application using `https://yoursparklefinder.com` and `https://yoursparklefinder.com/affiliate-disclosure`.
-2. Apply to Walmart and B&H after Amazon is submitted or in parallel if Louis is ready.
+1. Use the Louis candidate-review packet to screen the first Amazon-safe candidate set before publishing any links.
+2. Decide whether to apply to Walmart and B&H now or wait until Amazon's first reviewed candidate set is ready.
 3. Use the Louis candidate-review packet for the first exact product candidate only after guide and program readiness are confirmed.

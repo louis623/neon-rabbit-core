@@ -8,6 +8,7 @@ Use this tracker for affiliate applications, program terms, and next actions. Ev
 
 - `research`: not applied yet; still checking fit and requirements.
 - `applied`: application submitted; waiting for review.
+- `provisionally_active`: account/link access created, but final program review or qualification requirements are still pending.
 - `approved`: approved and eligible for links.
 - `rejected`: not approved; keep notes for future retry.
 - `paused`: not pursuing right now.
@@ -16,7 +17,7 @@ Use this tracker for affiliate applications, program terms, and next actions. Ev
 
 | Program / Network | Status | Login URL | Terms URL | Commission Notes | Cookie Window | Approved Domain | Disclosure Requirements | Last Reviewed | Next Action |
 |---|---|---|---|---|---|---|---|---|---|
-| Amazon Associates | research | https://affiliate-program.amazon.com/ | https://affiliate-program.amazon.com/help/operating/policies | Broad product coverage; rates vary by category. Requires qualifying sales and full review. | Record after application. | Use `https://yoursparklefinder.com` for application; record approval after Amazon review. | Requires clear affiliate disclosure and Amazon Associate disclosure before Amazon links go live. Public disclosure: `https://yoursparklefinder.com/affiliate-disclosure`. | 2026-05-31 | Ready for Louis to begin application using the custom domain. |
+| Amazon Associates | provisionally_active | https://affiliate-program.amazon.com/ | https://affiliate-program.amazon.com/help/operating/policies | Account created with Associate ID `yoursparklefi-20`. Broad product coverage; rates vary by category. Amazon review still depends on qualified referral activity and program compliance. | Record once confirmed in Associates Central. | `https://yoursparklefinder.com` submitted; record final approval after Amazon review. | Requires clear affiliate disclosure and Amazon Associate disclosure before Amazon links go live. Public disclosure: `https://yoursparklefinder.com/affiliate-disclosure`. Link-level disclosure must appear near Amazon links. | 2026-05-31 | Complete candidate review before first Amazon link. Do not self-purchase, ask friends/family to buy through links, or publish links without nearby disclosure. |
 | Walmart Affiliates | research | https://affiliates.walmart.com/ | https://affiliates.walmart.com/faqs | Broad retail fit for storage, care, tech, and shipping basics. | Record after approval. | Use `https://yoursparklefinder.com` for application; record approval after review. | Use clear affiliate disclosure near links and follow Walmart/Impact terms. Public disclosure: `https://yoursparklefinder.com/affiliate-disclosure`. | 2026-05-31 | Apply after Amazon or in parallel if Louis is ready. |
 | B&H Affiliate Program | research | https://www.bhphotovideo.com/c/find/shared/affiliates.jsp | https://www.bhphotovideo.com/c/find/shared/affiliates.jsp | Strong fit for cameras, lights, mics, and livestream gear. | Record after approval. | Use `https://yoursparklefinder.com` for application; record approval after review. | Use clear affiliate disclosure near links and follow B&H terms. Public disclosure: `https://yoursparklefinder.com/affiliate-disclosure`. | 2026-05-31 | Apply for rep/livestream gear lane. |
 | Etsy Affiliate Program | research | https://help.etsy.com/hc/en-us/articles/360000335987-The-Affiliate-Program | https://help.etsy.com/hc/en-us/articles/360000335987-The-Affiliate-Program | Useful for handmade displays, storage, and giftable collector items. Network path may vary. | Etsy help references 30 days; verify at application time. | Use `https://yoursparklefinder.com` for application; record approval after review. | Use clear affiliate disclosure and avoid implying all seller inventory is stable. Public disclosure: `https://yoursparklefinder.com/affiliate-disclosure`. | 2026-05-31 | Confirm current network path, then apply if collector guide content is ready. |
@@ -43,6 +44,7 @@ Amazon readiness summary:
 - Amazon says Associates must clearly and prominently identify themselves on their site or authorized location.
 - Required Amazon statement for Sparkle Finder planning: "As an Amazon Associate I earn from qualifying purchases."
 - Do not imply Amazon supports, sponsors, or endorses Sparkle Finder.
+- Do not use Sparkle Finder's own Amazon links for Louis/Sparkle Suite purchases, and do not ask friends, family, or business relationships to create qualifying purchases.
 - Re-check the current Operating Agreement and Program Policies before applying and again before publishing Amazon links.
 
 FTC readiness summary:

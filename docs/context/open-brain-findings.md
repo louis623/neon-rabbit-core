@@ -91,3 +91,32 @@ Sources:
 ## Initial Read
 
 The customer product should not be treated as just "make the rep board bigger." The existing notes point to a separate product surface with social identity, collection ownership, trust, community, search, and marketplace safety problems.
+
+## 2026-05-31 Session Addendum
+
+Sparkle Finder moved from planning into a live, deployable customer discovery hub with affiliate readiness foundations.
+
+Built and verified:
+
+- Next.js Sparkle Finder app on the custom domain `https://yoursparklefinder.com`.
+- Public affiliate disclosure route at `https://yoursparklefinder.com/affiliate-disclosure`.
+- Shop/affiliate trust copy with issue-reporting language.
+- Affiliate docs command center, program tracker, product-pick tracker, trust/copy rules, weekly log, and Louis candidate-review packet.
+- Eight first-pass affiliate content guide briefs split evenly between collector essentials and rep/livestream setup gear.
+- Route, copy guardrail, disclosure/trust wording, build, and smoke-test coverage.
+
+Key decisions:
+
+- Sparkle Finder remains a discovery hub, not a jewelry marketplace.
+- Sparkle Finder/Sparkle Suite must not imply official Bomb Party affiliation.
+- Affiliate revenue should be trust-first and split between collector essentials and rep/livestream setup gear.
+- No exact affiliate product links go live until Louis approves the exact product/listing, placement, disclosure copy, and trust/issue copy.
+- Do not use live prices, copied reviews, ratings, or retailer images unless current program terms allow them.
+- Public product placements need nearby disclosure plus a clear issue-reporting path so Sparkle Finder can pause, replace, remove, or contact the company.
+- Amazon Associates account exists with Associate ID `yoursparklefi-20`, but Amazon should be treated as provisionally active until final review/qualification requirements are satisfied.
+
+Next-session posture:
+
+- Stand by for Louis's direction.
+- Likely next work is either first Amazon-safe product candidate research, additional affiliate applications, or polishing Sparkle Finder public content.
+- Do not auto-publish links or select exact products without Louis approval.
