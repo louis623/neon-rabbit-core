@@ -50,6 +50,9 @@ create table public.sparkle_finder_communication_consents (
   updated_at timestamptz not null default now()
 );
 
+comment on table public.sparkle_finder_communication_consents is
+  'Communication preferences for Sparkle Finder accounts. Consent timestamp evidence is server-controlled; promotional SMS is off by default.';
+
 create table public.sparkle_finder_collection_items (
   id uuid primary key default extensions.gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -167,6 +170,71 @@ create trigger create_sparkle_finder_account_rows
 after insert on auth.users
 for each row execute function private.create_sparkle_finder_account_rows();
 
+create or replace function public.update_sparkle_finder_communication_preferences(
+  promotional_email_opt_in boolean,
+  promotional_sms_opt_in boolean,
+  account_sms_allowed boolean default null
+)
+returns public.sparkle_finder_communication_consents
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  authenticated_user_id uuid := auth.uid();
+  updated_consent public.sparkle_finder_communication_consents;
+begin
+  if authenticated_user_id is null then
+    raise exception 'Authentication required'
+      using errcode = '28000';
+  end if;
+
+  update public.sparkle_finder_communication_consents as consent
+  set
+    account_sms_allowed = coalesce(
+      update_sparkle_finder_communication_preferences.account_sms_allowed,
+      consent.account_sms_allowed
+    ),
+    promotional_email_opt_in =
+      update_sparkle_finder_communication_preferences.promotional_email_opt_in,
+    promotional_email_consented_at = case
+      when update_sparkle_finder_communication_preferences.promotional_email_opt_in
+        and consent.promotional_email_consented_at is null
+        then now()
+      when update_sparkle_finder_communication_preferences.promotional_email_opt_in
+        then consent.promotional_email_consented_at
+      else null
+    end,
+    promotional_sms_opt_in =
+      update_sparkle_finder_communication_preferences.promotional_sms_opt_in,
+    promotional_sms_consented_at = case
+      when update_sparkle_finder_communication_preferences.promotional_sms_opt_in
+        and consent.promotional_sms_consented_at is null
+        then now()
+      when update_sparkle_finder_communication_preferences.promotional_sms_opt_in
+        then consent.promotional_sms_consented_at
+      else null
+    end
+  where consent.user_id = authenticated_user_id
+  returning *
+  into updated_consent;
+
+  if not found then
+    raise exception 'Sparkle Finder communication consent row not found'
+      using errcode = 'P0002';
+  end if;
+
+  return updated_consent;
+end;
+$$;
+
+comment on function public.update_sparkle_finder_communication_preferences(boolean, boolean, boolean) is
+  'Updates a user''s own communication opt-ins while keeping consent timestamp evidence server-controlled.';
+
+revoke all on function public.update_sparkle_finder_communication_preferences(boolean, boolean, boolean) from public;
+revoke all on function public.update_sparkle_finder_communication_preferences(boolean, boolean, boolean) from anon;
+grant execute on function public.update_sparkle_finder_communication_preferences(boolean, boolean, boolean) to authenticated;
+
 create policy "Users can select their own profile"
 on public.sparkle_finder_profiles
 for select
@@ -197,13 +265,6 @@ on public.sparkle_finder_communication_consents
 for select
 to authenticated
 using (user_id = auth.uid());
-
-create policy "Users can update their own communication consent"
-on public.sparkle_finder_communication_consents
-for update
-to authenticated
-using (user_id = auth.uid())
-with check (user_id = auth.uid());
 
 create policy "Users can select their own collection items"
 on public.sparkle_finder_collection_items
@@ -256,14 +317,7 @@ grant update (
 grant select on public.sparkle_finder_memberships to authenticated;
 
 grant select on public.sparkle_finder_communication_consents to authenticated;
-grant update (
-  account_sms_allowed,
-  promotional_email_opt_in,
-  promotional_email_consented_at,
-  promotional_sms_opt_in,
-  promotional_sms_consented_at,
-  privacy_acknowledged_at
-) on public.sparkle_finder_communication_consents to authenticated;
+revoke update on public.sparkle_finder_communication_consents from authenticated;
 
 grant select, delete on public.sparkle_finder_collection_items to authenticated;
 grant insert (
