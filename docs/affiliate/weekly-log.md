@@ -71,7 +71,9 @@ Use this log for lightweight weekly operating notes. Keep entries short enough t
 - No affiliate links should go live until disclosure requirements are recorded for the relevant program and pick.
 - Louis wants direct involvement in product selection. No product should move to approved/live status without his review, and weak products or products with concerning reviews should be rejected.
 - Product/company issues reported by customers, reps, or team members should be recorded and can trigger a paused recommendation while Sparkle Finder reviews the affiliation.
-- The docs are ready for topic planning, but no program applications, exact product selections, affiliate links, public route implementation, or app-data changes happened in this session.
+- The docs are ready for topic planning, and the public disclosure route is live. No program applications, exact product selections, affiliate links, or app-data product changes happened in this session.
+- Connected `https://yoursparklefinder.com` and `https://www.yoursparklefinder.com` to the Vercel Sparkle Finder project. Verified both domains resolve to Vercel and HTTPS works.
+- Verified `https://yoursparklefinder.com/shop` and `https://yoursparklefinder.com/affiliate-disclosure` return HTTP 200 over HTTPS.
 
 ### Issue Reports
 
@@ -81,6 +83,6 @@ Use this log for lightweight weekly operating notes. Keep entries short enough t
 
 ### Next Week's Top 3 Actions
 
-1. Review the eight topic briefs and choose which guide draft should become the first public content page.
-2. Re-check program terms before any application, especially Amazon disclosure and content-use rules.
+1. Begin Amazon Associates application using `https://yoursparklefinder.com` and `https://yoursparklefinder.com/affiliate-disclosure`.
+2. Apply to Walmart and B&H after Amazon is submitted or in parallel if Louis is ready.
 3. Use the Louis candidate-review packet for the first exact product candidate only after guide and program readiness are confirmed.

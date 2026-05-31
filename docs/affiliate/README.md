@@ -15,7 +15,12 @@ No affiliate link should go live until the relevant program and product pick bot
 
 Louis must personally approve every product before it becomes an approved pick or live affiliate link.
 
-The current readiness layer is docs-only. It prepares content topics, disclosure copy, and quality review gates before Sparkle Finder applies to programs or chooses exact products.
+The current readiness layer is live on the custom Sparkle Finder domain:
+
+- Site URL for affiliate applications: `https://yoursparklefinder.com`
+- Public disclosure URL: `https://yoursparklefinder.com/affiliate-disclosure`
+
+It prepares content topics, disclosure copy, public trust/issue-reporting copy, and quality review gates before Sparkle Finder chooses exact products or publishes affiliate links.
 
 ## Start Here
 
