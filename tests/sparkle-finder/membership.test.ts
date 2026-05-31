@@ -3,8 +3,27 @@ import {
   createDefaultCommunicationConsent,
   getSilverAccessState,
 } from "../../lib/sparkle-finder/membership";
+import type { SparkleFinderSilverSource } from "../../lib/sparkle-finder/account-types";
+
+const plannedSilverSources = [
+  "trial",
+  "stripe",
+  "sparkle_suite_rep",
+  "manual",
+  "none",
+] satisfies SparkleFinderSilverSource[];
 
 describe("Sparkle Finder Silver membership", () => {
+  it("supports the planned Silver source values", () => {
+    expect(plannedSilverSources).toEqual([
+      "trial",
+      "stripe",
+      "sparkle_suite_rep",
+      "manual",
+      "none",
+    ]);
+  });
+
   it("grants Silver access for an active 45-day trial", () => {
     const result = getSilverAccessState({
       accessState: "silver_trial",

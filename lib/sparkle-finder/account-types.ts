@@ -1,6 +1,6 @@
 export type SparkleFinderAccessState = "silver_trial" | "silver_paid" | "silver_rep_included" | "free";
 
-export type SparkleFinderSilverSource = "trial" | "paid" | "rep_included" | "none";
+export type SparkleFinderSilverSource = "trial" | "stripe" | "sparkle_suite_rep" | "manual" | "none";
 
 export type SparkleFinderMembershipRecord = {
   accountId: string;
