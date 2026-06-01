@@ -1,6 +1,7 @@
-import { CalendarDays, Gem, LockKeyhole } from "lucide-react";
+import { CalendarDays, Gem, LockKeyhole, Mail } from "lucide-react";
 import type { CurrentSparkleFinderAccountState } from "@/lib/sparkle-finder/account-service";
 import { isSparkleFinderCheckoutConfigured } from "@/lib/sparkle-finder/billing";
+import { getSilverTrialAccountNotice } from "@/lib/sparkle-finder/trial-notifications";
 
 type SilverStatusPanelProps = {
   accountState: CurrentSparkleFinderAccountState & { status: "authenticated" };
@@ -12,6 +13,7 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
   const effectiveState = membership?.effectiveState ?? "free";
   const trialEndsAt = membership?.trialEndsAt ?? null;
   const trialDaysLeft = trialEndsAt ? getDaysLeft(trialEndsAt, now) : null;
+  const trialNotice = getSilverTrialAccountNotice({ trialEndsAt, now, effectiveState });
   const shouldShowUpgrade =
     effectiveState === "free" ||
     (effectiveState === "silver_trial" && typeof trialDaysLeft === "number" && trialDaysLeft <= 7);
@@ -41,6 +43,16 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
           <dd className="mt-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">{membership?.silverSource ?? "none"}</dd>
         </div>
       </dl>
+
+      {trialNotice ? (
+        <div className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-4">
+          <Mail aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[var(--sparkle-coral)]" />
+          <div>
+            <h3 className="text-base font-bold text-[var(--sparkle-plum-deep)]">{trialNotice.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">{trialNotice.body}</p>
+          </div>
+        </div>
+      ) : null}
 
       {effectiveState === "silver_trial" ? (
         <div className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-4">

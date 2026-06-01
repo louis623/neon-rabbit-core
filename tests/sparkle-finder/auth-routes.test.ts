@@ -289,6 +289,27 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain("9 days left");
   });
 
+  it("shows an account-page notice when a Silver trial is close to ending", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const markup = renderToStaticMarkup(
+      renderAccountPageContent(activeTrialAccountState(), new Date("2026-06-07T12:00:00.000Z")),
+    );
+
+    expect(markup).toContain("Silver trial ends in 3 days");
+    expect(markup).toContain("We will email account reminders before any Free downgrade.");
+  });
+
+  it("does not show trial downgrade warnings for paid or rep-included Silver", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const paidMarkup = renderToStaticMarkup(renderAccountPageContent(paidSilverAccountState()));
+    const repMarkup = renderToStaticMarkup(renderAccountPageContent(repIncludedSilverAccountState()));
+
+    expect(paidMarkup).not.toContain("Free downgrade");
+    expect(paidMarkup).not.toContain("Silver trial ends in");
+    expect(repMarkup).not.toContain("Free downgrade");
+    expect(repMarkup).not.toContain("Silver trial ends in");
+  });
+
   it("shows an honest upgrade CTA when an expired trial maps to Free", async () => {
     const { renderAccountPageContent } = await import("../../app/account/page");
     const markup = renderToStaticMarkup(renderAccountPageContent(expiredTrialMappedToFreeAccountState()));
@@ -456,6 +477,44 @@ function expiredTrialMappedToFreeAccountState(): CurrentSparkleFinderAccountStat
       hasSilverAccess: false,
       isTrialActive: false,
       isTrialExpired: true,
+    },
+  };
+}
+
+function paidSilverAccountState(): CurrentSparkleFinderAccountState {
+  const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & { status: "authenticated" };
+
+  return {
+    ...base,
+    membership: {
+      ...base.membership!,
+      accessState: "silver_paid",
+      silverSource: "stripe",
+      trialEndsAt: "2026-06-10T12:00:00.000Z",
+      silverEndsAt: null,
+      effectiveState: "silver_paid",
+      hasSilverAccess: true,
+      isTrialActive: false,
+      isTrialExpired: false,
+    },
+  };
+}
+
+function repIncludedSilverAccountState(): CurrentSparkleFinderAccountState {
+  const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & { status: "authenticated" };
+
+  return {
+    ...base,
+    membership: {
+      ...base.membership!,
+      accessState: "silver_rep_included",
+      silverSource: "sparkle_suite_rep",
+      trialEndsAt: "2026-06-10T12:00:00.000Z",
+      silverEndsAt: null,
+      effectiveState: "silver_rep_included",
+      hasSilverAccess: true,
+      isTrialActive: false,
+      isTrialExpired: false,
     },
   };
 }

@@ -57,6 +57,7 @@ Buy/sell is parked for v1. These questions are for a later revisit:
 - Do reps get leads when customers want a piece a rep has listed?
 - Can reps browse customer wanted lists to source inventory?
 - Do reps moderate communities tied to their customers or teams?
+- Silver trial notification scaffold: account email is the first alert channel for 7-day, 3-day, 1-day, day-of-expiration, and downgrade-confirmation notices. No launch SMS trial alerts; SMS waits for explicit consent, provider selection, compliance review, and messaging cost controls.
 - Does the customer platform increase the value of rep subscription, create a separate customer revenue stream, or both?
 - What exact master live calendar features belong to Free browsing versus Silver follow/save/alert behavior?
 
@@ -76,5 +77,6 @@ Message boards and social posting are parked for v1. These questions are for a l
 - What disclaimers are needed to avoid implying Bomb Party affiliation?
 - What customer data retention policy applies to social profiles, trade history, reports, and deleted accounts?
 - Does customer-side messaging require new SMS/email consent flows separate from rep-site audience consent?
+- Trial expiration alerts should launch by account email first; SMS alerts should remain off until explicit customer consent, cost controls, and final compliance copy exist.
 - What privacy controls are required for collection visibility and location/shipping data?
 - What consumer protection obligations are triggered by inquiry-only trade facilitation vs processed transactions?
