@@ -93,6 +93,11 @@ function mapInvoices(invoices: unknown[]): AccountBillingInvoiceSummary[] {
   })
 }
 
+function getAccountBillingCheckoutMode(): AccountBillingDashboardResult['checkoutMode'] {
+  const mode = process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+  return mode === 'true' || mode === '1' ? 'test_buyer' : 'standard'
+}
+
 export async function getAccountBillingDashboard(args: {
   supabase: SupabaseClient
   repId: string
@@ -168,6 +173,7 @@ export async function getAccountBillingDashboard(args: {
 
   return {
     stripeConfigured,
+    checkoutMode: getAccountBillingCheckoutMode(),
     subscription,
     paymentMethod,
     invoices,

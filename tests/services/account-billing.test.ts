@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/stripe/client', () => ({
   stripeEnabled: vi.fn(),
@@ -7,6 +7,8 @@ vi.mock('@/lib/stripe/client', () => ({
 
 import { getAccountBillingDashboard } from '@/lib/services/account-billing'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
+
+const originalTestBuyerMode = process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
 
 function makeSelectSingle(response: { data: unknown; error: unknown }) {
   const single = vi.fn().mockResolvedValue(response)
@@ -26,6 +28,15 @@ describe('account billing service', () => {
   beforeEach(() => {
     vi.mocked(stripeEnabled).mockReset()
     vi.mocked(getStripe).mockReset()
+    delete process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+  })
+
+  afterEach(() => {
+    if (originalTestBuyerMode === undefined) {
+      delete process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+    } else {
+      process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = originalTestBuyerMode
+    }
   })
 
   it('returns an unsubscribed monthly-ready dashboard when no subscription exists', async () => {
@@ -50,6 +61,7 @@ describe('account billing service', () => {
 
     expect(result).toEqual({
       stripeConfigured: false,
+      checkoutMode: 'standard',
       subscription: null,
       paymentMethod: null,
       invoices: [],
@@ -146,6 +158,7 @@ describe('account billing service', () => {
     ])
     expect(result.canStartSubscription).toBe(false)
     expect(result.canManageBilling).toBe(true)
+    expect(result.checkoutMode).toBe('standard')
   })
 
   it('allows billing portal access when a Stripe customer exists before subscription activation', async () => {
@@ -188,5 +201,30 @@ describe('account billing service', () => {
     expect(result.invoices).toEqual([])
     expect(result.canStartSubscription).toBe(true)
     expect(result.canManageBilling).toBe(true)
+    expect(result.checkoutMode).toBe('standard')
+  })
+
+  it('reports local Stripe test buyer checkout mode for billing review copy', async () => {
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = 'true'
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: null,
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'subscriptions') return subscriptionsChain.api
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: null,
+    })
+
+    expect(result.checkoutMode).toBe('test_buyer')
   })
 })

@@ -434,6 +434,7 @@ export interface AccountBillingInvoiceSummary {
 
 export interface AccountBillingDashboardResult {
   stripeConfigured: boolean
+  checkoutMode: 'standard' | 'test_buyer'
   subscription: AccountBillingSubscriptionSummary | null
   paymentMethod: AccountBillingPaymentMethodSummary | null
   invoices: AccountBillingInvoiceSummary[]
