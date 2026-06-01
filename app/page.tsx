@@ -7,8 +7,7 @@ export const metadata: Metadata = {
   title: {
     absolute: 'Sparkle Suite',
   },
-  description:
-    'Make your live-show customer experience feel more polished with Sparkle Suite.',
+  description: 'A better customer experience starts with a better rep setup.',
   alternates: {
     canonical: '/',
   },
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Sparkle Suite',
     description:
-      'A polished customer-facing site and live-show tools for reps who want a cleaner customer experience.',
+      'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
     url: '/',
     siteName: 'Sparkle Suite',
     type: 'website',
@@ -35,8 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Sparkle Suite',
-    description:
-      'Make your live-show customer experience feel more polished with Sparkle Suite.',
+    description: 'A better customer experience starts with a better rep setup.',
     images: [
       {
         url: '/opengraph-image',
@@ -67,7 +65,7 @@ const sparkleSuiteJsonLd = {
       url: 'https://www.yoursparklesuite.com/',
       audience: {
         '@type': 'Audience',
-        audienceType: 'BP reps',
+        audienceType: 'reps',
       },
       offers: {
         '@type': 'Offer',

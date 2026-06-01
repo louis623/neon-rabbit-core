@@ -1484,6 +1484,178 @@
   white-space: normal;
 }
 
+.termsAcceptance {
+  border-top: 1px solid var(--nic-nac-border);
+  display: grid;
+  gap: 16px;
+  margin-top: 4px;
+  padding-top: 18px;
+}
+
+.checkoutReview {
+  border: 1px solid rgba(238, 44, 155, 0.18);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 250, 0.92), rgba(255, 255, 255, 0.84));
+  box-shadow: 0 16px 36px rgba(64, 41, 36, 0.07);
+  box-sizing: border-box;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  width: 100%;
+}
+
+.checkoutReviewHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.checkoutReviewKicker,
+.checkoutReviewLabel {
+  color: var(--nic-nac-accent);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.checkoutReviewTitle {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.checkoutReviewCopy,
+.checkoutReviewNote {
+  color: var(--nic-nac-text-secondary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.checkoutReviewList {
+  display: grid;
+  gap: 10px;
+}
+
+.checkoutReviewItem {
+  border-top: 1px solid rgba(64, 41, 36, 0.09);
+  display: grid;
+  gap: 5px;
+  padding-top: 10px;
+}
+
+.checkoutReviewValue {
+  color: var(--nic-nac-text-primary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.checkoutUnlocks {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(64, 41, 36, 0.08);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.checkoutUnlockList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkoutUnlockList li {
+  color: var(--nic-nac-text-primary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  min-width: 0;
+  padding-left: 14px;
+  position: relative;
+}
+
+.checkoutUnlockList li::before {
+  background: var(--nic-nac-accent);
+  border-radius: 999px;
+  content: '';
+  height: 5px;
+  left: 0;
+  position: absolute;
+  top: 0.55em;
+  width: 5px;
+}
+
+.termsReadRow {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  color: var(--nic-nac-text-secondary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.termsReadRow span {
+  min-width: min(100%, 260px);
+}
+
+.termsLink {
+  display: inline-flex;
+  color: var(--nic-nac-accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(238, 44, 155, 0.45);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.termsLink:hover {
+  color: var(--nic-nac-text-primary);
+  text-decoration-color: var(--nic-nac-accent);
+}
+
+.siteSettingsToggle {
+  align-items: flex-start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  color: var(--nic-nac-text-primary);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.siteSettingsToggle input {
+  height: 16px;
+  margin: 2px 0 0;
+  width: 16px;
+}
+
+.termsAcceptance + .actionRow {
+  margin-top: 4px;
+}
+
+@media (max-width: 680px) {
+  .checkoutUnlockList {
+    grid-template-columns: 1fr;
+  }
+}
+
 .statusBadge {
   border-radius: 999px;
   padding: 4px 10px;

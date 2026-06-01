@@ -1,3 +1,4 @@
+import { buildNicNacCoreKnowledgeText } from '@/lib/nic-nac/knowledge'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 
 type BuildPromptInput = {
@@ -23,6 +24,9 @@ Live provider guardrails:
 - No live SignWell sends.
 - No payment collection, webhook unlock, or billing-change claims.
 - No fulfillment/vendor automation claims.`
+
+const SHARED_KNOWLEDGE_PROMPT = `Shared Nic-Nac knowledge:
+${buildNicNacCoreKnowledgeText()}`
 
 const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   memory: `Memory tools:
@@ -110,12 +114,15 @@ export function buildNicNacSystemPrompt({
   const sections = uniqueIntents.map((intent) => INTENT_PROMPTS[intent])
   const toolList = activeToolNames.length ? activeToolNames.join(', ') : 'none'
 
-  return `${CORE_PROMPT}
-
-Active tools for this turn:
+  return [
+    CORE_PROMPT,
+    SHARED_KNOWLEDGE_PROMPT,
+    `Active tools for this turn:
 ${toolList}
 
-Only call tools in the active list. If the rep needs something outside the active list, answer naturally, ask a short clarifying question, or say the capability is not available on this turn.
-
-${sections.join('\n\n')}`
+Only call tools in the active list. If the rep needs something outside the active list, answer naturally, ask a short clarifying question, or say the capability is not available on this turn.`,
+    sections.join('\n\n'),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 }

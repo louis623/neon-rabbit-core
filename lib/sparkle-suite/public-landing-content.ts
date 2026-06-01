@@ -2,215 +2,121 @@ export const sparkleSuitePublicLandingSafety = {
   disclaimer:
     'Sparkle Suite is an independent tool for reps. We are not affiliated with, endorsed by, sponsored by, or officially connected to Bomb Party.',
   audienceClarifier:
-    'Sparkle Suite provides websites and customer-experience tools for BP reps.',
+    'Sparkle Suite is built for reps who want a more polished customer experience, smoother live shows, and less patchwork behind the scenes.',
 } as const
 
 export const sparkleSuitePublicLandingContent = {
   brand: 'Sparkle Suite',
+  sections: [
+    { id: 'hero', label: 'Hero' },
+    { id: 'workspace-proof', label: 'Workspace proof' },
+    { id: 'pricing', label: 'Pricing' },
+  ],
   nav: {
     links: [
-      { label: 'Features', href: '#tools' },
-      { label: 'How It Works', href: '#customers' },
-      { label: 'Examples', href: '#examples' },
-      { label: 'Help', href: '#faq' },
+      { label: 'Customer site', href: '#top' },
+      { label: 'Workspace', href: '#workspace-proof' },
       { label: 'Pricing', href: '#pricing' },
     ],
   },
   hero: {
-    headline: 'Make your Bomb Party customer experience feel more polished.',
+    eyebrow: 'Sparkle Suite for reps',
+    headline: 'A better customer experience starts with a better rep setup.',
     body:
-      'Sparkle Suite gives your customers a beautiful place to find your live shows, follow the queue, browse trades, get updates, and stay connected - all in one place.',
-    primaryCta: { label: 'Get Sparkle Suite', href: '#pricing' },
-    secondaryCta: { label: 'See What It Does', href: '#tools' },
-    productHeadline: 'Trade board',
-    productSubhead: 'Sparkle Suite workspace',
-    valueProps: [
-      {
-        title: 'Live shows',
-        body: 'they can find',
-      },
-      {
-        title: 'Queue updates',
-        body: 'they can follow',
-      },
-      {
-        title: 'Trade board',
-        body: 'they can use',
-      },
-      {
-        title: 'Updates',
-        body: 'they actually get',
-      },
-      {
-        title: 'Support with',
-        body: 'Nic-Nac',
-      },
-    ],
-    screens: [
-      {
-        id: 'site',
-        title: 'Upcoming Live Shows',
-        label: 'Thursday, May 29',
-        body: '8:00 PM',
-      },
-      {
-        id: 'queue',
-        title: 'Live queue',
-        label: 'Now serving',
-        body: 'Kayla',
-      },
-      {
-        id: 'trade',
-        title: 'Trade board',
-        label: 'ISO: Unicorn',
-        body: 'Have: Birthday',
-      },
-      {
-        id: 'calendar',
-        title: 'Live event',
-        label: 'Thursday, May 29',
-        body: '8:00 PM',
-      },
-      {
-        id: 'email',
-        title: 'Email updates',
-        label: 'Live Thursday 8 PM',
-        body: 'Reminder sent',
-      },
-      {
-        id: 'sms',
-        title: 'SMS updates',
-        label: 'Hi! Your spot is saved.',
-        body: 'Reminder sent',
-      },
-      {
-        id: 'nic-nac',
-        title: 'Ask Nic-Nac',
-        label: "Hi! I'm Nic-Nac.",
-        body: 'How can I help?',
-      },
-    ],
+      'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
+    primaryCta: { label: 'Level up your live stream', href: '/start' },
   },
-  comparison: {
-    heading: 'Less scattered. More polished.',
+  workspaceProof: {
+    eyebrow: 'Rep workspace',
+    heading: 'Run the show with less scramble behind the scenes.',
     body:
-      'Give your customers one beautiful place to follow along.',
-    beforeLabel: 'Before',
-    before: [
-      'Show details in posts',
-      'Queue questions in comments',
-      'Trade requests in messages',
-      'Reminders handled by hand',
-    ],
-    afterLabel: 'With Sparkle Suite',
-    after: [
-      'Shows are easier to find',
-      'The queue is easier to follow',
-      'Trades have a cleaner home',
-      'Updates feel more intentional',
-    ],
+      'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
   },
-  features: {
-    heading: 'The tools behind the smoother experience.',
-    body:
-      'Sparkle Suite is not just a prettier link page. It brings the customer-facing pieces of your live-show setup into one polished place.',
-    items: [
-      {
-        title: 'Trade board',
-        body:
-          'Give trade requests a cleaner place to live so customers can browse wants, haves, and pending trades without digging through messages.',
-      },
-      {
-        title: 'Live queue',
-        body:
-          'Help customers follow who is up now and who is coming next while your show keeps moving.',
-      },
-      {
-        title: 'Live event calendar',
-        body:
-          'Make upcoming lives, featured details, and show times easier for customers to find.',
-      },
-      {
-        title: 'Email updates',
-        body:
-          'Send clearer follow-through when customers need details after the live.',
-      },
-      {
-        title: 'SMS updates',
-        body:
-          'Send timely reminders when visibility matters and social posts are not enough.',
-      },
-      {
-        title: 'Nic-Nac',
-        body:
-          'Get practical setup and how-to help inside Sparkle Suite when you need it.',
-      },
-    ],
-  },
-  customers: {
-    heading: 'Customers should know where to go.',
-    body:
-      'When the next show, queue, trades, and updates all have a cleaner home, the whole experience feels easier to follow.',
-    steps: [
-      'Find the next show',
-      'Join or follow the queue',
-      'Browse trades',
-      'Get the update',
-    ],
-  },
-  reps: {
-    heading: 'Less repeating. More selling.',
-    body:
-      'Sparkle Suite does not run your business for you. It gives the repeat details a better place to live, so customers can find more answers without pulling you away from the show.',
-    points: [
-      {
-        title: 'Fewer repeated questions',
-        body: 'Show details, queue flow, and links are easier for customers to find.',
-      },
-      {
-        title: 'Cleaner follow-through',
-        body:
-          'Email and SMS updates help important details leave the chat and reach customers directly.',
-      },
-      {
-        title: 'Support when you need it',
-        body:
-          'Nic-Nac helps answer Sparkle Suite setup and how-to questions inside the workspace.',
-      },
-    ],
+  assets: {
+    customerMobile: {
+      src: '/sparkle-suite/landing/jane-customer-home-mobile.png',
+      alt: "Jane's Sparkle Party customer site preview on mobile.",
+    },
+    customerTradeMobile: {
+      src: '/sparkle-suite/landing/jane-customer-trade-mobile.png',
+      alt: "Jane's Sparkle Party trade board preview on mobile.",
+    },
+    customerDesktop: {
+      src: '/sparkle-suite/landing/jane-customer-home-desktop.png',
+      alt: "Jane's Sparkle Party customer site preview on desktop.",
+    },
+    workspaceDesktop: {
+      src: '/sparkle-suite/landing/workspace-proof-desktop.png',
+      alt: 'Sparkle Suite workspace setup checklist preview.',
+    },
+    workspaceMobile: {
+      src: '/sparkle-suite/landing/workspace-proof-mobile.png',
+      alt: 'Sparkle Suite mobile workspace setup preview.',
+    },
   },
   pricing: {
-    heading: 'Ready to make your customer experience feel more polished?',
+    eyebrow: 'Pricing',
+    heading: 'Time to level up.',
     body:
-      'Get Sparkle Suite, accept the agreement during checkout, and finish setup inside Sparkle Suite with Nic-Nac there to help.',
-    primaryCta: { label: 'Get Sparkle Suite', href: '/login' },
-    note:
-      'Checkout and setup access happen through your Sparkle Suite account.',
+      'If you have been waiting for a sign to stop piecing it together, this is it.',
+    buildFee: {
+      label: 'Sparkle Suite build fee',
+      price: '$49.99',
+      body: 'One-time and non-refundable, itemized separately at checkout.',
+    },
+    standard: {
+      label: 'Standard monthly',
+      badge: 'Current monthly rate',
+      price: '$74.99/month',
+      term: 'Monthly subscription from the start.',
+      firstCheckout: '$124.98 first checkout. Tax is not included in this price.',
+    },
+    included: [
+      'Customer site',
+      'Trade board',
+      'Live queue',
+      'Live event calendar',
+      'Email updates',
+      'SMS updates',
+      'Nic-Nac',
+    ],
+    primaryCta: { label: 'Start Sparkle Suite', href: '/start' },
+    sectionCta: { label: "I'm Ready to Level Up", href: '/start' },
   },
-  faq: [
-    {
-      question: 'What is Sparkle Suite?',
-      answer:
-        'Sparkle Suite gives reps a polished customer-facing site and live-show tools that help customers find shows, follow the queue, browse trades, get updates, and stay connected.',
+  publicNicNacAssistant: {
+    teaser: 'Still have questions? Ask Nic-Nac.',
+    body:
+      "Get quick answers about setup, pricing, what's included, and whether Sparkle Suite fits your live-show workflow.",
+    buttonLabel: 'Ask Nic-Nac',
+    panelTitle: 'Ask Nic-Nac',
+    panelIntro:
+      'Nic-Nac can answer public Sparkle Suite questions before you start checkout.',
+    starterQuestions: [
+      "What's included?",
+      'How does setup work?',
+      'Is Sparkle Suite affiliated with Bomb Party?',
+    ],
+    inputLabel: 'Your question',
+    inputPlaceholder: 'Ask about setup, pricing, included tools, or fit.',
+    submitLabel: 'Ask',
+    handoffLabels: {
+      name: 'Name',
+      email: 'Email',
+      question: 'Question for Louis',
+      submit: 'Save question here',
+      saved:
+        'Saved here for Louis to review. No email, text, calendar, payment, or provider action was triggered.',
     },
-    {
-      question: 'Who is it for?',
-      answer:
-        'Sparkle Suite is built for Bomb Party reps who want a cleaner customer experience and smoother live-show setup.',
-    },
-    {
-      question: 'What happens after I purchase?',
-      answer:
-        'You get access to Sparkle Suite, receive your setup links, and use Nic-Nac and the help/how-to resources to finish setup.',
-    },
-    {
-      question: 'Does Sparkle Suite replace the rep?',
-      answer:
-        'No. Sparkle Suite supports the customer experience and repeat details so reps can stay focused on their shows and customers.',
-    },
-    {
-      question: 'Is Sparkle Suite affiliated with Bomb Party?',
-      answer: sparkleSuitePublicLandingSafety.disclaimer,
-    },
-  ],
+  },
+  footer: {
+    links: [
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms and Conditions', href: '/terms-and-conditions' },
+    ],
+    socialLinks: [
+      { label: 'Sparkle Finder', href: '#' },
+      { label: 'YouTube', href: '#' },
+      { label: 'TikTok', href: '#' },
+    ],
+  },
 } as const

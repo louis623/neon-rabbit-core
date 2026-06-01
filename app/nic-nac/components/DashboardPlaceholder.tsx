@@ -26,6 +26,7 @@ import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
+import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
@@ -104,6 +105,52 @@ function mergeTradeBoardResults(
 }
 
 type WorkspaceSectionKey = (typeof WORKSPACE_SECTIONS)[number]['key']
+
+const WORKSPACE_SECTION_KEYS = new Set<string>(
+  WORKSPACE_SECTIONS.map((section) => section.key),
+)
+
+const UNPAID_WORKSPACE_SECTION_KEYS = new Set<WorkspaceSectionKey>([
+  'setup-checklist',
+  'help-resources',
+  'account',
+])
+
+export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey {
+  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+  const requested = params.get('section')?.trim() ?? ''
+  if (WORKSPACE_SECTION_KEYS.has(requested)) {
+    return requested as WorkspaceSectionKey
+  }
+  if (params.get('onboarding') === 'self-serve-started') {
+    return 'account'
+  }
+  return 'setup-checklist'
+}
+
+export function hasPaidWorkspaceSubscription(
+  summary: AccountBillingDashboardResult | null | undefined,
+) {
+  const status = summary?.subscription?.status
+  return status === 'active' || status === 'trialing' || status === 'past_due'
+}
+
+export function getVisibleWorkspaceSections(hasPaidWorkspace: boolean) {
+  if (hasPaidWorkspace) return WORKSPACE_SECTIONS
+  return WORKSPACE_SECTIONS.filter((section) =>
+    UNPAID_WORKSPACE_SECTION_KEYS.has(section.key),
+  )
+}
+
+export function resolveWorkspaceSectionForAccess(
+  section: WorkspaceSectionKey,
+  hasPaidWorkspace: boolean,
+): WorkspaceSectionKey {
+  if (hasPaidWorkspace || UNPAID_WORKSPACE_SECTION_KEYS.has(section)) {
+    return section
+  }
+  return 'account'
+}
 
 export type RosterFilter =
   | 'all'
@@ -320,6 +367,44 @@ const SITE_SKIN_GALLERY_FEATURED_CODES = [
   'VE-01',
   'RQ-01',
 ] as const
+
+const FIRST_START_SKIN_RECOMMENDATIONS = [
+  {
+    id: 'sparkle_suite_morganite',
+    label: 'Classic Sparkle',
+    reason: 'Best default for a polished Sparkle Suite launch.',
+  },
+  {
+    id: 'black_diamond',
+    label: 'Black Diamond',
+    reason: 'Stronger reveal-night contrast for bold live sellers.',
+  },
+  {
+    id: 'rose_gold',
+    label: 'Rose Gold',
+    reason: 'Soft, jewelry-forward warmth for boutique styling.',
+  },
+  {
+    id: 'garnet',
+    label: 'Garnet',
+    reason: 'Confident red accents for high-energy show branding.',
+  },
+] as const
+
+const SETUP_ACTION_BY_ID: Record<string, { label: string; target: WorkspaceSectionKey }> = {
+  'business-profile': { label: 'Continue in Site Settings', target: 'site-settings' },
+  'skin-and-branding': { label: 'Open Help & Resources', target: 'help-resources' },
+  'public-links': { label: 'Continue in Site Settings', target: 'site-settings' },
+  'site-copy': { label: 'Continue in Site Settings', target: 'site-settings' },
+  shows: { label: 'Open Calendar', target: 'show-calendar' },
+  'trade-board': { label: 'Open Trade Board', target: 'trade-board' },
+  calculator: { label: 'Open Calculator', target: 'business-calculator' },
+  'chrome-extension-live-queue': {
+    label: 'Open Help & Resources',
+    target: 'help-resources',
+  },
+  'publish-readiness': { label: 'Review live site', target: 'site-settings' },
+}
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -934,7 +1019,11 @@ export type DashboardPlaceholderProps = {
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const { repIdOverride, initialSiteSettings } = props
   const [activeSection, setActiveSection] =
-    useState<WorkspaceSectionKey>('setup-checklist')
+    useState<WorkspaceSectionKey>(() =>
+      typeof window === 'undefined'
+        ? 'setup-checklist'
+        : getInitialWorkspaceSection(window.location.search),
+    )
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
     status: 'loading',
   })
@@ -1298,6 +1387,51 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
+  async function loadPaidWorkspaceData(signal?: AbortSignal) {
+    await Promise.all([
+      loadAudience(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setAudienceState({ status: 'error' })
+      }),
+      loadWallet(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setWalletState({ status: 'error' })
+      }),
+      loadCalendar(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setCalendarState({ status: 'error' })
+      }),
+      loadSiteSettings(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setSiteSettingsState({ status: 'error' })
+      }),
+      loadTradeBoard(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setTradeBoardState({ status: 'error' })
+      }),
+      loadTradeRequests(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setTradeRequestsState({ status: 'error' })
+      }),
+      loadFulfillmentQueue(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setFulfillmentQueueState({ status: 'error' })
+      }),
+      loadTradeHistory(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setTradeHistoryState({ status: 'error' })
+      }),
+      loadMessages(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setMessagesState({ status: 'error' })
+      }),
+      loadAnalytics(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setAnalyticsState({ status: 'error' })
+      }),
+    ])
+  }
+
   useEffect(() => {
     const controller = new AbortController()
     let cancelled = false
@@ -1309,65 +1443,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           if ((error as { name?: string }).name === 'AbortError') return
           setRepProfileState({ status: 'error' })
         }),
-        loadAudience(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setAudienceState({ status: 'error' })
-        }),
-        loadWallet(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setWalletState({ status: 'error' })
-        }),
-        loadCalendar(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setCalendarState({ status: 'error' })
-        }),
-        loadSiteSettings(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setSiteSettingsState({ status: 'error' })
-        }),
         loadAccountBilling(controller.signal).catch((error) => {
           if (cancelled) return
           if ((error as { name?: string }).name === 'AbortError') return
           setAccountBillingState({ status: 'error' })
         }),
-        loadTradeBoard(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setTradeBoardState({ status: 'error' })
-        }),
-        loadTradeRequests(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setTradeRequestsState({ status: 'error' })
-        }),
-        loadFulfillmentQueue(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setFulfillmentQueueState({ status: 'error' })
-        }),
-        loadTradeHistory(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setTradeHistoryState({ status: 'error' })
-        }),
-        loadMessages(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setMessagesState({ status: 'error' })
-        }),
         loadResources(controller.signal).catch((error) => {
           if (cancelled) return
           if ((error as { name?: string }).name === 'AbortError') return
           setResourcesState({ status: 'error' })
-        }),
-        loadAnalytics(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setAnalyticsState({ status: 'error' })
         }),
       ])
     })()
@@ -1399,6 +1483,36 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         helperMessage: current.helperMessage ?? billingBannerMessage,
       }))
     }
+
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('billing') !== 'subscription-success') return
+    const sessionId = params.get('session_id')?.trim()
+
+    ;(async () => {
+      setAccountBillingActionState((current) => ({
+        ...current,
+        helperMessage:
+          current.helperMessage ?? 'Subscription checkout completed. Syncing billing status...',
+      }))
+
+      try {
+        const response = await fetch('/api/stripe/sync', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        })
+        if (!response.ok) return
+        await loadAccountBilling()
+      } catch {
+        setAccountBillingActionState((current) => ({
+          ...current,
+          helperMessage:
+            current.helperMessage ??
+            'Subscription checkout completed. Billing status will refresh in a moment.',
+        }))
+      }
+    })()
   }, [])
 
   useEffect(() => {
@@ -1930,6 +2044,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }, [])
 
+  useEffect(() => {
+    if (accountBillingState.status !== 'ready') return
+    if (!hasPaidWorkspaceSubscription(accountBillingState.summary)) return
+
+    const controller = new AbortController()
+    void loadPaidWorkspaceData(controller.signal)
+
+    return () => controller.abort()
+  }, [accountBillingState.status, accountBillingState.summary])
+
+  useEffect(() => {
+    if (accountBillingState.status !== 'ready') return
+    const hasPaidWorkspace = hasPaidWorkspaceSubscription(accountBillingState.summary)
+    const allowedSection = resolveWorkspaceSectionForAccess(
+      activeSection,
+      hasPaidWorkspace,
+    )
+    if (allowedSection !== activeSection) {
+      setActiveSection(allowedSection)
+    }
+  }, [accountBillingState.status, accountBillingState.summary, activeSection])
+
   async function handleQuickAddListing() {
     if (!quickAddItemNumber.trim()) {
       setTradeBoardActionState({
@@ -2287,6 +2423,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     siteSettingsState.settings,
     siteSettingsDraft,
   )
+  const hasPaidWorkspace = hasPaidWorkspaceSubscription(
+    accountBillingState.summary,
+  )
+  const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
 
   return (
     <main className={styles.main} data-workspace-skin={workspaceSkinPreset}>
@@ -2309,24 +2449,26 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               {headerExtensionId}
             </span>
           </div>
-          <a
-            className={styles.liveSiteButton}
-            href={customerSparkleSiteHref}
-            target="_blank"
-            rel="noreferrer"
-          >
-            View live site
-          </a>
+          {hasPaidWorkspace ? (
+            <a
+              className={styles.liveSiteButton}
+              href={customerSparkleSiteHref}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View live site
+            </a>
+          ) : null}
         </div>
       </header>
       <div className={styles.workspaceShell}>
         <aside className={styles.workspaceSidebar}>
           <div className={styles.workspaceSidebarTitle}>Dashboard</div>
           <div className={styles.workspaceSidebarIntro}>
-            Start with the setup checklist, then ask Nic-Nac when you want help doing the work with you.
+            Start with checkout review, then unlock the guided setup steps for your public site.
           </div>
           <nav className={styles.workspaceNav}>
-            {WORKSPACE_SECTIONS.map((section) => {
+            {visibleWorkspaceSections.map((section) => {
               const isLockedSection = 'locked' in section && section.locked
               return (
                 <button
@@ -2339,7 +2481,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                   } ${
                     isLockedSection ? styles.workspaceNavButtonLocked : ''
                   }`}
-                  onClick={() => setActiveSection(section.key)}
+                  onClick={() =>
+                    setActiveSection(
+                      resolveWorkspaceSectionForAccess(
+                        section.key,
+                        hasPaidWorkspace,
+                      ),
+                    )
+                  }
                 >
                   <span className={styles.workspaceNavLabelRow}>
                     <span className={styles.workspaceNavLabel}>{section.label}</span>
@@ -2358,11 +2507,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         <section className={styles.workspaceContent}>
           {activeSection === 'setup-checklist' ? (
             <div className={styles.workspaceSectionStack}>
-              <SetupChecklistCard />
+              <SetupChecklistCard
+                hasPaidWorkspace={hasPaidWorkspace}
+                onSelectSection={setActiveSection}
+              />
             </div>
           ) : null}
 
-          {activeSection === 'trade-board' ? (
+          {hasPaidWorkspace && activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
               visibleListings={visibleTradeListings}
@@ -2389,7 +2541,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             />
           ) : null}
 
-          {activeSection === 'jewelry-library' ? (
+          {hasPaidWorkspace && activeSection === 'jewelry-library' ? (
             <JewelryLibraryCard
               state={jewelryLibraryState}
               searchQuery={librarySearchQuery}
@@ -2400,25 +2552,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             />
           ) : null}
 
-          {activeSection === 'show-calendar' ? (
+          {hasPaidWorkspace && activeSection === 'show-calendar' ? (
             <div className={styles.workspaceSectionStack}>
               <ShowCalendarCard state={calendarState} />
             </div>
           ) : null}
 
-          {activeSection === 'business-calculator' ? (
+          {hasPaidWorkspace && activeSection === 'business-calculator' ? (
             <div className={styles.workspaceSectionStack}>
               <BusinessCalculatorCard />
             </div>
           ) : null}
 
-          {activeSection === 'team-management' ? (
+          {hasPaidWorkspace && activeSection === 'team-management' ? (
             <div className={styles.workspaceSectionStack}>
               <TeamManagementCard />
             </div>
           ) : null}
 
-          {activeSection === 'messages' ? (
+          {hasPaidWorkspace && activeSection === 'messages' ? (
             <div className={styles.workspaceSectionStack}>
               <MessagesCenterCard
                 state={messagesState}
@@ -2459,7 +2611,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
 
-          {activeSection === 'site-settings' ? (
+          {hasPaidWorkspace && activeSection === 'site-settings' ? (
             <div className={styles.workspaceSectionStack}>
               <SiteSettingsCard
                 state={siteSettingsState}
@@ -2475,7 +2627,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
           {activeSection === 'help-resources' ? (
             <div className={styles.workspaceSectionStack}>
-              <HelpResourcesCard state={resourcesState} />
+              <HelpResourcesCard
+                state={resourcesState}
+                hasPaidWorkspace={hasPaidWorkspace}
+              />
             </div>
           ) : null}
 
@@ -2490,16 +2645,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 agreementAccepted={subscriptionAgreementAccepted}
                 onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
               />
-              <WalletSummaryCard
-                state={walletState}
-                actionState={walletActionState}
-                autoRechargeDraft={autoRechargeDraft}
-                onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
-                onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
-                onLoadWallet={handleWalletLoad}
-                statusMessage={walletActionState.helperMessage}
-              />
-              <SiteAnalyticsCard state={analyticsState} />
+              {hasPaidWorkspace ? (
+                <>
+                  <WalletSummaryCard
+                    state={walletState}
+                    actionState={walletActionState}
+                    autoRechargeDraft={autoRechargeDraft}
+                    onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
+                    onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
+                    onLoadWallet={handleWalletLoad}
+                    statusMessage={walletActionState.helperMessage}
+                  />
+                  <SiteAnalyticsCard state={analyticsState} />
+                </>
+              ) : null}
             </div>
           ) : null}
         </section>
@@ -3216,14 +3375,25 @@ function MessagesCenterCard({
   )
 }
 
-function HelpResourcesCard({ state }: { state: ResourcesState }) {
+function HelpResourcesCard({
+  state,
+  hasPaidWorkspace,
+}: {
+  state: ResourcesState
+  hasPaidWorkspace: boolean
+}) {
+  const recommendedSkins = FIRST_START_SKIN_RECOMMENDATIONS.map((recommendation) => {
+    const skin = AMETHYST_SKIN_CARDS.find((candidate) => candidate.id === recommendation.id)
+    return skin ? { ...recommendation, skin } : null
+  }).filter((item): item is NonNullable<typeof item> => item !== null)
+
   return (
     <div className={styles.workspacePanel}>
       <div className={styles.workspaceSectionHeader}>
         <div>
           <div className={styles.cardTitle}>Help & Resources</div>
           <div className={styles.cardSubtitle}>
-            Short operating notes for the workflows reps ask about most.
+            Guided first-start steps first, then the full operating library.
           </div>
         </div>
       </div>
@@ -3231,7 +3401,49 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
         <>
           <div className={styles.siteSettingsSection}>
             <div className={styles.calendarHeader}>
-              <div className={styles.walletSettingsTitle}>Skin gallery</div>
+              <div>
+                <div className={styles.walletSettingsTitle}>Choose your look</div>
+                <div className={styles.helperNote}>
+                  Start with one of these recommended customer-site skins. You can
+                  tune the full gallery after checkout.
+                </div>
+              </div>
+              <span className={styles.rosterTag}>Recommended first picks</span>
+            </div>
+            <div className={styles.skinGallery}>
+              {recommendedSkins.map(({ label, reason, skin }) => (
+                <div key={skin.id} className={styles.skinCard}>
+                  <div className={styles.skinCardHeader}>
+                    <span className={styles.rosterTag}>{skin.code}</span>
+                    <span className={styles.customerName}>{label}</span>
+                  </div>
+                  <div className={styles.skinPreview} aria-hidden="true">
+                    <span
+                      className={styles.skinPreviewHero}
+                      style={{ background: skin.swatches[0]?.value }}
+                    />
+                    <span
+                      className={styles.skinPreviewCard}
+                      style={{
+                        borderColor: skin.swatches[1]?.value,
+                        background: skin.swatches[2]?.value,
+                      }}
+                    />
+                  </div>
+                  <div className={styles.helperNote}>{reason}</div>
+                  <div className={styles.timelineList}>
+                    <span className={styles.timelineItem}>
+                      {hasPaidWorkspace ? 'Ready to apply' : 'Ready after checkout'}
+                    </span>
+                    <span className={styles.timelineItem}>{skin.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={styles.siteSettingsSection}>
+            <div className={styles.calendarHeader}>
+              <div className={styles.walletSettingsTitle}>Full skin gallery</div>
               <span className={styles.rosterTag}>
                 Featured {SITE_SKIN_GALLERY_FEATURED_CODES.join(' / ')}
               </span>
@@ -3326,7 +3538,13 @@ function HelpResourcesCard({ state }: { state: ResourcesState }) {
   )
 }
 
-function SetupChecklistCard() {
+function SetupChecklistCard({
+  hasPaidWorkspace,
+  onSelectSection,
+}: {
+  hasPaidWorkspace: boolean
+  onSelectSection: (section: WorkspaceSectionKey) => void
+}) {
   const checklist = getSelfServeOnboardingChecklist()
 
   return (
@@ -3338,21 +3556,41 @@ function SetupChecklistCard() {
             First-run setup path for self-serve reps after purchase.
           </div>
         </div>
-        <span className={styles.rosterTag}>Nic-Nac guided</span>
+        <span className={styles.rosterTag}>After checkout</span>
       </div>
       <div className={styles.resourceList}>
-        {checklist.map((item, index) => (
-          <div key={item.id} className={styles.resourceCard}>
-            <div className={styles.badgeRow}>
-              <span className={styles.rosterTag}>Step {index + 1}</span>
+        {checklist.map((item, index) => {
+          const action = SETUP_ACTION_BY_ID[item.id] ?? {
+            label: 'Open setup step',
+            target: 'setup-checklist' as WorkspaceSectionKey,
+          }
+          const statusLabel = hasPaidWorkspace
+            ? 'Ready now'
+            : index < 3
+              ? 'Ready after checkout'
+              : 'Locked until checkout'
+
+          return (
+            <div key={item.id} className={styles.resourceCard}>
+              <div className={styles.badgeRow}>
+                <span className={styles.rosterTag}>Step {index + 1}</span>
+                <span className={styles.statusBadge}>{statusLabel}</span>
+              </div>
+              <div className={styles.customerName}>{item.title}</div>
+              <div className={styles.helperNote}>{item.description}</div>
+              <div className={styles.actionRow}>
+                <button
+                  type="button"
+                  className={styles.helperButton}
+                  disabled={!hasPaidWorkspace}
+                  onClick={() => onSelectSection(action.target)}
+                >
+                  {hasPaidWorkspace ? action.label : `${action.label} after checkout`}
+                </button>
+              </div>
             </div>
-            <div className={styles.customerName}>{item.title}</div>
-            <div className={styles.helperNote}>{item.description}</div>
-            <div className={styles.timelineList}>
-              <span className={styles.timelineItem}>{item.nicNacPrompt}</span>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -4070,6 +4308,39 @@ function formatCalculatorMoney(value: number) {
   }).format(value)
 }
 
+function isSparkleSuiteTestBuyerPreview() {
+  const mode = process.env.NEXT_PUBLIC_SPARKLE_STRIPE_TEST_BUYER_MODE
+  return mode === 'true' || mode === '1'
+}
+
+function getSparkleSuiteCheckoutReview(
+  checkoutMode?: AccountBillingDashboardResult['checkoutMode'],
+) {
+  const { pricing } = sparkleSuitePublicLandingContent
+  const testBuyerPreview =
+    checkoutMode === 'test_buyer' ||
+    (checkoutMode === undefined && isSparkleSuiteTestBuyerPreview())
+
+  return {
+    dueToday: testBuyerPreview
+      ? '50 cents in Stripe test mode. No real money moves.'
+      : `${pricing.buildFee.price} build fee + ${pricing.standard.price} first month before taxes or Stripe-calculated extras.`,
+    dueTodayNote: testBuyerPreview
+      ? 'Use this local-only path to feel the buyer flow before real checkout is turned on.'
+      : 'Stripe itemizes the build fee and monthly subscription before you pay.',
+    renewal: testBuyerPreview
+      ? '50 cents per month in Stripe test mode until cancelled.'
+      : `${pricing.standard.price} after the first checkout until cancelled.`,
+    cancellation: 'Cancel anytime from billing. Access continues through the paid billing period.',
+    included: [
+      'Customer-facing site',
+      'Trade board / dance floor',
+      'LiveQ',
+      ...pricing.included.slice(3),
+    ],
+  }
+}
+
 export function AccountBillingCard({
   state,
   actionState,
@@ -4122,17 +4393,22 @@ export function AccountBillingCard({
   const paymentMethodLabel = summary.paymentMethod
     ? `${summary.paymentMethod.brand} ending in ${summary.paymentMethod.last4}`
     : 'No card on file yet.'
+  const checkoutReview = getSparkleSuiteCheckoutReview(summary.checkoutMode)
 
   return (
     <div className={styles.accountBillingCard}>
       <div className={styles.accountBillingHeader}>
         <div>
           <div className={styles.walletSettingsTitle}>Billing</div>
-          <div className={styles.accountMuted}>Monthly plan - Cancel anytime</div>
+          <div className={styles.accountMuted}>
+            Build fee + monthly plan - cancel anytime
+          </div>
         </div>
         <span className={styles.accountStatusBadge}>{subscriptionTitle}</span>
       </div>
 
+      {!summary.canStartSubscription ? (
+        <>
       <div className={styles.accountDetailList}>
         <div className={styles.accountDetailRow}>
           <div className={styles.walletTransactionCopy}>
@@ -4188,6 +4464,8 @@ export function AccountBillingCard({
           )}
         </div>
       </div>
+        </>
+      ) : null}
 
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
@@ -4197,19 +4475,82 @@ export function AccountBillingCard({
       ) : null}
 
       {summary.canStartSubscription ? (
-        <label className={styles.siteSettingsToggle}>
-          <input
-            type="checkbox"
-            checked={agreementAccepted}
-            onChange={(event) =>
-              onAgreementAcceptedChange?.(event.currentTarget.checked)
-            }
-          />
-          <span>
-            I have read and accept the Sparkle Suite{' '}
-            <a href="/terms-and-conditions">Terms and Conditions</a>.
-          </span>
-        </label>
+        <div className={styles.termsAcceptance}>
+          <section
+            className={styles.checkoutReview}
+            aria-label="Sparkle Suite checkout review"
+          >
+            <div className={styles.checkoutReviewHeader}>
+              <span className={styles.checkoutReviewKicker}>Before checkout</span>
+              <h3 className={styles.checkoutReviewTitle}>
+                Review your Sparkle Suite plan
+              </h3>
+              <p className={styles.checkoutReviewCopy}>
+                Stripe shows the final checkout details before you pay. Checkout
+                alone does not send customer texts, emails, calendar changes, or
+                provider messages.
+              </p>
+            </div>
+
+            <div className={styles.checkoutReviewList}>
+              <div className={styles.checkoutReviewItem}>
+                <span className={styles.checkoutReviewLabel}>Due today</span>
+                <span className={styles.checkoutReviewValue}>
+                  {checkoutReview.dueToday}
+                </span>
+                <span className={styles.checkoutReviewNote}>
+                  {checkoutReview.dueTodayNote}
+                </span>
+              </div>
+              <div className={styles.checkoutReviewItem}>
+                <span className={styles.checkoutReviewLabel}>Renews</span>
+                <span className={styles.checkoutReviewValue}>
+                  {checkoutReview.renewal}
+                </span>
+              </div>
+              <div className={styles.checkoutReviewItem}>
+                <span className={styles.checkoutReviewLabel}>Cancel policy</span>
+                <span className={styles.checkoutReviewValue}>
+                  {checkoutReview.cancellation}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.checkoutUnlocks}>
+              <span className={styles.checkoutReviewLabel}>
+                After checkout unlocks
+              </span>
+              <ul className={styles.checkoutUnlockList}>
+                {checkoutReview.included.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <div className={styles.termsReadRow}>
+            <span>Read the Sparkle Suite terms before checkout.</span>
+            <a
+              className={styles.termsLink}
+              href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount%26onboarding%3Dself-serve-started"
+            >
+              Read Terms and Conditions
+            </a>
+          </div>
+          <label className={styles.siteSettingsToggle}>
+            <input
+              type="checkbox"
+              checked={agreementAccepted}
+              onChange={(event) =>
+                onAgreementAcceptedChange?.(event.currentTarget.checked)
+              }
+            />
+            <span>
+              I understand today&apos;s charge, the monthly renewal, and the
+              cancel policy, and I accept the Sparkle Suite terms.
+            </span>
+          </label>
+        </div>
       ) : null}
 
       <div className={styles.actionRow}>
@@ -4221,11 +4562,11 @@ export function AccountBillingCard({
             disabled={actionState?.pendingAction !== null || !agreementAccepted}
           >
             {actionState?.pendingAction === 'subscribe'
-              ? 'Opening checkout…'
-              : 'Start monthly subscription'}
+              ? 'Opening checkout...'
+              : 'Continue to secure Stripe checkout'}
           </button>
         ) : null}
-        {summary.canManageBilling ? (
+        {summary.canManageBilling && !summary.canStartSubscription ? (
           <button
             type="button"
             className={styles.actionButton}
@@ -4233,7 +4574,7 @@ export function AccountBillingCard({
             disabled={actionState?.pendingAction !== null}
           >
             {actionState?.pendingAction === 'manage'
-              ? 'Opening portal…'
+              ? 'Opening portal...'
               : 'Manage billing and cancel'}
           </button>
         ) : null}

@@ -19,6 +19,10 @@ import {
   getAutoRechargeAmountOptions,
   getAutoRechargeDraft,
   getAutoRechargeThresholdOptions,
+  getInitialWorkspaceSection,
+  getVisibleWorkspaceSections,
+  hasPaidWorkspaceSubscription,
+  resolveWorkspaceSectionForAccess,
   filterRosterCustomers,
   getWalletBannerMessage,
   getWalletLoadOptions,
@@ -269,6 +273,7 @@ const ACCOUNT_BILLING_READY_STATE = {
   status: 'ready' as const,
   summary: {
     stripeConfigured: true,
+    checkoutMode: 'standard' as const,
     subscription: {
       status: 'active' as const,
       planType: 'monthly' as const,
@@ -372,23 +377,62 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Sparkle Suite workspace')
     expect(html).toContain('Rep / show')
     expect(html).toContain('Extension code')
-    expect(html).toContain('View live site')
-    expect(html).toContain('href="/amethyst/Homepage.html"')
+    expect(html).not.toContain('View live site')
+    expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
     expect(html).toContain('Setup Checklist')
     expect(html).toContain('Confirm business/profile basics')
     expect(html).toContain('Understand the Chrome extension and Live Queue')
-    expect(html).toContain('Trade Board')
-    expect(html).toContain('Jewelry Library')
-    expect(html).toContain('Calendar')
-    expect(html).toContain('Business Calculator')
-    expect(html).toContain('Team Management')
-    expect(html).toContain('Messages')
-    expect(html).toContain('Site Settings')
+    expect(html).not.toContain('Trade Board</span>')
+    expect(html).not.toContain('Jewelry Library')
+    expect(html).not.toContain('Calendar</span>')
+    expect(html).not.toContain('Business Calculator')
+    expect(html).not.toContain('Team Management')
+    expect(html).not.toContain('Messages</span>')
+    expect(html).not.toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
-    expect(html).toContain('Listings, requests, queue, and history')
+    expect(html).not.toContain('Listings, requests, queue, and history')
     expect(html).not.toContain('I confirm I own the piece')
+  })
+
+  it('can deep-link new self-serve reps to account billing after signup', () => {
+    expect(
+      getInitialWorkspaceSection('?section=account&onboarding=self-serve-started'),
+    ).toBe('account')
+    expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
+    expect(getInitialWorkspaceSection('?section=unknown')).toBe('setup-checklist')
+    expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
+      'account',
+    )
+  })
+
+  it('limits unpaid self-serve reps to setup, help, and account sections', () => {
+    expect(hasPaidWorkspaceSubscription(null)).toBe(false)
+    expect(
+      hasPaidWorkspaceSubscription({
+        ...ACCOUNT_BILLING_READY_STATE.summary,
+        subscription: null,
+      }),
+    ).toBe(false)
+    expect(
+      hasPaidWorkspaceSubscription({
+        ...ACCOUNT_BILLING_READY_STATE.summary,
+        subscription: {
+          ...ACCOUNT_BILLING_READY_STATE.summary.subscription!,
+          status: 'active',
+        },
+      }),
+    ).toBe(true)
+    expect(getVisibleWorkspaceSections(false).map((section) => section.key)).toEqual([
+      'setup-checklist',
+      'help-resources',
+      'account',
+    ])
+    expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('account')
+    expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe(
+      'help-resources',
+    )
   })
 
   it('renders the locked team management add-on skeleton', () => {
@@ -485,6 +529,16 @@ describe('DashboardPlaceholder', () => {
     expect(styles).toContain('--workspace-accent')
     expect(styles).not.toContain('--nic-nac-accent: #9333EA')
     expect(styles).not.toContain(".main[data-workspace-skin='velvet'] .nic")
+  })
+
+  it('keeps the workspace Nic-Nac glyph backed by the shared mark', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/NicNacGlyph.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain("from '@/app/_components/nic-nac-mark'")
+    expect(source).toContain('NicNacMark')
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {
@@ -968,8 +1022,8 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Monthly plan')
-    expect(html).toContain('Cancel anytime')
+    expect(html).toContain('Build fee + monthly plan')
+    expect(html).toContain('cancel anytime')
     expect(html).toContain('Active')
     expect(html).toContain('Scheduled to end')
     expect(html).toContain('visa ending in 4242')
@@ -991,6 +1045,116 @@ describe('DashboardPlaceholder', () => {
             paymentMethod: null,
             invoices: [],
             canStartSubscription: true,
+            canManageBilling: true,
+          },
+        },
+        agreementAccepted: false,
+      }),
+    )
+
+    expect(html).toContain('Build fee + monthly plan')
+    expect(html).toContain('Before checkout')
+    expect(html).toContain('Review your Sparkle Suite plan')
+    expect(html).toContain('$49.99 build fee + $74.99/month first month')
+    expect(html).toContain('Stripe itemizes the build fee and monthly subscription')
+    expect(html).toContain('$74.99/month after the first checkout until cancelled.')
+    expect(html).toContain('Cancel anytime from billing.')
+    expect(html).toContain('After checkout unlocks')
+    expect(html).toContain('Customer-facing site')
+    expect(html).toContain('Trade board / dance floor')
+    expect(html).toContain('Checkout alone does not send customer texts')
+    expect(html).toContain('Read the Sparkle Suite terms before checkout.')
+    expect(html).toContain('Read Terms and Conditions')
+    expect(html).toContain(
+      'I understand today&#x27;s charge, the monthly renewal, and the cancel policy',
+    )
+    expect(html).toContain('_termsLink_')
+    expect(html).toContain(
+      'href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount%26onboarding%3Dself-serve-started"',
+    )
+    expect(html).not.toContain('target="_blank"')
+    expect(html).toContain('Continue to secure Stripe checkout')
+    expect(html).not.toContain('Manage billing and cancel')
+    expect(html).toContain('disabled=""')
+  })
+
+  it('hides empty billing admin states during unpaid checkout review', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            paymentMethod: null,
+            invoices: [],
+            canStartSubscription: true,
+            canManageBilling: true,
+          },
+        },
+        agreementAccepted: false,
+      }),
+    )
+
+    expect(html).toContain('Review your Sparkle Suite plan')
+    expect(html).not.toContain('Subscription</span>')
+    expect(html).not.toContain('Payment method')
+    expect(html).not.toContain('Billing history')
+    expect(html).not.toContain('No card on file yet.')
+    expect(html).not.toContain('Billing history will appear after your first Stripe invoice.')
+  })
+
+  it('renders setup checklist rows with statuses and post-checkout actions without depending on Ask Nic-Nac', () => {
+    const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
+
+    expect(html).toContain('Locked until checkout')
+    expect(html).toContain('Ready after checkout')
+    expect(html).toContain('Continue in Site Settings')
+    expect(html).toContain('Open Help &amp; Resources')
+    expect(html).toContain('After checkout')
+    expect(html).not.toContain('Ask Nic-Nac')
+  })
+
+  it('shows first-start help as a curated choose-your-look step before the full skin gallery', () => {
+    const previousWindow = globalThis.window
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { location: { search: '?section=help-resources&onboarding=self-serve-started' } },
+    })
+
+    try {
+      const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
+      const chooseIndex = html.indexOf('Choose your look')
+      const galleryIndex = html.indexOf('Full skin gallery')
+
+      expect(chooseIndex).toBeGreaterThanOrEqual(0)
+      expect(galleryIndex).toBeGreaterThanOrEqual(0)
+      expect(chooseIndex).toBeLessThan(galleryIndex)
+      expect(html).toContain('Recommended first picks')
+      expect(html).toContain('Classic Sparkle')
+      expect(html).toContain('Black Diamond')
+      expect(html).toContain('Rose Gold')
+      expect(html).toContain('Garnet')
+    } finally {
+      Object.defineProperty(globalThis, 'window', {
+        configurable: true,
+        value: previousWindow,
+      })
+    }
+  })
+
+  it('renders local test buyer checkout pricing when the billing summary is in test mode', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            checkoutMode: 'test_buyer',
+            subscription: null,
+            paymentMethod: null,
+            invoices: [],
+            canStartSubscription: true,
             canManageBilling: false,
           },
         },
@@ -998,11 +1162,29 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('I have read and accept the Sparkle Suite')
-    expect(html).toContain('Terms and Conditions')
-    expect(html).toContain('href="/terms-and-conditions"')
-    expect(html).toContain('Start monthly subscription')
-    expect(html).toContain('disabled=""')
+    expect(html).toContain('50 cents in Stripe test mode. No real money moves.')
+    expect(html).toContain(
+      'Use this local-only path to feel the buyer flow before real checkout is turned on.',
+    )
+    expect(html).toContain(
+      '50 cents per month in Stripe test mode until cancelled.',
+    )
+  })
+
+  it('syncs Stripe billing when returning from subscription checkout', () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.tsx',
+      ),
+      'utf8',
+    )
+
+    expect(source).toContain("params.get('billing') !== 'subscription-success'")
+    expect(source).toContain("params.get('session_id')?.trim()")
+    expect(source).toContain("fetch('/api/stripe/sync'")
+    expect(source).toContain('body: JSON.stringify({ sessionId })')
+    expect(source).toContain('await loadAccountBilling()')
   })
 
   it('renders static skin browsing cards for low-cost appearance selection', () => {
@@ -1012,7 +1194,7 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(source).toContain('AMETHYST_SKIN_CARDS')
-    expect(source).toContain('Skin gallery')
+    expect(source).toContain('Full skin gallery')
     expect(source).toContain('skin.code')
     expect(source).toContain('SS-01')
     expect(source).toContain('BD-01')

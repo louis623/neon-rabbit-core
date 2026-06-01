@@ -2,8 +2,7 @@ import {
   sparkleSuitePublicLandingContent,
   sparkleSuitePublicLandingSafety,
 } from '@/lib/sparkle-suite/public-landing-content'
-
-type ProductScreen = (typeof sparkleSuitePublicLandingContent.hero.screens)[number]
+import { SparkleSuitePublicNicNac } from './sparkle-suite-public-nic-nac'
 
 function SparkleSeal({ className }: { className?: string }) {
   return (
@@ -42,450 +41,178 @@ function LandingButton({
   variant?: 'primary' | 'ghost'
 }) {
   return (
-    <a className={`sl-btn sl-btn--${variant}`} href={href}>
+    <a className={`sl2-btn sl2-btn--${variant}`} href={href}>
       {label}
-      {variant === 'primary' ? (
-        <span aria-hidden="true" className="sl-btn__arrow">
-          -&gt;
-        </span>
-      ) : null}
     </a>
   )
 }
 
-function SparkleIcon({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 24 24">
-      <path
-        d="M12 3v18M5 7h14M6 17h12M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  )
-}
-
-function ProductMiniScreen({
-  screen,
-}: {
-  screen: ProductScreen
-}) {
-  const action =
-    screen.id === 'queue'
-      ? 'View full queue'
-      : screen.id === 'trade'
-        ? 'View all trades'
-        : screen.id === 'calendar'
-          ? 'Add to calendar'
-          : screen.id === 'email'
-            ? 'Manage emails'
-            : screen.id === 'sms'
-              ? 'Manage texts'
-              : 'Browse help'
-
-  return (
-    <article
-      className={`sl-product-card sl-depth-object sl-depth-object--${screen.id} sl-product-card--${screen.id}`}
-    >
-      <div className="sl-product-card__top">
-        <SparkleIcon className="sl-product-card__icon" />
-        <h3>{screen.title}</h3>
-      </div>
-      <MiniScreenBody screen={screen} />
-      <a href="#tools">
-        {action}
-        <span aria-hidden="true">-&gt;</span>
-      </a>
-    </article>
-  )
-}
-
-function MiniScreenBody({ screen }: { screen: ProductScreen }) {
-  if (screen.id === 'queue') {
-    return (
-      <div className="sl-product-card__body sl-mini-queue">
-        <div>
-          <span>Now serving</span>
-          <strong>{screen.body}</strong>
-          <b>12</b>
-        </div>
-        <div>
-          <span>Up next</span>
-          <strong>Amanda</strong>
-          <b>13</b>
-        </div>
-        <div>
-          <span>After that</span>
-          <strong>Jessica</strong>
-          <b>14</b>
-        </div>
-      </div>
-    )
-  }
-
-  if (screen.id === 'trade') {
-    return (
-      <div className="sl-product-card__body sl-mini-trades">
-        <div>
-          <strong>ISO</strong>
-          <span>Have</span>
-        </div>
-        <p>{screen.label}</p>
-        <p>ISO: Stackers</p>
-        <p>{screen.body}</p>
-      </div>
-    )
-  }
-
-  if (screen.id === 'calendar') {
-    return (
-      <div className="sl-product-card__body sl-mini-action">
-        <span>{screen.label}</span>
-        <strong>{screen.body}</strong>
-        <button type="button">Next show saved</button>
-      </div>
-    )
-  }
-
-  if (screen.id === 'email' || screen.id === 'sms') {
-    return (
-      <div className="sl-product-card__body sl-mini-action">
-        <span>{screen.label}</span>
-        <strong>{screen.body}</strong>
-        <button type="button">Reminder sent</button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="sl-product-card__body sl-mini-action">
-      <span>{screen.label}</span>
-      <strong>{screen.body}</strong>
-      <button type="button">Ask a question</button>
-    </div>
-  )
-}
-
-function ProductScreenCascade() {
-  const { hero } = sparkleSuitePublicLandingContent
-
-  return (
-    <div
-      aria-label="Sparkle Suite product previews"
-      className="sl-product-universe sl-cascade sl-product-scene"
-    >
-      <div className="sl-product-stage">
-        <article className="sl-browser-card sl-depth-object sl-depth-object--screen">
-          <div className="sl-browser-card__chrome">
-            <SparkleSeal className="sl-browser-card__seal" />
-            <nav aria-label="Sparkle Suite workspace navigation">
-              <span>Shows</span>
-              <span>Queue</span>
-              <span className="is-active">Trade board</span>
-              <span>Updates</span>
-              <span>Nic-Nac</span>
-            </nav>
-            <span>Workspace</span>
-          </div>
-          <div
-            aria-label="Sparkle Suite workspace with the Trade board tab open"
-            className="sl-workspace-preview"
-          >
-            <aside className="sl-workspace-sidebar" aria-label="Workspace sections">
-              <SparkleSeal className="sl-workspace-sidebar__seal" />
-              <span>Home</span>
-              <span>Live shows</span>
-              <span>Live queue</span>
-              <span className="is-active">Trade board</span>
-              <span>Updates</span>
-            </aside>
-            <section className="sl-workspace-main">
-              <div className="sl-workspace-head">
-                <div>
-                  <span>Sparkle Suite workspace</span>
-                  <h3>Trade board</h3>
-                </div>
-                <button type="button">New trade</button>
-              </div>
-              <div className="sl-workspace-stats" aria-label="Trade board summary">
-                {[
-                  ['Open ISO', '8'],
-                  ['Matches', '3'],
-                  ['Pending', '5'],
-                ].map(([label, value]) => (
-                  <div className="sl-workspace-stat" key={label}>
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                  </div>
-                ))}
-              </div>
-              <div className="sl-trade-board-snapshot" aria-label="Trade board requests">
-                <div className="sl-trade-board-tabs" aria-hidden="true">
-                  <span className="is-active">ISO</span>
-                  <span>Have</span>
-                  <span>Pending</span>
-                </div>
-                {[
-                  ['ISO', 'Unicorn', 'Kayla', 'Open'],
-                  ['Have', 'Birthday', 'Amanda', 'Matched'],
-                  ['ISO', 'Stackers', 'Jessica', 'Pending'],
-                ].map(([type, item, rep, status]) => (
-                  <div className="sl-trade-row" key={`${type}-${item}`}>
-                    <b>{type}</b>
-                    <strong>{item}</strong>
-                    <span>{rep}</span>
-                    <em>{status}</em>
-                  </div>
-                ))}
-              </div>
-            </section>
-            <aside className="sl-workspace-rail" aria-label="Workspace support">
-              <div className="sl-workspace-note">
-                <span>Nic-Nac</span>
-                <strong>Trade board looks tidy.</strong>
-              </div>
-              <div className="sl-workspace-reminder">
-                <span>Next live</span>
-                <strong>Thursday, 8 PM</strong>
-              </div>
-            </aside>
-          </div>
-        </article>
-        <div aria-hidden="true" className="sl-connector sl-connector--queue" />
-        <div aria-hidden="true" className="sl-connector sl-connector--trade" />
-        <div aria-hidden="true" className="sl-connector sl-connector--updates" />
-        {hero.screens.slice(1).map((screen) => (
-          <ProductMiniScreen key={screen.id} screen={screen} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function LandingHeader() {
+  const { brand, nav } = sparkleSuitePublicLandingContent
+
   return (
-    <header className="sl-header">
-      <a aria-label="Sparkle Suite home" className="sl-brand" href="#top">
-        <SparkleSeal className="sl-brand__seal" />
-        <span>{sparkleSuitePublicLandingContent.brand}</span>
+    <header className="sl2-header">
+      <a aria-label="Sparkle Suite home" className="sl2-brand" href="#top">
+        <SparkleSeal className="sl2-brand__seal" />
+        <span>{brand}</span>
       </a>
       <nav aria-label="Sparkle Suite landing page">
-        {sparkleSuitePublicLandingContent.nav.links.map((link) => (
+        {nav.links.map((link) => (
           <a href={link.href} key={link.href}>
             {link.label}
           </a>
         ))}
       </nav>
-      <div className="sl-header__actions">
-        <a href="/login">Sign In</a>
-        <LandingButton href="#pricing" label="Get Sparkle Suite" />
+      <div className="sl2-header__actions">
+        <span>Already have Sparkle Suite?</span>
+        <a href="/login">Sign in here.</a>
       </div>
     </header>
   )
 }
 
-function LandingHero() {
-  const { hero } = sparkleSuitePublicLandingContent
-  const [headlineLead, headlineAccent = ''] = hero.headline.split('feel more ')
+function ProductHero() {
+  const { hero, assets } = sparkleSuitePublicLandingContent
 
   return (
-    <>
-      <section className="sl-hero" id="top">
-        <div className="sl-hero__copy">
-          <h1>
-            {headlineLead}feel more <em>{headlineAccent}</em>
-          </h1>
-          <p>{hero.body}</p>
-          <div className="sl-actions">
-            <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
-            <LandingButton
-              href={hero.secondaryCta.href}
-              label={hero.secondaryCta.label}
-              variant="ghost"
-            />
-          </div>
-          <div className="sl-value-row">
-            {hero.valueProps.map((item) => (
-              <article key={`${item.title}-${item.body}`}>
-                <SparkleIcon className="sl-value-row__icon" />
-                <strong>{item.title}</strong>
-                <span>{item.body}</span>
-              </article>
-            ))}
-          </div>
-        </div>
-        <ProductScreenCascade />
-      </section>
-    </>
-  )
-}
-
-function ComparisonBand() {
-  const { comparison } = sparkleSuitePublicLandingContent
-
-  return (
-    <section aria-labelledby="comparison-heading" className="sl-comparison">
-      <div className="sl-comparison__copy">
-        <h2 id="comparison-heading">{comparison.heading}</h2>
-        <p>{comparison.body}</p>
+    <section className="sl2-hero" id="top">
+      <div className="sl2-hero__copy">
+        <span className="sl2-eyebrow">{hero.eyebrow}</span>
+        <h1>{hero.headline}</h1>
+        <p>{hero.body}</p>
+        <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
       </div>
-      <div className="sl-comparison__grid">
-        <article>
-          <span>{comparison.beforeLabel}</span>
-          <ul>
-            {comparison.before.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </article>
-        <article className="is-after">
-          <span>{comparison.afterLabel}</span>
-          <ul>
-            {comparison.after.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </article>
+      <div className="sl2-product-stack" aria-label="Real Sparkle Suite customer site previews">
+        <img
+          className="sl2-shot sl2-shot--customer"
+          src={assets.customerMobile.src}
+          alt={assets.customerMobile.alt}
+        />
+        <img
+          className="sl2-shot sl2-shot--trade"
+          src={assets.customerTradeMobile.src}
+          alt={assets.customerTradeMobile.alt}
+        />
+        <img
+          className="sl2-shot sl2-shot--landing"
+          src={assets.customerDesktop.src}
+          alt={assets.customerDesktop.alt}
+        />
       </div>
     </section>
   )
 }
 
-function FeatureProof() {
-  const { features } = sparkleSuitePublicLandingContent
+function WorkspaceProof() {
+  const { workspaceProof, assets } = sparkleSuitePublicLandingContent
 
   return (
-    <section aria-labelledby="features-heading" className="sl-section sl-features" id="tools">
-      <div className="sl-section__head">
-        <h2 id="features-heading">{features.heading}</h2>
-        <p>{features.body}</p>
+    <section className="sl2-workspace-proof" id="workspace-proof">
+      <div className="sl2-workspace-proof__copy">
+        <span className="sl2-eyebrow">{workspaceProof.eyebrow}</span>
+        <h2>{workspaceProof.heading}</h2>
+        <p>{workspaceProof.body}</p>
       </div>
-      <div className="sl-feature-grid">
-        {features.items.map((feature, index) => (
-          <article className="sl-feature-card" key={feature.title}>
-            <span className="sl-feature-card__num">{String(index + 1).padStart(2, '0')}</span>
-            <h3>{feature.title}</h3>
-            <p>{feature.body}</p>
-          </article>
-        ))}
+      <div
+        className="sl2-workspace-proof__shots"
+        aria-label="Real Sparkle Suite workspace previews"
+      >
+        <img src={assets.workspaceDesktop.src} alt={assets.workspaceDesktop.alt} />
+        <img src={assets.workspaceMobile.src} alt={assets.workspaceMobile.alt} />
       </div>
     </section>
   )
 }
 
-function CustomerPath() {
-  const { customers } = sparkleSuitePublicLandingContent
-
-  return (
-    <section
-      aria-labelledby="customers-heading"
-      className="sl-section sl-customer-path"
-      id="customers"
-    >
-      <div className="sl-section__head">
-        <h2 id="customers-heading">{customers.heading}</h2>
-        <p>{customers.body}</p>
-      </div>
-      <ol className="sl-path">
-        {customers.steps.map((step, index) => (
-          <li key={step}>
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            {step}
-          </li>
-        ))}
-      </ol>
-    </section>
-  )
-}
-
-function RepRelief() {
-  const { reps } = sparkleSuitePublicLandingContent
-
-  return (
-    <section aria-labelledby="rep-heading" className="sl-section sl-rep-relief">
-      <div>
-        <h2 id="rep-heading">{reps.heading}</h2>
-        <p>{reps.body}</p>
-      </div>
-      <div className="sl-relief-list">
-        {reps.points.map((point) => (
-          <article key={point.title}>
-            <h3>{point.title}</h3>
-            <p>{point.body}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function PricingCta() {
+function PricingSection() {
   const { pricing } = sparkleSuitePublicLandingContent
+  const firstCheckoutPrice = pricing.standard.firstCheckout.split(' first checkout')[0]
+  const firstCheckoutNote = pricing.standard.firstCheckout
+    .replace(`${firstCheckoutPrice} first checkout`, '')
+    .replace(/^[\s.]+/, '')
+    .replace(/\.$/, '')
 
   return (
-    <section aria-labelledby="pricing-heading" className="sl-pricing" id="pricing">
-      <div>
-        <h2 id="pricing-heading">{pricing.heading}</h2>
+    <section className="sl2-pricing" id="pricing">
+      <div className="sl2-pricing__intro">
+        <span className="sl2-eyebrow">{pricing.eyebrow}</span>
+        <h2>{pricing.heading}</h2>
         <p>{pricing.body}</p>
-        <p className="sl-pricing__note">{pricing.note}</p>
       </div>
-      <LandingButton href={pricing.primaryCta.href} label={pricing.primaryCta.label} />
-    </section>
-  )
-}
-
-function LandingFaq() {
-  const { faq } = sparkleSuitePublicLandingContent
-
-  return (
-    <section aria-labelledby="faq-heading" className="sl-section sl-faq" id="faq">
-      <div className="sl-section__head">
-        <h2 id="faq-heading">A few quick answers.</h2>
-        <p>{sparkleSuitePublicLandingSafety.audienceClarifier}</p>
-      </div>
-      <div className="sl-faq__list">
-        {faq.map((item) => (
-          <details key={item.question}>
-            <summary>{item.question}</summary>
-            <p>{item.answer}</p>
-          </details>
-        ))}
-      </div>
+      <article className="sl2-pricing-offer" aria-label="Sparkle Suite Standard pricing">
+        <div className="sl2-pricing-offer__head">
+          <span>{pricing.standard.badge}</span>
+          <h3>Sparkle Suite Standard</h3>
+        </div>
+        <dl className="sl2-pricing-breakdown">
+          <div className="sl2-pricing-line">
+            <dt>One-time build fee</dt>
+            <dd>{pricing.buildFee.price}</dd>
+          </div>
+          <div className="sl2-pricing-line">
+            <dt>Monthly subscription</dt>
+            <dd>{pricing.standard.price}</dd>
+          </div>
+        </dl>
+        <div
+          className="sl2-pricing-total"
+          aria-label={`${firstCheckoutPrice} first checkout. ${firstCheckoutNote}.`}
+        >
+          <strong>{firstCheckoutPrice}</strong>
+          <span>first checkout</span>
+          <p>{firstCheckoutNote}.</p>
+        </div>
+        <p className="sl2-pricing-note">
+          Build fee is one-time and non-refundable. Monthly subscription starts from
+          checkout.
+        </p>
+      </article>
+      <LandingButton href={pricing.sectionCta.href} label={pricing.sectionCta.label} />
+      <SparkleSuitePublicNicNac />
     </section>
   )
 }
 
 function LandingFooter() {
+  const { brand, footer } = sparkleSuitePublicLandingContent
+
   return (
-    <footer className="sl-footer">
-      <div className="sl-footer__brand">
-        <SparkleSeal className="sl-footer__seal" />
-        <span>{sparkleSuitePublicLandingContent.brand}</span>
+    <footer className="sl2-footer">
+      <div className="sl2-footer__brand">
+        <SparkleSeal className="sl2-footer__seal" />
+        <span>{brand}</span>
+      </div>
+      <div className="sl2-footer__nav" aria-label="Footer links">
+        <div>
+          <h2>Links</h2>
+          {footer.links.map((link) => (
+            <a href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+        <div>
+          <h2>Social</h2>
+          {footer.socialLinks.map((link) => (
+            <a href={link.href} key={link.label}>
+              {link.label}
+            </a>
+          ))}
+        </div>
       </div>
       <p>{sparkleSuitePublicLandingSafety.disclaimer}</p>
-      <div className="sl-footer__links">
-        <a href="/privacy-policy">Privacy Policy</a>
-        <a href="/terms-and-conditions">Terms and Conditions</a>
-      </div>
     </footer>
   )
 }
 
 export function SparkleSuitePublicLanding() {
   return (
-    <main className="sparkle-landing">
-      <div className="sl-shell">
+    <main className="sparkle-landing sparkle-landing-v2">
+      <div className="sl2-shell">
         <LandingHeader />
-        <LandingHero />
-        <ComparisonBand />
-        <FeatureProof />
-        <CustomerPath />
-        <RepRelief />
-        <PricingCta />
-        <LandingFaq />
+        <ProductHero />
+        <WorkspaceProof />
+        <PricingSection />
         <LandingFooter />
       </div>
     </main>

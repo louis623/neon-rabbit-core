@@ -1,0 +1,13 @@
+.mark {
+  align-items: center;
+  background: var(--nic-nac-accent, #ee2c9b);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(238, 44, 155, 0.22);
+  color: var(--nic-nac-text-on-accent, #ffffff);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: var(--font-prelaunch-body), "Geist", system-ui, sans-serif;
+  font-weight: 900;
+  justify-content: center;
+  line-height: 1;
+}

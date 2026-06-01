@@ -17,7 +17,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('record_show_session_event')
     expect(prompt).toContain('zero-provider state tools')
     expect(prompt).toContain('Do not pre-announce tool calls')
-    expect(prompt).not.toContain('You have twenty-eight tools')
+    expect(prompt).not.toContain('You have twenty-nine tools')
     expect(prompt).not.toContain('send_sms_notification')
     expect(prompt.length).toBeLessThan(8_000)
   })
