@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Crown, Gem, Sparkles } from "lucide-react";
-import { CollectionManager } from "@/components/silver/CollectionManager";
+import { CollectionManager, type ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import { ProfileEditor } from "@/components/silver/ProfileEditor";
+import {
+  saveSilverCollectionItemAction,
+  saveSilverProfileAction,
+} from "@/app/(hub)/silver/actions";
 import {
   getCollectionItemsByCustomerId,
   getJewelryItemById,
@@ -15,8 +19,9 @@ import {
 } from "@/lib/sparkle-finder/auth";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
+import { createClient } from "@/lib/supabase/server";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
-import type { SilverProfile } from "@/lib/sparkle-finder/types";
+import type { CollectionItem, SilverProfile } from "@/lib/sparkle-finder/types";
 
 type SilverPageAccountState = SparkleFinderAccountState & {
   silverProfile?: SilverProfile;
@@ -26,26 +31,36 @@ type SilverPageAccountState = SparkleFinderAccountState & {
 export default async function SilverPage() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+  const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
+  const persistedCollectionItems =
+    accountState.status === "authenticated" && accountState.isLocalPreview !== true
+      ? await getPersistedCollectionItems(accountState.customer.id)
+      : undefined;
 
-  return renderSilverPageContent(await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode }));
+  return renderSilverPageContent(accountState, persistedCollectionItems);
 }
 
-export function renderSilverPageContent(accountState: SilverPageAccountState) {
+export function renderSilverPageContent(
+  accountState: SilverPageAccountState,
+  persistedCollectionItems?: ManagedCollectionItem[],
+) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
 
-  if (accountState.status !== "authenticated" || !entitlements.canUseSilverProfileActions) {
+  if (accountState.status !== "authenticated") {
     return <SilverUpgradePrompt accountState={accountState} />;
   }
 
   const customer = accountState.customer;
   const profile =
     accountState.silverProfile ?? getSilverProfileByCustomerId(customer.id) ?? createEmptySilverProfile(customer.id);
-  const collectionItems = getCollectionItemsByCustomerId(customer.id).flatMap((item) => {
-    const jewelryItem = getJewelryItemById(item.jewelryItemId);
+  const collectionItems =
+    persistedCollectionItems ??
+    getCollectionItemsByCustomerId(customer.id).flatMap((item) => {
+      const jewelryItem = getJewelryItemById(item.jewelryItemId);
 
-    return jewelryItem ? [{ ...item, jewelryItem }] : [];
-  });
+      return jewelryItem ? [{ ...item, jewelryItem }] : [];
+    });
 
   return (
     <section className="grid gap-6">
@@ -60,7 +75,9 @@ export function renderSilverPageContent(accountState: SilverPageAccountState) {
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {isLocalPreview
               ? "View and stage local profile, collection, and watchlist updates for Sparkle Finder's fixture-backed preview."
-              : "View your signed-in Silver workspace and stage profile, collection, and watchlist updates. Persistent account-backed saves are coming in a later update."}
+              : entitlements.canUseSilverProfileActions
+                ? "View and save your signed-in Silver profile, collection, and watchlist updates."
+                : "View your signed-in profile and saved library state. Silver access unlocks profile and collection saves."}
           </p>
         </div>
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
@@ -79,11 +96,21 @@ export function renderSilverPageContent(accountState: SilverPageAccountState) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
-        <ProfileEditor accountState={accountState} customer={customer} profile={profile} />
+        <ProfileEditor
+          accountState={accountState}
+          canSaveSilverActions={entitlements.canUseSilverProfileActions}
+          customer={customer}
+          isLocalPreview={isLocalPreview}
+          profile={profile}
+          saveAction={isLocalPreview ? undefined : saveSilverProfileAction}
+        />
         <CollectionManager
           accountState={accountState}
+          canSaveSilverActions={entitlements.canUseSilverCollectionActions}
           collectionItems={collectionItems}
+          isLocalPreview={isLocalPreview}
           libraryItems={getJewelryItems()}
+          saveAction={isLocalPreview ? undefined : saveSilverCollectionItemAction}
         />
       </div>
     </section>
@@ -130,4 +157,64 @@ function createEmptySilverProfile(customerId: string): SilverProfile {
     bio: "",
     visibility: "private",
   };
+}
+
+async function getPersistedCollectionItems(userId: string): Promise<ManagedCollectionItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("sparkle_finder_collection_items")
+      .select("id,user_id,jewelry_item_id,state,note,is_highlighted")
+      .eq("user_id", userId);
+
+    if (error || !Array.isArray(data)) {
+      return [];
+    }
+
+    return data.flatMap((row) => {
+      const item = mapPersistedCollectionItem(row);
+      const jewelryItem = item ? getJewelryItemById(item.jewelryItemId) : null;
+
+      return item && jewelryItem ? [{ ...item, jewelryItem }] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
+  if (!row || typeof row !== "object") {
+    return null;
+  }
+
+  const record = row as Record<string, unknown>;
+  const id = readString(record.id);
+  const customerId = readString(record.user_id);
+  const jewelryItemId = readString(record.jewelry_item_id);
+  const state = readCollectionState(record.state);
+
+  if (!id || !customerId || !jewelryItemId || !state) {
+    return null;
+  }
+
+  return {
+    id,
+    customerId,
+    jewelryItemId,
+    state,
+    note: readString(record.note),
+    isHighlighted: record.is_highlighted === true,
+  };
+}
+
+function readString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function readCollectionState(value: unknown): CollectionItem["state"] | null {
+  if (value === "owned" || value === "wishlist" || value === "private_note_only") {
+    return value;
+  }
+
+  return null;
 }

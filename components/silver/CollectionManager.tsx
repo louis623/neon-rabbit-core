@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { BookmarkPlus, Gem, LockKeyhole, Plus, ShieldCheck, Star } from "lucide-react";
+import { useActionState, useState } from "react";
+import { BookmarkPlus, Gem, LockKeyhole, Plus, ShieldCheck, Star, StickyNote } from "lucide-react";
 import { addJewelryItemToCustomerCollection } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CollectionItem, JewelryItem } from "@/lib/sparkle-finder/types";
+import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
 
 export type ManagedCollectionItem = CollectionItem & {
   jewelryItem: JewelryItem;
@@ -12,30 +13,49 @@ export type ManagedCollectionItem = CollectionItem & {
 
 type CollectionManagerProps = {
   accountState: SparkleFinderAccountState;
+  canSaveSilverActions: boolean;
   collectionItems: ManagedCollectionItem[];
+  isLocalPreview: boolean;
   libraryItems: JewelryItem[];
+  saveAction?: (previousState: SilverSaveActionState, formData: FormData) => Promise<SilverSaveActionState>;
 };
 
-export function CollectionManager({ accountState, collectionItems, libraryItems }: CollectionManagerProps) {
+const realAccountInitialState: SilverSaveActionState = {
+  status: "idle",
+  message: "Collection ready.",
+};
+
+export function CollectionManager({
+  accountState,
+  canSaveSilverActions,
+  collectionItems,
+  isLocalPreview,
+  libraryItems,
+  saveAction,
+}: CollectionManagerProps) {
   const [items, setItems] = useState(collectionItems);
-  const [statusMessage, setStatusMessage] = useState("Local collection preview ready.");
+  const [localStatusMessage, setLocalStatusMessage] = useState(
+    canSaveSilverActions ? "Local collection preview ready." : "Silver preview is required to save collection updates.",
+  );
+  const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledCollectionAction, realAccountInitialState);
+  const statusMessage = isLocalPreview ? localStatusMessage : actionState.message;
   const collectionByJewelryId = new Map(items.map((item) => [item.jewelryItemId, item]));
 
   function previewAdd(item: JewelryItem, state: CollectionItem["state"]) {
     const result = addJewelryItemToCustomerCollection(accountState, items, {
       isHighlighted: state === "owned",
       jewelryItemId: item.id,
-      note: state === "wishlist" ? "Watching this library record." : "Added from the local Silver preview.",
+      note: getDefaultCollectionNote(state, true),
       state,
     });
 
     if (!result.ok) {
-      setStatusMessage("Silver preview is required to save collection updates.");
+      setLocalStatusMessage("Silver preview is required to save collection updates.");
       return;
     }
 
     setItems(result.collectionItems.map((collectionItem) => ({ ...collectionItem, jewelryItem: findJewelryItem(collectionItem.jewelryItemId, libraryItems) })));
-    setStatusMessage(state === "wishlist" ? "Watchlist preview updated." : "Collection preview updated.");
+    setLocalStatusMessage(state === "wishlist" ? "Watchlist preview updated." : "Collection preview updated.");
   }
 
   return (
@@ -49,7 +69,7 @@ export function CollectionManager({ accountState, collectionItems, libraryItems 
             </h2>
           </div>
           <span className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 py-1 text-xs font-bold text-[var(--sparkle-ink-muted)]">
-            {items.length} local records
+            {items.length} {isLocalPreview ? "local" : "saved"} records
           </span>
         </div>
 
@@ -87,22 +107,39 @@ export function CollectionManager({ accountState, collectionItems, libraryItems 
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-sm font-bold text-[var(--sparkle-plum)]"
-                    onClick={() => previewAdd(item, "owned")}
-                    type="button"
-                  >
-                    <Plus aria-hidden="true" className="size-4" />
-                    Add to collection
-                  </button>
-                  <button
-                    className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)]"
-                    onClick={() => previewAdd(item, "wishlist")}
-                    type="button"
-                  >
-                    <BookmarkPlus aria-hidden="true" className="size-4" />
-                    Add to watchlist
-                  </button>
+                  <CollectionActionButton
+                    canSave={canSaveSilverActions}
+                    formAction={formAction}
+                    icon="owned"
+                    isLocalPreview={isLocalPreview}
+                    isPending={isPending}
+                    item={item}
+                    label="Add to collection"
+                    onPreviewAdd={previewAdd}
+                    state="owned"
+                  />
+                  <CollectionActionButton
+                    canSave={canSaveSilverActions}
+                    formAction={formAction}
+                    icon="wishlist"
+                    isLocalPreview={isLocalPreview}
+                    isPending={isPending}
+                    item={item}
+                    label="Add to watchlist"
+                    onPreviewAdd={previewAdd}
+                    state="wishlist"
+                  />
+                  <CollectionActionButton
+                    canSave={canSaveSilverActions}
+                    formAction={formAction}
+                    icon="private_note_only"
+                    isLocalPreview={isLocalPreview}
+                    isPending={isPending}
+                    item={item}
+                    label="Add private note"
+                    onPreviewAdd={previewAdd}
+                    state="private_note_only"
+                  />
                   {savedItem ? <StateBadge state={savedItem.state} /> : null}
                 </div>
               </div>
@@ -129,6 +166,68 @@ export function CollectionManager({ accountState, collectionItems, libraryItems 
       </article>
     </section>
   );
+}
+
+function CollectionActionButton({
+  canSave,
+  formAction,
+  icon,
+  isLocalPreview,
+  isPending,
+  item,
+  label,
+  onPreviewAdd,
+  state,
+}: {
+  canSave: boolean;
+  formAction: (formData: FormData) => void;
+  icon: CollectionItem["state"];
+  isLocalPreview: boolean;
+  isPending: boolean;
+  item: JewelryItem;
+  label: string;
+  onPreviewAdd: (item: JewelryItem, state: CollectionItem["state"]) => void;
+  state: CollectionItem["state"];
+}) {
+  const className =
+    state === "owned"
+      ? "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-sm font-bold text-[var(--sparkle-plum)] disabled:cursor-not-allowed disabled:opacity-55"
+      : "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] disabled:cursor-not-allowed disabled:opacity-55";
+  const disabled = !canSave || (!isLocalPreview && isPending);
+
+  if (isLocalPreview) {
+    return (
+      <button className={className} disabled={disabled} onClick={() => onPreviewAdd(item, state)} type="button">
+        <CollectionActionIcon state={icon} />
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <form action={formAction}>
+      <input name="jewelryItemId" type="hidden" value={item.id} />
+      <input name="state" type="hidden" value={state} />
+      <input name="note" type="hidden" value={getDefaultCollectionNote(state, false)} />
+      <input name="isHighlighted" type="hidden" value={state === "owned" ? "yes" : "no"} />
+      <button className={className} disabled={disabled} type="submit">
+        <CollectionActionIcon state={icon} />
+        {label}
+      </button>
+    </form>
+  );
+}
+
+function CollectionActionIcon({ state }: { state: CollectionItem["state"] }) {
+  if (state === "wishlist") {
+    return <BookmarkPlus aria-hidden="true" className="size-4" />;
+  }
+
+  if (state === "private_note_only") {
+    return <StickyNote aria-hidden="true" className="size-4" />;
+  }
+
+  return <Plus aria-hidden="true" className="size-4" />;
 }
 
 function SavedCollectionCard({ item }: { item: ManagedCollectionItem }) {
@@ -171,4 +270,23 @@ function StateBadge({ state }: { state: CollectionItem["state"] }) {
 
 function findJewelryItem(jewelryItemId: string, libraryItems: JewelryItem[]): JewelryItem {
   return libraryItems.find((item) => item.id === jewelryItemId) ?? libraryItems[0];
+}
+
+function getDefaultCollectionNote(state: CollectionItem["state"], isLocalPreview: boolean): string {
+  if (state === "wishlist") {
+    return "Watching this library record.";
+  }
+
+  if (state === "private_note_only") {
+    return isLocalPreview ? "Private note from the local Silver preview." : "Private note saved from Silver.";
+  }
+
+  return isLocalPreview ? "Added from the local Silver preview." : "Added from Silver.";
+}
+
+async function disabledCollectionAction(): Promise<SilverSaveActionState> {
+  return {
+    status: "denied",
+    message: "Silver access is required to save collection updates.",
+  };
 }

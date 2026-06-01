@@ -34,7 +34,22 @@ export function getSparkleFinderAccountEntitlements(
     };
   }
 
-  return getSparkleFinderEntitlements(accountState.customer);
+  const membership =
+    "membership" in accountState
+      ? (accountState.membership as { hasSilverAccess?: boolean } | undefined)
+      : undefined;
+
+  if (!membership) {
+    return getSparkleFinderEntitlements(accountState.customer);
+  }
+
+  return {
+    tier: accountState.tier,
+    canBrowseLibrary: true,
+    canUseSilverProfileActions: membership.hasSilverAccess === true,
+    canUseSilverCollectionActions: membership.hasSilverAccess === true,
+    canUseNicNacFindRequests: membership.hasSilverAccess === true,
+  };
 }
 
 export function canUseSilverProfileActions(customer: CustomerAccount): boolean {

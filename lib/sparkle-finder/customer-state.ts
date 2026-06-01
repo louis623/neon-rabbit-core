@@ -1,7 +1,8 @@
 import type { SparkleFinderAccountState } from "./auth";
+import type { CurrentSparkleFinderAccountState } from "./account-service";
 import type { CollectionItem, SilverProfile } from "./types";
 
-export type CustomerStateDeniedReason = "silver_required";
+export type CustomerStateDeniedReason = "silver_required" | "account_mismatch" | "save_failed";
 
 export type SilverProfileUpdateInput = Partial<
   Pick<SilverProfile, "bio" | "photoUrl" | "tiktokHandle" | "visibility">
@@ -34,6 +35,30 @@ export type CollectionItemUpsertResult =
       collectionItems: CollectionItem[];
     };
 
+export type PersistedCustomerStateResult =
+  | {
+      ok: true;
+    }
+  | {
+      ok: false;
+      reason: CustomerStateDeniedReason;
+    };
+
+type SupabasePersistenceResult = PromiseLike<{ data: unknown; error: unknown }>;
+
+type SupabasePersistenceFilterBuilder = PromiseLike<{ data: unknown; error: unknown }> & {
+  eq: (column: string, value: string) => SupabasePersistenceFilterBuilder;
+  maybeSingle?: () => SupabasePersistenceResult;
+};
+
+export type SupabaseCustomerStateClient = {
+  from: (table: string) => {
+    select: (columns: string) => SupabasePersistenceFilterBuilder;
+    update: (values: Record<string, unknown>) => SupabasePersistenceFilterBuilder;
+    insert: (values: Record<string, unknown>) => SupabasePersistenceResult;
+  };
+};
+
 export function updateSilverProfilePreview(
   accountState: SparkleFinderAccountState,
   profile: SilverProfile,
@@ -55,6 +80,76 @@ export function updateSilverProfilePreview(
       customerId: accountState.customer.id,
     },
   };
+}
+
+export async function persistSilverProfileForAccount(
+  supabase: SupabaseCustomerStateClient,
+  accountState: CurrentSparkleFinderAccountState,
+  input: SilverProfileUpdateInput,
+): Promise<PersistedCustomerStateResult> {
+  if (!canSaveSilverState(accountState)) {
+    return { ok: false, reason: "silver_required" };
+  }
+
+  const values = {
+    tiktok_handle: cleanText(input.tiktokHandle, 80),
+    bio: cleanText(input.bio, 500),
+    profile_visibility: input.visibility === "sparkle_finder" ? "sparkle_finder" : "private",
+  };
+
+  const existingProfile = await safeMaybeSingle(
+    supabase.from("sparkle_finder_profiles").select("user_id").eq("user_id", accountState.customer.id),
+  );
+
+  const result = existingProfile.data
+    ? await supabase.from("sparkle_finder_profiles").update(values).eq("user_id", accountState.customer.id)
+    : await supabase.from("sparkle_finder_profiles").insert({
+        user_id: accountState.customer.id,
+        display_name: cleanText(accountState.customer.displayName, 80),
+        email: cleanText(accountState.customer.email, 254),
+        state: cleanText(accountState.customer.state, 40),
+        ...values,
+      });
+
+  return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
+}
+
+export async function persistCollectionItemForAccount(
+  supabase: SupabaseCustomerStateClient,
+  accountState: CurrentSparkleFinderAccountState,
+  input: CollectionItemUpsertInput,
+): Promise<PersistedCustomerStateResult> {
+  if (!canSaveSilverState(accountState)) {
+    return { ok: false, reason: "silver_required" };
+  }
+
+  const values = {
+    state: input.state,
+    note: cleanText(input.note, 500),
+    is_highlighted: input.isHighlighted,
+  };
+  const existingItem = await safeMaybeSingle(
+    supabase
+      .from("sparkle_finder_collection_items")
+      .select("id,user_id")
+      .eq("user_id", accountState.customer.id)
+      .eq("jewelry_item_id", input.jewelryItemId),
+  );
+
+  const existingItemId = getRecordString(existingItem.data, "id");
+  const result = existingItemId
+    ? await supabase
+        .from("sparkle_finder_collection_items")
+        .update(values)
+        .eq("user_id", accountState.customer.id)
+        .eq("id", existingItemId)
+    : await supabase.from("sparkle_finder_collection_items").insert({
+        user_id: accountState.customer.id,
+        jewelry_item_id: input.jewelryItemId,
+        ...values,
+      });
+
+  return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
 }
 
 export function addJewelryItemToCustomerCollection(
@@ -89,11 +184,48 @@ export function addJewelryItemToCustomerCollection(
 }
 
 function canSaveSilverState(
-  accountState: SparkleFinderAccountState,
-): accountState is SparkleFinderAccountState & { status: "authenticated" } {
-  return accountState.status === "authenticated" && accountState.tier === "silver";
+  accountState: SparkleFinderAccountState | CurrentSparkleFinderAccountState,
+): accountState is (SparkleFinderAccountState | CurrentSparkleFinderAccountState) & { status: "authenticated" } {
+  if (accountState.status !== "authenticated") {
+    return false;
+  }
+
+  const membership =
+    "membership" in accountState
+      ? (accountState.membership as CurrentSparkleFinderAccountState["membership"] | undefined)
+      : undefined;
+
+  return membership ? membership.hasSilverAccess : accountState.tier === "silver";
 }
 
 function createLocalCollectionItemId(jewelryItemId: string): string {
   return `collection-local-${jewelryItemId}`;
+}
+
+async function safeMaybeSingle(builder: SupabasePersistenceFilterBuilder): Promise<{ data: unknown; error: unknown }> {
+  if (!builder.maybeSingle) {
+    return { data: null, error: null };
+  }
+
+  try {
+    return await builder.maybeSingle();
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+function cleanText(value: string | undefined, maxLength: number): string {
+  return String(value ?? "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function getRecordString(value: unknown, key: string): string | null {
+  if (!value || typeof value !== "object" || !(key in value)) {
+    return null;
+  }
+
+  const recordValue = (value as Record<string, unknown>)[key];
+
+  return typeof recordValue === "string" ? recordValue : null;
 }

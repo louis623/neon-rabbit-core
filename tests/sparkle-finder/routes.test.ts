@@ -223,8 +223,8 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("@caseyfinds");
     expect(markup).toContain("Looking for jewel tones and unicorns.");
-    expect(markup).toContain("View your signed-in Silver workspace and stage profile, collection, and watchlist updates.");
-    expect(markup).toContain("Persistent account-backed saves are coming in a later update.");
+    expect(markup).toContain("View and save your signed-in Silver profile, collection, and watchlist updates.");
+    expect(markup).toContain("Save profile");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
     expect(markup).not.toContain("Local fixture mode");
@@ -239,14 +239,15 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Local fixture mode");
   });
 
-  it("renders the Silver route upgrade prompt for Free customers", () => {
+  it("renders limited Silver route state for Free customers without enabled write controls", () => {
     const markup = renderToStaticMarkup(
       renderSilverPageContent({ ...getLocalDevAuthState("free"), isLocalPreview: true }),
     );
 
-    expect(markup).toContain("Silver preview needed");
-    expect(markup).toContain("/auth/sign-in");
-    expect(markup).not.toContain("Profile form");
+    expect(markup).toContain("Silver Profile");
+    expect(markup).toContain("Silver preview is required to save profile updates.");
+    expect(markup).toContain("disabled");
+    expect(markup).not.toContain("Silver preview needed");
   });
 
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
