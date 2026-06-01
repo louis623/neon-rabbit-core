@@ -1,5 +1,6 @@
 import Stripe from "stripe";
-import { describe, expect, it } from "vitest";
+import type { Mock } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getSparkleFinderBillingEnv,
   isSparkleFinderCheckoutConfigured,
@@ -227,6 +228,249 @@ describe("Sparkle Finder Stripe billing", () => {
   });
 });
 
+describe("Sparkle Finder billing routes", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("@/lib/supabase/server");
+    vi.doUnmock("@/lib/sparkle-finder/billing");
+    vi.unstubAllEnvs();
+  });
+
+  it("redirects unverified signed-in checkout users without creating Stripe records", async () => {
+    const customersCreate = vi.fn();
+    const checkoutSessionsCreate = vi.fn();
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-123", email: "casey@example.com" } },
+          error: null,
+        }),
+      },
+      from: vi.fn(),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ customersCreate, checkoutSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/checkout/route");
+    const response = await POST();
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      "https://sparkle.example/account?error=email_verification_required",
+    );
+    expect(customersCreate).not.toHaveBeenCalled();
+    expect(checkoutSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("creates a subscription checkout session for verified signed-in users", async () => {
+    const customersCreate = vi.fn().mockResolvedValue({ id: "cus_created" });
+    const checkoutSessionsCreate = vi.fn().mockResolvedValue({ url: "https://checkout.stripe.test/session" });
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-123",
+              email: "casey@example.com",
+              email_confirmed_at: "2026-06-01T12:00:00.000Z",
+            },
+          },
+          error: null,
+        }),
+      },
+      from: membershipTableClient(null),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ customersCreate, checkoutSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/checkout/route");
+    const response = await POST();
+
+    expect(customersCreate).toHaveBeenCalledWith({
+      email: "casey@example.com",
+      metadata: {
+        supabase_user_id: "user-123",
+      },
+    });
+    expect(checkoutSessionsCreate).toHaveBeenCalledWith({
+      mode: "subscription",
+      customer: "cus_created",
+      client_reference_id: "user-123",
+      line_items: [
+        {
+          price: "price_silver",
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        supabase_user_id: "user-123",
+      },
+      subscription_data: {
+        metadata: {
+          supabase_user_id: "user-123",
+        },
+      },
+      success_url: "https://sparkle.example/account?message=silver_checkout_started",
+      cancel_url: "https://sparkle.example/account?message=silver_checkout_canceled",
+    });
+    expect(checkoutSessionsCreate.mock.calls[0][0].subscription_data).not.toHaveProperty("trial_period_days");
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://checkout.stripe.test/session");
+  });
+
+  it("requires an existing Stripe customer before opening the billing portal", async () => {
+    const portalSessionsCreate = vi.fn();
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-123" } },
+          error: null,
+        }),
+      },
+      from: membershipTableClient({ stripe_customer_id: null }),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ portalSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/portal/route");
+    const response = await POST();
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://sparkle.example/account?error=missing_stripe_customer");
+    expect(portalSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("creates a hosted billing portal session for users with a Stripe customer", async () => {
+    const portalSessionsCreate = vi.fn().mockResolvedValue({ url: "https://billing.stripe.test/session" });
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-123" } },
+          error: null,
+        }),
+      },
+      from: membershipTableClient({ stripe_customer_id: "cus_123" }),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ portalSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/portal/route");
+    const response = await POST();
+
+    expect(portalSessionsCreate).toHaveBeenCalledWith({
+      customer: "cus_123",
+      return_url: "https://sparkle.example/account",
+    });
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://billing.stripe.test/session");
+  });
+
+  it("rejects webhook requests without a Stripe signature before reading the body", async () => {
+    const constructEvent = vi.fn();
+    const request = new Request("https://sparkle.example/api/stripe/webhook", {
+      method: "POST",
+      body: "raw=stripe",
+    });
+
+    stubBillingEnv();
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ constructEvent })),
+    });
+
+    const text = vi.spyOn(request, "text");
+    const { POST } = await import("../../app/api/stripe/webhook/route");
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: "Missing Stripe signature." });
+    expect(text).not.toHaveBeenCalled();
+    expect(constructEvent).not.toHaveBeenCalled();
+  });
+
+  it("constructs webhook events from raw text and rejects invalid signatures", async () => {
+    const constructEvent = vi.fn(() => {
+      throw new Error("invalid signature");
+    });
+    const request = new Request("https://sparkle.example/api/stripe/webhook", {
+      method: "POST",
+      body: "raw=stripe",
+      headers: {
+        "stripe-signature": "t=123,v1=bad",
+      },
+    });
+
+    stubBillingEnv();
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ constructEvent })),
+    });
+
+    const { POST } = await import("../../app/api/stripe/webhook/route");
+    const response = await POST(request);
+
+    expect(constructEvent).toHaveBeenCalledWith("raw=stripe", "t=123,v1=bad", "whsec_123");
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: "Invalid Stripe signature." });
+  });
+
+  it("applies a membership update for valid checkout completion webhooks", async () => {
+    const applyStripeMembershipUpdate = vi.fn().mockResolvedValue({ ok: true });
+    const constructEvent = vi.fn().mockReturnValue({
+      id: "evt_123",
+      object: "event",
+      type: "checkout.session.completed",
+      data: {
+        object: checkoutSession({
+          client_reference_id: "user-123",
+          customer: "cus_123",
+          subscription: "sub_123",
+        }),
+      },
+    });
+
+    stubBillingEnv();
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ constructEvent })),
+      applyStripeMembershipUpdate,
+    });
+
+    const { POST } = await import("../../app/api/stripe/webhook/route");
+    const response = await POST(
+      new Request("https://sparkle.example/api/stripe/webhook", {
+        method: "POST",
+        body: "raw=stripe",
+        headers: {
+          "stripe-signature": "t=123,v1=good",
+        },
+      }),
+    );
+
+    expect(constructEvent).toHaveBeenCalledWith("raw=stripe", "t=123,v1=good", "whsec_123");
+    expect(applyStripeMembershipUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "user-123",
+        stripeCustomerId: "cus_123",
+        stripeSubscriptionId: "sub_123",
+        accessState: "silver_paid",
+        silverSource: "stripe",
+      }),
+    );
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ received: true });
+  });
+});
+
 function checkoutSession(overrides: Partial<Stripe.Checkout.Session>): Stripe.Checkout.Session {
   return {
     id: "cs_test_123",
@@ -260,4 +504,67 @@ function invoice(overrides: Record<string, unknown>): Stripe.Invoice {
 
 function seconds(value: string): number {
   return Math.floor(new Date(value).getTime() / 1000);
+}
+
+function stubBillingEnv() {
+  vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_123");
+  vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_123");
+  vi.stubEnv("STRIPE_SILVER_PRICE_ID", "price_silver");
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://sparkle.example");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://supabase.example");
+  vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
+}
+
+function mockSupabaseServerClient(client: unknown) {
+  vi.doMock("@/lib/supabase/server", () => ({
+    createClient: vi.fn().mockResolvedValue(client),
+  }));
+}
+
+function mockBillingModule(overrides: Record<string, unknown>) {
+  vi.doMock("@/lib/sparkle-finder/billing", async (importOriginal) => ({
+    ...((await importOriginal()) as Record<string, unknown>),
+    ...overrides,
+  }));
+}
+
+function membershipTableClient(row: Record<string, unknown> | null) {
+  return vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        maybeSingle: vi.fn().mockResolvedValue({ data: row, error: null }),
+      })),
+    })),
+  }));
+}
+
+function stripeRouteClient({
+  customersCreate = vi.fn(),
+  checkoutSessionsCreate = vi.fn(),
+  portalSessionsCreate = vi.fn(),
+  constructEvent = vi.fn(),
+}: {
+  customersCreate?: Mock;
+  checkoutSessionsCreate?: Mock;
+  portalSessionsCreate?: Mock;
+  constructEvent?: Mock;
+}) {
+  return {
+    customers: {
+      create: customersCreate,
+    },
+    checkout: {
+      sessions: {
+        create: checkoutSessionsCreate,
+      },
+    },
+    billingPortal: {
+      sessions: {
+        create: portalSessionsCreate,
+      },
+    },
+    webhooks: {
+      constructEvent,
+    },
+  } as unknown as Stripe;
 }

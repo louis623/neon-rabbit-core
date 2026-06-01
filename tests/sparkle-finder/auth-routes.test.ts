@@ -275,7 +275,9 @@ describe("Sparkle Finder account route", () => {
     const markup = renderToStaticMarkup(renderAccountPageContent(expiredTrialMappedToFreeAccountState()));
 
     expect(markup).toContain("Continue Silver at $4.99/month");
-    expect(markup).toContain("Billing setup is coming next.");
+    expect(markup).toContain(
+      "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured.",
+    );
     expect(markup).toContain("disabled");
     expect(markup).not.toContain("/stripe");
   });
