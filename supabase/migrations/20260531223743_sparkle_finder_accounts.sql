@@ -41,6 +41,7 @@ create table public.sparkle_finder_communication_consents (
   user_id uuid primary key references auth.users(id) on delete cascade,
   account_email_required boolean not null default true,
   account_sms_allowed boolean not null default false,
+  account_sms_consented_at timestamptz,
   promotional_email_opt_in boolean not null default false,
   promotional_email_consented_at timestamptz,
   promotional_sms_opt_in boolean not null default false,
@@ -195,6 +196,16 @@ begin
       update_sparkle_finder_communication_preferences.account_sms_allowed,
       consent.account_sms_allowed
     ),
+    account_sms_consented_at = case
+      when update_sparkle_finder_communication_preferences.account_sms_allowed
+        and consent.account_sms_consented_at is null
+        then now()
+      when update_sparkle_finder_communication_preferences.account_sms_allowed
+        then consent.account_sms_consented_at
+      when update_sparkle_finder_communication_preferences.account_sms_allowed = false
+        then null
+      else consent.account_sms_consented_at
+    end,
     promotional_email_opt_in =
       update_sparkle_finder_communication_preferences.promotional_email_opt_in,
     promotional_email_consented_at = case

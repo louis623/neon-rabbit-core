@@ -223,7 +223,9 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("@caseyfinds");
     expect(markup).toContain("Looking for jewel tones and unicorns.");
-    expect(markup).toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
+    expect(markup).toContain("View your signed-in Silver workspace and stage profile, collection, and watchlist updates.");
+    expect(markup).toContain("Persistent account-backed saves are coming in a later update.");
+    expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
     expect(markup).not.toContain("Local fixture mode");
   });

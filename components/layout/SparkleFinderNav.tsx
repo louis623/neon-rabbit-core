@@ -50,4 +50,3 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: Spar
     </header>
   );
 }
-

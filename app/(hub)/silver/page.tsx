@@ -60,7 +60,7 @@ export function renderSilverPageContent(accountState: SilverPageAccountState) {
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {isLocalPreview
               ? "View and stage local profile, collection, and watchlist updates for Sparkle Finder's fixture-backed preview."
-              : "Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account."}
+              : "View your signed-in Silver workspace and stage profile, collection, and watchlist updates. Persistent account-backed saves are coming in a later update."}
           </p>
         </div>
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
@@ -103,12 +103,12 @@ function SilverUpgradePrompt({ accountState }: { accountState: SilverPageAccount
           {isLocalPreview ? "Silver preview needed" : "Silver access needed"}
         </p>
         <h1 className="mt-2 font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
-          {isLocalPreview ? "Open Silver to save profile and collection previews" : "Open Silver to manage your profile and collection"}
+          {isLocalPreview ? "Open Silver to save profile and collection previews" : "Open Silver to view and stage your workspace"}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
           {isLocalPreview
             ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, collection records, and watchlist records against local fixture data."
-            : "Free accounts can keep browsing the library. Silver accounts can manage profile details, collection records, and watchlist records."}
+            : "Free accounts can keep browsing the library. Silver accounts can view and stage profile details, collection records, and watchlist records while persistent saves are still in progress."}
         </p>
       </div>
       <Link

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   type CurrentSparkleFinderAccountState,
@@ -162,6 +164,19 @@ describe("Sparkle Finder account service", () => {
     expect(account.customer.email).toBe(user.email);
     expect(account.membership?.effectiveState).toBe("free");
     expect(account.communicationConsent.accountEmailRequired).toBe(true);
+  });
+
+  it("keeps the Supabase SMS consent timestamp contract aligned with account mapping", () => {
+    const migrationSql = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260531223743_sparkle_finder_accounts.sql"),
+      "utf8",
+    );
+
+    expect(migrationSql).toContain("account_sms_consented_at timestamptz");
+    expect(migrationSql).toContain("account_sms_consented_at = case");
+    expect(migrationSql).toContain("then now()");
+    expect(migrationSql).toContain("then consent.account_sms_consented_at");
+    expect(migrationSql).toContain("else null");
   });
 });
 
