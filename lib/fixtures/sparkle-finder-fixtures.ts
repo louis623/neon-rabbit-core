@@ -8,6 +8,7 @@ import type {
   RepSummary,
   SilverProfile,
 } from "../sparkle-finder/types";
+import type { SparkleSuiteRepEntitlement } from "../sparkle-finder/rep-entitlements";
 
 export const sparkleFinderAffiliateShopItems: AffiliateShopItem[] = [
   {
@@ -87,6 +88,27 @@ export const sparkleFinderReps: RepSummary[] = [
     state: "TN",
     siteUrl: "https://sparklesuite.example/reps/chris",
     nextLiveShowId: "show-chris-evening",
+  },
+];
+
+export const sparkleFinderRepEntitlements: SparkleSuiteRepEntitlement[] = [
+  {
+    sparkleSuiteRepId: "rep-sierra",
+    businessName: "Sierra Sparkle Studio",
+    subscriptionStatus: "active",
+    publicDiscoveryEnabled: true,
+  },
+  {
+    sparkleSuiteRepId: "rep-maya",
+    businessName: "Maya's Glow Room",
+    subscriptionStatus: "inactive",
+    publicDiscoveryEnabled: true,
+  },
+  {
+    sparkleSuiteRepId: "rep-kelli",
+    businessName: "Kelli Jo Sparkles",
+    subscriptionStatus: "active",
+    publicDiscoveryEnabled: false,
   },
 ];
 

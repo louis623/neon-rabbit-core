@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Crown, Gem, Heart, MapPin, ShieldCheck } from "lucide-react";
+import { RepBadge } from "@/components/account/RepBadge";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderEntitlements } from "@/lib/sparkle-finder/entitlements";
@@ -45,9 +46,12 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
               {getInitials(customer.displayName)}
             </div>
             <div className="min-w-0 pt-1">
-              <h3 className="truncate font-[var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-                {customer.displayName}
-              </h3>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h3 className="truncate font-[var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                  {customer.displayName}
+                </h3>
+                <RepBadge repIdentity={customer.repIdentity} />
+              </div>
               <p className="mt-1 inline-flex items-center gap-1 text-sm text-[var(--sparkle-ink-muted)]">
                 <MapPin aria-hidden="true" className="size-4" />
                 {customer.state}, USA

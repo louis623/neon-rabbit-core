@@ -8,6 +8,12 @@ export type LiveShowStatus = "scheduled" | "live" | "completed";
 export type SilverProfileVisibility = "private" | "sparkle_finder";
 export type NicNacFindRequestStatus = "queued" | "complete";
 
+export type SparkleSuiteRepIdentity = {
+  sparkleSuiteRepId: string;
+  businessName: string;
+  publicDiscoveryEnabled: boolean;
+};
+
 export type RepSummary = {
   id: string;
   businessName: string;
@@ -55,6 +61,7 @@ export type CustomerAccount = {
   phoneE164?: string;
   state: string;
   tier: CustomerTier;
+  repIdentity?: SparkleSuiteRepIdentity;
 };
 
 export type SilverProfile = {

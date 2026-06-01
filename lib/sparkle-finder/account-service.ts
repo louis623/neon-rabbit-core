@@ -10,6 +10,12 @@ import {
   createDefaultCommunicationConsent,
   getSilverAccessState,
 } from "./membership";
+import {
+  getRepIdentity,
+  getSparkleSuiteRepEntitlement,
+  hasRepIncludedSilver,
+  type SparkleSuiteRepEntitlement,
+} from "./rep-entitlements";
 import type {
   SparkleFinderAccessState,
   SparkleFinderCommunicationConsent,
@@ -69,6 +75,8 @@ export type CurrentSparkleFinderAccountState = SparkleFinderAccountState & {
   membership?: SparkleFinderMembershipDetails;
   communicationConsent: SparkleFinderCommunicationConsent;
   silverProfile?: SilverProfile;
+  repEntitlement?: SparkleSuiteRepEntitlement;
+  repIdentity?: CustomerAccount["repIdentity"];
   isLocalPreview?: boolean;
 };
 
@@ -161,13 +169,28 @@ export function mapSparkleFinderAccountRows({
 }: AccountRowsInput): CurrentSparkleFinderAccountState {
   const displayName = firstPresent(profile?.display_name, user.email?.split("@")[0], "Sparkle Finder");
   const email = firstPresent(profile?.email, user.email, "");
-  const accessState = membership?.access_state ?? "free";
-  const silverAccess = getSilverAccessState({
-    accessState,
+  const baseAccessState = membership?.access_state ?? "free";
+  const baseSilverAccess = getSilverAccessState({
+    accessState: baseAccessState,
     trialEndsAt: membership?.trial_ends_at,
     silverEndsAt: membership?.silver_ends_at,
     now,
   });
+  const repEntitlement = getSparkleSuiteRepEntitlement(profile?.sparkle_suite_rep_id);
+  const repIdentity = getRepIdentity(repEntitlement);
+  const shouldUseRepIncludedSilver =
+    hasRepIncludedSilver(repEntitlement) && baseSilverAccess.effectiveState !== "silver_paid";
+  const accessState: SparkleFinderAccessState = shouldUseRepIncludedSilver
+    ? "silver_rep_included"
+    : baseAccessState;
+  const silverAccess = shouldUseRepIncludedSilver
+    ? getSilverAccessState({
+        accessState,
+        trialEndsAt: membership?.trial_ends_at,
+        silverEndsAt: membership?.silver_ends_at,
+        now,
+      })
+    : baseSilverAccess;
   const tier = silverAccess.hasSilverAccess ? "silver" : "free";
   const customer: CustomerAccount = {
     id: user.id,
@@ -176,6 +199,7 @@ export function mapSparkleFinderAccountRows({
     phoneE164: profile?.phone_e164 ?? "",
     state: profile?.state ?? "",
     tier,
+    ...(repIdentity ? { repIdentity } : {}),
   };
 
   return {
@@ -188,7 +212,7 @@ export function mapSparkleFinderAccountRows({
       accountId: user.id,
       personId: user.id,
       accessState,
-      silverSource: membership?.silver_source ?? "none",
+      silverSource: shouldUseRepIncludedSilver ? "sparkle_suite_rep" : membership?.silver_source ?? "none",
       trialStartedAt: membership?.trial_started_at ?? null,
       trialEndsAt: membership?.trial_ends_at ?? null,
       silverStartedAt: membership?.silver_started_at ?? null,
@@ -217,6 +241,8 @@ export function mapSparkleFinderAccountRows({
       bio: profile?.bio ?? "",
       visibility: profile?.profile_visibility ?? "private",
     },
+    ...(repEntitlement ? { repEntitlement } : {}),
+    ...(repIdentity ? { repIdentity } : {}),
   };
 }
 

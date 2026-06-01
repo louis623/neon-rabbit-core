@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { RepBadge } from "../../components/account/RepBadge";
 import {
   type CurrentSparkleFinderAccountState,
   getCurrentSparkleFinderAccount,
@@ -70,6 +73,73 @@ describe("Sparkle Finder account service", () => {
     expect(account.tier).toBe("silver");
     expect(account.membership?.effectiveState).toBe("silver_rep_included");
     expect(getSparkleFinderNavStatusLabel(account)).toBe("Rep Silver");
+  });
+
+  it("maps an active fixture-backed rep entitlement to Rep Silver and rep identity details", () => {
+    const account = mapSparkleFinderAccountRows({
+      user,
+      profile: profileRow({ is_rep: true, sparkle_suite_rep_id: "rep-sierra" }),
+      membership: membershipRow({
+        access_state: "free",
+        silver_source: "none",
+      }),
+      consent: consentRow(),
+      now: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(account.status).toBe("authenticated");
+    expect(account.tier).toBe("silver");
+    expect(account.customer?.tier).toBe("silver");
+    expect(account.membership?.accessState).toBe("silver_rep_included");
+    expect(account.membership?.effectiveState).toBe("silver_rep_included");
+    expect(account.membership?.silverSource).toBe("sparkle_suite_rep");
+    expect(account.repIdentity).toEqual({
+      sparkleSuiteRepId: "rep-sierra",
+      businessName: "Sierra Sparkle Studio",
+      publicDiscoveryEnabled: true,
+    });
+    expect(account.customer?.repIdentity).toEqual(account.repIdentity);
+    expect(getSparkleFinderNavStatusLabel(account)).toBe("Rep Silver");
+
+    const badgeMarkup = renderToStaticMarkup(createElement(RepBadge, { repIdentity: account.repIdentity }));
+
+    expect(badgeMarkup).toContain("Sparkle Suite rep");
+    expect(badgeMarkup).toContain("Sierra Sparkle Studio");
+  });
+
+  it("falls back to membership date rules when a fixture-backed rep entitlement is inactive", () => {
+    const activeTrialAccount = mapSparkleFinderAccountRows({
+      user,
+      profile: profileRow({ is_rep: true, sparkle_suite_rep_id: "rep-maya" }),
+      membership: membershipRow({
+        access_state: "silver_trial",
+        silver_source: "trial",
+        trial_ends_at: "2026-07-15T00:00:00.000Z",
+      }),
+      consent: consentRow(),
+      now: "2026-06-01T00:00:00.000Z",
+    });
+    const expiredTrialAccount = mapSparkleFinderAccountRows({
+      user,
+      profile: profileRow({ is_rep: true, sparkle_suite_rep_id: "rep-maya" }),
+      membership: membershipRow({
+        access_state: "silver_trial",
+        silver_source: "trial",
+        trial_ends_at: "2026-05-01T00:00:00.000Z",
+      }),
+      consent: consentRow(),
+      now: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(activeTrialAccount.tier).toBe("silver");
+    expect(activeTrialAccount.membership?.effectiveState).toBe("silver_trial");
+    expect(activeTrialAccount.repEntitlement?.subscriptionStatus).toBe("inactive");
+    expect(getSparkleFinderNavStatusLabel(activeTrialAccount)).toBe("Trial Silver");
+
+    expect(expiredTrialAccount.tier).toBe("free");
+    expect(expiredTrialAccount.membership?.effectiveState).toBe("free");
+    expect(expiredTrialAccount.repEntitlement?.subscriptionStatus).toBe("inactive");
+    expect(getSparkleFinderNavStatusLabel(expiredTrialAccount)).toBe("Free");
   });
 
   it("maps expired trials to Free", () => {
