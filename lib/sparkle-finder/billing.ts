@@ -12,6 +12,8 @@ const requiredBillingEnv = [
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_SILVER_PRICE_ID",
   "NEXT_PUBLIC_SITE_URL",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
 ] as const;
 
 type RequiredBillingEnvName = (typeof requiredBillingEnv)[number];
@@ -24,6 +26,8 @@ export type SparkleFinderBillingEnv =
       stripeWebhookSecret: string;
       silverPriceId: string;
       siteUrl: string;
+      supabaseUrl: string;
+      supabaseServiceRoleKey: string;
     }
   | {
       isConfigured: false;
@@ -71,15 +75,15 @@ export function getSparkleFinderBillingEnv(
     stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!.trim(),
     silverPriceId: env.STRIPE_SILVER_PRICE_ID!.trim(),
     siteUrl: env.NEXT_PUBLIC_SITE_URL!.trim().replace(/\/+$/, ""),
+    supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+    supabaseServiceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY!.trim(),
   };
 }
 
-export function isSparkleFinderCheckoutConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Boolean(
-    env.STRIPE_SECRET_KEY?.trim() &&
-      env.STRIPE_SILVER_PRICE_ID?.trim() &&
-      env.NEXT_PUBLIC_SITE_URL?.trim(),
-  );
+export function isSparkleFinderCheckoutConfigured(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return getSparkleFinderBillingEnv(env).isConfigured;
 }
 
 export function createStripeClient(secretKey: string): Stripe {
@@ -167,13 +171,22 @@ export function mapInvoiceToMembershipUpdate(
     subscription_details?: {
       metadata?: Stripe.Metadata | null;
     } | null;
+    parent?: {
+      subscription_details?: {
+        metadata?: Stripe.Metadata | null;
+        subscription?: string | Stripe.Subscription | null;
+      } | null;
+    } | null;
   };
   const userId = firstPresent(
     invoice.metadata?.supabase_user_id,
+    invoiceWithSubscription.parent?.subscription_details?.metadata?.supabase_user_id,
     invoiceWithSubscription.subscription_details?.metadata?.supabase_user_id,
   );
   const stripeCustomerId = stripeId(invoice.customer);
-  const stripeSubscriptionId = stripeId(invoiceWithSubscription.subscription);
+  const stripeSubscriptionId = stripeId(
+    invoiceWithSubscription.parent?.subscription_details?.subscription ?? invoiceWithSubscription.subscription,
+  );
 
   if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
     return null;
@@ -263,6 +276,29 @@ export async function fetchMembershipForUser(client: {
     .maybeSingle();
 
   return error ? null : (data as SupabaseMembershipRow | null);
+}
+
+export function isSupabaseUserEmailVerified(
+  user:
+    | {
+        id?: string | null;
+        email?: string | null;
+        email_confirmed_at?: string | null;
+        confirmed_at?: string | null;
+        email_verified?: boolean | null;
+        user_metadata?: {
+          email_verified?: boolean | null;
+        } | null;
+      }
+    | null
+    | undefined,
+): boolean {
+  return Boolean(
+    user?.email_confirmed_at?.trim() ||
+      user?.confirmed_at?.trim() ||
+      user?.email_verified === true ||
+      user?.user_metadata?.email_verified === true,
+  );
 }
 
 function paidUpdate(input: {

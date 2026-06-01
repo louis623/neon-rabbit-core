@@ -2,6 +2,8 @@ import Stripe from "stripe";
 import { describe, expect, it } from "vitest";
 import {
   getSparkleFinderBillingEnv,
+  isSparkleFinderCheckoutConfigured,
+  isSupabaseUserEmailVerified,
   mapCheckoutSessionCompletedToMembershipUpdate,
   mapInvoiceToMembershipUpdate,
   mapSubscriptionToMembershipUpdate,
@@ -14,6 +16,8 @@ describe("Sparkle Finder Stripe billing", () => {
       STRIPE_WEBHOOK_SECRET: "whsec_123",
       STRIPE_SILVER_PRICE_ID: "price_silver",
       NEXT_PUBLIC_SITE_URL: "https://sparkle.example",
+      NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
     });
 
     expect(env).toEqual({
@@ -23,6 +27,8 @@ describe("Sparkle Finder Stripe billing", () => {
       stripeWebhookSecret: "whsec_123",
       silverPriceId: "price_silver",
       siteUrl: "https://sparkle.example",
+      supabaseUrl: "https://supabase.example",
+      supabaseServiceRoleKey: "service-role-key",
     });
   });
 
@@ -32,11 +38,35 @@ describe("Sparkle Finder Stripe billing", () => {
       STRIPE_WEBHOOK_SECRET: "whsec_123",
       STRIPE_SILVER_PRICE_ID: "",
       NEXT_PUBLIC_SITE_URL: "",
+      NEXT_PUBLIC_SUPABASE_URL: "",
+      SUPABASE_SERVICE_ROLE_KEY: "",
     });
 
     expect(env.isConfigured).toBe(false);
-    expect(env.missing).toEqual(["STRIPE_SECRET_KEY", "STRIPE_SILVER_PRICE_ID", "NEXT_PUBLIC_SITE_URL"]);
+    expect(env.missing).toEqual([
+      "STRIPE_SECRET_KEY",
+      "STRIPE_SILVER_PRICE_ID",
+      "NEXT_PUBLIC_SITE_URL",
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+    ]);
     expect("stripeSecretKey" in env).toBe(false);
+  });
+
+  it("only enables paid checkout when checkout, webhook, and Supabase write prerequisites are present", () => {
+    const completeEnv = {
+      STRIPE_SECRET_KEY: "sk_test_123",
+      STRIPE_WEBHOOK_SECRET: "whsec_123",
+      STRIPE_SILVER_PRICE_ID: "price_silver",
+      NEXT_PUBLIC_SITE_URL: "https://sparkle.example",
+      NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+    };
+
+    expect(isSparkleFinderCheckoutConfigured(completeEnv)).toBe(true);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, STRIPE_WEBHOOK_SECRET: "" })).toBe(false);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SUPABASE_URL: "" })).toBe(false);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, SUPABASE_SERVICE_ROLE_KEY: "" })).toBe(false);
   });
 
   it("maps completed checkout sessions to paid Silver membership updates", () => {
@@ -145,6 +175,39 @@ describe("Sparkle Finder Stripe billing", () => {
       silverStartedAt: "2026-06-01T12:00:00.000Z",
       silverEndsAt: null,
     });
+  });
+
+  it("maps paid invoices using the current parent subscription details shape", () => {
+    const update = mapInvoiceToMembershipUpdate(
+      invoice({
+        customer: "cus_123",
+        status: "paid",
+        parent: {
+          subscription_details: {
+            metadata: { supabase_user_id: "user-123" },
+            subscription: "sub_123",
+          },
+        },
+      }),
+      "2026-06-01T12:00:00.000Z",
+    );
+
+    expect(update).toMatchObject({
+      userId: "user-123",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: "sub_123",
+      accessState: "silver_paid",
+      silverSource: "stripe",
+      silverStartedAt: "2026-06-01T12:00:00.000Z",
+      silverEndsAt: null,
+    });
+  });
+
+  it("requires a verified Supabase user before starting paid checkout", () => {
+    expect(isSupabaseUserEmailVerified({ id: "user-123", email_confirmed_at: "2026-06-01T12:00:00.000Z" })).toBe(true);
+    expect(isSupabaseUserEmailVerified({ id: "user-123", confirmed_at: "2026-06-01T12:00:00.000Z" })).toBe(true);
+    expect(isSupabaseUserEmailVerified({ id: "user-123", email: "casey@example.com" })).toBe(false);
+    expect(isSupabaseUserEmailVerified(null)).toBe(false);
   });
 
   it("does not downgrade on failed invoices because Stripe Billing may recover payment", () => {

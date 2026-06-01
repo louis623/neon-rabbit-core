@@ -72,7 +72,7 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
               <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
                 {isBillingConfigured
                   ? "Start secure Stripe-hosted Checkout for monthly Silver access."
-                  : "Billing setup is coming next. This button is pending until Stripe routes are added."}
+                  : "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured."}
               </p>
             </div>
           </div>

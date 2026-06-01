@@ -79,5 +79,7 @@ Task 7's server-only Stripe scaffold expects:
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_SILVER_PRICE_ID`
 - `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-Webhook membership updates also require `SUPABASE_SERVICE_ROLE_KEY` on the server. Without it, the webhook still verifies the Stripe signature but fails closed instead of trying to update paid membership rows through the publishable Supabase client.
+Paid checkout is disabled unless checkout, Stripe webhook verification, and Supabase service-role membership writes are all configured. Without the service role key and Supabase URL, Stripe webhooks fail closed instead of trying to update paid membership rows through the publishable Supabase client.

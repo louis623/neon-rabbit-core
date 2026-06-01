@@ -4,12 +4,24 @@ import {
   createStripeClient,
   fetchMembershipForUser,
   getSparkleFinderBillingEnv,
+  isSupabaseUserEmailVerified,
 } from "@/lib/sparkle-finder/billing";
 
 type SparkleFinderCheckoutClient = {
   auth: {
     getUser: () => Promise<{
-      data: { user: { id: string; email?: string | null } | null };
+      data: {
+        user: {
+          id: string;
+          email?: string | null;
+          email_confirmed_at?: string | null;
+          confirmed_at?: string | null;
+          email_verified?: boolean | null;
+          user_metadata?: {
+            email_verified?: boolean | null;
+          } | null;
+        } | null;
+      };
       error: unknown;
     }>;
   };
@@ -41,6 +53,10 @@ export async function POST() {
 
   if (error || !data.user) {
     return NextResponse.redirect(new URL("/auth/sign-in?next=/account", billingEnv.siteUrl), 303);
+  }
+
+  if (!isSupabaseUserEmailVerified(data.user)) {
+    return redirectToAccount("email_verification_required", billingEnv.siteUrl);
   }
 
   const membership = await fetchMembershipForUser(supabase, data.user.id);
