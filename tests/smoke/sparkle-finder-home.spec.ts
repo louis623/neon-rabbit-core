@@ -97,6 +97,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Sparkle Finder account" })).toBeVisible();
+    await expect(page.getByText(/Your\s+45-day Silver trial\s+is active/)).toBeVisible();
+    await expect(page.getByText(/Trial ends\s+June 10, 2026/)).toBeVisible();
     await expect(page.getByText("Phone is used for account identification")).toBeVisible();
     await expect(page.getByText("We do not sell your phone number.")).toBeVisible();
     await expect(page.getByText("Marketing texts are optional and separate from account/security notices.")).toBeVisible();
