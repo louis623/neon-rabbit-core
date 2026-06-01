@@ -46,8 +46,10 @@ type SparkleFinderMembershipRow = {
 };
 
 type SparkleFinderConsentRow = {
+  user_id: string;
   account_email_required: boolean | null;
   account_sms_allowed: boolean | null;
+  account_sms_consented_at?: string | null;
   promotional_email_opt_in: boolean | null;
   promotional_sms_opt_in: boolean | null;
   promotional_email_consented_at: string | null;
@@ -200,7 +202,7 @@ export function mapSparkleFinderAccountRows({
           accountSmsAllowed: consent.account_sms_allowed ?? false,
           promotionalEmailOptIn: consent.promotional_email_opt_in ?? false,
           promotionalSmsOptIn: consent.promotional_sms_opt_in ?? false,
-          accountSmsConsentedAt: null,
+          accountSmsConsentedAt: consent.account_sms_consented_at ?? null,
           promotionalEmailConsentedAt: consent.promotional_email_consented_at,
           promotionalSmsConsentedAt: consent.promotional_sms_consented_at,
           privacyAcknowledgedAt: consent.privacy_acknowledged_at,

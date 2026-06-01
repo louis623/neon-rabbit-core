@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  type CurrentSparkleFinderAccountState,
   getCurrentSparkleFinderAccount,
   getSparkleFinderNavStatusLabel,
   mapSparkleFinderAccountRows,
 } from "../../lib/sparkle-finder/account-service";
+import type {
+  SparkleFinderAccessState,
+  SparkleFinderSilverSource,
+} from "../../lib/sparkle-finder/account-types";
 
 const user = {
   id: "user-123",
@@ -100,6 +105,22 @@ describe("Sparkle Finder account service", () => {
     expect(getSparkleFinderNavStatusLabel(account)).toBe("Free");
   });
 
+  it("maps account SMS consent timestamps when present", () => {
+    const account = mapSparkleFinderAccountRows({
+      user,
+      profile: profileRow(),
+      membership: membershipRow(),
+      consent: consentRow({
+        account_sms_allowed: true,
+        account_sms_consented_at: "2026-05-31T12:00:00.000Z",
+      }),
+      now: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(account.communicationConsent.accountSmsAllowed).toBe(true);
+    expect(account.communicationConsent.accountSmsConsentedAt).toBe("2026-05-31T12:00:00.000Z");
+  });
+
   it("returns anonymous when Supabase is unconfigured", async () => {
     const account = await getCurrentSparkleFinderAccount({
       isSupabaseConfigured: () => false,
@@ -137,13 +158,18 @@ describe("Sparkle Finder account service", () => {
     expect(account.status).toBe("authenticated");
     expect(account.tier).toBe("free");
     expect(account.displayName).toBe("collector");
+    expectAuthenticated(account);
     expect(account.customer.email).toBe(user.email);
     expect(account.membership?.effectiveState).toBe("free");
     expect(account.communicationConsent.accountEmailRequired).toBe(true);
   });
 });
 
-function profileRow(overrides = {}) {
+type ProfileRow = Parameters<typeof mapSparkleFinderAccountRows>[0]["profile"];
+type MembershipRow = NonNullable<Parameters<typeof mapSparkleFinderAccountRows>[0]["membership"]>;
+type ConsentRow = NonNullable<Parameters<typeof mapSparkleFinderAccountRows>[0]["consent"]>;
+
+function profileRow(overrides: Partial<NonNullable<ProfileRow>> = {}): NonNullable<ProfileRow> {
   return {
     user_id: user.id,
     display_name: "Casey Collector",
@@ -155,11 +181,11 @@ function profileRow(overrides = {}) {
   };
 }
 
-function membershipRow(overrides = {}) {
+function membershipRow(overrides: Partial<MembershipRow> = {}): MembershipRow {
   return {
     user_id: user.id,
-    access_state: "free",
-    silver_source: "none",
+    access_state: "free" satisfies SparkleFinderAccessState,
+    silver_source: "none" satisfies SparkleFinderSilverSource,
     trial_started_at: null,
     trial_ends_at: null,
     silver_started_at: null,
@@ -168,11 +194,12 @@ function membershipRow(overrides = {}) {
   };
 }
 
-function consentRow(overrides = {}) {
+function consentRow(overrides: Partial<ConsentRow> = {}): ConsentRow {
   return {
     user_id: user.id,
     account_email_required: true,
     account_sms_allowed: false,
+    account_sms_consented_at: null,
     promotional_email_opt_in: false,
     promotional_sms_opt_in: false,
     promotional_email_consented_at: null,
@@ -180,6 +207,12 @@ function consentRow(overrides = {}) {
     privacy_acknowledged_at: "2026-05-31T00:00:00.000Z",
     ...overrides,
   };
+}
+
+function expectAuthenticated(
+  account: CurrentSparkleFinderAccountState,
+): asserts account is CurrentSparkleFinderAccountState & { status: "authenticated" } {
+  expect(account.status).toBe("authenticated");
 }
 
 function createFakeSupabaseClient({

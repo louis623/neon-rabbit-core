@@ -13,6 +13,7 @@ import ShopPage from "../../app/(hub)/shop/page";
 import SignInPage from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
+import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import {
   affiliateDisclosureHref,
   affiliateIssueReportHref,
@@ -186,8 +187,60 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Future catalog request path");
   });
 
+  it("renders real Silver account profile details without local fixture page copy", () => {
+    const accountState: CurrentSparkleFinderAccountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Casey Collector",
+      email: "casey@example.com",
+      customer: {
+        id: "user-123",
+        displayName: "Casey Collector",
+        email: "casey@example.com",
+        state: "PA",
+        tier: "silver",
+      },
+      communicationConsent: {
+        accountEmailRequired: true,
+        accountSmsAllowed: true,
+        promotionalEmailOptIn: false,
+        promotionalSmsOptIn: false,
+        accountSmsConsentedAt: "2026-05-31T12:00:00.000Z",
+        promotionalEmailConsentedAt: null,
+        promotionalSmsConsentedAt: null,
+        privacyAcknowledgedAt: "2026-05-31T00:00:00.000Z",
+      },
+      silverProfile: {
+        customerId: "user-123",
+        photoUrl: "",
+        tiktokHandle: "@caseyfinds",
+        bio: "Looking for jewel tones and unicorns.",
+        visibility: "sparkle_finder",
+      },
+    };
+
+    const markup = renderToStaticMarkup(renderSilverPageContent(accountState));
+
+    expect(markup).toContain("@caseyfinds");
+    expect(markup).toContain("Looking for jewel tones and unicorns.");
+    expect(markup).toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
+    expect(markup).not.toContain("fixture-backed preview");
+    expect(markup).not.toContain("Local fixture mode");
+  });
+
+  it("keeps local fixture wording for Silver local preview accounts", () => {
+    const markup = renderToStaticMarkup(
+      renderSilverPageContent({ ...getLocalDevAuthState("silver"), isLocalPreview: true }),
+    );
+
+    expect(markup).toContain("fixture-backed preview");
+    expect(markup).toContain("Local fixture mode");
+  });
+
   it("renders the Silver route upgrade prompt for Free customers", () => {
-    const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("free")));
+    const markup = renderToStaticMarkup(
+      renderSilverPageContent({ ...getLocalDevAuthState("free"), isLocalPreview: true }),
+    );
 
     expect(markup).toContain("Silver preview needed");
     expect(markup).toContain("/auth/sign-in");
