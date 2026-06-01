@@ -49,6 +49,8 @@ describe("Sparkle Finder auth boundary", () => {
 describe("Sparkle Finder Supabase proxy", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.resetModules();
+    vi.doUnmock("../../lib/supabase/server");
   });
 
   it("returns a Next response without throwing when Supabase is unconfigured", async () => {
@@ -59,5 +61,57 @@ describe("Sparkle Finder Supabase proxy", () => {
     const response = await updateSession(new NextRequest("http://localhost:3000/dashboard"));
 
     expect(response.status).toBe(200);
+  });
+
+  it("redirects successful email confirmations to a safe local next path", async () => {
+    const verifyOtp = vi.fn().mockResolvedValue({ error: null });
+
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp,
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(
+      new Request("http://localhost:4310/auth/confirm?token_hash=abc123&type=email&next=/silver"),
+    );
+
+    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: "abc123", type: "email" });
+    expect(response.headers.get("location")).toBe("http://localhost:4310/silver");
+  });
+
+  it("ignores external confirmation next URLs", async () => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp: vi.fn().mockResolvedValue({ error: null }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(
+      new Request("http://localhost:4310/auth/confirm?token_hash=abc123&type=email&next=https://evil.example"),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("redirects failed confirmations to sign-in with a safe error", async () => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp: vi.fn().mockResolvedValue({ error: new Error("bad token") }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(new Request("http://localhost:4310/auth/confirm?token_hash=bad&type=email"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=confirmation_failed");
   });
 });

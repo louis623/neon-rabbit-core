@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { Gem, LogIn, Search, UserRound } from "lucide-react";
+import { Gem, LogIn, Search, UserPlus, UserRound } from "lucide-react";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
   createNoCredentialSupabaseAuthBoundary,
   getLocalDevAuthState,
+  isLocalPreviewAuthEnabled,
 } from "@/lib/sparkle-finder/auth";
 
 export default function SignInPage() {
   const localFreeAccount = getLocalDevAuthState("free");
   const localSilverAccount = getLocalDevAuthState("silver");
   const supabaseBoundary = createNoCredentialSupabaseAuthBoundary();
+  const previewAuthEnabled = isLocalPreviewAuthEnabled();
 
   return (
     <>
@@ -21,36 +23,56 @@ export default function SignInPage() {
               Sparkle Finder account
             </p>
             <h1 className="font-serif text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-              Sign in for local preview access
+              Sign in to open Sparkle Finder
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              This development build uses fixture accounts, so no production credentials are needed. Guest preview keeps
-              the public view anonymous, Free preview opens the browsing hub, and Silver preview opens collection tools
-              and focused Nic-Nac requests.
+              Use your Sparkle Finder account for the library, rep availability, Silver collection tools, and focused
+              Nic-Nac requests. New accounts start with a 45-day Silver trial.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-[var(--sparkle-paper)] px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
-                href="/auth/preview/anonymous"
-              >
-                <UserRound aria-hidden="true" className="size-4" />
-                Continue as Guest
-              </Link>
-              <Link
                 className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-                href="/auth/preview/free"
+                href="/auth/sign-up"
               >
-                <LogIn aria-hidden="true" className="size-4" />
-                Continue as {localFreeAccount.displayName}
-              </Link>
-              <Link
-                className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-[var(--sparkle-paper)] px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
-                href="/auth/preview/silver"
-              >
-                <Gem aria-hidden="true" className="size-4" />
-                Preview {localSilverAccount.displayName}
+                <UserPlus aria-hidden="true" className="size-4" />
+                Create account
               </Link>
             </div>
+            {previewAuthEnabled ? (
+              <div className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+                <div>
+                  <h2 className="text-lg font-bold text-[var(--sparkle-plum-deep)]">Development preview</h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+                    This development build uses fixture accounts, so no production credentials are needed. Guest preview
+                    keeps the public view anonymous, Free preview opens the browsing hub, and Silver preview opens
+                    collection tools and focused Nic-Nac requests.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-[var(--sparkle-paper)] px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+                    href="/auth/preview/anonymous"
+                  >
+                    <UserRound aria-hidden="true" className="size-4" />
+                    Continue as Guest
+                  </Link>
+                  <Link
+                    className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+                    href="/auth/preview/free"
+                  >
+                    <LogIn aria-hidden="true" className="size-4" />
+                    Continue as {localFreeAccount.displayName}
+                  </Link>
+                  <Link
+                    className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-[var(--sparkle-paper)] px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+                    href="/auth/preview/silver"
+                  >
+                    <Gem aria-hidden="true" className="size-4" />
+                    Preview {localSilverAccount.displayName}
+                  </Link>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">

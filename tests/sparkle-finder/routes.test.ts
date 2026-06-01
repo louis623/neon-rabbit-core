@@ -223,6 +223,61 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Free preview keeps Guest preview");
   });
 
+  it("renders a sign-up route with 45-day Silver trial copy", async () => {
+    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
+    const markup = renderToStaticMarkup(createElement(SignUpPage));
+
+    expect(markup).toContain("45-day Silver trial");
+  });
+
+  it("renders sign-up phone and privacy copy", async () => {
+    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
+    const markup = renderToStaticMarkup(createElement(SignUpPage));
+
+    expect(markup).toContain(
+      "Used for account verification, recovery, and trial protection. Not sold. Marketing texts are optional.",
+    );
+    expect(markup).toContain("I acknowledge");
+    expect(markup).toContain("privacy");
+  });
+
+  it("leaves promotional SMS unchecked by default on the sign-up route", async () => {
+    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
+    const markup = renderToStaticMarkup(createElement(SignUpPage));
+
+    expect(markup).toContain('name="promotionalSms"');
+    expect(markup).not.toContain('name="promotionalSms" checked=""');
+    expect(markup).not.toContain('name="promotionalSms" checked');
+  });
+
+  it("links sign-in visitors to the sign-up route", () => {
+    const markup = renderToStaticMarkup(createElement(SignInPage));
+
+    expect(markup).toContain('href="/auth/sign-up"');
+  });
+
+  it("hides local preview links in production when preview auth is disabled", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "");
+
+    const markup = renderToStaticMarkup(createElement(SignInPage));
+
+    expect(markup).not.toContain("/auth/preview/anonymous");
+    expect(markup).not.toContain("/auth/preview/free");
+    expect(markup).not.toContain("/auth/preview/silver");
+  });
+
+  it("shows local preview links when preview auth is enabled", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "true");
+
+    const markup = renderToStaticMarkup(createElement(SignInPage));
+
+    expect(markup).toContain("/auth/preview/anonymous");
+    expect(markup).toContain("/auth/preview/free");
+    expect(markup).toContain("/auth/preview/silver");
+  });
+
   it("keeps local preview redirects on safe local request hosts", async () => {
     const freeResponse = await previewAuthGET(
       new Request("http://localhost:4310/auth/preview/free", {
