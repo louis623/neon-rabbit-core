@@ -245,6 +245,25 @@ describe("Sparkle Finder account route", () => {
     expect(markup).not.toContain('name="promotionalSms" checked');
   });
 
+  it("renders a self-facing Sparkle Suite rep marker on rep account surfaces", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const accountState: CurrentSparkleFinderAccountState = {
+      ...activeTrialAccountState(),
+      repEntitlement: {
+        sparkleSuiteRepId: "rep-kelli",
+        businessName: "Kelli Jo Sparkles",
+        subscriptionStatus: "active",
+        publicDiscoveryEnabled: false,
+      },
+    };
+
+    const markup = renderToStaticMarkup(renderAccountPageContent(accountState));
+
+    expect(markup).toContain("Sparkle Suite rep");
+    expect(markup).toContain("Kelli Jo Sparkles");
+    expect(markup).not.toContain("Bomb Party rep");
+  });
+
   it("renders the existing profile phone so profile saves preserve it", async () => {
     const { renderAccountPageContent } = await import("../../app/account/page");
     const accountState = activeTrialAccountState() as CurrentSparkleFinderAccountState & {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { LogIn } from "lucide-react";
 import { AccountPreferences } from "@/components/account/AccountPreferences";
+import { RepBadge } from "@/components/account/RepBadge";
 import { SilverStatusPanel } from "@/components/account/SilverStatusPanel";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
@@ -9,6 +10,7 @@ import {
   type CurrentSparkleFinderAccountState,
 } from "@/lib/sparkle-finder/account-service";
 import { parseSparkleFinderAuthMode, sparkleFinderAuthCookieName } from "@/lib/sparkle-finder/auth";
+import type { SparkleSuiteRepIdentity } from "@/lib/sparkle-finder/types";
 
 export default async function AccountPage() {
   const cookieStore = await cookies();
@@ -64,7 +66,10 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         <section className="grid gap-2">
           <p className="text-sm font-bold uppercase tracking-wide text-[var(--sparkle-coral)]">Account</p>
-          <h1 className="text-3xl font-bold text-[var(--sparkle-plum-deep)]">Sparkle Finder account</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold text-[var(--sparkle-plum-deep)]">Sparkle Finder account</h1>
+            <RepBadge repIdentity={getSelfFacingRepIdentity(accountState)} />
+          </div>
           <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
             Manage the signed-in profile, privacy choices, and Silver access attached to verified account data.
           </p>
@@ -75,4 +80,20 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
       </div>
     </main>
   );
+}
+
+function getSelfFacingRepIdentity(accountState: CurrentSparkleFinderAccountState): SparkleSuiteRepIdentity | undefined {
+  if (accountState.repIdentity) {
+    return accountState.repIdentity;
+  }
+
+  if (!accountState.repEntitlement) {
+    return undefined;
+  }
+
+  return {
+    sparkleSuiteRepId: accountState.repEntitlement.sparkleSuiteRepId,
+    businessName: accountState.repEntitlement.businessName,
+    publicDiscoveryEnabled: accountState.repEntitlement.publicDiscoveryEnabled,
+  };
 }

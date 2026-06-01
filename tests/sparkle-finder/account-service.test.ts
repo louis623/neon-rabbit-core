@@ -107,6 +107,35 @@ describe("Sparkle Finder account service", () => {
     expect(badgeMarkup).toContain("Sierra Sparkle Studio");
   });
 
+  it("maps an active private rep entitlement to included Silver without public rep identity", () => {
+    const account = mapSparkleFinderAccountRows({
+      user,
+      profile: profileRow({ is_rep: true, sparkle_suite_rep_id: "rep-kelli" }),
+      membership: membershipRow({
+        access_state: "free",
+        silver_source: "none",
+      }),
+      consent: consentRow(),
+      now: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(account.status).toBe("authenticated");
+    expect(account.tier).toBe("silver");
+    expect(account.customer?.tier).toBe("silver");
+    expect(account.membership?.accessState).toBe("silver_rep_included");
+    expect(account.membership?.effectiveState).toBe("silver_rep_included");
+    expect(account.membership?.silverSource).toBe("sparkle_suite_rep");
+    expect(account.repEntitlement).toMatchObject({
+      sparkleSuiteRepId: "rep-kelli",
+      businessName: "Kelli Jo Sparkles",
+      subscriptionStatus: "active",
+      publicDiscoveryEnabled: false,
+    });
+    expect(account.repIdentity).toBeUndefined();
+    expect(account.customer?.repIdentity).toBeUndefined();
+    expect(getSparkleFinderNavStatusLabel(account)).toBe("Rep Silver");
+  });
+
   it("falls back to membership date rules when a fixture-backed rep entitlement is inactive", () => {
     const activeTrialAccount = mapSparkleFinderAccountRows({
       user,

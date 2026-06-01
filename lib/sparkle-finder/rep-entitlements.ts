@@ -21,7 +21,7 @@ export function getSparkleSuiteRepEntitlement(
 }
 
 export function hasRepIncludedSilver(repEntitlement: SparkleSuiteRepEntitlement | null | undefined): boolean {
-  return repEntitlement?.subscriptionStatus === "active" && repEntitlement.publicDiscoveryEnabled;
+  return repEntitlement?.subscriptionStatus === "active";
 }
 
 export function getRepIdentity(
