@@ -1,5 +1,6 @@
 import { CalendarDays, Gem, LockKeyhole } from "lucide-react";
 import type { CurrentSparkleFinderAccountState } from "@/lib/sparkle-finder/account-service";
+import { isSparkleFinderCheckoutConfigured } from "@/lib/sparkle-finder/billing";
 
 type SilverStatusPanelProps = {
   accountState: CurrentSparkleFinderAccountState & { status: "authenticated" };
@@ -14,6 +15,7 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
   const shouldShowUpgrade =
     effectiveState === "free" ||
     (effectiveState === "silver_trial" && typeof trialDaysLeft === "number" && trialDaysLeft <= 7);
+  const isBillingConfigured = isSparkleFinderCheckoutConfigured();
 
   return (
     <section className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
@@ -68,17 +70,30 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
             <div>
               <h3 className="text-base font-bold text-[var(--sparkle-plum-deep)]">Continue Silver at $4.99/month</h3>
               <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                Billing setup is coming next. This button is pending until Stripe routes are added.
+                {isBillingConfigured
+                  ? "Start secure Stripe-hosted Checkout for monthly Silver access."
+                  : "Billing setup is coming next. This button is pending until Stripe routes are added."}
               </p>
             </div>
           </div>
-          <button
-            className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-shell)] px-5 text-sm font-bold text-[var(--sparkle-ink-muted)]"
-            disabled
-            type="button"
-          >
-            Continue Silver at $4.99/month
-          </button>
+          {isBillingConfigured ? (
+            <form action="/billing/checkout" method="post">
+              <button
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+                type="submit"
+              >
+                Continue Silver at $4.99/month
+              </button>
+            </form>
+          ) : (
+            <button
+              className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-shell)] px-5 text-sm font-bold text-[var(--sparkle-ink-muted)]"
+              disabled
+              type="button"
+            >
+              Continue Silver at $4.99/month
+            </button>
+          )}
         </div>
       ) : null}
     </section>

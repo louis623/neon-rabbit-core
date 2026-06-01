@@ -70,3 +70,14 @@ This repo is not for:
 ## Current Posture
 
 Research first. Design later. Build only after the customer-side scope, trust model, data ownership model, and transaction boundary are deliberately decided.
+
+## Silver Billing Env
+
+Task 7's server-only Stripe scaffold expects:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_SILVER_PRICE_ID`
+- `NEXT_PUBLIC_SITE_URL`
+
+Webhook membership updates also require `SUPABASE_SERVICE_ROLE_KEY` on the server. Without it, the webhook still verifies the Stripe signature but fails closed instead of trying to update paid membership rows through the publishable Supabase client.
