@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Gem, ShoppingBag, UserRound, UsersRound, Video } from "lucide-react";
+import { BookOpen, ShoppingBag, UserRound, UsersRound, Video } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
@@ -9,7 +9,6 @@ const navItems = [
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Live Shows", href: "/live-shows", icon: Video },
   { label: "Rep Boards", href: "/rep-boards", icon: UsersRound },
-  { label: "Diamonds & Unicorns", href: "/diamonds-unicorns", icon: Gem },
   { label: "Shop", href: "/shop", icon: ShoppingBag },
 ];
 

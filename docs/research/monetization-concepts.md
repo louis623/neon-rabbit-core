@@ -1,8 +1,8 @@
 # Monetization Concepts
 
-Intent update: 2026-05-29
+Intent update: 2026-05-31
 
-Buy/sell and customer-to-customer trading are out of the first customer-side version. The first version is a secured free customer discovery hub that drives traffic to Sparkle Suite reps.
+Buy/sell and customer-to-customer trading are out of the first customer-side version. The first version is a secured customer discovery hub that drives traffic to Sparkle Suite reps. New accounts start with a 45-day Silver trial, then continue as paid Silver, rep-included Silver, or Free access.
 
 ## Current V1 Monetization Direction
 
@@ -12,7 +12,7 @@ V1 stays free for customers and monetizes lightly:
 - affiliate links for jewelry collector products
 - affiliate links for live-streaming gear and tools reps may want
 - possible Sparkle Suite branded products later
-- optional Silver Membership if customer-facing Nic-Nac search assist is included or staged soon after launch
+- Silver Membership at `$4.99/month` with a 45-day trial and a Free downgrade path
 
 V1 should not include:
 
@@ -54,6 +54,7 @@ Silver should be monthly only:
 - membership remains active until the end of the paid month
 - no annual billing
 - no yearly refund complexity
+- new accounts start with a 45-day Silver trial
 
 Pricing leaning:
 
@@ -63,8 +64,18 @@ Pricing leaning:
 
 Sparkle Suite rep perk:
 
-- paid Sparkle Suite reps receive free Silver access while their rep account is paid and active
+- paid Sparkle Suite reps receive included Silver access while their rep account is paid and active
+- this should be implemented as a Silver Membership Billing Credit or equivalent entitlement
+- this should not be the mechanism that connects rep data to Sparkle Finder
 - this gives reps a reason to use the customer hub and understand what customers experience
+
+Sparkle Suite rep identity:
+
+- reps should have one account/profile experience, not separate customer and rep accounts
+- a rep profile includes everything a normal Silver customer can access
+- rep identity should be visible, such as a badge or diamond marker
+- rep profile basics, shows, dance floors, and relevant business links should flow automatically from Sparkle Suite into Sparkle Finder
+- Sparkle Suite should be upfront that active rep discovery data may appear on Sparkle Finder
 
 Possible Silver features:
 
@@ -98,7 +109,7 @@ Watch-outs:
 
 ### Free Account
 
-Free accounts should be useful enough to grow the network:
+Free access begins after the 45-day Silver trial ends without paid or rep-included Silver access. Free accounts should remain useful enough to grow the network:
 
 - create a login and basic account preferences
 - browse the master jewelry library
@@ -115,7 +126,7 @@ Free accounts should not be able to:
 
 ### Silver Account
 
-Silver accounts become the paid convenience tier:
+Silver access may come from a 45-day trial, a paid `$4.99/month` subscription, or an active Sparkle Suite rep entitlement. Silver accounts become the convenience tier:
 
 - can create a customer profile
 - can build and display a personal collection from existing library records

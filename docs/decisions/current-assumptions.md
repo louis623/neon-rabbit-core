@@ -2,7 +2,7 @@
 
 Initial pull date: 2026-05-28
 
-These are working assumptions for research only. They are not final product decisions.
+These are working assumptions for research only unless a later decision note marks them as locked.
 
 ## Assumptions With Strong Source Support
 
@@ -12,7 +12,7 @@ These are working assumptions for research only. They are not final product deci
 - Sparkle Finder should use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
 - Sparkle Finder should use the main Sparkle Suite brand system, not the Amethyst skin/template.
 - Sparkle Finder's locked homepage/UI direction is the updated Concept 2 mockup: an editorial discovery hub with the `SF` circular seal, a `Today across Sparkle Suite` agenda panel, and an integrated Silver Collector Space.
-- The customer side is more than a trade board. For v1, it is a secured free discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
+- The customer side is more than a trade board. For v1, it is a secured discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
 - Current rep-side trade board rules are intentionally narrow.
 - Neon Rabbit has historically preferred not to be the money or shipping middleman for the rep trade board.
@@ -20,18 +20,25 @@ These are working assumptions for research only. They are not final product deci
 
 ## Assumptions That Need Validation
 
-- First customer MVP should be a secured free discovery hub, not collection showcase or customer-to-customer trading.
+- First customer MVP should be a secured discovery hub, not customer-to-customer trading.
 - Customer buy/sell is deferred.
 - Customer-to-customer trading is deferred.
 - Customer accounts should be global to Sparkle Suite, with optional relationships to reps.
-- Logged-in free customers can browse Sparkle Suite rep live calendars, aggregated rep trade boards/dance floors, and the master jewelry library.
-- Logged-in free customers can browse a Diamonds & Unicorns Library view, powered by Bomb Party's own diamond/unicorn labels in the master jewelry library.
+- New customer accounts should start with a 45-day Silver trial by default, then downgrade to Free if they do not upgrade.
+- Phone numbers may be collected for identity, recovery, verification, trial abuse prevention, and security notices, but marketing SMS requires a separate optional opt-in.
+- Sparkle Finder should not sell customer personal information.
+- Promotional email consent should be separate from account/security email.
+- Logged-in Free customers can browse Sparkle Suite rep live calendars, aggregated rep trade boards/dance floors, and the master jewelry library after any trial or paid Silver access ends.
+- Logged-in Free customers can find diamond and unicorn labels inside the Master Jewelry Library through filters and search, not through a separate standalone library surface.
 - Sparkle Suite should not create its own rarity ratings or rarity scoring for Diamonds & Unicorns.
 - Public visitors should see a landing/teaser only; the useful hub requires login.
 - Customer paid membership should be called Silver Membership, not Plus.
 - Silver Membership is monthly only, cancel anytime, active until the end of the paid month, with no annual plan.
 - Silver pricing should target under $5/month, likely `$4.99/month`, because it should feel like less than a cup of coffee.
-- Paid Sparkle Suite reps should receive Silver access for free while their rep account is paid and active.
+- Paid Sparkle Suite reps should receive Silver access for free while their rep account is paid and active, implemented as a Silver Membership Billing Credit or equivalent entitlement.
+- Sparkle Suite rep data should connect to Sparkle Finder automatically from Sparkle Suite, not through the rep's Silver billing-credit code.
+- A rep should have one unified account/profile experience that includes normal Silver customer access plus visible rep identity, such as a rep badge/diamond marker.
+- Do not split reps into separate customer and rep accounts. Reps are also collectors and should be treated as Silver members with rep identity layered in.
 - Customer-facing Nic-Nac may be a Silver feature for focused search assist: `Nic-Nac, find this for me`.
 - Customer profile and customer collection features should be Silver Membership features.
 - Affiliate/shop monetization should include both collector products and live-streaming gear/tools for reps.

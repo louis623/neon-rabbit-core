@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, Gem, UsersRound } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, PackageCheck, UsersRound } from "lucide-react";
 
 const discoveryCards = [
   {
@@ -21,10 +21,10 @@ const discoveryCards = [
     icon: BookOpen,
   },
   {
-    title: "Diamonds & Unicorns Library",
-    body: "Explore Bomb Party diamond and unicorn labels.",
-    href: "/diamonds-unicorns",
-    icon: Gem,
+    title: "Collector & Rep Essentials",
+    body: "Shop care, storage, display, livestream, and setup gear.",
+    href: "/shop",
+    icon: PackageCheck,
   },
 ];
 

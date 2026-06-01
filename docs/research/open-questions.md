@@ -8,13 +8,14 @@ Initial pull date: 2026-05-28
 - Should customers log in through Sparkle Suite directly, through their rep's site, or both?
 - What URL/domain should `Sparkle Finder by Sparkle Suite` use?
 - Is this for all Bomb Party customers, only customers attached to Sparkle Suite reps, or invite-only early communities?
-- Should Silver Membership launch in v1 or shortly after the free discovery hub?
-- What exact customer information does Silver require for customer profile and collection features?
+- Which exact Silver features must launch with the 45-day trial versus shortly after?
+- What exact customer information does Silver require for customer profile and collection features beyond email, phone, and communication consent fields?
 
 ## Identity and Trust
 
-- What does a customer profile require at launch: name, email, phone, handle, location, preferred rep?
-- Do customers need verified phone/email before using profile or collection features?
+- What does a profile require at launch beyond email, phone, display name, optional handle, optional location, and separate communication consent preferences?
+- Should both email and phone be verified before Silver trial access starts, or can phone verification happen before higher-risk actions?
+- What is the retention/deletion policy for phone numbers after account closure?
 - What report/ban process is needed for bad actors even while trading and posting are parked?
 - Should reputation be global, rep-scoped, transaction-scoped, or all three?
 - What happens when a user is reported by multiple customers or reps?
@@ -57,7 +58,10 @@ Buy/sell is parked for v1. These questions are for a later revisit:
 - Do reps get leads when customers want a piece a rep has listed?
 - Can reps browse customer wanted lists to source inventory?
 - Do reps moderate communities tied to their customers or teams?
-- Silver trial notification scaffold: account email is the first alert channel for 7-day, 3-day, 1-day, day-of-expiration, and downgrade-confirmation notices. No launch SMS trial alerts; SMS waits for explicit consent, provider selection, compliance review, and messaging cost controls.
+- How should the 45-day Silver trial convert to paid Silver without feeling pushy or punitive?
+- What exact notifications should go out before trial downgrade?
+  Current scaffold: account email is the first alert channel for 7-day, 3-day, 1-day, day-of-expiration, and downgrade-confirmation notices. No launch SMS trial alerts; SMS waits for explicit consent, provider selection, compliance review, and messaging cost controls.
+- How should Sparkle Suite display the included Silver Membership Billing Credit for active reps?
 - Does the customer platform increase the value of rep subscription, create a separate customer revenue stream, or both?
 - What exact master live calendar features belong to Free browsing versus Silver follow/save/alert behavior?
 
@@ -76,7 +80,7 @@ Message boards and social posting are parked for v1. These questions are for a l
 
 - What disclaimers are needed to avoid implying Bomb Party affiliation?
 - What customer data retention policy applies to social profiles, trade history, reports, and deleted accounts?
-- Does customer-side messaging require new SMS/email consent flows separate from rep-site audience consent?
+- Does customer-side messaging require new SMS/email consent flows separate from rep-site audience consent? Current direction: yes, keep account/security messaging separate from promotional email/SMS consent.
 - Trial expiration alerts should launch by account email first; SMS alerts should remain off until explicit customer consent, cost controls, and final compliance copy exist.
 - What privacy controls are required for collection visibility and location/shipping data?
 - What consumer protection obligations are triggered by inquiry-only trade facilitation vs processed transactions?

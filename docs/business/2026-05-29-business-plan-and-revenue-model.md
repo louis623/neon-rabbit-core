@@ -4,13 +4,13 @@ Created: 2026-05-29
 
 ## Executive Summary
 
-Sparkle Finder is a secured, free-login discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, rep trade boards/dance floors, and the master jewelry library easier to discover in one place.
+Sparkle Finder is a secured discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. New accounts start with a 45-day Silver trial and then continue as paid Silver or downgrade to Free access. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, rep trade boards/dance floors, and the master jewelry library easier to discover in one place.
 
 The business model is intentionally light at launch:
 
-- Free customer accounts create network value and lead data.
+- Customer accounts create network value and lead data.
 - Silver Membership monetizes Nic-Nac-assisted piece hunting for customers who want faster answers.
-- Paid Sparkle Suite reps receive Silver for free as a membership perk.
+- Paid Sparkle Suite reps receive Silver for free as a membership perk through a Silver Membership Billing Credit or equivalent entitlement.
 - Affiliate/shop links monetize collector gear and live-streaming gear without turning the hub into a marketplace.
 - Careful AdSense placements add background revenue without making the brand feel cheap.
 
@@ -45,7 +45,9 @@ Working name and mark:
 
 ## V1 Product Scope
 
-### Free Logged-In Hub
+### Logged-In Hub
+
+All new customer accounts begin with a 45-day Silver trial. After that trial, customers either continue as paid Silver members, qualify for included Silver through an active Sparkle Suite rep account, or downgrade to Free access.
 
 Free customer account holders can:
 
@@ -53,7 +55,6 @@ Free customer account holders can:
 - browse master Sparkle Suite rep live calendar
 - browse aggregated rep trade boards/dance floors
 - browse the master jewelry library
-- browse Diamonds & Unicorns Library
 - use normal manual search and filters
 - open rep sites and rep trade boards
 - see rep next-show context where available
@@ -73,7 +74,9 @@ Terms:
 - remains active until the end of the paid month
 - target price: under $5/month
 - working price: `$4.99/month`
+- 45-day trial for new accounts
 - paid Sparkle Suite reps receive Silver for free while their rep account is active
+- rep-included Silver should be represented as a Silver Membership Billing Credit or equivalent entitlement
 
 Silver features:
 
@@ -92,6 +95,55 @@ Silver features:
 - generous monthly Nic-Nac search access, with internal usage controls
 
 Silver should not be described as unlimited AI access.
+
+Silver access states:
+
+- `silver_trial`: new account during the 45-day trial
+- `silver_paid`: active paid Silver subscription
+- `silver_rep_included`: active Sparkle Suite rep with included Silver access
+- `free`: account without active Silver access
+
+The app should calculate whether a user currently has Silver access from these states instead of treating Free and Silver as separate account systems.
+
+### Sparkle Suite Rep Identity
+
+Sparkle Suite reps should use one account/profile experience, not separate customer and rep accounts. A rep profile gives the rep normal Silver access plus visible rep identity, such as a badge or diamond marker.
+
+Rep data should connect to Sparkle Finder automatically from Sparkle Suite, not through a Silver billing-credit code. The billing credit only handles the rep's included Silver access.
+
+Sparkle Suite should be upfront that active rep discovery data may appear on Sparkle Finder:
+
+- rep profile basics
+- show schedules
+- dance floors / rep trade boards
+- relevant business links
+
+### Phone Privacy And Consent
+
+Customer phone numbers may be used for account identity, recovery, verification, trial abuse prevention, and security notices. They should not be used as implied marketing permission.
+
+Required consent split:
+
+- account/security email: required when needed to operate the account
+- account/security SMS: limited to verification, recovery, fraud prevention, and security notices
+- promotional email: optional opt-in
+- promotional SMS: optional opt-in, off by default
+
+Sparkle Finder should not sell customer personal information. Signup and privacy copy should say plainly why a phone number is requested and how it is used.
+
+Implementation notes:
+
+- store verification timestamps
+- store separate promotional email and SMS consent timestamps
+- keep SMS alerts out of launch until consent and cost controls are proven
+- give users a way to update their phone number and communication preferences
+- define retention/deletion rules for closed accounts
+
+Privacy/security sources to keep in view:
+
+- FTC privacy/security guidance: `https://www.ftc.gov/business-guidance/resources/protecting-personal-information-guide-business`
+- FTC Start with Security: `https://www.ftc.gov/business-guidance/resources/start-security-guide-business`
+- FCC text message/TCPA guidance: `https://docs.fcc.gov/public/attachments/FCC-22-72A1.pdf`
 
 ### Parked Features
 
@@ -208,9 +260,9 @@ The customer hub should increase Sparkle Suite rep value because paid reps can s
 
 - my site is included in the customer discovery network
 - my live shows appear in the master calendar
-- my trade board can be discovered through the hub
+- my dance floor / trade board can be discovered through the hub
 - customers hunting pieces may get routed toward me
-- I get free Silver access as a paid rep
+- I get included Silver access as a paid rep
 
 This can support:
 
@@ -299,30 +351,30 @@ Assumptions:
 Primary conversion:
 
 ```text
-public visitor -> free login
+public visitor -> 45-day Silver trial account
 ```
 
 Early target:
 
-- 10-25% of interested visitors create a free account if the landing page clearly explains that calendars/boards/library require login.
+- 10-25% of interested visitors create an account if the landing page clearly explains that calendars/boards/library require login and the first 45 days include Silver access.
 
 ### Silver Conversion
 
 Primary conversion:
 
 ```text
-free customer -> Silver member
+silver trial customer -> paid Silver member
 ```
 
 Early target:
 
-- 5-10% of active free customers convert to Silver if `Nic-Nac, find this for me` is visible at high-intent moments.
+- 5-10% of active trial customers convert to paid Silver if `Nic-Nac, find this for me` is visible at high-intent moments and the trial value is clear before downgrade.
 
 High-intent moments:
 
 - jewelry detail page
 - no obvious manual match found
-- Diamonds & Unicorns page
+- master jewelry library filtered to diamond/unicorn labels
 - rep board item detail
 - creating or expanding a personal collection
 - after repeated searches
@@ -433,11 +485,13 @@ Customer metrics:
 - rep calendar views
 - rep board views
 - library searches
-- Diamonds & Unicorns views
+- master jewelry library diamond/unicorn filter views
 - affiliate clicks
 - Silver profile creations
 - Silver collection items saved
 - Silver trial starts
+- 45-day trial to paid Silver conversions
+- trial expirations to Free downgrade
 - Silver paid conversions
 - Nic-Nac searches per Silver member
 - cost per Nic-Nac search
@@ -464,12 +518,11 @@ Business metrics:
 
 Launch the business model in this order:
 
-1. Free secured discovery hub.
+1. Secured discovery hub with new accounts starting in a 45-day Silver trial.
 2. Rep calendar, rep directory, rep board aggregation, and master jewelry library.
-3. Diamonds & Unicorns Library as a free excitement driver.
-4. Affiliate/shop layer with collector and live-streaming gear.
-5. Silver Membership at `$4.99/month`, monthly only, with first-month free trial if cost guardrails are ready.
-6. Free Silver access for paid Sparkle Suite reps.
+3. Affiliate/shop layer with collector and live-streaming gear.
+4. Silver Membership at `$4.99/month`, monthly only, with the 45-day trial and downgrade path.
+5. Included Silver access for paid Sparkle Suite reps through a Silver Membership Billing Credit or equivalent entitlement.
 7. Add more tiers only after there is clear usage data.
 
 Do not launch customer-to-customer trading, buy/sell, Gold, Diamond, or sponsored rep placements until the discovery hub has real usage data.

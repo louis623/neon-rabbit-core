@@ -2,6 +2,16 @@
 
 Decision date: 2026-05-29
 
+## 2026-05-31 Superseding Notes
+
+Later product decisions update this pivot:
+
+- New accounts start with a 45-day Silver trial by default, then downgrade to Free if they do not upgrade or qualify for included Silver.
+- Diamonds and unicorn labels should live inside the Master Jewelry Library as filters/search facets, not as a standalone Diamonds & Unicorns Library surface.
+- Active Sparkle Suite reps receive included Silver access through a Silver Membership Billing Credit or equivalent entitlement.
+- Rep data connects to Sparkle Finder automatically from Sparkle Suite. The billing credit is only for Silver access.
+- Reps should use one unified account/profile experience that includes normal Silver access plus visible rep identity, such as a badge or diamond marker.
+
 ## Decision
 
 Shelve customer-to-customer trading for v1.
