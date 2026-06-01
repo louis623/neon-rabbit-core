@@ -18,9 +18,13 @@ export function loadState(): AppState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw) as Partial<AppState>;
+    const selectedStepId = typeof parsed.selectedStepId === 'string'
+      && steps.some((step) => step.id === parsed.selectedStepId)
+      ? parsed.selectedStepId
+      : fallback.selectedStepId;
 
     return {
-      selectedStepId: parsed.selectedStepId ?? fallback.selectedStepId,
+      selectedStepId,
       stepStatuses: { ...fallback.stepStatuses, ...(parsed.stepStatuses ?? {}) },
       questions: parsed.questions ?? [],
     };

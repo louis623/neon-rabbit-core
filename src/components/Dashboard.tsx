@@ -15,7 +15,7 @@ export function Dashboard({ selectedStepId, stepStatuses, questionCount, onSelec
   const nextStep = steps.find((step) => stepStatuses[step.id] !== 'done') ?? steps[0];
 
   return (
-    <section className="dashboard" aria-label="Start Strong dashboard">
+    <section className="dashboard" aria-label="Onboarding dashboard">
       <div className="hero-card">
         <div>
           <p className="plain-label">Brittany's new rep path</p>
@@ -42,8 +42,19 @@ export function Dashboard({ selectedStepId, stepStatuses, questionCount, onSelec
         </div>
       </div>
 
+      <section className="next-step-focus" aria-label="Recommended next step">
+        <div>
+          <span className="eyebrow">Do this next</span>
+          <h2>{nextStep.title}</h2>
+          <p>{nextStep.whatToDo}</p>
+        </div>
+        <button className="primary-button" onClick={() => onSelectStep(nextStep.id)}>
+          Open this step
+        </button>
+      </section>
+
       <div className="section-title-row">
-        <h2>Your Start Strong Path</h2>
+        <h2>Your path to getting started.</h2>
         <span>{progress.percent}% complete</span>
       </div>
       <div className="path-grid">
@@ -54,12 +65,14 @@ export function Dashboard({ selectedStepId, stepStatuses, questionCount, onSelec
           const firstOpenStep = groupSteps.find((step) => stepStatuses[step.id] !== 'done') ?? groupSteps[0];
           const isSelected = groupSteps.some((step) => step.id === selectedStepId);
           const complete = groupSteps.length > 0 && doneCount === groupSteps.length;
+          const cardLabel = `${group}. ${doneCount} of ${groupSteps.length} done.${helpCount > 0 ? ` ${helpCount} step needs help.` : ''}`;
 
           return (
             <button
               className={`path-card ${isSelected ? 'selected' : ''}`}
               key={group}
               onClick={() => firstOpenStep && onSelectStep(firstOpenStep.id)}
+              aria-label={cardLabel}
             >
               <span className={`path-number ${complete ? 'complete' : ''}`}>{complete ? 'OK' : index + 1}</span>
               <span className="path-copy">

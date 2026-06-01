@@ -1,21 +1,31 @@
 export type ResourceSourceType = 'official' | 'team' | 'sparkle-suite';
 
+export type ResourceCategory = 'Start Here' | 'BPU' | 'Money' | 'Supplies' | 'Shipping' | 'Loyalty' | 'Sparkle Suite';
+
 export type StepStatus = 'not-started' | 'done' | 'needs-help';
 
 export type Resource = {
   id: string;
   title: string;
   description: string;
+  details?: Array<string | {
+    label: string;
+    url: string;
+    note?: string;
+    kind?: 'link' | 'video';
+  }>;
   url: string;
   sourceType: ResourceSourceType;
+  category: ResourceCategory;
 };
 
 export type ChecklistGroup =
-  | 'Get Set Up'
-  | 'Learn the Back Office'
-  | 'Get Supplies Ready'
-  | 'Prepare for First Live'
-  | 'Ship and Follow Up'
+  | 'Get Connected'
+  | 'Start BPU'
+  | 'Pay And Payouts'
+  | 'Build Your Setup'
+  | 'Shipping And Orders'
+  | 'Loyalty And Follow-Up'
   | 'Questions for Brittany';
 
 export type ChecklistStep = {

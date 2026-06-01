@@ -47,6 +47,32 @@ export function StepDetail({ stepId, status, onMarkDone, onNeedHelp, onAskNicNac
               )
             ))}
           </div>
+          {linkedResources.some((resource) => resource?.details) && (
+            <div className="resource-notes">
+              {linkedResources.map((resource) => resource?.details && (
+                <ul key={`${resource.id}-details`}>
+                  {resource.details.map((detail) => (
+                    typeof detail === 'string' ? (
+                      <li key={detail}>{detail}</li>
+                    ) : detail.kind === 'video' ? (
+                      <li className="video-resource" key={detail.url}>
+                        <video controls preload="metadata" src={detail.url}>
+                          <a href={detail.url}>Open video</a>
+                        </video>
+                        <a href={detail.url} target="_blank" rel="noreferrer">{detail.label}</a>
+                        {detail.note && <span>{detail.note}</span>}
+                      </li>
+                    ) : (
+                      <li key={detail.url}>
+                        <a href={detail.url} target="_blank" rel="noreferrer">{detail.label}</a>
+                        {detail.note && <span>{detail.note}</span>}
+                      </li>
+                    )
+                  ))}
+                </ul>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -60,12 +86,16 @@ export function StepDetail({ stepId, status, onMarkDone, onNeedHelp, onAskNicNac
         <span>{step.nicNacHint}</span>
       </div>
 
+      <p className="stuck-helper">
+        If this step does not make sense, save it for Brittany. This demo keeps it here until the Sparkle Suite team inbox is built.
+      </p>
+
       <div className="step-actions">
         <button className="success-button" onClick={() => onMarkDone(step.id)}>
           {status === 'done' ? 'Done' : 'Mark done'}
         </button>
         <button className="secondary-button" onClick={() => onNeedHelp(step.id, `I need help with: ${step.title}`)}>
-          I need help
+          I'm stuck
         </button>
         <button className="text-button" onClick={() => onAskNicNac(step.nicNacHint)}>
           Ask Nic-Nac about this

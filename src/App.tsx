@@ -11,6 +11,7 @@ import type { AppState, RepQuestion } from './types';
 export default function App() {
   const [appState, setAppState] = useState<AppState>(() => loadState());
   const [nicNacPrompt, setNicNacPrompt] = useState<string | null>(null);
+  const [nicNacCloseSignal, setNicNacCloseSignal] = useState(0);
   const selectedStep = useMemo(
     () => steps.find((step) => step.id === appState.selectedStepId) ?? steps[0],
     [appState.selectedStepId],
@@ -22,6 +23,10 @@ export default function App() {
 
   function selectStep(stepId: string) {
     setAppState((current) => ({ ...current, selectedStepId: stepId }));
+  }
+
+  function handleSectionNav() {
+    setNicNacCloseSignal((value) => value + 1);
   }
 
   function markDone(stepId: string) {
@@ -52,20 +57,26 @@ export default function App() {
   }
 
   function startOver() {
+    handleSectionNav();
     resetState();
     setAppState(createInitialState());
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" id="top">
       <header className="topbar">
-        <div className="brand-mark">*</div>
-        <strong>Britt's Team Start Strong</strong>
+        <a className="brand-home-link" href="#top">Britt with Bling</a>
         <nav aria-label="Main navigation">
-          <a href="#home">Home</a>
-          <a href="#resources">Resources</a>
-          <a href="#questions">Ask Brittany</a>
+          <a href="#resources" onClick={handleSectionNav}>Resources</a>
+          <a href="#questions" onClick={handleSectionNav}>Ask Brittany</a>
         </nav>
+        <NicNac
+          selectedStepId={appState.selectedStepId}
+          prompt={nicNacPrompt}
+          closeSignal={nicNacCloseSignal}
+          onPromptHandled={() => setNicNacPrompt(null)}
+          onEscalate={addNicNacQuestion}
+        />
         <button className="reset-button" type="button" onClick={startOver}>Reset demo</button>
       </header>
 
@@ -88,12 +99,15 @@ export default function App() {
 
       <Resources />
       <Questions questions={appState.questions} />
-      <NicNac
-        selectedStepId={appState.selectedStepId}
-        prompt={nicNacPrompt}
-        onPromptHandled={() => setNicNacPrompt(null)}
-        onEscalate={addNicNacQuestion}
-      />
+
+      <footer className="site-footer">
+        <span>Continue the shine:</span>
+        <nav aria-label="Partner links">
+          <a href="https://brittwithbling.com/" target="_blank" rel="noreferrer">Britt with Bling</a>
+          <a href="https://www.yoursparklesuite.com/prelaunch" target="_blank" rel="noreferrer">Sparkle Suite coming soon</a>
+          <a href="https://neonrabbit.net/" target="_blank" rel="noreferrer">Powered by Neon Rabbit</a>
+        </nav>
+      </footer>
     </main>
   );
 }

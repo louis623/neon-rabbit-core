@@ -12,6 +12,7 @@ export function Questions({ questions }: QuestionsProps) {
         <span className="eyebrow">Ask Brittany</span>
         <h2>Saved questions</h2>
         <p>Questions Nic-Nac should not answer get saved here for Brittany.</p>
+        <p>For this demo, questions stay here. Later, this area will connect to Brittany's Sparkle Suite team workspace.</p>
       </div>
 
       {questions.length === 0 ? (

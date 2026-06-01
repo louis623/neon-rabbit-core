@@ -1,4 +1,4 @@
-# Britt's Team Start Strong
+# Britt with Bling Onboarding Demo
 
 Separate pilot repo for Brittany's new-rep onboarding and resource checklist.
 
@@ -10,9 +10,9 @@ This repo is intentionally separate from Sparkle Suite so the Brittany pilot can
 
 ## Demo Scope
 
-- Clickable Start Strong checklist
+- Clickable onboarding checklist
 - Official Bomb Party and FTC resource links
-- Demo Brittany notes clearly marked as sample guidance
+- Brittany team guidance clearly marked for review
 - Local progress tracking in the browser
 - Saved questions for Brittany
 - Floating Nic-Nac helper with canned, guardrailed prototype answers

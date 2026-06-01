@@ -12,6 +12,13 @@ The pilot should live outside `neon-rabbit-core` in a new repo, tentatively name
 
 It may later become a Sparkle Suite add-on, but the first build should be isolated so Brittany's pilot can move quickly without changing Sparkle Suite launch scope.
 
+Post-launch Sparkle Suite direction:
+
+- Treat team onboarding hubs as an upgrade path for reps who want team management.
+- Link the onboarding hub back to the Team Management tab in the Sparkle Suite workspace.
+- Keep shared Bomb Party basics centrally maintained while allowing each team lead to add private, bespoke coaching notes, techniques, scripts, links, and team preferences.
+- Do not require this for Sparkle Suite launch; position it as a post-launch option once the core rep workspace is stable.
+
 The initial deploy target should support either:
 
 - `start.brittwithbling.com` as the simplest DNS path, or
@@ -52,12 +59,13 @@ The dashboard shows:
 
 The setup path groups are:
 
-1. Get Set Up
-2. Learn the Back Office
-3. Get Supplies Ready
-4. Prepare for First Live
-5. Ship and Follow Up
-6. Questions for Brittany
+1. Get Connected
+2. Start BPU
+3. Pay And Payouts
+4. Build Your Setup
+5. Shipping And Orders
+6. Loyalty And Follow-Up
+7. Questions for Brittany
 
 ### Step Detail View
 
@@ -83,7 +91,7 @@ Official resources known for the seed content:
 - Bomb Party return policy: `https://help.bombparty.com/hc/en-us/articles/33194356359444-Return-Policy`
 - FTC MLM business guidance: `https://www.ftc.gov/business-guidance/resources/business-guidance-concerning-multi-level-marketing`
 
-Seed content may include demo-only team guidance, but it must be labeled as sample Brittany guidance until Brittany approves or replaces it.
+Seed content may include team guidance from Brittany's emails, but it must stay labeled as team guidance until Brittany approves final wording and links.
 
 ### Floating Nic-Nac Helper
 
@@ -162,9 +170,9 @@ The skeleton is ready for Brittany review when:
 - A user can open a step and mark it done.
 - Progress updates locally.
 - Official resource links open in a new tab.
-- Sample Brittany notes are visible and labeled appropriately.
+- Brittany team guidance is visible and labeled appropriately.
 - `I need help` creates a visible question item.
-- Floating Nic-Nac opens and responds to at least five simple sample questions.
+- Floating Nic-Nac opens and responds to at least five simple team-onboarding questions.
 - Unknown or sensitive Nic-Nac questions are saved for Brittany.
 - The UI works on desktop and mobile widths.
 - The app can be deployed as a standalone site or embedded/routed from Brittany's domain later.

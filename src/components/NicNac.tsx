@@ -10,24 +10,29 @@ type Message = {
 type NicNacProps = {
   selectedStepId: string;
   prompt: string | null;
+  closeSignal: number;
   onPromptHandled: () => void;
   onEscalate: (question: RepQuestion) => void;
 };
 
 const quickQuestions = [
-  'Where is BPU?',
+  'What do I do first?',
+  'How do I get into BPU?',
+  'What is PayQuicker?',
+  'How do payouts work?',
   'What supplies do I need?',
-  'What about shipping?',
-  'Should I buy more inventory?',
+  'What is Ship.com?',
+  'How do fizz points work?',
+  'Hard Bomb Party truths',
 ];
 
-export function NicNac({ selectedStepId, prompt, onPromptHandled, onEscalate }: NicNacProps) {
+export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, onEscalate }: NicNacProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'nic-nac',
-      text: 'Hi, I can help with the checklist, BPU, official links, simple setup questions, and knowing when to ask Brittany.',
+      text: 'Hi, I can help with Brittany\'s getting-started path, getting into BPU, PayQuicker, setup, shipping, loyalty basics, and knowing when to ask Brittany.',
     },
   ]);
 
@@ -75,6 +80,11 @@ export function NicNac({ selectedStepId, prompt, onPromptHandled, onEscalate }: 
     askNicNac(prompt);
     onPromptHandled();
   }, [askNicNac, onPromptHandled, prompt]);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [closeSignal]);
+
   function submitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = draft.trim();
@@ -101,7 +111,7 @@ export function NicNac({ selectedStepId, prompt, onPromptHandled, onEscalate }: 
           </div>
           <div className="nic-messages">
             {messages.map((message, index) => (
-              <p className={message.role} key={`${message.role}-${index}`}>{message.text}</p>
+              <p className={message.role === 'nic-nac' ? 'nic-reply' : 'rep'} key={`${message.role}-${index}`}>{message.text}</p>
             ))}
           </div>
           <form onSubmit={submitForm}>
