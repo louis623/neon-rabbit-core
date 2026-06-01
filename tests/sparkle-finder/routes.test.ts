@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
 import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
 import DashboardPage from "../../app/(hub)/dashboard/page";
@@ -40,6 +40,10 @@ const publicRoutes = [
 ] as const;
 
 describe("Sparkle Finder hub routes", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("renders the shared hub shell around dashboard content", () => {
     const markup = renderToStaticMarkup(
       renderHubChrome(createElement(DashboardPage), getLocalDevAuthState("silver")),
@@ -238,6 +242,30 @@ describe("Sparkle Finder hub routes", () => {
     expect(freeResponse.headers.get("location")).toBe("http://127.0.0.1:4310/dashboard");
     expect(silverResponse.headers.get("location")).toBe("http://localhost:4310/dashboard");
     expect(anonymousResponse.headers.get("location")).toBe("http://127.0.0.1:4310/");
+  });
+
+  it("blocks local preview auth cookies in production without the preview flag", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "");
+
+    const response = await previewAuthGET(new Request("http://localhost:4310/auth/preview/silver"), {
+      params: Promise.resolve({ mode: "silver" }),
+    });
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in");
+    expect(response.headers.get("set-cookie") ?? "").not.toContain("sparkle_finder_auth_mode");
+  });
+
+  it("allows local preview auth cookies in production when the preview flag is enabled", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "true");
+
+    const response = await previewAuthGET(new Request("http://localhost:4310/auth/preview/silver"), {
+      params: Promise.resolve({ mode: "silver" }),
+    });
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("set-cookie") ?? "").toContain("sparkle_finder_auth_mode=silver");
   });
 
   it("ignores an untrusted Host header when the request URL host is local", async () => {
