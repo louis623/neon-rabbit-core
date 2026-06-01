@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
-  getLocalDevAuthState,
   isSparkleFinderSignedIn,
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
+import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import Link from "next/link";
 
@@ -13,7 +13,7 @@ export default async function HubLayout({ children }: Readonly<{ children: React
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
 
-  return renderHubChrome(children, getLocalDevAuthState(authMode));
+  return renderHubChrome(children, await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode }));
 }
 
 export function renderHubChrome(children: React.ReactNode, accountState: SparkleFinderAccountState) {

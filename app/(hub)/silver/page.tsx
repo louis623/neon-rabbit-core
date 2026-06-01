@@ -10,10 +10,10 @@ import {
   getSilverProfileByCustomerId,
 } from "@/lib/sparkle-finder/service";
 import {
-  getLocalDevAuthState,
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
+import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { SilverProfile } from "@/lib/sparkle-finder/types";
@@ -22,14 +22,15 @@ export default async function SilverPage() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
 
-  return renderSilverPageContent(getLocalDevAuthState(authMode));
+  return renderSilverPageContent(await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode }));
 }
 
 export function renderSilverPageContent(accountState: SparkleFinderAccountState) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
+  const isDemoAccount = accountState.status === "authenticated" && accountState.customer.id.startsWith("customer-");
 
   if (accountState.status !== "authenticated" || !entitlements.canUseSilverProfileActions) {
-    return <SilverUpgradePrompt />;
+    return <SilverUpgradePrompt accountState={accountState} />;
   }
 
   const customer = accountState.customer;
@@ -51,15 +52,21 @@ export function renderSilverPageContent(accountState: SparkleFinderAccountState)
             {customer.displayName}&apos;s Silver Space
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-            View and stage local profile, collection, and watchlist updates for Sparkle Finder&apos;s fixture-backed preview.
+            {isDemoAccount
+              ? "View and stage local profile, collection, and watchlist updates for Sparkle Finder's fixture-backed preview."
+              : "Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account."}
           </p>
         </div>
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="flex items-center gap-3">
             <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">Local fixture mode</p>
-              <p className="text-sm leading-5 text-[var(--sparkle-ink-muted)]">Preview-only state, ready for later actions.</p>
+              <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">
+                {isDemoAccount ? "Local fixture mode" : "Account Silver access"}
+              </p>
+              <p className="text-sm leading-5 text-[var(--sparkle-ink-muted)]">
+                {isDemoAccount ? "Preview-only state, ready for later actions." : "Your access is checked from the signed-in account."}
+              </p>
             </div>
           </div>
         </div>
@@ -77,20 +84,25 @@ export function renderSilverPageContent(accountState: SparkleFinderAccountState)
   );
 }
 
-function SilverUpgradePrompt() {
+function SilverUpgradePrompt({ accountState }: { accountState: SparkleFinderAccountState }) {
+  const isDemoAccount = accountState.status === "authenticated" && accountState.customer.id.startsWith("customer-");
+
   return (
     <section className="mx-auto grid max-w-3xl gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)] sm:p-8">
       <div className="grid size-16 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
         <Gem aria-hidden="true" className="size-8" strokeWidth={1.5} />
       </div>
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Silver preview needed</p>
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
+          {isDemoAccount ? "Silver preview needed" : "Silver access needed"}
+        </p>
         <h1 className="mt-2 font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
-          Open Silver to save profile and collection previews
+          {isDemoAccount ? "Open Silver to save profile and collection previews" : "Open Silver to manage your profile and collection"}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, collection
-          records, and watchlist records against local fixture data.
+          {isDemoAccount
+            ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, collection records, and watchlist records against local fixture data."
+            : "Free accounts can keep browsing the library. Silver accounts can manage profile details, collection records, and watchlist records."}
         </p>
       </div>
       <Link

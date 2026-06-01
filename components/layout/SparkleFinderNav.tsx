@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BookOpen, Gem, ShoppingBag, UserRound, UsersRound, Video } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
+import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 
 const navItems = [
@@ -17,7 +18,7 @@ type SparkleFinderNavProps = {
 };
 
 export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: SparkleFinderNavProps = {}) {
-  const accountLabel = getAccountLabel(accountState);
+  const accountLabel = getSparkleFinderNavStatusLabel(accountState);
 
   return (
     <header className="sparkle-finder-nav-shell" data-smoke="nav">
@@ -50,10 +51,3 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState() }: Spar
   );
 }
 
-function getAccountLabel(accountState: SparkleFinderAccountState): string {
-  if (accountState.status === "anonymous") {
-    return "Guest";
-  }
-
-  return accountState.tier === "silver" ? "Silver" : "Free";
-}
