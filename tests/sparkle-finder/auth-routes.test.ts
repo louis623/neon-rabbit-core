@@ -245,6 +245,20 @@ describe("Sparkle Finder account route", () => {
     expect(markup).not.toContain('name="promotionalSms" checked');
   });
 
+  it("renders the existing profile phone so profile saves preserve it", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const accountState = activeTrialAccountState() as CurrentSparkleFinderAccountState & {
+      status: "authenticated";
+      customer: NonNullable<CurrentSparkleFinderAccountState["customer"]> & { phoneE164: string };
+    };
+    accountState.customer.phoneE164 = "+15551234567";
+
+    const markup = renderToStaticMarkup(renderAccountPageContent(accountState));
+
+    expect(markup).toContain('name="phone"');
+    expect(markup).toContain('value="+15551234567"');
+  });
+
   it("shows 45-day Silver trial countdown copy for active trials", async () => {
     const { renderAccountPageContent } = await import("../../app/account/page");
     const markup = renderToStaticMarkup(
@@ -301,6 +315,40 @@ describe("Sparkle Finder account route", () => {
       promotional_email_opt_in: true,
       promotional_sms_opt_in: true,
       account_sms_allowed: true,
+    });
+    expect(revalidatePath).toHaveBeenCalledWith("/account");
+  });
+
+  it("opts out of optional communications when consent checkboxes are omitted", async () => {
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-123", email: "casey@example.com" } },
+      error: null,
+    });
+    const rpc = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+    const revalidatePath = vi.fn();
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("next/cache", () => ({ revalidatePath }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: { getUser },
+        rpc,
+      }),
+    }));
+
+    const { updateCommunicationPreferences } = await import("../../app/account/actions");
+
+    await expect(updateCommunicationPreferences(new FormData())).rejects.toThrow(
+      "redirect:/account?message=preferences_saved",
+    );
+    expect(getUser).toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledWith("update_sparkle_finder_communication_preferences", {
+      promotional_email_opt_in: false,
+      promotional_sms_opt_in: false,
+      account_sms_allowed: false,
     });
     expect(revalidatePath).toHaveBeenCalledWith("/account");
   });

@@ -52,6 +52,7 @@ export type CustomerAccount = {
   id: string;
   displayName: string;
   email: string;
+  phoneE164?: string;
   state: string;
   tier: CustomerTier;
 };

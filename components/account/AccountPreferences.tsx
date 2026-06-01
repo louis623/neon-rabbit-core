@@ -56,6 +56,7 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
           <input
             autoComplete="tel"
             className={inputClassName}
+            defaultValue={customer?.phoneE164 ?? ""}
             name="phone"
             placeholder="555-123-4567"
             type="tel"

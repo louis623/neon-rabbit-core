@@ -27,6 +27,7 @@ type SparkleFinderProfileRow = {
   user_id: string;
   display_name: string | null;
   email: string | null;
+  phone_e164?: string | null;
   state: string | null;
   tiktok_handle?: string | null;
   bio?: string | null;
@@ -172,6 +173,7 @@ export function mapSparkleFinderAccountRows({
     id: user.id,
     displayName,
     email,
+    phoneE164: profile?.phone_e164 ?? "",
     state: profile?.state ?? "",
     tier,
   };
