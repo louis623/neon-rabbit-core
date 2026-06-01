@@ -11,7 +11,7 @@ const smokeTexts = [
   "Today across Sparkle Suite",
   "Master Live Calendar",
   "Rep Trade Boards / Dance Floors",
-  "Diamonds & Unicorns",
+  "Collector & Rep Essentials",
   "Silver Collector Space",
   "Nic-Nac, find this for me",
 ];
@@ -53,8 +53,68 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expectClickPath(page, page.getByRole("link", { name: "Browse Library" }), "/library");
     await expectClickPath(page, page.getByRole("link", { name: "Master Live Calendar" }), "/live-shows");
     await expectClickPath(page, page.getByRole("link", { name: "Rep Trade Boards / Dance Floors" }), "/rep-boards");
-    await expectClickPath(page, page.getByRole("link", { name: "Diamonds & Unicorns Library" }), "/diamonds-unicorns");
+    await expectClickPath(page, page.getByRole("link", { name: "Collector & Rep Essentials" }), "/shop");
     await expectClickPath(page, page.getByRole("link", { name: "Shop affiliate picks" }), "/shop");
+  });
+
+  test("shop discovery card remains present and opens the shop route", async ({ page }) => {
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+
+    const shopCard = page
+      .locator('[data-smoke="discovery-cards"]')
+      .getByRole("link", { name: /Collector & Rep Essentials/ });
+    await expect(shopCard).toBeVisible();
+    await expect(shopCard).toHaveAttribute("href", "/shop");
+    await expect(shopCard).toContainText("Shop care, storage, display, livestream, and setup gear.");
+
+    await shopCard.click();
+    await expect(page).toHaveURL(`${baseUrl}/shop`);
+    await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Continue to sign in" })).toHaveAttribute("href", "/auth/sign-in");
+  });
+
+  test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
+    await page.goto(`${baseUrl}/auth/sign-up`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByRole("heading", { name: "Start your 45-day Silver trial" })).toBeVisible();
+    await expect(page.getByText("Start with a 45-day Silver trial")).toBeVisible();
+    await expect(page.getByText("Marketing texts are optional.")).toBeVisible();
+    await expect(page.getByText("Not sold.")).toBeVisible();
+    await expect(page.getByText("I acknowledge the Sparkle Finder privacy terms")).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: /Text me optional promotional messages/ })).not.toBeChecked();
+  });
+
+  test("account route prompts anonymous visitors and Silver preview can access account and Silver pages", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Sign in to manage your Sparkle Finder account")).toBeVisible();
+    await expect(page.getByText("Silver trial details")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/auth/sign-up");
+
+    await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
+    await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+
+    await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Sparkle Finder account" })).toBeVisible();
+    await expect(page.getByText("Phone is used for account identification")).toBeVisible();
+    await expect(page.getByText("We do not sell your phone number.")).toBeVisible();
+    await expect(page.getByText("Marketing texts are optional and separate from account/security notices.")).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: /Optional promotional SMS/ })).not.toBeChecked();
+
+    await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Sparkle Mama's Silver Space")).toBeVisible();
+    await expect(page.getByText("Local fixture mode")).toBeVisible();
+  });
+
+  test("hub routes still gate anonymous visitors", async ({ page }) => {
+    await page.context().clearCookies();
+
+    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/shop", "/silver"]) {
+      await page.goto(`${baseUrl}${path}`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Continue to sign in" })).toHaveAttribute("href", "/auth/sign-in");
+    }
   });
 
   test("auth preview paths open gated hub routes", async ({ page }) => {
@@ -75,7 +135,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Finder Dashboard")).toBeVisible();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Silver preview needed")).toBeVisible();
+    await expect(page.getByText("Marlena's Silver Space")).toBeVisible();
+    await expect(page.getByText("Silver preview is required to save profile updates.")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
@@ -92,9 +153,15 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
   test("Silver library item detail exposes bounded Nic-Nac and local rep-board paths", async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
-    await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
-    await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+    await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Finder Dashboard")).toBeVisible();
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();

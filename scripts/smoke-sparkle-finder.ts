@@ -10,11 +10,14 @@ const screenshotDir = resolve("verification/sparkle-finder");
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
 const useShell = process.platform === "win32";
+const smokeEnv = {
+  SPARKLE_FINDER_ENABLE_PREVIEW_AUTH: "true",
+};
 
 async function main() {
   mkdirSync(screenshotDir, { recursive: true });
 
-  runCommand(npmCommand, ["run", "build"]);
+  runCommand(npmCommand, ["run", "build"], smokeEnv);
   await assertPortIsFree(port);
 
   const server = startServer();
@@ -67,9 +70,12 @@ function startServer() {
     process.execPath,
     ["node_modules/next/dist/bin/next", "start", "-p", String(port), "-H", "127.0.0.1"],
     {
-    env: process.env,
-    shell: false,
-    stdio: ["ignore", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        ...smokeEnv,
+      },
+      shell: false,
+      stdio: ["ignore", "pipe", "pipe"],
     },
   );
 

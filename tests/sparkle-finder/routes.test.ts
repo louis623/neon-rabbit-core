@@ -3,8 +3,8 @@ import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
 import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
+import { renderAccountPageContent } from "../../app/account/page";
 import DashboardPage from "../../app/(hub)/dashboard/page";
-import DiamondsUnicornsPage from "../../app/(hub)/diamonds-unicorns/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import LibraryPage from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
@@ -29,7 +29,6 @@ import { getLocalRepBoardHref, getLocalRepHref } from "../../lib/sparkle-finder/
 const routes = [
   ["dashboard", () => renderToStaticMarkup(createElement(DashboardPage))],
   ["library", () => renderToStaticMarkup(createElement(LibraryPage))],
-  ["diamonds-unicorns", () => renderToStaticMarkup(createElement(DiamondsUnicornsPage))],
   ["live-shows", () => renderToStaticMarkup(createElement(LiveShowsPage))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
@@ -55,7 +54,6 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library");
     expect(markup).toContain("/rep-boards");
     expect(markup).toContain("/live-shows");
-    expect(markup).toContain("/diamonds-unicorns");
     expect(markup).toContain("/shop");
   });
 
@@ -68,6 +66,19 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/auth/sign-in");
     expect(markup).not.toContain("Finder Dashboard");
   });
+
+  it.each(["dashboard", "library", "live-shows", "rep-boards", "shop", "silver"] as const)(
+    "gates anonymous visitors before rendering %s hub content",
+    (routeName) => {
+      const [, renderRoute] = routes.find(([name]) => name === routeName)!;
+      const markup = renderToStaticMarkup(
+        renderHubChrome(createElement("div", { dangerouslySetInnerHTML: { __html: renderRoute() } }), getLocalDevAuthState("anonymous")),
+      );
+
+      expect(markup).toContain("Sign in to open Sparkle Finder");
+      expect(markup).toContain("/auth/sign-in");
+    },
+  );
 
   it("renders library search and fixture-backed jewelry cards", () => {
     const markup = renderToStaticMarkup(createElement(LibraryPage));
@@ -107,14 +118,6 @@ describe("Sparkle Finder hub routes", () => {
     ).toThrow();
   });
 
-  it("uses only Bomb Party diamond and unicorn labels on the filtered route", () => {
-    const markup = renderToStaticMarkup(createElement(DiamondsUnicornsPage));
-
-    expect(markup).toContain("Diamond");
-    expect(markup).toContain("Unicorn");
-    expect(markup).not.toContain("Standard");
-  });
-
   it("renders rep board listings without customer action controls", () => {
     const markup = renderToStaticMarkup(createElement(RepBoardsPage));
 
@@ -138,9 +141,23 @@ describe("Sparkle Finder hub routes", () => {
   it("renders shop route content from fixture data", () => {
     const markup = renderToStaticMarkup(createElement(ShopPage));
 
-    expect(markup).toContain("Collector Essentials");
+    expect(markup).toContain("Collector &amp; Rep Essentials");
+    expect(markup).toContain("Shop by need");
+    expect(markup).toContain("Rep Essentials");
     expect(markup).toContain("Storage &amp; Display");
     expect(markup).toContain("Livestream Gear");
+    expect(markup).toContain("Affiliate link after approval");
+    expect(markup).toContain("Louis review required");
+  });
+
+  it("keeps the homepage shop card aligned to the new shop route", async () => {
+    const { DiscoveryCards } = await import("../../components/home/DiscoveryCards");
+    const markup = renderToStaticMarkup(createElement(DiscoveryCards));
+
+    expect(markup).toContain("Collector &amp; Rep Essentials");
+    expect(markup).toContain("Shop care, storage, display, livestream, and setup gear.");
+    expect(markup).toContain('href="/shop"');
+    expect(markup).not.toContain("Diamonds &amp; Unicorns Library");
   });
 
   it("renders shop affiliate disclosure and issue-reporting trust copy", () => {
@@ -308,6 +325,30 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("privacy");
   });
 
+  it("renders anonymous account prompts and 45-day Silver trial account copy", () => {
+    const anonymousMarkup = renderToStaticMarkup(renderAccountPageContent(anonymousRouteAccountState()));
+    const trialMarkup = renderToStaticMarkup(
+      renderAccountPageContent(activeTrialRouteAccountState(), new Date("2026-06-01T12:00:00.000Z")),
+    );
+
+    expect(anonymousMarkup).toContain("Sign in to manage your Sparkle Finder account");
+    expect(anonymousMarkup).toContain("Silver trial details");
+    expect(anonymousMarkup).toContain("/auth/sign-up");
+    expect(trialMarkup).toContain("45-day Silver trial");
+    expect(trialMarkup).toContain("Trial ends June 10, 2026");
+    expect(trialMarkup).toContain("9 days left");
+  });
+
+  it("renders account phone privacy copy and leaves promotional SMS unchecked by default", () => {
+    const markup = renderToStaticMarkup(renderAccountPageContent(activeTrialRouteAccountState()));
+
+    expect(markup).toContain("Phone is used for account identification, recovery, trial protection, and security notices.");
+    expect(markup).toContain("We do not sell your phone number.");
+    expect(markup).toContain("Marketing texts are optional and separate from account/security notices.");
+    expect(markup).toContain('name="promotionalSms"');
+    expect(markup).not.toContain('name="promotionalSms" checked');
+  });
+
   it("leaves promotional SMS unchecked by default on the sign-up route", async () => {
     const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
     const markup = renderToStaticMarkup(createElement(SignUpPage));
@@ -444,3 +485,63 @@ describe("Sparkle Finder hub routes", () => {
     expect(getLocalRepHref("https://sparklesuite.example/reps/sierra")).toBe("/rep-boards?rep=sierra");
   });
 });
+
+function anonymousRouteAccountState(): CurrentSparkleFinderAccountState {
+  return {
+    status: "anonymous",
+    tier: "anonymous",
+    displayName: "Guest",
+    email: null,
+    customer: null,
+    communicationConsent: {
+      accountEmailRequired: true,
+      accountSmsAllowed: false,
+      promotionalEmailOptIn: false,
+      promotionalSmsOptIn: false,
+      accountSmsConsentedAt: null,
+      promotionalEmailConsentedAt: null,
+      promotionalSmsConsentedAt: null,
+      privacyAcknowledgedAt: null,
+    },
+  };
+}
+
+function activeTrialRouteAccountState(): CurrentSparkleFinderAccountState {
+  return {
+    status: "authenticated",
+    tier: "silver",
+    displayName: "Casey Collector",
+    email: "casey@example.com",
+    customer: {
+      id: "user-123",
+      displayName: "Casey Collector",
+      email: "casey@example.com",
+      state: "PA",
+      tier: "silver",
+    },
+    membership: {
+      accountId: "user-123",
+      personId: "user-123",
+      accessState: "silver_trial",
+      silverSource: "trial",
+      trialStartedAt: "2026-04-26T12:00:00.000Z",
+      trialEndsAt: "2026-06-10T12:00:00.000Z",
+      silverStartedAt: "2026-04-26T12:00:00.000Z",
+      silverEndsAt: "2026-06-10T12:00:00.000Z",
+      effectiveState: "silver_trial",
+      hasSilverAccess: true,
+      isTrialActive: true,
+      isTrialExpired: false,
+    },
+    communicationConsent: {
+      accountEmailRequired: true,
+      accountSmsAllowed: false,
+      promotionalEmailOptIn: false,
+      promotionalSmsOptIn: false,
+      accountSmsConsentedAt: null,
+      promotionalEmailConsentedAt: null,
+      promotionalSmsConsentedAt: null,
+      privacyAcknowledgedAt: "2026-04-26T12:00:00.000Z",
+    },
+  };
+}
