@@ -121,7 +121,7 @@ export function getSilverTrialAccountNotice(input: SilverTrialNotificationInput)
   return {
     tone: "upcoming",
     title,
-    body: `Your Silver trial ends ${formatDate(input.trialEndsAt)}. We will email account reminders before any Free downgrade.`,
+    body: `Your Silver trial ends ${formatDate(input.trialEndsAt)}. This account page shows reminders before any Free downgrade.`,
   };
 }
 

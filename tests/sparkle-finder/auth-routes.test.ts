@@ -296,7 +296,7 @@ describe("Sparkle Finder account route", () => {
     );
 
     expect(markup).toContain("Silver trial ends in 3 days");
-    expect(markup).toContain("We will email account reminders before any Free downgrade.");
+    expect(markup).toContain("This account page shows reminders before any Free downgrade.");
   });
 
   it("does not show trial downgrade warnings for paid or rep-included Silver", async () => {

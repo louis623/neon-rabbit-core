@@ -70,7 +70,7 @@ describe("Sparkle Finder Silver trial notifications", () => {
     ).toEqual({
       tone: "upcoming",
       title: "Silver trial ends in 3 days",
-      body: "Your Silver trial ends June 10, 2026. We will email account reminders before any Free downgrade.",
+      body: "Your Silver trial ends June 10, 2026. This account page shows reminders before any Free downgrade.",
     });
   });
 });
