@@ -116,6 +116,9 @@ const anonymousAccountState: CurrentSparkleFinderAccountState = {
   communicationConsent: createDefaultCommunicationConsent(),
 };
 
+const localPreviewSilverTrialStartedAt = "2026-04-27T00:00:00.000Z";
+const localPreviewSilverTrialEndsAt = "2026-06-10T23:59:59.999Z";
+
 export async function getCurrentSparkleFinderAccount({
   isSupabaseConfigured = defaultIsSupabaseConfigured,
   createSupabaseClient = defaultCreateSupabaseClient,
@@ -289,8 +292,35 @@ function getLocalPreviewAccountState(
 
   return {
     ...getLocalDevAuthState(mode),
+    membership: createLocalPreviewMembership(mode),
     communicationConsent: createDefaultCommunicationConsent(),
     isLocalPreview: true,
+  };
+}
+
+function createLocalPreviewMembership(mode: Exclude<SparkleFinderAuthMode, "anonymous">): SparkleFinderMembershipDetails {
+  const previewAccount = getLocalDevAuthState(mode);
+  const accountId = previewAccount.status === "authenticated" ? previewAccount.customer.id : `local-preview-${mode}`;
+  const accessState: SparkleFinderAccessState = mode === "silver" ? "silver_trial" : "free";
+  const silverAccess = getSilverAccessState({
+    accessState,
+    trialEndsAt: mode === "silver" ? localPreviewSilverTrialEndsAt : null,
+    now: "2026-06-01T00:00:00.000Z",
+  });
+
+  return {
+    accountId,
+    personId: accountId,
+    accessState,
+    silverSource: mode === "silver" ? "trial" : "none",
+    trialStartedAt: mode === "silver" ? localPreviewSilverTrialStartedAt : null,
+    trialEndsAt: mode === "silver" ? localPreviewSilverTrialEndsAt : null,
+    silverStartedAt: null,
+    silverEndsAt: null,
+    effectiveState: silverAccess.effectiveState,
+    hasSilverAccess: silverAccess.hasSilverAccess,
+    isTrialActive: silverAccess.isTrialActive,
+    isTrialExpired: silverAccess.isTrialExpired,
   };
 }
 

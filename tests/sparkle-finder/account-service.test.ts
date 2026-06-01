@@ -234,6 +234,49 @@ describe("Sparkle Finder account service", () => {
     expect(getSparkleFinderNavStatusLabel(account)).toBe("Guest");
   });
 
+  it("maps the local preview Silver account to an active 45-day trial", async () => {
+    const account = await getCurrentSparkleFinderAccount({
+      isSupabaseConfigured: () => false,
+      localPreviewAuthMode: "silver",
+      createSupabaseClient: async () => {
+        throw new Error("should not create Supabase client");
+      },
+    });
+
+    expect(account.status).toBe("authenticated");
+    expect(account.tier).toBe("silver");
+    expect(account.membership).toMatchObject({
+      accessState: "silver_trial",
+      effectiveState: "silver_trial",
+      hasSilverAccess: true,
+      isTrialActive: true,
+      trialEndsAt: "2026-06-10T23:59:59.999Z",
+      silverSource: "trial",
+    });
+    expect(getSparkleFinderNavStatusLabel(account)).toBe("Trial Silver");
+  });
+
+  it("keeps the local preview Free account on Free membership state", async () => {
+    const account = await getCurrentSparkleFinderAccount({
+      isSupabaseConfigured: () => false,
+      localPreviewAuthMode: "free",
+      createSupabaseClient: async () => {
+        throw new Error("should not create Supabase client");
+      },
+    });
+
+    expect(account.status).toBe("authenticated");
+    expect(account.tier).toBe("free");
+    expect(account.membership).toMatchObject({
+      accessState: "free",
+      effectiveState: "free",
+      hasSilverAccess: false,
+      isTrialActive: false,
+      silverSource: "none",
+    });
+    expect(getSparkleFinderNavStatusLabel(account)).toBe("Free");
+  });
+
   it("returns anonymous when Supabase has no authenticated user", async () => {
     const account = await getCurrentSparkleFinderAccount({
       isSupabaseConfigured: () => true,
