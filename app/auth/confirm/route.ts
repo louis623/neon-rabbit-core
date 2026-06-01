@@ -29,7 +29,26 @@ export async function GET(request: Request) {
 }
 
 function getSafeNextPath(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+  if (!next) {
+    return "/dashboard";
+  }
+
+  let decodedNext = next;
+
+  try {
+    decodedNext = decodeURIComponent(next);
+  } catch {
+    return "/dashboard";
+  }
+
+  if (
+    !next.startsWith("/") ||
+    next.startsWith("//") ||
+    next.includes("\\") ||
+    decodedNext.startsWith("//") ||
+    decodedNext.includes("\\") ||
+    /^\/[a-z][a-z0-9+.-]*:/i.test(decodedNext)
+  ) {
     return "/dashboard";
   }
 

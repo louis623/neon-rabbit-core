@@ -230,6 +230,17 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("45-day Silver trial");
   });
 
+  it("renders sign-up choices for password or magic link", async () => {
+    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
+    const markup = renderToStaticMarkup(createElement(SignUpPage));
+
+    expect(markup).toContain('name="authMethod"');
+    expect(markup).toContain('value="password"');
+    expect(markup).toContain('value="magic-link"');
+    expect(markup).toContain("Use a password");
+    expect(markup).toContain("Email me a magic sign-in link");
+  });
+
   it("renders sign-up phone and privacy copy", async () => {
     const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
     const markup = renderToStaticMarkup(createElement(SignUpPage));

@@ -100,6 +100,54 @@ describe("Sparkle Finder Supabase proxy", () => {
     expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
   });
 
+  it.each([
+    ["/\\evil.example"],
+    ["/%5Cevil.example"],
+    ["//evil.example"],
+    ["/%2Fevil.example"],
+    ["https://evil.example"],
+    ["javascript:alert(1)"],
+    ["silver"],
+  ])("ignores unsafe confirmation next path %s", async (next) => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp: vi.fn().mockResolvedValue({ error: null }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(
+      new Request(
+        `http://localhost:4310/auth/confirm?token_hash=abc123&type=email&next=${encodeURIComponent(next)}`,
+      ),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("preserves safe confirmation next paths with query strings", async () => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp: vi.fn().mockResolvedValue({ error: null }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(
+      new Request(
+        `http://localhost:4310/auth/confirm?token_hash=abc123&type=email&next=${encodeURIComponent(
+          "/silver?from=signup",
+        )}`,
+      ),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/silver?from=signup");
+  });
+
   it("redirects failed confirmations to sign-in with a safe error", async () => {
     vi.doMock("../../lib/supabase/server", () => ({
       createClient: async () => ({
@@ -113,5 +161,54 @@ describe("Sparkle Finder Supabase proxy", () => {
     const response = await GET(new Request("http://localhost:4310/auth/confirm?token_hash=bad&type=email"));
 
     expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=confirmation_failed");
+  });
+});
+
+describe("Sparkle Finder signup server actions", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("next/navigation");
+    vi.doUnmock("../../lib/supabase/server");
+  });
+
+  it("requests an email magic link without requiring a password", async () => {
+    const signInWithOtp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signInWithOtp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("privacyAcknowledged", "yes");
+
+    const { requestMagicLink } = await import("../../app/auth/sign-up/actions");
+
+    await expect(requestMagicLink(formData)).rejects.toThrow("redirect:/auth/sign-in?message=check_email");
+    expect(signInWithOtp).toHaveBeenCalledWith({
+      email: "mama@example.com",
+      options: {
+        emailRedirectTo: "http://localhost:3000/auth/confirm?next=%2Fsilver%3Ffrom%3Dsignup",
+        data: {
+          display_name: "Sparkle Mama",
+          phone: "555-123-4567",
+          state: "CA",
+          privacy_acknowledged: true,
+          promotional_email_opt_in: false,
+          promotional_sms_opt_in: false,
+        },
+      },
+    });
   });
 });

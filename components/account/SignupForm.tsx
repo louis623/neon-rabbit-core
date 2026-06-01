@@ -1,10 +1,15 @@
-import { Gem, Mail, ShieldCheck } from "lucide-react";
-import { signUpWithPassword } from "@/app/auth/sign-up/actions";
+"use client";
+
+import { useState } from "react";
+import { Gem, KeyRound, Mail, ShieldCheck } from "lucide-react";
+import { requestMagicLink, signUpWithPassword } from "@/app/auth/sign-up/actions";
 
 const inputClassName =
   "min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]";
 
 export function SignupForm() {
+  const [authMethod, setAuthMethod] = useState<"password" | "magic-link">("password");
+
   return (
     <form
       action={signUpWithPassword}
@@ -65,14 +70,47 @@ export function SignupForm() {
         <input autoComplete="address-level1" className={inputClassName} maxLength={40} name="state" required />
       </label>
 
+      <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
+        <legend className="px-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">Sign-up method</legend>
+        <label className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          <input
+            checked={authMethod === "password"}
+            className="mt-1"
+            name="authMethod"
+            onChange={() => setAuthMethod("password")}
+            type="radio"
+            value="password"
+          />
+          <span>
+            <span className="block font-bold text-[var(--sparkle-plum-deep)]">Use a password</span>
+            Create a password and confirm your email with Supabase.
+          </span>
+        </label>
+        <label className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          <input
+            checked={authMethod === "magic-link"}
+            className="mt-1"
+            name="authMethod"
+            onChange={() => setAuthMethod("magic-link")}
+            type="radio"
+            value="magic-link"
+          />
+          <span>
+            <span className="block font-bold text-[var(--sparkle-plum-deep)]">Email me a magic sign-in link</span>
+            Use an email link instead of setting a password today.
+          </span>
+        </label>
+      </fieldset>
+
       <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
         Password
         <input
           autoComplete="new-password"
           className={inputClassName}
+          disabled={authMethod === "magic-link"}
           minLength={8}
           name="password"
-          required
+          required={authMethod === "password"}
           type="password"
         />
       </label>
@@ -96,17 +134,28 @@ export function SignupForm() {
         </label>
       </fieldset>
 
-      <button
-        className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-        type="submit"
-      >
-        <Mail aria-hidden="true" className="size-4" />
-        Create account
-      </button>
+      {authMethod === "password" ? (
+        <button
+          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+          type="submit"
+        >
+          <KeyRound aria-hidden="true" className="size-4" />
+          Create account
+        </button>
+      ) : (
+        <button
+          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+          formAction={requestMagicLink}
+          type="submit"
+        >
+          <Mail aria-hidden="true" className="size-4" />
+          Email sign-in link
+        </button>
+      )}
 
       <p className="flex items-start gap-2 text-xs font-semibold leading-5 text-[var(--sparkle-ink-muted)]">
         <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--sparkle-coral)]" />
-        Password signup sends the normal Supabase confirmation email when auth is configured.
+        Password signup sends the normal Supabase confirmation email. Magic-link signup sends an email sign-in link.
       </p>
     </form>
   );
