@@ -56,10 +56,22 @@ function clean(value: string | null | undefined) {
   return value?.trim() || ''
 }
 
+function hasLegacyPlaceholderText(value: string | null | undefined) {
+  const normalized = clean(value).toLowerCase()
+  if (!normalized) return false
+
+  return (
+    /\b(rep name|show name)\b/.test(normalized) ||
+    normalized === 'jane' ||
+    normalized.includes("jane's ") ||
+    normalized.includes("jane's sparkle party")
+  )
+}
+
 function firstText(...values: Array<string | null | undefined>) {
   for (const value of values) {
     const cleaned = clean(value)
-    if (cleaned) return cleaned
+    if (cleaned && !hasLegacyPlaceholderText(cleaned)) return cleaned
   }
 
   return ''
@@ -91,7 +103,7 @@ function buildTicker(settings: SiteSettingsDashboardResult, fallback: string) {
   const parts = [
     settings.bannerVisible ? settings.bannerText : '',
     settings.tickerVisible ? settings.tickerText : '',
-  ].filter((value) => clean(value).length > 0)
+  ].filter((value) => clean(value).length > 0 && !hasLegacyPlaceholderText(value))
 
   return parts.length > 0 ? parts.join(' | ') : fallback
 }

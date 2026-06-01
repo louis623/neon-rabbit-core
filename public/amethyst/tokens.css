@@ -102,6 +102,11 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 h1, h2, h3, h4 {
   font-family: var(--font-sans);
   font-weight: var(--fw-semi);

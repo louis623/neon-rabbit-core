@@ -1,11 +1,11 @@
 export const prelaunchContent = {
   officialVersionName: 'Sparkle Suite V1 Preview Public Site',
   brand: 'Sparkle Suite',
-  eyebrow: 'Self-Serve Launch Flow',
-  headline: 'Sparkle Suite',
+  eyebrow: 'Coming Soon',
+  headline: 'A better customer experience starts with a better rep setup.',
   body:
-    'Buy your workspace, accept the terms, and let Nic-Nac guide setup from inside the backend.',
-  primaryCtaLabel: 'Get Launch Access',
+    'Sparkle Suite gives reps a more polished website, standout live show tools, and built-in support that helps customers feel the difference.',
+  primaryCtaLabel: 'Join the Waitlist',
   secondaryCtaLabel: 'What Is Sparkle Suite?',
   heroFeatures: [
     {
@@ -34,7 +34,6 @@ export const prelaunchContent = {
     },
   ],
   previewHeading: 'Inside the suite',
-  previewKicker: 'V1 preview',
   previewItems: [
     {
       number: '01',
@@ -64,14 +63,6 @@ export const prelaunchContent = {
   ],
   previewPlus:
     'Plus Nic-Nac - the built-in live show AI assistant helping with flow, content, and the moving parts behind the scenes.',
-  salesVideoHeading: 'Sales snippets',
-  salesVideoBody:
-    'Short TikTok-style previews can show the public site, Live Queue, trade board, and backend polish before purchase. Detailed training stays in the help/how-to hub after checkout.',
-  salesVideoItems: [
-    'Public site preview',
-    'Live Queue customer view',
-    'Trade board customer experience',
-  ],
   valueHeading: 'Why it stands out',
   valueSubheading: 'The edge customers can actually feel.',
   valueBody:
@@ -159,11 +150,48 @@ export const prelaunchContent = {
       body: 'You want better tools and assistant support instead of doing every step manually.',
     },
   ],
-  waitlistEyebrow: 'Launch access',
-  waitlistHeading: 'Get ready for self-serve launch access.',
+  pricing: {
+    eyebrow: 'Founder pricing',
+    heading: 'Join the waitlist while founder pricing is still in reach.',
+    body:
+      'The first 20 paid reps get the same Sparkle Suite package at the founding monthly rate before standard pricing begins.',
+    buildFee: {
+      label: 'Sparkle Suite build fee',
+      price: '$49.99',
+      body: 'One-time and non-refundable, itemized separately at checkout.',
+    },
+    founder: {
+      label: 'Founding rep monthly',
+      badge: 'First 20 paid reps',
+      price: '$49.99/month',
+      term: 'Founder rate for the first 12 paid service months.',
+      firstCheckout: '$99.98 first checkout before taxes or Stripe-calculated extras.',
+      afterTerm: 'Then moves to the standard $74.99/month rate.',
+    },
+    standard: {
+      label: 'Standard monthly',
+      badge: 'Rep 21 and beyond',
+      price: '$74.99/month',
+      term: 'Monthly subscription from the start.',
+      firstCheckout: '$124.98 first checkout before taxes or Stripe-calculated extras.',
+    },
+    included: [
+      'Customer-facing site',
+      'Live queue',
+      'Trade board / dance floor',
+      'Live event calendar',
+      'Email and SMS updates',
+      'Nic-Nac live-show AI assistant',
+    ],
+    cta: { label: 'Join the waitlist', href: '#waitlist' },
+    note:
+      'No free trials, no $1 first month, and no hidden build fee. Founder pricing is limited to the first 20 paid reps.',
+  },
+  waitlistEyebrow: 'Join the Waitlist',
+  waitlistHeading: 'Be first in line when Sparkle Suite opens.',
   waitlistBody:
-    "Sparkle Suite is moving toward a simple buy, login, and setup flow. Join the launch list and we'll send the purchase path when your account lane opens.",
-  waitlistNote: 'No setup meeting required unless something needs escalation.',
+    "Join the waitlist and we'll reach out when Sparkle Suite is ready to help you stand out, wow customers, and run your business with less manual work.",
+  waitlistNote: "Takes about 60 seconds. We'll save your spot.",
   waitlistFields: {
     name: {
       label: 'Name',
@@ -186,8 +214,8 @@ export const prelaunchContent = {
       placeholder: 'Who are you under?',
     },
     setupPain: {
-      label: 'What would you want Sparkle Suite to clean up first? - optional',
-      placeholder: 'A quick note is plenty. Skip it if you already know you want in.',
+      label: 'What part of your current setup feels the most patchwork? - optional',
+      placeholder: 'Tell us what feels scattered, manual, or harder than it should.',
     },
   },
   waitlistSmsConsentLabel:
@@ -196,18 +224,18 @@ export const prelaunchContent = {
     "Email me updates. Send me practical updates when there's something worth knowing.",
   waitlistConsentNote:
     "We'll send practical updates by email, and by text only if you choose SMS.",
-  waitlistSubmitLabel: 'Get Launch Access',
-  waitlistSubmittingLabel: 'Saving your launch request...',
+  waitlistSubmitLabel: 'Join the Waitlist',
+  waitlistSubmittingLabel: 'Saving your spot...',
   waitlistErrorFallback:
     'Something went wrong while joining the waitlist. Please try again.',
   waitlistSuccessEyebrow: "You're on the list",
-  waitlistSuccessTitle: "You're on the launch list.",
+  waitlistSuccessTitle: "Thank you, friend. We've got you.",
   waitlistSuccessBody:
-    "We'll reach out using the updates you chose when self-serve launch access is ready for your lane.",
-  footerEyebrow: 'The new handoff',
-  footerHeading: 'Built to sell first, train after purchase.',
+    "We'll reach out by email and text when Sparkle Suite is ready. Until then, your spot is saved.",
+  footerEyebrow: 'A note from the team',
+  footerHeading: "We're building this carefully.",
   footerBody:
-    'The landing page sells the value. Your confirmation email, backend workspace, Nic-Nac, and the help/how-to hub handle setup.',
+    'The polished edge is on the way. Join the waitlist and be first to know when Sparkle Suite is ready.',
   footerTagline:
-    'For reps who want to buy, log in, and build the rest with Nic-Nac.',
+    'For reps who want smoother live shows and a more polished customer experience.',
 } as const

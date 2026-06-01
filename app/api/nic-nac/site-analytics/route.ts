@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import { getSiteAnalyticsDashboard } from '@/lib/services/site-analytics'
 
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const summary = await getSiteAnalyticsDashboard({
       supabase: createAdminClient(),
       repId,

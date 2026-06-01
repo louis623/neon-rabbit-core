@@ -7,6 +7,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
+import { assertPaidWorkspaceAccess } from '@/lib/nic-nac/subscription-access'
 
 export interface NicNacAuthContext {
   repId: string
@@ -44,6 +45,12 @@ export async function getAuthenticatedNicNacContext(): Promise<NicNacAuthContext
   )
 
   return { repId, rep, supabase }
+}
+
+export async function getPaidNicNacContext(): Promise<NicNacAuthContext> {
+  const context = await getAuthenticatedNicNacContext()
+  await assertPaidWorkspaceAccess(context.supabase, context.repId)
+  return context
 }
 
 export { AuthError }

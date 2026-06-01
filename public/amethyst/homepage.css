@@ -202,6 +202,17 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
+.hp-ticker-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 .hp-ticker-row {
   display: flex;
   align-items: center;
@@ -306,8 +317,11 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   }
 
   .hp-header-link {
-    padding-inline: 10px;
-    font-size: 11px;
+    justify-content: center;
+    min-width: 92px;
+    min-height: 44px;
+    padding-inline: 12px;
+    font-size: 12px;
   }
 
   .hp-shop-btn {
@@ -317,12 +331,14 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   .hp-ticker {
     top: var(--hp-mobile-sticky-ticker-top);
     overflow-x: clip;
-    contain: paint;
+    contain: layout paint;
   }
 
   .hp-ticker-row {
     width: 100%;
     max-width: 100vw;
+    display: block;
+    contain: layout paint;
   }
 
   .hp-ticker-label {
@@ -331,6 +347,11 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   }
 
   .hp-ticker-track {
+    position: absolute;
+    inset: 0 auto 0 0;
+    align-items: center;
+    width: max-content;
+    max-width: none;
     min-width: max-content;
     padding-left: 132px;
     gap: 24px;
@@ -1908,6 +1929,56 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   margin-top: 3px;
   flex-shrink: 0;
 }
+.hp-unsubscribe-toggle {
+  position: relative;
+  align-items: center;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--hp-bg-elevated);
+  cursor: pointer;
+}
+.hp-unsubscribe-toggle input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.hp-toggle-control {
+  width: 46px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease);
+}
+.hp-toggle-control::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 8px rgba(14, 8, 32, 0.18);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.hp-unsubscribe-toggle input:checked + .hp-toggle-control {
+  background: var(--hp-primary);
+}
+.hp-unsubscribe-toggle input:checked + .hp-toggle-control::after {
+  transform: translateX(18px);
+}
+.hp-unsubscribe-toggle:focus-within {
+  outline: 2px solid color-mix(in oklab, var(--hp-primary) 28%, white);
+  outline-offset: 3px;
+}
 
 .hp-signup-actions {
   display: flex;
@@ -2049,7 +2120,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 8px;
 }
 .hp-footer-social {
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.15);
   display: inline-flex;
@@ -2079,6 +2150,9 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 10px;
 }
 .hp-footer-col a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: rgba(255,255,255,0.65);
   font-size: 13px;
   text-decoration: none;
@@ -2102,7 +2176,12 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   flex-wrap: wrap;
   gap: 12px;
 }
-.hp-footer-bottom a { color: rgba(255,255,255,0.6); }
+.hp-footer-bottom a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgba(255,255,255,0.6);
+}
 
 /* ============================================================
    Nic-Nac launcher (TH3 Square + sparkle)
@@ -2879,6 +2958,10 @@ body.shape-soft { --hp-radius-card: 24px; }
     min-width: 44px;
     min-height: 44px;
     touch-action: manipulation;
+  }
+
+  .hp-unsubscribe-toggle {
+    min-height: 56px;
   }
 }
 

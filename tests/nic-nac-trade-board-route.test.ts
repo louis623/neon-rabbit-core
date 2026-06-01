@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedNicNacContextMock = vi.fn()
+const getPaidNicNacContextMock = vi.fn()
 const getAuthenticatedRepMock = vi.fn()
 const getMyBoardMock = vi.fn()
 const addListingMock = vi.fn()
@@ -13,6 +14,8 @@ vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getAuthenticatedNicNacContext: (...args: unknown[]) =>
     getAuthenticatedNicNacContextMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getPaidNicNacContextMock(...args),
 }))
 
 vi.mock('@/lib/supabase/auth', () => ({
@@ -44,10 +47,12 @@ import {
   POST,
 } from '@/app/api/nic-nac/trade-board/route'
 import { AuthError } from '@/lib/nic-nac/auth'
+import { ServiceError } from '@/lib/services/errors'
 
 describe('trade board route', () => {
   beforeEach(() => {
     getAuthenticatedNicNacContextMock.mockReset()
+    getPaidNicNacContextMock.mockReset()
     getAuthenticatedRepMock.mockReset()
     getMyBoardMock.mockReset()
     addListingMock.mockReset()
@@ -58,7 +63,7 @@ describe('trade board route', () => {
   })
 
   it('returns the authenticated rep trade board summary', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -95,9 +100,10 @@ describe('trade board route', () => {
   })
 
   it('adds a listing through the admin-backed fallback action without a confirmation checkbox', async () => {
-    getAuthenticatedRepMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
     })
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-2',
@@ -129,7 +135,7 @@ describe('trade board route', () => {
   })
 
   it('updates a listing with the authenticated rep client', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -165,7 +171,7 @@ describe('trade board route', () => {
   })
 
   it('restores a removed listing with the authenticated rep client', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -201,9 +207,10 @@ describe('trade board route', () => {
   })
 
   it('normalizes a custom listing photo before addListing sees it', async () => {
-    getAuthenticatedRepMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
     })
     processRepCustomListingPhotoUrlMock.mockResolvedValueOnce({
       photoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
@@ -242,7 +249,7 @@ describe('trade board route', () => {
   })
 
   it('normalizes a custom listing photo before updateListing sees it', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -285,7 +292,7 @@ describe('trade board route', () => {
   })
 
   it('removes a listing with a required reason', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -320,7 +327,7 @@ describe('trade board route', () => {
   })
 
   it('returns 401 when the rep is not signed in', async () => {
-    getAuthenticatedNicNacContextMock.mockRejectedValueOnce(
+    getPaidNicNacContextMock.mockRejectedValueOnce(
       new AuthError('Not authenticated'),
     )
 
@@ -332,5 +339,52 @@ describe('trade board route', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'unauthenticated',
     })
+  })
+
+  it('requires a paid subscription before loading the trade board', async () => {
+    getPaidNicNacContextMock.mockRejectedValueOnce(
+      new ServiceError({
+        code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+        message: 'subscription required',
+        userMessage:
+          'Start your Sparkle Suite subscription before using workspace tools.',
+        statusCode: 402,
+      }),
+    )
+
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/trade-board'),
+    )
+
+    expect(getMyBoardMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(402)
+    await expect(response.json()).resolves.toEqual({
+      code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+      error: 'Start your Sparkle Suite subscription before using workspace tools.',
+    })
+  })
+
+  it('requires a paid subscription before adding a trade board listing', async () => {
+    getPaidNicNacContextMock.mockRejectedValueOnce(
+      new ServiceError({
+        code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+        message: 'subscription required',
+        userMessage:
+          'Start your Sparkle Suite subscription before using workspace tools.',
+        statusCode: 402,
+      }),
+    )
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ itemNumber: 'RG100' }),
+      }),
+    )
+
+    expect(addListingMock).not.toHaveBeenCalled()
+    expect(processRepCustomListingPhotoUrlMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(402)
   })
 })

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedNicNacContextMock = vi.fn()
+const getPaidNicNacContextMock = vi.fn()
 const getAuthenticatedRepMock = vi.fn()
 const getTradeRequestsMock = vi.fn()
 const approveTradeMock = vi.fn()
@@ -10,6 +11,8 @@ vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getAuthenticatedNicNacContext: (...args: unknown[]) =>
     getAuthenticatedNicNacContextMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getPaidNicNacContextMock(...args),
 }))
 
 vi.mock('@/lib/supabase/auth', () => ({
@@ -28,10 +31,12 @@ vi.mock('@/lib/services/trade-requests', () => ({
 }))
 
 import { GET, POST } from '@/app/api/nic-nac/trade-requests/route'
+import { ServiceError } from '@/lib/services/errors'
 
 describe('trade requests route', () => {
   beforeEach(() => {
     getAuthenticatedNicNacContextMock.mockReset()
+    getPaidNicNacContextMock.mockReset()
     getAuthenticatedRepMock.mockReset()
     getTradeRequestsMock.mockReset()
     approveTradeMock.mockReset()
@@ -39,7 +44,7 @@ describe('trade requests route', () => {
   })
 
   it('returns pending requests for the authenticated rep', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -61,9 +66,10 @@ describe('trade requests route', () => {
   })
 
   it('approves a request through the fallback action', async () => {
-    getAuthenticatedRepMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
     })
     approveTradeMock.mockResolvedValueOnce({
       requestId: 'request-1',
@@ -94,9 +100,10 @@ describe('trade requests route', () => {
   })
 
   it('rejects a request through the fallback action', async () => {
-    getAuthenticatedRepMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
     })
     rejectTradeMock.mockResolvedValueOnce({
       requestId: 'request-2',
@@ -125,5 +132,32 @@ describe('trade requests route', () => {
       'Not the right fit',
     )
     expect(response.status).toBe(200)
+  })
+
+  it('requires a paid subscription before approving trade requests', async () => {
+    getPaidNicNacContextMock.mockRejectedValueOnce(
+      new ServiceError({
+        code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+        message: 'subscription required',
+        userMessage:
+          'Start your Sparkle Suite subscription before using workspace tools.',
+        statusCode: 402,
+      }),
+    )
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/trade-requests', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', requestId: 'request-1' }),
+      }),
+    )
+
+    expect(approveTradeMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(402)
+    await expect(response.json()).resolves.toEqual({
+      code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+      error: 'Start your Sparkle Suite subscription before using workspace tools.',
+    })
   })
 })

@@ -19,7 +19,8 @@ import { createAnthropic } from '@ai-sdk/anthropic'
 // Pin baseURL explicitly to avoid an inherited ANTHROPIC_BASE_URL env var
 // (sometimes set without /v1) from steering the SDK to the wrong endpoint.
 const anthropic = createAnthropic({ baseURL: 'https://api.anthropic.com/v1' })
-import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { ServiceError } from '@/lib/services/errors'
 import {
   loadCanonicalHistory,
   insertUserMessage,
@@ -89,12 +90,18 @@ export async function POST(request: Request) {
 
   let ctx
   try {
-    ctx = await getAuthenticatedNicNacContext()
+    ctx = await getPaidNicNacContext()
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json(
         { error: 'unauthenticated' },
         { status: 401, headers: responseHeaders }
+      )
+    }
+    if (err instanceof ServiceError) {
+      return NextResponse.json(
+        { error: err.userMessage, code: err.code },
+        { status: err.statusCode, headers: responseHeaders },
       )
     }
     await logIncident({

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { ServiceError } from '@/lib/services/errors'
 import {
   getConversationOwner,
   getLatestConversationId,
@@ -13,10 +14,16 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   let ctx
   try {
-    ctx = await getAuthenticatedNicNacContext()
+    ctx = await getPaidNicNacContext()
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
+    }
+    if (err instanceof ServiceError) {
+      return NextResponse.json(
+        { error: err.userMessage, code: err.code },
+        { status: err.statusCode },
+      )
     }
     throw err
   }

@@ -60,16 +60,14 @@ export function PrelaunchHero() {
               <span className="ss-eyebrow ss-eyebrow--ink">
                 {prelaunchContent.previewHeading}
               </span>
-              <span className="ss-eyebrow">{prelaunchContent.previewKicker}</span>
             </div>
             {prelaunchContent.previewItems.map((item) => (
-              <article className="ss-card" key={item.number}>
+              <article className="ss-card" key={item.title}>
                 <FeatureGlyph title={item.title} />
                 <div>
                   <div className="ss-card__title">{item.title}</div>
                   <div className="ss-card__sub">{item.body}</div>
                 </div>
-                <span className="ss-card__meta">{item.number}</span>
               </article>
             ))}
             <p className="ss-stack__note">

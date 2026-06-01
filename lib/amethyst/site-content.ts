@@ -101,13 +101,13 @@ export interface AmethystSiteContent {
 }
 
 export const defaultAmethystSiteContent: AmethystSiteContent = {
-  repName: 'Rep Name',
-  businessName: 'Show Name',
-  teamName: "Jane's Sparkle Party",
+  repName: 'Sasha Rivera',
+  businessName: 'Sparkle by Sasha',
+  teamName: 'Sparkle by Sasha',
   heroEyebrow: 'Live reveals · every Tuesday · 8pm local time',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
-    "I'm Rep Name. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.",
+    "I'm Sasha Rivera. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.",
   announcementText: 'Text club gets first dibs on drops and reminders.',
   announcementItems: [
     'Live tonight · 8pm local time',
@@ -121,13 +121,13 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   streamLinks: [
     {
       label: 'Watch on TikTok',
-      handle: '@repname',
+      handle: '@sparklebysasha',
       href: '#watch-live',
       platform: 'tiktok',
     },
     {
       label: 'Watch on Facebook Live',
-      handle: 'Rep Name Live',
+      handle: 'Sparkle by Sasha Live',
       href: '#watch-live',
       platform: 'facebook',
     },
@@ -199,13 +199,13 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
       platforms: [
         {
           label: 'Join on TikTok',
-          handle: '@repname',
+          handle: '@sparklebysasha',
           href: '#watch-live',
           platform: 'tiktok',
         },
         {
           label: 'Watch on Facebook',
-          handle: 'Rep Name Live',
+          handle: 'Sparkle by Sasha Live',
           href: '#watch-live',
           platform: 'facebook',
         },
@@ -225,7 +225,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
       platforms: [
         {
           label: 'Join on TikTok',
-          handle: '@repname',
+          handle: '@sparklebysasha',
           href: '#watch-live',
           platform: 'tiktok',
         },
@@ -237,9 +237,9 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     'Customers order a sealed jewelry box, then join the live reveal to watch what comes out in real time. Every box includes real jewelry, with rare Diamond Territory and Unicorn Magic pieces mixed into the regular drops.',
   signupEyebrow: 'Stay in the loop',
   signupTitle: 'Never miss a show.',
-  signupSub: 'Get a heads-up when Rep Name goes live, plus first looks at new trade board listings and featured collections.',
+  signupSub: 'Get a heads-up when Sasha goes live, plus first looks at new trade board listings and featured collections.',
   signupConsent:
-    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Show Name. Message and data rates may apply. Reply STOP to unsubscribe.',
+    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Sparkle by Sasha. Message and data rates may apply. Reply STOP to unsubscribe.',
   joinTeamEyebrow: 'Join the team',
   joinTeamTitle: 'Want to do this too?',
   joinTeamSub:
@@ -272,7 +272,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     { label: 'YouTube', shortLabel: 'YT', href: '#watch-live' },
   ],
   legalDisclaimer:
-    'Show Name is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.',
+    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.',
   navLinks: [
     { label: 'Home', href: '#top' },
     { label: 'Trade Board', href: '#trade-board' },

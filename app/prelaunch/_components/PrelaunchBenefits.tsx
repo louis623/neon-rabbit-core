@@ -55,10 +55,9 @@ export function PrelaunchBenefits() {
           </div>
           <div className="ss-feat-grid">
             {prelaunchContent.suiteItems.map((item) => (
-              <article className="ss-feat" key={item.number}>
+              <article className="ss-feat" key={item.title}>
                 <div className="ss-feat__head">
                   <FeatureGlyph title={item.title} />
-                  <span className="ss-feat__num">{item.number}</span>
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>

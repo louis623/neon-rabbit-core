@@ -53,7 +53,7 @@ describe('Amethyst trade page template wiring', () => {
 
     expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-drawer[\s\S]*?top:\s*var\(--hp-mobile-sticky-drawer-top\);/)
     expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-filters[\s\S]*?top:\s*var\(--hp-mobile-sticky-filters-top\);/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*static;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-filter-pill[\s\S]*?min-height:\s*44px;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-card-close[\s\S]*?min-width:\s*44px;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-card-expand-mask[\s\S]*?animation:\s*none\s*!important;/)
@@ -171,14 +171,14 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Browse Jane\'s Sparkle Party trade board listings and request fair jewelry trades from live reveal customers." />',
+      '<meta name="description" content="Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Jane\'s Sparkle Party - Trade Board" />',
+      '<meta property="og:title" content="Sparkle by Sasha - Trade Board" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })
@@ -211,6 +211,25 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('Rare finds')
     expect(css).toContain('.tp-filter-panel')
     expect(css).toContain('.tp-filter-search')
+  })
+
+  it('ships mobile scanning affordances for filtering the customer trade board', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('Search or filter the board')
+    expect(jsx).toContain('className="tp-mobile-filter-cue"')
+    expect(jsx).toContain('aria-controls="trade-filter-panel"')
+    expect(jsx).toContain('id="trade-filter-panel"')
+    expect(css).toContain('.tp-mobile-filter-cue')
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-mobile-filter-cue[\s\S]*?display:\s*flex;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
   })
 
   it('does not ship corrupted visible characters in the trade runtime copy', () => {

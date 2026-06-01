@@ -379,6 +379,9 @@ export const termsAndConditionsDocument: LegalDocument = {
       paragraphs: [
         "Some Sparkle Suite services may require payment.",
         "Any payment terms, subscription terms, setup fees, or service fees will be presented separately when applicable.",
+        "Listed Sparkle Suite prices do not include taxes.",
+        "Stripe checkout may calculate and show applicable taxes, payment-processing details, or other checkout-related amounts before payment is submitted.",
+        "The final amount shown in Stripe checkout controls before payment is submitted.",
         "Unless otherwise stated in writing, fees are not automatically refundable once work has started or services have been provided.",
       ],
     },

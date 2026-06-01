@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'type is invalid.' }, { status: 400 })
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const result = await getRepMessages(supabase, repId, {
       limit: limit ?? undefined,
       messageType,
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const action = typeof body?.action === 'string' ? body.action.trim() : ''
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
 
     if (action === 'create_support_request') {
       const result = await createRepSupportMessage(supabase, repId, {

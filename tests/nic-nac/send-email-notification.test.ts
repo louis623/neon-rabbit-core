@@ -298,7 +298,7 @@ describe('send_email_notification', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(28)
+    expect(names).toHaveLength(29)
     expect(names).toEqual(
       expect.arrayContaining([
         'send_sms_notification',

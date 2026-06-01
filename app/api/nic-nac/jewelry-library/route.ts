@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceError } from '@/lib/services/errors'
 import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'limit must be a whole number.' }, { status: 400 })
     }
 
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const results = await searchJewelryDatabase(createAdminClient(), repId, {
       query,
       limit: limit ?? undefined,
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const itemNumber =
       typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : ''
     const listingPhotoUrl =

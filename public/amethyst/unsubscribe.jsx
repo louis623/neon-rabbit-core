@@ -4,7 +4,7 @@ const { useState } = React;
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
 const FOOTER_LINKS = CONTENT.footerLinks || {};
 const SOCIAL_LINKS = CONTENT.socialLinks || [];
-const BUSINESS_NAME = CONTENT.businessName || "Show Name";
+const BUSINESS_NAME = CONTENT.businessName || "Sparkle by Sasha";
 const SHOP_HREF = CONTENT.streamLinks?.shop || "https://bombparty.com";
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
@@ -163,12 +163,14 @@ function UnsubscribePage() {
                 </div>
               </div>
               <div className="hp-signup-consent-box">
-                <label className="hp-signup-check">
+                <label className="hp-signup-check hp-unsubscribe-toggle">
                   <input type="checkbox" checked={form.unsubscribeSms} onChange={(e) => updateField("unsubscribeSms", e.target.checked)} />
+                  <span className="hp-toggle-control" aria-hidden="true" />
                   <span>Stop SMS updates</span>
                 </label>
-                <label className="hp-signup-check">
+                <label className="hp-signup-check hp-unsubscribe-toggle">
                   <input type="checkbox" checked={form.unsubscribeEmail} onChange={(e) => updateField("unsubscribeEmail", e.target.checked)} />
+                  <span className="hp-toggle-control" aria-hidden="true" />
                   <span>Stop email updates</span>
                 </label>
               </div>

@@ -3,9 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const getAuthenticatedRepMock = vi.fn()
 const getWalletDashboardMock = vi.fn()
 
-vi.mock('@/lib/supabase/auth', () => ({
+vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
-  getAuthenticatedRep: (...args: unknown[]) => getAuthenticatedRepMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getAuthenticatedRepMock(...args),
 }))
 
 vi.mock('@/lib/services/wallet-dashboard', () => ({
@@ -13,7 +14,7 @@ vi.mock('@/lib/services/wallet-dashboard', () => ({
 }))
 
 import { GET } from '@/app/api/nic-nac/wallet-summary/route'
-import { AuthError } from '@/lib/supabase/auth'
+import { AuthError } from '@/lib/nic-nac/auth'
 
 describe('GET /api/nic-nac/wallet-summary', () => {
   beforeEach(() => {

@@ -16,8 +16,7 @@ export function PrelaunchAudience() {
           </div>
           <ul className="ss-audience__list">
             {prelaunchContent.audiences.map((audience) => (
-              <li className="ss-audience__item" key={audience.number}>
-                <span className="ss-audience__num">{audience.number}</span>
+              <li className="ss-audience__item" key={audience.title}>
                 <div>
                   <h4>{audience.title}</h4>
                   <p>{audience.body}</p>

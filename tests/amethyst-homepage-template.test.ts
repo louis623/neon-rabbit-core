@@ -9,6 +9,51 @@ import {
 } from '@/lib/amethyst/homepage-template-data'
 
 describe('Amethyst homepage template data wiring', () => {
+  it('keeps locked public fallback exports on the shared demo identity', () => {
+    const files = [
+      'public/amethyst/Homepage.html',
+      'public/amethyst/Trade.html',
+      'public/amethyst/Join.html',
+      'public/amethyst/Unsubscribe.html',
+      'public/amethyst/homepage.jsx',
+      'public/amethyst/trade.jsx',
+      'public/amethyst/join.jsx',
+      'public/amethyst/unsubscribe.jsx',
+    ].map((file) => readFileSync(resolve(process.cwd(), file), 'utf8'))
+    const serialized = files.join('\n')
+
+    expect(serialized).toContain('Sparkle by Sasha')
+    expect(serialized).not.toMatch(/\b(?:Rep Name|Show Name)\b/)
+    expect(serialized).not.toContain("Jane's Sparkle Party")
+  })
+
+  it('marks animated ticker tracks as decorative and provides concise screen-reader summaries', () => {
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const trade = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    for (const jsx of [homepage, trade, join]) {
+      expect(jsx).toContain('className="hp-ticker-sr"')
+      expect(jsx).toContain('aria-hidden="true"')
+      expect(jsx).toContain('aria-label="Customer site updates"')
+    }
+    expect(css).toContain('.hp-ticker-sr')
+    expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
+  })
+
   it('ships shared customer-facing mobile CSS containment and motion safeguards', () => {
     const tokensCss = readFileSync(
       resolve(process.cwd(), 'public/amethyst/tokens.css'),
@@ -23,7 +68,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(tokensCss).toContain('max-width: 100%;')
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-ticker[\s\S]*?overflow-x:\s*clip;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-header-nav[\s\S]*?max-width:\s*100%;/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-header-link[\s\S]*?font-size:\s*11px;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-header-link[\s\S]*?font-size:\s*12px;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-ticker-track[\s\S]*?min-width:\s*max-content;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-trade-preview[\s\S]*?top:\s*var\(--hp-mobile-sticky-trade-top\);/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-header-link[\s\S]*?min-height:\s*44px;/)
@@ -94,14 +139,14 @@ describe('Amethyst homepage template data wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane\'s Sparkle Party." />',
+      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Homepage.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Jane\'s Sparkle Party - Live jewelry reveals" />',
+      '<meta property="og:title" content="Sparkle by Sasha - Live jewelry reveals" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })
@@ -294,5 +339,22 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(html).toContain('unsubscribe.jsx')
     expect(jsx).toContain('/api/amethyst/customer-audience/unsubscribe')
+  })
+
+  it('uses large toggle-style unsubscribe rows for mobile preference changes', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/unsubscribe.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('className="hp-signup-check hp-unsubscribe-toggle"')
+    expect(jsx).toContain('className="hp-toggle-control"')
+    expect(css).toContain('.hp-unsubscribe-toggle')
+    expect(css).toContain('.hp-toggle-control')
+    expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-unsubscribe-toggle[\s\S]*?min-height:\s*56px;/)
   })
 })

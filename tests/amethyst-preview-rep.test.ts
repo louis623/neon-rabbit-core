@@ -10,11 +10,15 @@ function makeAdminClient({
   repsById = {},
   repsByCustomDomain = {},
   latestLaunchRepId = null,
+  paidRepIds = [],
+  readyLaunchRepIds = [],
 }: {
   repsByEmail?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsById?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsByCustomDomain?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   latestLaunchRepId?: string | null
+  paidRepIds?: string[]
+  readyLaunchRepIds?: string[]
 }) {
   const repEq = vi.fn((column: string, value: string) => {
     if (column === 'email') {
@@ -54,6 +58,47 @@ function makeAdminClient({
   const launchStatusEq = vi.fn(() => ({ not: launchNot }))
   const launchStageEq = vi.fn(() => ({ eq: launchStatusEq }))
 
+  const publicLaunchMaybeSingle = vi.fn((repId: string) =>
+    Promise.resolve({
+      data: readyLaunchRepIds.includes(repId) ? { id: 'launch-ready' } : null,
+      error: null,
+    }),
+  )
+  const publicLaunchLimit = vi.fn((repId: string) => ({
+    maybeSingle: () => publicLaunchMaybeSingle(repId),
+  }))
+  const publicLaunchOrder = vi.fn((repId: string) => ({
+    limit: () => publicLaunchLimit(repId),
+  }))
+  const publicLaunchStatusEq = vi.fn((repId: string) => ({
+    order: () => publicLaunchOrder(repId),
+  }))
+  const publicLaunchStageEq = vi.fn((repId: string) => ({
+    eq: () => publicLaunchStatusEq(repId),
+  }))
+  const publicLaunchRepEq = vi.fn((_column: string, repId: string) => ({
+    eq: () => publicLaunchStageEq(repId),
+  }))
+
+  const subscriptionMaybeSingle = vi.fn((repId: string) =>
+    Promise.resolve({
+      data: paidRepIds.includes(repId) ? { id: 'sub-1', status: 'active' } : null,
+      error: null,
+    }),
+  )
+  const subscriptionLimit = vi.fn((repId: string) => ({
+    maybeSingle: () => subscriptionMaybeSingle(repId),
+  }))
+  const subscriptionOrder = vi.fn((repId: string) => ({
+    limit: () => subscriptionLimit(repId),
+  }))
+  const subscriptionIn = vi.fn((repId: string) => ({
+    order: () => subscriptionOrder(repId),
+  }))
+  const subscriptionEq = vi.fn((_column: string, repId: string) => ({
+    in: () => subscriptionIn(repId),
+  }))
+
   const from = vi.fn((table: string) => {
     if (table === 'reps') {
       return {
@@ -63,7 +108,15 @@ function makeAdminClient({
 
     if (table === 'sparkle_suite_launch_builds') {
       return {
-        select: vi.fn(() => ({ eq: launchStageEq })),
+        select: vi.fn((columns: string) => ({
+          eq: columns === 'rep_id' ? launchStageEq : publicLaunchRepEq,
+        })),
+      }
+    }
+
+    if (table === 'subscriptions') {
+      return {
+        select: vi.fn(() => ({ eq: subscriptionEq })),
       }
     }
 
@@ -88,6 +141,7 @@ describe('Amethyst preview rep resolver', () => {
           email: 'target@example.com',
         },
       },
+      paidRepIds: ['rep-target'],
     })
 
     await expect(
@@ -117,6 +171,7 @@ describe('Amethyst preview rep resolver', () => {
           email: 'sasha@example.com',
         },
       },
+      paidRepIds: ['rep-domain'],
     })
 
     await expect(
@@ -199,6 +254,53 @@ describe('Amethyst preview rep resolver', () => {
     ).resolves.toEqual({
       id: 'rep-launch',
       email: 'launch@example.com',
+    })
+  })
+
+  it('does not expose an unpaid explicit rep id as a public customer site', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+      repsById: {
+        'rep-unpaid': {
+          id: 'rep-unpaid',
+          email: 'unpaid@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        repId: 'rep-unpaid',
+      }),
+    ).resolves.toBeNull()
+  })
+
+  it('allows an explicit rep id with a ready launch build before subscription', async () => {
+    const admin = makeAdminClient({
+      repsById: {
+        'rep-demo-ready': {
+          id: 'rep-demo-ready',
+          email: 'demo-ready@example.com',
+        },
+      },
+      readyLaunchRepIds: ['rep-demo-ready'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        repId: 'rep-demo-ready',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-demo-ready',
+      email: 'demo-ready@example.com',
     })
   })
 

@@ -169,7 +169,7 @@ describe('Nic-Nac show-session tools', () => {
         'get_show_session_context',
       ]),
     )
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('You have twenty-eight tools')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('You have twenty-nine tools')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_show_session_context')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('record_show_session_event')
   })

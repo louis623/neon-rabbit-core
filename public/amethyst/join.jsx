@@ -8,11 +8,11 @@ const {
 } = window;
 
 const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
-  teamName: "Jane's Sparkle Party",
-  repName: "Jane",
-  repCity: "Chicago",
-  repState: "Illinois",
-  businessName: "Jane's Sparkle Party",
+  teamName: "Sparkle by Sasha",
+  repName: "Sasha Rivera",
+  repCity: "Austin",
+  repState: "Texas",
+  businessName: "Sparkle by Sasha",
   teamMemberCount: 6,
   showPromo: true,
   promoText: "November Promo: New reps get a guaranteed Diamond in their first launch pack.",
@@ -286,10 +286,14 @@ function Header({ businessName }) {
 function Ticker({ topText }) {
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
   return (
-    <div className="hp-ticker">
+    <div className="hp-ticker" aria-label="Customer site updates">
+      <div className="hp-ticker-sr">
+        <p>Announcements: {items.join("; ")}</p>
+        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current trade board highlights</a>
+      </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...items, ...items, ...items].map((item, index) => (
             <span key={index} className="hp-ticker-item"><span className="dot" />{item}</span>
           ))}
@@ -297,7 +301,7 @@ function Ticker({ topText }) {
       </div>
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES].map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />

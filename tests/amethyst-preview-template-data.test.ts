@@ -50,6 +50,54 @@ const repExtras = {
 }
 
 describe('Amethyst preview template data', () => {
+  it('uses one polished demo identity when preview data cannot load', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      env: {},
+      dependencies: {
+        createAdminClient: vi.fn(),
+      },
+    })
+    const serialized = JSON.stringify(data)
+
+    expect(data.homepage.repName).toBe('Sasha Rivera')
+    expect(data.homepage.businessName).toBe('Sparkle by Sasha')
+    expect(data.trade.repName).toBe('Sasha Rivera')
+    expect(data.trade.businessName).toBe('Sparkle by Sasha')
+    expect(data.join.repName).toBe('Sasha Rivera')
+    expect(data.join.businessName).toBe('Sparkle by Sasha')
+    expect(data.join.teamName).toBe('Sparkle by Sasha')
+    expect(serialized).not.toMatch(/\b(?:Rep Name|Show Name)\b/)
+  })
+
+  it('normalizes legacy placeholder demo settings to the shared demo identity', () => {
+    const legacySettings: SiteSettingsDashboardResult = {
+      ...demoSettings,
+      displayName: 'Jane',
+      businessName: "Jane's Sparkle Party",
+      teamName: "Jane's Sparkle Party",
+      tagline:
+        "Give customers one polished place to see Jane's next live, join updates, and browse trade-friendly Sparkle Suite links.",
+      bannerText: "Welcome to Jane's Sparkle Party",
+      tickerText: '',
+      tickerVisible: false,
+    }
+
+    const homepage = mapPreviewSettingsToHomepageTemplateData(legacySettings)
+    const trade = mapPreviewSettingsToTradeTemplateData(legacySettings)
+    const join = mapPreviewSettingsToJoinTemplateData(legacySettings)
+    const serialized = JSON.stringify({ homepage, trade, join })
+
+    expect(homepage.repName).toBe('Sasha Rivera')
+    expect(homepage.businessName).toBe('Sparkle by Sasha')
+    expect(trade.repName).toBe('Sasha Rivera')
+    expect(trade.businessName).toBe('Sparkle by Sasha')
+    expect(join.repName).toBe('Sasha Rivera')
+    expect(join.businessName).toBe('Sparkle by Sasha')
+    expect(join.teamName).toBe('Sparkle by Sasha')
+    expect(serialized).not.toContain('Jane')
+    expect(serialized).not.toMatch(/\b(?:Rep Name|Show Name)\b/)
+  })
+
   it('maps connected demo settings into homepage data', () => {
     const data = mapPreviewSettingsToHomepageTemplateData(
       demoSettings,

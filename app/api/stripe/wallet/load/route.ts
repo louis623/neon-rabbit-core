@@ -3,8 +3,11 @@ import { getStripe, stripeEnabled } from '@/lib/stripe/client'
 import { getAppUrl } from '@/lib/stripe/config'
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { ServiceError } from '@/lib/services/errors'
 import { ensureWallet } from '@/lib/services/wallet'
 import { walletMilsToStripeCents } from '@/lib/services/wallet-units'
+import { assertPaidWorkspaceAccess } from '@/lib/nic-nac/subscription-access'
 
 export async function POST(request: Request) {
   if (!stripeEnabled()) {
@@ -13,6 +16,7 @@ export async function POST(request: Request) {
 
   try {
     const { repId, rep } = await getAuthenticatedRep()
+    await assertPaidWorkspaceAccess(createAdminClient(), repId)
 
     const body = (await request.json()) as { amount_cents?: unknown }
     const amountCents = body.amount_cents
@@ -71,6 +75,12 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 })
+    }
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        { code: error.code, error: error.userMessage },
+        { status: error.statusCode },
+      )
     }
     console.error('[stripe/wallet/load] Error:', error)
     return NextResponse.json({ error: 'Failed to create wallet load session' }, { status: 500 })

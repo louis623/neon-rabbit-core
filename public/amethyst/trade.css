@@ -391,6 +391,13 @@ body.tradepage h4 {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+.tp-mobile-filter-cue {
+  display: none;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
 .tp-filter-results strong {
   color: var(--fg);
 }
@@ -852,7 +859,15 @@ body.tradepage h4 {
   .tp-card-expand { grid-template-columns: 1fr; }
   .tp-filter-grid { grid-template-columns: 1fr; }
   .tp-filters {
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 76;
+    box-shadow: 0 12px 28px rgba(14, 8, 32, 0.08);
+  }
+  .tp-mobile-filter-cue {
+    display: flex;
+    align-items: center;
+    min-height: 24px;
   }
   .tp-filters-topline {
     flex-direction: column;

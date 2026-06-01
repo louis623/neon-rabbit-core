@@ -69,3 +69,26 @@ Live Reveal Queue shipped as sideload to unblock clients. Web Store rebuild is a
 
 **Obsidian as visual interface**
 Obsidian layered over the same GitHub vault files for a visual knowledge graph. Does not replace the vault — it reads from it.
+
+---
+
+## May 31, 2026
+
+**Sparkle Suite work moves toward cloud batch execution**
+Louis wants large batch work to continue through `/goal` instead of many small stop/start chunks. The correct operating model is not to shrink the work; it is to move heavy repo work off the older Windows laptop and into GitHub Codespaces or equivalent cloud workspaces. The laptop should become the control panel, not the build machine.
+
+**One big batch per repo, not many local builds at once**
+Do not run multiple serious local repo builds/dev servers in parallel on Louis's laptop. Big batches are allowed and preferred, but each heavy repo should run in its own cloud workspace once Codespaces is stood up. Until then, work one heavy repo at a time locally.
+
+**End-of-session safety rule locked**
+Commit means a checkpoint saved locally. Push means backed up to GitHub. At session close, important work must be committed and pushed to GitHub so another machine or Codespace can resume it. Vercel deploys from GitHub; Supabase hosts app data; the laptop is not the production host.
+
+**Codespaces pilot approved**
+After current stopped sessions are safely closed, inventory the Sparkle Suite repos, make sure important work is pushed, then stand up GitHub Codespaces for the three heavy repos first: Sparkle Suite, Sparkle Finder, and Sparkle Rep Onboarding. Marketing can stay local/lightweight unless it becomes build-heavy.
+
+**Sparkle repo naming direction**
+Rename repo concepts toward clear product names:
+- `neon-rabbit-core` should become `sparkle-suite` for the main rep-side platform and workspace.
+- `sparkle-suite-customer` should become `sparkle-finder` for the customer/collector hub.
+- `sparkle-suite-marketing` should become or remain `sparkle-marketing` for campaigns, videos, content plans, and marketing assets for Suite and Finder.
+- `britt-with-bling-start-strong` should become `sparkle-rep-onboarding` because it organizes rep setup/access/resources rather than replacing Bomb Party University training.

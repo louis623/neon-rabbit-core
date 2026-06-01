@@ -5,9 +5,10 @@ const searchJewelryDatabaseMock = vi.fn()
 const addListingMock = vi.fn()
 const processRepCustomListingPhotoUrlMock = vi.fn()
 
-vi.mock('@/lib/supabase/auth', () => ({
+vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
-  getAuthenticatedRep: (...args: unknown[]) => getAuthenticatedRepMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getAuthenticatedRepMock(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({

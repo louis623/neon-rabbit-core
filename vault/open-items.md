@@ -6,6 +6,9 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## High Priority
 
+- [ ] **Close three active Sparkle repo sessions safely** - finish the stopped repo sessions one at a time, commit meaningful work, push to GitHub, and record branch/status before starting Codespaces setup.
+- [ ] **Sparkle repo inventory and rename plan** - after active work is pushed, inventory GitHub/local/Vercel/Supabase links for Sparkle Suite, Sparkle Finder, Sparkle Rep Onboarding, and Sparkle Marketing; confirm target repo names before renaming.
+- [ ] **GitHub Codespaces setup for heavy Sparkle repos** - create a repeatable cloud-workspace workflow for Sparkle Suite, Sparkle Finder, and Sparkle Rep Onboarding so batch agent work runs in the cloud instead of on Louis's laptop.
 - [ ] **Agent architecture planning session** — MUST happen before any Phase 2 orchestration code is written — highest risk area
 - [ ] **Supabase schema design session** — must happen before any application code is written
 - [ ] **Open Brain build session** — Supabase + pgvector + Discord capture bot

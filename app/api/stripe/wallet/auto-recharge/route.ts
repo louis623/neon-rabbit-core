@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ServiceError } from '@/lib/services/errors'
 import { ensureWallet } from '@/lib/services/wallet'
+import { assertPaidWorkspaceAccess } from '@/lib/nic-nac/subscription-access'
 import {
   stripeCentsToWalletMils,
   walletMilsToStripeCents,
@@ -17,6 +19,7 @@ interface Body {
 export async function POST(request: Request) {
   try {
     const { repId } = await getAuthenticatedRep()
+    await assertPaidWorkspaceAccess(createAdminClient(), repId)
     const body = (await request.json()) as Body
 
     if (typeof body.enabled !== 'boolean') {
@@ -106,6 +109,12 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 })
+    }
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        { code: error.code, error: error.userMessage },
+        { status: error.statusCode },
+      )
     }
     console.error('[stripe/wallet/auto-recharge] Error:', error)
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })

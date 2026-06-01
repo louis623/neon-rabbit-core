@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -21,7 +21,7 @@ function serviceErrorResponse(error: ServiceError) {
 
 export async function GET() {
   try {
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const queue = await getFulfillmentQueue(supabase, repId)
     return NextResponse.json(queue)
   } catch (error) {
@@ -36,7 +36,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
 
     const nextStatus =
       body?.nextStatus === 'approved' ||

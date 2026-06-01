@@ -8,8 +8,8 @@ const {
 } = window;
 
 const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
-  repName: "Rep Name",
-  businessName: "Show Name",
+  repName: "Sasha Rivera",
+  businessName: "Sparkle by Sasha",
   liveState: "live",
   contentState: "populated",
   cardCount: 18,
@@ -463,10 +463,14 @@ function Ticker({ topText }) {
   ];
 
   return (
-    <div className="hp-ticker">
+    <div className="hp-ticker" aria-label="Customer site updates">
+      <div className="hp-ticker-sr">
+        <p>Announcements: {items.join("; ")}</p>
+        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current trade board highlights</a>
+      </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...items, ...items, ...items].map((item, index) => (
             <span key={index} className="hp-ticker-item"><span className="dot" />{item}</span>
           ))}
@@ -474,7 +478,7 @@ function Ticker({ topText }) {
       </div>
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...trades, ...trades, ...trades].map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
@@ -626,8 +630,11 @@ function Filters({
   return (
     <div className={`tp-filters style-${style}`}>
       <div className="tp-filters-topline">
-        <div className="tp-filter-results">
-          <strong>{listings.length}</strong> available pieces
+        <div>
+          <div className="tp-mobile-filter-cue">Search or filter the board</div>
+          <div className="tp-filter-results">
+            <strong>{listings.length}</strong> available pieces
+          </div>
         </div>
         <div className="tp-filter-actions">
           {activeFilterCount > 0 && (
@@ -640,6 +647,7 @@ function Filters({
             className={`tp-filter-toggle ${secondaryOpen ? "active" : ""}`}
             onClick={() => setSecondaryOpen((open) => !open)}
             aria-expanded={secondaryOpen}
+            aria-controls="trade-filter-panel"
           >
             More filters
             {activeFilterCount > 0 && <span className="tp-filter-badge">{activeFilterCount}</span>}
@@ -688,7 +696,7 @@ function Filters({
       </div>
 
       {secondaryOpen && (
-        <div className="tp-filter-panel">
+        <div className="tp-filter-panel" id="trade-filter-panel">
           <div className="tp-filter-group">
             <div className="tp-filter-group-head">
               <h3>Collection</h3>

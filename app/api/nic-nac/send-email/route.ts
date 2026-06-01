@@ -3,7 +3,7 @@ import { getCustomerAudienceMember } from '@/lib/services/customer-audience'
 import { ServiceError, errors } from '@/lib/services/errors'
 import { sendEmailNotification } from '@/lib/services/email-notifications'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const subject = readText(body?.subject)
     const message = readText(body?.body)
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const customer = await getCustomerAudienceMember(supabase, repId, audienceId)
 
     if (!customer) {

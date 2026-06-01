@@ -14,11 +14,11 @@ const {
 // Tweak defaults are bootstrapped from the Next app so the locked export can
 // read structured rep data without changing layout or motion behavior.
 const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
-  repName: "Rep Name",
-  businessName: "Show Name",
+  repName: "Sasha Rivera",
+  businessName: "Sparkle by Sasha",
   tagline: "Live jewelry reveals every Tuesday - joy you can hold.",
   heroHeadline: "Real jewelry. Live reveals. Pure sparkle.",
-  heroSub: "I'm Rep Name - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  heroSub: "I'm Sasha Rivera - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
   buttonStyle: "sparkle",
   tickerVariant: "dual",
   nicNacStyle: "square",
@@ -381,10 +381,14 @@ function Ticker({ topText }) {
     { name: "Estate Sapphire Cluster", price: "$220", tier: "unicorn" },
   ];
   return (
-    <div className="hp-ticker" id="trade-board">
+    <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
+      <div className="hp-ticker-sr">
+        <p>Announcements: {items.join("; ")}</p>
+        <a {...linkProps(getTradeBoardHref())}>Browse current trade board highlights</a>
+      </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...items, ...items, ...items].map((it, i) => (
             <span key={i} className="hp-ticker-item"><span className="dot" />{it}</span>
           ))}
@@ -392,7 +396,7 @@ function Ticker({ topText }) {
       </div>
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
-        <div className="hp-ticker-track">
+        <div className="hp-ticker-track" aria-hidden="true">
           {[...trades, ...trades, ...trades].map((tr, i) => (
             <a key={i} {...linkProps(getTradeBoardHref())} className="hp-ticker-trade">
               <span className={`pip ${tr.tier}`} />
@@ -1022,7 +1026,7 @@ function JoinCta() {
   return (
     <section className="hp-join-cta" id="join-team">
       <div className="hp-join-cta-inner">
-        <div className="hp-join-eyebrow">Jane's Sparkle Party · Jane's Sparkle Party</div>
+        <div className="hp-join-eyebrow">Sparkle by Sasha · Sparkle by Sasha</div>
         <h2 className="hp-join-title">Want to do this too?</h2>
         <p className="hp-join-sub">
           Join my team. I'll show you how I built a real business doing live jewelry reveals on my own schedule —
@@ -1087,7 +1091,7 @@ function Footer({ businessName }) {
           <span><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Accessibility</a></span>
         </div>
         <p>
-          Jane's Sparkle Party is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
+          Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
           This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names,
           trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board
           listings are sold by the rep and not by Bomb Party LLC.

@@ -9,6 +9,8 @@ vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getAuthenticatedNicNacContext: (...args: unknown[]) =>
     getAuthenticatedNicNacContextMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getAuthenticatedNicNacContextMock(...args),
 }))
 
 vi.mock('@/lib/services/rep-messages', () => ({

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const audience = await getCustomerAudience(supabase, repId, {
       channelFilter,
       limit: limit ?? undefined,
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const result = await unsubscribeCustomerAudienceMember(supabase, repId, {
       audienceId:
         typeof body?.audienceId === 'string' ? body.audienceId.trim() : '',

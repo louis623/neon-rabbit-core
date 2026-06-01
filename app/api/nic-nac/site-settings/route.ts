@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const settings = await getSiteSettingsDashboard(supabase, repId)
     return NextResponse.json(settings)
   } catch (error) {
@@ -39,7 +39,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const settings = await updateSiteSettingsDashboard(supabase, repId, body ?? {})
 
     return NextResponse.json({

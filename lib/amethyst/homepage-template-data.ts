@@ -115,16 +115,16 @@ export interface AmethystHomepageTweakDefaults {
 }
 
 export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData = {
-  repName: 'Rep Name',
-  businessName: 'Show Name',
-  teamName: "Jane's Sparkle Party",
+  repName: 'Sasha Rivera',
+  businessName: 'Sparkle by Sasha',
+  teamName: 'Sparkle by Sasha',
   tagline: 'Live jewelry reveals every Tuesday - joy you can hold.',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
-    "I'm Rep Name - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+    "I'm Sasha Rivera - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
   tickerTopText:
     'Live tonight - 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday',
-  aboutHeadline: 'Meet Rep Name and the story behind the sparkle.',
+  aboutHeadline: 'Meet Sasha Rivera and the story behind the sparkle.',
   aboutParagraphs: [
     'Share how you got started, what customers can expect in your live reveals, and why this business matters to you. This should feel personal, warm, and easy for new shoppers to connect with.',
     'Talk about your community, your favorite kinds of reveals, or the energy you bring to show nights. Nic-Nac can rewrite this to match your voice while keeping the section polished and on-brand.',
@@ -148,9 +148,9 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     },
   ],
   signupTitle: 'Never miss a show.',
-  signupSub: 'Get a heads-up when Rep Name goes live, plus first dibs on new drops.',
+  signupSub: 'Get a heads-up when Sasha goes live, plus first dibs on new drops.',
   signupConsent:
-    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Show Name. Msg & data rates may apply. Reply STOP to unsubscribe.',
+    'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Sparkle by Sasha. Msg & data rates may apply. Reply STOP to unsubscribe.',
   joinTeamTitle: 'Want to do this too?',
   joinTeamSub:
     "Join my team. I'll show you how I built a real business doing live jewelry reveals on my own schedule - and Sparkle Suite gives you the site to run it.",
@@ -158,8 +158,8 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
   footerTagline:
     'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
   legalDisclaimer:
-    'Show Name is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
-  showcaseVideoCaption: '@repname - "When the box hits different..."',
+    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
+  showcaseVideoCaption: '@sparklebysasha - "When the box hits different..."',
   showcaseVideoUrl: '#',
   streamLinks: {
     shop: 'https://bombparty.com',

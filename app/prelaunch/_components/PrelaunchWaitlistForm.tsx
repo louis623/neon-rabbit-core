@@ -167,14 +167,17 @@ export function PrelaunchWaitlistForm() {
                 />
                 <div className="ss-field">
                   <label htmlFor="waitlist-setup-pain">
-                    What would you want Sparkle Suite to clean up first?
+                    {prelaunchContent.waitlistFields.setupPain.label.replace(
+                      ' - optional',
+                      '',
+                    )}
                     <span className="ss-field__opt">- optional</span>
                   </label>
                   <textarea
                     id="waitlist-setup-pain"
                     name="setupPain"
                     onChange={handleChange}
-                    placeholder="A sentence or two is plenty. Skip it if you'd rather keep it simple."
+                    placeholder={prelaunchContent.waitlistFields.setupPain.placeholder}
                     value={values.setupPain}
                   />
                 </div>

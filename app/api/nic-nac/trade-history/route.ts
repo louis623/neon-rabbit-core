@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'limit must be a whole number.' }, { status: 400 })
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const history = await getTradeHistory(supabase, repId, { limit: limit ?? undefined })
     return NextResponse.json(history)
   } catch (error) {

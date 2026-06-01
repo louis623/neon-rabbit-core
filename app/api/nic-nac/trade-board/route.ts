@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
-import { getAuthenticatedRep } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceError } from '@/lib/services/errors'
 import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
@@ -110,7 +109,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'sortOrder must be asc or desc.' }, { status: 400 })
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const board = await getMyBoard(supabase, repId, {
       statusFilter,
       typeFilter,
@@ -133,7 +132,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const itemNumber =
       typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : ''
     const listingPhotoUrl =
@@ -171,7 +170,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json()
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const listingId = typeof body?.listingId === 'string' ? body.listingId.trim() : ''
     if (body?.action === 'restore') {
       const result = await restoreListing(supabase, repId, {
@@ -227,7 +226,7 @@ export async function DELETE(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const result = await removeListing(supabase, repId, {
       listingId: typeof body?.listingId === 'string' ? body.listingId.trim() : undefined,
       itemNumber: typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : undefined,

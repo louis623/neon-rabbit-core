@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { listMyShows } from '@/lib/services/calendar'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
+import { ServiceError } from '@/lib/services/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const [upcomingResult, recentResult] = await Promise.all([
       listMyShows(supabase, repId, {
         upcoming: true,
@@ -55,6 +56,12 @@ export async function GET(request: Request) {
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
+    }
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        { error: error.userMessage, code: error.code },
+        { status: error.statusCode },
+      )
     }
 
     throw error

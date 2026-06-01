@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getAuthenticatedNicNacContextMock = vi.fn()
+const getPaidNicNacContextMock = vi.fn()
 const getSiteSettingsDashboardMock = vi.fn()
 const updateSiteSettingsDashboardMock = vi.fn()
 
@@ -8,6 +9,8 @@ vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getAuthenticatedNicNacContext: (...args: unknown[]) =>
     getAuthenticatedNicNacContextMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) =>
+    getPaidNicNacContextMock(...args),
 }))
 
 vi.mock('@/lib/services/site-settings', () => ({
@@ -24,12 +27,13 @@ import { ServiceError } from '@/lib/services/errors'
 describe('site settings route', () => {
   beforeEach(() => {
     getAuthenticatedNicNacContextMock.mockReset()
+    getPaidNicNacContextMock.mockReset()
     getSiteSettingsDashboardMock.mockReset()
     updateSiteSettingsDashboardMock.mockReset()
   })
 
   it('returns the authenticated rep site settings dashboard payload', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -81,7 +85,7 @@ describe('site settings route', () => {
   })
 
   it('saves site settings changes for the authenticated rep', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -162,7 +166,7 @@ describe('site settings route', () => {
   })
 
   it('returns 401 when the rep is not signed in', async () => {
-    getAuthenticatedNicNacContextMock.mockRejectedValueOnce(
+    getPaidNicNacContextMock.mockRejectedValueOnce(
       new AuthError('Not authenticated'),
     )
 
@@ -175,7 +179,7 @@ describe('site settings route', () => {
   })
 
   it('returns a service error payload when a save is rejected', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
       supabase: { marker: 'supabase' },
@@ -201,6 +205,33 @@ describe('site settings route', () => {
     await expect(response.json()).resolves.toEqual({
       code: 'INVALID_INPUT',
       error: 'Instagram handle is too long.',
+    })
+  })
+
+  it('requires a paid subscription before editing the customer site settings', async () => {
+    getPaidNicNacContextMock.mockRejectedValueOnce(
+      new ServiceError({
+        code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+        message: 'subscription required',
+        userMessage:
+          'Start your Sparkle Suite subscription before using workspace tools.',
+        statusCode: 402,
+      }),
+    )
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/site-settings', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ bannerText: 'Going live tonight' }),
+      }),
+    )
+
+    expect(updateSiteSettingsDashboardMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(402)
+    await expect(response.json()).resolves.toEqual({
+      code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
+      error: 'Start your Sparkle Suite subscription before using workspace tools.',
     })
   })
 })

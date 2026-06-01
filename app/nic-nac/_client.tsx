@@ -82,6 +82,8 @@ type ConversationRolloverResponse = {
 export default function NicNacClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const isPurchaseOnboardingMode =
+    searchParams.get('onboarding') === 'self-serve-started'
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [historyState, setHistoryState] = useState<{
@@ -177,6 +179,7 @@ export default function NicNacClient() {
   // written for cache consistency but no longer read during init — DB is the
   // source of truth so cross-device sessions land on the same conversation.
   useEffect(() => {
+    if (isPurchaseOnboardingMode) return
     const controller = new AbortController()
     let cancelled = false
     ;(async () => {
@@ -234,18 +237,20 @@ export default function NicNacClient() {
       cancelled = true
       controller.abort()
     }
-  }, [router, searchParams, resolveAttempt])
+  }, [isPurchaseOnboardingMode, router, searchParams, resolveAttempt])
 
   useEffect(() => {
+    if (isPurchaseOnboardingMode) return
     const mq = window.matchMedia(DESKTOP_MEDIA_QUERY)
     setIsDesktop(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [])
+  }, [isPurchaseOnboardingMode])
 
   // Load persisted history once conversationId is known.
   useEffect(() => {
+    if (isPurchaseOnboardingMode) return
     if (!conversationId) return
     let cancelled = false
     ;(async () => {
@@ -306,7 +311,7 @@ export default function NicNacClient() {
     return () => {
       cancelled = true
     }
-  }, [conversationId, rolloverConversation])
+  }, [conversationId, isPurchaseOnboardingMode, rolloverConversation])
 
   // Desktop Escape minimizes (only if no HITL pending).
   useEffect(() => {
@@ -377,6 +382,14 @@ export default function NicNacClient() {
   ) : (
     <div className={shellStyles.loading}>{initLoadError ?? 'Loading…'}</div>
   )
+
+  if (isPurchaseOnboardingMode) {
+    return (
+      <div className={shellStyles.root}>
+        <DashboardPlaceholder />
+      </div>
+    )
+  }
 
   return (
     <div

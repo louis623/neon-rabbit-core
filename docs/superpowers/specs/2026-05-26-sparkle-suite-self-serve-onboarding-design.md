@@ -15,6 +15,16 @@ Sparkle Suite should move away from a bespoke intake/build workflow and toward a
 
 The landing page sells the product. The backend and help center teach the product.
 
+## Launch Rollout Intent
+
+Post-launch self-service is the target operating model, not the immediate production state. Louis's intended rollout is:
+
+1. Run multiple demos first and harden the product from those sessions.
+2. Process waitlist clients when Sparkle Suite is ready for that next group.
+3. Move to true post-launch self-service after the waitlist is completed, so a lead can start, pay, and enter the workspace without manual onboarding.
+
+Until Louis explicitly approves deployment or promotion, the post-launch/root landing page remains local-only and production stays on the prelaunch page.
+
 ## Target Workflow
 
 ### 1. Sales Landing Page

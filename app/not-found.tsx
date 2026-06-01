@@ -27,7 +27,7 @@ export default function NotFound() {
               <a className="prelaunch-link" href="/terms-and-conditions">
                 Terms and Conditions
               </a>
-              <a className="prelaunch-link" href="mailto:louis@neonrabbit.net">
+              <a className="prelaunch-link" href="/prelaunch#waitlist">
                 Contact
               </a>
             </nav>

@@ -11,9 +11,13 @@ import { POST } from '@/app/api/amethyst/customer-audience/route'
 function makeAdminClient({
   repId = 'rep-1',
   insertError = null,
+  paidRepIds = [],
+  readyLaunchRepIds = [],
 }: {
   repId?: string | null
   insertError?: unknown
+  paidRepIds?: string[]
+  readyLaunchRepIds?: string[]
 } = {}) {
   const maybeSingle = vi.fn().mockResolvedValue({
     data: repId ? { id: repId } : null,
@@ -34,6 +38,51 @@ function makeAdminClient({
   const insertSelect = vi.fn().mockReturnValue({ single: insertSingle })
   const insert = vi.fn().mockReturnValue({ select: insertSelect })
 
+  const subscriptionMaybeSingle = vi.fn((targetRepId: string) =>
+    Promise.resolve({
+      data: paidRepIds.includes(targetRepId)
+        ? { id: 'subscription-1', status: 'active' }
+        : null,
+      error: null,
+    }),
+  )
+  const subscriptionLimit = vi.fn((targetRepId: string) => ({
+    maybeSingle: () => subscriptionMaybeSingle(targetRepId),
+  }))
+  const subscriptionOrder = vi.fn((targetRepId: string) => ({
+    limit: () => subscriptionLimit(targetRepId),
+  }))
+  const subscriptionIn = vi.fn((targetRepId: string) => ({
+    order: () => subscriptionOrder(targetRepId),
+  }))
+  const subscriptionEq = vi.fn((_column: string, targetRepId: string) => ({
+    in: () => subscriptionIn(targetRepId),
+  }))
+
+  const launchMaybeSingle = vi.fn((targetRepId: string) =>
+    Promise.resolve({
+      data: readyLaunchRepIds.includes(targetRepId)
+        ? { id: 'launch-build-1' }
+        : null,
+      error: null,
+    }),
+  )
+  const launchLimit = vi.fn((targetRepId: string) => ({
+    maybeSingle: () => launchMaybeSingle(targetRepId),
+  }))
+  const launchOrder = vi.fn((targetRepId: string) => ({
+    limit: () => launchLimit(targetRepId),
+  }))
+  const launchStatusEq = vi.fn((targetRepId: string) => ({
+    order: () => launchOrder(targetRepId),
+  }))
+  const launchStageEq = vi.fn((targetRepId: string) => ({
+    eq: () => launchStatusEq(targetRepId),
+  }))
+  const launchRepEq = vi.fn((_column: string, targetRepId: string) => ({
+    eq: () => launchStageEq(targetRepId),
+  }))
+
   const from = vi.fn((table: string) => {
     if (table === 'reps') {
       return {
@@ -44,6 +93,18 @@ function makeAdminClient({
     if (table === 'customer_audience') {
       return {
         insert,
+      }
+    }
+
+    if (table === 'subscriptions') {
+      return {
+        select: vi.fn(() => ({ eq: subscriptionEq })),
+      }
+    }
+
+    if (table === 'sparkle_suite_launch_builds') {
+      return {
+        select: vi.fn(() => ({ eq: launchRepEq })),
       }
     }
 
@@ -121,7 +182,10 @@ describe('POST /api/amethyst/customer-audience', () => {
   })
 
   it('creates the signup for the explicit customer-site target from the query string', async () => {
-    const { client, spies } = makeAdminClient({ repId: 'jane-rep' })
+    const { client, spies } = makeAdminClient({
+      repId: 'jane-rep',
+      paidRepIds: ['jane-rep'],
+    })
     createAdminClientMock.mockReturnValue(client)
 
     const response = await POST(
@@ -154,7 +218,10 @@ describe('POST /api/amethyst/customer-audience', () => {
   })
 
   it('creates the signup for the public page target from the referer', async () => {
-    const { client, spies } = makeAdminClient({ repId: 'referer-rep' })
+    const { client, spies } = makeAdminClient({
+      repId: 'referer-rep',
+      paidRepIds: ['referer-rep'],
+    })
     createAdminClientMock.mockReturnValue(client)
 
     const response = await POST(
@@ -242,6 +309,36 @@ describe('POST /api/amethyst/customer-audience', () => {
     await expect(response.json()).resolves.toEqual({
       code: 'INVALID_INPUT',
       error: 'A phone number is required if the customer wants SMS updates.',
+    })
+  })
+
+  it('rejects public customer signups for unpaid direct rep targets', async () => {
+    const { client, spies } = makeAdminClient({ repId: 'unpaid-rep' })
+    createAdminClientMock.mockReturnValue(client)
+
+    const response = await POST(
+      new Request('http://localhost/api/amethyst/customer-audience?c=unpaid-rep', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: 'Louis',
+          lastName: 'Phase Five Smoke',
+          email: 'smoke@example.com',
+          phone: '(555) 555-0199',
+          smsConsent: true,
+          emailConsent: true,
+          marketingConsent: true,
+        }),
+      }),
+    )
+
+    expect(spies.eq).toHaveBeenCalledWith('id', 'unpaid-rep')
+    expect(spies.insert).not.toHaveBeenCalled()
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Signup is temporarily unavailable right now.',
     })
   })
 })

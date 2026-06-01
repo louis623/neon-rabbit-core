@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import {
-  getAuthenticatedNicNacContext,
+  getPaidNicNacContext,
   AuthError,
 } from '@/lib/nic-nac/auth'
-import { getAuthenticatedRep } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceError } from '@/lib/services/errors'
 import {
@@ -50,7 +49,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'status is invalid.' }, { status: 400 })
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const requests = await getTradeRequests(supabase, repId, {
       statusFilter,
       limit: limit ?? undefined,
@@ -73,7 +72,7 @@ export async function POST(request: Request) {
     const requestId = typeof body?.requestId === 'string' ? body.requestId.trim() : ''
     const repNotes = typeof body?.repNotes === 'string' ? body.repNotes : undefined
 
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const supabase = createAdminClient()
 
     if (action === 'approve') {

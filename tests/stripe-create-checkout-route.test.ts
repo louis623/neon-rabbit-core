@@ -5,6 +5,7 @@ const getStripeMock = vi.fn()
 const getPriceIdMock = vi.fn()
 const getSparkleSuitePriceIdsMock = vi.fn()
 const getAppUrlMock = vi.fn()
+const getStripeConfigMock = vi.fn()
 const getOrCreateStripeCustomerMock = vi.fn()
 const getAuthenticatedRepMock = vi.fn()
 const createAdminClientMock = vi.fn()
@@ -19,6 +20,7 @@ vi.mock('@/lib/stripe/config', () => ({
   getSparkleSuitePriceIds: (...args: unknown[]) =>
     getSparkleSuitePriceIdsMock(...args),
   getAppUrl: (...args: unknown[]) => getAppUrlMock(...args),
+  getStripeConfig: (...args: unknown[]) => getStripeConfigMock(...args),
 }))
 
 vi.mock('@/lib/stripe/customers', () => ({
@@ -65,12 +67,16 @@ function createCheckoutAdminMock(paidSubscriptionStarts = 0) {
 }
 
 describe('POST /api/stripe/create-checkout', () => {
+  const originalTestBuyerMode = process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+
   beforeEach(() => {
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = originalTestBuyerMode
     stripeEnabledMock.mockReset()
     getStripeMock.mockReset()
     getPriceIdMock.mockReset()
     getSparkleSuitePriceIdsMock.mockReset()
     getAppUrlMock.mockReset()
+    getStripeConfigMock.mockReset()
     getOrCreateStripeCustomerMock.mockReset()
     getAuthenticatedRepMock.mockReset()
     createAdminClientMock.mockReset()
@@ -309,5 +315,105 @@ describe('POST /api/stripe/create-checkout', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Invalid planType — monthly is the only supported plan.',
     })
+  })
+  it('creates a guarded 50-cent Stripe test buyer checkout without configured price IDs', async () => {
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = 'true'
+    stripeEnabledMock.mockReturnValue(true)
+    getStripeConfigMock.mockReturnValue({
+      STRIPE_SECRET_KEY: 'sk_test_secret',
+    })
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-test-buyer',
+      rep: { id: 'rep-test-buyer' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock())
+    getSparkleSuitePriceIdsMock.mockReturnValue({})
+    getAppUrlMock.mockReturnValue('http://localhost:3000')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_test_buyer')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_test_buyer',
+      url: 'https://checkout.stripe.test/cs_test_buyer',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customer: 'cus_test_buyer',
+        mode: 'subscription',
+        line_items: [
+          {
+            price_data: expect.objectContaining({
+              currency: 'usd',
+              unit_amount: 50,
+              recurring: { interval: 'month' },
+              product_data: expect.objectContaining({
+                name: 'Sparkle Suite test buyer subscription',
+              }),
+            }),
+            quantity: 1,
+          },
+        ],
+        metadata: expect.objectContaining({
+          rep_id: 'rep-test-buyer',
+          pricing_tier: 'standard',
+          test_buyer_checkout: 'true',
+          production_pricing: 'false',
+          monthly_price_id: 'test_buyer_price_data_50_cents',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            test_buyer_checkout: 'true',
+            production_pricing: 'false',
+          }),
+        }),
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('refuses test buyer checkout unless the local Stripe key is a test key', async () => {
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = 'true'
+    stripeEnabledMock.mockReturnValue(true)
+    getStripeConfigMock.mockReturnValue({
+      STRIPE_SECRET_KEY: 'sk_live_secret',
+    })
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-test-buyer',
+      rep: { id: 'rep-test-buyer' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock())
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: 'TEST_BUYER_CHECKOUT_NOT_AVAILABLE',
+      error:
+        'Test buyer checkout requires a Stripe test key and cannot run in production.',
+      action:
+        'Use STRIPE_SECRET_KEY=sk_test_... with SPARKLE_STRIPE_TEST_BUYER_MODE=true in local development.',
+    })
+    expect(getStripeMock).not.toHaveBeenCalled()
   })
 })

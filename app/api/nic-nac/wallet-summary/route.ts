@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getWalletDashboard } from '@/lib/services/wallet-dashboard'
-import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { ServiceError } from '@/lib/services/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,12 +25,18 @@ export async function GET(request: Request) {
       )
     }
 
-    const { repId } = await getAuthenticatedRep()
+    const { repId } = await getPaidNicNacContext()
     const summary = await getWalletDashboard(repId, { limit: limit ?? undefined })
     return NextResponse.json(summary)
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
+    }
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        { code: error.code, error: error.userMessage },
+        { status: error.statusCode },
+      )
     }
     throw error
   }

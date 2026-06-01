@@ -17,6 +17,35 @@ export const metadata: Metadata = {
   },
 }
 
-export default function TermsAndConditionsPage() {
-  return <SparkleLegalPage document={termsAndConditionsDocument} />
+function readReturnTo(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (!raw?.trim()) return null
+
+  try {
+    const decoded = decodeURIComponent(raw.trim())
+    if (!decoded.startsWith('/')) return null
+    if (decoded.startsWith('//')) return null
+    return decoded
+  } catch {
+    return null
+  }
+}
+
+export default async function TermsAndConditionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    returnTo?: string | string[]
+  }>
+}) {
+  const query = searchParams ? await searchParams : {}
+  const returnTo = readReturnTo(query.returnTo)
+
+  return (
+    <SparkleLegalPage
+      backHref={returnTo ?? undefined}
+      backLabel={returnTo ? 'Back to checkout' : undefined}
+      document={termsAndConditionsDocument}
+    />
+  )
 }

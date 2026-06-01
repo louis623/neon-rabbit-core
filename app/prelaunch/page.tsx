@@ -4,7 +4,7 @@ import { PrelaunchAudience } from './_components/PrelaunchAudience'
 import { PrelaunchBenefits } from './_components/PrelaunchBenefits'
 import { PrelaunchFooter } from './_components/PrelaunchFooter'
 import { PrelaunchHero } from './_components/PrelaunchHero'
-import { PrelaunchVideoSection } from './_components/PrelaunchVideoSection'
+import { PrelaunchPricing } from './_components/PrelaunchPricing'
 import { PrelaunchWaitlistForm } from './_components/PrelaunchWaitlistForm'
 import { prelaunchContent } from '@/lib/prelaunch/content'
 
@@ -110,9 +110,9 @@ export default function PrelaunchPage() {
         }}
       />
       <PrelaunchHero />
-      <PrelaunchVideoSection />
       <PrelaunchBenefits />
       <PrelaunchAudience />
+      <PrelaunchPricing />
       <PrelaunchWaitlistForm />
       <PrelaunchFooter />
     </main>

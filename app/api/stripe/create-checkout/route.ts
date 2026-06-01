@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
-import { getAppUrl, getSparkleSuitePriceIds } from '@/lib/stripe/config'
-import { buildSparkleSuiteCheckoutPricing } from '@/lib/stripe/sparkle-suite-pricing'
+import {
+  getAppUrl,
+  getSparkleSuitePriceIds,
+  getStripeConfig,
+} from '@/lib/stripe/config'
+import {
+  buildSparkleSuiteCheckoutPricing,
+  buildSparkleSuiteTestBuyerCheckoutPricing,
+} from '@/lib/stripe/sparkle-suite-pricing'
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -9,6 +16,22 @@ import { getSelfServeAgreementVersion } from '@/lib/prelaunch/self-serve-agreeme
 
 const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
+
+function isTestBuyerCheckoutEnabled() {
+  return (
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE === 'true' ||
+    process.env.SPARKLE_STRIPE_TEST_BUYER_MODE === '1'
+  )
+}
+
+function canUseTestBuyerCheckout() {
+  const secretKey = getStripeConfig()?.STRIPE_SECRET_KEY ?? ''
+  return (
+    isTestBuyerCheckoutEnabled() &&
+    process.env.NODE_ENV !== 'production' &&
+    secretKey.startsWith('sk_test_')
+  )
+}
 
 async function countPaidSubscriptionStarts(
   admin: ReturnType<typeof createAdminClient>,
@@ -78,10 +101,26 @@ export async function POST(request: Request) {
       )
     }
 
-    const pricing = buildSparkleSuiteCheckoutPricing({
-      paidSubscriptionStarts: await countPaidSubscriptionStarts(admin),
-      priceIds: getSparkleSuitePriceIds(),
-    })
+    const testBuyerCheckoutEnabled = isTestBuyerCheckoutEnabled()
+    if (testBuyerCheckoutEnabled && !canUseTestBuyerCheckout()) {
+      return NextResponse.json(
+        {
+          code: 'TEST_BUYER_CHECKOUT_NOT_AVAILABLE',
+          error:
+            'Test buyer checkout requires a Stripe test key and cannot run in production.',
+          action:
+            'Use STRIPE_SECRET_KEY=sk_test_... with SPARKLE_STRIPE_TEST_BUYER_MODE=true in local development.',
+        },
+        { status: 400 },
+      )
+    }
+
+    const pricing = testBuyerCheckoutEnabled
+      ? buildSparkleSuiteTestBuyerCheckoutPricing()
+      : buildSparkleSuiteCheckoutPricing({
+          paidSubscriptionStarts: await countPaidSubscriptionStarts(admin),
+          priceIds: getSparkleSuitePriceIds(),
+        })
     if (!pricing.ok) {
       return NextResponse.json(
         {
