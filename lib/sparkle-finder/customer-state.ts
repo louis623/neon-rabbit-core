@@ -56,6 +56,10 @@ export type SupabaseCustomerStateClient = {
     select: (columns: string) => SupabasePersistenceFilterBuilder;
     update: (values: Record<string, unknown>) => SupabasePersistenceFilterBuilder;
     insert: (values: Record<string, unknown>) => SupabasePersistenceResult;
+    upsert: (
+      values: Record<string, unknown>,
+      options: { onConflict: string },
+    ) => SupabasePersistenceResult;
   };
 };
 
@@ -124,30 +128,15 @@ export async function persistCollectionItemForAccount(
   }
 
   const values = {
+    user_id: accountState.customer.id,
+    jewelry_item_id: input.jewelryItemId,
     state: input.state,
     note: cleanText(input.note, 500),
     is_highlighted: input.isHighlighted,
   };
-  const existingItem = await safeMaybeSingle(
-    supabase
-      .from("sparkle_finder_collection_items")
-      .select("id,user_id")
-      .eq("user_id", accountState.customer.id)
-      .eq("jewelry_item_id", input.jewelryItemId),
-  );
-
-  const existingItemId = getRecordString(existingItem.data, "id");
-  const result = existingItemId
-    ? await supabase
-        .from("sparkle_finder_collection_items")
-        .update(values)
-        .eq("user_id", accountState.customer.id)
-        .eq("id", existingItemId)
-    : await supabase.from("sparkle_finder_collection_items").insert({
-        user_id: accountState.customer.id,
-        jewelry_item_id: input.jewelryItemId,
-        ...values,
-      });
+  const result = await supabase.from("sparkle_finder_collection_items").upsert(values, {
+    onConflict: "user_id,jewelry_item_id",
+  });
 
   return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
 }
@@ -218,14 +207,4 @@ function cleanText(value: string | undefined, maxLength: number): string {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
-}
-
-function getRecordString(value: unknown, key: string): string | null {
-  if (!value || typeof value !== "object" || !(key in value)) {
-    return null;
-  }
-
-  const recordValue = (value as Record<string, unknown>)[key];
-
-  return typeof recordValue === "string" ? recordValue : null;
 }

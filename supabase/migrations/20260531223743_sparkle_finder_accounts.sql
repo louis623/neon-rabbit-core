@@ -68,6 +68,9 @@ create table public.sparkle_finder_collection_items (
 create index sparkle_finder_collection_items_user_id_idx
   on public.sparkle_finder_collection_items(user_id);
 
+create unique index sparkle_finder_collection_items_user_jewelry_item_key
+  on public.sparkle_finder_collection_items(user_id, jewelry_item_id);
+
 create index sparkle_finder_collection_items_user_state_idx
   on public.sparkle_finder_collection_items(user_id, state);
 

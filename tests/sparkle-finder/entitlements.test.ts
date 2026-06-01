@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getSparkleFinderAccountEntitlements,
   canUseSilverCollectionActions,
@@ -34,6 +34,13 @@ const silverCustomer: CustomerAccount = {
 };
 
 describe("Sparkle Finder entitlements", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("next/cache");
+    vi.doUnmock("../../lib/supabase/server");
+    vi.doUnmock("../../lib/sparkle-finder/account-service");
+  });
+
   it("represents anonymous local-dev visitors without customer entitlements", () => {
     const accountState = getLocalDevAuthState("anonymous");
     const entitlements = getSparkleFinderAccountEntitlements(accountState);
@@ -252,12 +259,12 @@ describe("Sparkle Finder entitlements", () => {
   });
 
   it.each([
-    ["silver_trial", "trial Silver"],
-    ["silver_paid", "paid Silver"],
-    ["silver_rep_included", "rep-included Silver"],
-  ] satisfies Array<[SparkleFinderAccessState, string]>)(
+    "silver_trial",
+    "silver_paid",
+    "silver_rep_included",
+  ] satisfies SparkleFinderAccessState[])(
     "allows %s accounts to persist Silver profile and collection state",
-    async (accessState, _label) => {
+    async (accessState) => {
       const accountState = currentAccountState(accessState);
       const client = createFakePersistenceClient({
         profile: { user_id: accountState.customer.id },
@@ -306,7 +313,7 @@ describe("Sparkle Finder entitlements", () => {
       });
       expect(client.operations).toContainEqual({
         table: "sparkle_finder_collection_items",
-        type: "insert",
+        type: "upsert",
         values: {
           user_id: "user-123",
           jewelry_item_id: "jewel-rainbow-crown-ring",
@@ -314,10 +321,13 @@ describe("Sparkle Finder entitlements", () => {
           note: "Confirmed in my collection.",
           is_highlighted: true,
         },
+        options: {
+          onConflict: "user_id,jewelry_item_id",
+        },
       });
       expect(client.operations).toContainEqual({
         table: "sparkle_finder_collection_items",
-        type: "insert",
+        type: "upsert",
         values: {
           user_id: "user-123",
           jewelry_item_id: "jewel-lilac-orbit-ring",
@@ -325,10 +335,13 @@ describe("Sparkle Finder entitlements", () => {
           note: "Watching for this one.",
           is_highlighted: false,
         },
+        options: {
+          onConflict: "user_id,jewelry_item_id",
+        },
       });
       expect(client.operations).toContainEqual({
         table: "sparkle_finder_collection_items",
-        type: "insert",
+        type: "upsert",
         values: {
           user_id: "user-123",
           jewelry_item_id: "jewel-golden-heart-necklace",
@@ -336,11 +349,14 @@ describe("Sparkle Finder entitlements", () => {
           note: "Pairs with layered chains.",
           is_highlighted: false,
         },
+        options: {
+          onConflict: "user_id,jewelry_item_id",
+        },
       });
     },
   );
 
-  it("updates an existing persisted collection item by authenticated user and jewelry item", async () => {
+  it("uses duplicate-safe upsert for an existing persisted collection item", async () => {
     const accountState = currentAccountState("silver_paid");
     const client = createFakePersistenceClient({
       collectionItem: { id: "collection-existing", user_id: "user-123" },
@@ -356,17 +372,52 @@ describe("Sparkle Finder entitlements", () => {
     expect(result).toEqual({ ok: true });
     expect(client.operations).toContainEqual({
       table: "sparkle_finder_collection_items",
-      type: "update",
+      type: "upsert",
       values: {
+        user_id: "user-123",
+        jewelry_item_id: "jewel-rainbow-crown-ring",
         state: "owned",
         note: "Now highlighted.",
         is_highlighted: true,
       },
-      filters: [
-        ["user_id", "user-123"],
-        ["id", "collection-existing"],
-      ],
+      options: {
+        onConflict: "user_id,jewelry_item_id",
+      },
     });
+    expect(client.operations).not.toContainEqual(expect.objectContaining({ type: "insert" }));
+    expect(client.operations).not.toContainEqual(expect.objectContaining({ type: "update" }));
+  });
+
+  it("keeps collection persistence duplicate-safe when a previous duplicate row would make selection ambiguous", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      collectionSelectError: new Error("multiple rows returned"),
+    });
+
+    const result = await persistCollectionItemForAccount(client, accountState, {
+      jewelryItemId: "jewel-rainbow-crown-ring",
+      state: "wishlist",
+      note: "Recover by upserting one logical row.",
+      isHighlighted: false,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toEqual([
+      {
+        table: "sparkle_finder_collection_items",
+        type: "upsert",
+        values: {
+          user_id: "user-123",
+          jewelry_item_id: "jewel-rainbow-crown-ring",
+          state: "wishlist",
+          note: "Recover by upserting one logical row.",
+          is_highlighted: false,
+        },
+        options: {
+          onConflict: "user_id,jewelry_item_id",
+        },
+      },
+    ]);
   });
 
   it("inserts a missing persisted profile with required account-owned basics", async () => {
@@ -414,6 +465,44 @@ describe("Sparkle Finder entitlements", () => {
     expect(profileResult).toEqual({ ok: false, reason: "silver_required" });
     expect(collectionResult).toEqual({ ok: false, reason: "silver_required" });
     expect(client.operations).toEqual([]);
+  });
+
+  it("rejects unknown jewelry item ids in the Silver collection server action before persistence", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({});
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: accountState.customer.id } },
+      error: null,
+    });
+    const revalidatePath = vi.fn();
+
+    vi.doMock("next/cache", () => ({ revalidatePath }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        ...client,
+        auth: { getUser },
+      }),
+    }));
+    vi.doMock("../../lib/sparkle-finder/account-service", () => ({
+      getCurrentSparkleFinderAccount: async () => accountState,
+    }));
+
+    const { saveSilverCollectionItemAction } = await import("../../app/(hub)/silver/actions");
+    const formData = new FormData();
+    formData.set("jewelryItemId", "jewel-not-in-library");
+    formData.set("state", "owned");
+    formData.set("note", "Should not persist.");
+    formData.set("isHighlighted", "yes");
+
+    const result = await saveSilverCollectionItemAction({ status: "idle", message: "" }, formData);
+
+    expect(result).toEqual({
+      status: "denied",
+      message: "Collection item is not available in the Sparkle Finder library.",
+    });
+    expect(getUser).toHaveBeenCalled();
+    expect(client.operations).toEqual([]);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });
 
@@ -463,27 +552,25 @@ function currentAccountState(accessState: SparkleFinderAccessState): CurrentSpar
 function createFakePersistenceClient({
   profile = null,
   collectionItem = null,
+  collectionSelectError = null,
 }: {
   profile?: { user_id: string } | null;
   collectionItem?: { id: string; user_id: string } | null;
+  collectionSelectError?: Error | null;
 }) {
   const operations: Array<{
     table: string;
-    type: "insert" | "update";
+    type: "insert" | "update" | "upsert";
     values: Record<string, unknown>;
     filters?: Array<[string, string]>;
+    options?: Record<string, unknown>;
   }> = [];
 
   return {
     operations,
     from(table: string) {
-      const selectRows: Record<string, unknown> = {
-        sparkle_finder_profiles: profile,
-        sparkle_finder_collection_items: collectionItem,
-      };
-
       return {
-        select: () => createFilterBuilder(async () => ({ data: selectRows[table] ?? null, error: null })),
+        select: () => createFilterBuilder(async () => selectResultForTable(table)),
         update: (values: Record<string, unknown>) =>
           createFilterBuilder(async (filters) => {
             operations.push({ table, type: "update", values, filters });
@@ -493,9 +580,26 @@ function createFakePersistenceClient({
           operations.push({ table, type: "insert", values });
           return { data: null, error: null };
         },
+        upsert: async (values: Record<string, unknown>, options: Record<string, unknown>) => {
+          operations.push({ table, type: "upsert", values, options });
+          return { data: null, error: null };
+        },
       };
     },
   };
+
+  function selectResultForTable(table: string): Promise<{ data: unknown; error: unknown }> {
+    const selectRows: Record<string, unknown> = {
+      sparkle_finder_profiles: profile,
+      sparkle_finder_collection_items: collectionItem,
+    };
+
+    if (table === "sparkle_finder_collection_items" && collectionSelectError) {
+      throw collectionSelectError;
+    }
+
+    return Promise.resolve({ data: selectRows[table] ?? null, error: null });
+  }
 }
 
 function createFilterBuilder(
