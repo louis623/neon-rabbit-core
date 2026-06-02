@@ -1,5 +1,6 @@
 export type TeamOnboardingSiteStatus = 'draft' | 'published' | 'archived';
 export type TeamOnboardingInviteStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
+export type TeamOnboardingMemberStatus = 'invited' | 'active' | 'inactive';
 export type TeamOnboardingQuestionStatus = 'open' | 'answered' | 'archived';
 export type TeamOnboardingResourceSource = 'official' | 'team' | 'sparkle-suite';
 
@@ -23,7 +24,7 @@ export interface TeamOnboardingMember {
   displayName: string;
   email: string | null;
   phone: string | null;
-  status: TeamOnboardingInviteStatus;
+  status: TeamOnboardingMemberStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,7 +32,7 @@ export interface TeamOnboardingMember {
 export interface TeamOnboardingInvite {
   id: string;
   siteId: string;
-  memberId: string;
+  memberId: string | null;
   tokenHash: string;
   status: TeamOnboardingInviteStatus;
   expiresAt: string;
@@ -72,8 +73,8 @@ export interface TeamOnboardingQuestion {
   answeredAt: string | null;
 }
 
-export interface PublicTeamOnboardingConfig
-  extends Pick<TeamOnboardingSite, 'slug' | 'title' | 'teamName' | 'repDisplayName' | 'customDomain'> {
+export interface PublicTeamOnboardingConfig {
+  site: Pick<TeamOnboardingSite, 'slug' | 'title' | 'teamName' | 'repDisplayName' | 'customDomain'>;
   resources: TeamOnboardingResource[];
   steps: TeamOnboardingStep[];
 }

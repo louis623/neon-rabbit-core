@@ -137,11 +137,13 @@ export async function getPublishedSiteConfig(
   }
 
   return {
-    slug: site.slug,
-    title: site.title,
-    teamName: site.teamName,
-    repDisplayName: site.repDisplayName,
-    customDomain: site.customDomain,
+    site: {
+      slug: site.slug,
+      title: site.title,
+      teamName: site.teamName,
+      repDisplayName: site.repDisplayName,
+      customDomain: site.customDomain,
+    },
     resources: ((resourceData ?? []) as unknown as TeamOnboardingResourceRow[]).map(mapResourceRow),
     steps: ((stepData ?? []) as unknown as TeamOnboardingStepRow[]).map(mapStepRow),
   };

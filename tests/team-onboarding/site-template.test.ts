@@ -7,11 +7,13 @@ describe('team onboarding site template contract', () => {
     await expect(import('@/lib/team-onboarding/types')).resolves.toBeTypeOf('object');
 
     const config = {
-      slug: 'britt-with-bling',
-      title: 'Britt with Bling New Rep Path',
-      teamName: 'Britt with Bling',
-      repDisplayName: 'Brittany',
-      customDomain: 'brittwithbling.com',
+      site: {
+        slug: 'britt-with-bling',
+        title: 'Britt with Bling New Rep Path',
+        teamName: 'Britt with Bling',
+        repDisplayName: 'Brittany',
+        customDomain: 'brittwithbling.com',
+      },
       resources: [
         {
           id: 'sparkle-suite-questions',
@@ -37,7 +39,7 @@ describe('team onboarding site template contract', () => {
       ],
     } satisfies PublicTeamOnboardingConfig;
 
-    expect(config.teamName).toBe('Britt with Bling');
+    expect(config.site.teamName).toBe('Britt with Bling');
     expect(config.resources[0].source).toBe('sparkle-suite');
     expect(config.steps[0]).toMatchObject({
       groupTitle: 'Questions for Brittany',
