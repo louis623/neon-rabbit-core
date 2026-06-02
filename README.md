@@ -34,3 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Rep Onboarding App
+
+The rep-facing onboarding/resource site lives in `apps/rep-onboarding`. It was imported from `louis623/sparkle-rep-onboarding` so the existing work can continue inside the Sparkle Suite repo without rebuilding the site. Sparkle Suite owns Team Management, access control, Nic-Nac publishing, and question routing around this app.
