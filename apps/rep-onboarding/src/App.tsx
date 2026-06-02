@@ -5,13 +5,25 @@ import { Questions } from './components/Questions';
 import { Resources } from './components/Resources';
 import { StepDetail } from './components/StepDetail';
 import { steps } from './data';
+import {
+  fetchRemoteOnboardingConfig,
+  getConfiguredSiteSlug,
+  getSparkleSuiteApiBaseUrl,
+  submitRemoteQuestion,
+} from './integration/team-onboarding-client';
 import { createInitialState, loadState, makeQuestion, resetState, saveState } from './state';
 import type { AppState, RepQuestion } from './types';
+
+type RemoteLoadState = 'local' | 'loading' | 'loaded' | 'error';
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>(() => loadState());
   const [nicNacPrompt, setNicNacPrompt] = useState<string | null>(null);
   const [nicNacCloseSignal, setNicNacCloseSignal] = useState(0);
+  const [remoteLoadState, setRemoteLoadState] = useState<RemoteLoadState>('local');
+  const [remoteQuestionStatus, setRemoteQuestionStatus] = useState<string | null>(null);
+  const [apiBaseUrl] = useState(() => getSparkleSuiteApiBaseUrl());
+  const [siteSlug] = useState(() => getConfiguredSiteSlug());
   const selectedStep = useMemo(
     () => steps.find((step) => step.id === appState.selectedStepId) ?? steps[0],
     [appState.selectedStepId],
@@ -20,6 +32,28 @@ export default function App() {
   useEffect(() => {
     saveState(appState);
   }, [appState]);
+
+  useEffect(() => {
+    if (!apiBaseUrl || !siteSlug) {
+      setRemoteLoadState('local');
+      return;
+    }
+
+    let isActive = true;
+    setRemoteLoadState('loading');
+
+    fetchRemoteOnboardingConfig({ apiBaseUrl, siteSlug })
+      .then(() => {
+        if (isActive) setRemoteLoadState('loaded');
+      })
+      .catch(() => {
+        if (isActive) setRemoteLoadState('error');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [apiBaseUrl, siteSlug]);
 
   function selectStep(stepId: string) {
     setAppState((current) => ({ ...current, selectedStepId: stepId }));
@@ -37,6 +71,8 @@ export default function App() {
   }
 
   function addQuestion(stepId: string | null, text: string) {
+    const normalizedText = text.trim();
+
     setAppState((current) => ({
       ...current,
       questions: [makeQuestion(text, stepId, 'rep'), ...current.questions],
@@ -44,6 +80,25 @@ export default function App() {
         ? { ...current.stepStatuses, [stepId]: 'needs-help' }
         : current.stepStatuses,
     }));
+
+    if (!apiBaseUrl || !siteSlug || !normalizedText) return;
+
+    const step = stepId ? steps.find((item) => item.id === stepId) : null;
+    void submitRemoteQuestion({
+      apiBaseUrl,
+      siteSlug,
+      submission: {
+        siteSlug,
+        siteToken: '',
+        stepId,
+        stepTitle: step?.title ?? null,
+        questionText: normalizedText,
+        source: 'rep_button',
+        website: window.location.href,
+      },
+    })
+      .then(() => setRemoteQuestionStatus('Sent to Sparkle Suite.'))
+      .catch(() => setRemoteQuestionStatus('Your question was saved here, but Sparkle Suite did not receive it yet.'));
   }
 
   function addNicNacQuestion(question: RepQuestion) {
@@ -98,7 +153,7 @@ export default function App() {
       </div>
 
       <Resources />
-      <Questions questions={appState.questions} />
+      <Questions questions={appState.questions} remoteQuestionStatus={remoteQuestionStatus} />
 
       <footer className="site-footer">
         <span>Continue the shine:</span>

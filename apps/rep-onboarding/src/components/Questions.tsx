@@ -3,16 +3,18 @@ import type { RepQuestion } from '../types';
 
 type QuestionsProps = {
   questions: RepQuestion[];
+  remoteQuestionStatus?: string | null;
 };
 
-export function Questions({ questions }: QuestionsProps) {
+export function Questions({ questions, remoteQuestionStatus }: QuestionsProps) {
   return (
     <section className="section-panel" id="questions">
       <div className="section-heading">
         <span className="eyebrow">Ask Brittany</span>
         <h2>Saved questions</h2>
         <p>Questions Nic-Nac should not answer get saved here for Brittany.</p>
-        <p>For this demo, questions stay here. Later, this area will connect to Brittany's Sparkle Suite team workspace.</p>
+        <p>Questions are saved here first. When Sparkle Suite is connected, they are also sent to the Sparkle Suite team workspace.</p>
+        {remoteQuestionStatus && <p className="integration-status">{remoteQuestionStatus}</p>}
       </div>
 
       {questions.length === 0 ? (
