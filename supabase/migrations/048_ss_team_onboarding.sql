@@ -27,12 +27,16 @@ CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_members (
 CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_invites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES public.ss_team_onboarding_sites(id) ON DELETE CASCADE,
-  member_id UUID REFERENCES public.ss_team_onboarding_members(id) ON DELETE SET NULL,
+  member_id UUID,
   token_hash TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'revoked', 'expired')),
   expires_at TIMESTAMPTZ NOT NULL,
   accepted_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT ss_team_onboarding_invites_site_member_fk
+    FOREIGN KEY (site_id, member_id)
+    REFERENCES public.ss_team_onboarding_members(site_id, id)
+    ON DELETE SET NULL (member_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_resources (
