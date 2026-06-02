@@ -379,7 +379,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')
     expect(html).toContain('Business Calculator')
-    expect(html).toContain('Team Management')
+    expect(html).toContain('Manage My Team')
     expect(html).toContain('Messages')
     expect(html).toContain('Site Settings')
     expect(html).toContain('Help &amp; Resources')
@@ -389,12 +389,17 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('I confirm I own the piece')
   })
 
-  it('renders the locked team management add-on skeleton', () => {
+  it('renders the locked manage my team add-on skeleton', () => {
     const html = renderToStaticMarkup(createElement(TeamManagementCard))
 
-    expect(html).toContain('Team Management')
+    expect(html).toContain('Manage My Team')
     expect(html).toContain('Paid add-on locked')
-    expect(html).toContain('Upgrade to manage your team on this platform.')
+    expect(html).toContain(
+      'Upgrade to manage private rep onboarding pages, invites, onboarding questions, and replies from this workspace.',
+    )
+    expect(html).toContain(
+      'Private rep onboarding pages, invite controls, and onboarding questions will unlock with the add-on.',
+    )
     expect(html).toContain('href="/prelaunch"')
     expect(html).toContain('Team member intake')
     expect(html).toContain('Name')
@@ -505,12 +510,14 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(source).toContain('NIC_NAC_WORKSPACE_REFRESH_EVENT')
-    expect(source).toContain('refreshAfterNicNacMutation')
-    expect(source).toContain("detail?.topic !== 'trade'")
-    expect(source).toContain('void refreshTradeWorkspace()')
-    expect(source).toContain('window.addEventListener(\n      NIC_NAC_WORKSPACE_REFRESH_EVENT')
-    expect(source).not.toContain("if (activeSection !== 'trade-board') return\n\n    const refreshAfterNicNacMutation")
+    const normalizedSource = source.replace(/\r\n/g, '\n')
+
+    expect(normalizedSource).toContain('NIC_NAC_WORKSPACE_REFRESH_EVENT')
+    expect(normalizedSource).toContain('refreshAfterNicNacMutation')
+    expect(normalizedSource).toContain("detail?.topic !== 'trade'")
+    expect(normalizedSource).toContain('void refreshTradeWorkspace()')
+    expect(normalizedSource).toContain('window.addEventListener(\n      NIC_NAC_WORKSPACE_REFRESH_EVENT')
+    expect(normalizedSource).not.toContain("if (activeSection !== 'trade-board') return\n\n    const refreshAfterNicNacMutation")
   })
 
   it('renders the trade board as visual piece cards with a customer preview link', () => {

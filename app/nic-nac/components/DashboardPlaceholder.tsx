@@ -32,7 +32,7 @@ const WORKSPACE_SECTIONS = [
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
   { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home' },
-  { key: 'team-management', label: 'Team Management', subtitle: 'Paid add-on for team onboarding and messages', locked: true },
+  { key: 'team-management', label: 'Manage My Team', subtitle: 'Paid add-on for private rep onboarding pages', locked: true },
   { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools' },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
   { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
@@ -3903,17 +3903,20 @@ export function TeamManagementCard() {
     <div className={styles.workspacePanel}>
       <div className={styles.workspaceSectionHeader}>
         <div>
-          <div className={styles.cardTitle}>Team Management</div>
+          <div className={styles.cardTitle}>Manage My Team</div>
           <div className={styles.cardSubtitle}>
-            Upgrade to manage team members, onboarding site messages, and replies
-            from this workspace.
+            Upgrade to manage private rep onboarding pages, invites,
+            onboarding questions, and replies from this workspace.
           </div>
         </div>
         <span className={styles.rosterTag}>Paid add-on locked</span>
       </div>
 
       <div className={styles.teamUpgradeNotice}>
-        <span>Upgrade to manage your team on this platform.</span>
+        <span>
+          Private rep onboarding pages, invite controls, and onboarding questions
+          will unlock with the add-on.
+        </span>
         <a className={styles.helperLink} href="/prelaunch">
           View upgrade options
         </a>
