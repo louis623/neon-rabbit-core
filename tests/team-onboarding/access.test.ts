@@ -25,6 +25,8 @@ describe('team onboarding access helpers', () => {
     expect(getBearerToken(null)).toBeNull()
     expect(getBearerToken('Basic abc123')).toBeNull()
     expect(getBearerToken('Bearer')).toBeNull()
+    expect(getBearerToken('Bearer    ')).toBeNull()
+    expect(getBearerToken('Bearer abc123 extra')).toBeNull()
   })
 
   it('assertQuestionText trims valid string input', () => {

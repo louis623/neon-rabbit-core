@@ -9,7 +9,7 @@ export function getBearerToken(authorizationHeader: string | null): string | nul
     return null
   }
 
-  const match = authorizationHeader.match(/^bearer\s+(.+)$/i)
+  const match = authorizationHeader.match(/^bearer\s+(\S+)$/i)
 
   return match?.[1] ?? null
 }
