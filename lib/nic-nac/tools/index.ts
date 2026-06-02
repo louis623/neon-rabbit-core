@@ -38,6 +38,7 @@ import { sendSmsNotificationTool } from './send-sms-notification'
 import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { customerAudienceTool } from './get-customer-audience'
+import { createTeamOnboardingSiteTool } from './create-team-onboarding-site'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -71,6 +72,7 @@ const REGISTRY: ToolDefinition[] = [
   sendEmailNotificationTool,
   getNotificationPreferencesTool,
   customerAudienceTool,
+  createTeamOnboardingSiteTool,
 ]
 
 export type NicNacToolIntent =
@@ -82,6 +84,7 @@ export type NicNacToolIntent =
   | 'catalog'
   | 'calendar'
   | 'site'
+  | 'team_onboarding'
   | 'notification'
   | 'audience'
 
@@ -110,6 +113,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   catalog: ['search_jewelry_database'],
   calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show'],
   site: ['update_banner_text', 'update_streaming_links', 'update_site_setting'],
+  team_onboarding: ['create_team_onboarding_site'],
   notification: [
     'send_sms_notification',
     'send_email_notification',
@@ -209,6 +213,20 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
 
   if (
     hasAny([
+      /\brep onboarding\b/,
+      /\bteam onboarding\b/,
+      /\bonboarding page\b/,
+      /\bonboarding site\b/,
+      /\bmanage my team\b/,
+      /\bprivate onboarding page\b/,
+      /\bteam member invite\b/,
+    ])
+  ) {
+    add('team_onboarding')
+  }
+
+  if (
+    hasAny([
       /\bbanner\b/,
       /\bstreaming link/,
       /\bsite\b/,
@@ -217,7 +235,8 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\bticker\b/,
       /\bteam name\b/,
       /\bsocial\b/,
-    ])
+    ]) &&
+    !intents.includes('team_onboarding')
   ) {
     add('site')
   }

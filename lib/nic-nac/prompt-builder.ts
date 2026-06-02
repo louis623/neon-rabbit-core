@@ -81,6 +81,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - update_streaming_links replaces the full streaming-links map. If the rep gives only one link and you do not know the full set, ask for the full set.
 - update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.`,
 
+  team_onboarding: `Team onboarding tools:
+- create_team_onboarding_site creates a draft/private onboarding site config for Manage My Team.
+- Treat paid Sparkle Suite users asking for rep onboarding as Manage My Team workflows for specific team members.
+- Do not describe this as public signup for reps, and do not claim public publishing, entitlement checks, invite delivery, or database persistence is done from chat.`,
+
   notification: `Notification tools:
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.
 - Do not claim live SMS delivery unless the actual send tool returns success.

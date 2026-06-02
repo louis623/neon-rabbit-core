@@ -60,6 +60,19 @@ describe('Nic-Nac tool routing', () => {
     ])
   })
 
+  it.each([
+    'Can you make a private onboarding page for my new team member?',
+    'I need a Manage My Team onboarding site for Britt with Bling.',
+    'Set up rep onboarding for a team member invite.',
+  ])('routes onboarding language to the team onboarding tools: %s', (text) => {
+    const intents = getToolIntentsForText(text)
+
+    expect(intents).toEqual(['team_onboarding'])
+    expect(listToolNamesForIntents(intents)).toContain(
+      'create_team_onboarding_site',
+    )
+  })
+
   it('builds only the routed tools for a live-show turn', () => {
     const tools = buildToolsForIntents(makeCtx(), ['show_memory'])
 
