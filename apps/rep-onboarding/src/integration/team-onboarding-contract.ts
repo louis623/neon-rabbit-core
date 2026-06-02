@@ -32,18 +32,12 @@ export interface RemoteOnboardingConfig {
 }
 
 export interface RemoteQuestionSubmission {
-  siteSlug: string;
-  siteToken: string;
-  submitterName?: string;
-  submitterEmail?: string;
-  submitterPhone?: string;
   stepId: string | null;
-  stepTitle: string | null;
   questionText: string;
-  source: 'rep_button' | 'nic_nac';
-  website: string;
 }
 
 export interface RemoteQuestionReceipt {
-  questionId: string;
+  id: string;
+  status: 'open';
+  createdAt: string;
 }

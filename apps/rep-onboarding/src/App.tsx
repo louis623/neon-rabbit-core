@@ -75,7 +75,7 @@ export default function App() {
 
     setAppState((current) => ({
       ...current,
-      questions: [makeQuestion(text, stepId, 'rep'), ...current.questions],
+      questions: [makeQuestion(normalizedText || text, stepId, 'rep'), ...current.questions],
       stepStatuses: stepId && current.stepStatuses[stepId] !== 'done'
         ? { ...current.stepStatuses, [stepId]: 'needs-help' }
         : current.stepStatuses,
@@ -83,18 +83,12 @@ export default function App() {
 
     if (!apiBaseUrl || !siteSlug || !normalizedText) return;
 
-    const step = stepId ? steps.find((item) => item.id === stepId) : null;
     void submitRemoteQuestion({
       apiBaseUrl,
       siteSlug,
       submission: {
-        siteSlug,
-        siteToken: '',
         stepId,
-        stepTitle: step?.title ?? null,
         questionText: normalizedText,
-        source: 'rep_button',
-        website: window.location.href,
       },
     })
       .then(() => setRemoteQuestionStatus('Sent to Sparkle Suite.'))
