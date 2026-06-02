@@ -47,14 +47,6 @@
   padding-top: 16px;
 }
 
-.formHead span {
-  color: #a7446b;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .copy h1 {
   font-family: var(--font-prelaunch-display), Georgia, serif;
   font-size: clamp(3.4rem, 8vw, 6.8rem);
@@ -139,10 +131,13 @@
 }
 
 .form {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(74, 38, 53, 0.14);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(238, 44, 155, 0.18), transparent 32%),
+    linear-gradient(145deg, #402924 0%, #36221d 100%);
+  border: 1px solid rgba(246, 231, 218, 0.16);
   border-radius: 8px;
-  box-shadow: 0 28px 80px rgba(72, 35, 50, 0.14);
+  box-shadow: 0 28px 80px rgba(72, 35, 50, 0.24);
+  color: #f6e7da;
   display: grid;
   gap: 15px;
   min-width: 0;
@@ -151,12 +146,39 @@
   position: relative;
 }
 
+.formColumn {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.nicNacLauncher {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.nicNacLauncher:global(.sparkle-landing-v2) {
+  background: transparent;
+  color: inherit;
+  min-height: auto;
+  overflow: visible;
+}
+
 .form::before {
-  background: linear-gradient(90deg, #ee2c9b, #d7a041, #2d8c83);
+  background: linear-gradient(90deg, #ee2c9b, #ffd4ea, #f6e7da);
   content: "";
   height: 4px;
   inset: 0 0 auto;
   position: absolute;
+}
+
+.formHead span {
+  color: #ffd4ea;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .formHead h2 {
@@ -168,12 +190,12 @@
 }
 
 .formHead p {
-  color: rgba(59, 32, 43, 0.62);
+  color: rgba(246, 231, 218, 0.76);
   margin: 0 0 8px;
 }
 
 .form label {
-  color: #593145;
+  color: rgba(246, 231, 218, 0.9);
   display: grid;
   font-size: 0.92rem;
   font-weight: 800;
@@ -182,8 +204,8 @@
 }
 
 .form input {
-  background: #fff;
-  border: 1px solid rgba(74, 38, 53, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 212, 234, 0.24);
   border-radius: 6px;
   box-sizing: border-box;
   color: #3b202b;
@@ -196,8 +218,8 @@
 }
 
 .form input:focus {
-  border-color: #d94f86;
-  box-shadow: 0 0 0 3px rgba(217, 79, 134, 0.16);
+  border-color: #ff6fbd;
+  box-shadow: 0 0 0 3px rgba(255, 111, 189, 0.22);
   outline: none;
 }
 
@@ -217,7 +239,7 @@
 
 .accountNotice,
 .termsNote {
-  color: rgba(59, 32, 43, 0.68);
+  color: rgba(246, 231, 218, 0.72);
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.5;
@@ -225,10 +247,10 @@
 }
 
 .accountNotice {
-  background: rgba(255, 247, 244, 0.78);
-  border: 1px solid rgba(74, 38, 53, 0.12);
+  background: rgba(255, 246, 250, 0.1);
+  border: 1px solid rgba(255, 212, 234, 0.2);
   border-radius: 6px;
-  color: #3b202b;
+  color: #fff6fa;
   padding: 11px 12px;
 }
 
@@ -242,10 +264,10 @@
 }
 
 .form button {
-  background: #3b202b;
+  background: linear-gradient(135deg, #ff4cae, #d81b87);
   border: 0;
   border-radius: 999px;
-  color: #fff7f4;
+  color: #fff6fb;
   cursor: pointer;
   font: inherit;
   font-weight: 900;

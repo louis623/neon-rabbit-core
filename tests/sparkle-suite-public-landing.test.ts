@@ -281,6 +281,28 @@ describe('Sparkle Suite public landing page', () => {
     expect(shippingAnswer.message).toContain('does not handle shipping')
   })
 
+  it('answers public signup-page form and next-step questions', () => {
+    const formAnswer = answerPublicNicNacQuestion('What is this form for?')
+    const cardAnswer = answerPublicNicNacQuestion('Do I need a card here?')
+    const nextAnswer = answerPublicNicNacQuestion(
+      'What happens after I create my account?',
+    )
+
+    expect(formAnswer.kind).toBe('answer')
+    expect(formAnswer.message).toContain('creates your Sparkle Suite account')
+    expect(formAnswer.message).toContain('name, business name, email, password')
+    expect(formAnswer.message).toContain('phone')
+    expect(formAnswer.message).toContain('primary live/social link')
+    expect(formAnswer.message).toContain('shop link')
+    expect(cardAnswer.kind).toBe('answer')
+    expect(cardAnswer.message).toContain('No card is needed on this step')
+    expect(cardAnswer.message).toContain('does not charge you')
+    expect(nextAnswer.kind).toBe('answer')
+    expect(nextAnswer.message).toContain('review the plan and terms')
+    expect(nextAnswer.message).toContain('Stripe checkout')
+    expect(nextAnswer.message).toContain('open Nic-Nac')
+  })
+
   it('routes public Nic-Nac questions through the landing-page API', () => {
     const source = readFileSync(
       join(process.cwd(), 'app', '_components', 'sparkle-suite-public-nic-nac.tsx'),

@@ -174,6 +174,37 @@ describe('public Nic-Nac knowledge pack', () => {
     )
   })
 
+  it('contains public signup-page form and next-step guidance', () => {
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
+      'creates the rep account first',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
+      'No card is needed on this step',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('name')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('business name')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('email')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('password')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('phone')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain(
+      'primary live/social link',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('shop link')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety).toContain(
+      'does not text or email customers',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety).toContain(
+      'does not charge',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
+      'plan and terms',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
+      'Stripe checkout',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain('Nic-Nac')
+  })
+
   it('does not include private or implementation-only context', () => {
     const text = buildPublicNicNacKnowledgeText()
 
@@ -205,6 +236,10 @@ describe('public Nic-Nac guardrails', () => {
     'Is this for Bomb Party reps?',
     'How much does it cost?',
     'What happens after checkout?',
+    'What is this form for?',
+    'Why do you ask for my phone?',
+    'Do I pay on this page?',
+    'What happens after I create my account?',
     'Can it help with live shows?',
     "I'm a Bomb Party rep. How does Sparkle Suite help me?",
     'How are you going to facilitate trades?',
@@ -266,6 +301,9 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('Use only the approved public facts below')
     expect(prompt).toContain('potential Bomb Party representatives')
     expect(prompt).toContain('Answer normal public TradeBoard mechanics questions directly')
+    expect(prompt).toContain('Answer signup-page questions directly')
+    expect(prompt).toContain('No card is needed on this step')
+    expect(prompt).toContain('what happens after account creation')
     expect(prompt).toContain('dance floor means TradeBoard')
     expect(prompt).toContain('dancers means the rep-listed trade-eligible jewelry')
     expect(prompt).toContain('never say customers add dancers to the dance floor')
@@ -291,6 +329,8 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('MSRP is reference only')
     expect(prompt).toContain('does not collect order IDs')
     expect(prompt).toContain('SMS consent is optional')
+    expect(prompt).toContain('does not text or email customers')
+    expect(prompt).toContain('Stripe checkout')
     expect(prompt).toContain('cannot send texts or emails from the public page')
     expect(prompt).toContain('The rep sets the final trade rules and approvals')
     expect(prompt).toContain('$74.99/month')

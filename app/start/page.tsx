@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SparkleSuitePublicNicNac } from '@/app/_components/sparkle-suite-public-nic-nac'
 import { StartSparkleSuiteForm } from './StartSparkleSuiteForm'
 import styles from './start.module.css'
 
@@ -95,7 +96,12 @@ export default function StartPage() {
               ))}
             </ol>
           </div>
-          <StartSparkleSuiteForm />
+          <div className={styles.formColumn}>
+            <StartSparkleSuiteForm />
+            <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
+              <SparkleSuitePublicNicNac variant="compact" />
+            </div>
+          </div>
         </div>
       </section>
     </main>

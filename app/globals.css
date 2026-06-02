@@ -4268,10 +4268,6 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   width: 42px;
 }
 
-.sparkle-landing-v2 .sl2-header nav {
-  display: none;
-}
-
 .sparkle-landing-v2 .sl2-header__actions {
   align-items: center;
   display: flex;
@@ -4593,6 +4589,11 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   max-width: 34rem;
 }
 
+.sparkle-landing-v2 .sl2-nic-nac__compact-launcher {
+  display: flex;
+  justify-content: center;
+}
+
 .sparkle-landing-v2 .sl2-nic-nac__teaser strong {
   color: #f6e7da;
   display: block;
@@ -4610,10 +4611,11 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 
 .sparkle-landing-v2 .sl2-nic-nac__button {
   align-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(246, 231, 218, 0.26);
+  background: linear-gradient(135deg, #ff4cae 0%, #d81b87 100%);
+  border: 1px solid transparent;
   border-radius: 999px;
-  color: #402924;
+  box-shadow: 0 18px 36px rgba(216, 27, 135, 0.22);
+  color: #fff6fb;
   cursor: pointer;
   display: inline-flex;
   font-family: var(--font-prelaunch-body), "DM Sans", system-ui, sans-serif;
@@ -4988,21 +4990,8 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
     padding: 0 34px;
   }
 
-  .sparkle-landing-v2 .sl2-header nav,
   .sparkle-landing-v2 .sl2-header__actions span {
     display: flex;
-  }
-
-  .sparkle-landing-v2 .sl2-header nav {
-    align-items: center;
-    gap: 18px;
-  }
-
-  .sparkle-landing-v2 .sl2-header nav a {
-    color: rgba(246, 231, 218, 0.78);
-    font-size: 13px;
-    font-weight: 800;
-    text-decoration: none;
   }
 
   .sparkle-landing-v2 .sl2-header {

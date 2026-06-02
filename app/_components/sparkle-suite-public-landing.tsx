@@ -48,7 +48,7 @@ function LandingButton({
 }
 
 function LandingHeader() {
-  const { brand, nav } = sparkleSuitePublicLandingContent
+  const { brand } = sparkleSuitePublicLandingContent
 
   return (
     <header className="sl2-header">
@@ -56,13 +56,6 @@ function LandingHeader() {
         <SparkleSeal className="sl2-brand__seal" />
         <span>{brand}</span>
       </a>
-      <nav aria-label="Sparkle Suite landing page">
-        {nav.links.map((link) => (
-          <a href={link.href} key={link.href}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
       <div className="sl2-header__actions">
         <span>Already have Sparkle Suite?</span>
         <a href="/login">Sign in here.</a>

@@ -23,7 +23,11 @@ type AskNicNacOptions = {
   replaceThread?: boolean
 }
 
-export function SparkleSuitePublicNicNac() {
+export function SparkleSuitePublicNicNac({
+  variant = 'teaser',
+}: {
+  variant?: 'teaser' | 'compact'
+}) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [question, setQuestion] = useState('')
@@ -162,11 +166,19 @@ export function SparkleSuitePublicNicNac() {
 
   return (
     <aside className="sl2-nic-nac" aria-label="Public Nic-Nac assistant">
-      <div className="sl2-nic-nac__teaser">
-        <div>
-          <strong>{publicNicNacAssistant.teaser}</strong>
-          <p>{publicNicNacAssistant.body}</p>
-        </div>
+      <div
+        className={
+          variant === 'compact'
+            ? 'sl2-nic-nac__compact-launcher'
+            : 'sl2-nic-nac__teaser'
+        }
+      >
+        {variant === 'teaser' ? (
+          <div>
+            <strong>{publicNicNacAssistant.teaser}</strong>
+            <p>{publicNicNacAssistant.body}</p>
+          </div>
+        ) : null}
         <button
           ref={openerRef}
           aria-controls="sparkle-public-nic-nac-panel"

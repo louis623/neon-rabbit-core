@@ -20,6 +20,16 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
   setup: NIC_NAC_CORE_KNOWLEDGE.setupSummary,
   customization:
     'Sparkle Suite includes customer-facing website customization support so the site can feel polished and aligned with the rep.',
+  signupPage: {
+    purpose:
+      'The Start Sparkle Suite page creates the rep account first. No card is needed on this step; payment review comes next.',
+    fields:
+      'The form asks for name, business name, email, password, optional phone, primary live/social link, and shop link so Sparkle Suite can create the rep account and prepare customer-site setup details.',
+    safety:
+      'Submitting the signup form does not text or email customers, does not post anywhere, does not change provider settings, and does not charge the rep.',
+    nextSteps:
+      'After account creation, the rep reviews the plan and terms, continues to Stripe checkout, then opens Nic-Nac to finish setup for the customer site, TradeBoard, LiveQ, live event calendar, and updates.',
+  },
   tradeBoardRules: [
     NIC_NAC_TRADEBOARD_KNOWLEDGE.summary,
     NIC_NAC_TRADEBOARD_KNOWLEDGE.boundaries,
@@ -85,6 +95,7 @@ export function buildPublicNicNacKnowledgeText() {
     `Rep context: ${PUBLIC_NIC_NAC_KNOWLEDGE.repContext}`,
     `Setup: ${PUBLIC_NIC_NAC_KNOWLEDGE.setup}`,
     `Customization: ${PUBLIC_NIC_NAC_KNOWLEDGE.customization}`,
+    `Signup page: ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps}`,
     `TradeBoard rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules}`,
     `TradeBoard Bomb Party lingo: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo}`,
     `TradeBoard live-show flow: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow}`,

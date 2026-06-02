@@ -12,13 +12,6 @@ export const sparkleSuitePublicLandingContent = {
     { id: 'workspace-proof', label: 'Workspace proof' },
     { id: 'pricing', label: 'Pricing' },
   ],
-  nav: {
-    links: [
-      { label: 'Customer site', href: '#top' },
-      { label: 'Workspace', href: '#workspace-proof' },
-      { label: 'Pricing', href: '#pricing' },
-    ],
-  },
   hero: {
     eyebrow: 'Sparkle Suite for reps',
     headline: 'A better customer experience starts with a better rep setup.',

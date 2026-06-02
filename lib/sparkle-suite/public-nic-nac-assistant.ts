@@ -58,6 +58,64 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
 
   if (
     includesAny(question, [
+      'form',
+      'field',
+      'name',
+      'business name',
+      'email',
+      'password',
+      'phone',
+      'social link',
+      'live link',
+      'shop link',
+      'card',
+      'pay here',
+      'pay on this page',
+      'account',
+      'sign up',
+      'signup',
+      'start page',
+      'after this',
+      'what happens next',
+      'after signup',
+      'after i create',
+    ])
+  ) {
+    if (
+      includesAny(question, ['card', 'pay here', 'pay on this page', 'charge', 'charged'])
+    ) {
+      return {
+        kind: 'answer',
+        message:
+          'No card is needed on this step. Creating your account does not charge you; you review the plan and terms before continuing to Stripe checkout.',
+      }
+    }
+
+    if (
+      includesAny(question, [
+        'after this',
+        'what happens next',
+        'after signup',
+        'after i create',
+        'after account',
+      ])
+    ) {
+      return {
+        kind: 'answer',
+        message:
+          'After this, you review the plan and terms, continue to Stripe checkout, then open Nic-Nac to finish customer-site, TradeBoard, LiveQ, calendar, and updates setup.',
+      }
+    }
+
+    return {
+      kind: 'answer',
+      message:
+        'This form creates your Sparkle Suite account first. It asks for name, business name, email, password, optional phone, primary live/social link, and shop link so Sparkle Suite can prepare your customer-site setup details.',
+    }
+  }
+
+  if (
+    includesAny(question, [
       'price',
       'pricing',
       'cost',
