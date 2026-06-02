@@ -2,6 +2,127 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createQuestion, getPublishedSiteConfig, mapSiteRow } from '@/lib/team-onboarding/repository';
 
+const publishedSiteRow = {
+  id: 'site-1',
+  owner_rep_id: 'rep-1',
+  slug: 'britt-with-bling',
+  title: 'Britt with Bling New Rep Path',
+  team_name: 'Britt with Bling',
+  rep_display_name: 'Brittany',
+  status: 'published',
+  custom_domain: 'brittwithbling.com',
+  created_at: '2026-06-01T12:00:00.000Z',
+  updated_at: '2026-06-01T12:30:00.000Z',
+  published_at: '2026-06-01T13:00:00.000Z',
+};
+
+type MockQueryResult<T> = {
+  data: T | null;
+  error: { message: string } | null;
+};
+
+function createPublishedConfigSupabaseMock({
+  siteResult = { data: publishedSiteRow, error: null },
+  resourceResult = {
+    data: [
+      {
+        id: 'resource-1',
+        site_id: 'site-1',
+        title: 'Sparkle Suite Question Inbox',
+        description: 'Sends new-rep questions to Brittany in Sparkle Suite.',
+        href: 'https://www.yoursparklesuite.com/nic-nac/team-onboarding',
+        category: 'Sparkle Suite',
+        source: 'sparkle-suite',
+        sort_order: 10,
+      },
+    ],
+    error: null,
+  },
+  stepResult = {
+    data: [
+      {
+        id: 'step-1',
+        site_id: 'site-1',
+        group_title: 'Questions for Brittany',
+        title: 'Ask Brittany',
+        description: 'Collect anything the new rep needs Brittany to answer.',
+        resource_ids: null,
+        sort_order: 70,
+      },
+    ],
+    error: null,
+  },
+}: {
+  siteResult?: MockQueryResult<typeof publishedSiteRow>;
+  resourceResult?: MockQueryResult<
+    Array<{
+      id: string;
+      site_id: string;
+      title: string;
+      description: string;
+      href: string;
+      category: string;
+      source: string;
+      sort_order: number;
+    }>
+  >;
+  stepResult?: MockQueryResult<
+    Array<{
+      id: string;
+      site_id: string;
+      group_title: string;
+      title: string;
+      description: string;
+      resource_ids: string[] | null;
+      sort_order: number;
+    }>
+  >;
+} = {}) {
+  const siteMaybeSingle = vi.fn().mockResolvedValue(siteResult);
+  const siteEqStatus = vi.fn().mockReturnValue({ maybeSingle: siteMaybeSingle });
+  const siteEqSlug = vi.fn().mockReturnValue({ eq: siteEqStatus });
+  const siteSelect = vi.fn().mockReturnValue({ eq: siteEqSlug });
+
+  const resourceOrder = vi.fn().mockResolvedValue(resourceResult);
+  const resourceEq = vi.fn().mockReturnValue({ order: resourceOrder });
+  const resourceSelect = vi.fn().mockReturnValue({ eq: resourceEq });
+
+  const stepOrder = vi.fn().mockResolvedValue(stepResult);
+  const stepEq = vi.fn().mockReturnValue({ order: stepOrder });
+  const stepSelect = vi.fn().mockReturnValue({ eq: stepEq });
+
+  const from = vi.fn((table: string) => {
+    if (table === 'ss_team_onboarding_sites') {
+      return { select: siteSelect };
+    }
+
+    if (table === 'ss_team_onboarding_resources') {
+      return { select: resourceSelect };
+    }
+
+    if (table === 'ss_team_onboarding_steps') {
+      return { select: stepSelect };
+    }
+
+    throw new Error(`Unexpected table: ${table}`);
+  });
+
+  return {
+    supabase: { from } as never,
+    from,
+    siteSelect,
+    siteEqSlug,
+    siteEqStatus,
+    siteMaybeSingle,
+    resourceSelect,
+    resourceEq,
+    resourceOrder,
+    stepSelect,
+    stepEq,
+    stepOrder,
+  };
+}
+
 describe('team onboarding repository', () => {
   it('mapSiteRow converts all site fields to camelCase', () => {
     expect(
@@ -33,75 +154,24 @@ describe('team onboarding repository', () => {
     });
   });
 
-  it('getPublishedSiteConfig returns nested public site config', async () => {
-    const maybeSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: 'site-1',
-        owner_rep_id: 'rep-1',
-        slug: 'britt-with-bling',
-        title: 'Britt with Bling New Rep Path',
-        team_name: 'Britt with Bling',
-        rep_display_name: 'Brittany',
-        status: 'published',
-        custom_domain: 'brittwithbling.com',
-        created_at: '2026-06-01T12:00:00.000Z',
-        updated_at: '2026-06-01T12:30:00.000Z',
-        published_at: '2026-06-01T13:00:00.000Z',
-      },
-      error: null,
-    });
-    const siteEqStatus = vi.fn().mockReturnValue({ maybeSingle });
-    const siteEqSlug = vi.fn().mockReturnValue({ eq: siteEqStatus });
-    const siteSelect = vi.fn().mockReturnValue({ eq: siteEqSlug });
+  it('getPublishedSiteConfig queries published site by slug and status', async () => {
+    const mock = createPublishedConfigSupabaseMock();
 
-    const resourceOrder = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'resource-1',
-          site_id: 'site-1',
-          title: 'Sparkle Suite Question Inbox',
-          description: 'Sends new-rep questions to Brittany in Sparkle Suite.',
-          href: 'https://www.yoursparklesuite.com/nic-nac/team-onboarding',
-          category: 'Sparkle Suite',
-          source: 'sparkle-suite',
-          sort_order: 10,
-        },
-      ],
-      error: null,
-    });
-    const resourceEq = vi.fn().mockReturnValue({ order: resourceOrder });
-    const resourceSelect = vi.fn().mockReturnValue({ eq: resourceEq });
+    await getPublishedSiteConfig(mock.supabase, 'britt-with-bling');
 
-    const stepOrder = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'step-1',
-          site_id: 'site-1',
-          group_title: 'Questions for Brittany',
-          title: 'Ask Brittany',
-          description: 'Collect anything the new rep needs Brittany to answer.',
-          resource_ids: ['resource-1'],
-          sort_order: 70,
-        },
-      ],
-      error: null,
-    });
-    const stepEq = vi.fn().mockReturnValue({ order: stepOrder });
-    const stepSelect = vi.fn().mockReturnValue({ eq: stepEq });
+    expect(mock.from).toHaveBeenCalledWith('ss_team_onboarding_sites');
+    expect(mock.siteSelect).toHaveBeenCalledWith(
+      'id,owner_rep_id,slug,title,team_name,rep_display_name,status,custom_domain,created_at,updated_at,published_at',
+    );
+    expect(mock.siteEqSlug).toHaveBeenCalledWith('slug', 'britt-with-bling');
+    expect(mock.siteEqStatus).toHaveBeenCalledWith('status', 'published');
+    expect(mock.siteMaybeSingle).toHaveBeenCalledOnce();
+  });
 
-    const from = vi.fn((table: string) => {
-      if (table === 'ss_team_onboarding_sites') {
-        return { select: siteSelect };
-      }
+  it('getPublishedSiteConfig maps the returned public config shape', async () => {
+    const mock = createPublishedConfigSupabaseMock();
 
-      if (table === 'ss_team_onboarding_resources') {
-        return { select: resourceSelect };
-      }
-
-      return { select: stepSelect };
-    });
-
-    await expect(getPublishedSiteConfig({ from } as never, 'britt-with-bling')).resolves.toEqual({
+    await expect(getPublishedSiteConfig(mock.supabase, 'britt-with-bling')).resolves.toEqual({
       site: {
         slug: 'britt-with-bling',
         title: 'Britt with Bling New Rep Path',
@@ -128,11 +198,42 @@ describe('team onboarding repository', () => {
           groupTitle: 'Questions for Brittany',
           title: 'Ask Brittany',
           description: 'Collect anything the new rep needs Brittany to answer.',
-          resourceIds: ['resource-1'],
+          resourceIds: [],
           sortOrder: 70,
         },
       ],
     });
+
+    expect(mock.from).toHaveBeenCalledWith('ss_team_onboarding_resources');
+    expect(mock.resourceSelect).toHaveBeenCalledWith(
+      'id,site_id,title,description,href,category,source,sort_order',
+    );
+    expect(mock.resourceEq).toHaveBeenCalledWith('site_id', 'site-1');
+    expect(mock.resourceOrder).toHaveBeenCalledWith('sort_order', { ascending: true });
+    expect(mock.from).toHaveBeenCalledWith('ss_team_onboarding_steps');
+    expect(mock.stepSelect).toHaveBeenCalledWith(
+      'id,site_id,group_title,title,description,resource_ids,sort_order',
+    );
+    expect(mock.stepEq).toHaveBeenCalledWith('site_id', 'site-1');
+    expect(mock.stepOrder).toHaveBeenCalledWith('sort_order', { ascending: true });
+  });
+
+  it('getPublishedSiteConfig returns null when the published site has no data', async () => {
+    const mock = createPublishedConfigSupabaseMock({
+      siteResult: { data: null, error: null },
+    });
+
+    await expect(getPublishedSiteConfig(mock.supabase, 'missing-site')).resolves.toBeNull();
+    expect(mock.from).toHaveBeenCalledTimes(1);
+  });
+
+  it('getPublishedSiteConfig returns null when the published site query errors', async () => {
+    const mock = createPublishedConfigSupabaseMock({
+      siteResult: { data: null, error: { message: 'permission denied' } },
+    });
+
+    await expect(getPublishedSiteConfig(mock.supabase, 'britt-with-bling')).resolves.toBeNull();
+    expect(mock.from).toHaveBeenCalledTimes(1);
   });
 
   it('createQuestion inserts an open question and maps the returned row', async () => {

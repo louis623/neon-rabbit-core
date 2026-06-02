@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_members (
   phone TEXT,
   status TEXT NOT NULL DEFAULT 'invited' CHECK (status IN ('invited', 'active', 'inactive')),
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT ss_team_onboarding_members_site_id_id_unique UNIQUE (site_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_invites (
@@ -52,19 +53,28 @@ CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_steps (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   resource_ids UUID[] NOT NULL DEFAULT '{}'::uuid[],
-  sort_order INTEGER NOT NULL DEFAULT 0
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  CONSTRAINT ss_team_onboarding_steps_site_id_id_unique UNIQUE (site_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS public.ss_team_onboarding_questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES public.ss_team_onboarding_sites(id) ON DELETE CASCADE,
-  member_id UUID REFERENCES public.ss_team_onboarding_members(id) ON DELETE SET NULL,
-  step_id UUID REFERENCES public.ss_team_onboarding_steps(id) ON DELETE SET NULL,
+  member_id UUID,
+  step_id UUID,
   question_text TEXT NOT NULL,
   answer_text TEXT,
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'answered', 'archived')),
   created_at TIMESTAMPTZ DEFAULT now(),
-  answered_at TIMESTAMPTZ
+  answered_at TIMESTAMPTZ,
+  CONSTRAINT ss_team_onboarding_questions_site_member_fk
+    FOREIGN KEY (site_id, member_id)
+    REFERENCES public.ss_team_onboarding_members(site_id, id)
+    ON DELETE SET NULL (member_id),
+  CONSTRAINT ss_team_onboarding_questions_site_step_fk
+    FOREIGN KEY (site_id, step_id)
+    REFERENCES public.ss_team_onboarding_steps(site_id, id)
+    ON DELETE SET NULL (step_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_ss_team_onboarding_sites_owner_rep
