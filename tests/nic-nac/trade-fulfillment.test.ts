@@ -321,7 +321,7 @@ describe('fulfillment registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(29)
+    expect(names).toHaveLength(33)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_fulfillment_queue',

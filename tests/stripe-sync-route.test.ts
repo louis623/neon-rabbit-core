@@ -4,6 +4,7 @@ const stripeEnabledMock = vi.fn()
 const getStripeMock = vi.fn()
 const getAuthenticatedRepMock = vi.fn()
 const createAdminClientMock = vi.fn()
+const createLightBoxFulfillmentTaskMock = vi.fn()
 
 vi.mock('@/lib/stripe/client', () => ({
   stripeEnabled: (...args: unknown[]) => stripeEnabledMock(...args),
@@ -17,6 +18,11 @@ vi.mock('@/lib/supabase/auth', () => ({
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: (...args: unknown[]) => createAdminClientMock(...args),
+}))
+
+vi.mock('@/lib/self-serve/light-box-fulfillment', () => ({
+  createLightBoxFulfillmentTask: (...args: unknown[]) =>
+    createLightBoxFulfillmentTaskMock(...args),
 }))
 
 import { POST } from '@/app/api/stripe/sync/route'
@@ -47,11 +53,31 @@ function makeSubscription(overrides: Record<string, unknown> = {}) {
 function makeAdmin() {
   const repsUpdateEq = vi.fn().mockResolvedValue({ error: null })
   const repsUpdate = vi.fn(() => ({ eq: repsUpdateEq }))
+  const repsSingle = vi.fn().mockResolvedValue({
+    data: {
+      id: 'rep-test-buyer',
+      email: 'buyer@example.com',
+      display_name: 'Test Buyer',
+    },
+    error: null,
+  })
+  const repsSelectEq = vi.fn(() => ({ single: repsSingle }))
+  const repsSelect = vi.fn(() => ({ eq: repsSelectEq }))
   const subscriptionsUpsert = vi.fn().mockResolvedValue({ error: null })
+  const setupMaybeSingle = vi.fn().mockResolvedValue({
+    data: {
+      status: 'payment_pending',
+      current_step: 'checkout',
+    },
+    error: null,
+  })
+  const setupSelectEq = vi.fn(() => ({ maybeSingle: setupMaybeSingle }))
+  const setupSelect = vi.fn(() => ({ eq: setupSelectEq }))
+  const setupUpsert = vi.fn().mockResolvedValue({ error: null })
 
   const from = vi.fn((table: string) => {
     if (table === 'reps') {
-      return { update: repsUpdate }
+      return { update: repsUpdate, select: repsSelect }
     }
 
     if (table === 'subscriptions') {
@@ -66,6 +92,13 @@ function makeAdmin() {
       }
     }
 
+    if (table === 'self_serve_setup_sessions') {
+      return {
+        select: setupSelect,
+        upsert: setupUpsert,
+      }
+    }
+
     throw new Error(`unexpected table ${table}`)
   })
 
@@ -75,6 +108,8 @@ function makeAdmin() {
       from,
       repsUpdate,
       repsUpdateEq,
+      repsSelect,
+      setupUpsert,
       subscriptionsUpsert,
     },
   }
@@ -86,6 +121,7 @@ describe('POST /api/stripe/sync', () => {
     getStripeMock.mockReset()
     getAuthenticatedRepMock.mockReset()
     createAdminClientMock.mockReset()
+    createLightBoxFulfillmentTaskMock.mockReset()
   })
 
   it('syncs the exact returned checkout session and unlocks the authenticated rep', async () => {
@@ -262,6 +298,99 @@ describe('POST /api/stripe/sync', () => {
     expect(spies.subscriptionsUpsert).not.toHaveBeenCalledWith(
       expect.objectContaining({ status: 'active' }),
       expect.anything(),
+    )
+  })
+
+  it('uses returned Stripe checkout sync to start required setup when the webhook is delayed', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-test-buyer',
+      rep: {
+        id: 'rep-test-buyer',
+        stripe_customer_id: null,
+      },
+    })
+    const subscription = makeSubscription()
+    const retrieveSession = vi.fn().mockResolvedValue({
+      id: 'cs_required_setup',
+      created: 1_779_120_000,
+      mode: 'subscription',
+      customer: 'cus_test_buyer',
+      customer_details: {
+        name: 'Test Buyer',
+        address: {
+          line1: '123 Shine St',
+          city: 'Sparkle City',
+          state: 'LA',
+          postal_code: '70000',
+          country: 'US',
+        },
+      },
+      subscription: 'sub_test_buyer',
+      metadata: {
+        rep_id: 'rep-test-buyer',
+        plan_type: 'monthly',
+        pricing_tier: 'standard',
+        first_run_setup: 'required_nic_nac',
+        light_box_required: 'true',
+      },
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          retrieve: retrieveSession,
+        },
+      },
+      subscriptions: {
+        retrieve: vi.fn().mockResolvedValue(subscription),
+      },
+    })
+    const { client, spies } = makeAdmin()
+    createAdminClientMock.mockReturnValue(client)
+    createLightBoxFulfillmentTaskMock.mockResolvedValue({
+      created: true,
+      skipped: false,
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/sync', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId: 'cs_required_setup' }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      synced: true,
+      mode: 'checkout_session',
+      stripeSubscriptionCount: 1,
+      changes: [
+        'sub_test_buyer: synced from checkout session',
+        'cs_required_setup: required setup unlocked',
+      ],
+    })
+    expect(spies.setupUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-test-buyer',
+        status: 'required_setup',
+        current_step: 'account_basics',
+      }),
+      { onConflict: 'rep_id' },
+    )
+    expect(createLightBoxFulfillmentTaskMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        repId: 'rep-test-buyer',
+        repEmail: 'buyer@example.com',
+        repName: 'Test Buyer',
+        stripeCheckoutSessionId: 'cs_required_setup',
+        stripeSubscriptionId: 'sub_test_buyer',
+        shippingName: 'Test Buyer',
+        shippingAddress: expect.objectContaining({
+          line1: '123 Shine St',
+        }),
+      }),
+      client,
     )
   })
 })

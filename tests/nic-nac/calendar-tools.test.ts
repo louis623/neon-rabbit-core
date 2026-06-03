@@ -252,11 +252,11 @@ describe('calendar tools', () => {
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools now exposes 29 tools including the four calendar tools', () => {
+  it('buildAllTools now exposes 33 tools including the four calendar tools', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(29)
+    expect(names).toHaveLength(33)
     expect(names).toEqual(expect.arrayContaining([
       'add_show',
       'list_my_shows',

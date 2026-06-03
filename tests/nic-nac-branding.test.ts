@@ -51,9 +51,12 @@ describe('Nic-Nac branding copy', () => {
     )
 
     expect(css).toContain('#402924')
-    expect(css).toContain('#36221d')
     expect(css).toContain('#ee2c9b')
     expect(css).toContain('Playfair Display')
     expect(css).toContain('DM Sans')
+    expect(css).not.toContain(
+      'linear-gradient(135deg, #fff8fb 0%, #f8efe9 42%, #402924 82%, #36221d 100%)',
+    )
+    expect(css).not.toMatch(/background:[^;}]*#402924[^;}]*#36221d[^;}]*;/)
   })
 })

@@ -31,6 +31,8 @@ import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'nic_nac_last_conversation'
 const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)'
+const SETUP_STATE_TIMEOUT_MS = 10_000
+const CHECKOUT_SYNC_TIMEOUT_MS = 15_000
 
 function newConversationId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -62,11 +64,22 @@ type CheckoutResponse = {
   error?: string
 }
 
+type StripeSyncResponse = {
+  synced?: boolean
+  error?: string
+}
+
 export default function NicNacClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const wantsCheckout = searchParams.get('onboarding') === 'checkout-required'
   const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
+  const billingState = searchParams.get('billing')
+  const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
+  const isFinalizingCheckout =
+    wantsRequiredSetup &&
+    billingState === 'subscription-success' &&
+    checkoutSessionId.length > 0
 
   const [setupState, setSetupState] = useState<RequiredSetupState | null>(null)
   const [setupStateStatus, setSetupStateStatus] = useState<
@@ -110,10 +123,18 @@ export default function NicNacClient() {
     async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
       if (options.showLoading) setSetupStateStatus('loading')
       setSetupStateError(null)
+      const controller = new AbortController()
+      const abortFromCaller = () => controller.abort('caller')
+      if (options.signal?.aborted) controller.abort('caller')
+      options.signal?.addEventListener('abort', abortFromCaller, { once: true })
+      const timeoutId = window.setTimeout(() => {
+        controller.abort('timeout')
+      }, SETUP_STATE_TIMEOUT_MS)
+
       try {
         const res = await fetch('/api/self-serve/setup-state', {
           credentials: 'include',
-          signal: options.signal,
+          signal: controller.signal,
         })
         if (!res.ok) {
           const body = (await res.json().catch(() => null)) as
@@ -131,10 +152,61 @@ export default function NicNacClient() {
         setSetupState(body.state ?? null)
         setSetupStateStatus('ready')
       } catch (err) {
-        if ((err as { name?: string })?.name === 'AbortError') return
+        if ((err as { name?: string })?.name === 'AbortError') {
+          if (controller.signal.reason === 'timeout') {
+            setSetupState(null)
+            setSetupStateError(
+              'Setup state did not load. Check local auth and environment configuration, then refresh.',
+            )
+            setSetupStateStatus('error')
+          }
+          return
+        }
         setSetupState(null)
         setSetupStateError(`Failed to load setup state: ${(err as Error).message}`)
         setSetupStateStatus('error')
+      } finally {
+        window.clearTimeout(timeoutId)
+        options.signal?.removeEventListener('abort', abortFromCaller)
+      }
+    },
+    [],
+  )
+
+  const syncReturnedCheckoutSession = useCallback(
+    async (sessionId: string, signal?: AbortSignal) => {
+      const controller = new AbortController()
+      const abortFromCaller = () => controller.abort('caller')
+      if (signal?.aborted) controller.abort('caller')
+      signal?.addEventListener('abort', abortFromCaller, { once: true })
+      const timeoutId = window.setTimeout(() => {
+        controller.abort('timeout')
+      }, CHECKOUT_SYNC_TIMEOUT_MS)
+
+      try {
+        const res = await fetch('/api/stripe/sync', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+          signal: controller.signal,
+        })
+        if (res.ok) return
+
+        const body = (await res.json().catch(() => null)) as
+          | StripeSyncResponse
+          | null
+        throw new Error(body?.error ?? `Stripe checkout sync failed (${res.status}).`)
+      } catch (err) {
+        if (controller.signal.reason === 'timeout') {
+          throw new Error(
+            'Stripe checkout sync did not finish. Check Stripe and Supabase configuration, then refresh.',
+          )
+        }
+        throw err
+      } finally {
+        window.clearTimeout(timeoutId)
+        signal?.removeEventListener('abort', abortFromCaller)
       }
     },
     [],
@@ -142,11 +214,37 @@ export default function NicNacClient() {
 
   useEffect(() => {
     const controller = new AbortController()
-    void loadSetupState({ signal: controller.signal, showLoading: true })
+    ;(async () => {
+      if (isFinalizingCheckout) {
+        setSetupStateStatus('loading')
+        setSetupStateError(null)
+        try {
+          await syncReturnedCheckoutSession(checkoutSessionId, controller.signal)
+        } catch (err) {
+          if ((err as { name?: string })?.name === 'AbortError') return
+          setSetupState(null)
+          setSetupStateError(
+            err instanceof Error
+              ? err.message
+              : 'Stripe checkout sync failed.',
+          )
+          setSetupStateStatus('error')
+          return
+        }
+      }
+      await loadSetupState({ signal: controller.signal, showLoading: true })
+    })()
     return () => {
       controller.abort()
     }
-  }, [loadSetupState])
+  }, [
+    billingState,
+    checkoutSessionId,
+    isFinalizingCheckout,
+    loadSetupState,
+    syncReturnedCheckoutSession,
+    wantsRequiredSetup,
+  ])
 
   const setupStatus = setupState?.status
   const workspaceMode = resolveNicNacWorkspaceMode({
@@ -468,22 +566,6 @@ export default function NicNacClient() {
     <div className={shellStyles.loading}>{initLoadError ?? 'Loading…'}</div>
   )
 
-  if (setupStateStatus === 'loading') {
-    return (
-      <div className={shellStyles.root}>
-        <div className={shellStyles.loading}>Loading setup...</div>
-      </div>
-    )
-  }
-
-  if (setupStateStatus === 'error') {
-    return (
-      <div className={shellStyles.root}>
-        <div className={shellStyles.loading}>{setupStateError}</div>
-      </div>
-    )
-  }
-
   if (isCheckoutRequiredMode) {
     return (
       <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
@@ -500,6 +582,24 @@ export default function NicNacClient() {
     return (
       <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
         <RequiredSetupHome state={setupState} chat={chatContent} />
+      </div>
+    )
+  }
+
+  if (setupStateStatus === 'loading') {
+    return (
+      <div className={shellStyles.root}>
+        <div className={shellStyles.loading}>
+          {isFinalizingCheckout ? 'Finalizing Stripe checkout...' : 'Loading setup...'}
+        </div>
+      </div>
+    )
+  }
+
+  if (setupStateStatus === 'error') {
+    return (
+      <div className={shellStyles.root}>
+        <div className={shellStyles.loading}>{setupStateError}</div>
       </div>
     )
   }

@@ -336,7 +336,7 @@ describe('site customization registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx({ from: vi.fn() }))
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(29)
+    expect(names).toHaveLength(33)
     expect(names).toEqual(
       expect.arrayContaining([
         'update_banner_text',

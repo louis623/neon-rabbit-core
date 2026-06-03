@@ -3,6 +3,11 @@ import type Stripe from 'stripe'
 import { getStripe, stripeEnabled as isStripeEnabled } from '@/lib/stripe/client'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  createRequiredSetupCheckoutFulfillment,
+  isRequiredNicNacSetupCheckout,
+  transitionSetupSessionAfterCheckout,
+} from '@/lib/self-serve/required-setup-checkout'
 
 function getSubscriptionPeriod(sub: Stripe.Subscription): { start: number; end: number } {
   const item = sub.items.data[0]
@@ -169,11 +174,28 @@ export async function POST(request: Request) {
         metadata: session.metadata,
       })
 
+      const changes = [`${stripeSub.id}: synced from checkout session`]
+      if (isRequiredNicNacSetupCheckout(session)) {
+        await transitionSetupSessionAfterCheckout(
+          admin,
+          repId,
+          new Date().toISOString(),
+        )
+        await createRequiredSetupCheckoutFulfillment({
+          admin,
+          repId,
+          session,
+          subscription: stripeSub,
+          paidAtIso: new Date(session.created * 1000).toISOString(),
+        })
+        changes.push(`${session.id}: required setup unlocked`)
+      }
+
       return NextResponse.json({
         synced: true,
         mode: 'checkout_session',
         stripeSubscriptionCount: 1,
-        changes: [`${stripeSub.id}: synced from checkout session`],
+        changes,
       })
     }
 

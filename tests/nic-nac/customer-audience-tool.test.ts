@@ -108,7 +108,7 @@ describe('get_customer_audience', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(29)
+    expect(names).toHaveLength(33)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_customer_audience',

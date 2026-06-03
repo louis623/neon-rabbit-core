@@ -19,6 +19,29 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain("workspaceMode === 'dashboard_unlocked'")
   })
 
+  it('does not bypass real setup state with a local preview fallback', () => {
+    expect(client).not.toContain("searchParams.get('preview') === 'setup'")
+    expect(client).not.toContain('canUseLocalRequiredSetupPreview')
+    expect(client).not.toContain('buildLocalRequiredSetupPreviewState')
+  })
+
+  it('surfaces a local setup-state load blocker instead of spinning forever', () => {
+    expect(client).toContain('SETUP_STATE_TIMEOUT_MS')
+    expect(client).toContain("controller.abort('timeout')")
+    expect(client).toContain('Setup state did not load')
+  })
+
+  it('syncs a returned Stripe checkout session before loading required setup', () => {
+    expect(client).toContain('/api/stripe/sync')
+    expect(client).toContain('CHECKOUT_SYNC_TIMEOUT_MS')
+    expect(client).toContain("searchParams.get('billing')")
+    expect(client).toContain("searchParams.get('session_id')")
+    expect(client).toContain("billingState === 'subscription-success'")
+    expect(client).toContain('syncReturnedCheckoutSession(checkoutSessionId')
+    expect(client).toContain('Finalizing Stripe checkout')
+    expect(client).toContain('Stripe checkout sync did not finish')
+  })
+
   it('sends the setup chat mode only during required setup', () => {
     expect(client).toContain("mode: isRequiredSetupMode ? 'required_setup' : 'workspace'")
   })
