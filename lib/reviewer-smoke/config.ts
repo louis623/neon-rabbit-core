@@ -33,6 +33,23 @@ export function isReviewerSmokeTokenValid(
   )
 }
 
+export function getReviewerSmokeDiagnostics(
+  token: unknown,
+  env: NodeJS.ProcessEnv = process.env,
+) {
+  const expected = getReviewerSmokeToken(env)
+  const received = typeof token === 'string' ? token.trim() : ''
+  return {
+    enabled: reviewerSmokeModeEnabled(env),
+    modeFlag: env.SPARKLE_REVIEWER_SMOKE_MODE?.trim().toLowerCase() ?? null,
+    nodeEnv: env.NODE_ENV ?? null,
+    vercelEnv: env.VERCEL_ENV ?? null,
+    expectedTokenLength: expected.length,
+    receivedTokenLength: received.length,
+    tokenMatches: expected.length >= 12 && received === expected,
+  }
+}
+
 export function getReviewerSmokePersona(env: NodeJS.ProcessEnv = process.env) {
   return {
     displayName:

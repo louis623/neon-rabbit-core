@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
-import { isReviewerSmokeTokenValid, getReviewerSmokePersona } from '@/lib/reviewer-smoke/config'
+import {
+  getReviewerSmokeDiagnostics,
+  getReviewerSmokePersona,
+  isReviewerSmokeTokenValid,
+} from '@/lib/reviewer-smoke/config'
 import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
 
@@ -9,6 +13,10 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   if (!isReviewerSmokeTokenValid(body?.token)) {
+    console.warn(
+      '[reviewer-smoke/checkout] Unavailable:',
+      getReviewerSmokeDiagnostics(body?.token),
+    )
     return NextResponse.json(
       {
         code: 'REVIEWER_SMOKE_DISABLED',

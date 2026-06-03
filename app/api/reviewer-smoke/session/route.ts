@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
+  getReviewerSmokeDiagnostics,
   isReviewerSmokeTokenValid,
   normalizeReviewerSmokeState,
 } from '@/lib/reviewer-smoke/config'
@@ -11,6 +12,10 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   if (!isReviewerSmokeTokenValid(body?.token)) {
+    console.warn(
+      '[reviewer-smoke/session] Unavailable:',
+      getReviewerSmokeDiagnostics(body?.token),
+    )
     return NextResponse.json(
       {
         code: 'REVIEWER_SMOKE_DISABLED',
