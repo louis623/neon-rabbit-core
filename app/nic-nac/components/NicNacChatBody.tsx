@@ -11,7 +11,7 @@ import {
 import { Bubble } from './Bubble'
 import { ChatHistory } from './ChatHistory'
 import { Chips } from './Chips'
-import { EmptyGreeting } from './EmptyGreeting'
+import { EmptyGreeting, type NicNacChatMode } from './EmptyGreeting'
 import { ErrorBlock } from './ErrorBlock'
 import { HITLBlock } from './HITLBlock'
 import { InputRow, type InputAttachment } from './InputRow'
@@ -47,12 +47,14 @@ type ConversationHydrateResponse = {
 }
 export function NicNacChatBody({
   conversationId,
+  chatMode = 'workspace',
   transport,
   initialMessages,
   onChatStateChange,
   onRolloverRecommended,
 }: {
   conversationId: string
+  chatMode?: NicNacChatMode
   transport: DefaultChatTransport<UIMessage>
   initialMessages: UIMessage[]
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
@@ -500,7 +502,7 @@ export function NicNacChatBody({
   return (
     <>
       <ChatHistory isStreaming={isStreaming}>
-        {!hasMessages ? <EmptyGreeting /> : null}
+        {!hasMessages ? <EmptyGreeting mode={chatMode} /> : null}
         {messages.map((m, idx) => {
           const ts = readCreatedAt(
             m,
@@ -549,6 +551,7 @@ export function NicNacChatBody({
       </ChatHistory>
       <Chips
         visible={chipsVisible}
+        mode={chatMode}
         onPick={handleChip}
         disabled={isStreaming || hasPendingApproval}
       />
@@ -563,7 +566,13 @@ export function NicNacChatBody({
         onPickFiles={handlePickFiles}
         onRemoveAttachment={handleRemoveAttachment}
         attachmentNotice={attachmentNotice}
-        placeholder={hasPendingApproval ? 'Approve or cancel above…' : 'Ask Nic-Nac…'}
+        placeholder={
+          hasPendingApproval
+            ? 'Approve or cancel above…'
+            : chatMode === 'required_setup'
+              ? 'Reply to Nic-Nac…'
+              : 'Ask Nic-Nac…'
+        }
       />
     </>
   )

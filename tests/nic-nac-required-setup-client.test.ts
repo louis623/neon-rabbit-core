@@ -48,6 +48,7 @@ describe('Nic-Nac required setup client', () => {
 
   it('sends the setup chat mode only during required setup', () => {
     expect(client).toContain("mode: isRequiredSetupMode ? 'required_setup' : 'workspace'")
+    expect(client).toContain("chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}")
   })
 
   it('refreshes setup state after required setup chat responses settle', () => {

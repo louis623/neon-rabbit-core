@@ -563,6 +563,7 @@ export default function NicNacClient() {
     <NicNacChatBody
       key={conversationId}
       conversationId={conversationId!}
+      chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}
       transport={transport!}
       initialMessages={initialMessages!}
       onChatStateChange={setChatState}
