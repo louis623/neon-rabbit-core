@@ -13,7 +13,6 @@ export function reviewerSmokeModeEnabled(env: NodeJS.ProcessEnv = process.env) {
   const flag = env.SPARKLE_REVIEWER_SMOKE_MODE?.trim().toLowerCase()
   if (flag !== 'true' && flag !== '1') return false
   if (env.VERCEL_ENV === 'production') return false
-  if (env.NODE_ENV === 'production' && !env.VERCEL_ENV) return false
   return true
 }
 

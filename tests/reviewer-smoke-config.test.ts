@@ -28,6 +28,16 @@ describe('reviewer smoke config', () => {
     expect(isReviewerSmokeTokenValid('wrong-token')).toBe(false)
   })
 
+  it('does not depend on NODE_ENV when the reviewer flag and token are explicit', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('SPARKLE_REVIEWER_SMOKE_MODE', 'true')
+    vi.stubEnv('SPARKLE_REVIEWER_SMOKE_TOKEN', 'review-token-12345')
+
+    expect(reviewerSmokeModeEnabled()).toBe(true)
+    expect(isReviewerSmokeTokenValid('review-token-12345')).toBe(true)
+  })
+
   it('cannot be enabled in production', () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('VERCEL_ENV', 'production')
