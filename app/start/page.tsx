@@ -18,31 +18,6 @@ export const metadata: Metadata = {
   },
 }
 
-const steps = [
-  'Create your Sparkle Suite account',
-  'Agree to the Sparkle Suite terms',
-  'Confirm payment in Stripe',
-  'Finish setup with Nic-Nac',
-]
-
-const reassurance = [
-  {
-    title: 'Google is the quickest way in.',
-    body:
-      'Use your Google account to start your Sparkle Suite workspace. Prefer a different email? You can create an account with email instead.',
-  },
-  {
-    title: 'Terms come before checkout.',
-    body:
-      'Review and accept the Sparkle Suite Terms here, then Stripe opens for plan and payment details.',
-  },
-  {
-    title: 'Nic-Nac helps finish setup after checkout.',
-    body:
-      'After payment, Nic-Nac opens the setup path for your customer-facing website, dancefloor/trade board, live show calendar, and SMS and email updates.',
-  },
-]
-
 function SparkleSeal({ className }: { className?: string }) {
   return (
     <svg aria-hidden="true" className={className} viewBox="0 0 64 64">
@@ -125,31 +100,16 @@ export default function StartPage() {
       <div className="sl2-shell">
         <StartHeader />
         <section className={styles.hero}>
-          <div className={styles.grid}>
-            <div className={styles.copy}>
-              <h1>Start your Sparkle Suite</h1>
-              <p>
-                Create your Sparkle Suite account, agree to the terms, then head
-                to Stripe Checkout for plan and payment details. After checkout,
-                Nic-Nac opens to help finish your Sparkle Suite
-                customer-facing website, dancefloor/trade board, live show
-                calendar, and SMS and email updates.
-              </p>
-              <div className={styles.reassurance} aria-label="Start reassurance">
-                {reassurance.map((item) => (
-                  <section className={styles.reassuranceItem} key={item.title}>
-                    <h2>{item.title}</h2>
-                    <p>{item.body}</p>
-                  </section>
-                ))}
-              </div>
-              <ol className={styles.steps} aria-label="Self-serve signup steps">
-                {steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </div>
-            <div className={styles.formColumn}>
+          <div className={styles.copy}>
+            <h1>Start your Sparkle Suite</h1>
+            <p>
+              Create your Sparkle Suite account, agree to the terms, then head
+              to Stripe Checkout for plan and payment details. After checkout,
+              Nic-Nac opens to help finish your Sparkle Suite customer-facing
+              website, dancefloor/trade board, live show calendar, and SMS and
+              email updates.
+            </p>
+            <div className={styles.accountArea}>
               <StartSparkleSuiteForm />
               <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
                 <SparkleSuitePublicNicNac variant="compact" />

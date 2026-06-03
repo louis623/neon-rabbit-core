@@ -14,13 +14,6 @@
   padding: clamp(28px, 6vw, 76px) 0 0;
 }
 
-.grid {
-  align-items: start;
-  display: grid;
-  gap: clamp(24px, 5vw, 72px);
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
-}
-
 .copy {
   max-width: 640px;
   padding-top: 16px;
@@ -44,69 +37,11 @@
   max-width: 620px;
 }
 
-.reassurance {
+.accountArea {
   display: grid;
-  gap: 10px;
-  margin-top: 24px;
-  max-width: 680px;
-}
-
-.reassuranceItem {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(74, 38, 53, 0.12);
-  border-radius: 8px;
-  box-shadow: 0 16px 42px rgba(72, 35, 50, 0.08);
-  padding: 14px 16px;
-}
-
-.reassuranceItem h2 {
-  color: #3b202b;
-  font-size: 0.98rem;
-  font-weight: 900;
-  line-height: 1.35;
-  margin: 0;
-}
-
-.reassuranceItem p {
-  color: rgba(59, 32, 43, 0.66);
-  font-size: 0.92rem;
-  line-height: 1.5;
-  margin-top: 5px;
-}
-
-.steps {
-  counter-reset: start-step;
-  display: grid;
-  gap: 12px;
-  list-style: none;
-  margin: 28px 0 0;
-  padding: 0;
-}
-
-.steps li {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(74, 38, 53, 0.12);
-  border-radius: 8px;
-  display: grid;
-  font-weight: 800;
-  gap: 12px;
-  grid-template-columns: 28px 1fr;
-  padding: 12px 14px;
-  counter-increment: start-step;
-}
-
-.steps li::before {
-  align-items: center;
-  background: #d94f86;
-  border-radius: 999px;
-  color: #fff;
-  content: counter(start-step);
-  display: inline-flex;
-  font-size: 0.85rem;
-  height: 28px;
-  justify-content: center;
-  width: 28px;
+  gap: 14px;
+  margin-top: clamp(22px, 4vw, 34px);
+  max-width: 640px;
 }
 
 .form {
@@ -123,12 +58,6 @@
   overflow: hidden;
   padding: clamp(20px, 3vw, 30px);
   position: relative;
-}
-
-.formColumn {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
 }
 
 .formStack {
@@ -422,13 +351,11 @@
     padding-top: 28px;
   }
 
-  .grid,
   .split {
     grid-template-columns: 1fr;
   }
 
   .copy {
-    display: contents;
     padding-top: 0;
   }
 
@@ -443,16 +370,6 @@
     font-size: 1rem;
     line-height: 1.62;
     order: 2;
-  }
-
-  .reassurance {
-    margin-top: 18px;
-    order: 4;
-  }
-
-  .steps {
-    margin-top: 20px;
-    order: 5;
   }
 
   .form {

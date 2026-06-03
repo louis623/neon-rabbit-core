@@ -270,25 +270,6 @@ export function StartSparkleSuiteForm() {
           <h2>Account creation</h2>
         </div>
 
-        <label className={styles.termsCheck}>
-          <input
-            name="agreementAccepted"
-            type="checkbox"
-            value="true"
-            checked={agreementAccepted}
-            onChange={(event) => setAgreementAccepted(event.currentTarget.checked)}
-          />
-          <span>
-            I agree to the{' '}
-            <a href="/terms-and-conditions" target="_blank" rel="noreferrer">
-              Sparkle Suite Terms
-            </a>
-            .
-          </span>
-        </label>
-
-        {error ? <div className={styles.error}>{error}</div> : null}
-
         <div className={styles.formActions}>
           <button
             type="button"
@@ -314,6 +295,25 @@ export function StartSparkleSuiteForm() {
             Sign in instead
           </a>
         </div>
+
+        <label className={styles.termsCheck}>
+          <input
+            name="agreementAccepted"
+            type="checkbox"
+            value="true"
+            checked={agreementAccepted}
+            onChange={(event) => setAgreementAccepted(event.currentTarget.checked)}
+          />
+          <span>
+            I agree to the{' '}
+            <a href="/terms-and-conditions" target="_blank" rel="noreferrer">
+              Sparkle Suite Terms
+            </a>
+            .
+          </span>
+        </label>
+
+        {error ? <div className={styles.error}>{error}</div> : null}
 
         {emailSignupOpen ? (
           <form
