@@ -27,9 +27,14 @@ const migrationPath = path.join(
   process.cwd(),
   'supabase/migrations/20260602143000_ss_required_nic_nac_setup.sql',
 )
+const exposureMigrationPath = path.join(
+  process.cwd(),
+  'supabase/migrations/20260603124344_expose_required_setup_tables_to_data_api.sql',
+)
 
 describe('self-serve required setup migration', () => {
   const sql = readFileSync(migrationPath, 'utf8')
+  const exposureSql = readFileSync(exposureMigrationPath, 'utf8')
 
   it('creates the required setup session table with the locked dashboard state machine', () => {
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS self_serve_setup_sessions')
@@ -87,6 +92,19 @@ describe('self-serve required setup migration', () => {
     expect(sql).toContain('USING (false)')
     expect(sql).toContain('WITH CHECK (false)')
     expect(sql).not.toContain('user_metadata')
+  })
+
+  it('explicitly grants Data API access for the server-side setup flow', () => {
+    expect(exposureSql).toContain(
+      'GRANT SELECT ON self_serve_setup_sessions TO authenticated',
+    )
+    expect(exposureSql).toContain(
+      'GRANT ALL ON self_serve_setup_sessions TO service_role',
+    )
+    expect(exposureSql).toContain(
+      'GRANT ALL ON light_box_fulfillment_tasks TO service_role',
+    )
+    expect(exposureSql).not.toContain('TO anon')
   })
 })
 
