@@ -150,7 +150,7 @@
 .nicNacLauncher:global(.sparkle-landing-v2) :global(.sl2-nic-nac__button) {
   background: linear-gradient(135deg, #ff4cae 0%, #d81b87 100%);
   box-shadow: none;
-  color: #fff6fb;
+  color: #ffffff;
 }
 
 .form::before {
@@ -285,7 +285,7 @@
   border: 0;
   border-radius: 999px;
   box-shadow: 0 16px 32px rgba(216, 27, 135, 0.18);
-  color: #fff6fb;
+  color: #ffffff;
   cursor: pointer;
   font: inherit;
   font-weight: 900;
@@ -296,8 +296,9 @@
 .form button:disabled {
   background: linear-gradient(135deg, #ff4cae 0%, #d81b87 100%);
   box-shadow: none;
+  color: #ffffff;
   cursor: default;
-  opacity: 0.78;
+  opacity: 1;
 }
 
 .form .secondaryButton {
