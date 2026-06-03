@@ -21,6 +21,24 @@ type CheckoutResponse = {
   error?: string
 }
 
+type ReviewerSmokeState =
+  | 'checkout_required'
+  | 'required_setup'
+  | 'dashboard_unlocked'
+
+type ReviewerSmokeResponse =
+  | {
+      ok: true
+      email: string
+      password: string
+      next: string
+      state: ReviewerSmokeState
+    }
+  | {
+      ok?: false
+      error?: string
+    }
+
 function isSignupSuccess(
   payload: SignupResponse | null,
 ): payload is Extract<SignupResponse, { ok: true }> {
@@ -35,15 +53,111 @@ function firstFieldError(
 }
 
 export function StartSparkleSuiteForm() {
+  const [reviewToken] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    return new URLSearchParams(window.location.search).get('review')?.trim() ?? ''
+  })
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] =
     useState<Record<string, string[]> | undefined>()
   const [busy, setBusy] = useState(false)
+  const [reviewerBusy, setReviewerBusy] = useState<ReviewerSmokeState | null>(
+    null,
+  )
+  const [reviewerError, setReviewerError] = useState<string | null>(null)
+
+  async function startReviewerSmoke(state: ReviewerSmokeState) {
+    setReviewerBusy(state)
+    setReviewerError(null)
+    setError(null)
+    setFieldErrors(undefined)
+
+    try {
+      const response = await fetch('/api/reviewer-smoke/session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: reviewToken, state }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | ReviewerSmokeResponse
+        | null
+
+      if (!response.ok || payload?.ok !== true) {
+        const message =
+          payload && 'error' in payload ? payload.error : undefined
+        throw new Error(message ?? 'Reviewer smoke mode is not available.')
+      }
+
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: payload.email,
+        password: payload.password,
+      })
+      if (signInError) throw signInError
+
+      const separator = payload.next.includes('?') ? '&' : '?'
+      window.location.href = `${payload.next}${separator}review=${encodeURIComponent(reviewToken)}`
+    } catch (caught) {
+      setReviewerError(
+        caught instanceof Error
+          ? caught.message
+          : 'Reviewer smoke mode did not start.',
+      )
+    } finally {
+      setReviewerBusy(null)
+    }
+  }
 
   return (
-    <form
-      className={styles.form}
-      onSubmit={async (event) => {
+    <div className={styles.formStack}>
+      {reviewToken ? (
+        <section className={styles.reviewerPanel} aria-label="Reviewer smoke mode">
+          <div>
+            <span>Reviewer smoke mode</span>
+            <h3>Use safe test data</h3>
+            <p>
+              Start a reusable test rep so you can review the customer path
+              without personal data, live charges, or provider side effects.
+            </p>
+          </div>
+          <div className={styles.reviewerActions}>
+            <button
+              type="button"
+              onClick={() => startReviewerSmoke('checkout_required')}
+              disabled={reviewerBusy !== null || busy}
+            >
+              {reviewerBusy === 'checkout_required'
+                ? 'Preparing...'
+                : 'Start fresh review run'}
+            </button>
+            <button
+              type="button"
+              onClick={() => startReviewerSmoke('required_setup')}
+              disabled={reviewerBusy !== null || busy}
+            >
+              {reviewerBusy === 'required_setup'
+                ? 'Preparing...'
+                : 'Skip to Nic-Nac setup'}
+            </button>
+            <button
+              type="button"
+              onClick={() => startReviewerSmoke('dashboard_unlocked')}
+              disabled={reviewerBusy !== null || busy}
+            >
+              {reviewerBusy === 'dashboard_unlocked'
+                ? 'Preparing...'
+                : 'Open dashboard preview'}
+            </button>
+          </div>
+          {reviewerError ? (
+            <p className={styles.reviewerError}>{reviewerError}</p>
+          ) : null}
+        </section>
+      ) : null}
+      <form
+        className={styles.form}
+        onSubmit={async (event) => {
         event.preventDefault()
         setBusy(true)
         setError(null)
@@ -211,6 +325,7 @@ export function StartSparkleSuiteForm() {
       >
         Continue with Google
       </button>
-    </form>
+      </form>
+    </div>
   )
 }

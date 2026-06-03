@@ -62,10 +62,18 @@ export function CheckoutRequiredHome({
   busy,
   error,
   onStartCheckout,
+  reviewerMode = false,
+  reviewerBusy = false,
+  reviewerError = null,
+  onSimulateReviewerCheckout,
 }: {
   busy: boolean
   error: string | null
   onStartCheckout: () => void
+  reviewerMode?: boolean
+  reviewerBusy?: boolean
+  reviewerError?: string | null
+  onSimulateReviewerCheckout?: () => void
 }) {
   return (
     <main className={`${styles.root} ${styles.checkoutRoot}`}>
@@ -96,6 +104,28 @@ export function CheckoutRequiredHome({
           >
             {busy ? 'Opening Stripe...' : 'Continue to secure Stripe checkout'}
           </button>
+          {reviewerMode ? (
+            <div className={styles.reviewerPanel}>
+              <span>Reviewer smoke mode - test data only</span>
+              <p>
+                Use this to continue the customer path without a live charge or
+                real shipping details.
+              </p>
+              {reviewerError ? (
+                <p className={styles.errorText}>{reviewerError}</p>
+              ) : null}
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={onSimulateReviewerCheckout}
+                disabled={reviewerBusy}
+              >
+                {reviewerBusy
+                  ? 'Simulating checkout...'
+                  : 'Simulate paid checkout'}
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>

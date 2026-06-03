@@ -60,3 +60,36 @@ when `NODE_ENV=production`.
 Stop the smoke if `/api/self-serve/setup-state` returns a configuration error,
 if Stripe Checkout opens in live mode, if the return page stays on loading, or if
 the app shows the unlocked dashboard before required Nic-Nac setup is complete.
+
+## Reviewer Smoke Mode
+
+Use reviewer smoke mode when Louis needs to review the customer path without
+personal data or a real payment attempt.
+
+Required preview/local env:
+
+```env
+SPARKLE_REVIEWER_SMOKE_MODE=true
+SPARKLE_REVIEWER_SMOKE_TOKEN=long-random-preview-token
+SPARKLE_REVIEWER_SMOKE_EMAIL=sparkle-reviewer+preview@neonrabbit.net
+SPARKLE_REVIEWER_SMOKE_PASSWORD=preview-only-password
+SPARKLE_REVIEWER_SMOKE_DISPLAY_NAME=Britt Test Rep
+```
+
+Open:
+
+```text
+/start?review=long-random-preview-token
+```
+
+Then choose:
+
+1. `Start fresh review run` to reset the reusable reviewer rep and land on the
+   checkout-required page.
+2. `Simulate paid checkout` to continue to required Nic-Nac setup without Stripe
+   or shipping data.
+3. `Skip to Nic-Nac setup` when reviewing the required setup page directly.
+4. `Open dashboard preview` when reviewing the unlocked dashboard state.
+
+Reviewer smoke mode is blocked in production and requires the token. The UI is
+visibly labeled as test data only.

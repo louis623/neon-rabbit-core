@@ -1,0 +1,46 @@
+# Sparkle Suite Reviewer Smoke Standard
+
+Customer-facing Sparkle Suite work is not ready for Louis review until Louis can
+walk the full customer path with safe reviewer data.
+
+## Required Standard
+
+Every signup, checkout, onboarding, customer-site, Nic-Nac, Live queue, Trade
+board, email, SMS, and dashboard workflow must include:
+
+- a Vercel preview URL or explicit local URL
+- safe reviewer/test data
+- no need for Louis to use personal information
+- no live charges or live customer/provider side effects
+- a reset or reseed path for repeated testing
+- clear visual labeling when review mode is active
+- documented steps from first page to final expected state
+- tests proving review mode is disabled in production
+
+## Reviewer Mode Rules
+
+Reviewer mode must be gated by environment and token. It may run in local
+development or Vercel preview. It must not run in production.
+
+Reviewer mode should use one reusable QA persona instead of disposable accounts:
+
+- display name: `Britt Test Rep`
+- email: configured by `SPARKLE_REVIEWER_SMOKE_EMAIL`
+- password: configured by `SPARKLE_REVIEWER_SMOKE_PASSWORD`
+
+The default flow should reset the QA persona to the checkout-required state, then
+let Louis either open test Stripe checkout or simulate paid checkout when the
+goal is only to review the customer-facing pages.
+
+## Required Handoff
+
+When handing a customer-facing feature to Louis, include:
+
+- preview URL
+- reviewer URL with token omitted from public notes unless Louis supplied it
+- exact click path
+- what is real vs simulated
+- reset instructions
+- verification commands run
+
+If any item is missing, say so plainly before calling the work ready.

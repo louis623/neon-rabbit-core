@@ -69,6 +69,12 @@ type StripeSyncResponse = {
   error?: string
 }
 
+type ReviewerCheckoutResponse = {
+  ok?: boolean
+  next?: string
+  error?: string
+}
+
 export default function NicNacClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -76,6 +82,7 @@ export default function NicNacClient() {
   const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
   const billingState = searchParams.get('billing')
   const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
+  const reviewerToken = searchParams.get('review')?.trim() ?? ''
   const isFinalizingCheckout =
     wantsRequiredSetup &&
     billingState === 'subscription-success' &&
@@ -88,6 +95,10 @@ export default function NicNacClient() {
   const [setupStateError, setSetupStateError] = useState<string | null>(null)
   const [checkoutBusy, setCheckoutBusy] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [reviewerCheckoutBusy, setReviewerCheckoutBusy] = useState(false)
+  const [reviewerCheckoutError, setReviewerCheckoutError] = useState<string | null>(
+    null,
+  )
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [historyState, setHistoryState] = useState<{
@@ -541,6 +552,41 @@ export default function NicNacClient() {
     }
   }, [])
 
+  const handleSimulateReviewerCheckout = useCallback(async () => {
+    if (!reviewerToken) return
+    setReviewerCheckoutBusy(true)
+    setReviewerCheckoutError(null)
+
+    try {
+      const res = await fetch('/api/reviewer-smoke/checkout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: reviewerToken }),
+      })
+      const body = (await res.json().catch(() => null)) as
+        | ReviewerCheckoutResponse
+        | null
+
+      if (!res.ok || !body?.next) {
+        throw new Error(
+          body?.error ?? 'Reviewer checkout simulation did not finish.',
+        )
+      }
+
+      const separator = body.next.includes('?') ? '&' : '?'
+      window.location.href = `${body.next}${separator}review=${encodeURIComponent(reviewerToken)}`
+    } catch (err) {
+      setReviewerCheckoutError(
+        err instanceof Error
+          ? err.message
+          : 'Reviewer checkout simulation did not finish.',
+      )
+    } finally {
+      setReviewerCheckoutBusy(false)
+    }
+  }, [reviewerToken])
+
   const chatContent = isReady ? (
     <NicNacChatBody
       key={conversationId}
@@ -573,6 +619,10 @@ export default function NicNacClient() {
           busy={checkoutBusy}
           error={checkoutError}
           onStartCheckout={handleStartCheckout}
+          reviewerMode={reviewerToken.length > 0}
+          reviewerBusy={reviewerCheckoutBusy}
+          reviewerError={reviewerCheckoutError}
+          onSimulateReviewerCheckout={handleSimulateReviewerCheckout}
         />
       </div>
     )
