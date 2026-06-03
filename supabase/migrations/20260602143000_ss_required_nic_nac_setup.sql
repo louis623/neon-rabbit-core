@@ -56,29 +56,62 @@ CREATE INDEX IF NOT EXISTS idx_light_box_fulfillment_tasks_needs_order_due
 ALTER TABLE self_serve_setup_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE light_box_fulfillment_tasks ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY self_serve_setup_sessions_own_select
-  ON self_serve_setup_sessions
-  FOR SELECT
-  TO authenticated
-  USING (
-    auth.uid() IS NOT NULL
-    AND EXISTS (
-      SELECT 1 FROM reps
-      WHERE reps.auth_user_id = auth.uid()
-      AND reps.id = self_serve_setup_sessions.rep_id
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'self_serve_setup_sessions'
+      AND policyname = 'self_serve_setup_sessions_own_select'
+  ) THEN
+    CREATE POLICY self_serve_setup_sessions_own_select
+      ON self_serve_setup_sessions
+      FOR SELECT
+      TO authenticated
+      USING (
+        auth.uid() IS NOT NULL
+        AND EXISTS (
+          SELECT 1 FROM reps
+          WHERE reps.auth_user_id = auth.uid()
+          AND reps.id = self_serve_setup_sessions.rep_id
+        )
+      );
+  END IF;
+END
+$$;
 
-CREATE POLICY self_serve_setup_sessions_service_only_writes
-  ON self_serve_setup_sessions
-  FOR ALL
-  TO authenticated
-  USING (false)
-  WITH CHECK (false);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'self_serve_setup_sessions'
+      AND policyname = 'self_serve_setup_sessions_service_only_writes'
+  ) THEN
+    CREATE POLICY self_serve_setup_sessions_service_only_writes
+      ON self_serve_setup_sessions
+      FOR ALL
+      TO authenticated
+      USING (false)
+      WITH CHECK (false);
+  END IF;
+END
+$$;
 
-CREATE POLICY light_box_fulfillment_tasks_service_only
-  ON light_box_fulfillment_tasks
-  FOR ALL
-  TO authenticated
-  USING (false)
-  WITH CHECK (false);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'light_box_fulfillment_tasks'
+      AND policyname = 'light_box_fulfillment_tasks_service_only'
+  ) THEN
+    CREATE POLICY light_box_fulfillment_tasks_service_only
+      ON light_box_fulfillment_tasks
+      FOR ALL
+      TO authenticated
+      USING (false)
+      WITH CHECK (false);
+  END IF;
+END
+$$;
