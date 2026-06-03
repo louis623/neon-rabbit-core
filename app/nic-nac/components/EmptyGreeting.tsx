@@ -10,9 +10,10 @@ export function EmptyGreeting({
   if (mode === 'required_setup') {
     return (
       <div className={styles.greeting}>
-        Welcome to Sparkle Suite. I&apos;ll guide setup one step at a time.
-        We&apos;ll start with account basics: your display name, business name,
-        contact details, and rep-facing profile.
+        Welcome to your new Sparkle Suite. I&apos;m Nic-Nac, your built-in setup
+        assistant. I&apos;ll guide you one step at a time so we can get your
+        workspace and customer-facing site ready. Let&apos;s start with your name.
+        What should I call you?
       </div>
     )
   }
