@@ -1,9 +1,8 @@
 .page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 14% 12%, rgba(255, 247, 244, 0.9), transparent 34%),
-    linear-gradient(135deg, rgba(255, 247, 244, 0.96), rgba(252, 232, 230, 0.86)),
-    #fff7f4;
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.84), transparent 34%),
+    linear-gradient(180deg, #fffdfc 0%, #fbf5f2 48%, #f6ede8 100%);
   color: #3b202b;
   font-family: var(--font-prelaunch-sans), system-ui, sans-serif;
 }
@@ -45,12 +44,10 @@
 }
 
 .form {
-  background:
-    radial-gradient(circle at 18% 0%, rgba(238, 44, 155, 0.18), transparent 32%),
-    linear-gradient(145deg, #402924 0%, #36221d 100%);
+  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
   border: 1px solid rgba(246, 231, 218, 0.16);
   border-radius: 8px;
-  box-shadow: 0 28px 80px rgba(72, 35, 50, 0.24);
+  box-shadow: 0 24px 58px rgba(54, 34, 29, 0.18);
   color: #f6e7da;
   display: grid;
   gap: 15px;
@@ -151,15 +148,15 @@
 }
 
 .form::before {
-  background: linear-gradient(90deg, #ee2c9b, #ffd4ea, #f6e7da);
+  background: #ee2c9b;
   content: "";
-  height: 4px;
+  height: 3px;
   inset: 0 0 auto;
   position: absolute;
 }
 
 .formHead span {
-  color: #ffd4ea;
+  color: rgba(246, 231, 218, 0.82);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -191,7 +188,7 @@
 
 .form input {
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(255, 212, 234, 0.24);
+  border: 1px solid rgba(246, 231, 218, 0.2);
   border-radius: 6px;
   box-sizing: border-box;
   color: #3b202b;
@@ -240,8 +237,8 @@
 }
 
 .accountNotice {
-  background: rgba(255, 246, 250, 0.1);
-  border: 1px solid rgba(255, 212, 234, 0.2);
+  background: rgba(246, 231, 218, 0.08);
+  border: 1px solid rgba(246, 231, 218, 0.14);
   border-radius: 6px;
   color: #fff6fa;
   padding: 11px 12px;
@@ -249,8 +246,8 @@
 
 .termsCheck {
   align-items: start;
-  background: rgba(255, 246, 250, 0.08);
-  border: 1px solid rgba(255, 212, 234, 0.2);
+  background: rgba(246, 231, 218, 0.06);
+  border: 1px solid rgba(246, 231, 218, 0.16);
   border-radius: 6px;
   display: grid;
   grid-template-columns: 18px 1fr;
@@ -295,8 +292,8 @@
 }
 
 .form .secondaryButton {
-  background: rgba(255, 246, 250, 0.08);
-  border: 1px solid rgba(255, 212, 234, 0.3);
+  background: rgba(246, 231, 218, 0.08);
+  border: 1px solid rgba(246, 231, 218, 0.24);
   color: #fff6fa;
 }
 
@@ -311,12 +308,12 @@
   font-size: 0.88rem;
   font-weight: 900;
   justify-self: center;
-  text-decoration-color: rgba(255, 212, 234, 0.48);
+  text-decoration-color: rgba(246, 231, 218, 0.4);
   text-underline-offset: 3px;
 }
 
 .emailSignupPanel {
-  border-top: 1px solid rgba(255, 212, 234, 0.2);
+  border-top: 1px solid rgba(246, 231, 218, 0.16);
   margin-top: 2px;
   padding-top: 15px;
 }
@@ -338,8 +335,8 @@
 }
 
 .form .closePanelButton {
-  background: rgba(255, 246, 250, 0.08);
-  border: 1px solid rgba(255, 212, 234, 0.26);
+  background: rgba(246, 231, 218, 0.08);
+  border: 1px solid rgba(246, 231, 218, 0.22);
   color: #fff6fa;
   font-size: 0.82rem;
   min-height: 34px;

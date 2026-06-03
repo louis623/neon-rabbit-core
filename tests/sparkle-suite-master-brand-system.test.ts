@@ -33,8 +33,9 @@ function extractMarkdownFileReferences(content: string) {
 }
 
 function extractSection(content: string, heading: string) {
+  const normalizedContent = content.replace(/\r\n/g, '\n')
   const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const match = content.match(
+  const match = normalizedContent.match(
     new RegExp(`${escapedHeading}\\n\\n([\\s\\S]*?)(?=\\n## |$)`),
   )
 
@@ -181,6 +182,10 @@ describe('Sparkle Suite master brand system', () => {
     expect(checklist).toContain('Does this sound like Sparkle Suite?')
     expect(checklist).toContain('Does Nic-Nac feel useful instead of gimmicky?')
     expect(checklist).toContain('If this is email or SMS, are channel-specific compliance rules being respected?')
+    expect(checklist).toContain('## Visual UI check')
+    expect(checklist).toContain('did you compare it against `/prelaunch` and the current landing page')
+    expect(checklist).toContain('decorative card glows')
+    expect(checklist).toContain('solid warm dark panels')
 
     const homepage = read('docs/sparkle-suite/brand/playbooks/homepage-and-signup.md')
     expect(homepage).toContain('Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic-nac-positioning.md`.')
@@ -405,6 +410,11 @@ describe('Sparkle Suite master brand system', () => {
     expect(productionKit).toContain('A better customer experience starts with a better rep setup.')
     expect(productionKit).toContain('Join the Waitlist')
     expect(productionKit).toContain('Do not use these as the base for public-facing visuals:')
+    expect(productionKit).toContain('## Public UI implementation rules')
+    expect(productionKit).toContain('Keep pink mostly in primary CTAs, small accent text, small icons, simple rules, and thin borders.')
+    expect(productionKit).toContain('Do not add decorative pink glows, halos, or pink washes around cards or panels.')
+    expect(productionKit).toContain('Do not use pink-to-cream gradient strips on cards unless Louis explicitly approves that pattern.')
+    expect(productionKit).toContain('Dark cards should read as solid warm dark panels with restrained borders')
 
     const retiredImportedFiles = [
       'docs/drive-import/sparkle-suite/design/SS_DesignKit_Velvet.md',

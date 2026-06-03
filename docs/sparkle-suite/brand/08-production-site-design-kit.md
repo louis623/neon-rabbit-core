@@ -111,6 +111,18 @@ Do not replace this with purple-only kit buttons, black buttons, or loud neon gr
 - Shadows are present but restrained
 - Dark sections use the warm dark panel color, not pure black
 
+## Public UI implementation rules
+
+Use these rules for signup, checkout-start, onboarding, pricing, and other public-facing product-flow pages:
+
+- Match the current `/prelaunch` page and the current landing page before adding new visual treatments.
+- Keep pink mostly in primary CTAs, small accent text, small icons, simple rules, and thin borders.
+- Do not add decorative pink glows, halos, or pink washes around cards or panels.
+- Do not use pink-to-cream gradient strips on cards unless Louis explicitly approves that pattern.
+- Dark cards should read as solid warm dark panels with restrained borders, not gradient-showcase cards.
+- White cards should stay clean, quiet, and practical with thin hairlines and restrained shadows.
+- If a new page feels like a separate campaign brand, stop and simplify it back toward the approved public site.
+
 ## Brand mark
 
 - Use the simple Sparkle Suite `S` seal
