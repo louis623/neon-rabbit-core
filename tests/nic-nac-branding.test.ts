@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { NicNacMark } from '@/app/_components/nic-nac-mark'
 import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
@@ -61,6 +62,25 @@ describe('Nic-Nac branding copy', () => {
     expect(chipsHtml).toContain('What do you need from me?')
     expect(chipsHtml).not.toContain('What&#x27;s on my board?')
     expect(chipsHtml).not.toContain('Remove a listing')
+  })
+
+  it('uses the approved bright pink circle with a white N for every shared Nic-Nac mark', () => {
+    const markHtml = renderToStaticMarkup(createElement(NicNacMark, { size: 34 }))
+    const markCss = readFileSync(
+      resolve(process.cwd(), 'app/_components/nic-nac-mark.module.css'),
+      'utf8',
+    )
+
+    expect(markHtml).toContain('N')
+    expect(markHtml).toContain('width:34px')
+    expect(markHtml).toContain('height:34px')
+    expect(markCss).toContain('background: #ee2c9b')
+    expect(markCss).toContain('color: #ffffff')
+    expect(markCss).toContain('border-radius: 999px')
+    expect(markCss).toContain('font-family: "DM Sans"')
+    expect(markCss).not.toContain('var(--nic-nac-accent')
+    expect(markCss).not.toContain('var(--nic-nac-text-on-accent')
+    expect(markCss).not.toContain('box-shadow')
   })
 
   it('keeps required setup styling on the production Sparkle Suite palette', () => {
