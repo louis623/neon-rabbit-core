@@ -28,9 +28,9 @@ Reviewer mode should use one reusable QA persona instead of disposable accounts:
 - email: configured by `SPARKLE_REVIEWER_SMOKE_EMAIL`
 - password: configured by `SPARKLE_REVIEWER_SMOKE_PASSWORD`
 
-The default flow should reset the QA persona to the checkout-required state, then
-let Louis either open test Stripe checkout or simulate paid checkout when the
-goal is only to review the customer-facing pages.
+The default flow should reset the QA persona and open Stripe Checkout directly.
+Do not add an extra customer-facing page whose only purpose is to make Louis
+press another button before checkout or setup.
 
 ## Required Handoff
 

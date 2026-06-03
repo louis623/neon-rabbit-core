@@ -33,16 +33,14 @@ Production and Vercel preview runs must use the deployed app URL for
 1. Open `/start`.
 2. Create a new rep account with email and password, or use Google sign-in if
    the preview auth callback is configured.
-3. Confirm the app sends the signed-in rep to
-   `/nic-nac?onboarding=checkout-required`.
-4. Confirm the first screen is focused on secure monthly checkout and light-box
-   shipping details, without empty dashboard sections.
-5. Click `Continue to secure Stripe checkout`.
-6. In Stripe test checkout, use card `4242 4242 4242 4242`, any future expiry,
+3. Confirm the app opens Stripe Checkout directly. If the signed-in rep resumes
+   at `/nic-nac?onboarding=checkout-required`, the app should immediately open
+   checkout rather than render a separate checkout page.
+4. In Stripe test checkout, use card `4242 4242 4242 4242`, any future expiry,
    any CVC, and any ZIP.
-7. Confirm Stripe returns to
+5. Confirm Stripe returns to
    `/nic-nac?onboarding=required-setup&billing=subscription-success&session_id=...`.
-8. Confirm the page loads the required Nic-Nac setup experience with the first
+6. Confirm the page loads the required Nic-Nac setup experience with the first
    setup step ready, not the full dashboard and not a permanent loading state.
 
 If the webhook is not running, the Nic-Nac return page calls `/api/stripe/sync`
@@ -84,12 +82,9 @@ Open:
 
 Then choose:
 
-1. `Start fresh review run` to reset the reusable reviewer rep and land on the
-   checkout-required page.
-2. `Simulate paid checkout` to continue to required Nic-Nac setup without Stripe
-   or shipping data.
-3. `Skip to Nic-Nac setup` when reviewing the required setup page directly.
-4. `Open dashboard preview` when reviewing the unlocked dashboard state.
+1. `Start smoke checkout` to reset the reusable reviewer rep and open Stripe
+   Checkout without a Sparkle-hosted pre-checkout page.
+2. `Open dashboard preview` when reviewing the unlocked dashboard state.
 
 Reviewer smoke mode is blocked in production and requires the token. The UI is
 visibly labeled as test data only.

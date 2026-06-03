@@ -115,30 +115,22 @@ export function StartSparkleSuiteForm() {
         <section className={styles.reviewerPanel} aria-label="Reviewer smoke mode">
           <div>
             <span>Reviewer smoke mode</span>
-            <h3>Use safe test data</h3>
+            <h3>Review the customer path</h3>
             <p>
-              Start a reusable test rep so you can review the customer path
-              without personal data, live charges, or provider side effects.
+              Reset the reusable test rep and open checkout without using your
+              personal account details.
             </p>
           </div>
           <div className={styles.reviewerActions}>
             <button
               type="button"
+              className={styles.reviewerPrimaryAction}
               onClick={() => startReviewerSmoke('checkout_required')}
               disabled={reviewerBusy !== null || busy}
             >
               {reviewerBusy === 'checkout_required'
                 ? 'Preparing...'
-                : 'Start fresh review run'}
-            </button>
-            <button
-              type="button"
-              onClick={() => startReviewerSmoke('required_setup')}
-              disabled={reviewerBusy !== null || busy}
-            >
-              {reviewerBusy === 'required_setup'
-                ? 'Preparing...'
-                : 'Skip to Nic-Nac setup'}
+                : 'Start smoke checkout'}
             </button>
             <button
               type="button"

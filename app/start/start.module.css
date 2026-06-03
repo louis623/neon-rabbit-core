@@ -209,6 +209,13 @@
   padding: 10px 14px;
 }
 
+.reviewerActions .reviewerPrimaryAction {
+  background: #ee2c9b;
+  border-color: #ee2c9b;
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(238, 44, 155, 0.22);
+}
+
 .reviewerActions button:disabled {
   cursor: default;
   opacity: 0.58;

@@ -11,10 +11,7 @@ import { NicNacChatBody } from './components/NicNacChatBody'
 import { NicNacColumn } from './components/NicNacColumn'
 import { NicNacGlyph } from './components/NicNacGlyph'
 import { NicNacMobileShell } from './components/NicNacMobileShell'
-import {
-  CheckoutRequiredHome,
-  RequiredSetupHome,
-} from './components/RequiredSetupHome'
+import { RequiredSetupHome } from './components/RequiredSetupHome'
 import {
   buildConversationStateUrl,
   getConversationIdFromSearch,
@@ -69,12 +66,6 @@ type StripeSyncResponse = {
   error?: string
 }
 
-type ReviewerCheckoutResponse = {
-  ok?: boolean
-  next?: string
-  error?: string
-}
-
 export default function NicNacClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -82,7 +73,6 @@ export default function NicNacClient() {
   const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
   const billingState = searchParams.get('billing')
   const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
-  const reviewerToken = searchParams.get('review')?.trim() ?? ''
   const isFinalizingCheckout =
     wantsRequiredSetup &&
     billingState === 'subscription-success' &&
@@ -95,10 +85,7 @@ export default function NicNacClient() {
   const [setupStateError, setSetupStateError] = useState<string | null>(null)
   const [checkoutBusy, setCheckoutBusy] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
-  const [reviewerCheckoutBusy, setReviewerCheckoutBusy] = useState(false)
-  const [reviewerCheckoutError, setReviewerCheckoutError] = useState<string | null>(
-    null,
-  )
+  const checkoutRedirectStartedRef = useRef(false)
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [historyState, setHistoryState] = useState<{
@@ -552,40 +539,24 @@ export default function NicNacClient() {
     }
   }, [])
 
-  const handleSimulateReviewerCheckout = useCallback(async () => {
-    if (!reviewerToken) return
-    setReviewerCheckoutBusy(true)
-    setReviewerCheckoutError(null)
-
-    try {
-      const res = await fetch('/api/reviewer-smoke/checkout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ token: reviewerToken }),
-      })
-      const body = (await res.json().catch(() => null)) as
-        | ReviewerCheckoutResponse
-        | null
-
-      if (!res.ok || !body?.next) {
-        throw new Error(
-          body?.error ?? 'Reviewer checkout simulation did not finish.',
-        )
-      }
-
-      const separator = body.next.includes('?') ? '&' : '?'
-      window.location.href = `${body.next}${separator}review=${encodeURIComponent(reviewerToken)}`
-    } catch (err) {
-      setReviewerCheckoutError(
-        err instanceof Error
-          ? err.message
-          : 'Reviewer checkout simulation did not finish.',
-      )
-    } finally {
-      setReviewerCheckoutBusy(false)
+  useEffect(() => {
+    if (
+      !isCheckoutRequiredMode ||
+      setupStateStatus !== 'ready' ||
+      checkoutRedirectStartedRef.current ||
+      checkoutError
+    ) {
+      return
     }
-  }, [reviewerToken])
+
+    checkoutRedirectStartedRef.current = true
+    void handleStartCheckout()
+  }, [
+    checkoutError,
+    handleStartCheckout,
+    isCheckoutRequiredMode,
+    setupStateStatus,
+  ])
 
   const chatContent = isReady ? (
     <NicNacChatBody
@@ -614,16 +585,23 @@ export default function NicNacClient() {
 
   if (isCheckoutRequiredMode) {
     return (
-      <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
-        <CheckoutRequiredHome
-          busy={checkoutBusy}
-          error={checkoutError}
-          onStartCheckout={handleStartCheckout}
-          reviewerMode={reviewerToken.length > 0}
-          reviewerBusy={reviewerCheckoutBusy}
-          reviewerError={reviewerCheckoutError}
-          onSimulateReviewerCheckout={handleSimulateReviewerCheckout}
-        />
+      <div className={shellStyles.root}>
+        <div className={shellStyles.loading}>
+          {checkoutError ? checkoutError : 'Opening checkout...'}
+          {checkoutError ? (
+            <button
+              type="button"
+              className={shellStyles.retryLink}
+              disabled={checkoutBusy}
+              onClick={() => {
+                checkoutRedirectStartedRef.current = true
+                void handleStartCheckout()
+              }}
+            >
+              Try again
+            </button>
+          ) : null}
+        </div>
       </div>
     )
   }

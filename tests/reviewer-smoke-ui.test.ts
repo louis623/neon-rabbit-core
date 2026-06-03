@@ -11,7 +11,7 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
     'utf8',
   )
-  const checkoutHome = readFileSync(
+  const requiredSetupHome = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
     'utf8',
   )
@@ -22,17 +22,20 @@ describe('reviewer smoke UI wiring', () => {
 
   it('adds reviewer controls to the start page without replacing normal signup', () => {
     expect(startForm).toContain('/api/reviewer-smoke/session')
-    expect(startForm).toContain('Start fresh review run')
-    expect(startForm).toContain('Skip to Nic-Nac setup')
+    expect(startForm).toContain('Start smoke checkout')
     expect(startForm).toContain('Open dashboard preview')
+    expect(startForm).not.toContain('Review checkout recovery')
     expect(startForm).toContain('/api/self-serve/signup')
   })
 
-  it('adds a clearly labeled simulated checkout path only for reviewer mode', () => {
-    expect(nicNacClient).toContain('/api/reviewer-smoke/checkout')
-    expect(nicNacClient).toContain("searchParams.get('review')")
-    expect(checkoutHome).toContain('Reviewer smoke mode - test data only')
-    expect(checkoutHome).toContain('Simulate paid checkout')
+  it('opens checkout automatically instead of rendering a duplicate checkout page', () => {
+    expect(nicNacClient).toContain('/api/stripe/create-checkout')
+    expect(nicNacClient).toContain('void handleStartCheckout()')
+    expect(nicNacClient).not.toContain('/api/reviewer-smoke/checkout')
+    expect(nicNacClient).not.toContain('void handleSimulateReviewerCheckout()')
+    expect(nicNacClient).not.toContain('CheckoutRequiredHome')
+    expect(requiredSetupHome).not.toContain('Simulate paid checkout')
+    expect(requiredSetupHome).not.toContain('Secure checkout')
   })
 
   it('captures reviewer smoke path as a standard process', () => {
