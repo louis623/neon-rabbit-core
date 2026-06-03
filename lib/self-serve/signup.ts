@@ -39,6 +39,13 @@ export function selfServeSignupEnabled(env: NodeJS.ProcessEnv = process.env) {
   const flag = env.SPARKLE_SELF_SERVE_ENABLED?.trim().toLowerCase()
   if (flag === 'true') return true
   if (flag === 'false') return false
+  const reviewerFlag = env.SPARKLE_REVIEWER_SMOKE_MODE?.trim().toLowerCase()
+  if (
+    env.VERCEL_ENV === 'preview' &&
+    (reviewerFlag === 'true' || reviewerFlag === '1')
+  ) {
+    return true
+  }
   return env.NODE_ENV !== 'production'
 }
 

@@ -79,8 +79,15 @@ function createAdminMock() {
 }
 
 describe('POST /api/self-serve/signup', () => {
+  const originalNodeEnv = process.env.NODE_ENV
+  const originalVercelEnv = process.env.VERCEL_ENV
+  const originalReviewerSmokeMode = process.env.SPARKLE_REVIEWER_SMOKE_MODE
+
   beforeEach(() => {
     createAdminClientMock.mockReset()
+    process.env.NODE_ENV = originalNodeEnv
+    process.env.VERCEL_ENV = originalVercelEnv
+    process.env.SPARKLE_REVIEWER_SMOKE_MODE = originalReviewerSmokeMode
     process.env.SPARKLE_SELF_SERVE_ENABLED = 'true'
   })
 
@@ -212,6 +219,8 @@ describe('POST /api/self-serve/signup', () => {
 
   it('stays closed when self-serve is not enabled', async () => {
     process.env.SPARKLE_SELF_SERVE_ENABLED = 'false'
+    process.env.VERCEL_ENV = 'preview'
+    process.env.SPARKLE_REVIEWER_SMOKE_MODE = 'true'
 
     const response = await POST(
       new Request('http://localhost/api/self-serve/signup', {
@@ -230,6 +239,35 @@ describe('POST /api/self-serve/signup', () => {
     await expect(response.json()).resolves.toEqual({
       code: 'SELF_SERVE_NOT_OPEN',
       error: 'Sparkle Suite self-serve signup is not open yet.',
+    })
+  })
+
+  it('opens in Vercel preview when reviewer smoke mode is enabled', async () => {
+    delete process.env.SPARKLE_SELF_SERVE_ENABLED
+    process.env.NODE_ENV = 'production'
+    process.env.VERCEL_ENV = 'preview'
+    process.env.SPARKLE_REVIEWER_SMOKE_MODE = 'true'
+
+    const admin = createAdminMock()
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Preview Buyer',
+          email: 'preview@example.com',
+          password: 'Sparkle2026!',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(201)
+    expect(admin.createUser).toHaveBeenCalledWith({
+      email: 'preview@example.com',
+      password: 'Sparkle2026!',
+      email_confirm: true,
     })
   })
 
