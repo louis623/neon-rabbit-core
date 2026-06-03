@@ -8,13 +8,16 @@ export type NicNacWorkspaceMode =
 
 export function resolveNicNacWorkspaceMode({
   setupStatus,
+  isCheckoutSuccessReturn = false,
   wantsCheckout,
   wantsRequiredSetup,
 }: {
   setupStatus: RequiredSetupStatus | null | undefined
+  isCheckoutSuccessReturn?: boolean
   wantsCheckout: boolean
   wantsRequiredSetup: boolean
 }): NicNacWorkspaceMode {
+  if (isCheckoutSuccessReturn && wantsRequiredSetup) return 'required_setup'
   if (setupStatus === 'dashboard_unlocked') return 'dashboard_unlocked'
   if (setupStatus === 'required_setup' || setupStatus === 'setup_blocked') {
     return 'required_setup'

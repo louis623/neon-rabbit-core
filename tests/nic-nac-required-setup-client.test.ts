@@ -42,6 +42,10 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('Stripe checkout sync did not finish')
   })
 
+  it('passes the Stripe success return into workspace mode resolution', () => {
+    expect(client).toContain('isCheckoutSuccessReturn: isFinalizingCheckout')
+  })
+
   it('sends the setup chat mode only during required setup', () => {
     expect(client).toContain("mode: isRequiredSetupMode ? 'required_setup' : 'workspace'")
   })
@@ -96,5 +100,16 @@ describe('required setup client mode precedence', () => {
         wantsRequiredSetup: false,
       }),
     ).toBe('checkout_required')
+  })
+
+  it('keeps the Stripe success return in required setup even if stale preview state says unlocked', () => {
+    expect(
+      resolveNicNacWorkspaceMode({
+        setupStatus: 'dashboard_unlocked',
+        wantsCheckout: false,
+        wantsRequiredSetup: true,
+        isCheckoutSuccessReturn: true,
+      }),
+    ).toBe('required_setup')
   })
 })

@@ -247,6 +247,7 @@ export default function NicNacClient() {
   const setupStatus = setupState?.status
   const workspaceMode = resolveNicNacWorkspaceMode({
     setupStatus,
+    isCheckoutSuccessReturn: isFinalizingCheckout,
     wantsCheckout,
     wantsRequiredSetup,
   })
