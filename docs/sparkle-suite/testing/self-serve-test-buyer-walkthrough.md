@@ -37,7 +37,7 @@ Production and Vercel preview runs must use the deployed app URL for
    at `/nic-nac?onboarding=checkout-required`, the app should immediately open
    checkout rather than render a separate checkout page.
 4. In Stripe test checkout, use card `4242 4242 4242 4242`, any future expiry,
-   any CVC, and any ZIP.
+   any CVC, any ZIP, and dummy name, email, phone, and shipping information.
 5. Confirm Stripe returns to
    `/nic-nac?onboarding=required-setup&billing=subscription-success&session_id=...`.
 6. Confirm the page loads the required Nic-Nac setup experience with the first
@@ -84,7 +84,8 @@ Then choose:
 
 1. `Start smoke checkout` to reset the reusable reviewer rep and open Stripe
    Checkout without a Sparkle-hosted pre-checkout page.
-2. `Open dashboard preview` when reviewing the unlocked dashboard state.
+2. `Open setup preview` only when skipping Stripe to inspect the same required
+   Nic-Nac setup state that should appear after successful checkout.
 
-Reviewer smoke mode is blocked in production and requires the token. The UI is
-visibly labeled as test data only.
+Reviewer smoke mode is blocked in production. The UI is visibly labeled as test
+data only.
