@@ -132,6 +132,7 @@ describe('POST /api/stripe/create-checkout', () => {
           'https://sparkle-suite.example/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
         cancel_url:
           'https://sparkle-suite.example/nic-nac?onboarding=checkout-required&billing=subscription-cancelled',
+        payment_method_types: ['card', 'link'],
         shipping_address_collection: { allowed_countries: ['US'] },
         phone_number_collection: { enabled: true },
         metadata: expect.objectContaining({
@@ -153,6 +154,59 @@ describe('POST /api/stripe/create-checkout', () => {
           }),
         }),
       }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('allows only card and Link payment methods for Sparkle Suite checkout', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-payment-methods',
+      rep: { id: 'rep-payment-methods' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock())
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_payment_methods')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_payment_methods',
+      url: 'https://checkout.stripe.test/cs_payment_methods',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    const createParams = createMock.mock.calls[0]?.[0]
+    expect(createParams).toEqual(
+      expect.objectContaining({
+        payment_method_types: ['card', 'link'],
+      }),
+    )
+    expect(createParams.payment_method_types).not.toEqual(
+      expect.arrayContaining([
+        'affirm',
+        'afterpay_clearpay',
+        'amazon_pay',
+        'cashapp',
+        'klarna',
+      ]),
     )
     expect(response.status).toBe(200)
   })

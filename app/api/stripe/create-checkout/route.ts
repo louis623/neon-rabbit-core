@@ -17,6 +17,8 @@ import { getSelfServeAgreementVersion } from '@/lib/prelaunch/self-serve-agreeme
 const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
 
+const SPARKLE_SUITE_CHECKOUT_PAYMENT_METHODS = ['card', 'link'] as const
+
 function isTestBuyerCheckoutEnabled() {
   return (
     process.env.SPARKLE_STRIPE_TEST_BUYER_MODE === 'true' ||
@@ -151,6 +153,7 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
+      payment_method_types: [...SPARKLE_SUITE_CHECKOUT_PAYMENT_METHODS],
       line_items: pricing.lineItems,
       success_url: `${getAppUrl()}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${getAppUrl()}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
