@@ -147,6 +147,12 @@
   overflow: visible;
 }
 
+.nicNacLauncher:global(.sparkle-landing-v2) :global(.sl2-nic-nac__button) {
+  background: linear-gradient(135deg, #ff4cae 0%, #d81b87 100%);
+  box-shadow: none;
+  color: #fff6fb;
+}
+
 .form::before {
   background: #ee2c9b;
   content: "";
@@ -278,6 +284,7 @@
   background: linear-gradient(135deg, #ff4cae, #d81b87);
   border: 0;
   border-radius: 999px;
+  box-shadow: 0 16px 32px rgba(216, 27, 135, 0.18);
   color: #fff6fb;
   cursor: pointer;
   font: inherit;
@@ -287,13 +294,16 @@
 }
 
 .form button:disabled {
+  background: linear-gradient(135deg, #ff4cae 0%, #d81b87 100%);
+  box-shadow: none;
   cursor: default;
-  opacity: 0.58;
+  opacity: 0.78;
 }
 
 .form .secondaryButton {
   background: rgba(246, 231, 218, 0.08);
   border: 1px solid rgba(246, 231, 218, 0.24);
+  box-shadow: none;
   color: #fff6fa;
 }
 
@@ -337,6 +347,7 @@
 .form .closePanelButton {
   background: rgba(246, 231, 218, 0.08);
   border: 1px solid rgba(246, 231, 218, 0.22);
+  box-shadow: none;
   color: #fff6fa;
   font-size: 0.82rem;
   min-height: 34px;
