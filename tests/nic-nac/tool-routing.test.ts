@@ -303,4 +303,15 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
+
+  it('routes required setup mode to setup tools only', () => {
+    const names = listToolNamesForIntents(['required_setup'])
+
+    expect(names).toEqual([
+      'get_required_setup_state',
+      'save_required_setup_answer',
+      'request_required_setup_support',
+      'unlock_required_setup',
+    ])
+  })
 })

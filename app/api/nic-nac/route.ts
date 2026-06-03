@@ -34,6 +34,7 @@ import {
   buildToolsForIntents,
   getToolIntentsForMessages,
   shouldRequireToolCallForMessages,
+  type NicNacToolIntent,
 } from '@/lib/nic-nac/tools'
 import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
@@ -53,6 +54,7 @@ export const maxDuration = 300
 interface PostBody {
   conversationId: string
   messages: UIMessage[]
+  mode?: 'workspace' | 'required_setup'
 }
 
 // Scan messages for HITL approval-responded parts. AI SDK v6 mutates the
@@ -131,6 +133,7 @@ export async function POST(request: Request) {
   }
 
   const { conversationId, messages } = body
+  const mode = body.mode === 'required_setup' ? 'required_setup' : 'workspace'
 
   console.info('[nic-nac] run', { runId, conversationId, repId })
 
@@ -213,7 +216,10 @@ export async function POST(request: Request) {
     })
   }
 
-  const toolIntents = getToolIntentsForMessages(messages)
+  const toolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? ['required_setup']
+      : getToolIntentsForMessages(messages)
   const requireToolCall = shouldRequireToolCallForMessages(messages, toolIntents)
   const tools = buildToolsForIntents(
     { repId, supabase, conversationId, runId },
@@ -244,6 +250,7 @@ export async function POST(request: Request) {
   const systemPrompt = buildNicNacSystemPrompt({
     intents: toolIntents,
     activeToolNames,
+    mode,
   })
   let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined

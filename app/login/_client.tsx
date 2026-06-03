@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { safeRelativeRedirectPath } from '@/lib/auth/safe-redirect'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginClient() {
@@ -11,6 +12,7 @@ export default function LoginClient() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const redirect = safeRelativeRedirectPath(searchParams.get('redirect'))
 
   return (
     <div
@@ -39,7 +41,6 @@ export default function LoginClient() {
               setError(signErr.message)
               return
             }
-            const redirect = searchParams.get('redirect') || '/nic-nac'
             router.replace(redirect)
           } catch (err) {
             setError((err as Error).message)
@@ -81,6 +82,42 @@ export default function LoginClient() {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          setError(null)
+          setBusy(true)
+          try {
+            const supabase = createClient()
+            const { error: signErr } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirect)}`,
+              },
+            })
+            if (signErr) {
+              setError(signErr.message)
+              setBusy(false)
+            }
+          } catch (err) {
+            setError((err as Error).message)
+            setBusy(false)
+          }
+        }}
+        style={{
+          marginTop: 12,
+          width: '100%',
+          padding: '8px 16px',
+          background: 'white',
+          color: '#111',
+          border: '1px solid #ccc',
+          borderRadius: 4,
+          cursor: busy ? 'default' : 'pointer',
+        }}
+      >
+        Continue with Google
+      </button>
     </div>
   )
 }

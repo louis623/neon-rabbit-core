@@ -2,28 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useChat } from '@ai-sdk/react'
 import {
   DefaultChatTransport,
-  lastAssistantMessageIsCompleteWithApprovalResponses,
-  type FileUIPart,
   type UIMessage,
 } from 'ai'
-import { Bubble } from './components/Bubble'
-import { ChatHistory } from './components/ChatHistory'
-import { Chips } from './components/Chips'
 import { DashboardPlaceholder } from './components/DashboardPlaceholder'
-import { EmptyGreeting } from './components/EmptyGreeting'
-import { ErrorBlock } from './components/ErrorBlock'
-import { HITLBlock } from './components/HITLBlock'
-import { InputRow, type InputAttachment } from './components/InputRow'
-import { StreamingBubble } from './components/StreamingBubble'
-import { ThinkingIndicator } from './components/ThinkingIndicator'
+import { NicNacChatBody } from './components/NicNacChatBody'
 import { NicNacColumn } from './components/NicNacColumn'
 import { NicNacGlyph } from './components/NicNacGlyph'
 import { NicNacMobileShell } from './components/NicNacMobileShell'
-import { compressImage } from '@/lib/nic-nac/image-compress'
-import { orderResolvedAttachments } from '@/lib/nic-nac/client-attachments'
+import {
+  CheckoutRequiredHome,
+  RequiredSetupHome,
+} from './components/RequiredSetupHome'
 import {
   buildConversationStateUrl,
   getConversationIdFromSearch,
@@ -31,23 +22,14 @@ import {
   readJsonResponse,
 } from '@/lib/nic-nac/client-conversation-routing'
 import {
-  findActionableApproval,
-  type ActionableApproval,
-} from '@/lib/nic-nac/hitl-state'
-import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
-import {
   shouldStartNicNacRollover,
   type NicNacConversationRunHealth,
 } from '@/lib/nic-nac/rollover'
-import {
-  getWorkspaceRefreshPartKey,
-  isTradeWorkspaceMutationPart,
-  NIC_NAC_WORKSPACE_REFRESH_EVENT,
-} from '@/lib/nic-nac/workspace-refresh-events'
+import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
+import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'nic_nac_last_conversation'
-const MAX_ATTACHMENTS = 10
 const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)'
 
 function newConversationId() {
@@ -55,17 +37,8 @@ function newConversationId() {
   return `conv_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 }
 
-function newAttachmentId() {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
-  return `att_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
-}
-
 function getInitialDesktopMatch() {
   return true
-}
-
-interface ApprovalResponseFn {
-  (args: { id: string; approved: boolean; reason?: string }): void
 }
 
 type ConversationHydrateResponse = {
@@ -79,11 +52,29 @@ type ConversationRolloverResponse = {
   messages?: UIMessage[]
 }
 
+type SetupStateResponse = {
+  state?: RequiredSetupState
+  error?: string
+}
+
+type CheckoutResponse = {
+  url?: string | null
+  error?: string
+}
+
 export default function NicNacClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isPurchaseOnboardingMode =
-    searchParams.get('onboarding') === 'self-serve-started'
+  const wantsCheckout = searchParams.get('onboarding') === 'checkout-required'
+  const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
+
+  const [setupState, setSetupState] = useState<RequiredSetupState | null>(null)
+  const [setupStateStatus, setSetupStateStatus] = useState<
+    'loading' | 'ready' | 'error'
+  >('loading')
+  const [setupStateError, setSetupStateError] = useState<string | null>(null)
+  const [checkoutBusy, setCheckoutBusy] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [historyState, setHistoryState] = useState<{
@@ -104,8 +95,8 @@ export default function NicNacClient() {
   const [isDesktop, setIsDesktop] = useState(getInitialDesktopMatch)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [desktopOpen, setDesktopOpen] = useState(true)
-  // Lifted from ChatBody so "New conversation" can disable correctly without
-  // a context dance. ChatBody pushes streaming/HITL state up via a callback.
+  // Lifted from the chat body so "New conversation" can disable correctly
+  // without a context dance. The chat body pushes streaming/HITL state up.
   const [chatState, setChatState] = useState<{
     isStreaming: boolean
     hasPendingApproval: boolean
@@ -113,6 +104,70 @@ export default function NicNacClient() {
   const chatStateRef = useRef(chatState)
   const [rolloverInFlight, setRolloverInFlight] = useState(false)
   const rolloverInFlightRef = useRef(false)
+  const wasStreamingRef = useRef(false)
+
+  const loadSetupState = useCallback(
+    async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
+      if (options.showLoading) setSetupStateStatus('loading')
+      setSetupStateError(null)
+      try {
+        const res = await fetch('/api/self-serve/setup-state', {
+          credentials: 'include',
+          signal: options.signal,
+        })
+        if (!res.ok) {
+          const body = (await res.json().catch(() => null)) as
+            | SetupStateResponse
+            | null
+          setSetupState(null)
+          setSetupStateError(body?.error ?? `Couldn't load setup state (${res.status}).`)
+          setSetupStateStatus('error')
+          return
+        }
+        const body = await readJsonResponse<SetupStateResponse>(
+          res,
+          'required setup state',
+        )
+        setSetupState(body.state ?? null)
+        setSetupStateStatus('ready')
+      } catch (err) {
+        if ((err as { name?: string })?.name === 'AbortError') return
+        setSetupState(null)
+        setSetupStateError(`Failed to load setup state: ${(err as Error).message}`)
+        setSetupStateStatus('error')
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void loadSetupState({ signal: controller.signal, showLoading: true })
+    return () => {
+      controller.abort()
+    }
+  }, [loadSetupState])
+
+  const setupStatus = setupState?.status
+  const workspaceMode = resolveNicNacWorkspaceMode({
+    setupStatus,
+    wantsCheckout,
+    wantsRequiredSetup,
+  })
+  const isDashboardUnlocked = workspaceMode === 'dashboard_unlocked'
+  const isRequiredSetupMode = workspaceMode === 'required_setup'
+  const isCheckoutRequiredMode = workspaceMode === 'checkout_required'
+  const shouldUseConversation =
+    setupStateStatus === 'ready' &&
+    !isCheckoutRequiredMode &&
+    (isRequiredSetupMode || isDashboardUnlocked)
+
+  useEffect(() => {
+    const wasStreaming = wasStreamingRef.current
+    wasStreamingRef.current = chatState.isStreaming
+    if (!wasStreaming || chatState.isStreaming || !isRequiredSetupMode) return
+    void loadSetupState()
+  }, [chatState.isStreaming, isRequiredSetupMode, loadSetupState])
 
   useEffect(() => {
     chatStateRef.current = chatState
@@ -179,7 +234,7 @@ export default function NicNacClient() {
   // written for cache consistency but no longer read during init — DB is the
   // source of truth so cross-device sessions land on the same conversation.
   useEffect(() => {
-    if (isPurchaseOnboardingMode) return
+    if (!shouldUseConversation) return
     const controller = new AbortController()
     let cancelled = false
     ;(async () => {
@@ -237,20 +292,20 @@ export default function NicNacClient() {
       cancelled = true
       controller.abort()
     }
-  }, [isPurchaseOnboardingMode, router, searchParams, resolveAttempt])
+  }, [shouldUseConversation, router, searchParams, resolveAttempt])
 
   useEffect(() => {
-    if (isPurchaseOnboardingMode) return
+    if (!shouldUseConversation) return
     const mq = window.matchMedia(DESKTOP_MEDIA_QUERY)
     setIsDesktop(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [isPurchaseOnboardingMode])
+  }, [shouldUseConversation])
 
   // Load persisted history once conversationId is known.
   useEffect(() => {
-    if (isPurchaseOnboardingMode) return
+    if (!shouldUseConversation) return
     if (!conversationId) return
     let cancelled = false
     ;(async () => {
@@ -311,7 +366,7 @@ export default function NicNacClient() {
     return () => {
       cancelled = true
     }
-  }, [conversationId, isPurchaseOnboardingMode, rolloverConversation])
+  }, [conversationId, shouldUseConversation, rolloverConversation])
 
   // Desktop Escape minimizes (only if no HITL pending).
   useEffect(() => {
@@ -334,10 +389,14 @@ export default function NicNacClient() {
     return new DefaultChatTransport({
       api: '/api/nic-nac',
       prepareSendMessagesRequest: ({ messages }) => ({
-        body: { conversationId, messages },
+        body: {
+          conversationId,
+          messages,
+          mode: isRequiredSetupMode ? 'required_setup' : 'workspace',
+        },
       }),
     })
-  }, [conversationId])
+  }, [conversationId, isRequiredSetupMode])
 
   const initialMessages =
     conversationId && historyState.conversationId === conversationId
@@ -350,7 +409,7 @@ export default function NicNacClient() {
   const isReady = conversationId && transport && initialMessages !== null
 
   // "New conversation" — rotate the id, replace URL, clear local state.
-  // ChatBody re-mounts via key={conversationId} so useChat resets cleanly.
+  // The chat body re-mounts via key={conversationId} so useChat resets cleanly.
   const handleNewConversation = useCallback(() => {
     if (chatState.isStreaming || chatState.hasPendingApproval) return
     activateConversation(newConversationId(), [])
@@ -358,8 +417,34 @@ export default function NicNacClient() {
 
   const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
 
+  const handleStartCheckout = useCallback(async () => {
+    setCheckoutBusy(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          planType: 'monthly',
+          agreementAccepted: true,
+        }),
+      })
+      const body = (await res.json().catch(() => null)) as CheckoutResponse | null
+      if (!res.ok || !body?.url) {
+        throw new Error(body?.error ?? 'Unable to open Stripe checkout.')
+      }
+      window.location.href = body.url
+    } catch (err) {
+      setCheckoutError(
+        err instanceof Error ? err.message : 'Unable to open Stripe checkout.',
+      )
+      setCheckoutBusy(false)
+    }
+  }, [])
+
   const chatContent = isReady ? (
-    <ChatBody
+    <NicNacChatBody
       key={conversationId}
       conversationId={conversationId!}
       transport={transport!}
@@ -383,10 +468,38 @@ export default function NicNacClient() {
     <div className={shellStyles.loading}>{initLoadError ?? 'Loading…'}</div>
   )
 
-  if (isPurchaseOnboardingMode) {
+  if (setupStateStatus === 'loading') {
     return (
       <div className={shellStyles.root}>
-        <DashboardPlaceholder />
+        <div className={shellStyles.loading}>Loading setup...</div>
+      </div>
+    )
+  }
+
+  if (setupStateStatus === 'error') {
+    return (
+      <div className={shellStyles.root}>
+        <div className={shellStyles.loading}>{setupStateError}</div>
+      </div>
+    )
+  }
+
+  if (isCheckoutRequiredMode) {
+    return (
+      <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
+        <CheckoutRequiredHome
+          busy={checkoutBusy}
+          error={checkoutError}
+          onStartCheckout={handleStartCheckout}
+        />
+      </div>
+    )
+  }
+
+  if (isRequiredSetupMode && setupState) {
+    return (
+      <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
+        <RequiredSetupHome state={setupState} chat={chatContent} />
       </div>
     )
   }
@@ -435,657 +548,5 @@ export default function NicNacClient() {
         </NicNacMobileShell>
       )}
     </div>
-  )
-}
-
-function ChatBody({
-  conversationId,
-  transport,
-  initialMessages,
-  onChatStateChange,
-  onRolloverRecommended,
-}: {
-  conversationId: string
-  transport: DefaultChatTransport<UIMessage>
-  initialMessages: UIMessage[]
-  onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
-  onRolloverRecommended: (conversationId: string) => Promise<boolean>
-  resetSignal: string
-}) {
-  // Server-owned ThinkingIndicator state machine. The server emits transient
-  // `data-thinking` parts with phase: 'show' | 'confirm' | 'hide'. The client
-  // only owns presentation timing (150ms provisional debounce, 800ms confirmed
-  // minimum). `activeMessageIdRef` outlives provisional hides so a later
-  // confirm for the same message can re-show — supports preamble→tool and
-  // tool→text→tool sequences.
-  const [thinkingFor, setThinkingFor] = useState<string | null>(null)
-  const thinkingForRef = useRef<string | null>(null)
-  useEffect(() => {
-    thinkingForRef.current = thinkingFor
-  }, [thinkingFor])
-  const activeMessageIdRef = useRef<string | null>(null)
-  const confirmedRef = useRef(false)
-  const shownAtRef = useRef<number | null>(null)
-  const showTimerRef = useRef<number | null>(null)
-  const hideTimerRef = useRef<number | null>(null)
-
-  const clearShowTimer = useCallback(() => {
-    if (showTimerRef.current !== null) {
-      window.clearTimeout(showTimerRef.current)
-      showTimerRef.current = null
-    }
-  }, [])
-  const clearHideTimer = useCallback(() => {
-    if (hideTimerRef.current !== null) {
-      window.clearTimeout(hideTimerRef.current)
-      hideTimerRef.current = null
-    }
-  }, [])
-
-  const requestShow = useCallback(
-    (id: string) => {
-      if (activeMessageIdRef.current !== id) {
-        clearShowTimer()
-        clearHideTimer()
-        activeMessageIdRef.current = id
-        confirmedRef.current = false
-        shownAtRef.current = null
-        setThinkingFor(null)
-      }
-      if (thinkingForRef.current === id) return
-      clearShowTimer()
-      showTimerRef.current = window.setTimeout(() => {
-        showTimerRef.current = null
-        shownAtRef.current = Date.now()
-        setThinkingFor(id)
-      }, 150)
-    },
-    [clearShowTimer, clearHideTimer]
-  )
-
-  const confirmThinking = useCallback(
-    (id: string) => {
-      if (activeMessageIdRef.current !== id) {
-        clearShowTimer()
-        clearHideTimer()
-        activeMessageIdRef.current = id
-      }
-      confirmedRef.current = true
-      clearShowTimer()
-      // Stamp shownAtRef so the 800ms minimum has a fresh basis when
-      // upgrading from provisional → confirmed (or re-confirming after a
-      // prior hide in a tool→text→tool sequence).
-      shownAtRef.current = Date.now()
-      if (thinkingForRef.current !== id) {
-        setThinkingFor(id)
-      }
-    },
-    [clearShowTimer, clearHideTimer]
-  )
-
-  const requestHide = useCallback(
-    (id: string) => {
-      if (activeMessageIdRef.current !== id) return
-      clearShowTimer()
-      // Not visible: cancel pending show, clear confirmation, but KEEP
-      // activeMessageIdRef so a later confirm for this same id can resurrect.
-      if (thinkingForRef.current !== id) {
-        confirmedRef.current = false
-        shownAtRef.current = null
-        return
-      }
-      // Visible + unconfirmed: hide immediately. KEEP activeMessageIdRef.
-      if (!confirmedRef.current) {
-        setThinkingFor(null)
-        confirmedRef.current = false
-        shownAtRef.current = null
-        return
-      }
-      // Visible + confirmed: enforce 800ms minimum from the last show.
-      const elapsed = Date.now() - (shownAtRef.current ?? Date.now())
-      const remaining = Math.max(0, 800 - elapsed)
-      clearHideTimer()
-      hideTimerRef.current = window.setTimeout(() => {
-        hideTimerRef.current = null
-        setThinkingFor(null)
-        confirmedRef.current = false
-        shownAtRef.current = null
-        // activeMessageIdRef stays — supports tool-text-tool resumption.
-      }, remaining)
-    },
-    [clearShowTimer, clearHideTimer]
-  )
-
-  const {
-    messages,
-    sendMessage,
-    addToolApprovalResponse,
-    status,
-    error,
-    regenerate,
-    clearError,
-    setMessages,
-  } = useChat({
-    transport,
-    messages: initialMessages,
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
-    onData: (dataPart) => {
-      if (dataPart.type !== 'data-thinking') return
-      const data = dataPart.data as {
-        phase: 'show' | 'confirm' | 'hide'
-        messageId: string
-      }
-      if (data.phase === 'show') requestShow(data.messageId)
-      else if (data.phase === 'confirm') confirmThinking(data.messageId)
-      else if (data.phase === 'hide') requestHide(data.messageId)
-    },
-  })
-
-  const [draft, setDraft] = useState('')
-  const [attachments, setAttachments] = useState<InputAttachment[]>([])
-  const [attachmentNotice, setAttachmentNotice] = useState<string | null>(null)
-  // Per-message failure tracking for inline retry. Stores the original parts
-  // so retry sends the full payload (text + images) even after attachments
-  // were cleared on submit.
-  const [failedMessages, setFailedMessages] = useState<
-    Map<string, { parts: UIMessage['parts'] }>
-  >(new Map())
-  const [pendingOptimisticCreated, setPendingOptimisticCreated] = useState<{
-    stamp: number
-    previousLatestUserId: string | null
-  } | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const prevStatusRef = useRef<typeof status>(status)
-  const announcedWorkspaceRefreshPartsRef = useRef<Set<string>>(new Set())
-
-  const isStreaming = status === 'streaming' || status === 'submitted'
-  // Actionable only if the LAST assistant message has an approval-requested
-  // part in its LAST step. Mirrors AI SDK's
-  // `lastAssistantMessageIsCompleteWithApprovalResponses` — anything older
-  // is historical and `addToolApprovalResponse` (which only mutates the
-  // last message) can't even target it. Treating older approval-requested
-  // parts as live would resurrect dead cards on reload and lock the input.
-  const actionableApproval = useMemo(
-    () => findActionableApproval(messages),
-    [messages]
-  )
-  const hasPendingApproval = actionableApproval !== null
-
-  const refreshConversationMessages = useCallback(async () => {
-    if (!conversationId || status !== 'ready' || hasPendingApproval) return
-
-    const res = await fetch(buildConversationStateUrl(conversationId), {
-      credentials: 'include',
-    })
-    if (!res.ok) return
-
-    const body = (await readJsonResponse<ConversationHydrateResponse>(
-      res,
-      'conversation history',
-    ).catch(() => null)) as
-      | ConversationHydrateResponse
-      | null
-    if (!body?.messages) return
-    if (shouldStartNicNacRollover(body.runHealth)) {
-      void onRolloverRecommended(conversationId)
-      return
-    }
-
-    setMessages((current) => mergeServerMessages(current, body.messages ?? []))
-  }, [conversationId, hasPendingApproval, onRolloverRecommended, setMessages, status])
-
-  useEffect(() => {
-    if (!conversationId || status !== 'ready' || hasPendingApproval) return
-
-    const refreshIfIdle = () => {
-      if (document.visibilityState === 'hidden') return
-      void refreshConversationMessages()
-    }
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible') {
-        void refreshConversationMessages()
-      }
-    }
-
-    document.addEventListener('visibilitychange', refreshWhenVisible)
-    window.addEventListener('focus', refreshIfIdle)
-    window.addEventListener('online', refreshIfIdle)
-    const intervalId = window.setInterval(refreshIfIdle, 45_000)
-
-    return () => {
-      document.removeEventListener('visibilitychange', refreshWhenVisible)
-      window.removeEventListener('focus', refreshIfIdle)
-      window.removeEventListener('online', refreshIfIdle)
-      window.clearInterval(intervalId)
-    }
-  }, [conversationId, hasPendingApproval, refreshConversationMessages, status])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    let shouldRefreshTrade = false
-    for (const message of messages) {
-      for (const [index, part] of (message.parts ?? []).entries()) {
-        if (!isTradeWorkspaceMutationPart(part as never)) continue
-        const key = getWorkspaceRefreshPartKey(message, part, index)
-        if (announcedWorkspaceRefreshPartsRef.current.has(key)) continue
-        announcedWorkspaceRefreshPartsRef.current.add(key)
-        shouldRefreshTrade = true
-      }
-    }
-
-    if (shouldRefreshTrade) {
-      window.dispatchEvent(
-        new CustomEvent(NIC_NAC_WORKSPACE_REFRESH_EVENT, {
-          detail: { topic: 'trade' },
-        }),
-      )
-    }
-  }, [messages])
-
-  // Push streaming + HITL state up so the parent can disable the New button.
-  useEffect(() => {
-    onChatStateChange({ isStreaming, hasPendingApproval })
-  }, [isStreaming, hasPendingApproval, onChatStateChange])
-
-  // Auto-focus input when streaming completes (ready/error transitions), and
-  // fire a terminal ThinkingIndicator hide as a safety net in case the server
-  // didn't (e.g. transport-level error before the finally clause ran).
-  useEffect(() => {
-    if (prevStatusRef.current !== status) {
-      if (
-        prevStatusRef.current === 'streaming' ||
-        prevStatusRef.current === 'submitted'
-      ) {
-        textareaRef.current?.focus()
-      }
-      if (
-        (status === 'error' || status === 'ready') &&
-        activeMessageIdRef.current
-      ) {
-        requestHide(activeMessageIdRef.current)
-      }
-      prevStatusRef.current = status
-    }
-  }, [status, requestHide])
-
-  const currentFailedMessage =
-    status === 'error' && error ? findLatestUserMessage(messages) : null
-  const displayedFailedMessages =
-    currentFailedMessage && !failedMessages.has(currentFailedMessage.id)
-      ? new Map(failedMessages).set(currentFailedMessage.id, {
-          parts: currentFailedMessage.parts,
-        })
-      : failedMessages
-
-  const hasError = !!error
-  const hasMessages = messages.length > 0
-  const chipsVisible = !isStreaming && !hasPendingApproval && !hasError
-  const inputAriaDisabled = hasPendingApproval
-  const latestUserId = findLatestUserMessageId(messages)
-  const latestPendingUserId =
-    pendingOptimisticCreated &&
-    latestUserId &&
-    latestUserId !== pendingOptimisticCreated.previousLatestUserId
-      ? latestUserId
-      : null
-
-  const sendWithParts = useCallback(
-    async (parts: UIMessage['parts'], replaceMessageId?: string) => {
-      // Split parts into text + file payload so we hit useChat's
-      // ({ text, files }) overload, which is the canonical send path.
-      const textChunks: string[] = []
-      const files: FileUIPart[] = []
-      for (const p of parts ?? []) {
-        const pt = p as {
-          type?: string
-          text?: string
-          mediaType?: string
-          url?: string
-          filename?: string
-        }
-        if (pt.type === 'text' && typeof pt.text === 'string') {
-          textChunks.push(pt.text)
-        } else if (
-          pt.type === 'file' &&
-          typeof pt.mediaType === 'string' &&
-          typeof pt.url === 'string'
-        ) {
-          files.push({
-            type: 'file',
-            mediaType: pt.mediaType,
-            url: pt.url,
-            ...(pt.filename ? { filename: pt.filename } : {}),
-          })
-        }
-      }
-      const text = textChunks.join('\n').trim()
-      const optimisticId = replaceMessageId
-      try {
-        if (text && files.length > 0) {
-          await sendMessage({
-            text,
-            files,
-            ...(optimisticId ? { messageId: optimisticId } : {}),
-          })
-        } else if (files.length > 0) {
-          await sendMessage({
-            files,
-            ...(optimisticId ? { messageId: optimisticId } : {}),
-          })
-        } else if (text) {
-          await sendMessage({
-            text,
-            ...(optimisticId ? { messageId: optimisticId } : {}),
-          })
-        }
-      } catch {
-        // useChat surfaces error state; no rethrow needed.
-      }
-    },
-    [sendMessage]
-  )
-
-  const handleSubmit = async () => {
-    const text = draft.trim()
-    if (!text && attachments.length === 0) return
-    // Build canonical parts for failure-retry storage.
-    const parts: UIMessage['parts'] = []
-    if (text) parts.push({ type: 'text', text } as unknown as UIMessage['parts'][number])
-    for (const a of attachments) {
-      parts.push({
-        type: 'file',
-        mediaType: a.mediaType,
-        url: a.dataUrl,
-        width: a.width,
-        height: a.height,
-        blurRisk: a.blurRisk,
-        lightingRisk: a.lightingRisk,
-        subjectCoverage: a.subjectCoverage,
-        subjectCentered: a.subjectCentered,
-      } as unknown as UIMessage['parts'][number])
-    }
-    setDraft('')
-    setAttachments([])
-    setAttachmentNotice(null)
-    setPendingOptimisticCreated({
-      stamp: Date.now(),
-      previousLatestUserId: findLatestUserMessageId(messages),
-    })
-    await sendWithParts(parts)
-  }
-
-  const handleChip = (text: string) => {
-    if (hasPendingApproval || isStreaming) return
-    void sendMessage({ text })
-  }
-
-  const handlePickFiles = async (files: FileList | null, _mode: 'gallery' | 'camera') => {
-    if (!files || files.length === 0) return
-    const remainingSlots = MAX_ATTACHMENTS - attachments.length
-    if (remainingSlots <= 0) {
-      setAttachmentNotice(`Max ${MAX_ATTACHMENTS} images per message.`)
-      return
-    }
-    const list = Array.from(files)
-    let notice: string | null = null
-    if (list.length > remainingSlots) {
-      notice = `Kept first ${remainingSlots} — max ${MAX_ATTACHMENTS} per message.`
-    }
-    const slice = list.slice(0, remainingSlots)
-    const failed: string[] = []
-    const results = await Promise.all(
-      slice.map(async (file, index) => {
-        try {
-          const compressed = await compressImage(file)
-          return {
-            index,
-            attachment: {
-              id: newAttachmentId(),
-              dataUrl: compressed.dataUrl,
-              mediaType: 'image/jpeg' as const,
-              width: compressed.width,
-              height: compressed.height,
-              blurRisk: compressed.blurRisk,
-              lightingRisk: compressed.lightingRisk,
-              subjectCoverage: compressed.subjectCoverage,
-              subjectCentered: compressed.subjectCentered,
-            },
-          }
-        } catch {
-          failed.push(file.name || 'image')
-          return null
-        }
-      })
-    )
-    const accepted: InputAttachment[] = orderResolvedAttachments(results)
-    if (accepted.length > 0) {
-      setAttachments((prev) => [...prev, ...accepted].slice(0, MAX_ATTACHMENTS))
-    }
-    if (failed.length > 0) {
-      const detail = failed.length === 1 ? `Couldn't read ${failed[0]}.` : `Couldn't read ${failed.length} files.`
-      notice = notice ? `${notice} ${detail}` : detail
-    }
-    setAttachmentNotice(notice)
-  }
-
-  const handleRemoveAttachment = (id: string) => {
-    setAttachments((prev) => prev.filter((a) => a.id !== id))
-    setAttachmentNotice(null)
-  }
-
-  const handleRetry = useCallback(
-    async (messageId: string) => {
-      const entry = displayedFailedMessages.get(messageId)
-      if (!entry) return
-      setFailedMessages((prev) => {
-        const next = new Map(prev)
-        next.delete(messageId)
-        return next
-      })
-      clearError()
-      // Replace the failed message in place by passing its existing id.
-      await sendWithParts(entry.parts, messageId)
-    },
-    [displayedFailedMessages, clearError, sendWithParts]
-  )
-
-  return (
-    <>
-      <ChatHistory isStreaming={isStreaming}>
-        {!hasMessages ? <EmptyGreeting /> : null}
-        {messages.map((m, idx) => {
-          const ts = readCreatedAt(
-            m,
-            latestPendingUserId,
-            pendingOptimisticCreated?.stamp ?? null
-          )
-          if (m.role === 'user') {
-            const failed = displayedFailedMessages.get(m.id)
-            return (
-              <div key={m.id}>
-                <UserMessage message={m} timestamp={ts} />
-                {failed ? (
-                  <ErrorBlock
-                    variant="inline"
-                    message="Couldn't send. Try again?"
-                    onRetry={() => void handleRetry(m.id)}
-                  />
-                ) : null}
-              </div>
-            )
-          }
-          return (
-            <AssistantMessage
-              key={m.id}
-              message={m}
-              timestamp={ts}
-              isFirstInRun={isFirstNicNacInRun(messages, idx)}
-              isStreamingTail={isStreaming && idx === messages.length - 1}
-              isThinking={thinkingFor === m.id}
-              onApprove={addToolApprovalResponse}
-              actionableApproval={
-                actionableApproval?.messageId === m.id
-                  ? actionableApproval.approval
-                  : null
-              }
-            />
-          )
-        })}
-        {hasError && displayedFailedMessages.size === 0 ? (
-          <ErrorBlock
-            variant="global"
-            message="Couldn't reach Nic-Nac just now. If this keeps happening, let Louis know."
-            onRetry={() => regenerate()}
-          />
-        ) : null}
-      </ChatHistory>
-      <Chips
-        visible={chipsVisible}
-        onPick={handleChip}
-        disabled={isStreaming || hasPendingApproval}
-      />
-      <InputRow
-        ref={textareaRef}
-        value={draft}
-        onChange={setDraft}
-        onSubmit={() => void handleSubmit()}
-        disabled={inputAriaDisabled}
-        isStreaming={isStreaming}
-        attachments={attachments}
-        onPickFiles={handlePickFiles}
-        onRemoveAttachment={handleRemoveAttachment}
-        attachmentNotice={attachmentNotice}
-        placeholder={hasPendingApproval ? 'Approve or cancel above…' : 'Ask Nic-Nac…'}
-      />
-    </>
-  )
-}
-
-function readCreatedAt(
-  m: UIMessage,
-  latestPendingUserId: string | null,
-  pendingStamp: number | null
-): string | number | undefined {
-  const meta = m.metadata as { created_at?: string } | undefined
-  if (meta?.created_at) return meta.created_at
-  return m.id === latestPendingUserId ? pendingStamp ?? undefined : undefined
-}
-
-function findLatestUserMessageId(messages: UIMessage[]): string | null {
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'user') return messages[i].id
-  }
-  return null
-}
-
-function findLatestUserMessage(
-  messages: UIMessage[]
-): { id: string; parts: UIMessage['parts'] } | null {
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'user') {
-      return { id: messages[i].id, parts: messages[i].parts ?? [] }
-    }
-  }
-  return null
-}
-
-function isFirstNicNacInRun(messages: UIMessage[], idx: number): boolean {
-  if (messages[idx]?.role !== 'assistant') return false
-  if (idx === 0) return true
-  return messages[idx - 1]?.role === 'user'
-}
-
-function UserMessage({ message, timestamp }: { message: UIMessage; timestamp?: string | number }) {
-  const parts = message.parts ?? []
-  const text = parts
-    .map((p) => {
-      const pt = p as { type?: string; text?: string }
-      return pt.type === 'text' ? pt.text ?? '' : ''
-    })
-    .join('')
-  const images = parts
-    .filter((p) => {
-      const pt = p as { type?: string; mediaType?: string; url?: string }
-      return (
-        pt.type === 'file' &&
-        typeof pt.mediaType === 'string' &&
-        pt.mediaType.startsWith('image/') &&
-        typeof pt.url === 'string'
-      )
-    })
-    .map((p) => ({ url: (p as { url: string }).url }))
-  if (!text && images.length === 0) return null
-  return (
-    <Bubble variant="rep" text={text || undefined} images={images} timestamp={timestamp} />
-  )
-}
-
-function AssistantMessage({
-  message,
-  timestamp,
-  isFirstInRun,
-  isStreamingTail,
-  isThinking,
-  onApprove,
-  actionableApproval,
-}: {
-  message: UIMessage
-  timestamp?: string | number
-  isFirstInRun: boolean
-  isStreamingTail: boolean
-  isThinking: boolean
-  onApprove: ApprovalResponseFn
-  // Non-null only when this message is the LAST assistant message AND its
-  // last step contains an approval-requested part. Stale historical
-  // approval-requested parts on earlier messages render nothing — the SDK
-  // can't re-target them, and the assistant's resolved reply (or the
-  // normalized terminal state from loadConversationForClient) already
-  // conveys the outcome.
-  actionableApproval: ActionableApproval | null
-}) {
-  const parts = message.parts ?? []
-  const text = parts
-    .map((p) => {
-      const pt = p as { type?: string; text?: string }
-      return pt.type === 'text' ? pt.text ?? '' : ''
-    })
-    .join('')
-
-  // Visibility is server-owned: the route emits transient `data-thinking`
-  // signals (show / confirm / hide) and the parent threads `isThinking` here.
-  // Approval cards always win so they're never hidden behind the rabbit.
-  const showThinking = isThinking && !actionableApproval
-
-  return (
-    <>
-      {showThinking ? (
-        <ThinkingIndicator showGlyph={isFirstInRun} />
-      ) : text ? (
-        isStreamingTail ? (
-          <StreamingBubble text={text} showGlyph={isFirstInRun} timestamp={timestamp} />
-        ) : (
-          <Bubble
-            variant="nicNac"
-            showGlyph={isFirstInRun}
-            text={text}
-            renderMarkdown
-            timestamp={timestamp}
-          />
-        )
-      ) : null}
-      {actionableApproval ? (
-        <Bubble variant="nicNac" showGlyph={!text && isFirstInRun}>
-          <HITLBlock
-            approvalId={actionableApproval.approvalId}
-            toolName={actionableApproval.toolName}
-            args={actionableApproval.input}
-            onRespond={(approved) =>
-              onApprove({ id: actionableApproval.approvalId, approved })
-            }
-          />
-        </Bubble>
-      ) : null}
-    </>
   )
 }

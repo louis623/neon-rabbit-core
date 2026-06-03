@@ -29,7 +29,7 @@ function createAdminMock() {
   }))
 
   const siteSettingsUpsert = vi.fn().mockResolvedValue({ error: null })
-  const onboardingUpsert = vi.fn().mockResolvedValue({ error: null })
+  const setupSessionUpsert = vi.fn().mockResolvedValue({ error: null })
   const smsWalletUpsert = vi.fn().mockResolvedValue({ error: null })
 
   const from = vi.fn((table: string) => {
@@ -40,7 +40,12 @@ function createAdminMock() {
       }
     }
     if (table === 'site_settings') return { upsert: siteSettingsUpsert }
-    if (table === 'onboarding_status') return { upsert: onboardingUpsert }
+    if (table === 'self_serve_setup_sessions') {
+      return { upsert: setupSessionUpsert }
+    }
+    if (table === 'onboarding_status') {
+      throw new Error('onboarding_status should not be written by tiny signup')
+    }
     if (table === 'sms_wallet') return { upsert: smsWalletUpsert }
     throw new Error(`unexpected table ${table}`)
   })
@@ -64,7 +69,7 @@ function createAdminMock() {
     from,
     repsInsert,
     siteSettingsUpsert,
-    onboardingUpsert,
+    setupSessionUpsert,
     smsWalletUpsert,
     createUser,
     deleteUser,
@@ -79,7 +84,7 @@ describe('POST /api/self-serve/signup', () => {
     process.env.SPARKLE_SELF_SERVE_ENABLED = 'true'
   })
 
-  it('creates the self-serve auth user, rep workspace defaults, and onboarding state', async () => {
+  it('creates only the auth user, rep account defaults, and checkout-required setup session', async () => {
     const admin = createAdminMock()
     createAdminClientMock.mockReturnValue(admin)
 
@@ -89,12 +94,8 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'JAMIE@example.com',
           password: 'Sparkle2026!',
-          phone: '303-555-0199',
-          primarySocialUrl: 'https://www.tiktok.com/@jamiehart',
-          emailConsent: true,
         }),
       }),
     )
@@ -108,12 +109,12 @@ describe('POST /api/self-serve/signup', () => {
       auth_user_id: 'auth-self-serve',
       email: 'jamie@example.com',
       display_name: 'Jamie Hart',
-      business_name: 'Jamie Hart Sparkles',
-      phone: '303-555-0199',
+      business_name: 'Jamie Hart',
+      phone: null,
       custom_domain: null,
       shop_link: null,
       streaming_links: {
-        primary: 'https://www.tiktok.com/@jamiehart',
+        primary: null,
         secondary: null,
       },
       social_handles: {},
@@ -123,12 +124,12 @@ describe('POST /api/self-serve/signup', () => {
     expect(admin.siteSettingsUpsert).toHaveBeenCalledWith(
       {
         rep_id: 'rep-self-serve',
-        banner_text: 'Welcome to Jamie Hart Sparkles',
+        banner_text: 'Welcome to Jamie Hart',
         banner_visible: true,
         ticker_text: null,
         ticker_visible: false,
-        tagline: 'A polished place to shop Jamie Hart Sparkles.',
-        team_name: 'Jamie Hart Sparkles',
+        tagline: 'A polished place to shop Jamie Hart.',
+        team_name: 'Jamie Hart',
         show_join_page: true,
         hero_animation_type: 'zoom',
         customer_site_template: 'amethyst',
@@ -136,11 +137,16 @@ describe('POST /api/self-serve/signup', () => {
       },
       { onConflict: 'rep_id' },
     )
-    expect(admin.onboardingUpsert).toHaveBeenCalledWith(
+    expect(admin.setupSessionUpsert).toHaveBeenCalledWith(
       {
         rep_id: 'rep-self-serve',
-        current_stage: 'signup_received',
+        status: 'checkout_required',
+        current_step: 'account_basics',
         completed_steps: ['self_serve_account_created'],
+        answers: {
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+        },
       },
       { onConflict: 'rep_id' },
     )
@@ -160,8 +166,48 @@ describe('POST /api/self-serve/signup', () => {
       ok: true,
       repId: 'rep-self-serve',
       email: 'jamie@example.com',
-      next: '/nic-nac?section=account&onboarding=self-serve-started',
+      next: '/nic-nac?onboarding=checkout-required',
     })
+  })
+
+  it('ignores setup source fields when a tiny signup payload contains legacy extras', async () => {
+    const admin = createAdminMock()
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Jamie Hart',
+          businessName: 'Legacy Business',
+          email: 'jamie@example.com',
+          password: 'Sparkle2026!',
+          phone: '303-555-0199',
+          primarySocialUrl: 'https://www.tiktok.com/@legacy',
+          shopUrl: 'https://legacy.example/shop',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(201)
+    expect(admin.repsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        business_name: 'Jamie Hart',
+        phone: null,
+        shop_link: null,
+        streaming_links: { primary: null, secondary: null },
+      }),
+    )
+    expect(admin.setupSessionUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        answers: {
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+        },
+      }),
+      { onConflict: 'rep_id' },
+    )
   })
 
   it('stays closed when self-serve is not enabled', async () => {
@@ -173,10 +219,8 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
-          emailConsent: true,
         }),
       }),
     )
@@ -196,7 +240,6 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'J',
-          businessName: '',
           email: 'not-an-email',
           password: 'short',
         }),
@@ -209,7 +252,6 @@ describe('POST /api/self-serve/signup', () => {
       code: 'INVALID_INPUT',
       error: 'Please check the signup form and try again.',
       fields: expect.objectContaining({
-        businessName: expect.any(Array),
         displayName: expect.any(Array),
         email: expect.any(Array),
         password: expect.any(Array),
@@ -227,7 +269,6 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
         }),
@@ -252,10 +293,8 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
-          emailConsent: true,
         }),
       }),
     )
@@ -284,10 +323,8 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
-          emailConsent: true,
         }),
       }),
     )
@@ -310,10 +347,8 @@ describe('POST /api/self-serve/signup', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName: 'Jamie Hart',
-          businessName: 'Jamie Hart Sparkles',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
-          emailConsent: true,
         }),
       }),
     )

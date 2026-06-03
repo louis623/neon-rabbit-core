@@ -47,6 +47,7 @@ import {
   sortRosterCustomers,
   searchRosterCustomers,
 } from '@/app/nic-nac/components/DashboardPlaceholder'
+import { getHelpResources } from '@/lib/services/help-resources'
 
 const READY_STATE = {
   status: 'ready' as const,
@@ -369,6 +370,21 @@ const TRADE_BOARD_READY_STATE = {
 }
 
 describe('DashboardPlaceholder', () => {
+  it('keeps help resources out of old first-run checklist framing', () => {
+    const helpText = getHelpResources()
+      .flatMap((resource) => [
+        resource.title,
+        resource.summary,
+        resource.body,
+        ...resource.quickActions,
+      ])
+      .join(' ')
+
+    expect(helpText).not.toContain('after checkout')
+    expect(helpText).not.toContain('setup checklist')
+    expect(helpText).not.toContain('Start setup checklist')
+  })
+
   it('renders the Sparkle Suite Nic-Nac workspace shell', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
@@ -380,34 +396,32 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
-    expect(html).toContain('Setup Checklist')
-    expect(html).toContain('Confirm business/profile basics')
-    expect(html).toContain('Understand the Chrome extension and Live Queue')
-    expect(html).not.toContain('Trade Board</span>')
-    expect(html).not.toContain('Jewelry Library')
-    expect(html).not.toContain('Calendar</span>')
-    expect(html).not.toContain('Business Calculator')
-    expect(html).not.toContain('Team Management')
-    expect(html).not.toContain('Messages</span>')
-    expect(html).not.toContain('Public page copy and branding')
+    expect(html).not.toContain('Setup Checklist')
+    expect(html).not.toContain('Confirm business/profile basics')
+    expect(html).not.toContain('Understand the Chrome extension and Live Queue')
+    expect(html).toContain('Trade Board</span>')
+    expect(html).toContain('Jewelry Library')
+    expect(html).toContain('Calendar</span>')
+    expect(html).toContain('Business Calculator')
+    expect(html).toContain('Team Management')
+    expect(html).toContain('Messages</span>')
+    expect(html).toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
-    expect(html).not.toContain('Listings, requests, queue, and history')
+    expect(html).toContain('Listings, requests, queue, and history')
     expect(html).not.toContain('I confirm I own the piece')
   })
 
-  it('can deep-link new self-serve reps to account billing after signup', () => {
-    expect(
-      getInitialWorkspaceSection('?section=account&onboarding=self-serve-started'),
-    ).toBe('account')
+  it('deep-links workspace sections without self-serve-started first-run routing', () => {
+    expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
-    expect(getInitialWorkspaceSection('?section=unknown')).toBe('setup-checklist')
+    expect(getInitialWorkspaceSection('?section=unknown')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
-      'account',
+      'trade-board',
     )
   })
 
-  it('limits unpaid self-serve reps to setup, help, and account sections', () => {
+  it('keeps the dashboard section list complete for unlocked workspace reps', () => {
     expect(hasPaidWorkspaceSubscription(null)).toBe(false)
     expect(
       hasPaidWorkspaceSubscription({
@@ -425,14 +439,18 @@ describe('DashboardPlaceholder', () => {
       }),
     ).toBe(true)
     expect(getVisibleWorkspaceSections(false).map((section) => section.key)).toEqual([
-      'setup-checklist',
+      'trade-board',
+      'jewelry-library',
+      'show-calendar',
+      'business-calculator',
+      'team-management',
+      'messages',
+      'site-settings',
       'help-resources',
       'account',
     ])
-    expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('account')
-    expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe(
-      'help-resources',
-    )
+    expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
+    expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
   })
 
   it('renders the locked team management add-on skeleton', () => {
@@ -1070,7 +1088,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).toContain('_termsLink_')
     expect(html).toContain(
-      'href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount%26onboarding%3Dself-serve-started"',
+      'href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"',
     )
     expect(html).not.toContain('target="_blank"')
     expect(html).toContain('Continue to secure Stripe checkout')
@@ -1104,22 +1122,21 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Billing history will appear after your first Stripe invoice.')
   })
 
-  it('renders setup checklist rows with statuses and post-checkout actions without depending on Ask Nic-Nac', () => {
+  it('does not render first-run checklist rows from the unlocked dashboard', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
-    expect(html).toContain('Locked until checkout')
-    expect(html).toContain('Ready after checkout')
-    expect(html).toContain('Continue in Site Settings')
-    expect(html).toContain('Open Help &amp; Resources')
-    expect(html).toContain('After checkout')
+    expect(html).not.toContain('Locked until checkout')
+    expect(html).not.toContain('Ready after checkout')
+    expect(html).not.toContain('Continue in Site Settings')
+    expect(html).not.toContain('After checkout')
     expect(html).not.toContain('Ask Nic-Nac')
   })
 
-  it('shows first-start help as a curated choose-your-look step before the full skin gallery', () => {
+  it('shows skin help without depending on self-serve-started onboarding', () => {
     const previousWindow = globalThis.window
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
-      value: { location: { search: '?section=help-resources&onboarding=self-serve-started' } },
+      value: { location: { search: '?section=help-resources' } },
     })
 
     try {
@@ -1135,6 +1152,9 @@ describe('DashboardPlaceholder', () => {
       expect(html).toContain('Black Diamond')
       expect(html).toContain('Rose Gold')
       expect(html).toContain('Garnet')
+      expect(html).not.toContain('Guided first-start')
+      expect(html).not.toContain('after checkout')
+      expect(html).not.toContain('Ready after checkout')
     } finally {
       Object.defineProperty(globalThis, 'window', {
         configurable: true,

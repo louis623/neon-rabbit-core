@@ -48,16 +48,21 @@ function expectsServiceErrorResponse(source: string) {
 }
 
 describe('Nic-Nac paid route boundary', () => {
-  it('keeps self-serve purchase onboarding free of assistant error and floating controls', () => {
+  it('keeps required setup and checkout flows outside the unlocked dashboard shell', () => {
     const source = readRoute('app/nic-nac/_client.tsx')
 
     expect(source).toContain(
-      "searchParams.get('onboarding') === 'self-serve-started'",
+      "searchParams.get('onboarding') === 'checkout-required'",
     )
-    expect(source).toContain('if (isPurchaseOnboardingMode) return')
-    expect(source).toMatch(
-      /if \(isPurchaseOnboardingMode\) \{\s*return \(\s*<div className=\{shellStyles\.root\}>\s*<DashboardPlaceholder \/>\s*<\/div>\s*\)\s*\}/,
+    expect(source).toContain(
+      "searchParams.get('onboarding') === 'required-setup'",
     )
+    expect(source).toContain('isCheckoutRequiredMode')
+    expect(source).toContain('isRequiredSetupMode')
+    expect(source).toContain('<RequiredSetupHome')
+    expect(source).toContain("planType: 'monthly'")
+    expect(source).toContain('agreementAccepted: true')
+    expect(source).not.toContain("onboarding') === 'self-serve-started'")
   })
 
   it('keeps product and chat routes behind paid workspace access', () => {

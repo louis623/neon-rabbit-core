@@ -39,6 +39,10 @@ import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { customerAudienceTool } from './get-customer-audience'
 import { getHelpResourcesTool } from './get-help-resources'
+import { getRequiredSetupStateTool } from './get-required-setup-state'
+import { saveRequiredSetupAnswerTool } from './save-required-setup-answer'
+import { requestRequiredSetupSupportTool } from './request-required-setup-support'
+import { unlockRequiredSetupTool } from './unlock-required-setup'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
 import type { ToolContext, ToolDefinition } from './types'
@@ -73,6 +77,10 @@ const REGISTRY: ToolDefinition[] = [
   getNotificationPreferencesTool,
   customerAudienceTool,
   getHelpResourcesTool,
+  getRequiredSetupStateTool,
+  saveRequiredSetupAnswerTool,
+  requestRequiredSetupSupportTool,
+  unlockRequiredSetupTool,
 ]
 
 export type NicNacToolIntent =
@@ -87,6 +95,7 @@ export type NicNacToolIntent =
   | 'notification'
   | 'audience'
   | 'resources'
+  | 'required_setup'
 
 const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   memory: ['read_recent_rep_notes', 'write_rep_note'],
@@ -121,6 +130,12 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   ],
   audience: ['get_customer_audience', 'get_notification_preferences'],
   resources: ['get_help_resources'],
+  required_setup: [
+    'get_required_setup_state',
+    'save_required_setup_answer',
+    'request_required_setup_support',
+    'unlock_required_setup',
+  ],
 }
 
 const REGISTRY_BY_NAME = new Map(REGISTRY.map((def) => [def.name, def]))

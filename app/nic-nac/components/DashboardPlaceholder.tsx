@@ -21,7 +21,6 @@ import type {
   WalletTransactionSummary,
 } from '@/lib/services/types'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
-import { getSelfServeOnboardingChecklist } from '@/lib/services/self-serve-onboarding'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
@@ -30,7 +29,6 @@ import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-lan
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
-  { key: 'setup-checklist', label: 'Setup Checklist', subtitle: 'First-run setup path with Nic-Nac' },
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
@@ -110,22 +108,13 @@ const WORKSPACE_SECTION_KEYS = new Set<string>(
   WORKSPACE_SECTIONS.map((section) => section.key),
 )
 
-const UNPAID_WORKSPACE_SECTION_KEYS = new Set<WorkspaceSectionKey>([
-  'setup-checklist',
-  'help-resources',
-  'account',
-])
-
 export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
   const requested = params.get('section')?.trim() ?? ''
   if (WORKSPACE_SECTION_KEYS.has(requested)) {
     return requested as WorkspaceSectionKey
   }
-  if (params.get('onboarding') === 'self-serve-started') {
-    return 'account'
-  }
-  return 'setup-checklist'
+  return 'trade-board'
 }
 
 export function hasPaidWorkspaceSubscription(
@@ -135,21 +124,15 @@ export function hasPaidWorkspaceSubscription(
   return status === 'active' || status === 'trialing' || status === 'past_due'
 }
 
-export function getVisibleWorkspaceSections(hasPaidWorkspace: boolean) {
-  if (hasPaidWorkspace) return WORKSPACE_SECTIONS
-  return WORKSPACE_SECTIONS.filter((section) =>
-    UNPAID_WORKSPACE_SECTION_KEYS.has(section.key),
-  )
+export function getVisibleWorkspaceSections(_hasPaidWorkspace: boolean) {
+  return WORKSPACE_SECTIONS
 }
 
 export function resolveWorkspaceSectionForAccess(
   section: WorkspaceSectionKey,
-  hasPaidWorkspace: boolean,
+  _hasPaidWorkspace: boolean,
 ): WorkspaceSectionKey {
-  if (hasPaidWorkspace || UNPAID_WORKSPACE_SECTION_KEYS.has(section)) {
-    return section
-  }
-  return 'account'
+  return section
 }
 
 export type RosterFilter =
@@ -390,21 +373,6 @@ const FIRST_START_SKIN_RECOMMENDATIONS = [
     reason: 'Confident red accents for high-energy show branding.',
   },
 ] as const
-
-const SETUP_ACTION_BY_ID: Record<string, { label: string; target: WorkspaceSectionKey }> = {
-  'business-profile': { label: 'Continue in Site Settings', target: 'site-settings' },
-  'skin-and-branding': { label: 'Open Help & Resources', target: 'help-resources' },
-  'public-links': { label: 'Continue in Site Settings', target: 'site-settings' },
-  'site-copy': { label: 'Continue in Site Settings', target: 'site-settings' },
-  shows: { label: 'Open Calendar', target: 'show-calendar' },
-  'trade-board': { label: 'Open Trade Board', target: 'trade-board' },
-  calculator: { label: 'Open Calculator', target: 'business-calculator' },
-  'chrome-extension-live-queue': {
-    label: 'Open Help & Resources',
-    target: 'help-resources',
-  },
-  'publish-readiness': { label: 'Review live site', target: 'site-settings' },
-}
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -1021,7 +989,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>(() =>
       typeof window === 'undefined'
-        ? 'setup-checklist'
+        ? 'trade-board'
         : getInitialWorkspaceSection(window.location.search),
     )
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
@@ -2465,7 +2433,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         <aside className={styles.workspaceSidebar}>
           <div className={styles.workspaceSidebarTitle}>Dashboard</div>
           <div className={styles.workspaceSidebarIntro}>
-            Start with checkout review, then unlock the guided setup steps for your public site.
+            Manage the live workspace, customer site, trade tools, messages, and account settings.
           </div>
           <nav className={styles.workspaceNav}>
             {visibleWorkspaceSections.map((section) => {
@@ -2505,15 +2473,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </nav>
         </aside>
         <section className={styles.workspaceContent}>
-          {activeSection === 'setup-checklist' ? (
-            <div className={styles.workspaceSectionStack}>
-              <SetupChecklistCard
-                hasPaidWorkspace={hasPaidWorkspace}
-                onSelectSection={setActiveSection}
-              />
-            </div>
-          ) : null}
-
           {hasPaidWorkspace && activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
@@ -2785,7 +2744,7 @@ export function TradeBoardWorkspaceCard({
                   <span className={styles.metricLabel}>Top type</span>
                   <span className={styles.metricValue}>
                     {Object.entries(boardSummary.typeBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ??
-                      '—'}
+                      '-'}
                   </span>
                 </div>
               </div>
@@ -2862,9 +2821,9 @@ export function TradeBoardWorkspaceCard({
                           {' '}
                           {listing.design.type_prefix}
                           {listing.design.collection?.name
-                            ? ` · ${listing.design.collection.name}`
+                            ? ` - ${listing.design.collection.name}`
                             : ''}
-                          {listing.listed_at ? ` · Listed ${formatCompactDate(listing.listed_at)}` : ''}
+                          {listing.listed_at ? ` - Listed ${formatCompactDate(listing.listed_at)}` : ''}
                         </div>
                         <div className={styles.helperNote}>
                           Image source: {getTradeListingPhotoSourceLabel(listing)}
@@ -2976,7 +2935,7 @@ export function TradeBoardWorkspaceCard({
                     <div className={styles.tradeIdentity}>
                       <div className={styles.customerName}>{request.customerName}</div>
                       <div className={styles.customerDate}>
-                        Wants {request.listing.design.itemNumber} · {request.listing.design.designName}
+                        Wants {request.listing.design.itemNumber} - {request.listing.design.designName}
                       </div>
                       <div className={styles.helperNote}>{request.customerDescription}</div>
                     </div>
@@ -3035,7 +2994,7 @@ export function TradeBoardWorkspaceCard({
                       <div className={styles.tradeIdentity}>
                         <div className={styles.customerName}>{item.customerName}</div>
                         <div className={styles.customerDate}>
-                          {item.itemNumber} · {item.designName}
+                          {item.itemNumber} - {item.designName}
                         </div>
                         <div className={styles.helperNote}>
                           {item.daysSinceLastUpdate} day(s) since last update
@@ -3104,13 +3063,13 @@ export function TradeBoardWorkspaceCard({
                 <div className={styles.metricBlock}>
                   <span className={styles.metricLabel}>Avg days</span>
                   <span className={styles.metricValue}>
-                    {history.summary.avgFulfillmentDays?.toFixed(1) ?? '—'}
+                    {history.summary.avgFulfillmentDays?.toFixed(1) ?? '-'}
                   </span>
                 </div>
                 <div className={styles.metricBlock}>
                   <span className={styles.metricLabel}>Top design</span>
                   <span className={styles.metricValue}>
-                    {history.summary.topDesign?.itemNumber ?? '—'}
+                    {history.summary.topDesign?.itemNumber ?? '-'}
                   </span>
                 </div>
               </div>
@@ -3121,7 +3080,7 @@ export function TradeBoardWorkspaceCard({
                       <div className={styles.tradeIdentity}>
                         <div className={styles.customerName}>{item.customerName}</div>
                         <div className={styles.customerDate}>
-                          {item.design.itemNumber} · {item.design.designName}
+                          {item.design.itemNumber} - {item.design.designName}
                         </div>
                       </div>
                       <div className={styles.tradeMeta}>
@@ -3217,8 +3176,8 @@ function JewelryLibraryCard({
                   <div className={styles.customerName}>{result.designName}</div>
                   <div className={styles.customerDate}>
                     {result.itemNumber}
-                    {result.collectionName ? ` · ${result.collectionName}` : ''}
-                    {result.material ? ` · ${result.material}` : ''}
+                    {result.collectionName ? ` - ${result.collectionName}` : ''}
+                    {result.material ? ` - ${result.material}` : ''}
                   </div>
                 </div>
                 <div className={styles.tradeMeta}>
@@ -3306,7 +3265,7 @@ function MessagesCenterCard({
                       {message.subject || MESSAGE_TYPE_LABELS[message.messageType]}
                     </div>
                     <div className={styles.customerDate}>
-                      {MESSAGE_TYPE_LABELS[message.messageType]} · {formatCompactDateTime(message.createdAt)}
+                      {MESSAGE_TYPE_LABELS[message.messageType]} - {formatCompactDateTime(message.createdAt)}
                     </div>
                     <div className={styles.helperNote}>{message.body}</div>
                   </div>
@@ -3393,7 +3352,7 @@ function HelpResourcesCard({
         <div>
           <div className={styles.cardTitle}>Help & Resources</div>
           <div className={styles.cardSubtitle}>
-            Guided first-start steps first, then the full operating library.
+            Customer-site skin reference and the full operating library.
           </div>
         </div>
       </div>
@@ -3404,8 +3363,8 @@ function HelpResourcesCard({
               <div>
                 <div className={styles.walletSettingsTitle}>Choose your look</div>
                 <div className={styles.helperNote}>
-                  Start with one of these recommended customer-site skins. You can
-                  tune the full gallery after checkout.
+                  Reference polished customer-site skins when you want a refreshed
+                  storefront look.
                 </div>
               </div>
               <span className={styles.rosterTag}>Recommended first picks</span>
@@ -3433,7 +3392,7 @@ function HelpResourcesCard({
                   <div className={styles.helperNote}>{reason}</div>
                   <div className={styles.timelineList}>
                     <span className={styles.timelineItem}>
-                      {hasPaidWorkspace ? 'Ready to apply' : 'Ready after checkout'}
+                      {hasPaidWorkspace ? 'Ready to apply' : 'Skin reference'}
                     </span>
                     <span className={styles.timelineItem}>{skin.label}</span>
                   </div>
@@ -3534,64 +3493,6 @@ function HelpResourcesCard({
           )}
         </>
       }
-    </div>
-  )
-}
-
-function SetupChecklistCard({
-  hasPaidWorkspace,
-  onSelectSection,
-}: {
-  hasPaidWorkspace: boolean
-  onSelectSection: (section: WorkspaceSectionKey) => void
-}) {
-  const checklist = getSelfServeOnboardingChecklist()
-
-  return (
-    <div className={styles.workspacePanel}>
-      <div className={styles.workspaceSectionHeader}>
-        <div>
-          <div className={styles.cardTitle}>Setup Checklist</div>
-          <div className={styles.cardSubtitle}>
-            First-run setup path for self-serve reps after purchase.
-          </div>
-        </div>
-        <span className={styles.rosterTag}>After checkout</span>
-      </div>
-      <div className={styles.resourceList}>
-        {checklist.map((item, index) => {
-          const action = SETUP_ACTION_BY_ID[item.id] ?? {
-            label: 'Open setup step',
-            target: 'setup-checklist' as WorkspaceSectionKey,
-          }
-          const statusLabel = hasPaidWorkspace
-            ? 'Ready now'
-            : index < 3
-              ? 'Ready after checkout'
-              : 'Locked until checkout'
-
-          return (
-            <div key={item.id} className={styles.resourceCard}>
-              <div className={styles.badgeRow}>
-                <span className={styles.rosterTag}>Step {index + 1}</span>
-                <span className={styles.statusBadge}>{statusLabel}</span>
-              </div>
-              <div className={styles.customerName}>{item.title}</div>
-              <div className={styles.helperNote}>{item.description}</div>
-              <div className={styles.actionRow}>
-                <button
-                  type="button"
-                  className={styles.helperButton}
-                  disabled={!hasPaidWorkspace}
-                  onClick={() => onSelectSection(action.target)}
-                >
-                  {hasPaidWorkspace ? action.label : `${action.label} after checkout`}
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
     </div>
   )
 }
@@ -3942,7 +3843,7 @@ export function SiteSettingsCard({
           onClick={() => onSave?.()}
           disabled={actionState?.pending || !hasUnsavedChanges}
         >
-          {actionState?.pending ? 'Saving…' : 'Save site settings'}
+          {actionState?.pending ? 'Saving...' : 'Save site settings'}
         </button>
       </div>
     </div>
@@ -4445,7 +4346,7 @@ export function AccountBillingCard({
                     {formatAccountBillingAmount(invoice.amountPaidCents)}
                   </span>
                   <span className={styles.walletTransactionDate}>
-                    {formatAccountBillingDate(invoice.createdAt)} ·{' '}
+                    {formatAccountBillingDate(invoice.createdAt)} -{' '}
                     {invoice.status ?? 'unknown'}
                   </span>
                 </div>
@@ -4532,7 +4433,7 @@ export function AccountBillingCard({
             <span>Read the Sparkle Suite terms before checkout.</span>
             <a
               className={styles.termsLink}
-              href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount%26onboarding%3Dself-serve-started"
+              href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"
             >
               Read Terms and Conditions
             </a>

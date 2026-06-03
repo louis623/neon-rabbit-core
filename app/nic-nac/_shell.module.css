@@ -16,6 +16,10 @@
   }
 }
 
+.setupRoot {
+  padding-right: 0;
+}
+
 .loading {
   padding: 24px;
   font-family: 'Geist', system-ui, sans-serif;

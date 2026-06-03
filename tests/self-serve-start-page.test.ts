@@ -24,20 +24,41 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).toContain('Confirm payment in Stripe')
     expect(html).toContain('Open Nic-Nac and finish setup')
     expect(html).toContain('name="displayName"')
-    expect(html).toContain('name="businessName"')
     expect(html).toContain('name="email"')
     expect(html).toContain('name="password"')
+    expect(html).toContain('name="agreementAccepted"')
+    expect(html).not.toContain('name="businessName"')
+    expect(html).not.toContain('name="phone"')
+    expect(html).not.toContain('name="primarySocialUrl"')
+    expect(html).not.toContain('name="shopUrl"')
+    expect(html).not.toContain('Business name')
+    expect(html).not.toContain('Primary live/social link')
+    expect(html).not.toContain('Shop link')
     expect(html).not.toContain('name="emailConsent"')
     expect(html).toContain(
       'Sparkle Suite sends account and setup updates for this private workspace.',
     )
     expect(html).toContain(
-      'Terms are reviewed separately in the checkout review before payment.',
+      'I agree to review and accept the Sparkle Suite terms before payment.',
     )
     expect(html).not.toContain(
       'Email me Sparkle Suite account and setup updates. I will accept the Sparkle Suite terms before checkout.',
     )
     expect(html).toContain('Create account and continue')
+    expect(html).toContain('Continue with Google')
+  })
+
+  it('contains the checkout and Google OAuth client flow', () => {
+    const source = readFileSync('app/start/StartSparkleSuiteForm.tsx', 'utf8')
+
+    expect(source).toContain('/api/stripe/create-checkout')
+    expect(source).toContain("planType: 'monthly'")
+    expect(source).toContain('agreementAccepted: true')
+    expect(source).toContain('signInWithOAuth')
+    expect(source).toContain("provider: 'google'")
+    expect(source).toContain(
+      '/api/auth/callback?next=/nic-nac?onboarding=checkout-required',
+    )
   })
 
   it('keeps mobile form controls at comfortable tap-target sizes', () => {

@@ -223,6 +223,13 @@
   outline: none;
 }
 
+.form input[type="checkbox"] {
+  accent-color: #ee2c9b;
+  height: 18px;
+  min-height: 18px;
+  width: 18px;
+}
+
 .form em {
   color: #9d233e;
   font-size: 0.82rem;
@@ -254,6 +261,20 @@
   padding: 11px 12px;
 }
 
+.termsCheck {
+  align-items: start;
+  background: rgba(255, 246, 250, 0.08);
+  border: 1px solid rgba(255, 212, 234, 0.2);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  padding: 11px 12px;
+}
+
+.termsCheck span {
+  line-height: 1.45;
+}
+
 .error {
   background: rgba(157, 35, 62, 0.1);
   border: 1px solid rgba(157, 35, 62, 0.22);
@@ -278,6 +299,12 @@
 .form button:disabled {
   cursor: default;
   opacity: 0.58;
+}
+
+.form .secondaryButton {
+  background: rgba(255, 246, 250, 0.08);
+  border: 1px solid rgba(255, 212, 234, 0.3);
+  color: #fff6fa;
 }
 
 @media (max-width: 860px) {

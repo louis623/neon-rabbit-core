@@ -1,9 +1,11 @@
 import { buildNicNacCoreKnowledgeText } from '@/lib/nic-nac/knowledge'
+import { buildRequiredSetupPrompt } from '@/lib/nic-nac/required-setup-prompt'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 
 type BuildPromptInput = {
   intents: NicNacToolIntent[]
   activeToolNames: string[]
+  mode?: 'workspace' | 'required_setup'
 }
 
 const CORE_PROMPT = `You are Nic-Nac, the operator assistant inside Sparkle Suite for Bomb Party jewelry reps. The person on the other end is a working rep. Talk like a friendly coworker who knows the system: warm, brief, practical, and never corporate.
@@ -102,16 +104,22 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - get_help_resources searches the approved Sparkle Suite help/how-to hub.
 - Use it for setup, first-run onboarding, Nic-Nac usage, public-site edits, shows, trade board, calculator, Chrome extension, Live Queue overview, troubleshooting, and escalation questions.
 - Answer from the returned resources. Mention video slots only as available help resources; do not claim a walkthrough video is published unless the resource says it is ready.`,
+
+  required_setup: buildRequiredSetupPrompt(),
 }
 
 export function buildNicNacSystemPrompt({
   intents,
   activeToolNames,
+  mode = 'workspace',
 }: BuildPromptInput): string {
   const uniqueIntents = intents.filter(
     (intent, index) => intents.indexOf(intent) === index,
   )
-  const sections = uniqueIntents.map((intent) => INTENT_PROMPTS[intent])
+  const sections =
+    mode === 'required_setup'
+      ? [buildRequiredSetupPrompt()]
+      : uniqueIntents.map((intent) => INTENT_PROMPTS[intent])
   const toolList = activeToolNames.length ? activeToolNames.join(', ') : 'none'
 
   return [

@@ -16,6 +16,11 @@ type SignupResponse =
       fields?: Record<string, string[]>
     }
 
+type CheckoutResponse = {
+  url?: string | null
+  error?: string
+}
+
 function isSignupSuccess(
   payload: SignupResponse | null,
 ): payload is Extract<SignupResponse, { ok: true }> {
@@ -47,20 +52,23 @@ export function StartSparkleSuiteForm() {
         const form = new FormData(event.currentTarget)
         const email = String(form.get('email') ?? '').trim().toLowerCase()
         const password = String(form.get('password') ?? '')
+        const agreementAccepted = form.get('agreementAccepted') === 'true'
 
         try {
+          if (!agreementAccepted) {
+            throw new Error(
+              'Please accept the Sparkle Suite terms step before checkout.',
+            )
+          }
+
           const response = await fetch('/api/self-serve/signup', {
             method: 'POST',
             credentials: 'include',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
               displayName: form.get('displayName'),
-              businessName: form.get('businessName'),
               email,
               password,
-              phone: form.get('phone'),
-              primarySocialUrl: form.get('primarySocialUrl'),
-              shopUrl: form.get('shopUrl'),
             }),
           })
           const payload = (await response.json().catch(() => null)) as
@@ -87,7 +95,27 @@ export function StartSparkleSuiteForm() {
             )
           }
 
-          window.location.href = payload.next
+          const checkoutResponse = await fetch('/api/stripe/create-checkout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              planType: 'monthly',
+              agreementAccepted: true,
+            }),
+          })
+          const checkoutPayload = (await checkoutResponse
+            .json()
+            .catch(() => null)) as CheckoutResponse | null
+
+          if (!checkoutResponse.ok || !checkoutPayload?.url) {
+            throw new Error(
+              checkoutPayload?.error ||
+                'Your account is ready, but checkout did not open. Please continue from Nic-Nac.',
+            )
+          }
+
+          window.location.href = checkoutPayload.url
         } catch (caught) {
           setError(
             caught instanceof Error
@@ -116,14 +144,6 @@ export function StartSparkleSuiteForm() {
       </label>
 
       <label>
-        <span>Business name</span>
-        <input name="businessName" autoComplete="organization" required />
-        {firstFieldError(fieldErrors, 'businessName') ? (
-          <em>{firstFieldError(fieldErrors, 'businessName')}</em>
-        ) : null}
-      </label>
-
-      <label>
         <span>Email</span>
         <input name="email" type="email" autoComplete="email" required />
         {firstFieldError(fieldErrors, 'email') ? (
@@ -145,33 +165,51 @@ export function StartSparkleSuiteForm() {
         ) : null}
       </label>
 
-      <div className={styles.split}>
-        <label>
-          <span>Phone</span>
-          <input name="phone" type="tel" autoComplete="tel" />
-        </label>
-        <label>
-          <span>Primary live/social link</span>
-          <input name="primarySocialUrl" type="url" />
-        </label>
-      </div>
-
-      <label>
-        <span>Shop link</span>
-        <input name="shopUrl" type="url" />
-      </label>
-
       <p className={styles.accountNotice}>
         Sparkle Suite sends account and setup updates for this private workspace.
       </p>
-      <p className={styles.termsNote}>
-        Terms are reviewed separately in the checkout review before payment.
-      </p>
+
+      <label className={styles.termsCheck}>
+        <input
+          name="agreementAccepted"
+          type="checkbox"
+          value="true"
+          required
+        />
+        <span>
+          I agree to review and accept the Sparkle Suite terms before payment.
+        </span>
+      </label>
 
       {error ? <div className={styles.error}>{error}</div> : null}
 
       <button type="submit" disabled={busy}>
         {busy ? 'Creating account...' : 'Create account and continue'}
+      </button>
+      <button
+        className={styles.secondaryButton}
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true)
+          setError(null)
+          setFieldErrors(undefined)
+
+          const supabase = createClient()
+          const { error: signInError } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: `${window.location.origin}/api/auth/callback?next=/nic-nac?onboarding=checkout-required`,
+            },
+          })
+
+          if (signInError) {
+            setError(signInError.message)
+            setBusy(false)
+          }
+        }}
+        type="button"
+      >
+        Continue with Google
       </button>
     </form>
   )

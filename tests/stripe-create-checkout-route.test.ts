@@ -57,6 +57,10 @@ function createCheckoutAdminMock(paidSubscriptionStarts = 0) {
             in: vi.fn(() => ({
               limit: vi.fn(() => ({
                 single: vi.fn().mockResolvedValue({ data: null }),
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
+                }),
               })),
             })),
           })),
@@ -122,21 +126,31 @@ describe('POST /api/stripe/create-checkout', () => {
       expect.objectContaining({
         line_items: [
           { price: 'price_build_fee', quantity: 1 },
-          { price: 'price_founder_monthly', quantity: 1 },
+          { price: 'price_standard_monthly', quantity: 1 },
         ],
         success_url:
-          'https://sparkle-suite.example/nic-nac?billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
+          'https://sparkle-suite.example/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
         cancel_url:
-          'https://sparkle-suite.example/nic-nac?billing=subscription-cancelled',
+          'https://sparkle-suite.example/nic-nac?onboarding=checkout-required&billing=subscription-cancelled',
+        shipping_address_collection: { allowed_countries: ['US'] },
+        phone_number_collection: { enabled: true },
         metadata: expect.objectContaining({
           plan_type: 'monthly',
-          pricing_tier: 'founder',
-          founder_sequence: '1',
+          first_run_setup: 'required_nic_nac',
+          light_box_required: 'true',
+          pricing_tier: 'standard',
+          founder_sequence: '',
           build_fee_charged: 'true',
-          founder_rate_months: '12',
+          founder_rate_months: '',
           agreement_provider: 'clickwrap',
           agreement_version: 'sparkle-suite-terms-2026-05-09',
           signwell_required: 'false',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            first_run_setup: 'required_nic_nac',
+            light_box_required: 'true',
+          }),
         }),
       }),
     )
@@ -271,6 +285,73 @@ describe('POST /api/stripe/create-checkout', () => {
       }),
     )
     expect(response.status).toBe(200)
+  })
+
+  it('fails closed when the active subscription guard query errors', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-guard-error',
+      rep: { id: 'rep-guard-error' },
+    })
+    createAdminClientMock.mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn((_: string, options?: { count?: string }) => {
+          if (options?.count === 'exact') {
+            return {
+              in: vi.fn().mockResolvedValue({
+                count: 0,
+                error: null,
+              }),
+            }
+          }
+
+          return {
+            eq: vi.fn(() => ({
+              in: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: { message: 'database unavailable' },
+                  }),
+                  single: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: { message: 'database unavailable' },
+                  }),
+                })),
+              })),
+            })),
+          }
+        }),
+      })),
+    })
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_guard_error')
+
+    const createMock = vi.fn()
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(500)
+    expect(createMock).not.toHaveBeenCalled()
+    expect(getOrCreateStripeCustomerMock).not.toHaveBeenCalled()
   })
 
   it('requires standard terms acceptance before creating checkout', async () => {

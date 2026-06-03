@@ -4,28 +4,18 @@ import { createAdminClient } from '@/lib/supabase/admin'
 type AdminClient = ReturnType<typeof createAdminClient>
 
 export const SELF_SERVE_NEXT_PATH =
-  '/nic-nac?section=account&onboarding=self-serve-started'
+  '/nic-nac?onboarding=checkout-required'
+
+export interface SelfServeWorkspaceAccount {
+  authUserId: string
+  email: string
+  displayName: string
+}
 
 const selfServeSignupSchema = z.object({
   displayName: z.string().trim().min(2),
-  businessName: z.string().trim().min(2),
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
-  phone: z
-    .string()
-    .trim()
-    .optional()
-    .transform((value) => value || null),
-  primarySocialUrl: z
-    .string()
-    .trim()
-    .optional()
-    .transform((value) => value || null),
-  shopUrl: z
-    .string()
-    .trim()
-    .optional()
-    .transform((value) => value || null),
 })
 
 export type SelfServeSignupInput = z.input<typeof selfServeSignupSchema>
@@ -50,11 +40,6 @@ export function selfServeSignupEnabled(env: NodeJS.ProcessEnv = process.env) {
   if (flag === 'true') return true
   if (flag === 'false') return false
   return env.NODE_ENV !== 'production'
-}
-
-function cleanNullableUrl(value: string | null) {
-  if (!value) return null
-  return value
 }
 
 function flattenSignupErrors(error: z.ZodError) {
@@ -94,6 +79,148 @@ async function assertNoExistingRep(email: string, admin: AdminClient) {
   }
 
   return null
+}
+
+export function getSelfServeDisplayNameFromAuthUser(user: {
+  email?: string | null
+  user_metadata?: Record<string, unknown> | null
+}) {
+  const metadata = user.user_metadata ?? {}
+  const metadataName =
+    typeof metadata.display_name === 'string'
+      ? metadata.display_name
+      : typeof metadata.full_name === 'string'
+        ? metadata.full_name
+        : typeof metadata.name === 'string'
+          ? metadata.name
+          : ''
+  const trimmedMetadataName = metadataName.trim()
+  if (trimmedMetadataName) return trimmedMetadataName
+
+  const email = user.email?.trim()
+  if (!email) return 'Sparkle Rep'
+
+  return email.split('@')[0]?.trim() || 'Sparkle Rep'
+}
+
+export async function createSelfServeWorkspaceForAuthUser(
+  account: SelfServeWorkspaceAccount,
+  admin: AdminClient = createAdminClient(),
+) {
+  const displayName = account.displayName.trim() || 'Sparkle Rep'
+  const email = account.email.trim().toLowerCase()
+  const { data: rep, error: repError } = await admin
+    .from('reps')
+    .insert({
+      auth_user_id: account.authUserId,
+      email,
+      display_name: displayName,
+      business_name: displayName,
+      phone: null,
+      custom_domain: null,
+      shop_link: null,
+      streaming_links: {
+        primary: null,
+        secondary: null,
+      },
+      social_handles: {},
+      template_id: 'default',
+      status: 'onboarding',
+    })
+    .select('id, auth_user_id, email')
+    .single()
+
+  if (repError) throw repError
+
+  const repId = rep.id as string
+  const [
+    { error: siteSettingsError },
+    { error: setupSessionError },
+    { error: walletError },
+  ] = await Promise.all([
+    admin.from('site_settings').upsert(
+      {
+        rep_id: repId,
+        banner_text: `Welcome to ${displayName}`,
+        banner_visible: true,
+        ticker_text: null,
+        ticker_visible: false,
+        tagline: `A polished place to shop ${displayName}.`,
+        team_name: displayName,
+        show_join_page: true,
+        hero_animation_type: 'zoom',
+        customer_site_template: 'amethyst',
+        appearance_preset: 'sparkle_suite_morganite',
+      },
+      { onConflict: 'rep_id' },
+    ),
+    admin.from('self_serve_setup_sessions').upsert(
+      {
+        rep_id: repId,
+        status: 'checkout_required',
+        current_step: 'account_basics',
+        completed_steps: ['self_serve_account_created'],
+        answers: {
+          displayName,
+          email,
+        },
+      },
+      { onConflict: 'rep_id' },
+    ),
+    admin.from('sms_wallet').upsert(
+      {
+        rep_id: repId,
+        balance_mils: 0,
+        auto_recharge_enabled: false,
+        auto_recharge_threshold_mils: 5000,
+        auto_recharge_amount_mils: 25000,
+        minimum_load_amount_mils: 25000,
+      },
+      { onConflict: 'rep_id' },
+    ),
+  ])
+
+  if (siteSettingsError) throw siteSettingsError
+  if (setupSessionError) throw setupSessionError
+  if (walletError) throw walletError
+
+  return {
+    repId,
+    email,
+  }
+}
+
+export async function ensureSelfServeWorkspaceForAuthUser(
+  account: SelfServeWorkspaceAccount,
+  admin: AdminClient = createAdminClient(),
+  options: { allowCreate?: boolean } = {},
+) {
+  const { data: existingRep, error } = await admin
+    .from('reps')
+    .select('id')
+    .eq('auth_user_id', account.authUserId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (existingRep) {
+    return {
+      repId: existingRep.id as string,
+      created: false,
+    }
+  }
+
+  if (options.allowCreate === false) {
+    return {
+      repId: null,
+      created: false,
+    }
+  }
+
+  const created = await createSelfServeWorkspaceForAuthUser(account, admin)
+  return {
+    repId: created.repId,
+    created: true,
+  }
 }
 
 export async function createSelfServeSignup(
@@ -143,75 +270,14 @@ export async function createSelfServeSignup(
   }
 
   try {
-    const { data: rep, error: repError } = await admin
-      .from('reps')
-      .insert({
-        auth_user_id: authUserId,
+    const { repId } = await createSelfServeWorkspaceForAuthUser(
+      {
+        authUserId,
         email: signup.email,
-        display_name: signup.displayName,
-        business_name: signup.businessName,
-        phone: signup.phone,
-        custom_domain: null,
-        shop_link: cleanNullableUrl(signup.shopUrl),
-        streaming_links: {
-          primary: cleanNullableUrl(signup.primarySocialUrl),
-          secondary: null,
-        },
-        social_handles: {},
-        template_id: 'default',
-        status: 'onboarding',
-      })
-      .select('id, auth_user_id, email')
-      .single()
-
-    if (repError) throw repError
-
-    const repId = rep.id as string
-    const [
-      { error: siteSettingsError },
-      { error: onboardingError },
-      { error: walletError },
-    ] = await Promise.all([
-      admin.from('site_settings').upsert(
-        {
-          rep_id: repId,
-          banner_text: `Welcome to ${signup.businessName}`,
-          banner_visible: true,
-          ticker_text: null,
-          ticker_visible: false,
-          tagline: `A polished place to shop ${signup.businessName}.`,
-          team_name: signup.businessName,
-          show_join_page: true,
-          hero_animation_type: 'zoom',
-          customer_site_template: 'amethyst',
-          appearance_preset: 'sparkle_suite_morganite',
-        },
-        { onConflict: 'rep_id' },
-      ),
-      admin.from('onboarding_status').upsert(
-        {
-          rep_id: repId,
-          current_stage: 'signup_received',
-          completed_steps: ['self_serve_account_created'],
-        },
-        { onConflict: 'rep_id' },
-      ),
-      admin.from('sms_wallet').upsert(
-        {
-          rep_id: repId,
-          balance_mils: 0,
-          auto_recharge_enabled: false,
-          auto_recharge_threshold_mils: 5000,
-          auto_recharge_amount_mils: 25000,
-          minimum_load_amount_mils: 25000,
-        },
-        { onConflict: 'rep_id' },
-      ),
-    ])
-
-    if (siteSettingsError) throw siteSettingsError
-    if (onboardingError) throw onboardingError
-    if (walletError) throw walletError
+        displayName: signup.displayName,
+      },
+      admin,
+    )
 
     return {
       ok: true,

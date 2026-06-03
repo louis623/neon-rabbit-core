@@ -86,13 +86,17 @@ export async function POST(request: Request) {
 
     // Check for existing active subscription (Finding 16)
     const admin = createAdminClient()
-    const { data: existing } = await admin
+    const { data: existing, error: existingError } = await admin
       .from('subscriptions')
       .select('id, status')
       .eq('rep_id', repId)
       .in('status', ['active', 'trialing'])
       .limit(1)
-      .single()
+      .maybeSingle()
+
+    if (existingError) {
+      throw existingError
+    }
 
     if (existing) {
       return NextResponse.json(
@@ -138,18 +142,25 @@ export async function POST(request: Request) {
       agreement_version: getSelfServeAgreementVersion(),
       signwell_required: 'false',
     }
+    const requiredSetupMetadata = {
+      first_run_setup: 'required_nic_nac',
+      light_box_required: 'true',
+    }
 
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       line_items: pricing.lineItems,
-      success_url: `${getAppUrl()}/nic-nac?billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${getAppUrl()}/nic-nac?billing=subscription-cancelled`,
+      success_url: `${getAppUrl()}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getAppUrl()}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
+      shipping_address_collection: { allowed_countries: ['US'] },
+      phone_number_collection: { enabled: true },
       metadata: {
         rep_id: repId,
         plan_type: planType,
         ...agreementMetadata,
+        ...requiredSetupMetadata,
         ...pricing.metadata,
       },
       subscription_data: {
@@ -157,6 +168,7 @@ export async function POST(request: Request) {
           rep_id: repId,
           plan_type: planType,
           ...agreementMetadata,
+          ...requiredSetupMetadata,
           ...pricing.metadata,
         },
       },

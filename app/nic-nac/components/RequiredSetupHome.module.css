@@ -1,0 +1,214 @@
+.root {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.82fr) minmax(420px, 1.18fr);
+  background:
+    radial-gradient(circle at top left, rgba(238, 44, 155, 0.16), transparent 34rem),
+    linear-gradient(135deg, #fff8fb 0%, #f8efe9 42%, #402924 82%, #36221d 100%);
+  color: #402924;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.hero {
+  padding: clamp(1.5rem, 4vw, 4rem);
+  display: grid;
+  align-content: space-between;
+  gap: 2rem;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.mark {
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(238, 44, 155, 0.32);
+  background: rgba(255, 255, 255, 0.78);
+  color: #ee2c9b;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.35rem;
+}
+
+.brandRow p,
+.kicker,
+.chatHeader p {
+  margin: 0;
+  color: #7b5c55;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brandRow h1,
+.copy h2 {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #402924;
+  letter-spacing: 0;
+}
+
+.brandRow h1 {
+  font-size: 1.35rem;
+}
+
+.copy {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 34rem;
+}
+
+.copy h2 {
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  line-height: 0.96;
+}
+
+.copy p:last-child {
+  margin: 0;
+  max-width: 31rem;
+  color: #654944;
+  line-height: 1.7;
+}
+
+.progressShell {
+  max-width: 28rem;
+  display: grid;
+  gap: 0.7rem;
+  color: #402924;
+  font-weight: 800;
+}
+
+.progressTopline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+
+.progressTrack {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(64, 41, 36, 0.12);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff4cae, #d81b87);
+}
+
+.chatPanel {
+  min-height: calc(100vh - 2rem);
+  margin: 1rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 1px solid rgba(64, 41, 36, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 252, 250, 0.94);
+  box-shadow: 0 24px 70px rgba(64, 41, 36, 0.2);
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid rgba(64, 41, 36, 0.1);
+}
+
+.chatHeader span {
+  display: block;
+  margin-top: 0.15rem;
+  color: #7b5c55;
+  font-size: 0.88rem;
+}
+
+.chatBody {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+}
+
+.checkoutRoot {
+  grid-template-columns: minmax(0, 720px);
+  align-content: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 4rem);
+}
+
+.checkoutHero {
+  display: grid;
+  gap: 2.2rem;
+  max-width: 680px;
+}
+
+.checkoutActions {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 28rem;
+}
+
+.primaryButton {
+  min-height: 3rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  color: #fff6fb;
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 0.85rem 1.2rem;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.32),
+    0 16px 34px rgba(216, 27, 135, 0.2);
+}
+
+.primaryButton:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.errorText {
+  margin: 0;
+  border: 1px solid rgba(155, 23, 79, 0.18);
+  border-radius: 8px;
+  background: #fff0f5;
+  color: #9b174f;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  padding: 0.75rem 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .root {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .copy h2 {
+    font-size: 2.6rem;
+  }
+
+  .chatPanel {
+    min-height: 70vh;
+  }
+}

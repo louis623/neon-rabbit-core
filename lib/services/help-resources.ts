@@ -4,13 +4,13 @@ const HELP_RESOURCES: HelpResource[] = [
   {
     id: 'getting-started-after-purchase',
     category: 'Getting started',
-    title: 'Getting started after purchase',
-    summary: 'The first path after checkout: open the backend, meet Nic-Nac, and work through setup.',
+    title: 'Getting oriented in the workspace',
+    summary: 'Where to find the main dashboard tools and when to ask Nic-Nac for help.',
     body:
-      'After purchase, use your confirmation email to open the backend workspace. Nic-Nac will guide the setup checklist from inside the workspace, and this help hub holds the walkthroughs when you want to watch a step before doing it.',
-    quickActions: ['Open backend workspace', 'Start setup checklist', 'Watch setup walkthrough'],
+      'Use the workspace sections for trade board work, shows, customer roster, site settings, billing, and help. Nic-Nac can answer plain-English questions, explain what a tool does, or help gather details when something needs support.',
+    quickActions: ['Open backend workspace', 'Ask Nic-Nac for help', 'Watch workspace walkthrough'],
     video: {
-      title: 'Getting started / setup walkthrough',
+      title: 'Workspace orientation walkthrough',
       provider: 'youtube',
       status: 'placeholder',
     },
@@ -19,7 +19,7 @@ const HELP_RESOURCES: HelpResource[] = [
     id: 'meet-nic-nac',
     category: 'Nic-Nac',
     title: 'Meet Nic-Nac and how to ask for help',
-    summary: 'How to use Nic-Nac as the first stop for setup, site edits, and workflow questions.',
+    summary: 'How to use Nic-Nac as the first stop for site edits and workflow questions.',
     body:
       'Nic-Nac is your Sparkle Suite assistant inside the backend workspace. Ask plain-English questions, ask for help changing site settings, or ask what to do next. If something needs Louis or Neon Rabbit support, Nic-Nac should help gather the details for escalation.',
     quickActions: ['Ask Nic-Nac what to do next', 'Ask for a site edit', 'Start an escalation'],
@@ -35,7 +35,7 @@ const HELP_RESOURCES: HelpResource[] = [
     title: 'Backend workspace tour',
     summary: 'Where the main Sparkle Suite tools live once the rep logs in.',
     body:
-      'The backend workspace is the home base for setup, shows, trade board work, customer roster, calculator, billing, site settings, and help. Use the left-side workspace sections to move between tools, then ask Nic-Nac when you want help taking action.',
+      'The backend workspace is the home base for shows, trade board work, customer roster, calculator, billing, site settings, and help. Use the left-side workspace sections to move between tools, then ask Nic-Nac when you want help taking action.',
     quickActions: ['Open workspace tour', 'Review workspace sections', 'Ask Nic-Nac for directions'],
     video: {
       title: 'Backend workspace tour',

@@ -1,29 +1,29 @@
 .main {
   --workspace-accent: #ee2c9b;
   --workspace-accent-hover: #d91d89;
-  --workspace-accent-soft: rgba(255, 212, 234, 0.72);
+  --workspace-accent-soft: rgba(255, 212, 234, 0.36);
   --workspace-bg-start: #fffdfc;
-  --workspace-bg-mid: #fcf8f6;
-  --workspace-bg-end: #fffdfc;
-  --workspace-surface-dashboard: #fcf8f6;
-  --workspace-surface-primary: rgba(255, 255, 255, 0.78);
+  --workspace-bg-mid: #fbf5f2;
+  --workspace-bg-end: #f6ede8;
+  --workspace-surface-dashboard: #fbf5f2;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.9);
   --workspace-surface-primary-solid: #ffffff;
-  --workspace-surface-dashboard-placeholder: #fff6fa;
-  --workspace-surface-input: #fffafc;
-  --workspace-border: rgba(64, 41, 36, 0.12);
-  --workspace-border-strong: rgba(64, 41, 36, 0.2);
+  --workspace-surface-dashboard-placeholder: #f6ede8;
+  --workspace-surface-input: #fffdfb;
+  --workspace-border: rgba(64, 41, 36, 0.14);
+  --workspace-border-strong: rgba(64, 41, 36, 0.24);
   --workspace-border-input-focus: rgba(238, 44, 155, 0.42);
   --workspace-text-primary: #402924;
   --workspace-text-secondary: #775d57;
   --workspace-text-inverse: #ffffff;
   --workspace-nav-active: linear-gradient(
     135deg,
-    rgba(255, 246, 250, 0.98),
-    rgba(191, 244, 224, 0.32)
+    rgba(255, 246, 250, 0.94),
+    rgba(246, 237, 232, 0.78)
   );
-  --workspace-sidebar-glow: rgba(255, 212, 234, 0.7);
-  --workspace-panel-shadow: rgba(64, 41, 36, 0.06);
-  --workspace-button-shadow: rgba(64, 41, 36, 0.12);
+  --workspace-sidebar-glow: rgba(54, 34, 29, 0.09);
+  --workspace-panel-shadow: rgba(54, 34, 29, 0.1);
+  --workspace-button-shadow: rgba(216, 27, 135, 0.24);
   --nic-nac-accent: var(--workspace-accent);
   --nic-nac-surface-dashboard: var(--workspace-surface-dashboard);
   --nic-nac-surface-primary: var(--workspace-surface-primary);
@@ -38,7 +38,8 @@
   --nic-nac-text-inverse: var(--workspace-text-inverse);
   min-height: 100vh;
   background:
-    radial-gradient(circle at 86% 4%, var(--workspace-accent-soft), transparent 24rem),
+    radial-gradient(circle at 82% 0%, var(--workspace-accent-soft), transparent 22rem),
+    radial-gradient(circle at 8% 12%, rgba(246, 237, 232, 0.84), transparent 22rem),
     linear-gradient(
       180deg,
       var(--workspace-bg-start) 0%,
@@ -51,26 +52,26 @@
 .main[data-workspace-skin='sparkle_suite_morganite'] {
   --workspace-accent: #ee2c9b;
   --workspace-accent-hover: #d91d89;
-  --workspace-accent-soft: rgba(255, 188, 217, 0.62);
+  --workspace-accent-soft: rgba(255, 212, 234, 0.34);
   --workspace-bg-start: #fffdfc;
-  --workspace-bg-mid: #fbf3f1;
-  --workspace-bg-end: #fffaf8;
-  --workspace-surface-dashboard: #fbf3f1;
-  --workspace-surface-primary: rgba(255, 255, 255, 0.82);
+  --workspace-bg-mid: #fbf5f2;
+  --workspace-bg-end: #f6ede8;
+  --workspace-surface-dashboard: #fbf5f2;
+  --workspace-surface-primary: rgba(255, 255, 255, 0.9);
   --workspace-surface-primary-solid: #ffffff;
-  --workspace-surface-dashboard-placeholder: #fff4f8;
-  --workspace-surface-input: #fffafb;
-  --workspace-border: rgba(84, 51, 55, 0.14);
-  --workspace-border-strong: rgba(84, 51, 55, 0.24);
+  --workspace-surface-dashboard-placeholder: #f6ede8;
+  --workspace-surface-input: #fffdfb;
+  --workspace-border: rgba(64, 41, 36, 0.14);
+  --workspace-border-strong: rgba(64, 41, 36, 0.24);
   --workspace-border-input-focus: rgba(238, 44, 155, 0.42);
   --workspace-text-primary: #402924;
-  --workspace-text-secondary: #7b5f62;
+  --workspace-text-secondary: #775d57;
   --workspace-nav-active: linear-gradient(
     135deg,
-    rgba(255, 246, 250, 0.98),
-    rgba(255, 229, 238, 0.62)
+    rgba(255, 246, 250, 0.94),
+    rgba(246, 237, 232, 0.78)
   );
-  --workspace-sidebar-glow: rgba(255, 188, 217, 0.64);
+  --workspace-sidebar-glow: rgba(54, 34, 29, 0.09);
 }
 
 .main[data-workspace-skin='black_diamond'] {
@@ -266,7 +267,7 @@
 }
 
 .topbarSubtitle {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--nic-nac-text-secondary);
@@ -288,15 +289,18 @@
   min-height: 42px;
   max-width: 220px;
   border-radius: 999px;
-  border: 1px solid var(--nic-nac-border);
-  background: var(--workspace-surface-primary);
+  border: 1px solid rgba(64, 41, 36, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 250, 0.72));
   padding: 8px 14px;
-  box-shadow: 0 10px 22px var(--workspace-panel-shadow);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.9),
+    0 10px 22px rgba(54, 34, 29, 0.08);
   min-width: 0;
 }
 
 .topbarInfoLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 800;
   line-height: 1;
@@ -308,7 +312,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 800;
   line-height: 1.2;
@@ -330,11 +334,13 @@
   min-height: 42px;
   max-width: 100%;
   border-radius: 999px;
-  border: 1px solid var(--nic-nac-text-primary);
-  background: var(--nic-nac-text-primary);
-  color: var(--nic-nac-text-inverse);
-  box-shadow: 0 12px 28px var(--workspace-button-shadow);
-  font-family: 'Geist', system-ui, sans-serif;
+  border: 1px solid transparent;
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  color: #fff6fb;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.34),
+    0 12px 28px var(--workspace-button-shadow);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 800;
   line-height: 1.2;
@@ -344,8 +350,8 @@
 }
 
 .liveSiteButton:hover {
-  background: var(--workspace-accent-hover);
-  border-color: var(--workspace-accent-hover);
+  background: linear-gradient(180deg, #f73fa5 0%, var(--workspace-accent-hover) 100%);
+  border-color: transparent;
 }
 
 .workspaceShell {
@@ -366,10 +372,23 @@
   padding: 18px 16px;
   border-radius: 22px;
   background:
-    radial-gradient(circle at top right, var(--workspace-sidebar-glow), transparent 52%),
-    var(--workspace-surface-primary);
+    linear-gradient(180deg, rgba(255, 246, 250, 0.7), rgba(255, 255, 255, 0.9)),
+    radial-gradient(circle at top right, var(--workspace-sidebar-glow), transparent 54%),
+    rgba(255, 255, 255, 0.86);
   border: 1px solid var(--nic-nac-border);
-  box-shadow: 0 18px 42px var(--workspace-panel-shadow);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.92),
+    0 18px 42px var(--workspace-panel-shadow);
+  overflow: hidden;
+  position: sticky;
+}
+
+.workspaceSidebar::before {
+  content: "";
+  height: 6px;
+  inset: 0 0 auto;
+  background: linear-gradient(90deg, #402924 0%, #ee2c9b 72%, #ffd4ea 100%);
+  position: absolute;
 }
 
 .workspaceSidebarTitle {
@@ -380,7 +399,7 @@
 }
 
 .workspaceSidebarIntro {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.55;
   color: var(--nic-nac-text-secondary);
@@ -411,9 +430,19 @@
 }
 
 .workspaceNavButtonActive {
-  border-color: var(--workspace-border-strong);
-  background: var(--workspace-nav-active);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+  border-color: rgba(64, 41, 36, 0.86);
+  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
+  box-shadow:
+    inset 0 1px rgba(246, 231, 218, 0.16),
+    0 14px 30px rgba(54, 34, 29, 0.16);
+}
+
+.workspaceNavButtonActive .workspaceNavLabel {
+  color: #fff2ea;
+}
+
+.workspaceNavButtonActive .workspaceNavSubtitle {
+  color: rgba(246, 231, 218, 0.78);
 }
 
 .workspaceNavButtonLocked {
@@ -425,7 +454,11 @@
 }
 
 .workspaceNavButton:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.workspaceNavButtonActive:hover {
+  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
 }
 
 .workspaceNavLabelRow {
@@ -438,7 +471,7 @@
 }
 
 .workspaceNavLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--nic-nac-text-primary);
@@ -449,7 +482,7 @@
   border-radius: 999px;
   background: rgba(64, 41, 36, 0.08);
   color: var(--nic-nac-text-secondary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 800;
   line-height: 1;
@@ -458,7 +491,7 @@
 }
 
 .workspaceNavSubtitle {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   line-height: 1.4;
   color: var(--nic-nac-text-secondary);
@@ -482,19 +515,32 @@
 .workspacePanel {
   border-radius: 20px;
   border: 1px solid var(--nic-nac-border);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 18px 42px rgba(64, 41, 36, 0.05);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 18px 42px rgba(54, 34, 29, 0.08);
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.workspacePanel::before {
+  content: "";
+  height: 6px;
+  inset: 0 0 auto;
+  background: linear-gradient(90deg, #402924 0%, rgba(238, 44, 155, 0.82) 70%, rgba(255, 212, 234, 0.76) 100%);
+  position: absolute;
 }
 
 .workspaceIntroCard {
   background:
-    linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.8)),
-    radial-gradient(circle at 96% 16%, rgba(238, 44, 155, 0.14), transparent 18rem);
+    linear-gradient(135deg, rgba(255, 246, 250, 0.9), rgba(255, 255, 255, 0.92)),
+    radial-gradient(circle at 96% 16%, rgba(64, 41, 36, 0.06), transparent 18rem);
 }
 
 .workspaceSectionHeader {
@@ -535,7 +581,7 @@
   display: flex;
   align-items: start;
   gap: 8px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.4;
   color: var(--nic-nac-text-secondary);
@@ -637,7 +683,7 @@
   background: rgba(255, 255, 255, 0.92);
   color: var(--nic-nac-text-primary);
   cursor: pointer;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-weight: 800;
 }
 
@@ -682,7 +728,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
@@ -730,9 +776,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 246, 250, 0.58));
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.84),
+    0 12px 28px rgba(54, 34, 29, 0.05);
 }
 
 .skinGallery {
@@ -852,7 +903,7 @@
 }
 
 .cardSubtitle {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.55;
   color: var(--nic-nac-text-secondary);
@@ -951,7 +1002,7 @@
 }
 
 .accountMuted {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.45;
   color: var(--nic-nac-text-secondary);
@@ -964,7 +1015,7 @@
   border: 1px solid rgba(238, 44, 155, 0.2);
   background: rgba(255, 246, 250, 0.78);
   padding: 6px 10px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.25;
@@ -994,7 +1045,7 @@
 
 .accountDetailValue {
   min-width: 0;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
@@ -1028,7 +1079,7 @@
   background: transparent;
   color: var(--nic-nac-text-secondary);
   cursor: pointer;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -1066,7 +1117,7 @@
 
 .calculatorAdornment {
   padding: 0 10px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--nic-nac-text-secondary);
@@ -1078,7 +1129,7 @@
   border: 0;
   background: transparent;
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
@@ -1119,14 +1170,14 @@
 }
 
 .calculatorResultLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.35;
   color: var(--nic-nac-text-secondary);
 }
 
 .calculatorResultValue {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 1.15;
@@ -1160,7 +1211,7 @@
 }
 
 .metricLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1170,7 +1221,7 @@
 }
 
 .metricValue {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 19px;
   line-height: 1.15;
   font-weight: 700;
@@ -1205,9 +1256,9 @@
   max-width: 100%;
   border-radius: 999px;
   padding: 4px 10px;
-  background: var(--nic-nac-surface-primary);
-  border: 1px solid var(--nic-nac-border);
-  font-family: 'Geist', system-ui, sans-serif;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   line-height: 1.25;
   color: var(--nic-nac-text-secondary);
@@ -1234,14 +1285,14 @@
 }
 
 .searchLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--nic-nac-text-secondary);
 }
 
 .sortLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
@@ -1255,7 +1306,7 @@
   border-radius: 12px;
   background: var(--nic-nac-surface-input);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.2;
   padding: 11px 12px;
@@ -1273,7 +1324,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   padding: 10px 12px;
 }
@@ -1289,7 +1340,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1;
   padding: 8px 12px;
@@ -1301,7 +1352,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--nic-nac-text-secondary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1;
   padding: 8px 12px;
@@ -1338,7 +1389,7 @@
 }
 
 .customerName {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
@@ -1346,7 +1397,7 @@
 
 .customerDate,
 .customerContact {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
@@ -1373,13 +1424,13 @@
 }
 
 .statusDetailLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   color: var(--nic-nac-text-secondary);
 }
 
 .statusDetailValue {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
@@ -1408,29 +1459,32 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   padding: 10px 12px;
 }
 
 .actionButton {
   max-width: 100%;
-  border: 1px solid var(--nic-nac-text-primary);
+  border: 1px solid transparent;
   border-radius: 999px;
-  background: var(--nic-nac-text-primary);
-  color: var(--nic-nac-text-inverse);
-  font-family: 'Geist', system-ui, sans-serif;
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  color: #fff6fb;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
   padding: 10px 14px;
   cursor: pointer;
   white-space: normal;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.32),
+    0 10px 22px rgba(216, 27, 135, 0.18);
 }
 
 .actionButton:hover {
-  background: var(--nic-nac-accent);
-  border-color: var(--nic-nac-accent);
+  background: linear-gradient(180deg, #f73fa5 0%, var(--nic-nac-accent-hover) 100%);
+  border-color: transparent;
 }
 
 .actionButton:disabled {
@@ -1439,17 +1493,17 @@
 }
 
 .actionButton:disabled:hover {
-  background: var(--nic-nac-text-primary);
-  border-color: var(--nic-nac-text-primary);
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  border-color: transparent;
 }
 
 .secondaryActionButton {
   width: 100%;
-  border: 1px solid var(--nic-nac-border);
+  border: 1px solid rgba(238, 44, 155, 0.2);
   border-radius: 999px;
-  background: var(--nic-nac-surface-primary);
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.8));
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -1458,8 +1512,8 @@
 }
 
 .secondaryActionButton:hover {
-  border-color: rgba(238, 44, 155, 0.34);
-  background: rgba(255, 212, 234, 0.28);
+  border-color: rgba(238, 44, 155, 0.4);
+  background: linear-gradient(180deg, rgba(255, 236, 246, 0.98), rgba(255, 255, 255, 0.86));
 }
 
 .secondaryActionButton:disabled {
@@ -1470,18 +1524,27 @@
 .helperButton,
 .helperLink {
   max-width: 100%;
-  border: 1px solid rgba(238, 44, 155, 0.2);
+  border: 1px solid rgba(238, 44, 155, 0.46);
   border-radius: 999px;
-  background: rgba(255, 212, 234, 0.38);
+  background: linear-gradient(180deg, rgba(255, 76, 174, 0.13), rgba(255, 246, 250, 0.94));
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   padding: 10px 14px;
   text-decoration: none;
   cursor: pointer;
   white-space: normal;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.82),
+    0 10px 22px rgba(216, 27, 135, 0.08);
+}
+
+.helperButton:disabled {
+  color: #402924;
+  cursor: default;
+  opacity: 1;
 }
 
 .termsAcceptance {
@@ -1513,7 +1576,7 @@
 .checkoutReviewKicker,
 .checkoutReviewLabel {
   color: var(--nic-nac-accent);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1533,7 +1596,7 @@
 .checkoutReviewCopy,
 .checkoutReviewNote {
   color: var(--nic-nac-text-secondary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.5;
   margin: 0;
@@ -1553,7 +1616,7 @@
 
 .checkoutReviewValue {
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 800;
   line-height: 1.4;
@@ -1579,7 +1642,7 @@
 
 .checkoutUnlockList li {
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
@@ -1605,7 +1668,7 @@
   flex-wrap: wrap;
   gap: 8px 12px;
   color: var(--nic-nac-text-secondary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1635,7 +1698,7 @@
   gap: 10px;
   grid-template-columns: 18px minmax(0, 1fr);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.45;
 }
@@ -1658,9 +1721,14 @@
 
 .statusBadge {
   border-radius: 999px;
+  border: 1px solid rgba(64, 41, 36, 0.16);
+  background: rgba(246, 237, 232, 0.76);
+  color: #402924;
   padding: 4px 10px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .statusBadgePositive {
@@ -1686,7 +1754,7 @@
   background:
     linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.74));
   border: 1px dashed rgba(238, 44, 155, 0.22);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
   color: var(--nic-nac-text-secondary);
@@ -1698,7 +1766,7 @@
   background: #fff0f5;
   border: 1px solid rgba(238, 44, 155, 0.16);
   color: #9b174f;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
 }
 
@@ -1708,7 +1776,7 @@
   background: rgba(191, 244, 224, 0.48);
   border: 1px solid rgba(39, 83, 69, 0.12);
   color: #275345;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
 }
 
@@ -1724,7 +1792,7 @@
     linear-gradient(135deg, rgba(255, 246, 250, 0.98), rgba(255, 255, 255, 0.76));
   border: 1px solid rgba(238, 44, 155, 0.18);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
@@ -1768,13 +1836,13 @@
   border: 1px dashed rgba(238, 44, 155, 0.2);
   padding: 14px;
   color: var(--nic-nac-text-secondary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
 }
 
 .helperNote {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
@@ -1784,7 +1852,7 @@
   padding: 12px 14px;
   background: rgba(255, 183, 77, 0.12);
   color: #ffd08a;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
 }
 
@@ -1793,7 +1861,7 @@
   border-radius: 999px;
   padding: 4px 10px;
   background: rgba(255, 183, 77, 0.14);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   color: #ffd08a;
 }
@@ -1805,7 +1873,7 @@
 }
 
 .walletTimelineLabel {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
@@ -1820,7 +1888,7 @@
 }
 
 .walletSettingsTitle {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
@@ -1854,7 +1922,7 @@
 }
 
 .siteSettingsPreviewNote {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   line-height: 1.4;
   color: var(--nic-nac-text-secondary);
@@ -1878,7 +1946,7 @@
 }
 
 .siteSettingsSaveStatus {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: var(--nic-nac-text-secondary);
@@ -1897,7 +1965,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--nic-nac-text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   padding: 10px 12px;
 }
@@ -1928,7 +1996,7 @@
 }
 
 .calendarWeekday {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1967,7 +2035,7 @@
 }
 
 .calendarCellDay {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
@@ -1987,7 +2055,7 @@
   white-space: nowrap;
   border-radius: 999px;
   padding: 4px 8px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   color: var(--nic-nac-text-primary);
   background: rgba(255, 255, 255, 0.08);
@@ -2028,20 +2096,20 @@
 }
 
 .walletTransactionTitle {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
 }
 
 .walletTransactionDate {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
 
 .walletTransactionAmount {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
@@ -2057,7 +2125,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   padding: 4px 10px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   color: var(--nic-nac-text-secondary);
 }
@@ -2068,7 +2136,7 @@
   border-radius: 8px;
   background: var(--nic-nac-surface-dashboard-placeholder);
   padding: 16px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   color: var(--nic-nac-text-secondary);
 }
@@ -2079,7 +2147,7 @@
   border-radius: 8px;
   background: var(--nic-nac-surface-dashboard-placeholder);
   padding: 16px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   color: var(--nic-nac-text-secondary);
 }
@@ -2090,7 +2158,7 @@
   border-radius: 8px;
   background: var(--nic-nac-surface-dashboard-placeholder);
   padding: 16px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   color: var(--nic-nac-text-secondary);
 }

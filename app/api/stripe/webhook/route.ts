@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/client'
 import { getSparkleSuitePriceIds, getStripeConfig } from '@/lib/stripe/config'
 import { stripeCentsToWalletMils } from '@/lib/services/wallet-units'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { upsertPrelaunchLaunchGate } from '@/lib/prelaunch/launch-gates'
+import { createLightBoxFulfillmentTask } from '@/lib/self-serve/light-box-fulfillment'
 
 export const dynamic = 'force-dynamic'
 
@@ -134,32 +135,44 @@ async function ensureFounderStepUpSchedule({
   return schedule.id
 }
 
-async function isEventProcessed(eventId: string): Promise<boolean> {
+async function claimStripeEvent(eventId: string, eventType: string): Promise<boolean> {
   const admin = createAdminClient()
-  const { data } = await admin
-    .from('stripe_events')
-    .select('id')
-    .eq('id', eventId)
-    .single()
-  return !!data
+  const { data, error } = await admin.rpc('claim_stripe_event', {
+    p_event_id: eventId,
+    p_event_type: eventType,
+  })
+  if (error) throw error
+  return data === true
 }
 
-async function markEventProcessed(eventId: string, eventType: string): Promise<void> {
+async function markStripeEventProcessed(eventId: string, eventType: string): Promise<void> {
   const admin = createAdminClient()
-  const { error } = await admin
-    .from('stripe_events')
-    .insert({ id: eventId, event_type: eventType })
+  const { error } = await admin.rpc('mark_stripe_event_processed', {
+    p_event_id: eventId,
+    p_event_type: eventType,
+  })
+  if (error) throw error
+}
+
+async function markStripeEventFailed(
+  eventId: string,
+  eventType: string,
+  errorMessage: string,
+): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.rpc('mark_stripe_event_failed', {
+    p_event_id: eventId,
+    p_event_type: eventType,
+    p_error: errorMessage,
+  })
   if (error) {
-    // Unique constraint violation means another process already recorded it — safe
-    if (!error.code?.includes('23505')) {
-      throw error
-    }
+    console.error('[stripe/webhook] Failed to mark Stripe event failed:', error)
   }
 }
 
 /**
  * Resolve the Stripe processing fee for a PaymentIntent from its latest charge's
- * balance transaction. Returns null if the balance transaction isn't yet available —
+ * balance transaction. Returns null if the balance transaction isn't yet available â€”
  * callers should pass null to the credit RPC (we never invent fees).
  */
 async function resolveStripeFeeCents(
@@ -361,7 +374,7 @@ async function handlePaymentIntentCanceled(event: Stripe.Event) {
 }
 
 /**
- * requires_action is NON-terminal — do NOT release the lock here; otherwise the next
+ * requires_action is NON-terminal â€” do NOT release the lock here; otherwise the next
  * SMS deduct could kick off a second off-session PI while the first awaits 3DS.
  * The eventual terminal event (succeeded / payment_failed / canceled) will settle it.
  */
@@ -383,6 +396,61 @@ function getCheckoutPaymentIntentId(session: Stripe.Checkout.Session) {
   return typeof session.payment_intent === 'string'
     ? session.payment_intent
     : session.payment_intent.id
+}
+
+function isRequiredNicNacSetupCheckout(session: Stripe.Checkout.Session) {
+  return (
+    session.metadata?.first_run_setup === 'required_nic_nac' &&
+    session.metadata?.light_box_required === 'true'
+  )
+}
+
+type CheckoutSessionWithCollectedShipping = Stripe.Checkout.Session & {
+  collected_information?: {
+    shipping_details?: {
+      name?: string | null
+      address?: Record<string, unknown> | null
+    } | null
+  } | null
+  shipping_details?: {
+    name?: string | null
+    address?: Record<string, unknown> | null
+  } | null
+}
+
+async function transitionSetupSessionAfterCheckout(
+  admin: ReturnType<typeof createAdminClient>,
+  repId: string,
+  now: string,
+) {
+  const { data: existing, error: selectError } = await admin
+    .from('self_serve_setup_sessions')
+    .select('status, current_step')
+    .eq('rep_id', repId)
+    .maybeSingle()
+
+  if (selectError) throw selectError
+
+  const shouldSetRequiredSetup =
+    !existing ||
+    existing.status === 'checkout_required' ||
+    existing.status === 'payment_pending'
+
+  if (!shouldSetRequiredSetup) return
+
+  const { error: setupSessionError } = await admin
+    .from('self_serve_setup_sessions')
+    .upsert(
+      {
+        rep_id: repId,
+        status: 'required_setup',
+        current_step: 'account_basics',
+        updated_at: now,
+      },
+      { onConflict: 'rep_id' },
+    )
+
+  if (setupSessionError) throw setupSessionError
 }
 
 async function handlePrelaunchPaymentGateCheckout(
@@ -465,6 +533,17 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
 
   if (session.mode !== 'subscription' || !session.subscription) return
 
+  if (session.payment_status !== 'paid') {
+    logStripeEvent('info', event, {
+      phase: 'checkout_completed',
+      skipped: true,
+      reason: 'not_paid',
+      session_id: session.id,
+      payment_status: session.payment_status,
+    })
+    return
+  }
+
   const repId = session.metadata?.rep_id
   const planType = session.metadata?.plan_type
   const pricingTier = session.metadata?.pricing_tier
@@ -539,6 +618,54 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
     })
 
   if (error) throw error
+
+  if (!isRequiredNicNacSetupCheckout(session)) {
+    logStripeEvent('info', event, {
+      phase: 'checkout_completed',
+      skipped_required_setup: true,
+      reason: 'not_required_nic_nac_setup_checkout',
+      rep_id: repId,
+      subscription_id: subscription.id,
+    })
+    return
+  }
+
+  const now = new Date().toISOString()
+  await transitionSetupSessionAfterCheckout(admin, repId, now)
+
+  const { data: rep, error: repError } = await admin
+    .from('reps')
+    .select('id, email, display_name')
+    .eq('id', repId)
+    .single()
+
+  if (repError) throw repError
+
+  const shippingSession = session as CheckoutSessionWithCollectedShipping
+  const shippingDetails =
+    shippingSession.collected_information?.shipping_details ??
+    shippingSession.shipping_details ??
+    null
+
+  await createLightBoxFulfillmentTask(
+    {
+      repId,
+      repEmail: rep?.email ?? null,
+      repName: rep?.display_name ?? null,
+      stripeCheckoutSessionId: session.id,
+      stripeSubscriptionId: subscription.id,
+      paidAtIso: new Date(event.created * 1000).toISOString(),
+      shippingName:
+        shippingDetails?.name ??
+        session.customer_details?.name ??
+        null,
+      shippingAddress:
+        (shippingDetails?.address ??
+          session.customer_details?.address ??
+          {}) as Record<string, unknown>,
+    },
+    admin,
+  )
 
   logStripeEvent('info', event, {
     phase: 'checkout_completed',
@@ -704,24 +831,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Idempotency check (Finding 2)
-  if (await isEventProcessed(event.id)) {
-    return NextResponse.json({ received: true, deduplicated: true })
-  }
-
   const handler = EVENT_HANDLERS[event.type]
   if (!handler) {
     return NextResponse.json({ received: true })
   }
 
   try {
+    const claimed = await claimStripeEvent(event.id, event.type)
+    if (!claimed) {
+      return NextResponse.json({ received: true, deduplicated: true })
+    }
+
     await handler(event)
-    await markEventProcessed(event.id, event.type)
+    await markStripeEventProcessed(event.id, event.type)
     return NextResponse.json({ received: true })
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    await markStripeEventFailed(event.id, event.type, message)
     logStripeEvent('error', event, {
       phase: 'handler_error',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: message,
     })
     return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
   }
