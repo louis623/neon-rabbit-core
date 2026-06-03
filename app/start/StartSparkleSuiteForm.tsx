@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './start.module.css'
 
@@ -57,6 +57,8 @@ export function StartSparkleSuiteForm() {
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('review')?.trim() ?? ''
   })
+  const [agreementAccepted, setAgreementAccepted] = useState(false)
+  const [emailSignupOpen, setEmailSignupOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] =
     useState<Record<string, string[]> | undefined>()
@@ -109,6 +111,120 @@ export function StartSparkleSuiteForm() {
     }
   }
 
+  async function openCheckout() {
+    const checkoutResponse = await fetch('/api/stripe/create-checkout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        planType: 'monthly',
+        agreementAccepted: true,
+      }),
+    })
+    const checkoutPayload = (await checkoutResponse
+      .json()
+      .catch(() => null)) as CheckoutResponse | null
+
+    if (!checkoutResponse.ok || !checkoutPayload?.url) {
+      throw new Error(
+        checkoutPayload?.error ||
+          'Your account is ready, but checkout did not open. Please continue from Nic-Nac.',
+      )
+    }
+
+    window.location.href = checkoutPayload.url
+  }
+
+  async function startGoogleSignup() {
+    if (!agreementAccepted) {
+      setError('Please agree to the Sparkle Suite Terms before checkout.')
+      return
+    }
+
+    setBusy(true)
+    setError(null)
+    setFieldErrors(undefined)
+
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=/nic-nac?onboarding=checkout-required`,
+      },
+    })
+
+    if (signInError) {
+      setError(signInError.message)
+      setBusy(false)
+    }
+  }
+
+  async function startEmailSignup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
+    setFieldErrors(undefined)
+
+    const form = new FormData(event.currentTarget)
+    const email = String(form.get('email') ?? '').trim().toLowerCase()
+    const password = String(form.get('password') ?? '')
+    const passwordConfirm = String(form.get('passwordConfirm') ?? '')
+
+    try {
+      if (!agreementAccepted) {
+        throw new Error('Please agree to the Sparkle Suite Terms before checkout.')
+      }
+
+      if (password !== passwordConfirm) {
+        setFieldErrors({
+          passwordConfirm: ['Enter the same password twice.'],
+        })
+        throw new Error('Enter the same password twice.')
+      }
+
+      const response = await fetch('/api/self-serve/signup', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: form.get('displayName'),
+          email,
+          password,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | SignupResponse
+        | null
+
+      if (!response.ok || !isSignupSuccess(payload)) {
+        const failed = payload && !isSignupSuccess(payload) ? payload : undefined
+        setFieldErrors(failed?.fields)
+        throw new Error(failed?.error || 'Unable to create your account.')
+      }
+
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) {
+        throw new Error(
+          'Your account was created, but sign-in did not finish. Please sign in to continue.',
+        )
+      }
+
+      await openCheckout()
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Unable to create your account.',
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className={styles.formStack}>
       {reviewToken ? (
@@ -147,177 +263,126 @@ export function StartSparkleSuiteForm() {
           ) : null}
         </section>
       ) : null}
-      <form
-        className={styles.form}
-        onSubmit={async (event) => {
-        event.preventDefault()
-        setBusy(true)
-        setError(null)
-        setFieldErrors(undefined)
 
-        const form = new FormData(event.currentTarget)
-        const email = String(form.get('email') ?? '').trim().toLowerCase()
-        const password = String(form.get('password') ?? '')
-        const agreementAccepted = form.get('agreementAccepted') === 'true'
+      <section className={styles.form} aria-label="Start Sparkle Suite account creation">
+        <div className={styles.formHead}>
+          <span>Let's get started</span>
+          <h2>Account creation</h2>
+        </div>
 
-        try {
-          if (!agreementAccepted) {
-            throw new Error(
-              'Please accept the Sparkle Suite terms step before checkout.',
-            )
-          }
+        <label className={styles.termsCheck}>
+          <input
+            name="agreementAccepted"
+            type="checkbox"
+            value="true"
+            checked={agreementAccepted}
+            onChange={(event) => setAgreementAccepted(event.currentTarget.checked)}
+          />
+          <span>
+            I agree to the{' '}
+            <a href="/terms-and-conditions" target="_blank" rel="noreferrer">
+              Sparkle Suite Terms
+            </a>
+            .
+          </span>
+        </label>
 
-          const response = await fetch('/api/self-serve/signup', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              displayName: form.get('displayName'),
-              email,
-              password,
-            }),
-          })
-          const payload = (await response.json().catch(() => null)) as
-            | SignupResponse
-            | null
+        {error ? <div className={styles.error}>{error}</div> : null}
 
-          if (!response.ok || !isSignupSuccess(payload)) {
-            const failed =
-              payload && !isSignupSuccess(payload) ? payload : undefined
-            setFieldErrors(failed?.fields)
-            throw new Error(
-              failed?.error || 'Unable to create your account.',
-            )
-          }
+        <div className={styles.formActions}>
+          <button
+            type="button"
+            disabled={busy || !agreementAccepted}
+            onClick={startGoogleSignup}
+          >
+            {busy ? 'Opening Google...' : 'Continue with Google'}
+          </button>
+          <button
+            className={styles.secondaryButton}
+            disabled={busy}
+            type="button"
+            aria-expanded={emailSignupOpen}
+            onClick={() => {
+              setError(null)
+              setFieldErrors(undefined)
+              setEmailSignupOpen(true)
+            }}
+          >
+            Create account with a different email
+          </button>
+          <a className={styles.signInLink} href="/login">
+            Sign in instead
+          </a>
+        </div>
 
-          const supabase = createClient()
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          })
-          if (signInError) {
-            throw new Error(
-              'Your account was created, but sign-in did not finish. Please sign in to continue.',
-            )
-          }
+        {emailSignupOpen ? (
+          <form
+            aria-label="Create account with email"
+            className={styles.emailSignupPanel}
+            onSubmit={startEmailSignup}
+          >
+            <div className={styles.emailSignupHeader}>
+              <h3>Email account</h3>
+              <button
+                type="button"
+                className={styles.closePanelButton}
+                disabled={busy}
+                onClick={() => setEmailSignupOpen(false)}
+              >
+                Close
+              </button>
+            </div>
 
-          const checkoutResponse = await fetch('/api/stripe/create-checkout', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              planType: 'monthly',
-              agreementAccepted: true,
-            }),
-          })
-          const checkoutPayload = (await checkoutResponse
-            .json()
-            .catch(() => null)) as CheckoutResponse | null
+            <label>
+              <span>Your name</span>
+              <input name="displayName" autoComplete="name" required />
+              {firstFieldError(fieldErrors, 'displayName') ? (
+                <em>{firstFieldError(fieldErrors, 'displayName')}</em>
+              ) : null}
+            </label>
 
-          if (!checkoutResponse.ok || !checkoutPayload?.url) {
-            throw new Error(
-              checkoutPayload?.error ||
-                'Your account is ready, but checkout did not open. Please continue from Nic-Nac.',
-            )
-          }
+            <label>
+              <span>Email</span>
+              <input name="email" type="email" autoComplete="email" required />
+              {firstFieldError(fieldErrors, 'email') ? (
+                <em>{firstFieldError(fieldErrors, 'email')}</em>
+              ) : null}
+            </label>
 
-          window.location.href = checkoutPayload.url
-        } catch (caught) {
-          setError(
-            caught instanceof Error
-              ? caught.message
-              : 'Unable to create your account.',
-          )
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
-      <div className={styles.formHead}>
-        <span>Private account start</span>
-        <h2>Create your rep account</h2>
-        <p>
-          No card is needed on this step. Your checkout review comes next.
-        </p>
-      </div>
+            <label>
+              <span>Password</span>
+              <input
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+              {firstFieldError(fieldErrors, 'password') ? (
+                <em>{firstFieldError(fieldErrors, 'password')}</em>
+              ) : null}
+            </label>
 
-      <label>
-        <span>Your name</span>
-        <input name="displayName" autoComplete="name" required />
-        {firstFieldError(fieldErrors, 'displayName') ? (
-          <em>{firstFieldError(fieldErrors, 'displayName')}</em>
+            <label>
+              <span>Confirm password</span>
+              <input
+                name="passwordConfirm"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+              {firstFieldError(fieldErrors, 'passwordConfirm') ? (
+                <em>{firstFieldError(fieldErrors, 'passwordConfirm')}</em>
+              ) : null}
+            </label>
+
+            <button type="submit" disabled={busy || !agreementAccepted}>
+              {busy ? 'Creating account...' : 'Create account and continue'}
+            </button>
+          </form>
         ) : null}
-      </label>
-
-      <label>
-        <span>Email</span>
-        <input name="email" type="email" autoComplete="email" required />
-        {firstFieldError(fieldErrors, 'email') ? (
-          <em>{firstFieldError(fieldErrors, 'email')}</em>
-        ) : null}
-      </label>
-
-      <label>
-        <span>Password</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-        />
-        {firstFieldError(fieldErrors, 'password') ? (
-          <em>{firstFieldError(fieldErrors, 'password')}</em>
-        ) : null}
-      </label>
-
-      <p className={styles.accountNotice}>
-        Sparkle Suite sends account and setup updates for this private workspace.
-      </p>
-
-      <label className={styles.termsCheck}>
-        <input
-          name="agreementAccepted"
-          type="checkbox"
-          value="true"
-          required
-        />
-        <span>
-          I agree to review and accept the Sparkle Suite terms before payment.
-        </span>
-      </label>
-
-      {error ? <div className={styles.error}>{error}</div> : null}
-
-      <button type="submit" disabled={busy}>
-        {busy ? 'Creating account...' : 'Create account and continue'}
-      </button>
-      <button
-        className={styles.secondaryButton}
-        disabled={busy}
-        onClick={async () => {
-          setBusy(true)
-          setError(null)
-          setFieldErrors(undefined)
-
-          const supabase = createClient()
-          const { error: signInError } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: `${window.location.origin}/api/auth/callback?next=/nic-nac?onboarding=checkout-required`,
-            },
-          })
-
-          if (signInError) {
-            setError(signInError.message)
-            setBusy(false)
-          }
-        }}
-        type="button"
-      >
-        Continue with Google
-      </button>
-      </form>
+      </section>
     </div>
   )
 }

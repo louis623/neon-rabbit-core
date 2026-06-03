@@ -11,27 +11,7 @@
 .hero {
   margin: 0 auto;
   max-width: 1180px;
-  padding: 28px clamp(18px, 4vw, 52px) 64px;
-}
-
-.brand {
-  align-items: center;
-  color: #402924;
-  display: inline-flex;
-  font-family: var(--font-prelaunch-display), Georgia, serif;
-  font-size: 14px;
-  font-weight: 800;
-  gap: 16px;
-  letter-spacing: 6px;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.seal {
-  color: #ee2c9b;
-  flex: 0 0 auto;
-  height: 58px;
-  width: 58px;
+  padding: clamp(28px, 6vw, 76px) 0 0;
 }
 
 .grid {
@@ -39,7 +19,6 @@
   display: grid;
   gap: clamp(24px, 5vw, 72px);
   grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
-  padding-top: clamp(28px, 6vw, 76px);
 }
 
 .copy {
@@ -259,6 +238,7 @@
 }
 
 .formHead h2 {
+  color: #f6e7da;
   font-family: var(--font-prelaunch-display), Georgia, serif;
   font-size: clamp(2rem, 4vw, 3rem);
   letter-spacing: 0;
@@ -352,6 +332,13 @@
   line-height: 1.45;
 }
 
+.termsCheck a {
+  color: #ffd4ea;
+  font-weight: 900;
+  text-decoration-color: rgba(255, 212, 234, 0.58);
+  text-underline-offset: 3px;
+}
+
 .error {
   background: rgba(157, 35, 62, 0.1);
   border: 1px solid rgba(157, 35, 62, 0.22);
@@ -384,29 +371,60 @@
   color: #fff6fa;
 }
 
+.formActions,
+.emailSignupPanel {
+  display: grid;
+  gap: 10px;
+}
+
+.signInLink {
+  color: rgba(246, 231, 218, 0.78);
+  font-size: 0.88rem;
+  font-weight: 900;
+  justify-self: center;
+  text-decoration-color: rgba(255, 212, 234, 0.48);
+  text-underline-offset: 3px;
+}
+
+.emailSignupPanel {
+  border-top: 1px solid rgba(255, 212, 234, 0.2);
+  margin-top: 2px;
+  padding-top: 15px;
+}
+
+.emailSignupHeader {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.emailSignupHeader h3 {
+  color: #f6e7da;
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.form .closePanelButton {
+  background: rgba(255, 246, 250, 0.08);
+  border: 1px solid rgba(255, 212, 234, 0.26);
+  color: #fff6fa;
+  font-size: 0.82rem;
+  min-height: 34px;
+  padding: 7px 12px;
+}
+
 @media (max-width: 860px) {
   .hero {
-    padding: 22px clamp(16px, 5vw, 24px) 52px;
-  }
-
-  .brand {
-    font-size: 12px;
-    gap: 12px;
-    letter-spacing: 4px;
-  }
-
-  .seal {
-    height: 48px;
-    width: 48px;
+    padding-top: 28px;
   }
 
   .grid,
   .split {
     grid-template-columns: 1fr;
-  }
-
-  .grid {
-    padding-top: 28px;
   }
 
   .copy {

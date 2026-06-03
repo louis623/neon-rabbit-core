@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import { SparkleSuitePublicNicNac } from '@/app/_components/sparkle-suite-public-nic-nac'
+import {
+  sparkleSuitePublicLandingContent,
+  sparkleSuitePublicLandingSafety,
+} from '@/lib/sparkle-suite/public-landing-content'
 import { StartSparkleSuiteForm } from './StartSparkleSuiteForm'
 import styles from './start.module.css'
 
@@ -15,26 +19,27 @@ export const metadata: Metadata = {
 }
 
 const steps = [
-  'Create your rep account',
-  'Review plan and terms',
+  'Create your Sparkle Suite account',
+  'Agree to the Sparkle Suite terms',
   'Confirm payment in Stripe',
-  'Open Nic-Nac and finish setup',
+  'Finish setup with Nic-Nac',
 ]
 
 const reassurance = [
   {
-    title: 'No card is needed on this step.',
-    body: 'Start with account details only; payment waits until the checkout review.',
+    title: 'Google is the quickest way in.',
+    body:
+      'Use your Google account to start your Sparkle Suite workspace. Prefer a different email? You can create an account with email instead.',
   },
   {
-    title:
-      'Nothing here texts or emails customers, posts to live or social channels, changes provider settings, or charges you.',
-    body: 'This creates a private Sparkle Suite workspace for your setup.',
+    title: 'Terms come before checkout.',
+    body:
+      'Review and accept the Sparkle Suite Terms here, then Stripe opens for plan and payment details.',
   },
   {
-    title:
-      'Review your plan, renewal details, and Sparkle Suite terms before Stripe asks for payment.',
-    body: 'You see the billing summary first, then continue to secure Stripe checkout.',
+    title: 'Nic-Nac helps finish setup after checkout.',
+    body:
+      'After payment, Nic-Nac opens the setup path for your customer-facing website, dancefloor/trade board, live show calendar, and SMS and email updates.',
   },
 ]
 
@@ -65,45 +70,95 @@ function SparkleSeal({ className }: { className?: string }) {
   )
 }
 
+function StartHeader() {
+  const { brand } = sparkleSuitePublicLandingContent
+
+  return (
+    <header className="sl2-header">
+      <a aria-label="Sparkle Suite home" className="sl2-brand" href="/">
+        <SparkleSeal className="sl2-brand__seal" />
+        <span>{brand}</span>
+      </a>
+      <div className="sl2-header__actions">
+        <span>Already have Sparkle Suite?</span>
+        <a href="/login">Sign in here.</a>
+      </div>
+    </header>
+  )
+}
+
+function StartFooter() {
+  const { brand, footer } = sparkleSuitePublicLandingContent
+
+  return (
+    <footer className="sl2-footer">
+      <div className="sl2-footer__brand">
+        <SparkleSeal className="sl2-footer__seal" />
+        <span>{brand}</span>
+      </div>
+      <div className="sl2-footer__nav" aria-label="Footer links">
+        <div>
+          <h2>Links</h2>
+          {footer.links.map((link) => (
+            <a href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+        <div>
+          <h2>Social</h2>
+          {footer.socialLinks.map((link) => (
+            <a href={link.href} key={link.label}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </div>
+      <p>{sparkleSuitePublicLandingSafety.disclaimer}</p>
+    </footer>
+  )
+}
+
 export default function StartPage() {
   return (
-    <main className={styles.page}>
-      <section className={styles.hero}>
-        <a className={styles.brand} href="/">
-          <SparkleSeal className={styles.seal} />
-          <span>Sparkle Suite</span>
-        </a>
-        <div className={styles.grid}>
-          <div className={styles.copy}>
-            <h1>Start your Sparkle Suite</h1>
-            <p>
-              Create your account first, then review the plan, terms, and
-              renewal details before payment. Nic-Nac opens after checkout to
-              help finish your customer site, dance floor, calendar, and
-              updates.
-            </p>
-            <div className={styles.reassurance} aria-label="Start reassurance">
-              {reassurance.map((item) => (
-                <section className={styles.reassuranceItem} key={item.title}>
-                  <h2>{item.title}</h2>
-                  <p>{item.body}</p>
-                </section>
-              ))}
+    <main className={`${styles.page} sparkle-landing-v2`}>
+      <div className="sl2-shell">
+        <StartHeader />
+        <section className={styles.hero}>
+          <div className={styles.grid}>
+            <div className={styles.copy}>
+              <h1>Start your Sparkle Suite</h1>
+              <p>
+                Create your Sparkle Suite account, agree to the terms, then head
+                to Stripe Checkout for plan and payment details. After checkout,
+                Nic-Nac opens to help finish your Sparkle Suite
+                customer-facing website, dancefloor/trade board, live show
+                calendar, and SMS and email updates.
+              </p>
+              <div className={styles.reassurance} aria-label="Start reassurance">
+                {reassurance.map((item) => (
+                  <section className={styles.reassuranceItem} key={item.title}>
+                    <h2>{item.title}</h2>
+                    <p>{item.body}</p>
+                  </section>
+                ))}
+              </div>
+              <ol className={styles.steps} aria-label="Self-serve signup steps">
+                {steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
             </div>
-            <ol className={styles.steps} aria-label="Self-serve signup steps">
-              {steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-          </div>
-          <div className={styles.formColumn}>
-            <StartSparkleSuiteForm />
-            <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
-              <SparkleSuitePublicNicNac variant="compact" />
+            <div className={styles.formColumn}>
+              <StartSparkleSuiteForm />
+              <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
+                <SparkleSuitePublicNicNac variant="compact" />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <StartFooter />
+      </div>
     </main>
   )
 }

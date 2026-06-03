@@ -9,7 +9,7 @@ import StartPage from '@/app/start/page'
 describe('Sparkle Suite start page', () => {
   it('renders a compact Nic-Nac launcher below the account form', () => {
     const html = renderToStaticMarkup(createElement(StartPage))
-    const formIndex = html.indexOf('Create account and continue')
+    const formIndex = html.indexOf('Continue with Google')
     const nicNacIndex = html.indexOf('Ask Nic-Nac')
 
     expect(formIndex).toBeGreaterThan(-1)
