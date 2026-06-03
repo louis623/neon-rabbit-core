@@ -83,6 +83,27 @@ describe('Nic-Nac branding copy', () => {
     expect(markCss).not.toContain('box-shadow')
   })
 
+  it('does not let required setup header text styling override the shared Nic-Nac mark', () => {
+    const requiredSetupHome = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/RequiredSetupHome.tsx',
+      ),
+      'utf8',
+    )
+    const requiredSetupCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/RequiredSetupHome.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(requiredSetupHome).toContain('className={styles.chatStatus}')
+    expect(requiredSetupCss).toContain('.chatStatus')
+    expect(requiredSetupCss).not.toContain('.chatHeader span')
+  })
+
   it('keeps required setup styling on the production Sparkle Suite palette', () => {
     const css = readFileSync(
       resolve(

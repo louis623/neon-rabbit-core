@@ -49,7 +49,7 @@ export function RequiredSetupHome({
           <NicNacGlyph size={34} />
           <div>
             <p>Nic-Nac</p>
-            <span>Required setup resumes automatically</span>
+            <span className={styles.chatStatus}>Required setup resumes automatically</span>
           </div>
         </header>
         <div className={styles.chatBody}>{chat}</div>

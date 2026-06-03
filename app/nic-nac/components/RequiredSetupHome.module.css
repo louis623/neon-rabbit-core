@@ -135,7 +135,7 @@
   border-bottom: 1px solid rgba(64, 41, 36, 0.1);
 }
 
-.chatHeader span {
+.chatStatus {
   display: block;
   margin-top: 0.15rem;
   color: #7b5c55;
