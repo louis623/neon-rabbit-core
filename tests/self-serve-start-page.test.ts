@@ -36,9 +36,11 @@ describe('Sparkle Suite self-serve start page', () => {
     const html = renderToStaticMarkup(createElement(StartPage))
 
     expect(html).toContain('class="sl2-header"')
+    expect(html).toContain('class="sl2-header__inner"')
     expect(html).toContain('aria-label="Sparkle Suite home"')
     expect(html).toContain('Already have Sparkle Suite?')
     expect(html).toContain('class="sl2-footer"')
+    expect(html).toContain('class="sl2-footer__inner"')
     expect(html).toContain('Privacy Policy')
     expect(html).toContain('Terms and Conditions')
   })

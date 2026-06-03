@@ -1,35 +1,9 @@
+import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import {
-  sparkleSuitePublicLandingContent,
-  sparkleSuitePublicLandingSafety,
-} from '@/lib/sparkle-suite/public-landing-content'
+  SparkleSuitePublicFooter,
+  SparkleSuitePublicHeader,
+} from './sparkle-suite-public-chrome'
 import { SparkleSuitePublicNicNac } from './sparkle-suite-public-nic-nac'
-
-function SparkleSeal({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 64 64">
-      <circle
-        cx="32"
-        cy="32"
-        fill="#ffffff"
-        r="30"
-        stroke="currentColor"
-        strokeWidth="0.75"
-      />
-      <text
-        fill="currentColor"
-        fontFamily="'Playfair Display', Georgia, serif"
-        fontSize="32"
-        fontStyle="italic"
-        fontWeight="500"
-        textAnchor="middle"
-        x="32"
-        y="42"
-      >
-        S
-      </text>
-    </svg>
-  )
-}
 
 function LandingButton({
   href,
@@ -44,23 +18,6 @@ function LandingButton({
     <a className={`sl2-btn sl2-btn--${variant}`} href={href}>
       {label}
     </a>
-  )
-}
-
-function LandingHeader() {
-  const { brand } = sparkleSuitePublicLandingContent
-
-  return (
-    <header className="sl2-header">
-      <a aria-label="Sparkle Suite home" className="sl2-brand" href="#top">
-        <SparkleSeal className="sl2-brand__seal" />
-        <span>{brand}</span>
-      </a>
-      <div className="sl2-header__actions">
-        <span>Already have Sparkle Suite?</span>
-        <a href="/login">Sign in here.</a>
-      </div>
-    </header>
   )
 }
 
@@ -166,47 +123,15 @@ function PricingSection() {
   )
 }
 
-function LandingFooter() {
-  const { brand, footer } = sparkleSuitePublicLandingContent
-
-  return (
-    <footer className="sl2-footer">
-      <div className="sl2-footer__brand">
-        <SparkleSeal className="sl2-footer__seal" />
-        <span>{brand}</span>
-      </div>
-      <div className="sl2-footer__nav" aria-label="Footer links">
-        <div>
-          <h2>Links</h2>
-          {footer.links.map((link) => (
-            <a href={link.href} key={link.href}>
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div>
-          <h2>Social</h2>
-          {footer.socialLinks.map((link) => (
-            <a href={link.href} key={link.label}>
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </div>
-      <p>{sparkleSuitePublicLandingSafety.disclaimer}</p>
-    </footer>
-  )
-}
-
 export function SparkleSuitePublicLanding() {
   return (
     <main className="sparkle-landing sparkle-landing-v2">
       <div className="sl2-shell">
-        <LandingHeader />
+        <SparkleSuitePublicHeader homeHref="#top" />
         <ProductHero />
         <WorkspaceProof />
         <PricingSection />
-        <LandingFooter />
+        <SparkleSuitePublicFooter />
       </div>
     </main>
   )

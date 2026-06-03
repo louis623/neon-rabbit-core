@@ -19,7 +19,15 @@ describe('POST /api/reviewer-smoke/session', () => {
     vi.stubEnv('SPARKLE_REVIEWER_SMOKE_TOKEN', 'review-token-12345')
   })
 
-  it('blocks reviewer setup when the token is missing', async () => {
+  it('resets the reusable reviewer session without a URL token in preview', async () => {
+    resetReviewerSmokeSessionMock.mockResolvedValue({
+      ok: true,
+      email: 'sparkle-reviewer+preview@neonrabbit.net',
+      password: 'preview-only-password',
+      state: 'required_setup',
+      next: '/nic-nac?onboarding=required-setup',
+    })
+
     const response = await POST(
       new Request('http://localhost/api/reviewer-smoke/session', {
         method: 'POST',
@@ -28,12 +36,8 @@ describe('POST /api/reviewer-smoke/session', () => {
       }),
     )
 
-    expect(response.status).toBe(403)
-    expect(resetReviewerSmokeSessionMock).not.toHaveBeenCalled()
-    await expect(response.json()).resolves.toEqual({
-      code: 'REVIEWER_SMOKE_DISABLED',
-      error: 'Reviewer smoke mode is not available.',
-    })
+    expect(response.status).toBe(200)
+    expect(resetReviewerSmokeSessionMock).toHaveBeenCalledWith('required_setup')
   })
 
   it('blocks reviewer setup in production even with a matching token', async () => {

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { SparkleSuitePublicNicNac } from '@/app/_components/sparkle-suite-public-nic-nac'
 import {
-  sparkleSuitePublicLandingContent,
-  sparkleSuitePublicLandingSafety,
-} from '@/lib/sparkle-suite/public-landing-content'
+  SparkleSuitePublicFooter,
+  SparkleSuitePublicHeader,
+} from '@/app/_components/sparkle-suite-public-chrome'
+import { SparkleSuitePublicNicNac } from '@/app/_components/sparkle-suite-public-nic-nac'
+import { reviewerSmokeModeEnabled } from '@/lib/reviewer-smoke/config'
 import { StartSparkleSuiteForm } from './StartSparkleSuiteForm'
 import styles from './start.module.css'
 
@@ -18,87 +19,11 @@ export const metadata: Metadata = {
   },
 }
 
-function SparkleSeal({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 64 64">
-      <circle
-        cx="32"
-        cy="32"
-        fill="#ffffff"
-        r="30"
-        stroke="currentColor"
-        strokeWidth="0.75"
-      />
-      <text
-        fill="currentColor"
-        fontFamily="'Playfair Display', Georgia, serif"
-        fontSize="32"
-        fontStyle="italic"
-        fontWeight="500"
-        textAnchor="middle"
-        x="32"
-        y="42"
-      >
-        S
-      </text>
-    </svg>
-  )
-}
-
-function StartHeader() {
-  const { brand } = sparkleSuitePublicLandingContent
-
-  return (
-    <header className="sl2-header">
-      <a aria-label="Sparkle Suite home" className="sl2-brand" href="/">
-        <SparkleSeal className="sl2-brand__seal" />
-        <span>{brand}</span>
-      </a>
-      <div className="sl2-header__actions">
-        <span>Already have Sparkle Suite?</span>
-        <a href="/login">Sign in here.</a>
-      </div>
-    </header>
-  )
-}
-
-function StartFooter() {
-  const { brand, footer } = sparkleSuitePublicLandingContent
-
-  return (
-    <footer className="sl2-footer">
-      <div className="sl2-footer__brand">
-        <SparkleSeal className="sl2-footer__seal" />
-        <span>{brand}</span>
-      </div>
-      <div className="sl2-footer__nav" aria-label="Footer links">
-        <div>
-          <h2>Links</h2>
-          {footer.links.map((link) => (
-            <a href={link.href} key={link.href}>
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div>
-          <h2>Social</h2>
-          {footer.socialLinks.map((link) => (
-            <a href={link.href} key={link.label}>
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </div>
-      <p>{sparkleSuitePublicLandingSafety.disclaimer}</p>
-    </footer>
-  )
-}
-
 export default function StartPage() {
   return (
     <main className={`${styles.page} sparkle-landing-v2`}>
       <div className="sl2-shell">
-        <StartHeader />
+        <SparkleSuitePublicHeader />
         <section className={styles.hero}>
           <div className={styles.copy}>
             <h1>Start your Sparkle Suite</h1>
@@ -110,14 +35,16 @@ export default function StartPage() {
               email updates.
             </p>
             <div className={styles.accountArea}>
-              <StartSparkleSuiteForm />
+              <StartSparkleSuiteForm
+                reviewerSmokeVisible={reviewerSmokeModeEnabled()}
+              />
               <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
                 <SparkleSuitePublicNicNac variant="compact" />
               </div>
             </div>
           </div>
         </section>
-        <StartFooter />
+        <SparkleSuitePublicFooter />
       </div>
     </main>
   )

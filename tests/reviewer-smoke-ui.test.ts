@@ -22,9 +22,11 @@ describe('reviewer smoke UI wiring', () => {
 
   it('adds reviewer controls to the start page without replacing normal signup', () => {
     expect(startForm).toContain('/api/reviewer-smoke/session')
+    expect(startForm).toContain('reviewerSmokeVisible')
     expect(startForm).toContain('Start smoke checkout')
     expect(startForm).toContain('Open dashboard preview')
     expect(startForm).not.toContain('Review checkout recovery')
+    expect(startForm).not.toContain('{reviewToken ? (')
     expect(startForm).toContain('/api/self-serve/signup')
   })
 

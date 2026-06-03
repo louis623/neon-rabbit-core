@@ -52,7 +52,11 @@ function firstFieldError(
   return fields?.[key]?.[0] ?? null
 }
 
-export function StartSparkleSuiteForm() {
+export function StartSparkleSuiteForm({
+  reviewerSmokeVisible = false,
+}: {
+  reviewerSmokeVisible?: boolean
+}) {
   const [reviewToken] = useState(() => {
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('review')?.trim() ?? ''
@@ -98,8 +102,10 @@ export function StartSparkleSuiteForm() {
       })
       if (signInError) throw signInError
 
-      const separator = payload.next.includes('?') ? '&' : '?'
-      window.location.href = `${payload.next}${separator}review=${encodeURIComponent(reviewToken)}`
+      window.location.href =
+        reviewToken.length > 0
+          ? `${payload.next}${payload.next.includes('?') ? '&' : '?'}review=${encodeURIComponent(reviewToken)}`
+          : payload.next
     } catch (caught) {
       setReviewerError(
         caught instanceof Error
@@ -227,7 +233,7 @@ export function StartSparkleSuiteForm() {
 
   return (
     <div className={styles.formStack}>
-      {reviewToken ? (
+      {reviewerSmokeVisible ? (
         <section className={styles.reviewerPanel} aria-label="Reviewer smoke mode">
           <div>
             <span>Reviewer smoke mode</span>
