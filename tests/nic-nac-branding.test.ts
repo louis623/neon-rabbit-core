@@ -43,7 +43,7 @@ describe('Nic-Nac branding copy', () => {
     expect(headerHtml).toContain('aria-label="Close Nic-Nac"')
   })
 
-  it('uses guided copy and setup prompts during required setup', () => {
+  it('uses guided copy without prompt chips during required setup', () => {
     const greetingHtml = renderToStaticMarkup(
       createElement(EmptyGreeting, { mode: 'required_setup' }),
     )
@@ -62,10 +62,26 @@ describe('Nic-Nac branding copy', () => {
     expect(greetingHtml).toContain('customer-facing website ready!')
     expect(greetingHtml).toContain('What should I call you?')
     expect(greetingHtml).not.toContain('What&#x27;s on your mind?')
-    expect(chipsHtml).toContain('Start account basics')
-    expect(chipsHtml).toContain('What do you need from me?')
+    expect(chipsHtml).toBe('')
+    expect(chipsHtml).not.toContain('Start account basics')
+    expect(chipsHtml).not.toContain('What do you need from me?')
     expect(chipsHtml).not.toContain('What&#x27;s on my board?')
     expect(chipsHtml).not.toContain('Remove a listing')
+  })
+
+  it('keeps prompt chips available in the normal workspace', () => {
+    const chipsHtml = renderToStaticMarkup(
+      createElement(Chips, {
+        visible: true,
+        mode: 'workspace',
+        onPick: () => {},
+      }),
+    )
+
+    expect(chipsHtml).toContain('What&#x27;s on my board?')
+    expect(chipsHtml).toContain('Remove a listing')
+    expect(chipsHtml).not.toContain('Start account basics')
+    expect(chipsHtml).not.toContain('What do you need from me?')
   })
 
   it('uses the approved bright pink circle with a white N for every shared Nic-Nac mark', () => {

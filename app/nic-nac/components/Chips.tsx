@@ -2,10 +2,6 @@ import styles from './Chips.module.css'
 import type { NicNacChatMode } from './EmptyGreeting'
 
 const WORKSPACE_CHIP_LABELS = ["What's on my board?", 'Remove a listing']
-const REQUIRED_SETUP_CHIP_LABELS = [
-  'Start account basics',
-  'What do you need from me?',
-]
 
 export function Chips({
   visible,
@@ -19,8 +15,8 @@ export function Chips({
   mode?: NicNacChatMode
 }) {
   if (!visible) return null
-  const labels =
-    mode === 'required_setup' ? REQUIRED_SETUP_CHIP_LABELS : WORKSPACE_CHIP_LABELS
+  if (mode === 'required_setup') return null
+  const labels = WORKSPACE_CHIP_LABELS
 
   return (
     <div className={styles.row} role="group" aria-label="Suggested prompts">
