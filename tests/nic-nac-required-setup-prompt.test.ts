@@ -19,6 +19,28 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('populate the Trade Board before unlock')
   })
 
+  it('uses clear account-basics language for customer-facing setup fields', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain(
+      'What name do you want shown on your Sparkle Suite customer-facing website?',
+    )
+    expect(prompt).toContain('Ask one field at a time')
+    expect(prompt).toContain('Do not dump the account-basics fields as a checklist')
+    expect(prompt).toContain('Do not re-welcome the rep after they answer')
+    expect(prompt).toContain('What is your live show name?')
+    expect(prompt).toContain('Bomb Party rep store link')
+    expect(prompt).toContain('link customers use to shop or order from you')
+    expect(prompt).toContain('Main live-show or social-media link')
+    expect(prompt).toContain('conversationName')
+    expect(prompt).toContain('customerFacingDisplayName')
+    expect(prompt).toContain('liveShowName')
+    expect(prompt).toContain('bombPartyRepStoreLink')
+    expect(prompt).not.toContain('display name, business name, best contact detail, shop link')
+    expect(prompt).not.toContain('Your business name')
+    expect(prompt).not.toContain('Link to your shop or website')
+  })
+
   it('adds required setup instructions without workspace tool sections in setup mode', () => {
     const prompt = buildNicNacSystemPrompt({
       mode: 'required_setup',

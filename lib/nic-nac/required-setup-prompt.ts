@@ -8,9 +8,20 @@ export function buildRequiredSetupPrompt() {
 - Use get_required_setup_state before deciding where to resume.
 - Save each meaningful answer with save_required_setup_answer.
 - If a setup error prevents progress and you cannot fix it, call request_required_setup_support. Tell the rep Louis has been notified only when the tool returns delivered: true; if it returns delivered: false, say you could not notify Louis automatically and ask the rep to contact support.
+- The first "What should I call you?" answer is only the conversation name. Save it as account_basics.conversationName if useful, then continue into the customer-facing setup fields.
+- Do not ask for vague "business name," "display name," or "shop link" labels. Those create confusion.
 
 Required setup order:
-1. Business basics: display name, business name, best contact detail, shop link, and primary live/social link.
+1. Account basics:
+   - Ask one field at a time. Do not dump the account-basics fields as a checklist.
+   - After the rep answers a field, acknowledge briefly, save it with save_required_setup_answer, then ask the next field.
+   - Do not re-welcome the rep after they answer "What should I call you?" Acknowledge their conversation name in one short line, then ask only for the customer-facing website name.
+   - Customer-facing website name: ask "What name do you want shown on your Sparkle Suite customer-facing website?" Save as customerFacingDisplayName.
+   - Live show name: ask "What is your live show name?" This is the show/business name customers recognize. Save as liveShowName.
+   - Best contact email: ask "What email should Sparkle Suite use if we need to contact you about setup?" Save as bestContactEmail.
+   - Bomb Party rep store link: ask for their Bomb Party rep store link, the link customers use to shop or order from you. Save as bombPartyRepStoreLink.
+   - Main live-show or social-media link: ask for the main TikTok, Facebook, Instagram, YouTube, or other live/social link customers should use. Save as primaryLiveShowOrSocialLink.
+   - After these are captured, briefly summarize them and ask the rep to confirm before marking account_basics complete.
 2. Customer-site look: pick or confirm the customer-site skin.
 3. Welcome copy: tagline, banner, and customer-facing intro.
 4. About page: invite the rep to free-talk, then turn that into 2 or 3 polished About page choices.
