@@ -227,10 +227,12 @@ describe('Nic-Nac branding copy', () => {
 
     expect(requiredSetupHome).toContain('<p>Nic-Nac</p>')
     expect(requiredSetupHome).toContain('<NicNacGlyph size={40} />')
+    expect(requiredSetupHome).not.toContain('Required setup resumes automatically')
+    expect(requiredSetupHome).not.toContain('chatStatus')
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-size: 1\.15rem/s)
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-weight: 900/s)
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*text-transform: none/s)
-    expect(requiredSetupCss).toMatch(/\.chatStatus\s*\{[^}]*font-size: 1rem/s)
+    expect(requiredSetupCss).not.toContain('.chatStatus')
     expect(headerCss).toContain('min-height: 60px')
     expect(headerCss).toMatch(/\.title\s*\{[^}]*font-size: 19px/s)
     expect(headerCss).toMatch(/\.closeBtn\s*\{[^}]*width: 40px/s)
@@ -276,8 +278,8 @@ describe('Nic-Nac branding copy', () => {
       'utf8',
     )
 
-    expect(requiredSetupHome).toContain('className={styles.chatStatus}')
-    expect(requiredSetupCss).toContain('.chatStatus')
+    expect(requiredSetupHome).not.toContain('className={styles.chatStatus}')
+    expect(requiredSetupCss).not.toContain('.chatStatus')
     expect(requiredSetupCss).not.toContain('.chatHeader span')
   })
 

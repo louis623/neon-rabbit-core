@@ -189,15 +189,6 @@
   border-bottom: 1px solid rgba(64, 41, 36, 0.1);
 }
 
-.chatStatus {
-  display: block;
-  margin-top: 0.2rem;
-  color: #7b5c55;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
 .chatBody {
   min-height: 0;
   display: grid;
