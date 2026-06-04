@@ -84,6 +84,31 @@ describe('Nic-Nac branding copy', () => {
     expect(chipsHtml).not.toContain('What do you need from me?')
   })
 
+  it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {
+    const bubbleCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/Bubble.module.css'),
+      'utf8',
+    )
+    const streamingCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/StreamingBubble.module.css'),
+      'utf8',
+    )
+    const greetingCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/EmptyGreeting.module.css'),
+      'utf8',
+    )
+
+    expect(bubbleCss).toContain('.nicNac')
+    expect(bubbleCss).toContain('font-size: 21px')
+    expect(bubbleCss).toContain('font-weight: 700')
+    expect(streamingCss).toContain('font-size: 21px')
+    expect(streamingCss).toContain('font-weight: 700')
+    expect(greetingCss).toContain('font-size: 21px')
+    expect(greetingCss).toContain('font-weight: 700')
+    expect(bubbleCss).toContain('.rep')
+    expect(bubbleCss).toContain('font-weight: 500')
+  })
+
   it('uses the approved bright pink circle with a white N for every shared Nic-Nac mark', () => {
     const markHtml = renderToStaticMarkup(createElement(NicNacMark, { size: 34 }))
     const markCss = readFileSync(

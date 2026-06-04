@@ -57,7 +57,9 @@
   background: var(--nic-nac-surface-nic-nac-message);
   border: 1px solid var(--nic-nac-border);
   border-radius: 14px 14px 14px 4px;
-  font-weight: 400;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .timestamp {
@@ -136,5 +138,5 @@
 }
 
 .mdRoot strong {
-  font-weight: 600;
+  font-weight: 800;
 }
