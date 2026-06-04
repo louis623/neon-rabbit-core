@@ -46,6 +46,7 @@ import {
   normalizeRunUsage,
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
+import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -378,23 +379,24 @@ export async function POST(request: Request) {
       // from canonical history (loadCanonicalHistory drops non-complete
       // assistant rows from the model's view).
       try {
+        const normalizedParts = normalizeNicNacAssistantParts(responseMessage.parts)
         if (sdkIsContinuation) {
           await checkpointAssistant(supabase, {
             conversationId,
             messageId: responseMessage.id,
-            parts: responseMessage.parts,
+            parts: normalizedParts,
           })
         } else if (isAborted) {
           await abortAssistant(supabase, {
             conversationId,
             messageId: responseMessage.id,
-            parts: responseMessage.parts,
+            parts: normalizedParts,
           })
         } else {
           await completeAssistant(supabase, {
             conversationId,
             messageId: responseMessage.id,
-            parts: responseMessage.parts,
+            parts: normalizedParts,
           })
         }
         await logNicNacRun({
