@@ -28,7 +28,6 @@ import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
-  formatExtensionRepId,
 } from '@/lib/nic-nac/rep-links'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import styles from './DashboardPlaceholder.module.css'
@@ -36,7 +35,6 @@ import styles from './DashboardPlaceholder.module.css'
 export {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
-  formatExtensionRepId,
 }
 
 const WORKSPACE_SECTIONS = [
@@ -208,6 +206,7 @@ type RepProfileState = {
   status: 'loading' | 'ready' | 'error'
   repId?: string
   displayName?: string
+  liveQueueSyncCode?: string | null
 }
 
 type TradeBoardActionState = {
@@ -279,6 +278,7 @@ type MeResponsePayload = {
   rep?: {
     id?: string
     display_name?: string
+    live_queue_sync_code?: string | null
   }
 }
 
@@ -966,11 +966,12 @@ export function getCustomerRecoveryActions(customer: CustomerAudienceMember) {
 
 export type DashboardPlaceholderProps = {
   repIdOverride?: string
+  liveQueueSyncCodeOverride?: string | null
   initialSiteSettings?: SiteSettingsDashboardResult
 }
 
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
-  const { repIdOverride, initialSiteSettings } = props
+  const { repIdOverride, liveQueueSyncCodeOverride, initialSiteSettings } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>(() =>
       typeof window === 'undefined'
@@ -1102,6 +1103,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       status: 'ready',
       repId: payload.rep?.id,
       displayName: payload.rep?.display_name,
+      liveQueueSyncCode: payload.rep?.live_queue_sync_code ?? null,
     })
   }
 
@@ -2371,7 +2373,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     siteSettingsState.settings?.displayName ?? repProfileState.displayName,
     siteSettingsState.settings?.businessName,
   )
-  const headerExtensionId = formatExtensionRepId(repIdOverride ?? repProfileState.repId)
+  const headerLiveQueueSyncCode =
+    liveQueueSyncCodeOverride ?? repProfileState.liveQueueSyncCode ?? 'Not assigned yet'
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
     siteSettingsDraft,
@@ -2397,9 +2400,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             <span className={styles.topbarInfoValue}>{headerRepShow}</span>
           </div>
           <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Extension code</span>
+            <span className={styles.topbarInfoLabel}>Live Queue sync code</span>
             <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
-              {headerExtensionId}
+              {headerLiveQueueSyncCode}
+            </span>
+            <span className={styles.topbarInfoHint}>
+              Saved here for future extension setup.
             </span>
           </div>
           {hasPaidWorkspace ? (

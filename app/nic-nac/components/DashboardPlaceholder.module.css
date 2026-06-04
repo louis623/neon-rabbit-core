@@ -327,6 +327,17 @@
   line-height: 1.2;
 }
 
+.topbarInfoHint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--nic-nac-text-secondary);
+}
+
 .liveSiteButton {
   display: inline-flex;
   align-items: center;

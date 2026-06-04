@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { getLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const { rep } = await getAuthenticatedNicNacContext()
+    const { repId, rep, supabase } = await getAuthenticatedNicNacContext()
+    const liveQueueSyncCode = await getLiveQueueSyncCodeForRep(supabase, repId)
     return NextResponse.json({
-      rep: { id: rep.id, email: rep.email, display_name: rep.display_name },
+      rep: {
+        id: rep.id,
+        email: rep.email,
+        display_name: rep.display_name,
+        live_queue_sync_code: liveQueueSyncCode,
+      },
     })
   } catch (err) {
     if (err instanceof AuthError) {

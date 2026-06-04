@@ -55,9 +55,10 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('requiredSetupStep={setupState?.currentStep ?? null}')
   })
 
-  it('passes a required setup extension code into chat for Live Queue setup', () => {
-    expect(client).toContain('requiredSetupExtensionCode={requiredSetupExtensionCode}')
-    expect(client).toContain('formatExtensionRepId(setupState?.repId)')
+  it('passes the assigned Live Queue sync code into chat for Live Queue setup', () => {
+    expect(client).toContain('requiredSetupSyncCode={requiredSetupSyncCode}')
+    expect(client).toContain('setupState?.liveQueueSyncCode ?? null')
+    expect(client).not.toContain('formatExtensionRepId(setupState?.repId)')
   })
 
   it('passes the exact required setup preview href into chat', () => {

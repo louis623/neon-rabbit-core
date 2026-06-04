@@ -28,6 +28,15 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('Ask one field at a time')
     expect(prompt).toContain('Do not dump the account-basics fields as a checklist')
     expect(prompt).toContain('Do not re-welcome the rep after they answer')
+    expect(prompt).toContain(
+      'If the latest user message answers "What should I call you?"',
+    )
+    expect(prompt).toContain(
+      'Do not ask "What should I call you?" a second time',
+    )
+    expect(prompt).toContain(
+      'Thanks, Jane. What name do you want shown on your Sparkle Suite customer-facing website?',
+    )
     expect(prompt).toContain('What is your live show name?')
     expect(prompt).toContain('Bomb Party rep store link')
     expect(prompt).toContain('link customers use to shop or order from you')
@@ -59,8 +68,14 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('Live Queue setup')
     expect(prompt).toContain('Live Queue is not optional')
     expect(prompt).toContain('If Live Queue setup is blocked')
+    expect(prompt).toContain('Live Queue sync code')
+    expect(prompt).toContain(
+      'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',
+    )
+    expect(prompt).toContain('Do not ask the rep to search')
     expect(prompt).toContain('request_required_setup_support')
     expect(prompt).toContain('notify Louis or support')
+    expect(prompt).not.toContain('extension code')
     expect(prompt).not.toContain('come back later')
     expect(prompt).not.toContain('before your first live show')
     expect(prompt).not.toContain('Live Queue orientation')

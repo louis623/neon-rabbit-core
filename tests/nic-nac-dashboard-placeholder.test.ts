@@ -40,7 +40,6 @@ import {
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
   type DashboardPlaceholderProps,
-  formatExtensionRepId,
   formatHeaderRepShow,
   formatWalletAmount,
   needsFreshOptIn,
@@ -392,7 +391,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Workspace')
     expect(html).not.toContain('Sparkle Suite workspace')
     expect(html).toContain('Rep / show')
-    expect(html).toContain('Extension code')
+    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('Saved here for future extension setup.')
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -474,17 +474,30 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('disabled=""')
   })
 
-  it('formats the workspace header rep/show and extension code labels', () => {
+  it('formats the workspace header rep/show label without deriving sync codes from rep ids', () => {
     expect(formatHeaderRepShow('Louis', 'Sparkle by Sasha')).toBe(
       'Louis / Sparkle by Sasha',
     )
     expect(formatHeaderRepShow('', 'Sparkle by Sasha')).toBe('Sparkle by Sasha')
     expect(formatHeaderRepShow(undefined, undefined)).toBe('Rep info loading')
-    expect(formatExtensionRepId('8242049c-58bc-47d4-aa7a-bee2dfb7c62f')).toBe(
-      '916574',
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
     )
-    expect(formatExtensionRepId('123456')).toBe('123456')
-    expect(formatExtensionRepId(undefined)).toBe('Waiting for code')
+    expect(source).not.toContain('formatExtensionRepId(')
+  })
+
+  it('renders the saved Live Queue sync code in the workspace topbar', () => {
+    const html = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        liveQueueSyncCodeOverride: 'MHF-7342',
+      }),
+    )
+
+    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('MHF-7342')
+    expect(html).toContain('Saved here for future extension setup.')
+    expect(html).not.toContain('Extension code')
   })
 
   it('derives the workspace skin from the current site settings draft first', () => {

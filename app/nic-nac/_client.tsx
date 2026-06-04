@@ -24,7 +24,6 @@ import {
 } from '@/lib/nic-nac/rollover'
 import {
   buildCustomerSparkleSiteHref,
-  formatExtensionRepId,
 } from '@/lib/nic-nac/rep-links'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
 import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
@@ -56,8 +55,12 @@ type ConversationRolloverResponse = {
   messages?: UIMessage[]
 }
 
+type SetupStateWithLiveQueue = RequiredSetupState & {
+  liveQueueSyncCode?: string | null
+}
+
 type SetupStateResponse = {
-  state?: RequiredSetupState
+  state?: SetupStateWithLiveQueue
   error?: string
 }
 
@@ -99,7 +102,7 @@ export default function NicNacClient({
     billingState === 'subscription-success' &&
     checkoutSessionId.length > 0
 
-  const [setupState, setSetupState] = useState<RequiredSetupState | null>(null)
+  const [setupState, setSetupState] = useState<SetupStateWithLiveQueue | null>(null)
   const [setupStateStatus, setSetupStateStatus] = useState<
     'loading' | 'ready' | 'error'
   >('loading')
@@ -281,7 +284,7 @@ export default function NicNacClient({
     setupStateStatus === 'ready' &&
     !isCheckoutRequiredMode &&
     (isRequiredSetupMode || isDashboardUnlocked)
-  const requiredSetupExtensionCode = formatExtensionRepId(setupState?.repId)
+  const requiredSetupSyncCode = setupState?.liveQueueSyncCode ?? null
   const requiredSetupPreviewHref = buildCustomerSparkleSiteHref(setupState?.repId)
 
   useEffect(() => {
@@ -627,7 +630,7 @@ export default function NicNacClient({
       conversationId={conversationId!}
       chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}
       requiredSetupStep={setupState?.currentStep ?? null}
-      requiredSetupExtensionCode={requiredSetupExtensionCode}
+      requiredSetupSyncCode={requiredSetupSyncCode}
       requiredSetupPreviewHref={requiredSetupPreviewHref}
       transport={transport!}
       initialMessages={initialMessages!}

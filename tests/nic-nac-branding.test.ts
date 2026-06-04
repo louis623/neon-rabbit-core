@@ -116,19 +116,24 @@ describe('Nic-Nac branding copy', () => {
   it('renders required Live Queue setup as an operational setup panel', () => {
     const html = renderToStaticMarkup(
       createElement(RequiredSetupLiveQueuePanel, {
-        extensionCode: '064632',
+        syncCode: 'MHF-7342',
         onSend: () => {},
       }),
     )
 
     expect(html).toContain('Set up Live Queue')
-    expect(html).toContain('Extension code')
-    expect(html).toContain('064632')
-    expect(html).toContain('Install or open the Sparkle Suite Chrome extension')
-    expect(html).toContain('Enter this extension code')
+    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('MHF-7342')
+    expect(html).toContain('Open Sparkle Suite Live Queue in the Chrome Extension Store')
+    expect(html).toContain(
+      'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',
+    )
+    expect(html).toContain('Enter this sync code')
     expect(html).toContain('Confirm the Party Filter')
     expect(html).toContain('Check Live Queue status')
     expect(html).toContain('I need help with Live Queue setup')
+    expect(html).not.toContain('search')
+    expect(html).not.toContain('064632')
     expect(html).not.toContain('orientation')
     expect(html).not.toContain('LiveQ')
   })

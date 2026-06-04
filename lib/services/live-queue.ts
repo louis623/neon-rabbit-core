@@ -81,3 +81,22 @@ export async function getLiveQueueSnapshot(
     staleAfterSeconds: input.staleAfterSeconds,
   })
 }
+
+export async function getLiveQueueSyncCodeForRep(
+  supabase: SupabaseClient,
+  repId: string,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('live_queue')
+    .select('sync_code')
+    .eq('rep_id', repId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  const syncCode = (data as { sync_code?: unknown } | null)?.sync_code
+  return typeof syncCode === 'string' && syncCode.trim()
+    ? syncCode.trim()
+    : null
+}

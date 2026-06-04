@@ -1,0 +1,53 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const getAuthenticatedNicNacContextMock = vi.fn()
+const getLiveQueueSyncCodeForRepMock = vi.fn()
+
+vi.mock('@/lib/nic-nac/auth', () => ({
+  AuthError: class AuthError extends Error {},
+  getAuthenticatedNicNacContext: (...args: unknown[]) =>
+    getAuthenticatedNicNacContextMock(...args),
+}))
+
+vi.mock('@/lib/services/live-queue', () => ({
+  getLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    getLiveQueueSyncCodeForRepMock(...args),
+}))
+
+import { GET } from '@/app/api/nic-nac/me/route'
+
+describe('/api/nic-nac/me', () => {
+  beforeEach(() => {
+    getAuthenticatedNicNacContextMock.mockReset()
+    getLiveQueueSyncCodeForRepMock.mockReset()
+  })
+
+  it('returns the authenticated rep profile with the saved Live Queue sync code', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: {
+        id: 'rep-1',
+        email: 'rep@example.com',
+        display_name: 'Mile High Fizz',
+      },
+      supabase: { marker: 'supabase' },
+    })
+    getLiveQueueSyncCodeForRepMock.mockResolvedValueOnce('MHF-7342')
+
+    const response = await GET()
+
+    expect(getLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      rep: {
+        id: 'rep-1',
+        email: 'rep@example.com',
+        display_name: 'Mile High Fizz',
+        live_queue_sync_code: 'MHF-7342',
+      },
+    })
+  })
+})

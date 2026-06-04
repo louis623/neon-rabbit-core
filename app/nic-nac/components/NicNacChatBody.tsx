@@ -54,7 +54,7 @@ export function NicNacChatBody({
   conversationId,
   chatMode = 'workspace',
   requiredSetupStep,
-  requiredSetupExtensionCode = 'Waiting for code',
+  requiredSetupSyncCode = null,
   requiredSetupPreviewHref = '/amethyst/Homepage.html',
   transport,
   initialMessages,
@@ -64,7 +64,7 @@ export function NicNacChatBody({
   conversationId: string
   chatMode?: NicNacChatMode
   requiredSetupStep?: RequiredSetupStepId | null
-  requiredSetupExtensionCode?: string
+  requiredSetupSyncCode?: string | null
   requiredSetupPreviewHref?: string
   transport: DefaultChatTransport<UIMessage>
   initialMessages: UIMessage[]
@@ -582,7 +582,7 @@ export function NicNacChatBody({
         ) : null}
         {showLiveQueuePanel ? (
           <RequiredSetupLiveQueuePanel
-            extensionCode={requiredSetupExtensionCode}
+            syncCode={requiredSetupSyncCode}
             onSend={handleLookChoice}
             disabled={isStreaming || hasPendingApproval}
           />

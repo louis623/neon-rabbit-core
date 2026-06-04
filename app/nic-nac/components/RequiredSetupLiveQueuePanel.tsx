@@ -1,16 +1,19 @@
 'use client'
 
+import { LIVE_QUEUE_CHROME_EXTENSION_URL } from '@/lib/nic-nac/live-queue-extension'
 import styles from './RequiredSetupLiveQueuePanel.module.css'
 
 export function RequiredSetupLiveQueuePanel({
-  extensionCode,
+  syncCode,
   onSend,
   disabled = false,
 }: {
-  extensionCode: string
+  syncCode: string | null
   onSend: (message: string) => void
   disabled?: boolean
 }) {
+  const hasSyncCode = Boolean(syncCode?.trim())
+
   return (
     <section className={styles.panel} aria-label="Live Queue setup">
       <div className={styles.header}>
@@ -23,12 +26,28 @@ export function RequiredSetupLiveQueuePanel({
         </p>
       </div>
       <div className={styles.codeBox}>
-        <span>Extension code</span>
-        <strong>{extensionCode}</strong>
+        <span>Live Queue sync code</span>
+        <strong>{hasSyncCode ? syncCode : 'Not assigned yet'}</strong>
       </div>
+      {!hasSyncCode ? (
+        <p className={styles.blockedNote}>
+          Nic-Nac needs support to assign your Live Queue sync code before this
+          step can be completed.
+        </p>
+      ) : null}
       <ol className={styles.steps}>
-        <li>Install or open the Sparkle Suite Chrome extension.</li>
-        <li>Enter this extension code in the extension.</li>
+        <li>
+          <a
+            className={styles.storeLink}
+            href={LIVE_QUEUE_CHROME_EXTENSION_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open Sparkle Suite Live Queue in the Chrome Extension Store
+          </a>
+          .
+        </li>
+        <li>Enter this sync code in the extension.</li>
         <li>Open your Bomb Party Party Orders page.</li>
         <li>Confirm the Party Filter for the show you want synced.</li>
         <li>Check Live Queue status before moving on.</li>
@@ -37,7 +56,7 @@ export function RequiredSetupLiveQueuePanel({
         <button
           type="button"
           onClick={() => onSend('I connected Live Queue and confirmed it is syncing.')}
-          disabled={disabled}
+          disabled={disabled || !hasSyncCode}
         >
           Live Queue is connected
         </button>

@@ -1,13 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { getAuthenticatedRepMock, getRequiredSetupStateMock } = vi.hoisted(() => ({
+const {
+  createAdminClientMock,
+  getAuthenticatedRepMock,
+  getLiveQueueSyncCodeForRepMock,
+  getRequiredSetupStateMock,
+} = vi.hoisted(() => ({
+  createAdminClientMock: vi.fn(),
   getAuthenticatedRepMock: vi.fn(),
+  getLiveQueueSyncCodeForRepMock: vi.fn(),
   getRequiredSetupStateMock: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: (...args: unknown[]) => createAdminClientMock(...args),
 }))
 
 vi.mock('@/lib/supabase/auth', () => ({
   AuthError: class AuthError extends Error {},
   getAuthenticatedRep: (...args: unknown[]) => getAuthenticatedRepMock(...args),
+}))
+
+vi.mock('@/lib/services/live-queue', () => ({
+  getLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    getLiveQueueSyncCodeForRepMock(...args),
 }))
 
 vi.mock('@/lib/self-serve/required-setup', () => ({
@@ -16,7 +32,9 @@ vi.mock('@/lib/self-serve/required-setup', () => ({
 
 describe('/api/self-serve/setup-state', () => {
   beforeEach(() => {
+    createAdminClientMock.mockReset()
     getAuthenticatedRepMock.mockReset()
+    getLiveQueueSyncCodeForRepMock.mockReset()
     getRequiredSetupStateMock.mockReset()
   })
 
@@ -30,17 +48,24 @@ describe('/api/self-serve/setup-state', () => {
       currentStep: 'account_basics',
       completedSteps: [],
     })
+    createAdminClientMock.mockReturnValue({ from: vi.fn() })
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue('MHF-7342')
     const { GET } = await import('@/app/api/self-serve/setup-state/route')
 
     const response = await GET()
 
     expect(getRequiredSetupStateMock).toHaveBeenCalledWith('rep-1')
+    expect(getLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(
+      expect.any(Object),
+      'rep-1',
+    )
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       state: {
         status: 'required_setup',
         currentStep: 'account_basics',
         completedSteps: [],
+        liveQueueSyncCode: 'MHF-7342',
       },
     })
   })

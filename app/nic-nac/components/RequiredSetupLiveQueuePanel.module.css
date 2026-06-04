@@ -66,6 +66,18 @@
   letter-spacing: 0;
 }
 
+.blockedNote {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(238, 44, 155, 0.26);
+  border-radius: 8px;
+  background: #fff6fa;
+  color: #654944;
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.42;
+}
+
 .steps {
   display: grid;
   gap: 8px;
@@ -79,6 +91,17 @@
 .steps li::marker {
   color: #ee2c9b;
   font-weight: 900;
+}
+
+.storeLink {
+  color: #8f1a5f;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.storeLink:hover {
+  color: #5f123f;
 }
 
 .actions {
