@@ -53,6 +53,19 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('Customer-site look: pick or confirm the customer-site skin')
   })
 
+  it('requires support escalation when Live Queue setup is blocked', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain('Live Queue setup')
+    expect(prompt).toContain('Live Queue is not optional')
+    expect(prompt).toContain('If Live Queue setup is blocked')
+    expect(prompt).toContain('request_required_setup_support')
+    expect(prompt).toContain('notify Louis or support')
+    expect(prompt).not.toContain('come back later')
+    expect(prompt).not.toContain('before your first live show')
+    expect(prompt).not.toContain('Live Queue orientation')
+  })
+
   it('adds required setup instructions without workspace tool sections in setup mode', () => {
     const prompt = buildNicNacSystemPrompt({
       mode: 'required_setup',

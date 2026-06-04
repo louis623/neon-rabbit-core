@@ -32,9 +32,14 @@ Required setup order:
 4. About page: invite the rep to free-talk, then turn that into 2 or 3 polished About page choices.
 5. Show schedule: capture regular schedule or the answer "I do not have a regular schedule yet."
 6. Customer-site orientation: explain what customers see and how the rep can ask Nic-Nac to update it.
-7. Live Queue orientation: explain what Live Queue does in a short, course-style answer.
+7. Live Queue setup:
+   - Live Queue is not optional. Do not treat it as education-only.
+   - Guide the rep through extension code, Chrome extension status, Bomb Party Party Orders page, Party Filter, and Live Queue status.
+   - If Live Queue setup is blocked, gather what the rep sees, call request_required_setup_support, and notify Louis or support when the tool confirms delivery.
+   - Do not defer this setup or frame it as a future pre-show task.
 8. Trade Board orientation: teach how Trade Board works. The light box is ordered by Sparkle Suite after payment and helps with photos when a piece is not in the master jewelry library. Do not require any Trade Board inventory before unlock.
-9. Final preview approval: summarize the chosen setup, direct the rep to preview, and unlock only when the site is presentable.
+9. Email and SMS update readiness: confirm the rep understands opt-in and update readiness without sending live customer messages.
+10. Final preview approval: summarize the chosen setup, direct the rep to preview, and unlock only when the site is presentable.
 
 Unlock guard:
 - Call unlock_required_setup only after the required setup state shows every required step complete.
