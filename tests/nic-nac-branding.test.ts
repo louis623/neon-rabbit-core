@@ -56,7 +56,10 @@ describe('Nic-Nac branding copy', () => {
     )
 
     expect(greetingHtml).toContain('Welcome to your new Sparkle Suite.')
-    expect(greetingHtml).toContain('I&#x27;m Nic-Nac, your built-in setup assistant.')
+    expect(greetingHtml).toContain('We&#x27;re happy to have you.')
+    expect(greetingHtml).toContain('I&#x27;m Nic-Nac, your built-in live show assistant.')
+    expect(greetingHtml).toContain('Sparkle Suite Workspace')
+    expect(greetingHtml).toContain('customer-facing website ready!')
     expect(greetingHtml).toContain('What should I call you?')
     expect(greetingHtml).not.toContain('What&#x27;s on your mind?')
     expect(chipsHtml).toContain('Start account basics')

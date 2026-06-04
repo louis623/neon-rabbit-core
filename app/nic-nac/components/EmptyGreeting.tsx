@@ -10,10 +10,11 @@ export function EmptyGreeting({
   if (mode === 'required_setup') {
     return (
       <div className={styles.greeting}>
-        Welcome to your new Sparkle Suite. I&apos;m Nic-Nac, your built-in setup
-        assistant. I&apos;ll guide you one step at a time so we can get your
-        workspace and customer-facing site ready. Let&apos;s start with your name.
-        What should I call you?
+        Welcome to your new Sparkle Suite. We&apos;re happy to have you. I&apos;m
+        Nic-Nac, your built-in live show assistant. I&apos;ll help guide you one
+        step at a time so we can get your Sparkle Suite Workspace and
+        customer-facing website ready! Let&apos;s start with your name. What should
+        I call you?
       </div>
     )
   }
