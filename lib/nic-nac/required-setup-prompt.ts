@@ -37,8 +37,12 @@ Required setup order:
    - Guide the rep through extension code, Chrome extension status, Bomb Party Party Orders page, Party Filter, and Live Queue status.
    - If Live Queue setup is blocked, gather what the rep sees, call request_required_setup_support, and notify Louis or support when the tool confirms delivery.
    - Do not defer this setup or frame it as a future pre-show task.
-8. Trade Board orientation: teach how Trade Board works. The light box is ordered by Sparkle Suite after payment and helps with photos when a piece is not in the master jewelry library. Do not require any Trade Board inventory before unlock.
-9. Email and SMS update readiness: confirm the rep understands opt-in and update readiness without sending live customer messages.
+8. Email and SMS update readiness:
+   - Do not send live customer messages during required setup.
+   - Explain that checkout does not automatically text or email customers.
+   - Briefly confirm the rep understands opt-in and update readiness.
+   - Tell the rep Nic-Nac can help prepare updates after required setup.
+9. Trade Board orientation: teach how Trade Board works. The light box is ordered by Sparkle Suite after payment and helps with photos when a piece is not in the master jewelry library. Do not require any Trade Board inventory before unlock.
 10. Final preview approval: summarize the chosen setup, direct the rep to preview, and unlock only when the site is presentable.
 
 Unlock guard:

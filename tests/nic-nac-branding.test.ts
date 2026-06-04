@@ -8,6 +8,7 @@ import { NicNacMark } from '@/app/_components/nic-nac-mark'
 import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
 import { RequiredSetupLiveQueuePanel } from '@/app/nic-nac/components/RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
+import { RequiredSetupUpdatesPanel } from '@/app/nic-nac/components/RequiredSetupUpdatesPanel'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
 import { ThinkingIndicator } from '@/app/nic-nac/components/ThinkingIndicator'
@@ -129,6 +130,20 @@ describe('Nic-Nac branding copy', () => {
     expect(html).toContain('I need help with Live Queue setup')
     expect(html).not.toContain('orientation')
     expect(html).not.toContain('LiveQ')
+  })
+
+  it('renders email and SMS update readiness as a setup check', () => {
+    const html = renderToStaticMarkup(
+      createElement(RequiredSetupUpdatesPanel, {
+        onSend: () => {},
+      }),
+    )
+
+    expect(html).toContain('Email and SMS update readiness')
+    expect(html).toContain('Checkout does not text or email customers automatically')
+    expect(html).toContain('Review how customers opt in')
+    expect(html).toContain('Confirm update readiness')
+    expect(html).toContain('I need help with update setup')
   })
 
   it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {

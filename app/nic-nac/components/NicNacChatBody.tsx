@@ -17,6 +17,7 @@ import { HITLBlock } from './HITLBlock'
 import { InputRow, type InputAttachment } from './InputRow'
 import { RequiredSetupLiveQueuePanel } from './RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from './RequiredSetupLookPicker'
+import { RequiredSetupUpdatesPanel } from './RequiredSetupUpdatesPanel'
 import { StreamingBubble } from './StreamingBubble'
 import { ThinkingIndicator } from './ThinkingIndicator'
 import { compressImage } from '@/lib/nic-nac/image-compress'
@@ -341,6 +342,9 @@ export function NicNacChatBody({
     chatMode === 'required_setup' && requiredSetupStep === 'site_skin'
   const showLiveQueuePanel =
     chatMode === 'required_setup' && requiredSetupStep === 'live_queue_setup'
+  const showUpdatesPanel =
+    chatMode === 'required_setup' &&
+    requiredSetupStep === 'email_sms_update_readiness'
   const inputAriaDisabled = hasPendingApproval
   const latestUserId = findLatestUserMessageId(messages)
   const latestPendingUserId =
@@ -573,6 +577,12 @@ export function NicNacChatBody({
         {showLiveQueuePanel ? (
           <RequiredSetupLiveQueuePanel
             extensionCode={requiredSetupExtensionCode}
+            onSend={handleLookChoice}
+            disabled={isStreaming || hasPendingApproval}
+          />
+        ) : null}
+        {showUpdatesPanel ? (
+          <RequiredSetupUpdatesPanel
             onSend={handleLookChoice}
             disabled={isStreaming || hasPendingApproval}
           />
