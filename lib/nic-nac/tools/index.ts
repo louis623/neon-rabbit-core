@@ -356,6 +356,7 @@ export function shouldRequireToolCallForMessages(
   messages: RoutableMessage[],
   intents: NicNacToolIntent[],
 ): boolean {
+  if (intents.includes('required_setup')) return true
   if (!intents.includes('trade_board')) return false
 
   const latestUser = [...messages].reverse().find((message) => message.role === 'user')

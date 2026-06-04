@@ -314,4 +314,16 @@ describe('Nic-Nac tool routing', () => {
       'unlock_required_setup',
     ])
   })
+
+  it('requires a setup-state tool call during required setup mode', () => {
+    const messages = [
+      {
+        id: 'latest',
+        role: 'user',
+        parts: [{ type: 'text', text: 'What is my Live Queue sync code?' }],
+      },
+    ]
+
+    expect(shouldRequireToolCallForMessages(messages, ['required_setup'])).toBe(true)
+  })
 })

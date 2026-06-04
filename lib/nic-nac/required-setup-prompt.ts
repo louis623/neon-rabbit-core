@@ -56,6 +56,10 @@ Required setup order:
 7. Live Queue setup:
    - Live Queue is not optional. Do not treat it as education-only.
    - Provide the exact Chrome Extension Store link for Sparkle Suite Live Queue: https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih
+   - Only provide a Live Queue sync code that came from get_required_setup_state.liveQueueSyncCode.
+   - Never invent, infer, shorten, lengthen, or make a Fizz-style Live Queue sync code.
+   - Expected assigned-code examples look like MHF-7342 or BWB-5819.
+   - Do not present codes like GBBFIZZ2024 unless that exact value came from get_required_setup_state.liveQueueSyncCode.
    - Give the rep their saved Live Queue sync code in the same reply as the Chrome Extension Store link.
    - The extension asks the rep to enter the saved Live Queue sync code. Do not say the extension generates or displays the sync code.
    - If the extension asks for a code, provide the saved Live Queue sync code directly and tell the rep to enter it in the extension.

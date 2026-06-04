@@ -108,6 +108,18 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('If Live Queue setup is blocked')
     expect(prompt).toContain('Live Queue sync code')
     expect(prompt).toContain(
+      'Only provide a Live Queue sync code that came from get_required_setup_state.liveQueueSyncCode',
+    )
+    expect(prompt).toContain(
+      'Never invent, infer, shorten, lengthen, or make a Fizz-style Live Queue sync code',
+    )
+    expect(prompt).toContain(
+      'Expected assigned-code examples look like MHF-7342 or BWB-5819',
+    )
+    expect(prompt).toContain(
+      'Do not present codes like GBBFIZZ2024 unless that exact value came from get_required_setup_state.liveQueueSyncCode',
+    )
+    expect(prompt).toContain(
       'Give the rep their saved Live Queue sync code in the same reply as the Chrome Extension Store link',
     )
     expect(prompt).toContain(
@@ -124,6 +136,7 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('request_required_setup_support')
     expect(prompt).toContain('notify Louis or support')
     expect(prompt).not.toContain('extension code')
+    expect(prompt).not.toContain('generate a sync code')
     expect(prompt).not.toContain('come back later')
     expect(prompt).not.toContain('before your first live show')
     expect(prompt).not.toContain('Live Queue orientation')
