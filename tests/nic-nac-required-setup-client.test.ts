@@ -60,6 +60,11 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('formatExtensionRepId(setupState?.repId)')
   })
 
+  it('passes the exact required setup preview href into chat', () => {
+    expect(client).toContain('requiredSetupPreviewHref={requiredSetupPreviewHref}')
+    expect(client).toContain('buildCustomerSparkleSiteHref(setupState?.repId)')
+  })
+
   it('refreshes setup state after required setup chat responses settle', () => {
     expect(client).toContain('wasStreamingRef')
     expect(client).toContain('void loadSetupState()')

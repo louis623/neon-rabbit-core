@@ -22,7 +22,10 @@ import {
   shouldStartNicNacRollover,
   type NicNacConversationRunHealth,
 } from '@/lib/nic-nac/rollover'
-import { formatExtensionRepId } from '@/lib/nic-nac/rep-links'
+import {
+  buildCustomerSparkleSiteHref,
+  formatExtensionRepId,
+} from '@/lib/nic-nac/rep-links'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
 import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
 import { createClient } from '@/lib/supabase/client'
@@ -279,6 +282,7 @@ export default function NicNacClient({
     !isCheckoutRequiredMode &&
     (isRequiredSetupMode || isDashboardUnlocked)
   const requiredSetupExtensionCode = formatExtensionRepId(setupState?.repId)
+  const requiredSetupPreviewHref = buildCustomerSparkleSiteHref(setupState?.repId)
 
   useEffect(() => {
     const wasStreaming = wasStreamingRef.current
@@ -624,6 +628,7 @@ export default function NicNacClient({
       chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}
       requiredSetupStep={setupState?.currentStep ?? null}
       requiredSetupExtensionCode={requiredSetupExtensionCode}
+      requiredSetupPreviewHref={requiredSetupPreviewHref}
       transport={transport!}
       initialMessages={initialMessages!}
       onChatStateChange={setChatState}

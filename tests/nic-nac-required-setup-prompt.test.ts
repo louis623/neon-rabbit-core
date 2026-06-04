@@ -76,6 +76,16 @@ describe('required Nic-Nac setup prompt', () => {
     )
   })
 
+  it('requires the final preview approval panel without guessing link location', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain('Do not guess where the preview link is')
+    expect(prompt).toContain('The app shows the preview approval panel automatically')
+    expect(prompt).toContain('Approve preview and unlock workspace')
+    expect(prompt).not.toContain('look for a preview link')
+    expect(prompt).not.toContain('somewhere on this page')
+  })
+
   it('adds required setup instructions without workspace tool sections in setup mode', () => {
     const prompt = buildNicNacSystemPrompt({
       mode: 'required_setup',

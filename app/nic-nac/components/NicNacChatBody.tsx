@@ -17,6 +17,7 @@ import { HITLBlock } from './HITLBlock'
 import { InputRow, type InputAttachment } from './InputRow'
 import { RequiredSetupLiveQueuePanel } from './RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from './RequiredSetupLookPicker'
+import { RequiredSetupPreviewPanel } from './RequiredSetupPreviewPanel'
 import { RequiredSetupUpdatesPanel } from './RequiredSetupUpdatesPanel'
 import { StreamingBubble } from './StreamingBubble'
 import { ThinkingIndicator } from './ThinkingIndicator'
@@ -54,6 +55,7 @@ export function NicNacChatBody({
   chatMode = 'workspace',
   requiredSetupStep,
   requiredSetupExtensionCode = 'Waiting for code',
+  requiredSetupPreviewHref = '/amethyst/Homepage.html',
   transport,
   initialMessages,
   onChatStateChange,
@@ -63,6 +65,7 @@ export function NicNacChatBody({
   chatMode?: NicNacChatMode
   requiredSetupStep?: RequiredSetupStepId | null
   requiredSetupExtensionCode?: string
+  requiredSetupPreviewHref?: string
   transport: DefaultChatTransport<UIMessage>
   initialMessages: UIMessage[]
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
@@ -345,6 +348,9 @@ export function NicNacChatBody({
   const showUpdatesPanel =
     chatMode === 'required_setup' &&
     requiredSetupStep === 'email_sms_update_readiness'
+  const showPreviewPanel =
+    chatMode === 'required_setup' &&
+    requiredSetupStep === 'final_preview_approval'
   const inputAriaDisabled = hasPendingApproval
   const latestUserId = findLatestUserMessageId(messages)
   const latestPendingUserId =
@@ -584,6 +590,13 @@ export function NicNacChatBody({
         {showUpdatesPanel ? (
           <RequiredSetupUpdatesPanel
             onSend={handleLookChoice}
+            disabled={isStreaming || hasPendingApproval}
+          />
+        ) : null}
+        {showPreviewPanel ? (
+          <RequiredSetupPreviewPanel
+            previewHref={requiredSetupPreviewHref}
+            onApprove={handleLookChoice}
             disabled={isStreaming || hasPendingApproval}
           />
         ) : null}

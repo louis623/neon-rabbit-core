@@ -8,6 +8,7 @@ import { NicNacMark } from '@/app/_components/nic-nac-mark'
 import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
 import { RequiredSetupLiveQueuePanel } from '@/app/nic-nac/components/RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
+import { RequiredSetupPreviewPanel } from '@/app/nic-nac/components/RequiredSetupPreviewPanel'
 import { RequiredSetupUpdatesPanel } from '@/app/nic-nac/components/RequiredSetupUpdatesPanel'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
@@ -144,6 +145,22 @@ describe('Nic-Nac branding copy', () => {
     expect(html).toContain('Review how customers opt in')
     expect(html).toContain('Confirm update readiness')
     expect(html).toContain('I need help with update setup')
+  })
+
+  it('renders final preview approval with an exact customer-facing website link', () => {
+    const html = renderToStaticMarkup(
+      createElement(RequiredSetupPreviewPanel, {
+        previewHref: '/amethyst/Homepage.html?c=rep-1',
+        onApprove: () => {},
+      }),
+    )
+
+    expect(html).toContain('Preview your customer-facing website')
+    expect(html).toContain('href="/amethyst/Homepage.html?c=rep-1"')
+    expect(html).toContain('Open preview')
+    expect(html).toContain('Approve preview and unlock workspace')
+    expect(html).not.toContain('look around the edges')
+    expect(html).not.toContain('dashboard')
   })
 
   it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {
