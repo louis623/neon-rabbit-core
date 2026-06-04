@@ -116,7 +116,8 @@ describe('self-serve required setup service contract', () => {
     'about_page',
     'show_schedule',
     'customer_site_orientation',
-    'live_queue_orientation',
+    'live_queue_setup',
+    'email_sms_update_readiness',
     'trade_board_orientation',
     'final_preview_approval',
   ] as const
@@ -130,6 +131,15 @@ describe('self-serve required setup service contract', () => {
     expect(REQUIRED_SETUP_STEPS.every((step) => step.required)).toBe(true)
     expect(REQUIRED_SETUP_STEPS.map((step) => step.id)).not.toContain(
       'trade_board_inventory',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
+      'Live Queue setup',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
+      'Email and SMS update readiness',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
+      'Live queue orientation',
     )
     expect(REQUIRED_SETUP_STEPS.every((step) => step.label.length > 0)).toBe(
       true,
@@ -190,7 +200,7 @@ describe('self-serve required setup service contract', () => {
         'about_page',
         'show_schedule',
         'customer_site_orientation',
-        'live_queue_orientation',
+        'live_queue_setup',
       ],
       answers: { businessName: 'Britt With Bling' },
       generated_copy: { welcome: 'Welcome sparkle friends' },
@@ -212,7 +222,7 @@ describe('self-serve required setup service contract', () => {
         'about_page',
         'show_schedule',
         'customer_site_orientation',
-        'live_queue_orientation',
+        'live_queue_setup',
       ],
       steps: REQUIRED_SETUP_STEPS,
       answers: { businessName: 'Britt With Bling' },
@@ -221,7 +231,7 @@ describe('self-serve required setup service contract', () => {
       dashboardUnlockedAt: null,
       createdAt: '2026-06-02T14:30:00Z',
       updatedAt: '2026-06-02T14:35:00Z',
-      nextStep: 'trade_board_orientation',
+      nextStep: 'email_sms_update_readiness',
       canUnlockDashboard: false,
     })
   })

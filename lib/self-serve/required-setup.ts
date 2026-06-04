@@ -12,8 +12,13 @@ export const REQUIRED_SETUP_STEPS = [
     required: true,
   },
   {
-    id: 'live_queue_orientation',
-    label: 'Live queue orientation',
+    id: 'live_queue_setup',
+    label: 'Live Queue setup',
+    required: true,
+  },
+  {
+    id: 'email_sms_update_readiness',
+    label: 'Email and SMS update readiness',
     required: true,
   },
   {
