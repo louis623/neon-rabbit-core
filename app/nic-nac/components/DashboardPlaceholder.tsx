@@ -25,8 +25,19 @@ import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
+import {
+  buildCustomerSparkleSiteHref,
+  buildCustomerTradeBoardHref,
+  formatExtensionRepId,
+} from '@/lib/nic-nac/rep-links'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import styles from './DashboardPlaceholder.module.css'
+
+export {
+  buildCustomerSparkleSiteHref,
+  buildCustomerTradeBoardHref,
+  formatExtensionRepId,
+}
 
 const WORKSPACE_SECTIONS = [
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
@@ -62,20 +73,6 @@ export function formatHeaderRepShow(
   const show = businessName?.trim()
   if (rep && show) return `${rep} / ${show}`
   return rep || show || 'Rep info loading'
-}
-
-export function formatExtensionRepId(repId?: string | null) {
-  const rawId = repId?.trim()
-  if (!rawId) return 'Waiting for code'
-  if (/^\d{6}$/.test(rawId)) return rawId
-
-  let hash = 2166136261
-  for (const char of rawId) {
-    hash ^= char.charCodeAt(0)
-    hash = Math.imul(hash, 16777619) >>> 0
-  }
-
-  return String(hash % 1_000_000).padStart(6, '0')
 }
 
 function mergeTradeBoardResults(
@@ -656,18 +653,6 @@ export function getAccountBillingBannerMessage(search: string) {
     return 'Returned from Stripe billing portal.'
   }
   return null
-}
-
-export function buildCustomerTradeBoardHref(repId?: string | null) {
-  const cleanedRepId = repId?.trim()
-  if (!cleanedRepId) return '/amethyst/Trade.html'
-  return `/amethyst/Trade.html?c=${encodeURIComponent(cleanedRepId)}`
-}
-
-export function buildCustomerSparkleSiteHref(repId?: string | null) {
-  const cleanedRepId = repId?.trim()
-  if (!cleanedRepId) return '/amethyst/Homepage.html'
-  return `/amethyst/Homepage.html?c=${encodeURIComponent(cleanedRepId)}`
 }
 
 export function getTradeListingPhotoUrl(listing: TradeListingWithDesign) {

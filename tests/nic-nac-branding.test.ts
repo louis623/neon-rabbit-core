@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 
 import { NicNacMark } from '@/app/_components/nic-nac-mark'
 import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
+import { RequiredSetupLiveQueuePanel } from '@/app/nic-nac/components/RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
@@ -108,6 +109,26 @@ describe('Nic-Nac branding copy', () => {
     expect(html).toContain('BD-01')
     expect(html).not.toContain('skin')
     expect(html).not.toContain('Skin')
+  })
+
+  it('renders required Live Queue setup as an operational setup panel', () => {
+    const html = renderToStaticMarkup(
+      createElement(RequiredSetupLiveQueuePanel, {
+        extensionCode: '064632',
+        onSend: () => {},
+      }),
+    )
+
+    expect(html).toContain('Set up Live Queue')
+    expect(html).toContain('Extension code')
+    expect(html).toContain('064632')
+    expect(html).toContain('Install or open the Sparkle Suite Chrome extension')
+    expect(html).toContain('Enter this extension code')
+    expect(html).toContain('Confirm the Party Filter')
+    expect(html).toContain('Check Live Queue status')
+    expect(html).toContain('I need help with Live Queue setup')
+    expect(html).not.toContain('orientation')
+    expect(html).not.toContain('LiveQ')
   })
 
   it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {

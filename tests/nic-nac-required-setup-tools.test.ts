@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { ToolDefinition } from '@/lib/nic-nac/tools/types'
 
 const {
@@ -91,6 +93,17 @@ describe('required setup tools', () => {
       },
     )
     expect(completeRequiredSetupStepMock).not.toHaveBeenCalled()
+  })
+
+  it('allows operational required setup step IDs in the save-answer schema', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'lib/nic-nac/tools/save-required-setup-answer.ts'),
+      'utf8',
+    )
+
+    expect(source).toContain("'live_queue_setup'")
+    expect(source).toContain("'email_sms_update_readiness'")
+    expect(source).not.toContain("'live_queue_orientation'")
   })
 
   it('completes the step when requested after saving an answer', async () => {

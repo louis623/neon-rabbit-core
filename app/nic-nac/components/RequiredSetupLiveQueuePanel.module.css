@@ -1,0 +1,128 @@
+.panel {
+  display: grid;
+  gap: 14px;
+  margin: 12px 0 18px 30px;
+  padding: 16px;
+  border: 1px solid rgba(64, 41, 36, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 42px rgba(72, 35, 50, 0.08);
+  color: #402924;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.header {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.kicker {
+  margin: 0;
+  color: #7b5c55;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.header h2 {
+  margin: 0;
+  color: #402924;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.header p:last-child {
+  margin: 0;
+  color: #654944;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.codeBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(238, 44, 155, 0.24);
+  border-radius: 8px;
+  background: #fff6fa;
+}
+
+.codeBox span {
+  color: #654944;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.codeBox strong {
+  color: #402924;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+  color: #654944;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.steps li::marker {
+  color: #ee2c9b;
+  font-weight: 900;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.actions button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: linear-gradient(90deg, #ff4cae, #d81b87);
+  color: #fff6fb;
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 900;
+}
+
+.actions .secondary {
+  border: 1px solid rgba(64, 41, 36, 0.18);
+  background: #402924;
+}
+
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.actions button:focus-visible {
+  outline: 2px solid #ee2c9b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .panel {
+    margin-left: 0;
+    padding: 12px;
+  }
+
+  .codeBox,
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
