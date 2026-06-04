@@ -244,6 +244,26 @@ describe('Nic-Nac branding copy', () => {
     expect(inputCss).toMatch(/\.send\s*\{[^}]*width: 42px/s)
   })
 
+  it('contains required setup chat scrolling inside the Nic-Nac card', () => {
+    const requiredSetupCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.module.css'),
+      'utf8',
+    )
+    const chatHistoryCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/ChatHistory.module.css'),
+      'utf8',
+    )
+
+    expect(requiredSetupCss).toMatch(/\.root\s*\{[^}]*height: 100dvh/s)
+    expect(requiredSetupCss).toMatch(/\.root\s*\{[^}]*overflow: hidden/s)
+    expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*height: calc\(100dvh - 2rem\)/s)
+    expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*min-height: 0/s)
+    expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*overflow: hidden/s)
+    expect(requiredSetupCss).toMatch(/\.chatBody\s*\{[^}]*min-height: 0/s)
+    expect(requiredSetupCss).toMatch(/\.chatBody\s*\{[^}]*overflow: hidden/s)
+    expect(chatHistoryCss).toMatch(/\.scroll\s*\{[^}]*overflow-y: auto/s)
+  })
+
   it('uses the approved bright pink circle with a white N for every shared Nic-Nac mark', () => {
     const markHtml = renderToStaticMarkup(createElement(NicNacMark, { size: 34 }))
     const markCss = readFileSync(

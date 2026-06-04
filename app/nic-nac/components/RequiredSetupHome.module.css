@@ -1,7 +1,8 @@
 .root {
-  min-height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: minmax(280px, 0.82fr) minmax(420px, 1.18fr);
+  overflow: hidden;
   background:
     radial-gradient(circle at 14% 12%, rgba(255, 247, 244, 0.9), transparent 34%),
     linear-gradient(135deg, rgba(255, 247, 244, 0.96), rgba(252, 232, 230, 0.86)),
@@ -11,10 +12,12 @@
 }
 
 .hero {
+  min-height: 0;
   padding: clamp(1.5rem, 4vw, 4rem);
   display: grid;
   align-content: space-between;
   gap: 2rem;
+  overflow: auto;
 }
 
 .brandRow {
@@ -170,7 +173,8 @@
 }
 
 .chatPanel {
-  min-height: calc(100vh - 2rem);
+  height: calc(100dvh - 2rem);
+  min-height: 0;
   margin: 1rem;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -193,6 +197,7 @@
   min-height: 0;
   display: grid;
   grid-template-rows: 1fr auto auto;
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
