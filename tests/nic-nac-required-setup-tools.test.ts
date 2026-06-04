@@ -6,6 +6,8 @@ import type { ToolDefinition } from '@/lib/nic-nac/tools/types'
 const {
   getRequiredSetupStateMock,
   getLiveQueueSyncCodeForRepMock,
+  ensureLiveQueueSyncCodeForRepMock,
+  adminClientMock,
   saveRequiredSetupAnswerMock,
   completeRequiredSetupStepMock,
   unlockRequiredSetupMock,
@@ -13,6 +15,8 @@ const {
 } = vi.hoisted(() => ({
   getRequiredSetupStateMock: vi.fn(),
   getLiveQueueSyncCodeForRepMock: vi.fn(),
+  ensureLiveQueueSyncCodeForRepMock: vi.fn(),
+  adminClientMock: { from: vi.fn() },
   saveRequiredSetupAnswerMock: vi.fn(),
   completeRequiredSetupStepMock: vi.fn(),
   unlockRequiredSetupMock: vi.fn(),
@@ -34,6 +38,12 @@ vi.mock('@/lib/ops/louis-alerts', () => ({
 vi.mock('@/lib/services/live-queue', () => ({
   getLiveQueueSyncCodeForRep: (...args: unknown[]) =>
     getLiveQueueSyncCodeForRepMock(...args),
+  ensureLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    ensureLiveQueueSyncCodeForRepMock(...args),
+}))
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => adminClientMock,
 }))
 
 function ctx() {
@@ -56,6 +66,7 @@ describe('required setup tools', () => {
   beforeEach(() => {
     getRequiredSetupStateMock.mockReset()
     getLiveQueueSyncCodeForRepMock.mockReset()
+    ensureLiveQueueSyncCodeForRepMock.mockReset()
     saveRequiredSetupAnswerMock.mockReset()
     completeRequiredSetupStepMock.mockReset()
     unlockRequiredSetupMock.mockReset()
@@ -98,6 +109,27 @@ describe('required setup tools', () => {
       currentStep: 'live_queue_setup',
       liveQueueSyncCode: 'MHF-7342',
     })
+  })
+
+  it('ensures a Live Queue sync code for required setup', async () => {
+    ensureLiveQueueSyncCodeForRepMock.mockResolvedValue({
+      syncCode: 'GFF-7342',
+      created: true,
+    })
+    const { ensureLiveQueueSyncCodeTool } = await import(
+      '@/lib/nic-nac/tools/ensure-live-queue-sync-code'
+    )
+    const testCtx = ctx()
+    const tool = ensureLiveQueueSyncCodeTool.build(testCtx)
+
+    await expect(executeTool(tool, {})).resolves.toEqual({
+      syncCode: 'GFF-7342',
+      created: true,
+    })
+    expect(ensureLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(
+      adminClientMock,
+      { repId: 'rep-1' },
+    )
   })
 
   it('saves an answer with generated copy and support state patches', async () => {

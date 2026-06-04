@@ -1,4 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const ensureLiveQueueSyncCodeForRepMock = vi.hoisted(() => vi.fn())
+
+vi.mock('@/lib/services/live-queue', () => ({
+  ensureLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    ensureLiveQueueSyncCodeForRepMock(...args),
+}))
 
 import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 
@@ -62,6 +69,14 @@ function makeReviewerAdmin() {
 }
 
 describe('reviewer smoke session reset', () => {
+  beforeEach(() => {
+    ensureLiveQueueSyncCodeForRepMock.mockReset()
+    ensureLiveQueueSyncCodeForRepMock.mockResolvedValue({
+      syncCode: 'BTR-7342',
+      created: false,
+    })
+  })
+
   it('clears the reusable reviewer rep Nic-Nac history so setup preview starts fresh', async () => {
     const { admin, spies } = makeReviewerAdmin()
 
@@ -79,6 +94,17 @@ describe('reviewer smoke session reset', () => {
     expect(spies.conversationDelete.eq).toHaveBeenCalledWith(
       'rep_id',
       'rep-reviewer',
+    )
+  })
+
+  it('ensures reviewer required setup has a real Live Queue sync code', async () => {
+    const { admin } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('required_setup', admin as never)
+
+    expect(ensureLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(
+      admin,
+      { repId: 'rep-reviewer' },
     )
   })
 })

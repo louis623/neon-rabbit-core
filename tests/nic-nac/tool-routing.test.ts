@@ -309,6 +309,7 @@ describe('Nic-Nac tool routing', () => {
 
     expect(names).toEqual([
       'get_required_setup_state',
+      'ensure_live_queue_sync_code',
       'save_required_setup_answer',
       'request_required_setup_support',
       'unlock_required_setup',

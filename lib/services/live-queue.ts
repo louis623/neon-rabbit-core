@@ -1,9 +1,23 @@
+import { randomInt } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { LiveQueueSnapshot } from '@/lib/services/types'
 
 const AUTO_ANCHOR_PREFIX = 'NIC-NAC-AUTO-'
 const DEFAULT_STALE_AFTER_SECONDS = 180
 const MAX_QUEUE_NAMES = 200
+const DEFAULT_SYNC_CODE_ATTEMPTS = 8
+
+type LiveQueueRepProfile = {
+  businessName?: string | null
+  displayName?: string | null
+  email?: string | null
+}
+
+type EnsureLiveQueueSyncCodeInput = {
+  repId: string
+  randomDigits?: () => number
+  maxAttempts?: number
+}
 
 type LiveQueueRow = {
   sync_code: string
@@ -99,4 +113,112 @@ export async function getLiveQueueSyncCodeForRep(
   return typeof syncCode === 'string' && syncCode.trim()
     ? syncCode.trim()
     : null
+}
+
+export function generateLiveQueueSyncCode(
+  profile: LiveQueueRepProfile,
+  randomDigits: () => number = () => randomInt(0, 10000),
+): string {
+  const seed =
+    profile.businessName?.trim() ||
+    profile.displayName?.trim() ||
+    profile.email?.split('@')[0]?.trim() ||
+    'Sparkle Suite'
+  const prefix = buildSyncCodePrefix(seed)
+  const digits = String(Math.abs(Math.trunc(randomDigits())) % 10000).padStart(4, '0')
+
+  return `${prefix}-${digits}`
+}
+
+export async function ensureLiveQueueSyncCodeForRep(
+  supabase: SupabaseClient,
+  input: EnsureLiveQueueSyncCodeInput,
+): Promise<{ syncCode: string; created: boolean }> {
+  const existing = await getLiveQueueSyncCodeForRep(supabase, input.repId)
+  if (existing) return { syncCode: existing, created: false }
+
+  const profile = await getRepProfileForLiveQueueSyncCode(supabase, input.repId)
+  const attempts = input.maxAttempts ?? DEFAULT_SYNC_CODE_ATTEMPTS
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const syncCode = generateLiveQueueSyncCode(profile, input.randomDigits)
+    const { data, error } = await supabase
+      .from('live_queue')
+      .insert({
+        rep_id: input.repId,
+        sync_code: syncCode,
+        queue: [],
+      })
+      .select('sync_code')
+      .single()
+
+    if (!error) {
+      const inserted = (data as { sync_code?: unknown } | null)?.sync_code
+      if (typeof inserted === 'string' && inserted.trim()) {
+        return { syncCode: inserted.trim(), created: true }
+      }
+      return { syncCode, created: true }
+    }
+
+    if (!isUniqueViolation(error)) throw error
+  }
+
+  throw new Error('Could not create a unique Live Queue sync code.')
+}
+
+async function getRepProfileForLiveQueueSyncCode(
+  supabase: SupabaseClient,
+  repId: string,
+): Promise<LiveQueueRepProfile> {
+  const { data, error } = await supabase
+    .from('reps')
+    .select('business_name, display_name, email')
+    .eq('id', repId)
+    .single()
+
+  if (error) throw error
+  const row = data as {
+    business_name?: unknown
+    display_name?: unknown
+    email?: unknown
+  } | null
+
+  return {
+    businessName:
+      typeof row?.business_name === 'string' ? row.business_name : null,
+    displayName: typeof row?.display_name === 'string' ? row.display_name : null,
+    email: typeof row?.email === 'string' ? row.email : null,
+  }
+}
+
+function buildSyncCodePrefix(seed: string): string {
+  const words = seed
+    .replace(/['’]s\b/gi, '')
+    .replace(/[^a-z0-9]+/gi, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (words.length >= 3) {
+    return words
+      .slice(0, 3)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+  }
+
+  if (words.length === 2) {
+    return `${words[0][0]}${words[1].slice(0, 2)}`.toUpperCase().padEnd(3, 'X')
+  }
+
+  return (words[0] ?? 'SSW').slice(0, 3).toUpperCase().padEnd(3, 'X')
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === '23505'
+  )
 }

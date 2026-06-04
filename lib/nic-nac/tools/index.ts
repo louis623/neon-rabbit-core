@@ -40,6 +40,7 @@ import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { customerAudienceTool } from './get-customer-audience'
 import { getHelpResourcesTool } from './get-help-resources'
 import { getRequiredSetupStateTool } from './get-required-setup-state'
+import { ensureLiveQueueSyncCodeTool } from './ensure-live-queue-sync-code'
 import { saveRequiredSetupAnswerTool } from './save-required-setup-answer'
 import { requestRequiredSetupSupportTool } from './request-required-setup-support'
 import { unlockRequiredSetupTool } from './unlock-required-setup'
@@ -78,6 +79,7 @@ const REGISTRY: ToolDefinition[] = [
   customerAudienceTool,
   getHelpResourcesTool,
   getRequiredSetupStateTool,
+  ensureLiveQueueSyncCodeTool,
   saveRequiredSetupAnswerTool,
   requestRequiredSetupSupportTool,
   unlockRequiredSetupTool,
@@ -132,6 +134,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   resources: ['get_help_resources'],
   required_setup: [
     'get_required_setup_state',
+    'ensure_live_queue_sync_code',
     'save_required_setup_answer',
     'request_required_setup_support',
     'unlock_required_setup',

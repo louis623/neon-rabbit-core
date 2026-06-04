@@ -6,6 +6,7 @@ import {
   createSelfServeWorkspaceForAuthUser,
   type SelfServeWorkspaceAccount,
 } from '@/lib/self-serve/signup'
+import { ensureLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   REVIEWER_SMOKE_NEXT_PATHS,
@@ -231,6 +232,10 @@ export async function resetReviewerSmokeSession(
     )
 
   if (setupError) throw setupError
+
+  if (state !== 'checkout_required') {
+    await ensureLiveQueueSyncCodeForRep(admin, { repId })
+  }
 
   return {
     ok: true as const,

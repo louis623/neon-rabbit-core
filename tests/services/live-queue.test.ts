@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildLiveQueueSnapshot,
+  ensureLiveQueueSyncCodeForRep,
+  generateLiveQueueSyncCode,
   getLiveQueueSyncCodeForRep,
   getLiveQueueSnapshot,
   normalizeLiveQueue,
@@ -35,6 +37,29 @@ function makeLiveQueueSyncCodeChain(response: { data: unknown; error: unknown })
 }
 
 describe('live queue service', () => {
+  it('generates approved Live Queue sync codes from rep-facing names', () => {
+    expect(
+      generateLiveQueueSyncCode(
+        {
+          businessName: "Gracie's Fizz Fest",
+          displayName: 'Gracie Bott',
+          email: 'gracie@example.com',
+        },
+        () => 7342,
+      ),
+    ).toBe('GFF-7342')
+    expect(
+      generateLiveQueueSyncCode(
+        {
+          businessName: '',
+          displayName: 'Britt With Bling',
+          email: 'britt@example.com',
+        },
+        () => 5819,
+      ),
+    ).toBe('BWB-5819')
+  })
+
   it('normalizes queue names without trusting malformed payload values', () => {
     expect(
       normalizeLiveQueue([' Alice ', null, '', 'Bo', 42, { nope: true }]),
@@ -113,6 +138,72 @@ describe('live queue service', () => {
       ascending: true,
     })
     expect(chain.spies.limit).toHaveBeenCalledWith(1)
+  })
+
+  it('reuses an existing Live Queue sync code when ensuring setup readiness', async () => {
+    const existingChain = makeLiveQueueSyncCodeChain({
+      data: { sync_code: 'MHF-7342' },
+      error: null,
+    })
+
+    await expect(
+      ensureLiveQueueSyncCodeForRep(existingChain.supabase as never, {
+        repId: 'rep-1',
+      }),
+    ).resolves.toEqual({
+      syncCode: 'MHF-7342',
+      created: false,
+    })
+  })
+
+  it('creates a unique approved Live Queue sync code when the rep has none', async () => {
+    const existingMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+    const existingLimit = vi.fn(() => ({ maybeSingle: existingMaybeSingle }))
+    const existingOrder = vi.fn(() => ({ limit: existingLimit }))
+    const existingEq = vi.fn(() => ({ order: existingOrder }))
+    const existingSelect = vi.fn(() => ({ eq: existingEq }))
+
+    const repSingle = vi.fn().mockResolvedValue({
+      data: {
+        business_name: "Gracie's Fizz Fest",
+        display_name: 'Gracie Bott',
+        email: 'gracie@example.com',
+      },
+      error: null,
+    })
+    const repEq = vi.fn(() => ({ single: repSingle }))
+    const repSelect = vi.fn(() => ({ eq: repEq }))
+
+    const insertSelect = vi.fn(() => ({ single: vi.fn().mockResolvedValue({
+      data: { sync_code: 'GFF-7342' },
+      error: null,
+    }) }))
+    const insert = vi.fn(() => ({ select: insertSelect }))
+    const from = vi.fn((table: string) => {
+      if (table === 'live_queue') {
+        return existingSelect.mock.calls.length === 0
+          ? { select: existingSelect }
+          : { insert }
+      }
+      if (table === 'reps') return { select: repSelect }
+      throw new Error(`Unexpected table ${table}`)
+    })
+
+    await expect(
+      ensureLiveQueueSyncCodeForRep({ from } as never, {
+        repId: 'rep-1',
+        randomDigits: () => 7342,
+      }),
+    ).resolves.toEqual({
+      syncCode: 'GFF-7342',
+      created: true,
+    })
+
+    expect(insert).toHaveBeenCalledWith({
+      rep_id: 'rep-1',
+      sync_code: 'GFF-7342',
+      queue: [],
+    })
   })
 
   it('does not query live_queue for missing or auto-generated anchors', async () => {
