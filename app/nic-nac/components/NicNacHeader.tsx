@@ -15,7 +15,7 @@ export function NicNacHeader({
   return (
     <header className={styles.header}>
       <div className={styles.titleGroup}>
-        <NicNacGlyph size={22} />
+        <NicNacGlyph size={30} />
         <span className={styles.title}>Nic-Nac</span>
       </div>
       <div className={styles.actions}>
@@ -28,7 +28,7 @@ export function NicNacHeader({
             disabled={newConversationDisabled}
             title="New conversation"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 14 14" aria-hidden="true">
               <path
                 d="M7 1.5 V 12.5 M 1.5 7 H 12.5"
                 stroke="currentColor"
@@ -45,7 +45,7 @@ export function NicNacHeader({
             className={styles.closeBtn}
             aria-label={closeLabel ?? 'Close Nic-Nac'}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 14 14" aria-hidden="true">
               <path
                 d="M2 2 L12 12 M12 2 L2 12"
                 stroke="currentColor"

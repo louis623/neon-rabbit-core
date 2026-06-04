@@ -1,8 +1,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px;
+  gap: 8px;
+  padding: 10px;
   margin: 8px 16px 16px 16px;
   background: var(--nic-nac-surface-input);
   border: 1px solid var(--nic-nac-border);
@@ -18,13 +18,13 @@
 .inputRow {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: 8px;
   padding: 0 4px 0 4px;
 }
 
 .iconBtn {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   border: 0;
   border-radius: 8px;
@@ -128,12 +128,13 @@
   outline: 0;
   background: transparent;
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.45;
   color: var(--nic-nac-text-primary);
-  min-height: 28px;
+  min-height: 42px;
   max-height: 160px;
-  padding: 4px 0;
+  padding: 8px 0;
   overflow-y: auto;
 }
 
@@ -149,8 +150,8 @@
 }
 
 .send {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   border: 0;
   border-radius: 8px;

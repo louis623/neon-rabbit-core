@@ -44,6 +44,7 @@ describe('Nic-Nac branding copy', () => {
     expect(inputHtml).toContain('placeholder="Ask Nic-Nac…')
     expect(thinkingHtml).toContain('Nic-Nac is thinking…')
     expect(headerHtml).toContain('Nic-Nac')
+    expect(headerHtml).not.toContain('NIC-NAC')
     expect(headerHtml).toContain('aria-label="Close Nic-Nac"')
   })
 
@@ -168,7 +169,7 @@ describe('Nic-Nac branding copy', () => {
     expect(html).not.toContain('dashboard')
   })
 
-  it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {
+  it('keeps Nic-Nac and rep message text large and bold for live-show readability', () => {
     const bubbleCss = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/Bubble.module.css'),
       'utf8',
@@ -181,16 +182,63 @@ describe('Nic-Nac branding copy', () => {
       resolve(process.cwd(), 'app/nic-nac/components/EmptyGreeting.module.css'),
       'utf8',
     )
+    const tokensCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/nic-nac-tokens.css'),
+      'utf8',
+    )
 
     expect(bubbleCss).toContain('.nicNac')
     expect(bubbleCss).toContain('font-size: 21px')
     expect(bubbleCss).toContain('font-weight: 700')
+    expect(bubbleCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
     expect(streamingCss).toContain('font-size: 21px')
     expect(streamingCss).toContain('font-weight: 700')
+    expect(streamingCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
     expect(greetingCss).toContain('font-size: 21px')
     expect(greetingCss).toContain('font-weight: 700')
     expect(bubbleCss).toContain('.rep')
-    expect(bubbleCss).toContain('font-weight: 500')
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-size: 21px/s)
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-weight: 700/s)
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*line-height: 1\.45/s)
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*color: var\(--nic-nac-speaker-rep\)/s)
+    expect(tokensCss).toContain('--nic-nac-speaker-nic-nac: #402924')
+    expect(tokensCss).toContain('--nic-nac-speaker-rep: #36221D')
+    expect(tokensCss).toContain('--nic-nac-surface-rep-message: #F6EDE8')
+    expect(tokensCss).not.toContain('#285C59')
+  })
+
+  it('keeps Nic-Nac headers and the shared chat composer easy to read', () => {
+    const requiredSetupHome = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
+      'utf8',
+    )
+    const requiredSetupCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.module.css'),
+      'utf8',
+    )
+    const headerCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/NicNacHeader.module.css'),
+      'utf8',
+    )
+    const inputCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/InputRow.module.css'),
+      'utf8',
+    )
+
+    expect(requiredSetupHome).toContain('<p>Nic-Nac</p>')
+    expect(requiredSetupHome).toContain('<NicNacGlyph size={40} />')
+    expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-size: 1\.15rem/s)
+    expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-weight: 900/s)
+    expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*text-transform: none/s)
+    expect(requiredSetupCss).toMatch(/\.chatStatus\s*\{[^}]*font-size: 1rem/s)
+    expect(headerCss).toContain('min-height: 60px')
+    expect(headerCss).toMatch(/\.title\s*\{[^}]*font-size: 19px/s)
+    expect(headerCss).toMatch(/\.closeBtn\s*\{[^}]*width: 40px/s)
+    expect(headerCss).toMatch(/\.newBtn\s*\{[^}]*width: 40px/s)
+    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-size: 18px/s)
+    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-weight: 700/s)
+    expect(inputCss).toMatch(/\.iconBtn\s*\{[^}]*width: 42px/s)
+    expect(inputCss).toMatch(/\.send\s*\{[^}]*width: 42px/s)
   })
 
   it('uses the approved bright pink circle with a white N for every shared Nic-Nac mark', () => {

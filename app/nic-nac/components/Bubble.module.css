@@ -50,7 +50,10 @@
 .rep {
   background: var(--nic-nac-surface-rep-message);
   border-radius: 14px 14px 4px 14px;
-  font-weight: 500;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--nic-nac-speaker-rep);
 }
 
 .nicNac {
@@ -60,6 +63,7 @@
   font-size: 21px;
   font-weight: 700;
   line-height: 1.45;
+  color: var(--nic-nac-speaker-nic-nac);
 }
 
 .timestamp {

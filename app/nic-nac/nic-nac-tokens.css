@@ -20,7 +20,7 @@
   --nic-nac-surface-primary-solid: #FFFFFF;
   --nic-nac-surface-dashboard: #FCF8F6;
   --nic-nac-surface-dashboard-placeholder: #F6EDE8;
-  --nic-nac-surface-rep-message: #FFF6FA;
+  --nic-nac-surface-rep-message: #F6EDE8;
   --nic-nac-surface-nic-nac-message: #FFFFFF;
   --nic-nac-surface-input: #FFFFFF;
   --nic-nac-surface-input-disabled: #F6EDE8;
@@ -43,6 +43,8 @@
   --nic-nac-text-inverse: #FFFFFF;
   --nic-nac-text-on-accent: #FFFFFF;
   --nic-nac-text-error: #991B1B;
+  --nic-nac-speaker-nic-nac: #402924;
+  --nic-nac-speaker-rep: #36221D;
 
   /* Focus ring */
   --nic-nac-focus-ring: #EE2C9B;

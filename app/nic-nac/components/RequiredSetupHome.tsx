@@ -54,7 +54,7 @@ export function RequiredSetupHome({
       </section>
       <section className={styles.chatPanel} aria-label="Nic-Nac required setup chat">
         <header className={styles.chatHeader}>
-          <NicNacGlyph size={34} />
+          <NicNacGlyph size={40} />
           <div>
             <p>Nic-Nac</p>
             <span className={styles.chatStatus}>Required setup resumes automatically</span>

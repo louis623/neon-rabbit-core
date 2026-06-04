@@ -113,7 +113,7 @@ export const InputRow = forwardRef<HTMLTextAreaElement, InputRowProps>(function 
           aria-label="Take photo"
           disabled={disabled || isStreaming}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true">
             <path
               d="M5.4 4 L7 2.4 L11 2.4 L12.6 4 L15 4 A1.4 1.4 0 0 1 16.4 5.4 L16.4 13.6 A1.4 1.4 0 0 1 15 15 L3 15 A1.4 1.4 0 0 1 1.6 13.6 L1.6 5.4 A1.4 1.4 0 0 1 3 4 Z"
               fill="none"
@@ -131,7 +131,7 @@ export const InputRow = forwardRef<HTMLTextAreaElement, InputRowProps>(function 
           aria-label="Attach images"
           disabled={disabled || isStreaming}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true">
             <rect
               x="2"
               y="3"
@@ -216,7 +216,7 @@ export const InputRow = forwardRef<HTMLTextAreaElement, InputRowProps>(function 
           disabled={!canSubmit}
           aria-label="Send"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 14 14" aria-hidden="true">
             <path d="M2 12 L12 7 L2 2 L4 7 Z" fill="currentColor" />
           </svg>
         </button>
