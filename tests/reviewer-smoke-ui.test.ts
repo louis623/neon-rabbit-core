@@ -47,4 +47,11 @@ describe('reviewer smoke UI wiring', () => {
     expect(standard).toContain('tests proving review mode is disabled in production')
     expect(standard).toContain('no live charges')
   })
+
+  it('exposes a reviewer-only reset on the required setup preview', () => {
+    expect(nicNacClient).toContain('reviewerSmokeVisible')
+    expect(nicNacClient).toContain('/api/reviewer-smoke/session')
+    expect(nicNacClient).toContain('Reset setup preview')
+    expect(requiredSetupHome).toContain('reviewerActions')
+  })
 })

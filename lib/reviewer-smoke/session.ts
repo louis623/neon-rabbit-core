@@ -153,6 +153,14 @@ async function ensureReviewerWorkspace(
   return created.repId
 }
 
+async function clearReviewerNicNacHistory(admin: AdminClient, repId: string) {
+  const tables = ['approval_events', 'nic_nac_runs', 'nic_nac_conversations']
+  for (const table of tables) {
+    const { error } = await admin.from(table).delete().eq('rep_id', repId)
+    if (error) throw error
+  }
+}
+
 export async function resetReviewerSmokeSession(
   requestedState: unknown,
   admin: AdminClient = createAdminClient(),
@@ -178,6 +186,7 @@ export async function resetReviewerSmokeSession(
     },
     existingRepId,
   )
+  await clearReviewerNicNacHistory(admin, repId)
   const now = new Date().toISOString()
   const status = state
   const completedSteps = completedStepsForState(state)

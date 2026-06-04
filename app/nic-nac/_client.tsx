@@ -24,6 +24,7 @@ import {
 } from '@/lib/nic-nac/rollover'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
 import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
+import { createClient } from '@/lib/supabase/client'
 import shellStyles from './_shell.module.css'
 
 const STORAGE_KEY = 'nic_nac_last_conversation'
@@ -66,7 +67,23 @@ type StripeSyncResponse = {
   error?: string
 }
 
-export default function NicNacClient() {
+type ReviewerSmokeResponse =
+  | {
+      ok: true
+      email: string
+      password: string
+      next: string
+    }
+  | {
+      ok?: false
+      error?: string
+    }
+
+export default function NicNacClient({
+  reviewerSmokeVisible = false,
+}: {
+  reviewerSmokeVisible?: boolean
+}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const wantsCheckout = searchParams.get('onboarding') === 'checkout-required'
@@ -85,6 +102,8 @@ export default function NicNacClient() {
   const [setupStateError, setSetupStateError] = useState<string | null>(null)
   const [checkoutBusy, setCheckoutBusy] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [reviewerResetBusy, setReviewerResetBusy] = useState(false)
+  const [reviewerResetError, setReviewerResetError] = useState<string | null>(null)
   const checkoutRedirectStartedRef = useRef(false)
 
   const [conversationId, setConversationId] = useState<string | null>(null)
@@ -540,6 +559,43 @@ export default function NicNacClient() {
     }
   }, [])
 
+  const handleReviewerSetupReset = useCallback(async () => {
+    setReviewerResetBusy(true)
+    setReviewerResetError(null)
+    try {
+      const res = await fetch('/api/reviewer-smoke/session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ state: 'required_setup' }),
+      })
+      const body = (await res.json().catch(() => null)) as
+        | ReviewerSmokeResponse
+        | null
+      if (!res.ok || body?.ok !== true) {
+        const message = body && 'error' in body ? body.error : undefined
+        throw new Error(message ?? 'Unable to reset setup preview.')
+      }
+
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email: body.email,
+        password: body.password,
+      })
+      if (error) throw error
+
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY)
+        window.location.href = body.next
+      }
+    } catch (err) {
+      setReviewerResetError(
+        err instanceof Error ? err.message : 'Unable to reset setup preview.',
+      )
+      setReviewerResetBusy(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (
       !isCheckoutRequiredMode ||
@@ -611,7 +667,24 @@ export default function NicNacClient() {
   if (isRequiredSetupMode && setupState) {
     return (
       <div className={`${shellStyles.root} ${shellStyles.setupRoot}`}>
-        <RequiredSetupHome state={setupState} chat={chatContent} />
+        <RequiredSetupHome
+          state={setupState}
+          chat={chatContent}
+          reviewerActions={
+            reviewerSmokeVisible ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleReviewerSetupReset()}
+                  disabled={reviewerResetBusy}
+                >
+                  {reviewerResetBusy ? 'Resetting...' : 'Reset setup preview'}
+                </button>
+                {reviewerResetError ? <p>{reviewerResetError}</p> : null}
+              </>
+            ) : null
+          }
+        />
       </div>
     )
   }

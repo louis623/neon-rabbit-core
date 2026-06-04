@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import NicNacClient from './_client'
+import { reviewerSmokeModeEnabled } from '@/lib/reviewer-smoke/config'
 import './nic-nac-tokens.css'
 
 export const dynamic = 'force-dynamic'
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export default function NicNacPage() {
   return (
     <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-      <NicNacClient />
+      <NicNacClient reviewerSmokeVisible={reviewerSmokeModeEnabled()} />
     </Suspense>
   )
 }

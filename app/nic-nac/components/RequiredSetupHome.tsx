@@ -6,9 +6,11 @@ import styles from './RequiredSetupHome.module.css'
 export function RequiredSetupHome({
   state,
   chat,
+  reviewerActions,
 }: {
   state: RequiredSetupState
   chat: ReactNode
+  reviewerActions?: ReactNode
 }) {
   const completed = state.completedSteps.length
   const total = state.steps.length
@@ -43,6 +45,12 @@ export function RequiredSetupHome({
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />
           </div>
         </div>
+        {reviewerActions ? (
+          <div className={styles.reviewerShell}>
+            <p>Reviewer preview</p>
+            {reviewerActions}
+          </div>
+        ) : null}
       </section>
       <section className={styles.chatPanel} aria-label="Nic-Nac required setup chat">
         <header className={styles.chatHeader}>

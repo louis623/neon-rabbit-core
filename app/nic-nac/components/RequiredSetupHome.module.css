@@ -115,6 +115,50 @@
   background: linear-gradient(90deg, #ff4cae, #d81b87);
 }
 
+.reviewerShell {
+  max-width: 28rem;
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid rgba(238, 44, 155, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 16px 42px rgba(72, 35, 50, 0.08);
+  padding: 1rem;
+}
+
+.reviewerShell p {
+  margin: 0;
+  color: #7b5c55;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.reviewerShell button {
+  min-height: 2.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff4cae, #d81b87);
+  color: #fff6fb;
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.reviewerShell button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.reviewerShell button + p {
+  color: #9d174d;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
 .chatPanel {
   min-height: calc(100vh - 2rem);
   margin: 1rem;
