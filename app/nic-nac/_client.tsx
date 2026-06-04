@@ -59,6 +59,11 @@ type SetupStateWithLiveQueue = RequiredSetupState & {
   liveQueueSyncCode?: string | null
 }
 
+function isReviewerSmokeSetupState(state: SetupStateWithLiveQueue | null) {
+  const reviewerSmoke = state?.supportState?.reviewer_smoke
+  return typeof reviewerSmoke === 'object' && reviewerSmoke !== null
+}
+
 type SetupStateResponse = {
   state?: SetupStateWithLiveQueue
   error?: string
@@ -367,7 +372,7 @@ export default function NicNacClient({
       const urlId = getConversationIdFromSearch(
         new URLSearchParams(Array.from(searchParams.entries())).toString(),
       )
-      if (urlId) {
+      if (urlId && !isFinalizingCheckout) {
         if (cancelled) return
         setConversationId(urlId)
         if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, urlId)
@@ -417,7 +422,7 @@ export default function NicNacClient({
       cancelled = true
       controller.abort()
     }
-  }, [shouldUseConversation, router, searchParams, resolveAttempt])
+  }, [isFinalizingCheckout, shouldUseConversation, router, searchParams, resolveAttempt])
 
   useEffect(() => {
     if (!shouldUseConversation) return
@@ -541,6 +546,8 @@ export default function NicNacClient({
   }, [activateConversation, chatState])
 
   const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
+  const showReviewerSetupActions =
+    reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)
 
   const handleStartCheckout = useCallback(async () => {
     setCheckoutBusy(true)
@@ -683,7 +690,7 @@ export default function NicNacClient({
           state={setupState}
           chat={chatContent}
           reviewerActions={
-            reviewerSmokeVisible ? (
+            showReviewerSetupActions ? (
               <>
                 <button
                   type="button"

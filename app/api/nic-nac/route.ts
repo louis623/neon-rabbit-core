@@ -151,13 +151,25 @@ export async function POST(request: Request) {
       loadCanonicalHistory(supabase, conversationId),
     ])
   } catch (err) {
+    const message = (err as Error).message
     await logIncident({
       errorType: 'pre_stream_setup_failed',
       repId,
       conversationId,
       severity: 'error',
-      details: { runId, message: (err as Error).message },
+      details: { runId, message },
     })
+    if (mode === 'required_setup') {
+      return NextResponse.json(
+        {
+          error: 'Required setup chat failed.',
+          code: 'REQUIRED_SETUP_CHAT_CONTEXT_MISSING',
+          detail:
+            'Nic-Nac could not load this required setup conversation context.',
+        },
+        { status: 500, headers: responseHeaders },
+      )
+    }
     throw err
   }
   if (existingOwner && existingOwner !== repId) {

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
+import {
+  ensureLiveQueueSyncCodeForRep,
+  getLiveQueueSyncCodeForRep,
+} from '@/lib/services/live-queue'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getRequiredSetupState } from '@/lib/self-serve/required-setup'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
@@ -9,7 +12,12 @@ export async function GET() {
     const { repId } = await getAuthenticatedRep()
     const admin = createAdminClient()
     const state = await getRequiredSetupState(repId)
-    const liveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
+    const existingLiveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
+    const liveQueueSyncCode =
+      existingLiveQueueSyncCode ??
+      (state.status === 'required_setup' || state.status === 'setup_blocked'
+        ? (await ensureLiveQueueSyncCodeForRep(admin, { repId })).syncCode
+        : null)
     return NextResponse.json({
       state: {
         ...state,

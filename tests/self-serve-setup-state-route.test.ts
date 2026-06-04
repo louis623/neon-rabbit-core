@@ -3,11 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const {
   createAdminClientMock,
   getAuthenticatedRepMock,
+  ensureLiveQueueSyncCodeForRepMock,
   getLiveQueueSyncCodeForRepMock,
   getRequiredSetupStateMock,
 } = vi.hoisted(() => ({
   createAdminClientMock: vi.fn(),
   getAuthenticatedRepMock: vi.fn(),
+  ensureLiveQueueSyncCodeForRepMock: vi.fn(),
   getLiveQueueSyncCodeForRepMock: vi.fn(),
   getRequiredSetupStateMock: vi.fn(),
 }))
@@ -22,6 +24,8 @@ vi.mock('@/lib/supabase/auth', () => ({
 }))
 
 vi.mock('@/lib/services/live-queue', () => ({
+  ensureLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    ensureLiveQueueSyncCodeForRepMock(...args),
   getLiveQueueSyncCodeForRep: (...args: unknown[]) =>
     getLiveQueueSyncCodeForRepMock(...args),
 }))
@@ -34,6 +38,7 @@ describe('/api/self-serve/setup-state', () => {
   beforeEach(() => {
     createAdminClientMock.mockReset()
     getAuthenticatedRepMock.mockReset()
+    ensureLiveQueueSyncCodeForRepMock.mockReset()
     getLiveQueueSyncCodeForRepMock.mockReset()
     getRequiredSetupStateMock.mockReset()
   })
@@ -66,6 +71,42 @@ describe('/api/self-serve/setup-state', () => {
         currentStep: 'account_basics',
         completedSteps: [],
         liveQueueSyncCode: 'MHF-7342',
+      },
+    })
+  })
+
+  it('creates a saved Live Queue sync code when required setup has none yet', async () => {
+    getAuthenticatedRepMock.mockResolvedValue({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+    })
+    getRequiredSetupStateMock.mockResolvedValue({
+      status: 'required_setup',
+      currentStep: 'live_queue_setup',
+      completedSteps: ['account_basics'],
+    })
+    const admin = { from: vi.fn() }
+    createAdminClientMock.mockReturnValue(admin)
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue(null)
+    ensureLiveQueueSyncCodeForRepMock.mockResolvedValue({
+      syncCode: 'GFF-7342',
+      created: true,
+    })
+    const { GET } = await import('@/app/api/self-serve/setup-state/route')
+
+    const response = await GET()
+
+    expect(getLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(admin, 'rep-1')
+    expect(ensureLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(admin, {
+      repId: 'rep-1',
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      state: {
+        status: 'required_setup',
+        currentStep: 'live_queue_setup',
+        completedSteps: ['account_basics'],
+        liveQueueSyncCode: 'GFF-7342',
       },
     })
   })

@@ -115,7 +115,7 @@ describe('POST /api/stripe/create-checkout', () => {
     })
 
     const response = await POST(
-      new Request('http://localhost/api/stripe/create-checkout', {
+      new Request('https://sparkle-suite.example/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ agreementAccepted: true }),
@@ -158,6 +158,106 @@ describe('POST /api/stripe/create-checkout', () => {
     expect(response.status).toBe(200)
   })
 
+  it('returns Stripe checkout to the preview deployment origin that started checkout', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-preview',
+      rep: { id: 'rep-preview' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock())
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.vercel.app')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_preview')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_preview',
+      url: 'https://checkout.stripe.test/cs_preview',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const previewOrigin =
+      'https://sparkle-suite-git-codex-sparkle-cro-d70670-louis-2849s-projects.vercel.app'
+    const response = await POST(
+      new Request(`${previewOrigin}/api/stripe/create-checkout`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: previewOrigin,
+        },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url:
+          `${previewOrigin}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:
+          `${previewOrigin}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('does not trust an arbitrary checkout origin header', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-safe-origin',
+      rep: { id: 'rep-safe-origin' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock())
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.vercel.app')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_safe_origin')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_safe_origin',
+      url: 'https://checkout.stripe.test/cs_safe_origin',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('https://sparkle-suite.vercel.app/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: 'https://evil.example',
+        },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url:
+          'https://sparkle-suite.vercel.app/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
+        cancel_url:
+          'https://sparkle-suite.vercel.app/nic-nac?onboarding=checkout-required&billing=subscription-cancelled',
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
   it('allows only card and Link payment methods for Sparkle Suite checkout', async () => {
     stripeEnabledMock.mockReturnValue(true)
     getAuthenticatedRepMock.mockResolvedValueOnce({
@@ -186,7 +286,7 @@ describe('POST /api/stripe/create-checkout', () => {
     })
 
     const response = await POST(
-      new Request('http://localhost/api/stripe/create-checkout', {
+      new Request('https://sparkle-suite.example/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ agreementAccepted: true }),
@@ -396,7 +496,7 @@ describe('POST /api/stripe/create-checkout', () => {
     })
 
     const response = await POST(
-      new Request('http://localhost/api/stripe/create-checkout', {
+      new Request('https://sparkle-suite.example/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ agreementAccepted: true }),

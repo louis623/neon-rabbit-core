@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
 import {
-  getAppUrl,
   getSparkleSuitePriceIds,
   getStripeConfig,
 } from '@/lib/stripe/config'
@@ -13,6 +12,7 @@ import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSelfServeAgreementVersion } from '@/lib/prelaunch/self-serve-agreement'
+import { resolveCheckoutReturnOrigin } from '@/lib/stripe/return-origin'
 
 const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
@@ -149,14 +149,15 @@ export async function POST(request: Request) {
       light_box_required: 'true',
     }
 
+    const returnOrigin = resolveCheckoutReturnOrigin(request)
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: [...SPARKLE_SUITE_CHECKOUT_PAYMENT_METHODS],
       line_items: pricing.lineItems,
-      success_url: `${getAppUrl()}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${getAppUrl()}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
+      success_url: `${returnOrigin}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${returnOrigin}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
       shipping_address_collection: { allowed_countries: ['US'] },
       phone_number_collection: { enabled: true },
       metadata: {

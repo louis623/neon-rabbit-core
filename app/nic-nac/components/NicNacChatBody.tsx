@@ -35,10 +35,19 @@ import {
 import type { RequiredSetupStepId } from '@/lib/self-serve/required-setup'
 
 const MAX_ATTACHMENTS = 10
+const REQUIRED_SETUP_SEND_ERROR_MESSAGE =
+  'Nic-Nac could not send because required setup context is missing. Refresh, then try again.'
+const WORKSPACE_SEND_ERROR_MESSAGE = "Couldn't send. Try again?"
 
 function newAttachmentId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
   return `att_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+}
+
+function getSendErrorMessage(mode: NicNacChatMode) {
+  return mode === 'required_setup'
+    ? REQUIRED_SETUP_SEND_ERROR_MESSAGE
+    : WORKSPACE_SEND_ERROR_MESSAGE
 }
 
 interface ApprovalResponseFn {
@@ -543,7 +552,7 @@ export function NicNacChatBody({
                 {failed ? (
                   <ErrorBlock
                     variant="inline"
-                    message="Couldn't send. Try again?"
+                    message={getSendErrorMessage(chatMode)}
                     onRetry={() => void handleRetry(m.id)}
                   />
                 ) : null}
@@ -570,7 +579,11 @@ export function NicNacChatBody({
         {hasError && displayedFailedMessages.size === 0 ? (
           <ErrorBlock
             variant="global"
-            message="Couldn't reach Nic-Nac just now. If this keeps happening, let Louis know."
+            message={
+              chatMode === 'required_setup'
+                ? REQUIRED_SETUP_SEND_ERROR_MESSAGE
+                : "Couldn't reach Nic-Nac just now. If this keeps happening, let Louis know."
+            }
             onRetry={() => regenerate()}
           />
         ) : null}

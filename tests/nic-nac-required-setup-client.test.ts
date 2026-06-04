@@ -55,13 +55,45 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('Stripe checkout sync did not finish')
   })
 
+  it('does not trust a checkout-success conversation id until setup sync resolves the rep', () => {
+    expect(client).toContain('urlId && !isFinalizingCheckout')
+    expect(client).toContain('isFinalizingCheckout,')
+  })
+
   it('passes the Stripe success return into workspace mode resolution', () => {
     expect(client).toContain('isCheckoutSuccessReturn: isFinalizingCheckout')
+  })
+
+  it('shows reviewer setup actions only for reviewer smoke setup state', () => {
+    expect(client).toContain('isReviewerSmokeSetupState')
+    expect(client).toContain('state?.supportState?.reviewer_smoke')
+    expect(client).toContain(
+      'reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)',
+    )
+    expect(client).toContain('showReviewerSetupActions ? (')
   })
 
   it('sends the setup chat mode only during required setup', () => {
     expect(client).toContain("mode: isRequiredSetupMode ? 'required_setup' : 'workspace'")
     expect(client).toContain("chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}")
+  })
+
+  it('surfaces actionable send failures during required setup', () => {
+    const chatBody = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/NicNacChatBody.tsx'),
+      'utf8',
+    )
+    const route = readFileSync(
+      resolve(process.cwd(), 'app/api/nic-nac/route.ts'),
+      'utf8',
+    )
+
+    expect(chatBody).toContain('REQUIRED_SETUP_SEND_ERROR_MESSAGE')
+    expect(chatBody).toContain(
+      'Nic-Nac could not send because required setup context is missing. Refresh, then try again.',
+    )
+    expect(route).toContain('REQUIRED_SETUP_CHAT_CONTEXT_MISSING')
+    expect(route).toContain('Required setup chat failed.')
   })
 
   it('passes the active setup step into chat so setup can show step-specific UI', () => {
