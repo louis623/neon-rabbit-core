@@ -31,8 +31,8 @@ export default function StartPage() {
               Create your Sparkle Suite account, agree to the terms, then head
               to Stripe Checkout for plan and payment details. After checkout,
               Nic-Nac opens to help finish your Sparkle Suite customer-facing
-              website, dancefloor/trade board, live show calendar, and SMS and
-              email updates.
+              website, Trade Board, Live Queue, live show calendar, and email
+              and SMS updates.
             </p>
             <div className={styles.accountArea}>
               <StartSparkleSuiteForm

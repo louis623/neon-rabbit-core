@@ -14,7 +14,7 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('rep has approved the final preview')
     expect(prompt).toContain('About page')
     expect(prompt).toContain('Trade Board orientation')
-    expect(prompt).toContain('The light box is ordered by Sparkle Suite after payment')
+    expect(prompt).toContain('The Light Box is ordered by Sparkle Suite after payment')
     expect(prompt).toContain('repApprovedPreview')
     expect(prompt).not.toContain('populate the Trade Board before unlock')
   })
@@ -45,6 +45,13 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('customerFacingDisplayName')
     expect(prompt).toContain('liveShowName')
     expect(prompt).toContain('bombPartyRepStoreLink')
+    expect(prompt).toContain(
+      'After these account basics are captured, summarize them and ask the rep to confirm before marking account_basics complete',
+    )
+    expect(prompt).toContain(
+      'Do not advance to the customer-site Look until the rep confirms the account basics summary',
+    )
+    expect(prompt).toContain('Does that all look right before we pick your customer-site Look?')
     expect(prompt).not.toContain('display name, business name, best contact detail, shop link')
     expect(prompt).not.toContain('Your business name')
     expect(prompt).not.toContain('Link to your shop or website')
@@ -90,6 +97,15 @@ describe('required Nic-Nac setup prompt', () => {
       'Do not replace concrete details with generic jewelry-show filler',
     )
     expect(prompt).toContain(
+      'Do not complete the About page immediately after free-talk',
+    )
+    expect(prompt).toContain(
+      'Show 2 or 3 polished About page choices and ask the rep to pick, blend, or revise',
+    )
+    expect(prompt).toContain(
+      'After the rep picks or approves an About option, save the selected About copy and move on',
+    )
+    expect(prompt).toContain(
       'If the rep mentions being Gracie Bott, older, rescued from the shelter, running the household, banana and papaya habits, or wanting support for her cause, those details must appear in the About choices',
     )
     expect(prompt).toContain(
@@ -124,6 +140,12 @@ describe('required Nic-Nac setup prompt', () => {
     )
     expect(prompt).toContain(
       'Only use the syncCode returned by ensure_live_queue_sync_code when that tool succeeds',
+    )
+    expect(prompt).toContain(
+      'Do not mark Live Queue setup complete from vague replies like yes, okay, install now, or set it up now',
+    )
+    expect(prompt).toContain(
+      'Only complete Live Queue setup after the rep confirms the extension is installed, the saved sync code was entered, Bomb Party Party Orders is open, Party Filter is set, and Live Queue status is connected',
     )
     expect(prompt).toContain(
       'Give the rep their saved Live Queue sync code in the same reply as the Chrome Extension Store link',
@@ -164,6 +186,9 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('Do not guess where the preview link is')
     expect(prompt).toContain('The app shows the preview approval panel automatically')
     expect(prompt).toContain('Approve preview and unlock workspace')
+    expect(prompt).toContain(
+      'When the rep approves the final preview, call unlock_required_setup with repApprovedPreview: true',
+    )
     expect(prompt).not.toContain('look for a preview link')
     expect(prompt).not.toContain('somewhere on this page')
   })
@@ -172,7 +197,14 @@ describe('required Nic-Nac setup prompt', () => {
     const prompt = buildRequiredSetupPrompt()
 
     expect(prompt).toContain('Do not overuse Perfect')
+    expect(prompt).toContain('Do not use Perfect more than once during required setup')
     expect(prompt).toContain('Do not begin setup transitions with "Perfect. Now"')
+    expect(prompt).toContain(
+      'Never output run-together sentence pairs like Perfect.Now, options:Here, or right away.I',
+    )
+    expect(prompt).toContain(
+      'If support notification fails, explain the next support step without run-together sentences',
+    )
     expect(prompt).toContain(
       'Use short confirmations like Got it, Thanks, That is saved, or We will use that',
     )
@@ -182,6 +214,22 @@ describe('required Nic-Nac setup prompt', () => {
     )
     expect(prompt).not.toContain('LiveQ')
     expect(prompt).not.toContain('TradeBoard')
+  })
+
+  it('explains Trade Board and Light Box clearly before unlock', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain('Light Box')
+    expect(prompt).toContain('The Light Box is ordered by Sparkle Suite after payment')
+    expect(prompt).toContain(
+      'The Light Box helps with consistent jewelry photos when a piece is not in the master jewelry library',
+    )
+    expect(prompt).toContain(
+      'Do not require any Trade Board inventory before unlock',
+    )
+    expect(prompt).toContain(
+      'Trade Board helps reps organize customer trade requests instead of chasing DMs, comments, and screenshots',
+    )
   })
 
   it('adds required setup instructions without workspace tool sections in setup mode', () => {

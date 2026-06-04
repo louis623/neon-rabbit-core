@@ -2,13 +2,13 @@ type JsonObject = Record<string, unknown>
 
 export const REQUIRED_SETUP_STEPS = [
   { id: 'account_basics', label: 'Account basics', required: true },
-  { id: 'site_skin', label: 'Site skin', required: true },
+  { id: 'site_skin', label: 'Customer-site Look', required: true },
   { id: 'welcome_copy', label: 'Welcome copy', required: true },
   { id: 'about_page', label: 'About page', required: true },
   { id: 'show_schedule', label: 'Show schedule', required: true },
   {
     id: 'customer_site_orientation',
-    label: 'Customer site orientation',
+    label: 'Customer-facing website orientation',
     required: true,
   },
   {
@@ -23,7 +23,7 @@ export const REQUIRED_SETUP_STEPS = [
   },
   {
     id: 'trade_board_orientation',
-    label: 'Trade board orientation',
+    label: 'Trade Board orientation',
     required: true,
   },
   {

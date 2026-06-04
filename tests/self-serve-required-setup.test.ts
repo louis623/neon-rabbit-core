@@ -136,7 +136,16 @@ describe('self-serve required setup service contract', () => {
       'Live Queue setup',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
+      'Customer-site Look',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
+      'Trade Board orientation',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
       'Email and SMS update readiness',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
+      'Site skin',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
       'Live queue orientation',

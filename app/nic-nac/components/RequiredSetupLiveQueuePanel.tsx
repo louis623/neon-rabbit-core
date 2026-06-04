@@ -53,12 +53,16 @@ export function RequiredSetupLiveQueuePanel({
         <li>Enter this sync code in the extension.</li>
         <li>Open your Bomb Party Party Orders page.</li>
         <li>Confirm the Party Filter for the show you want synced.</li>
-        <li>Check Live Queue status before moving on.</li>
+        <li>Confirm Live Queue status is connected before moving on.</li>
       </ol>
       <div className={styles.actions}>
         <button
           type="button"
-          onClick={() => onSend('I connected Live Queue and confirmed it is syncing.')}
+          onClick={() =>
+            onSend(
+              'I confirm Live Queue setup is complete: extensionInstalled: true, syncCodeEntered: true, partyOrdersOpen: true, partyFilterSet: true, liveQueueConnected: true. Live Queue status is connected.',
+            )
+          }
           disabled={disabled || !hasSyncCode}
         >
           Live Queue is connected

@@ -1,6 +1,9 @@
 import { tool } from 'ai'
 import { z } from 'zod'
-import { unlockRequiredSetup } from '@/lib/self-serve/required-setup'
+import {
+  completeRequiredSetupStep,
+  unlockRequiredSetup,
+} from '@/lib/self-serve/required-setup'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -20,6 +23,9 @@ export const unlockRequiredSetupTool: ToolDefinition = {
           throw new Error('The rep must approve the final preview before unlock.')
         }
 
+        await completeRequiredSetupStep(ctx.repId, 'final_preview_approval', {
+          repApprovedPreview: true,
+        })
         return unlockRequiredSetup(ctx.repId)
       },
     }),

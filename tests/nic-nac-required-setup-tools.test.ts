@@ -171,9 +171,7 @@ describe('required setup tools', () => {
     expect(source).not.toContain("'live_queue_orientation'")
   })
 
-  it('completes the step when requested after saving an answer', async () => {
-    saveRequiredSetupAnswerMock.mockResolvedValue({ currentStep: 'account_basics' })
-    completeRequiredSetupStepMock.mockResolvedValue({ currentStep: 'site_skin' })
+  it('blocks account basics completion until the rep confirms the summary', async () => {
     const { saveRequiredSetupAnswerTool } = await import(
       '@/lib/nic-nac/tools/save-required-setup-answer'
     )
@@ -182,20 +180,95 @@ describe('required setup tools', () => {
     await expect(
       executeTool(tool, {
         stepId: 'account_basics',
-        answer: { businessName: 'Sparkle Test' },
+        answer: { customerFacingDisplayName: 'Sparkle Test' },
         completeStep: true,
       }),
-    ).resolves.toEqual({ currentStep: 'site_skin' })
+    ).rejects.toThrow('account basics summary')
+
+    expect(saveRequiredSetupAnswerMock).not.toHaveBeenCalled()
+    expect(completeRequiredSetupStepMock).not.toHaveBeenCalled()
+  })
+
+  it('blocks Live Queue completion until the operational checklist is confirmed', async () => {
+    const { saveRequiredSetupAnswerTool } = await import(
+      '@/lib/nic-nac/tools/save-required-setup-answer'
+    )
+    const tool = saveRequiredSetupAnswerTool.build(ctx())
+
+    await expect(
+      executeTool(tool, {
+        stepId: 'live_queue_setup',
+        answer: { liveQueueConnected: true },
+        completeStep: true,
+      }),
+    ).rejects.toThrow('Live Queue setup requires')
+
+    expect(saveRequiredSetupAnswerMock).not.toHaveBeenCalled()
+    expect(completeRequiredSetupStepMock).not.toHaveBeenCalled()
+  })
+
+  it('completes the step when requested after saving an answer', async () => {
+    saveRequiredSetupAnswerMock.mockResolvedValue({ currentStep: 'account_basics' })
+    completeRequiredSetupStepMock.mockResolvedValue({ currentStep: 'about_page' })
+    const { saveRequiredSetupAnswerTool } = await import(
+      '@/lib/nic-nac/tools/save-required-setup-answer'
+    )
+    const tool = saveRequiredSetupAnswerTool.build(ctx())
+
+    await expect(
+      executeTool(tool, {
+        stepId: 'welcome_copy',
+        answer: { headline: 'Welcome sparkle friends' },
+        completeStep: true,
+      }),
+    ).resolves.toEqual({ currentStep: 'about_page' })
 
     expect(saveRequiredSetupAnswerMock).toHaveBeenCalledWith(
       'rep-1',
-      'account_basics',
-      { businessName: 'Sparkle Test' },
+      'welcome_copy',
+      { headline: 'Welcome sparkle friends' },
       {},
     )
     expect(completeRequiredSetupStepMock).toHaveBeenCalledWith(
       'rep-1',
-      'account_basics',
+      'welcome_copy',
+    )
+  })
+
+  it('saves structured Live Queue checklist evidence when completing setup', async () => {
+    saveRequiredSetupAnswerMock.mockResolvedValue({ currentStep: 'live_queue_setup' })
+    completeRequiredSetupStepMock.mockResolvedValue({
+      currentStep: 'email_sms_update_readiness',
+    })
+    const { saveRequiredSetupAnswerTool } = await import(
+      '@/lib/nic-nac/tools/save-required-setup-answer'
+    )
+    const tool = saveRequiredSetupAnswerTool.build(ctx())
+    const answer = {
+      extensionInstalled: true,
+      syncCodeEntered: true,
+      partyOrdersOpen: true,
+      partyFilterSet: true,
+      liveQueueConnected: true,
+    }
+
+    await expect(
+      executeTool(tool, {
+        stepId: 'live_queue_setup',
+        answer,
+        completeStep: true,
+      }),
+    ).resolves.toEqual({ currentStep: 'email_sms_update_readiness' })
+
+    expect(saveRequiredSetupAnswerMock).toHaveBeenCalledWith(
+      'rep-1',
+      'live_queue_setup',
+      answer,
+      {},
+    )
+    expect(completeRequiredSetupStepMock).toHaveBeenCalledWith(
+      'rep-1',
+      'live_queue_setup',
     )
   })
 
@@ -280,6 +353,9 @@ describe('required setup tools', () => {
 
   it('unlocks required setup after preview approval', async () => {
     unlockRequiredSetupMock.mockResolvedValue({ status: 'dashboard_unlocked' })
+    completeRequiredSetupStepMock.mockResolvedValue({
+      currentStep: 'final_preview_approval',
+    })
     const { unlockRequiredSetupTool } = await import(
       '@/lib/nic-nac/tools/unlock-required-setup'
     )
@@ -290,6 +366,11 @@ describe('required setup tools', () => {
         repApprovedPreview: true,
       }),
     ).resolves.toEqual({ status: 'dashboard_unlocked' })
+    expect(completeRequiredSetupStepMock).toHaveBeenCalledWith(
+      'rep-1',
+      'final_preview_approval',
+      { repApprovedPreview: true },
+    )
     expect(unlockRequiredSetupMock).toHaveBeenCalledWith('rep-1')
   })
 })

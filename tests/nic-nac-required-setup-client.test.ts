@@ -4,6 +4,19 @@ import { describe, expect, it } from 'vitest'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
 
 const client = readFileSync(resolve(process.cwd(), 'app/nic-nac/_client.tsx'), 'utf8')
+const requiredSetupHome = readFileSync(
+  resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
+  'utf8',
+)
+const liveQueuePanel = readFileSync(
+  resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupLiveQueuePanel.tsx'),
+  'utf8',
+)
+const startForm = readFileSync(
+  resolve(process.cwd(), 'app/start/StartSparkleSuiteForm.tsx'),
+  'utf8',
+)
+const startPage = readFileSync(resolve(process.cwd(), 'app/start/page.tsx'), 'utf8')
 
 describe('Nic-Nac required setup client', () => {
   it('uses a reusable chat body component', () => {
@@ -64,6 +77,26 @@ describe('Nic-Nac required setup client', () => {
   it('passes the exact required setup preview href into chat', () => {
     expect(client).toContain('requiredSetupPreviewHref={requiredSetupPreviewHref}')
     expect(client).toContain('buildCustomerSparkleSiteHref(setupState?.repId)')
+  })
+
+  it('uses current required setup product language in setup surfaces', () => {
+    const source = `${requiredSetupHome}\n${startForm}\n${startPage}`
+
+    expect(source).not.toContain('Site skin')
+    expect(source).not.toContain('public site')
+    expect(source).not.toContain('dancefloor/trade board')
+    expect(source).toContain('customer-facing website')
+    expect(source).toContain('Live Queue')
+    expect(source).toContain('Trade Board')
+  })
+
+  it('sends structured Live Queue completion evidence from the setup panel', () => {
+    expect(liveQueuePanel).toContain('extensionInstalled: true')
+    expect(liveQueuePanel).toContain('syncCodeEntered: true')
+    expect(liveQueuePanel).toContain('partyOrdersOpen: true')
+    expect(liveQueuePanel).toContain('partyFilterSet: true')
+    expect(liveQueuePanel).toContain('liveQueueConnected: true')
+    expect(liveQueuePanel).toContain('Live Queue status is connected')
   })
 
   it('refreshes setup state after required setup chat responses settle', () => {

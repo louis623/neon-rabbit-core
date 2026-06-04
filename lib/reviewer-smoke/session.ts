@@ -45,9 +45,6 @@ function setupAnswersForReviewer(persona: ReturnType<typeof getReviewerSmokePers
       preset: 'sparkle_suite_morganite',
       tone: 'warm, polished, customer-ready',
     },
-    welcome_copy: {
-      headline: 'Welcome, sparkle friends.',
-    },
   }
 }
 

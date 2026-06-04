@@ -107,4 +107,24 @@ describe('reviewer smoke session reset', () => {
       { repId: 'rep-reviewer' },
     )
   })
+
+  it('starts required setup preview without stale welcome-copy answers', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('required_setup', admin as never)
+
+    expect(spies.setupUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        current_step: 'account_basics',
+        completed_steps: [],
+        generated_copy: {},
+        answers: expect.not.objectContaining({
+          welcome_copy: expect.objectContaining({
+            headline: 'Welcome, sparkle friends.',
+          }),
+        }),
+      }),
+      { onConflict: 'rep_id' },
+    )
+  })
 })

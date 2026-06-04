@@ -132,7 +132,7 @@ describe('Nic-Nac branding copy', () => {
     )
     expect(html).toContain('Enter this sync code')
     expect(html).toContain('Confirm the Party Filter')
-    expect(html).toContain('Check Live Queue status')
+    expect(html).toContain('Confirm Live Queue status is connected')
     expect(html).toContain('I need help with Live Queue setup')
     expect(html).not.toContain('search')
     expect(html).not.toContain('064632')

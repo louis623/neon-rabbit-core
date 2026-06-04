@@ -31,9 +31,9 @@ export function RequiredSetupHome({
           <p className={styles.kicker}>Paid setup</p>
           <h2>One conversation, one step at a time.</h2>
           <p>
-            Nic-Nac will shape the public site, teach the workspace, and unlock
-            the full dashboard when everything is polished enough to represent
-            your business and Sparkle Suite.
+            Nic-Nac will shape the customer-facing website, teach the Sparkle
+            Suite Workspace, and unlock the full workspace when everything is
+            polished enough to represent your business and Sparkle Suite.
           </p>
         </div>
         <div className={styles.progressShell}>
