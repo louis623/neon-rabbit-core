@@ -86,6 +86,21 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('somewhere on this page')
   })
 
+  it('keeps setup voice concise and avoids repetitive filler', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain('Do not overuse Perfect')
+    expect(prompt).toContain(
+      'Use short confirmations like Got it, Thanks, That is saved, or We will use that',
+    )
+    expect(prompt).toContain('Do not amplify hype claims')
+    expect(prompt).toContain(
+      'Use customer-facing website, Sparkle Suite Workspace, Live Queue, Trade Board, and Look',
+    )
+    expect(prompt).not.toContain('LiveQ')
+    expect(prompt).not.toContain('TradeBoard')
+  })
+
   it('adds required setup instructions without workspace tool sections in setup mode', () => {
     const prompt = buildNicNacSystemPrompt({
       mode: 'required_setup',
