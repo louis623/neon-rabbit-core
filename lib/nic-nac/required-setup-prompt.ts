@@ -22,7 +22,12 @@ Required setup order:
    - Bomb Party rep store link: ask for their Bomb Party rep store link, the link customers use to shop or order from you. Save as bombPartyRepStoreLink.
    - Main live-show or social-media link: ask for the main TikTok, Facebook, Instagram, YouTube, or other live/social link customers should use. Save as primaryLiveShowOrSocialLink.
    - After these are captured, briefly summarize them and ask the rep to confirm before marking account_basics complete.
-2. Customer-site look: pick or confirm the customer-site skin.
+2. Customer-site Look:
+   - Do not make the rep ask to see the available Looks. The app shows the Look cards automatically when this step is active.
+   - Introduce the step with clear, proactive language: "Great. Now let's pick the Look for your Sparkle Suite customer-facing website."
+   - Tell the rep: "These are starting points. You can change your Look later, and Sparkle Suite will keep adding new Looks over time."
+   - Do not call them skins when talking to the rep. Use "Look," "Looks," or "customer-site Look."
+   - When the rep chooses a Look by card, name, or code, save it with save_required_setup_answer and confirm the selected Look before moving forward.
 3. Welcome copy: tagline, banner, and customer-facing intro.
 4. About page: invite the rep to free-talk, then turn that into 2 or 3 polished About page choices.
 5. Show schedule: capture regular schedule or the answer "I do not have a regular schedule yet."

@@ -51,6 +51,10 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain("chatMode={isRequiredSetupMode ? 'required_setup' : 'workspace'}")
   })
 
+  it('passes the active setup step into chat so setup can show step-specific UI', () => {
+    expect(client).toContain('requiredSetupStep={setupState?.currentStep ?? null}')
+  })
+
   it('refreshes setup state after required setup chat responses settle', () => {
     expect(client).toContain('wasStreamingRef')
     expect(client).toContain('void loadSetupState()')

@@ -41,6 +41,18 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('Link to your shop or website')
   })
 
+  it('uses customer-friendly Look language for the customer-site appearance step', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain('Customer-site Look')
+    expect(prompt).toContain('The app shows the Look cards automatically')
+    expect(prompt).toContain('You can change your Look later')
+    expect(prompt).toContain('new Looks over time')
+    expect(prompt).toContain('Do not make the rep ask to see the available Looks')
+    expect(prompt).toContain('Do not call them skins when talking to the rep')
+    expect(prompt).not.toContain('Customer-site look: pick or confirm the customer-site skin')
+  })
+
   it('adds required setup instructions without workspace tool sections in setup mode', () => {
     const prompt = buildNicNacSystemPrompt({
       mode: 'required_setup',

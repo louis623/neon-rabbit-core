@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 
 import { NicNacMark } from '@/app/_components/nic-nac-mark'
 import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
+import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
 import { ThinkingIndicator } from '@/app/nic-nac/components/ThinkingIndicator'
@@ -82,6 +83,31 @@ describe('Nic-Nac branding copy', () => {
     expect(chipsHtml).toContain('Remove a listing')
     expect(chipsHtml).not.toContain('Start account basics')
     expect(chipsHtml).not.toContain('What do you need from me?')
+  })
+
+  it('renders a proactive customer-site Look picker for required setup', () => {
+    const html = renderToStaticMarkup(
+      createElement(RequiredSetupLookPicker, {
+        onChoose: () => {},
+      }),
+    )
+
+    expect(html).toContain('Choose your customer-site Look')
+    expect(html).toContain('You can change your Look later')
+    expect(html).toContain('new Looks over time')
+    expect(html).toContain('Recommended')
+    expect(html).toContain('Warm + Polished')
+    expect(html).toContain('Sparkle Suite/Morganite')
+    expect(html).toContain('Dark + Dramatic')
+    expect(html).toContain('Black Diamond')
+    expect(html).toContain('Soft Jewelry Polish')
+    expect(html).toContain('Rose Gold')
+    expect(html).toContain('Original Sparkle')
+    expect(html).toContain('Choose this Look')
+    expect(html).toContain('SS-01')
+    expect(html).toContain('BD-01')
+    expect(html).not.toContain('skin')
+    expect(html).not.toContain('Skin')
   })
 
   it('keeps Nic-Nac speaking text large and bold for live-show readability', () => {

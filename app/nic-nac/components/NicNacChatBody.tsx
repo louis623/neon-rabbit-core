@@ -15,6 +15,7 @@ import { EmptyGreeting, type NicNacChatMode } from './EmptyGreeting'
 import { ErrorBlock } from './ErrorBlock'
 import { HITLBlock } from './HITLBlock'
 import { InputRow, type InputAttachment } from './InputRow'
+import { RequiredSetupLookPicker } from './RequiredSetupLookPicker'
 import { StreamingBubble } from './StreamingBubble'
 import { ThinkingIndicator } from './ThinkingIndicator'
 import { compressImage } from '@/lib/nic-nac/image-compress'
@@ -28,6 +29,7 @@ import {
   isTradeWorkspaceMutationPart,
   NIC_NAC_WORKSPACE_REFRESH_EVENT,
 } from '@/lib/nic-nac/workspace-refresh-events'
+import type { RequiredSetupStepId } from '@/lib/self-serve/required-setup'
 
 const MAX_ATTACHMENTS = 10
 
@@ -48,6 +50,7 @@ type ConversationHydrateResponse = {
 export function NicNacChatBody({
   conversationId,
   chatMode = 'workspace',
+  requiredSetupStep,
   transport,
   initialMessages,
   onChatStateChange,
@@ -55,6 +58,7 @@ export function NicNacChatBody({
 }: {
   conversationId: string
   chatMode?: NicNacChatMode
+  requiredSetupStep?: RequiredSetupStepId | null
   transport: DefaultChatTransport<UIMessage>
   initialMessages: UIMessage[]
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
@@ -330,6 +334,8 @@ export function NicNacChatBody({
   const hasError = !!error
   const hasMessages = messages.length > 0
   const chipsVisible = !isStreaming && !hasPendingApproval && !hasError
+  const showLookPicker =
+    chatMode === 'required_setup' && requiredSetupStep === 'site_skin'
   const inputAriaDisabled = hasPendingApproval
   const latestUserId = findLatestUserMessageId(messages)
   const latestPendingUserId =
@@ -425,6 +431,11 @@ export function NicNacChatBody({
   }
 
   const handleChip = (text: string) => {
+    if (hasPendingApproval || isStreaming) return
+    void sendMessage({ text })
+  }
+
+  const handleLookChoice = (text: string) => {
     if (hasPendingApproval || isStreaming) return
     void sendMessage({ text })
   }
@@ -546,6 +557,12 @@ export function NicNacChatBody({
             variant="global"
             message="Couldn't reach Nic-Nac just now. If this keeps happening, let Louis know."
             onRetry={() => regenerate()}
+          />
+        ) : null}
+        {showLookPicker ? (
+          <RequiredSetupLookPicker
+            onChoose={handleLookChoice}
+            disabled={isStreaming || hasPendingApproval}
           />
         ) : null}
       </ChatHistory>
