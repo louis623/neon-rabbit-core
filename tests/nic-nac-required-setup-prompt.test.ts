@@ -70,6 +70,16 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('If Live Queue setup is blocked')
     expect(prompt).toContain('Live Queue sync code')
     expect(prompt).toContain(
+      'Give the rep their saved Live Queue sync code in the same reply as the Chrome Extension Store link',
+    )
+    expect(prompt).toContain(
+      'If the extension asks for a code, provide the saved Live Queue sync code directly',
+    )
+    expect(prompt).toContain(
+      'Do not say the extension generates or displays the sync code',
+    )
+    expect(prompt).toContain('Do not ask for the rep email to look up the code')
+    expect(prompt).toContain(
       'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',
     )
     expect(prompt).toContain('Do not ask the rep to search')
@@ -105,6 +115,7 @@ describe('required Nic-Nac setup prompt', () => {
     const prompt = buildRequiredSetupPrompt()
 
     expect(prompt).toContain('Do not overuse Perfect')
+    expect(prompt).toContain('Do not begin setup transitions with "Perfect. Now"')
     expect(prompt).toContain(
       'Use short confirmations like Got it, Thanks, That is saved, or We will use that',
     )

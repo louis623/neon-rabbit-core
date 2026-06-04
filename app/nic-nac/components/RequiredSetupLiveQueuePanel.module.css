@@ -44,6 +44,7 @@
 
 .codeBox {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -64,6 +65,14 @@
   font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: 0;
+}
+
+.codeBox small {
+  flex-basis: 100%;
+  color: #654944;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .blockedNote {

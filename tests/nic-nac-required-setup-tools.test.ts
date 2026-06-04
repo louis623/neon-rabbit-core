@@ -5,12 +5,14 @@ import type { ToolDefinition } from '@/lib/nic-nac/tools/types'
 
 const {
   getRequiredSetupStateMock,
+  getLiveQueueSyncCodeForRepMock,
   saveRequiredSetupAnswerMock,
   completeRequiredSetupStepMock,
   unlockRequiredSetupMock,
   sendLouisAlertMock,
 } = vi.hoisted(() => ({
   getRequiredSetupStateMock: vi.fn(),
+  getLiveQueueSyncCodeForRepMock: vi.fn(),
   saveRequiredSetupAnswerMock: vi.fn(),
   completeRequiredSetupStepMock: vi.fn(),
   unlockRequiredSetupMock: vi.fn(),
@@ -27,6 +29,11 @@ vi.mock('@/lib/self-serve/required-setup', () => ({
 
 vi.mock('@/lib/ops/louis-alerts', () => ({
   sendLouisAlert: (...args: unknown[]) => sendLouisAlertMock(...args),
+}))
+
+vi.mock('@/lib/services/live-queue', () => ({
+  getLiveQueueSyncCodeForRep: (...args: unknown[]) =>
+    getLiveQueueSyncCodeForRepMock(...args),
 }))
 
 function ctx() {
@@ -48,6 +55,7 @@ function executeTool(
 describe('required setup tools', () => {
   beforeEach(() => {
     getRequiredSetupStateMock.mockReset()
+    getLiveQueueSyncCodeForRepMock.mockReset()
     saveRequiredSetupAnswerMock.mockReset()
     completeRequiredSetupStepMock.mockReset()
     unlockRequiredSetupMock.mockReset()
@@ -56,6 +64,30 @@ describe('required setup tools', () => {
 
   it('reads required setup state', async () => {
     getRequiredSetupStateMock.mockResolvedValue({ status: 'required_setup' })
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue(null)
+    const { getRequiredSetupStateTool } = await import(
+      '@/lib/nic-nac/tools/get-required-setup-state'
+    )
+    const testCtx = ctx()
+    const tool = getRequiredSetupStateTool.build(testCtx)
+
+    await expect(executeTool(tool, {})).resolves.toEqual({
+      status: 'required_setup',
+      liveQueueSyncCode: null,
+    })
+    expect(getRequiredSetupStateMock).toHaveBeenCalledWith('rep-1')
+    expect(getLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(
+      testCtx.supabase,
+      'rep-1',
+    )
+  })
+
+  it('includes the saved Live Queue sync code in required setup state', async () => {
+    getRequiredSetupStateMock.mockResolvedValue({
+      status: 'required_setup',
+      currentStep: 'live_queue_setup',
+    })
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue('MHF-7342')
     const { getRequiredSetupStateTool } = await import(
       '@/lib/nic-nac/tools/get-required-setup-state'
     )
@@ -63,8 +95,9 @@ describe('required setup tools', () => {
 
     await expect(executeTool(tool, {})).resolves.toEqual({
       status: 'required_setup',
+      currentStep: 'live_queue_setup',
+      liveQueueSyncCode: 'MHF-7342',
     })
-    expect(getRequiredSetupStateMock).toHaveBeenCalledWith('rep-1')
   })
 
   it('saves an answer with generated copy and support state patches', async () => {

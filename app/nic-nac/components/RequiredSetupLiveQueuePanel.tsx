@@ -28,6 +28,9 @@ export function RequiredSetupLiveQueuePanel({
       <div className={styles.codeBox}>
         <span>Live Queue sync code</span>
         <strong>{hasSyncCode ? syncCode : 'Not assigned yet'}</strong>
+        {hasSyncCode ? (
+          <small>Use this when the extension asks for your code.</small>
+        ) : null}
       </div>
       {!hasSyncCode ? (
         <p className={styles.blockedNote}>
