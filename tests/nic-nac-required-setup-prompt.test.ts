@@ -62,6 +62,44 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('Customer-site look: pick or confirm the customer-site skin')
   })
 
+  it('keeps welcome-copy setup from asking redundant tagline and intro questions', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain(
+      'Welcome copy: capture a headline and one supporting welcome line',
+    )
+    expect(prompt).toContain(
+      'Do not ask for both a tagline and a separate intro or welcome message if the rep already gave a usable supporting line',
+    )
+    expect(prompt).toContain(
+      'If the rep says they already gave the welcome copy, reuse the prior answer instead of asking again',
+    )
+    expect(prompt).toContain(
+      'Example: after "All are welcome. Enjoy the fizz, the bling, the sparkle, and the glam.", save it as the supporting welcome line',
+    )
+    expect(prompt).not.toContain('Welcome copy: tagline, banner, and customer-facing intro.')
+  })
+
+  it('requires About page options to preserve the rep-specific details', () => {
+    const prompt = buildRequiredSetupPrompt()
+
+    expect(prompt).toContain(
+      'About page: preserve the rep-specific facts, names, humor, voice, and memorable details',
+    )
+    expect(prompt).toContain(
+      'Do not replace concrete details with generic jewelry-show filler',
+    )
+    expect(prompt).toContain(
+      'If the rep mentions being Gracie Bott, older, rescued from the shelter, running the household, banana and papaya habits, or wanting support for her cause, those details must appear in the About choices',
+    )
+    expect(prompt).toContain(
+      'If an About draft drops the specifics the rep gave, rewrite it before showing it',
+    )
+    expect(prompt).not.toContain(
+      'About page: invite the rep to free-talk, then turn that into 2 or 3 polished About page choices.',
+    )
+  })
+
   it('requires support escalation when Live Queue setup is blocked', () => {
     const prompt = buildRequiredSetupPrompt()
 
