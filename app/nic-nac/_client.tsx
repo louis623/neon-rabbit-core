@@ -14,6 +14,7 @@ import { NicNacMobileShell } from './components/NicNacMobileShell'
 import { RequiredSetupHome } from './components/RequiredSetupHome'
 import {
   buildConversationStateUrl,
+  canUseUrlConversationId,
   getConversationIdFromSearch,
   putConversationIdInSearch,
   readJsonResponse,
@@ -102,10 +103,14 @@ export default function NicNacClient({
   const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
   const billingState = searchParams.get('billing')
   const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
-  const isFinalizingCheckout =
+  const isCheckoutSuccessReturn =
     wantsRequiredSetup &&
     billingState === 'subscription-success' &&
     checkoutSessionId.length > 0
+  const [checkoutSyncedSessionId, setCheckoutSyncedSessionId] = useState<string | null>(null)
+  const checkoutSyncComplete =
+    isCheckoutSuccessReturn && checkoutSyncedSessionId === checkoutSessionId
+  const isFinalizingCheckout = isCheckoutSuccessReturn && !checkoutSyncComplete
 
   const [setupState, setSetupState] = useState<SetupStateWithLiveQueue | null>(null)
   const [setupStateStatus, setSetupStateStatus] = useState<
@@ -260,6 +265,8 @@ export default function NicNacClient({
           setSetupStateStatus('error')
           return
         }
+        if (controller.signal.aborted) return
+        setCheckoutSyncedSessionId(checkoutSessionId)
       }
       await loadSetupState({ signal: controller.signal, showLoading: true })
     })()
@@ -269,6 +276,7 @@ export default function NicNacClient({
   }, [
     billingState,
     checkoutSessionId,
+    checkoutSyncComplete,
     isFinalizingCheckout,
     loadSetupState,
     syncReturnedCheckoutSession,
@@ -278,7 +286,7 @@ export default function NicNacClient({
   const setupStatus = setupState?.status
   const workspaceMode = resolveNicNacWorkspaceMode({
     setupStatus,
-    isCheckoutSuccessReturn: isFinalizingCheckout,
+    isCheckoutSuccessReturn,
     wantsCheckout,
     wantsRequiredSetup,
   })
@@ -372,7 +380,14 @@ export default function NicNacClient({
       const urlId = getConversationIdFromSearch(
         new URLSearchParams(Array.from(searchParams.entries())).toString(),
       )
-      if (urlId && !isFinalizingCheckout) {
+      if (
+        urlId &&
+        canUseUrlConversationId({
+          urlId,
+          isCheckoutSuccessReturn,
+          checkoutSyncComplete,
+        })
+      ) {
         if (cancelled) return
         setConversationId(urlId)
         if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, urlId)
@@ -422,7 +437,14 @@ export default function NicNacClient({
       cancelled = true
       controller.abort()
     }
-  }, [isFinalizingCheckout, shouldUseConversation, router, searchParams, resolveAttempt])
+  }, [
+    checkoutSyncComplete,
+    isCheckoutSuccessReturn,
+    shouldUseConversation,
+    router,
+    searchParams,
+    resolveAttempt,
+  ])
 
   useEffect(() => {
     if (!shouldUseConversation) return

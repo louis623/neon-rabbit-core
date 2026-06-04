@@ -56,12 +56,12 @@ describe('Nic-Nac required setup client', () => {
   })
 
   it('does not trust a checkout-success conversation id until setup sync resolves the rep', () => {
-    expect(client).toContain('urlId && !isFinalizingCheckout')
-    expect(client).toContain('isFinalizingCheckout,')
+    expect(client).toContain('canUseUrlConversationId')
+    expect(client).toContain('checkoutSyncComplete')
   })
 
   it('passes the Stripe success return into workspace mode resolution', () => {
-    expect(client).toContain('isCheckoutSuccessReturn: isFinalizingCheckout')
+    expect(client).toContain('isCheckoutSuccessReturn')
   })
 
   it('shows reviewer setup actions only for reviewer smoke setup state', () => {

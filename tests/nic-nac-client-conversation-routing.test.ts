@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildConversationStateUrl,
+  canUseUrlConversationId,
   getConversationIdFromSearch,
   putConversationIdInSearch,
   readJsonResponse,
@@ -29,6 +30,24 @@ describe('Nic-Nac client conversation routing', () => {
     expect(buildConversationStateUrl('conv-123')).toBe(
       '/api/nic-nac/conversation-state?conversationId=conv-123',
     )
+  })
+
+  it('trusts a checkout-success conversation id after Stripe sync is complete', () => {
+    expect(
+      canUseUrlConversationId({
+        urlId: 'conv-123',
+        isCheckoutSuccessReturn: true,
+        checkoutSyncComplete: false,
+      }),
+    ).toBe(false)
+
+    expect(
+      canUseUrlConversationId({
+        urlId: 'conv-123',
+        isCheckoutSuccessReturn: true,
+        checkoutSyncComplete: true,
+      }),
+    ).toBe(true)
   })
 
   it('turns non-JSON route failures into readable errors', async () => {

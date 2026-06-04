@@ -19,6 +19,19 @@ export function buildConversationStateUrl(conversationId?: string | null) {
   return `/api/nic-nac/conversation-state?${params.toString()}`
 }
 
+export function canUseUrlConversationId({
+  urlId,
+  isCheckoutSuccessReturn,
+  checkoutSyncComplete,
+}: {
+  urlId: string | null
+  isCheckoutSuccessReturn: boolean
+  checkoutSyncComplete: boolean
+}) {
+  if (!urlId) return false
+  return !isCheckoutSuccessReturn || checkoutSyncComplete
+}
+
 export async function readJsonResponse<T>(response: Response, label: string) {
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.toLowerCase().includes('application/json')) {
