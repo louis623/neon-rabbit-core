@@ -9,6 +9,7 @@ import {
 } from './homepage-template-data'
 import {
   DEFAULT_AMETHYST_APPEARANCE_PRESET,
+  normalizeAmethystAppearancePreset,
   type AmethystAppearancePresetId,
 } from './appearance-presets'
 import {
@@ -16,6 +17,14 @@ import {
   type AmethystJoinTemplateData,
 } from './join-template-data'
 import { resolveAmethystPreviewRep } from './preview-rep'
+import {
+  getRequiredSetupState,
+  type RequiredSetupState,
+} from '@/lib/self-serve/required-setup'
+import {
+  firstRequiredSetupDraftText as firstDraftText,
+  normalizeRequiredSetupDraftState,
+} from '@/lib/self-serve/required-setup-draft'
 import {
   defaultAmethystTradeTemplateData,
   type AmethystTradeTemplateData,
@@ -25,6 +34,7 @@ interface PreviewTemplateDataDependencies {
   createAdminClient?: typeof createAdminClient
   resolveAmethystPreviewRep?: typeof resolveAmethystPreviewRep
   getSiteSettingsDashboard?: typeof getSiteSettingsDashboard
+  getRequiredSetupState?: typeof getRequiredSetupState
 }
 
 interface LoadPreviewTemplateDataOptions {
@@ -54,6 +64,106 @@ const defaultPreviewTemplateData: AmethystPreviewTemplateData = {
 
 function clean(value: string | null | undefined) {
   return value?.trim() || ''
+}
+
+function socialKeyForUrl(value: string) {
+  const normalized = value.toLowerCase()
+  if (normalized.includes('tiktok.com')) return 'tiktok'
+  if (normalized.includes('facebook.com') || normalized.includes('fb.com')) return 'facebook'
+  if (normalized.includes('instagram.com')) return 'instagram'
+  if (normalized.includes('youtube.com') || normalized.includes('youtu.be')) return 'youtube'
+  return 'website'
+}
+
+function mergePrimarySocialLink(
+  socialHandles: Record<string, string>,
+  primaryLink: string,
+) {
+  if (!primaryLink) return socialHandles
+  return {
+    ...socialHandles,
+    [socialKeyForUrl(primaryLink)]: primaryLink,
+  }
+}
+
+function applyRequiredSetupDraftToSettings(
+  settings: SiteSettingsDashboardResult,
+  state: RequiredSetupState | null | undefined,
+): SiteSettingsDashboardResult {
+  if (!state?.repId) return settings
+  const draft = normalizeRequiredSetupDraftState(state)
+  const businessName = firstDraftText(
+    draft.customerFacingDisplayName,
+    settings.businessName,
+  )
+  const teamName = firstDraftText(draft.liveShowName, businessName, settings.teamName)
+  const tagline = firstDraftText(draft.welcomeSupportingLine, settings.tagline)
+  const bannerText = firstDraftText(draft.welcomeHeadline, settings.bannerText)
+
+  return {
+    ...settings,
+    displayName: firstDraftText(draft.conversationName, settings.displayName),
+    businessName,
+    email: firstDraftText(draft.bestContactEmail, settings.email),
+    bannerText,
+    bannerVisible: Boolean(bannerText) || settings.bannerVisible,
+    tagline,
+    teamName,
+    appearancePreset: draft.appearancePreset || settings.appearancePreset,
+    socialHandles: mergePrimarySocialLink(
+      settings.socialHandles,
+      draft.primaryLiveShowOrSocialLink,
+    ),
+  }
+}
+
+function applyRequiredSetupDraftToExtras(
+  extras: PreviewRepExtras,
+  state: RequiredSetupState | null | undefined,
+): PreviewRepExtras {
+  if (!state?.repId) return extras
+  const draft = normalizeRequiredSetupDraftState(state)
+  const streamingLinks = asRecord(extras.streamingLinks)
+  const primaryLink = draft.primaryLiveShowOrSocialLink
+
+  return {
+    ...extras,
+    shopLink: firstDraftText(draft.bombPartyRepStoreLink, extras.shopLink),
+    streamingLinks: primaryLink
+      ? {
+          ...streamingLinks,
+          [socialKeyForUrl(primaryLink)]: primaryLink,
+        }
+      : streamingLinks,
+  }
+}
+
+function applyRequiredSetupDraftToHomepage(
+  homepage: AmethystHomepageTemplateData,
+  state: RequiredSetupState | null | undefined,
+): AmethystHomepageTemplateData {
+  if (!state?.repId) return homepage
+  const draft = normalizeRequiredSetupDraftState(state)
+  const aboutParagraphs = [...homepage.aboutParagraphs] as [string, string, string]
+
+  if (draft.aboutCopy) aboutParagraphs[0] = draft.aboutCopy
+  if (draft.scheduleSummary) {
+    aboutParagraphs[2] = `Live show schedule: ${draft.scheduleSummary}`
+  }
+
+  return {
+    ...homepage,
+    heroEyebrow: draft.scheduleSummary
+      ? `Live schedule: ${draft.scheduleSummary}`
+      : 'Live schedule coming soon',
+    heroHeadline: firstDraftText(draft.welcomeHeadline, homepage.heroHeadline),
+    heroSub: firstDraftText(draft.welcomeSupportingLine, homepage.heroSub),
+    aboutHeadline: draft.customerFacingDisplayName
+      ? `Meet the story behind ${draft.customerFacingDisplayName}.`
+      : homepage.aboutHeadline,
+    aboutParagraphs,
+    footerTagline: firstDraftText(draft.welcomeSupportingLine, homepage.footerTagline),
+  }
 }
 
 function hasLegacyPlaceholderText(value: string | null | undefined) {
@@ -174,14 +284,55 @@ function withCustomerTarget(href: string, repId: string | null | undefined) {
   return `${href}${separator}c=${encodeURIComponent(cleanedRepId)}`
 }
 
+function targetedHomepageAboutParagraphs(
+  homepage: AmethystHomepageTemplateData,
+): [string, string, string] {
+  const neutral: [string, string, string] = [
+    `${homepage.repName} will share more about this live reveal community soon.`,
+    'Customer details, show style, and favorite reveal notes will appear here after they are added.',
+    homepage.heroEyebrow,
+  ]
+  const isPlaceholder = (value: string) => {
+    const normalized = value.toLowerCase()
+    return (
+      normalized.includes('share how you got started') ||
+      normalized.includes('nic-nac can rewrite this') ||
+      normalized.includes('add a final paragraph')
+    )
+  }
+
+  return homepage.aboutParagraphs.map((paragraph, index) =>
+    isPlaceholder(paragraph) ? neutral[index] : paragraph,
+  ) as [string, string, string]
+}
+
+function targetedJoinFaq(teamName: string, repName: string): AmethystJoinTemplateData['faqAnswers'] {
+  return {
+    whatIsTeam: `${teamName} details will appear after ${repName} adds team information.`,
+    cost: 'Review current starter pack details before joining.',
+    experience: `${repName} can answer onboarding and experience questions directly.`,
+    timeCommitment: `${repName} can discuss schedule expectations and what setup looks like.`,
+    support: 'Support details will appear after this rep configures them.',
+    income: 'Review the income disclosure before joining. Income varies by effort, sales, and time.',
+  }
+}
+
 function applyCustomerTarget(
   data: AmethystPreviewTemplateData,
   repId: string | null | undefined,
 ): AmethystPreviewTemplateData {
+  const targeted = Boolean(repId?.trim())
+
   return {
     appearancePreset: data.appearancePreset,
     homepage: {
       ...data.homepage,
+      aboutParagraphs: targeted
+        ? targetedHomepageAboutParagraphs(data.homepage)
+        : data.homepage.aboutParagraphs,
+      showcaseVideoCaption: targeted
+        ? 'Intro video coming soon.'
+        : data.homepage.showcaseVideoCaption,
       joinTeamUrl: withCustomerTarget(data.homepage.joinTeamUrl, repId),
       footerLinks: {
         ...data.homepage.footerLinks,
@@ -199,6 +350,21 @@ function applyCustomerTarget(
     },
     join: {
       ...data.join,
+      teamMembers: targeted ? [] : data.join.teamMembers,
+      promoText: targeted ? '' : data.join.promoText,
+      footerColumn: targeted
+        ? {
+            title: 'Team Notes',
+            links: [
+              { label: 'Team details appear after setup', href: '#faq' },
+              { label: 'Connect with the rep', href: '#faq' },
+              { label: 'Review current income disclosure', href: '#faq' },
+            ],
+          }
+        : data.join.footerColumn,
+      faqAnswers: targeted
+        ? targetedJoinFaq(data.join.teamName, data.join.repName)
+        : data.join.faqAnswers,
       footerLinks: {
         ...data.join.footerLinks,
         home: withCustomerTarget(data.join.footerLinks.home, repId),
@@ -228,6 +394,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     teamName: firstText(settings.teamName, defaultAmethystHomepageTemplateData.teamName),
     tagline,
     heroSub: `I'm ${repName} - join me for live reveals, favorite finds, and customer-first sparkle.`,
+    heroEyebrow: 'Live schedule coming soon',
     tickerTopText: buildTicker(
       settings,
       defaultAmethystHomepageTemplateData.tickerTopText,
@@ -337,16 +504,33 @@ export async function loadAmethystPreviewTemplateData(
 
     const settings = await (dependencies.getSiteSettingsDashboard ??
       getSiteSettingsDashboard)(admin, rep.id)
+    let requiredSetupState: RequiredSetupState | null = null
+    try {
+      requiredSetupState = await (dependencies.getRequiredSetupState ??
+        getRequiredSetupState)(rep.id)
+    } catch {
+      requiredSetupState = null
+    }
+    const draftSettings = applyRequiredSetupDraftToSettings(
+      settings,
+      requiredSetupState,
+    )
     const extras = {
       shopLink: rep.shop_link,
       streamingLinks: rep.streaming_links,
     }
+    const draftExtras = applyRequiredSetupDraftToExtras(extras, requiredSetupState)
 
     return applyCustomerTarget({
-      appearancePreset: settings.appearancePreset,
-      homepage: mapPreviewSettingsToHomepageTemplateData(settings, extras),
-      trade: mapPreviewSettingsToTradeTemplateData(settings, extras),
-      join: mapPreviewSettingsToJoinTemplateData(settings, extras),
+      appearancePreset: normalizeAmethystAppearancePreset(
+        draftSettings.appearancePreset,
+      ),
+      homepage: applyRequiredSetupDraftToHomepage(
+        mapPreviewSettingsToHomepageTemplateData(draftSettings, draftExtras),
+        requiredSetupState,
+      ),
+      trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
+      join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
     }, options.repId)
   } catch {
     return defaultPreviewTemplateData

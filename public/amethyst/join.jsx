@@ -52,6 +52,7 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
 };
 
 const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
+const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -61,6 +62,22 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function setMetaContent(selector, value) {
+  if (!value) return;
+  const node = document.querySelector(selector);
+  if (node) node.setAttribute("content", value);
+}
+
+function applyTargetedMetadata(pageTitle, description) {
+  if (!RUNTIME_CONTEXT.targeted) return;
+  document.title = pageTitle;
+  setMetaContent('meta[name="description"]', description);
+  setMetaContent('meta[property="og:title"]', pageTitle);
+  setMetaContent('meta[property="og:description"]', description);
+  setMetaContent('meta[name="twitter:title"]', pageTitle);
+  setMetaContent('meta[name="twitter:description"]', description);
 }
 
 function deriveInitials(name, fallback) {
@@ -179,7 +196,9 @@ const FALLBACK_TEAM = [
 
 const TEAM_MEMBERS = (CONTENT.teamMembers && CONTENT.teamMembers.length > 0
   ? CONTENT.teamMembers
-  : FALLBACK_TEAM
+  : RUNTIME_CONTEXT.targeted
+    ? []
+    : FALLBACK_TEAM
 ).map((member) => ({
   ...member,
   initials: deriveInitials(member.name, member.initials),
@@ -209,7 +228,7 @@ function getLocationLabel(city, state) {
   return normalizedCity || normalizedState || "";
 }
 
-const TICKER_TRADES = [
+const TICKER_TRADES = RUNTIME_CONTEXT.targeted ? [] : [
   { name: "Citrine Sun Pendant", price: "$148", tier: "unicorn" },
   { name: "Rose Quartz Band", price: "$98", tier: "diamond" },
   { name: "Amethyst Halo Ring", price: "$118", tier: "" },
@@ -225,7 +244,7 @@ const LIVE_QUEUE_NAMES = [
   "Amber L.", "Sadie P.", "Lauren E.", "Robin A.", "Faith D.", "Nicole V.",
 ];
 
-const LIVE_QUEUE_ENTRIES = LIVE_QUEUE_NAMES.map((name, index) => ({
+const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map((name, index) => ({
   position: index + 1,
   label:
     index === 0
@@ -302,12 +321,14 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {[...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES].map((trade, index) => (
+          {TICKER_TRADES.length > 0 ? [...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES].map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
               {trade.name} · {trade.price}
             </a>
-          ))}
+          )) : (
+            <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>
+          )}
         </div>
       </div>
     </div>
@@ -315,6 +336,23 @@ function Ticker({ topText }) {
 }
 
 function LiveQueueStrip({ onOpen }) {
+  if (LIVE_QUEUE_ENTRIES.length === 0) {
+    return (
+      <section className="hp-trade-preview">
+        <div className="hp-trade-preview-inner">
+          <div className="hp-trade-preview-head">
+            <span className="live-dot" />
+            <span>Live Reveal Queue</span>
+          </div>
+          <div className="hp-trade-preview-items">
+            Live Queue is ready. Customer names appear here when a live show is connected.
+          </div>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue â†—</button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="hp-trade-preview">
       <div className="hp-trade-preview-inner">
@@ -352,17 +390,21 @@ function LiveQueueModal({ open, onClose }) {
           </div>
           <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close live reveal queue">×</button>
         </div>
-        <div className="hp-queue-modal-list">
-          {LIVE_QUEUE_ENTRIES.map((entry) => (
-            <div key={entry.position} className={`hp-queue-modal-row ${entry.highlight ? "now" : ""}`}>
-              <span className="pos">{entry.position}</span>
-              <div className="meta">
-                <span className="label">{entry.label}</span>
-                <span className="name">{entry.name}</span>
+        {LIVE_QUEUE_ENTRIES.length > 0 ? (
+          <div className="hp-queue-modal-list">
+            {LIVE_QUEUE_ENTRIES.map((entry) => (
+              <div key={entry.position} className={`hp-queue-modal-row ${entry.highlight ? "now" : ""}`}>
+                <span className="pos">{entry.position}</span>
+                <div className="meta">
+                  <span className="label">{entry.label}</span>
+                  <span className="name">{entry.name}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="hp-queue-modal-empty">Live Queue is ready. Customer names appear here when a live show is connected.</div>
+        )}
       </div>
     </div>
   );
@@ -739,8 +781,6 @@ function App() {
 
   useEffect(() => {
     const locationSuffix = locationLabel ? ` | ${locationLabel}` : "";
-    document.title = `Join ${t.teamName} | ${t.repName}${locationSuffix}`;
-
     const description = `Explore ${t.teamName}, Bomb Party starter pack details, and rep support from ${t.repName}${locationLabel ? ` in ${locationLabel}` : ""}. Review the Income Disclosure Statement before enrolling.`;
     let meta = document.querySelector('meta[name="description"]');
 
@@ -750,7 +790,9 @@ function App() {
       document.head.appendChild(meta);
     }
 
+    document.title = `Join ${t.teamName} | ${t.repName}${locationSuffix}`;
     meta.setAttribute("content", description);
+    applyTargetedMetadata(document.title, description);
   }, [locationLabel, t.repName, t.teamName]);
 
   useEffect(() => {

@@ -36,6 +36,7 @@ vi.mock('@/lib/self-serve/required-setup', () => ({
 
 describe('/api/self-serve/setup-state', () => {
   beforeEach(() => {
+    vi.unstubAllEnvs()
     createAdminClientMock.mockReset()
     getAuthenticatedRepMock.mockReset()
     ensureLiveQueueSyncCodeForRepMock.mockReset()
@@ -116,12 +117,97 @@ describe('/api/self-serve/setup-state', () => {
     getAuthenticatedRepMock.mockRejectedValue(new AuthError('Not authenticated'))
     const { GET } = await import('@/app/api/self-serve/setup-state/route')
 
-    const response = await GET()
+    const response = await GET(
+      new Request('http://localhost/api/self-serve/setup-state'),
+    )
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       error: 'Not authenticated',
     })
+    expect(getRequiredSetupStateMock).not.toHaveBeenCalled()
+  })
+
+  it('opens a preview workspace by conversation id without an auth cookie', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    const { AuthError } = await import('@/lib/supabase/auth')
+    getAuthenticatedRepMock.mockRejectedValue(new AuthError('Not authenticated'))
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { rep_id: 'rep-gracie-smoke' },
+      error: null,
+    })
+    const eq = vi.fn().mockReturnValue({ maybeSingle })
+    const select = vi.fn().mockReturnValue({ eq })
+    const from = vi.fn().mockReturnValue({ select })
+    const admin = { from }
+    createAdminClientMock.mockReturnValue(admin)
+    getRequiredSetupStateMock.mockResolvedValue({
+      id: 'setup-gracie-smoke',
+      repId: 'rep-gracie-smoke',
+      status: 'dashboard_unlocked',
+      currentStep: 'final_preview_approval',
+      completedSteps: ['account_basics'],
+      supportState: {
+        reviewer_smoke: {
+          enabled: true,
+          state: 'dashboard_unlocked',
+        },
+      },
+    })
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue('GS2-2335')
+    const { GET } = await import('@/app/api/self-serve/setup-state/route')
+
+    const response = await GET(
+      new Request(
+        'https://preview.test/api/self-serve/setup-state?conversationId=45764110-0330-4a5d-964b-5b5ff49fb662',
+      ),
+    )
+
+    expect(response.status).toBe(200)
+    expect(from).toHaveBeenCalledWith('nic_nac_conversations')
+    expect(eq).toHaveBeenCalledWith(
+      'id',
+      '45764110-0330-4a5d-964b-5b5ff49fb662',
+    )
+    expect(getRequiredSetupStateMock).toHaveBeenCalledWith('rep-gracie-smoke')
+    await expect(response.json()).resolves.toEqual({
+      state: {
+        id: 'setup-gracie-smoke',
+        repId: 'rep-gracie-smoke',
+        status: 'dashboard_unlocked',
+        currentStep: 'final_preview_approval',
+        completedSteps: ['account_basics'],
+        supportState: {
+          reviewer_smoke: {
+            enabled: true,
+            state: 'dashboard_unlocked',
+          },
+          review_workspace: {
+            enabled: true,
+            source: 'conversation_id',
+          },
+        },
+        liveQueueSyncCode: 'GS2-2335',
+      },
+    })
+  })
+
+  it('does not open unauthenticated workspace review URLs in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    const { AuthError } = await import('@/lib/supabase/auth')
+    getAuthenticatedRepMock.mockRejectedValue(new AuthError('Not authenticated'))
+    const { GET } = await import('@/app/api/self-serve/setup-state/route')
+
+    const response = await GET(
+      new Request(
+        'https://www.yoursparklesuite.com/api/self-serve/setup-state?conversationId=45764110-0330-4a5d-964b-5b5ff49fb662',
+      ),
+    )
+
+    expect(response.status).toBe(401)
+    expect(createAdminClientMock).not.toHaveBeenCalled()
     expect(getRequiredSetupStateMock).not.toHaveBeenCalled()
   })
 

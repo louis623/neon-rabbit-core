@@ -26,6 +26,10 @@ export interface AmethystJoinTeamMember {
   }
 }
 
+export interface AmethystRuntimeContext {
+  targeted: boolean
+}
+
 export interface AmethystJoinTemplateData {
   repName: string
   repCity: string
@@ -333,10 +337,22 @@ function safeScriptJson(value: unknown) {
 export function buildAmethystJoinBootstrapScript(
   data: AmethystJoinTemplateData = defaultAmethystJoinTemplateData,
   appearancePreset?: AmethystAppearancePresetId | string | null,
+  runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
-  const defaults = buildAmethystJoinTweakDefaults(data, appearancePreset)
+  const targeted = Boolean(runtimeContext.targeted)
+  const defaults = {
+    ...buildAmethystJoinTweakDefaults(data, appearancePreset),
+    ...(targeted
+      ? {
+          showTeam: data.teamMembers.length > 0,
+          teamMemberCount: data.teamMembers.length,
+          showPromo: Boolean(data.promoText),
+        }
+      : {}),
+  }
 
   return [
+    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
     `window.AMETHYST_JOIN_TEMPLATE_DATA = ${safeScriptJson(data)};`,
     `window.JOIN_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
   ].join('\n')

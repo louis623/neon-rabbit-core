@@ -57,6 +57,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   showSlots: false,
 };
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
+const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const DEFAULT_HOMEPAGE_EVENTS = [
   {
     id: "default-homepage-event-1",
@@ -94,9 +95,11 @@ const DEFAULT_HOMEPAGE_EVENTS = [
     ],
   },
 ];
-const HOMEPAGE_EVENT_PAYLOAD = Array.isArray(window.AMETHYST_HOMEPAGE_EVENTS) && window.AMETHYST_HOMEPAGE_EVENTS.length > 0
+const HOMEPAGE_EVENT_PAYLOAD = Array.isArray(window.AMETHYST_HOMEPAGE_EVENTS)
   ? window.AMETHYST_HOMEPAGE_EVENTS
-  : DEFAULT_HOMEPAGE_EVENTS;
+  : RUNTIME_CONTEXT.targeted
+    ? []
+    : DEFAULT_HOMEPAGE_EVENTS;
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -106,6 +109,10 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function withCurrentSearch(path) {
+  return `${path}${window.location.search || ""}`;
 }
 
 function getShopHref() {
@@ -125,7 +132,23 @@ function getJoinTeamHref() {
 }
 
 function getUnsubscribeHref() {
-  return CONTENT.footerLinks?.unsubscribe || "/amethyst/Unsubscribe.html";
+  return CONTENT.footerLinks?.unsubscribe || withCurrentSearch("/amethyst/Unsubscribe.html");
+}
+
+function setMetaContent(selector, value) {
+  if (!value) return;
+  const node = document.querySelector(selector);
+  if (node) node.setAttribute("content", value);
+}
+
+function applyTargetedMetadata(pageTitle, description) {
+  if (!RUNTIME_CONTEXT.targeted) return;
+  document.title = pageTitle;
+  setMetaContent('meta[name="description"]', description);
+  setMetaContent('meta[property="og:title"]', pageTitle);
+  setMetaContent('meta[property="og:description"]', description);
+  setMetaContent('meta[name="twitter:title"]', pageTitle);
+  setMetaContent('meta[name="twitter:description"]', description);
 }
 
 function getPlatformHref(platform) {
@@ -157,7 +180,7 @@ const LIVE_QUEUE_NAMES = [
   "Amber L.", "Sadie P.", "Lauren E.", "Robin A.", "Faith D.", "Nicole V.",
 ];
 
-const LIVE_QUEUE_ENTRIES = LIVE_QUEUE_NAMES.map((name, index) => ({
+const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map((name, index) => ({
   position: index + 1,
   label:
     index === 0
@@ -301,7 +324,7 @@ function LRQRail({ state }) {
       </div>
     );
   }
-  if (state === "empty") {
+  if (state === "empty" || LIVE_QUEUE_ENTRIES.length === 0) {
     return (
       <div className="hp-lrq">
         <div className="hp-lrq-inner">
@@ -347,7 +370,7 @@ function Hero({ t }) {
       <div className="hp-hero-media placeholder slot" data-slot="hero photo" />
       <div className="hp-hero-inner">
         <div>
-          <div className="hp-hero-eyebrow">Live Tuesdays · 8pm CST</div>
+          <div className="hp-hero-eyebrow">{t.heroEyebrow || "Live schedule coming soon"}</div>
           <h1 className="hp-hero-headline slot" data-slot="hero headline">
             {t.heroHeadline.split(/(?<=[.!?])\s+/).map((line, i) => (
               <span key={i} style={{ display: 'block' }}>{line}</span>
@@ -373,7 +396,7 @@ function Hero({ t }) {
 // ============================================================
 function Ticker({ topText }) {
   const items = topText.split("|").map(s => s.trim()).filter(Boolean);
-  const trades = [
+  const trades = RUNTIME_CONTEXT.targeted ? [] : [
     { name: "Citrine Sun Pendant", price: "$148", tier: "unicorn" },
     { name: "Rose Quartz Band", price: "$98", tier: "diamond" },
     { name: "Amethyst Halo Ring", price: "$118", tier: "" },
@@ -397,12 +420,14 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {[...trades, ...trades, ...trades].map((tr, i) => (
+          {trades.length > 0 ? [...trades, ...trades, ...trades].map((tr, i) => (
             <a key={i} {...linkProps(getTradeBoardHref())} className="hp-ticker-trade">
               <span className={`pip ${tr.tier}`} />
               {tr.name} · {tr.price}
             </a>
-          ))}
+          )) : (
+            <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>
+          )}
         </div>
       </div>
     </div>
@@ -453,7 +478,7 @@ function LiveQueueStrip({ state, onOpen }) {
             <span>Live Reveal Queue</span>
           </div>
           <div className="hp-trade-preview-items">
-            Ready to reveal.
+            Live Queue is ready. Customer names appear here when a live show is connected.
           </div>
           <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue ↗</button>
         </div>
@@ -488,7 +513,7 @@ function LiveQueueStrip({ state, onOpen }) {
 function LiveQueueModal({ open, onClose, state }) {
   if (!open) return null;
 
-  const live = state !== "offline" && state !== "loading" && state !== "empty";
+  const live = state !== "offline" && state !== "loading" && state !== "empty" && LIVE_QUEUE_ENTRIES.length > 0;
 
   return (
     <div className="hp-queue-modal-mask" onClick={onClose}>
@@ -507,8 +532,8 @@ function LiveQueueModal({ open, onClose, state }) {
           <div className="hp-queue-modal-empty">No show is running right now. Check back Tuesday at 8pm CST.</div>
         ) : state === "loading" ? (
           <div className="hp-queue-modal-empty">Loading queue…</div>
-        ) : state === "empty" ? (
-          <div className="hp-queue-modal-empty">The live queue is empty right now, so you are ready for the next reveal.</div>
+        ) : state === "empty" || LIVE_QUEUE_ENTRIES.length === 0 ? (
+          <div className="hp-queue-modal-empty">Live Queue is ready. Customer names appear here when a live show is connected.</div>
         ) : (
           <div className="hp-queue-modal-list">
             {LIVE_QUEUE_ENTRIES.map((entry) => (
@@ -530,7 +555,7 @@ function LiveQueueModal({ open, onClose, state }) {
 // ============================================================
 // Events
 // ============================================================
-const EVENTS = Array.isArray(HOMEPAGE_EVENT_PAYLOAD) && HOMEPAGE_EVENT_PAYLOAD.length > 0 ? HOMEPAGE_EVENT_PAYLOAD : [
+const EVENTS = Array.isArray(HOMEPAGE_EVENT_PAYLOAD) && (HOMEPAGE_EVENT_PAYLOAD.length > 0 || RUNTIME_CONTEXT.targeted) ? HOMEPAGE_EVENT_PAYLOAD : [
   {
     when: "Tue, Nov 12 · 8:00 PM EST", featured: true, name: "Unicorn Magic Drop · November",
     codes: [
@@ -792,6 +817,10 @@ function Events({ count }) {
 // What is a Bomb Party
 // ============================================================
 function Wibp({ repName }) {
+  const showcaseVideoCaption = RUNTIME_CONTEXT.targeted
+    ? CONTENT.showcaseVideoCaption || "Intro video coming soon."
+    : CONTENT.showcaseVideoCaption || "Showcase video coming soon.";
+
   return (
     <section className="hp-section" id="wibp" style={{ background: "var(--hp-bg-elevated)" }}>
       <div className="hp-container">
@@ -827,7 +856,7 @@ function Wibp({ repName }) {
               <div className="hp-video-pill"><span className="pip" />TikTok · Loops</div>
               <div className="hp-video-play">▶</div>
             </div>
-            <div className="hp-wibp-video-caption">@sparklebysasha · "When the box hits different..."</div>
+            <div className="hp-wibp-video-caption">{showcaseVideoCaption}</div>
           </div>
         </div>
       </div>
@@ -839,27 +868,32 @@ function Wibp({ repName }) {
 // About
 // ============================================================
 function AboutSection({ repName }) {
+  const neutralAbout = [
+    `${repName} will share more about this live reveal community soon.`,
+    "Customer details, show style, and favorite reveal notes will appear here after they are added.",
+    "Live show schedule and updates will stay current from this Sparkle Suite customer site.",
+  ];
+  const aboutParagraphs = Array.isArray(CONTENT.aboutParagraphs)
+    ? CONTENT.aboutParagraphs
+    : neutralAbout;
+  const aboutHeadline = CONTENT.aboutHeadline || `Meet ${repName} and the story behind the sparkle.`;
+
   return (
     <section className="hp-section" id="about">
       <div className="hp-container">
         <div className="hp-about-grid">
           <div className="hp-about-copy">
             <div className="hp-section-eyebrow">About the rep</div>
-            <h2 className="hp-section-title slot" data-slot="about headline">
-              Meet <span className="slot" data-slot="rep name">{repName}</span> and the story behind the sparkle.
-            </h2>
+            <h2 className="hp-section-title slot" data-slot="about headline">{aboutHeadline}</h2>
             <div className="hp-about-body">
               <p className="slot" data-slot="about paragraph 1">
-                Share how you got started, what customers can expect in your live reveals, and why this business matters to you.
-                This should feel personal, warm, and easy for new shoppers to connect with.
+                {aboutParagraphs[0] || neutralAbout[0]}
               </p>
               <p className="slot" data-slot="about paragraph 2">
-                Talk about your community, your favorite kinds of reveals, or the energy you bring to show nights. Nic-Nac can
-                rewrite this to match your voice while keeping the section polished and on-brand.
+                {aboutParagraphs[1] || neutralAbout[1]}
               </p>
               <p className="slot" data-slot="about paragraph 3">
-                Add a final paragraph about your schedule, what makes your page special, or what you love most about helping
-                customers find pieces they get excited to wear.
+                {aboutParagraphs[2] || neutralAbout[2]}
               </p>
             </div>
           </div>
@@ -912,7 +946,7 @@ function Signup({ repName, businessName }) {
     setSubmitState({ status: "submitting", message: "" });
 
     try {
-      const response = await fetch("/api/amethyst/customer-audience", {
+      const response = await fetch(withCurrentSearch("/api/amethyst/customer-audience"), {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -1045,6 +1079,17 @@ function JoinCta() {
 // Footer
 // ============================================================
 function Footer({ businessName }) {
+  const footerColumn = RUNTIME_CONTEXT.targeted
+    ? null
+    : {
+        title: "Hosting Soon",
+        links: [
+          { label: "Halloween Spook-tacular · Oct 29", href: "#" },
+          { label: "Holiday Gift Guide · Nov 24", href: "#" },
+          { label: "Year-end Sparkle · Dec 17", href: "#" },
+        ],
+      };
+
   return (
     <footer className="hp-footer">
       <div className="hp-footer-inner">
@@ -1076,14 +1121,16 @@ function Footer({ businessName }) {
             <li><a href="#">Contact</a></li>
           </ul>
         </div>
-        <div className="hp-footer-col slot" data-slot="optional 4th column">
-          <h4>Hosting Soon</h4>
-          <ul>
-            <li><a href="#">Halloween Spook-tacular · Oct 29</a></li>
-            <li><a href="#">Holiday Gift Guide · Nov 24</a></li>
-            <li><a href="#">Year-end Sparkle · Dec 17</a></li>
-          </ul>
-        </div>
+        {footerColumn ? (
+          <div className="hp-footer-col slot" data-slot="optional 4th column">
+            <h4>{footerColumn.title}</h4>
+            <ul>
+              {footerColumn.links.map((link) => (
+                <li key={link.label}><a href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
       <div className="hp-footer-bottom">
         <div className="legal-row">
@@ -1091,10 +1138,7 @@ function Footer({ businessName }) {
           <span><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Accessibility</a></span>
         </div>
         <p>
-          Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
-          This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names,
-          trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board
-          listings are sold by the rep and not by Bomb Party LLC.
+          {CONTENT.legalDisclaimer || `${businessName} is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC.`}
         </p>
       </div>
     </footer>
@@ -1153,6 +1197,13 @@ function SparkleFx({ level }) {
 function App() {
   const [t, setTweak] = useTweaks(DEFAULTS);
   const [queueOpen, setQueueOpen] = useState(false);
+
+  useEffect(() => {
+    applyTargetedMetadata(
+      `${t.businessName} - Live jewelry reveals`,
+      `Shop live jewelry reveals and updates with ${t.businessName}.`,
+    );
+  }, [t.businessName]);
 
   // Apply tokens to root
   useEffect(() => {

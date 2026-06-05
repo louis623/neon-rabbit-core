@@ -16,6 +16,10 @@ export function reviewerSmokeModeEnabled(env: NodeJS.ProcessEnv = process.env) {
   return true
 }
 
+export function workspaceReviewAccessEnabled(env: NodeJS.ProcessEnv = process.env) {
+  return env.VERCEL_ENV !== 'production'
+}
+
 export function getReviewerSmokeToken(env: NodeJS.ProcessEnv = process.env) {
   return env.SPARKLE_REVIEWER_SMOKE_TOKEN?.trim() ?? ''
 }

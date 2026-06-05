@@ -7,6 +7,7 @@ import { buildAmethystTradeBootstrapScript } from '@/lib/amethyst/trade-template
 
 export async function GET(request: Request) {
   const repId = resolveAmethystRequestRepId(request)
+  const targeted = Boolean(repId)
   const [listings, templateData] = await Promise.all([
     loadAmethystTradeBoardPreviewListings({ repId }),
     loadAmethystPreviewTemplateData({ repId }),
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
       templateData.trade,
       listings,
       templateData.appearancePreset,
+      { targeted },
     ),
     {
       headers: {

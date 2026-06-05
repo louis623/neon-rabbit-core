@@ -33,6 +33,38 @@ function makeAdminClient({ repId = 'rep-preview' }: { repId?: string | null } = 
   }
 }
 
+function makeTargetedAdminClient() {
+  const repMaybeSingle = vi.fn().mockResolvedValue({
+    data: { id: 'rep-clean' },
+    error: null,
+  })
+  const repEq = vi.fn().mockReturnValue({ maybeSingle: repMaybeSingle })
+  const selectRep = vi.fn().mockReturnValue({ eq: repEq })
+
+  const subscriptionMaybeSingle = vi.fn().mockResolvedValue({
+    data: { id: 'subscription-1', status: 'active' },
+    error: null,
+  })
+  const subscriptionLimit = vi.fn().mockReturnValue({
+    maybeSingle: subscriptionMaybeSingle,
+  })
+  const subscriptionOrder = vi.fn().mockReturnValue({ limit: subscriptionLimit })
+  const subscriptionIn = vi.fn().mockReturnValue({ order: subscriptionOrder })
+  const subscriptionEq = vi.fn().mockReturnValue({ in: subscriptionIn })
+  const selectSubscription = vi.fn().mockReturnValue({ eq: subscriptionEq })
+
+  const from = vi.fn((table: string) => {
+    if (table === 'reps') return { select: selectRep }
+    if (table === 'subscriptions') return { select: selectSubscription }
+    throw new Error(`Unexpected table ${table}`)
+  })
+
+  return {
+    client: { from } as never,
+    spies: { repEq },
+  }
+}
+
 describe('POST /api/amethyst/customer-audience/unsubscribe', () => {
   beforeEach(() => {
     createAdminClientMock.mockReset()
@@ -94,5 +126,42 @@ describe('POST /api/amethyst/customer-audience/unsubscribe', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Unsubscribe is temporarily unavailable right now.',
     })
+  })
+
+  it('resolves targeted unsubscribe requests from the current customer site rep', async () => {
+    const { client, spies } = makeTargetedAdminClient()
+    createAdminClientMock.mockReturnValue(client)
+    unsubscribeCustomerAudienceByContactMock.mockResolvedValueOnce({
+      updatedCount: 1,
+      smsUpdatedCount: 0,
+      emailUpdatedCount: 1,
+    })
+
+    const response = await POST(
+      new Request(
+        'http://localhost/api/amethyst/customer-audience/unsubscribe?c=rep-clean',
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            email: 'customer@example.com',
+            unsubscribeEmail: true,
+          }),
+        },
+      ),
+    )
+
+    expect(spies.repEq).toHaveBeenCalledWith('id', 'rep-clean')
+    expect(unsubscribeCustomerAudienceByContactMock).toHaveBeenCalledWith(
+      client,
+      {
+        repId: 'rep-clean',
+        phone: '',
+        email: 'customer@example.com',
+        unsubscribeSms: false,
+        unsubscribeEmail: true,
+      },
+    )
+    expect(response.status).toBe(200)
   })
 })

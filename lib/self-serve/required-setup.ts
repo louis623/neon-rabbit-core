@@ -1,3 +1,5 @@
+import { publishRequiredSetupCustomerSiteDraft } from './required-setup-site-draft'
+
 type JsonObject = Record<string, unknown>
 
 export const REQUIRED_SETUP_STEPS = [
@@ -372,6 +374,8 @@ export async function unlockRequiredSetup(repId: string) {
   if (state.status !== 'required_setup') {
     throw new Error(`Cannot unlock required setup from ${state.status}.`)
   }
+
+  await publishRequiredSetupCustomerSiteDraft(admin, state)
 
   return updateRequiredSetupSession(admin, repId, {
     status: 'dashboard_unlocked',

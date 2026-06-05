@@ -3,29 +3,79 @@ import {
   ensureLiveQueueSyncCodeForRep,
   getLiveQueueSyncCodeForRep,
 } from '@/lib/services/live-queue'
+import { workspaceReviewAccessEnabled } from '@/lib/reviewer-smoke/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getRequiredSetupState } from '@/lib/self-serve/required-setup'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
 
-export async function GET() {
+async function getRepIdForWorkspaceReview(conversationId: string) {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('nic_nac_conversations')
+    .select('rep_id')
+    .eq('id', conversationId)
+    .maybeSingle<{ rep_id: string | null }>()
+
+  if (error) throw error
+  return data?.rep_id ?? null
+}
+
+function getConversationIdFromRequest(request?: Request) {
+  if (!request) return ''
+  return new URL(request.url).searchParams.get('conversationId')?.trim() ?? ''
+}
+
+async function loadSetupStateForRep(repId: string) {
+  const admin = createAdminClient()
+  const state = await getRequiredSetupState(repId)
+  const existingLiveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
+  const liveQueueSyncCode =
+    existingLiveQueueSyncCode ??
+    (state.status === 'required_setup' || state.status === 'setup_blocked'
+      ? (await ensureLiveQueueSyncCodeForRep(admin, { repId })).syncCode
+      : null)
+
+  return {
+    ...state,
+    liveQueueSyncCode,
+  }
+}
+
+async function loadWorkspaceReviewSetupState(request?: Request) {
+  if (!workspaceReviewAccessEnabled()) return null
+
+  const conversationId = getConversationIdFromRequest(request)
+  if (!conversationId) return null
+
+  const repId = await getRepIdForWorkspaceReview(conversationId)
+  if (!repId) return null
+
+  const state = await loadSetupStateForRep(repId)
+  return {
+    ...state,
+    supportState: {
+      ...state.supportState,
+      review_workspace: {
+        enabled: true,
+        source: 'conversation_id',
+      },
+    },
+  }
+}
+
+export async function GET(request?: Request) {
   try {
     const { repId } = await getAuthenticatedRep()
-    const admin = createAdminClient()
-    const state = await getRequiredSetupState(repId)
-    const existingLiveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
-    const liveQueueSyncCode =
-      existingLiveQueueSyncCode ??
-      (state.status === 'required_setup' || state.status === 'setup_blocked'
-        ? (await ensureLiveQueueSyncCodeForRep(admin, { repId })).syncCode
-        : null)
     return NextResponse.json({
-      state: {
-        ...state,
-        liveQueueSyncCode,
-      },
+      state: await loadSetupStateForRep(repId),
     })
   } catch (error) {
     if (error instanceof AuthError) {
+      const reviewState = await loadWorkspaceReviewSetupState(request)
+      if (reviewState) {
+        return NextResponse.json({ state: reviewState })
+      }
+
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
 

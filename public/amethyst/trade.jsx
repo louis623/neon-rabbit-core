@@ -49,11 +49,12 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
 };
 
 const CONTENT = window.AMETHYST_TRADE_TEMPLATE_DATA || {};
+const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
   ? window.AMETHYST_TRADE_BOARD_LISTINGS
   : [];
 const TRADE_REQUEST_ENDPOINT = "/api/amethyst/trade-requests";
-const TRADE_BOARD_ENDPOINT = "/api/amethyst/trade-board";
+const TRADE_BOARD_ENDPOINT = withCurrentSearch("/api/amethyst/trade-board");
 const TRADE_BOARD_REFRESH_MS = 45_000;
 const DEFAULT_TRADE_REQUEST_ERROR = "We couldn't submit that request. Please try again.";
 
@@ -65,6 +66,26 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function withCurrentSearch(path) {
+  return `${path}${window.location.search || ""}`;
+}
+
+function setMetaContent(selector, value) {
+  if (!value) return;
+  const node = document.querySelector(selector);
+  if (node) node.setAttribute("content", value);
+}
+
+function applyTargetedMetadata(pageTitle, description) {
+  if (!RUNTIME_CONTEXT.targeted) return;
+  document.title = pageTitle;
+  setMetaContent('meta[name="description"]', description);
+  setMetaContent('meta[property="og:title"]', pageTitle);
+  setMetaContent('meta[property="og:description"]', description);
+  setMetaContent('meta[name="twitter:title"]', pageTitle);
+  setMetaContent('meta[name="twitter:description"]', description);
 }
 
 const FOOTER_LINKS = CONTENT.footerLinks || {};
@@ -205,7 +226,7 @@ const LIVE_QUEUE_NAMES = [
   "Amber L.", "Sadie P.", "Lauren E.", "Robin A.", "Faith D.", "Nicole V.",
 ];
 
-const LIVE_QUEUE_ENTRIES = LIVE_QUEUE_NAMES.map((name, index) => ({
+const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map((name, index) => ({
   position: index + 1,
   label:
     index === 0
@@ -455,7 +476,7 @@ function Header({ businessName }) {
 
 function Ticker({ topText }) {
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
-  const trades = [
+  const trades = RUNTIME_CONTEXT.targeted ? [] : [
     { name: "OG Halo Bloom Ring", meta: "Ring / OG", tier: "" },
     { name: "Birthday Spark Necklace", meta: "Necklace / Birthday", tier: "" },
     { name: "North Star Pendant", meta: "Pendant / Spring Luxe", tier: "unicorn" },
@@ -479,12 +500,14 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {[...trades, ...trades, ...trades].map((trade, index) => (
+          {trades.length > 0 ? [...trades, ...trades, ...trades].map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
               {trade.name} - {trade.meta}
             </a>
-          ))}
+          )) : (
+            <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>
+          )}
         </div>
       </div>
     </div>
@@ -492,7 +515,7 @@ function Ticker({ topText }) {
 }
 
 function LiveQueueStrip({ live, onOpen }) {
-  if (!live) {
+  if (!live || LIVE_QUEUE_ENTRIES.length === 0) {
     return (
       <section className="hp-trade-preview">
         <div className="hp-trade-preview-inner">
@@ -501,7 +524,7 @@ function LiveQueueStrip({ live, onOpen }) {
             <span>Live Reveal Queue</span>
           </div>
           <div className="hp-trade-preview-items" style={{ color: "var(--fg-muted)" }}>
-            No live queue right now. Check back Tuesday at 8pm CST.
+            Live Queue is ready. Customer names appear here when a live show is connected.
           </div>
           <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue ?</button>
         </div>
@@ -550,7 +573,7 @@ function LiveQueueModal({ open, onClose, live }) {
             &times;
           </button>
         </div>
-        {live ? (
+        {live && LIVE_QUEUE_ENTRIES.length > 0 ? (
           <div className="hp-queue-modal-list">
             {LIVE_QUEUE_ENTRIES.map((entry) => (
               <div key={entry.position} className={`hp-queue-modal-row ${entry.highlight ? "now" : ""}`}>
@@ -564,7 +587,7 @@ function LiveQueueModal({ open, onClose, live }) {
           </div>
         ) : (
           <div className="hp-queue-modal-empty">
-            No live queue right now. Check back Tuesday at 8pm CST.
+            Live Queue is ready. Customer names appear here when a live show is connected.
           </div>
         )}
       </div>
@@ -997,7 +1020,7 @@ function EmptyState({ repName }) {
       </p>
       <div className="tp-empty-next">
         <span className="live-dot" />
-        Next show: Tuesday - 8:00 PM CST
+        Listings will appear after this rep adds trade pieces.
       </div>
     </div>
   );
@@ -1153,6 +1176,13 @@ function App() {
   const [secondaryFiltersOpen, setSecondaryFiltersOpen] = useState(false);
   const [queueOpen, setQueueOpen] = useState(false);
 
+  useEffect(() => {
+    applyTargetedMetadata(
+      `${t.businessName} - Trade Board`,
+      `Browse available trade pieces from ${t.businessName}.`,
+    );
+  }, [t.businessName]);
+
   const bootstrappedListings = useMemo(
     () => liveListings.map(normalizeBootstrapPiece).filter(Boolean),
     [liveListings],
@@ -1161,6 +1191,8 @@ function App() {
     if (bootstrappedListings.length > 0) {
       return bootstrappedListings.slice(0, t.cardCount);
     }
+
+    if (RUNTIME_CONTEXT.targeted) return [];
 
     return buildSamples(t.cardCount);
   }, [bootstrappedListings, t.cardCount]);

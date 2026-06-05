@@ -155,4 +155,18 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(createAdminClientMock).not.toHaveBeenCalled()
     expect(listMyShowsMock).not.toHaveBeenCalled()
   })
+
+  it('returns empty events instead of demo events for targeted reps without data', async () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    const result = await loadAmethystHomepageUpcomingShows({
+      repId: 'rep-clean',
+      targeted: true,
+    })
+
+    expect(result).toEqual([])
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(listMyShowsMock).not.toHaveBeenCalled()
+  })
 })

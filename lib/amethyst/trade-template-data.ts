@@ -1,7 +1,4 @@
-import {
-  defaultAmethystTradeBoardListings,
-  type AmethystTradeBoardListing,
-} from './trade-board-listings'
+import { type AmethystTradeBoardListing } from './trade-board-listings'
 import {
   applyAmethystAppearancePreset,
   type AmethystAppearancePresetId,
@@ -16,6 +13,10 @@ export interface AmethystTradeSocialLink {
 export interface AmethystTradeFooterLink {
   label: string
   href: string
+}
+
+export interface AmethystRuntimeContext {
+  targeted: boolean
 }
 
 export interface AmethystTradeTemplateData {
@@ -228,12 +229,23 @@ function safeScriptJson(value: unknown) {
 
 export function buildAmethystTradeBootstrapScript(
   data: AmethystTradeTemplateData = defaultAmethystTradeTemplateData,
-  listings: AmethystTradeBoardListing[] = defaultAmethystTradeBoardListings,
+  listings: AmethystTradeBoardListing[] = [],
   appearancePreset?: AmethystAppearancePresetId | string | null,
+  runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
-  const defaults = buildAmethystTradeTweakDefaults(data, appearancePreset)
+  const targeted = Boolean(runtimeContext.targeted)
+  const defaults = {
+    ...buildAmethystTradeTweakDefaults(data, appearancePreset),
+    ...(targeted
+      ? {
+          contentState: listings.length > 0 ? 'populated' : 'empty',
+          cardCount: listings.length,
+        }
+      : {}),
+  }
 
   return [
+    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
     `window.AMETHYST_TRADE_TEMPLATE_DATA = ${safeScriptJson(data)};`,
     `window.TRADE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_TRADE_BOARD_LISTINGS = ${safeScriptJson(listings)};`,

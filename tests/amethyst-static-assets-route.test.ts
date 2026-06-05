@@ -66,6 +66,16 @@ describe('Amethyst static asset route', () => {
     expect(html).not.toContain('<script>alert')
   })
 
+  it('carries customer targets into the unsubscribe bootstrap script', async () => {
+    const response = await GET(
+      new Request('https://preview.example/amethyst/Unsubscribe.html?c=rep-clean'),
+      { params: Promise.resolve({ asset: ['Unsubscribe.html'] }) },
+    )
+    const html = await response.text()
+
+    expect(html).toContain('/api/amethyst/homepage-template?c=rep-clean')
+  })
+
   it('rejects path traversal outside the public Amethyst export folder', async () => {
     const response = await GET(
       new Request('http://localhost:3001/amethyst/../package.json'),

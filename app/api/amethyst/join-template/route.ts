@@ -6,12 +6,14 @@ import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 
 export async function GET(request: Request) {
   const repId = resolveAmethystRequestRepId(request)
+  const targeted = Boolean(repId)
   const templateData = await loadAmethystPreviewTemplateData({ repId })
 
   return new NextResponse(
     buildAmethystJoinBootstrapScript(
       templateData.join,
       templateData.appearancePreset,
+      { targeted },
     ),
     {
       headers: {

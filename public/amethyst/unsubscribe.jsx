@@ -20,8 +20,12 @@ function linkProps(href) {
     : { href: href || "#" };
 }
 
+function withCurrentSearch(path) {
+  return `${path}${window.location.search || ""}`;
+}
+
 function getUnsubscribeHref() {
-  return FOOTER_LINKS.unsubscribe || "/amethyst/Unsubscribe.html";
+  return FOOTER_LINKS.unsubscribe || withCurrentSearch("/amethyst/Unsubscribe.html");
 }
 
 function Header() {
@@ -103,7 +107,7 @@ function UnsubscribePage() {
     setSubmitState({ status: "submitting", message: "" });
 
     try {
-      const response = await fetch("/api/amethyst/customer-audience/unsubscribe", {
+      const response = await fetch(withCurrentSearch("/api/amethyst/customer-audience/unsubscribe"), {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -151,7 +155,7 @@ function UnsubscribePage() {
                 Stop SMS updates, email updates, or both for the Amethyst preview site.
               </p>
             </div>
-            <form action="/api/amethyst/customer-audience/unsubscribe" className="hp-signup-form" onSubmit={handleSubmit}>
+            <form action={withCurrentSearch("/api/amethyst/customer-audience/unsubscribe")} className="hp-signup-form" onSubmit={handleSubmit}>
               <div className="hp-signup-row">
                 <div className="hp-signup-field">
                   <label className="hp-signup-label" htmlFor="unsubscribe-phone">Phone number</label>

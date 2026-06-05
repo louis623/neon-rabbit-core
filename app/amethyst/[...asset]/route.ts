@@ -12,6 +12,11 @@ import {
   serializeJsonLd,
 } from '@/lib/seo/amethyst-structured-data'
 import { resolveSparkleRequestOrigin } from '@/lib/seo/sparkle-crawl'
+import {
+  type AmethystPreviewTemplateData,
+  loadAmethystPreviewTemplateData,
+} from '@/lib/amethyst/preview-template-data'
+import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 
 export const runtime = 'nodejs'
 
@@ -46,6 +51,11 @@ const AMETHYST_PUBLIC_HTML_PAGES: Record<string, AmethystPublicPage> = {
   'Homepage.html': 'homepage',
   'Trade.html': 'trade',
   'Join.html': 'join',
+}
+
+const AMETHYST_TEMPLATE_SCRIPT_PAGES: Record<string, AmethystPublicPage> = {
+  ...AMETHYST_PUBLIC_HTML_PAGES,
+  'Unsubscribe.html': 'homepage',
 }
 
 function getContentType(filePath: string | URL) {
@@ -92,24 +102,114 @@ function renderMetaTag(tag: AmethystPublicMetaTag) {
   return `<meta name="${tag.name}" content="${escapeHtmlAttribute(tag.content)}" />`
 }
 
-function renderMetadataBlock(page: AmethystPublicPage, origin: string) {
-  return buildAmethystPublicMetaTags(page, { origin }).map(renderMetaTag).join('\n')
+function buildTargetedPageText(
+  page: AmethystPublicPage,
+  templateData: AmethystPreviewTemplateData,
+) {
+  const businessName = templateData.homepage.businessName
+  const repName = templateData.homepage.repName
+  const teamName = templateData.join.teamName
+
+  if (page === 'trade') {
+    return {
+      title: `${businessName} - Trade Board`,
+      description: `Browse available trade pieces from ${businessName}.`,
+    }
+  }
+
+  if (page === 'join') {
+    return {
+      title: `Join ${teamName}`,
+      description: `Learn how to join ${teamName} with ${repName}.`,
+    }
+  }
+
+  return {
+    title: `${businessName} - Live jewelry reveals`,
+    description: `Shop live jewelry reveals and updates with ${businessName}.`,
+  }
+}
+
+function buildMetadataTagsFromPublicMetadata(
+  metadata: ReturnType<typeof buildAmethystPublicMetadata>,
+): AmethystPublicMetaTag[] {
+  return [
+    { tag: 'title', text: metadata.title },
+    { tag: 'meta', name: 'description', content: metadata.description },
+    { tag: 'meta', name: 'robots', content: metadata.robots },
+    { tag: 'link', rel: 'canonical', href: metadata.canonicalUrl },
+    { tag: 'meta', property: 'og:type', content: metadata.openGraph.type },
+    { tag: 'meta', property: 'og:site_name', content: metadata.openGraph.siteName },
+    { tag: 'meta', property: 'og:title', content: metadata.openGraph.title },
+    {
+      tag: 'meta',
+      property: 'og:description',
+      content: metadata.openGraph.description,
+    },
+    { tag: 'meta', property: 'og:url', content: metadata.openGraph.url },
+    { tag: 'meta', property: 'og:image', content: metadata.openGraph.image },
+    { tag: 'meta', name: 'twitter:card', content: metadata.twitter.card },
+    { tag: 'meta', name: 'twitter:title', content: metadata.twitter.title },
+    {
+      tag: 'meta',
+      name: 'twitter:description',
+      content: metadata.twitter.description,
+    },
+    { tag: 'meta', name: 'twitter:image', content: metadata.twitter.image },
+  ]
+}
+
+function renderMetadataBlock(
+  page: AmethystPublicPage,
+  origin: string,
+  templateData?: AmethystPreviewTemplateData | null,
+) {
+  if (!templateData) {
+    return buildAmethystPublicMetaTags(page, { origin }).map(renderMetaTag).join('\n')
+  }
+
+  const pageText = buildTargetedPageText(page, templateData)
+  const defaultMetadata = buildAmethystPublicMetadata(page, { origin })
+  const metadata = {
+    ...defaultMetadata,
+    ...pageText,
+    openGraph: {
+      ...defaultMetadata.openGraph,
+      ...pageText,
+    },
+    twitter: {
+      ...defaultMetadata.twitter,
+      ...pageText,
+    },
+  }
+
+  return buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')
 }
 
 function injectAmethystJsonLd(
   html: string,
   page: AmethystPublicPage,
   origin: string,
+  templateData?: AmethystPreviewTemplateData | null,
 ) {
-  const metadata = buildAmethystPublicMetadata(page, { origin })
+  const defaultMetadata = buildAmethystPublicMetadata(page, { origin })
+  const pageText = templateData ? buildTargetedPageText(page, templateData) : null
+  const metadata = pageText
+    ? { ...defaultMetadata, ...pageText }
+    : defaultMetadata
+  const homepage = templateData?.homepage
+  const join = templateData?.join
   const jsonLd = buildAmethystPublicPageJsonLd({
     origin,
     path: metadata.path,
     title: metadata.title,
     description: metadata.description,
-    repName: 'Jane',
-    businessName: "Jane's Sparkle Party",
-    shopUrl: 'https://bombparty.com',
+    repName: homepage?.repName ?? 'Jane',
+    businessName: homepage?.businessName ?? "Jane's Sparkle Party",
+    repCity: join?.repCity,
+    repState: join?.repState,
+    shopUrl: homepage?.streamLinks.shop ?? 'https://bombparty.com',
+    sameAs: homepage?.socialLinks.map((link) => link.href).filter((href) => href !== '#'),
   })
   const script = `<script type="application/ld+json">${serializeJsonLd(
     jsonLd,
@@ -119,18 +219,45 @@ function injectAmethystJsonLd(
     .replace('</head>', `${script}\n</head>`)
 }
 
+function rewriteTemplateScriptTarget(
+  html: string,
+  page: AmethystPublicPage,
+  requestUrl: URL,
+) {
+  const target = requestUrl.searchParams.get('c') || requestUrl.searchParams.get('repId')
+  if (!target) return html
+  const endpoint =
+    page === 'homepage'
+      ? '/api/amethyst/homepage-template'
+      : page === 'trade'
+        ? '/api/amethyst/trade-template'
+        : '/api/amethyst/join-template'
+
+  return html.replace(
+    `src="${endpoint}"`,
+    `src="${endpoint}?c=${escapeHtmlAttribute(target)}"`,
+  )
+}
+
 function rewriteAmethystPublicHtml(
   html: string,
   page: AmethystPublicPage,
   origin: string,
+  requestUrl: URL,
+  templateData?: AmethystPreviewTemplateData | null,
 ) {
-  const metadataBlock = renderMetadataBlock(page, origin)
+  const metadataBlock = renderMetadataBlock(page, origin, templateData)
   const rewritten = html.replace(
     /<title>[\s\S]*?<meta name="twitter:image" content="[^"]+" \/>\r?\n?/,
     `${metadataBlock}\n`,
   )
 
-  return injectAmethystJsonLd(rewritten, page, origin)
+  return injectAmethystJsonLd(
+    rewriteTemplateScriptTarget(rewritten, page, requestUrl),
+    page,
+    origin,
+    templateData,
+  )
 }
 
 export async function GET(
@@ -144,15 +271,30 @@ export async function GET(
   try {
     const body = await readFile(filePath)
     const contentType = getContentType(filePath)
-    const page = AMETHYST_PUBLIC_HTML_PAGES[asset.join('/')]
-    const responseBody =
-      page && contentType.startsWith('text/html')
-        ? rewriteAmethystPublicHtml(
-            body.toString('utf8'),
-            page,
-            resolveSparkleRequestOrigin(request),
-          )
-        : body
+    const assetPath = asset.join('/')
+    const page = AMETHYST_PUBLIC_HTML_PAGES[assetPath]
+    const templateScriptPage = AMETHYST_TEMPLATE_SCRIPT_PAGES[assetPath]
+    const requestUrl = new URL(request.url)
+    const repId = resolveAmethystRequestRepId(request)
+    const templateData =
+      page && contentType.startsWith('text/html') && repId
+        ? await loadAmethystPreviewTemplateData({ repId })
+        : null
+    let responseBody: BodyInit = new Uint8Array(body)
+    if (contentType.startsWith('text/html')) {
+      const html = body.toString('utf8')
+      if (page) {
+        responseBody = rewriteAmethystPublicHtml(
+          html,
+          page,
+          resolveSparkleRequestOrigin(request),
+          requestUrl,
+          templateData,
+        )
+      } else if (templateScriptPage) {
+        responseBody = rewriteTemplateScriptTarget(html, templateScriptPage, requestUrl)
+      }
+    }
 
     return new Response(responseBody, {
       headers: {

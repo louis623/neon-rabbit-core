@@ -20,11 +20,16 @@ export interface AmethystHomepageSocialLink {
   href: string
 }
 
+export interface AmethystRuntimeContext {
+  targeted: boolean
+}
+
 export interface AmethystHomepageTemplateData {
   repName: string
   businessName: string
   teamName: string
   tagline: string
+  heroEyebrow: string
   heroHeadline: string
   heroSub: string
   tickerTopText: string
@@ -119,6 +124,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
   businessName: 'Sparkle by Sasha',
   teamName: 'Sparkle by Sasha',
   tagline: 'Live jewelry reveals every Tuesday - joy you can hold.',
+  heroEyebrow: 'Live Tuesdays - 8pm CST',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
     "I'm Sasha Rivera - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
@@ -250,10 +256,22 @@ export function buildAmethystHomepageBootstrapScript(
   data: AmethystHomepageTemplateData = defaultAmethystHomepageTemplateData,
   events: AmethystHomepageEventCard[] = defaultAmethystHomepageEvents,
   appearancePreset?: AmethystAppearancePresetId | string | null,
+  runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
-  const defaults = buildAmethystHomepageTweakDefaults(data, appearancePreset)
+  const targeted = Boolean(runtimeContext.targeted)
+  const defaults = {
+    ...buildAmethystHomepageTweakDefaults(data, appearancePreset),
+    ...(targeted
+      ? {
+          showEvents: events.length > 0,
+          eventCount: events.length,
+          lrqState: 'empty',
+        }
+      : {}),
+  }
 
   return [
+    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
     `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(data)};`,
     `window.HOMEPAGE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_HOMEPAGE_EVENTS = ${safeScriptJson(events)};`,
@@ -268,6 +286,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  function href(selector, value) { var node = document.querySelector(selector); if (node && value) node.setAttribute('href', value); }`,
     `  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }`,
     `  function bindButton(selector, value) { var node = document.querySelector(selector); if (!node || !value) return; node.style.cursor = 'pointer'; node.onclick = function () { if (/^https?:\\/\\//.test(value)) window.open(value, '_blank', 'noopener,noreferrer'); else window.location.href = value; }; }`,
+    `  text('.hp-hero-eyebrow', content.heroEyebrow);`,
     `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
     `  text('[data-slot="about headline"]', content.aboutHeadline);`,
     `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,

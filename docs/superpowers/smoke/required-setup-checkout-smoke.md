@@ -52,6 +52,20 @@ https://sparkle-suite-git-codex-sparkle-cro-d70670-louis-2849s-projects.vercel.a
 11. The rep should be told the code stays saved at the top of the Sparkle Suite Workspace for future use.
 12. After final approval and unlock, the Sparkle Suite Workspace topbar shows the same saved Live Queue sync code.
 
+## Targeted Customer-Site No-Demo-Data Gate
+
+Before approving the final preview for a targeted customer site such as `?c=<repId>` or a custom-domain route, verify:
+
+- No `Sparkle by Sasha`, `Sasha Rivera`, `Jane`, or `Jane's Sparkle Party`.
+- No fake Trade Board listings or ticker pieces.
+- No fake Live Queue customer names.
+- No fake upcoming shows.
+- No hard-coded `Tuesday 8pm CST` schedule.
+- No fake Join Team members.
+- Title, meta description, and JSON-LD match the new rep.
+- Empty Trade Board and Live Queue sections use honest neutral empty states until real data exists.
+- Customer signup and unsubscribe requests preserve the targeted rep query.
+
 ## Failure Capture
 
 If the flow fails, capture these before resetting:

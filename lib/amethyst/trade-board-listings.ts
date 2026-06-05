@@ -165,12 +165,13 @@ export async function loadAmethystTradeBoardPreviewListings(
   options: LoadAmethystTradeBoardPreviewListingsOptions = {},
 ): Promise<AmethystTradeBoardListing[]> {
   const limit = options.limit ?? 18
+  const targeted = Boolean(options.repId)
 
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.SUPABASE_SERVICE_ROLE_KEY
   ) {
-    return defaultAmethystTradeBoardListings
+    return targeted ? [] : defaultAmethystTradeBoardListings
   }
 
   try {
@@ -182,7 +183,7 @@ export async function loadAmethystTradeBoardPreviewListings(
     })
 
     if (!rep?.id) {
-      return defaultAmethystTradeBoardListings
+      return targeted ? [] : defaultAmethystTradeBoardListings
     }
 
     const board = await getMyBoard(admin, rep.id as string, {
@@ -193,11 +194,11 @@ export async function loadAmethystTradeBoardPreviewListings(
     })
 
     if (!board.listings.length) {
-      return defaultAmethystTradeBoardListings
+      return targeted ? [] : defaultAmethystTradeBoardListings
     }
 
     return board.listings.map(mapTradeListingToAmethystTradeBoardListing)
   } catch {
-    return defaultAmethystTradeBoardListings
+    return targeted ? [] : defaultAmethystTradeBoardListings
   }
 }

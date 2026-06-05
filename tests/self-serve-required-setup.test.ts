@@ -678,6 +678,115 @@ describe('self-serve required setup service contract', () => {
     expect(state.dashboardUnlockedAt).toBe('2026-06-02T15:00:00Z')
   })
 
+  it('publishes the approved required setup draft before unlocking the dashboard', async () => {
+    const selectMock = vi.fn()
+    const eqMock = vi.fn()
+    const maybeSingleMock = vi.fn()
+    const repsUpdateMock = vi.fn()
+    const repsEqMock = vi.fn()
+    const siteSettingsUpsertMock = vi.fn()
+    const setupUpdateMock = vi.fn()
+    const setupUpdateEqMock = vi.fn()
+    const setupUpdateSelectMock = vi.fn()
+    const setupUpdateSingleMock = vi.fn()
+
+    fromMock
+      .mockReturnValueOnce({ select: selectMock })
+      .mockReturnValueOnce({ update: repsUpdateMock })
+      .mockReturnValueOnce({ upsert: siteSettingsUpsertMock })
+      .mockReturnValueOnce({ update: setupUpdateMock })
+    selectMock.mockReturnValueOnce({ eq: eqMock })
+    eqMock.mockReturnValueOnce({ maybeSingle: maybeSingleMock })
+    maybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'setup-1',
+        rep_id: 'rep-1',
+        status: 'required_setup',
+        current_step: 'final_preview_approval',
+        completed_steps: [...requiredStepIds],
+        answers: {
+          account_basics: {
+            conversationName: 'Gracie Smoke',
+            customerFacingDisplayName: "Gracie's Sparkle Party",
+            liveShowName: "Gracie's Sparkle Party Live",
+            bestContactEmail: 'smoke.rep@example.com',
+            bombPartyRepStoreLink: 'https://bombparty.com/graciesmoke',
+            primaryLiveShowOrSocialLink:
+              'https://www.tiktok.com/@graciessparkleparty',
+          },
+          site_skin: {
+            selectedLookCode: 'RQ-01',
+          },
+          welcome_copy: {
+            headline: "Welcome to Gracie's Sparkle Party.",
+            supportingLine:
+              'Join me for fun jewelry reveals, friendly live shows, and sparkle you can shop anytime.',
+          },
+        },
+        generated_copy: {},
+        support_state: {},
+        dashboard_unlocked_at: null,
+        created_at: '2026-06-02T14:30:00Z',
+        updated_at: '2026-06-02T14:35:00Z',
+      },
+      error: null,
+    })
+    repsUpdateMock.mockReturnValueOnce({ eq: repsEqMock })
+    repsEqMock.mockResolvedValueOnce({ error: null })
+    siteSettingsUpsertMock.mockResolvedValueOnce({ error: null })
+    setupUpdateMock.mockReturnValueOnce({ eq: setupUpdateEqMock })
+    setupUpdateEqMock.mockReturnValueOnce({ select: setupUpdateSelectMock })
+    setupUpdateSelectMock.mockReturnValueOnce({ single: setupUpdateSingleMock })
+    setupUpdateSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'setup-1',
+        rep_id: 'rep-1',
+        status: 'dashboard_unlocked',
+        current_step: 'final_preview_approval',
+        completed_steps: [...requiredStepIds],
+        answers: {},
+        generated_copy: {},
+        support_state: {},
+        dashboard_unlocked_at: '2026-06-02T15:00:00Z',
+        created_at: '2026-06-02T14:30:00Z',
+        updated_at: '2026-06-02T15:00:00Z',
+      },
+      error: null,
+    })
+
+    const state = await unlockRequiredSetup('rep-1')
+
+    expect(repsUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        display_name: 'Gracie Smoke',
+        business_name: "Gracie's Sparkle Party",
+        email: 'smoke.rep@example.com',
+        shop_link: 'https://bombparty.com/graciesmoke',
+        streaming_links: {
+          tiktok: 'https://www.tiktok.com/@graciessparkleparty',
+        },
+        social_handles: {
+          tiktok: 'https://www.tiktok.com/@graciessparkleparty',
+        },
+      }),
+    )
+    expect(repsEqMock).toHaveBeenCalledWith('id', 'rep-1')
+    expect(siteSettingsUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-1',
+        banner_text: "Welcome to Gracie's Sparkle Party.",
+        banner_visible: true,
+        tagline:
+          'Join me for fun jewelry reveals, friendly live shows, and sparkle you can shop anytime.',
+        team_name: "Gracie's Sparkle Party Live",
+        customer_site_template: 'amethyst',
+        appearance_preset: 'rose_quartz',
+      }),
+      { onConflict: 'rep_id' },
+    )
+    expect(state.status).toBe('dashboard_unlocked')
+  })
+
   it('unlocks the dashboard when every required setup step is complete', async () => {
     const selectMock = vi.fn()
     const eqMock = vi.fn()

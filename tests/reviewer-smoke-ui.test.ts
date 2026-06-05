@@ -11,8 +11,16 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
     'utf8',
   )
+  const nicNacPage = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/page.tsx'),
+    'utf8',
+  )
   const requiredSetupHome = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
+    'utf8',
+  )
+  const dashboardPlaceholder = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
     'utf8',
   )
   const standard = readFileSync(
@@ -55,5 +63,100 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('/api/reviewer-smoke/session')
     expect(nicNacClient).toContain('Reset setup preview')
     expect(requiredSetupHome).toContain('reviewerActions')
+  })
+
+  it('keeps the post-setup workspace visible in non-production review mode', () => {
+    expect(nicNacPage).toContain('workspaceReviewAccessEnabled()')
+    expect(nicNacClient).toContain('buildWorkspaceReviewFallbackState')
+    expect(nicNacClient).toContain('review_workspace')
+    expect(nicNacClient).toContain('Gracie Smoke')
+    expect(nicNacClient).toContain('Gracie Test Studio 20260605001558')
+    expect(nicNacClient).toContain('GS2-2335')
+  })
+
+  it('opens Nic-Nac with an empty starter chat in workspace review mode', () => {
+    expect(nicNacClient).toContain('showWorkspaceReviewState')
+    expect(nicNacClient).toContain('Workspace review mode starts fresh')
+    expect(nicNacClient).toContain('messages: []')
+  })
+
+  it('puts the trade request inbox before board inventory in the workspace card', () => {
+    const componentStart = dashboardPlaceholder.indexOf(
+      'export function TradeBoardWorkspaceCard',
+    )
+    const componentEnd = dashboardPlaceholder.indexOf(
+      'function FulfillmentQueueCard',
+      componentStart,
+    )
+    const componentSource = dashboardPlaceholder.slice(componentStart, componentEnd)
+
+    expect(componentSource.indexOf('Request inbox')).toBeGreaterThan(-1)
+    expect(componentSource.indexOf('Board Inventory')).toBeGreaterThan(-1)
+    expect(componentSource.indexOf('Request inbox')).toBeLessThan(
+      componentSource.indexOf('Board Inventory'),
+    )
+  })
+
+  it('keeps summary metrics out of board inventory', () => {
+    const componentStart = dashboardPlaceholder.indexOf(
+      'export function TradeBoardWorkspaceCard',
+    )
+    const boardInventoryStart = dashboardPlaceholder.indexOf(
+      'Board Inventory',
+      componentStart,
+    )
+    const quickAddStart = dashboardPlaceholder.indexOf(
+      'Quick add by item number',
+      boardInventoryStart,
+    )
+    const boardInventorySource = dashboardPlaceholder.slice(
+      boardInventoryStart,
+      quickAddStart,
+    )
+
+    expect(boardInventorySource).not.toContain('Active pieces')
+    expect(boardInventorySource).not.toContain('Board MSRP')
+    expect(boardInventorySource).not.toContain('Top type')
+    expect(boardInventorySource).not.toContain('Pending requests')
+    expect(boardInventorySource).not.toContain('pendingRequestCount')
+  })
+
+  it('uses search and filters to browse board inventory without a default full grid', () => {
+    const componentStart = dashboardPlaceholder.indexOf(
+      'export function TradeBoardWorkspaceCard',
+    )
+    const componentEnd = dashboardPlaceholder.indexOf(
+      'function FulfillmentQueueCard',
+      componentStart,
+    )
+    const componentSource = dashboardPlaceholder.slice(componentStart, componentEnd)
+
+    expect(componentSource).toContain(
+      'Use search or filters to browse pieces currently on your board.',
+    )
+    expect(componentSource).toContain('No board pieces match this search.')
+    expect(componentSource).toContain('Jewelry Type')
+    expect(componentSource).toContain('Collection')
+    expect(componentSource).toContain('Reset')
+    expect(componentSource).toContain('getBoardInventoryResults')
+    expect(componentSource).toContain('getCarouselWindow')
+    expect(componentSource).toContain('useSyncExternalStore')
+    expect(componentSource).toContain('inventoryCarouselPageSize')
+    expect(componentSource).toContain('if (!hasMoreListings) return')
+    expect(componentSource).not.toContain('carousel.startIndex - 3')
+    expect(componentSource).not.toContain('carousel.startIndex + 3')
+    expect(componentSource).not.toContain('No pieces on your board yet. Add your first item above.')
+    expect(componentSource).not.toContain('No board listings match this search yet.')
+  })
+
+  it('keeps customer site previewing inside the workspace with Nic-Nac available', () => {
+    expect(dashboardPlaceholder).toContain('type WorkspacePreviewState')
+    expect(dashboardPlaceholder).toContain('handleOpenLiveSitePreview')
+    expect(dashboardPlaceholder).toContain('handleOpenTradeBoardPreview')
+    expect(dashboardPlaceholder).toContain('Back to workspace')
+    expect(dashboardPlaceholder).toContain('Refresh preview')
+    expect(dashboardPlaceholder).toContain('title="Sparkle Suite live site preview"')
+    expect(dashboardPlaceholder).toContain('customerTradeBoardHref')
+    expect(nicNacClient).toContain('<DashboardPlaceholder')
   })
 })

@@ -7,8 +7,9 @@ import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 
 export async function GET(request: Request) {
   const repId = resolveAmethystRequestRepId(request)
+  const targeted = Boolean(repId)
   const [events, templateData] = await Promise.all([
-    loadAmethystHomepageUpcomingShows(),
+    loadAmethystHomepageUpcomingShows({ repId, targeted }),
     loadAmethystPreviewTemplateData({ repId }),
   ])
 
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
       templateData.homepage,
       events,
       templateData.appearancePreset,
+      { targeted },
     ),
     {
       headers: {

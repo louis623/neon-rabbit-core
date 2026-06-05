@@ -94,6 +94,7 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(script).toContain('window.AMETHYST_TRADE_TEMPLATE_DATA')
+    expect(script).toContain('window.AMETHYST_RUNTIME_CONTEXT')
     expect(script).toContain('window.AMETHYST_TRADE_BOARD_LISTINGS')
     expect(script).toContain('"tradeRules"')
     expect(script).toContain('"faqAnswers"')
@@ -101,8 +102,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(script).toContain('"shopUrl"')
     expect(script).toContain('"socialLinks"')
     expect(script).toContain('"footerLinks"')
-    expect(script).toContain('"material"')
-    expect(script).toContain('"photoUrl"')
+    expect(script).toContain('window.AMETHYST_TRADE_BOARD_LISTINGS = []')
     expect(script).toContain('"/amethyst/Homepage.html"')
     expect(script).toContain('"/amethyst/Join.html"')
   })
@@ -242,7 +242,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('Shop ?')
     expect(jsx).toContain('Shop -&gt;')
     expect(jsx).toContain('Ring / OG')
-    expect(jsx).toContain('Next show: Tuesday - 8:00 PM CST')
+    expect(jsx).toContain('Listings will appear after this rep adds trade pieces.')
   })
 
   it('uses the shared sticky live reveal queue strip and modal trigger on trade', () => {

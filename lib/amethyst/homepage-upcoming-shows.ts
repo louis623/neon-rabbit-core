@@ -187,25 +187,36 @@ export function mapCalendarEventToHomepageEvent(
   }
 }
 
+interface LoadAmethystHomepageUpcomingShowsOptions {
+  limit?: number
+  repId?: string | null
+  targeted?: boolean
+}
+
 export async function loadAmethystHomepageUpcomingShows(
-  limit = 2,
+  options: LoadAmethystHomepageUpcomingShowsOptions | number = {},
 ): Promise<AmethystHomepageEventCard[]> {
+  const limit = typeof options === 'number' ? options : options.limit ?? 2
+  const repId = typeof options === 'number' ? null : options.repId
+  const targeted = typeof options === 'number' ? false : Boolean(options.targeted || repId)
+
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.SUPABASE_SERVICE_ROLE_KEY
   ) {
-    return defaultAmethystHomepageEvents
+    return targeted ? [] : defaultAmethystHomepageEvents
   }
 
   try {
     const admin = createAdminClient()
     const rep = await resolveAmethystPreviewRep(admin, {
       env: process.env,
+      repId,
       select: 'id, email, streaming_links',
     })
 
     if (!rep?.id) {
-      return defaultAmethystHomepageEvents
+      return targeted ? [] : defaultAmethystHomepageEvents
     }
 
     const result = await listMyShows(admin as never, rep.id as string, {
@@ -214,7 +225,7 @@ export async function loadAmethystHomepageUpcomingShows(
     })
 
     if (!result.events.length) {
-      return defaultAmethystHomepageEvents
+      return targeted ? [] : defaultAmethystHomepageEvents
     }
 
     return result.events
@@ -227,6 +238,6 @@ export async function loadAmethystHomepageUpcomingShows(
         ),
       )
   } catch {
-    return defaultAmethystHomepageEvents
+    return targeted ? [] : defaultAmethystHomepageEvents
   }
 }
