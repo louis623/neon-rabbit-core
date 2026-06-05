@@ -18,6 +18,7 @@ import { getTradeRequestsTool } from './get-trade-requests'
 import { approveTradeTool } from './approve-trade'
 import { rejectTradeTool } from './reject-trade'
 import { searchJewelryDatabaseTool } from './search-jewelry-database'
+import { reportJewelryCatalogIssueTool } from './report-jewelry-catalog-issue'
 import { updateListingTool } from './update-listing'
 import { getTradeHistoryTool } from './get-trade-history'
 import { getFulfillmentQueueTool } from './get-fulfillment-queue'
@@ -57,6 +58,7 @@ const REGISTRY: ToolDefinition[] = [
   approveTradeTool,
   rejectTradeTool,
   searchJewelryDatabaseTool,
+  reportJewelryCatalogIssueTool,
   updateListingTool,
   getTradeHistoryTool,
   getFulfillmentQueueTool,
@@ -113,6 +115,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'add_listing',
     'update_listing',
     'search_jewelry_database',
+    'report_jewelry_catalog_issue',
   ],
   trade_requests: [
     'get_trade_requests',
@@ -121,7 +124,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'get_trade_history',
   ],
   fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
-  catalog: ['search_jewelry_database'],
+  catalog: ['search_jewelry_database', 'report_jewelry_catalog_issue'],
   calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show'],
   site: ['update_banner_text', 'update_streaming_links', 'update_site_setting'],
   notification: [
@@ -222,7 +225,21 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
     add('fulfillment')
   }
 
-  if (hasAny([/\bsearch\b/, /\blook up\b/, /\bfind\b/, /\bcatalog\b/])) {
+  if (
+    hasAny([
+      /\bsearch\b/,
+      /\blook up\b/,
+      /\bfind\b/,
+      /\bcatalog\b/,
+      /\bwrong\b.*\b(item|piece|collection|photo|msrp|price|stone|material|name)\b/,
+      /\b(item|piece|collection|photo|msrp|price|stone|material|name)\b.*\bwrong\b/,
+      /\binaccurate\b/,
+      /\bincorrect\b/,
+      /\bbad photo\b/,
+      /\bblurry\b/,
+      /\bduplicate\b/,
+    ])
+  ) {
     add('catalog')
   }
 

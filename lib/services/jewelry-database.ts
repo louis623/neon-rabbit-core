@@ -29,6 +29,11 @@ import {
   type UpdatePhotoPipelineStateResult,
 } from './types'
 import { errors } from './errors'
+import { writeJewelryCatalogChange } from './jewelry-catalog-audit'
+import {
+  deriveJewelryCatalogTags,
+  normalizeJewelryCatalogTags,
+} from './jewelry-catalog-tags'
 
 const VALID_TYPE_PREFIXES = new Set<JewelryType>(['RG', 'NK', 'ER', 'ST', 'BR'])
 
@@ -53,10 +58,22 @@ export function normalizeItemNumber(itemNumber: string): string {
   return itemNumber.trim().toUpperCase()
 }
 
+function normalizeCollectionYear(collectionYear?: number | null): number | null {
+  if (collectionYear === undefined || collectionYear === null) return null
+  if (!Number.isInteger(collectionYear) || collectionYear < 2020 || collectionYear > 2040) {
+    throw errors.INVALID_INPUT(
+      'collectionYear must be between 2020 and 2040',
+      'Use a four-digit collection year between 2020 and 2040.',
+    )
+  }
+  return collectionYear
+}
+
 async function findOrCreateCollection(
   supabase: SupabaseClient,
   rawCollectionName: string,
-): Promise<{ id: string; name: string }> {
+  collectionYear?: number | null,
+): Promise<{ id: string; name: string; collectionYear: number | null }> {
   const name = rawCollectionName.trim()
   if (!name) {
     throw errors.INVALID_INPUT(
@@ -64,30 +81,50 @@ async function findOrCreateCollection(
       'I need the exact collection name before I can list that piece.',
     )
   }
+  const normalizedYear = normalizeCollectionYear(collectionYear)
 
   const { data: existing, error: lookupErr } = await supabase
     .from('collections')
-    .select('id, name')
+    .select('id, name, collection_year')
     .eq('name', name)
     .maybeSingle()
   if (lookupErr) throw lookupErr
   if (existing) {
+    if (normalizedYear !== null && existing.collection_year === null) {
+      const { data: updated, error: updateErr } = await supabase
+        .from('collections')
+        .update({ collection_year: normalizedYear })
+        .eq('id', existing.id)
+        .is('collection_year', null)
+        .select('id, name, collection_year')
+        .single()
+      if (updateErr) throw updateErr
+
+      return {
+        id: updated.id as string,
+        name: updated.name as string,
+        collectionYear: (updated.collection_year as number | null) ?? null,
+      }
+    }
+
     return {
       id: existing.id as string,
       name: existing.name as string,
+      collectionYear: (existing.collection_year as number | null) ?? null,
     }
   }
 
   const { data: created, error: insErr } = await supabase
     .from('collections')
-    .insert({ name })
-    .select('id, name')
+    .insert({ name, collection_year: normalizedYear })
+    .select('id, name, collection_year')
     .single()
   if (insErr) throw insErr
 
   return {
     id: created.id as string,
     name: created.name as string,
+    collectionYear: (created.collection_year as number | null) ?? null,
   }
 }
 
@@ -142,15 +179,21 @@ export async function resolveItemNumber(
   const { data, error } = await supabase
     .from('jewelry_designs')
     .select(
-      'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection_id, collection:collections(name)'
+      'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection_id, search_tags, collection:collections(name, collection_year)'
     )
     .eq('item_number', normalizedItemNumber)
     .maybeSingle()
   if (error) throw error
   if (!data) return { found: false, itemNumber: normalizedItemNumber }
 
-  const collectionRel = (data as { collection: { name: string } | { name: string }[] | null })
-    .collection
+  const collectionRel = (
+    data as {
+      collection:
+        | { name: string; collection_year: number | null }
+        | { name: string; collection_year: number | null }[]
+        | null
+    }
+  ).collection
   const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
 
   return {
@@ -166,6 +209,8 @@ export async function resolveItemNumber(
       typePrefix: data.type_prefix as JewelryType,
       collectionId: (data.collection_id as string | null) ?? null,
       collectionName: collection?.name ?? null,
+      collectionYear: collection?.collection_year ?? null,
+      searchTags: Array.isArray(data.search_tags) ? (data.search_tags as string[]) : [],
     },
     hasCollection: !!data.collection_id,
   }
@@ -197,7 +242,11 @@ export async function searchJewelryDatabase(
     bp_msrp: number | null
     canonical_photo_url: string | null
     type_prefix: JewelryType
-    collection: { name: string } | { name: string }[] | null
+    search_tags: string[] | null
+    collection:
+      | { name: string; collection_year: number | null }
+      | { name: string; collection_year: number | null }[]
+      | null
   }
   let designs: DesignRow[] = []
 
@@ -205,7 +254,7 @@ export async function searchJewelryDatabase(
     const { data, error } = await supabase
       .from('jewelry_designs')
       .select(
-        'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection:collections(name)'
+        'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
       )
       .textSearch('design_name', q, { type: 'plain', config: 'english' })
       .limit(limit)
@@ -221,7 +270,7 @@ export async function searchJewelryDatabase(
     const { data, error } = await supabase
       .from('jewelry_designs')
       .select(
-        'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection:collections(name)'
+        'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
       )
       .or(
         `design_name.ilike.${pattern},material.ilike.${pattern},main_stone.ilike.${pattern},item_number.ilike.${pattern}`
@@ -229,6 +278,45 @@ export async function searchJewelryDatabase(
       .limit(limit)
     if (error) throw error
     designs = (data ?? []) as unknown as DesignRow[]
+  }
+
+  if (designs.length === 0) {
+    const normalizedTagQuery = normalizeJewelryCatalogTags([q])
+    if (normalizedTagQuery.length > 0) {
+      const { data, error } = await supabase
+        .from('jewelry_designs')
+        .select(
+          'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
+        )
+        .overlaps('search_tags', normalizedTagQuery)
+        .limit(limit)
+      if (error) throw error
+      designs = (data ?? []) as unknown as DesignRow[]
+    }
+  }
+
+  if (designs.length === 0 && /^20[2-4]\d$/.test(q)) {
+    const { data: collections, error: collectionErr } = await supabase
+      .from('collections')
+      .select('id')
+      .eq('collection_year', Number(q))
+      .limit(limit)
+    if (collectionErr) throw collectionErr
+
+    const collectionIds = ((collections ?? []) as Array<{ id: string }>).map(
+      (collection) => collection.id,
+    )
+    if (collectionIds.length > 0) {
+      const { data, error } = await supabase
+        .from('jewelry_designs')
+        .select(
+          'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
+        )
+        .in('collection_id', collectionIds)
+        .limit(limit)
+      if (error) throw error
+      designs = (data ?? []) as unknown as DesignRow[]
+    }
   }
 
   if (designs.length === 0) return []
@@ -272,6 +360,8 @@ export async function searchJewelryDatabase(
       canonicalPhotoUrl: d.canonical_photo_url,
       typePrefix: d.type_prefix,
       collectionName: collection?.name ?? null,
+      collectionYear: collection?.collection_year ?? null,
+      searchTags: Array.isArray(d.search_tags) ? d.search_tags : [],
       isOnMyBoard: onMyBoard.has(d.id),
       activeListingsCount: activeCounts.get(d.id) ?? 0,
     }
@@ -308,11 +398,26 @@ export async function createDesign(
   // Collection lookup is by `name` only (collections has no type_prefix column).
   let collectionId: string | null = null
   let collectionName: string | null = null
+  let collectionYear: number | null = null
   if (input.collectionName?.trim()) {
-    const collection = await findOrCreateCollection(supabase, input.collectionName)
+    const collection = await findOrCreateCollection(
+      supabase,
+      input.collectionName,
+      input.collectionYear,
+    )
     collectionId = collection.id
     collectionName = collection.name
+    collectionYear = collection.collectionYear
   }
+
+  const searchTags = deriveJewelryCatalogTags({
+    typePrefix,
+    designName: input.designName,
+    material: input.material,
+    mainStone: input.mainStone,
+    collectionName,
+    explicitTags: input.searchTags,
+  })
 
   const { data: design, error: designErr } = await supabase
     .from('jewelry_designs')
@@ -321,23 +426,50 @@ export async function createDesign(
       design_name: input.designName,
       type_prefix: typePrefix,
       collection_id: collectionId,
+      search_tags: searchTags,
       material: input.material ?? null,
       main_stone: input.mainStone ?? null,
       bp_msrp: input.bpMsrp ?? null,
       canonical_photo_url: input.piecePhotoUrl,
       special_features: input.specialFeatures ?? null,
       length_info: input.lengthInfo ?? null,
+      created_by_rep_id: input.createdByRepId ?? null,
       ...buildPhotoPipelineUpdate(input.photoPipeline),
     })
     .select('id, item_number, type_prefix')
     .single()
   if (designErr) throw designErr
 
+  await writeJewelryCatalogChange(supabase, {
+    designId: design.id as string,
+    repId: input.createdByRepId ?? null,
+    conversationId: input.conversationId ?? null,
+    changeType: 'create_design',
+    beforeState: {},
+    afterState: {
+      itemNumber: normalizedItemNumber,
+      designName: input.designName,
+      typePrefix,
+      collectionId,
+      collectionName,
+      collectionYear,
+      searchTags,
+      material: input.material ?? null,
+      mainStone: input.mainStone ?? null,
+      bpMsrp: input.bpMsrp ?? null,
+      canonicalPhotoUrl: input.piecePhotoUrl,
+      specialFeatures: input.specialFeatures ?? null,
+      lengthInfo: input.lengthInfo ?? null,
+    },
+  })
+
   return {
     designId: design.id as string,
     itemNumber: design.item_number as string,
     collectionId,
     collectionName,
+    collectionYear,
+    searchTags,
     typePrefix: design.type_prefix as JewelryType,
   }
 }

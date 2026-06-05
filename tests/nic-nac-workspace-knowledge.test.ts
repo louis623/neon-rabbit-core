@@ -68,4 +68,26 @@ describe('workspace Nic-Nac shared knowledge', () => {
       'Do not lie, hallucinate, or make things up',
     )
   })
+
+  it('teaches the rep-maintained catalog correction policy', () => {
+    const routedPrompt = buildNicNacSystemPrompt({
+      intents: ['catalog'],
+      activeToolNames: ['search_jewelry_database', 'report_jewelry_catalog_issue'],
+    })
+
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('rep-maintained through Nic-Nac')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('report_jewelry_catalog_issue')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not promise Louis will review routine jewelry catalog issues',
+    )
+    expect(routedPrompt).toContain('rep-maintained through Nic-Nac')
+    expect(routedPrompt).toContain('report_jewelry_catalog_issue')
+    expect(routedPrompt).toContain(
+      'Do not promise Louis will review routine jewelry catalog issues',
+    )
+    expect(routedPrompt).toContain('Collection year is stored on the collection')
+    expect(routedPrompt).toContain('Tags are practical discovery helpers')
+    expect(routedPrompt).toContain('Do not use rarity or hype tags')
+    expect(routedPrompt).toContain('If unsure, skip the tag')
+  })
 })

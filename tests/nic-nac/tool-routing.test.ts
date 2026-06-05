@@ -198,6 +198,22 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
   })
 
+  it('routes catalog correction language to the catalog tool pack', () => {
+    expect(getToolIntentsForText('RG100 has the wrong collection')).toContain(
+      'catalog',
+    )
+    expect(getToolIntentsForText('This item has a bad blurry photo')).toContain(
+      'catalog',
+    )
+    expect(
+      getToolIntentsForText('The MSRP is incorrect in the database'),
+    ).toContain('catalog')
+
+    expect(listToolNamesForIntents(['catalog'])).toContain(
+      'report_jewelry_catalog_issue',
+    )
+  })
+
   it('keeps trade-board tools for terse collection-name replies', () => {
     const messages = [
       {

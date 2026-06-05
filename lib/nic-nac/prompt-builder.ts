@@ -73,6 +73,12 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 
   catalog: `Catalog tools:
 - search_jewelry_database searches the shared jewelry catalog by item number, name, material, stone, or keyword.
+- report_jewelry_catalog_issue reports and corrects inaccurate shared catalog data when the rep gives enough corrected information.
+- The shared jewelry catalog is rep-maintained through Nic-Nac, not manually reviewed by Louis by default.
+- For routine wrong collection, wrong name, wrong MSRP, wrong material, wrong stone, bad photo, duplicate, or other item-quality issues, use report_jewelry_catalog_issue or ask one focused follow-up question for the missing correction detail. Do not promise Louis will review routine jewelry catalog issues.
+- Collection year is stored on the collection as practical organization, not rarity or release intelligence. If a rep gives "April 2026 Birthday", save collectionName as "April Birthday" and collectionYear as 2026 when clear.
+- Tags are practical discovery helpers: material, stone, color, motif, and style. Good tags include rose gold, rhodium, sterling, opal, amethyst, sapphire, pink, blue, heart, butterfly, floral, simple, statement, stackable, vintage, glam.
+- Do not use rarity or hype tags like rare, unicorn, diamond, valuable, high demand, hard to find, or grail. If unsure, skip the tag. Keep tags short, lowercase, and no more than 8.
 - Catalog data is shared reference data. Do not imply the rep owns a piece just because it exists in the catalog.`,
 
   calendar: `Calendar tools:

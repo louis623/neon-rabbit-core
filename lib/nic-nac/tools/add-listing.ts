@@ -48,6 +48,8 @@ const newDesignShape = {
   mainStone: z.string().optional(),
   bpMsrp: z.number().optional(),
   collectionName: z.string().optional(),
+  collectionYear: z.number().int().min(2020).max(2040).optional(),
+  searchTags: z.array(z.string()).max(8).optional(),
   specialFeatures: z.string().optional(),
   lengthInfo: z.string().optional(),
 }
@@ -417,11 +419,15 @@ async function runSingle(
         designName,
         piecePhotoUrl: resolvedPhotoUrl,
         collectionName,
+        collectionYear: input.collectionYear,
+        searchTags: input.searchTags,
         material: input.material,
         mainStone: input.mainStone,
         bpMsrp: input.bpMsrp,
         specialFeatures: input.specialFeatures,
         lengthInfo: input.lengthInfo,
+        createdByRepId: ctx.repId,
+        conversationId: ctx.conversationId,
         photoPipeline: stagedOriginal
           ? {
               originalPath: stagedOriginal.objectPath,
@@ -648,6 +654,8 @@ async function runSingle(
             'material',
             'mainStone',
             'bpMsrp',
+            'collectionYear',
+            'searchTags',
             'specialFeatures',
             'lengthInfo',
           ],

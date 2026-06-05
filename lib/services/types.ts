@@ -797,6 +797,8 @@ export interface JewelryDatabaseResult {
   canonicalPhotoUrl: string | null
   typePrefix: JewelryType
   collectionName: string | null
+  collectionYear: number | null
+  searchTags: string[]
   isOnMyBoard: boolean
   activeListingsCount: number
 }
@@ -816,6 +818,8 @@ export type ResolveItemNumberResult =
         typePrefix: JewelryType
         collectionId: string | null
         collectionName: string | null
+        collectionYear: number | null
+        searchTags: string[]
       }
       hasCollection: boolean
     }
@@ -828,9 +832,13 @@ export interface CreateDesignInput {
   mainStone?: string
   bpMsrp?: number
   collectionName?: string
+  collectionYear?: number | null
+  searchTags?: string[]
   specialFeatures?: string
   lengthInfo?: string
   photoPipeline?: PhotoPipelineStatePatch
+  createdByRepId?: string | null
+  conversationId?: string | null
 }
 
 export interface CreateDesignResult {
@@ -838,6 +846,8 @@ export interface CreateDesignResult {
   itemNumber: string
   collectionId: string | null
   collectionName: string | null
+  collectionYear: number | null
+  searchTags: string[]
   typePrefix: JewelryType
 }
 
@@ -855,6 +865,67 @@ export interface UpdateDesignCollectionResult {
 export interface UpdateCanonicalPhotoResult {
   designId: string
   canonicalPhotoUrl: string
+}
+
+export type JewelryCatalogChangeType =
+  | 'create_design'
+  | 'report_issue'
+  | 'correct_design_fields'
+  | 'replace_canonical_photo'
+
+export type JewelryCatalogIssueType =
+  | 'wrong_item_number'
+  | 'wrong_collection'
+  | 'wrong_collection_year'
+  | 'wrong_design_name'
+  | 'wrong_msrp'
+  | 'wrong_jewelry_type'
+  | 'wrong_material'
+  | 'wrong_stone'
+  | 'wrong_tags'
+  | 'bad_photo'
+  | 'duplicate'
+  | 'other'
+
+export interface WriteJewelryCatalogChangeInput {
+  designId: string
+  repId?: string | null
+  conversationId?: string | null
+  changeType: JewelryCatalogChangeType
+  issueType?: JewelryCatalogIssueType | null
+  reason?: string | null
+  beforeState: Record<string, unknown>
+  afterState: Record<string, unknown>
+}
+
+export interface JewelryCatalogCorrectionPatch {
+  designName?: string
+  collectionName?: string
+  collectionYear?: number | null
+  material?: string | null
+  mainStone?: string | null
+  bpMsrp?: number | null
+  specialFeatures?: string | null
+  lengthInfo?: string | null
+  searchTags?: string[]
+  canonicalPhotoUrl?: string
+}
+
+export interface ReportJewelryCatalogIssueInput {
+  itemNumber: string
+  repId: string
+  conversationId?: string | null
+  issueType: JewelryCatalogIssueType
+  reason: string
+  correction?: JewelryCatalogCorrectionPatch
+}
+
+export interface ReportJewelryCatalogIssueResult {
+  designId: string
+  itemNumber: string
+  changedFields: string[]
+  issueLogged: boolean
+  corrected: boolean
 }
 
 export type PhotoPipelineStatus =

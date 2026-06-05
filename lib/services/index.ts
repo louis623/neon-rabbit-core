@@ -56,6 +56,12 @@ export type {
   ResolveItemNumberResult,
   CreateDesignInput,
   CreateDesignResult,
+  JewelryCatalogChangeType,
+  JewelryCatalogIssueType,
+  WriteJewelryCatalogChangeInput,
+  JewelryCatalogCorrectionPatch,
+  ReportJewelryCatalogIssueInput,
+  ReportJewelryCatalogIssueResult,
   UpdateCanonicalPhotoResult,
 } from './types'
 export type {
@@ -99,6 +105,12 @@ export {
   createDesign,
   updateCanonicalPhoto,
 } from './jewelry-database'
+export { writeJewelryCatalogChange } from './jewelry-catalog-audit'
+export { reportJewelryCatalogIssue } from './jewelry-catalog-corrections'
+export {
+  deriveJewelryCatalogTags,
+  normalizeJewelryCatalogTags,
+} from './jewelry-catalog-tags'
 
 // Jewelry Photo Pre-Flight
 export { assessJewelryPhotoPreflight } from './jewelry-photo-preflight'

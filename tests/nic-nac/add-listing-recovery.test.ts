@@ -203,6 +203,8 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
       'material',
       'mainStone',
       'bpMsrp',
+      'collectionYear',
+      'searchTags',
       'specialFeatures',
       'lengthInfo',
     ])
@@ -278,6 +280,8 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       designName: 'Sapphire Halo',
       piecePhotoUrl: 'https://dropbox.example/photo.jpg',
       collectionName: 'Lustre',
+      collectionYear: 2026,
+      searchTags: ['rose gold', 'heart'],
     })
 
     expect(createDesignMock).toHaveBeenCalledTimes(1)
@@ -287,6 +291,8 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       piecePhotoUrl:
         'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/manual-source.jpg',
       collectionName: 'Lustre',
+      collectionYear: 2026,
+      searchTags: ['rose gold', 'heart'],
       photoPipeline: {
         originalPath: 'rep-1/originals/manual-source.jpg',
         originalUrl: 'https://signed.example.com/manual-source',
