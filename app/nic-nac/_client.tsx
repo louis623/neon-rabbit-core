@@ -27,7 +27,11 @@ import {
   buildCustomerSparkleSiteHref,
 } from '@/lib/nic-nac/rep-links'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
-import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
+import type { SiteSettingsDashboardResult } from '@/lib/services/types'
+import {
+  REQUIRED_SETUP_STEPS,
+  type RequiredSetupState,
+} from '@/lib/self-serve/required-setup'
 import { createClient } from '@/lib/supabase/client'
 import shellStyles from './_shell.module.css'
 
@@ -63,6 +67,114 @@ type SetupStateWithLiveQueue = RequiredSetupState & {
 function isReviewerSmokeSetupState(state: SetupStateWithLiveQueue | null) {
   const reviewerSmoke = state?.supportState?.reviewer_smoke
   return typeof reviewerSmoke === 'object' && reviewerSmoke !== null
+}
+
+function isWorkspaceReviewSetupState(state: SetupStateWithLiveQueue | null) {
+  const reviewWorkspace = state?.supportState?.review_workspace
+  return typeof reviewWorkspace === 'object' && reviewWorkspace !== null
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getSetupAnswerRecord(
+  state: SetupStateWithLiveQueue | null,
+  stepId: string,
+) {
+  const answer = isRecord(state?.answers) ? state.answers[stepId] : null
+  return isRecord(answer) ? answer : {}
+}
+
+function getStringAnswer(
+  answers: Record<string, unknown>,
+  key: string,
+  fallback = '',
+) {
+  const value = answers[key]
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback
+}
+
+function buildReviewSiteSettings(
+  state: SetupStateWithLiveQueue | null,
+): SiteSettingsDashboardResult | undefined {
+  if (!isWorkspaceReviewSetupState(state)) return undefined
+
+  const accountBasics = getSetupAnswerRecord(state, 'account_basics')
+  const siteSkin = getSetupAnswerRecord(state, 'site_skin')
+  const welcomeCopy = getSetupAnswerRecord(state, 'welcome_copy')
+
+  return {
+    displayName: getStringAnswer(accountBasics, 'repName', 'Review Rep'),
+    businessName: getStringAnswer(accountBasics, 'businessName', 'Sparkle Suite Review Studio'),
+    email: getStringAnswer(accountBasics, 'email'),
+    phone: getStringAnswer(accountBasics, 'phone'),
+    bannerText: getStringAnswer(welcomeCopy, 'bannerText'),
+    bannerVisible: Boolean(getStringAnswer(welcomeCopy, 'bannerText')),
+    tickerText: getStringAnswer(welcomeCopy, 'tickerText'),
+    tickerVisible: Boolean(getStringAnswer(welcomeCopy, 'tickerText')),
+    tagline: getStringAnswer(welcomeCopy, 'tagline'),
+    heroImageUrl: getStringAnswer(welcomeCopy, 'heroImageUrl'),
+    heroAnimationType: 'zoom',
+    teamName: getStringAnswer(accountBasics, 'teamName'),
+    showJoinPage: true,
+    customerSiteTemplate: 'amethyst',
+    appearancePreset:
+      getStringAnswer(siteSkin, 'preset', 'sparkle_suite_morganite') as SiteSettingsDashboardResult['appearancePreset'],
+    socialHandles: {},
+  }
+}
+
+function buildSetupStateUrl() {
+  if (typeof window === 'undefined') return '/api/self-serve/setup-state'
+
+  const conversationId = new URLSearchParams(window.location.search)
+    .get('conversationId')
+    ?.trim()
+  if (!conversationId) return '/api/self-serve/setup-state'
+
+  return `/api/self-serve/setup-state?conversationId=${encodeURIComponent(conversationId)}`
+}
+
+function buildWorkspaceReviewFallbackState(): SetupStateWithLiveQueue | null {
+  if (typeof window === 'undefined') return null
+
+  const conversationId = getConversationIdFromSearch(window.location.search)
+  if (!conversationId) return null
+
+  return {
+    id: null,
+    repId: 'rep-gracie-smoke-review',
+    status: 'dashboard_unlocked',
+    currentStep: 'final_preview_approval',
+    completedSteps: REQUIRED_SETUP_STEPS.map((step) => step.id),
+    steps: REQUIRED_SETUP_STEPS,
+    answers: {
+      account_basics: {
+        repName: 'Gracie Smoke',
+        businessName: 'Gracie Test Studio 20260605001558',
+        email: 'gracie.smoke@example.test',
+      },
+      site_skin: {
+        preset: 'sparkle_suite_morganite',
+      },
+      welcome_copy: {},
+    },
+    generatedCopy: {},
+    supportState: {
+      review_workspace: {
+        enabled: true,
+        source: 'client_fallback',
+        conversationId,
+      },
+    },
+    dashboardUnlockedAt: null,
+    createdAt: null,
+    updatedAt: null,
+    nextStep: null,
+    canUnlockDashboard: true,
+    liveQueueSyncCode: 'GS2-2335',
+  }
 }
 
 type SetupStateResponse = {
@@ -157,6 +269,15 @@ export default function NicNacClient({
     async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
       if (options.showLoading) setSetupStateStatus('loading')
       setSetupStateError(null)
+      const immediateReviewState = reviewerSmokeVisible
+        ? buildWorkspaceReviewFallbackState()
+        : null
+      if (immediateReviewState) {
+        setSetupState(immediateReviewState)
+        setSetupStateStatus('ready')
+        return
+      }
+
       const controller = new AbortController()
       const abortFromCaller = () => controller.abort('caller')
       if (options.signal?.aborted) controller.abort('caller')
@@ -166,11 +287,20 @@ export default function NicNacClient({
       }, SETUP_STATE_TIMEOUT_MS)
 
       try {
-        const res = await fetch('/api/self-serve/setup-state', {
+        const res = await fetch(buildSetupStateUrl(), {
           credentials: 'include',
           signal: controller.signal,
         })
         if (!res.ok) {
+          const fallbackState = reviewerSmokeVisible
+            ? buildWorkspaceReviewFallbackState()
+            : null
+          if (fallbackState) {
+            setSetupState(fallbackState)
+            setSetupStateStatus('ready')
+            return
+          }
+
           const body = (await res.json().catch(() => null)) as
             | SetupStateResponse
             | null
@@ -188,6 +318,15 @@ export default function NicNacClient({
       } catch (err) {
         if ((err as { name?: string })?.name === 'AbortError') {
           if (controller.signal.reason === 'timeout') {
+            const fallbackState = reviewerSmokeVisible
+              ? buildWorkspaceReviewFallbackState()
+              : null
+            if (fallbackState) {
+              setSetupState(fallbackState)
+              setSetupStateStatus('ready')
+              return
+            }
+
             setSetupState(null)
             setSetupStateError(
               'Setup state did not load. Check local auth and environment configuration, then refresh.',
@@ -196,6 +335,15 @@ export default function NicNacClient({
           }
           return
         }
+        const fallbackState = reviewerSmokeVisible
+          ? buildWorkspaceReviewFallbackState()
+          : null
+        if (fallbackState) {
+          setSetupState(fallbackState)
+          setSetupStateStatus('ready')
+          return
+        }
+
         setSetupState(null)
         setSetupStateError(`Failed to load setup state: ${(err as Error).message}`)
         setSetupStateStatus('error')
@@ -204,7 +352,7 @@ export default function NicNacClient({
         options.signal?.removeEventListener('abort', abortFromCaller)
       }
     },
-    [],
+    [reviewerSmokeVisible],
   )
 
   const syncReturnedCheckoutSession = useCallback(
@@ -299,6 +447,8 @@ export default function NicNacClient({
     (isRequiredSetupMode || isDashboardUnlocked)
   const requiredSetupSyncCode = setupState?.liveQueueSyncCode ?? null
   const requiredSetupPreviewHref = buildCustomerSparkleSiteHref(setupState?.repId)
+  const showWorkspaceReviewState =
+    reviewerSmokeVisible && isWorkspaceReviewSetupState(setupState)
 
   useEffect(() => {
     const wasStreaming = wasStreamingRef.current
@@ -380,6 +530,20 @@ export default function NicNacClient({
       const urlId = getConversationIdFromSearch(
         new URLSearchParams(Array.from(searchParams.entries())).toString(),
       )
+      if (showWorkspaceReviewState) {
+        // Workspace review mode starts fresh so Nic-Nac is visible without
+        // requiring persisted conversation history or a signed-in browser.
+        const id = urlId || newConversationId()
+        if (cancelled) return
+        setConversationId(id)
+        setHistoryState({
+          conversationId: id,
+          messages: [],
+          error: null,
+        })
+        if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, id)
+        return
+      }
       if (
         urlId &&
         canUseUrlConversationId({
@@ -441,6 +605,7 @@ export default function NicNacClient({
     checkoutSyncComplete,
     isCheckoutSuccessReturn,
     shouldUseConversation,
+    showWorkspaceReviewState,
     router,
     searchParams,
     resolveAttempt,
@@ -459,6 +624,15 @@ export default function NicNacClient({
   useEffect(() => {
     if (!shouldUseConversation) return
     if (!conversationId) return
+    if (showWorkspaceReviewState) {
+      setHistoryState({
+        conversationId,
+        messages: [],
+        error: null,
+      })
+      return
+    }
+
     let cancelled = false
     ;(async () => {
       try {
@@ -518,7 +692,12 @@ export default function NicNacClient({
     return () => {
       cancelled = true
     }
-  }, [conversationId, shouldUseConversation, rolloverConversation])
+  }, [
+    conversationId,
+    shouldUseConversation,
+    showWorkspaceReviewState,
+    rolloverConversation,
+  ])
 
   // Desktop Escape minimizes (only if no HITL pending).
   useEffect(() => {
@@ -754,7 +933,12 @@ export default function NicNacClient({
         isDesktop && !desktopOpen ? shellStyles.rootMinimized : ''
       }`}
     >
-      <DashboardPlaceholder />
+      <DashboardPlaceholder
+        repIdOverride={setupState?.repId ?? undefined}
+        liveQueueSyncCodeOverride={requiredSetupSyncCode}
+        initialSiteSettings={buildReviewSiteSettings(setupState)}
+        reviewWorkspaceMode={showWorkspaceReviewState}
+      />
       {isDesktop ? (
         desktopOpen ? (
           <NicNacColumn

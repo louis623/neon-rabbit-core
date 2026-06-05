@@ -2,7 +2,7 @@ import type { UIMessage } from 'ai'
 
 export const NIC_NAC_WORKSPACE_REFRESH_EVENT = 'nic-nac:workspace-refresh'
 
-export type NicNacWorkspaceRefreshTopic = 'trade'
+export type NicNacWorkspaceRefreshTopic = 'trade' | 'site'
 
 const TRADE_WRITE_TOOL_TYPES = new Set([
   'tool-add_listing',
@@ -12,6 +12,12 @@ const TRADE_WRITE_TOOL_TYPES = new Set([
   'tool-approve_trade',
   'tool-reject_trade',
   'tool-update_fulfillment_status',
+])
+
+const SITE_WRITE_TOOL_TYPES = new Set([
+  'tool-update_banner_text',
+  'tool-update_site_setting',
+  'tool-update_streaming_links',
 ])
 
 type ToolPartLike = {
@@ -29,6 +35,9 @@ export function getWorkspaceRefreshTopicsFromMessages(
     for (const part of message.parts ?? []) {
       if (isTradeWorkspaceMutationPart(part as ToolPartLike)) {
         topics.add('trade')
+      }
+      if (isSiteWorkspaceMutationPart(part as ToolPartLike)) {
+        topics.add('site')
       }
     }
   }
@@ -53,6 +62,14 @@ export function isTradeWorkspaceMutationPart(part: ToolPartLike) {
   if (part.type === 'tool-add_listing') {
     return addListingOutputMutatedBoard(part.output)
   }
+
+  return true
+}
+
+export function isSiteWorkspaceMutationPart(part: ToolPartLike) {
+  if (!part.type || !SITE_WRITE_TOOL_TYPES.has(part.type)) return false
+  if (part.state !== 'output-available') return false
+  if (isToolErrorOutput(part.output)) return false
 
   return true
 }

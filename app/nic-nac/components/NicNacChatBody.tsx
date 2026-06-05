@@ -21,20 +21,28 @@ import { RequiredSetupPreviewPanel } from './RequiredSetupPreviewPanel'
 import { RequiredSetupUpdatesPanel } from './RequiredSetupUpdatesPanel'
 import { StreamingBubble } from './StreamingBubble'
 import { ThinkingIndicator } from './ThinkingIndicator'
+import { TradeRequestLiveCard } from './TradeRequestLiveCard'
 import { compressImage } from '@/lib/nic-nac/image-compress'
 import { orderResolvedAttachments } from '@/lib/nic-nac/client-attachments'
 import { buildConversationStateUrl, readJsonResponse } from '@/lib/nic-nac/client-conversation-routing'
 import { findActionableApproval, type ActionableApproval } from '@/lib/nic-nac/hitl-state'
 import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
+import {
+  isTradeRequestCardPart,
+  type TradeRequestCardPart,
+} from '@/lib/nic-nac/trade-request-card-parts'
+import type { TradeRequestStatus } from '@/lib/services/types'
 import { shouldStartNicNacRollover, type NicNacConversationRunHealth } from '@/lib/nic-nac/rollover'
 import {
   getWorkspaceRefreshPartKey,
+  isSiteWorkspaceMutationPart,
   isTradeWorkspaceMutationPart,
   NIC_NAC_WORKSPACE_REFRESH_EVENT,
 } from '@/lib/nic-nac/workspace-refresh-events'
 import type { RequiredSetupStepId } from '@/lib/self-serve/required-setup'
 
 const MAX_ATTACHMENTS = 10
+const CONVERSATION_MESSAGE_REFRESH_MS = 15_000
 const REQUIRED_SETUP_SEND_ERROR_MESSAGE =
   'Nic-Nac could not send because required setup context is missing. Refresh, then try again.'
 const WORKSPACE_SEND_ERROR_MESSAGE = "Couldn't send. Try again?"
@@ -52,6 +60,102 @@ function getSendErrorMessage(mode: NicNacChatMode) {
 
 interface ApprovalResponseFn {
   (args: { id: string; approved: boolean; reason?: string }): void
+}
+
+type TradeRequestDecision = {
+  requestId: string
+  action: 'approve' | 'reject'
+}
+
+type TradeRequestDecisionById = Record<string, TradeRequestDecision['action']>
+type TradeRequestDecisionErrorById = Record<string, string>
+
+export function getTradeRequestCardState({
+  requestId,
+  requestStatus,
+  pendingTradeDecision,
+  resolvedTradeDecisions,
+  tradeDecisionErrors,
+}: {
+  requestId: string
+  requestStatus?: TradeRequestStatus
+  pendingTradeDecision: TradeRequestDecision | null
+  resolvedTradeDecisions: TradeRequestDecisionById
+  tradeDecisionErrors: TradeRequestDecisionErrorById
+}): {
+  pendingAction: TradeRequestDecision['action'] | null
+  actionsDisabled: boolean
+  terminalNote: string | null
+  errorMessage: string | null
+} {
+  const resolvedAction = resolvedTradeDecisions[requestId]
+  const terminalStatus =
+    requestStatus && requestStatus !== 'pending' ? requestStatus : null
+  return {
+    pendingAction:
+      pendingTradeDecision?.requestId === requestId
+        ? pendingTradeDecision.action
+        : null,
+    actionsDisabled:
+      pendingTradeDecision !== null ||
+      resolvedAction !== undefined ||
+      terminalStatus !== null,
+    terminalNote:
+      resolvedAction === 'approve'
+        ? 'Trade approved.'
+        : resolvedAction === 'reject'
+          ? 'Trade denied.'
+          : terminalStatus === 'approved'
+            ? 'Trade approved.'
+            : terminalStatus === 'denied'
+              ? 'Trade denied.'
+              : terminalStatus === 'cancelled'
+                ? 'Trade cancelled.'
+                : null,
+    errorMessage: tradeDecisionErrors[requestId] ?? null,
+  }
+}
+
+function unavailableTradeRequestDecision() {}
+
+export type AssistantMessageRenderable =
+  | { type: 'text'; key: string; text: string }
+  | {
+      type: 'data-trade-request-card'
+      key: string
+      request: TradeRequestCardPart['data']
+    }
+
+export function buildAssistantMessageRenderables(
+  parts: readonly unknown[],
+): AssistantMessageRenderable[] {
+  const renderables: AssistantMessageRenderable[] = []
+  let textBuffer = ''
+
+  const flushText = (key: string) => {
+    if (!textBuffer) return
+    renderables.push({ type: 'text', key, text: textBuffer })
+    textBuffer = ''
+  }
+
+  parts.forEach((part, index) => {
+    const pt = part as { type?: string; text?: string }
+    if (pt.type === 'text') {
+      textBuffer += pt.text ?? ''
+      return
+    }
+    if (isTradeRequestCardPart(part)) {
+      flushText(`text-${index}`)
+      renderables.push({
+        type: 'data-trade-request-card',
+        key: `trade-request-${part.data.requestId}-${index}`,
+        request: part.data,
+      })
+    }
+  })
+  flushText('text-final')
+
+  return renderables
 }
 
 type ConversationHydrateResponse = {
@@ -223,9 +327,16 @@ export function NicNacChatBody({
     stamp: number
     previousLatestUserId: string | null
   } | null>(null)
+  const [pendingTradeDecision, setPendingTradeDecision] =
+    useState<TradeRequestDecision | null>(null)
+  const [resolvedTradeDecisions, setResolvedTradeDecisions] =
+    useState<TradeRequestDecisionById>({})
+  const [tradeDecisionErrors, setTradeDecisionErrors] =
+    useState<TradeRequestDecisionErrorById>({})
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const prevStatusRef = useRef<typeof status>(status)
   const announcedWorkspaceRefreshPartsRef = useRef<Set<string>>(new Set())
+  const tradeDecisionInFlightRef = useRef(false)
 
   const isStreaming = status === 'streaming' || status === 'submitted'
   // Actionable only if the LAST assistant message has an approval-requested
@@ -279,7 +390,10 @@ export function NicNacChatBody({
     document.addEventListener('visibilitychange', refreshWhenVisible)
     window.addEventListener('focus', refreshIfIdle)
     window.addEventListener('online', refreshIfIdle)
-    const intervalId = window.setInterval(refreshIfIdle, 45_000)
+    const intervalId = window.setInterval(
+      refreshIfIdle,
+      CONVERSATION_MESSAGE_REFRESH_MS,
+    )
 
     return () => {
       document.removeEventListener('visibilitychange', refreshWhenVisible)
@@ -292,25 +406,88 @@ export function NicNacChatBody({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    let shouldRefreshTrade = false
+    const topicsToRefresh = new Set<'trade' | 'site'>()
     for (const message of messages) {
       for (const [index, part] of (message.parts ?? []).entries()) {
-        if (!isTradeWorkspaceMutationPart(part as never)) continue
+        const shouldRefreshTrade = isTradeWorkspaceMutationPart(part as never)
+        const shouldRefreshSite = isSiteWorkspaceMutationPart(part as never)
+        if (!shouldRefreshTrade && !shouldRefreshSite) continue
         const key = getWorkspaceRefreshPartKey(message, part, index)
         if (announcedWorkspaceRefreshPartsRef.current.has(key)) continue
         announcedWorkspaceRefreshPartsRef.current.add(key)
-        shouldRefreshTrade = true
+        if (shouldRefreshTrade) topicsToRefresh.add('trade')
+        if (shouldRefreshSite) topicsToRefresh.add('site')
       }
     }
 
-    if (shouldRefreshTrade) {
+    for (const topic of topicsToRefresh) {
       window.dispatchEvent(
         new CustomEvent(NIC_NAC_WORKSPACE_REFRESH_EVENT, {
-          detail: { topic: 'trade' },
+          detail: { topic },
         }),
       )
     }
   }, [messages])
+
+  const handleTradeRequestDecision = useCallback(
+    async (action: 'approve' | 'reject', requestId: string) => {
+      if (tradeDecisionInFlightRef.current) return
+      if (resolvedTradeDecisions[requestId]) return
+      tradeDecisionInFlightRef.current = true
+      setPendingTradeDecision({ requestId, action })
+      setTradeDecisionErrors((current) => {
+        if (!current[requestId]) return current
+        const next = { ...current }
+        delete next[requestId]
+        return next
+      })
+      try {
+        const res = await fetch('/api/nic-nac/trade-requests', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, requestId }),
+        })
+        if (!res.ok) {
+          const body = await readJsonResponse<{ error?: string }>(
+            res,
+            'trade request decision',
+          ).catch(() => null)
+          throw new Error(body?.error ?? 'Trade request decision failed')
+        }
+        setResolvedTradeDecisions((current) => ({
+          ...current,
+          [requestId]: action,
+        }))
+        setTradeDecisionErrors((current) => {
+          if (!current[requestId]) return current
+          const next = { ...current }
+          delete next[requestId]
+          return next
+        })
+        window.dispatchEvent(
+          new CustomEvent(NIC_NAC_WORKSPACE_REFRESH_EVENT, {
+            detail: { topic: 'trade' },
+          }),
+        )
+        await refreshConversationMessages()
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Trade request decision failed'
+        setTradeDecisionErrors((current) => ({
+          ...current,
+          [requestId]: message,
+        }))
+        console.error('Nic-Nac trade request decision failed', error)
+      } finally {
+        setPendingTradeDecision(null)
+        tradeDecisionInFlightRef.current = false
+      }
+    },
+    [refreshConversationMessages, resolvedTradeDecisions],
+  )
 
   // Push streaming + HITL state up so the parent can disable the New button.
   useEffect(() => {
@@ -568,6 +745,10 @@ export function NicNacChatBody({
               isStreamingTail={isStreaming && idx === messages.length - 1}
               isThinking={thinkingFor === m.id}
               onApprove={addToolApprovalResponse}
+              onTradeRequestDecision={handleTradeRequestDecision}
+              pendingTradeDecision={pendingTradeDecision}
+              resolvedTradeDecisions={resolvedTradeDecisions}
+              tradeDecisionErrors={tradeDecisionErrors}
               actionableApproval={
                 actionableApproval?.messageId === m.id
                   ? actionableApproval.approval
@@ -709,6 +890,10 @@ function AssistantMessage({
   isStreamingTail,
   isThinking,
   onApprove,
+  onTradeRequestDecision,
+  pendingTradeDecision,
+  resolvedTradeDecisions,
+  tradeDecisionErrors,
   actionableApproval,
 }: {
   message: UIMessage
@@ -717,6 +902,13 @@ function AssistantMessage({
   isStreamingTail: boolean
   isThinking: boolean
   onApprove: ApprovalResponseFn
+  onTradeRequestDecision?: (
+    action: 'approve' | 'reject',
+    requestId: string,
+  ) => void
+  pendingTradeDecision: TradeRequestDecision | null
+  resolvedTradeDecisions: TradeRequestDecisionById
+  tradeDecisionErrors: TradeRequestDecisionErrorById
   // Non-null only when this message is the LAST assistant message AND its
   // last step contains an approval-requested part. Stale historical
   // approval-requested parts on earlier messages render nothing — the SDK
@@ -726,37 +918,76 @@ function AssistantMessage({
   actionableApproval: ActionableApproval | null
 }) {
   const parts = message.parts ?? []
-  const text = parts
-    .map((p) => {
-      const pt = p as { type?: string; text?: string }
-      return pt.type === 'text' ? pt.text ?? '' : ''
-    })
-    .join('')
+  const renderables = buildAssistantMessageRenderables(parts)
 
   // Visibility is server-owned: the route emits transient `data-thinking`
   // signals (show / confirm / hide) and the parent threads `isThinking` here.
   // Approval cards always win so they're never hidden behind the rabbit.
   const showThinking = isThinking && !actionableApproval
+  const hasRenderedContent = renderables.length > 0
+  const lastRenderableIndex = renderables.length - 1
 
   return (
     <>
       {showThinking ? (
         <ThinkingIndicator showGlyph={isFirstInRun} />
-      ) : text ? (
-        isStreamingTail ? (
-          <StreamingBubble text={text} showGlyph={isFirstInRun} timestamp={timestamp} />
-        ) : (
-          <Bubble
-            variant="nicNac"
-            showGlyph={isFirstInRun}
-            text={text}
-            renderMarkdown
-            timestamp={timestamp}
-          />
-        )
-      ) : null}
+      ) : (
+        renderables.map((item, index) => {
+          const showGlyph = isFirstInRun && index === 0
+          const itemTimestamp =
+            index === lastRenderableIndex ? timestamp : undefined
+
+          if (item.type === 'text') {
+            return isStreamingTail ? (
+              <StreamingBubble
+                key={item.key}
+                text={item.text}
+                showGlyph={showGlyph}
+                timestamp={itemTimestamp}
+              />
+            ) : (
+              <Bubble
+                key={item.key}
+                variant="nicNac"
+                showGlyph={showGlyph}
+                text={item.text}
+                renderMarkdown
+                timestamp={itemTimestamp}
+              />
+            )
+          }
+
+          const cardState = getTradeRequestCardState({
+            requestId: item.request.requestId,
+            requestStatus: item.request.status,
+            pendingTradeDecision,
+            resolvedTradeDecisions,
+            tradeDecisionErrors,
+          })
+
+          return (
+            <Bubble
+              key={item.key}
+              variant="nicNac"
+              showGlyph={showGlyph}
+              timestamp={itemTimestamp}
+            >
+              <TradeRequestLiveCard
+                request={item.request}
+                pendingAction={cardState.pendingAction}
+                actionsDisabled={cardState.actionsDisabled}
+                terminalNote={cardState.terminalNote}
+                errorMessage={cardState.errorMessage}
+                onDecision={
+                  onTradeRequestDecision ?? unavailableTradeRequestDecision
+                }
+              />
+            </Bubble>
+          )
+        })
+      )}
       {actionableApproval ? (
-        <Bubble variant="nicNac" showGlyph={!text && isFirstInRun}>
+        <Bubble variant="nicNac" showGlyph={!hasRenderedContent && isFirstInRun}>
           <HITLBlock
             approvalId={actionableApproval.approvalId}
             toolName={actionableApproval.toolName}

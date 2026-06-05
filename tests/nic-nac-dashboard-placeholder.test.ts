@@ -594,13 +594,44 @@ describe('DashboardPlaceholder', () => {
 
     expect(source).toContain('NIC_NAC_WORKSPACE_REFRESH_EVENT')
     expect(source).toContain('refreshAfterNicNacMutation')
-    expect(source).toContain("detail?.topic !== 'trade'")
+    expect(source).toContain("topic === 'trade'")
+    expect(source).toContain("topic === 'site'")
     expect(source).toContain('void refreshTradeWorkspace()')
+    expect(source).toContain('setPreviewFrameKey')
     expect(source).toContain('window.addEventListener(\n      NIC_NAC_WORKSPACE_REFRESH_EVENT')
     expect(source).not.toContain("if (activeSection !== 'trade-board') return\n\n    const refreshAfterNicNacMutation")
   })
 
-  it('renders the trade board as visual piece cards with a customer preview link', () => {
+  it('keeps live site and customer board previews inside the Nic-Nac workspace shell', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('type WorkspacePreviewState')
+    expect(source).toContain('handleOpenLiveSitePreview')
+    expect(source).toContain('handleOpenTradeBoardPreview')
+    expect(source).toContain('workspacePreview.mode === \'live_site_preview\'')
+    expect(source).toContain('Live Site Preview')
+    expect(source).toContain('Back to workspace')
+    expect(source).toContain('Refresh preview')
+    expect(source).toContain('<iframe')
+    expect(source).toContain('title="Sparkle Suite live site preview"')
+    expect(source).not.toContain('href={customerSparkleSiteHref}\n              target="_blank"')
+  })
+
+  it('uses a wider-screen fallback instead of embedding the live site on narrow workspaces', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY')
+    expect(source).toContain('canUseEmbeddedLiveSitePreview')
+    expect(source).toContain('Use a wider screen to preview and edit the live site with Nic-Nac side by side.')
+  })
+
+  it('renders board inventory piece cards after active search with a customer preview link', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -619,7 +650,7 @@ describe('DashboardPlaceholder', () => {
             },
           },
         },
-        tradeBoardSearchQuery: '',
+        tradeBoardSearchQuery: 'RG',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
         onQuickAddItemNumberChange: () => {},
@@ -637,20 +668,19 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('href="/amethyst/Trade.html?c=rep-1"')
     expect(html).toContain('target="_blank"')
     expect(html).toContain('src="https://cdn.example.com/sapphire-halo.jpg"')
-    expect(html).toContain('Image source: custom listing photo')
-    expect(html).toContain('Image source: no photo yet')
     expect(html).toContain('Open image preview for Sapphire Halo')
     expect(html).toContain('type="button"')
-    expect(html).toContain('aria-label="Active trade board pieces"')
+    expect(html).toContain('aria-label="Filtered active board pieces"')
     expect(html).toContain('alt="Sapphire Halo"')
     expect(html).toContain('Sapphire Halo')
     expect(html).toContain('RG100')
-    expect(html).toContain('Rose Quartz Stack')
-    expect(html).toContain('ST200')
-    expect(html).toContain('ST')
+    expect(html).toContain('Showing 1-1 of 1')
+    expect(html).toContain('Remove')
+    expect(html).toContain('Reset')
+    expect(html).not.toContain('Rose Quartz Stack')
   })
 
-  it('renders a load more control when more active board listings can be fetched', () => {
+  it('keeps board inventory quiet by default while still showing browse filters', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -680,11 +710,15 @@ describe('DashboardPlaceholder', () => {
         onRejectRequest: () => {},
         onAdvanceFulfillment: () => {},
         hasMoreListings: true,
-        onLoadMoreListings: () => {},
+        isInventoryBrowseLoading: true,
       }),
     )
 
-    expect(html).toContain('Load more')
+    expect(html).toContain('Jewelry Type')
+    expect(html).toContain('Collection')
+    expect(html).toContain('Use search or filters to browse pieces currently on your board.')
+    expect(html).not.toContain('Load more')
+    expect(html).not.toContain('Loading board pieces...')
   })
 
   it('builds active trade board fetch URLs with limit and offset', () => {
@@ -733,7 +767,7 @@ describe('DashboardPlaceholder', () => {
             },
           },
         },
-        tradeBoardSearchQuery: '',
+        tradeBoardSearchQuery: 'RG',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
         onQuickAddItemNumberChange: () => {},

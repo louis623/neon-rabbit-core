@@ -13,6 +13,7 @@ vi.mock('@/lib/nic-nac/persistence', () => ({
 }))
 
 import { notifyRepOfTradeRequest } from '@/lib/nic-nac/trade-request-notifications'
+import { isTradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-parts'
 
 describe('notifyRepOfTradeRequest', () => {
   const upsert = vi.fn()
@@ -63,17 +64,47 @@ describe('notifyRepOfTradeRequest', () => {
             type: 'text',
             text: expect.stringContaining('New trade request from Alice'),
           },
+          {
+            type: 'data-trade-request-card',
+            data: expect.objectContaining({
+              requestId: 'req-1',
+              status: 'pending',
+              customerName: 'Alice',
+              requestedItem: {
+                itemNumber: 'RG31452',
+                designName: 'The Celeste Ring',
+                typePrefix: 'RG',
+                collectionName: 'Birthday',
+                bpMsrp: 128,
+              },
+              offeredText: 'Trading a birthday ring, size 8',
+              ruleCheck: {
+                status: 'needs_review',
+                label: 'Compare against RG / Birthday',
+                description: expect.stringContaining('free text'),
+              },
+            }),
+          },
         ],
       }),
       { onConflict: 'conversation_id,message_id', ignoreDuplicates: true },
     )
 
     const payload = upsert.mock.calls[0][0] as {
-      parts: Array<{ type: string; text: string }>
+      parts: Array<{
+        type: string
+        text?: string
+        data?: { ruleCheck: { description: string } }
+      }>
     }
     expect(payload.parts[0].text).toContain('Birthday')
     expect(payload.parts[0].text).toContain('RG')
     expect(payload.parts[0].text).toContain('MSRP is reference only')
+    expect(payload.parts[1].data?.ruleCheck.description).toContain(
+      'same type and collection',
+    )
+    expect(isTradeRequestCardPart(payload.parts[0])).toBe(false)
+    expect(isTradeRequestCardPart(payload.parts[1])).toBe(true)
   })
 
   it('creates a fresh conversation id when the rep has no existing Nic-Nac thread yet', async () => {

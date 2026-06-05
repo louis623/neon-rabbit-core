@@ -4,6 +4,7 @@ import type { UIMessage } from 'ai'
 import {
   getWorkspaceRefreshPartKey,
   getWorkspaceRefreshTopicsFromMessages,
+  isSiteWorkspaceMutationPart,
   isTradeWorkspaceMutationPart,
 } from '@/lib/nic-nac/workspace-refresh-events'
 
@@ -86,6 +87,36 @@ describe('Nic-Nac workspace refresh events', () => {
         },
       }),
     ).toBe(true)
+  })
+
+  it('requests a site preview refresh after site customization tools mutate settings', () => {
+    const messages = [
+      assistantWithToolPart({
+        type: 'tool-update_site_setting',
+        state: 'output-available',
+        output: {
+          settings: {
+            bannerText: 'Going live at 8',
+          },
+        },
+      }),
+    ]
+
+    expect(isSiteWorkspaceMutationPart(messages[0].parts[0] as never)).toBe(true)
+    expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['site'])
+  })
+
+  it('does not refresh the site preview for failed site-setting tools', () => {
+    expect(
+      isSiteWorkspaceMutationPart({
+        type: 'tool-update_site_setting',
+        state: 'output-available',
+        output: {
+          code: 'SITE_SETTINGS_UPDATE_FAILED',
+          message: 'Unable to update that setting.',
+        },
+      }),
+    ).toBe(false)
   })
 
   it('builds stable part keys so the client dispatches each mutation once', () => {

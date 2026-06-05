@@ -24,6 +24,13 @@ function readLimit(url: URL) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function readOffset(url: URL) {
+  const raw = url.searchParams.get('offset')
+  if (!raw) return undefined
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null
+}
+
 function readStatus(value: string | null) {
   if (!value) return undefined
   if (
@@ -88,6 +95,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
     const limit = readLimit(url)
+    const offset = readOffset(url)
     const statusFilter = readStatus(url.searchParams.get('status'))
     const typeFilter = readType(url.searchParams.get('type'))
     const sortBy = readSortBy(url.searchParams.get('sortBy'))
@@ -95,6 +103,9 @@ export async function GET(request: Request) {
 
     if (limit === null) {
       return NextResponse.json({ error: 'limit must be a whole number.' }, { status: 400 })
+    }
+    if (offset === null) {
+      return NextResponse.json({ error: 'offset must be a whole number.' }, { status: 400 })
     }
     if (statusFilter === null) {
       return NextResponse.json({ error: 'status is invalid.' }, { status: 400 })
@@ -117,6 +128,7 @@ export async function GET(request: Request) {
       sortBy,
       sortOrder,
       limit: limit ?? undefined,
+      offset: offset ?? undefined,
     })
 
     return NextResponse.json(board)

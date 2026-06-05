@@ -80,7 +80,7 @@ describe('trade board route', () => {
 
     const response = await GET(
       new Request(
-        'http://localhost/api/nic-nac/trade-board?status=available&type=RG&collection=Birthday&sortBy=listed_at&sortOrder=asc&limit=8',
+        'http://localhost/api/nic-nac/trade-board?status=available&type=RG&collection=Birthday&sortBy=listed_at&sortOrder=asc&limit=8&offset=16',
       ),
     )
 
@@ -94,6 +94,7 @@ describe('trade board route', () => {
         sortBy: 'listed_at',
         sortOrder: 'asc',
         limit: 8,
+        offset: 16,
       },
     )
     expect(response.status).toBe(200)

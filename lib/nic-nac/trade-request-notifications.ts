@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 import type { TradeRequestNotificationSummary } from '@/lib/services/types'
 import { getLatestConversationId } from '@/lib/nic-nac/persistence'
+import { buildTradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-parts'
 
 export function buildTradeRequestNotificationText(
   summary: TradeRequestNotificationSummary,
@@ -43,6 +44,7 @@ export async function notifyRepOfTradeRequest(
           type: 'text',
           text: buildTradeRequestNotificationText(summary),
         },
+        buildTradeRequestCardPart(summary),
       ],
       status: 'complete',
     },

@@ -1,7 +1,7 @@
 .main {
   --workspace-accent: #ee2c9b;
   --workspace-accent-hover: #d91d89;
-  --workspace-accent-soft: rgba(255, 212, 234, 0.36);
+  --workspace-accent-soft: rgba(64, 41, 36, 0.08);
   --workspace-bg-start: #fffdfc;
   --workspace-bg-mid: #fbf5f2;
   --workspace-bg-end: #f6ede8;
@@ -23,7 +23,7 @@
   );
   --workspace-sidebar-glow: rgba(54, 34, 29, 0.09);
   --workspace-panel-shadow: rgba(54, 34, 29, 0.1);
-  --workspace-button-shadow: rgba(216, 27, 135, 0.24);
+  --workspace-button-shadow: rgba(54, 34, 29, 0.12);
   --nic-nac-accent: var(--workspace-accent);
   --nic-nac-surface-dashboard: var(--workspace-surface-dashboard);
   --nic-nac-surface-primary: var(--workspace-surface-primary);
@@ -38,7 +38,6 @@
   --nic-nac-text-inverse: var(--workspace-text-inverse);
   min-height: 100vh;
   background:
-    radial-gradient(circle at 82% 0%, var(--workspace-accent-soft), transparent 22rem),
     radial-gradient(circle at 8% 12%, rgba(246, 237, 232, 0.84), transparent 22rem),
     linear-gradient(
       180deg,
@@ -52,7 +51,7 @@
 .main[data-workspace-skin='sparkle_suite_morganite'] {
   --workspace-accent: #ee2c9b;
   --workspace-accent-hover: #d91d89;
-  --workspace-accent-soft: rgba(255, 212, 234, 0.34);
+  --workspace-accent-soft: rgba(64, 41, 36, 0.08);
   --workspace-bg-start: #fffdfc;
   --workspace-bg-mid: #fbf5f2;
   --workspace-bg-end: #f6ede8;
@@ -72,6 +71,7 @@
     rgba(246, 237, 232, 0.78)
   );
   --workspace-sidebar-glow: rgba(54, 34, 29, 0.09);
+  --workspace-button-shadow: rgba(54, 34, 29, 0.12);
 }
 
 .main[data-workspace-skin='black_diamond'] {
@@ -350,7 +350,7 @@
   color: #fff6fb;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.34),
-    0 12px 28px var(--workspace-button-shadow);
+    0 10px 22px var(--workspace-button-shadow);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 800;
@@ -358,6 +358,7 @@
   padding: 11px 18px;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .liveSiteButton:hover {
@@ -371,6 +372,89 @@
   gap: 24px;
   max-width: 1180px;
   width: 100%;
+}
+
+.previewUnavailableNotice {
+  max-width: 1180px;
+  width: 100%;
+  border: 1px solid rgba(238, 44, 155, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.84));
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.previewShell {
+  display: grid;
+  grid-template-rows: auto minmax(620px, 1fr);
+  gap: 12px;
+  max-width: 1180px;
+  min-height: calc(100vh - 112px);
+  width: 100%;
+}
+
+.previewToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 250, 0.9), rgba(255, 255, 255, 0.94)),
+    radial-gradient(circle at 96% 16%, rgba(64, 41, 36, 0.06), transparent 18rem);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 14px 32px rgba(54, 34, 29, 0.08);
+  padding: 14px 16px;
+}
+
+.previewToolbarCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.previewKicker {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.previewTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.previewToolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.previewFrame {
+  width: 100%;
+  min-height: 620px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 18px;
+  background: var(--nic-nac-surface-primary-solid);
+  box-shadow: 0 18px 42px rgba(54, 34, 29, 0.08);
 }
 
 .workspaceSidebar {
@@ -775,6 +859,143 @@
 
 .tradePieceCard .actionRow {
   grid-column: 3;
+}
+
+.boardInventoryControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.boardInventorySelect {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+  padding: 10px 12px;
+}
+
+.boardInventorySelect:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
+}
+
+.boardInventorySelect:disabled {
+  color: var(--nic-nac-text-secondary);
+  opacity: 0.64;
+}
+
+.boardInventoryReset,
+.boardInventoryArrow,
+.boardInventoryRemoveButton {
+  border: 1px solid rgba(238, 44, 155, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.84));
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 10px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.boardInventoryReset:hover,
+.boardInventoryArrow:hover,
+.boardInventoryRemoveButton:hover {
+  border-color: rgba(238, 44, 155, 0.4);
+  background: linear-gradient(180deg, rgba(255, 236, 246, 0.98), rgba(255, 255, 255, 0.88));
+}
+
+.boardInventoryReset:disabled,
+.boardInventoryArrow:disabled,
+.boardInventoryRemoveButton:disabled {
+  cursor: default;
+  opacity: 0.54;
+}
+
+.boardInventoryCarousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.boardInventoryCarouselHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.boardInventoryArrowGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.boardInventoryCarouselGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.boardInventoryPieceCard {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(104px, 1fr) auto;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-primary);
+  padding: 10px;
+}
+
+.boardInventoryMedia,
+.boardInventoryMediaButton {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.boardInventoryMedia {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--nic-nac-border);
+  background:
+    linear-gradient(135deg, rgba(255, 212, 234, 0.48), rgba(225, 250, 245, 0.62));
+}
+
+.boardInventoryMediaButton {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.boardInventoryPieceBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.boardInventoryPieceBody .customerName {
+  overflow-wrap: anywhere;
+}
+
+.boardInventoryRemoveButton {
+  width: 100%;
 }
 
 .resourceList {
@@ -1276,6 +1497,30 @@
   overflow-wrap: anywhere;
 }
 
+.libraryTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.libraryTag {
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 4px 9px;
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
 .filterBar {
   display: flex;
   flex-wrap: wrap;
@@ -1490,7 +1735,7 @@
   white-space: normal;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.32),
-    0 10px 22px rgba(216, 27, 135, 0.18);
+    0 10px 22px rgba(54, 34, 29, 0.1);
 }
 
 .actionButton:hover {
@@ -1549,7 +1794,7 @@
   white-space: normal;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.82),
-    0 10px 22px rgba(216, 27, 135, 0.08);
+    0 10px 22px rgba(54, 34, 29, 0.08);
 }
 
 .helperButton:disabled {
@@ -2281,6 +2526,24 @@
     grid-template-columns: 1fr;
   }
 
+  .previewShell {
+    display: block;
+    min-height: auto;
+  }
+
+  .previewToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .previewToolbarActions {
+    display: none;
+  }
+
+  .previewFrame {
+    display: none;
+  }
+
   .workspaceSidebar {
     position: static;
   }
@@ -2314,6 +2577,29 @@
   .tradePieceCard .actionRow {
     grid-column: 2;
     justify-content: flex-start;
+  }
+
+  .boardInventoryControls {
+    grid-template-columns: 1fr;
+  }
+
+  .boardInventoryReset,
+  .boardInventoryArrow {
+    width: 100%;
+  }
+
+  .boardInventoryCarouselHeader {
+    align-items: stretch;
+  }
+
+  .boardInventoryArrowGroup {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .boardInventoryCarouselGrid {
+    grid-template-columns: 1fr;
   }
 
   .metricGrid {

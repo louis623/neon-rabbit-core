@@ -8,6 +8,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { UIMessage } from 'ai'
+import { isTradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-parts'
+import type { TradeRequestStatus } from '@/lib/services/types'
 
 export async function loadCanonicalHistory(
   supabase: SupabaseClient,
@@ -262,6 +264,7 @@ export async function loadConversationForClient(
 
   // Collect every approval id that appears in an approval-requested part.
   const pendingApprovalIds: string[] = []
+  const tradeRequestIds: string[] = []
   for (const m of messages) {
     if (m.role !== 'assistant') continue
     for (const part of m.parts ?? []) {
@@ -269,25 +272,45 @@ export async function loadConversationForClient(
       if (p?.state === 'approval-requested' && p?.approval?.id) {
         pendingApprovalIds.push(p.approval.id)
       }
+      if (isTradeRequestCardPart(part)) {
+        tradeRequestIds.push(part.data.requestId)
+      }
     }
   }
-  if (pendingApprovalIds.length === 0) return messages
+  if (pendingApprovalIds.length === 0 && tradeRequestIds.length === 0) return messages
 
   // One round-trip: pull every recorded approval event for this conversation
   // whose id matches a pending part. Conversation-scoped to keep the index
   // selective.
-  const { data, error } = await supabase
-    .from('approval_events')
-    .select('approval_id, approved')
-    .eq('conversation_id', conversationId)
-    .in('approval_id', pendingApprovalIds)
-  if (error) throw error
-
   const resolved = new Map<string, boolean>()
-  for (const row of (data ?? []) as Array<{ approval_id: string; approved: boolean }>) {
-    resolved.set(row.approval_id, row.approved)
+  if (pendingApprovalIds.length > 0) {
+    const { data, error } = await supabase
+      .from('approval_events')
+      .select('approval_id, approved')
+      .eq('conversation_id', conversationId)
+      .in('approval_id', pendingApprovalIds)
+    if (error) throw error
+
+    for (const row of (data ?? []) as Array<{ approval_id: string; approved: boolean }>) {
+      resolved.set(row.approval_id, row.approved)
+    }
   }
-  if (resolved.size === 0) return messages
+
+  const tradeStatuses = new Map<string, TradeRequestStatus>()
+  if (tradeRequestIds.length > 0) {
+    const uniqueTradeRequestIds = Array.from(new Set(tradeRequestIds))
+    const { data, error } = await supabase
+      .from('trade_requests')
+      .select('id, status')
+      .in('id', uniqueTradeRequestIds)
+    if (error) throw error
+
+    for (const row of (data ?? []) as Array<{ id: string; status: TradeRequestStatus }>) {
+      tradeStatuses.set(row.id, row.status)
+    }
+  }
+
+  if (resolved.size === 0 && tradeStatuses.size === 0) return messages
 
   // Annotate in place. Build new arrays so we don't mutate the loaded rows
   // (UIMessage is a structural type but UI consumers may share references).
@@ -295,6 +318,19 @@ export async function loadConversationForClient(
     if (m.role !== 'assistant') return m
     let changed = false
     const nextParts = (m.parts ?? []).map((part) => {
+      if (isTradeRequestCardPart(part)) {
+        const status = tradeStatuses.get(part.data.requestId)
+        if (!status || part.data.status === status) return part
+        changed = true
+        return {
+          ...part,
+          data: {
+            ...part.data,
+            status,
+          },
+        }
+      }
+
       const p = part as { state?: string; approval?: { id?: string } }
       if (p?.state !== 'approval-requested' || !p?.approval?.id) return part
       const approved = resolved.get(p.approval.id)

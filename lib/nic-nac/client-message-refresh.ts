@@ -4,12 +4,25 @@ export function mergeServerMessages(
   current: UIMessage[],
   incoming: UIMessage[],
 ): UIMessage[] {
-  const seen = new Set(current.map((message) => message.id))
+  const incomingById = new Map(incoming.map((message) => [message.id, message]))
+  const seen = new Set<string>()
+  let changed = false
+
+  const merged = current.map((message) => {
+    const serverMessage = incomingById.get(message.id)
+    if (!serverMessage) return message
+    seen.add(message.id)
+    if (serverMessage === message) return message
+    changed = true
+    return serverMessage
+  })
+
   const appended = incoming.filter((message) => {
     if (seen.has(message.id)) return false
     seen.add(message.id)
     return true
   })
 
-  return appended.length > 0 ? [...current, ...appended] : current
+  if (appended.length > 0) changed = true
+  return changed ? [...merged, ...appended] : current
 }

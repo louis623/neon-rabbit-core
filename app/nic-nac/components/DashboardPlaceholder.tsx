@@ -1,6 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import type {
   AccountBillingDashboardResult,
   BoardResult,
@@ -29,6 +35,12 @@ import {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
 } from '@/lib/nic-nac/rep-links'
+import {
+  getBoardInventoryOptions,
+  getBoardInventoryResults,
+  getCarouselWindow,
+  hasActiveBoardInventoryBrowse,
+} from '@/lib/nic-nac/board-inventory-view'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import styles from './DashboardPlaceholder.module.css'
 
@@ -49,8 +61,10 @@ const WORKSPACE_SECTIONS = [
   { key: 'account', label: 'Account', subtitle: 'Billing, wallet, and site analytics' },
 ] as const
 
-const TRADE_WORKSPACE_REFRESH_MS = 45_000
+const TRADE_WORKSPACE_REFRESH_MS = 15_000
 const TRADE_BOARD_PAGE_SIZE = 12
+const BOARD_INVENTORY_MOBILE_QUERY = '(max-width: 840px)'
+const LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY = '(min-width: 841px)'
 
 export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
   const params = new URLSearchParams({
@@ -61,6 +75,32 @@ export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
     params.set('offset', String(options.offset))
   }
   return `/api/nic-nac/trade-board?${params.toString()}`
+}
+
+function subscribeBoardInventoryViewport(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+
+  const mediaQuery = window.matchMedia(BOARD_INVENTORY_MOBILE_QUERY)
+  mediaQuery.addEventListener('change', callback)
+  return () => mediaQuery.removeEventListener('change', callback)
+}
+
+function getBoardInventoryPageSizeSnapshot() {
+  if (typeof window === 'undefined') return 3
+  return window.matchMedia(BOARD_INVENTORY_MOBILE_QUERY).matches ? 1 : 3
+}
+
+function subscribeLiveSitePreviewViewport(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+
+  const mediaQuery = window.matchMedia(LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY)
+  mediaQuery.addEventListener('change', callback)
+  return () => mediaQuery.removeEventListener('change', callback)
+}
+
+function getLiveSitePreviewViewportSnapshot() {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia(LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY).matches
 }
 
 export function formatHeaderRepShow(
@@ -378,10 +418,6 @@ const MESSAGE_TYPE_LABELS: Record<string, string> = {
   announcement: 'Announcement',
   support_request: 'Support request',
   support_response: 'Support reply',
-}
-
-function formatCompactDate(value: string | null) {
-  return value ? value.slice(0, 10) : 'Unknown'
 }
 
 function formatCompactDateTime(value: string | null) {
@@ -968,21 +1004,62 @@ export type DashboardPlaceholderProps = {
   repIdOverride?: string
   liveQueueSyncCodeOverride?: string | null
   initialSiteSettings?: SiteSettingsDashboardResult
+  reviewWorkspaceMode?: boolean
 }
 
+type WorkspacePreviewState =
+  | { mode: 'workspace' }
+  | {
+      mode: 'live_site_preview'
+      href: string
+      title: 'Live Site Preview' | 'Customer Trade Board Preview'
+    }
+
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
-  const { repIdOverride, liveQueueSyncCodeOverride, initialSiteSettings } = props
+  const {
+    repIdOverride,
+    liveQueueSyncCodeOverride,
+    initialSiteSettings,
+    reviewWorkspaceMode = false,
+  } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>(() =>
       typeof window === 'undefined'
         ? 'trade-board'
         : getInitialWorkspaceSection(window.location.search),
     )
+  const [workspacePreview, setWorkspacePreview] = useState<WorkspacePreviewState>({
+    mode: 'workspace',
+  })
+  const [previewFrameKey, setPreviewFrameKey] = useState(0)
+  const [previewUnavailableMessage, setPreviewUnavailableMessage] = useState<
+    string | null
+  >(null)
+  const canUseEmbeddedLiveSitePreview = useSyncExternalStore(
+    subscribeLiveSitePreviewViewport,
+    getLiveSitePreviewViewportSnapshot,
+    () => true,
+  )
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    repId: repIdOverride,
+    displayName: initialSiteSettings?.displayName,
+    liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
   const [audienceState, setAudienceState] = useState<AudienceState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode
+      ? {
+          totalCustomers: 0,
+          smsReachableCount: 0,
+          emailReachableCount: 0,
+          marketingConsentCount: 0,
+          smsOptedOutCount: 0,
+          emailOptedOutCount: 0,
+          addedLast30DaysCount: 0,
+        }
+      : undefined,
+    customers: reviewWorkspaceMode ? [] : undefined,
   })
   const [rosterFilter, setRosterFilter] = useState<RosterFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -999,10 +1076,36 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     pending: false,
   })
   const [walletState, setWalletState] = useState<WalletState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode
+      ? {
+          balanceMils: 0,
+          balanceUsd: 0,
+          estimatedTextsRemaining: 0,
+          messagesSentThisMonth: 0,
+          messagesSpendThisMonthMils: 0,
+          messagesSpendThisMonthUsd: 0,
+          autoRechargeEnabled: false,
+          autoRechargePending: false,
+          autoRechargeThresholdMils: 10000,
+          autoRechargeThresholdUsd: 10,
+          autoRechargeAmountMils: 25000,
+          autoRechargeAmountUsd: 25,
+          minimumLoadAmountMils: 25000,
+          minimumLoadAmountUsd: 25,
+          lastLoadedAt: null,
+          recentTransactions: [],
+        }
+      : undefined,
   })
   const [calendarState, setCalendarState] = useState<CalendarState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode
+      ? {
+          upcomingEvents: [],
+          recentEvents: [],
+        }
+      : undefined,
   })
   const [siteSettingsState, setSiteSettingsState] = useState<SiteSettingsState>(
     initialSiteSettings
@@ -1016,7 +1119,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const [accountBillingState, setAccountBillingState] =
     useState<AccountBillingState>({
-      status: 'loading',
+      status: reviewWorkspaceMode ? 'ready' : 'loading',
+      summary: reviewWorkspaceMode
+        ? {
+            stripeConfigured: false,
+            checkoutMode: 'test_buyer',
+            subscription: {
+              status: 'active',
+              planType: 'monthly',
+              currentPeriodEnd: null,
+              cancelAtPeriodEnd: false,
+              cancelledAt: null,
+              livemode: false,
+            },
+            paymentMethod: null,
+            invoices: [],
+            canStartSubscription: false,
+            canManageBilling: false,
+          }
+        : undefined,
     })
   const [walletActionState, setWalletActionState] = useState<WalletActionState>({
     pendingAmountCents: null,
@@ -1045,7 +1166,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       initialSiteSettings ? getSiteSettingsDraft(initialSiteSettings) : null,
     )
   const [tradeBoardState, setTradeBoardState] = useState<TradeBoardState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    board: reviewWorkspaceMode
+      ? {
+          listings: [],
+          summary: {
+            totalPieces: 0,
+            totalMsrp: 0,
+            pendingRequestCount: 0,
+            typeBreakdown: {
+              RG: 0,
+              NK: 0,
+              ER: 0,
+              ST: 0,
+              BR: 0,
+            },
+          },
+        }
+      : undefined,
+    hasMoreListings: reviewWorkspaceMode ? false : undefined,
   })
   const [tradeBoardActionState, setTradeBoardActionState] =
     useState<TradeBoardActionState>({
@@ -1053,15 +1192,31 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+  const inventoryBrowseLoadPromiseRef = useRef<Promise<void> | null>(null)
+  const inventoryBrowseFailedOffsetRef = useRef<number | null>(null)
   const [tradeRequestsState, setTradeRequestsState] = useState<TradeRequestsState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    requests: reviewWorkspaceMode ? [] : undefined,
   })
   const [fulfillmentQueueState, setFulfillmentQueueState] =
     useState<FulfillmentQueueState>({
-      status: 'loading',
+      status: reviewWorkspaceMode ? 'ready' : 'loading',
+      items: reviewWorkspaceMode ? [] : undefined,
     })
   const [tradeHistoryState, setTradeHistoryState] = useState<TradeHistoryState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    history: reviewWorkspaceMode
+      ? {
+          items: [],
+          summary: {
+            totalCompleted: 0,
+            totalMsrpTraded: 0,
+            avgFulfillmentDays: null,
+            topDesign: null,
+            repeatCustomers: [],
+          },
+        }
+      : undefined,
   })
   const [jewelryLibraryState, setJewelryLibraryState] =
     useState<JewelryLibraryState>({
@@ -1069,7 +1224,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       results: [],
     })
   const [messagesState, setMessagesState] = useState<MessagesState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    inbox: reviewWorkspaceMode
+      ? {
+          unreadCount: 0,
+          messages: [],
+        }
+      : undefined,
   })
   const [messagesActionState, setMessagesActionState] =
     useState<MessagesActionState>({
@@ -1078,10 +1239,36 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       helperMessage: null,
     })
   const [resourcesState, setResourcesState] = useState<ResourcesState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    resources: reviewWorkspaceMode ? [] : undefined,
   })
   const [analyticsState, setAnalyticsState] = useState<AnalyticsState>({
-    status: 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    analytics: reviewWorkspaceMode
+      ? {
+          configured: false,
+          privacy: {
+            disablesIpCapture: true,
+            masksSensitiveInputs: true,
+            identifiesAfterLoginOnly: true,
+          },
+          overview: {
+            pageViews30d: null,
+            uniqueVisitors30d: null,
+            topTrafficSource: null,
+            topDeviceType: null,
+          },
+          topPages: [],
+          trafficSources: [],
+          deviceMix: [],
+          operationalSnapshot: {
+            activeListings: 0,
+            pendingRequests: 0,
+            upcomingShows: 0,
+            reachableCustomers: 0,
+          },
+        }
+      : undefined,
   })
   const [tradeBoardSearchQuery, setTradeBoardSearchQuery] = useState('')
   const [quickAddItemNumber, setQuickAddItemNumber] = useState('')
@@ -1211,6 +1398,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         hasMoreListings: payload.listings.length === TRADE_BOARD_PAGE_SIZE,
       }
     })
+    return payload
   }
 
   async function loadTradeRequests(signal?: AbortSignal) {
@@ -1388,6 +1576,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   useEffect(() => {
+    if (reviewWorkspaceMode) return
+
     const controller = new AbortController()
     let cancelled = false
 
@@ -1415,7 +1605,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       cancelled = true
       controller.abort()
     }
-  }, [])
+  }, [reviewWorkspaceMode])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1914,6 +2104,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function refreshTradeWorkspace() {
+    if (reviewWorkspaceMode) return
+
     await Promise.all([
       loadTradeBoard(),
       loadTradeRequests(),
@@ -1923,9 +2115,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     ])
   }
 
-  async function handleLoadMoreTradeListings() {
-    const offset = tradeBoardState.board?.listings.length ?? 0
-    if (offset <= 0) return
+  const handleEnsureInventoryBrowseLoaded = useCallback(async () => {
+    if (reviewWorkspaceMode) return
+    if (tradeBoardActionState.pendingKey === 'load-more-listings') return
+
+    let offset = tradeBoardState.board?.listings.length ?? 0
+    if (offset <= 0 || tradeBoardState.hasMoreListings !== true) return
+    if (inventoryBrowseLoadPromiseRef.current) {
+      return inventoryBrowseLoadPromiseRef.current
+    }
+    if (inventoryBrowseFailedOffsetRef.current === offset) return
 
     setTradeBoardActionState({
       pendingKey: 'load-more-listings',
@@ -1933,27 +2132,49 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       helperMessage: null,
     })
 
-    try {
-      await loadTradeBoard(undefined, { offset, append: true })
-      setTradeBoardActionState({
-        pendingKey: null,
-        error: null,
-        helperMessage: null,
-      })
-    } catch (error) {
-      setTradeBoardActionState({
-        pendingKey: null,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Unable to load more listings right now.',
-        helperMessage: null,
-      })
-    }
-  }
+    inventoryBrowseLoadPromiseRef.current = (async () => {
+      try {
+        let hasMore = true
+        while (hasMore) {
+          const payload = await loadTradeBoard(undefined, { offset, append: true })
+          const fetchedCount = payload.listings.length
+          hasMore = fetchedCount === TRADE_BOARD_PAGE_SIZE
+          offset += fetchedCount
+          if (fetchedCount === 0) break
+        }
+        inventoryBrowseFailedOffsetRef.current = null
+        setTradeBoardActionState({
+          pendingKey: null,
+          error: null,
+          helperMessage: null,
+        })
+      } catch (error) {
+        inventoryBrowseFailedOffsetRef.current =
+          tradeBoardState.board?.listings.length ?? null
+        setTradeBoardActionState({
+          pendingKey: null,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Unable to load more listings right now.',
+          helperMessage: null,
+        })
+      } finally {
+        inventoryBrowseLoadPromiseRef.current = null
+      }
+    })()
+
+    return inventoryBrowseLoadPromiseRef.current
+  }, [
+    reviewWorkspaceMode,
+    tradeBoardActionState.pendingKey,
+    tradeBoardState.board?.listings.length,
+    tradeBoardState.hasMoreListings,
+  ])
 
   useEffect(() => {
     if (activeSection !== 'trade-board') return
+    if (reviewWorkspaceMode) return
 
     const refreshIfTradeBoardActive = () => {
       if (document.visibilityState === 'hidden') return
@@ -1977,14 +2198,23 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       window.removeEventListener('focus', refreshIfTradeBoardActive)
       window.clearInterval(intervalId)
     }
-  }, [activeSection])
+  }, [activeSection, reviewWorkspaceMode])
 
   useEffect(() => {
     const refreshAfterNicNacMutation = (event: Event) => {
       const detail = (event as CustomEvent<{ topic?: string }>).detail
-      if (detail?.topic !== 'trade') return
+      const topic = detail?.topic
+      if (topic !== 'trade' && topic !== 'site') return
       if (document.visibilityState === 'hidden') return
-      void refreshTradeWorkspace()
+      if (topic === 'trade' && !reviewWorkspaceMode) {
+        void refreshTradeWorkspace()
+      }
+      if (
+        workspacePreview.mode === 'live_site_preview' &&
+        (topic === 'trade' || topic === 'site')
+      ) {
+        setPreviewFrameKey((current) => current + 1)
+      }
     }
 
     window.addEventListener(
@@ -1997,9 +2227,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         refreshAfterNicNacMutation,
       )
     }
-  }, [])
+  }, [reviewWorkspaceMode, workspacePreview.mode])
 
   useEffect(() => {
+    if (reviewWorkspaceMode) return
     if (accountBillingState.status !== 'ready') return
     if (!hasPaidWorkspaceSubscription(accountBillingState.summary)) return
 
@@ -2007,7 +2238,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     void loadPaidWorkspaceData(controller.signal)
 
     return () => controller.abort()
-  }, [accountBillingState.status, accountBillingState.summary])
+  }, [accountBillingState.status, accountBillingState.summary, reviewWorkspaceMode])
 
   useEffect(() => {
     if (accountBillingState.status !== 'ready') return
@@ -2358,17 +2589,38 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  const visibleTradeListings =
-    tradeBoardState.board?.listings.filter((listing) =>
-      listing.status === 'available' &&
-      [listing.design.item_number, listing.design.design_name, listing.design.collection?.name ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(tradeBoardSearchQuery.trim().toLowerCase()),
-    ) ?? []
   const customerSparkleSiteHref = buildCustomerSparkleSiteHref(
     repIdOverride ?? repProfileState.repId,
   )
+  const customerTradeBoardHref = buildCustomerTradeBoardHref(
+    repIdOverride ?? repProfileState.repId,
+  )
+  const openWorkspacePreview = (nextPreview: Extract<WorkspacePreviewState, { mode: 'live_site_preview' }>) => {
+    if (!canUseEmbeddedLiveSitePreview) {
+      setPreviewUnavailableMessage(
+        'Use a wider screen to preview and edit the live site with Nic-Nac side by side.',
+      )
+      return
+    }
+
+    setPreviewUnavailableMessage(null)
+    setWorkspacePreview(nextPreview)
+    setPreviewFrameKey((current) => current + 1)
+  }
+  const handleOpenLiveSitePreview = () => {
+    openWorkspacePreview({
+      mode: 'live_site_preview',
+      href: customerSparkleSiteHref,
+      title: 'Live Site Preview',
+    })
+  }
+  const handleOpenTradeBoardPreview = () => {
+    openWorkspacePreview({
+      mode: 'live_site_preview',
+      href: customerTradeBoardHref,
+      title: 'Customer Trade Board Preview',
+    })
+  }
   const headerRepShow = formatHeaderRepShow(
     siteSettingsState.settings?.displayName ?? repProfileState.displayName,
     siteSettingsState.settings?.businessName,
@@ -2409,17 +2661,56 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </span>
           </div>
           {hasPaidWorkspace ? (
-            <a
+            <button
+              type="button"
               className={styles.liveSiteButton}
-              href={customerSparkleSiteHref}
-              target="_blank"
-              rel="noreferrer"
+              onClick={handleOpenLiveSitePreview}
             >
               View live site
-            </a>
+            </button>
           ) : null}
         </div>
       </header>
+      {previewUnavailableMessage ? (
+        <div className={styles.previewUnavailableNotice}>
+          {previewUnavailableMessage}
+        </div>
+      ) : null}
+      {workspacePreview.mode === 'live_site_preview' ? (
+        <section className={styles.previewShell} aria-label={workspacePreview.title}>
+          <div className={styles.previewToolbar}>
+            <div className={styles.previewToolbarCopy}>
+              <span className={styles.previewKicker}>Live Site Preview</span>
+              <span className={styles.previewTitle}>{workspacePreview.title}</span>
+            </div>
+            <div className={styles.previewToolbarActions}>
+              <button
+                type="button"
+                className={styles.helperButton}
+                onClick={() => {
+                  setWorkspacePreview({ mode: 'workspace' })
+                  setPreviewUnavailableMessage(null)
+                }}
+              >
+                Back to workspace
+              </button>
+              <button
+                type="button"
+                className={styles.liveSiteButton}
+                onClick={() => setPreviewFrameKey((current) => current + 1)}
+              >
+                Refresh preview
+              </button>
+            </div>
+          </div>
+          <iframe
+            key={`${previewFrameKey}:${workspacePreview.href}`}
+            className={styles.previewFrame}
+            src={workspacePreview.href}
+            title="Sparkle Suite live site preview"
+          />
+        </section>
+      ) : (
       <div className={styles.workspaceShell}>
         <aside className={styles.workspaceSidebar}>
           <div className={styles.workspaceSidebarTitle}>Dashboard</div>
@@ -2467,7 +2758,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           {hasPaidWorkspace && activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
-              visibleListings={visibleTradeListings}
               tradeBoardSearchQuery={tradeBoardSearchQuery}
               onTradeBoardSearchQueryChange={setTradeBoardSearchQuery}
               quickAddItemNumber={quickAddItemNumber}
@@ -2485,9 +2775,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 handleTradeRequestDecision(requestId, 'reject')
               }
               onAdvanceFulfillment={handleAdvanceFulfillment}
-              customerBoardHref={buildCustomerTradeBoardHref(repProfileState.repId)}
+              customerBoardHref={customerTradeBoardHref}
+              onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
               hasMoreListings={tradeBoardState.hasMoreListings === true}
-              onLoadMoreListings={handleLoadMoreTradeListings}
+              onEnsureInventoryBrowseLoaded={handleEnsureInventoryBrowseLoaded}
+              isInventoryBrowseLoading={
+                tradeBoardActionState.pendingKey === 'load-more-listings'
+              }
             />
           ) : null}
 
@@ -2613,6 +2907,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           ) : null}
         </section>
       </div>
+      )}
     </main>
   )
 }
@@ -2640,8 +2935,10 @@ export function TradeBoardWorkspaceCard({
   onRejectRequest,
   onAdvanceFulfillment,
   customerBoardHref = buildCustomerTradeBoardHref(),
+  onOpenCustomerBoardPreview,
   hasMoreListings = false,
-  onLoadMoreListings,
+  onEnsureInventoryBrowseLoaded,
+  isInventoryBrowseLoading = false,
 }: {
   tradeBoardState: TradeBoardState
   visibleListings?: TradeListingWithDesign[]
@@ -2662,19 +2959,54 @@ export function TradeBoardWorkspaceCard({
     nextStatus: 'shipped' | 'completed',
   ) => void
   customerBoardHref?: string
+  onOpenCustomerBoardPreview?: () => void
   hasMoreListings?: boolean
-  onLoadMoreListings?: () => void
+  onEnsureInventoryBrowseLoaded?: () => Promise<void>
+  isInventoryBrowseLoading?: boolean
 }) {
   const [previewListing, setPreviewListing] = useState<TradeListingWithDesign | null>(
     null,
   )
+  const [inventoryJewelryType, setInventoryJewelryType] = useState('')
+  const [inventoryCollection, setInventoryCollection] = useState('')
+  const [inventoryCarouselIndex, setInventoryCarouselIndex] = useState(0)
   const boardSummary = tradeBoardState.board?.summary
   const boardListings = (visibleListings ?? tradeBoardState.board?.listings ?? []).filter(
     (listing) => listing.status === 'available',
   )
+  const inventoryFilters = {
+    search: tradeBoardSearchQuery,
+    jewelryType: inventoryJewelryType,
+    collection: inventoryCollection,
+  }
+  const hasActiveInventoryBrowse = hasActiveBoardInventoryBrowse(inventoryFilters)
+  const inventoryOptions = getBoardInventoryOptions(boardListings)
+  const inventoryResults = getBoardInventoryResults(boardListings, inventoryFilters)
+  const inventoryCarouselPageSize = useSyncExternalStore(
+    subscribeBoardInventoryViewport,
+    getBoardInventoryPageSizeSnapshot,
+    () => 3,
+  )
+  const carousel = getCarouselWindow(
+    inventoryResults,
+    inventoryCarouselIndex,
+    inventoryCarouselPageSize,
+  )
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
   const history = tradeHistoryState.history
+
+  useEffect(() => {
+    if (!hasMoreListings) return
+    void onEnsureInventoryBrowseLoaded?.()
+  }, [hasMoreListings, onEnsureInventoryBrowseLoaded])
+
+  function handleResetInventoryBrowse() {
+    onTradeBoardSearchQueryChange('')
+    setInventoryJewelryType('')
+    setInventoryCollection('')
+    setInventoryCarouselIndex(0)
+  }
 
   return (
     <div className={styles.workspaceSectionStack}>
@@ -2687,14 +3019,24 @@ export function TradeBoardWorkspaceCard({
             </div>
           </div>
           <div className={styles.headerActions}>
-            <a
-              className={styles.helperLink}
-              href={customerBoardHref}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View customer board
-            </a>
+            {onOpenCustomerBoardPreview ? (
+              <button
+                type="button"
+                className={styles.helperButton}
+                onClick={onOpenCustomerBoardPreview}
+              >
+                View customer board
+              </button>
+            ) : (
+              <a
+                className={styles.helperLink}
+                href={customerBoardHref}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View customer board
+              </a>
+            )}
             <span className={styles.rosterTag}>Default landing section</span>
           </div>
         </div>
@@ -2707,7 +3049,71 @@ export function TradeBoardWorkspaceCard({
       <div className={styles.workspaceSectionGrid}>
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Board overview</div>
+            <div className={styles.walletSettingsTitle}>Request inbox</div>
+            <span className={styles.rosterTag}>
+              {tradeRequestsState.status === 'ready' ? `${requests.length} pending` : 'Loading'}
+            </span>
+          </div>
+          {tradeRequestsState.status === 'ready' ? (
+            <div className={styles.tradeList}>
+              {requests.length > 0 ? (
+                requests.map((request) => {
+                  const ruleCheckTarget = request.listing.design.collectionName
+                    ? `${request.listing.design.typePrefix} / ${request.listing.design.collectionName}`
+                    : request.listing.design.typePrefix
+
+                  return (
+                    <div key={request.id} className={styles.tradeRow}>
+                      <div className={styles.tradeIdentity}>
+                        <div className={styles.customerName}>{request.customerName}</div>
+                        <div className={styles.customerDate}>
+                          Wants {request.listing.design.itemNumber} - {request.listing.design.designName}
+                        </div>
+                        <div className={styles.helperNote}>{request.customerDescription}</div>
+                        <div className={styles.helperNote}>
+                          Rule check: compare against {ruleCheckTarget}
+                        </div>
+                      </div>
+                      <div className={styles.actionRow}>
+                        <button
+                          type="button"
+                          className={styles.actionButton}
+                          disabled={actionState.pendingKey === `approve:${request.id}`}
+                          onClick={() => onApproveRequest(request.id)}
+                        >
+                          {actionState.pendingKey === `approve:${request.id}`
+                            ? 'Approving...'
+                            : 'Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.helperButton}
+                          disabled={actionState.pendingKey === `reject:${request.id}`}
+                          onClick={() => onRejectRequest(request.id)}
+                        >
+                          {actionState.pendingKey === `reject:${request.id}`
+                            ? 'Denying...'
+                            : 'Deny'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className={styles.emptyState}>No pending trade requests right now.</div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          )}
+        </div>
+
+        <div className={styles.workspacePanel}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.walletSettingsTitle}>Board Inventory</div>
             <span className={styles.rosterTag}>
               {tradeBoardState.status === 'ready' && boardSummary
                 ? `${boardSummary.totalPieces} live pieces`
@@ -2716,29 +3122,6 @@ export function TradeBoardWorkspaceCard({
           </div>
           {tradeBoardState.status === 'ready' && boardSummary ? (
             <>
-              <div className={styles.metricGrid}>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Active pieces</span>
-                  <span className={styles.metricValue}>{boardSummary.totalPieces}</span>
-                </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Board MSRP</span>
-                  <span className={styles.metricValue}>
-                    {formatTradeMoney(boardSummary.totalMsrp)}
-                  </span>
-                </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Pending requests</span>
-                  <span className={styles.metricValue}>{boardSummary.pendingRequestCount}</span>
-                </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Top type</span>
-                  <span className={styles.metricValue}>
-                    {Object.entries(boardSummary.typeBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ??
-                      '-'}
-                  </span>
-                </div>
-              </div>
               <div className={styles.workspaceFormRow}>
                 <label className={styles.searchField}>
                   <span className={styles.searchLabel}>Quick add by item number</span>
@@ -2767,99 +3150,171 @@ export function TradeBoardWorkspaceCard({
                   type="text"
                   className={`${styles.searchInput} ph-no-capture`}
                   value={tradeBoardSearchQuery}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    setInventoryCarouselIndex(0)
                     onTradeBoardSearchQueryChange(event.target.value)
-                  }
+                  }}
                   placeholder="Search by item number, design, or collection"
                 />
               </label>
-              <div
-                className={styles.tradePieceGrid}
-                aria-label="Active trade board pieces"
-              >
-                {boardListings.length > 0 ? (
-                  boardListings.map((listing) => {
-                    const photoUrl = getTradeListingPhotoUrl(listing)
-                    return (
-                    <div key={listing.id} className={styles.tradePieceCard}>
-                      <button
-                        type="button"
-                        className={styles.tradePieceMediaButton}
-                        aria-label={`Open image preview for ${listing.design.design_name}`}
-                        onClick={() => setPreviewListing(listing)}
-                      >
-                        <span className={styles.tradePieceMedia}>
-                          {photoUrl ? (
-                            <img
-                              className={styles.tradePieceImage}
-                              src={photoUrl}
-                              alt={listing.design.design_name}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className={styles.tradePieceFallback}>
-                              {listing.design.type_prefix}
-                            </span>
-                          )}
-                        </span>
-                      </button>
-                      <div className={styles.tradePieceBody}>
-                        <div className={styles.customerName}>
-                          {listing.design.design_name}
-                        </div>
-                        <div className={styles.tradePieceMetaLine}>
-                          {listing.design.item_number}
-                          {' '}
-                          {listing.design.type_prefix}
-                          {listing.design.collection?.name
-                            ? ` - ${listing.design.collection.name}`
-                            : ''}
-                          {listing.listed_at ? ` - Listed ${formatCompactDate(listing.listed_at)}` : ''}
-                        </div>
-                        <div className={styles.helperNote}>
-                          Image source: {getTradeListingPhotoSourceLabel(listing)}
-                        </div>
-                      </div>
-                      <div className={styles.tradeMeta}>
-                        <span className={styles.statusBadgePositive}>{listing.status}</span>
-                        <span className={styles.timelineItem}>
-                          {formatTradeMoney(listing.design.bp_msrp)}
-                        </span>
-                      </div>
-                      <div className={styles.actionRow}>
+              <div className={styles.boardInventoryControls}>
+                <select
+                  aria-label="Jewelry Type"
+                  value={inventoryJewelryType}
+                  className={styles.boardInventorySelect}
+                  disabled={boardListings.length === 0}
+                  onChange={(event) => {
+                    setInventoryCarouselIndex(0)
+                    setInventoryJewelryType(event.target.value)
+                  }}
+                >
+                  <option value="">Jewelry Type</option>
+                  {inventoryOptions.jewelryTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Collection"
+                  value={inventoryCollection}
+                  className={styles.boardInventorySelect}
+                  disabled={boardListings.length === 0}
+                  onChange={(event) => {
+                    setInventoryCarouselIndex(0)
+                    setInventoryCollection(event.target.value)
+                  }}
+                >
+                  <option value="">Collection</option>
+                  {inventoryOptions.collections.map((collection) => (
+                    <option key={collection} value={collection}>
+                      {collection}
+                    </option>
+                  ))}
+                </select>
+                {hasActiveInventoryBrowse ? (
+                  <button
+                    type="button"
+                    className={styles.boardInventoryReset}
+                    onClick={handleResetInventoryBrowse}
+                  >
+                    Reset
+                  </button>
+                ) : null}
+              </div>
+              {hasActiveInventoryBrowse ? (
+                inventoryResults.length > 0 ? (
+                  <div
+                    className={styles.boardInventoryCarousel}
+                    aria-label="Filtered active board pieces"
+                  >
+                    <div className={styles.boardInventoryCarouselHeader}>
+                      <span className={styles.helperNote}>{carousel.rangeLabel}</span>
+                      <div className={styles.boardInventoryArrowGroup}>
                         <button
                           type="button"
-                          className={styles.actionButton}
-                          disabled={actionState.pendingKey === `remove:${listing.id}`}
-                          onClick={() => onRemoveListing(listing.id)}
+                          className={styles.boardInventoryArrow}
+                          disabled={!carousel.canGoPrevious}
+                          onClick={() =>
+                            setInventoryCarouselIndex(
+                              Math.max(
+                                0,
+                                carousel.startIndex - inventoryCarouselPageSize,
+                              ),
+                            )
+                          }
+                          aria-label="Previous board inventory pieces"
                         >
-                          {actionState.pendingKey === `remove:${listing.id}`
-                            ? 'Removing...'
-                            : 'Remove'}
+                          Previous
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.boardInventoryArrow}
+                          disabled={!carousel.canGoNext}
+                          onClick={() =>
+                            setInventoryCarouselIndex(
+                              carousel.startIndex + inventoryCarouselPageSize,
+                            )
+                          }
+                          aria-label="Next board inventory pieces"
+                        >
+                          Next
                         </button>
                       </div>
                     </div>
-                  )})
+                    {isInventoryBrowseLoading ? (
+                      <div className={styles.helperNote}>Loading board pieces...</div>
+                    ) : null}
+                    <div className={styles.boardInventoryCarouselGrid}>
+                      {carousel.visibleItems.map((listing) => {
+                        const photoUrl = getTradeListingPhotoUrl(listing)
+                        return (
+                          <div key={listing.id} className={styles.boardInventoryPieceCard}>
+                            <button
+                              type="button"
+                              className={styles.boardInventoryMediaButton}
+                              aria-label={`Open image preview for ${listing.design.design_name}`}
+                              onClick={() => setPreviewListing(listing)}
+                            >
+                              <span className={styles.boardInventoryMedia}>
+                                {photoUrl ? (
+                                  <img
+                                    className={styles.tradePieceImage}
+                                    src={photoUrl}
+                                    alt={listing.design.design_name}
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <span className={styles.tradePieceFallback}>
+                                    {listing.design.type_prefix}
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                            <div className={styles.boardInventoryPieceBody}>
+                              <div className={styles.customerName}>
+                                {listing.design.design_name}
+                              </div>
+                              <div className={styles.tradePieceMetaLine}>
+                                {listing.design.item_number}
+                              </div>
+                              <div className={styles.tradePieceMetaLine}>
+                                {listing.design.type_prefix}
+                                {listing.design.collection?.name
+                                  ? ` - ${listing.design.collection.name}`
+                                  : ''}
+                              </div>
+                              <div className={styles.timelineItem}>
+                                {formatTradeMoney(listing.design.bp_msrp)}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className={styles.boardInventoryRemoveButton}
+                              disabled={actionState.pendingKey === `remove:${listing.id}`}
+                              onClick={() => onRemoveListing(listing.id)}
+                            >
+                              {actionState.pendingKey === `remove:${listing.id}`
+                                ? 'Removing...'
+                                : 'Remove'}
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 ) : (
                   <div className={styles.emptyState}>
-                    {tradeBoardSearchQuery.trim()
-                      ? 'No board listings match this search yet.'
-                      : 'No pieces on your board yet. Add your first item above.'}
+                    {isInventoryBrowseLoading
+                      ? 'Loading board pieces...'
+                      : 'No board pieces match this search.'}
                   </div>
-                )}
-              </div>
-              {hasMoreListings && !tradeBoardSearchQuery.trim() ? (
-                <button
-                  type="button"
-                  className={styles.secondaryActionButton}
-                  disabled={actionState.pendingKey === 'load-more-listings'}
-                  onClick={onLoadMoreListings}
-                >
-                  {actionState.pendingKey === 'load-more-listings'
-                    ? 'Loading...'
-                    : 'Load more'}
-                </button>
-              ) : null}
+                )
+              ) : (
+                <div className={styles.emptyState}>
+                  Use search or filters to browse pieces currently on your board.
+                </div>
+              )}
               {previewListing ? (
                 <div
                   className={styles.imagePreviewMask}
@@ -2903,61 +3358,6 @@ export function TradeBoardWorkspaceCard({
                 </div>
               ) : null}
             </>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
-        </div>
-
-        <div className={styles.workspacePanel}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Request inbox</div>
-            <span className={styles.rosterTag}>
-              {tradeRequestsState.status === 'ready' ? `${requests.length} pending` : 'Loading'}
-            </span>
-          </div>
-          {tradeRequestsState.status === 'ready' ? (
-            <div className={styles.tradeList}>
-              {requests.length > 0 ? (
-                requests.map((request) => (
-                  <div key={request.id} className={styles.tradeRow}>
-                    <div className={styles.tradeIdentity}>
-                      <div className={styles.customerName}>{request.customerName}</div>
-                      <div className={styles.customerDate}>
-                        Wants {request.listing.design.itemNumber} - {request.listing.design.designName}
-                      </div>
-                      <div className={styles.helperNote}>{request.customerDescription}</div>
-                    </div>
-                    <div className={styles.actionRow}>
-                      <button
-                        type="button"
-                        className={styles.actionButton}
-                        disabled={actionState.pendingKey === `approve:${request.id}`}
-                        onClick={() => onApproveRequest(request.id)}
-                      >
-                        {actionState.pendingKey === `approve:${request.id}`
-                          ? 'Approving...'
-                          : 'Approve'}
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.helperButton}
-                        disabled={actionState.pendingKey === `reject:${request.id}`}
-                        onClick={() => onRejectRequest(request.id)}
-                      >
-                        {actionState.pendingKey === `reject:${request.id}`
-                          ? 'Denying...'
-                          : 'Deny'}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.emptyState}>No pending trade requests right now.</div>
-              )}
-            </div>
           ) : (
             <div className={styles.cardFill}>
               <div className={styles.loadingLine} />
@@ -3161,43 +3561,62 @@ function JewelryLibraryCard({
           </div>
         ) : state.results && state.results.length > 0 ? (
           <div className={styles.tradeList}>
-            {state.results.map((result) => (
-              <div key={result.designId} className={styles.tradeRow}>
-                <div className={styles.tradeIdentity}>
-                  <div className={styles.customerName}>{result.designName}</div>
-                  <div className={styles.customerDate}>
-                    {result.itemNumber}
-                    {result.collectionName ? ` - ${result.collectionName}` : ''}
-                    {result.material ? ` - ${result.material}` : ''}
+            {state.results.map((result) => {
+              const collectionLabel = [
+                result.collectionName,
+                result.collectionYear ? String(result.collectionYear) : null,
+              ]
+                .filter(Boolean)
+                .join(' - ')
+              const visibleTags = (result.searchTags ?? []).slice(0, 4)
+
+              return (
+                <div key={result.designId} className={styles.tradeRow}>
+                  <div className={styles.tradeIdentity}>
+                    <div className={styles.customerName}>{result.designName}</div>
+                    <div className={styles.customerDate}>
+                      {result.itemNumber}
+                      {collectionLabel ? ` - ${collectionLabel}` : ''}
+                      {result.material ? ` - ${result.material}` : ''}
+                    </div>
+                    {visibleTags.length > 0 ? (
+                      <div className={styles.libraryTagList}>
+                        {visibleTags.map((tag) => (
+                          <span key={`${result.designId}:${tag}`} className={styles.libraryTag}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className={styles.tradeMeta}>
+                    <span className={styles.timelineItem}>
+                      {result.isOnMyBoard ? 'Already on my board' : 'Not on my board'}
+                    </span>
+                    <span className={styles.timelineItem}>
+                      {result.activeListingsCount} active board{result.activeListingsCount === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <div className={styles.actionRow}>
+                    <button
+                      type="button"
+                      className={styles.actionButton}
+                      disabled={
+                        result.isOnMyBoard ||
+                        actionState.pendingKey === `library:${result.itemNumber}`
+                      }
+                      onClick={() => onAddToBoard(result.itemNumber)}
+                    >
+                      {actionState.pendingKey === `library:${result.itemNumber}`
+                        ? 'Adding...'
+                        : result.isOnMyBoard
+                          ? 'Already listed'
+                          : 'Add to board'}
+                    </button>
                   </div>
                 </div>
-                <div className={styles.tradeMeta}>
-                  <span className={styles.timelineItem}>
-                    {result.isOnMyBoard ? 'Already on my board' : 'Not on my board'}
-                  </span>
-                  <span className={styles.timelineItem}>
-                    {result.activeListingsCount} active board{result.activeListingsCount === 1 ? '' : 's'}
-                  </span>
-                </div>
-                <div className={styles.actionRow}>
-                  <button
-                    type="button"
-                    className={styles.actionButton}
-                    disabled={
-                      result.isOnMyBoard ||
-                      actionState.pendingKey === `library:${result.itemNumber}`
-                    }
-                    onClick={() => onAddToBoard(result.itemNumber)}
-                  >
-                    {actionState.pendingKey === `library:${result.itemNumber}`
-                      ? 'Adding...'
-                      : result.isOnMyBoard
-                        ? 'Already listed'
-                        : 'Add to board'}
-                  </button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className={styles.emptyState}>No catalog matches for that search yet.</div>

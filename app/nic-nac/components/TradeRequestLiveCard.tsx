@@ -1,0 +1,77 @@
+import type { TradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-parts'
+import styles from './TradeRequestLiveCard.module.css'
+
+export function TradeRequestLiveCard({
+  request,
+  pendingAction,
+  actionsDisabled = false,
+  terminalNote = null,
+  errorMessage = null,
+  onDecision,
+}: {
+  request: TradeRequestCardPart['data']
+  pendingAction: 'approve' | 'reject' | null
+  actionsDisabled?: boolean
+  terminalNote?: string | null
+  errorMessage?: string | null
+  onDecision: (decision: 'approve' | 'reject', requestId: string) => void
+}) {
+  const requestedItem = `${request.requestedItem.itemNumber} - ${request.requestedItem.designName}`
+  const buttonsDisabled = actionsDisabled || pendingAction !== null || terminalNote !== null
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <div className={styles.eyebrow}>New trade request</div>
+        <div className={styles.customer}>{request.customerName}</div>
+      </div>
+
+      <div className={styles.details}>
+        <div className={styles.row}>
+          <div className={styles.label}>Requested item</div>
+          <div className={styles.value}>{requestedItem}</div>
+        </div>
+        <div className={styles.row}>
+          <div className={styles.label}>Offered</div>
+          <div className={styles.value}>{request.offeredText}</div>
+        </div>
+        <div className={`${styles.row} ${styles.rule}`}>
+          <div className={styles.label}>Rule check</div>
+          <div className={styles.value}>{request.ruleCheck.label}</div>
+        </div>
+      </div>
+
+      <div className={styles.actions}>
+        <button
+          className={`${styles.button} ${styles.approve}`}
+          type="button"
+          disabled={buttonsDisabled}
+          aria-busy={pendingAction === 'approve'}
+          aria-label={`Approve trade request from ${request.customerName} for ${requestedItem}`}
+          onClick={() => onDecision('approve', request.requestId)}
+        >
+          {pendingAction === 'approve' ? 'Approving...' : 'Approve'}
+        </button>
+        <button
+          className={`${styles.button} ${styles.deny}`}
+          type="button"
+          disabled={buttonsDisabled}
+          aria-busy={pendingAction === 'reject'}
+          aria-label={`Deny trade request from ${request.customerName} for ${requestedItem}`}
+          onClick={() => onDecision('reject', request.requestId)}
+        >
+          {pendingAction === 'reject' ? 'Denying...' : 'Deny'}
+        </button>
+      </div>
+
+      {terminalNote ? (
+        <div className={styles.terminalNote}>{terminalNote}</div>
+      ) : null}
+      {errorMessage ? (
+        <div className={styles.errorNote} role="status">
+          {errorMessage}
+        </div>
+      ) : null}
+    </div>
+  )
+}

@@ -281,6 +281,7 @@ describe('loadConversationForClient', () => {
   function makeFakeSupabase({
     convRows,
     approvalRows,
+    tradeRequestRows = [],
   }: {
     convRows: Array<{
       message_id: string
@@ -290,6 +291,7 @@ describe('loadConversationForClient', () => {
       created_at: string
     }>
     approvalRows: Array<{ approval_id: string; approved: boolean }>
+    tradeRequestRows?: Array<{ id: string; status: string }>
   }) {
     const conversationsBuilder = {
       select: vi.fn().mockReturnThis(),
@@ -317,9 +319,17 @@ describe('loadConversationForClient', () => {
       ),
     }
 
+    const tradeRequestsBuilder = {
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnValue(
+        Promise.resolve({ data: tradeRequestRows, error: null })
+      ),
+    }
+
     const from = vi.fn((table: string) => {
       if (table === 'nic_nac_conversations') return conversationsBuilder
       if (table === 'approval_events') return approvalsBuilder
+      if (table === 'trade_requests') return tradeRequestsBuilder
       throw new Error(`unexpected table: ${table}`)
     })
 
@@ -338,6 +348,39 @@ describe('loadConversationForClient', () => {
           toolName: 'approve_trade',
           input: { requestId: 'req-1' },
           approval: { id: approvalId },
+        },
+      ],
+      status: 'complete' as const,
+      created_at: '2026-04-30T10:00:00Z',
+    }
+  }
+
+  function tradeRequestAssistantRow(requestId: string) {
+    return {
+      message_id: 'trade-card-1',
+      role: 'assistant' as const,
+      parts: [
+        { type: 'text', text: 'New trade request.' },
+        {
+          type: 'data-trade-request-card',
+          data: {
+            requestId,
+            status: 'pending',
+            customerName: 'Maya Stone',
+            requestedItem: {
+              itemNumber: 'RG100',
+              designName: 'Rose Glow',
+              typePrefix: 'RG',
+              collectionName: 'Birthday',
+              bpMsrp: 39.95,
+            },
+            offeredText: 'Offering RG095.',
+            ruleCheck: {
+              status: 'needs_review',
+              label: 'Compare against RG / Birthday',
+              description: 'Confirm same type and collection.',
+            },
+          },
         },
       ],
       status: 'complete' as const,
@@ -470,5 +513,20 @@ describe('loadConversationForClient', () => {
     // tracks calls and we only expect the conversations table.
     const fromCalls = (supabase as unknown as { from: { mock: { calls: string[][] } } }).from.mock.calls
     expect(fromCalls.flat()).not.toContain('approval_events')
+  })
+
+  it('hydrates trade request card parts with current non-pending status', async () => {
+    const supabase = makeFakeSupabase({
+      convRows: [tradeRequestAssistantRow('req-7')],
+      approvalRows: [],
+      tradeRequestRows: [{ id: 'req-7', status: 'approved' }],
+    })
+
+    const result = await loadConversationForClient(supabase, 'conv-1')
+    const part = (result[0].parts as Array<Record<string, unknown>>)[1] as {
+      data?: { status?: string }
+    }
+
+    expect(part.data?.status).toBe('approved')
   })
 })
