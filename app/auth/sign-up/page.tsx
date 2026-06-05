@@ -14,7 +14,7 @@ export default function SignUpPage() {
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">
               Sparkle Finder account
             </p>
-            <h1 className="font-serif text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+            <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               Start your 45-day Silver trial
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">

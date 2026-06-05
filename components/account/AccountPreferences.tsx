@@ -112,6 +112,23 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
         <label className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
           <input
             className="mt-1"
+            defaultChecked={Boolean(consent.privacyAcknowledgedAt)}
+            disabled={Boolean(consent.privacyAcknowledgedAt)}
+            name="privacyAcknowledged"
+            required={!consent.privacyAcknowledgedAt}
+            type="checkbox"
+            value="yes"
+          />
+          <span>
+            <span className="block font-bold text-[var(--sparkle-plum-deep)]">Privacy acknowledgment</span>I acknowledge
+            the Sparkle Finder privacy terms and agree that my account details are used to provide the 45-day Silver
+            trial and account support.
+          </span>
+        </label>
+
+        <label className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          <input
+            className="mt-1"
             defaultChecked={consent.accountSmsAllowed}
             name="accountSmsAllowed"
             type="checkbox"

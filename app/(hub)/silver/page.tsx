@@ -7,6 +7,7 @@ import {
   saveSilverCollectionItemAction,
   saveSilverProfileAction,
 } from "@/app/(hub)/silver/actions";
+import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
 import {
   getCollectionItemsByCustomerId,
   getJewelryItemById,
@@ -21,7 +22,7 @@ import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-ser
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import { createClient } from "@/lib/supabase/server";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
-import type { CollectionItem, SilverProfile } from "@/lib/sparkle-finder/types";
+import type { CollectionItem, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
 
 type SilverPageAccountState = SparkleFinderAccountState & {
   silverProfile?: SilverProfile;
@@ -32,17 +33,19 @@ export default async function SilverPage() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
+  const libraryItems = await getCatalogJewelryItems();
   const persistedCollectionItems =
     accountState.status === "authenticated" && accountState.isLocalPreview !== true
-      ? await getPersistedCollectionItems(accountState.customer.id)
+      ? await getPersistedCollectionItems(accountState.customer.id, libraryItems)
       : undefined;
 
-  return renderSilverPageContent(accountState, persistedCollectionItems);
+  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems);
 }
 
 export function renderSilverPageContent(
   accountState: SilverPageAccountState,
   persistedCollectionItems?: ManagedCollectionItem[],
+  libraryItems: JewelryItem[] = getJewelryItems(),
 ) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
@@ -57,7 +60,7 @@ export function renderSilverPageContent(
   const collectionItems =
     persistedCollectionItems ??
     getCollectionItemsByCustomerId(customer.id).flatMap((item) => {
-      const jewelryItem = getJewelryItemById(item.jewelryItemId);
+      const jewelryItem = findLibraryItemById(item.jewelryItemId, libraryItems) ?? getJewelryItemById(item.jewelryItemId);
 
       return jewelryItem ? [{ ...item, jewelryItem }] : [];
     });
@@ -69,7 +72,7 @@ export function renderSilverPageContent(
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
             Silver Membership
           </p>
-          <h1 className="mt-2 font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
             {customer.displayName}&apos;s Silver Space
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -109,7 +112,7 @@ export function renderSilverPageContent(
           canSaveSilverActions={entitlements.canUseSilverCollectionActions}
           collectionItems={collectionItems}
           isLocalPreview={isLocalPreview}
-          libraryItems={getJewelryItems()}
+          libraryItems={libraryItems}
           saveAction={isLocalPreview ? undefined : saveSilverCollectionItemAction}
         />
       </div>
@@ -129,7 +132,7 @@ function SilverUpgradePrompt({ accountState }: { accountState: SilverPageAccount
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
           {isLocalPreview ? "Silver preview needed" : "Silver access needed"}
         </p>
-        <h1 className="mt-2 font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+        <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
           {isLocalPreview ? "Open Silver to save profile and collection previews" : "Open Silver to view and stage your workspace"}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -159,7 +162,7 @@ function createEmptySilverProfile(customerId: string): SilverProfile {
   };
 }
 
-async function getPersistedCollectionItems(userId: string): Promise<ManagedCollectionItem[]> {
+async function getPersistedCollectionItems(userId: string, libraryItems: JewelryItem[]): Promise<ManagedCollectionItem[]> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -173,13 +176,17 @@ async function getPersistedCollectionItems(userId: string): Promise<ManagedColle
 
     return data.flatMap((row) => {
       const item = mapPersistedCollectionItem(row);
-      const jewelryItem = item ? getJewelryItemById(item.jewelryItemId) : null;
+      const jewelryItem = item ? findLibraryItemById(item.jewelryItemId, libraryItems) ?? getJewelryItemById(item.jewelryItemId) : null;
 
       return item && jewelryItem ? [{ ...item, jewelryItem }] : [];
     });
   } catch {
     return [];
   }
+}
+
+function findLibraryItemById(itemId: string, libraryItems: readonly JewelryItem[]): JewelryItem | undefined {
+  return libraryItems.find((item) => item.id === itemId);
 }
 
 function mapPersistedCollectionItem(row: unknown): CollectionItem | null {

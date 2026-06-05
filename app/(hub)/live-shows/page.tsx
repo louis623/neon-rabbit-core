@@ -7,7 +7,7 @@ export default function LiveShowsPage() {
   return (
     <section className="grid gap-6">
       <div>
-        <h1 className="font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+        <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
           Master Live Calendar
         </h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -24,7 +24,7 @@ export default function LiveShowsPage() {
               key={show.id}
             >
               <p className="text-sm font-bold text-[var(--sparkle-coral)]">{formatShowTime(show.startsAt)}</p>
-              <h2 className="mt-2 font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+              <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
                 {show.title}
               </h2>
               <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">

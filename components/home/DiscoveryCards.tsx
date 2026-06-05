@@ -43,7 +43,7 @@ export function DiscoveryCards() {
             <div className="flex gap-4">
               <Icon aria-hidden="true" className="mt-1 size-9 shrink-0 text-[var(--sparkle-rose)]" strokeWidth={1.8} />
               <div>
-                <h2 className="font-[var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)] xl:text-xl">
+                <h2 className="font-[family-name:var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)] xl:text-xl">
                   {card.title}
                 </h2>
                 <p className="mt-1.5 text-sm leading-5 text-[var(--sparkle-ink-muted)]">{card.body}</p>

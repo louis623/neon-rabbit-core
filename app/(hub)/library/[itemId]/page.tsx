@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Gem } from "lucide-react";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
+import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
 import {
   getLocalDevAuthState,
   parseSparkleFinderAuthMode,
@@ -10,6 +11,7 @@ import {
 import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
 type ItemDetailPageProps = {
   params: Promise<{
@@ -21,15 +23,17 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const resolvedParams = await params;
+  const item = await getCatalogJewelryItemById(resolvedParams.itemId);
 
-  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode));
+  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode), item);
 }
 
 export function renderItemDetailPageContent(
   params: Awaited<ItemDetailPageProps["params"]>,
   accountState: SparkleFinderAccountState,
+  resolvedItem?: JewelryItem,
 ) {
-  const item = getJewelryItemById(params.itemId);
+  const item = resolvedItem ?? getJewelryItemById(params.itemId);
 
   if (!item) {
     notFound();
@@ -40,13 +44,22 @@ export function renderItemDetailPageContent(
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)]">
-        <div className="grid aspect-[16/10] place-items-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
-          <Gem aria-hidden="true" className="size-20" strokeWidth={1.2} />
+        <div className="grid aspect-[16/10] place-items-center overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
+          {item.imageUrl ? (
+            <div
+              aria-label={item.name}
+              className="size-full bg-cover bg-center"
+              role="img"
+              style={{ backgroundImage: `url("${item.imageUrl}")` }}
+            />
+          ) : (
+            <Gem aria-hidden="true" className="size-20" strokeWidth={1.2} />
+          )}
         </div>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
           {item.collectionName}
         </p>
-        <h1 className="mt-2 font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+        <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
           {item.name}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -57,7 +70,7 @@ export function renderItemDetailPageContent(
 
       <aside className="grid gap-4">
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Known rep availability
           </h2>
           <div className="mt-4 grid gap-3">
@@ -85,7 +98,7 @@ export function renderItemDetailPageContent(
               })
             ) : (
               <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                No fixture-backed rep board leads yet.
+                No rep board leads yet.
               </p>
             )}
           </div>

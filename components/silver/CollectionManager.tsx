@@ -64,7 +64,7 @@ export function CollectionManager({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Collection preview</p>
-            <h2 className="mt-1 font-[var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
+            <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
               Saved Library Pieces
             </h2>
           </div>
@@ -83,7 +83,7 @@ export function CollectionManager({
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Catalog actions</p>
-          <h2 className="mt-1 font-[var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
             Add Existing Records
           </h2>
         </div>

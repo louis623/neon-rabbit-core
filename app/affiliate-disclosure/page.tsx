@@ -26,7 +26,7 @@ export default function AffiliateDisclosurePage() {
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">
               Credibility first
             </p>
-            <h1 className="font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+            <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
               Affiliate Disclosure
             </h1>
             <p className="max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -38,7 +38,7 @@ export default function AffiliateDisclosurePage() {
         </div>
 
         <div className="grid gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)]">
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             How Affiliate Links Work
           </h2>
           <p className="text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -56,7 +56,7 @@ export default function AffiliateDisclosurePage() {
         </div>
 
         <div className="grid gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)]">
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Bomb Party Relationship
           </h2>
           <p className="text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -66,7 +66,7 @@ export default function AffiliateDisclosurePage() {
         </div>
 
         <div className="grid gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)]">
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             {affiliateIssueReportLabel}
           </h2>
           <p className="text-base leading-7 text-[var(--sparkle-ink-muted)]">

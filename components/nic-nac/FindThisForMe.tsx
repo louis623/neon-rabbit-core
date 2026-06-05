@@ -36,7 +36,7 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false }: 
           <div className="mx-auto mb-3 grid size-20 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)] text-[var(--sparkle-plum)]">
             <Search aria-hidden="true" className="size-9" strokeWidth={1.5} />
           </div>
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Nic-Nac, find this for me
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
@@ -69,7 +69,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
           <Sparkles aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </div>
         <div>
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Nic-Nac, find this for me
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
@@ -99,7 +99,7 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
           <Search aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </div>
         <div>
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Nic-Nac, find this for me
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">

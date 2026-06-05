@@ -7,10 +7,18 @@ Created: 2026-06-01
 Production rollout is not complete.
 
 - Production deployment has not been run for the Silver auth/billing work.
-- Remote Supabase migrations have not been applied.
+- Remote Supabase migrations were applied through the authenticated Supabase SQL Editor because local Supabase CLI auth is unavailable.
 - Local Supabase is not linked. `supabase migration list --linked` failed with: `Cannot find project ref. Have you run supabase link?`
 - The linked Vercel project is `sparkle-finder-dev`.
-- `npx vercel env ls` reported no environment variables.
+- Production Vercel env now includes `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for browser/server Supabase auth.
+- Development Vercel env now includes `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Preview Vercel env is not configured yet because `sparkle-finder-dev` does not have a connected Git repository, so Vercel rejected branch-scoped preview env setup.
+- Stripe and Supabase service-role production env vars are still not configured in Vercel.
+- Supabase CLI management access is not authenticated in this local session. `supabase projects list -o json` reached the API and returned `Unauthorized`.
+- Google Auth is enabled in Supabase. Public Auth settings return `external.google=true`.
+- Supabase redirect allow-list now includes Sparkle Finder production callback/confirm URLs and `http://127.0.0.1:3000/**`.
+- Google OAuth start is verified: Supabase returns `302` to Google for `https://yoursparklefinder.com/api/auth/callback?next=/account`.
+- Remote schema is verified: `sparkle_finder_profiles` returns `200 OK` through Supabase REST after the SQL Editor migration run and PostgREST schema reload.
 - Latest implemented Silver/auth smoke commit before this rollout document: `758ceb5 test: assert account silver trial smoke copy`.
 
 ## Required Vercel Environment Variables
@@ -22,7 +30,7 @@ Configure these in Vercel before a production deploy. Production values should b
 | `NEXT_PUBLIC_SITE_URL` | Public browser/server | Auth redirects, billing return URLs | Production value: `https://yoursparklefinder.com`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Public browser/server | Supabase Auth and client reads | From the linked Supabase project API settings. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public browser/server | Supabase browser/server client | Use the publishable/anon key, not the service role key. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Stripe webhook membership writes | Keep out of client code. Required for webhook-driven paid Silver updates. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Stripe webhook membership writes and server-rendered canonical catalog reads | Keep out of client code. Required for webhook-driven paid Silver updates. Also lets Sparkle Finder read the shared Sparkle Suite jewelry catalog without changing Sparkle Suite RLS policies. |
 | `STRIPE_SECRET_KEY` | Server only | Checkout, billing portal, webhook API reads | Use the live key for production rollout. |
 | `STRIPE_WEBHOOK_SECRET` | Server only | Stripe webhook signature verification | From the production webhook endpoint configured in Stripe. |
 | `STRIPE_SILVER_PRICE_ID` | Server only | Paid Silver checkout | Recurring monthly price ID for the Silver Membership product. Target price is `$4.99/month`. |
@@ -31,7 +39,7 @@ Do not deploy full production paid auth/billing until all required variables are
 
 ## Vercel Commands
 
-Use these after Louis supplies production values:
+Use these after Louis supplies production values. The public production auth values listed above have already been added to Vercel; the remaining server-only values still need to be added before paid billing rollout:
 
 ```powershell
 npx vercel env add NEXT_PUBLIC_SITE_URL production
@@ -80,11 +88,21 @@ The remote project must receive the Sparkle Finder account schema migration that
 - account creation trigger for the default 45-day Silver trial
 - RLS policies for user-owned profile, membership, consent, and collection rows
 
+Sparkle Finder catalog reads:
+
+- Sparkle Finder reads the shared Sparkle Suite catalog from `collections`, `jewelry_designs`, and available `trade_listings`.
+- Sparkle Suite remains the jewelry-loading/admin source of truth.
+- Sparkle Finder should not create or update `collections`, `jewelry_designs`, or `trade_listings` during this phase.
+- The Finder server-side catalog adapter prefers `SUPABASE_SERVICE_ROLE_KEY` so public catalog pages can render canonical jewelry rows without loosening Sparkle Suite RLS policies.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` server-only in Vercel and local `.env.local`. Never prefix it with `NEXT_PUBLIC_`.
+- `sparkle_finder_collection_items.jewelry_item_id` should now store the canonical `jewelry_designs.id` for real saved collection records.
+
 Supabase Auth configuration:
 
 - Site URL should be `https://yoursparklefinder.com`.
 - Redirect allow-list should include `https://yoursparklefinder.com/**`.
 - If `www` remains a public entry point, also allow `https://www.yoursparklefinder.com/**`.
+- OAuth callback redirect URL should include `https://yoursparklefinder.com/api/auth/callback`.
 - Password signup confirmation and magic-link emails should target Sparkle Finder's server-side confirm route.
 - The current confirm route expects `token_hash`, `type`, and optional `next`.
 - Supabase SSR email-template docs support `TokenHash` for custom server-side auth links.
@@ -101,6 +119,97 @@ Supabase Auth configuration:
 ```
 
 Verify exact template placement and variable names in the Supabase dashboard before enabling templates. Do not rely only on Supabase's default `{{ .ConfirmationURL }}` redirect flow for SSR confirmation, because Sparkle Finder's `/auth/confirm` route exchanges `token_hash` directly.
+
+## Google OAuth for Sparkle Finder
+
+Supabase Auth must have Google enabled before the `Continue with Google` button works outside local mocked tests.
+
+Required Supabase Auth redirect URLs:
+
+- `http://localhost:3000/api/auth/callback`
+- `http://127.0.0.1:3000/api/auth/callback`
+- `https://yoursparklefinder.com/api/auth/callback`
+- Any approved Vercel preview URL plus `/api/auth/callback` when preview OAuth testing is needed
+
+Supabase management API values needed to complete this from the CLI/API:
+
+- Project ref: `bqhzfkgkjyuhlsozpylf`
+- Site URL: `https://yoursparklefinder.com`
+- Redirect URLs: include `https://yoursparklefinder.com/api/auth/callback`, `https://yoursparklefinder.com/auth/confirm`, and approved local/preview equivalents.
+- Google provider: enable Google and set the approved Google Client ID/Secret in Supabase Auth provider configuration.
+
+Current public Auth settings check:
+
+```powershell
+$anon = "<NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY>"
+curl.exe -L `
+  https://bqhzfkgkjyuhlsozpylf.supabase.co/auth/v1/settings `
+  -H "apikey: $anon"
+```
+
+Relevant result as of 2026-06-05 after Chrome dashboard setup:
+
+```json
+{
+  "external": {
+    "email": true,
+    "google": true
+  },
+  "disable_signup": false,
+  "mailer_autoconfirm": true
+}
+```
+
+OAuth start verification:
+
+```powershell
+$anon = "<NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY>"
+$redirect = [System.Uri]::EscapeDataString("https://yoursparklefinder.com/api/auth/callback?next=/account")
+curl.exe -s -D - -o NUL `
+  "https://bqhzfkgkjyuhlsozpylf.supabase.co/auth/v1/authorize?provider=google&redirect_to=$redirect" `
+  -H "apikey: $anon"
+```
+
+Expected result: `HTTP/1.1 302 Found` with `Location: https://accounts.google.com/...`.
+
+If this ever needs to be redone without dashboard access, when a Supabase access token with `auth_config_write` and `project_admin_write` is available, the hosted Supabase Management API accepts these Auth configuration fields:
+
+```powershell
+$headers = @{
+  Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN"
+  "Content-Type" = "application/json"
+}
+
+$body = @{
+  site_url = "https://yoursparklefinder.com"
+  uri_allow_list = "https://yoursparklefinder.com/api/auth/callback,https://yoursparklefinder.com/auth/confirm,http://localhost:3000/api/auth/callback,http://127.0.0.1:3000/api/auth/callback"
+  external_google_enabled = $true
+  external_google_client_id = $env:GOOGLE_CLIENT_ID
+  external_google_secret = $env:GOOGLE_CLIENT_SECRET
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Patch `
+  -Uri "https://api.supabase.com/v1/projects/bqhzfkgkjyuhlsozpylf/config/auth" `
+  -Headers $headers `
+  -Body $body
+```
+
+Do not commit or paste the Google Client Secret. Keep it in the Supabase provider configuration or an approved secret manager only.
+
+Google Cloud OAuth:
+
+- Create or reuse an OAuth client for Sparkle Finder web auth.
+- Add the Supabase project callback URL shown in the Supabase Google provider screen to Google authorized redirect URIs.
+- Store the Google Client ID and Client Secret only in Supabase provider configuration or approved server-side environment configuration.
+
+App environment:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SITE_URL`
+
+Do not expose Supabase service-role keys to the browser.
 
 ## Stripe Requirements
 

@@ -23,6 +23,7 @@ export async function updateCommunicationPreferences(formData: FormData) {
     promotional_email_opt_in: formData.get("promotionalEmail") === "yes",
     promotional_sms_opt_in: formData.get("promotionalSms") === "yes",
     account_sms_allowed: formData.get("accountSmsAllowed") === "yes",
+    privacy_acknowledged: formData.get("privacyAcknowledged") === "yes",
   });
 
   if (error) {

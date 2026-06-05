@@ -36,7 +36,7 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
                   {rep.businessName}
                 </p>
-                <h2 className="mt-2 font-[var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
                   {item.name}
                 </h2>
                 <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">{item.collectionName}</p>

@@ -164,6 +164,94 @@ describe("Sparkle Finder Supabase proxy", () => {
 
     expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=confirmation_failed");
   });
+
+  it.each([
+    [null],
+    ["//evil.example"],
+    ["/%2Fevil.example"],
+    ["/\\evil.example"],
+    ["/%5Cevil.example"],
+    ["https://evil.example"],
+    ["javascript:alert(1)"],
+    ["silver"],
+  ])("normalizes unsafe next path %s to the dashboard", async (next) => {
+    const { safeSparkleFinderNextPath } = await import("../../lib/sparkle-finder/safe-redirect");
+
+    expect(safeSparkleFinderNextPath(next)).toBe("/dashboard");
+  });
+
+  it("preserves safe local next paths", async () => {
+    const { safeSparkleFinderNextPath } = await import("../../lib/sparkle-finder/safe-redirect");
+
+    expect(safeSparkleFinderNextPath("/account?setup=required")).toBe("/account?setup=required");
+  });
+
+  it("redirects missing Google OAuth codes to sign-in with a safe error", async () => {
+    const { GET } = await import("../../app/api/auth/callback/route");
+    const response = await GET(new Request("http://localhost:4310/api/auth/callback?next=/account"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=missing_oauth_code");
+  });
+
+  it("exchanges Google OAuth codes and redirects to a safe next path", async () => {
+    const exchangeCodeForSession = vi.fn().mockResolvedValue({ error: null });
+
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          exchangeCodeForSession,
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/api/auth/callback/route");
+    const response = await GET(
+      new Request(
+        `http://localhost:4310/api/auth/callback?code=oauth-code&next=${encodeURIComponent(
+          "/account?setup=required",
+        )}`,
+      ),
+    );
+
+    expect(exchangeCodeForSession).toHaveBeenCalledWith("oauth-code");
+    expect(response.headers.get("location")).toBe("http://localhost:4310/account?setup=required");
+  });
+
+  it("falls back to the dashboard when Google OAuth next is unsafe", async () => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          exchangeCodeForSession: vi.fn().mockResolvedValue({ error: null }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/api/auth/callback/route");
+    const response = await GET(
+      new Request(
+        `http://localhost:4310/api/auth/callback?code=oauth-code&next=${encodeURIComponent(
+          "https://evil.example",
+        )}`,
+      ),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("redirects failed Google OAuth exchanges to sign-in with a safe error", async () => {
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          exchangeCodeForSession: vi.fn().mockResolvedValue({ error: new Error("bad code") }),
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/api/auth/callback/route");
+    const response = await GET(new Request("http://localhost:4310/api/auth/callback?code=bad-code&next=/account"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=oauth_exchange_failed");
+  });
 });
 
 describe("Sparkle Finder signup server actions", () => {
@@ -171,6 +259,49 @@ describe("Sparkle Finder signup server actions", () => {
     vi.resetModules();
     vi.doUnmock("next/navigation");
     vi.doUnmock("../../lib/supabase/server");
+  });
+
+  it("sends password signup confirmations through the Sparkle Finder confirm route", async () => {
+    const signUp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signUp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("password", "sparkle-password");
+    formData.set("privacyAcknowledged", "yes");
+
+    const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
+
+    await expect(signUpWithPassword(formData)).rejects.toThrow("redirect:/auth/sign-in?message=check_email");
+    expect(signUp).toHaveBeenCalledWith({
+      email: "mama@example.com",
+      password: "sparkle-password",
+      options: {
+        emailRedirectTo: "http://localhost:3000/auth/confirm?next=%2Faccount",
+        data: {
+          display_name: "Sparkle Mama",
+          phone: "555-123-4567",
+          state: "CA",
+          privacy_acknowledged: true,
+          promotional_email_opt_in: false,
+          promotional_sms_opt_in: false,
+        },
+      },
+    });
   });
 
   it("requests an email magic link without requiring a password", async () => {
@@ -243,6 +374,82 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain("We do not sell your phone number.");
     expect(markup).toContain('name="promotionalSms"');
     expect(markup).not.toContain('name="promotionalSms" checked');
+  });
+
+  it("marks Google-like authenticated accounts without phone, state, or privacy acknowledgment incomplete", async () => {
+    const { getAccountCompletionState } = await import("../../lib/sparkle-finder/account-completion");
+    const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & {
+      status: "authenticated";
+      customer: NonNullable<CurrentSparkleFinderAccountState["customer"]>;
+    };
+    const accountState = {
+      ...base,
+      customer: {
+        ...base.customer,
+        phoneE164: "",
+        state: "",
+      },
+      communicationConsent: {
+        ...base.communicationConsent,
+        privacyAcknowledgedAt: null,
+      },
+    };
+
+    expect(getAccountCompletionState(accountState)).toEqual({
+      isComplete: false,
+      missingFields: ["phone", "state", "privacy acknowledgment"],
+    });
+  });
+
+  it("marks Guest display names incomplete for authenticated accounts", async () => {
+    const { getAccountCompletionState } = await import("../../lib/sparkle-finder/account-completion");
+    const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & {
+      status: "authenticated";
+      customer: NonNullable<CurrentSparkleFinderAccountState["customer"]>;
+    };
+    const accountState = {
+      ...base,
+      displayName: "Guest",
+      customer: {
+        ...base.customer,
+        displayName: "Guest",
+      },
+    };
+
+    expect(getAccountCompletionState(accountState).missingFields).toContain("display name");
+  });
+
+  it("renders completion guidance before account controls for incomplete authenticated accounts", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & {
+      status: "authenticated";
+      customer: NonNullable<CurrentSparkleFinderAccountState["customer"]>;
+    };
+    const accountState = {
+      ...base,
+      displayName: "Guest",
+      customer: {
+        ...base.customer,
+        displayName: "Guest",
+        phoneE164: "",
+        state: "",
+      },
+      communicationConsent: {
+        ...base.communicationConsent,
+        privacyAcknowledgedAt: null,
+      },
+    };
+
+    const markup = renderToStaticMarkup(renderAccountPageContent(accountState));
+
+    expect(markup).toContain("Complete your Sparkle Finder account");
+    expect(markup).toContain(
+      "Google sign-in created your secure login. Add the remaining details needed for trial protection, account support, and privacy acknowledgment.",
+    );
+    expect(markup).toContain("Save profile basics");
+    expect(markup).toContain("Save communication preferences");
+    expect(markup).toContain("name=\"privacyAcknowledged\"");
+    expect(markup).toContain("I acknowledge the Sparkle Finder privacy terms");
   });
 
   it("renders a self-facing Sparkle Suite rep marker on rep account surfaces", async () => {
@@ -346,6 +553,7 @@ describe("Sparkle Finder account route", () => {
     formData.set("promotionalEmail", "yes");
     formData.set("promotionalSms", "yes");
     formData.set("accountSmsAllowed", "yes");
+    formData.set("privacyAcknowledged", "yes");
 
     const { updateCommunicationPreferences } = await import("../../app/account/actions");
 
@@ -357,6 +565,7 @@ describe("Sparkle Finder account route", () => {
       promotional_email_opt_in: true,
       promotional_sms_opt_in: true,
       account_sms_allowed: true,
+      privacy_acknowledged: true,
     });
     expect(revalidatePath).toHaveBeenCalledWith("/account");
   });
@@ -391,6 +600,7 @@ describe("Sparkle Finder account route", () => {
       promotional_email_opt_in: false,
       promotional_sms_opt_in: false,
       account_sms_allowed: false,
+      privacy_acknowledged: false,
     });
     expect(revalidatePath).toHaveBeenCalledWith("/account");
   });

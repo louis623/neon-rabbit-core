@@ -28,7 +28,7 @@ const affiliateIcons: Partial<Record<string, LucideIcon>> = {
 export function AffiliateStrip({ items, showShopCta = true }: AffiliateStripProps) {
   return (
     <section
-      className="border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]"
+      className="sparkle-finder-footer-strip border-b border-[var(--sparkle-border)] bg-[rgba(255,254,253,0.94)]"
       data-smoke="affiliate-strip"
       id="shop"
     >
@@ -36,7 +36,7 @@ export function AffiliateStrip({ items, showShopCta = true }: AffiliateStripProp
         <div className="flex items-center gap-4">
           <PackageCheck aria-hidden="true" className="size-9 shrink-0 text-[var(--sparkle-plum)]" strokeWidth={1.7} />
           <div>
-            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+            <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               Collector Essentials
             </h2>
             <p className="mt-1 text-sm leading-5 text-[var(--sparkle-ink-muted)]">

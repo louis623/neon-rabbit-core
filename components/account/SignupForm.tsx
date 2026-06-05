@@ -3,12 +3,35 @@
 import { useState } from "react";
 import { Gem, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { requestMagicLink, signUpWithPassword } from "@/app/auth/sign-up/actions";
+import { createClient } from "@/lib/supabase/client";
 
 const inputClassName =
   "min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]";
 
 export function SignupForm() {
   const [authMethod, setAuthMethod] = useState<"password" | "magic-link">("password");
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  async function handleGoogleSignup() {
+    setGoogleError(null);
+
+    try {
+      const supabase = createClient();
+      const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(
+        "/account?setup=required",
+      )}`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+
+      if (error) {
+        setGoogleError("Google sign-up could not be started. Please try again.");
+      }
+    } catch {
+      setGoogleError("Google sign-up is not configured in this environment.");
+    }
+  }
 
   return (
     <form
@@ -24,6 +47,20 @@ export function SignupForm() {
             Start with a 45-day Silver trial, then keep browsing for free if you do not continue Silver.
           </p>
         </div>
+      </div>
+
+      <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3">
+        <button
+          className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+          onClick={handleGoogleSignup}
+          type="button"
+        >
+          Continue with Google
+        </button>
+        <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          After Google sign-up, Sparkle Finder may ask for the remaining account details needed for your Silver trial.
+        </p>
+        {googleError ? <p className="text-sm font-semibold text-[var(--sparkle-plum-deep)]">{googleError}</p> : null}
       </div>
 
       <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">

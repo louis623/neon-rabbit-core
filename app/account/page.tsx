@@ -5,6 +5,7 @@ import { AccountPreferences } from "@/components/account/AccountPreferences";
 import { RepBadge } from "@/components/account/RepBadge";
 import { SilverStatusPanel } from "@/components/account/SilverStatusPanel";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
+import { getAccountCompletionState } from "@/lib/sparkle-finder/account-completion";
 import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
@@ -61,6 +62,8 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
     );
   }
 
+  const completion = getAccountCompletionState(accountState);
+
   return (
     <main className="min-h-screen bg-[var(--sparkle-shell)] px-5 py-8 sm:px-8 lg:px-10">
       <div className="mx-auto grid w-full max-w-6xl gap-5">
@@ -75,10 +78,22 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
           </p>
         </section>
 
+        {!completion.isComplete ? <AccountCompletionPanel /> : null}
         <SilverStatusPanel accountState={accountState} now={now} />
         <AccountPreferences accountState={accountState} />
       </div>
     </main>
+  );
+}
+
+function AccountCompletionPanel() {
+  return (
+    <section className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+      <h2 className="text-xl font-bold text-[var(--sparkle-plum-deep)]">Complete your Sparkle Finder account</h2>
+      <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+        Google sign-in created your secure login. Add the remaining details needed for trial protection, account support, and privacy acknowledgment.
+      </p>
+    </section>
   );
 }
 

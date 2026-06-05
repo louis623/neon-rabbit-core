@@ -7,7 +7,7 @@ import {
   persistSilverProfileForAccount,
   type SupabaseCustomerStateClient,
 } from "@/lib/sparkle-finder/customer-state";
-import { getJewelryItemById } from "@/lib/sparkle-finder/service";
+import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
 import { createClient } from "@/lib/supabase/server";
 import type { CollectionItem } from "@/lib/sparkle-finder/types";
 
@@ -73,7 +73,7 @@ export async function saveSilverCollectionItemAction(
     };
   }
 
-  if (!getJewelryItemById(jewelryItemId)) {
+  if (!(await getCatalogJewelryItemById(jewelryItemId, { useFixtureFallback: false }))) {
     return {
       status: "denied",
       message: "Collection item is not available in the Sparkle Finder library.",

@@ -1,17 +1,29 @@
 import Link from "next/link";
-import { Gem, LogIn, Search, UserPlus, UserRound } from "lucide-react";
+import { Gem, LogIn, UserPlus, UserRound } from "lucide-react";
+import { SignInForm } from "@/components/account/SignInForm";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
-  createNoCredentialSupabaseAuthBoundary,
   getLocalDevAuthState,
   isLocalPreviewAuthEnabled,
 } from "@/lib/sparkle-finder/auth";
+import { safeSparkleFinderNextPath } from "@/lib/sparkle-finder/safe-redirect";
 
-export default function SignInPage() {
+type SignInPageProps = {
+  searchParams?: Promise<SignInSearchParams> | SignInSearchParams;
+};
+
+type SignInSearchParams = Record<string, string | string[] | undefined>;
+
+export default async function SignInPage({ searchParams }: SignInPageProps = {}) {
+  return renderSignInPageContent(await Promise.resolve(searchParams ?? {}));
+}
+
+export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
   const localFreeAccount = getLocalDevAuthState("free");
   const localSilverAccount = getLocalDevAuthState("silver");
-  const supabaseBoundary = createNoCredentialSupabaseAuthBoundary();
   const previewAuthEnabled = isLocalPreviewAuthEnabled();
+  const nextPath = safeSparkleFinderNextPath(getSearchParam(searchParams.next) ?? null);
+  const notice = getSignInNotice(getSearchParam(searchParams.message), getSearchParam(searchParams.error));
 
   return (
     <>
@@ -22,13 +34,18 @@ export default function SignInPage() {
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">
               Sparkle Finder account
             </p>
-            <h1 className="font-serif text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+            <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               Sign in to open Sparkle Finder
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
               Use your Sparkle Finder account for the library, rep availability, Silver collection tools, and focused
               Nic-Nac requests. New accounts start with a 45-day Silver trial.
             </p>
+            {notice ? (
+              <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)] shadow-[var(--sparkle-shadow-sm)]">
+                {notice}
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-3">
               <Link
                 className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
@@ -75,39 +92,29 @@ export default function SignInPage() {
             ) : null}
           </div>
 
-          <div className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-            <div className="flex items-start gap-3">
-              <Search aria-hidden="true" className="mt-1 size-5 text-[var(--sparkle-coral)]" />
-              <div>
-                <h2 className="text-lg font-bold text-[var(--sparkle-plum-deep)]">Account states</h2>
-                <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                  Anonymous visitors see the public homepage and are prompted before opening hub tools.
-                </p>
-              </div>
-            </div>
-            <dl className="grid gap-3 text-sm">
-              <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
-                <dt className="font-bold text-[var(--sparkle-plum-deep)]">Guest/public</dt>
-                <dd className="text-[var(--sparkle-ink-muted)]">anonymous</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
-                <dt className="font-bold text-[var(--sparkle-plum-deep)]">Free preview</dt>
-                <dd className="text-[var(--sparkle-ink-muted)]">{localFreeAccount.status}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
-                <dt className="font-bold text-[var(--sparkle-plum-deep)]">Silver preview</dt>
-                <dd className="text-[var(--sparkle-ink-muted)]">{localSilverAccount.status}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3 border-t border-[var(--sparkle-border)] pt-3">
-                <dt className="font-bold text-[var(--sparkle-plum-deep)]">Supabase boundary</dt>
-                <dd className="text-[var(--sparkle-ink-muted)]">
-                  {supabaseBoundary.isConfigured ? "configured" : "placeholder"}
-                </dd>
-              </div>
-            </dl>
-          </div>
+          <SignInForm nextPath={nextPath} />
         </section>
       </main>
     </>
   );
+}
+
+function getSearchParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getSignInNotice(message: string | undefined, error: string | undefined): string | null {
+  if (message === "check_email") {
+    return "Check your email for the Sparkle Finder sign-in link.";
+  }
+
+  if (error === "missing_oauth_code") {
+    return "Google sign-in did not return a valid authorization code.";
+  }
+
+  if (error === "oauth_exchange_failed") {
+    return "Google sign-in could not be completed. Please try again.";
+  }
+
+  return null;
 }

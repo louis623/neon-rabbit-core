@@ -174,7 +174,7 @@ export default function ShopPage() {
               <span className="sparkle-shop-rule" />
               <span className="sparkle-shop-eyebrow">Shop</span>
             </div>
-            <h1 className="font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">
+            <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">
               Collector & Rep Essentials
             </h1>
             <p className="max-w-3xl text-base leading-7 text-[var(--ss-shop-muted)]">
@@ -204,7 +204,7 @@ export default function ShopPage() {
         <aside className="sparkle-shop-trust grid content-start gap-4 p-5">
           <ShieldCheck aria-hidden="true" className="size-9 text-[var(--ss-shop-soft-pink)]" strokeWidth={1.8} />
           <div className="grid gap-2">
-            <h2 className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[#fff2ea]">
+            <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[#fff2ea]">
               Honest affiliate shopping
             </h2>
             <p className="text-sm leading-6 text-[rgba(246,231,218,0.78)]">
@@ -226,7 +226,7 @@ export default function ShopPage() {
       <section className="grid gap-4" aria-labelledby="shop-by-need">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-[var(--font-playfair)] text-3xl font-semibold" id="shop-by-need">
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold" id="shop-by-need">
               Shop by need
             </h2>
             <p className="mt-1 text-sm leading-6 text-[var(--ss-shop-muted)]">
@@ -262,7 +262,7 @@ export default function ShopPage() {
 
       <section className="grid gap-4" id="all-picks" aria-labelledby="recommendation-lanes">
         <div>
-          <h2 className="font-[var(--font-playfair)] text-3xl font-semibold" id="recommendation-lanes">
+          <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold" id="recommendation-lanes">
             Recommendation lanes
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-[var(--ss-shop-muted)]">
@@ -282,7 +282,7 @@ export default function ShopPage() {
                     <Icon aria-hidden="true" className="size-6" strokeWidth={1.8} />
                   </span>
                   <div>
-                    <h3 className="font-[var(--font-playfair)] text-2xl font-semibold">{lane.title}</h3>
+                    <h3 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold">{lane.title}</h3>
                     <p className="mt-1 text-sm leading-6 text-[var(--ss-shop-muted)]">{lane.body}</p>
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export default function ShopPage() {
 
       <section className="sparkle-shop-index grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:p-6">
         <div>
-          <h2 className="font-[var(--font-playfair)] text-2xl font-semibold">Current category index</h2>
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold">Current category index</h2>
           <p className="mt-1 text-sm leading-6 text-[var(--ss-shop-muted)]">
             These are the current shop categories from the affiliate tracker. They are planning categories, not approved
             exact product recommendations.
@@ -361,7 +361,7 @@ function ShopLane({
         <span aria-hidden="true" id={secondaryId} key={secondaryId} />
       ))}
       <div>
-        <h2 className="font-[var(--font-playfair)] text-3xl font-semibold" id={`${id}-heading`}>
+        <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold" id={`${id}-heading`}>
           {title}
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-6 text-[var(--ss-shop-muted)]">{description}</p>

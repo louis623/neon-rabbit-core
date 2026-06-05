@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Gem, Library, Radio, UsersRound } from "lucide-react";
-import { getDiamondAndUnicornItems, getJewelryItems, getLiveShows, getRepBoardListings } from "@/lib/sparkle-finder/service";
+import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
+import { getJewelryItems, getLiveShows, getRepBoardListings } from "@/lib/sparkle-finder/service";
+import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
 const cards = [
   {
@@ -25,11 +27,18 @@ const cards = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const libraryItems = await getCatalogJewelryItems();
+  return renderDashboardPageContent(libraryItems);
+}
+
+export function renderDashboardPageContent(libraryItems: JewelryItem[] = getJewelryItems()) {
+  const diamondAndUnicornCount = libraryItems.filter((item) => item.bpLabel === "diamond" || item.bpLabel === "unicorn").length;
+
   return (
     <section className="grid gap-6">
       <div>
-        <h1 className="font-[var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
+        <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
           Finder Dashboard
         </h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
@@ -47,7 +56,7 @@ export default function DashboardPage() {
               key={card.title}
             >
               <Icon aria-hidden="true" className="size-8 text-[var(--sparkle-rose)]" />
-              <h2 className="mt-4 font-[var(--font-playfair)] text-xl font-semibold text-[var(--sparkle-plum-deep)]">
+              <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-xl font-semibold text-[var(--sparkle-plum-deep)]">
                 {card.title}
               </h2>
             </Link>
@@ -55,10 +64,10 @@ export default function DashboardPage() {
         })}
       </div>
       <dl className="grid gap-4 md:grid-cols-4">
-        <Stat label="Library records" value={getJewelryItems().length} />
+        <Stat label="Library records" value={libraryItems.length} />
         <Stat label="Live shows" value={getLiveShows().length} />
         <Stat label="Board listings" value={getRepBoardListings().length} />
-        <Stat label="Diamond & unicorn labels" value={getDiamondAndUnicornItems().length} />
+        <Stat label="Diamond & unicorn labels" value={diamondAndUnicornCount} />
       </dl>
     </section>
   );

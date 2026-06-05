@@ -29,6 +29,7 @@ export async function signUpWithPassword(formData: FormData) {
       email: details.email,
       password: details.password,
       options: {
+        emailRedirectTo: getEmailRedirectTo("/account"),
         data: getDisplayMetadata(details),
       },
     });
@@ -61,7 +62,7 @@ export async function requestMagicLink(formData: FormData) {
     const { error } = await supabase.auth.signInWithOtp({
       email: details.email,
       options: {
-        emailRedirectTo: getEmailRedirectTo(),
+        emailRedirectTo: getEmailRedirectTo("/silver?from=signup"),
         data: getDisplayMetadata(details),
       },
     });
@@ -104,10 +105,10 @@ function getDisplayMetadata(details: SignupDetails) {
   };
 }
 
-function getEmailRedirectTo() {
+function getEmailRedirectTo(nextPath: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const origin = siteUrl.replace(/\/+$/, "");
-  const next = encodeURIComponent("/silver?from=signup");
+  const next = encodeURIComponent(nextPath);
 
   return `${origin}/auth/confirm?next=${next}`;
 }

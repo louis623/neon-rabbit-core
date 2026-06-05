@@ -23,7 +23,7 @@ export function LiveShowAgenda({ liveShows, reps }: LiveShowAgendaProps) {
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-[var(--sparkle-plum)]" />
-            <h2 className="font-[var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)] sm:text-2xl">
+            <h2 className="font-[family-name:var(--font-playfair)] text-xl font-semibold leading-tight text-[var(--sparkle-plum-deep)] sm:text-2xl">
               Today across Sparkle Suite
             </h2>
           </div>

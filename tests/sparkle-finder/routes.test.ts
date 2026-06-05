@@ -3,14 +3,15 @@ import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
 import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
+import { renderPublicHomeContent } from "../../app/page";
 import { renderAccountPageContent } from "../../app/account/page";
-import DashboardPage from "../../app/(hub)/dashboard/page";
+import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
-import LibraryPage from "../../app/(hub)/library/page";
+import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import LiveShowsPage from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
-import SignInPage from "../../app/auth/sign-in/page";
+import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
@@ -27,8 +28,8 @@ import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-g
 import { getLocalRepBoardHref, getLocalRepHref } from "../../lib/sparkle-finder/route-hrefs";
 
 const routes = [
-  ["dashboard", () => renderToStaticMarkup(createElement(DashboardPage))],
-  ["library", () => renderToStaticMarkup(createElement(LibraryPage))],
+  ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
+  ["library", () => renderToStaticMarkup(renderLibraryPageContent())],
   ["live-shows", () => renderToStaticMarkup(createElement(LiveShowsPage))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
@@ -46,7 +47,7 @@ describe("Sparkle Finder hub routes", () => {
 
   it("renders the shared hub shell around dashboard content", () => {
     const markup = renderToStaticMarkup(
-      renderHubChrome(createElement(DashboardPage), getLocalDevAuthState("silver")),
+      renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
     );
 
     expect(markup).toContain("Sparkle Finder");
@@ -59,12 +60,39 @@ describe("Sparkle Finder hub routes", () => {
 
   it("shows a sign-in wall for anonymous hub visitors", () => {
     const markup = renderToStaticMarkup(
-      renderHubChrome(createElement(DashboardPage), getLocalDevAuthState("anonymous")),
+      renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("anonymous")),
     );
 
-    expect(markup).toContain("Sign in to open Sparkle Finder");
+    expect(markup).toContain("Create a free Sparkle Finder account to open this tool.");
+    expect(markup).toContain("/auth/sign-up");
     expect(markup).toContain("/auth/sign-in");
     expect(markup).not.toContain("Finder Dashboard");
+  });
+
+  it("renders the selected trust-first public landing for anonymous visitors", () => {
+    const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
+
+    expect(markup).toContain("Sparkle Finder");
+    expect(markup).toContain("Start free Silver trial");
+    expect(markup).toContain("Sign in");
+    expect(markup).toContain("Master Jewelry Library");
+    expect(markup).toContain("Live Show Calendar");
+    expect(markup).toContain("Rep Trade Boards / Dance Floors");
+    expect(markup).toContain("Collection Showcase");
+    expect(markup).toContain("Collector &amp; Rep Essentials");
+    expect(markup).toContain("clean, organized place to help you find the reps, products, and shows you love");
+  });
+
+  it("renders public landing independence and avoids live/demo jewelry data", () => {
+    const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
+
+    expect(markup).toContain("Sparkle Finder does not sell Bomb Party jewelry.");
+    expect(markup).toContain("We are not Bomb Party, a Bomb Party affiliate, or a Bomb Party rep.");
+    expect(markup).not.toContain("Rainbow Crown Ring");
+    expect(markup).not.toContain("Celestial Lights Preview");
+    expect(markup).not.toContain("Sierra Sparkle Studio");
+    expect(markup).not.toContain("Add to collection");
+    expect(markup).not.toContain("Nic-Nac, find this for me");
   });
 
   it.each(["dashboard", "library", "live-shows", "rep-boards", "shop", "silver"] as const)(
@@ -75,13 +103,14 @@ describe("Sparkle Finder hub routes", () => {
         renderHubChrome(createElement("div", { dangerouslySetInnerHTML: { __html: renderRoute() } }), getLocalDevAuthState("anonymous")),
       );
 
-      expect(markup).toContain("Sign in to open Sparkle Finder");
+      expect(markup).toContain("Create a free Sparkle Finder account to open this tool.");
+      expect(markup).toContain("/auth/sign-up");
       expect(markup).toContain("/auth/sign-in");
     },
   );
 
   it("renders library search and fixture-backed jewelry cards", () => {
-    const markup = renderToStaticMarkup(createElement(LibraryPage));
+    const markup = renderToStaticMarkup(renderLibraryPageContent());
 
     expect(markup).toContain("Search the Jewelry Library");
     expect(markup).toContain("Rainbow Crown Ring");
@@ -279,21 +308,44 @@ describe("Sparkle Finder hub routes", () => {
       renderToStaticMarkup(
         renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
       ),
-      renderToStaticMarkup(createElement(SignInPage)),
+      renderToStaticMarkup(renderSignInPageContent()),
     ].join(" ");
 
     expect(markup).not.toContain("sparklesuite.example");
   });
 
   it("renders sign-in choices for Guest, Free preview, and Silver preview", () => {
-    const markup = renderToStaticMarkup(createElement(SignInPage));
+    const markup = renderToStaticMarkup(renderSignInPageContent());
 
     expect(markup).toContain("Guest preview keeps the public view anonymous");
-    expect(markup).toContain("Guest/public");
     expect(markup).toContain("/auth/preview/anonymous");
     expect(markup).toContain("/auth/preview/free");
     expect(markup).toContain("/auth/preview/silver");
     expect(markup).not.toContain("Free preview keeps Guest preview");
+  });
+
+  it("renders the real sign-in form and sign-up link", () => {
+    const markup = renderToStaticMarkup(renderSignInPageContent());
+
+    expect(markup).toContain("Email");
+    expect(markup).toContain("Password");
+    expect(markup).toContain("Sign in");
+    expect(markup).toContain("Continue with Google");
+    expect(markup).toContain('href="/auth/sign-up"');
+  });
+
+  it("renders readable sign-in notices", () => {
+    const checkEmailMarkup = renderToStaticMarkup(renderSignInPageContent({ message: "check_email" }));
+    const missingCodeMarkup = renderToStaticMarkup(
+      renderSignInPageContent({ error: "missing_oauth_code" }),
+    );
+    const exchangeFailedMarkup = renderToStaticMarkup(
+      renderSignInPageContent({ error: "oauth_exchange_failed" }),
+    );
+
+    expect(checkEmailMarkup).toContain("Check your email for the Sparkle Finder sign-in link.");
+    expect(missingCodeMarkup).toContain("Google sign-in did not return a valid authorization code.");
+    expect(exchangeFailedMarkup).toContain("Google sign-in could not be completed. Please try again.");
   });
 
   it("renders a sign-up route with 45-day Silver trial copy", async () => {
@@ -312,6 +364,16 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('value="magic-link"');
     expect(markup).toContain("Use a password");
     expect(markup).toContain("Email me a magic sign-in link");
+  });
+
+  it("renders sign-up Google auth and remaining account details copy", async () => {
+    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
+    const markup = renderToStaticMarkup(createElement(SignUpPage));
+
+    expect(markup).toContain("Continue with Google");
+    expect(markup).toContain(
+      "After Google sign-up, Sparkle Finder may ask for the remaining account details needed for your Silver trial.",
+    );
   });
 
   it("renders sign-up phone and privacy copy", async () => {
@@ -359,7 +421,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("links sign-in visitors to the sign-up route", () => {
-    const markup = renderToStaticMarkup(createElement(SignInPage));
+    const markup = renderToStaticMarkup(renderSignInPageContent());
 
     expect(markup).toContain('href="/auth/sign-up"');
   });
@@ -368,7 +430,7 @@ describe("Sparkle Finder hub routes", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "");
 
-    const markup = renderToStaticMarkup(createElement(SignInPage));
+    const markup = renderToStaticMarkup(renderSignInPageContent());
 
     expect(markup).not.toContain("/auth/preview/anonymous");
     expect(markup).not.toContain("/auth/preview/free");
@@ -379,7 +441,7 @@ describe("Sparkle Finder hub routes", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "true");
 
-    const markup = renderToStaticMarkup(createElement(SignInPage));
+    const markup = renderToStaticMarkup(renderSignInPageContent());
 
     expect(markup).toContain("/auth/preview/anonymous");
     expect(markup).toContain("/auth/preview/free");

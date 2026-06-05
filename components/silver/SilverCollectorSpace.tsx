@@ -35,19 +35,19 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="mb-3 flex items-center gap-3 text-[var(--sparkle-ink-muted)]">
             <Crown aria-hidden="true" className="size-6 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
-            <h2 className="font-[var(--font-playfair)] text-[1.35rem] font-semibold leading-tight">Silver Membership</h2>
+            <h2 className="font-[family-name:var(--font-playfair)] text-[1.35rem] font-semibold leading-tight">Silver Membership</h2>
           </div>
 
           <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-3">
             <div
               aria-label={`${customer.displayName} avatar`}
-              className="grid size-[4.5rem] shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#eeeeee)] font-[var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
+              className="grid size-[4.5rem] shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#eeeeee)] font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
             >
               {getInitials(customer.displayName)}
             </div>
             <div className="min-w-0 pt-1">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h3 className="truncate font-[var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+                <h3 className="truncate font-[family-name:var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
                   {customer.displayName}
                 </h3>
                 <RepBadge repIdentity={customer.repIdentity} />
@@ -90,7 +90,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-[var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+              <p className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
                 Your Silver Collector Space
               </p>
               <h2 className="mt-1 text-base font-medium leading-tight text-[var(--sparkle-plum-deep)]">

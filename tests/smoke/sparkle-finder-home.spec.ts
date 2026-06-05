@@ -8,12 +8,14 @@ const screenshotDir = process.env.SPARKLE_FINDER_SCREENSHOT_DIR ?? "verification
 
 const smokeTexts = [
   "Sparkle Finder",
-  "Today across Sparkle Suite",
-  "Master Live Calendar",
+  "Collector-first discovery",
+  "Start free Silver trial",
+  "Sparkle Finder does not sell Bomb Party jewelry",
+  "Master Jewelry Library",
+  "Live Show Calendar",
   "Rep Trade Boards / Dance Floors",
+  "Collection Showcase",
   "Collector & Rep Essentials",
-  "Silver Collector Space",
-  "Nic-Nac, find this for me",
 ];
 
 const viewports = [
@@ -23,7 +25,7 @@ const viewports = [
 
 test.describe("Sparkle Finder homepage smoke", () => {
   for (const viewport of viewports) {
-    test(`${viewport.name} homepage renders guarded discovery hub`, async ({ page }) => {
+    test(`${viewport.name} homepage renders trust-first public landing`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
@@ -33,6 +35,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
       await expectNoGuardrailCopy(page);
       await expectHomepageLinksStayLocal(page);
+      await expectNoPublicHomepageDemoData(page);
       await expectReadableControls(page);
       await expectPrimarySectionsAreVisible(page);
       await expectPrimarySectionsDoNotOverlap(page);
@@ -49,28 +52,23 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-    await expectClickPath(page, page.getByRole("link", { name: "Explore Live Calendar" }), "/live-shows");
-    await expectClickPath(page, page.getByRole("link", { name: "Browse Library" }), "/library");
-    await expectClickPath(page, page.getByRole("link", { name: "Master Live Calendar" }), "/live-shows");
-    await expectClickPath(page, page.getByRole("link", { name: "Rep Trade Boards / Dance Floors" }), "/rep-boards");
-    await expectClickPath(page, page.getByRole("link", { name: "Collector & Rep Essentials" }), "/shop");
-    await expectClickPath(page, page.getByRole("link", { name: "Shop affiliate picks" }), "/shop");
+    await expectClickPath(page, page.getByRole("link", { name: "Start free Silver trial" }), "/auth/sign-up");
+    await expectClickPath(page, page.getByRole("link", { name: "Sign in" }), "/auth/sign-in");
   });
 
-  test("shop discovery card remains present and opens the shop route", async ({ page }) => {
+  test("shop feature card remains present and routes through signup", async ({ page }) => {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
     const shopCard = page
-      .locator('[data-smoke="discovery-cards"]')
+      .locator('[data-smoke="public-feature-cards"]')
       .getByRole("link", { name: /Collector & Rep Essentials/ });
     await expect(shopCard).toBeVisible();
-    await expect(shopCard).toHaveAttribute("href", "/shop");
-    await expect(shopCard).toContainText("Shop care, storage, display, livestream, and setup gear.");
+    await expect(shopCard).toHaveAttribute("href", "/auth/sign-up?next=/shop");
+    await expect(shopCard).toContainText("Browse care, storage, display, livestream, and setup gear");
 
     await shopCard.click();
-    await expect(page).toHaveURL(`${baseUrl}/shop`);
-    await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Continue to sign in" })).toHaveAttribute("href", "/auth/sign-in");
+    await expect(page).toHaveURL(`${baseUrl}/auth/sign-up?next=/shop`);
+    await expect(page.getByText("Start your 45-day Silver trial")).toBeVisible();
   });
 
   test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
@@ -96,7 +94,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page).toHaveURL(`${baseUrl}/dashboard`);
 
     await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: "Sparkle Finder account" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sparkle Finder account", exact: true })).toBeVisible();
     await expect(page.getByText(/Your\s+45-day Silver trial\s+is active/)).toBeVisible();
     await expect(page.getByText(/Trial ends\s+June 10, 2026/)).toBeVisible();
     await expect(page.getByText("Phone is used for account identification")).toBeVisible();
@@ -115,7 +113,9 @@ test.describe("Sparkle Finder homepage smoke", () => {
     for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/shop", "/silver"]) {
       await page.goto(`${baseUrl}${path}`, { waitUntil: "domcontentloaded" });
       await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
-      await expect(page.getByRole("link", { name: "Continue to sign in" })).toHaveAttribute("href", "/auth/sign-in");
+      await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Start free Silver trial" })).toHaveAttribute("href", "/auth/sign-up");
+      await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/auth/sign-in");
     }
   });
 
@@ -126,7 +126,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
 
-    await page.getByRole("link", { name: "Continue to sign in" }).click();
+    await page.getByRole("link", { name: "Sign in" }).click();
     await expect(page).toHaveURL(`${baseUrl}/auth/sign-in`);
     await expect(page.getByRole("link", { name: "Continue as Guest" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Continue as Marlena/ })).toBeVisible();
@@ -151,6 +151,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page).toHaveURL(`${baseUrl}/`);
     await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
+    await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();
   });
 
   test("Silver library item detail exposes bounded Nic-Nac and local rep-board paths", async ({ page }) => {
@@ -187,11 +188,9 @@ async function expectNoGuardrailCopy(page: Page) {
 async function expectPrimarySectionsAreVisible(page: Page) {
   for (const selector of [
     "nav",
-    "hero",
-    "agenda",
-    "discovery-cards",
-    "silver",
-    "affiliate-strip",
+    "public-landing",
+    "public-hero",
+    "public-feature-cards",
   ]) {
     await expect(page.locator(`[data-smoke="${selector}"]`)).toBeVisible();
   }
@@ -210,13 +209,23 @@ async function expectNoExampleLinksOnCurrentPage(page: Page) {
   expect(html).not.toContain("sparklesuite.example");
 }
 
+async function expectNoPublicHomepageDemoData(page: Page) {
+  const html = await page.content();
+
+  expect(html).not.toContain("Rainbow Crown Ring");
+  expect(html).not.toContain("Celestial Lights Preview");
+  expect(html).not.toContain("Sierra Sparkle Studio");
+  expect(html).not.toContain("Add to collection");
+  expect(html).not.toContain("Nic-Nac, find this for me");
+}
+
 async function expectReadableControls(page: Page) {
   const navLabelsFit = await page.locator('[data-smoke="nav"] a').evaluateAll((links) =>
     links.every((link) => link.scrollWidth <= link.clientWidth + 1),
   );
   expect(navLabelsFit, "nav labels should not be clipped inside links").toBe(true);
 
-  const primaryColors = await page.getByRole("link", { name: "Explore Live Calendar" }).evaluate((element) => {
+  const primaryColors = await page.getByRole("link", { name: "Start free Silver trial" }).evaluate((element) => {
     const styles = window.getComputedStyle(element);
 
     return {
@@ -240,16 +249,11 @@ async function expectClickPath(page: Page, link: Locator, expectedPath: string) 
 
 async function expectPrimarySectionsDoNotOverlap(page: Page) {
   const nav = page.locator('[data-smoke="nav"]');
-  const hero = page.locator('[data-smoke="hero"]');
-  const agenda = page.locator('[data-smoke="agenda"]');
-  const discoveryCards = page.locator('[data-smoke="discovery-cards"]');
-  const silver = page.locator('[data-smoke="silver"]');
-  const affiliateStrip = page.locator('[data-smoke="affiliate-strip"]');
+  const hero = page.locator('[data-smoke="public-hero"]');
+  const featureCards = page.locator('[data-smoke="public-feature-cards"]');
 
-  await expectNoOverlap(nav, hero, "nav", "hero");
-  await expectNoOverlap(discoveryCards, agenda, "discovery cards", "agenda");
-  await expectNoOverlap(hero, silver, "hero", "Silver Collector Space");
-  await expectNoOverlap(silver, affiliateStrip, "Silver Collector Space", "affiliate strip");
+  await expectNoOverlap(nav, hero, "nav", "public hero");
+  await expectNoOverlap(hero, featureCards, "public hero", "feature cards");
 }
 
 async function expectNoOverlap(left: Locator, right: Locator, leftLabel: string, rightLabel: string) {

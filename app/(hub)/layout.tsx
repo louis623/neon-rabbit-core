@@ -34,20 +34,27 @@ function HubSignInWall() {
     <section className="mx-auto grid max-w-3xl gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)] sm:p-8">
       <div className="grid gap-3">
         <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">Account needed</p>
-        <h1 className="font-serif text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
+        <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
           Sign in to open Sparkle Finder
         </h1>
         <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          Free accounts can browse the library and follow rep availability. Silver preview accounts can also see
-          collection and Nic-Nac request tools in local development.
+          Create a free Sparkle Finder account to open this tool.
         </p>
       </div>
-      <Link
-        className="inline-flex h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-        href="/auth/sign-in"
-      >
-        Continue to sign in
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          className="inline-flex h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+          href="/auth/sign-up"
+        >
+          Start free Silver trial
+        </Link>
+        <Link
+          className="inline-flex h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+          href="/auth/sign-in"
+        >
+          Sign in
+        </Link>
+      </div>
     </section>
   );
 }
