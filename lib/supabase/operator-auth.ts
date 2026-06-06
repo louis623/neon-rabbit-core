@@ -29,7 +29,7 @@ async function getDevBypassOperator() {
   const admin = createAdminClient()
   const { data: rep, error } = await admin
     .from('reps')
-    .select('id, auth_user_id, email, display_name, stripe_customer_id')
+    .select('id, auth_user_id, email, display_name, stripe_customer_id, public_site_slug')
     .eq('email', email)
     .single()
 
