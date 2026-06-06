@@ -13,6 +13,10 @@ export default function LiveShowsPage() {
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
           One schedule for Sparkle Suite rep live shows and next-show context.
         </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          Preview calendar data is shown here. Live next-show context appears on item availability leads when Sparkle
+          Suite API matches include it.
+        </p>
       </div>
       <div className="grid gap-4">
         {shows.map((show) => {

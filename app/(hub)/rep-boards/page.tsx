@@ -11,6 +11,10 @@ export default function RepBoardsPage() {
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
           Browse rep-hosted board paths and dance floor context, then follow the rep-owned path for details.
         </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          Preview board data is shown here. Live item-level availability appears from the jewelry detail page when
+          Sparkle Suite API matches exist.
+        </p>
       </div>
       <RepBoardGrid
         jewelryItems={getJewelryItems()}

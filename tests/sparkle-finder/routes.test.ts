@@ -125,6 +125,21 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library/jewel-rainbow-crown-ring");
   });
 
+  it("labels fixture-backed dashboard board and show stats as preview data", () => {
+    const markup = renderToStaticMarkup(renderDashboardPageContent());
+
+    expect(markup).toContain("Preview live shows");
+    expect(markup).toContain("Preview board listings");
+  });
+
+  it("labels rep boards and live shows as preview-backed pages", () => {
+    const repBoardsMarkup = renderToStaticMarkup(createElement(RepBoardsPage));
+    const liveShowsMarkup = renderToStaticMarkup(createElement(LiveShowsPage));
+
+    expect(repBoardsMarkup).toContain("Preview board data");
+    expect(liveShowsMarkup).toContain("Preview calendar data");
+  });
+
   it("preserves selected library filters and only shows matching records", () => {
     const markup = renderToStaticMarkup(
       renderLibraryPageContent(libraryFilterItems(), { q: "rose", type: "ring", label: "diamond" }),

@@ -65,10 +65,14 @@ export function renderDashboardPageContent(libraryItems: JewelryItem[] = getJewe
       </div>
       <dl className="grid gap-4 md:grid-cols-4">
         <Stat label="Library records" value={libraryItems.length} />
-        <Stat label="Live shows" value={getLiveShows().length} />
-        <Stat label="Board listings" value={getRepBoardListings().length} />
+        <Stat label="Preview live shows" value={getLiveShows().length} />
+        <Stat label="Preview board listings" value={getRepBoardListings().length} />
         <Stat label="Diamond & unicorn labels" value={diamondAndUnicornCount} />
       </dl>
+      <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+        Library counts are read through the Sparkle Suite Finder catalog connection when available. Board and calendar
+        counts remain preview data until Sparkle Suite exposes list endpoints for those views.
+      </p>
     </section>
   );
 }
