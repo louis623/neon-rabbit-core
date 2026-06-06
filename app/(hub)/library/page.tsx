@@ -112,6 +112,7 @@ function matchesLibraryFilters(item: JewelryItem, filters: LibraryFilters): bool
     item.itemNumber,
     item.jewelryType,
     item.bpLabel,
+    item.collectionYear ? String(item.collectionYear) : "",
     ...(item.searchTags ?? []),
   ]
     .join(" ")

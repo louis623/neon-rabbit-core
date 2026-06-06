@@ -152,6 +152,16 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Ocean Pearl Necklace");
   });
 
+  it("matches library searches by collection year", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), { q: "2026", type: "necklace", label: "diamond" }),
+    );
+
+    expect(markup).toContain("Ocean Pearl Necklace");
+    expect(markup).not.toContain("Rose Crown Ring");
+    expect(markup).not.toContain("No library records match those filters.");
+  });
+
   it("shows an empty library state when no records match selected filters", () => {
     const markup = renderToStaticMarkup(
       renderLibraryPageContent(libraryFilterItems(), { q: "ocean", type: "necklace", label: "standard" }),
