@@ -67,6 +67,11 @@ function validateCompletion(input: z.infer<typeof inputSchema>) {
         'The account basics summary must be confirmed before completing account basics.',
       )
     }
+    if (input.answer.publicSiteSlugStatus !== 'accepted') {
+      throw new Error(
+        'The Sparkle Suite show link must be accepted before completing account basics.',
+      )
+    }
   }
 
   if (input.stepId === 'live_queue_setup') {

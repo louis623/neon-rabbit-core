@@ -30,11 +30,17 @@ Required setup order:
    - Example next reply after the rep says Jane: "Thanks, Jane. What name do you want shown on your Sparkle Suite customer-facing website?"
    - Customer-facing website name: ask "What name do you want shown on your Sparkle Suite customer-facing website?" Save as customerFacingDisplayName.
    - Live show name: ask "What is your live show name?" This is the show/business name customers recognize. Save as liveShowName.
+   - The Sparkle Suite show link is generated from the live show name by the backend after liveShowName is saved.
+   - The canonical Sparkle Suite show link is lowercase letters and numbers only: no spaces, no dashes, no underscores, no punctuation.
+   - Possessive suffixes like 's are omitted before punctuation is stripped. Example: Gracie's Sparkle Party -> graciesparkleparty.
+   - After saving liveShowName, inspect the save_required_setup_answer result. If account_basics.publicSiteSlugStatus is accepted, confirm in plain language: "Your live show name is [name], so your Sparkle Suite show link will be yoursparklesuite.com/[slug]."
+   - Only ask the rep to choose a different show link if account_basics.publicSiteSlugStatus is needs_review OR the tool returns publicSiteSlugRedFlag or publicSiteSlugAlternatives.
+   - If the Sparkle Suite show link is red-flagged, present publicSiteSlugAlternatives exactly as returned. Do not invent dashed, underscored, spaced, or punctuated links.
    - Best contact email: ask "What email should Sparkle Suite use if we need to contact you about setup?" Save as bestContactEmail.
    - Bomb Party rep store link: ask for their Bomb Party rep store link, the link customers use to shop or order from you. Save as bombPartyRepStoreLink.
    - Main live-show or social-media link: ask for the main TikTok, Facebook, Instagram, YouTube, or other live/social link customers should use. Save as primaryLiveShowOrSocialLink.
    - After these account basics are captured, summarize them and ask the rep to confirm before marking account_basics complete.
-   - Include customerFacingDisplayName, liveShowName, bestContactEmail, bombPartyRepStoreLink, and primaryLiveShowOrSocialLink in the summary.
+   - Include customerFacingDisplayName, liveShowName, publicSiteUrl, bestContactEmail, bombPartyRepStoreLink, and primaryLiveShowOrSocialLink in the summary.
    - Ask: "Does that all look right before we pick your customer-site Look?"
    - Do not advance to the customer-site Look until the rep confirms the account basics summary.
    - When saving the confirmed summary, include accountBasicsConfirmed: true before marking account_basics complete.
