@@ -119,6 +119,7 @@ describe('POST /api/self-serve/signup', () => {
       business_name: 'Jamie Hart',
       phone: null,
       custom_domain: null,
+      public_site_slug: null,
       shop_link: null,
       streaming_links: {
         primary: null,

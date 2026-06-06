@@ -125,6 +125,7 @@ export async function createSelfServeWorkspaceForAuthUser(
       business_name: displayName,
       phone: null,
       custom_domain: null,
+      public_site_slug: null,
       shop_link: null,
       streaming_links: {
         primary: null,
