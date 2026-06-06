@@ -2,13 +2,17 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Gem } from "lucide-react";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
-import { getCatalogJewelryItemById, getFinderAvailabilityForJewelryItem } from "@/lib/sparkle-finder/catalog-service";
+import {
+  getCatalogJewelryItemById,
+  getFinderAvailabilityForJewelryItem,
+  getSparkleSuiteFinderPublicBaseUrl,
+} from "@/lib/sparkle-finder/catalog-service";
 import {
   getLocalDevAuthState,
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
+import { getLocalRepBoardHref, getSparkleSuiteRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
@@ -42,19 +46,20 @@ export function renderItemDetailPageContent(
     notFound();
   }
 
+  const sparkleSuiteBaseUrl = getSparkleSuiteFinderPublicBaseUrl();
   const apiAvailabilityRows = availability
     ? [
         ...availability.exactMatches.map((match) => ({
           key: match.listingId,
           businessName: match.rep.businessName,
           matchType: "exact_item",
-          href: match.rep.tradeBoardPath,
+          href: getSparkleSuiteRepBoardHref(match.rep.tradeBoardPath, sparkleSuiteBaseUrl),
         })),
         ...availability.similarMatches.map((match) => ({
           key: match.listingId,
           businessName: match.rep.businessName,
           matchType: "same_collection_type",
-          href: match.rep.tradeBoardPath,
+          href: getSparkleSuiteRepBoardHref(match.rep.tradeBoardPath, sparkleSuiteBaseUrl),
         })),
       ]
     : [];

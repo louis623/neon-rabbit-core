@@ -15,6 +15,7 @@ import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
+import type { FinderAvailabilityResult } from "../../lib/sparkle-finder/catalog-service";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import {
   affiliateDisclosureHref,
@@ -246,6 +247,50 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Exact item");
     expect(markup).toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("sparklesuite.example");
+  });
+
+  it("renders API-backed item detail availability with full Sparkle Suite rep board links", () => {
+    const apiItem: JewelryItem = {
+      id: "design-api",
+      name: "API Garden Gala Ring",
+      collectionName: "Garden Gala",
+      collectionYear: 2026,
+      jewelryType: "ring",
+      imageUrl: "",
+      bpLabel: "standard",
+      itemNumber: "RG-API",
+      knownRepListingIds: [],
+      searchTags: ["garden"],
+      availableListingCount: 1,
+    };
+    const availability: FinderAvailabilityResult = {
+      requestedItem: apiItem,
+      exactMatches: [
+        {
+          listingId: "listing-api",
+          listedAt: null,
+          photoUrl: null,
+          item: apiItem,
+          rep: {
+            repId: "rep-demo",
+            displayName: "Demo Rep",
+            businessName: "Sparkle Suite Demo Boutique",
+            profilePhotoUrl: null,
+            customerSitePath: "/amethyst?c=rep-demo",
+            tradeBoardPath: "/amethyst/trade?c=rep-demo",
+          },
+          nextShow: null,
+        },
+      ],
+      similarMatches: [],
+    };
+
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent({ itemId: "design-api" }, getLocalDevAuthState("silver"), apiItem, availability),
+    );
+
+    expect(markup).toContain("https://www.yoursparklesuite.com/amethyst/trade?c=rep-demo");
+    expect(markup).toContain("Sparkle Suite Demo Boutique");
   });
 
   it("renders the item detail Silver prompt for Free customers", () => {
