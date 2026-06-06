@@ -14,7 +14,7 @@ yoursparklesuite.com/{show-link}
 Example:
 
 ```text
-yoursparklesuite.com/gracie
+yoursparklesuite.com/graciesparkleparty
 ```
 
 Workspace access remains centralized:
@@ -30,6 +30,39 @@ After login, the authenticated rep is routed to their own Sparkle Suite workspac
 The launch product includes one primary customer-facing show link per rep. This link is intended to be easy to say, print, type, and later convert into QR assets without adding launch complexity.
 
 The public show link should be case-insensitive, with a lowercase canonical URL and optional display formatting in UI or printed guidance.
+
+## Show Link Generation
+
+During required setup, Nic-Nac should not make choosing a show link feel like a separate task by default. Sparkle Suite should generate the default show link from the rep's live show name.
+
+Example:
+
+```text
+Live show name: Gracie's Sparkle Party
+Show link: yoursparklesuite.com/graciesparkleparty
+```
+
+Canonical show-link rules:
+
+```text
+lowercase
+letters and numbers only
+no spaces
+no dashes
+no underscores
+no punctuation
+```
+
+Spaces, apostrophes, punctuation, and symbols are removed when generating the default link.
+
+Nic-Nac should surface a red flag only when the generated link is blocked, taken, too short, too long, confusing, or inappropriate. If a red flag exists, Nic-Nac should suggest a small set of clean letters-and-numbers-only alternatives.
+
+Nic-Nac should confirm the generated link in plain language before account basics are marked complete:
+
+```text
+Your live show name is Gracie's Sparkle Party, so your Sparkle Suite show link will be:
+yoursparklesuite.com/graciesparkleparty
+```
 
 ## Reserved Paths
 
