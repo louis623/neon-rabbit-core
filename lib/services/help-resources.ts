@@ -163,6 +163,16 @@ const HELP_RESOURCES: HelpResource[] = [
     quickActions: ['Open site settings', 'Update banner text', 'Hide join page'],
   },
   {
+    id: 'domain-forwarding',
+    category: 'Site settings',
+    title: 'Forward a custom domain to your Sparkle Suite show link',
+    summary:
+      'Use your domain provider\'s forwarding/redirect setting to send a custom domain to yoursparklesuite.com/yourshowname.',
+    body:
+      'Your default customer site link is yoursparklesuite.com/yourshowname. If you own a custom domain, set up standard forwarding or redirecting with your domain provider so visitors land on that Sparkle Suite show link; do not use masked forwarding because it can hide the real page and break customer-facing behavior. Custom domains are self-managed by default: Nic-Nac can point reps to this article, but should not walk through provider-specific DNS setup or domain forwarding screens. If you want Sparkle Suite to help with setup, ask about paid premium tech help.',
+    quickActions: ['Copy show link', 'Review domain forwarding steps', 'Ask about premium tech help'],
+  },
+  {
     id: 'live-queue-setup',
     category: 'Live Queue',
     title: 'Set up the Live Queue extension',

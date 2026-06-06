@@ -19,7 +19,7 @@ describe('help resources', () => {
       )
       .join(' ')
 
-    expect(combinedText).toContain('Getting started after purchase')
+    expect(combinedText).toContain('Getting oriented in the workspace')
     expect(combinedText).toContain('Meet Nic-Nac')
     expect(combinedText).toContain('Backend workspace tour')
     expect(combinedText).toContain('Editing the public site')
@@ -81,5 +81,36 @@ describe('help resources', () => {
     ['empty queue', 'live-queue-troubleshooting'],
   ])('retrieves Live Queue help for "%s"', (query, expectedResourceId) => {
     expect(getHelpResources(query).map((resource) => resource.id)).toContain(expectedResourceId)
+  })
+
+  it('documents the custom domain forwarding policy and Nic-Nac support boundary', () => {
+    const resource = getHelpResources()
+      .find((helpResource) => helpResource.id === 'domain-forwarding')
+
+    expect(resource).toMatchObject({
+      category: 'Site settings',
+      title: expect.stringContaining('domain'),
+    })
+
+    const combinedText = [
+      resource?.summary,
+      resource?.body,
+      ...(resource?.quickActions ?? []),
+    ].join(' ')
+
+    expect(combinedText).toContain('yoursparklesuite.com/yourshowname')
+    expect(combinedText).toContain('forwarding/redirect')
+    expect(combinedText).toContain('do not use masked forwarding')
+    expect(combinedText).toContain('premium tech help')
+    expect(combinedText).toContain('Nic-Nac')
+    expect(combinedText).toContain('provider-specific DNS setup')
+  })
+
+  it.each([
+    'domain',
+    'forwarding',
+    'custom domain',
+  ])('retrieves domain forwarding help for "%s"', (query) => {
+    expect(getHelpResources(query).map((resource) => resource.id)).toContain('domain-forwarding')
   })
 })
