@@ -29,6 +29,7 @@ describe('/api/nic-nac/me', () => {
         id: 'rep-1',
         email: 'rep@example.com',
         display_name: 'Mile High Fizz',
+        public_site_slug: 'milehighfizz',
       },
       supabase: { marker: 'supabase' },
     })
@@ -46,6 +47,7 @@ describe('/api/nic-nac/me', () => {
         id: 'rep-1',
         email: 'rep@example.com',
         display_name: 'Mile High Fizz',
+        public_site_slug: 'milehighfizz',
         live_queue_sync_code: 'MHF-7342',
       },
     })
