@@ -11,6 +11,7 @@ import {
   searchJewelryItemsByText,
   withNextShowContext,
 } from "../../lib/sparkle-finder/search";
+import type { JewelryItem } from "../../lib/sparkle-finder/types";
 
 describe("Sparkle Finder fixture search adapters", () => {
   it("returns available exact board listing matches before broader matches", () => {
@@ -64,6 +65,27 @@ describe("Sparkle Finder fixture search adapters", () => {
         status: "scheduled",
       }),
     });
+  });
+
+  it("searches API-shaped jewelry records by tags and collection year", () => {
+    const items: JewelryItem[] = [
+      {
+        id: "design-api",
+        name: "Garden Gala Bracelet",
+        collectionName: "Garden Gala",
+        collectionYear: 2026,
+        jewelryType: "bracelet",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "BR1001",
+        knownRepListingIds: [],
+        searchTags: ["rose gold", "garden"],
+        availableListingCount: 1,
+      },
+    ];
+
+    expect(searchJewelryItemsByText(items, "rose gold")).toHaveLength(1);
+    expect(searchJewelryItemsByText(items, "2026")).toHaveLength(1);
   });
 
   it("returns empty arrays for searches and matches with no fixture result", () => {

@@ -28,6 +28,8 @@ export function searchJewelryItemsByText(
       item.jewelryType,
       item.bpLabel,
       item.itemNumber,
+      item.collectionYear ? String(item.collectionYear) : "",
+      ...(item.searchTags ?? []),
     ]
       .join(" ")
       .toLocaleLowerCase();
