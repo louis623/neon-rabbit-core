@@ -54,6 +54,7 @@ describe('public site show link rules', () => {
     expect(generatePublicSiteSlug("Gracie's Sparkle Party")).toBe(
       'graciesparkleparty',
     )
+    expect(generatePublicSiteSlug("Macy's")).toBe('macy')
     expect(generatePublicSiteSlug('Bling & Fizz 24/7')).toBe('blingfizz247')
     expect(generatePublicSiteSlug('  The_Big-Live.Show!  ')).toBe(
       'thebigliveshow',
@@ -150,7 +151,10 @@ export type PublicSiteSlugValidation =
   | { ok: false; reason: 'empty' | 'format' | 'reserved' | 'too_short' | 'too_long' }
 
 export function generatePublicSiteSlug(value: string | null | undefined) {
-  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  return (value ?? '')
+    .toLowerCase()
+    .replace(/['’]s\b/g, '')
+    .replace(/[^a-z0-9]/g, '')
 }
 
 export function validatePublicSiteSlug(
@@ -576,7 +580,7 @@ In `lib/nic-nac/required-setup-prompt.ts`, replace the live show name/account-ba
 
 ```text
    - Live show name: ask "What is your live show name?" This is the show/business name customers recognize. Save as liveShowName.
-   - Sparkle Suite show link: the backend generates the default show link from the live show name. The canonical link is lowercase letters and numbers only, with no spaces, no dashes, no underscores, and no punctuation.
+   - Sparkle Suite show link: the backend generates the default show link from the live show name. The canonical link is lowercase letters and numbers only, with no spaces, no dashes, no underscores, and no punctuation. Possessive suffixes like 's are omitted so Gracie's Sparkle Party becomes graciesparkleparty.
    - After saving liveShowName, read the save_required_setup_answer result. If account_basics.publicSiteSlugStatus is accepted, confirm the generated link in plain language: "Your live show name is [name], so your Sparkle Suite show link will be yoursparklesuite.com/[slug]."
    - Only ask the rep to choose a different show link if account_basics.publicSiteSlugStatus is needs_review or the tool returns publicSiteSlugRedFlag/publicSiteSlugAlternatives.
    - If the generated show link has a red flag, present the alternatives exactly as returned. Do not invent dashed, underscored, spaced, or punctuated links.

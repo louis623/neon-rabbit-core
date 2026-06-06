@@ -53,7 +53,7 @@ no underscores
 no punctuation
 ```
 
-Spaces, apostrophes, punctuation, and symbols are removed when generating the default link.
+Spaces, apostrophes, punctuation, and symbols are removed when generating the default link. Possessive suffixes like `'s` or `’s` are omitted so names like `Gracie's Sparkle Party` become `graciesparkleparty`, not `graciessparkleparty`.
 
 Nic-Nac should surface a red flag only when the generated link is blocked, taken, too short, too long, confusing, or inappropriate. If a red flag exists, Nic-Nac should suggest a small set of clean letters-and-numbers-only alternatives.
 

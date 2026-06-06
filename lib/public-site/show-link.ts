@@ -30,7 +30,10 @@ export type PublicSiteSlugValidation =
   | { ok: false; reason: 'empty' | 'format' | 'reserved' | 'too_short' | 'too_long' }
 
 export function generatePublicSiteSlug(value: string | null | undefined) {
-  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  return (value ?? '')
+    .toLowerCase()
+    .replace(/['’]s\b/g, '')
+    .replace(/[^a-z0-9]/g, '')
 }
 
 export function validatePublicSiteSlug(
