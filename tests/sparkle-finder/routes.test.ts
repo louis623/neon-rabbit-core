@@ -155,6 +155,86 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("The shared Sparkle Suite jewelry catalog is not available");
   });
 
+  it("shows availability and optional catalog metadata on library cards", () => {
+    const items: JewelryItem[] = [
+      {
+        id: "design-available",
+        name: "Garden Gala Bracelet",
+        collectionName: "Garden Gala",
+        collectionYear: 2026,
+        jewelryType: "bracelet",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "BR1001",
+        knownRepListingIds: [],
+        searchTags: ["rose gold", "garden"],
+        availableListingCount: 2,
+      },
+    ];
+
+    const markup = renderToStaticMarkup(renderLibraryPageContent(items));
+
+    expect(markup).toContain("2 available");
+    expect(markup).toContain("2026");
+    expect(markup).toContain("rose gold");
+  });
+
+  it("shows known rep lead metadata when library card counts are unknown but leads exist", () => {
+    const singularItems: JewelryItem[] = [
+      {
+        id: "design-known-lead",
+        name: "Garden Gala Ring",
+        collectionName: "Garden Gala",
+        jewelryType: "ring",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "RG1001",
+        knownRepListingIds: ["lead-1"],
+      },
+    ];
+    const pluralItems: JewelryItem[] = [
+      {
+        id: "design-known-leads",
+        name: "Garden Gala Necklace",
+        collectionName: "Garden Gala",
+        jewelryType: "necklace",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "NK1001",
+        knownRepListingIds: ["lead-1", "lead-2"],
+      },
+    ];
+
+    const singularMarkup = renderToStaticMarkup(renderLibraryPageContent(singularItems));
+    const pluralMarkup = renderToStaticMarkup(renderLibraryPageContent(pluralItems));
+
+    expect(singularMarkup).toContain("Known rep lead");
+    expect(singularMarkup).not.toContain("Known rep leads");
+    expect(singularMarkup).not.toContain("No current listings");
+    expect(pluralMarkup).toContain("Known rep leads");
+    expect(pluralMarkup).not.toContain("No current listings");
+  });
+
+  it("shows availability unknown when library card counts and known leads are missing", () => {
+    const items: JewelryItem[] = [
+      {
+        id: "design-unknown",
+        name: "Garden Gala Earrings",
+        collectionName: "Garden Gala",
+        jewelryType: "earrings",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "ER1001",
+        knownRepListingIds: [],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(renderLibraryPageContent(items));
+
+    expect(markup).toContain("Availability unknown");
+    expect(markup).not.toContain("No current listings");
+  });
+
   it("renders the item detail route with rep availability and focused Nic-Nac CTA", () => {
     const markup = renderToStaticMarkup(
       renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
