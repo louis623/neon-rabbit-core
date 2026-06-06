@@ -25,7 +25,12 @@ import {
 } from "../../lib/sparkle-finder/affiliate-copy";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
-import { getLocalRepBoardHref, getLocalRepHref } from "../../lib/sparkle-finder/route-hrefs";
+import {
+  getLocalRepBoardHref,
+  getLocalRepHref,
+  getSparkleSuiteRepBoardHref,
+  getSparkleSuiteRepHref,
+} from "../../lib/sparkle-finder/route-hrefs";
 
 const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
@@ -545,6 +550,21 @@ describe("Sparkle Finder hub routes", () => {
       "/rep-boards?listing=rainbow-crown",
     );
     expect(getLocalRepHref("https://sparklesuite.example/reps/sierra")).toBe("/rep-boards?rep=sierra");
+  });
+
+  it("converts Sparkle Suite API rep paths into customer-safe external hrefs", () => {
+    expect(getSparkleSuiteRepBoardHref("/amethyst/trade?c=rep-demo", "https://suite.example")).toBe(
+      "https://suite.example/amethyst/trade?c=rep-demo",
+    );
+    expect(getSparkleSuiteRepHref("/amethyst?c=rep-demo", "https://suite.example/")).toBe(
+      "https://suite.example/amethyst?c=rep-demo",
+    );
+    expect(getSparkleSuiteRepBoardHref("https://suite.example/amethyst/trade?c=rep-demo", "https://ignored.example")).toBe(
+      "https://suite.example/amethyst/trade?c=rep-demo",
+    );
+    expect(getSparkleSuiteRepHref("https://suite.example/amethyst?c=rep-demo", "https://ignored.example")).toBe(
+      "https://suite.example/amethyst?c=rep-demo",
+    );
   });
 });
 

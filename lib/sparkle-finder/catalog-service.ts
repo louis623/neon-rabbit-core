@@ -208,6 +208,10 @@ export function mapSparkleSuiteFinderJewelryType(jewelryType: SparkleSuiteFinder
   return types[jewelryType];
 }
 
+export function getSparkleSuiteFinderPublicBaseUrl(options: Pick<CatalogReadOptions, "apiBaseUrl"> = {}): string {
+  return getSparkleSuiteFinderApiBaseUrl(options);
+}
+
 function mapAvailabilityMatches(matches: SparkleSuiteFinderAvailabilityMatch[] | undefined): FinderAvailabilityMatch[] {
   return (matches ?? []).map((match) => ({
     listingId: match.listingId,
@@ -230,7 +234,7 @@ async function fetchJson<T>(url: string, options: CatalogReadOptions): Promise<T
   return (await response.json()) as T;
 }
 
-function getSparkleSuiteFinderApiBaseUrl(options: CatalogReadOptions): string {
+function getSparkleSuiteFinderApiBaseUrl(options: Pick<CatalogReadOptions, "apiBaseUrl"> = {}): string {
   const configured =
     options.apiBaseUrl ??
     process.env.SPARKLE_SUITE_FINDER_API_BASE_URL ??

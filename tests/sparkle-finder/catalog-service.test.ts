@@ -3,6 +3,7 @@ import {
   getCatalogJewelryItemById,
   getCatalogJewelryItems,
   getFinderAvailabilityForJewelryItem,
+  getSparkleSuiteFinderPublicBaseUrl,
   mapSparkleSuiteFinderCatalogItem,
   mapSparkleSuiteFinderJewelryType,
   type SparkleSuiteFinderCatalogItem,
@@ -142,6 +143,13 @@ describe("Sparkle Finder public API catalog service", () => {
       id: "jewel-rainbow-crown-ring",
       name: "Rainbow Crown Ring",
     });
+  });
+
+  it("normalizes the Sparkle Suite Finder API base URL for customer-facing links", () => {
+    expect(getSparkleSuiteFinderPublicBaseUrl({ apiBaseUrl: "https://suite.example/" })).toBe("https://suite.example");
+    expect(getSparkleSuiteFinderPublicBaseUrl({ apiBaseUrl: "https://suite.example///" })).toBe(
+      "https://suite.example",
+    );
   });
 });
 
