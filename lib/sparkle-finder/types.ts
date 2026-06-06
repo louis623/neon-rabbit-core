@@ -38,10 +38,13 @@ export type JewelryItem = {
   id: string;
   name: string;
   collectionName: string;
+  collectionYear?: number | null;
   jewelryType: JewelryType;
   imageUrl: string;
   bpLabel: BombPartyLabel;
   itemNumber: string;
+  searchTags?: string[];
+  availableListingCount?: number;
   knownRepListingIds: string[];
 };
 

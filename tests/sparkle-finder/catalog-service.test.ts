@@ -1,19 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   getCatalogJewelryItemById,
   getCatalogJewelryItems,
-  mapCanonicalJewelryDesignRow,
-  mapSparkleSuiteJewelryType,
-  type CanonicalJewelryDesignRow,
+  getFinderAvailabilityForJewelryItem,
+  mapSparkleSuiteFinderCatalogItem,
+  mapSparkleSuiteFinderJewelryType,
+  type SparkleSuiteFinderCatalogItem,
 } from "../../lib/sparkle-finder/catalog-service";
 
-describe("Sparkle Finder canonical catalog service", () => {
-  it("maps Sparkle Suite jewelry_designs rows into Finder library records", () => {
-    const item = mapCanonicalJewelryDesignRow(
-      canonicalRow({
-        design_name: "Starlight Diamond Ring",
-        type_prefix: "RG",
-        special_features: "Diamond label",
+describe("Sparkle Finder public API catalog service", () => {
+  it("maps Sparkle Suite Finder API catalog items into Finder library records", () => {
+    const item = mapSparkleSuiteFinderCatalogItem(
+      apiCatalogItem({
+        designName: "Starlight Diamond Ring",
+        jewelryType: "ring",
+        searchTags: ["rose gold", "diamond"],
       }),
     );
 
@@ -21,125 +22,188 @@ describe("Sparkle Finder canonical catalog service", () => {
       id: "design-123",
       name: "Starlight Diamond Ring",
       collectionName: "Midnight Garden",
+      collectionYear: 2026,
       jewelryType: "ring",
       imageUrl: "https://cdn.example.test/design-123.jpg",
       bpLabel: "diamond",
       itemNumber: "RG1234",
+      searchTags: ["rose gold", "diamond"],
+      availableListingCount: 2,
       knownRepListingIds: [],
     });
   });
 
-  it("uses the agreed Finder type fallback for Sparkle Suite ST items", () => {
-    expect(mapSparkleSuiteJewelryType("ST")).toBe("other");
-    expect(mapSparkleSuiteJewelryType("BR")).toBe("bracelet");
-    expect(mapSparkleSuiteJewelryType("ER")).toBe("earrings");
-    expect(mapSparkleSuiteJewelryType("NK")).toBe("necklace");
+  it("uses the agreed Finder type fallback for Sparkle Suite stack items", () => {
+    expect(mapSparkleSuiteFinderJewelryType("stack")).toBe("other");
+    expect(mapSparkleSuiteFinderJewelryType("bracelet")).toBe("bracelet");
+    expect(mapSparkleSuiteFinderJewelryType("earrings")).toBe("earrings");
+    expect(mapSparkleSuiteFinderJewelryType("necklace")).toBe("necklace");
+    expect(mapSparkleSuiteFinderJewelryType("ring")).toBe("ring");
   });
 
-  it("reads canonical catalog rows and attaches available trade listing ids", async () => {
-    const rows = [
-      canonicalRow({
-        id: "design-unicorn",
-        design_name: "Lavender Unicorn Necklace",
-        item_number: "NK8888",
-        main_stone: "Unicorn opal",
-        type_prefix: "NK",
-      }),
-    ];
-    const client = createFakeCatalogClient({
-      rows,
-      listings: [{ id: "listing-available", design_id: "design-unicorn" }],
-    });
+  it("reads catalog items from the Sparkle Suite public Finder API", async () => {
+    const fetchCatalog = vi.fn(async () => jsonResponse({ items: [apiCatalogItem({ designId: "design-api" })] }));
 
     const items = await getCatalogJewelryItems({
-      createSupabaseClient: async () => client as never,
-      isConfigured: () => true,
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
       useFixtureFallback: false,
     });
 
+    expect(fetchCatalog).toHaveBeenCalledWith("https://suite.example/api/public/finder/catalog?limit=50", {
+      cache: "no-store",
+    });
     expect(items).toEqual([
       expect.objectContaining({
-        id: "design-unicorn",
-        itemNumber: "NK8888",
-        jewelryType: "necklace",
-        bpLabel: "unicorn",
-        knownRepListingIds: ["listing-available"],
+        id: "design-api",
+        itemNumber: "RG1234",
+        collectionYear: 2026,
+        searchTags: ["rose gold"],
+        availableListingCount: 2,
       }),
     ]);
   });
 
-  it("fetches a single canonical catalog item by jewelry_designs id", async () => {
-    const rows = [canonicalRow({ id: "design-single", item_number: "BR7777", type_prefix: "BR" })];
-    const client = createFakeCatalogClient({
-      rows,
-      listings: [{ id: "listing-single", design_id: "design-single" }],
-    });
+  it("fetches a single catalog item by Sparkle Suite designId", async () => {
+    const fetchDetail = vi.fn(async () => jsonResponse({ item: apiCatalogItem({ designId: "design-single" }) }));
 
     const item = await getCatalogJewelryItemById("design-single", {
-      createSupabaseClient: async () => client as never,
-      isConfigured: () => true,
+      apiBaseUrl: "https://suite.example/",
+      fetcher: fetchDetail,
       useFixtureFallback: false,
     });
 
+    expect(fetchDetail).toHaveBeenCalledWith("https://suite.example/api/public/finder/catalog/design-single", {
+      cache: "no-store",
+    });
     expect(item).toEqual(
       expect.objectContaining({
         id: "design-single",
-        itemNumber: "BR7777",
-        jewelryType: "bracelet",
-        knownRepListingIds: ["listing-single"],
+        collectionYear: 2026,
+        availableListingCount: 2,
       }),
     );
   });
+
+  it("reads exact and similar availability matches from the Sparkle Suite public Finder API", async () => {
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [
+          apiAvailabilityMatch({
+            listingId: "listing-exact",
+            designId: "design-123",
+            designName: "Starlight Diamond Ring",
+          }),
+        ],
+        similarMatches: [
+          apiAvailabilityMatch({
+            listingId: "listing-similar",
+            designId: "design-similar",
+            designName: "Starlight Sister Ring",
+          }),
+        ],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(fetchAvailability).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/availability?designId=design-123&limit=24",
+      { cache: "no-store" },
+    );
+    expect(availability?.exactMatches[0]).toMatchObject({
+      listingId: "listing-exact",
+      rep: {
+        businessName: "Sparkle Suite Demo Boutique",
+      },
+      item: {
+        id: "design-123",
+      },
+    });
+    expect(availability?.similarMatches[0]).toMatchObject({
+      listingId: "listing-similar",
+      item: {
+        id: "design-similar",
+      },
+    });
+  });
+
+  it("falls back to fixture items when the API is not configured", async () => {
+    const items = await getCatalogJewelryItems({
+      apiBaseUrl: "",
+    });
+
+    expect(items[0]).toMatchObject({
+      id: "jewel-rainbow-crown-ring",
+      name: "Rainbow Crown Ring",
+    });
+  });
 });
 
-function canonicalRow(overrides: Partial<CanonicalJewelryDesignRow> = {}): CanonicalJewelryDesignRow {
+function apiCatalogItem(overrides: Partial<SparkleSuiteFinderCatalogItem> = {}): SparkleSuiteFinderCatalogItem {
   return {
-    id: "design-123",
-    item_number: "RG1234",
-    design_name: "Starlight Ring",
+    designId: "design-123",
+    itemNumber: "RG1234",
+    designName: "Starlight Ring",
+    collectionName: "Midnight Garden",
+    collectionYear: 2026,
+    jewelryType: "ring",
     material: "Rose gold",
-    main_stone: "Pink stone",
-    canonical_photo_url: "https://cdn.example.test/design-123.jpg",
-    special_features: null,
-    type_prefix: "RG",
-    collection: { name: "Midnight Garden" },
+    mainStone: "Pink stone",
+    bpMsrp: 19.95,
+    canonicalPhotoUrl: "https://cdn.example.test/design-123.jpg",
+    searchTags: ["rose gold"],
+    availableListingCount: 2,
     ...overrides,
   };
 }
 
-function createFakeCatalogClient({
-  rows,
-  listings,
+function apiAvailabilityMatch({
+  listingId,
+  designId,
+  designName,
 }: {
-  rows: CanonicalJewelryDesignRow[];
-  listings: Array<{ id: string; design_id: string }>;
+  listingId: string;
+  designId: string;
+  designName: string;
 }) {
   return {
-    from(table: string) {
-      if (table === "jewelry_designs") {
-        return {
-          select: () => ({
-            order: async () => ({ data: rows, error: null }),
-            eq: (_column: string, value: string) => ({
-              maybeSingle: async () => ({
-                data: rows.find((row) => row.id === value) ?? null,
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-
-      return {
-        select: () => ({
-          eq: () => ({
-            in: async (_column: string, values: string[]) => ({
-              data: listings.filter((listing) => values.includes(listing.design_id)),
-              error: null,
-            }),
-          }),
-        }),
-      };
+    listingId,
+    listedAt: "2026-06-06T12:00:00.000Z",
+    photoUrl: "https://cdn.example.test/listing.jpg",
+    photoSource: "canonical",
+    item: apiCatalogItem({ designId, designName }),
+    rep: {
+      repId: "rep-demo",
+      displayName: "Demo Rep",
+      businessName: "Sparkle Suite Demo Boutique",
+      profilePhotoUrl: "https://cdn.example.test/rep.jpg",
+      customerSitePath: "/amethyst?c=rep-demo",
+      tradeBoardPath: "/amethyst/trade?c=rep-demo",
+    },
+    nextShow: {
+      showId: "show-demo",
+      repId: "rep-demo",
+      platform: "TikTok",
+      startsAt: "2026-06-06T20:00:00.000Z",
+      durationMinutes: 60,
+      title: "Demo Show",
+      description: "A fixture-backed public API show.",
+      status: "scheduled",
     },
   };
+}
+
+function jsonResponse(payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "content-type": "application/json",
+    },
+  });
 }

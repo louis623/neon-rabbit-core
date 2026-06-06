@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { FindThisForMe } from "../../components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findNicNacMatchesForItem } from "../../lib/sparkle-finder/nic-nac";
+import type { FinderAvailabilityResult } from "../../lib/sparkle-finder/catalog-service";
 
 describe("Nic-Nac find-this-for-me flow", () => {
   it("returns exact item matches before same collection and type fallback matches", () => {
@@ -34,6 +35,41 @@ describe("Nic-Nac find-this-for-me flow", () => {
       nextLiveShow: {
         id: "show-sierra-tonight",
         title: "Celestial Lights Preview",
+      },
+    });
+  });
+
+  it("maps Sparkle Suite API availability into bounded Nic-Nac exact and similar leads", () => {
+    const result = findNicNacMatchesForItem(
+      getLocalDevAuthState("silver"),
+      "design-api",
+      apiAvailability(),
+    );
+
+    if (!result.ok) {
+      throw new Error("Expected Silver Nic-Nac API request to be allowed.");
+    }
+
+    expect(result.requestedItem).toMatchObject({
+      id: "design-api",
+      name: "Garden Gala Bracelet",
+    });
+    expect(result.results.map((match) => match.matchType)).toEqual(["exact_item", "same_collection_type"]);
+    expect(result.results[0]).toMatchObject({
+      confidenceLabel: "Exact item lead",
+      matchedItem: {
+        id: "design-api",
+      },
+      rep: {
+        businessName: "Sparkle Suite Demo Boutique",
+      },
+      listing: {
+        id: "listing-exact-api",
+        boardUrl: "/amethyst/trade?c=rep-demo",
+      },
+      nextLiveShow: {
+        id: "show-demo",
+        title: "Demo Live",
       },
     });
   });
@@ -130,3 +166,70 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).not.toContain("Exact item lead");
   });
 });
+
+function apiAvailability(): FinderAvailabilityResult {
+  const requestedItem = {
+    id: "design-api",
+    name: "Garden Gala Bracelet",
+    collectionName: "Demo Garden",
+    collectionYear: null,
+    jewelryType: "bracelet",
+    imageUrl: "",
+    bpLabel: "standard",
+    itemNumber: "BR1001",
+    knownRepListingIds: [],
+    searchTags: [],
+    availableListingCount: 1,
+  } as const;
+
+  return {
+    requestedItem,
+    exactMatches: [
+      {
+        listingId: "listing-exact-api",
+        listedAt: "2026-06-06T12:00:00.000Z",
+        photoUrl: "",
+        item: requestedItem,
+        rep: {
+          repId: "rep-demo",
+          displayName: "Demo Rep",
+          businessName: "Sparkle Suite Demo Boutique",
+          profilePhotoUrl: "",
+          customerSitePath: "/amethyst?c=rep-demo",
+          tradeBoardPath: "/amethyst/trade?c=rep-demo",
+        },
+        nextShow: {
+          showId: "show-demo",
+          repId: "rep-demo",
+          platform: "TikTok",
+          startsAt: "2026-06-06T20:00:00.000Z",
+          durationMinutes: 60,
+          title: "Demo Live",
+          description: "",
+          status: "scheduled",
+        },
+      },
+    ],
+    similarMatches: [
+      {
+        listingId: "listing-similar-api",
+        listedAt: "2026-06-06T12:30:00.000Z",
+        photoUrl: "",
+        item: {
+          ...requestedItem,
+          id: "design-similar",
+          name: "Garden Gala Sister Bracelet",
+        },
+        rep: {
+          repId: "rep-demo",
+          displayName: "Demo Rep",
+          businessName: "Sparkle Suite Demo Boutique",
+          profilePhotoUrl: "",
+          customerSitePath: "/amethyst?c=rep-demo",
+          tradeBoardPath: "/amethyst/trade?c=rep-demo",
+        },
+        nextShow: null,
+      },
+    ],
+  };
+}

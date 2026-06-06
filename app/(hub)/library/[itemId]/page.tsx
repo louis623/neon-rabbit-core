@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Gem } from "lucide-react";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
-import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
+import { getCatalogJewelryItemById, getFinderAvailabilityForJewelryItem } from "@/lib/sparkle-finder/catalog-service";
 import {
   getLocalDevAuthState,
   parseSparkleFinderAuthMode,
@@ -11,6 +11,7 @@ import {
 import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
 type ItemDetailPageProps = {
@@ -24,14 +25,16 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const resolvedParams = await params;
   const item = await getCatalogJewelryItemById(resolvedParams.itemId);
+  const availability = item ? await getFinderAvailabilityForJewelryItem(item.id) : undefined;
 
-  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode), item);
+  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode), item, availability);
 }
 
 export function renderItemDetailPageContent(
   params: Awaited<ItemDetailPageProps["params"]>,
   accountState: SparkleFinderAccountState,
   resolvedItem?: JewelryItem,
+  availability?: FinderAvailabilityResult,
 ) {
   const item = resolvedItem ?? getJewelryItemById(params.itemId);
 
@@ -39,7 +42,23 @@ export function renderItemDetailPageContent(
     notFound();
   }
 
-  const matches = matchJewelryItemToRepBoardListings(item.id);
+  const apiAvailabilityRows = availability
+    ? [
+        ...availability.exactMatches.map((match) => ({
+          key: match.listingId,
+          businessName: match.rep.businessName,
+          matchType: "exact_item",
+          href: match.rep.tradeBoardPath,
+        })),
+        ...availability.similarMatches.map((match) => ({
+          key: match.listingId,
+          businessName: match.rep.businessName,
+          matchType: "same_collection_type",
+          href: match.rep.tradeBoardPath,
+        })),
+      ]
+    : [];
+  const fixtureMatches = apiAvailabilityRows.length === 0 ? matchJewelryItemToRepBoardListings(item.id) : [];
 
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
@@ -74,8 +93,26 @@ export function renderItemDetailPageContent(
             Known rep availability
           </h2>
           <div className="mt-4 grid gap-3">
-            {matches.length > 0 ? (
-              matches.map((match) => {
+            {apiAvailabilityRows.length > 0 ? (
+              apiAvailabilityRows.map((match) => (
+                <div
+                  className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3"
+                  key={match.key}
+                >
+                  <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{match.businessName}</p>
+                  <p className="mt-1 text-xs font-bold text-[var(--sparkle-coral)]">
+                    {formatMatchType(match.matchType)}
+                  </p>
+                  <a
+                    className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+                    href={match.href}
+                  >
+                    Open rep board path
+                  </a>
+                </div>
+              ))
+            ) : fixtureMatches.length > 0 ? (
+              fixtureMatches.map((match) => {
                 const rep = getRepById(match.repId);
 
                 return (
@@ -104,7 +141,7 @@ export function renderItemDetailPageContent(
           </div>
         </article>
 
-        <FindThisForMe accountState={accountState} compact jewelryItemId={item.id} />
+        <FindThisForMe accountState={accountState} availability={availability} compact jewelryItemId={item.id} />
       </aside>
     </section>
   );

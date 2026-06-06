@@ -1,66 +1,117 @@
-import { createClient as createSupabaseServiceClient, type SupabaseClient } from "@supabase/supabase-js";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { createClient as createServerSupabaseClient } from "@/lib/supabase/server";
 import { sparkleFinderJewelryItems } from "../fixtures/sparkle-finder-fixtures";
 import type { BombPartyLabel, JewelryItem, JewelryType } from "./types";
 
-type SparkleSuiteJewelryType = "RG" | "NK" | "ER" | "ST" | "BR";
+export type SparkleSuiteFinderJewelryType = "ring" | "necklace" | "earrings" | "stack" | "bracelet";
 
-type CollectionRelation = {
-  name: string | null;
-};
-
-export type CanonicalJewelryDesignRow = {
-  id: string;
-  item_number: string;
-  design_name: string;
+export type SparkleSuiteFinderCatalogItem = {
+  designId: string;
+  itemNumber: string;
+  designName: string;
+  collectionName: string | null;
+  collectionYear: number | null;
+  jewelryType: SparkleSuiteFinderJewelryType;
   material: string | null;
-  main_stone: string | null;
-  canonical_photo_url: string | null;
-  special_features: string | null;
-  type_prefix: SparkleSuiteJewelryType;
-  collection: CollectionRelation | CollectionRelation[] | null;
+  mainStone: string | null;
+  bpMsrp: number | null;
+  canonicalPhotoUrl: string | null;
+  searchTags: string[];
+  availableListingCount: number;
 };
 
-type TradeListingRow = {
-  id: string;
-  design_id: string;
+export type SparkleSuiteFinderPublicRep = {
+  repId: string;
+  displayName: string;
+  businessName: string;
+  profilePhotoUrl: string | null;
+  customerSitePath: string;
+  tradeBoardPath: string;
 };
 
-type CatalogClientFactory = () => Promise<Pick<SupabaseClient, "from">>;
+export type SparkleSuiteFinderPublicShow = {
+  showId: string;
+  repId: string;
+  platform: string;
+  startsAt: string;
+  durationMinutes: number;
+  title: string | null;
+  description: string | null;
+  status: "scheduled" | "live";
+};
+
+export type FinderAvailabilityMatch = {
+  listingId: string;
+  listedAt: string | null;
+  photoUrl: string | null;
+  item: JewelryItem;
+  rep: SparkleSuiteFinderPublicRep;
+  nextShow: SparkleSuiteFinderPublicShow | null;
+};
+
+export type FinderAvailabilityResult = {
+  requestedItem: JewelryItem | null;
+  exactMatches: FinderAvailabilityMatch[];
+  similarMatches: FinderAvailabilityMatch[];
+};
 
 type CatalogReadOptions = {
-  createSupabaseClient?: CatalogClientFactory;
-  isConfigured?: () => boolean;
+  apiBaseUrl?: string;
+  fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
+  limit?: number;
+  query?: string;
   useFixtureFallback?: boolean;
 };
 
-const catalogSelect =
-  "id,item_number,design_name,material,main_stone,canonical_photo_url,special_features,type_prefix,collection:collections(name)";
+type CatalogListResponse = {
+  items?: SparkleSuiteFinderCatalogItem[];
+};
+
+type CatalogDetailResponse = {
+  item?: SparkleSuiteFinderCatalogItem;
+};
+
+type AvailabilityResponse = {
+  requestedItem?: SparkleSuiteFinderCatalogItem | null;
+  exactMatches?: SparkleSuiteFinderAvailabilityMatch[];
+  similarMatches?: SparkleSuiteFinderAvailabilityMatch[];
+};
+
+type SparkleSuiteFinderAvailabilityMatch = {
+  listingId: string;
+  listedAt: string | null;
+  photoUrl: string | null;
+  item: SparkleSuiteFinderCatalogItem;
+  rep: SparkleSuiteFinderPublicRep;
+  nextShow: SparkleSuiteFinderPublicShow | null;
+};
+
+const defaultSparkleSuiteFinderApiBaseUrl = "https://www.yoursparklesuite.com";
+const defaultCatalogLimit = 50;
+const defaultAvailabilityLimit = 24;
 
 export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): Promise<JewelryItem[]> {
-  const configured = options.isConfigured?.() ?? isCanonicalCatalogConfigured();
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
 
-  if (!configured) {
-    return options.useFixtureFallback === false ? [] : getFixtureJewelryItems();
+  if (!apiBaseUrl) {
+    return fallbackItems(options);
+  }
+
+  const params = new URLSearchParams({ limit: String(options.limit ?? defaultCatalogLimit) });
+  const query = options.query?.trim();
+
+  if (query) {
+    params.set("query", query);
   }
 
   try {
-    const supabase = await createCatalogClient(options);
-    const { data, error } = await supabase
-      .from("jewelry_designs")
-      .select(catalogSelect)
-      .order("created_at", { ascending: false });
+    const payload = await fetchJson<CatalogListResponse>(
+      `${apiBaseUrl}/api/public/finder/catalog?${params.toString()}`,
+      options,
+    );
+    const items = Array.isArray(payload.items) ? payload.items : [];
 
-    if (error || !Array.isArray(data)) {
-      return options.useFixtureFallback === false ? [] : getFixtureJewelryItems();
-    }
-
-    const items = mapCanonicalJewelryDesignRows(data as unknown as CanonicalJewelryDesignRow[]);
-
-    return withKnownRepListingIds(supabase, items, options.useFixtureFallback === false);
+    return items.map(mapSparkleSuiteFinderCatalogItem);
   } catch {
-    return options.useFixtureFallback === false ? [] : getFixtureJewelryItems();
+    return fallbackItems(options);
   }
 }
 
@@ -68,131 +119,135 @@ export async function getCatalogJewelryItemById(
   itemId: string,
   options: CatalogReadOptions = {},
 ): Promise<JewelryItem | undefined> {
-  const configured = options.isConfigured?.() ?? isCanonicalCatalogConfigured();
+  const trimmedItemId = itemId.trim();
 
-  if (!configured) {
-    return options.useFixtureFallback === false ? undefined : getFixtureJewelryItems().find((item) => item.id === itemId);
+  if (!trimmedItemId) {
+    return undefined;
+  }
+
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
+
+  if (!apiBaseUrl) {
+    return fallbackItemById(trimmedItemId, options);
   }
 
   try {
-    const supabase = await createCatalogClient(options);
-    const { data, error } = await supabase
-      .from("jewelry_designs")
-      .select(catalogSelect)
-      .eq("id", itemId)
-      .maybeSingle();
+    const payload = await fetchJson<CatalogDetailResponse>(
+      `${apiBaseUrl}/api/public/finder/catalog/${encodeURIComponent(trimmedItemId)}`,
+      options,
+    );
 
-    if (error || !data) {
-      return options.useFixtureFallback === false ? undefined : getFixtureJewelryItems().find((item) => item.id === itemId);
-    }
-
-    const [item] = mapCanonicalJewelryDesignRows([data as unknown as CanonicalJewelryDesignRow]);
-
-    return item ? (await withKnownRepListingIds(supabase, [item], options.useFixtureFallback === false))[0] : undefined;
+    return payload.item ? mapSparkleSuiteFinderCatalogItem(payload.item) : fallbackItemById(trimmedItemId, options);
   } catch {
-    return options.useFixtureFallback === false ? undefined : getFixtureJewelryItems().find((item) => item.id === itemId);
+    return fallbackItemById(trimmedItemId, options);
   }
 }
 
-export function mapCanonicalJewelryDesignRows(rows: readonly CanonicalJewelryDesignRow[]): JewelryItem[] {
-  return rows.map(mapCanonicalJewelryDesignRow);
+export async function getFinderAvailabilityForJewelryItem(
+  itemId: string,
+  options: CatalogReadOptions = {},
+): Promise<FinderAvailabilityResult | undefined> {
+  const trimmedItemId = itemId.trim();
+
+  if (!trimmedItemId) {
+    return undefined;
+  }
+
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
+
+  if (!apiBaseUrl) {
+    return undefined;
+  }
+
+  const params = new URLSearchParams({
+    designId: trimmedItemId,
+    limit: String(options.limit ?? defaultAvailabilityLimit),
+  });
+
+  try {
+    const payload = await fetchJson<AvailabilityResponse>(
+      `${apiBaseUrl}/api/public/finder/availability?${params.toString()}`,
+      options,
+    );
+
+    return {
+      requestedItem: payload.requestedItem ? mapSparkleSuiteFinderCatalogItem(payload.requestedItem) : null,
+      exactMatches: mapAvailabilityMatches(payload.exactMatches),
+      similarMatches: mapAvailabilityMatches(payload.similarMatches),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
-export function mapCanonicalJewelryDesignRow(row: CanonicalJewelryDesignRow): JewelryItem {
-  const collection = readCollectionRelation(row.collection);
-  const collectionName = collection?.name?.trim() || "Unassigned Collection";
-
+export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalogItem): JewelryItem {
   return {
-    id: row.id,
-    name: row.design_name.trim() || row.item_number,
-    collectionName,
-    jewelryType: mapSparkleSuiteJewelryType(row.type_prefix),
-    imageUrl: row.canonical_photo_url?.trim() ?? "",
-    bpLabel: deriveBombPartyLabel(row),
-    itemNumber: row.item_number,
+    id: item.designId,
+    name: item.designName.trim() || item.itemNumber,
+    collectionName: item.collectionName?.trim() || "Unassigned Collection",
+    collectionYear: item.collectionYear,
+    jewelryType: mapSparkleSuiteFinderJewelryType(item.jewelryType),
+    imageUrl: item.canonicalPhotoUrl?.trim() ?? "",
+    bpLabel: deriveBombPartyLabel(item),
+    itemNumber: item.itemNumber,
+    searchTags: Array.isArray(item.searchTags) ? [...item.searchTags] : [],
+    availableListingCount: item.availableListingCount,
     knownRepListingIds: [],
   };
 }
 
-export function mapSparkleSuiteJewelryType(typePrefix: SparkleSuiteJewelryType): JewelryType {
-  const types: Record<SparkleSuiteJewelryType, JewelryType> = {
-    BR: "bracelet",
-    ER: "earrings",
-    NK: "necklace",
-    RG: "ring",
-    ST: "other",
+export function mapSparkleSuiteFinderJewelryType(jewelryType: SparkleSuiteFinderJewelryType): JewelryType {
+  const types: Record<SparkleSuiteFinderJewelryType, JewelryType> = {
+    bracelet: "bracelet",
+    earrings: "earrings",
+    necklace: "necklace",
+    ring: "ring",
+    stack: "other",
   };
 
-  return types[typePrefix];
+  return types[jewelryType];
 }
 
-export function isCanonicalCatalogConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      (process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || isSupabaseConfigured()),
-  );
+function mapAvailabilityMatches(matches: SparkleSuiteFinderAvailabilityMatch[] | undefined): FinderAvailabilityMatch[] {
+  return (matches ?? []).map((match) => ({
+    listingId: match.listingId,
+    listedAt: match.listedAt,
+    photoUrl: match.photoUrl,
+    item: mapSparkleSuiteFinderCatalogItem(match.item),
+    rep: match.rep,
+    nextShow: match.nextShow,
+  }));
 }
 
-async function createCatalogClient(options: CatalogReadOptions): Promise<Pick<SupabaseClient, "from">> {
-  if (options.createSupabaseClient) {
-    return options.createSupabaseClient();
+async function fetchJson<T>(url: string, options: CatalogReadOptions): Promise<T> {
+  const fetcher = options.fetcher ?? fetch;
+  const response = await fetcher(url, { cache: "no-store" });
+
+  if (!response.ok) {
+    throw new Error(`Sparkle Suite Finder API returned ${response.status}`);
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-
-  if (supabaseUrl && serviceRoleKey) {
-    return createSupabaseServiceClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        persistSession: false,
-      },
-    });
-  }
-
-  return createServerSupabaseClient();
+  return (await response.json()) as T;
 }
 
-async function withKnownRepListingIds(
-  supabase: Pick<SupabaseClient, "from">,
-  items: JewelryItem[],
-  shouldFailClosed: boolean,
-): Promise<JewelryItem[]> {
-  if (items.length === 0) {
-    return [];
-  }
+function getSparkleSuiteFinderApiBaseUrl(options: CatalogReadOptions): string {
+  const configured =
+    options.apiBaseUrl ??
+    process.env.SPARKLE_SUITE_FINDER_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_SPARKLE_SUITE_FINDER_API_BASE_URL ??
+    defaultSparkleSuiteFinderApiBaseUrl;
 
-  const itemIds = items.map((item) => item.id);
-
-  try {
-    const { data, error } = await supabase
-      .from("trade_listings")
-      .select("id,design_id")
-      .eq("status", "available")
-      .in("design_id", itemIds);
-
-    if (error || !Array.isArray(data)) {
-      return shouldFailClosed ? items : items;
-    }
-
-    const listingIdsByDesignId = new Map<string, string[]>();
-
-    for (const listing of data as unknown as TradeListingRow[]) {
-      const listingIds = listingIdsByDesignId.get(listing.design_id) ?? [];
-      listingIds.push(listing.id);
-      listingIdsByDesignId.set(listing.design_id, listingIds);
-    }
-
-    return items.map((item) => ({
-      ...item,
-      knownRepListingIds: listingIdsByDesignId.get(item.id) ?? [],
-    }));
-  } catch {
-    return items;
-  }
+  return configured.trim().replace(/\/+$/, "");
 }
 
-function deriveBombPartyLabel(row: CanonicalJewelryDesignRow): BombPartyLabel {
-  const searchableText = [row.design_name, row.material, row.main_stone, row.special_features]
+function deriveBombPartyLabel(item: SparkleSuiteFinderCatalogItem): BombPartyLabel {
+  const searchableText = [
+    item.designName,
+    item.material,
+    item.mainStone,
+    item.collectionName,
+    ...(Array.isArray(item.searchTags) ? item.searchTags : []),
+  ]
     .filter(Boolean)
     .join(" ")
     .toLocaleLowerCase();
@@ -208,14 +263,12 @@ function deriveBombPartyLabel(row: CanonicalJewelryDesignRow): BombPartyLabel {
   return "standard";
 }
 
-function readCollectionRelation(
-  collection: CanonicalJewelryDesignRow["collection"],
-): CollectionRelation | undefined {
-  if (Array.isArray(collection)) {
-    return collection[0];
-  }
+function fallbackItems(options: CatalogReadOptions): JewelryItem[] {
+  return options.useFixtureFallback === false ? [] : getFixtureJewelryItems();
+}
 
-  return collection ?? undefined;
+function fallbackItemById(itemId: string, options: CatalogReadOptions): JewelryItem | undefined {
+  return options.useFixtureFallback === false ? undefined : getFixtureJewelryItems().find((item) => item.id === itemId);
 }
 
 function getFixtureJewelryItems(): JewelryItem[] {

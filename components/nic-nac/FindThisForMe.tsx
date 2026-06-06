@@ -4,15 +4,17 @@ import { findNicNacMatchesForItem } from "@/lib/sparkle-finder/nic-nac";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
 import type { NicNacFindMatch } from "@/lib/sparkle-finder/nic-nac";
 
 type FindThisForMeProps = {
   accountState: SparkleFinderAccountState;
   jewelryItemId?: string;
   compact?: boolean;
+  availability?: FinderAvailabilityResult;
 };
 
-export function FindThisForMe({ accountState, jewelryItemId, compact = false }: FindThisForMeProps) {
+export function FindThisForMe({ accountState, jewelryItemId, compact = false, availability }: FindThisForMeProps) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
 
   if (!entitlements.canUseNicNacFindRequests) {
@@ -23,7 +25,7 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false }: 
     return <NicNacEmptyPrompt compact={compact} />;
   }
 
-  const result = findNicNacMatchesForItem(accountState, jewelryItemId);
+  const result = findNicNacMatchesForItem(accountState, jewelryItemId, availability);
 
   if (!result.ok) {
     return <NicNacEmptyPrompt compact={compact} />;
@@ -131,7 +133,8 @@ function NicNacMatchCard({ match }: { match: NicNacFindMatch }) {
         <p className="inline-flex items-center gap-2">
           <CalendarClock aria-hidden="true" className="size-4 text-[var(--sparkle-rose)]" />
           <span>
-            <strong className="text-[var(--sparkle-plum-deep)]">Next show:</strong> {match.nextLiveShow.title}
+            <strong className="text-[var(--sparkle-plum-deep)]">Next show:</strong>{" "}
+            {match.nextLiveShow?.title ?? "No upcoming show listed"}
           </span>
         </p>
       </div>
