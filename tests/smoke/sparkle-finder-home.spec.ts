@@ -5,6 +5,13 @@ import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-g
 
 const baseUrl = process.env.SPARKLE_FINDER_BASE_URL ?? "http://127.0.0.1:4310";
 const screenshotDir = process.env.SPARKLE_FINDER_SCREENSHOT_DIR ?? "verification/sparkle-finder";
+const sparkleSuiteFinderBaseUrl = (
+  process.env.SPARKLE_SUITE_FINDER_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_SPARKLE_SUITE_FINDER_API_BASE_URL ??
+  "https://www.yoursparklesuite.com"
+)
+  .trim()
+  .replace(/\/+$/, "");
 
 const smokeTexts = [
   "Sparkle Finder",
@@ -178,6 +185,31 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Rep Trade Boards / Dance Floors")).toBeVisible();
     await expectNoExampleLinksOnCurrentPage(page);
   });
+
+  test("Silver API-backed item detail exposes Sparkle Suite rep board link when configured", async ({ page }) => {
+    const apiItemId = process.env.SPARKLE_FINDER_SMOKE_API_ITEM_ID;
+
+    test.skip(!apiItemId, "Set SPARKLE_FINDER_SMOKE_API_ITEM_ID to smoke-test a live API-backed item detail page.");
+
+    await page.context().clearCookies();
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+
+    await page.goto(`${baseUrl}/library/${apiItemId}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Nic-Nac, find this for me")).toBeVisible();
+    const repBoardLink = page.getByRole("link", { name: "Open rep board path" }).first();
+    await expect(repBoardLink).toBeVisible();
+    await expect(repBoardLink).toHaveAttribute(
+      "href",
+      new RegExp(`^${escapeRegExp(sparkleSuiteFinderBaseUrl)}/`),
+    );
+    await expectNoGuardrailCopy(page);
+  });
 });
 
 async function expectNoGuardrailCopy(page: Page) {
@@ -329,4 +361,8 @@ function parseRgb(value: string): [number, number, number] {
   }
 
   return [channels[0] ?? 0, channels[1] ?? 0, channels[2] ?? 0];
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
