@@ -9,6 +9,7 @@ function makeAdminClient({
   repsByEmail = {},
   repsById = {},
   repsByCustomDomain = {},
+  repsByPublicSiteSlug = {},
   latestLaunchRepId = null,
   paidRepIds = [],
   readyLaunchRepIds = [],
@@ -16,6 +17,7 @@ function makeAdminClient({
   repsByEmail?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsById?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsByCustomDomain?: Record<string, { id: string; email: string; streaming_links?: unknown }>
+  repsByPublicSiteSlug?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   latestLaunchRepId?: string | null
   paidRepIds?: string[]
   readyLaunchRepIds?: string[]
@@ -25,6 +27,15 @@ function makeAdminClient({
       return {
         maybeSingle: vi.fn().mockResolvedValue({
           data: repsByEmail[value] ?? null,
+          error: null,
+        }),
+      }
+    }
+
+    if (column === 'public_site_slug') {
+      return {
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: repsByPublicSiteSlug[value] ?? null,
           error: null,
         }),
       }
@@ -127,6 +138,103 @@ function makeAdminClient({
 }
 
 describe('Amethyst preview rep resolver', () => {
+  it('resolves a paid rep by public site slug before preview email fallbacks', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+      repsByPublicSiteSlug: {
+        'sparkle-by-sasha': {
+          id: 'rep-slug',
+          email: 'sasha@example.com',
+        },
+      },
+      paidRepIds: ['rep-slug'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        publicSiteSlug: 'sparkle-by-sasha',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-slug',
+      email: 'sasha@example.com',
+    })
+  })
+
+  it('normalizes public site slug lookup from mixed case and whitespace', async () => {
+    const admin = makeAdminClient({
+      repsByPublicSiteSlug: {
+        'sparkle-by-sasha': {
+          id: 'rep-slug',
+          email: 'sasha@example.com',
+        },
+      },
+      paidRepIds: ['rep-slug'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        publicSiteSlug: '  Sparkle-By-Sasha  ',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-slug',
+      email: 'sasha@example.com',
+    })
+  })
+
+  it('returns null for an unpaid public site slug match without preview email fallback', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+      repsByPublicSiteSlug: {
+        'sparkle-by-sasha': {
+          id: 'rep-slug',
+          email: 'sasha@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        publicSiteSlug: 'sparkle-by-sasha',
+      }),
+    ).resolves.toBeNull()
+  })
+
+  it('returns null for an unknown public site slug without preview email fallback', async () => {
+    const admin = makeAdminClient({
+      repsByEmail: {
+        'preview@example.com': {
+          id: 'rep-preview',
+          email: 'preview@example.com',
+        },
+      },
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        env: {
+          AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
+        },
+        publicSiteSlug: 'unknown-sparkle',
+      }),
+    ).resolves.toBeNull()
+  })
+
   it('uses an explicit rep id before preview email fallbacks', async () => {
     const admin = makeAdminClient({
       repsByEmail: {

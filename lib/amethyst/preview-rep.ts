@@ -13,6 +13,7 @@ interface AmethystPreviewRep {
 interface ResolveAmethystPreviewRepOptions {
   env?: Record<string, string | undefined>
   repId?: string | null
+  publicSiteSlug?: string | null
   select?: string
 }
 
@@ -75,6 +76,23 @@ async function loadRepByCustomDomain(
     }
   }
   const { data, error } = await query.eq('custom_domain', customDomain).maybeSingle()
+  if (error) throw error
+  return data ?? null
+}
+
+async function loadRepByPublicSiteSlug(
+  admin: PreviewAdminClient,
+  publicSiteSlug: string,
+  select: string,
+): Promise<AmethystPreviewRep | null> {
+  const query = admin.from('reps').select(select) as {
+    eq(column: string, value: string): {
+      maybeSingle(): Promise<{ data: AmethystPreviewRep | null; error: unknown }>
+    }
+  }
+  const { data, error } = await query
+    .eq('public_site_slug', publicSiteSlug)
+    .maybeSingle()
   if (error) throw error
   return data ?? null
 }
@@ -193,7 +211,15 @@ export async function resolveAmethystPreviewRep(
 ): Promise<AmethystPreviewRep | null> {
   const env = options.env ?? process.env
   const select = options.select ?? 'id, email'
+  const publicSiteSlug = options.publicSiteSlug?.trim().toLowerCase()
   const repId = options.repId?.trim()
+
+  if (publicSiteSlug) {
+    const rep = await loadRepByPublicSiteSlug(admin, publicSiteSlug, select)
+    if (!rep) return null
+
+    return (await canServePublicCustomerSite(admin, rep.id)) ? rep : null
+  }
 
   if (repId) {
     const rep = await loadRepById(admin, repId, select)
