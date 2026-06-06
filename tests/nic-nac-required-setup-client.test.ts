@@ -36,6 +36,7 @@ describe('Nic-Nac required setup client', () => {
     expect(client).not.toContain("searchParams.get('preview') === 'setup'")
     expect(client).not.toContain('canUseLocalRequiredSetupPreview')
     expect(client).not.toContain('buildLocalRequiredSetupPreviewState')
+    expect(client).not.toContain('const immediateReviewState')
   })
 
   it('surfaces a local setup-state load blocker instead of spinning forever', () => {

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const listSparkleFinderCatalogItemsMock = vi.fn()
 const getSparkleFinderCatalogItemMock = vi.fn()
 const getSparkleFinderAvailabilityMock = vi.fn()
+const listSparkleFinderLiveShowsMock = vi.fn()
 
 vi.mock('@/lib/sparkle-finder/public-api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/sparkle-finder/public-api')>(
@@ -17,18 +18,22 @@ vi.mock('@/lib/sparkle-finder/public-api', async () => {
       getSparkleFinderCatalogItemMock(...args),
     getSparkleFinderAvailability: (...args: unknown[]) =>
       getSparkleFinderAvailabilityMock(...args),
+    listSparkleFinderLiveShows: (...args: unknown[]) =>
+      listSparkleFinderLiveShowsMock(...args),
   }
 })
 
 import { GET as getFinderAvailability } from '@/app/api/public/finder/availability/route'
 import { GET as getFinderCatalog } from '@/app/api/public/finder/catalog/route'
 import { GET as getFinderCatalogDetail } from '@/app/api/public/finder/catalog/[designId]/route'
+import { GET as getFinderLiveShows } from '@/app/api/public/finder/live-shows/route'
 
 describe('Sparkle Finder public routes', () => {
   beforeEach(() => {
     listSparkleFinderCatalogItemsMock.mockReset()
     getSparkleFinderCatalogItemMock.mockReset()
     getSparkleFinderAvailabilityMock.mockReset()
+    listSparkleFinderLiveShowsMock.mockReset()
   })
 
   it('returns public catalog search results without caching', async () => {
@@ -128,10 +133,26 @@ describe('Sparkle Finder public routes', () => {
   })
 
   it('returns public exact and similar availability matches', async () => {
+    const availability = {
+      listingId: 'listing-1',
+      rep: {
+        repId: 'rep-1',
+        showName: 'Gracie Test Studio',
+        repFirstName: 'Gracie',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/gracieteststudio',
+      },
+      nextShow: {
+        showId: 'show-1',
+        repId: 'rep-1',
+        startsAt: '2026-06-10T00:00:00.000Z',
+        title: 'Wednesday Reveal',
+        status: 'scheduled',
+      },
+    }
     getSparkleFinderAvailabilityMock.mockResolvedValueOnce({
       requestedItem: { designId: 'design-1', itemNumber: 'RG100' },
-      exactMatches: [{ listingId: 'listing-1' }],
-      similarMatches: [{ listingId: 'listing-2' }],
+      exactMatches: [availability],
+      similarMatches: [{ ...availability, listingId: 'listing-2' }],
     })
 
     const response = await getFinderAvailability(
@@ -145,10 +166,59 @@ describe('Sparkle Finder public routes', () => {
       limit: 8,
     })
     expect(response.headers.get('cache-control')).toBe('no-store')
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+    expect(body).toEqual({
       requestedItem: { designId: 'design-1', itemNumber: 'RG100' },
-      exactMatches: [{ listingId: 'listing-1' }],
-      similarMatches: [{ listingId: 'listing-2' }],
+      exactMatches: [availability],
+      similarMatches: [{ ...availability, listingId: 'listing-2' }],
+    })
+    expect(JSON.stringify(body)).not.toContain('businessName')
+    expect(JSON.stringify(body)).not.toContain('tradeBoardPath')
+    expect(JSON.stringify(body)).not.toContain('customerSitePath')
+  })
+
+  it('returns public live shows without requiring item availability', async () => {
+    listSparkleFinderLiveShowsMock.mockResolvedValueOnce([
+      {
+        showId: 'show-1',
+        showName: 'Gracie Test Studio',
+        repFirstName: 'Gracie',
+        startsAt: '2026-06-10T00:00:00.000Z',
+        status: 'scheduled',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/gracieteststudio',
+      },
+    ])
+
+    const response = await getFinderLiveShows(
+      new Request('http://localhost/api/public/finder/live-shows?limit=12'),
+    )
+
+    expect(listSparkleFinderLiveShowsMock).toHaveBeenCalledWith({ limit: 12 })
+    expect(getSparkleFinderAvailabilityMock).not.toHaveBeenCalled()
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    await expect(response.json()).resolves.toEqual({
+      shows: [
+        {
+          showId: 'show-1',
+          showName: 'Gracie Test Studio',
+          repFirstName: 'Gracie',
+          startsAt: '2026-06-10T00:00:00.000Z',
+          status: 'scheduled',
+          customerSiteUrl: 'https://www.yoursparklesuite.com/gracieteststudio',
+        },
+      ],
+    })
+  })
+
+  it('rejects invalid live show limits', async () => {
+    const response = await getFinderLiveShows(
+      new Request('http://localhost/api/public/finder/live-shows?limit=bad'),
+    )
+
+    expect(response.status).toBe(400)
+    expect(listSparkleFinderLiveShowsMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'limit must be a positive whole number.',
     })
   })
 })

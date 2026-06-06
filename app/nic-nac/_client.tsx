@@ -274,14 +274,6 @@ export default function NicNacClient({
     async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
       if (options.showLoading) setSetupStateStatus('loading')
       setSetupStateError(null)
-      const immediateReviewState = reviewerSmokeVisible
-        ? buildWorkspaceReviewFallbackState()
-        : null
-      if (immediateReviewState) {
-        setSetupState(immediateReviewState)
-        setSetupStateStatus('ready')
-        return
-      }
 
       const controller = new AbortController()
       const abortFromCaller = () => controller.abort('caller')

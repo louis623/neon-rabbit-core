@@ -9,11 +9,24 @@ import { ServiceError } from '@/lib/services/errors'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const MAX_CALENDAR_SUMMARY_LIMIT = 20
+const WHOLE_NUMBER_PATTERN = /^[1-9]\d*$/
+
 function readLimit(url: URL, key: string) {
   const raw = url.searchParams.get(key)
   if (!raw) return undefined
-  const parsed = Number.parseInt(raw, 10)
-  return Number.isFinite(parsed) ? parsed : null
+  if (!WHOLE_NUMBER_PATTERN.test(raw)) return null
+
+  const parsed = Number(raw)
+  if (!Number.isSafeInteger(parsed) || parsed > MAX_CALENDAR_SUMMARY_LIMIT) {
+    return null
+  }
+
+  return parsed
+}
+
+function limitError(key: string) {
+  return `${key} must be a whole number between 1 and ${MAX_CALENDAR_SUMMARY_LIMIT}.`
 }
 
 export async function GET(request: Request) {
@@ -24,14 +37,14 @@ export async function GET(request: Request) {
 
     if (upcomingLimit === null) {
       return NextResponse.json(
-        { error: 'upcoming must be a whole number.' },
+        { error: limitError('upcoming') },
         { status: 400 },
       )
     }
 
     if (historyLimit === null) {
       return NextResponse.json(
-        { error: 'history must be a whole number.' },
+        { error: limitError('history') },
         { status: 400 },
       )
     }

@@ -9,6 +9,7 @@ import type { ToolDefinition } from './types'
 const inputSchema = z.object({
   platform: z.string(),
   eventTime: z.string(),
+  timeZone: z.string().optional(),
   durationMinutes: z.number().int().positive().optional(),
   title: z.string().optional(),
   description: z.string().optional(),

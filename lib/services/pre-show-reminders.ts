@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendSmsNotification } from './sms-notifications'
 import { ServiceError } from './errors'
 import type { CalendarEvent, CustomerAudienceMember } from './types'
+import { DEFAULT_REP_TIME_ZONE } from './calendar-timezone'
 
 const DEFAULT_LEAD_MINUTES = 30
 const DEFAULT_LIMIT = 25
@@ -40,6 +41,7 @@ type CalendarEventRow = {
   rep_id: string
   platform: string
   event_time: string
+  time_zone: string | null
   duration_minutes: number | null
   title: string | null
   description: string | null
@@ -79,6 +81,7 @@ function mapEvent(row: CalendarEventRow): CalendarEvent {
     repId: row.rep_id,
     platform: row.platform,
     eventTime: row.event_time,
+    timeZone: row.time_zone ?? DEFAULT_REP_TIME_ZONE,
     durationMinutes: row.duration_minutes ?? 60,
     title: row.title,
     description: row.description,
@@ -179,6 +182,7 @@ async function loadEvents(
         'rep_id',
         'platform',
         'event_time',
+        'time_zone',
         'duration_minutes',
         'title',
         'description',

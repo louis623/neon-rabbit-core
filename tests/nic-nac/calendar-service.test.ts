@@ -14,6 +14,7 @@ function baseRow(overrides: Record<string, unknown> = {}) {
     rep_id: 'rep-1',
     platform: 'TikTok',
     event_time: '2099-05-01T20:00:00.000Z',
+    time_zone: 'America/New_York',
     duration_minutes: 60,
     title: 'Friday Sparkles',
     description: 'Main show',
@@ -147,6 +148,7 @@ describe('calendar service', () => {
       rep_id: 'rep-1',
       platform: 'TikTok',
       event_time: '2099-05-01T20:00:00.000Z',
+      time_zone: 'America/New_York',
       duration_minutes: 60,
       title: 'Friday Sparkles',
       description: null,
@@ -162,6 +164,7 @@ describe('calendar service', () => {
       id: 'event-1',
       repId: 'rep-1',
       eventTime: '2099-05-01T20:00:00.000Z',
+      timeZone: 'America/New_York',
       durationMinutes: 60,
       discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       recurrenceGroupId: null,
@@ -202,6 +205,7 @@ describe('calendar service', () => {
     expect(insertPayload.every((row) => row.is_recurring === true)).toBe(true)
     expect(insertPayload.every((row) => row.recurrence_rule === 'weekly')).toBe(true)
     expect(insertPayload.every((row) => row.status === 'scheduled')).toBe(true)
+    expect(insertPayload.every((row) => row.time_zone === 'America/New_York')).toBe(true)
     expect(insertPayload.every((row) => row.discount_codes instanceof Array)).toBe(true)
     expect(new Set(insertPayload.map((row) => row.recurrence_group_id))).toHaveLength(1)
     expect(new Set(insertPayload.map((row) => row.id))).toHaveLength(4)
@@ -211,6 +215,7 @@ describe('calendar service', () => {
     expect(result.events[0]).toMatchObject({
       title: 'Weekly Sparkles',
       isRecurring: true,
+      timeZone: 'America/New_York',
       recurrenceGroupId: 'group-1',
       recurrenceRule: 'weekly',
     })
@@ -262,6 +267,7 @@ describe('calendar service', () => {
     expect(result.events[0]).toMatchObject({
       id: 'event-1',
       title: 'Friday Sparkles',
+      timeZone: 'America/New_York',
       discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featuredCollections: ['Celestial'],
     })
@@ -361,12 +367,14 @@ describe('calendar service', () => {
     const result = await updateShow(supabase, 'rep-1', 'event-1', {
       title: 'Wednesday Sparkles',
       discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
+      timeZone: 'America/New_York',
       applyToSeries: true,
     })
 
     const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(updateCall.title).toBe('Wednesday Sparkles')
     expect(updateCall.discount_codes).toEqual([{ code: 'NEWCODE', description: 'Updated' }])
+    expect(updateCall.time_zone).toBe('America/New_York')
     expect(typeof updateCall.updated_at).toBe('string')
     expect(updated.state.eq).toEqual([
       ['rep_id', 'rep-1'],

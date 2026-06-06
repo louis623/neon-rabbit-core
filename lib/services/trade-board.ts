@@ -146,6 +146,52 @@ function shouldIncludeListingInBoardRead(
   return isRemovedListingInsideRecoveryWindow(listing.deleted_at, options)
 }
 
+function compareNullableText(a: string | null | undefined, b: string | null | undefined) {
+  return (a ?? '').localeCompare(b ?? '')
+}
+
+function getListingTimestamp(listing: TradeListingWithDesign, key: 'created_at' | 'listed_at') {
+  const parsed = Date.parse(key === 'listed_at' ? listing.listed_at ?? '' : listing.created_at)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function sortBoardListings(
+  listings: TradeListingWithDesign[],
+  sortBy: NonNullable<GetMyBoardFilters['sortBy']>,
+  sortOrder: NonNullable<GetMyBoardFilters['sortOrder']>,
+) {
+  const direction = sortOrder === 'asc' ? 1 : -1
+  return [...listings].sort((a, b) => {
+    let comparison = 0
+
+    if (sortBy === 'created_at' || sortBy === 'listed_at') {
+      comparison =
+        getListingTimestamp(a, sortBy) - getListingTimestamp(b, sortBy)
+    } else if (sortBy === 'msrp') {
+      comparison = Number(a.design.bp_msrp ?? 0) - Number(b.design.bp_msrp ?? 0)
+    } else if (sortBy === 'design_name') {
+      comparison = compareNullableText(a.design.design_name, b.design.design_name)
+    } else if (sortBy === 'collection') {
+      comparison = compareNullableText(
+        a.design.collection?.name,
+        b.design.collection?.name,
+      )
+    }
+
+    if (comparison !== 0) return comparison * direction
+    return a.design.item_number.localeCompare(b.design.item_number)
+  })
+}
+
+function pageBoardListings(
+  listings: TradeListingWithDesign[],
+  filters: GetMyBoardFilters,
+) {
+  const offset = filters.offset ?? 0
+  const end = filters.limit ? offset + filters.limit : undefined
+  return listings.slice(offset, end)
+}
+
 function isManagedRepListingPhotoUrl(repId: string, photoUrl: string): boolean {
   try {
     const url = new URL(photoUrl)
@@ -195,20 +241,10 @@ export async function getMyBoard(
   if (filters.statusFilter) {
     query = query.eq('status', filters.statusFilter)
   }
-  if (filters.typeFilter) {
-    query = query.eq('jewelry_designs.type_prefix', filters.typeFilter)
-  }
 
   const sortBy = filters.sortBy ?? 'listed_at'
   const sortOrder = filters.sortOrder ?? 'desc'
-  if (sortBy === 'listed_at' || sortBy === 'created_at') {
-    query = query.order(sortBy, { ascending: sortOrder === 'asc', nullsFirst: false })
-  }
-
-  if (filters.limit) query = query.limit(filters.limit)
-  if (filters.offset) {
-    query = query.range(filters.offset, filters.offset + (filters.limit ?? 100) - 1)
-  }
+  query = query.order('listed_at', { ascending: false, nullsFirst: false })
 
   const { data, error } = await query
   if (error) throw error
@@ -237,14 +273,19 @@ export async function getMyBoard(
   const filteredByCollection = filters.collectionFilter
     ? listings.filter((l) => l.design.collection?.name === filters.collectionFilter)
     : listings
+  const filteredByType = filters.typeFilter
+    ? filteredByCollection.filter((l) => l.design.type_prefix === filters.typeFilter)
+    : filteredByCollection
+  const sortedListings = sortBoardListings(filteredByType, sortBy, sortOrder)
+  const pagedListings = pageBoardListings(sortedListings, filters)
 
-  const totalPieces = filteredByCollection.length
-  const totalMsrp = filteredByCollection.reduce(
+  const totalPieces = pagedListings.length
+  const totalMsrp = pagedListings.reduce(
     (sum, l) => sum + Number(l.design.bp_msrp ?? 0),
     0
   )
   const typeBreakdown: Record<JewelryType, number> = { RG: 0, NK: 0, ER: 0, ST: 0, BR: 0 }
-  for (const l of filteredByCollection) {
+  for (const l of pagedListings) {
     typeBreakdown[l.design.type_prefix] = (typeBreakdown[l.design.type_prefix] ?? 0) + 1
   }
 
@@ -253,7 +294,7 @@ export async function getMyBoard(
   // collection-filtered set. Preserved here for Task 1.5A; reconcile in the
   // task that wires the dashboard view (likely by adding a separate
   // pendingRequestCountTotal field).
-  const listingIds = filteredByCollection.map((l) => l.id)
+  const listingIds = pagedListings.map((l) => l.id)
   let pendingRequestCount = 0
   if (listingIds.length > 0) {
     const { count } = await supabase
@@ -265,7 +306,7 @@ export async function getMyBoard(
   }
 
   return {
-    listings: filteredByCollection,
+    listings: pagedListings,
     summary: { totalPieces, totalMsrp, typeBreakdown, pendingRequestCount },
   }
 }

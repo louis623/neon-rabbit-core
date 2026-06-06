@@ -13,6 +13,7 @@ const inputSchema = z
     eventId: z.string().uuid(),
     platform: z.string().optional(),
     eventTime: z.string().optional(),
+    timeZone: z.string().optional(),
     durationMinutes: z.number().int().positive().optional(),
     title: z.string().optional(),
     description: z.string().optional(),
@@ -27,6 +28,7 @@ const inputSchema = z
     (value) =>
       value.platform !== undefined ||
       value.eventTime !== undefined ||
+      value.timeZone !== undefined ||
       value.durationMinutes !== undefined ||
       value.title !== undefined ||
       value.description !== undefined ||
@@ -62,6 +64,7 @@ export function makeUpdateShowTool(ctx: {
         eventId,
         platform,
         eventTime,
+        timeZone,
         durationMinutes,
         title,
         description,
@@ -73,6 +76,7 @@ export function makeUpdateShowTool(ctx: {
       const patch = {
         platform,
         eventTime,
+        timeZone,
         durationMinutes,
         title,
         description,

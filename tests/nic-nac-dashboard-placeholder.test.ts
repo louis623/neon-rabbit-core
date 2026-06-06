@@ -22,6 +22,7 @@ import {
   getInitialWorkspaceSection,
   getVisibleWorkspaceSections,
   hasPaidWorkspaceSubscription,
+  isComingSoonWorkspaceSection,
   resolveWorkspaceSectionForAccess,
   filterRosterCustomers,
   getWalletBannerMessage,
@@ -39,6 +40,7 @@ import {
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
+  getJewelryLibrarySearchErrorMessage,
   type DashboardPlaceholderProps,
   formatHeaderRepShow,
   formatWalletAmount,
@@ -110,6 +112,18 @@ const READY_STATE = {
     },
   ],
 }
+
+describe('workspace request error copy', () => {
+  it('keeps jewelry library search failures plain-English for reps', () => {
+    expect(getJewelryLibrarySearchErrorMessage(500)).toBe(
+      'Unable to search the jewelry library right now. Try again in a minute, or ask Nic-Nac to help look up the piece.',
+    )
+    expect(getJewelryLibrarySearchErrorMessage(401)).not.toContain('401')
+    expect(getJewelryLibrarySearchErrorMessage(500)).not.toContain(
+      'jewelry library request failed',
+    )
+  })
+})
 
 const DUPLICATE_CUSTOMERS = [
   {
@@ -192,6 +206,7 @@ const CALENDAR_READY_STATE = {
         repId: 'rep-1',
         platform: 'Facebook Live',
         eventTime: '2026-05-15T19:00:00.000Z',
+        timeZone: 'America/New_York',
         durationMinutes: 60,
         title: 'Thursday reveal',
         description: null,
@@ -209,6 +224,7 @@ const CALENDAR_READY_STATE = {
         repId: 'rep-1',
         platform: 'TikTok Live',
         eventTime: '2026-05-18T20:30:00.000Z',
+        timeZone: 'America/New_York',
         durationMinutes: 90,
         title: '',
         description: 'Sunday party',
@@ -228,6 +244,7 @@ const CALENDAR_READY_STATE = {
         repId: 'rep-1',
         platform: 'Facebook Live',
         eventTime: '2026-05-05T19:00:00.000Z',
+        timeZone: 'America/New_York',
         durationMinutes: 60,
         title: 'Launch party',
         description: null,
@@ -405,6 +422,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Business Calculator')
     expect(html).toContain('Team Management')
     expect(html).toContain('Messages</span>')
+    expect((html.match(/Coming soon/g) ?? []).length).toBe(3)
+    expect(html).not.toContain('Locked</span>')
     expect(html).toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
@@ -415,6 +434,13 @@ describe('DashboardPlaceholder', () => {
   it('deep-links workspace sections without self-serve-started first-run routing', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
+    expect(getInitialWorkspaceSection('?section=business-calculator')).toBe(
+      'trade-board',
+    )
+    expect(getInitialWorkspaceSection('?section=team-management')).toBe(
+      'trade-board',
+    )
+    expect(getInitialWorkspaceSection('?section=messages')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
       'trade-board',
@@ -451,6 +477,17 @@ describe('DashboardPlaceholder', () => {
     ])
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
+    expect(isComingSoonWorkspaceSection('business-calculator')).toBe(true)
+    expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
+    expect(isComingSoonWorkspaceSection('messages')).toBe(true)
+    expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
+    expect(resolveWorkspaceSectionForAccess('business-calculator', true)).toBe(
+      'trade-board',
+    )
+    expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe(
+      'trade-board',
+    )
+    expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('trade-board')
   })
 
   it('renders the locked team management add-on skeleton', () => {
@@ -1386,6 +1423,44 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Recently wrapped')
     expect(html).toContain('Launch party')
     expect(html).toContain('Recurring')
+  })
+
+  it('renders rep calendar event times in the event timezone instead of UTC', () => {
+    const html = renderToStaticMarkup(
+      createElement(ShowCalendarCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            upcomingEvents: [
+              {
+                id: 'show-eastern',
+                repId: 'rep-1',
+                platform: 'TikTok Live',
+                eventTime: '2026-06-07T00:00:00.000Z',
+                timeZone: 'America/New_York',
+                durationMinutes: 60,
+                title: 'Eastern smoke show',
+                description: null,
+                discountCodes: [],
+                featuredCollections: null,
+                isRecurring: false,
+                recurrenceGroupId: null,
+                recurrenceRule: null,
+                status: 'scheduled' as const,
+                createdAt: '2026-06-01T10:00:00.000Z',
+                updatedAt: '2026-06-01T10:00:00.000Z',
+              },
+            ],
+            recentEvents: [],
+          },
+        },
+        referenceDate: new Date('2026-06-10T12:00:00.000Z'),
+      }),
+    )
+
+    expect(html).toContain('Eastern smoke show')
+    expect(html).toContain('8:00 PM')
+    expect(html).toMatch(/EDT|Eastern/)
   })
 
   it('builds a five-week calendar grid anchored to the reference month', () => {

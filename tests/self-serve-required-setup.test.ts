@@ -15,6 +15,7 @@ import {
   canUnlockRequiredSetup,
   completeRequiredSetupStep,
   ensureRequiredSetupSession,
+  getRequiredSetupState,
   getNextRequiredSetupStep,
   isRequiredSetupStepId,
   normalizeRequiredSetupSession,
@@ -336,6 +337,158 @@ describe('self-serve required setup service contract', () => {
       }),
     )
     expect(state.status).toBe('payment_pending')
+    expect(state.currentStep).toBe('account_basics')
+  })
+
+  it('moves a paid checkout-required rep into required setup instead of looping back to Stripe', async () => {
+    const setupSelectMock = vi.fn()
+    const setupEqMock = vi.fn()
+    const setupMaybeSingleMock = vi.fn()
+    const subscriptionSelectMock = vi.fn()
+    const subscriptionEqMock = vi.fn()
+    const subscriptionInMock = vi.fn()
+    const subscriptionOrderMock = vi.fn()
+    const subscriptionLimitMock = vi.fn()
+    const subscriptionMaybeSingleMock = vi.fn()
+    const updateMock = vi.fn()
+    const updateEqMock = vi.fn()
+    const updateSelectMock = vi.fn()
+    const updateSingleMock = vi.fn()
+
+    fromMock
+      .mockReturnValueOnce({ select: setupSelectMock })
+      .mockReturnValueOnce({ select: subscriptionSelectMock })
+      .mockReturnValueOnce({ update: updateMock })
+    setupSelectMock.mockReturnValueOnce({ eq: setupEqMock })
+    setupEqMock.mockReturnValueOnce({ maybeSingle: setupMaybeSingleMock })
+    setupMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'setup-1',
+        rep_id: 'rep-1',
+        status: 'checkout_required',
+        current_step: 'account_basics',
+        completed_steps: [],
+        answers: {},
+        generated_copy: {},
+        support_state: {},
+        dashboard_unlocked_at: null,
+        created_at: '2026-06-02T14:30:00Z',
+        updated_at: '2026-06-02T14:30:00Z',
+      },
+      error: null,
+    })
+    subscriptionSelectMock.mockReturnValueOnce({ eq: subscriptionEqMock })
+    subscriptionEqMock.mockReturnValueOnce({ in: subscriptionInMock })
+    subscriptionInMock.mockReturnValueOnce({ order: subscriptionOrderMock })
+    subscriptionOrderMock.mockReturnValueOnce({ limit: subscriptionLimitMock })
+    subscriptionLimitMock.mockReturnValueOnce({
+      maybeSingle: subscriptionMaybeSingleMock,
+    })
+    subscriptionMaybeSingleMock.mockResolvedValueOnce({
+      data: { id: 'sub-1', status: 'active' },
+      error: null,
+    })
+    updateMock.mockReturnValueOnce({ eq: updateEqMock })
+    updateEqMock.mockReturnValueOnce({ select: updateSelectMock })
+    updateSelectMock.mockReturnValueOnce({ single: updateSingleMock })
+    updateSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'setup-1',
+        rep_id: 'rep-1',
+        status: 'required_setup',
+        current_step: 'account_basics',
+        completed_steps: [],
+        answers: {},
+        generated_copy: {},
+        support_state: {},
+        dashboard_unlocked_at: null,
+        created_at: '2026-06-02T14:30:00Z',
+        updated_at: '2026-06-06T15:30:00Z',
+      },
+      error: null,
+    })
+
+    const state = await getRequiredSetupState('rep-1')
+
+    expect(fromMock).toHaveBeenNthCalledWith(1, 'self_serve_setup_sessions')
+    expect(fromMock).toHaveBeenNthCalledWith(2, 'subscriptions')
+    expect(subscriptionInMock).toHaveBeenCalledWith('status', [
+      'active',
+      'trialing',
+      'past_due',
+    ])
+    expect(updateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'required_setup',
+        current_step: 'account_basics',
+      }),
+    )
+    expect(updateEqMock).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(state.status).toBe('required_setup')
+  })
+
+  it('creates a required setup row when a paid rep has no setup session yet', async () => {
+    const setupSelectMock = vi.fn()
+    const setupEqMock = vi.fn()
+    const setupMaybeSingleMock = vi.fn()
+    const subscriptionSelectMock = vi.fn()
+    const subscriptionEqMock = vi.fn()
+    const subscriptionInMock = vi.fn()
+    const subscriptionOrderMock = vi.fn()
+    const subscriptionLimitMock = vi.fn()
+    const subscriptionMaybeSingleMock = vi.fn()
+    const upsertMock = vi.fn()
+    const upsertSelectMock = vi.fn()
+    const upsertSingleMock = vi.fn()
+
+    fromMock
+      .mockReturnValueOnce({ select: setupSelectMock })
+      .mockReturnValueOnce({ select: subscriptionSelectMock })
+      .mockReturnValueOnce({ upsert: upsertMock })
+    setupSelectMock.mockReturnValueOnce({ eq: setupEqMock })
+    setupEqMock.mockReturnValueOnce({ maybeSingle: setupMaybeSingleMock })
+    setupMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null })
+    subscriptionSelectMock.mockReturnValueOnce({ eq: subscriptionEqMock })
+    subscriptionEqMock.mockReturnValueOnce({ in: subscriptionInMock })
+    subscriptionInMock.mockReturnValueOnce({ order: subscriptionOrderMock })
+    subscriptionOrderMock.mockReturnValueOnce({ limit: subscriptionLimitMock })
+    subscriptionLimitMock.mockReturnValueOnce({
+      maybeSingle: subscriptionMaybeSingleMock,
+    })
+    subscriptionMaybeSingleMock.mockResolvedValueOnce({
+      data: { id: 'sub-1', status: 'trialing' },
+      error: null,
+    })
+    upsertMock.mockReturnValueOnce({ select: upsertSelectMock })
+    upsertSelectMock.mockReturnValueOnce({ single: upsertSingleMock })
+    upsertSingleMock.mockResolvedValueOnce({
+      data: {
+        id: 'setup-1',
+        rep_id: 'rep-1',
+        status: 'required_setup',
+        current_step: 'account_basics',
+        completed_steps: [],
+        answers: {},
+        generated_copy: {},
+        support_state: {},
+        dashboard_unlocked_at: null,
+        created_at: '2026-06-06T15:30:00Z',
+        updated_at: '2026-06-06T15:30:00Z',
+      },
+      error: null,
+    })
+
+    const state = await getRequiredSetupState('rep-1')
+
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-1',
+        status: 'required_setup',
+        current_step: 'account_basics',
+      }),
+      { onConflict: 'rep_id' },
+    )
+    expect(state.status).toBe('required_setup')
     expect(state.currentStep).toBe('account_basics')
   })
 

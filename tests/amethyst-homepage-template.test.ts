@@ -205,11 +205,18 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('window.AMETHYST_HOMEPAGE_EVENTS')
     expect(jsx).toContain('Intl.DateTimeFormat')
+    expect(jsx).toContain('Intl.DateTimeFormat(undefined')
+    expect(jsx).toContain('timeZoneName: "short"')
+    expect(jsx).not.toContain('timeZone: "UTC"')
     expect(jsx).toContain('downloadCalendarEvent')
     expect(jsx).toContain('text/calendar')
     expect(jsx).toContain('URL.createObjectURL')
     expect(jsx).toContain('event.collections.map')
     expect(jsx).toContain('event.platforms.map')
+    expect(jsx).toContain('Date TBD - Time TBD')
+    expect(jsx).toContain('ev.when.split(" - ")')
+    expect(jsx).not.toContain('Â')
+    expect(jsx).not.toContain('Ã')
   })
 
   it('wires the customer signup form to the audience route with separate consent controls', () => {

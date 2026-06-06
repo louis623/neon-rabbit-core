@@ -30,6 +30,7 @@ describe('/api/nic-nac/me', () => {
         email: 'rep@example.com',
         display_name: 'Mile High Fizz',
         public_site_slug: 'milehighfizz',
+        time_zone: 'America/Denver',
       },
       supabase: { marker: 'supabase' },
     })
@@ -48,6 +49,7 @@ describe('/api/nic-nac/me', () => {
         email: 'rep@example.com',
         display_name: 'Mile High Fizz',
         public_site_slug: 'milehighfizz',
+        time_zone: 'America/Denver',
         live_queue_sync_code: 'MHF-7342',
       },
     })

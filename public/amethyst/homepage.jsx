@@ -557,7 +557,7 @@ function LiveQueueModal({ open, onClose, state }) {
 // ============================================================
 const EVENTS = Array.isArray(HOMEPAGE_EVENT_PAYLOAD) && (HOMEPAGE_EVENT_PAYLOAD.length > 0 || RUNTIME_CONTEXT.targeted) ? HOMEPAGE_EVENT_PAYLOAD : [
   {
-    when: "Tue, Nov 12 · 8:00 PM EST", featured: true, name: "Unicorn Magic Drop · November",
+    when: "Tue, Nov 12 - 8:00 PM EST", featured: true, name: "Unicorn Magic Drop - November",
     codes: [
       { code: "UNICORN15", desc: "15% off Unicorn tier boxes" },
       { code: "FREESHIP75", desc: "Free shipping on orders $75+" },
@@ -568,7 +568,7 @@ const EVENTS = Array.isArray(HOMEPAGE_EVENT_PAYLOAD) && (HOMEPAGE_EVENT_PAYLOAD.
     platforms: ["tt", "fb"],
   },
   {
-    when: "Sat, Nov 16 · 1:00 PM EST", featured: false, name: "Saturday Sparkle Brunch",
+    when: "Sat, Nov 16 - 1:00 PM EST", featured: false, name: "Saturday Sparkle Brunch",
     codes: [
       { code: "BRUNCH10", desc: "10% off Saturday show purchases" },
       { code: "FREESHIP75", desc: "Free shipping on orders $75+" },
@@ -680,8 +680,8 @@ function normalizeHomepageEvent(event) {
   const title = event.title || event.name || "Upcoming live reveal";
   const eventTime = event.eventTime || null;
   const when = event.when || (eventTime
-    ? `${formatEventDateLabel(eventTime)} Â· ${formatEventTimeLabel(eventTime)}`
-    : "Date TBD Â· Time TBD");
+    ? `${formatEventDateLabel(eventTime)} - ${formatEventTimeLabel(eventTime)}`
+    : "Date TBD - Time TBD");
   const platforms = Array.isArray(event.platforms)
     ? event.platforms.map((platform) => {
         if (typeof platform === "string") {
@@ -747,7 +747,7 @@ function Events({ count }) {
         </div>
         <div className="hp-event-grid" style={{ gridTemplateColumns: count === 1 ? "1fr" : undefined }}>
           {HOMEPAGE_EVENT_PAYLOAD.slice(0, count).map((rawEvent, i) => { const event = normalizeHomepageEvent(rawEvent); const ev = event;
-            const [dateStr, timeStr] = ev.when.split(" · ");
+            const [dateStr, timeStr = ""] = ev.when.split(" - ");
             return (
               <article key={i} className={`hp-event-card ${ev.featured ? "featured" : ""}`}>
                 {ev.featured && <span className="hp-event-pill"><span className="pip" />Featured</span>}

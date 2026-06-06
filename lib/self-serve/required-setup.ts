@@ -97,6 +97,7 @@ const REQUIRED_SETUP_STATUSES: RequiredSetupStatus[] = [
   'setup_blocked',
   'dashboard_unlocked',
 ]
+const PAID_SETUP_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -318,6 +319,20 @@ async function loadRequiredSetupSessionRow(
   return data as RequiredSetupSessionRow | null
 }
 
+async function hasPaidSetupSubscription(admin: AdminClient, repId: string) {
+  const { data, error } = await admin
+    .from('subscriptions')
+    .select('id, status')
+    .eq('rep_id', repId)
+    .in('status', [...PAID_SETUP_SUBSCRIPTION_STATUSES])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return Boolean(data)
+}
+
 async function updateRequiredSetupSession(
   admin: AdminClient,
   repId: string,
@@ -337,6 +352,50 @@ async function updateRequiredSetupSession(
   return normalizeRequiredSetupSession(data as RequiredSetupSessionRow)
 }
 
+async function createRequiredSetupSessionAfterPaidAccess(
+  admin: AdminClient,
+  repId: string,
+) {
+  const { data, error } = await admin
+    .from('self_serve_setup_sessions')
+    .upsert(
+      {
+        rep_id: repId,
+        status: 'required_setup',
+        current_step: 'account_basics',
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'rep_id' },
+    )
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return normalizeRequiredSetupSession(data as RequiredSetupSessionRow)
+}
+
+async function reconcilePaidRequiredSetupState(
+  admin: AdminClient,
+  repId: string,
+  row: RequiredSetupSessionRow | null,
+) {
+  const state = normalizeRequiredSetupSession(row)
+  if (
+    state.status !== 'checkout_required' &&
+    state.status !== 'payment_pending'
+  ) {
+    return state
+  }
+
+  if (!(await hasPaidSetupSubscription(admin, repId))) return state
+  if (!row) return createRequiredSetupSessionAfterPaidAccess(admin, repId)
+
+  return updateRequiredSetupSession(admin, repId, {
+    status: 'required_setup',
+    current_step: state.currentStep,
+  })
+}
+
 function requireExistingRequiredSetupSession(
   row: RequiredSetupSessionRow | null,
   repId: string,
@@ -352,7 +411,7 @@ export async function getRequiredSetupState(repId: string) {
   const { createAdminClient } = await import('@/lib/supabase/admin')
   const admin = createAdminClient()
   const row = await loadRequiredSetupSessionRow(admin, repId)
-  return normalizeRequiredSetupSession(row)
+  return reconcilePaidRequiredSetupState(admin, repId, row)
 }
 
 export async function ensureRequiredSetupSession(

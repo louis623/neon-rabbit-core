@@ -96,7 +96,14 @@ describe('public site slug route', () => {
     expect(html).toContain(
       '"@id":"https://www.yoursparklesuite.com/graciesparkleparty#webpage"',
     )
+    expect(html).toContain('href="/amethyst/tokens.css"')
+    expect(html).toContain('href="/amethyst/components.css"')
+    expect(html).toContain('href="/amethyst/homepage.css"')
+    expect(html).toContain('src="/amethyst/tweaks-panel.jsx"')
+    expect(html).toContain('src="/amethyst/homepage.jsx"')
     expect(html).toContain('/api/amethyst/homepage-template?c=rep-gracie')
+    expect(html).not.toContain('href="tokens.css"')
+    expect(html).not.toContain('src="homepage.jsx"')
     expect(html).not.toContain('?c=graciesparkleparty')
   })
 })

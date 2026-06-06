@@ -159,6 +159,31 @@ async function clearReviewerNicNacHistory(admin: AdminClient, repId: string) {
   }
 }
 
+async function ensureReviewerSubscription(admin: AdminClient, repId: string) {
+  const now = new Date()
+  const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+  const { error } = await admin.from('subscriptions').upsert(
+    {
+      rep_id: repId,
+      stripe_subscription_id: `sub_reviewer_smoke_${repId}`,
+      stripe_customer_id: `cus_reviewer_smoke_${repId}`,
+      plan_tier: 'monthly',
+      pricing_tier: 'smoke',
+      status: 'active',
+      monthly_amount: 99,
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      cancel_at_period_end: false,
+      stripe_livemode: false,
+      updated_at: now.toISOString(),
+    },
+    { onConflict: 'rep_id' },
+  )
+
+  if (error) throw error
+}
+
 export async function resetReviewerSmokeSession(
   requestedState: unknown,
   admin: AdminClient = createAdminClient(),
@@ -232,6 +257,9 @@ export async function resetReviewerSmokeSession(
 
   if (state !== 'checkout_required') {
     await ensureLiveQueueSyncCodeForRep(admin, { repId })
+  }
+  if (state === 'dashboard_unlocked') {
+    await ensureReviewerSubscription(admin, repId)
   }
 
   return {

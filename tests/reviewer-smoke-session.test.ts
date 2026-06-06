@@ -29,6 +29,7 @@ function makeReviewerAdmin() {
   const repUpdateEq = vi.fn().mockResolvedValue({ error: null })
   const repUpdate = vi.fn(() => ({ eq: repUpdateEq }))
   const setupUpsert = vi.fn().mockResolvedValue({ error: null })
+  const subscriptionUpsert = vi.fn().mockResolvedValue({ error: null })
   const conversationDelete = makeDeleteBuilder()
   const approvalDelete = makeDeleteBuilder()
   const runDelete = makeDeleteBuilder()
@@ -50,6 +51,9 @@ function makeReviewerAdmin() {
       if (table === 'self_serve_setup_sessions') {
         return { upsert: setupUpsert }
       }
+      if (table === 'subscriptions') {
+        return { upsert: subscriptionUpsert }
+      }
       if (table === 'nic_nac_conversations') return conversationDelete
       if (table === 'approval_events') return approvalDelete
       if (table === 'nic_nac_runs') return runDelete
@@ -64,6 +68,7 @@ function makeReviewerAdmin() {
       conversationDelete,
       runDelete,
       setupUpsert,
+      subscriptionUpsert,
     },
   }
 }
@@ -123,6 +128,23 @@ describe('reviewer smoke session reset', () => {
             headline: 'Welcome, sparkle friends.',
           }),
         }),
+      }),
+      { onConflict: 'rep_id' },
+    )
+  })
+
+  it('seeds active test subscription access for dashboard-unlocked smoke sessions', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.subscriptionUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-reviewer',
+        status: 'active',
+        plan_tier: 'monthly',
+        pricing_tier: 'smoke',
+        stripe_livemode: false,
       }),
       { onConflict: 'rep_id' },
     )

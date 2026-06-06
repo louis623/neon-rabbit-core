@@ -172,6 +172,7 @@ export interface CalendarEvent {
   repId: string
   platform: string
   eventTime: string
+  timeZone: string
   durationMinutes: number
   title: string | null
   description: string | null
@@ -188,6 +189,7 @@ export interface CalendarEvent {
 export interface AddShowInput {
   platform: string
   eventTime: string
+  timeZone?: string
   durationMinutes?: number
   title?: string
   description?: string
@@ -215,6 +217,7 @@ export interface ListShowsResult {
 export interface UpdateShowInput {
   platform?: string
   eventTime?: string
+  timeZone?: string
   durationMinutes?: number
   title?: string
   description?: string

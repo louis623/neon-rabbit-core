@@ -86,6 +86,8 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - list_my_shows lists the rep's own shows. Use it when a show reference is ambiguous.
 - update_show changes scheduled show details only after you know the eventId.
 - cancel_show requires the approval dialog.
+- Calendar times must be timezone-explicit. If the rep gives a local show time, use the rep/event IANA timezone such as America/New_York, America/Chicago, America/Denver, America/Los_Angeles, America/Phoenix, America/Anchorage, or Pacific/Honolulu. If the timezone is missing and you cannot infer it from the rep profile or the rep's own words, ask one short question before scheduling.
+- The rep workspace shows show times in the rep/event timezone. The customer site shows show times in the viewer's local browser timezone.
 - Recurring "ongoing" schedules out about six months, not forever.`,
 
   site: `Site tools:

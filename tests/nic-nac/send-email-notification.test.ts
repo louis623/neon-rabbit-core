@@ -298,14 +298,43 @@ describe('send_email_notification', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(33)
-    expect(names).toEqual(
-      expect.arrayContaining([
-        'send_sms_notification',
-        'send_email_notification',
-        'get_notification_preferences',
-      ]),
-    )
+    expect(names).toEqual([
+      'add_listing',
+      'add_show',
+      'approve_trade',
+      'cancel_show',
+      'ensure_live_queue_sync_code',
+      'get_customer_audience',
+      'get_fulfillment_queue',
+      'get_help_resources',
+      'get_notification_preferences',
+      'get_required_setup_state',
+      'get_show_session_context',
+      'get_trade_history',
+      'get_trade_requests',
+      'list_my_shows',
+      'list_my_trade_board',
+      'read_recent_rep_notes',
+      'record_show_session_event',
+      'reject_trade',
+      'remove_listing',
+      'report_jewelry_catalog_issue',
+      'request_required_setup_support',
+      'restore_listing',
+      'save_required_setup_answer',
+      'search_jewelry_database',
+      'send_email_notification',
+      'send_sms_notification',
+      'start_show_session',
+      'unlock_required_setup',
+      'update_banner_text',
+      'update_fulfillment_status',
+      'update_listing',
+      'update_show',
+      'update_site_setting',
+      'update_streaming_links',
+      'write_rep_note',
+    ])
     expect(sendEmailNotificationTool.readOnly).toBe(false)
     expect(sendEmailNotificationTool.name).toBe('send_email_notification')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('send_email_notification')

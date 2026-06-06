@@ -79,7 +79,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'upcoming must be a whole number.',
+      error: 'upcoming must be a whole number between 1 and 20.',
     })
   })
 
@@ -90,8 +90,31 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'history must be a whole number.',
+      error: 'history must be a whole number between 1 and 20.',
     })
+  })
+
+  it.each([
+    ['upcoming', '8abc'],
+    ['upcoming', '1.5'],
+    ['upcoming', '0'],
+    ['upcoming', '-1'],
+    ['upcoming', '21'],
+    ['history', '4abc'],
+    ['history', '2.5'],
+    ['history', '0'],
+    ['history', '-1'],
+    ['history', '21'],
+  ])('returns 400 when %s has invalid limit %s', async (key, value) => {
+    const response = await GET(
+      new Request(`http://localhost/api/nic-nac/calendar-summary?${key}=${value}`),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: `${key} must be a whole number between 1 and 20.`,
+    })
+    expect(listMyShowsMock).not.toHaveBeenCalled()
   })
 
   it('returns 401 when the rep is not signed in', async () => {

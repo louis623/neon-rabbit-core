@@ -14,9 +14,13 @@ import {
   type RecurringShowInput,
 } from './types'
 import { errors } from './errors'
+import {
+  DEFAULT_REP_TIME_ZONE,
+  assertValidTimeZone,
+} from './calendar-timezone'
 
 const EVENT_SELECT = `
-  id, rep_id, platform, event_time, duration_minutes, title, description,
+  id, rep_id, platform, event_time, time_zone, duration_minutes, title, description,
   discount_codes, featured_collections, is_recurring, recurrence_group_id,
   recurrence_rule, status, created_at, updated_at
 `
@@ -26,6 +30,7 @@ type CalendarEventRow = {
   rep_id: string
   platform: string
   event_time: string
+  time_zone: string | null
   duration_minutes: number | null
   title: string | null
   description: string | null
@@ -43,6 +48,7 @@ type CalendarEventUpdate = {
   updated_at: string
   platform?: string
   event_time?: string
+  time_zone?: string
   duration_minutes?: number
   title?: string | null
   description?: string | null
@@ -92,6 +98,17 @@ function normalizeFutureEventTime(eventTime: string | undefined): string {
   }
   if (parsed.getTime() <= Date.now()) throw errors.EVENT_TIME_PAST()
   return parsed.toISOString()
+}
+
+function normalizeEventTimeZone(timeZone: string | undefined): string {
+  try {
+    return assertValidTimeZone(timeZone)
+  } catch {
+    throw errors.INVALID_INPUT(
+      'timeZone must be a valid IANA timezone',
+      'Show timezone needs to be a valid timezone like America/New_York.',
+    )
+  }
 }
 
 function normalizeDiscountCodes(discountCodes: DiscountCode[] | undefined): DiscountCode[] {
@@ -167,6 +184,7 @@ function mapEvent(row: CalendarEventRow): CalendarEvent {
     repId: row.rep_id,
     platform: row.platform,
     eventTime: row.event_time,
+    timeZone: row.time_zone ?? DEFAULT_REP_TIME_ZONE,
     durationMinutes: row.duration_minutes ?? 60,
     title: row.title,
     description: row.description,
@@ -189,6 +207,7 @@ function applyUpdateToRow(
     ...row,
     platform: update.platform ?? row.platform,
     event_time: update.event_time ?? row.event_time,
+    time_zone: update.time_zone ?? row.time_zone,
     duration_minutes: update.duration_minutes ?? row.duration_minutes,
     title: Object.prototype.hasOwnProperty.call(update, 'title')
       ? (update.title ?? null)
@@ -232,6 +251,7 @@ export async function addShow(
   if (!repId) throw errors.UNAUTHORIZED('repId required')
 
   const eventTime = normalizeFutureEventTime(input.eventTime)
+  const timeZone = normalizeEventTimeZone(input.timeZone)
   const platform = normalizeRequiredPlatform(input.platform)
   const durationMinutes = normalizeDuration(input.durationMinutes)
   const discountCodes = normalizeDiscountCodes(input.discountCodes)
@@ -246,6 +266,7 @@ export async function addShow(
         rep_id: repId,
         platform,
         event_time: eventTime,
+        time_zone: timeZone,
         duration_minutes: durationMinutes,
         title,
         description,
@@ -269,6 +290,7 @@ export async function addShow(
     rep_id: repId,
     platform,
     event_time: nextEventTime,
+    time_zone: timeZone,
     duration_minutes: durationMinutes,
     title,
     description,
@@ -392,6 +414,10 @@ export async function updateShow(
   }
   if (patch.eventTime !== undefined) {
     update.event_time = normalizeFutureEventTime(patch.eventTime)
+    hasPatch = true
+  }
+  if (patch.timeZone !== undefined) {
+    update.time_zone = normalizeEventTimeZone(patch.timeZone)
     hasPatch = true
   }
   if (patch.durationMinutes !== undefined) {

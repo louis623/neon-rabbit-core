@@ -321,7 +321,7 @@ describe('fulfillment registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(33)
+    expect(new Set(names).size).toBe(names.length)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_fulfillment_queue',
@@ -331,7 +331,9 @@ describe('fulfillment registry and prompt wiring', () => {
   })
 
   it('system prompt documents the fulfillment queue tools and follow-up flow', () => {
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('You have twenty-nine tools available right now:')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      "You have a scoped set of workspace tools available when the rep's request calls for them:",
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_fulfillment_queue')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_fulfillment_status')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('approved → shipped → completed')

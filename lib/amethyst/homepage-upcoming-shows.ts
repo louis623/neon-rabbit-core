@@ -24,6 +24,7 @@ export interface AmethystHomepageEventCard {
   title: string
   description: string | null
   eventTime: string
+  timeZone: string
   durationMinutes: number
   featured: boolean
   codes: AmethystHomepageEventCode[]
@@ -42,6 +43,7 @@ export const defaultAmethystHomepageEvents: AmethystHomepageEventCard[] = [
     title: 'Unicorn Magic Drop',
     description: 'Main live reveal',
     eventTime: '2099-11-12T20:00:00.000Z',
+    timeZone: 'America/New_York',
     durationMinutes: 60,
     featured: true,
     codes: [
@@ -76,6 +78,7 @@ export const defaultAmethystHomepageEvents: AmethystHomepageEventCard[] = [
     title: 'Saturday Sparkle Brunch',
     description: 'Weekend bonus show',
     eventTime: '2099-11-16T13:00:00.000Z',
+    timeZone: 'America/New_York',
     durationMinutes: 60,
     featured: false,
     codes: [{ code: 'BRUNCH10', desc: '10% off Saturday show purchases' }],
@@ -176,6 +179,7 @@ export function mapCalendarEventToHomepageEvent(
     title: normalizeEventTitle(event),
     description: event.description,
     eventTime: event.eventTime,
+    timeZone: event.timeZone,
     durationMinutes: event.durationMinutes,
     featured: index === 0,
     codes: event.discountCodes.map((discount) => ({

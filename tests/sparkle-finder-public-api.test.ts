@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  countListingsByDesignForQualifiedReps,
+  filterListingsWithNextShows,
+  mapFinderShowRowsToNextShows,
+  mapSparkleFinderLiveShowRows,
   mapSparkleFinderAvailabilityListingRow,
   mapSparkleFinderDesignRow,
   parseSparkleFinderLimit,
@@ -65,21 +69,19 @@ describe('Sparkle Finder public API contract helpers', () => {
         },
         rep: {
           id: 'rep-1',
-          display_name: 'Gracie',
+          display_name: 'Gracie Smoke',
           business_name: 'Gracie Test Studio',
           profile_photo_url: 'https://cdn.example.test/gracie.png',
           custom_domain: null,
+          public_site_slug: 'gracieteststudio',
           status: 'active',
         },
       } as never,
       {
         showId: 'show-1',
         repId: 'rep-1',
-        platform: 'TikTok',
         startsAt: '2026-06-06T01:00:00.000Z',
-        durationMinutes: 90,
         title: 'Friday Reveal',
-        description: 'Public show description',
         status: 'scheduled',
       },
     )
@@ -90,18 +92,202 @@ describe('Sparkle Finder public API contract helpers', () => {
       photoSource: 'listing',
       rep: {
         repId: 'rep-1',
-        businessName: 'Gracie Test Studio',
-        customerSitePath: '/amethyst?c=rep-1',
-        tradeBoardPath: '/amethyst/trade?c=rep-1',
+        showName: 'Gracie Test Studio',
+        repFirstName: 'Gracie',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/gracieteststudio',
       },
       nextShow: {
         showId: 'show-1',
-        platform: 'TikTok',
+        startsAt: '2026-06-06T01:00:00.000Z',
+        status: 'scheduled',
       },
     })
     expect(JSON.stringify(match)).not.toContain('private rep note')
     expect(JSON.stringify(match)).not.toContain('private trade preference')
     expect(JSON.stringify(match)).not.toContain('customerName')
+    expect(JSON.stringify(match)).not.toContain('businessName')
+    expect(JSON.stringify(match)).not.toContain('tradeBoardPath')
+    expect(JSON.stringify(match)).not.toContain('customerSitePath')
+    expect(JSON.stringify(match)).not.toContain('/amethyst?c=')
+  })
+
+  it('excludes available listings when the rep has no live or future show', () => {
+    const rows = [
+      { id: 'listing-with-show', rep_id: 'rep-1' },
+      { id: 'listing-without-show', rep_id: 'rep-2' },
+    ]
+
+    const filtered = filterListingsWithNextShows(
+      rows,
+      new Map([
+        [
+          'rep-1',
+          {
+            showId: 'show-1',
+            repId: 'rep-1',
+            startsAt: '2026-06-10T00:00:00.000Z',
+            title: 'Wednesday Reveal',
+            status: 'scheduled',
+          },
+        ],
+      ]),
+    )
+
+    expect(filtered.map((row) => row.id)).toEqual(['listing-with-show'])
+  })
+
+  it('counts only available listings from reps with live or future shows', () => {
+    const counts = countListingsByDesignForQualifiedReps(
+      [
+        { design_id: 'design-1', rep_id: 'rep-with-show' },
+        { design_id: 'design-1', rep_id: 'rep-without-show' },
+        { design_id: 'design-2', rep_id: 'rep-with-show' },
+      ],
+      new Set(['rep-with-show']),
+    )
+
+    expect(counts.get('design-1')).toBe(1)
+    expect(counts.get('design-2')).toBe(1)
+    expect(counts.has('design-3')).toBe(false)
+  })
+
+  it('keeps live shows that started in the past and excludes past scheduled shows', () => {
+    const shows = mapFinderShowRowsToNextShows(
+      [
+        {
+          id: 'past-scheduled',
+          rep_id: 'rep-past',
+          event_time: '2026-06-05T23:00:00.000Z',
+          title: 'Past Scheduled',
+          status: 'scheduled',
+        },
+        {
+          id: 'live-show',
+          rep_id: 'rep-live',
+          event_time: '2026-06-05T23:30:00.000Z',
+          title: 'Live Now',
+          status: 'live',
+        },
+        {
+          id: 'future-for-live-rep',
+          rep_id: 'rep-live',
+          event_time: '2026-06-10T00:00:00.000Z',
+          title: 'Later Reveal',
+          status: 'scheduled',
+        },
+        {
+          id: 'future-show',
+          rep_id: 'rep-future',
+          event_time: '2026-06-10T01:00:00.000Z',
+          title: 'Future Reveal',
+          status: 'scheduled',
+        },
+      ],
+      '2026-06-06T00:00:00.000Z',
+    )
+
+    expect(shows.has('rep-past')).toBe(false)
+    expect(shows.get('rep-live')).toMatchObject({
+      showId: 'live-show',
+      status: 'live',
+    })
+    expect(shows.get('rep-future')).toMatchObject({
+      showId: 'future-show',
+      status: 'scheduled',
+    })
+  })
+
+  it('maps live show calendar rows without requiring trade-board inventory', () => {
+    const shows = mapSparkleFinderLiveShowRows(
+      [
+        {
+          id: 'past-scheduled',
+          rep_id: 'rep-1',
+          event_time: '2026-06-05T23:00:00.000Z',
+          title: 'Past Scheduled',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-1',
+            display_name: 'Gracie Smoke',
+            business_name: 'Gracie Test Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'gracieteststudio',
+            status: 'active',
+          },
+        },
+        {
+          id: 'live-show',
+          rep_id: 'rep-1',
+          event_time: '2026-06-05T23:30:00.000Z',
+          title: 'Live Now',
+          status: 'live',
+          rep: {
+            id: 'rep-1',
+            display_name: 'Gracie Smoke',
+            business_name: 'Gracie Test Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'gracieteststudio',
+            status: 'active',
+          },
+        },
+        {
+          id: 'future-show',
+          rep_id: 'rep-2',
+          event_time: '2026-06-10T01:00:00.000Z',
+          title: 'Future Reveal',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-2',
+            display_name: 'Mila Moon',
+            business_name: 'Mila Moon Reveals',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'milamoonreveals',
+            status: 'active',
+          },
+        },
+        {
+          id: 'suspended-show',
+          rep_id: 'rep-3',
+          event_time: '2026-06-10T02:00:00.000Z',
+          title: 'Suspended Reveal',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-3',
+            display_name: 'Suspended Rep',
+            business_name: 'Suspended Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'suspendedstudio',
+            status: 'suspended',
+          },
+        },
+      ] as never,
+      '2026-06-06T00:00:00.000Z',
+    )
+
+    expect(shows).toEqual([
+      {
+        showId: 'live-show',
+        showName: 'Gracie Test Studio',
+        repFirstName: 'Gracie',
+        startsAt: '2026-06-05T23:30:00.000Z',
+        status: 'live',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/gracieteststudio',
+      },
+      {
+        showId: 'future-show',
+        showName: 'Mila Moon Reveals',
+        repFirstName: 'Mila',
+        startsAt: '2026-06-10T01:00:00.000Z',
+        status: 'scheduled',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/milamoonreveals',
+      },
+    ])
+    expect(JSON.stringify(shows)).not.toContain('trade')
+    expect(JSON.stringify(shows)).not.toContain('businessName')
   })
 
   it('normalizes public limit inputs', () => {

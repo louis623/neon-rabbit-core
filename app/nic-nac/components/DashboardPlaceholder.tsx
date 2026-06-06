@@ -53,9 +53,9 @@ const WORKSPACE_SECTIONS = [
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
-  { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home' },
-  { key: 'team-management', label: 'Team Management', subtitle: 'Paid add-on for team onboarding and messages', locked: true },
-  { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools' },
+  { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home', comingSoon: true },
+  { key: 'team-management', label: 'Team Management', subtitle: 'Team onboarding and shared customer workflows', comingSoon: true },
+  { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools', comingSoon: true },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
   { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
   { key: 'account', label: 'Account', subtitle: 'Billing, wallet, and site analytics' },
@@ -75,6 +75,10 @@ export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
     params.set('offset', String(options.offset))
   }
   return `/api/nic-nac/trade-board?${params.toString()}`
+}
+
+export function getJewelryLibrarySearchErrorMessage(_status?: number) {
+  return 'Unable to search the jewelry library right now. Try again in a minute, or ask Nic-Nac to help look up the piece.'
 }
 
 function subscribeBoardInventoryViewport(callback: () => void) {
@@ -143,11 +147,21 @@ const WORKSPACE_SECTION_KEYS = new Set<string>(
   WORKSPACE_SECTIONS.map((section) => section.key),
 )
 
+const COMING_SOON_WORKSPACE_SECTIONS = new Set<WorkspaceSectionKey>(
+  WORKSPACE_SECTIONS.filter((section) => 'comingSoon' in section && section.comingSoon)
+    .map((section) => section.key),
+)
+
+export function isComingSoonWorkspaceSection(section: WorkspaceSectionKey) {
+  return COMING_SOON_WORKSPACE_SECTIONS.has(section)
+}
+
 export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
   const requested = params.get('section')?.trim() ?? ''
   if (WORKSPACE_SECTION_KEYS.has(requested)) {
-    return requested as WorkspaceSectionKey
+    const section = requested as WorkspaceSectionKey
+    return isComingSoonWorkspaceSection(section) ? 'trade-board' : section
   }
   return 'trade-board'
 }
@@ -167,6 +181,7 @@ export function resolveWorkspaceSectionForAccess(
   section: WorkspaceSectionKey,
   _hasPaidWorkspace: boolean,
 ): WorkspaceSectionKey {
+  if (isComingSoonWorkspaceSection(section)) return 'trade-board'
   return section
 }
 
@@ -248,6 +263,7 @@ type RepProfileState = {
   displayName?: string
   publicSiteSlug?: string | null
   liveQueueSyncCode?: string | null
+  timeZone?: string | null
 }
 
 type TradeBoardActionState = {
@@ -320,6 +336,7 @@ type MeResponsePayload = {
     id?: string
     display_name?: string
     public_site_slug?: string | null
+    time_zone?: string | null
     live_queue_sync_code?: string | null
   }
 }
@@ -345,6 +362,7 @@ type CalendarDayCell = {
 }
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DEFAULT_CALENDAR_TIME_ZONE = 'America/New_York'
 
 const FILTER_OPTIONS: Array<{ value: RosterFilter; label: string }> = [
   { value: 'all', label: 'All customers' },
@@ -741,16 +759,38 @@ export function getWalletBannerMessage(search: string) {
   return null
 }
 
-function getUtcDateKey(input: Date | string) {
+function getTimeZoneParts(input: Date | string, timeZone: string) {
   const date = typeof input === 'string' ? new Date(input) : input
-  const year = date.getUTCFullYear()
-  const month = `${date.getUTCMonth() + 1}`.padStart(2, '0')
-  const day = `${date.getUTCDate()}`.padStart(2, '0')
-  return `${year}-${month}-${day}`
+  const parts = new Intl.DateTimeFormat('en-US', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone,
+    year: 'numeric',
+  }).formatToParts(date)
+  const byType = new Map(parts.map((part) => [part.type, part.value]))
+
+  return {
+    year: Number(byType.get('year')),
+    month: Number(byType.get('month')),
+    day: Number(byType.get('day')),
+  }
 }
 
-function getUtcMonthStart(referenceDate: Date) {
-  return new Date(Date.UTC(referenceDate.getUTCFullYear(), referenceDate.getUTCMonth(), 1))
+function getDateKeyInTimeZone(
+  input: Date | string,
+  timeZone = DEFAULT_CALENDAR_TIME_ZONE,
+) {
+  const { year, month, day } = getTimeZoneParts(input, timeZone)
+  return `${year}-${`${month}`.padStart(2, '0')}-${`${day}`.padStart(2, '0')}`
+}
+
+function getCalendarDisplayTimeZone(events: CalendarEvent[]) {
+  return events.find((event) => event.timeZone)?.timeZone ?? DEFAULT_CALENDAR_TIME_ZONE
+}
+
+function getMonthStartInTimeZone(referenceDate: Date, timeZone: string) {
+  const { year, month } = getTimeZoneParts(referenceDate, timeZone)
+  return new Date(Date.UTC(year, month - 1, 1))
 }
 
 function getCalendarEventTitle(event: CalendarEvent) {
@@ -768,14 +808,16 @@ export function getShowCalendarMetrics(
   recentEvents: CalendarEvent[],
   referenceDate = new Date(),
 ) {
-  const monthStart = getUtcMonthStart(referenceDate)
-  const nextMonthStart = new Date(
-    Date.UTC(referenceDate.getUTCFullYear(), referenceDate.getUTCMonth() + 1, 1),
-  )
+  const displayTimeZone = getCalendarDisplayTimeZone(upcomingEvents)
+  const monthStart = getMonthStartInTimeZone(referenceDate, displayTimeZone)
+  const monthKey = getDateKeyInTimeZone(monthStart, 'UTC').slice(0, 7)
 
   const thisMonthCount = upcomingEvents.filter((event) => {
-    const eventDate = new Date(event.eventTime)
-    return eventDate >= monthStart && eventDate < nextMonthStart
+    const eventMonthKey = getDateKeyInTimeZone(
+      event.eventTime,
+      event.timeZone ?? displayTimeZone,
+    ).slice(0, 7)
+    return eventMonthKey === monthKey
   }).length
 
   return {
@@ -795,15 +837,19 @@ export function buildShowCalendarCells(
   upcomingEvents: CalendarEvent[],
   referenceDate = new Date(),
 ): CalendarDayCell[] {
-  const monthStart = getUtcMonthStart(referenceDate)
+  const displayTimeZone = getCalendarDisplayTimeZone(upcomingEvents)
+  const monthStart = getMonthStartInTimeZone(referenceDate, displayTimeZone)
   const gridStart = new Date(monthStart)
   gridStart.setUTCDate(monthStart.getUTCDate() - monthStart.getUTCDay())
 
-  const todayKey = getUtcDateKey(referenceDate)
+  const todayKey = getDateKeyInTimeZone(referenceDate, displayTimeZone)
   const eventsByDay = new Map<string, CalendarEvent[]>()
 
   for (const event of upcomingEvents) {
-    const key = getUtcDateKey(event.eventTime)
+    const key = getDateKeyInTimeZone(
+      event.eventTime,
+      event.timeZone ?? displayTimeZone,
+    )
     const existing = eventsByDay.get(key) ?? []
     existing.push(event)
     eventsByDay.set(key, existing)
@@ -813,7 +859,7 @@ export function buildShowCalendarCells(
     const cellDate = new Date(gridStart)
     cellDate.setUTCDate(gridStart.getUTCDate() + index)
 
-    const isoDate = getUtcDateKey(cellDate)
+    const isoDate = getDateKeyInTimeZone(cellDate, 'UTC')
     return {
       isoDate,
       dayNumber: cellDate.getUTCDate(),
@@ -824,19 +870,26 @@ export function buildShowCalendarCells(
   })
 }
 
-function formatCalendarEventDate(eventTime: string) {
+function formatCalendarEventDate(
+  eventTime: string,
+  timeZone = DEFAULT_CALENDAR_TIME_ZONE,
+) {
   return new Date(eventTime).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
-    timeZone: 'UTC',
+    timeZone,
   })
 }
 
-function formatCalendarEventTime(eventTime: string) {
+function formatCalendarEventTime(
+  eventTime: string,
+  timeZone = DEFAULT_CALENDAR_TIME_ZONE,
+) {
   return new Date(eventTime).toLocaleString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
-    timeZone: 'UTC',
+    timeZone,
+    timeZoneName: 'short',
   })
 }
 
@@ -1297,6 +1350,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       displayName: payload.rep?.display_name,
       publicSiteSlug: payload.rep?.public_site_slug ?? null,
       liveQueueSyncCode: payload.rep?.live_queue_sync_code ?? null,
+      timeZone: payload.rep?.time_zone ?? null,
     })
   }
 
@@ -1526,7 +1580,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       },
     )
     if (!response.ok) {
-      throw new Error(`jewelry library request failed: ${response.status}`)
+      throw new Error(getJewelryLibrarySearchErrorMessage(response.status))
     }
 
     const payload = (await response.json()) as JewelryLibraryResponsePayload
@@ -2726,7 +2780,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </div>
           <nav className={styles.workspaceNav}>
             {visibleWorkspaceSections.map((section) => {
-              const isLockedSection = 'locked' in section && section.locked
+              const isComingSoonSection =
+                'comingSoon' in section && section.comingSoon
               return (
                 <button
                   key={section.key}
@@ -2736,8 +2791,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                       ? styles.workspaceNavButtonActive
                       : ''
                   } ${
-                    isLockedSection ? styles.workspaceNavButtonLocked : ''
+                    isComingSoonSection ? styles.workspaceNavButtonComingSoon : ''
                   }`}
+                  disabled={isComingSoonSection}
+                  aria-disabled={isComingSoonSection}
                   onClick={() =>
                     setActiveSection(
                       resolveWorkspaceSectionForAccess(
@@ -2749,8 +2806,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 >
                   <span className={styles.workspaceNavLabelRow}>
                     <span className={styles.workspaceNavLabel}>{section.label}</span>
-                    {isLockedSection ? (
-                      <span className={styles.workspaceNavLockTag}>Locked</span>
+                    {isComingSoonSection ? (
+                      <span className={styles.workspaceNavStatusTag}>
+                        Coming soon
+                      </span>
                     ) : null}
                   </span>
                   <span className={styles.workspaceNavSubtitle}>
@@ -5008,8 +5067,9 @@ export function ShowCalendarCard({
                       {getCalendarEventTitle(event)}
                     </span>
                     <span className={styles.walletTransactionDate}>
-                      {formatCalendarEventDate(event.eventTime)} at{' '}
-                      {formatCalendarEventTime(event.eventTime)} on {event.platform}
+                      {formatCalendarEventDate(event.eventTime, event.timeZone)} at{' '}
+                      {formatCalendarEventTime(event.eventTime, event.timeZone)} on{' '}
+                      {event.platform}
                     </span>
                   </div>
                   {event.isRecurring ? (
@@ -5033,7 +5093,8 @@ export function ShowCalendarCard({
                       {getCalendarEventTitle(event)}
                     </span>
                     <span className={styles.walletTransactionDate}>
-                      {formatCalendarEventDate(event.eventTime)} on {event.platform}
+                      {formatCalendarEventDate(event.eventTime, event.timeZone)} on{' '}
+                      {event.platform}
                     </span>
                   </div>
                   <span className={styles.timelineItem}>

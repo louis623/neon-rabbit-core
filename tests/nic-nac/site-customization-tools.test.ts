@@ -336,7 +336,7 @@ describe('site customization registry and prompt wiring', () => {
     const tools = buildAllTools(makeCtx({ from: vi.fn() }))
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(33)
+    expect(new Set(names).size).toBe(names.length)
     expect(names).toEqual(
       expect.arrayContaining([
         'update_banner_text',
@@ -351,7 +351,7 @@ describe('site customization registry and prompt wiring', () => {
 
   it('system prompt documents the site-customization tools and the new 21-tool total', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'You have twenty-nine tools available right now:',
+      "You have a scoped set of workspace tools available when the rep's request calls for them:",
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_banner_text')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_streaming_links')

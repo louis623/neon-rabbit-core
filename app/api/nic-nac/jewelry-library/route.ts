@@ -12,8 +12,9 @@ export const dynamic = 'force-dynamic'
 function readLimit(url: URL) {
   const raw = url.searchParams.get('limit')
   if (!raw) return undefined
+  if (!/^\d+$/.test(raw)) return null
   const parsed = Number.parseInt(raw, 10)
-  return Number.isFinite(parsed) ? parsed : null
+  return parsed > 0 ? parsed : null
 }
 
 function serviceErrorResponse(error: ServiceError) {

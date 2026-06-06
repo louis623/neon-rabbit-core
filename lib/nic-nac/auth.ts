@@ -18,6 +18,7 @@ export interface NicNacAuthContext {
     display_name: string
     stripe_customer_id: string | null
     public_site_slug: string | null
+    time_zone: string
   }
   supabase: SupabaseClient
 }

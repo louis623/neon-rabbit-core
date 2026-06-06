@@ -540,16 +540,23 @@
   color: rgba(246, 231, 218, 0.78);
 }
 
-.workspaceNavButtonLocked {
+.workspaceNavButtonComingSoon {
   opacity: 0.68;
+  cursor: not-allowed;
 }
 
-.workspaceNavButtonLocked.workspaceNavButtonActive {
-  opacity: 1;
+.workspaceNavButtonComingSoon .workspaceNavLabel,
+.workspaceNavButtonComingSoon .workspaceNavSubtitle {
+  font-weight: 500;
+  color: var(--nic-nac-text-muted);
 }
 
 .workspaceNavButton:hover {
   background: rgba(255, 255, 255, 0.62);
+}
+
+.workspaceNavButtonComingSoon:hover {
+  background: transparent;
 }
 
 .workspaceNavButtonActive:hover {
@@ -572,7 +579,7 @@
   color: var(--nic-nac-text-primary);
 }
 
-.workspaceNavLockTag {
+.workspaceNavStatusTag {
   flex: 0 0 auto;
   border-radius: 999px;
   background: rgba(64, 41, 36, 0.08);

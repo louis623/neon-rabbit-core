@@ -100,6 +100,19 @@ describe('trade board route', () => {
     expect(response.status).toBe(200)
   })
 
+  it('rejects malformed numeric paging params instead of partially parsing them', async () => {
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/trade-board?limit=12abc'),
+    )
+
+    expect(getPaidNicNacContextMock).not.toHaveBeenCalled()
+    expect(getMyBoardMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'limit must be a whole number.',
+    })
+  })
+
   it('adds a listing through the admin-backed fallback action without a confirmation checkbox', async () => {
     getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',

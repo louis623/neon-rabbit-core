@@ -294,6 +294,7 @@ export function makeAmethystSiteContent(
 
   return {
     ...defaultAmethystSiteContent,
+    teamName: overrides.teamName ?? businessName,
     heroSub:
       overrides.heroSub ??
       `I'm ${repName}. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.`,

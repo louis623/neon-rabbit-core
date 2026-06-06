@@ -286,6 +286,16 @@ function rewriteTemplateScriptTarget(
   )
 }
 
+function rewriteAmethystStaticAssetUrls(html: string) {
+  return html.replace(
+    /\b(href|src)="(?!https?:\/\/|\/|#)([^"]+\.(?:css|jsx?))"/g,
+    (_match, attribute: string, assetPath: string) => {
+      if (!AMETHYST_ASSETS.has(assetPath)) return `${attribute}="${assetPath}"`
+      return `${attribute}="/amethyst/${assetPath}"`
+    },
+  )
+}
+
 function rewriteAmethystPublicHtml(
   html: string,
   page: AmethystPublicPage,
@@ -306,7 +316,9 @@ function rewriteAmethystPublicHtml(
   )
 
   return injectAmethystJsonLd(
-    rewriteTemplateScriptTarget(rewritten, page, requestUrl, options.repIdOverride),
+    rewriteAmethystStaticAssetUrls(
+      rewriteTemplateScriptTarget(rewritten, page, requestUrl, options.repIdOverride),
+    ),
     page,
     origin,
     templateData,

@@ -327,6 +327,66 @@ describe('trade listing recovery service', () => {
     ])
   })
 
+  it('sorts filtered board listings by supported design fields before paging', async () => {
+    const boardQuery = new ThenableQuery({
+      data: [
+        makeListing({
+          id: 'listing-middle',
+          status: 'available',
+          deleted_at: null,
+          removal_reason: null,
+          design: {
+            ...makeDesign('Middle Ring'),
+            item_number: 'RG200',
+            bp_msrp: 75,
+          },
+        }),
+        makeListing({
+          id: 'listing-low',
+          status: 'available',
+          deleted_at: null,
+          removal_reason: null,
+          design: {
+            ...makeDesign('Low Ring'),
+            item_number: 'RG100',
+            bp_msrp: 42,
+          },
+        }),
+        makeListing({
+          id: 'listing-high',
+          status: 'available',
+          deleted_at: null,
+          removal_reason: null,
+          design: {
+            ...makeDesign('High Ring'),
+            item_number: 'RG300',
+            bp_msrp: 128,
+          },
+        }),
+      ],
+      error: null,
+    })
+    const requestCountQuery = new ThenableQuery({ count: 0, error: null })
+    const from = vi.fn((table: string) => {
+      if (table === 'trade_listings') return { select: vi.fn(() => boardQuery) }
+      if (table === 'trade_requests') return { select: vi.fn(() => requestCountQuery) }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const board = await getMyBoard(
+      { from } as never,
+      'rep-1',
+      { sortBy: 'msrp', sortOrder: 'desc', limit: 2, offset: 1 },
+      { now: fixedNow, recoveryWindowDays: 7 },
+    )
+
+    expect(board.listings.map((listing) => listing.id)).toEqual([
+      'listing-middle',
+      'listing-low',
+    ])
+    expect(board.summary.totalPieces).toBe(2)
+  })
+
   it('purges expired removed listings using the same configured cutoff', async () => {
     const purgeQuery = new ThenableQuery({
       data: [{ id: 'expired-1' }, { id: 'expired-2' }],

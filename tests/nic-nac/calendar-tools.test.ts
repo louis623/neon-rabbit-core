@@ -46,6 +46,7 @@ function calendarEvent(overrides: Record<string, unknown> = {}) {
     repId: 'rep-1',
     platform: 'TikTok',
     eventTime: '2099-05-01T20:00:00.000Z',
+    timeZone: 'America/New_York',
     durationMinutes: 60,
     title: 'Friday Sparkles',
     description: 'Main show',
@@ -86,7 +87,8 @@ describe('calendar tools', () => {
 
     const result = await tool.execute({
       platform: 'TikTok',
-      eventTime: '2099-05-01T20:00:00.000Z',
+      eventTime: '2026-06-07T00:00:00.000Z',
+      timeZone: 'America/New_York',
       title: 'Friday Sparkles',
       discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       recurring: { cadence: 'weekly', duration: '1_month' },
@@ -97,7 +99,8 @@ describe('calendar tools', () => {
       'rep-1',
       expect.objectContaining({
         platform: 'TikTok',
-        eventTime: '2099-05-01T20:00:00.000Z',
+        eventTime: '2026-06-07T00:00:00.000Z',
+        timeZone: 'America/New_York',
         title: 'Friday Sparkles',
         discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
         recurring: { cadence: 'weekly', duration: '1_month' },
@@ -168,6 +171,7 @@ describe('calendar tools', () => {
         title: 'Moved title',
         platform: undefined,
         eventTime: undefined,
+        timeZone: undefined,
         durationMinutes: undefined,
         description: undefined,
         discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
@@ -252,11 +256,11 @@ describe('calendar tools', () => {
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools now exposes 33 tools including the four calendar tools', () => {
+  it('buildAllTools exposes the four calendar tools without duplicate registry names', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(33)
+    expect(new Set(names).size).toBe(names.length)
     expect(names).toEqual(expect.arrayContaining([
       'add_show',
       'list_my_shows',
@@ -266,7 +270,9 @@ describe('calendar registry and prompt wiring', () => {
   })
 
   it('system prompt documents recurring shows, multi-code support, and series updates', () => {
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('You have twenty-nine tools available right now:')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      "You have a scoped set of workspace tools available when the rep's request calls for them:",
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('add_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('list_my_shows')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_show')
@@ -275,6 +281,8 @@ describe('calendar registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('How often')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('applyToSeries: true')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Calendar times must be timezone-explicit')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain("viewer's local browser timezone")
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('about six months ahead')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',

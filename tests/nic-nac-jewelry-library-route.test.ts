@@ -58,6 +58,19 @@ describe('jewelry library route', () => {
     expect(response.status).toBe(200)
   })
 
+  it('rejects malformed search limit params before loading the catalog', async () => {
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/jewelry-library?query=aurora&limit=16abc'),
+    )
+
+    expect(getAuthenticatedRepMock).not.toHaveBeenCalled()
+    expect(searchJewelryDatabaseMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'limit must be a whole number.',
+    })
+  })
+
   it('adds a searched design onto the rep board', async () => {
     getAuthenticatedRepMock.mockResolvedValueOnce({
       repId: 'rep-1',

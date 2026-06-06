@@ -236,6 +236,32 @@ const cleanTemplateData = {
   },
 }
 
+const cleanCalendarEvents = [
+  {
+    id: 'clean-event-1',
+    title: 'Eastern Host Chicago Viewer Smoke',
+    description: 'Fresh live reveal with smoke-test discounts.',
+    eventTime: '2026-06-07T00:00:00.000Z',
+    timeZone: 'America/New_York',
+    durationMinutes: 60,
+    featured: true,
+    codes: [{ code: 'CLEAN10', desc: '10% off smoke-test favorites' }],
+    collections: [
+      {
+        label: 'Clean Smoke Picks',
+        href: '/amethyst/Trade.html?collection=Clean%20Smoke%20Picks',
+      },
+    ],
+    platforms: [
+      {
+        kind: 'tt',
+        label: 'Join me on TikTok',
+        href: 'https://tiktok.example/@clean',
+      },
+    ],
+  },
+]
+
 describe('targeted Amethyst customer sites', () => {
   beforeEach(() => {
     mocks.loadAmethystPreviewTemplateData.mockReset()
@@ -273,6 +299,30 @@ describe('targeted Amethyst customer sites', () => {
     expect(script).toContain('"businessName":"Clean Smoke Sparkle"')
     expect(script).toContain('"heroSub":"A saved Nic-Nac welcome line."')
     expect(script).toContain('window.AMETHYST_HOMEPAGE_EVENTS = []')
+    expectNoDemoCustomerData(script)
+  })
+
+  it('hydrates targeted homepage bootstrap data with that rep calendar events', async () => {
+    mocks.loadAmethystHomepageUpcomingShows.mockResolvedValueOnce(cleanCalendarEvents)
+
+    const response = await getHomepageTemplate(
+      new Request('https://preview.example/api/amethyst/homepage-template?c=rep-clean'),
+    )
+    const script = await response.text()
+
+    expect(mocks.loadAmethystHomepageUpcomingShows).toHaveBeenCalledWith({
+      repId: 'rep-clean',
+      targeted: true,
+    })
+    expect(script).toContain('window.AMETHYST_HOMEPAGE_EVENTS')
+    expect(script).toContain('Eastern Host Chicago Viewer Smoke')
+    expect(script).toContain('2026-06-07T00:00:00.000Z')
+    expect(script).toContain('America/New_York')
+    expect(script).toContain('CLEAN10')
+    expect(script).toContain('Clean Smoke Picks')
+    expect(script).toContain('https://tiktok.example/@clean')
+    expect(script).toContain('"showEvents":true')
+    expect(script).toContain('"eventCount":1')
     expectNoDemoCustomerData(script)
   })
 

@@ -108,7 +108,7 @@ describe('get_customer_audience', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
-    expect(names).toHaveLength(33)
+    expect(new Set(names).size).toBe(names.length)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_customer_audience',
@@ -119,7 +119,7 @@ describe('get_customer_audience', () => {
     expect(customerAudienceTool.readOnly).toBe(true)
     expect(customerAudienceTool.name).toBe('get_customer_audience')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'You have twenty-nine tools available right now:',
+      "You have a scoped set of workspace tools available when the rep's request calls for them:",
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_customer_audience')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

@@ -1,12 +1,23 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PAID_WORKSPACE_STATUSES } from '@/lib/nic-nac/subscription-access'
+import { buildPublicSiteUrl, generatePublicSiteSlug } from '@/lib/public-site/show-link'
 import type { JewelryType } from '@/lib/services/types'
 
 type FinderCollectionRelation =
   | { name: string | null; collection_year: number | null }
   | Array<{ name: string | null; collection_year: number | null }>
   | null
+
+type FinderRepSingle = {
+  id: string
+  display_name: string | null
+  business_name: string | null
+  profile_photo_url: string | null
+  custom_domain: string | null
+  public_site_slug: string | null
+  status: string | null
+}
 
 type FinderDesignRow = {
   id: string
@@ -23,22 +34,8 @@ type FinderDesignRow = {
 }
 
 type FinderRepRow =
-  | {
-      id: string
-      display_name: string | null
-      business_name: string | null
-      profile_photo_url: string | null
-      custom_domain: string | null
-      status: string | null
-    }
-  | Array<{
-      id: string
-      display_name: string | null
-      business_name: string | null
-      profile_photo_url: string | null
-      custom_domain: string | null
-      status: string | null
-    }>
+  | FinderRepSingle
+  | FinderRepSingle[]
   | null
 
 type FinderListingRow = {
@@ -53,15 +50,18 @@ type FinderListingRow = {
   rep: FinderRepRow
 }
 
-type FinderShowRow = {
+export type FinderLeadShowRow = {
   id: string
   rep_id: string
-  platform: string
   event_time: string
-  duration_minutes: number | null
   title: string | null
-  description: string | null
   status: string
+}
+
+type FinderShowRow = FinderLeadShowRow
+
+type FinderLiveShowRow = FinderLeadShowRow & {
+  rep: FinderRepRow
 }
 
 export type FinderJewelryType =
@@ -88,21 +88,16 @@ export interface SparkleFinderCatalogItem {
 
 export interface SparkleFinderPublicRep {
   repId: string
-  displayName: string
-  businessName: string
-  profilePhotoUrl: string | null
-  customerSitePath: string
-  tradeBoardPath: string
+  showName: string
+  repFirstName: string
+  customerSiteUrl: string
 }
 
 export interface SparkleFinderPublicShow {
   showId: string
   repId: string
-  platform: string
   startsAt: string
-  durationMinutes: number
   title: string | null
-  description: string | null
   status: 'scheduled' | 'live'
 }
 
@@ -113,13 +108,22 @@ export interface SparkleFinderAvailabilityMatch {
   photoSource: 'listing' | 'canonical' | 'missing'
   item: SparkleFinderCatalogItem
   rep: SparkleFinderPublicRep
-  nextShow: SparkleFinderPublicShow | null
+  nextShow: SparkleFinderPublicShow
 }
 
 export interface SparkleFinderAvailabilityResult {
   requestedItem: SparkleFinderCatalogItem | null
   exactMatches: SparkleFinderAvailabilityMatch[]
   similarMatches: SparkleFinderAvailabilityMatch[]
+}
+
+export interface SparkleFinderLiveShow {
+  showId: string
+  showName: string
+  repFirstName: string
+  startsAt: string
+  status: 'scheduled' | 'live'
+  customerSiteUrl: string
 }
 
 export interface SparkleFinderCatalogListOptions {
@@ -139,19 +143,29 @@ export interface SparkleFinderAvailabilityOptions {
   supabase?: SupabaseClient
 }
 
+export interface SparkleFinderLiveShowsOptions {
+  limit?: number
+  supabase?: SupabaseClient
+}
+
 const FINDER_CATALOG_SELECT =
   'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, created_at, collection:collections(name, collection_year)'
 
 const FINDER_LISTING_SELECT = `
   id, rep_id, design_id, listing_photo_url, uses_canonical_photo, listed_at, status,
   design:jewelry_designs(${FINDER_CATALOG_SELECT}),
-  rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, status)
+  rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)
 `
+
+const FINDER_LIVE_SHOW_SELECT =
+  'id, rep_id, event_time, title, status, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)'
 
 export const DEFAULT_FINDER_CATALOG_LIMIT = 24
 export const MAX_FINDER_CATALOG_LIMIT = 50
 export const DEFAULT_FINDER_AVAILABILITY_LIMIT = 24
 export const MAX_FINDER_AVAILABILITY_LIMIT = 50
+export const DEFAULT_FINDER_LIVE_SHOW_LIMIT = 50
+export const MAX_FINDER_LIVE_SHOW_LIMIT = 100
 
 const TYPE_MAP: Record<JewelryType, FinderJewelryType> = {
   RG: 'ring',
@@ -254,16 +268,21 @@ export async function getSparkleFinderAvailability(
   if (eligibleRepIds.length === 0) {
     return { requestedItem, exactMatches: [], similarMatches: [] }
   }
+  const qualifiedRepIds = await loadRepIdsWithFinderShows(supabase, eligibleRepIds)
+  if (qualifiedRepIds.size === 0) {
+    return { requestedItem, exactMatches: [], similarMatches: [] }
+  }
 
   const limit = Math.min(
     Math.max(options.limit ?? DEFAULT_FINDER_AVAILABILITY_LIMIT, 1),
     MAX_FINDER_AVAILABILITY_LIMIT,
   )
-  const exactRows = await loadAvailableListingRows(supabase, eligibleRepIds, {
+  const qualifiedRepIdList = Array.from(qualifiedRepIds)
+  const exactRows = await loadAvailableListingRows(supabase, qualifiedRepIdList, {
     designId: options.designId,
     limit,
   })
-  const similarRows = await loadAvailableListingRows(supabase, eligibleRepIds, {
+  const similarRows = await loadAvailableListingRows(supabase, qualifiedRepIdList, {
     excludeDesignId: options.designId,
     collectionName: requestedItem.collectionName,
     jewelryType: requestedItem.jewelryType,
@@ -273,22 +292,41 @@ export async function getSparkleFinderAvailability(
     new Set([...exactRows, ...similarRows].map((listing) => listing.rep_id)),
   )
   const nextShows = await loadNextShowsByRepId(supabase, repIds)
+  const exactLeadRows = filterListingsWithNextShows(exactRows, nextShows)
+  const similarLeadRows = filterListingsWithNextShows(similarRows, nextShows)
 
   return {
     requestedItem,
-    exactMatches: exactRows.map((listing) =>
+    exactMatches: exactLeadRows.map((listing) =>
       mapSparkleFinderAvailabilityListingRow(
         listing,
-        nextShows.get(listing.rep_id) ?? null,
+        nextShows.get(listing.rep_id)!,
       ),
     ),
-    similarMatches: similarRows.map((listing) =>
+    similarMatches: similarLeadRows.map((listing) =>
       mapSparkleFinderAvailabilityListingRow(
         listing,
-        nextShows.get(listing.rep_id) ?? null,
+        nextShows.get(listing.rep_id)!,
       ),
     ),
   }
+}
+
+export async function listSparkleFinderLiveShows(
+  options: SparkleFinderLiveShowsOptions = {},
+): Promise<SparkleFinderLiveShow[]> {
+  if (!isFinderSupabaseConfigured(options.supabase)) return []
+
+  const supabase = options.supabase ?? createAdminClient()
+  const limit = Math.min(
+    Math.max(options.limit ?? DEFAULT_FINDER_LIVE_SHOW_LIMIT, 1),
+    MAX_FINDER_LIVE_SHOW_LIMIT,
+  )
+  const eligibleRepIds = await loadPublicFinderEligibleRepIds(supabase)
+  if (eligibleRepIds.length === 0) return []
+
+  const rows = await loadFinderLiveShowRows(supabase, eligibleRepIds, limit)
+  return mapSparkleFinderLiveShowRows(rows).slice(0, limit)
 }
 
 async function loadCatalogDesignRows(
@@ -375,19 +413,32 @@ async function countEligibleAvailableListings(
 
   const eligibleRepIds = await loadPublicFinderEligibleRepIds(supabase)
   if (eligibleRepIds.length === 0) return counts
+  const qualifiedRepIds = await loadRepIdsWithFinderShows(supabase, eligibleRepIds)
+  if (qualifiedRepIds.size === 0) return counts
 
   const { data, error } = await supabase
     .from('trade_listings')
     .select('design_id, rep_id')
     .eq('status', 'available')
     .in('design_id', designIds)
-    .in('rep_id', eligibleRepIds)
+    .in('rep_id', Array.from(qualifiedRepIds))
   if (error) throw error
 
-  for (const row of (data ?? []) as Array<{ design_id: string }>) {
+  return countListingsByDesignForQualifiedReps(
+    (data ?? []) as Array<{ design_id: string; rep_id: string }>,
+    qualifiedRepIds,
+  )
+}
+
+export function countListingsByDesignForQualifiedReps(
+  rows: Array<{ design_id: string; rep_id: string }>,
+  qualifiedRepIds: Set<string>,
+) {
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    if (!qualifiedRepIds.has(row.rep_id)) continue
     counts.set(row.design_id, (counts.get(row.design_id) ?? 0) + 1)
   }
-
   return counts
 }
 
@@ -473,35 +524,147 @@ async function loadNextShowsByRepId(supabase: SupabaseClient, repIds: string[]) 
   const shows = new Map<string, SparkleFinderPublicShow>()
   if (repIds.length === 0) return shows
 
+  const now = new Date().toISOString()
+  const liveResult = await supabase
+    .from('calendar_events')
+    .select('id, rep_id, event_time, title, status')
+    .in('rep_id', repIds)
+    .eq('status', 'live')
+    .order('event_time', { ascending: true })
+  if (liveResult.error) throw liveResult.error
+
   const { data, error } = await supabase
     .from('calendar_events')
-    .select('id, rep_id, platform, event_time, duration_minutes, title, description, status')
+    .select('id, rep_id, event_time, title, status')
     .in('rep_id', repIds)
-    .in('status', ['scheduled', 'live'])
-    .gte('event_time', new Date().toISOString())
+    .eq('status', 'scheduled')
+    .gte('event_time', now)
     .order('event_time', { ascending: true })
   if (error) throw error
 
-  for (const row of (data ?? []) as FinderShowRow[]) {
-    if (shows.has(row.rep_id)) continue
-    shows.set(row.rep_id, {
-      showId: row.id,
-      repId: row.rep_id,
-      platform: row.platform,
-      startsAt: row.event_time,
-      durationMinutes: row.duration_minutes ?? 60,
-      title: row.title,
-      description: row.description,
-      status: row.status === 'live' ? 'live' : 'scheduled',
+  return mapFinderShowRowsToNextShows([
+    ...((liveResult.data ?? []) as FinderShowRow[]),
+    ...((data ?? []) as FinderShowRow[]),
+  ])
+}
+
+async function loadFinderLiveShowRows(
+  supabase: SupabaseClient,
+  eligibleRepIds: string[],
+  limit: number,
+) {
+  const now = new Date().toISOString()
+  const liveResult = await supabase
+    .from('calendar_events')
+    .select(FINDER_LIVE_SHOW_SELECT)
+    .in('rep_id', eligibleRepIds)
+    .eq('status', 'live')
+    .order('event_time', { ascending: true })
+    .limit(limit)
+  if (liveResult.error) throw liveResult.error
+
+  const scheduledResult = await supabase
+    .from('calendar_events')
+    .select(FINDER_LIVE_SHOW_SELECT)
+    .in('rep_id', eligibleRepIds)
+    .eq('status', 'scheduled')
+    .gte('event_time', now)
+    .order('event_time', { ascending: true })
+    .limit(limit)
+  if (scheduledResult.error) throw scheduledResult.error
+
+  return [
+    ...((liveResult.data ?? []) as unknown as FinderLiveShowRow[]),
+    ...((scheduledResult.data ?? []) as unknown as FinderLiveShowRow[]),
+  ]
+}
+
+async function loadRepIdsWithFinderShows(
+  supabase: SupabaseClient,
+  eligibleRepIds: string[],
+) {
+  const shows = await loadNextShowsByRepId(supabase, eligibleRepIds)
+  return new Set(shows.keys())
+}
+
+function mapFinderShowRow(row: FinderShowRow): SparkleFinderPublicShow {
+  return {
+    showId: row.id,
+    repId: row.rep_id,
+    startsAt: row.event_time,
+    title: row.title,
+    status: row.status === 'live' ? 'live' : 'scheduled',
+  }
+}
+
+export function mapFinderShowRowsToNextShows(
+  rows: FinderLeadShowRow[],
+  nowIso = new Date().toISOString(),
+) {
+  const shows = new Map<string, SparkleFinderPublicShow>()
+  const sortedRows = rows
+    .filter((row) => isFinderLeadShowRow(row, nowIso))
+    .sort((left, right) => {
+      if (left.status === 'live' && right.status !== 'live') return -1
+      if (right.status === 'live' && left.status !== 'live') return 1
+      return left.event_time.localeCompare(right.event_time)
     })
+
+  for (const row of sortedRows) {
+    if (shows.has(row.rep_id)) continue
+    shows.set(row.rep_id, mapFinderShowRow(row))
   }
 
   return shows
 }
 
+function isFinderLeadShowRow(row: FinderShowRow, nowIso: string) {
+  if (row.status === 'live') return true
+  return row.status === 'scheduled' && row.event_time >= nowIso
+}
+
+export function mapSparkleFinderLiveShowRows(
+  rows: FinderLiveShowRow[],
+  nowIso = new Date().toISOString(),
+): SparkleFinderLiveShow[] {
+  return rows
+    .filter((row) => isFinderLeadShowRow(row, nowIso))
+    .filter((row) => {
+      const rep = readSingle(row.rep)
+      return Boolean(rep?.id && isFinderPublicRepStatus(rep.status))
+    })
+    .sort((left, right) => {
+      if (left.status === 'live' && right.status !== 'live') return -1
+      if (right.status === 'live' && left.status !== 'live') return 1
+      return left.event_time.localeCompare(right.event_time)
+    })
+    .map((row) => {
+      const rep = readSingle(row.rep)
+      if (!rep?.id) {
+        throw new Error('Finder live show is missing a public rep relation.')
+      }
+
+      return {
+        showId: row.id,
+        showName: getFinderShowName(rep),
+        repFirstName: getFinderRepFirstName(rep.display_name),
+        startsAt: row.event_time,
+        status: row.status === 'live' ? 'live' : 'scheduled',
+        customerSiteUrl: buildFinderCustomerSiteUrl(rep),
+      }
+    })
+}
+
+export function filterListingsWithNextShows<T extends { rep_id: string }>(
+  rows: T[],
+  nextShows: Map<string, SparkleFinderPublicShow>,
+) {
+  return rows.filter((row) => nextShows.has(row.rep_id))
+}
+
 export function mapSparkleFinderAvailabilityListingRow(
   row: FinderListingRow,
-  nextShow: SparkleFinderPublicShow | null,
+  nextShow: SparkleFinderPublicShow,
 ): SparkleFinderAvailabilityMatch {
   const design = readSingle(row.design)
   const rep = readSingle(row.rep)
@@ -523,22 +686,37 @@ export function mapSparkleFinderAvailabilityListingRow(
     item,
     rep: {
       repId: rep.id,
-      displayName: rep.display_name?.trim() || rep.business_name?.trim() || 'Sparkle Suite Rep',
-      businessName: rep.business_name?.trim() || rep.display_name?.trim() || 'Sparkle Suite Rep',
-      profilePhotoUrl: rep.profile_photo_url,
-      customerSitePath: buildCustomerSitePath(rep.id),
-      tradeBoardPath: buildTradeBoardPath(rep.id),
+      showName: getFinderShowName(rep),
+      repFirstName: getFinderRepFirstName(rep.display_name),
+      customerSiteUrl: buildFinderCustomerSiteUrl(rep),
     },
     nextShow,
   }
 }
 
-function buildCustomerSitePath(repId: string) {
-  return `/amethyst?c=${encodeURIComponent(repId)}`
+function getFinderShowName(rep: FinderRepSingle) {
+  return (
+    rep.business_name?.trim() ||
+    rep.display_name?.trim() ||
+    'Sparkle Suite Rep'
+  )
 }
 
-function buildTradeBoardPath(repId: string) {
-  return `/amethyst/trade?c=${encodeURIComponent(repId)}`
+function getFinderRepFirstName(displayName: string | null) {
+  const first = displayName?.trim().split(/\s+/)[0]?.trim()
+  return first || 'Sparkle Suite Rep'
+}
+
+function buildFinderCustomerSiteUrl(rep: FinderRepSingle) {
+  const slug =
+    rep.public_site_slug?.trim() ||
+    generatePublicSiteSlug(getFinderShowName(rep)) ||
+    'sparkleshow'
+  return buildPublicSiteUrl(slug)
+}
+
+function isFinderPublicRepStatus(status: string | null) {
+  return status !== 'suspended' && status !== 'churned'
 }
 
 function readSingle<T>(value: T | T[] | null): T | null {
