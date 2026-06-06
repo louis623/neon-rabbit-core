@@ -246,6 +246,7 @@ type RepProfileState = {
   status: 'loading' | 'ready' | 'error'
   repId?: string
   displayName?: string
+  publicSiteSlug?: string | null
   liveQueueSyncCode?: string | null
 }
 
@@ -318,6 +319,7 @@ type MeResponsePayload = {
   rep?: {
     id?: string
     display_name?: string
+    public_site_slug?: string | null
     live_queue_sync_code?: string | null
   }
 }
@@ -1044,6 +1046,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     repId: repIdOverride,
     displayName: initialSiteSettings?.displayName,
+    publicSiteSlug: null,
     liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
   const [audienceState, setAudienceState] = useState<AudienceState>({
@@ -1290,6 +1293,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       status: 'ready',
       repId: payload.rep?.id,
       displayName: payload.rep?.display_name,
+      publicSiteSlug: payload.rep?.public_site_slug ?? null,
       liveQueueSyncCode: payload.rep?.live_queue_sync_code ?? null,
     })
   }
@@ -2589,9 +2593,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  const customerSparkleSiteHref = buildCustomerSparkleSiteHref(
-    repIdOverride ?? repProfileState.repId,
-  )
+  const customerSparkleSiteHref = buildCustomerSparkleSiteHref({
+    repId: repIdOverride ?? repProfileState.repId,
+    publicSiteSlug: repProfileState.publicSiteSlug,
+  })
   const customerTradeBoardHref = buildCustomerTradeBoardHref(
     repIdOverride ?? repProfileState.repId,
   )

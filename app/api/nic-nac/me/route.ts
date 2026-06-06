@@ -14,6 +14,7 @@ export async function GET() {
         id: rep.id,
         email: rep.email,
         display_name: rep.display_name,
+        public_site_slug: rep.public_site_slug,
         live_queue_sync_code: liveQueueSyncCode,
       },
     })

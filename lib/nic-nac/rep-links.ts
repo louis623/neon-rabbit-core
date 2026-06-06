@@ -12,14 +12,37 @@ export function formatExtensionRepId(repId?: string | null) {
   return String(hash % 1_000_000).padStart(6, '0')
 }
 
-export function buildCustomerTradeBoardHref(repId?: string | null) {
-  const cleanedRepId = repId?.trim()
+type RepLinkTarget =
+  | string
+  | {
+      repId?: string | null
+      publicSiteSlug?: string | null
+    }
+  | null
+  | undefined
+
+function getRepId(target: RepLinkTarget) {
+  return typeof target === 'string' ? target.trim() : target?.repId?.trim()
+}
+
+function getPublicSiteSlug(target: RepLinkTarget) {
+  if (!target || typeof target === 'string') return null
+
+  const cleanedSlug = target.publicSiteSlug?.trim().toLowerCase()
+  return cleanedSlug || null
+}
+
+export function buildCustomerTradeBoardHref(target?: RepLinkTarget) {
+  const cleanedRepId = getRepId(target)
   if (!cleanedRepId) return '/amethyst/Trade.html'
   return `/amethyst/Trade.html?c=${encodeURIComponent(cleanedRepId)}`
 }
 
-export function buildCustomerSparkleSiteHref(repId?: string | null) {
-  const cleanedRepId = repId?.trim()
+export function buildCustomerSparkleSiteHref(target?: RepLinkTarget) {
+  const publicSiteSlug = getPublicSiteSlug(target)
+  if (publicSiteSlug) return `/${encodeURIComponent(publicSiteSlug)}`
+
+  const cleanedRepId = getRepId(target)
   if (!cleanedRepId) return '/amethyst/Homepage.html'
   return `/amethyst/Homepage.html?c=${encodeURIComponent(cleanedRepId)}`
 }
