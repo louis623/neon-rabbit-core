@@ -53,6 +53,7 @@ export const saveRequiredSetupAnswerTool: ToolDefinition = {
         )
 
         if (!input.completeStep) return saved
+        validateSavedCompletion(input, saved)
         return completeRequiredSetupStep(ctx.repId, input.stepId)
       },
     }),
@@ -65,11 +66,6 @@ function validateCompletion(input: z.infer<typeof inputSchema>) {
     if (input.answer.accountBasicsConfirmed !== true) {
       throw new Error(
         'The account basics summary must be confirmed before completing account basics.',
-      )
-    }
-    if (input.answer.publicSiteSlugStatus !== 'accepted') {
-      throw new Error(
-        'The Sparkle Suite show link must be accepted before completing account basics.',
       )
     }
   }
@@ -89,5 +85,34 @@ function validateCompletion(input: z.infer<typeof inputSchema>) {
         `Live Queue setup requires confirmed checklist fields before completion: ${missing.join(', ')}.`,
       )
     }
+  }
+}
+
+function validateSavedCompletion(
+  input: z.infer<typeof inputSchema>,
+  saved: unknown,
+) {
+  if (input.stepId !== 'account_basics') return
+
+  const accountBasics =
+    saved &&
+    typeof saved === 'object' &&
+    'answers' in saved &&
+    saved.answers &&
+    typeof saved.answers === 'object' &&
+    'account_basics' in saved.answers &&
+    saved.answers.account_basics &&
+    typeof saved.answers.account_basics === 'object'
+      ? saved.answers.account_basics
+      : null
+
+  if (
+    !accountBasics ||
+    !('publicSiteSlugStatus' in accountBasics) ||
+    accountBasics.publicSiteSlugStatus !== 'accepted'
+  ) {
+    throw new Error(
+      'The Sparkle Suite show link must be accepted before completing account basics.',
+    )
   }
 }

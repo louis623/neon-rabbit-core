@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildRequiredSetupPrompt } from '@/lib/nic-nac/required-setup-prompt'
 import type { ToolDefinition } from '@/lib/nic-nac/tools/types'
 
@@ -23,6 +23,11 @@ function executeTool(
 }
 
 describe('Nic-Nac required setup public show link contract', () => {
+  beforeEach(() => {
+    saveRequiredSetupAnswerMock.mockReset()
+    completeRequiredSetupStepMock.mockReset()
+  })
+
   it('teaches Nic-Nac how to handle the generated Sparkle Suite show link', () => {
     const prompt = buildRequiredSetupPrompt()
 
@@ -42,6 +47,14 @@ describe('Nic-Nac required setup public show link contract', () => {
   })
 
   it('blocks completing account basics until the public show link is accepted', async () => {
+    saveRequiredSetupAnswerMock.mockResolvedValue({
+      answers: {
+        account_basics: {
+          accountBasicsConfirmed: true,
+          publicSiteSlugStatus: 'needs_review',
+        },
+      },
+    })
     const { saveRequiredSetupAnswerTool } = await import(
       '@/lib/nic-nac/tools/save-required-setup-answer'
     )
@@ -65,7 +78,61 @@ describe('Nic-Nac required setup public show link contract', () => {
       'The Sparkle Suite show link must be accepted before completing account basics.',
     )
 
-    expect(saveRequiredSetupAnswerMock).not.toHaveBeenCalled()
+    expect(saveRequiredSetupAnswerMock).toHaveBeenCalledWith(
+      'rep-1',
+      'account_basics',
+      {
+        accountBasicsConfirmed: true,
+        publicSiteSlugStatus: 'needs_review',
+      },
+      {},
+    )
     expect(completeRequiredSetupStepMock).not.toHaveBeenCalled()
+  })
+
+  it('completes account basics when the saved public show link is accepted', async () => {
+    saveRequiredSetupAnswerMock.mockResolvedValue({
+      answers: {
+        account_basics: {
+          accountBasicsConfirmed: true,
+          publicSiteSlugStatus: 'accepted',
+          publicSiteSlug: 'graciesparkleparty',
+          publicSiteUrl: 'https://www.yoursparklesuite.com/graciesparkleparty',
+        },
+      },
+    })
+    completeRequiredSetupStepMock.mockResolvedValue({
+      currentStepId: 'site_skin',
+    })
+    const { saveRequiredSetupAnswerTool } = await import(
+      '@/lib/nic-nac/tools/save-required-setup-answer'
+    )
+    const tool = saveRequiredSetupAnswerTool.build({
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      runId: 'run-1',
+      supabase: {} as never,
+    })
+
+    await expect(
+      executeTool(tool, {
+        stepId: 'account_basics',
+        answer: {
+          accountBasicsConfirmed: true,
+        },
+        completeStep: true,
+      }),
+    ).resolves.toEqual({ currentStepId: 'site_skin' })
+
+    expect(saveRequiredSetupAnswerMock).toHaveBeenCalledWith(
+      'rep-1',
+      'account_basics',
+      { accountBasicsConfirmed: true },
+      {},
+    )
+    expect(completeRequiredSetupStepMock).toHaveBeenCalledWith(
+      'rep-1',
+      'account_basics',
+    )
   })
 })
