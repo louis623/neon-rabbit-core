@@ -15,6 +15,7 @@ import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
+import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import {
   affiliateDisclosureHref,
   affiliateIssueReportHref,
@@ -121,6 +122,37 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Celestial Lights");
     expect(markup).toContain("/library/jewel-rainbow-crown-ring");
+  });
+
+  it("preserves selected library filters and only shows matching records", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), { q: "rose", type: "ring", label: "diamond" }),
+    );
+
+    expect(markup).toContain('value="rose"');
+    expect(markup).toContain('<option value="ring" selected="">ring</option>');
+    expect(markup).toContain('<option value="diamond" selected="">diamond</option>');
+    expect(markup).toContain("Rose Crown Ring");
+    expect(markup).not.toContain("Ocean Pearl Necklace");
+  });
+
+  it("shows an empty library state when no records match selected filters", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), { q: "ocean", type: "necklace", label: "standard" }),
+    );
+
+    expect(markup).toContain("No library records match those filters.");
+    expect(markup).not.toContain("Rose Crown Ring");
+    expect(markup).not.toContain("Ocean Pearl Necklace");
+  });
+
+  it("shows a no-match library state when a search query returns no catalog records", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent([], { q: "rose", type: "all", label: "all" }),
+    );
+
+    expect(markup).toContain("No library records match those filters.");
+    expect(markup).not.toContain("The shared Sparkle Suite jewelry catalog is not available");
   });
 
   it("renders the item detail route with rep availability and focused Nic-Nac CTA", () => {
@@ -626,4 +658,35 @@ function activeTrialRouteAccountState(): CurrentSparkleFinderAccountState {
       privacyAcknowledgedAt: "2026-04-26T12:00:00.000Z",
     },
   };
+}
+
+function libraryFilterItems(): JewelryItem[] {
+  return [
+    {
+      id: "jewel-rose-crown-ring",
+      name: "Rose Crown Ring",
+      collectionName: "Garden Glow",
+      collectionYear: 2026,
+      jewelryType: "ring",
+      imageUrl: "/fixtures/rose-crown-ring.jpg",
+      bpLabel: "diamond",
+      itemNumber: "RCR-001",
+      searchTags: ["rose", "crown"],
+      availableListingCount: 1,
+      knownRepListingIds: [],
+    },
+    {
+      id: "jewel-ocean-pearl-necklace",
+      name: "Ocean Pearl Necklace",
+      collectionName: "Tide Line",
+      collectionYear: 2026,
+      jewelryType: "necklace",
+      imageUrl: "/fixtures/ocean-pearl-necklace.jpg",
+      bpLabel: "diamond",
+      itemNumber: "OPN-002",
+      searchTags: ["ocean", "pearl"],
+      availableListingCount: 1,
+      knownRepListingIds: [],
+    },
+  ];
 }
