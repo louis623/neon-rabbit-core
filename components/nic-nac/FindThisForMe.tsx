@@ -2,10 +2,16 @@ import Link from "next/link";
 import { CalendarClock, Search, Sparkles } from "lucide-react";
 import { findNicNacMatchesForItem } from "@/lib/sparkle-finder/nic-nac";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
-import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
+import { getSparkleSuiteFinderPublicBaseUrl } from "@/lib/sparkle-finder/catalog-service";
+import {
+  getLocalRepBoardHref,
+  getLocalRepHref,
+  getSparkleSuiteRepBoardHref,
+  getSparkleSuiteRepHref,
+} from "@/lib/sparkle-finder/route-hrefs";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
-import type { NicNacFindMatch } from "@/lib/sparkle-finder/nic-nac";
+import type { NicNacDataSource, NicNacFindMatch } from "@/lib/sparkle-finder/nic-nac";
 
 type FindThisForMeProps = {
   accountState: SparkleFinderAccountState;
@@ -46,13 +52,15 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
           </p>
         </div>
         <span className="inline-flex min-h-9 items-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
-          {result.results.length} fixture {result.results.length === 1 ? "lead" : "leads"}
+          {formatLeadCount(result.results.length, result.dataSource)}
         </span>
       </div>
 
       <div className="mt-4 grid gap-3">
         {result.results.length > 0 ? (
-          result.results.map((match) => <NicNacMatchCard key={match.listing.id} match={match} />)
+          result.results.map((match) => (
+            <NicNacMatchCard key={match.listing.id} match={match} dataSource={result.dataSource} />
+          ))
         ) : (
           <p className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
             {result.emptyState}
@@ -78,7 +86,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
             Browse for free. Let Nic-Nac hunt for you with Silver.
           </p>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Silver opens focused matching across fixture-backed rep boards and next-show context.
+            Silver opens focused matching across known rep board paths and next-show context.
           </p>
         </div>
         <Link
@@ -113,7 +121,16 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
   );
 }
 
-function NicNacMatchCard({ match }: { match: NicNacFindMatch }) {
+function NicNacMatchCard({ match, dataSource }: { match: NicNacFindMatch; dataSource: NicNacDataSource }) {
+  const boardHref =
+    dataSource === "api"
+      ? getSparkleSuiteRepBoardHref(match.listing.boardUrl, getSparkleSuiteFinderPublicBaseUrl())
+      : getLocalRepBoardHref(match.listing.boardUrl);
+  const repHref =
+    dataSource === "api"
+      ? getSparkleSuiteRepHref(match.rep.siteUrl, getSparkleSuiteFinderPublicBaseUrl())
+      : getLocalRepHref(match.rep.siteUrl);
+
   return (
     <div className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -142,19 +159,26 @@ function NicNacMatchCard({ match }: { match: NicNacFindMatch }) {
       <div className="mt-4 flex flex-wrap gap-3">
         <Link
           className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={getLocalRepBoardHref(match.listing.boardUrl)}
+          href={boardHref}
         >
           Open rep board path
         </Link>
         <Link
           className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={getLocalRepHref(match.rep.siteUrl)}
+          href={repHref}
         >
           Open rep profile
         </Link>
       </div>
     </div>
   );
+}
+
+function formatLeadCount(count: number, dataSource: NicNacDataSource) {
+  const sourceLabel = dataSource === "api" ? "Sparkle Suite" : "preview";
+  const leadLabel = count === 1 ? "lead" : "leads";
+
+  return `${count} ${sourceLabel} ${leadLabel}`;
 }
 
 function formatMatchType(value: string) {

@@ -10,6 +10,7 @@ import type { FinderAvailabilityMatch, FinderAvailabilityResult } from "./catalo
 import type { JewelryItem, LiveShow, MatchType, RepBoardListing, RepSummary } from "./types";
 
 export type NicNacFindDeniedReason = "silver_required" | "item_not_found";
+export type NicNacDataSource = "api" | "fixture";
 
 export type NicNacFindMatch = {
   requestId: string;
@@ -25,6 +26,7 @@ export type NicNacFindMatch = {
 export type NicNacFindResult =
   | {
       ok: true;
+      dataSource: NicNacDataSource;
       requestId: string;
       requestedItem: JewelryItem;
       results: NicNacFindMatch[];
@@ -81,6 +83,7 @@ export function findNicNacMatchesForItem(
 
   return {
     ok: true,
+    dataSource: "fixture",
     requestId,
     requestedItem,
     results: [
@@ -109,6 +112,7 @@ function createApiBackedNicNacResult(
 
   return {
     ok: true,
+    dataSource: "api",
     requestId,
     requestedItem: availability.requestedItem,
     results: [

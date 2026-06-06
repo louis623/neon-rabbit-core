@@ -5,6 +5,7 @@ import { FindThisForMe } from "../../components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findNicNacMatchesForItem } from "../../lib/sparkle-finder/nic-nac";
 import type { FinderAvailabilityResult } from "../../lib/sparkle-finder/catalog-service";
+import type { JewelryItem } from "../../lib/sparkle-finder/types";
 
 describe("Nic-Nac find-this-for-me flow", () => {
   it("returns exact item matches before same collection and type fallback matches", () => {
@@ -154,6 +155,37 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).not.toContain("chat");
   });
 
+  it("renders API-backed Sparkle Suite leads with public rep links", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FindThisForMe, {
+        accountState: getLocalDevAuthState("silver"),
+        jewelryItemId: "design-api",
+        availability: {
+          ...apiAvailability(),
+          similarMatches: [],
+        },
+      }),
+    );
+
+    expect(markup).toContain("1 Sparkle Suite lead");
+    expect(markup).toContain("https://www.yoursparklesuite.com/amethyst/trade?c=rep-demo");
+    expect(markup).not.toContain("fixture lead");
+    expect(markup).not.toContain("fixture-backed");
+  });
+
+  it("renders fixture-backed Nic-Nac results as preview leads with local rep board paths", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FindThisForMe, {
+        accountState: getLocalDevAuthState("silver"),
+        jewelryItemId: "jewel-rainbow-crown-ring",
+      }),
+    );
+
+    expect(markup).toContain("2 preview leads");
+    expect(markup).toContain("/rep-boards?listing=rainbow-crown");
+    expect(markup).not.toContain("Sparkle Suite lead");
+  });
+
   it("does not invent a fallback lead when a Silver collection has no selected item", () => {
     const markup = renderToStaticMarkup(
       createElement(FindThisForMe, {
@@ -168,7 +200,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
 });
 
 function apiAvailability(): FinderAvailabilityResult {
-  const requestedItem = {
+  const requestedItem: JewelryItem = {
     id: "design-api",
     name: "Garden Gala Bracelet",
     collectionName: "Demo Garden",
@@ -180,7 +212,7 @@ function apiAvailability(): FinderAvailabilityResult {
     knownRepListingIds: [],
     searchTags: [],
     availableListingCount: 1,
-  } as const;
+  };
 
   return {
     requestedItem,
