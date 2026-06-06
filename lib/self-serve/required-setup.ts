@@ -1,6 +1,15 @@
+import {
+  buildPublicSiteUrl,
+  generatePublicSiteSlug,
+  getPublicSiteSlugAlternatives,
+  validatePublicSiteSlug,
+} from '@/lib/public-site/show-link'
 import { publishRequiredSetupCustomerSiteDraft } from './required-setup-site-draft'
 
 type JsonObject = Record<string, unknown>
+type AdminClient = ReturnType<
+  typeof import('@/lib/supabase/admin')['createAdminClient']
+>
 
 export const REQUIRED_SETUP_STEPS = [
   { id: 'account_basics', label: 'Account basics', required: true },
@@ -136,6 +145,80 @@ function mergeStepPatch(
   }
 }
 
+async function loadRepByPublicSiteSlug(admin: AdminClient, slug: string) {
+  const { data, error } = await admin
+    .from('reps')
+    .select('id, public_site_slug')
+    .eq('public_site_slug', slug)
+    .maybeSingle()
+
+  if (error) throw error
+  return data as { id: string; public_site_slug: string | null } | null
+}
+
+async function claimPublicSiteSlug(
+  admin: AdminClient,
+  repId: string,
+  slug: string,
+) {
+  const { data, error } = await admin
+    .from('reps')
+    .update({ public_site_slug: slug })
+    .eq('id', repId)
+    .select('id, public_site_slug')
+    .single()
+
+  if (error) throw error
+  return data as { id: string; public_site_slug: string }
+}
+
+async function buildAccountBasicsPublicSitePatch(
+  admin: AdminClient,
+  repId: string,
+  answerPatch: JsonObject,
+): Promise<JsonObject> {
+  const hasExplicitSlug = typeof answerPatch.publicSiteSlug === 'string'
+  const hasLiveShowName = typeof answerPatch.liveShowName === 'string'
+
+  if (!hasExplicitSlug && !hasLiveShowName) {
+    return answerPatch
+  }
+
+  const generatedSlug = hasExplicitSlug
+    ? generatePublicSiteSlug(answerPatch.publicSiteSlug as string)
+    : generatePublicSiteSlug(answerPatch.liveShowName as string)
+
+  const validation = validatePublicSiteSlug(generatedSlug)
+  if (!validation.ok) {
+    return {
+      ...answerPatch,
+      publicSiteSlugStatus: 'needs_review',
+      publicSiteSlugRedFlag: validation.reason,
+      publicSiteSlugAlternatives: getPublicSiteSlugAlternatives(generatedSlug),
+    }
+  }
+
+  const existingOwner = await loadRepByPublicSiteSlug(admin, generatedSlug)
+  if (existingOwner && existingOwner.id !== repId) {
+    return {
+      ...answerPatch,
+      publicSiteSlugStatus: 'needs_review',
+      publicSiteSlugRedFlag: 'taken',
+      publicSiteSlugAlternatives: getPublicSiteSlugAlternatives(generatedSlug),
+    }
+  }
+
+  await claimPublicSiteSlug(admin, repId, generatedSlug)
+  return {
+    ...answerPatch,
+    publicSiteSlug: generatedSlug,
+    publicSiteUrl: buildPublicSiteUrl(generatedSlug),
+    publicSiteSlugStatus: 'accepted',
+    publicSiteSlugRedFlag: null,
+    publicSiteSlugAlternatives: [],
+  }
+}
+
 export function isRequiredSetupStepId(
   value: unknown,
 ): value is RequiredSetupStepId {
@@ -200,9 +283,7 @@ export function normalizeRequiredSetupSession(
 }
 
 async function loadRequiredSetupSessionRow(
-  admin: ReturnType<
-    typeof import('@/lib/supabase/admin')['createAdminClient']
-  >,
+  admin: AdminClient,
   repId: string,
 ) {
   const { data, error } = await admin
@@ -216,9 +297,7 @@ async function loadRequiredSetupSessionRow(
 }
 
 async function updateRequiredSetupSession(
-  admin: ReturnType<
-    typeof import('@/lib/supabase/admin')['createAdminClient']
-  >,
+  admin: AdminClient,
   repId: string,
   patch: Record<string, unknown>,
 ) {
@@ -297,8 +376,12 @@ export async function saveRequiredSetupAnswer(
     await loadRequiredSetupSessionRow(admin, repId),
     repId,
   )
+  const normalizedAnswerPatch =
+    stepId === 'account_basics'
+      ? await buildAccountBasicsPublicSitePatch(admin, repId, answerPatch)
+      : answerPatch
   const patch: Record<string, unknown> = {
-    answers: mergeStepPatch(row.answers, stepId, answerPatch),
+    answers: mergeStepPatch(row.answers, stepId, normalizedAnswerPatch),
   }
 
   if (options.generatedCopyPatch) {
