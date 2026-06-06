@@ -10,6 +10,7 @@ interface AuthenticatedRep {
     email: string
     display_name: string
     stripe_customer_id: string | null
+    public_site_slug: string | null
   }
 }
 
@@ -44,7 +45,7 @@ export async function getAuthenticatedRep(): Promise<AuthenticatedRep> {
   const admin = createAdminClient()
   const { data: rep, error: repError } = await admin
     .from('reps')
-    .select('id, auth_user_id, email, display_name, stripe_customer_id')
+    .select('id, auth_user_id, email, display_name, stripe_customer_id, public_site_slug')
     .eq('auth_user_id', user.id)
     .single()
 

@@ -95,6 +95,11 @@ function getStringAnswer(
   return typeof value === 'string' && value.trim() ? value.trim() : fallback
 }
 
+function getRequiredSetupPublicSiteSlug(state: SetupStateWithLiveQueue | null) {
+  const accountBasics = getSetupAnswerRecord(state, 'account_basics')
+  return getStringAnswer(accountBasics, 'publicSiteSlug') || null
+}
+
 function buildReviewSiteSettings(
   state: SetupStateWithLiveQueue | null,
 ): SiteSettingsDashboardResult | undefined {
@@ -446,7 +451,11 @@ export default function NicNacClient({
     !isCheckoutRequiredMode &&
     (isRequiredSetupMode || isDashboardUnlocked)
   const requiredSetupSyncCode = setupState?.liveQueueSyncCode ?? null
-  const requiredSetupPreviewHref = buildCustomerSparkleSiteHref(setupState?.repId)
+  const requiredSetupPublicSiteSlug = getRequiredSetupPublicSiteSlug(setupState)
+  const requiredSetupPreviewHref = buildCustomerSparkleSiteHref({
+    repId: setupState?.repId,
+    publicSiteSlug: requiredSetupPublicSiteSlug,
+  })
   const showWorkspaceReviewState =
     reviewerSmokeVisible && isWorkspaceReviewSetupState(setupState)
 
@@ -935,6 +944,7 @@ export default function NicNacClient({
     >
       <DashboardPlaceholder
         repIdOverride={setupState?.repId ?? undefined}
+        publicSiteSlugOverride={requiredSetupPublicSiteSlug}
         liveQueueSyncCodeOverride={requiredSetupSyncCode}
         initialSiteSettings={buildReviewSiteSettings(setupState)}
         reviewWorkspaceMode={showWorkspaceReviewState}

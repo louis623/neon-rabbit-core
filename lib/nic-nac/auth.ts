@@ -7,7 +7,6 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { assertPaidWorkspaceAccess } from '@/lib/nic-nac/subscription-access'
 
 export interface NicNacAuthContext {
@@ -29,16 +28,6 @@ export async function getAuthenticatedNicNacContext(): Promise<NicNacAuthContext
   // an independent authed client for tool/service queries against RLS-scoped
   // tables (trade_listings, trade_requests, nic_nac_conversations, etc.).
   const { repId, rep } = await getAuthenticatedRep()
-  const admin = createAdminClient()
-  const { data: repPublicProfile, error: repPublicProfileError } = await admin
-    .from('reps')
-    .select('public_site_slug')
-    .eq('id', repId)
-    .single()
-
-  if (repPublicProfileError || !repPublicProfile) {
-    throw new AuthError('Rep public profile not found for authenticated user')
-  }
 
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -56,14 +45,7 @@ export async function getAuthenticatedNicNacContext(): Promise<NicNacAuthContext
     }
   )
 
-  return {
-    repId,
-    rep: {
-      ...rep,
-      public_site_slug: repPublicProfile.public_site_slug,
-    },
-    supabase,
-  }
+  return { repId, rep, supabase }
 }
 
 export async function getPaidNicNacContext(): Promise<NicNacAuthContext> {

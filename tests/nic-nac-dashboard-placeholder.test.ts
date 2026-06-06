@@ -791,6 +791,19 @@ describe('DashboardPlaceholder', () => {
     )
   })
 
+  it('allows required setup review mode to preview the claimed public show link', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('publicSiteSlugOverride?: string | null')
+    expect(source).toContain('publicSiteSlug: publicSiteSlugOverride ?? null')
+    expect(source).toContain(
+      'publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug',
+    )
+  })
+
   it('filters the roster down to opted-out customers', () => {
     expect(filterRosterCustomers(READY_STATE.customers, 'opted_out')).toEqual([
       READY_STATE.customers[1],

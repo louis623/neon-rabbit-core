@@ -1004,6 +1004,7 @@ export function getCustomerRecoveryActions(customer: CustomerAudienceMember) {
 
 export type DashboardPlaceholderProps = {
   repIdOverride?: string
+  publicSiteSlugOverride?: string | null
   liveQueueSyncCodeOverride?: string | null
   initialSiteSettings?: SiteSettingsDashboardResult
   reviewWorkspaceMode?: boolean
@@ -1020,6 +1021,7 @@ type WorkspacePreviewState =
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const {
     repIdOverride,
+    publicSiteSlugOverride,
     liveQueueSyncCodeOverride,
     initialSiteSettings,
     reviewWorkspaceMode = false,
@@ -1046,7 +1048,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     repId: repIdOverride,
     displayName: initialSiteSettings?.displayName,
-    publicSiteSlug: null,
+    publicSiteSlug: publicSiteSlugOverride ?? null,
     liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
   const [audienceState, setAudienceState] = useState<AudienceState>({
@@ -2595,7 +2597,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
   const customerSparkleSiteHref = buildCustomerSparkleSiteHref({
     repId: repIdOverride ?? repProfileState.repId,
-    publicSiteSlug: repProfileState.publicSiteSlug,
+    publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
   })
   const customerTradeBoardHref = buildCustomerTradeBoardHref(
     repIdOverride ?? repProfileState.repId,

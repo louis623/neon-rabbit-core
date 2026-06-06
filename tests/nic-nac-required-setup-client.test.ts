@@ -108,7 +108,10 @@ describe('Nic-Nac required setup client', () => {
 
   it('passes the exact required setup preview href into chat', () => {
     expect(client).toContain('requiredSetupPreviewHref={requiredSetupPreviewHref}')
-    expect(client).toContain('buildCustomerSparkleSiteHref(setupState?.repId)')
+    expect(client).toContain('const requiredSetupPublicSiteSlug = getRequiredSetupPublicSiteSlug(setupState)')
+    expect(client).toContain('buildCustomerSparkleSiteHref({')
+    expect(client).toContain('publicSiteSlug: requiredSetupPublicSiteSlug')
+    expect(client).toContain('publicSiteSlugOverride={requiredSetupPublicSiteSlug}')
   })
 
   it('uses current required setup product language in setup surfaces', () => {
