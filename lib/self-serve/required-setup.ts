@@ -106,6 +106,10 @@ function normalizeJsonObject(value: unknown): JsonObject {
   return isJsonObject(value) ? value : {}
 }
 
+function isUniqueViolationError(error: unknown) {
+  return isJsonObject(error) && error.code === '23505'
+}
+
 function normalizeRequiredSetupStatus(value: string | null | undefined) {
   return REQUIRED_SETUP_STATUSES.includes(value as RequiredSetupStatus)
     ? (value as RequiredSetupStatus)
@@ -190,25 +194,28 @@ async function buildAccountBasicsPublicSitePatch(
 
   const validation = validatePublicSiteSlug(generatedSlug)
   if (!validation.ok) {
-    return {
-      ...answerPatch,
-      publicSiteSlugStatus: 'needs_review',
-      publicSiteSlugRedFlag: validation.reason,
-      publicSiteSlugAlternatives: getPublicSiteSlugAlternatives(generatedSlug),
-    }
+    return buildPublicSiteSlugRedFlagPatch(
+      answerPatch,
+      generatedSlug,
+      validation.reason,
+    )
   }
 
   const existingOwner = await loadRepByPublicSiteSlug(admin, generatedSlug)
   if (existingOwner && existingOwner.id !== repId) {
-    return {
-      ...answerPatch,
-      publicSiteSlugStatus: 'needs_review',
-      publicSiteSlugRedFlag: 'taken',
-      publicSiteSlugAlternatives: getPublicSiteSlugAlternatives(generatedSlug),
-    }
+    return buildPublicSiteSlugRedFlagPatch(answerPatch, generatedSlug, 'taken')
   }
 
-  await claimPublicSiteSlug(admin, repId, generatedSlug)
+  try {
+    await claimPublicSiteSlug(admin, repId, generatedSlug)
+  } catch (error) {
+    if (isUniqueViolationError(error)) {
+      return buildPublicSiteSlugRedFlagPatch(answerPatch, generatedSlug, 'taken')
+    }
+
+    throw error
+  }
+
   return {
     ...answerPatch,
     publicSiteSlug: generatedSlug,
@@ -216,6 +223,21 @@ async function buildAccountBasicsPublicSitePatch(
     publicSiteSlugStatus: 'accepted',
     publicSiteSlugRedFlag: null,
     publicSiteSlugAlternatives: [],
+  }
+}
+
+function buildPublicSiteSlugRedFlagPatch(
+  answerPatch: JsonObject,
+  generatedSlug: string,
+  redFlag: string,
+): JsonObject {
+  return {
+    ...answerPatch,
+    publicSiteSlug: null,
+    publicSiteUrl: null,
+    publicSiteSlugStatus: 'needs_review',
+    publicSiteSlugRedFlag: redFlag,
+    publicSiteSlugAlternatives: getPublicSiteSlugAlternatives(generatedSlug),
   }
 }
 

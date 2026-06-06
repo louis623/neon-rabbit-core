@@ -9,8 +9,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 import { saveRequiredSetupAnswer } from '@/lib/self-serve/required-setup'
 
 type AdminMockOptions = {
+  claimError?: unknown
   existingSlugOwner?: string | null
   existingSlug?: string
+  setupAnswers?: Record<string, unknown>
 }
 
 function makeSetupRow(answers: Record<string, unknown> = {}) {
@@ -30,7 +32,7 @@ function makeSetupRow(answers: Record<string, unknown> = {}) {
 }
 
 function makeAdminClient(options: AdminMockOptions = {}) {
-  const setupRow = makeSetupRow()
+  const setupRow = makeSetupRow(options.setupAnswers)
   const setupUpdates: Record<string, unknown>[] = []
   const repUpdates: Record<string, unknown>[] = []
 
@@ -57,7 +59,7 @@ function makeAdminClient(options: AdminMockOptions = {}) {
       id: 'rep-1',
       public_site_slug: repUpdates.at(-1)?.public_site_slug,
     },
-    error: null,
+    error: options.claimError ?? null,
   }))
 
   const from = vi.fn((table: string) => {
@@ -162,6 +164,8 @@ describe('required setup public site link claiming', () => {
         answers: {
           account_basics: {
             liveShowName: "Gracie's Sparkle Party",
+            publicSiteSlug: null,
+            publicSiteUrl: null,
             publicSiteSlugStatus: 'needs_review',
             publicSiteSlugRedFlag: 'taken',
             publicSiteSlugAlternatives: [
@@ -211,6 +215,8 @@ describe('required setup public site link claiming', () => {
         answers: {
           account_basics: {
             liveShowName: 'Go',
+            publicSiteSlug: null,
+            publicSiteUrl: null,
             publicSiteSlugStatus: 'needs_review',
             publicSiteSlugRedFlag: 'too_short',
             publicSiteSlugAlternatives: [
@@ -238,7 +244,8 @@ describe('required setup public site link claiming', () => {
         answers: {
           account_basics: {
             liveShowName: "Gracie's Sparkle Party",
-            publicSiteSlug: 'login',
+            publicSiteSlug: null,
+            publicSiteUrl: null,
             publicSiteSlugStatus: 'needs_review',
             publicSiteSlugRedFlag: 'reserved',
             publicSiteSlugAlternatives: [
@@ -250,5 +257,73 @@ describe('required setup public site link claiming', () => {
         },
       }),
     )
+  })
+
+  it('turns a claim-time unique violation into taken red-flag metadata without throwing', async () => {
+    const admin = makeAdminClient({
+      claimError: {
+        code: '23505',
+        message: 'duplicate key value violates unique constraint',
+      },
+    })
+
+    await expect(
+      saveRequiredSetupAnswer('rep-1', 'account_basics', {
+        liveShowName: "Gracie's Sparkle Party",
+      }),
+    ).resolves.toEqual(expect.any(Object))
+
+    expect(admin.repUpdateSingle).toHaveBeenCalledTimes(1)
+    expect(admin.setupUpdates.at(-1)).toEqual(
+      expect.objectContaining({
+        answers: {
+          account_basics: {
+            liveShowName: "Gracie's Sparkle Party",
+            publicSiteSlug: null,
+            publicSiteUrl: null,
+            publicSiteSlugStatus: 'needs_review',
+            publicSiteSlugRedFlag: 'taken',
+            publicSiteSlugAlternatives: [
+              'graciesparklepartylive',
+              'graciesparklepartyshop',
+              'graciesparklepartybp',
+            ],
+          },
+        },
+      }),
+    )
+  })
+
+  it('clears stale accepted public site metadata when a later save red-flags the slug', async () => {
+    const admin = makeAdminClient({
+      setupAnswers: {
+        account_basics: {
+          liveShowName: "Gracie's Sparkle Party",
+          publicSiteSlug: 'graciesparkleparty',
+          publicSiteUrl: 'https://www.yoursparklesuite.com/graciesparkleparty',
+          publicSiteSlugStatus: 'accepted',
+          publicSiteSlugRedFlag: null,
+          publicSiteSlugAlternatives: [],
+        },
+      },
+    })
+
+    const state = await saveRequiredSetupAnswer('rep-1', 'account_basics', {
+      liveShowName: 'Go',
+    })
+
+    expect(admin.repUpdateSingle).not.toHaveBeenCalled()
+    expect(state.answers.account_basics).toEqual({
+      liveShowName: 'Go',
+      publicSiteSlug: null,
+      publicSiteUrl: null,
+      publicSiteSlugStatus: 'needs_review',
+      publicSiteSlugRedFlag: 'too_short',
+      publicSiteSlugAlternatives: [
+        'sparkleshowlive',
+        'sparkleshowshop',
+        'sparkleshowbp',
+      ],
+    })
   })
 })
