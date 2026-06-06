@@ -65,6 +65,18 @@ describe("Sparkle Finder public API catalog service", () => {
     ]);
   });
 
+  it("can disable fixture fallback when a live API read fails", async () => {
+    const fetchCatalog = vi.fn(async () => new Response("not found", { status: 404 }));
+
+    const items = await getCatalogJewelryItems({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      useFixtureFallback: false,
+    });
+
+    expect(items).toEqual([]);
+  });
+
   it("fetches a single catalog item by Sparkle Suite designId", async () => {
     const fetchDetail = vi.fn(async () => jsonResponse({ item: apiCatalogItem({ designId: "design-single" }) }));
 
@@ -84,6 +96,18 @@ describe("Sparkle Finder public API catalog service", () => {
         availableListingCount: 2,
       }),
     );
+  });
+
+  it("can disable fixture fallback for missing detail records", async () => {
+    const fetchDetail = vi.fn(async () => new Response("not found", { status: 404 }));
+
+    const item = await getCatalogJewelryItemById("missing-design", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchDetail,
+      useFixtureFallback: false,
+    });
+
+    expect(item).toBeUndefined();
   });
 
   it("reads exact and similar availability matches from the Sparkle Suite public Finder API", async () => {
