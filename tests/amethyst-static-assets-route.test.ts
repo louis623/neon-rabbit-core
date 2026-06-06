@@ -87,7 +87,7 @@ describe('Amethyst static asset route', () => {
 
   it('keeps file tracing scoped to the public Amethyst export folder', () => {
     const source = readFileSync(
-      resolve(process.cwd(), 'app/amethyst/[...asset]/route.ts'),
+      resolve(process.cwd(), 'lib/amethyst/public-asset-response.ts'),
       'utf8',
     )
 
