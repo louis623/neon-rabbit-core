@@ -10,8 +10,9 @@ import {
 describe('public site show link rules', () => {
   it('generates a lowercase letters-and-numbers-only slug from the live show name', () => {
     expect(generatePublicSiteSlug("Gracie's Sparkle Party")).toBe(
-      'graciesparkleparty',
+      'graciessparkleparty',
     )
+    expect(generatePublicSiteSlug("Macy's")).toBe('macys')
     expect(generatePublicSiteSlug('Bling & Fizz 24/7')).toBe('blingfizz247')
     expect(generatePublicSiteSlug('  The_Big-Live.Show!  ')).toBe(
       'thebigliveshow',
