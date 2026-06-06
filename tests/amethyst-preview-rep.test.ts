@@ -147,7 +147,7 @@ describe('Amethyst preview rep resolver', () => {
         },
       },
       repsByPublicSiteSlug: {
-        'sparkle-by-sasha': {
+        sparklebysasha: {
           id: 'rep-slug',
           email: 'sasha@example.com',
         },
@@ -160,7 +160,7 @@ describe('Amethyst preview rep resolver', () => {
         env: {
           AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
         },
-        publicSiteSlug: 'sparkle-by-sasha',
+        publicSiteSlug: 'sparklebysasha',
       }),
     ).resolves.toEqual({
       id: 'rep-slug',
@@ -171,7 +171,7 @@ describe('Amethyst preview rep resolver', () => {
   it('normalizes public site slug lookup from mixed case and whitespace', async () => {
     const admin = makeAdminClient({
       repsByPublicSiteSlug: {
-        'sparkle-by-sasha': {
+        sparklebysasha: {
           id: 'rep-slug',
           email: 'sasha@example.com',
         },
@@ -181,7 +181,7 @@ describe('Amethyst preview rep resolver', () => {
 
     await expect(
       resolveAmethystPreviewRep(admin, {
-        publicSiteSlug: '  Sparkle-By-Sasha  ',
+        publicSiteSlug: '  SparkleBySasha  ',
       }),
     ).resolves.toEqual({
       id: 'rep-slug',
@@ -198,7 +198,7 @@ describe('Amethyst preview rep resolver', () => {
         },
       },
       repsByPublicSiteSlug: {
-        'sparkle-by-sasha': {
+        sparklebysasha: {
           id: 'rep-slug',
           email: 'sasha@example.com',
         },
@@ -210,7 +210,7 @@ describe('Amethyst preview rep resolver', () => {
         env: {
           AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
         },
-        publicSiteSlug: 'sparkle-by-sasha',
+        publicSiteSlug: 'sparklebysasha',
       }),
     ).resolves.toBeNull()
   })
@@ -230,7 +230,7 @@ describe('Amethyst preview rep resolver', () => {
         env: {
           AMETHYST_HOMEPAGE_PREVIEW_EMAIL: 'preview@example.com',
         },
-        publicSiteSlug: 'unknown-sparkle',
+        publicSiteSlug: 'unknownsparkle',
       }),
     ).resolves.toBeNull()
   })
