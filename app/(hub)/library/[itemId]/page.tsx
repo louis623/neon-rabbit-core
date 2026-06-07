@@ -5,14 +5,13 @@ import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
   getCatalogJewelryItemById,
   getFinderAvailabilityForJewelryItem,
-  getSparkleSuiteFinderPublicBaseUrl,
 } from "@/lib/sparkle-finder/catalog-service";
 import {
   getLocalDevAuthState,
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getLocalRepBoardHref, getSparkleSuiteRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
+import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById, matchJewelryItemToRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
@@ -46,20 +45,25 @@ export function renderItemDetailPageContent(
     notFound();
   }
 
-  const sparkleSuiteBaseUrl = getSparkleSuiteFinderPublicBaseUrl();
   const apiAvailabilityRows = availability
     ? [
         ...availability.exactMatches.map((match) => ({
           key: match.listingId,
-          businessName: match.rep.businessName,
+          showName: match.showName,
+          repFirstName: match.repFirstName,
+          showTime: match.nextShow.startsAt,
+          showStatus: match.nextShow.status,
           matchType: "exact_item",
-          href: getSparkleSuiteRepBoardHref(match.rep.tradeBoardPath, sparkleSuiteBaseUrl),
+          href: match.customerSiteUrl,
         })),
         ...availability.similarMatches.map((match) => ({
           key: match.listingId,
-          businessName: match.rep.businessName,
+          showName: match.showName,
+          repFirstName: match.repFirstName,
+          showTime: match.nextShow.startsAt,
+          showStatus: match.nextShow.status,
           matchType: "same_collection_type",
-          href: getSparkleSuiteRepBoardHref(match.rep.tradeBoardPath, sparkleSuiteBaseUrl),
+          href: match.customerSiteUrl,
         })),
       ]
     : [];
@@ -104,15 +108,19 @@ export function renderItemDetailPageContent(
                   className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3"
                   key={match.key}
                 >
-                  <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{match.businessName}</p>
+                  <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{match.showName}</p>
+                  <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">Rep: {match.repFirstName}</p>
                   <p className="mt-1 text-xs font-bold text-[var(--sparkle-coral)]">
                     {formatMatchType(match.matchType)}
+                  </p>
+                  <p className="mt-2 text-sm text-[var(--sparkle-ink-muted)]">
+                    {match.showStatus === "live" ? "Live now" : `Next show: ${formatShowTime(match.showTime)}`}
                   </p>
                   <a
                     className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                     href={match.href}
                   >
-                    Open rep board path
+                    Visit Rep Site
                   </a>
                 </div>
               ))
@@ -160,4 +168,12 @@ function formatMatchType(value: string) {
   const label = value.replaceAll("_", " ");
 
   return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function formatShowTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/New_York",
+  }).format(new Date(value));
 }

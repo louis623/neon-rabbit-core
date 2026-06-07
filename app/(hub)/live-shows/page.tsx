@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { getLiveShows, getRepById } from "@/lib/sparkle-finder/service";
+import { Radio } from "lucide-react";
+import { getFinderLiveShows, type FinderLiveShow } from "@/lib/sparkle-finder/catalog-service";
 
-export default function LiveShowsPage() {
-  const shows = getLiveShows();
+export default async function LiveShowsPage() {
+  const shows = await getFinderLiveShows();
 
+  return renderLiveShowsPageContent(shows);
+}
+
+export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
   return (
     <section className="grid gap-6">
       <div>
@@ -11,36 +16,44 @@ export default function LiveShowsPage() {
           Master Live Calendar
         </h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          One schedule for Sparkle Suite rep live shows and next-show context.
-        </p>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-          Preview calendar data is shown here. Live next-show context appears on item availability leads when Sparkle
-          Suite API matches include it.
+          See eligible Sparkle Suite shows that are live now or scheduled ahead, then visit the rep site for the board,
+          calendar, and live details.
         </p>
       </div>
-      <div className="grid gap-4">
-        {shows.map((show) => {
-          const rep = getRepById(show.repId);
-
-          return (
+      {shows.length > 0 ? (
+        <div className="grid gap-4">
+          {shows.map((show) => (
             <article
               className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]"
-              key={show.id}
+              key={show.showId}
             >
-              <p className="text-sm font-bold text-[var(--sparkle-coral)]">{formatShowTime(show.startsAt)}</p>
-              <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
-                {show.title}
-              </h2>
-              <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">
-                {rep?.businessName ?? "Sparkle Suite Rep"} · {show.durationMinutes} minutes
-              </p>
-              <Link className="mt-4 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={show.showUrl}>
-                Open show path
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-[var(--sparkle-coral)]">{formatShowTime(show.startsAt)}</p>
+                  <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+                    {show.showName}
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">Rep: {show.repFirstName}</p>
+                </div>
+                <span className="inline-flex min-h-8 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
+                  <Radio aria-hidden="true" className="size-4 text-[var(--sparkle-rose)]" />
+                  {show.status === "live" ? "Live now" : "Scheduled"}
+                </span>
+              </div>
+              <Link
+                className="mt-4 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+                href={show.customerSiteUrl}
+              >
+                Visit Rep Site
               </Link>
             </article>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
+          No live or upcoming shows are listed right now.
+        </p>
+      )}
     </section>
   );
 }

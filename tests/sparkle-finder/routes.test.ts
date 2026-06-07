@@ -8,14 +8,14 @@ import { renderAccountPageContent } from "../../app/account/page";
 import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
-import LiveShowsPage from "../../app/(hub)/live-shows/page";
+import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
-import type { FinderAvailabilityResult } from "../../lib/sparkle-finder/catalog-service";
+import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import {
   affiliateDisclosureHref,
@@ -37,7 +37,7 @@ import {
 const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
   ["library", () => renderToStaticMarkup(renderLibraryPageContent())],
-  ["live-shows", () => renderToStaticMarkup(createElement(LiveShowsPage))],
+  ["live-shows", () => renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
   ["silver", () => renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")))],
@@ -125,19 +125,23 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library/jewel-rainbow-crown-ring");
   });
 
-  it("labels fixture-backed dashboard board and show stats as preview data", () => {
-    const markup = renderToStaticMarkup(renderDashboardPageContent());
+  it("labels dashboard live show stats from the Finder API and board stats as preview data", () => {
+    const markup = renderToStaticMarkup(renderDashboardPageContent(undefined, 3));
 
-    expect(markup).toContain("Preview live shows");
+    expect(markup).toContain("Live/upcoming shows");
+    expect(markup).toContain(">3<");
     expect(markup).toContain("Preview board listings");
   });
 
-  it("labels rep boards and live shows as preview-backed pages", () => {
+  it("labels rep boards as preview-backed and renders API-shaped live shows", () => {
     const repBoardsMarkup = renderToStaticMarkup(createElement(RepBoardsPage));
-    const liveShowsMarkup = renderToStaticMarkup(createElement(LiveShowsPage));
+    const liveShowsMarkup = renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()));
 
     expect(repBoardsMarkup).toContain("Preview board data");
-    expect(liveShowsMarkup).toContain("Preview calendar data");
+    expect(liveShowsMarkup).toContain("Demo Glow Show");
+    expect(liveShowsMarkup).toContain("Rep: Demo");
+    expect(liveShowsMarkup).toContain("Visit Rep Site");
+    expect(liveShowsMarkup).not.toContain("Preview calendar data");
   });
 
   it("preserves selected library filters and only shows matching records", () => {
@@ -274,7 +278,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("sparklesuite.example");
   });
 
-  it("renders API-backed item detail availability with full Sparkle Suite rep board links", () => {
+  it("renders API-backed item detail availability with KISS rep site links", () => {
     const apiItem: JewelryItem = {
       id: "design-api",
       name: "API Garden Gala Ring",
@@ -296,15 +300,17 @@ describe("Sparkle Finder hub routes", () => {
           listedAt: null,
           photoUrl: null,
           item: apiItem,
-          rep: {
-            repId: "rep-demo",
-            displayName: "Demo Rep",
-            businessName: "Sparkle Suite Demo Boutique",
-            profilePhotoUrl: null,
-            customerSitePath: "/amethyst?c=rep-demo",
-            tradeBoardPath: "/amethyst/trade?c=rep-demo",
+          showName: "Demo Glow Show",
+          repFirstName: "Demo",
+          customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
+          nextShow: {
+            showId: "show-demo",
+            showName: "Demo Glow Show",
+            repFirstName: "Demo",
+            startsAt: "2026-06-06T20:00:00.000Z",
+            status: "scheduled",
+            customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
           },
-          nextShow: null,
         },
       ],
       similarMatches: [],
@@ -314,8 +320,11 @@ describe("Sparkle Finder hub routes", () => {
       renderItemDetailPageContent({ itemId: "design-api" }, getLocalDevAuthState("silver"), apiItem, availability),
     );
 
-    expect(markup).toContain("https://www.yoursparklesuite.com/amethyst/trade?c=rep-demo");
-    expect(markup).toContain("Sparkle Suite Demo Boutique");
+    expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
+    expect(markup).toContain("Demo Glow Show");
+    expect(markup).toContain("Rep: Demo");
+    expect(markup).toContain("Visit Rep Site");
+    expect(markup).not.toContain("Open rep board path");
   });
 
   it("renders the item detail Silver prompt for Free customers", () => {
@@ -346,12 +355,13 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("sparklesuite.example");
   });
 
-  it("renders live show route content from fixture data", () => {
-    const markup = renderToStaticMarkup(createElement(LiveShowsPage));
+  it("renders live show route content from Finder API-shaped data", () => {
+    const markup = renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()));
 
     expect(markup).toContain("Master Live Calendar");
-    expect(markup).toContain("Celestial Lights Preview");
-    expect(markup).toContain("Sierra Sparkle Studio");
+    expect(markup).toContain("Demo Glow Show");
+    expect(markup).toContain("Rep: Demo");
+    expect(markup).toContain("Visit Rep Site");
   });
 
   it("renders shop route content from fixture data", () => {
@@ -837,6 +847,19 @@ function libraryFilterItems(): JewelryItem[] {
       searchTags: ["ocean", "pearl"],
       availableListingCount: 1,
       knownRepListingIds: [],
+    },
+  ];
+}
+
+function finderLiveShowItems(): FinderLiveShow[] {
+  return [
+    {
+      showId: "show-demo",
+      showName: "Demo Glow Show",
+      repFirstName: "Demo",
+      startsAt: "2026-06-06T20:00:00.000Z",
+      status: "scheduled",
+      customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
     },
   ];
 }

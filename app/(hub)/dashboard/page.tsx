@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Gem, Library, Radio, UsersRound } from "lucide-react";
-import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
-import { getJewelryItems, getLiveShows, getRepBoardListings } from "@/lib/sparkle-finder/service";
+import { getCatalogJewelryItems, getFinderLiveShows } from "@/lib/sparkle-finder/catalog-service";
+import { getJewelryItems, getRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
 const cards = [
@@ -28,11 +28,15 @@ const cards = [
 ];
 
 export default async function DashboardPage() {
-  const libraryItems = await getCatalogJewelryItems();
-  return renderDashboardPageContent(libraryItems);
+  const [libraryItems, liveShows] = await Promise.all([getCatalogJewelryItems(), getFinderLiveShows()]);
+
+  return renderDashboardPageContent(libraryItems, liveShows.length);
 }
 
-export function renderDashboardPageContent(libraryItems: JewelryItem[] = getJewelryItems()) {
+export function renderDashboardPageContent(
+  libraryItems: JewelryItem[] = getJewelryItems(),
+  liveShowCount = 0,
+) {
   const diamondAndUnicornCount = libraryItems.filter((item) => item.bpLabel === "diamond" || item.bpLabel === "unicorn").length;
 
   return (
@@ -65,13 +69,13 @@ export function renderDashboardPageContent(libraryItems: JewelryItem[] = getJewe
       </div>
       <dl className="grid gap-4 md:grid-cols-4">
         <Stat label="Library records" value={libraryItems.length} />
-        <Stat label="Preview live shows" value={getLiveShows().length} />
+        <Stat label="Live/upcoming shows" value={liveShowCount} />
         <Stat label="Preview board listings" value={getRepBoardListings().length} />
         <Stat label="Diamond & unicorn labels" value={diamondAndUnicornCount} />
       </dl>
       <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-        Library counts are read through the Sparkle Suite Finder catalog connection when available. Board and calendar
-        counts remain preview data until Sparkle Suite exposes list endpoints for those views.
+        Library and calendar counts are read through Sparkle Suite Finder API connections when available. Board listing
+        counts remain preview data until Sparkle Suite exposes a board index endpoint.
       </p>
     </section>
   );

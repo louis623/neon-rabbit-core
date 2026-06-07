@@ -62,11 +62,12 @@ describe("Nic-Nac find-this-for-me flow", () => {
         id: "design-api",
       },
       rep: {
-        businessName: "Sparkle Suite Demo Boutique",
+        businessName: "Demo Glow Show",
+        displayName: "Demo",
       },
       listing: {
         id: "listing-exact-api",
-        boardUrl: "/amethyst/trade?c=rep-demo",
+        boardUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
       },
       nextLiveShow: {
         id: "show-demo",
@@ -155,7 +156,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).not.toContain("chat");
   });
 
-  it("renders API-backed Sparkle Suite leads with public rep links", () => {
+  it("renders API-backed Sparkle Suite leads with public rep site links", () => {
     const markup = renderToStaticMarkup(
       createElement(FindThisForMe, {
         accountState: getLocalDevAuthState("silver"),
@@ -168,7 +169,11 @@ describe("Nic-Nac find-this-for-me flow", () => {
     );
 
     expect(markup).toContain("1 Sparkle Suite lead");
-    expect(markup).toContain("https://www.yoursparklesuite.com/amethyst/trade?c=rep-demo");
+    expect(markup).toContain("Demo Glow Show");
+    expect(markup).toContain("Rep: Demo");
+    expect(markup).toContain("Visit Rep Site");
+    expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
+    expect(markup).not.toContain("Open rep board path");
     expect(markup).not.toContain("fixture lead");
     expect(markup).not.toContain("fixture-backed");
   });
@@ -222,23 +227,16 @@ function apiAvailability(): FinderAvailabilityResult {
         listedAt: "2026-06-06T12:00:00.000Z",
         photoUrl: "",
         item: requestedItem,
-        rep: {
-          repId: "rep-demo",
-          displayName: "Demo Rep",
-          businessName: "Sparkle Suite Demo Boutique",
-          profilePhotoUrl: "",
-          customerSitePath: "/amethyst?c=rep-demo",
-          tradeBoardPath: "/amethyst/trade?c=rep-demo",
-        },
+        showName: "Demo Glow Show",
+        repFirstName: "Demo",
+        customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
         nextShow: {
           showId: "show-demo",
-          repId: "rep-demo",
-          platform: "TikTok",
+          showName: "Demo Live",
+          repFirstName: "Demo",
           startsAt: "2026-06-06T20:00:00.000Z",
-          durationMinutes: 60,
-          title: "Demo Live",
-          description: "",
           status: "scheduled",
+          customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
         },
       },
     ],
@@ -252,15 +250,17 @@ function apiAvailability(): FinderAvailabilityResult {
           id: "design-similar",
           name: "Garden Gala Sister Bracelet",
         },
-        rep: {
-          repId: "rep-demo",
-          displayName: "Demo Rep",
-          businessName: "Sparkle Suite Demo Boutique",
-          profilePhotoUrl: "",
-          customerSitePath: "/amethyst?c=rep-demo",
-          tradeBoardPath: "/amethyst/trade?c=rep-demo",
+        showName: "Demo Glow Show",
+        repFirstName: "Demo",
+        customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
+        nextShow: {
+          showId: "show-demo",
+          showName: "Demo Live",
+          repFirstName: "Demo",
+          startsAt: "2026-06-06T20:00:00.000Z",
+          status: "scheduled",
+          customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
         },
-        nextShow: null,
       },
     ],
   };

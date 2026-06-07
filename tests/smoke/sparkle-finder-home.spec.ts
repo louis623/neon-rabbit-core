@@ -186,7 +186,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expectNoExampleLinksOnCurrentPage(page);
   });
 
-  test("Silver API-backed item detail exposes Sparkle Suite rep board link when configured", async ({ page }) => {
+  test("Silver API-backed item detail exposes Sparkle Suite rep site link when configured", async ({ page }) => {
     const apiItemId = process.env.SPARKLE_FINDER_SMOKE_API_ITEM_ID;
 
     test.skip(!apiItemId, "Set SPARKLE_FINDER_SMOKE_API_ITEM_ID to smoke-test a live API-backed item detail page.");
@@ -202,12 +202,36 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/library/${apiItemId}`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Nic-Nac, find this for me")).toBeVisible();
-    const repBoardLink = page.getByRole("link", { name: "Open rep board path" }).first();
-    await expect(repBoardLink).toBeVisible();
-    await expect(repBoardLink).toHaveAttribute(
+    const repSiteLink = page.getByRole("link", { name: "Visit Rep Site" }).first();
+    await expect(repSiteLink).toBeVisible();
+    await expect(repSiteLink).toHaveAttribute(
       "href",
       new RegExp(`^${escapeRegExp(sparkleSuiteFinderBaseUrl)}/`),
     );
+    await expect(page.getByRole("link", { name: "Open rep board path" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Open rep profile" })).toHaveCount(0);
+    await expectNoGuardrailCopy(page);
+  });
+
+  test("Silver live calendar exposes Sparkle Suite rep site links when configured", async ({ page }) => {
+    test.skip(
+      process.env.SPARKLE_FINDER_SMOKE_EXPECT_LIVE_SHOWS !== "true",
+      "Set SPARKLE_FINDER_SMOKE_EXPECT_LIVE_SHOWS=true when the Sparkle Suite live-shows endpoint is deployed.",
+    );
+
+    await page.context().clearCookies();
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+
+    await page.goto(`${baseUrl}/live-shows`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Master Live Calendar")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Visit Rep Site" }).first()).toBeVisible();
+    await expect(page.getByText("Preview calendar data")).toHaveCount(0);
     await expectNoGuardrailCopy(page);
   });
 });

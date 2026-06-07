@@ -3,6 +3,7 @@ import {
   getCatalogJewelryItemById,
   getCatalogJewelryItems,
   getFinderAvailabilityForJewelryItem,
+  getFinderLiveShows,
   getSparkleSuiteFinderPublicBaseUrl,
   mapSparkleSuiteFinderCatalogItem,
   mapSparkleSuiteFinderJewelryType,
@@ -143,11 +144,15 @@ describe("Sparkle Finder public API catalog service", () => {
     );
     expect(availability?.exactMatches[0]).toMatchObject({
       listingId: "listing-exact",
-      rep: {
-        businessName: "Sparkle Suite Demo Boutique",
-      },
+      showName: "Demo Glow Show",
+      repFirstName: "Demo",
+      customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
       item: {
         id: "design-123",
+      },
+      nextShow: {
+        showId: "show-demo",
+        showName: "Demo Glow Show",
       },
     });
     expect(availability?.similarMatches[0]).toMatchObject({
@@ -156,6 +161,82 @@ describe("Sparkle Finder public API catalog service", () => {
         id: "design-similar",
       },
     });
+  });
+
+  it("skips malformed availability matches without a next show", async () => {
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [
+          {
+            ...apiAvailabilityMatch({
+              listingId: "listing-missing-show",
+              designId: "design-123",
+              designName: "Starlight Diamond Ring",
+            }),
+            nextShow: null,
+          },
+        ],
+        similarMatches: [],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(availability?.exactMatches).toEqual([]);
+  });
+
+  it("reads live shows from the Sparkle Suite public Finder API", async () => {
+    const fetchLiveShows = vi.fn(async () =>
+      jsonResponse({
+        shows: [
+          {
+            showId: "show-demo",
+            showName: "Demo Glow Show",
+            repFirstName: "Demo",
+            startsAt: "2026-06-06T20:00:00.000Z",
+            status: "scheduled",
+            customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
+          },
+        ],
+      }),
+    );
+
+    const shows = await getFinderLiveShows({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchLiveShows,
+      useFixtureFallback: false,
+    });
+
+    expect(fetchLiveShows).toHaveBeenCalledWith("https://suite.example/api/public/finder/live-shows?limit=50", {
+      cache: "no-store",
+    });
+    expect(shows).toEqual([
+      {
+        showId: "show-demo",
+        showName: "Demo Glow Show",
+        repFirstName: "Demo",
+        startsAt: "2026-06-06T20:00:00.000Z",
+        status: "scheduled",
+        customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
+      },
+    ]);
+  });
+
+  it("can disable fixture fallback when live shows are unavailable", async () => {
+    const fetchLiveShows = vi.fn(async () => new Response("not found", { status: 404 }));
+
+    const shows = await getFinderLiveShows({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchLiveShows,
+      useFixtureFallback: false,
+    });
+
+    expect(shows).toEqual([]);
   });
 
   it("falls back to fixture items when the API is not configured", async () => {
@@ -210,23 +291,16 @@ function apiAvailabilityMatch({
     photoUrl: "https://cdn.example.test/listing.jpg",
     photoSource: "canonical",
     item: apiCatalogItem({ designId, designName }),
-    rep: {
-      repId: "rep-demo",
-      displayName: "Demo Rep",
-      businessName: "Sparkle Suite Demo Boutique",
-      profilePhotoUrl: "https://cdn.example.test/rep.jpg",
-      customerSitePath: "/amethyst?c=rep-demo",
-      tradeBoardPath: "/amethyst/trade?c=rep-demo",
-    },
+    showName: "Demo Glow Show",
+    repFirstName: "Demo",
+    customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
     nextShow: {
       showId: "show-demo",
-      repId: "rep-demo",
-      platform: "TikTok",
+      showName: "Demo Glow Show",
+      repFirstName: "Demo",
       startsAt: "2026-06-06T20:00:00.000Z",
-      durationMinutes: 60,
-      title: "Demo Show",
-      description: "A fixture-backed public API show.",
       status: "scheduled",
+      customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
     },
   };
 }

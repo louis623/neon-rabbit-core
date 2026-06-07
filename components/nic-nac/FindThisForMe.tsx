@@ -2,13 +2,7 @@ import Link from "next/link";
 import { CalendarClock, Search, Sparkles } from "lucide-react";
 import { findNicNacMatchesForItem } from "@/lib/sparkle-finder/nic-nac";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
-import { getSparkleSuiteFinderPublicBaseUrl } from "@/lib/sparkle-finder/catalog-service";
-import {
-  getLocalRepBoardHref,
-  getLocalRepHref,
-  getSparkleSuiteRepBoardHref,
-  getSparkleSuiteRepHref,
-} from "@/lib/sparkle-finder/route-hrefs";
+import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FinderAvailabilityResult } from "@/lib/sparkle-finder/catalog-service";
 import type { NicNacDataSource, NicNacFindMatch } from "@/lib/sparkle-finder/nic-nac";
@@ -122,20 +116,14 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
 }
 
 function NicNacMatchCard({ match, dataSource }: { match: NicNacFindMatch; dataSource: NicNacDataSource }) {
-  const boardHref =
-    dataSource === "api"
-      ? getSparkleSuiteRepBoardHref(match.listing.boardUrl, getSparkleSuiteFinderPublicBaseUrl())
-      : getLocalRepBoardHref(match.listing.boardUrl);
-  const repHref =
-    dataSource === "api"
-      ? getSparkleSuiteRepHref(match.rep.siteUrl, getSparkleSuiteFinderPublicBaseUrl())
-      : getLocalRepHref(match.rep.siteUrl);
-
   return (
     <div className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{match.rep.businessName}</p>
+          {dataSource === "api" ? (
+            <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">Rep: {match.rep.displayName}</p>
+          ) : null}
           <p className="mt-1 text-xs font-bold text-[var(--sparkle-coral)]">{match.confidenceLabel}</p>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
             {match.matchedItem.name} / {match.matchedItem.collectionName}
@@ -157,18 +145,29 @@ function NicNacMatchCard({ match, dataSource }: { match: NicNacFindMatch; dataSo
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={boardHref}
-        >
-          Open rep board path
-        </Link>
-        <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
-          href={repHref}
-        >
-          Open rep profile
-        </Link>
+        {dataSource === "api" ? (
+          <Link
+            className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+            href={match.rep.siteUrl}
+          >
+            Visit Rep Site
+          </Link>
+        ) : (
+          <>
+            <Link
+              className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+              href={getLocalRepBoardHref(match.listing.boardUrl)}
+            >
+              Open rep board path
+            </Link>
+            <Link
+              className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
+              href={getLocalRepHref(match.rep.siteUrl)}
+            >
+              Open rep profile
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );
