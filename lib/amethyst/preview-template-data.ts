@@ -29,6 +29,7 @@ import {
   defaultAmethystTradeTemplateData,
   type AmethystTradeTemplateData,
 } from './trade-template-data'
+import { getPublicRepName } from './public-rep-name'
 
 interface PreviewTemplateDataDependencies {
   createAdminClient?: typeof createAdminClient
@@ -287,8 +288,9 @@ function withCustomerTarget(href: string, repId: string | null | undefined) {
 function targetedHomepageAboutParagraphs(
   homepage: AmethystHomepageTemplateData,
 ): [string, string, string] {
+  const repName = getPublicRepName(homepage.repName)
   const neutral: [string, string, string] = [
-    `${homepage.repName} will share more about this live reveal community soon.`,
+    `${repName} will share more about this live reveal community soon.`,
     'Customer details, show style, and favorite reveal notes will appear here after they are added.',
     homepage.heroEyebrow,
   ]
@@ -307,11 +309,12 @@ function targetedHomepageAboutParagraphs(
 }
 
 function targetedJoinFaq(teamName: string, repName: string): AmethystJoinTemplateData['faqAnswers'] {
+  const publicRepName = getPublicRepName(repName)
   return {
-    whatIsTeam: `${teamName} details will appear after ${repName} adds team information.`,
+    whatIsTeam: `${teamName} details will appear after ${publicRepName} adds team information.`,
     cost: 'Review current starter pack details before joining.',
-    experience: `${repName} can answer onboarding and experience questions directly.`,
-    timeCommitment: `${repName} can discuss schedule expectations and what setup looks like.`,
+    experience: `${publicRepName} can answer onboarding and experience questions directly.`,
+    timeCommitment: `${publicRepName} can discuss schedule expectations and what setup looks like.`,
     support: 'Support details will appear after this rep configures them.',
     income: 'Review the income disclosure before joining. Income varies by effort, sales, and time.',
   }
@@ -336,7 +339,15 @@ function applyCustomerTarget(
       joinTeamUrl: withCustomerTarget(data.homepage.joinTeamUrl, repId),
       footerLinks: {
         ...data.homepage.footerLinks,
+        home: withCustomerTarget(
+          data.homepage.footerLinks.home || '/amethyst/Homepage.html',
+          repId,
+        ),
         tradeBoard: withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
+        joinTeam: withCustomerTarget(
+          data.homepage.footerLinks.joinTeam || data.homepage.joinTeamUrl,
+          repId,
+        ),
       },
     },
     trade: {
@@ -379,7 +390,9 @@ export function mapPreviewSettingsToHomepageTemplateData(
   settings: SiteSettingsDashboardResult,
   extras: PreviewRepExtras = {},
 ): AmethystHomepageTemplateData {
-  const repName = firstText(settings.displayName, defaultAmethystHomepageTemplateData.repName)
+  const repName = getPublicRepName(
+    firstText(settings.displayName, defaultAmethystHomepageTemplateData.repName),
+  )
   const businessName = firstText(
     settings.businessName,
     defaultAmethystHomepageTemplateData.businessName,
@@ -394,6 +407,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     teamName: firstText(settings.teamName, defaultAmethystHomepageTemplateData.teamName),
     tagline,
     heroSub: `I'm ${repName} - join me for live reveals, favorite finds, and customer-first sparkle.`,
+    heroMotion: settings.heroAnimationType,
     heroEyebrow: 'Live schedule coming soon',
     tickerTopText: buildTicker(
       settings,
@@ -424,9 +438,13 @@ export function mapPreviewSettingsToTradeTemplateData(
   )
   const shopUrl = resolveShopUrl(extras)
 
+  const repName = getPublicRepName(
+    firstText(settings.displayName, defaultAmethystTradeTemplateData.repName),
+  )
+
   return {
     ...defaultAmethystTradeTemplateData,
-    repName: firstText(settings.displayName, defaultAmethystTradeTemplateData.repName),
+    repName,
     businessName,
     tickerTopText: buildTicker(settings, defaultAmethystTradeTemplateData.tickerTopText),
     shopUrl,
@@ -445,7 +463,9 @@ export function mapPreviewSettingsToJoinTemplateData(
   settings: SiteSettingsDashboardResult,
   extras: PreviewRepExtras = {},
 ): AmethystJoinTemplateData {
-  const repName = firstText(settings.displayName, defaultAmethystJoinTemplateData.repName)
+  const repName = getPublicRepName(
+    firstText(settings.displayName, defaultAmethystJoinTemplateData.repName),
+  )
   const businessName = firstText(
     settings.businessName,
     defaultAmethystJoinTemplateData.businessName,

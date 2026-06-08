@@ -88,10 +88,12 @@ body.joinpage .hp-saturate {
   font-family: var(--hp-display-font);
   font-weight: var(--hp-heading-weight, 600);
   font-size: clamp(40px, 5.5vw, 68px);
-  line-height: 1.04;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
+  padding-block: 0.04em 0.12em;
   text-wrap: balance;
+  overflow: visible;
 }
 .jp-hero-pitch {
   font-size: 17px;
@@ -225,14 +227,16 @@ body.joinpage .hp-saturate {
   font-family: var(--hp-display-font);
   font-weight: var(--hp-heading-weight, 600);
   font-size: clamp(32px, 4vw, 48px);
-  line-height: 1.05;
+  line-height: 1.12;
   letter-spacing: -0.02em;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
+  padding-block: 0.03em 0.09em;
   text-wrap: balance;
   background: linear-gradient(90deg, var(--hp-primary), var(--hp-accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  overflow: visible;
 }
 .jp-section-sub {
   font-size: 17px;
@@ -635,11 +639,14 @@ body.joinpage .hp-saturate {
   font-family: var(--hp-display-font);
   font-weight: var(--hp-heading-weight, 600);
   font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.12;
   letter-spacing: -0.02em;
-  margin: 0 0 14px;
+  margin: 0 0 10px;
+  padding-block: 0.03em 0.09em;
   text-wrap: balance;
   position: relative;
   z-index: 1;
+  overflow: visible;
 }
 .jp-final-sub {
   font-size: 17px;

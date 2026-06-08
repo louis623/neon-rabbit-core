@@ -57,11 +57,15 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-filter-pill[\s\S]*?min-height:\s*44px;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-card-close[\s\S]*?min-width:\s*44px;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-card-expand-mask[\s\S]*?animation:\s*none\s*!important;/)
-    expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-faq-a[\s\S]*?transition:\s*none\s*!important;/)
+    expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-card-expand-cta[\s\S]*?transition:\s*none\s*!important;/)
+    expect(css).toMatch(/\.tp-hero-title\s*\{[\s\S]*?line-height:\s*1\.1;/)
+    expect(css).toMatch(/\.tp-hero-title\s*\{[\s\S]*?padding-block:\s*0\.04em 0\.12em;/)
+    expect(css).toMatch(/\.tp-hero-title\s*\{[\s\S]*?overflow:\s*visible;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?font-size:\s*clamp\(32px,\s*9\.6vw,\s*44px\);/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-inner[\s\S]*?width:\s*100vw;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-inner[\s\S]*?margin-inline:\s*calc\(50% - 50vw\);/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?max-width:\s*10ch;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?padding-block:\s*0\.04em 0\.12em;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-title[\s\S]*?overflow-wrap:\s*anywhere;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-sub[\s\S]*?width:\s*100%;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.tp-hero-sub[\s\S]*?max-width:\s*24ch;/)
@@ -105,6 +109,41 @@ describe('Amethyst trade page template wiring', () => {
     expect(script).toContain('window.AMETHYST_TRADE_BOARD_LISTINGS = []')
     expect(script).toContain('"/amethyst/Homepage.html"')
     expect(script).toContain('"/amethyst/Join.html"')
+  })
+
+  it('keeps the trade hero subcopy concise without pay-difference fine print', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+
+    expect(defaultAmethystTradeTemplateData.tradeHeroSub).toBe(
+      'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
+    )
+    expect(jsx).toContain(
+      'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
+    )
+    expect(defaultAmethystTradeTemplateData.tradeHeroSub).not.toContain(
+      'with no pay-the-difference and no credit payouts',
+    )
+  })
+
+  it('does not render the customer-facing Trade rules section', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(jsx).not.toContain('function Faq')
+    expect(jsx).not.toContain('<Faq />')
+    expect(jsx).not.toContain('Trade rules.')
+    expect(jsx).not.toContain('The short version. Read once, trade cleanly.')
+    expect(jsx).not.toContain('TweakToggle label="FAQ"')
+    expect(css).not.toContain('.tp-faq')
   })
 
   it('maps service-layer trade listings into customer-facing trade card data', () => {
@@ -194,14 +233,27 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(jsx).toContain('className="hp-header-nav"')
+    expect(jsx).toContain('function SocialLogo')
+    expect(jsx).toContain('<SocialLogo {...social} />')
+    expect(jsx).toContain('aria-label={social.label}')
+    expect(jsx).not.toContain('className="hp-footer-social">{social.shortLabel}</a>')
     expect(jsx).toContain('window.AMETHYST_TRADE_BOARD_LISTINGS')
     expect(jsx).toContain('deriveTradeBoardFilterOptions')
     expect(jsx).toContain('filterTradeBoardListings')
     expect(jsx).toContain('collectionSearch')
+    expect(jsx).toContain('tp-filter-primary-grid')
+    expect(jsx).toContain('tp-filters-row-collections')
+    expect(jsx).toContain('options.collections.map((collection) => (')
     expect(jsx).toContain('new URLSearchParams(window.location.search)')
     expect(jsx).toContain('More filters')
     expect(jsx).toContain('"/amethyst/Homepage.html"')
-    expect(jsx).toContain('"/amethyst/Join.html"')
+    expect(jsx).toContain('function ComingSoonNavItem')
+    expect(jsx).toContain('className="hp-header-link hp-header-link-disabled"')
+    expect(jsx).not.toContain('className="tp-hero-eyebrow"')
+    expect(jsx).not.toContain('Matching is based on same collection and same jewelry type')
+    expect(jsx).not.toContain('function RulesStrip')
+    expect(jsx).not.toContain('<RulesStrip />')
+    expect(jsx).not.toContain('tp-rules-strip')
     expect(jsx).toContain('piece.material')
     expect(jsx).toContain('piece.photoUrl')
     expect(jsx).toContain('same collection')
@@ -209,6 +261,13 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('Buy Now')
     expect(jsx).not.toContain('Next to reveal')
     expect(jsx).not.toContain('Rare finds')
+    expect(css).not.toContain('.tp-hero-eyebrow')
+    expect(css).not.toContain('.tp-hero .tp-card-rep')
+    expect(css).not.toContain('.tp-rules-strip')
+    expect(css).toMatch(/\.tp-filters\s*\{[\s\S]*?border-radius:\s*var\(--hp-radius-card\);/)
+    expect(css).toMatch(/\.tp-filter-primary-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1\.15fr\)\s+minmax\(0,\s*0\.85fr\)\s+minmax\(0,\s*1fr\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filter-primary-grid[\s\S]*?grid-template-columns:\s*1fr;/)
+    expect(css).toContain('.tp-filters-row-collections')
     expect(css).toContain('.tp-filter-panel')
     expect(css).toContain('.tp-filter-search')
   })
@@ -232,6 +291,35 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
   })
 
+  it('limits large trade boards with search, sort, lazy images, and load-more rendering', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('const BOARD_PAGE_SIZE = 24')
+    expect(jsx).toContain('boardSearch')
+    expect(jsx).toContain('searchTradeBoardListings')
+    expect(jsx).toContain('sortTradeBoardListings')
+    expect(jsx).toContain('const visibleTradeBoardPieces = filtered.slice(0, visibleCount)')
+    expect(jsx).toContain('setVisibleCount((count) => count + BOARD_PAGE_SIZE)')
+    expect(jsx).toContain('Search by piece, collection, size')
+    expect(jsx).toContain('Sort board')
+    expect(jsx).toContain('Load more')
+    expect(jsx).toContain('loading="lazy"')
+    expect(jsx).toContain('decoding="async"')
+    expect(css).toContain('.tp-board-search-row')
+    expect(css).toContain('.tp-board-search')
+    expect(css).toContain('.tp-board-sort')
+    expect(css).toContain('.tp-board-showing')
+    expect(css).toContain('.tp-load-more')
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-board-search-row[\s\S]*?grid-template-columns:\s*1fr;/)
+  })
+
   it('does not ship corrupted visible characters in the trade runtime copy', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
@@ -240,7 +328,7 @@ describe('Amethyst trade page template wiring', () => {
 
     expect(jsx).not.toMatch(/[�ï¿½]/)
     expect(jsx).not.toContain('Shop ?')
-    expect(jsx).toContain('Shop -&gt;')
+    expect(jsx).toContain('Shop live')
     expect(jsx).toContain('Ring / OG')
     expect(jsx).toContain('Listings will appear after this rep adds trade pieces.')
   })

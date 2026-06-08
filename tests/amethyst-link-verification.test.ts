@@ -12,7 +12,6 @@ describe('buildAmethystLinkChecks', () => {
     expect(checks.map((check) => check.url)).toEqual([
       'http://localhost:3001/amethyst/Homepage.html',
       'http://localhost:3001/amethyst/Trade.html',
-      'http://localhost:3001/amethyst/Join.html',
     ])
     expect(checks.every((check) => check.kind === 'local')).toBe(true)
   })
@@ -27,6 +26,6 @@ describe('buildAmethystLinkChecks', () => {
     expect(checks.map((check) => check.url)).toContain(
       'https://sparkle-suite.vercel.app/amethyst/Homepage.html',
     )
-    expect(checks.filter((check) => check.kind === 'production')).toHaveLength(3)
+    expect(checks.filter((check) => check.kind === 'production')).toHaveLength(2)
   })
 })

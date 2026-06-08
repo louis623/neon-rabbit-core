@@ -107,6 +107,11 @@ describe('customer flow smoke', () => {
         callPaidNicNac: false,
         attachReservedPhone: false,
       },
+      links: {
+        homepage: '/amethyst/Homepage.html',
+        tradeBoard: '/amethyst/Trade.html',
+        joinTeamComingSoon: 'Join Team is intentionally coming soon for launch.',
+      },
     })
   })
 

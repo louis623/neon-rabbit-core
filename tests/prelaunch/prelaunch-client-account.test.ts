@@ -139,7 +139,7 @@ describe('prelaunch client account provisioning', () => {
         ticker_visible: false,
         team_name: 'Louis Live Sparkles',
         show_join_page: true,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
       },
       { onConflict: 'rep_id' },
     )

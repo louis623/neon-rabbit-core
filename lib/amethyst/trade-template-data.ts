@@ -3,6 +3,7 @@ import {
   applyAmethystAppearancePreset,
   type AmethystAppearancePresetId,
 } from './appearance-presets'
+import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
 
 export interface AmethystTradeSocialLink {
   label: string
@@ -52,6 +53,7 @@ export interface AmethystTradeTemplateData {
     preOrders: string
     pastShows: string
     faq: string
+    contact?: string
     privacy: string
     terms: string
     accessibility: string
@@ -104,11 +106,11 @@ export interface AmethystTradeTweakDefaults {
 }
 
 export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
-  repName: 'Sasha Rivera',
+  repName: 'Sasha',
   businessName: 'Sparkle by Sasha',
   tradeHeroTitle: 'Trade for the piece you wanted to love.',
   tradeHeroSub:
-    'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type, with no pay-the-difference and no credit payouts.',
+    'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
   tickerTopText:
     'Trade board open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months',
   shopUrl: 'https://bombparty.com',
@@ -152,6 +154,7 @@ export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
     preOrders: 'https://bombparty.com',
     pastShows: '/amethyst/Homepage.html#events',
     faq: '#faq',
+    contact: '#faq',
     privacy: '#faq',
     terms: '#faq',
     accessibility: '#faq',
@@ -214,11 +217,11 @@ export function buildAmethystTradeTweakDefaults(
   appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystTradeTweakDefaults {
   return applyAmethystAppearancePreset({
-    repName: data.repName,
+    repName: getPublicRepName(data.repName),
     businessName: data.businessName,
     tickerTopText: data.tickerTopText,
     tradeHeroTitle: data.tradeHeroTitle,
-    tradeHeroSub: data.tradeHeroSub,
+    tradeHeroSub: redactPublicRepFullName(data.tradeHeroSub, data.repName),
     ...lockedTweakDefaults,
   }, appearancePreset)
 }
@@ -234,8 +237,13 @@ export function buildAmethystTradeBootstrapScript(
   runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
   const targeted = Boolean(runtimeContext.targeted)
+  const publicData: AmethystTradeTemplateData = {
+    ...data,
+    repName: getPublicRepName(data.repName),
+    tradeHeroSub: redactPublicRepFullName(data.tradeHeroSub, data.repName),
+  }
   const defaults = {
-    ...buildAmethystTradeTweakDefaults(data, appearancePreset),
+    ...buildAmethystTradeTweakDefaults(publicData, appearancePreset),
     ...(targeted
       ? {
           contentState: listings.length > 0 ? 'populated' : 'empty',
@@ -246,7 +254,7 @@ export function buildAmethystTradeBootstrapScript(
 
   return [
     `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
-    `window.AMETHYST_TRADE_TEMPLATE_DATA = ${safeScriptJson(data)};`,
+    `window.AMETHYST_TRADE_TEMPLATE_DATA = ${safeScriptJson(publicData)};`,
     `window.TRADE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_TRADE_BOARD_LISTINGS = ${safeScriptJson(listings)};`,
   ].join('\n')

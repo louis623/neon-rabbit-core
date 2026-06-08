@@ -274,7 +274,7 @@ const SITE_SETTINGS_READY_STATE = {
     tickerVisible: false,
     tagline: 'Live sparkle, zero stress.',
     heroImageUrl: 'https://cdn.example.com/hero.jpg',
-    heroAnimationType: 'pan' as const,
+    heroAnimationType: 'soft_glow' as const,
     teamName: 'Moonstone Squad',
     showJoinPage: true,
     customerSiteTemplate: 'amethyst' as const,
@@ -1024,6 +1024,8 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Current balance')
+    expect(html).toContain('SMS Wallet')
+    expect(html).toContain('Monitor text balance, reloads, and auto-recharge')
     expect(html).toContain('$24.99')
     expect(html).toContain('Texts left')
     expect(html).toContain('2776')
@@ -1060,13 +1062,21 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('Profile basics')
     expect(html).toContain('Display name')
-    expect(html).toContain('Business name')
-    expect(html).toContain('Banner and ticker')
-    expect(html).toContain('Banner text')
+    expect(html).toContain('Show name')
+    expect(html).not.toContain('Business name')
+    expect(html).not.toContain('Phone</span>')
+    expect(html).toContain('Ticker and join page')
+    expect(html).not.toContain('Banner and ticker')
+    expect(html).not.toContain('Banner text')
+    expect(html).not.toContain('Banner visible')
     expect(html).toContain('Ticker text')
-    expect(html).toContain('Hero image URL')
-    expect(html).toContain('Hero animation')
+    expect(html).not.toContain('Hero image URL')
+    expect(html).toContain('Hero motion')
+    expect(html).toContain('Sparkle rise')
+    expect(html).toContain('Soft glow')
+    expect(html).toContain('Still')
     expect(html).toContain('Site appearance')
+    expect(html).not.toContain('Site template')
     expect(html).toContain('Amethyst')
     expect(html).toContain('Sparkle Suite/Morganite')
     expect(html).toContain('Black Diamond')
@@ -1138,6 +1148,7 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Build fee + monthly plan')
+    expect(html).toContain('Account')
     expect(html).toContain('cancel anytime')
     expect(html).toContain('Active')
     expect(html).toContain('Scheduled to end')

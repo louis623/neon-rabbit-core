@@ -139,7 +139,7 @@ describe('POST /api/self-serve/signup', () => {
         tagline: 'A polished place to shop Jamie Hart.',
         team_name: 'Jamie Hart',
         show_join_page: true,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         customer_site_template: 'amethyst',
         appearance_preset: 'sparkle_suite_morganite',
       },

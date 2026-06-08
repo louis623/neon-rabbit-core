@@ -30,7 +30,7 @@ const demoSettings: SiteSettingsDashboardResult = {
   tickerVisible: true,
   tagline: 'Sparkle picks, trade board favorites, and show-night fizz.',
   heroImageUrl: '',
-  heroAnimationType: 'zoom',
+  heroAnimationType: 'sparkle_rise',
   teamName: 'Sparkle Demo Circle',
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
@@ -60,11 +60,11 @@ describe('Amethyst preview template data', () => {
     })
     const serialized = JSON.stringify(data)
 
-    expect(data.homepage.repName).toBe('Sasha Rivera')
+    expect(data.homepage.repName).toBe('Sasha')
     expect(data.homepage.businessName).toBe('Sparkle by Sasha')
-    expect(data.trade.repName).toBe('Sasha Rivera')
+    expect(data.trade.repName).toBe('Sasha')
     expect(data.trade.businessName).toBe('Sparkle by Sasha')
-    expect(data.join.repName).toBe('Sasha Rivera')
+    expect(data.join.repName).toBe('Sasha')
     expect(data.join.businessName).toBe('Sparkle by Sasha')
     expect(data.join.teamName).toBe('Sparkle by Sasha')
     expect(serialized).not.toMatch(/\b(?:Rep Name|Show Name)\b/)
@@ -88,11 +88,11 @@ describe('Amethyst preview template data', () => {
     const join = mapPreviewSettingsToJoinTemplateData(legacySettings)
     const serialized = JSON.stringify({ homepage, trade, join })
 
-    expect(homepage.repName).toBe('Sasha Rivera')
+    expect(homepage.repName).toBe('Sasha')
     expect(homepage.businessName).toBe('Sparkle by Sasha')
-    expect(trade.repName).toBe('Sasha Rivera')
+    expect(trade.repName).toBe('Sasha')
     expect(trade.businessName).toBe('Sparkle by Sasha')
-    expect(join.repName).toBe('Sasha Rivera')
+    expect(join.repName).toBe('Sasha')
     expect(join.businessName).toBe('Sparkle by Sasha')
     expect(join.teamName).toBe('Sparkle by Sasha')
     expect(serialized).not.toContain('Jane')
@@ -105,12 +105,13 @@ describe('Amethyst preview template data', () => {
       repExtras,
     )
 
-    expect(data.repName).toBe('Launch Demo Rep')
+    expect(data.repName).toBe('Launch')
     expect(data.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(data.teamName).toBe('Sparkle Demo Circle')
     expect(data.tagline).toBe(
       'Sparkle picks, trade board favorites, and show-night fizz.',
     )
+    expect(data.heroMotion).toBe('sparkle_rise')
     expect(data.tickerTopText).toBe(
       'Demo launch week | New demo listings added before every live show.',
     )
@@ -130,13 +131,13 @@ describe('Amethyst preview template data', () => {
     )
     const join = mapPreviewSettingsToJoinTemplateData(demoSettings, repExtras)
 
-    expect(trade.repName).toBe('Launch Demo Rep')
+    expect(trade.repName).toBe('Launch')
     expect(trade.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(trade.shopUrl).toBe(
       'https://www.bombparty.com/shop/sparkle-suite-demo',
     )
     expect(trade.tickerTopText).toContain('New demo listings')
-    expect(join.repName).toBe('Launch Demo Rep')
+    expect(join.repName).toBe('Launch')
     expect(join.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(join.teamName).toBe('Sparkle Demo Circle')
     expect(join.bpReferralUrl).toBe(

@@ -1,3 +1,5 @@
+import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
+
 export type AmethystTier = 'everyday' | 'diamond' | 'unicorn'
 export type AmethystEventPlatform = 'tiktok' | 'facebook' | 'shop'
 export type AmethystQueueState = 'live' | 'offline' | 'loading' | 'empty'
@@ -101,13 +103,13 @@ export interface AmethystSiteContent {
 }
 
 export const defaultAmethystSiteContent: AmethystSiteContent = {
-  repName: 'Sasha Rivera',
+  repName: 'Sasha',
   businessName: 'Sparkle by Sasha',
   teamName: 'Sparkle by Sasha',
   heroEyebrow: 'Live reveals · every Tuesday · 8pm local time',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
-    "I'm Sasha Rivera. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.",
+    "I'm Sasha. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.",
   announcementText: 'Text club gets first dibs on drops and reminders.',
   announcementItems: [
     'Live tonight · 8pm local time',
@@ -246,24 +248,17 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     "Join my team and I'll show you how to build a real Bomb Party business around your own schedule, your own community, and your own sparkle style.",
   footerTagline: 'Live jewelry reveals every week. Real pieces, real community, real sparkle.',
   footerShopLinks: [
+    { label: 'Home', href: '#top' },
     { label: 'Trade Board', href: '#trade-board' },
-    { label: 'Watch Live', href: '#watch-live' },
-    { label: 'Upcoming Shows', href: '#events' },
-    { label: 'Shop Bomb Party', href: 'https://bombparty.com', external: true },
+    { label: 'Join Team', href: '/amethyst/Join.html' },
   ],
   footerAboutLinks: [
-    { label: 'Home', href: '#top' },
-    { label: 'What is Bomb Party?', href: '#bomb-party' },
-    { label: 'Join Team', href: '/amethyst/Join.html' },
-    { label: 'Sign Up', href: '#signup' },
+    { label: 'FAQ', href: '#signup' },
+    { label: 'Contact', href: '#signup' },
   ],
   footerColumn: {
-    title: 'Hosting Soon',
-    links: [
-      { label: 'Holiday Gift Guide Night', href: '#events' },
-      { label: 'Diamond Territory Saturday', href: '#events' },
-      { label: 'Year-End Sparkle Party', href: '#events' },
-    ],
+    title: '',
+    links: [],
   },
   socialLinks: [
     { label: 'TikTok', shortLabel: 'TT', href: '#watch-live' },
@@ -288,25 +283,33 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
 export function makeAmethystSiteContent(
   overrides: Partial<AmethystSiteContent> = {},
 ): AmethystSiteContent {
-  const repName = overrides.repName ?? defaultAmethystSiteContent.repName
+  const rawRepName = overrides.repName ?? defaultAmethystSiteContent.repName
+  const repName = getPublicRepName(rawRepName)
   const businessName =
     overrides.businessName ?? defaultAmethystSiteContent.businessName
+  const heroSub = redactPublicRepFullName(
+    overrides.heroSub ??
+      `I'm ${repName}. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.`,
+    rawRepName,
+  )
+  const signupSub = redactPublicRepFullName(
+    overrides.signupSub ??
+      `Get a heads-up when ${repName} goes live, plus first looks at new trade board listings and featured collections.`,
+    rawRepName,
+  )
 
   return {
     ...defaultAmethystSiteContent,
+    ...overrides,
     teamName: overrides.teamName ?? businessName,
-    heroSub:
-      overrides.heroSub ??
-      `I'm ${repName}. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.`,
-    signupSub:
-      overrides.signupSub ??
-      `Get a heads-up when ${repName} goes live, plus first looks at new trade board listings and featured collections.`,
+    heroSub,
+    signupSub,
     signupConsent:
       overrides.signupConsent ??
       `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Message and data rates may apply. Reply STOP to unsubscribe.`,
     legalDisclaimer:
       overrides.legalDisclaimer ??
       `${businessName} is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.`,
-    ...overrides,
+    repName,
   }
 }

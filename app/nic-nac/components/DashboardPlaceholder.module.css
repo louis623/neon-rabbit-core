@@ -1175,60 +1175,87 @@
 .walletCard {
   min-height: 120px;
   margin-top: 4px;
-  border-radius: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 94% 12%, rgba(238, 44, 155, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 18px 42px rgba(54, 34, 29, 0.08);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  overflow: hidden;
+  position: relative;
 }
 
 .calendarCard {
   min-height: 120px;
   margin-top: 4px;
-  border-radius: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(238, 44, 155, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 18px 42px rgba(54, 34, 29, 0.08);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  overflow: hidden;
+  position: relative;
 }
 
 .siteSettingsCard {
   min-height: 120px;
   margin-top: 4px;
-  border-radius: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 96% 14%, rgba(238, 44, 155, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 18px 42px rgba(54, 34, 29, 0.08);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.calendarCard::before,
+.siteSettingsCard::before,
+.accountBillingCard::before,
+.walletCard::before {
+  content: "";
+  height: 6px;
+  inset: 0 0 auto;
+  background: linear-gradient(90deg, #402924 0%, rgba(238, 44, 155, 0.82) 70%, rgba(255, 212, 234, 0.76) 100%);
+  position: absolute;
 }
 
 .accountBillingCard {
   margin-top: 4px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.82);
+  background:
+    radial-gradient(circle at 94% 12%, rgba(238, 44, 155, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
   border: 1px solid var(--nic-nac-border);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.88),
+    0 18px 42px rgba(54, 34, 29, 0.08);
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  overflow: hidden;
+  position: relative;
 }
 
 .accountBillingHeader {
@@ -1266,7 +1293,13 @@
 .accountDetailList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 8px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 246, 250, 0.48));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.74);
+  padding: 8px;
 }
 
 .accountDetailRow {
@@ -1274,12 +1307,10 @@
   grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
   gap: 18px;
   align-items: start;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(64, 41, 36, 0.08);
-}
-
-.accountDetailRow:last-child {
-  border-bottom: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(64, 41, 36, 0.08);
+  padding: 12px;
 }
 
 .accountDetailValue {
@@ -1441,11 +1472,13 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.84));
+    radial-gradient(circle at 100% 0%, rgba(238, 44, 155, 0.08), transparent 7rem),
+    linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.86));
   border: 1px solid var(--nic-nac-border);
-  padding: 10px 12px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.84);
+  padding: 12px 14px;
   overflow: hidden;
 }
 
@@ -1547,6 +1580,13 @@
   gap: 6px;
 }
 
+.sortFieldWide {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+  gap: 6px;
+}
+
 .searchLabel {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
@@ -1583,13 +1623,20 @@
 
 .sortSelect {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  min-height: 42px;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
   color: var(--nic-nac-text-primary);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   padding: 10px 12px;
+}
+
+.sortSelect:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
 }
 
 .bulkActions {
@@ -1599,15 +1646,27 @@
 }
 
 .bulkActionButton {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(238, 44, 155, 0.24);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.82));
   color: var(--nic-nac-text-primary);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
+  font-weight: 700;
   line-height: 1;
   padding: 8px 12px;
   cursor: pointer;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.74);
+}
+
+.bulkActionButton:hover {
+  border-color: rgba(238, 44, 155, 0.42);
+  background: linear-gradient(180deg, rgba(255, 238, 247, 0.98), rgba(255, 255, 255, 0.9));
+}
+
+.bulkActionButton:disabled {
+  cursor: default;
+  opacity: 0.58;
 }
 
 .filterButton {
@@ -2123,10 +2182,11 @@
   width: fit-content;
   border-radius: 999px;
   padding: 4px 10px;
-  background: rgba(255, 183, 77, 0.14);
+  background: rgba(255, 183, 77, 0.2);
+  border: 1px solid rgba(154, 91, 18, 0.16);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
-  color: #ffd08a;
+  color: #7b4c10;
 }
 
 .walletTimeline {
@@ -2144,10 +2204,13 @@
 .walletSettingsPanel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 12px;
+  gap: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 246, 250, 0.56));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.76);
+  padding: 14px;
 }
 
 .walletSettingsTitle {
@@ -2178,10 +2241,13 @@
 .siteSettingsSection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 12px;
+  gap: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 246, 250, 0.56));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.76);
+  padding: 14px;
 }
 
 .siteSettingsPreviewNote {
@@ -2201,11 +2267,14 @@
   justify-content: space-between;
   gap: 10px;
   margin-top: 2px;
-  border: 1px solid var(--nic-nac-border);
-  border-radius: 14px;
-  background: var(--nic-nac-surface-primary-solid);
-  box-shadow: 0 14px 32px var(--workspace-panel-shadow);
-  padding: 10px;
+  border: 1px solid rgba(238, 44, 155, 0.16);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 250, 0.92));
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.84),
+    0 18px 38px rgba(54, 34, 29, 0.12);
+  padding: 12px;
 }
 
 .siteSettingsSaveStatus {
@@ -2224,13 +2293,19 @@
   width: 100%;
   min-height: 88px;
   resize: vertical;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
   color: var(--nic-nac-text-primary);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   padding: 10px 12px;
+}
+
+.siteSettingsTextarea:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
 }
 
 .walletToggleRow {
@@ -2238,12 +2313,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(64, 41, 36, 0.08);
+  padding: 10px 12px;
 }
 
 .walletReferencePanel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 246, 250, 0.48));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.74);
+  padding: 14px;
 }
 
 .walletReferenceList {
@@ -2256,6 +2341,10 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
+  border-radius: 14px;
+  background: rgba(255, 246, 250, 0.56);
+  border: 1px solid rgba(64, 41, 36, 0.06);
+  padding: 8px;
 }
 
 .calendarWeekday {
@@ -2271,17 +2360,23 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 246, 250, 0.48));
+  border: 1px solid var(--nic-nac-border);
+  padding: 8px;
 }
 
 .calendarCell {
   min-height: 96px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(64, 41, 36, 0.07);
+  background: rgba(255, 255, 255, 0.64);
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.68);
 }
 
 .calendarCellMuted {
@@ -2289,12 +2384,16 @@
 }
 
 .calendarCellActive {
-  border-color: rgba(157, 232, 199, 0.2);
-  background: rgba(95, 214, 167, 0.08);
+  border-color: rgba(95, 214, 167, 0.28);
+  background:
+    linear-gradient(180deg, rgba(235, 255, 247, 0.9), rgba(232, 250, 242, 0.74));
 }
 
 .calendarCellToday {
-  box-shadow: inset 0 0 0 1px rgba(157, 232, 199, 0.45);
+  border-color: rgba(238, 44, 155, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 44, 155, 0.12),
+    0 10px 24px rgba(238, 44, 155, 0.08);
 }
 
 .calendarCellDay {
@@ -2321,7 +2420,8 @@
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   color: var(--nic-nac-text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(64, 41, 36, 0.08);
 }
 
 .calendarPanels {
@@ -2334,6 +2434,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 246, 250, 0.54));
+  border: 1px solid var(--nic-nac-border);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.78);
+  padding: 14px;
 }
 
 .walletTransactionList {
@@ -2347,9 +2453,10 @@
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(64, 41, 36, 0.08);
 }
 
 .walletTransactionCopy {
@@ -2386,7 +2493,8 @@
 
 .timelineItem {
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(64, 41, 36, 0.08);
   padding: 4px 10px;
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 11px;

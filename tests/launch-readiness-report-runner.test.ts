@@ -178,7 +178,7 @@ describe('launch readiness report runner', () => {
     expect(report.journeys.find((journey) => journey.id === 'mobile-final-responsive')).toMatchObject({
       status: 'missing',
       blockedItems: [
-        'Add rendered mobile viewport smoke for /prelaunch, /nic-nac, and Amethyst homepage, trade, and join surfaces.',
+        'Add rendered mobile viewport smoke for /prelaunch, /nic-nac, and Amethyst homepage and trade surfaces.',
       ],
     })
   })
@@ -208,7 +208,6 @@ describe('launch readiness report runner', () => {
           '/nic-nac',
           '/amethyst/Homepage.html',
           '/amethyst/Trade.html',
-          '/amethyst/Join.html',
         ],
       },
     })
@@ -246,7 +245,7 @@ describe('launch readiness report runner', () => {
       status: 'covered',
       renderedProof: {
         ok: true,
-        routeCount: 5,
+        routeCount: 4,
         artifactPath:
           '.local/launch-readiness-results/rendered-mobile-2026-05-26.json',
       },

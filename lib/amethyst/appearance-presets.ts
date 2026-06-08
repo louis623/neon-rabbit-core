@@ -32,6 +32,7 @@ export interface AmethystAppearancePreset {
     shapeRadius: string
     density: string
     saturation: number
+    heroMotion: string
     sparkleLevel: string
     bgTreatment: string
     cardSurface: string
@@ -62,6 +63,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 130,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'glittery',
       bgTreatment: 'confetti',
       cardSurface: 'holographic',
@@ -88,6 +90,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 104,
+      heroMotion: 'soft_glow',
       sparkleLevel: 'subtle',
       bgTreatment: 'suite-paper',
       cardSurface: 'warm-paper',
@@ -114,6 +117,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 112,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'glittery',
       bgTreatment: 'black-velvet',
       cardSurface: 'dark-metallic',
@@ -140,6 +144,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 108,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'subtle',
       bgTreatment: 'rose-gold-paper',
       cardSurface: 'pearl-rose',
@@ -166,6 +171,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 112,
+      heroMotion: 'soft_glow',
       sparkleLevel: 'subtle',
       bgTreatment: 'garnet-shell',
       cardSurface: 'blush-shell',
@@ -192,6 +198,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 116,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'subtle',
       bgTreatment: 'amber-paper',
       cardSurface: 'sunlit-pearl',
@@ -218,6 +225,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 110,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'glittery',
       bgTreatment: 'velvet-orchid',
       cardSurface: 'plush-orchid',
@@ -244,6 +252,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       shapeRadius: 'soft',
       density: 'regular',
       saturation: 114,
+      heroMotion: 'sparkle_rise',
       sparkleLevel: 'glittery',
       bgTreatment: 'quartz-paper',
       cardSurface: 'pink-quartz',

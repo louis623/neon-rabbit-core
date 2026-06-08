@@ -142,7 +142,7 @@ describe('site customization tools', () => {
         ticker_visible: false,
         tagline: 'Fresh drops daily',
         hero_image_url: null,
-        hero_animation_type: 'pan',
+        hero_animation_type: 'soft_glow',
         team_name: null,
         show_join_page: false,
         customer_site_template: 'amethyst',
@@ -169,7 +169,7 @@ describe('site customization tools', () => {
 
     const result = await tool.execute({
       tagline: 'Fresh drops daily',
-      heroAnimationType: 'pan',
+      heroAnimationType: 'soft_glow',
       showJoinPage: false,
       customerSiteTemplate: 'not-a-real-template',
       appearancePreset: 'SS-01',
@@ -180,7 +180,7 @@ describe('site customization tools', () => {
 
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
       tagline: 'Fresh drops daily',
-      hero_animation_type: 'pan',
+      hero_animation_type: 'soft_glow',
       show_join_page: false,
       customer_site_template: 'amethyst',
       appearance_preset: 'sparkle_suite_morganite',
@@ -203,7 +203,7 @@ describe('site customization tools', () => {
       ],
       updated: {
         tagline: 'Fresh drops daily',
-        heroAnimationType: 'pan',
+        heroAnimationType: 'soft_glow',
         showJoinPage: false,
         customerSiteTemplate: 'amethyst',
         appearancePreset: 'sparkle_suite_morganite',
@@ -223,7 +223,7 @@ describe('site customization tools', () => {
         ticker_visible: false,
         tagline: null,
         hero_image_url: null,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
@@ -260,7 +260,7 @@ describe('site customization tools', () => {
         ticker_visible: false,
         tagline: null,
         hero_image_url: null,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
@@ -302,7 +302,7 @@ describe('site customization tools', () => {
         ticker_visible: false,
         tagline: null,
         hero_image_url: null,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',

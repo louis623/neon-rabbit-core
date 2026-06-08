@@ -6,6 +6,7 @@ import {
   applyAmethystAppearancePreset,
   type AmethystAppearancePresetId,
 } from './appearance-presets'
+import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
 
 export interface AmethystHomepageMediaSlot {
   typeLabel: string
@@ -32,11 +33,11 @@ export interface AmethystHomepageTemplateData {
   heroEyebrow: string
   heroHeadline: string
   heroSub: string
+  heroMotion: string
   tickerTopText: string
   aboutHeadline: string
   aboutParagraphs: [string, string, string]
   aboutMediaSlots: [
-    AmethystHomepageMediaSlot,
     AmethystHomepageMediaSlot,
     AmethystHomepageMediaSlot,
   ]
@@ -63,7 +64,9 @@ export interface AmethystHomepageTemplateData {
     AmethystHomepageSocialLink,
   ]
   footerLinks: {
+    home?: string
     tradeBoard: string
+    joinTeam?: string
     catalog: string
     preOrders: string
     pastShows: string
@@ -81,6 +84,7 @@ export interface AmethystHomepageTweakDefaults {
   tagline: string
   heroHeadline: string
   heroSub: string
+  heroMotion: string
   buttonStyle: string
   tickerVariant: string
   nicNacStyle: string
@@ -91,7 +95,6 @@ export interface AmethystHomepageTweakDefaults {
   showWibp: boolean
   showAbout: boolean
   showSignup: boolean
-  showJoinCta: boolean
   showFooter: boolean
   showNicNac: boolean
   eventCount: number
@@ -120,17 +123,18 @@ export interface AmethystHomepageTweakDefaults {
 }
 
 export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData = {
-  repName: 'Sasha Rivera',
+  repName: 'Sasha',
   businessName: 'Sparkle by Sasha',
   teamName: 'Sparkle by Sasha',
   tagline: 'Live jewelry reveals every Tuesday - joy you can hold.',
   heroEyebrow: 'Live Tuesdays - 8pm CST',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
-    "I'm Sasha Rivera - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+    "I'm Sasha - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  heroMotion: 'sparkle_rise',
   tickerTopText:
     'Live tonight - 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday',
-  aboutHeadline: 'Meet Sasha Rivera and the story behind the sparkle.',
+  aboutHeadline: 'Meet Sasha and the story behind the sparkle.',
   aboutParagraphs: [
     'Share how you got started, what customers can expect in your live reveals, and why this business matters to you. This should feel personal, warm, and easy for new shoppers to connect with.',
     'Talk about your community, your favorite kinds of reveals, or the energy you bring to show nights. Nic-Nac can rewrite this to match your voice while keeping the section polished and on-brand.',
@@ -138,18 +142,15 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
   ],
   aboutMediaSlots: [
     {
-      typeLabel: 'TikTok or reel',
-      caption: 'Drop in a TikTok, short reel, or vertical intro video.',
+      typeLabel: 'About media 1',
+      caption:
+        'Photo or short social video. Ask Nic-Nac to place it in About media 1.',
       href: '#',
     },
     {
-      typeLabel: 'Photo',
-      caption: 'Add a lifestyle photo, show setup image, or team snapshot.',
-      href: '#',
-    },
-    {
-      typeLabel: 'Photo or video',
-      caption: 'Use this slot for another customer-facing image, embed, or promo clip.',
+      typeLabel: 'About media 2',
+      caption:
+        'Optional second photo or short social video. Ask Nic-Nac to place it in About media 2.',
       href: '#',
     },
   ],
@@ -180,7 +181,9 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     { label: 'YouTube', shortLabel: 'YT', href: '#' },
   ],
   footerLinks: {
+    home: '/amethyst/Homepage.html',
     tradeBoard: '/amethyst/Trade.html',
+    joinTeam: '/amethyst/Join.html',
     catalog: 'https://bombparty.com',
     preOrders: 'https://bombparty.com',
     pastShows: '#events',
@@ -194,7 +197,13 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
 
 const lockedTweakDefaults: Omit<
   AmethystHomepageTweakDefaults,
-  'repName' | 'businessName' | 'tagline' | 'heroHeadline' | 'heroSub' | 'tickerTopText'
+  | 'repName'
+  | 'businessName'
+  | 'tagline'
+  | 'heroHeadline'
+  | 'heroSub'
+  | 'heroMotion'
+  | 'tickerTopText'
 > = {
   buttonStyle: 'sparkle',
   tickerVariant: 'dual',
@@ -206,7 +215,6 @@ const lockedTweakDefaults: Omit<
   showWibp: true,
   showAbout: true,
   showSignup: true,
-  showJoinCta: true,
   showFooter: true,
   showNicNac: true,
   eventCount: 2,
@@ -238,11 +246,12 @@ export function buildAmethystHomepageTweakDefaults(
   appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystHomepageTweakDefaults {
   return applyAmethystAppearancePreset({
-    repName: data.repName,
+    repName: getPublicRepName(data.repName),
     businessName: data.businessName,
     tagline: data.tagline,
     heroHeadline: data.heroHeadline,
-    heroSub: data.heroSub,
+    heroSub: redactPublicRepFullName(data.heroSub, data.repName),
+    heroMotion: data.heroMotion,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
   }, appearancePreset)
@@ -259,8 +268,18 @@ export function buildAmethystHomepageBootstrapScript(
   runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
   const targeted = Boolean(runtimeContext.targeted)
+  const publicData: AmethystHomepageTemplateData = {
+    ...data,
+    repName: getPublicRepName(data.repName),
+    heroSub: redactPublicRepFullName(data.heroSub, data.repName),
+    aboutHeadline: redactPublicRepFullName(data.aboutHeadline, data.repName),
+    aboutParagraphs: data.aboutParagraphs.map((paragraph) =>
+      redactPublicRepFullName(paragraph, data.repName),
+    ) as [string, string, string],
+    signupSub: redactPublicRepFullName(data.signupSub, data.repName),
+  }
   const defaults = {
-    ...buildAmethystHomepageTweakDefaults(data, appearancePreset),
+    ...buildAmethystHomepageTweakDefaults(publicData, appearancePreset),
     ...(targeted
       ? {
           showEvents: events.length > 0,
@@ -272,7 +291,7 @@ export function buildAmethystHomepageBootstrapScript(
 
   return [
     `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
-    `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(data)};`,
+    `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(publicData)};`,
     `window.HOMEPAGE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_HOMEPAGE_EVENTS = ${safeScriptJson(events)};`,
     `window.AMETHYST_APPLY_HOMEPAGE_TEMPLATE = function applyHomepageTemplate(currentTweaks) {`,
@@ -286,7 +305,6 @@ export function buildAmethystHomepageBootstrapScript(
     `  function href(selector, value) { var node = document.querySelector(selector); if (node && value) node.setAttribute('href', value); }`,
     `  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }`,
     `  function bindButton(selector, value) { var node = document.querySelector(selector); if (!node || !value) return; node.style.cursor = 'pointer'; node.onclick = function () { if (/^https?:\\/\\//.test(value)) window.open(value, '_blank', 'noopener,noreferrer'); else window.location.href = value; }; }`,
-    `  text('.hp-hero-eyebrow', content.heroEyebrow);`,
     `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
     `  text('[data-slot="about headline"]', content.aboutHeadline);`,
     `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,
@@ -295,19 +313,15 @@ export function buildAmethystHomepageBootstrapScript(
     `  text('.hp-signup-title', content.signupTitle);`,
     `  text('.hp-signup-sub', content.signupSub);`,
     `  html('.hp-signup-consent', (content.signupConsent || '') + ' <a href="' + (footerLinks.privacy || '#') + '">Privacy policy</a>.');`,
-    `  text('.hp-join-eyebrow', [tweaks.businessName || content.businessName, content.teamName].filter(Boolean).join(' · '));`,
-    `  text('.hp-join-title', content.joinTeamTitle);`,
-    `  text('.hp-join-sub', content.joinTeamSub);`,
     `  text('.hp-footer-tag', content.footerTagline);`,
     `  html('.hp-footer-bottom p', content.legalDisclaimer);`,
     `  href('.hp-shop-btn', streamLinks.shop || '#');`,
     `  href('.hp-hero-ctas .hp-btn-outline', streamLinks.shop || '#');`,
     `  href('.hp-hero-ctas .hp-btn-watch', streamLinks.watch || streamLinks.tiktok || '#');`,
-    `  href('.hp-join-cta .hp-btn-primary', content.joinTeamUrl || '#');`,
     `  href('.hp-signup-consent a', footerLinks.privacy || '#');`,
     `  all('.hp-footer-socials a').forEach(function (node, index) { if (socialLinks[index]) node.setAttribute('href', socialLinks[index].href); });`,
-    `  [footerLinks.tradeBoard, footerLinks.catalog, footerLinks.preOrders, footerLinks.pastShows].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(2) a')[index]; if (node && value) node.setAttribute('href', value); });`,
-    `  ['#about', content.joinTeamUrl || '#', footerLinks.faq || '#', footerLinks.contact || '#'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(3) a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  [footerLinks.home || '/amethyst/Homepage.html', footerLinks.tradeBoard || '/amethyst/Trade.html', footerLinks.joinTeam || '/amethyst/Join.html'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(2) a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  [footerLinks.faq || '#signup', footerLinks.contact || '#signup'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(3) a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `  [footerLinks.privacy, footerLinks.terms, footerLinks.accessibility].forEach(function (value, index) { var node = all('.legal-row a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `  (content.aboutMediaSlots || []).forEach(function (slot, index) { var card = document.querySelector('[data-slot="about media ' + (index + 1) + '"]'); if (!card || !slot) return; var typeNode = card.querySelector('.hp-about-media-type'); var captionNode = card.querySelector('.hp-about-media-caption'); if (typeNode && slot.typeLabel) typeNode.textContent = slot.typeLabel; if (captionNode && slot.caption) captionNode.textContent = slot.caption; if (slot.mediaUrl) { card.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.24), rgba(14, 8, 32, 0.52)), url("' + slot.mediaUrl + '")'; card.style.backgroundPosition = 'center'; card.style.backgroundSize = 'cover'; } if (slot.href) { card.style.cursor = 'pointer'; card.onclick = function () { if (/^https?:\\/\\//.test(slot.href)) window.open(slot.href, '_blank', 'noopener,noreferrer'); else window.location.href = slot.href; }; } });`,
     `};`,

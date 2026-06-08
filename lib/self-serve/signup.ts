@@ -156,7 +156,7 @@ export async function createSelfServeWorkspaceForAuthUser(
         tagline: `A polished place to shop ${displayName}.`,
         team_name: displayName,
         show_join_page: true,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         customer_site_template: 'amethyst',
         appearance_preset: 'sparkle_suite_morganite',
       },

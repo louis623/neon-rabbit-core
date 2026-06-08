@@ -14,11 +14,12 @@ const {
 // Tweak defaults are bootstrapped from the Next app so the locked export can
 // read structured rep data without changing layout or motion behavior.
 const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
-  repName: "Sasha Rivera",
+  repName: "Sasha",
   businessName: "Sparkle by Sasha",
   tagline: "Live jewelry reveals every Tuesday - joy you can hold.",
   heroHeadline: "Real jewelry. Live reveals. Pure sparkle.",
-  heroSub: "I'm Sasha Rivera - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  heroSub: "I'm Sasha - every Tuesday at 8pm CST I open Bomb Party boxes live and you watch what's inside, real time.",
+  heroMotion: "sparkle_rise",
   buttonStyle: "sparkle",
   tickerVariant: "dual",
   nicNacStyle: "square",
@@ -29,7 +30,6 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   showWibp: true,
   showAbout: true,
   showSignup: true,
-  showJoinCta: true,
   showFooter: true,
   showNicNac: true,
   eventCount: 2,
@@ -58,6 +58,23 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
 };
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
+
+function publicRepName(value, fallback = "your rep") {
+  const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+  if (!cleaned) return fallback;
+  return cleaned.split(" ")[0] || fallback;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function redactPublicRepText(text, repName) {
+  const value = String(text || "");
+  const cleaned = String(repName || "").trim().replace(/\s+/g, " ");
+  if (!cleaned || !cleaned.includes(" ")) return value;
+  return value.replace(new RegExp(escapeRegExp(cleaned), "g"), publicRepName(cleaned));
+}
 const DEFAULT_HOMEPAGE_EVENTS = [
   {
     id: "default-homepage-event-1",
@@ -123,12 +140,46 @@ function getTradeBoardHref() {
   return CONTENT.footerLinks?.tradeBoard || "/amethyst/Trade.html";
 }
 
-function getWatchHref() {
-  return CONTENT.streamLinks?.watch || CONTENT.streamLinks?.tiktok || "#";
+function getLiveShowWatchHref(event) {
+  const platforms = Array.isArray(event?.platforms) ? event.platforms : [];
+  const preferred = platforms.find((platform) => platform?.href && platform.kind === "tt")
+    || platforms.find((platform) => platform?.href);
+
+  return preferred?.href || null;
 }
 
-function getJoinTeamHref() {
-  return CONTENT.joinTeamUrl || "/amethyst/Join.html";
+function getWatchHref(liveShow) {
+  return getLiveShowWatchHref(liveShow) || CONTENT.streamLinks?.watch || CONTENT.streamLinks?.tiktok || "#";
+}
+
+function getWatchCtaLabel(isLive) {
+  if (isLive) return "Watch Live";
+  if (CONTENT.streamLinks?.tiktok) return "Watch on TikTok";
+  if (CONTENT.streamLinks?.facebook) return "Watch on Facebook";
+  return "Watch updates";
+}
+
+function ComingSoonNavItem({ label = "Join Team" }) {
+  return (
+    <span
+      className="hp-header-link hp-header-link-disabled"
+      aria-disabled="true"
+      aria-label={`${label} coming soon`}
+      title={`${label} is coming soon`}
+    >
+      <span>{label}</span>
+      <span className="hp-coming-soon-badge" aria-hidden="true">Soon</span>
+    </span>
+  );
+}
+
+function ComingSoonFooterItem({ label = "Join the team" }) {
+  return (
+    <span className="hp-footer-coming-soon" aria-label={`${label} coming soon`}>
+      {label}
+      <span aria-hidden="true">Soon</span>
+    </span>
+  );
 }
 
 function getUnsubscribeHref() {
@@ -163,6 +214,46 @@ function getAboutMediaSlot(index) {
   return CONTENT.aboutMediaSlots?.[index] || null;
 }
 
+function SocialLogo({ label, shortLabel }) {
+  const key = `${label || ""} ${shortLabel || ""}`.toLowerCase();
+
+  if (key.includes("tiktok") || key.includes("tt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16.6 3c.4 2.4 1.9 4 4.2 4.3v3.4c-1.6 0-3-.4-4.2-1.3v6.2c0 3.4-2.5 5.7-5.8 5.7-3.1 0-5.5-2.1-5.5-5.1 0-3.2 2.5-5.3 5.8-5.3.4 0 .8 0 1.1.1v3.4c-.4-.1-.8-.2-1.2-.2-1.4 0-2.4.8-2.4 2s.9 2 2.2 2c1.4 0 2.3-.9 2.3-2.8V3h3.5Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("facebook") || key.includes("fb")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14.2 8.1V6.6c0-.7.5-.9.9-.9h2.3V2.2L14.2 2c-3.2 0-4.8 1.9-4.8 5.1v1H7v3.8h2.4V22h4.2V11.9h3.1l.5-3.8h-3Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("instagram") || key.includes("ig")) {
+    return (
+      <svg className="hp-footer-social-logo hp-footer-social-logo-stroke" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.4" />
+        <circle cx="17" cy="7" r="1" />
+      </svg>
+    );
+  }
+
+  if (key.includes("youtube") || key.includes("yt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.4V8.6l5.9 3.4-5.9 3.4Z" />
+      </svg>
+    );
+  }
+
+  return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
+}
+
 function aboutMediaStyle(slot) {
   if (!slot?.mediaUrl) return undefined;
   return {
@@ -170,6 +261,21 @@ function aboutMediaStyle(slot) {
     backgroundPosition: "center",
     backgroundSize: "cover",
   };
+}
+
+function isScheduledShowLive(event, now = Date.now()) {
+  const startAt = Date.parse(event?.eventTime || "");
+  if (Number.isNaN(startAt)) return false;
+
+  const durationMinutes = Number(event.durationMinutes) > 0 ? Number(event.durationMinutes) : 60;
+  const endAt = startAt + durationMinutes * 60 * 1000;
+  return now >= startAt && now < endAt;
+}
+
+function getActiveLiveShow(now = Date.now()) {
+  return HOMEPAGE_EVENT_PAYLOAD
+    .map((event) => normalizeHomepageEvent(event))
+    .find((event) => isScheduledShowLive(event, now)) || null;
 }
 
 const LIVE_QUEUE_NAMES = [
@@ -199,6 +305,7 @@ const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map(
 // ============================================================
 const PRESETS = {
   amethyst: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "glittery", bgTreatment: "confetti", cardSurface: "holographic",
     textureOverlay: "sparkle", buttonEnergy: "calm", ctaEmphasis: "standard",
     tradeFlair: "holo-unicorn", cursorEffect: "sparkle", saturation: 130,
@@ -206,6 +313,7 @@ const PRESETS = {
     headingFont: "italiana", bodyFont: "inter", headingWeight: 600,
   },
   sparkle_suite_morganite: {
+    heroMotion: "soft_glow",
     sparkleLevel: "subtle", bgTreatment: "suite-paper", cardSurface: "warm-paper",
     textureOverlay: "none", buttonEnergy: "suite-lift", ctaEmphasis: "standard",
     tradeFlair: "soft-pink-lift", cursorEffect: "default", saturation: 104,
@@ -213,6 +321,7 @@ const PRESETS = {
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 500,
   },
   black_diamond: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "glittery", bgTreatment: "black-velvet", cardSurface: "dark-metallic",
     textureOverlay: "sparkle", buttonEnergy: "diamond-lift", ctaEmphasis: "standard",
     tradeFlair: "cyan-diamond", cursorEffect: "default", saturation: 112,
@@ -220,6 +329,7 @@ const PRESETS = {
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
   rose_gold: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
     textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
     tradeFlair: "champagne-rose", cursorEffect: "default", saturation: 108,
@@ -227,6 +337,7 @@ const PRESETS = {
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
   garnet: {
+    heroMotion: "soft_glow",
     sparkleLevel: "subtle", bgTreatment: "garnet-shell", cardSurface: "blush-shell",
     textureOverlay: "none", buttonEnergy: "garnet-lift", ctaEmphasis: "standard",
     tradeFlair: "ruby-polish", cursorEffect: "default", saturation: 112,
@@ -234,6 +345,7 @@ const PRESETS = {
     headingFont: "boska", bodyFont: "switzer", headingWeight: 600,
   },
   amber: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "subtle", bgTreatment: "amber-paper", cardSurface: "sunlit-pearl",
     textureOverlay: "none", buttonEnergy: "amber-pop", ctaEmphasis: "standard",
     tradeFlair: "citrine-glow", cursorEffect: "default", saturation: 116,
@@ -241,6 +353,7 @@ const PRESETS = {
     headingFont: "melodrama", bodyFont: "nunito", headingWeight: 600,
   },
   velvet: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "glittery", bgTreatment: "velvet-orchid", cardSurface: "plush-orchid",
     textureOverlay: "sparkle", buttonEnergy: "velvet-lift", ctaEmphasis: "standard",
     tradeFlair: "orchid-gloss", cursorEffect: "default", saturation: 110,
@@ -248,6 +361,7 @@ const PRESETS = {
     headingFont: "bitter", bodyFont: "archivo", headingWeight: 600,
   },
   rose_quartz: {
+    heroMotion: "sparkle_rise",
     sparkleLevel: "glittery", bgTreatment: "quartz-paper", cardSurface: "pink-quartz",
     textureOverlay: "sparkle", buttonEnergy: "quartz-pop", ctaEmphasis: "standard",
     tradeFlair: "pink-spark", cursorEffect: "default", saturation: 114,
@@ -306,7 +420,7 @@ function LRQRail({ state }) {
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--fg-muted)" }} />
             Live Reveal Queue
           </div>
-          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Show ended — see you next Tuesday at 8pm CST.</div>
+          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Queue opens when the next scheduled show starts.</div>
         </div>
       </div>
     );
@@ -364,13 +478,13 @@ function LRQRail({ state }) {
 // ============================================================
 // Hero (HE2)
 // ============================================================
-function Hero({ t }) {
+function Hero({ t, isLive, liveShow }) {
   return (
     <section className="hp-hero">
-      <div className="hp-hero-media placeholder slot" data-slot="hero photo" />
+      <div className="hp-hero-media" aria-hidden="true" />
+      <SparkleFx level={t.sparkleLevel} motion={t.heroMotion} />
       <div className="hp-hero-inner">
         <div>
-          <div className="hp-hero-eyebrow">{t.heroEyebrow || "Live schedule coming soon"}</div>
           <h1 className="hp-hero-headline slot" data-slot="hero headline">
             {t.heroHeadline.split(/(?<=[.!?])\s+/).map((line, i) => (
               <span key={i} style={{ display: 'block' }}>{line}</span>
@@ -383,7 +497,10 @@ function Hero({ t }) {
               <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
             </a>
             <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
-            <a {...linkProps(getWatchHref())} className="hp-btn-outline hp-btn-watch"><span className="hp-watch-dot" />Watch Live</a>
+            <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
+              {isLive && <span className="hp-watch-dot" />}
+              {getWatchCtaLabel(isLive)}
+            </a>
           </div>
         </div>
       </div>
@@ -440,13 +557,12 @@ function LiveQueueStrip({ state, onOpen }) {
       <section className="hp-trade-preview">
         <div className="hp-trade-preview-inner">
           <div className="hp-trade-preview-head">
-            <span className="live-dot" style={{ background: "var(--fg-muted)" }} />
-            <span>Live Reveal Queue</span>
+            <span>Reveal Queue</span>
           </div>
           <div className="hp-trade-preview-items" style={{ color: "var(--fg-muted)" }}>
-            Show ended — see you next Tuesday at 8pm CST.
+            Queue opens when the next scheduled show starts.
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue ↗</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View queue ↗</button>
         </div>
       </section>
     );
@@ -529,7 +645,7 @@ function LiveQueueModal({ open, onClose, state }) {
         </div>
 
         {state === "offline" ? (
-          <div className="hp-queue-modal-empty">No show is running right now. Check back Tuesday at 8pm CST.</div>
+          <div className="hp-queue-modal-empty">No show is running right now. Check the calendar for the next scheduled reveal.</div>
         ) : state === "loading" ? (
           <div className="hp-queue-modal-empty">Loading queue…</div>
         ) : state === "empty" || LIVE_QUEUE_ENTRIES.length === 0 ? (
@@ -899,18 +1015,15 @@ function AboutSection({ repName }) {
           </div>
 
           <div className="hp-about-media-grid">
-            <div className="hp-about-media-card hp-about-media-card-tall slot" data-slot="about media 1">
-              <div className="hp-about-media-type">TikTok or reel</div>
+            <div className="hp-about-media-card slot" data-slot="about media 1">
+              <div className="hp-about-media-type">About media 1</div>
               <div className="hp-about-media-play">â–¶</div>
-              <div className="hp-about-media-caption">Drop in a TikTok, short reel, or vertical intro video.</div>
+              <div className="hp-about-media-caption">Photo or short social video. Ask Nic-Nac to place it in About media 1.</div>
             </div>
             <div className="hp-about-media-card slot" data-slot="about media 2">
-              <div className="hp-about-media-type">Photo</div>
-              <div className="hp-about-media-caption">Add a lifestyle photo, show setup image, or team snapshot.</div>
-            </div>
-            <div className="hp-about-media-card slot" data-slot="about media 3">
-              <div className="hp-about-media-type">Photo or video</div>
-              <div className="hp-about-media-caption">Use this slot for another customer-facing image, embed, or promo clip.</div>
+              <div className="hp-about-media-type">About media 2</div>
+              <div className="hp-about-media-play">▶</div>
+              <div className="hp-about-media-caption">Optional second photo or short social video. Ask Nic-Nac to place it in About media 2.</div>
             </div>
           </div>
         </div>
@@ -1054,42 +1167,9 @@ function Signup({ repName, businessName }) {
 }
 
 // ============================================================
-// Join Team CTA
-// ============================================================
-function JoinCta() {
-  return (
-    <section className="hp-join-cta" id="join-team">
-      <div className="hp-join-cta-inner">
-        <div className="hp-join-eyebrow">Sparkle by Sasha · Sparkle by Sasha</div>
-        <h2 className="hp-join-title">Want to do this too?</h2>
-        <p className="hp-join-sub">
-          Join my team. I'll show you how I built a real business doing live jewelry reveals on my own schedule —
-          and Sparkle Suite gives you the site to run it.
-        </p>
-        <a {...linkProps(getJoinTeamHref())} className="hp-btn-primary hp-btn-sparkle solid-light">
-          See what's in it for you
-          <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
-        </a>
-      </div>
-    </section>
-  );
-}
-
-// ============================================================
 // Footer
 // ============================================================
 function Footer({ businessName }) {
-  const footerColumn = RUNTIME_CONTEXT.targeted
-    ? null
-    : {
-        title: "Hosting Soon",
-        links: [
-          { label: "Halloween Spook-tacular · Oct 29", href: "#" },
-          { label: "Holiday Gift Guide · Nov 24", href: "#" },
-          { label: "Year-end Sparkle · Dec 17", href: "#" },
-        ],
-      };
-
   return (
     <footer className="hp-footer">
       <div className="hp-footer-inner">
@@ -1097,40 +1177,37 @@ function Footer({ businessName }) {
           <div className="hp-footer-brand slot" data-slot="business name">{businessName}</div>
           <p className="hp-footer-tag">Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.</p>
           <div className="hp-footer-socials">
-            <a href="#" className="hp-footer-social">TT</a>
-            <a href="#" className="hp-footer-social">FB</a>
-            <a href="#" className="hp-footer-social">IG</a>
-            <a href="#" className="hp-footer-social">YT</a>
+            {[
+              { label: "TikTok", shortLabel: "TT" },
+              { label: "Facebook", shortLabel: "FB" },
+              { label: "Instagram", shortLabel: "IG" },
+              { label: "YouTube", shortLabel: "YT" },
+            ].map((social) => (
+              <a
+                key={social.shortLabel}
+                {...linkProps(getSocialHref(social.shortLabel))}
+                className="hp-footer-social"
+                aria-label={social.label}
+                title={social.label}
+              >
+                <SocialLogo {...social} />
+              </a>
+            ))}
           </div>
         </div>
         <div className="hp-footer-col">
-          <h4>Shop</h4>
           <ul>
-            <li><a href="#">Trade Board</a></li>
-            <li><a href="#">Bomb Party Catalog</a></li>
-            <li><a href="#">Pre-orders</a></li>
-            <li><a href="#">Past shows</a></li>
+            <li><a {...linkProps(CONTENT.footerLinks?.home || withCurrentSearch("/amethyst/Homepage.html"))}>Home</a></li>
+            <li><a {...linkProps(getTradeBoardHref())}>Trade Board</a></li>
+            <li><a {...linkProps(CONTENT.footerLinks?.joinTeam || withCurrentSearch("/amethyst/Join.html"))}>Join Team</a></li>
           </ul>
         </div>
         <div className="hp-footer-col">
-          <h4>About</h4>
           <ul>
-            <li><a href="#about">My story</a></li>
-            <li><a href="#">Join the team</a></li>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a {...linkProps(CONTENT.footerLinks?.faq || "#signup")}>FAQ</a></li>
+            <li><a {...linkProps(CONTENT.footerLinks?.contact || "#signup")}>Contact</a></li>
           </ul>
         </div>
-        {footerColumn ? (
-          <div className="hp-footer-col slot" data-slot="optional 4th column">
-            <h4>{footerColumn.title}</h4>
-            <ul>
-              {footerColumn.links.map((link) => (
-                <li key={link.label}><a href={link.href}>{link.label}</a></li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
       </div>
       <div className="hp-footer-bottom">
         <div className="legal-row">
@@ -1146,25 +1223,9 @@ function Footer({ businessName }) {
 }
 
 // ============================================================
-// Nic-Nac launcher
-// ============================================================
-function NicNac() {
-  return (
-    <div className="hp-nic-nac">
-      <button className="hp-nic-nac-btn" aria-label="Open Nic-Nac">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
-        </svg>
-        <span className="spark" />
-      </button>
-    </div>
-  );
-}
-
-// ============================================================
 // Sparkle FX layer
 // ============================================================
-function SparkleFx({ level }) {
+function SparkleFx({ level, motion }) {
   const counts = { none: 0, subtle: 8, glittery: 24, maximum: 60 };
   const n = counts[level] || 0;
   const sparkles = useMemo(() => {
@@ -1175,9 +1236,15 @@ function SparkleFx({ level }) {
       size: 0.5 + Math.random() * 1.2,
     }));
   }, [n]);
+
+  if (motion === "still") return null;
+  if (motion === "soft_glow") {
+    return <div className="hp-fx-layer hp-hero-fx-layer hp-fx-layer-glow" aria-hidden="true" />;
+  }
+
   if (!n) return null;
   return (
-    <div className="hp-fx-layer" aria-hidden="true">
+    <div className="hp-fx-layer hp-hero-fx-layer" aria-hidden="true">
       {sparkles.map((s, i) => (
         <span key={i} className="hp-fx-sparkle" style={{
           left: `${s.left}%`,
@@ -1197,6 +1264,11 @@ function SparkleFx({ level }) {
 function App() {
   const [t, setTweak] = useTweaks(DEFAULTS);
   const [queueOpen, setQueueOpen] = useState(false);
+  const repName = publicRepName(t.repName);
+  const [now, setNow] = useState(() => Date.now());
+  const activeLiveShow = useMemo(() => getActiveLiveShow(now), [now]);
+  const scheduleIsLive = Boolean(activeLiveShow);
+  const effectiveLrqState = scheduleIsLive ? t.lrqState : "offline";
 
   useEffect(() => {
     applyTargetedMetadata(
@@ -1289,6 +1361,11 @@ function App() {
     window.AMETHYST_APPLY_HOMEPAGE_TEMPLATE?.(t);
   }, [t]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const applyPreset = (p) => {
     const presetVals = PRESETS[p];
     if (!presetVals) return;
@@ -1297,56 +1374,53 @@ function App() {
 
   return (
     <>
-      <SparkleFx level={t.sparkleLevel} />
+      <div className="hp-sticky-stack">
+        {/* Header */}
+        <header className="hp-header">
+          <div className="hp-header-inner">
+            <div className="hp-brand">
+              <div className="hp-brand-name slot" data-slot="business name">{t.businessName}</div>
+              <div className="hp-brand-sub">
+                {scheduleIsLive && <span className="hp-live-dot" aria-hidden="true"></span>}
+                {scheduleIsLive ? "Live now" : "Jewelry reveals"}
+              </div>
+            </div>
+            <nav className="hp-header-nav" aria-label="Primary">
+              <a href="#top" className="hp-header-link" aria-current="page">Home</a>
+              <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
+              <ComingSoonNavItem />
+            </nav>
+            <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
+          </div>
+        </header>
+
+        {/* Ticker */}
+        {t.showTicker && <Ticker topText={t.tickerTopText} />}
+
+        {t.showLrq && <LiveQueueStrip state={effectiveLrqState} onOpen={() => setQueueOpen(true)} />}
+      </div>
 
       <div className="hp-saturate" id="top">
-      {/* Header */}
-      <header className="hp-header">
-        <div className="hp-header-inner">
-          <nav className="hp-header-nav" aria-label="Primary">
-            <a href="#top" className="hp-header-link" aria-current="page">Home</a>
-            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
-            <a {...linkProps(getJoinTeamHref())} className="hp-header-link">Join Team</a>
-          </nav>
-          <div className="hp-brand">
-            <div className="hp-brand-name slot" data-slot="business name">{t.businessName}</div>
-            <div className="hp-brand-sub">Live jewelry reveals</div>
-          </div>
-          <a {...linkProps(getShopHref())} className="hp-shop-btn">Shop</a>
-        </div>
-      </header>
-
-      {/* Ticker */}
-      {t.showTicker && <Ticker topText={t.tickerTopText} />}
-
-      {t.showLrq && <LiveQueueStrip state={t.lrqState} onOpen={() => setQueueOpen(true)} />}
-
       {/* Hero */}
-      {t.showHero && <Hero t={t} />}
+      {t.showHero && <Hero t={{ ...t, heroSub: redactPublicRepText(t.heroSub, t.repName) }} isLive={scheduleIsLive} liveShow={activeLiveShow} />}
 
       {/* Events */}
       {t.showEvents && <Events count={t.eventCount} />}
 
       {/* What is a Bomb Party */}
-      {t.showWibp && <Wibp repName={t.repName} />}
+      {t.showWibp && <Wibp repName={repName} />}
 
       {/* About */}
-      {t.showAbout && <AboutSection repName={t.repName} />}
+      {t.showAbout && <AboutSection repName={repName} />}
 
       {/* Signup */}
-      {t.showSignup && <Signup repName={t.repName} businessName={t.businessName} />}
-
-      {/* Join Team CTA */}
-      {t.showJoinCta && <JoinCta />}
+      {t.showSignup && <Signup repName={repName} businessName={t.businessName} />}
 
       {/* Footer */}
       {t.showFooter && <Footer businessName={t.businessName} />}
       </div>
 
-      {/* Nic-Nac */}
-      {t.showNicNac && <NicNac />}
-
-      <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} state={t.lrqState} />
+      <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} state={effectiveLrqState} />
 
       {/* TWEAKS PANEL */}
       <TweaksPanel title="Tweaks" subtitle="Tune the vibe" defaultWidth={380}>
@@ -1370,14 +1444,24 @@ function App() {
 
         <TweakSection title="Sparkle & motion">
           <TweakRadio
-            label="Sparkle level"
+            label="Hero motion"
+            value={t.heroMotion}
+            onChange={(v) => setTweak("heroMotion", v)}
+            options={[
+              { value: "sparkle_rise", label: "Sparkle rise" },
+              { value: "soft_glow", label: "Soft glow" },
+              { value: "still", label: "Still" },
+            ]}
+          />
+          <TweakRadio
+            label="Hero sparkle intensity"
             value={t.sparkleLevel}
             onChange={(v) => setTweak("sparkleLevel", v)}
             options={[
-              { value: "none", label: "None" },
+              { value: "none", label: "Off" },
               { value: "subtle", label: "Subtle" },
-              { value: "glittery", label: "Glittery" },
-              { value: "maximum", label: "Max" },
+              { value: "glittery", label: "Standard" },
+              { value: "maximum", label: "Extra" },
             ]}
           />
           <TweakRadio
@@ -1559,9 +1643,7 @@ function App() {
           <TweakToggle label="Bomb Party explainer" value={t.showWibp} onChange={(v) => setTweak("showWibp", v)} />
           <TweakToggle label="About section" value={t.showAbout} onChange={(v) => setTweak("showAbout", v)} />
           <TweakToggle label="Signup" value={t.showSignup} onChange={(v) => setTweak("showSignup", v)} />
-          <TweakToggle label="Join Team CTA" value={t.showJoinCta} onChange={(v) => setTweak("showJoinCta", v)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(v) => setTweak("showFooter", v)} />
-          <TweakToggle label="Nic-Nac launcher" value={t.showNicNac} onChange={(v) => setTweak("showNicNac", v)} />
         </TweakSection>
 
         <TweakSection title="Copy sandbox">

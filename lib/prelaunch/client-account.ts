@@ -233,7 +233,7 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
       ticker_visible: false,
       team_name: businessName,
       show_join_page: true,
-      hero_animation_type: 'zoom',
+      hero_animation_type: 'sparkle_rise',
     },
     { onConflict: 'rep_id' },
   )

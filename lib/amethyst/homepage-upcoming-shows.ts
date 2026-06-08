@@ -37,14 +37,18 @@ const PLATFORM_LINKS = {
   facebook: { kind: 'fb', label: 'Watch on Facebook Live' },
 } as const
 
+function demoLiveEventTime() {
+  return new Date(Date.now() - 10 * 60 * 1000).toISOString()
+}
+
 export const defaultAmethystHomepageEvents: AmethystHomepageEventCard[] = [
   {
     id: 'default-homepage-event-1',
-    title: 'Unicorn Magic Drop',
-    description: 'Main live reveal',
-    eventTime: '2099-11-12T20:00:00.000Z',
+    title: 'Live Now Demo Reveal',
+    description: 'Local preview live-state demo',
+    eventTime: demoLiveEventTime(),
     timeZone: 'America/New_York',
-    durationMinutes: 60,
+    durationMinutes: 90,
     featured: true,
     codes: [
       { code: 'UNICORN15', desc: '15% off Unicorn tier boxes' },

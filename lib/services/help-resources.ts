@@ -49,7 +49,7 @@ const HELP_RESOURCES: HelpResource[] = [
     title: 'Editing the public site, copy, links, and skin',
     summary: 'How to change the customer-facing details shoppers see first.',
     body:
-      'Use Site Settings for public-facing updates such as display name, business name, banner text, ticker text, tagline, hero image, social links, join-page visibility, and skin preset. These changes should feel like normal setup, not a custom build request.',
+      'Use Site Settings for public-facing updates such as display name, business name, ticker text, tagline, controlled hero motion, social links, join-page visibility, and skin preset. Custom hero image uploads are not part of the launch surface, so the site keeps a polished appearance.',
     quickActions: ['Open site settings', 'Choose skin preset', 'Update public links'],
     video: {
       title: 'Public site editing walkthrough',
@@ -157,7 +157,7 @@ const HELP_RESOURCES: HelpResource[] = [
     id: 'site-tweaks',
     category: 'Site settings',
     title: 'Fast site tweaks reps make most often',
-    summary: 'Banner text, ticker copy, hero image, join-page visibility, and social handles.',
+    summary: 'Ticker copy, controlled hero motion, join-page visibility, and social handles.',
     body:
       'Site settings are for the fast public-facing tweaks shoppers notice first. Use them when your show cadence changes, your recruitment push changes, or you want cleaner branding without editing code.',
     quickActions: ['Open site settings', 'Update banner text', 'Hide join page'],

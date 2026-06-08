@@ -60,7 +60,11 @@ function normalizeEmail(value: string | undefined) {
 function normalizeHeroAnimationType(
   value: string | null | undefined,
 ): HeroAnimationType {
-  return value === 'pan' ? 'pan' : 'zoom'
+  if (value === 'still' || value === 'sparkle_rise' || value === 'soft_glow') {
+    return value
+  }
+  if (value === 'pan') return 'soft_glow'
+  return 'sparkle_rise'
 }
 
 function normalizeSocialHandles(
@@ -189,10 +193,14 @@ export async function updateSiteSettingsDashboard(
     siteSettingsPatch.hero_image_url = normalizeNullableText(input.heroImageUrl)
   }
   if (input.heroAnimationType !== undefined) {
-    if (input.heroAnimationType !== 'zoom' && input.heroAnimationType !== 'pan') {
+    if (
+      input.heroAnimationType !== 'still' &&
+      input.heroAnimationType !== 'sparkle_rise' &&
+      input.heroAnimationType !== 'soft_glow'
+    ) {
       throw errors.INVALID_INPUT(
-        'heroAnimationType must be zoom or pan',
-        'Hero animation must be zoom or pan.',
+        'heroAnimationType must be still, sparkle_rise, or soft_glow',
+        'Hero motion must be Still, Sparkle rise, or Soft glow.',
       )
     }
     siteSettingsPatch.hero_animation_type = input.heroAnimationType

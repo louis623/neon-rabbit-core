@@ -9,6 +9,33 @@ import {
 } from '@/lib/amethyst/homepage-template-data'
 
 describe('Amethyst homepage template data wiring', () => {
+  it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const trade = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    for (const jsx of [homepage, trade, join]) {
+      expect(jsx).not.toContain('aria-label="Open Nic-Nac"')
+      expect(jsx).not.toContain('className="hp-nic-nac"')
+      expect(jsx).not.toContain('label="Nic-Nac launcher"')
+    }
+    expect(css).not.toContain('.hp-nic-nac')
+    expect(css).not.toContain('hp-nic-nac-spark')
+  })
+
   it('keeps locked public fallback exports on the shared demo identity', () => {
     const files = [
       'public/amethyst/Homepage.html',
@@ -23,6 +50,7 @@ describe('Amethyst homepage template data wiring', () => {
     const serialized = files.join('\n')
 
     expect(serialized).toContain('Sparkle by Sasha')
+    expect(serialized).not.toContain('Sasha Rivera')
     expect(serialized).not.toMatch(/\b(?:Rep Name|Show Name)\b/)
     expect(serialized).not.toContain("Jane's Sparkle Party")
   })
@@ -70,20 +98,31 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-header-nav[\s\S]*?max-width:\s*100%;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-header-link[\s\S]*?font-size:\s*12px;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-ticker-track[\s\S]*?min-width:\s*max-content;/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-trade-preview[\s\S]*?top:\s*var\(--hp-mobile-sticky-trade-top\);/)
+    expect(css).toContain('.hp-sticky-stack')
+    expect(css).toMatch(/\.hp-sticky-stack\s*\{[\s\S]*?position:\s*sticky;/)
+    expect(css).toMatch(/body\.homepage\s+#root,[\s\S]*?body\.tradepage\s+#root,[\s\S]*?body\.joinpage\s+#root\s*\{[\s\S]*?overflow:\s*visible;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-header-link[\s\S]*?min-height:\s*44px;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-queue-modal-close[\s\S]*?min-width:\s*44px;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?transition-duration:\s*0\.01ms\s*!important;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.hp-ticker-track[\s\S]*?animation:\s*none\s*!important;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?body\.tex-sparkle::before[\s\S]*?animation:\s*none\s*!important;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?body\.cta-pulse\s+\.hp-btn-primary:not\(\.outline\)[\s\S]*?animation:\s*none\s*!important;/)
+    expect(css).toMatch(/\.hp-hero-headline\s*\{[\s\S]*?line-height:\s*1\.08;/)
+    expect(css).toMatch(/\.hp-hero-headline\s*\{[\s\S]*?padding-block:\s*0\.04em 0\.12em;/)
+    expect(css).toMatch(/\.hp-hero-headline\s*\{[\s\S]*?overflow:\s*visible;/)
+    expect(css).toMatch(/\.hp-section-title\s*\{[\s\S]*?line-height:\s*1\.12;/)
+    expect(css).toMatch(/\.hp-section-title\s*\{[\s\S]*?padding-block:\s*0\.03em 0\.09em;/)
+    expect(css).toMatch(/\.hp-signup-title\s*\{[\s\S]*?line-height:\s*1\.14;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-headline[\s\S]*?font-size:\s*clamp\(36px,\s*10\.5vw,\s*48px\);/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-inner[\s\S]*?width:\s*100vw;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-inner[\s\S]*?margin-inline:\s*calc\(50% - 50vw\);/)
+    expect(css).toMatch(/\.hp-hero-inner\s*\{[\s\S]*?justify-content:\s*center;/)
+    expect(css).toMatch(/\.hp-hero-inner\s*\{[\s\S]*?text-align:\s*center;/)
+    expect(css).toMatch(/\.hp-hero-ctas\s*\{[\s\S]*?justify-content:\s*center;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-headline[\s\S]*?max-width:\s*11ch;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-headline[\s\S]*?padding-block:\s*0\.04em 0\.12em;/)
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-headline[\s\S]*?overflow-wrap:\s*anywhere;/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-media\.placeholder::after[\s\S]*?align-items:\s*flex-start;/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-hero-media\.placeholder::after[\s\S]*?text-align:\s*center;/)
+    expect(css).not.toContain('.hp-hero-media.placeholder::after')
   })
 
   it('maps structured editable content into the locked homepage tweak defaults', () => {
@@ -99,6 +138,7 @@ describe('Amethyst homepage template data wiring', () => {
       defaultAmethystHomepageTemplateData.heroHeadline,
     )
     expect(defaults.heroSub).toBe(defaultAmethystHomepageTemplateData.heroSub)
+    expect(defaults.heroMotion).toBe('soft_glow')
     expect(defaults.tickerTopText).toBe(
       defaultAmethystHomepageTemplateData.tickerTopText,
     )
@@ -115,6 +155,9 @@ describe('Amethyst homepage template data wiring', () => {
     expect(script).toContain('"aboutHeadline"')
     expect(script).toContain('"aboutParagraphs"')
     expect(script).toContain('"aboutMediaSlots"')
+    expect(script).toContain('"typeLabel":"About media 1"')
+    expect(script).toContain('"typeLabel":"About media 2"')
+    expect(script).toContain('"heroMotion"')
     expect(script).toContain('"streamLinks"')
     expect(script).toContain('"socialLinks"')
     expect(script).toContain('"eventTime"')
@@ -130,6 +173,27 @@ describe('Amethyst homepage template data wiring', () => {
     )
 
     expect(html).toContain('<script src="/api/amethyst/homepage-template"></script>')
+  })
+
+  it('uses two clear optional About media slots instead of a tiny three-card gallery', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('data-slot="about media 1"')
+    expect(jsx).toContain('data-slot="about media 2"')
+    expect(jsx).toContain('Ask Nic-Nac to place it in About media 1')
+    expect(jsx).toContain('Ask Nic-Nac to place it in About media 2')
+    expect(jsx).not.toContain('data-slot="about media 3"')
+    expect(jsx).not.toContain('hp-about-media-card-tall')
+    expect(css).toMatch(/\.hp-about-media-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/)
+    expect(css).toMatch(/\.hp-about-media-grid\s*\{[\s\S]*?grid-template-rows:\s*minmax\(420px,\s*1fr\);/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.hp-about-media-grid[\s\S]*?grid-template-columns:\s*1fr;/)
   })
 
   it('ships crawl and sharing metadata with the locked homepage export', () => {
@@ -151,7 +215,82 @@ describe('Amethyst homepage template data wiring', () => {
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })
 
-  it('wires the locked homepage export to the Trade and Join pages', () => {
+  it('uses real social media logo marks in the customer footer', () => {
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const unsubscribe = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/unsubscribe.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    for (const jsx of [homepage, unsubscribe]) {
+      expect(jsx).toContain('function SocialLogo')
+      expect(jsx).toContain('hp-footer-social-logo')
+      expect(jsx).toContain('aria-label={')
+      expect(jsx).not.toContain('className="hp-footer-social">TT</a>')
+      expect(jsx).not.toContain('className="hp-footer-social">FB</a>')
+      expect(jsx).not.toContain('className="hp-footer-social">IG</a>')
+      expect(jsx).not.toContain('className="hp-footer-social">YT</a>')
+    }
+    expect(css).toContain('.hp-footer-social-logo')
+    expect(css).toContain('.hp-footer-social-logo-stroke')
+  })
+
+  it('keeps the customer footer to two unlabeled navigation columns for launch', () => {
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const trade = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const shell = readFileSync(
+      resolve(process.cwd(), 'components/amethyst/site-shell.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    const footerLabels = ['Home', 'Trade Board', 'Join Team', 'FAQ', 'Contact']
+
+    for (const source of [homepage, trade, join]) {
+      for (const label of footerLabels) {
+        expect(source).toContain(`>${label}</a>`)
+      }
+      expect(source).not.toContain('Shop Now')
+      expect(source).not.toContain('Bomb Party Catalog')
+      expect(source).not.toContain('Pre-orders</a>')
+      expect(source).not.toContain('Past shows</a>')
+      expect(source).not.toContain('data-slot="optional 4th column"')
+      expect(source).not.toContain('<h4>{FOOTER_COLUMN')
+      expect(source).not.toContain('<h4>')
+      expect(source).not.toContain('Hosting Soon')
+    }
+    expect(shell).toContain('lg:grid-cols-[1.4fr_1fr_1fr]')
+    expect(shell).not.toContain('title:')
+    expect(shell).not.toContain('<h2')
+    expect(shell).not.toContain('FooterColumn title={content.footerColumn.title}')
+    expect(css).toContain('grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(120px, 1fr));')
+    expect(css).not.toContain('.hp-footer-col h4')
+    expect(css).toMatch(/\.hp-footer-col ul\s*\{[\s\S]*?gap:\s*4px;/)
+    expect(css).toMatch(/\.hp-footer-col a\s*\{[\s\S]*?min-height:\s*26px;/)
+    expect(css).toMatch(/\.hp-footer-bottom a\s*\{[\s\S]*?min-height:\s*24px;/)
+  })
+
+  it('wires the locked homepage export to Trade and parks Join Team as coming soon', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -159,7 +298,10 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('className="hp-header-nav"')
     expect(jsx).toContain('getTradeBoardHref()')
-    expect(jsx).toContain('getJoinTeamHref()')
+    expect(jsx).toContain('function ComingSoonNavItem')
+    expect(jsx).toContain('className="hp-header-link hp-header-link-disabled"')
+    expect(jsx).not.toContain('function JoinCta')
+    expect(jsx).not.toContain('showJoinCta')
   })
 
   it('renders one sticky live reveal queue strip under the ticker', () => {
@@ -180,21 +322,80 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).not.toContain('Next to reveal')
     expect(jsx).not.toContain('Open trade board')
     expect(jsx).not.toContain('<LiveQueueSection />')
+    expect(jsx).toContain('className="hp-sticky-stack"')
     expect(css).toContain('.hp-trade-preview')
     expect(css).toContain('.hp-queue-modal-mask')
     expect(css).toContain('position: sticky;')
-    expect(css).toContain('top: 144px;')
+    expect(css).toMatch(/\.hp-sticky-stack\s*\{[\s\S]*?top:\s*0;/)
+    expect(css).not.toContain('top: 144px;')
   })
 
-  it('uses a symmetrical header grid so the shared brand stays truly centered', () => {
+  it('derives live indicators from scheduled show windows instead of permanent live chrome', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function isScheduledShowLive')
+    expect(jsx).toContain('function getActiveLiveShow')
+    expect(jsx).toContain('const scheduleIsLive = Boolean(activeLiveShow)')
+    expect(jsx).toContain('const effectiveLrqState = scheduleIsLive ? t.lrqState : "offline"')
+    expect(jsx).toContain('{scheduleIsLive && <span className="hp-live-dot"')
+    expect(jsx).toContain('{scheduleIsLive ? "Live now" : "Jewelry reveals"}')
+    expect(jsx).toContain('getWatchCtaLabel(isLive)')
+    expect(jsx).toContain('Watch on TikTok')
+    expect(jsx).toContain('Queue opens when the next scheduled show starts.')
+    expect(jsx).toContain('<LiveQueueStrip state={effectiveLrqState}')
+    expect(jsx).toContain('state={effectiveLrqState}')
+  })
+
+  it('keeps hero visuals curated with controlled motion and intensity presets', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
       'utf8',
     )
 
-    expect(css).toContain('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);')
-    expect(css).toContain('justify-self: start;')
+    expect(jsx).toContain('function SparkleFx({ level, motion })')
+    expect(jsx).toContain('<div className="hp-hero-media" aria-hidden="true" />')
+    expect(jsx).not.toContain('className="hp-hero-eyebrow"')
+    expect(jsx).not.toContain('Live schedule coming soon')
+    expect(jsx).not.toContain('data-slot="hero photo"')
+    expect(jsx).not.toContain('rep-swappable via Nic-Nac')
+    expect(jsx).toContain('motion === "still"')
+    expect(jsx).toContain('motion === "soft_glow"')
+    expect(jsx).toContain('hp-fx-layer-glow')
+    expect(jsx).toContain('<SparkleFx level={t.sparkleLevel} motion={t.heroMotion} />')
+    expect(jsx).toContain('label="Hero motion"')
+    expect(jsx).toContain('label: "Sparkle rise"')
+    expect(jsx).toContain('label: "Soft glow"')
+    expect(jsx).toContain('label: "Still"')
+    expect(jsx).toContain('label="Hero sparkle intensity"')
+    expect(css).toContain('.hp-fx-layer-glow::before')
+    expect(css).toContain('.hp-fx-layer-glow::after')
+    expect(css).toContain('.hp-hero .hp-hero-fx-layer')
+    expect(css).toContain('@keyframes hp-fx-soft-glow')
+  })
+
+  it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('className="hp-live-dot"')
+    expect(jsx).toContain('Shop live')
+    expect(css).toContain('grid-template-columns: minmax(190px, 1fr) auto minmax(160px, 1fr);')
+    expect(css).toContain('justify-self: center;')
     expect(css).toContain('justify-self: end;')
+    expect(css).toContain('backdrop-filter: blur(18px);')
   })
 
   it('hydrates the locked homepage events from runtime data and keeps the show-card behaviors wired', () => {
@@ -274,11 +475,29 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
 
     expect(jsx).toContain('black_diamond')
     expect(jsx).toContain('Black Diamond')
     expect(html).toContain('DM+Sans')
     expect(html).toContain('Playfair+Display')
+    expect(css).toContain('body.bg-black-velvet .hp-ticker')
+    expect(css).toContain('body.bg-black-velvet .hp-ticker-row')
+    expect(css).toContain('body.bg-black-velvet .hp-trade-preview')
+    expect(css).toContain('body.bg-black-velvet .hp-trade-preview-pill')
+    expect(css).toContain('body.bg-black-velvet.tex-sparkle::before')
+    expect(css).toContain('body.bg-black-velvet .hp-hero::after')
+    expect(css).toContain('body.bg-black-velvet #events')
+    expect(css).toContain('body.bg-black-velvet #wibp')
+    expect(css).toContain('body.bg-black-velvet .hp-footer')
+    expect(css).toContain('--hp-form-panel-bg: rgba(8, 8, 8, 0.66);')
+    expect(css).toContain('body.bg-black-velvet .hp-signup-submit')
+    expect(css).toContain('color: #f9f3ec;')
+    expect(css).toMatch(/\.hp-queue-modal-row\s*\{[\s\S]*?color:\s*#2b1b1f;/)
+    expect(css).toMatch(/\.hp-queue-modal-row \.name\s*\{[\s\S]*?color:\s*#2b1b1f;/)
   })
 
   it('ships the Rose Gold skin in the local homepage preset picker', () => {
@@ -306,6 +525,10 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
 
     expect(jsx).toContain('garnet')
     expect(jsx).toContain('Garnet')
@@ -317,6 +540,9 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('Rose Quartz')
     expect(html).toContain('Bitter')
     expect(html).toContain('Nunito')
+    expect(css).toContain('body.bg-suite-paper .hp-signup-submit')
+    expect(css).toContain('body.bg-amber-paper .hp-signup-submit')
+    expect(css).toContain('body.bg-quartz-paper .hp-signup-submit')
   })
 
   it('does not ship legacy placeholder skins in the local homepage preset picker', () => {

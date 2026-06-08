@@ -216,6 +216,6 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     },
     defaultProviderActions: [],
     nextAction:
-      'Add rendered mobile viewport smoke for /prelaunch, /nic-nac, and Amethyst homepage, trade, and join surfaces.',
+      'Add rendered mobile viewport smoke for /prelaunch, /nic-nac, and Amethyst homepage and trade surfaces.',
   },
 ]

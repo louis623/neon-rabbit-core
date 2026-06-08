@@ -2,6 +2,7 @@ import {
   applyAmethystAppearancePreset,
   type AmethystAppearancePresetId,
 } from './appearance-presets'
+import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
 
 export interface AmethystJoinSocialLink {
   label: string
@@ -131,7 +132,7 @@ export interface AmethystJoinTweakDefaults {
 }
 
 export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
-  repName: 'Sasha Rivera',
+  repName: 'Sasha',
   repCity: 'Austin',
   repState: 'Texas',
   businessName: 'Sparkle by Sasha',
@@ -179,12 +180,8 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
     accessibility: '#faq',
   },
   footerColumn: {
-    title: 'Hosting Soon',
-    links: [
-      { label: 'Halloween Spook-tacular · Oct 29', href: '#faq' },
-      { label: 'Holiday Gift Guide · Nov 24', href: '#faq' },
-      { label: 'Year-end Sparkle · Dec 17', href: '#faq' },
-    ],
+    title: '',
+    links: [],
   },
   teamMembers: [
     {
@@ -315,15 +312,15 @@ export function buildAmethystJoinTweakDefaults(
 ): AmethystJoinTweakDefaults {
   return applyAmethystAppearancePreset({
     teamName: data.teamName,
-    repName: data.repName,
+    repName: getPublicRepName(data.repName),
     repCity: data.repCity,
     repState: data.repState,
     businessName: data.businessName,
     teamMemberCount: data.teamMembers.length,
     promoText: data.promoText,
-    heroPitch: data.heroPitch,
+    heroPitch: redactPublicRepFullName(data.heroPitch, data.repName),
     heroCtaText: data.heroCtaText,
-    finalPitch: data.finalPitch,
+    finalPitch: redactPublicRepFullName(data.finalPitch, data.repName),
     bpReferralUrl: data.bpReferralUrl,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
@@ -340,20 +337,37 @@ export function buildAmethystJoinBootstrapScript(
   runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
   const targeted = Boolean(runtimeContext.targeted)
+  const publicData: AmethystJoinTemplateData = {
+    ...data,
+    repName: getPublicRepName(data.repName),
+    heroPitch: redactPublicRepFullName(data.heroPitch, data.repName),
+    finalPitch: redactPublicRepFullName(data.finalPitch, data.repName),
+    faqAnswers: {
+      ...data.faqAnswers,
+      whatIsTeam: redactPublicRepFullName(data.faqAnswers.whatIsTeam, data.repName),
+      experience: redactPublicRepFullName(data.faqAnswers.experience, data.repName),
+      timeCommitment: redactPublicRepFullName(
+        data.faqAnswers.timeCommitment,
+        data.repName,
+      ),
+      support: redactPublicRepFullName(data.faqAnswers.support, data.repName),
+      income: redactPublicRepFullName(data.faqAnswers.income, data.repName),
+    },
+  }
   const defaults = {
-    ...buildAmethystJoinTweakDefaults(data, appearancePreset),
+    ...buildAmethystJoinTweakDefaults(publicData, appearancePreset),
     ...(targeted
       ? {
-          showTeam: data.teamMembers.length > 0,
-          teamMemberCount: data.teamMembers.length,
-          showPromo: Boolean(data.promoText),
+          showTeam: publicData.teamMembers.length > 0,
+          teamMemberCount: publicData.teamMembers.length,
+          showPromo: Boolean(publicData.promoText),
         }
       : {}),
   }
 
   return [
     `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
-    `window.AMETHYST_JOIN_TEMPLATE_DATA = ${safeScriptJson(data)};`,
+    `window.AMETHYST_JOIN_TEMPLATE_DATA = ${safeScriptJson(publicData)};`,
     `window.JOIN_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
   ].join('\n')
 }

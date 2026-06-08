@@ -8,7 +8,7 @@ const {
 } = window;
 
 const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
-  repName: "Sasha Rivera",
+  repName: "Sasha",
   businessName: "Sparkle by Sasha",
   liveState: "live",
   contentState: "populated",
@@ -25,7 +25,7 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
   showNicNac: true,
   tickerTopText: "Trade board open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months",
   tradeHeroTitle: "Trade for the piece you wanted to love.",
-  tradeHeroSub: "This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type, with no pay-the-difference and no credit payouts.",
+  tradeHeroSub: "This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.",
   primaryColor: "#5C0EFF",
   accentColor: "#FF1AC2",
   bgTone: "lavender",
@@ -48,6 +48,23 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
   showSlots: false,
 };
 
+function publicRepName(value, fallback = "your rep") {
+  const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+  if (!cleaned) return fallback;
+  return cleaned.split(" ")[0] || fallback;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function redactPublicRepText(text, repName) {
+  const value = String(text || "");
+  const cleaned = String(repName || "").trim().replace(/\s+/g, " ");
+  if (!cleaned || !cleaned.includes(" ")) return value;
+  return value.replace(new RegExp(escapeRegExp(cleaned), "g"), publicRepName(cleaned));
+}
+
 const CONTENT = window.AMETHYST_TRADE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
@@ -56,6 +73,7 @@ const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
 const TRADE_REQUEST_ENDPOINT = "/api/amethyst/trade-requests";
 const TRADE_BOARD_ENDPOINT = withCurrentSearch("/api/amethyst/trade-board");
 const TRADE_BOARD_REFRESH_MS = 45_000;
+const BOARD_PAGE_SIZE = 24;
 const DEFAULT_TRADE_REQUEST_ERROR = "We couldn't submit that request. Please try again.";
 
 function isExternalHref(href) {
@@ -66,6 +84,46 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function SocialLogo({ label, shortLabel }) {
+  const key = `${label || ""} ${shortLabel || ""}`.toLowerCase();
+
+  if (key.includes("tiktok") || key.includes("tt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16.6 3c.4 2.4 1.9 4 4.2 4.3v3.4c-1.6 0-3-.4-4.2-1.3v6.2c0 3.4-2.5 5.7-5.8 5.7-3.1 0-5.5-2.1-5.5-5.1 0-3.2 2.5-5.3 5.8-5.3.4 0 .8 0 1.1.1v3.4c-.4-.1-.8-.2-1.2-.2-1.4 0-2.4.8-2.4 2s.9 2 2.2 2c1.4 0 2.3-.9 2.3-2.8V3h3.5Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("facebook") || key.includes("fb")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14.2 8.1V6.6c0-.7.5-.9.9-.9h2.3V2.2L14.2 2c-3.2 0-4.8 1.9-4.8 5.1v1H7v3.8h2.4V22h4.2V11.9h3.1l.5-3.8h-3Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("instagram") || key.includes("ig")) {
+    return (
+      <svg className="hp-footer-social-logo hp-footer-social-logo-stroke" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.4" />
+        <circle cx="17" cy="7" r="1" />
+      </svg>
+    );
+  }
+
+  if (key.includes("youtube") || key.includes("yt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.4V8.6l5.9 3.4-5.9 3.4Z" />
+      </svg>
+    );
+  }
+
+  return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
 }
 
 function withCurrentSearch(path) {
@@ -90,13 +148,32 @@ function applyTargetedMetadata(pageTitle, description) {
 
 const FOOTER_LINKS = CONTENT.footerLinks || {};
 const FOOTER_SOCIALS = CONTENT.socialLinks || [];
-const FOOTER_COLUMN = CONTENT.footerColumn || { title: "Trade Notes", links: [] };
-const FAQ_CONTENT = CONTENT.faqAnswers || {};
-const TRADE_RULES = CONTENT.tradeRules || [];
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
-const JOIN_HREF = FOOTER_LINKS.joinTeam || "/amethyst/Join.html";
 const SHOP_HREF = CONTENT.shopUrl || FOOTER_LINKS.catalog || "#";
+
+function ComingSoonNavItem({ label = "Join Team" }) {
+  return (
+    <span
+      className="hp-header-link hp-header-link-disabled"
+      aria-disabled="true"
+      aria-label={`${label} coming soon`}
+      title={`${label} is coming soon`}
+    >
+      <span>{label}</span>
+      <span className="hp-coming-soon-badge" aria-hidden="true">Soon</span>
+    </span>
+  );
+}
+
+function ComingSoonFooterItem({ label = "Join Team" }) {
+  return (
+    <span className="hp-footer-coming-soon" aria-label={`${label} coming soon`}>
+      {label}
+      <span aria-hidden="true">Soon</span>
+    </span>
+  );
+}
 
 const PRESETS = {
   amethyst: {
@@ -382,6 +459,83 @@ function filterTradeBoardListings(listings, filters) {
   });
 }
 
+function normalizeTradeBoardSearch(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function searchableTradeBoardText(listing) {
+  return [
+    listing.name,
+    listing.collection,
+    listing.type,
+    listing.material,
+    listing.stone,
+    listing.size ? `size ${listing.size}` : "",
+    listing.tier,
+    listing.note,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function searchTradeBoardListings(listings, boardSearch) {
+  const terms = normalizeTradeBoardSearch(boardSearch).split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return listings;
+
+  return listings.filter((listing) => {
+    const haystack = searchableTradeBoardText(listing);
+    return terms.every((term) => haystack.includes(term));
+  });
+}
+
+function compareTradeBoardText(left, right) {
+  return String(left || "").localeCompare(String(right || ""), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+function sortTradeBoardListings(listings, sortMode) {
+  const sorted = [...listings];
+  const rarityRank = { unicorn: 0, diamond: 1, everyday: 2 };
+  const msrpValue = (piece) => (typeof piece.msrp === "number" ? piece.msrp : Number.MAX_SAFE_INTEGER);
+
+  if (sortMode === "collection") {
+    return sorted.sort((left, right) =>
+      compareTradeBoardText(left.collection, right.collection) ||
+      compareTradeBoardText(left.type, right.type) ||
+      compareTradeBoardText(left.name, right.name)
+    );
+  }
+
+  if (sortMode === "type") {
+    return sorted.sort((left, right) =>
+      compareTradeBoardText(left.type, right.type) ||
+      compareTradeBoardText(left.collection, right.collection) ||
+      compareTradeBoardText(left.name, right.name)
+    );
+  }
+
+  if (sortMode === "rarity") {
+    return sorted.sort((left, right) =>
+      (rarityRank[left.tier] ?? 3) - (rarityRank[right.tier] ?? 3) ||
+      compareTradeBoardText(left.name, right.name)
+    );
+  }
+
+  if (sortMode === "msrp-low") {
+    return sorted.sort((left, right) => msrpValue(left) - msrpValue(right) || compareTradeBoardText(left.name, right.name));
+  }
+
+  if (sortMode === "msrp-high") {
+    return sorted.sort((left, right) => msrpValue(right) - msrpValue(left) || compareTradeBoardText(left.name, right.name));
+  }
+
+  if (sortMode === "name") {
+    return sorted.sort((left, right) => compareTradeBoardText(left.name, right.name));
+  }
+
+  return sorted;
+}
+
 async function submitTradeRequestRequest(payload) {
   const response = await fetch(TRADE_REQUEST_ENDPOINT, {
     method: "POST",
@@ -459,16 +613,19 @@ function Header({ businessName }) {
   return (
     <header className="hp-header">
       <div className="hp-header-inner">
+        <div className="hp-brand">
+          <div className="hp-brand-name slot" data-slot="business name">{businessName}</div>
+          <div className="hp-brand-sub">
+            <span className="hp-live-dot" aria-hidden="true"></span>
+            Live jewelry reveals
+          </div>
+        </div>
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Trade Board</a>
-          <a {...linkProps(JOIN_HREF)} className="hp-header-link">Join Team</a>
+          <ComingSoonNavItem />
         </nav>
-        <div className="hp-brand">
-          <div className="hp-brand-name slot" data-slot="business name">{businessName}</div>
-          <div className="hp-brand-sub">Live jewelry reveals</div>
-        </div>
-        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop -&gt;</a>
+        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop live</a>
       </div>
     </header>
   );
@@ -599,26 +756,10 @@ function TradeHero({ tweakRepName, tweakHeroTitle, tweakHeroSub }) {
   return (
     <section className="tp-hero">
       <div className="tp-hero-inner">
-        <div className="tp-hero-eyebrow">Trade Board</div>
         <h1 className="tp-hero-title slot" data-slot="trade hero title">{tweakHeroTitle}</h1>
         <p className="tp-hero-sub slot" data-slot="trade hero sub">
           {tweakHeroSub} Browse what <span className="slot" data-slot="rep name">{tweakRepName}</span> has available, then request the closest fit you love.
         </p>
-        <div className="tp-card-rep">
-          Matching is based on same collection and same jewelry type. Bomb Party MSRP can stay visible for context, but it does not drive eligibility.
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function RulesStrip() {
-  return (
-    <section className="tp-filters tp-rules-strip">
-      <div className="tp-filters-row">
-        {TRADE_RULES.map((rule, index) => (
-          <span key={index} className="tp-filter-pill">{rule}</span>
-        ))}
       </div>
     </section>
   );
@@ -627,8 +768,14 @@ function RulesStrip() {
 function Filters({
   style,
   listings,
+  resultCount,
+  visibleCount,
   filters,
   setFilters,
+  boardSearch,
+  setBoardSearch,
+  sortMode,
+  setSortMode,
   collectionSearch,
   setCollectionSearch,
   secondaryOpen,
@@ -640,6 +787,8 @@ function Filters({
     [options.collections, collectionSearch],
   );
   const activeFilterCount = countActiveTradeBoardFilters(filters);
+  const activeBoardControlCount =
+    activeFilterCount + (boardSearch.trim() ? 1 : 0) + (sortMode !== "newest" ? 1 : 0);
 
   const setFilter = (key, value) => {
     setFilters((current) => ({ ...current, [key]: value }));
@@ -647,6 +796,8 @@ function Filters({
 
   const clearFilters = () => {
     setFilters(EMPTY_FILTER_STATE);
+    setBoardSearch("");
+    setSortMode("newest");
     setCollectionSearch("");
   };
 
@@ -658,9 +809,12 @@ function Filters({
           <div className="tp-filter-results">
             <strong>{listings.length}</strong> available pieces
           </div>
+          <div className="tp-board-showing">
+            Showing {Math.min(visibleCount, resultCount)} of {resultCount} matches
+          </div>
         </div>
         <div className="tp-filter-actions">
-          {activeFilterCount > 0 && (
+          {activeBoardControlCount > 0 && (
             <button type="button" className="tp-filter-link" onClick={clearFilters}>
               Clear filters
             </button>
@@ -673,49 +827,90 @@ function Filters({
             aria-controls="trade-filter-panel"
           >
             More filters
-            {activeFilterCount > 0 && <span className="tp-filter-badge">{activeFilterCount}</span>}
+            {activeBoardControlCount > 0 && <span className="tp-filter-badge">{activeBoardControlCount}</span>}
           </button>
         </div>
       </div>
 
-      <div className="tp-filters-row tp-filters-row-primary">
-        <button
-          type="button"
-          className={`tp-filter-pill ${filters.type === "all" ? "active" : ""}`}
-          onClick={() => setFilter("type", "all")}
-        >
-          All types
-        </button>
-        {options.types.map((type) => (
-          <button
-            key={type}
-            type="button"
-            className={`tp-filter-pill ${filters.type === type ? "active" : ""}`}
-            onClick={() => setFilter("type", type)}
-          >
-            {type}
-          </button>
-        ))}
+      <div className="tp-board-search-row">
+        <label className="tp-board-search">
+          <span>Search board</span>
+          <input
+            type="search"
+            value={boardSearch}
+            onChange={(event) => setBoardSearch(event.target.value)}
+            placeholder="Search by piece, collection, size"
+          />
+        </label>
+        <label className="tp-board-sort">
+          <span>Sort board</span>
+          <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+            <option value="newest">Newest added</option>
+            <option value="collection">Collection</option>
+            <option value="type">Jewelry type</option>
+            <option value="rarity">Rare first</option>
+            <option value="name">Piece name</option>
+            <option value="msrp-low">MSRP low to high</option>
+            <option value="msrp-high">MSRP high to low</option>
+          </select>
+        </label>
       </div>
 
-      <div className="tp-filters-row tp-filters-row-primary">
-        <button
-          type="button"
-          className={`tp-filter-pill ${filters.rarity === "all" ? "active" : ""}`}
-          onClick={() => setFilter("rarity", "all")}
-        >
-          All rarity
-        </button>
-        {options.rarityTags.map((rarity) => (
+      <div className="tp-filter-primary-grid">
+        <div className="tp-filters-row tp-filters-row-primary">
           <button
-            key={rarity}
             type="button"
-            className={`tp-filter-pill ${filters.rarity === rarity ? "active" : ""}`}
-            onClick={() => setFilter("rarity", rarity)}
+            className={`tp-filter-pill ${filters.type === "all" ? "active" : ""}`}
+            onClick={() => setFilter("type", "all")}
           >
-            {rarityLabel(rarity)}
+            All types
           </button>
-        ))}
+          {options.types.map((type) => (
+            <button
+              key={type}
+              type="button"
+              className={`tp-filter-pill ${filters.type === type ? "active" : ""}`}
+              onClick={() => setFilter("type", type)}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        <div className="tp-filters-row tp-filters-row-primary">
+          <button
+            type="button"
+            className={`tp-filter-pill ${filters.rarity === "all" ? "active" : ""}`}
+            onClick={() => setFilter("rarity", "all")}
+          >
+            All rarity
+          </button>
+          {options.rarityTags.map((rarity) => (
+            <button
+              key={rarity}
+              type="button"
+              className={`tp-filter-pill ${filters.rarity === rarity ? "active" : ""}`}
+              onClick={() => setFilter("rarity", rarity)}
+            >
+              {rarityLabel(rarity)}
+            </button>
+          ))}
+        </div>
+
+        {options.collections.length > 0 && (
+          <div className="tp-filters-row tp-filters-row-primary tp-filters-row-collections" aria-label="Filter by collection">
+            {options.collections.map((collection) => (
+              <button
+                key={collection}
+                type="button"
+                className={`tp-filter-pill ${filters.collection === collection ? "active" : ""}`}
+                onClick={() => setFilter("collection", collection)}
+              >
+                {collection}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {secondaryOpen && (
@@ -828,7 +1023,7 @@ function TradeCard({ piece, onTap, repName, tierVisible }) {
           </span>
         )}
         {piece.photoUrl ? (
-          <img className="tp-card-photo-img" src={piece.photoUrl} alt={piece.name} />
+          <img className="tp-card-photo-img" src={piece.photoUrl} alt={piece.name} loading="lazy" decoding="async" />
         ) : (
           <div className="photo-glyph">{piece.glyph}</div>
         )}
@@ -864,7 +1059,7 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
         <button className="tp-card-close" onClick={onClose} aria-label="Close">&times;</button>
         <div className={`tp-card-expand-photo slot ${piece.photoUrl ? "has-photo" : ""}`} data-slot="jewelry photo">
           {piece.photoUrl ? (
-            <img className="tp-card-expand-photo-img" src={piece.photoUrl} alt={piece.name} />
+            <img className="tp-card-expand-photo-img" src={piece.photoUrl} alt={piece.name} loading="lazy" decoding="async" />
           ) : (
             <div className="photo-glyph">{piece.glyph}</div>
           )}
@@ -1041,59 +1236,6 @@ function NoMatchesState({ onClear }) {
   );
 }
 
-const FAQS = [
-  {
-    q: "How does a trade actually work?",
-    a: FAQ_CONTENT.howTradeWorks || "Find a board piece you love, send a request, and the rep reviews the swap after the show.",
-  },
-  {
-    q: "Can I add cash if the piece I want is worth more?",
-    a: FAQ_CONTENT.cashDifference || "No. This board does not support pay-the-difference trades.",
-  },
-  {
-    q: "Do I get credit if the piece I want has a lower MSRP?",
-    a: FAQ_CONTENT.tradeCredit || "No. There is no credit or payout path on this board.",
-  },
-  {
-    q: "How are trades matched?",
-    a: FAQ_CONTENT.matchingRules || "Trades should stay within the same collection and the same jewelry type.",
-  },
-  {
-    q: "Does Bomb Party MSRP decide whether a trade is even?",
-    a: FAQ_CONTENT.msrp || "No. MSRP is for display only and is not the basis for trade parity.",
-  },
-  {
-    q: "Are diamonds and unicorns allowed?",
-    a: FAQ_CONTENT.rarePieces || "Yes, but they are expected to be rare edge-case listings.",
-  },
-  {
-    q: "How fast does the rep respond?",
-    a: FAQ_CONTENT.responseTime || "Most reps review requests after the live show ends.",
-  },
-];
-
-function Faq() {
-  const [open, setOpen] = useState(0);
-
-  return (
-    <section className="tp-faq" id="faq">
-      <h2>Trade rules.</h2>
-      <p className="tp-faq-sub">The short version. Read once, trade cleanly.</p>
-      {FAQS.map((faq, index) => (
-        <div key={index} className={`tp-faq-item ${open === index ? "open" : ""}`}>
-          <div className="tp-faq-q" onClick={() => setOpen(open === index ? -1 : index)}>
-            <span>{faq.q}</span>
-            <span className="chev">+</span>
-          </div>
-          <div className="tp-faq-a">
-            <div className="tp-faq-a-inner">{faq.a}</div>
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
 function Footer({ businessName }) {
   return (
     <footer className="hp-footer">
@@ -1103,34 +1245,29 @@ function Footer({ businessName }) {
           <p className="hp-footer-tag">{CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}</p>
           <div className="hp-footer-socials">
             {FOOTER_SOCIALS.map((social) => (
-              <a key={social.shortLabel} {...linkProps(social.href)} className="hp-footer-social">{social.shortLabel}</a>
+              <a
+                key={social.shortLabel}
+                {...linkProps(social.href)}
+                className="hp-footer-social"
+                aria-label={social.label}
+                title={social.label}
+              >
+                <SocialLogo {...social} />
+              </a>
             ))}
           </div>
         </div>
         <div className="hp-footer-col">
-          <h4>Shop</h4>
           <ul>
+            <li><a {...linkProps(HOME_HREF)}>Home</a></li>
             <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.catalog || "#")}>Bomb Party Catalog</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.preOrders || "#")}>Pre-orders</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.pastShows || HOME_HREF)}>Past shows</a></li>
+            <li><a {...linkProps(FOOTER_LINKS.joinTeam || "/amethyst/Join.html")}>Join Team</a></li>
           </ul>
         </div>
         <div className="hp-footer-col">
-          <h4>About</h4>
           <ul>
-            <li><a {...linkProps(HOME_HREF)}>Home</a></li>
-            <li><a {...linkProps(JOIN_HREF)}>Join Team</a></li>
             <li><a {...linkProps(FOOTER_LINKS.faq || "#faq")}>FAQ</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.privacy || "#faq")}>Privacy</a></li>
-          </ul>
-        </div>
-        <div className="hp-footer-col slot" data-slot="optional 4th column">
-          <h4>{FOOTER_COLUMN.title || "Trade Notes"}</h4>
-          <ul>
-            {(FOOTER_COLUMN.links || []).map((link) => (
-              <li key={link.label}><a {...linkProps(link.href)}>{link.label}</a></li>
-            ))}
+            <li><a {...linkProps(FOOTER_LINKS.contact || "#faq")}>Contact</a></li>
           </ul>
         </div>
       </div>
@@ -1149,19 +1286,6 @@ function Footer({ businessName }) {
   );
 }
 
-function NicNac() {
-  return (
-    <div className="hp-nic-nac">
-      <button className="hp-nic-nac-btn" aria-label="Open Nic-Nac">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
-        </svg>
-        <span className="spark" />
-      </button>
-    </div>
-  );
-}
-
 function App() {
   const [t, setTweak] = useTweaks(DEFAULTS);
   const [expanded, setExpanded] = useState(null);
@@ -1172,9 +1296,13 @@ function App() {
   const [submittedListingIds, setSubmittedListingIds] = useState([]);
   const [liveListings, setLiveListings] = useState(BOOTSTRAP_LISTINGS);
   const [filters, setFilters] = useState(getInitialTradeFilters);
+  const [boardSearch, setBoardSearch] = useState("");
+  const [sortMode, setSortMode] = useState("newest");
+  const [visibleCount, setVisibleCount] = useState(BOARD_PAGE_SIZE);
   const [collectionSearch, setCollectionSearch] = useState("");
   const [secondaryFiltersOpen, setSecondaryFiltersOpen] = useState(false);
   const [queueOpen, setQueueOpen] = useState(false);
+  const repName = publicRepName(t.repName);
 
   useEffect(() => {
     applyTargetedMetadata(
@@ -1200,10 +1328,20 @@ function App() {
     () => samples.filter((piece) => !submittedListingIds.includes(piece.id)),
     [samples, submittedListingIds],
   );
-  const filtered = useMemo(
+  const filteredByFacets = useMemo(
     () => filterTradeBoardListings(availableSamples, filters),
     [availableSamples, filters],
   );
+  const filtered = useMemo(
+    () => sortTradeBoardListings(searchTradeBoardListings(filteredByFacets, boardSearch), sortMode),
+    [filteredByFacets, boardSearch, sortMode],
+  );
+  const visibleTradeBoardPieces = filtered.slice(0, visibleCount);
+  const hasMoreTradeBoardPieces = visibleCount < filtered.length;
+
+  useEffect(() => {
+    setVisibleCount(BOARD_PAGE_SIZE);
+  }, [filters, boardSearch, sortMode, availableSamples.length]);
 
   useEffect(() => {
     if (t.demoSheet === "form") {
@@ -1330,6 +1468,8 @@ function App() {
   const showNoMatches = !isEmpty && availableSamples.length > 0 && filtered.length === 0;
   const clearFilters = () => {
     setFilters(EMPTY_FILTER_STATE);
+    setBoardSearch("");
+    setSortMode("newest");
     setCollectionSearch("");
   };
   const handleTradeRequestSubmit = async (payload) => {
@@ -1361,19 +1501,20 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className="hp-saturate">
+      <div className="hp-sticky-stack">
         <Header businessName={t.businessName} />
         {t.showTicker && <Ticker topText={t.tickerTopText} />}
         <LiveQueueStrip live={live} onOpen={() => setQueueOpen(true)} />
+      </div>
+
+      <div className="hp-saturate">
         {t.showHero && (
           <TradeHero
-            tweakRepName={t.repName}
+            tweakRepName={repName}
             tweakHeroTitle={t.tradeHeroTitle}
-            tweakHeroSub={t.tradeHeroSub}
+            tweakHeroSub={redactPublicRepText(t.tradeHeroSub, t.repName)}
           />
         )}
-
-        <RulesStrip />
 
         <section className="tp-board">
           <div className="tp-board-inner no-lrq">
@@ -1381,37 +1522,55 @@ function App() {
               <Filters
                 style={t.filterStyle}
                 listings={availableSamples}
+                resultCount={filtered.length}
+                visibleCount={visibleTradeBoardPieces.length}
                 filters={filters}
                 setFilters={setFilters}
+                boardSearch={boardSearch}
+                setBoardSearch={setBoardSearch}
+                sortMode={sortMode}
+                setSortMode={setSortMode}
                 collectionSearch={collectionSearch}
                 setCollectionSearch={setCollectionSearch}
                 secondaryOpen={secondaryFiltersOpen}
                 setSecondaryOpen={setSecondaryFiltersOpen}
               />
               {isEmpty ? (
-                <div className="tp-grid-wrap"><EmptyState repName={t.repName} /></div>
+                <div className="tp-grid-wrap"><EmptyState repName={repName} /></div>
               ) : showNoMatches ? (
                 <div className="tp-grid-wrap"><NoMatchesState onClear={clearFilters} /></div>
               ) : (
                 <div className="tp-grid-wrap">
                   <div className={`tp-grid aspect-${t.cardAspect}`}>
-                    {filtered.map((piece) => (
+                    {visibleTradeBoardPieces.map((piece) => (
                       <TradeCard
                         key={piece.id}
                         piece={piece}
                         onTap={(selectedPiece) => setExpanded(selectedPiece)}
-                        repName={t.repName}
+                        repName={repName}
                         tierVisible={t.tierVisibility}
                       />
                     ))}
+                  </div>
+                  <div className="tp-board-pagination">
+                    <div className="tp-board-showing">
+                      Showing {visibleTradeBoardPieces.length} of {filtered.length} pieces
+                    </div>
+                    {hasMoreTradeBoardPieces && (
+                      <button
+                        type="button"
+                        className="tp-load-more"
+                        onClick={() => setVisibleCount((count) => count + BOARD_PAGE_SIZE)}
+                      >
+                        Load more
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
             </div>
           </div>
         </section>
-
-        {t.showFaq && <Faq />}
 
         {t.showLegal && (
           <div className="tp-legal slot" data-slot="brand separation footer">
@@ -1421,8 +1580,6 @@ function App() {
 
         {t.showFooter && <Footer businessName={t.businessName} />}
       </div>
-
-      {t.showNicNac && <NicNac />}
 
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} live={live} />
 
@@ -1435,7 +1592,7 @@ function App() {
           setSuccess(false);
           setRequestError("");
         }}
-        repName={t.repName}
+        repName={repName}
       />
 
       <RequestSheet
@@ -1451,7 +1608,7 @@ function App() {
         success={success}
         pending={requestPending}
         error={requestError}
-        repName={t.repName}
+        repName={repName}
       />
 
       <TweaksPanel title="Tweaks" subtitle="Tune the trade board" defaultWidth={380}>
@@ -1639,10 +1796,8 @@ function App() {
         <TweakSection title="Section visibility">
           <TweakToggle label="Ticker" value={t.showTicker} onChange={(value) => setTweak("showTicker", value)} />
           <TweakToggle label="Page hero" value={t.showHero} onChange={(value) => setTweak("showHero", value)} />
-          <TweakToggle label="FAQ" value={t.showFaq} onChange={(value) => setTweak("showFaq", value)} />
           <TweakToggle label="Brand separation note" value={t.showLegal} onChange={(value) => setTweak("showLegal", value)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(value) => setTweak("showFooter", value)} />
-          <TweakToggle label="Nic-Nac launcher" value={t.showNicNac} onChange={(value) => setTweak("showNicNac", value)} />
         </TweakSection>
 
         <TweakSection title="Copy sandbox">

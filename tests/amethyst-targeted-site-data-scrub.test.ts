@@ -44,6 +44,7 @@ const FORBIDDEN_TARGETED_SITE_TEXT = [
   'Sparkle by Sasha',
   "Jane's Sparkle Party",
   'Sasha Rivera',
+  'Clean Rep',
   'Unicorn Magic Drop',
   'Birthday Bloom Ring',
   'Velvet Hour Necklace',
@@ -86,7 +87,6 @@ const cleanTemplateData = {
     aboutMediaSlots: [
       { typeLabel: 'Video', caption: 'Intro video coming soon.', href: '#' },
       { typeLabel: 'Photo', caption: 'Show photo coming soon.', href: '#' },
-      { typeLabel: 'Photo', caption: 'Community photo coming soon.', href: '#' },
     ],
     signupTitle: 'Get updates.',
     signupSub: 'Sign up for show reminders from Clean Smoke Sparkle.',

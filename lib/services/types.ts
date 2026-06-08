@@ -352,7 +352,7 @@ export interface WalletDashboardResult {
   recentTransactions: WalletTransactionSummary[]
 }
 
-export type HeroAnimationType = 'zoom' | 'pan'
+export type HeroAnimationType = 'still' | 'sparkle_rise' | 'soft_glow'
 export type CustomerSiteTemplate = 'amethyst'
 export type SiteAppearancePreset =
   | 'amethyst'

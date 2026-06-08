@@ -1,6 +1,10 @@
 import Link from 'next/link'
 
 import type { AmethystSiteContent, AmethystStreamLink } from '@/lib/amethyst/site-content'
+import {
+  getPublicRepName,
+  redactPublicRepFullName,
+} from '@/lib/amethyst/public-rep-name'
 
 import {
   AmethystSiteShell,
@@ -73,21 +77,18 @@ function LiveQueueSection({ content }: { content: AmethystSiteContent }) {
 function HeroSection({ content }: { content: AmethystSiteContent }) {
   const shopLink = content.streamLinks.find((link) => link.platform === 'shop')
   const watchLink = content.streamLinks.find((link) => link.platform !== 'shop')
+  const heroSub = redactPublicRepFullName(content.heroSub, content.repName)
 
   return (
     <section className="relative overflow-hidden">
       <div className="amethyst-hero-media amethyst-hero-placeholder absolute inset-0" aria-hidden="true" />
       <div className="relative mx-auto grid min-h-[86vh] max-w-7xl px-6 pb-24 pt-24">
         <div className="max-w-[620px] text-white">
-          <div className="mb-5 inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/70">
-            <span className="h-px w-7 bg-white/50" />
-            {content.heroEyebrow}
-          </div>
           <h1 className="font-[family-name:var(--font-amethyst-display)] text-[clamp(3rem,7vw,5.5rem)] leading-[0.98] tracking-[-0.03em]">
             {content.heroHeadline}
           </h1>
           <p className="mt-6 max-w-[540px] text-lg leading-[1.55] text-white/78">
-            {content.heroSub}
+            {heroSub}
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <a
@@ -251,6 +252,8 @@ function EventsSection({ content }: { content: AmethystSiteContent }) {
 }
 
 function BombPartySection({ content }: { content: AmethystSiteContent }) {
+  const repName = getPublicRepName(content.repName)
+
   return (
     <section className="bg-[var(--amethyst-bg-elevated)] px-6 py-24" id="bomb-party">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -259,7 +262,7 @@ function BombPartySection({ content }: { content: AmethystSiteContent }) {
             First time here?
           </div>
           <h2 className="mt-4 font-[family-name:var(--font-amethyst-display)] text-[clamp(2.2rem,3.4vw,3rem)] leading-[1.08] tracking-[-0.03em]">
-            It&apos;s a live jewelry reveal - with {content.repName}
+            It&apos;s a live jewelry reveal - with {repName}
           </h2>
           <p className="mt-4 text-base leading-8 text-[var(--amethyst-fg-muted)]">
             {content.whatIsBombPartyBody}
@@ -294,7 +297,7 @@ function BombPartySection({ content }: { content: AmethystSiteContent }) {
               ▶
             </div>
             <p className="max-w-xs text-sm leading-6 text-white/72">
-              @{content.repName.toLowerCase().replace(/\s+/g, '')} - &quot;When the box hits different...&quot;
+              @{repName.toLowerCase().replace(/\s+/g, '')} - &quot;When the box hits different...&quot;
             </p>
           </div>
         </div>
@@ -324,6 +327,8 @@ function StepCard({
 }
 
 function SignupSection({ content }: { content: AmethystSiteContent }) {
+  const signupSub = redactPublicRepFullName(content.signupSub, content.repName)
+
   return (
     <section className="px-6 py-24" id="signup">
       <div className="mx-auto max-w-4xl overflow-hidden rounded-[1.4rem] border border-[var(--amethyst-border)] bg-[var(--amethyst-bg-elevated)] p-8 shadow-[0_28px_60px_rgba(42,31,64,0.08)] md:p-12">
@@ -335,7 +340,7 @@ function SignupSection({ content }: { content: AmethystSiteContent }) {
             {content.signupTitle}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-[var(--amethyst-fg-muted)]">
-            {content.signupSub}
+            {signupSub}
           </p>
         </div>
 
@@ -434,33 +439,6 @@ function SignupSection({ content }: { content: AmethystSiteContent }) {
   )
 }
 
-function JoinTeamSection({ content }: { content: AmethystSiteContent }) {
-  return (
-    <section className="relative overflow-hidden bg-[var(--amethyst-fg)] px-6 py-24 text-center text-white" id="join-team">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(210,9,227,0.22),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(72,13,223,0.24),transparent_42%)]" />
-      <div className="relative mx-auto max-w-[760px]">
-        <div className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/60">
-          {content.businessName} · {content.teamName}
-        </div>
-        <h2 className="mt-4 font-[family-name:var(--font-amethyst-display)] text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.04] tracking-[-0.03em]">
-          {content.joinTeamTitle}
-        </h2>
-        <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/72">
-          {content.joinTeamSub}
-        </p>
-        <a
-          className="mt-8 inline-flex items-center rounded-full bg-white px-8 py-3 text-sm font-semibold text-[var(--amethyst-fg)] transition hover:-translate-y-0.5"
-          href={content.joinTeamUrl}
-          rel={content.joinTeamUrl.startsWith('http') ? 'noreferrer noopener' : undefined}
-          target={content.joinTeamUrl.startsWith('http') ? '_blank' : undefined}
-        >
-          See what&apos;s in it for you
-        </a>
-      </div>
-    </section>
-  )
-}
-
 export function AmethystHomepage({
   content,
 }: {
@@ -473,7 +451,6 @@ export function AmethystHomepage({
       <EventsSection content={content} />
       <BombPartySection content={content} />
       <SignupSection content={content} />
-      <JoinTeamSection content={content} />
     </AmethystSiteShell>
   )
 }

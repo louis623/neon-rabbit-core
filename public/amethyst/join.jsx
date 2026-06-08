@@ -9,7 +9,7 @@ const {
 
 const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   teamName: "Sparkle by Sasha",
-  repName: "Sasha Rivera",
+  repName: "Sasha",
   repCity: "Austin",
   repState: "Texas",
   businessName: "Sparkle by Sasha",
@@ -51,6 +51,23 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   showSlots: false,
 };
 
+function publicRepName(value, fallback = "your rep") {
+  const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+  if (!cleaned) return fallback;
+  return cleaned.split(" ")[0] || fallback;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function redactPublicRepText(text, repName) {
+  const value = String(text || "");
+  const cleaned = String(repName || "").trim().replace(/\s+/g, " ");
+  if (!cleaned || !cleaned.includes(" ")) return value;
+  return value.replace(new RegExp(escapeRegExp(cleaned), "g"), publicRepName(cleaned));
+}
+
 const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 
@@ -62,6 +79,46 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function SocialLogo({ label, shortLabel }) {
+  const key = `${label || ""} ${shortLabel || ""}`.toLowerCase();
+
+  if (key.includes("tiktok") || key.includes("tt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16.6 3c.4 2.4 1.9 4 4.2 4.3v3.4c-1.6 0-3-.4-4.2-1.3v6.2c0 3.4-2.5 5.7-5.8 5.7-3.1 0-5.5-2.1-5.5-5.1 0-3.2 2.5-5.3 5.8-5.3.4 0 .8 0 1.1.1v3.4c-.4-.1-.8-.2-1.2-.2-1.4 0-2.4.8-2.4 2s.9 2 2.2 2c1.4 0 2.3-.9 2.3-2.8V3h3.5Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("facebook") || key.includes("fb")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14.2 8.1V6.6c0-.7.5-.9.9-.9h2.3V2.2L14.2 2c-3.2 0-4.8 1.9-4.8 5.1v1H7v3.8h2.4V22h4.2V11.9h3.1l.5-3.8h-3Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("instagram") || key.includes("ig")) {
+    return (
+      <svg className="hp-footer-social-logo hp-footer-social-logo-stroke" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.4" />
+        <circle cx="17" cy="7" r="1" />
+      </svg>
+    );
+  }
+
+  if (key.includes("youtube") || key.includes("yt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.4V8.6l5.9 3.4-5.9 3.4Z" />
+      </svg>
+    );
+  }
+
+  return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
 }
 
 function setMetaContent(selector, value) {
@@ -207,7 +264,6 @@ const TEAM_MEMBERS = (CONTENT.teamMembers && CONTENT.teamMembers.length > 0
 
 const FOOTER_LINKS = CONTENT.footerLinks || {};
 const FOOTER_SOCIALS = CONTENT.socialLinks || [];
-const FOOTER_COLUMN = CONTENT.footerColumn || { title: "Hosting Soon", links: [] };
 const FAQ_ANSWERS = CONTENT.faqAnswers || {};
 const REP_SOCIALS = CONTENT.repSocialLinks || {};
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
@@ -287,16 +343,19 @@ function Header({ businessName }) {
   return (
     <header className="hp-header">
       <div className="hp-header-inner">
+        <div className="hp-brand">
+          <div className="hp-brand-name slot" data-slot="business name">{businessName}</div>
+          <div className="hp-brand-sub">
+            <span className="hp-live-dot" aria-hidden="true"></span>
+            Live jewelry reveals
+          </div>
+        </div>
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Trade Board</a>
           <a {...linkProps(JOIN_HREF)} className="hp-header-link" aria-current="page">Join Team</a>
         </nav>
-        <div className="hp-brand">
-          <div className="hp-brand-name slot" data-slot="business name">{businessName}</div>
-          <div className="hp-brand-sub">Live jewelry reveals</div>
-        </div>
-        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop ↗</a>
+        <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop live</a>
       </div>
     </header>
   );
@@ -679,38 +738,29 @@ function Footer({ businessName }) {
           <p className="hp-footer-tag">{CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}</p>
           <div className="hp-footer-socials">
             {FOOTER_SOCIALS.map((link, index) => (
-              <a key={`${link.label}-${index}`} {...linkProps(link.href)} className="hp-footer-social">
-                {link.shortLabel || (link.label || "").slice(0, 2).toUpperCase()}
+              <a
+                key={`${link.label}-${index}`}
+                {...linkProps(link.href)}
+                className="hp-footer-social"
+                aria-label={link.label}
+                title={link.label}
+              >
+                <SocialLogo {...link} />
               </a>
             ))}
           </div>
         </div>
         <div className="hp-footer-col">
-          <h4>Shop</h4>
           <ul>
+            <li><a {...linkProps(FOOTER_LINKS.home || "/amethyst/Homepage.html")}>Home</a></li>
             <li><a {...linkProps(FOOTER_LINKS.tradeBoard || TRADE_BOARD_HREF)}>Trade Board</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.catalog || SHOP_HREF)}>Bomb Party Catalog</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.preOrders || SHOP_HREF)}>Pre-orders</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.pastShows || "#top")}>Past shows</a></li>
+            <li><a {...linkProps(FOOTER_LINKS.joinTeam || "/amethyst/Join.html")}>Join Team</a></li>
           </ul>
         </div>
         <div className="hp-footer-col">
-          <h4>About</h4>
           <ul>
-            <li><a {...linkProps(FOOTER_LINKS.home || "/amethyst/Homepage.html")}>Home</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.joinTeam || "/amethyst/Join.html")}>Join the team</a></li>
             <li><a {...linkProps(FOOTER_LINKS.faq || "#faq")}>FAQ</a></li>
             <li><a {...linkProps(FOOTER_LINKS.contact || "#faq")}>Contact</a></li>
-          </ul>
-        </div>
-        <div className="hp-footer-col slot" data-slot="optional 4th column">
-          <h4>{FOOTER_COLUMN.title || "Hosting Soon"}</h4>
-          <ul>
-            {(FOOTER_COLUMN.links || []).map((link, index) => (
-              <li key={`${link.label}-${index}`}>
-                <a {...linkProps(link.href)}>{link.label}</a>
-              </li>
-            ))}
           </ul>
         </div>
       </div>
@@ -727,23 +777,11 @@ function Footer({ businessName }) {
   );
 }
 
-function NicNac() {
-  return (
-    <div className="hp-nic-nac">
-      <button className="hp-nic-nac-btn" aria-label="Open Nic-Nac">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
-        </svg>
-        <span className="spark" />
-      </button>
-    </div>
-  );
-}
-
 function App() {
   const [t, setTweak] = useTweaks(DEFAULTS);
   const [queueOpen, setQueueOpen] = useState(false);
   const locationLabel = getLocationLabel(t.repCity, t.repState);
+  const repName = publicRepName(t.repName);
 
   const visibleMembers = useMemo(() => {
     const count = Math.max(0, Math.min(t.teamMemberCount, TEAM_MEMBERS.length));
@@ -751,9 +789,9 @@ function App() {
   }, [t.teamMemberCount]);
 
   const repCard = {
-    name: t.repName.split(" ")[0] || t.repName,
+    name: repName,
     business: t.businessName,
-    initials: (t.repName[0] || "S").toUpperCase(),
+    initials: (repName[0] || "S").toUpperCase(),
     state: locationLabel || t.repState,
     socialLinks: {
       tiktok: REP_SOCIALS.tiktok,
@@ -781,7 +819,7 @@ function App() {
 
   useEffect(() => {
     const locationSuffix = locationLabel ? ` | ${locationLabel}` : "";
-    const description = `Explore ${t.teamName}, Bomb Party starter pack details, and rep support from ${t.repName}${locationLabel ? ` in ${locationLabel}` : ""}. Review the Income Disclosure Statement before enrolling.`;
+    const description = `Explore ${t.teamName}, Bomb Party starter pack details, and rep support from ${repName}${locationLabel ? ` in ${locationLabel}` : ""}. Review the Income Disclosure Statement before enrolling.`;
     let meta = document.querySelector('meta[name="description"]');
 
     if (!meta) {
@@ -790,10 +828,10 @@ function App() {
       document.head.appendChild(meta);
     }
 
-    document.title = `Join ${t.teamName} | ${t.repName}${locationSuffix}`;
+    document.title = `Join ${t.teamName} | ${repName}${locationSuffix}`;
     meta.setAttribute("content", description);
     applyTargetedMetadata(document.title, description);
-  }, [locationLabel, t.repName, t.teamName]);
+  }, [locationLabel, repName, t.teamName]);
 
   useEffect(() => {
     const body = document.body;
@@ -866,22 +904,24 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className="hp-saturate">
+      <div className="hp-sticky-stack">
         <Header businessName={t.businessName} />
 
         {t.showTicker ? <Ticker topText={t.tickerTopText} /> : null}
 
         <LiveQueueStrip onOpen={() => setQueueOpen(true)} />
+      </div>
 
+      <div className="hp-saturate">
         {t.showHero ? (
           <Hero
             teamName={t.teamName}
-            pitch={t.heroPitch}
+            pitch={redactPublicRepText(t.heroPitch, t.repName)}
             ctaText={t.heroCtaText}
             ctaUrl={t.bpReferralUrl}
             showPromo={t.showPromo}
             promoText={t.promoText}
-            repName={t.repName}
+            repName={repName}
             locationLabel={locationLabel}
           />
         ) : null}
@@ -895,17 +935,17 @@ function App() {
           />
         ) : null}
 
-        {t.showWhy ? <WhyJoin teamName={t.teamName} repName={t.repName} locationLabel={locationLabel} /> : null}
+        {t.showWhy ? <WhyJoin teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
 
-        {t.showFaq ? <Faq teamName={t.teamName} repName={t.repName} locationLabel={locationLabel} /> : null}
+        {t.showFaq ? <Faq teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
 
         {t.showFinalCta ? (
           <FinalCta
             teamName={t.teamName}
             ctaUrl={t.bpReferralUrl}
             ctaText="Join The Team Now"
-            pitch={t.finalPitch}
-            repName={t.repName}
+            pitch={redactPublicRepText(t.finalPitch, t.repName)}
+            repName={repName}
             locationLabel={locationLabel}
           />
         ) : null}
@@ -913,7 +953,6 @@ function App() {
         {t.showFooter ? <Footer businessName={t.businessName} /> : null}
       </div>
 
-      {t.showNicNac ? <NicNac /> : null}
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} />
 
       <TweaksPanel title="Tweaks" subtitle="Tune the join page" defaultWidth={380}>
@@ -1118,7 +1157,6 @@ function App() {
           <TweakToggle label="FAQ" value={t.showFaq} onChange={(value) => setTweak("showFaq", value)} />
           <TweakToggle label="Final CTA" value={t.showFinalCta} onChange={(value) => setTweak("showFinalCta", value)} />
           <TweakToggle label="Footer" value={t.showFooter} onChange={(value) => setTweak("showFooter", value)} />
-          <TweakToggle label="Nic-Nac launcher" value={t.showNicNac} onChange={(value) => setTweak("showNicNac", value)} />
         </TweakSection>
 
         <TweakSection title="Slot inspector">

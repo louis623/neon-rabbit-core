@@ -16,6 +16,7 @@ import {
   loadAmethystPreviewTemplateData,
 } from '@/lib/amethyst/preview-template-data'
 import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import { getPublicRepName } from '@/lib/amethyst/public-rep-name'
 
 interface RenderAmethystPublicAssetResponseOptions {
   repIdOverride?: string | null
@@ -109,7 +110,7 @@ function buildTargetedPageText(
   templateData: AmethystPreviewTemplateData,
 ) {
   const businessName = templateData.homepage.businessName
-  const repName = templateData.homepage.repName
+  const repName = getPublicRepName(templateData.homepage.repName)
   const teamName = templateData.join.teamName
 
   if (page === 'trade') {
@@ -247,7 +248,7 @@ function injectAmethystJsonLd(
     path: metadata.path,
     title: metadata.title,
     description: metadata.description,
-    repName: homepage?.repName ?? 'Jane',
+    repName: getPublicRepName(homepage?.repName, 'Jane'),
     businessName: homepage?.businessName ?? "Jane's Sparkle Party",
     repCity: join?.repCity,
     repState: join?.repState,

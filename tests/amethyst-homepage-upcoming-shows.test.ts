@@ -51,6 +51,17 @@ beforeEach(() => {
 })
 
 describe('Amethyst homepage upcoming shows', () => {
+  it('includes a live-now demo event in the local fallback schedule', () => {
+    const [event] = defaultAmethystHomepageEvents
+    const startAt = Date.parse(event.eventTime)
+    const endAt = startAt + event.durationMinutes * 60 * 1000
+    const now = Date.now()
+
+    expect(event.title).toBe('Live Now Demo Reveal')
+    expect(startAt).toBeLessThanOrEqual(now)
+    expect(endAt).toBeGreaterThan(now)
+  })
+
   it('maps calendar events into homepage cards with collection links and stream buttons', () => {
     const mapped = mapCalendarEventToHomepageEvent(
       makeEvent({

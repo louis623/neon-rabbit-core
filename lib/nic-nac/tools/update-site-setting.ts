@@ -15,8 +15,7 @@ const inputSchema = z.object({
   tickerText: z.string().optional(),
   tickerVisible: z.boolean().optional(),
   tagline: z.string().optional(),
-  heroImageUrl: z.string().optional(),
-  heroAnimationType: z.enum(['zoom', 'pan']).optional(),
+  heroAnimationType: z.enum(['still', 'sparkle_rise', 'soft_glow']).optional(),
   teamName: z.string().optional(),
   showJoinPage: z.boolean().optional(),
   customerSiteTemplate: z.string().optional(),
@@ -58,7 +57,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, hero image, hero animation, team name, join-page visibility, the approved Amethyst appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst.',
+      'This can patch banner, ticker, tagline, controlled hero motion, team name, join-page visibility, the approved Amethyst appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -66,7 +65,6 @@ export function makeUpdateSiteSettingTool(ctx: {
       tickerText,
       tickerVisible,
       tagline,
-      heroImageUrl,
       heroAnimationType,
       teamName,
       showJoinPage,
@@ -80,7 +78,6 @@ export function makeUpdateSiteSettingTool(ctx: {
         tickerText !== undefined ||
         tickerVisible !== undefined ||
         tagline !== undefined ||
-        heroImageUrl !== undefined ||
         heroAnimationType !== undefined ||
         teamName !== undefined ||
         showJoinPage !== undefined ||
@@ -102,7 +99,6 @@ export function makeUpdateSiteSettingTool(ctx: {
       if (tickerText !== undefined) siteSettingsPatch.ticker_text = tickerText
       if (tickerVisible !== undefined) siteSettingsPatch.ticker_visible = tickerVisible
       if (tagline !== undefined) siteSettingsPatch.tagline = tagline
-      if (heroImageUrl !== undefined) siteSettingsPatch.hero_image_url = heroImageUrl
       if (heroAnimationType !== undefined) {
         siteSettingsPatch.hero_animation_type = heroAnimationType
       }
@@ -157,10 +153,6 @@ export function makeUpdateSiteSettingTool(ctx: {
         if (tagline !== undefined) {
           updatedFields.push('tagline')
           updated.tagline = row.tagline
-        }
-        if (heroImageUrl !== undefined) {
-          updatedFields.push('heroImageUrl')
-          updated.heroImageUrl = row.hero_image_url
         }
         if (heroAnimationType !== undefined) {
           updatedFields.push('heroAnimationType')

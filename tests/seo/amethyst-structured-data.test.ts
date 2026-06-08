@@ -40,7 +40,7 @@ describe('Amethyst structured data builders', () => {
         expect.objectContaining({
           '@type': 'Person',
           '@id': 'https://sparklebysasha.example/#rep',
-          name: 'Sasha Patel',
+          name: 'Sasha',
           sameAs: ['https://www.tiktok.com/@sparklebysasha'],
         }),
         expect.objectContaining({

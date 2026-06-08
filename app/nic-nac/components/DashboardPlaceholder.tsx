@@ -4098,6 +4098,17 @@ export function SiteSettingsCard({
 
   return (
     <div className={styles.siteSettingsCard}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Site Settings</div>
+          <div className={styles.cardSubtitle}>
+            Keep your public profile, customer pages, and brand details tuned up.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>
+          Preview updates before your customer site changes.
+        </span>
+      </div>
       <div className={styles.calendarHeader}>
         <div className={styles.walletSettingsTitle}>Profile basics</div>
         <span className={styles.rosterTag}>
@@ -4116,7 +4127,7 @@ export function SiteSettingsCard({
           />
         </label>
         <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Business name</span>
+          <span className={styles.searchLabel}>Show name</span>
           <input
             className={styles.searchInput}
             value={draft.businessName}
@@ -4133,30 +4144,12 @@ export function SiteSettingsCard({
             onChange={(event) => onDraftChange?.({ email: event.target.value })}
           />
         </label>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Phone</span>
-          <input
-            className={styles.searchInput}
-            value={draft.phone}
-            onChange={(event) => onDraftChange?.({ phone: event.target.value })}
-          />
-        </label>
       </div>
 
       <div className={styles.siteSettingsSection}>
-        <div className={styles.walletSettingsTitle}>Banner and ticker</div>
+        <div className={styles.walletSettingsTitle}>Ticker and join page</div>
         <div className={styles.siteSettingsGrid}>
-          <label className={styles.searchField}>
-            <span className={styles.searchLabel}>Banner text</span>
-            <textarea
-              className={styles.siteSettingsTextarea}
-              value={draft.bannerText}
-              onChange={(event) =>
-                onDraftChange?.({ bannerText: event.target.value })
-              }
-            />
-          </label>
-          <label className={styles.searchField}>
+          <label className={styles.sortFieldWide}>
             <span className={styles.searchLabel}>Ticker text</span>
             <textarea
               className={styles.siteSettingsTextarea}
@@ -4168,16 +4161,6 @@ export function SiteSettingsCard({
           </label>
         </div>
         <div className={styles.siteSettingsToggleGrid}>
-          <label className={styles.walletToggleRow}>
-            <span className={styles.searchLabel}>Banner visible</span>
-            <input
-              type="checkbox"
-              checked={draft.bannerVisible}
-              onChange={(event) =>
-                onDraftChange?.({ bannerVisible: event.target.checked })
-              }
-            />
-          </label>
           <label className={styles.walletToggleRow}>
             <span className={styles.searchLabel}>Ticker visible</span>
             <input
@@ -4204,19 +4187,7 @@ export function SiteSettingsCard({
       <div className={styles.siteSettingsSection}>
         <div className={styles.walletSettingsTitle}>Branding and visuals</div>
         <div className={styles.siteSettingsGrid}>
-          <label className={styles.sortField}>
-            <span className={styles.sortLabel}>Site template</span>
-            <select
-              className={styles.sortSelect}
-              value={draft.customerSiteTemplate}
-              onChange={() =>
-                onDraftChange?.({ customerSiteTemplate: 'amethyst' })
-              }
-            >
-              <option value="amethyst">Amethyst</option>
-            </select>
-          </label>
-          <label className={styles.sortField}>
+          <label className={styles.sortFieldWide}>
             <span className={styles.sortLabel}>Site appearance</span>
             <select
               className={styles.sortSelect}
@@ -4258,30 +4229,25 @@ export function SiteSettingsCard({
               }
             />
           </label>
-          <label className={styles.searchField}>
-            <span className={styles.searchLabel}>Hero image URL</span>
-            <input
-              className={styles.searchInput}
-              value={draft.heroImageUrl}
-              onChange={(event) =>
-                onDraftChange?.({ heroImageUrl: event.target.value })
-              }
-            />
-          </label>
           <label className={styles.sortField}>
-            <span className={styles.sortLabel}>Hero animation</span>
+            <span className={styles.sortLabel}>Hero motion</span>
             <select
               className={styles.sortSelect}
               value={draft.heroAnimationType}
               onChange={(event) =>
                 onDraftChange?.({
-                  heroAnimationType: event.target.value as 'zoom' | 'pan',
+                  heroAnimationType: event.target.value as SiteSettingsDashboardResult['heroAnimationType'],
                 })
               }
             >
-              <option value="zoom">zoom</option>
-              <option value="pan">pan</option>
+              <option value="sparkle_rise">Sparkle rise</option>
+              <option value="soft_glow">Soft glow</option>
+              <option value="still">Still</option>
             </select>
+            <span className={styles.siteSettingsPreviewNote}>
+              Hero visuals stay curated by your site appearance so the page keeps
+              its polish on desktop and mobile.
+            </span>
           </label>
         </div>
       </div>
@@ -4774,9 +4740,9 @@ export function AccountBillingCard({
 
   return (
     <div className={styles.accountBillingCard}>
-      <div className={styles.accountBillingHeader}>
+      <div className={styles.workspaceSectionHeader}>
         <div>
-          <div className={styles.walletSettingsTitle}>Billing</div>
+          <div className={styles.cardTitle}>Account</div>
           <div className={styles.accountMuted}>
             Build fee + monthly plan - cancel anytime
           </div>
@@ -4786,61 +4752,61 @@ export function AccountBillingCard({
 
       {!summary.canStartSubscription ? (
         <>
-      <div className={styles.accountDetailList}>
-        <div className={styles.accountDetailRow}>
-          <div className={styles.walletTransactionCopy}>
-            <span className={styles.walletTransactionTitle}>Subscription</span>
-            <span className={styles.walletTransactionDate}>{subscriptionDetail}</span>
-          </div>
-          <span className={styles.accountDetailValue}>{nextBillingDate}</span>
-        </div>
-        <div className={styles.accountDetailRow}>
-          <div className={styles.walletTransactionCopy}>
-            <span className={styles.walletTransactionTitle}>Payment method</span>
-            <span className={styles.walletTransactionDate}>
-              {summary.paymentMethod
-                ? `Expires ${String(summary.paymentMethod.expMonth).padStart(2, '0')}/${summary.paymentMethod.expYear}`
-                : 'Add or update your card in Stripe.'}
-            </span>
-          </div>
-          <span className={styles.accountDetailValue}>{paymentMethodLabel}</span>
-        </div>
-      </div>
-
-      <div className={styles.siteSettingsSection}>
-        <div className={styles.walletSettingsTitle}>Billing history</div>
-        <div className={styles.walletTransactionList}>
-          {summary.invoices.length === 0 ? (
-            <div className={styles.emptyState}>
-              Billing history will appear after your first Stripe invoice.
-            </div>
-          ) : (
-            summary.invoices.map((invoice) => (
-              <div key={invoice.id} className={styles.walletTransactionRow}>
-                <div className={styles.walletTransactionCopy}>
-                  <span className={styles.walletTransactionTitle}>
-                    {formatAccountBillingAmount(invoice.amountPaidCents)}
-                  </span>
-                  <span className={styles.walletTransactionDate}>
-                    {formatAccountBillingDate(invoice.createdAt)} -{' '}
-                    {invoice.status ?? 'unknown'}
-                  </span>
-                </div>
-                {invoice.hostedInvoiceUrl ? (
-                  <a
-                    className={styles.helperLink}
-                    href={invoice.hostedInvoiceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View invoice
-                  </a>
-                ) : null}
+          <div className={styles.accountDetailList}>
+            <div className={styles.accountDetailRow}>
+              <div className={styles.walletTransactionCopy}>
+                <span className={styles.walletTransactionTitle}>Subscription</span>
+                <span className={styles.walletTransactionDate}>{subscriptionDetail}</span>
               </div>
-            ))
-          )}
-        </div>
-      </div>
+              <span className={styles.accountDetailValue}>{nextBillingDate}</span>
+            </div>
+            <div className={styles.accountDetailRow}>
+              <div className={styles.walletTransactionCopy}>
+                <span className={styles.walletTransactionTitle}>Payment method</span>
+                <span className={styles.walletTransactionDate}>
+                  {summary.paymentMethod
+                    ? `Expires ${String(summary.paymentMethod.expMonth).padStart(2, '0')}/${summary.paymentMethod.expYear}`
+                    : 'Add or update your card in Stripe.'}
+                </span>
+              </div>
+              <span className={styles.accountDetailValue}>{paymentMethodLabel}</span>
+            </div>
+          </div>
+
+          <div className={styles.siteSettingsSection}>
+            <div className={styles.walletSettingsTitle}>Billing history</div>
+            <div className={styles.walletTransactionList}>
+              {summary.invoices.length === 0 ? (
+                <div className={styles.emptyState}>
+                  Billing history will appear after your first Stripe invoice.
+                </div>
+              ) : (
+                summary.invoices.map((invoice) => (
+                  <div key={invoice.id} className={styles.walletTransactionRow}>
+                    <div className={styles.walletTransactionCopy}>
+                      <span className={styles.walletTransactionTitle}>
+                        {formatAccountBillingAmount(invoice.amountPaidCents)}
+                      </span>
+                      <span className={styles.walletTransactionDate}>
+                        {formatAccountBillingDate(invoice.createdAt)} -{' '}
+                        {invoice.status ?? 'unknown'}
+                      </span>
+                    </div>
+                    {invoice.hostedInvoiceUrl ? (
+                      <a
+                        className={styles.helperLink}
+                        href={invoice.hostedInvoiceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View invoice
+                      </a>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </>
       ) : null}
 
@@ -4996,6 +4962,17 @@ export function ShowCalendarCard({
 
   return (
     <div className={styles.calendarCard}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Calendar</div>
+          <div className={styles.cardSubtitle}>
+            Review upcoming shows, recent history, and what is visible on the public calendar.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>
+          Read-only here. Ask Nic-Nac to add or edit shows.
+        </span>
+      </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
           <span className={styles.metricLabel}>Upcoming</span>
@@ -5016,9 +4993,6 @@ export function ShowCalendarCard({
       </div>
       <div className={styles.calendarHeader}>
         <div className={styles.walletSettingsTitle}>{metrics.monthLabel}</div>
-        <span className={styles.rosterTag}>
-          Read-only here. Ask Nic-Nac to add or edit shows.
-        </span>
       </div>
       <div className={styles.calendarWeekdayRow}>
         {WEEKDAY_LABELS.map((label) => (
@@ -5160,6 +5134,17 @@ export function WalletSummaryCard({
 
   return (
     <div className={styles.walletCard}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>SMS Wallet</div>
+          <div className={styles.cardSubtitle}>
+            Monitor text balance, reloads, and auto-recharge from one account view.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>
+          {summary.autoRechargeEnabled ? 'Auto-recharge on' : 'Auto-recharge off'}
+        </span>
+      </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
           <span className={styles.metricLabel}>Current balance</span>
@@ -5199,9 +5184,6 @@ export function WalletSummaryCard({
         </div>
       </div>
       <div className={styles.walletMetaRow}>
-        <span className={styles.rosterTag}>
-          {summary.autoRechargeEnabled ? 'Auto-recharge on' : 'Auto-recharge off'}
-        </span>
         <span className={styles.rosterTag}>
           Threshold {formatWalletAmount(summary.autoRechargeThresholdMils)}
         </span>
@@ -5253,7 +5235,7 @@ export function WalletSummaryCard({
               </select>
             </label>
             <label className={styles.sortField}>
-          <span className={styles.sortLabel}>Reload amount</span>
+              <span className={styles.sortLabel}>Reload amount</span>
               <select
                 value={autoRechargeDraft.amountCents}
                 className={styles.sortSelect}

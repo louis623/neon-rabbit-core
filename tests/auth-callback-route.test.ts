@@ -214,6 +214,7 @@ describe('GET /api/auth/callback', () => {
       business_name: 'Google Rep',
       phone: null,
       custom_domain: null,
+      public_site_slug: null,
       shop_link: null,
       streaming_links: {
         primary: null,
@@ -233,7 +234,7 @@ describe('GET /api/auth/callback', () => {
         tagline: 'A polished place to shop Google Rep.',
         team_name: 'Google Rep',
         show_join_page: true,
-        hero_animation_type: 'zoom',
+        hero_animation_type: 'sparkle_rise',
         customer_site_template: 'amethyst',
         appearance_preset: 'sparkle_suite_morganite',
       },

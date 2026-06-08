@@ -1,4 +1,5 @@
 import { normalizeSparkleOrigin } from './sparkle-crawl'
+import { getPublicRepName } from '@/lib/amethyst/public-rep-name'
 
 type JsonLdScalar = string | number | boolean | null
 type JsonLdValue = JsonLdScalar | JsonLdObject | JsonLdValue[]
@@ -95,6 +96,7 @@ export function buildAmethystPublicPageJsonLd(
   const origin = normalizeSparkleOrigin(input.origin)
   const pageUrl = resolvePublicUrl(origin, input.path)
   const repId = `${origin}/#rep`
+  const repName = getPublicRepName(input.repName)
   const areaServed = buildAreaServed(input.repCity, input.repState)
   const sameAs = compactStrings(input.sameAs)
 
@@ -120,7 +122,7 @@ export function buildAmethystPublicPageJsonLd(
     {
       '@type': 'Person',
       '@id': repId,
-      name: input.repName,
+      name: repName,
       ...(sameAs.length ? { sameAs } : {}),
       ...(areaServed ? { address: areaServed } : {}),
     },

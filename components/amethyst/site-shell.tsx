@@ -155,22 +155,17 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
 }
 
 function FooterColumn({
-  title,
   links,
 }: {
-  title: string
   links: Array<{ label: string; href: string; external?: boolean }>
 }) {
   return (
     <div>
-      <h2 className="mb-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
-        {title}
-      </h2>
       <ul className="flex flex-col gap-[10px] text-[13px] text-white/65">
         {links.map((link) => (
-          <li key={`${title}-${link.label}`}>
+          <li key={link.label}>
             {renderLink(
-              `${title}-${link.label}`,
+              link.label,
               link,
               link.label,
               'transition hover:text-white',
@@ -182,28 +177,68 @@ function FooterColumn({
   )
 }
 
-function NicNacLauncher() {
-  return (
-    <div className="fixed bottom-6 right-6 z-[90]">
-      <button
-        aria-label="Open Nic-Nac"
-        className="relative flex h-14 w-14 items-center justify-center rounded-[14px] bg-[var(--amethyst-fg)] text-white shadow-[0_18px_32px_rgba(42,31,64,0.25)] transition hover:-translate-y-0.5"
-        type="button"
+function SocialLogo({
+  label,
+  shortLabel,
+}: {
+  label: string
+  shortLabel: string
+}) {
+  const key = `${label} ${shortLabel}`.toLowerCase()
+
+  if (key.includes('tiktok') || key.includes('tt')) {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
+        <path
+          d="M16.6 3c.4 2.4 1.9 4 4.2 4.3v3.4c-1.6 0-3-.4-4.2-1.3v6.2c0 3.4-2.5 5.7-5.8 5.7-3.1 0-5.5-2.1-5.5-5.1 0-3.2 2.5-5.3 5.8-5.3.4 0 .8 0 1.1.1v3.4c-.4-.1-.8-.2-1.2-.2-1.4 0-2.4.8-2.4 2s.9 2 2.2 2c1.4 0 2.3-.9 2.3-2.8V3h3.5Z"
+          fill="currentColor"
+        />
+      </svg>
+    )
+  }
+
+  if (key.includes('facebook') || key.includes('fb')) {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
+        <path
+          d="M14.2 8.1V6.6c0-.7.5-.9.9-.9h2.3V2.2L14.2 2c-3.2 0-4.8 1.9-4.8 5.1v1H7v3.8h2.4V22h4.2V11.9h3.1l.5-3.8h-3Z"
+          fill="currentColor"
+        />
+      </svg>
+    )
+  }
+
+  if (key.includes('instagram') || key.includes('ig')) {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+        viewBox="0 0 24 24"
       >
-        <svg
-          aria-hidden="true"
-          className="h-[22px] w-[22px]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z" />
-        </svg>
-        <span className="absolute -right-[3px] -top-[3px] h-3 w-3 rotate-45 bg-[var(--amethyst-primary)]" />
-      </button>
-    </div>
-  )
+        <rect height="16" rx="4.5" width="16" x="4" y="4" />
+        <circle cx="12" cy="12" r="3.4" />
+        <circle cx="17" cy="7" r="1" />
+      </svg>
+    )
+  }
+
+  if (key.includes('youtube') || key.includes('yt')) {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
+        <path
+          d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.4V8.6l5.9 3.4-5.9 3.4Z"
+          fill="currentColor"
+        />
+      </svg>
+    )
+  }
+
+  return <span className="text-[11px] font-bold">{shortLabel}</span>
 }
 
 export function AmethystSiteShell({
@@ -227,7 +262,7 @@ export function AmethystSiteShell({
         <main>{children}</main>
 
         <footer className="bg-[#0e0820] px-6 pb-8 pt-16 text-white/70">
-          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
             <div>
               <div className="font-[family-name:var(--font-amethyst-display)] text-[22px] font-semibold tracking-[-0.01em] text-white">
                 {content.businessName}
@@ -238,19 +273,20 @@ export function AmethystSiteShell({
               <div className="mt-6 flex gap-2">
                 {content.socialLinks.map((link) => (
                   <a
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-[11px] font-bold text-white transition hover:bg-white hover:text-[#0e0820]"
+                    aria-label={link.label}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white transition hover:bg-white hover:text-[#0e0820]"
                     href={link.href}
                     key={link.label}
+                    title={link.label}
                   >
-                    {link.shortLabel}
+                    <SocialLogo label={link.label} shortLabel={link.shortLabel} />
                   </a>
                 ))}
               </div>
             </div>
 
-            <FooterColumn title="Shop" links={content.footerShopLinks} />
-            <FooterColumn title="About" links={content.footerAboutLinks} />
-            <FooterColumn title={content.footerColumn.title} links={content.footerColumn.links} />
+            <FooterColumn links={content.footerShopLinks} />
+            <FooterColumn links={content.footerAboutLinks} />
           </div>
 
           <div className="mx-auto mt-12 max-w-7xl border-t border-white/10 pt-6 text-[11px] leading-[1.6] text-white/45">
@@ -271,7 +307,6 @@ export function AmethystSiteShell({
         </footer>
       </div>
 
-      <NicNacLauncher />
     </>
   )
 }

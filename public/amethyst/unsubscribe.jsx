@@ -8,7 +8,29 @@ const BUSINESS_NAME = CONTENT.businessName || "Sparkle by Sasha";
 const SHOP_HREF = CONTENT.streamLinks?.shop || "https://bombparty.com";
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
-const JOIN_HREF = FOOTER_LINKS.joinTeam || "/amethyst/Join.html";
+
+function ComingSoonNavItem({ label = "Join Team" }) {
+  return (
+    <span
+      className="hp-header-link hp-header-link-disabled"
+      aria-disabled="true"
+      aria-label={`${label} coming soon`}
+      title={`${label} is coming soon`}
+    >
+      <span>{label}</span>
+      <span className="hp-coming-soon-badge" aria-hidden="true">Soon</span>
+    </span>
+  );
+}
+
+function ComingSoonFooterItem({ label = "Join Team" }) {
+  return (
+    <span className="hp-footer-coming-soon" aria-label={`${label} coming soon`}>
+      {label}
+      <span aria-hidden="true">Soon</span>
+    </span>
+  );
+}
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -18,6 +40,46 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function SocialLogo({ label, shortLabel }) {
+  const key = `${label || ""} ${shortLabel || ""}`.toLowerCase();
+
+  if (key.includes("tiktok") || key.includes("tt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16.6 3c.4 2.4 1.9 4 4.2 4.3v3.4c-1.6 0-3-.4-4.2-1.3v6.2c0 3.4-2.5 5.7-5.8 5.7-3.1 0-5.5-2.1-5.5-5.1 0-3.2 2.5-5.3 5.8-5.3.4 0 .8 0 1.1.1v3.4c-.4-.1-.8-.2-1.2-.2-1.4 0-2.4.8-2.4 2s.9 2 2.2 2c1.4 0 2.3-.9 2.3-2.8V3h3.5Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("facebook") || key.includes("fb")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14.2 8.1V6.6c0-.7.5-.9.9-.9h2.3V2.2L14.2 2c-3.2 0-4.8 1.9-4.8 5.1v1H7v3.8h2.4V22h4.2V11.9h3.1l.5-3.8h-3Z" />
+      </svg>
+    );
+  }
+
+  if (key.includes("instagram") || key.includes("ig")) {
+    return (
+      <svg className="hp-footer-social-logo hp-footer-social-logo-stroke" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.4" />
+        <circle cx="17" cy="7" r="1" />
+      </svg>
+    );
+  }
+
+  if (key.includes("youtube") || key.includes("yt")) {
+    return (
+      <svg className="hp-footer-social-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.4V8.6l5.9 3.4-5.9 3.4Z" />
+      </svg>
+    );
+  }
+
+  return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
 }
 
 function withCurrentSearch(path) {
@@ -35,7 +97,7 @@ function Header() {
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Trade Board</a>
-          <a {...linkProps(JOIN_HREF)} className="hp-header-link">Join Team</a>
+          <ComingSoonNavItem />
         </nav>
         <div className="hp-brand">
           <div className="hp-brand-name">{BUSINESS_NAME}</div>
@@ -56,7 +118,15 @@ function Footer() {
           <p className="hp-footer-tag">Update your customer messaging preferences without needing live rep support.</p>
           <div className="hp-footer-socials">
             {SOCIAL_LINKS.slice(0, 4).map((link) => (
-              <a key={link.shortLabel} {...linkProps(link.href)} className="hp-footer-social">{link.shortLabel}</a>
+              <a
+                key={link.shortLabel}
+                {...linkProps(link.href)}
+                className="hp-footer-social"
+                aria-label={link.label}
+                title={link.label}
+              >
+                <SocialLogo {...link} />
+              </a>
             ))}
           </div>
         </div>
@@ -65,7 +135,7 @@ function Footer() {
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
             <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
-            <li><a {...linkProps(JOIN_HREF)}>Join Team</a></li>
+            <li><ComingSoonFooterItem /></li>
           </ul>
         </div>
         <div className="hp-footer-col">

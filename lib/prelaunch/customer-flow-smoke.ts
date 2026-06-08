@@ -55,7 +55,7 @@ export interface CustomerFlowSmokeResult {
     nicNac: string
     homepage: string
     tradeBoard: string
-    joinPage: string
+    joinTeamComingSoon: string
   }
 }
 
@@ -446,7 +446,7 @@ export async function runCustomerFlowSmoke(
       nicNac: '/nic-nac',
       homepage: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinPage: '/amethyst/Join.html',
+      joinTeamComingSoon: 'Join Team is intentionally coming soon for launch.',
     },
   }
 }

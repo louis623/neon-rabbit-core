@@ -7,7 +7,6 @@ export interface AmethystLinkCheck {
 const AMETHYST_PAGES = [
   { label: 'homepage', path: '/amethyst/Homepage.html' },
   { label: 'trade board', path: '/amethyst/Trade.html' },
-  { label: 'join page', path: '/amethyst/Join.html' },
 ]
 
 interface BuildAmethystLinkChecksOptions {
