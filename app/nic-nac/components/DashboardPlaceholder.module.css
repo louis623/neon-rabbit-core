@@ -2064,6 +2064,9 @@
 
 .helperButton,
 .helperLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
   border: 1px solid rgba(238, 44, 155, 0.46);
   border-radius: 999px;
@@ -2075,6 +2078,7 @@
   line-height: 1.2;
   padding: 10px 14px;
   text-decoration: none;
+  text-align: center;
   cursor: pointer;
   white-space: normal;
   box-shadow:

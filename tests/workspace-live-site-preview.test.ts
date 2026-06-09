@@ -21,6 +21,13 @@ describe('workspace live site focus preview', () => {
     expect(component).toContain('rel="noreferrer"')
   })
 
+  it('centers helper link text inside the pill button shape', () => {
+    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*display:\s*inline-flex/s)
+    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*align-items:\s*center/s)
+    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*justify-content:\s*center/s)
+    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*text-align:\s*center/s)
+  })
+
   it('does not block embedded preview on tablet or mobile widths', () => {
     expect(component).not.toContain('LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY')
     expect(component).not.toContain('canUseEmbeddedLiveSitePreview')
