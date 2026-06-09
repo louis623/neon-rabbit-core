@@ -1,7 +1,11 @@
 import styles from './Chips.module.css'
 import type { NicNacChatMode } from './EmptyGreeting'
 
-const WORKSPACE_CHIP_LABELS = ["What's on my board?", 'Remove a listing']
+const WORKSPACE_CHIP_LABELS = [
+  'Add a piece to Trade Board',
+  "What's on my board?",
+  'Remove a listing',
+]
 
 export function Chips({
   visible,

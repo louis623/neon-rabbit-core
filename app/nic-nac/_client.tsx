@@ -141,6 +141,13 @@ function buildSetupStateUrl() {
   return `/api/self-serve/setup-state?conversationId=${encodeURIComponent(conversationId)}`
 }
 
+function buildLoginRedirectHref() {
+  if (typeof window === 'undefined') return '/login?redirect=%2Fnic-nac'
+
+  const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
+  return `/login?redirect=${encodeURIComponent(returnPath)}`
+}
+
 function buildWorkspaceReviewFallbackState(): SetupStateWithLiveQueue | null {
   if (typeof window === 'undefined') return null
 
@@ -298,6 +305,11 @@ export default function NicNacClient({
             return
           }
 
+          if (res.status === 401) {
+            router.replace(buildLoginRedirectHref())
+            return
+          }
+
           const body = (await res.json().catch(() => null)) as
             | SetupStateResponse
             | null
@@ -349,7 +361,7 @@ export default function NicNacClient({
         options.signal?.removeEventListener('abort', abortFromCaller)
       }
     },
-    [reviewerSmokeVisible],
+    [reviewerSmokeVisible, router],
   )
 
   const syncReturnedCheckoutSession = useCallback(

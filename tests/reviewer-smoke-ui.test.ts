@@ -23,6 +23,10 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
     'utf8',
   )
+  const chips = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/Chips.tsx'),
+    'utf8',
+  )
   const standard = readFileSync(
     resolve(process.cwd(), 'docs/sparkle-suite/testing/reviewer-smoke-standard.md'),
     'utf8',
@@ -78,6 +82,13 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('showWorkspaceReviewState')
     expect(nicNacClient).toContain('Workspace review mode starts fresh')
     expect(nicNacClient).toContain('messages: []')
+  })
+
+  it('offers a guided trade-board intake starter chip', () => {
+    expect(chips).toContain('Add a piece to Trade Board')
+    expect(chips.indexOf('Add a piece to Trade Board')).toBeLessThan(
+      chips.indexOf("What's on my board?"),
+    )
   })
 
   it('puts the trade request inbox before board inventory in the workspace card', () => {

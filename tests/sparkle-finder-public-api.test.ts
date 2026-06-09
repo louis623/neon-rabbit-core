@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   countListingsByDesignForQualifiedReps,
+  deriveSparkleFinderCatalogFacets,
   filterListingsWithNextShows,
   mapFinderShowRowsToNextShows,
   mapSparkleFinderLiveShowRows,
@@ -41,6 +42,74 @@ describe('Sparkle Finder public API contract helpers', () => {
       searchTags: ['ring', 'rose gold', 'opal'],
       availableListingCount: 3,
     })
+  })
+
+  it('derives catalog facets only from existing catalog rows', () => {
+    const facets = deriveSparkleFinderCatalogFacets([
+      {
+        id: 'design-1',
+        item_number: 'RG100',
+        design_name: 'Aurora Diamond Ring',
+        material: 'Rose gold',
+        main_stone: 'Pearl',
+        bp_msrp: 39.95,
+        canonical_photo_url: null,
+        type_prefix: 'RG',
+        search_tags: ['diamond', 'rose gold'],
+        collection: { name: 'April Birthday', collection_year: 2026 },
+      },
+      {
+        id: 'design-2',
+        item_number: 'NK200',
+        design_name: 'Orbit Necklace',
+        material: 'Rhodium',
+        main_stone: 'Citrine',
+        bp_msrp: 49.95,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        search_tags: ['citrine'],
+        collection: { name: 'Galaxy', collection_year: 2025 },
+      },
+      {
+        id: 'design-3',
+        item_number: 'ER300',
+        design_name: 'Everyday Earrings',
+        material: null,
+        main_stone: null,
+        bp_msrp: null,
+        canonical_photo_url: null,
+        type_prefix: 'ER',
+        search_tags: [],
+        collection: null,
+      },
+    ])
+
+    expect(facets.collections).toEqual([
+      { value: 'April Birthday', count: 1 },
+      { value: 'Galaxy', count: 1 },
+    ])
+    expect(facets.materials).toEqual([
+      { value: 'Rhodium', count: 1 },
+      { value: 'Rose gold', count: 1 },
+    ])
+    expect(facets.stones).toEqual([
+      { value: 'Citrine', count: 1 },
+      { value: 'Pearl', count: 1 },
+    ])
+    expect(facets.types).toEqual([
+      { value: 'earrings', count: 1 },
+      { value: 'necklace', count: 1 },
+      { value: 'ring', count: 1 },
+    ])
+    expect(facets.labels).toEqual([
+      { value: 'diamond', count: 1 },
+      { value: 'standard', count: 2 },
+    ])
+    expect(facets.years).toEqual([
+      { value: '2025', count: 1 },
+      { value: '2026', count: 1 },
+    ])
+    expect(JSON.stringify(facets)).not.toContain('Opal')
   })
 
   it('maps public availability without leaking private listing fields', () => {

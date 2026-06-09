@@ -50,6 +50,14 @@ describe('Nic-Nac tool routing', () => {
     expect(toolNames).not.toContain('record_show_session_event')
   })
 
+  it('routes the guided add-a-piece chip to trade-board tools', () => {
+    const intents = getToolIntentsForText('Add a piece to Trade Board')
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+  })
+
   it('keeps casual chat on the lightweight memory pack', () => {
     const intents = getToolIntentsForText('hey, how are you holding up today?')
 
@@ -72,6 +80,7 @@ describe('Nic-Nac tool routing', () => {
   it.each([
     'Where is the Live Queue walkthrough video?',
     'Show me the how-to for editing my public site links.',
+    'Walk me through adding jewelry to my trade board.',
   ])('keeps "%s" on the read-only resources tool', (text) => {
     const intents = getToolIntentsForText(text)
 
@@ -309,6 +318,127 @@ describe('Nic-Nac tool routing', () => {
             type: 'file',
             mediaType: 'image/jpeg',
             url: 'data:image/jpeg;base64,BBBB',
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools for an item-number reply during guided intake', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'item-number',
+        role: 'user',
+        parts: [{ type: 'text', text: 'ER13743' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools available when the rep retries after a tool failure', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'I want this item added to the jewelry database as well as my trade board.',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "I hit a wall here - the add-listing tool isn't available on this turn.",
+          },
+        ],
+      },
+      {
+        id: 'retry',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Try again.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when the rep points back to already attached photos', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Please add this piece to my jewelry database and trade board.',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'What is the design name for ER13743? I can read the label photo, but I need the missing detail before I add it.',
+          },
+        ],
+      },
+      {
+        id: 'photos-have-info',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'All the information you need is contained within those photos.',
           },
         ],
       },

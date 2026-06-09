@@ -71,6 +71,8 @@ export type FinderJewelryType =
   | 'stack'
   | 'bracelet'
 
+export type FinderCatalogLabel = 'diamond' | 'unicorn' | 'standard'
+
 export interface SparkleFinderCatalogItem {
   designId: string
   itemNumber: string
@@ -84,6 +86,20 @@ export interface SparkleFinderCatalogItem {
   canonicalPhotoUrl: string | null
   searchTags: string[]
   availableListingCount: number
+}
+
+export interface SparkleFinderCatalogFacetOption {
+  value: string
+  count: number
+}
+
+export interface SparkleFinderCatalogFacets {
+  collections: SparkleFinderCatalogFacetOption[]
+  materials: SparkleFinderCatalogFacetOption[]
+  stones: SparkleFinderCatalogFacetOption[]
+  types: SparkleFinderCatalogFacetOption[]
+  labels: SparkleFinderCatalogFacetOption[]
+  years: SparkleFinderCatalogFacetOption[]
 }
 
 export interface SparkleFinderPublicRep {
@@ -128,9 +144,20 @@ export interface SparkleFinderLiveShow {
 
 export interface SparkleFinderCatalogListOptions {
   query?: string
+  jewelryType?: FinderJewelryType
+  collection?: string
+  material?: string
+  mainStone?: string
+  label?: FinderCatalogLabel
+  collectionYear?: number
   limit?: number
   supabase?: SupabaseClient
 }
+
+export type SparkleFinderCatalogFacetOptions = Omit<
+  SparkleFinderCatalogListOptions,
+  'limit'
+>
 
 export interface SparkleFinderCatalogDetailOptions {
   designId: string
@@ -162,6 +189,7 @@ const FINDER_LIVE_SHOW_SELECT =
 
 export const DEFAULT_FINDER_CATALOG_LIMIT = 24
 export const MAX_FINDER_CATALOG_LIMIT = 50
+export const MAX_FINDER_CATALOG_FACET_SOURCE_LIMIT = 500
 export const DEFAULT_FINDER_AVAILABILITY_LIMIT = 24
 export const MAX_FINDER_AVAILABILITY_LIMIT = 50
 export const DEFAULT_FINDER_LIVE_SHOW_LIMIT = 50
@@ -173,6 +201,14 @@ const TYPE_MAP: Record<JewelryType, FinderJewelryType> = {
   ER: 'earrings',
   ST: 'stack',
   BR: 'bracelet',
+}
+
+const TYPE_PREFIX_MAP: Record<FinderJewelryType, JewelryType> = {
+  ring: 'RG',
+  necklace: 'NK',
+  earrings: 'ER',
+  stack: 'ST',
+  bracelet: 'BR',
 }
 
 export function parseSparkleFinderLimit(
@@ -218,13 +254,61 @@ export async function listSparkleFinderCatalogItems(
     Math.max(options.limit ?? DEFAULT_FINDER_CATALOG_LIMIT, 1),
     MAX_FINDER_CATALOG_LIMIT,
   )
-  const queryText = options.query?.trim()
-  const designs = await loadCatalogDesignRows(supabase, queryText, limit)
+  const designs = filterCatalogRowsByLabel(
+    await loadCatalogDesignRows(supabase, options, limit),
+    options.label,
+  )
   const counts = await countEligibleAvailableListings(supabase, designs.map((design) => design.id))
 
   return designs.map((design) =>
     mapSparkleFinderDesignRow(design, counts.get(design.id) ?? 0),
   )
+}
+
+export async function listSparkleFinderCatalogFacets(
+  options: SparkleFinderCatalogFacetOptions = {},
+): Promise<SparkleFinderCatalogFacets> {
+  if (!isFinderSupabaseConfigured(options.supabase)) return emptySparkleFinderCatalogFacets()
+
+  const supabase = options.supabase ?? createAdminClient()
+  const rows = filterCatalogRowsByLabel(
+    await loadCatalogDesignRows(supabase, options, MAX_FINDER_CATALOG_FACET_SOURCE_LIMIT),
+    options.label,
+  )
+
+  return deriveSparkleFinderCatalogFacets(rows)
+}
+
+export function deriveSparkleFinderCatalogFacets(
+  rows: FinderDesignRow[],
+): SparkleFinderCatalogFacets {
+  const collectionCounts = new Map<string, number>()
+  const materialCounts = new Map<string, number>()
+  const stoneCounts = new Map<string, number>()
+  const typeCounts = new Map<string, number>()
+  const labelCounts = new Map<string, number>()
+  const yearCounts = new Map<string, number>()
+
+  for (const row of rows) {
+    const collection = readSingle(row.collection)
+    incrementFacet(collectionCounts, collection?.name)
+    incrementFacet(materialCounts, row.material)
+    incrementFacet(stoneCounts, row.main_stone)
+    incrementFacet(typeCounts, TYPE_MAP[row.type_prefix])
+    incrementFacet(labelCounts, deriveSparkleFinderCatalogLabel(row))
+    if (collection?.collection_year) {
+      incrementFacet(yearCounts, String(collection.collection_year))
+    }
+  }
+
+  return {
+    collections: mapFacetCounts(collectionCounts),
+    materials: mapFacetCounts(materialCounts),
+    stones: mapFacetCounts(stoneCounts),
+    types: mapFacetCounts(typeCounts),
+    labels: mapFacetCounts(labelCounts),
+    years: mapFacetCounts(yearCounts),
+  }
 }
 
 export async function getSparkleFinderCatalogItem(
@@ -331,77 +415,192 @@ export async function listSparkleFinderLiveShows(
 
 async function loadCatalogDesignRows(
   supabase: SupabaseClient,
-  queryText: string | undefined,
+  options: SparkleFinderCatalogListOptions,
   limit: number,
 ) {
+  const queryText = options.query?.trim()
+  const collectionIds = await loadCatalogFilterCollectionIds(supabase, options, limit)
+  if (collectionIds && collectionIds.length === 0) return []
+
   if (!queryText) {
-    const { data, error } = await supabase
+    let request = supabase
       .from('jewelry_designs')
       .select(FINDER_CATALOG_SELECT)
-      .order('created_at', { ascending: false })
-      .limit(limit)
+    request = applyCatalogBrowseFilters(request, options, collectionIds)
+    const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
     return ((data ?? []) as unknown as FinderDesignRow[])
   }
 
-  const pattern = `%${queryText.replace(/[%_]/g, (match) => `\\${match}`)}%`
-  const { data, error } = await supabase
+  const pattern = `%${escapeIlikePattern(queryText)}%`
+  let request = supabase
     .from('jewelry_designs')
     .select(FINDER_CATALOG_SELECT)
     .or(
       `item_number.ilike.${pattern},design_name.ilike.${pattern},material.ilike.${pattern},main_stone.ilike.${pattern}`,
     )
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  request = applyCatalogBrowseFilters(request, options, collectionIds)
+  const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
   if (error) throw error
   const rows = ((data ?? []) as unknown as FinderDesignRow[])
   if (rows.length > 0) return rows
 
-  return loadCatalogFallbackRows(supabase, queryText, limit)
+  return loadCatalogFallbackRows(supabase, queryText, limit, options, collectionIds)
 }
 
 async function loadCatalogFallbackRows(
   supabase: SupabaseClient,
   queryText: string,
   limit: number,
+  options: SparkleFinderCatalogListOptions,
+  explicitCollectionIds: string[] | null,
 ) {
   const tag = queryText.trim().toLowerCase()
   if (tag.length >= 2 && tag.length <= 32) {
-    const { data, error } = await supabase
+    let request = supabase
       .from('jewelry_designs')
       .select(FINDER_CATALOG_SELECT)
       .overlaps('search_tags', [tag])
-      .order('created_at', { ascending: false })
-      .limit(limit)
+    request = applyCatalogBrowseFilters(request, options, explicitCollectionIds)
+    const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
     const rows = ((data ?? []) as unknown as FinderDesignRow[])
     if (rows.length > 0) return rows
   }
 
-  if (/^20[2-4]\d$/.test(queryText)) {
-    const { data: collections, error: collectionErr } = await supabase
-      .from('collections')
-      .select('id')
-      .eq('collection_year', Number(queryText))
-      .limit(limit)
-    if (collectionErr) throw collectionErr
+  const collectionIds = await loadFallbackCollectionIds(supabase, queryText, limit)
+  if (collectionIds.length > 0) {
+    const narrowedCollectionIds = explicitCollectionIds
+      ? collectionIds.filter((collectionId) => explicitCollectionIds.includes(collectionId))
+      : collectionIds
 
-    const collectionIds = ((collections ?? []) as Array<{ id: string }>).map(
-      (collection) => collection.id,
-    )
-    if (collectionIds.length > 0) {
-      const { data, error } = await supabase
-        .from('jewelry_designs')
-        .select(FINDER_CATALOG_SELECT)
-        .in('collection_id', collectionIds)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-      if (error) throw error
-      return ((data ?? []) as unknown as FinderDesignRow[])
-    }
+    if (narrowedCollectionIds.length === 0) return []
+
+    let request = supabase
+      .from('jewelry_designs')
+      .select(FINDER_CATALOG_SELECT)
+      .in('collection_id', narrowedCollectionIds)
+    request = applyCatalogBrowseFilters(request, options, null)
+    const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
+    if (error) throw error
+    return ((data ?? []) as unknown as FinderDesignRow[])
   }
 
   return []
+}
+
+function applyCatalogBrowseFilters(
+  request: any,
+  options: SparkleFinderCatalogListOptions,
+  collectionIds: string[] | null,
+) {
+  if (options.jewelryType) {
+    request = request.eq('type_prefix', TYPE_PREFIX_MAP[options.jewelryType])
+  }
+  if (options.material?.trim()) {
+    request = request.ilike('material', `%${escapeIlikePattern(options.material)}%`)
+  }
+  if (options.mainStone?.trim()) {
+    request = request.ilike('main_stone', `%${escapeIlikePattern(options.mainStone)}%`)
+  }
+  if (collectionIds) {
+    request = request.in('collection_id', collectionIds)
+  }
+  return request
+}
+
+async function loadCatalogFilterCollectionIds(
+  supabase: SupabaseClient,
+  options: SparkleFinderCatalogListOptions,
+  limit: number,
+) {
+  const collection = options.collection?.trim()
+  const hasCollectionFilter = Boolean(collection)
+  const hasYearFilter = typeof options.collectionYear === 'number'
+  if (!hasCollectionFilter && !hasYearFilter) return null
+
+  let request = supabase.from('collections').select('id')
+  if (collection) {
+    request = request.ilike('name', `%${escapeIlikePattern(collection)}%`)
+  }
+  if (typeof options.collectionYear === 'number') {
+    request = request.eq('collection_year', options.collectionYear)
+  }
+
+  const { data, error } = await request.limit(limit)
+  if (error) throw error
+  return ((data ?? []) as Array<{ id: string }>).map((row) => row.id)
+}
+
+async function loadFallbackCollectionIds(
+  supabase: SupabaseClient,
+  queryText: string,
+  limit: number,
+) {
+  const pattern = `%${escapeIlikePattern(queryText)}%`
+  let request = supabase.from('collections').select('id').ilike('name', pattern)
+  if (/^20[2-4]\d$/.test(queryText)) {
+    request = supabase.from('collections').select('id').eq('collection_year', Number(queryText))
+  }
+
+  const { data, error } = await request.limit(limit)
+  if (error) throw error
+  return ((data ?? []) as Array<{ id: string }>).map((collection) => collection.id)
+}
+
+function filterCatalogRowsByLabel(
+  rows: FinderDesignRow[],
+  label: FinderCatalogLabel | undefined,
+) {
+  if (!label) return rows
+
+  return rows.filter((row) => {
+    return deriveSparkleFinderCatalogLabel(row) === label
+  })
+}
+
+function escapeIlikePattern(value: string) {
+  return value.trim().replace(/[%_]/g, (match) => `\\${match}`)
+}
+
+function deriveSparkleFinderCatalogLabel(row: FinderDesignRow): FinderCatalogLabel {
+  const haystack = [
+    row.design_name,
+    row.material,
+    row.main_stone,
+    readSingle(row.collection)?.name,
+    ...(Array.isArray(row.search_tags) ? row.search_tags : []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  if (haystack.includes('unicorn')) return 'unicorn'
+  if (haystack.includes('diamond')) return 'diamond'
+  return 'standard'
+}
+
+function incrementFacet(counts: Map<string, number>, value: string | null | undefined) {
+  const normalized = value?.trim()
+  if (!normalized) return
+  counts.set(normalized, (counts.get(normalized) ?? 0) + 1)
+}
+
+function mapFacetCounts(counts: Map<string, number>): SparkleFinderCatalogFacetOption[] {
+  return Array.from(counts.entries())
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value))
+}
+
+function emptySparkleFinderCatalogFacets(): SparkleFinderCatalogFacets {
+  return {
+    collections: [],
+    materials: [],
+    stones: [],
+    types: [],
+    labels: [],
+    years: [],
+  }
 }
 
 async function countEligibleAvailableListings(

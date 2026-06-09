@@ -1025,6 +1025,114 @@
     0 12px 28px rgba(54, 34, 29, 0.05);
 }
 
+.playbookStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.playbookIntro,
+.playbookGroup,
+.featureIndex,
+.supportPath {
+  border-radius: 14px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 14px;
+}
+
+.playbookIntro,
+.playbookGroupHeader,
+.supportPath {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.playbookGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playbookGuideList {
+  display: grid;
+  gap: 8px;
+}
+
+.playbookGuide {
+  border-radius: 12px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background: rgba(255, 246, 250, 0.58);
+  overflow: hidden;
+}
+
+.playbookGuideSummary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.playbookGuideSummary::-webkit-details-marker {
+  display: none;
+}
+
+.playbookGuideSummary > span:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.playbookGuideBody {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.guideField {
+  display: grid;
+  gap: 4px;
+}
+
+.guideField p,
+.guideField ul,
+.guideField ol {
+  margin: 0;
+}
+
+.guideField ul,
+.guideField ol {
+  padding-left: 18px;
+}
+
+.guideField li + li {
+  margin-top: 4px;
+}
+
+.featureIndex {
+  display: grid;
+  gap: 10px;
+}
+
+.featureIndexGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.featureIndexItem {
+  min-width: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background: rgba(255, 255, 255, 0.68);
+  padding: 10px;
+}
+
 .skinGallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
@@ -2669,6 +2777,20 @@
 
   .resourceList {
     grid-template-columns: 1fr;
+  }
+
+  .playbookIntro,
+  .playbookGroupHeader,
+  .supportPath {
+    flex-direction: column;
+  }
+
+  .featureIndexGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .playbookGuideSummary {
+    flex-direction: column;
   }
 
   .tradeRow {

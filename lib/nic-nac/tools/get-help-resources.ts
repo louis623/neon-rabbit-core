@@ -13,7 +13,7 @@ export const getHelpResourcesTool: ToolDefinition = {
   build: () =>
     tool({
       description:
-        'Search the approved Sparkle Suite help/how-to resources for setup, Nic-Nac, site edits, shows, trade board, calculator, Chrome extension, Live Queue, and escalation questions.',
+        'Search the approved Sparkle Suite Help & Resources Workflow Playbook. Prefer workflow guides for step-by-step rep outcomes, feature references for quick lookup, and support resources when the rep is blocked. Use only returned resource details; do not claim coming-soon or sandbox features are fully live.',
       inputSchema,
       execute: async ({ query = '' }) => ({
         resources: getHelpResources(query),

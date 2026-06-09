@@ -8,6 +8,7 @@ import {
   AccountBillingCard,
   BusinessCalculatorCard,
   DashboardPlaceholder,
+  HelpResourcesCard,
   TradeBoardWorkspaceCard,
   CustomerRosterCard,
   SiteSettingsCard,
@@ -431,6 +432,35 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('I confirm I own the piece')
   })
 
+  it('renders Help & Resources as a workflow playbook with a secondary feature index', () => {
+    const html = renderToStaticMarkup(
+      createElement(HelpResourcesCard, {
+        state: { status: 'ready', resources: getHelpResources() },
+        hasPaidWorkspace: true,
+      }),
+    )
+
+    expect(html).toContain('Pick what you are trying to do')
+    expect(html).toContain('Workflow Playbook')
+    expect(html).toContain('Start here: Learn your Sparkle Suite workspace')
+    expect(html).toContain('Add jewelry to your Trade Board')
+    expect(html).toContain('Goal')
+    expect(html).toContain('Use this when')
+    expect(html).toContain('Before you start')
+    expect(html).toContain('Good result')
+    expect(html).toContain('Ask Nic-Nac')
+    expect(html).toContain('Still stuck')
+    expect(html).toContain('Feature Index')
+    expect(html).toContain('Support Path')
+
+    expect(html.indexOf('Workflow Playbook')).toBeLessThan(
+      html.indexOf('Choose your look'),
+    )
+    expect(html.indexOf('Feature Index')).toBeLessThan(
+      html.indexOf('Choose your look'),
+    )
+  })
+
   it('deep-links workspace sections without self-serve-started first-run routing', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
@@ -682,7 +712,6 @@ describe('DashboardPlaceholder', () => {
               totalCompleted: 0,
               totalMsrpTraded: 0,
               avgFulfillmentDays: null,
-              topDesign: null,
               repeatCustomers: [],
             },
           },
@@ -731,7 +760,6 @@ describe('DashboardPlaceholder', () => {
               totalCompleted: 0,
               totalMsrpTraded: 0,
               avgFulfillmentDays: null,
-              topDesign: null,
               repeatCustomers: [],
             },
           },
@@ -756,6 +784,16 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Use search or filters to browse pieces currently on your board.')
     expect(html).not.toContain('Load more')
     expect(html).not.toContain('Loading board pieces...')
+  })
+
+  it('does not render the retired trade-history Top design metric', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).not.toContain('Top design')
+    expect(source).not.toContain('topDesign')
   })
 
   it('builds active trade board fetch URLs with limit and offset', () => {
@@ -799,7 +837,6 @@ describe('DashboardPlaceholder', () => {
               totalCompleted: 0,
               totalMsrpTraded: 0,
               avgFulfillmentDays: null,
-              topDesign: null,
               repeatCustomers: [],
             },
           },

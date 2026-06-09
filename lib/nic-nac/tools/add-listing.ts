@@ -39,11 +39,13 @@ const itemBaseShape = {
   repNotes: z.string().optional(),
   tradePreferences: z.string().optional(),
   listingPhotoUrl: z.string().optional(),
+  listingPhotoIndex: z.number().int().min(1).max(10).optional(),
 }
 
 const newDesignShape = {
   designName: z.string().optional(),
   piecePhotoUrl: z.string().optional(),
+  piecePhotoIndex: z.number().int().min(1).max(10).optional(),
   material: z.string().optional(),
   mainStone: z.string().optional(),
   bpMsrp: z.number().optional(),
@@ -67,6 +69,7 @@ const inputSchema = z.object({
   repNotes: z.string().optional(),
   tradePreferences: z.string().optional(),
   listingPhotoUrl: z.string().optional(),
+  listingPhotoIndex: z.number().int().min(1).max(10).optional(),
   // New-design recovery fields (single-mode follow-up after NEEDS_FULL_INFO).
   ...newDesignShape,
   // Batch-mode array.
@@ -133,12 +136,13 @@ async function writeAuditIsolated(args: {
 }
 
 // Look up a user-uploaded image part in this conversation and return its
-// client-compressed data URL. Within one message, the last image wins so a
-// jewelry photo can beat a label/info-card photo uploaded before it.
+// client-compressed data URL. When the model knows which attached photo is the
+// jewelry-front image, photoIndex is 1-based within the relevant message.
 async function resolvePhotoFromConversation(ctx: {
   supabase: SupabaseClient
   conversationId: string
   latestUserMessageOnly?: boolean
+  photoIndex?: number
 }): Promise<{
   imageDataUrl: string
 } | null> {
@@ -167,6 +171,18 @@ async function resolvePhotoFromConversation(ctx: {
         typeof p.url === 'string',
     )
     if (imageParts.length === 0) continue
+    if (ctx.photoIndex !== undefined) {
+      const imagePart = imageParts[ctx.photoIndex - 1]
+      if (!imagePart?.url) {
+        throw new NicNacToolError({
+          code: 'PHOTO_CHOICE_REQUIRED',
+          userMessage: `I only see ${imageParts.length} photo${imageParts.length === 1 ? '' : 's'} in that message, so I couldn't use photo ${ctx.photoIndex}. Tell me which attached image is the jewelry-front photo.`,
+        })
+      }
+      return {
+        imageDataUrl: imagePart.url,
+      }
+    }
     if (imageParts.length > 1) {
       throw new NicNacToolError({
         code: 'PHOTO_CHOICE_REQUIRED',
@@ -377,6 +393,7 @@ async function runSingle(
       const resolvedPhoto = await resolvePhotoFromConversation({
         supabase: ctx.supabase,
         conversationId: ctx.conversationId,
+        photoIndex: input.piecePhotoIndex,
       })
       if (!resolvedPhoto) {
         throw new NicNacToolError({
@@ -619,6 +636,7 @@ async function runSingle(
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       latestUserMessageOnly: true,
+      photoIndex: input.listingPhotoIndex,
     })
     if (resolvedListingPhoto) {
       try {
@@ -651,6 +669,8 @@ async function runSingle(
           requiredFields: ['designName', 'collectionName'],
           optionalFields: [
             'piecePhotoUrl',
+            'piecePhotoIndex',
+            'listingPhotoIndex',
             'material',
             'mainStone',
             'bpMsrp',
@@ -659,7 +679,7 @@ async function runSingle(
             'specialFeatures',
             'lengthInfo',
           ],
-          message: `${itemNumber} isn't in our database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read. Then ask the rep to confirm or provide collectionName before retrying — never extract or autofill the collection from vision alone (collections match by exact-string and a vision guess creates a junk row). The handler uploads the photo from chat automatically — do NOT ask the rep for a URL or include piecePhotoUrl unless they explicitly volunteered a real one.`,
+          message: `${itemNumber} isn't in the Sparkle Suite jewelry database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read. If a box clearly shows a Birthday Collection month/year, normalize it to collectionName like "March Birthday" and collectionYear like 2026; otherwise ask the rep for the exact collection. When multiple photos are attached, pass piecePhotoIndex or listingPhotoIndex for the jewelry-front photo instead of asking for another upload. The handler uploads the photo from chat automatically — do NOT ask the rep for a URL or include piecePhotoUrl unless they explicitly volunteered a real one.`,
         }
       }
       if (err.code === 'NEEDS_COLLECTION') {
@@ -787,8 +807,10 @@ async function runBatch(
           repNotes: recoveryItem.repNotes,
           tradePreferences: recoveryItem.tradePreferences,
           listingPhotoUrl: recoveryItem.listingPhotoUrl,
+          listingPhotoIndex: recoveryItem.listingPhotoIndex,
           designName: recoveryItem.designName,
           piecePhotoUrl: recoveryItem.piecePhotoUrl,
+          piecePhotoIndex: recoveryItem.piecePhotoIndex,
           material: recoveryItem.material,
           mainStone: recoveryItem.mainStone,
           bpMsrp: recoveryItem.bpMsrp,
@@ -919,8 +941,8 @@ export function makeAddListingTool(ctx: {
       "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
-      "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. If multiple chat photos are present, ask for one clear jewelry-front photo before writing. " +
-      "If the item isn't in the database, the tool returns needsAction:'create_design'. Use vision to extract designName, then confirm collectionName with the rep before retrying — never autofill the collection from vision alone. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
+      "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. Open packaging with the jewelry clearly visible counts as a jewelry-front photo. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo. " +
+      "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,

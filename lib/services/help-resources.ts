@@ -1,225 +1,479 @@
 import type { HelpResource } from '@/lib/services/types'
 
-const HELP_RESOURCES: HelpResource[] = [
-  {
-    id: 'getting-started-after-purchase',
-    category: 'Getting started',
-    title: 'Getting oriented in the workspace',
-    summary: 'Where to find the main dashboard tools and when to ask Nic-Nac for help.',
+type HelpResourceInput = Omit<
+  HelpResource,
+  'beforeYouStart' | 'steps' | 'relatedFeatureIds' | 'quickActions'
+> & {
+  beforeYouStart?: string[]
+  steps?: string[]
+  relatedFeatureIds?: string[]
+  quickActions?: string[]
+}
+
+function helpResource(input: HelpResourceInput): HelpResource {
+  return {
+    beforeYouStart: ['Open the Sparkle Suite workspace.'],
+    steps: [
+      'Open Help & Resources.',
+      'Choose the closest workflow.',
+      'Ask Nic-Nac if you want guided help.',
+    ],
+    relatedFeatureIds: [],
+    quickActions: [],
+    ...input,
+  }
+}
+
+const WORKFLOW_RESOURCES: HelpResource[] = [
+  helpResource({
+    id: 'start-here-workspace',
+    type: 'workflow',
+    group: 'Setup',
+    category: 'Setup',
+    title: 'Start here: Learn your Sparkle Suite workspace',
+    summary: 'A quick map of the workspace so reps know where the main tools live.',
     body:
-      'Use the workspace sections for trade board work, shows, customer roster, site settings, billing, and help. Nic-Nac can answer plain-English questions, explain what a tool does, or help gather details when something needs support.',
-    quickActions: ['Open backend workspace', 'Ask Nic-Nac for help', 'Watch workspace walkthrough'],
+      'Use this as the first stop when the workspace feels like a lot. It explains the main areas without expecting reps to know product names first.',
+    goal: 'Understand the main Sparkle Suite workspace areas without feeling lost.',
+    useWhen: 'Use this when you are new, returning after time away, or unsure where to start.',
+    beforeYouStart: ['Open the Sparkle Suite workspace.'],
+    steps: [
+      'Review the dashboard as your home base.',
+      'Open Nic-Nac when you want plain-English guidance.',
+      'Use Site Settings for customer-facing site details.',
+      'Use Trade Board for listings, requests, and trade follow-up.',
+      'Use Calendar and Live Queue tools before and during live shows.',
+      'Use Account for billing, SMS wallet, and site analytics.',
+      'Use Help & Resources when you need the next workflow.',
+    ],
+    goodResult: 'You know which workspace area to open for the job in front of you.',
+    nicNacPrompt: 'Walk me through the Sparkle Suite workspace.',
+    stillStuck: 'Ask Nic-Nac what you are trying to do and which workspace area to open.',
+    relatedFeatureIds: ['nic-nac', 'customer-site', 'trade-board', 'live-queue', 'billing'],
+    quickActions: ['Ask Nic-Nac for directions', 'Open Site Settings', 'Open Trade Board'],
     video: {
       title: 'Workspace orientation walkthrough',
       provider: 'youtube',
       status: 'placeholder',
     },
-  },
-  {
-    id: 'meet-nic-nac',
-    category: 'Nic-Nac',
-    title: 'Meet Nic-Nac and how to ask for help',
-    summary: 'How to use Nic-Nac as the first stop for site edits and workflow questions.',
+  }),
+  helpResource({
+    id: 'finish-setup-approve-site',
+    type: 'workflow',
+    group: 'Setup',
+    category: 'Setup',
+    title: 'Finish setup and approve your customer site',
+    summary: 'Move from a new account to a usable workspace and customer-facing site.',
     body:
-      'Nic-Nac is your Sparkle Suite assistant inside the backend workspace. Ask plain-English questions, ask for help changing site settings, or ask what to do next. If something needs Louis or Neon Rabbit support, Nic-Nac should help gather the details for escalation.',
-    quickActions: ['Ask Nic-Nac what to do next', 'Ask for a site edit', 'Start an escalation'],
-    video: {
-      title: 'How to use Nic-Nac',
-      provider: 'youtube',
-      status: 'placeholder',
-    },
-  },
-  {
-    id: 'backend-workspace-tour',
-    category: 'Backend workspace',
-    title: 'Backend workspace tour',
-    summary: 'Where the main Sparkle Suite tools live once the rep logs in.',
+      'This workflow keeps setup focused on the basics reps need before sharing their Sparkle Suite link.',
+    goal: 'Finish setup, approve the customer-site preview, and unlock the workspace.',
+    useWhen: 'Use this when your account is new or your site preview still needs approval.',
+    beforeYouStart: [
+      'Business or show display name',
+      'Public links and social profiles',
+      'Preferred customer-site skin',
+    ],
+    steps: [
+      'Confirm your business and profile basics.',
+      'Add the public links shoppers need.',
+      'Choose or confirm the customer-site skin.',
+      'Review the customer-facing site preview.',
+      'Ask Nic-Nac to help adjust unclear setup answers.',
+      'Approve the final setup preview.',
+      'Confirm that the Sparkle Suite workspace opens after approval.',
+    ],
+    goodResult: 'Your customer site is approved and the workspace opens for regular use.',
+    nicNacPrompt: 'Help me finish setup and approve my customer site.',
+    stillStuck:
+      'Tell Nic-Nac which setup step is blocked and include any visible error or missing field.',
+    relatedFeatureIds: ['customer-site', 'nic-nac', 'account-settings'],
+    quickActions: ['Review site preview', 'Ask Nic-Nac about setup', 'Open Site Settings'],
+  }),
+  helpResource({
+    id: 'update-customer-site',
+    type: 'workflow',
+    group: 'Setup',
+    category: 'Customer Site',
+    title: 'Update your customer-facing site',
+    summary: 'Make common customer-site edits without needing support.',
     body:
-      'The backend workspace is the home base for shows, trade board work, customer roster, calculator, billing, site settings, and help. Use the left-side workspace sections to move between tools, then ask Nic-Nac when you want help taking action.',
-    quickActions: ['Open workspace tour', 'Review workspace sections', 'Ask Nic-Nac for directions'],
-    video: {
-      title: 'Backend workspace tour',
-      provider: 'youtube',
-      status: 'placeholder',
-    },
-  },
-  {
-    id: 'public-site-editing',
-    category: 'Site settings',
-    title: 'Editing the public site, copy, links, and skin',
-    summary: 'How to change the customer-facing details shoppers see first.',
-    body:
-      'Use Site Settings for public-facing updates such as display name, business name, ticker text, tagline, controlled hero motion, social links, join-page visibility, and skin preset. Custom hero image uploads are not part of the launch surface, so the site keeps a polished appearance.',
-    quickActions: ['Open site settings', 'Choose skin preset', 'Update public links'],
+      'Use Site Settings for public-facing changes shoppers notice first. Custom hero image upload is not part of the launch surface.',
+    goal: 'Update the customer-facing site details reps can safely manage from the workspace.',
+    useWhen: 'Use this when your show info, links, branding, or Join Team visibility changes.',
+    beforeYouStart: ['The exact copy, link, handle, or setting you want to change.'],
+    steps: [
+      'Open Site Settings.',
+      'Update display name, business name, ticker, tagline, or social links.',
+      'Confirm the Shop Now link points to the right customer destination.',
+      'Set Join Team visibility for launch expectations.',
+      'Choose a supported skin preset if the site appearance needs a refresh.',
+      'Save the settings.',
+      'Open the customer-facing site preview and confirm the change.',
+    ],
+    goodResult: 'The customer-facing site shows the updated public details.',
+    nicNacPrompt: 'Help me update my customer-facing site.',
+    stillStuck:
+      'Ask Nic-Nac to identify which site setting controls the change and include the exact copy or link you wanted to use.',
+    relatedFeatureIds: ['customer-site', 'account-settings', 'nic-nac'],
+    quickActions: ['Open Site Settings', 'Preview customer site', 'Ask Nic-Nac for a site edit'],
     video: {
       title: 'Public site editing walkthrough',
       provider: 'youtube',
       status: 'placeholder',
     },
-  },
-  {
-    id: 'shows-and-trade-board',
-    category: 'Shows and trade board',
-    title: 'Adding and updating shows; Managing trade board content',
-    summary: 'How shows and trade board setup fit together before the rep goes live.',
+  }),
+  helpResource({
+    id: 'get-ready-for-live-show',
+    type: 'workflow',
+    group: 'Live Shows',
+    category: 'Live Shows',
+    title: 'Get ready for a live show',
+    summary: 'A pre-show checklist for site, queue, calendar, and trade board readiness.',
     body:
-      'Add upcoming shows in the calendar, then keep trade board pieces current so customers can request available pieces. Nic-Nac can help create shows, update show details, explain listing status, and guide trade request handling.',
-    quickActions: ['Add a show', 'Open trade board', 'Ask Nic-Nac to explain status'],
-    video: {
-      title: 'Shows and trade board walkthrough',
-      provider: 'youtube',
-      status: 'placeholder',
-    },
-  },
-  {
-    id: 'calculator-walkthrough',
-    category: 'Calculator',
-    title: 'Using the calculator',
-    summary: 'How to estimate monthly and single-show goals from the backend workspace.',
-    body:
-      'The business calculator helps estimate show revenue, costs, inventory flow, and take-home planning. Use it as a planning guide, then adjust assumptions when your show cadence, order volume, or costs change.',
-    quickActions: ['Open calculator', 'Estimate monthly take-home', 'Estimate one show'],
-    video: {
-      title: 'Calculator walkthrough',
-      provider: 'youtube',
-      status: 'placeholder',
-    },
-  },
-  {
-    id: 'chrome-extension-live-queue-overview',
+      'Use this before going live so customers can find the right show details and the rep is not chasing setup pieces mid-show.',
+    goal: 'Confirm the main Sparkle Suite live-show surfaces are ready before show time.',
+    useWhen: 'Use this on show day or while scheduling the next show.',
+    beforeYouStart: [
+      'Show date and time',
+      'Live platform',
+      'Customer site link',
+      'Current trade board pieces',
+    ],
+    steps: [
+      'Confirm the upcoming show appears in the calendar.',
+      'Open the customer site link and check the visible show information.',
+      'Review the Trade Board for stale or unavailable pieces.',
+      'Check Live Queue readiness based on current rollout instructions.',
+      'Confirm any customer update feature is enabled only if it is production-ready for this account.',
+      'Ask Nic-Nac to review anything that looks out of place.',
+    ],
+    goodResult: 'The customer site, show details, and trade board are ready before the live starts.',
+    nicNacPrompt: 'Help me get ready for a live show.',
+    stillStuck:
+      'Tell Nic-Nac which pre-show check failed and include the show date, platform, and visible issue.',
+    relatedFeatureIds: ['live-event-calendar', 'live-queue', 'trade-board', 'customer-site'],
+    quickActions: ['Open Calendar', 'Open Trade Board', 'Check Live Queue'],
+  }),
+  helpResource({
+    id: 'use-live-queue-during-show',
+    type: 'workflow',
+    group: 'Live Shows',
     category: 'Live Queue',
-    title: 'Chrome extension and Live Queue overview',
-    summary: 'Why the Chrome extension exists and how it supports the public Live Queue.',
+    title: 'Use Live Queue during a show',
+    summary: 'Understand what the queue is doing and what to check when it looks wrong.',
     body:
-      'The Chrome extension connects the Bomb Party Party Orders page to Sparkle Suite so the public site can show the live reveal queue. Reps do not need implementation details; they need to know why the extension is there, how to confirm it is on, and when to ask for help if the queue looks stale or empty.',
-    quickActions: ['Watch extension overview', 'Check extension status', 'Review Live Queue help'],
+      'Live Queue readiness can be coming soon or launch-gated depending on rollout state. Reps should follow the current approved setup path and ask for help if the queue is stale or empty. Check the sync code, extension status, and Party Filter before escalating. Web Store approval, unpacked testing, rep rollout, and verified installed copies are separate readiness steps.',
+    goal: 'Keep the public queue understandable during a live show.',
+    useWhen: 'Use this when checking Live Queue before or during a live show.',
+    beforeYouStart: [
+      'Sparkle Suite sync code',
+      'Bomb Party Party Orders tab',
+      'Current party or show context',
+    ],
+    steps: [
+      'Confirm the approved Live Queue setup path for this account.',
+      'Check that the sync code matches the workspace.',
+      'Confirm the Bomb Party Party Orders tab is open when queue sync is expected.',
+      'Use Party Filter when only one party should sync from a busy dashboard.',
+      'Check whether the queue is stale, empty, or missing expected names.',
+      'Ask Nic-Nac to gather status details if the queue still looks wrong.',
+    ],
+    goodResult:
+      'The queue state makes sense for the current show, or the right support details are collected.',
+    nicNacPrompt: 'Help me check my Live Queue.',
+    stillStuck:
+      'Include sync code status, Party Filter, whether Chrome and the BP tab are open, and what the public queue shows.',
+    relatedFeatureIds: ['live-queue'],
+    quickActions: ['Check extension status', 'Review stale queue', 'Ask Nic-Nac for help'],
+  }),
+  helpResource({
+    id: 'add-jewelry-to-trade-board',
+    type: 'workflow',
+    group: 'Trade Board',
+    category: 'Trade Board',
+    title: 'Add jewelry to your Trade Board',
+    summary: 'Start with the item number, then add photos only when the database needs them.',
+    body:
+      'Start with the item number. Nic-Nac checks the Sparkle Suite jewelry database first. Label/details and packaging photos are not final board photos; the final customer-facing board image must be a clear front-facing jewelry photo. Use a light box with the white background and brightest setting when taking catalog or board photos.',
+    goal: 'Add one tradeable piece with correct details and a customer-facing jewelry photo.',
+    useWhen: 'Use this when you have a piece you are willing to trade.',
+    beforeYouStart: [
+      'Item number',
+      'Readable label/details photo if the item is missing from the database',
+      'Collection name or packaging context if collection is unclear',
+      'Final front-facing jewelry photo',
+    ],
+    steps: [
+      'Start with the item number.',
+      'Let Nic-Nac check the Sparkle Suite jewelry database.',
+      'If the item is already found, confirm the match and listing details.',
+      'If the item is missing, upload a readable label/details photo.',
+      'Confirm the collection name or upload packaging context if the collection is not clear.',
+      'Upload the final front-facing jewelry photo for the customer-facing board image.',
+      'Review the listing and add it to your board.',
+    ],
+    goodResult:
+      'The piece appears on your Trade Board with correct details, available status, and a clear jewelry photo.',
+    nicNacPrompt: 'Help me add a piece to my Trade Board.',
+    stillStuck:
+      'Ask Nic-Nac what information is missing. If support is needed, include the item number, photos uploaded, and where the flow stopped.',
+    relatedFeatureIds: ['trade-board', 'nic-nac'],
+    quickActions: [
+      'Add a piece to Trade Board',
+      'Review photo best practices',
+      'Ask Nic-Nac what info is missing',
+    ],
     video: {
-      title: 'Chrome extension / Live Queue overview',
+      title: 'Adding trade board jewelry and taking light-box photos',
       provider: 'youtube',
       status: 'placeholder',
     },
-  },
-  {
-    id: 'setup-troubleshooting-escalation',
-    category: 'Troubleshooting',
-    title: 'Troubleshooting and escalation',
-    summary: 'What to try first and when Nic-Nac should package the issue for Louis or support.',
+  }),
+  helpResource({
+    id: 'handle-trade-requests',
+    type: 'workflow',
+    group: 'Trade Board',
+    category: 'Trade Requests',
+    title: 'Handle trade requests',
+    summary: 'Approve, deny, and follow up on trade requests without losing the thread.',
     body:
-      'Start by checking the relevant help resource, then ask Nic-Nac to walk through the setup step. Escalate only when the rep is blocked, something appears broken, or a change needs Neon Rabbit support. Include the page, account, action attempted, and any visible error.',
-    quickActions: ['Ask Nic-Nac to troubleshoot', 'Gather support details', 'Escalate to support'],
-  },
-  {
-    id: 'trade-board-basics',
-    category: 'Trade board',
-    title: 'How the trade board works',
-    summary: 'What belongs on your board, what the status labels mean, and how Nic-Nac helps.',
-    body:
-      'Your trade board is the live list of pieces you are willing to trade. Available means shoppers can request it. Pending trade means a request is in motion. Traded means a swap was completed. Removed means you pulled it down on purpose.',
-    quickActions: ['Review active listings', 'Remove a listing', 'Ask Nic-Nac to add a piece'],
-  },
-  {
-    id: 'trade-request-handling',
-    category: 'Trade requests',
-    title: 'How to approve or deny trade requests',
-    summary: 'A quick decision framework for requests that arrive during or after a show.',
-    body:
-      'Use the request inbox to compare the customer note with your current goals. Approving moves the piece into fulfillment. Denying returns the piece to your available board. If several customers want the same piece, only one request can move forward.',
+      'Sparkle Suite organizes trade interest, but the rep still controls trade judgment, approvals, shipping, and follow-through. Sparkle Suite does not guarantee equal value, settle disputes, or approve trades for the rep.',
+    goal: 'Move trade requests through a clear decision and fulfillment rhythm.',
+    useWhen: 'Use this when a customer requests a trade or a pending trade needs follow-up.',
+    beforeYouStart: [
+      'Customer request note',
+      'Current listing status',
+      'Rep decision on whether the trade should move forward',
+    ],
+    steps: [
+      'Open the trade request inbox.',
+      'Review the customer note and the requested listing.',
+      'Approve the request when the trade should move forward.',
+      'Deny the request when the trade should not move forward.',
+      'Move approved trades through shipped and completed when follow-through happens.',
+      'Keep only one request moving forward when several customers want the same piece.',
+    ],
+    goodResult: 'Each request has the right status and the rep knows what follow-up remains.',
+    nicNacPrompt: 'Help me handle my trade requests.',
+    stillStuck:
+      'Include the customer name, listing, request status, and the decision you are trying to make.',
+    relatedFeatureIds: ['trade-board'],
     quickActions: ['Open request inbox', 'Approve request', 'Deny request'],
-  },
-  {
-    id: 'fulfillment-rhythm',
-    category: 'Fulfillment',
-    title: 'Keep fulfillment moving',
-    summary: 'What the approved, shipped, and completed queue states are for.',
+  }),
+  helpResource({
+    id: 'manage-customers-and-updates',
+    type: 'workflow',
+    group: 'Customers & Account',
+    category: 'Customers',
+    title: 'Manage customers and updates',
+    summary: 'Keep customer roster, signup, opt-outs, and update readiness clear.',
     body:
-      'Approved means the trade is committed and needs follow-through. Shipped means it is on the way. Completed means the swap is fully done and can roll into your history metrics. Keep this queue current so your monthly report stays trustworthy.',
-    quickActions: ['Review queue', 'Mark shipped', 'Mark completed'],
-  },
-  {
-    id: 'audience-consent',
-    category: 'Audience',
-    title: 'Consent and outreach guardrails',
-    summary: 'Who can still receive email or SMS and what to do after an opt-out.',
-    body:
-      'Only message customers who are still reachable in the dashboard. If someone has opted out or sent STOP, they need to opt back in themselves. Use the signup form link when a customer wants back in.',
-    quickActions: ['Copy signup form link', 'Review reachable customers', 'Open customer roster'],
-  },
-  {
-    id: 'wallet-billing',
+      'Email Updates and SMS Updates must be treated according to their current account readiness. Customer messages should only go to opted-in reachable customers when the feature is production-ready for that account; otherwise describe the flow as coming soon or sandbox.',
+    goal: 'Understand which customers are reachable and what update tools are ready to use.',
+    useWhen: 'Use this when checking customer signup, opt-outs, Email Updates, or SMS Updates.',
+    beforeYouStart: [
+      'Customer roster access',
+      'Signup form link',
+      'Current Email/SMS readiness state',
+    ],
+    steps: [
+      'Open the customer roster.',
+      'Review which customers are reachable by email or SMS.',
+      'Use the signup form link when a customer wants to opt in.',
+      'Respect opt-outs and STOP status.',
+      'Confirm whether Email Updates or SMS Updates are coming soon, sandbox, or production-ready for this account.',
+      'Ask Nic-Nac before sending or promising any customer update flow.',
+    ],
+    goodResult:
+      'The rep knows who is reachable and avoids promising update behavior that is not ready.',
+    nicNacPrompt: 'Help me understand my customer updates.',
+    stillStuck:
+      'Include the customer channel, opt-in question, and whether the account is in sandbox or production mode.',
+    relatedFeatureIds: ['email-updates', 'sms-updates', 'customer-roster'],
+    quickActions: [
+      'Copy signup form link',
+      'Review reachable customers',
+      'Ask Nic-Nac about updates',
+    ],
+  }),
+  helpResource({
+    id: 'billing-wallet-account-basics',
+    type: 'workflow',
+    group: 'Customers & Account',
     category: 'Billing',
-    title: 'SMS wallet and billing basics',
-    summary: 'How SMS charges, wallet loads, and monthly billing fit together.',
+    title: 'Billing, SMS wallet, and account basics',
+    summary: 'Separate platform billing from SMS wallet spend and account status.',
     body:
-      'Manual texts debit the SMS wallet. If the wallet is low, load funds or enable auto-recharge. Monthly platform billing is separate from SMS spend and lives in Account / billing.',
-    quickActions: ['Open SMS wallet', 'Manage billing', 'Enable auto-recharge'],
-  },
-  {
-    id: 'site-tweaks',
-    category: 'Site settings',
-    title: 'Fast site tweaks reps make most often',
-    summary: 'Ticker copy, controlled hero motion, join-page visibility, and social handles.',
+      'Platform billing and SMS wallet spend are separate. Payment behavior may be sandbox or test-mode during demo and launch review.',
+    goal: 'Understand subscription billing, SMS wallet balance, and account payment state.',
+    useWhen: 'Use this when reviewing payment status, SMS wallet balance, or auto-recharge.',
+    beforeYouStart: [
+      'Account billing section',
+      'SMS wallet section',
+      'Current demo or production context',
+    ],
+    steps: [
+      'Open Account.',
+      'Review subscription billing status.',
+      'Review SMS wallet balance separately from platform billing.',
+      'Check whether auto-recharge is enabled.',
+      'Confirm whether payment behavior is sandbox, test-mode, or production-ready.',
+      'Ask Nic-Nac to explain unclear account status before escalating.',
+    ],
+    goodResult: 'The rep understands what is subscription billing and what is SMS wallet spend.',
+    nicNacPrompt: 'Help me understand billing and my SMS wallet.',
+    stillStuck:
+      'Include billing status, wallet balance, checkout mode, and the action you attempted.',
+    relatedFeatureIds: ['billing', 'sms-updates', 'account-settings'],
+    quickActions: ['Open SMS wallet', 'Manage billing', 'Review auto-recharge'],
+  }),
+  helpResource({
+    id: 'fix-something-or-ask-for-help',
+    type: 'workflow',
+    group: 'Help',
+    category: 'Support',
+    title: 'Fix something or ask for help',
+    summary: 'Try the right first checks, then package support details when blocked.',
     body:
-      'Site settings are for the fast public-facing tweaks shoppers notice first. Use them when your show cadence changes, your recruitment push changes, or you want cleaner branding without editing code.',
-    quickActions: ['Open site settings', 'Update banner text', 'Hide join page'],
-  },
-  {
-    id: 'domain-forwarding',
-    category: 'Site settings',
-    title: 'Forward a custom domain to your Sparkle Suite show link',
-    summary:
-      'Use your domain provider\'s forwarding/redirect setting to send a custom domain to yoursparklesuite.com/yourshowname.',
-    body:
-      'Your default customer site link is yoursparklesuite.com/yourshowname. If you own a custom domain, set up standard forwarding or redirecting with your domain provider so visitors land on that Sparkle Suite show link; do not use masked forwarding because it can hide the real page and break customer-facing behavior. Custom domains are self-managed by default: Nic-Nac can point reps to this article, but should not walk through provider-specific DNS setup or domain forwarding screens. If you want Sparkle Suite to help with setup, ask about paid premium tech help.',
-    quickActions: ['Copy show link', 'Review domain forwarding steps', 'Ask about premium tech help'],
-  },
-  {
-    id: 'live-queue-setup',
-    category: 'Live Queue',
-    title: 'Set up the Live Queue extension',
-    summary:
-      'How your sync code, Party Filter, and extension status work before a live show.',
-    body:
-      'The Live Queue extension reads your Bomb Party Party Orders page and sends unrevealed first names to your Sparkle Suite site. You enter your Sparkle Suite sync code in the extension once, then confirm the extension status is on and recently synced before you go live. Use Party Filter when you only want one party synced from a busy dashboard. Nic-Nac can help you find the right setup steps, but the rep confirms the sync code, chooses the Party Filter, and watches the status before show time.',
-    quickActions: ['Check extension status', 'Confirm sync code', 'Set Party Filter'],
-  },
-  {
-    id: 'live-queue-troubleshooting',
-    category: 'Live Queue',
-    title: 'Fix stale or empty Live Queue states',
-    summary:
-      'What to check when the queue is stale, empty, missing names, or not matching the show.',
-    body:
-      'A stale queue usually means the extension has not synced recently, Chrome is closed, the Bomb Party Party Orders tab is not open, or the saved sync code does not match Sparkle Suite. An empty queue can be correct when every order is revealed, no orders match the Party Filter, or the current party has no unrevealed rows. The rep should confirm the BP tab, extension status, sync code, and Party Filter first. If the queue is still stale or empty after that, ask Nic-Nac to help gather the status details for Louis or Neon Rabbit support.',
-    quickActions: ['Review stale queue', 'Review empty queue', 'Ask Nic-Nac for help'],
-  },
-  {
-    id: 'live-queue-rollout',
-    category: 'Live Queue',
-    title: 'Understand Web Store and unpacked install readiness',
-    summary:
-      'Why repo-ready extension work is separate from Chrome Web Store approval and rep rollout.',
-    body:
-      'The extension can be ready in the Sparkle Suite repo before every rep has the Web Store version. Web Store approval, rep rollout, and a verified installed copy are separate launch steps. During review, Louis or Neon Rabbit may provide an unpacked install for emergency or supervised testing, but reps should use the approved Web Store version for normal shows when it is available. Nic-Nac can explain the difference, while Louis or Neon Rabbit owns packaging, Web Store submission, approval checks, and rollout instructions.',
-    quickActions: ['Check Web Store status', 'Review unpacked install note', 'Ask Nic-Nac what to use'],
-  },
+      'This path keeps reps from getting stuck and helps support start from the actual issue instead of asking the rep to repeat everything.',
+    goal: 'Resolve simple issues or collect clean support details when the rep is blocked.',
+    useWhen: 'Use this when something looks broken, confusing, stale, missing, or blocked.',
+    beforeYouStart: [
+      'The page or workflow where the issue happened',
+      'What you tried',
+      'Any visible error',
+    ],
+    steps: [
+      'Open the closest workflow guide.',
+      'Check the Good Result section to confirm what should happen.',
+      'Ask Nic-Nac to walk through the workflow.',
+      'If still blocked, collect the page, account, action attempted, and visible error.',
+      'Send the support request with those details.',
+    ],
+    goodResult: 'The rep either resolves the issue or sends support enough context to act.',
+    nicNacPrompt: 'Help me troubleshoot this Sparkle Suite issue.',
+    stillStuck:
+      'Include page, account email, action attempted, expected result, actual result, and any visible error.',
+    relatedFeatureIds: ['nic-nac', 'account-settings'],
+    quickActions: ['Ask Nic-Nac to troubleshoot', 'Gather support details', 'Escalate to support'],
+  }),
+]
+
+const FEATURE_REFERENCE_TITLES = [
+  ['customer-site', 'Customer Site', 'Update your public-facing Sparkle Suite site details.'],
+  ['trade-board', 'Trade Board', 'Manage listings, requests, and trade follow-up.'],
+  ['live-queue', 'Live Queue', 'Help customers follow queue state when rollout is active.'],
+  [
+    'live-event-calendar',
+    'Live Event Calendar',
+    'Show upcoming lives in a clear customer-facing place.',
+  ],
+  [
+    'email-updates',
+    'Email Updates',
+    'Reach opted-in customers when Email Updates are ready for the account.',
+  ],
+  [
+    'sms-updates',
+    'SMS Updates',
+    'Reach opted-in customers when SMS Updates are ready for the account.',
+  ],
+  ['nic-nac', 'Nic-Nac', 'Use the built-in Sparkle Suite assistant for guided rep support.'],
+  ['billing', 'Billing', 'Review platform billing and payment status.'],
+  ['account-settings', 'Account / Settings', 'Manage account basics, wallet, and workspace settings.'],
+] as const
+
+const FEATURE_RESOURCES: HelpResource[] = FEATURE_REFERENCE_TITLES.map(
+  ([id, title, summary]) =>
+    helpResource({
+      id,
+      type: 'feature_reference',
+      group: 'Feature Index',
+      category: 'Feature Index',
+      title,
+      summary,
+      body: `${title} reference lives under the Feature Index. Use the Workflow Playbook first when you are trying to complete a specific task.`,
+      goal: `Know where ${title} fits in Sparkle Suite.`,
+      useWhen: `Use this when you already know you need ${title} reference help.`,
+      beforeYouStart: ['Know the feature you want to inspect.'],
+      steps: [
+        'Open Help & Resources.',
+        `Choose ${title} in the Feature Index.`,
+        'Use the related workflow guide when you need step-by-step help.',
+      ],
+      goodResult: `You know which ${title} workflow or workspace section to open next.`,
+      nicNacPrompt: `Help me with ${title}.`,
+      stillStuck: `Ask Nic-Nac which ${title} workflow applies to your situation.`,
+      relatedFeatureIds: [id],
+      quickActions: [`Open ${title}`, 'Ask Nic-Nac for guided help'],
+    }),
+)
+
+const DOMAIN_FORWARDING_RESOURCE = helpResource({
+  id: 'domain-forwarding',
+  type: 'support',
+  group: 'Support',
+  category: 'Site settings',
+  title: 'Forward a custom domain to your Sparkle Suite show link',
+  summary:
+    "Use your domain provider's forwarding/redirect setting to send a custom domain to yoursparklesuite.com/yourshowname.",
+  body:
+    'Your default customer site link is yoursparklesuite.com/yourshowname. If you own a custom domain, set up standard forwarding or redirecting with your domain provider so visitors land on that Sparkle Suite show link; do not use masked forwarding because it can hide the real page and break customer-facing behavior. Custom domains are self-managed by default: Nic-Nac can point reps to this article, but should not walk through provider-specific DNS setup or domain forwarding screens. If you want Sparkle Suite to help with setup, ask about paid premium tech help.',
+  goal: 'Understand the approved custom domain forwarding policy.',
+  useWhen: 'Use this when a rep owns a custom domain and wants it to point to Sparkle Suite.',
+  beforeYouStart: ['Default Sparkle Suite show link', 'Access to the domain provider account'],
+  steps: [
+    'Copy the default Sparkle Suite show link.',
+    'Open the domain provider forwarding or redirect settings.',
+    'Forward the domain to the Sparkle Suite show link.',
+    'Avoid masked forwarding.',
+    'Ask about paid premium tech help if provider-specific setup help is needed.',
+  ],
+  goodResult: 'Visitors who use the custom domain land on the Sparkle Suite show link.',
+  nicNacPrompt: 'Help me understand custom domain forwarding.',
+  stillStuck:
+    'Include the domain provider, the destination show link, and whether masked forwarding is enabled.',
+  relatedFeatureIds: ['customer-site', 'account-settings'],
+  quickActions: ['Copy show link', 'Review domain forwarding steps', 'Ask about premium tech help'],
+})
+
+const HELP_RESOURCES: HelpResource[] = [
+  ...WORKFLOW_RESOURCES,
+  ...FEATURE_RESOURCES,
+  DOMAIN_FORWARDING_RESOURCE,
 ]
 
 export function getHelpResources(query = ''): HelpResource[] {
   const normalized = query.trim().toLowerCase()
   if (!normalized) return HELP_RESOURCES
+  const queryWords = normalized.split(/\s+/).filter(Boolean)
 
-  return HELP_RESOURCES.filter((resource) =>
-    [
+  return HELP_RESOURCES.filter((resource) => {
+    const searchableText = [
+      resource.type,
+      resource.group,
       resource.category,
       resource.title,
       resource.summary,
       resource.body,
+      resource.goal,
+      resource.useWhen,
+      ...resource.beforeYouStart,
+      ...resource.steps,
+      resource.goodResult,
+      resource.nicNacPrompt,
+      resource.stillStuck,
+      ...resource.relatedFeatureIds,
       ...resource.quickActions,
       resource.video?.title ?? '',
       resource.video?.status ?? '',
     ]
       .join(' ')
       .toLowerCase()
-      .includes(normalized),
-  )
+
+    return (
+      searchableText.includes(normalized) ||
+      queryWords.every((word) => searchableText.includes(word))
+    )
+  })
 }

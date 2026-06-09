@@ -42,7 +42,7 @@ export function makeGetTradeHistoryTool(ctx: {
       "List past trade requests against the authenticated rep's listings, with summary analytics. " +
       'Use this when the rep asks about past trades, completed swaps, rejected requests, who has traded with them before, or how their trade activity is trending. ' +
       'Returns approved + denied trade records (not pending — for pending use get_trade_requests). ' +
-      'Summary includes totalCompleted, totalMsrpTraded, avgFulfillmentDays, the rep\'s top-traded design, and any repeat customers.',
+      'Summary includes totalCompleted, totalMsrpTraded, avgFulfillmentDays, and any repeat customers.',
     inputSchema,
     execute: async ({ limit }) => {
       let result: Awaited<ReturnType<typeof getTradeHistory>>
@@ -75,7 +75,6 @@ export function makeGetTradeHistoryTool(ctx: {
           totalCompleted: result.summary.totalCompleted,
           totalMsrpTraded: result.summary.totalMsrpTraded,
           avgFulfillmentDays: result.summary.avgFulfillmentDays,
-          topDesign: result.summary.topDesign,
           repeatCustomers: result.summary.repeatCustomers,
         },
       }

@@ -74,7 +74,7 @@ export interface AmethystJoinTemplateData {
   }
   footerColumn: {
     title: string
-    links: [AmethystJoinFooterLink, AmethystJoinFooterLink, AmethystJoinFooterLink]
+    links: AmethystJoinFooterLink[]
   }
   teamMembers: AmethystJoinTeamMember[]
   faqAnswers: {

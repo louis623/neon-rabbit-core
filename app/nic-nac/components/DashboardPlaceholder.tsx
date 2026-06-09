@@ -377,6 +377,14 @@ const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
   { value: 'name_asc', label: 'Name A-Z' },
 ]
 
+const HELP_RESOURCE_GROUP_ORDER = [
+  'Setup',
+  'Live Shows',
+  'Trade Board',
+  'Customers & Account',
+  'Help',
+] as const
+
 const SOCIAL_HANDLE_FIELDS = [
   { key: 'instagram', label: 'Instagram' },
   { key: 'facebook', label: 'Facebook' },
@@ -1270,7 +1278,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             totalCompleted: 0,
             totalMsrpTraded: 0,
             avgFulfillmentDays: null,
-            topDesign: null,
             repeatCustomers: [],
           },
         }
@@ -3523,12 +3530,6 @@ export function TradeBoardWorkspaceCard({
                     {history.summary.avgFulfillmentDays?.toFixed(1) ?? '-'}
                   </span>
                 </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Top design</span>
-                  <span className={styles.metricValue}>
-                    {history.summary.topDesign?.itemNumber ?? '-'}
-                  </span>
-                </div>
               </div>
               <div className={styles.tradeList}>
                 {history.items.length > 0 ? (
@@ -3810,7 +3811,23 @@ function MessagesCenterCard({
   )
 }
 
-function HelpResourcesCard({
+function getResourcesByType(
+  resources: HelpResource[] | undefined,
+  type: HelpResource['type'],
+) {
+  return resources?.filter((resource) => resource.type === type) ?? []
+}
+
+function getWorkflowResourcesByGroup(resources: HelpResource[] | undefined) {
+  const workflows = getResourcesByType(resources, 'workflow')
+
+  return HELP_RESOURCE_GROUP_ORDER.map((group) => ({
+    group,
+    resources: workflows.filter((resource) => resource.group === group),
+  })).filter((section) => section.resources.length > 0)
+}
+
+export function HelpResourcesCard({
   state,
   hasPaidWorkspace,
 }: {
@@ -3821,6 +3838,12 @@ function HelpResourcesCard({
     const skin = AMETHYST_SKIN_CARDS.find((candidate) => candidate.id === recommendation.id)
     return skin ? { ...recommendation, skin } : null
   }).filter((item): item is NonNullable<typeof item> => item !== null)
+  const workflowGroups = getWorkflowResourcesByGroup(state.resources)
+  const featureReferences = getResourcesByType(state.resources, 'feature_reference')
+    .filter((resource) => resource.group === 'Feature Index')
+  const supportResources = (state.resources ?? []).filter((resource) =>
+    resource.type === 'support' || resource.id === 'fix-something-or-ask-for-help',
+  )
 
   return (
     <div className={styles.workspacePanel}>
@@ -3828,12 +3851,146 @@ function HelpResourcesCard({
         <div>
           <div className={styles.cardTitle}>Help & Resources</div>
           <div className={styles.cardSubtitle}>
-            Customer-site skin reference and the full operating library.
+            Pick what you are trying to do. Nic-Nac can walk you through the steps when you want help.
           </div>
         </div>
       </div>
       {
         <>
+          {state.status === 'ready' && state.resources ? (
+            <div className={styles.playbookStack}>
+              <div className={styles.playbookIntro}>
+                <div>
+                  <div className={styles.walletSettingsTitle}>Workflow Playbook</div>
+                  <div className={styles.helperNote}>
+                    Start with the outcome, then follow the same simple recipe every time.
+                  </div>
+                </div>
+                <span className={styles.rosterTag}>Start here</span>
+              </div>
+
+              {workflowGroups.map((section) => (
+                <section key={section.group} className={styles.playbookGroup}>
+                  <div className={styles.playbookGroupHeader}>
+                    <div className={styles.customerName}>{section.group}</div>
+                    <span className={styles.rosterTag}>{section.resources.length} guides</span>
+                  </div>
+                  <div className={styles.playbookGuideList}>
+                    {section.resources.map((resource) => (
+                      <details key={resource.id} className={styles.playbookGuide}>
+                        <summary className={styles.playbookGuideSummary}>
+                          <span>
+                            <span className={styles.customerName}>{resource.title}</span>
+                            <span className={styles.helperNote}>{resource.summary}</span>
+                          </span>
+                          <span className={styles.rosterTag}>Open guide</span>
+                        </summary>
+                        <div className={styles.playbookGuideBody}>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Goal</span>
+                            <p>{resource.goal}</p>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Use this when</span>
+                            <p>{resource.useWhen}</p>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Before you start</span>
+                            <ul>
+                              {resource.beforeYouStart.map((item) => (
+                                <li key={`${resource.id}-before-${item}`}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Steps</span>
+                            <ol>
+                              {resource.steps.map((step) => (
+                                <li key={`${resource.id}-step-${step}`}>{step}</li>
+                              ))}
+                            </ol>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Good result</span>
+                            <p>{resource.goodResult}</p>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Ask Nic-Nac</span>
+                            <p>{resource.nicNacPrompt}</p>
+                          </div>
+                          <div className={styles.guideField}>
+                            <span className={styles.searchLabel}>Still stuck</span>
+                            <p>{resource.stillStuck}</p>
+                          </div>
+                          {resource.video ? (
+                            <div className={styles.timelineList}>
+                              <span className={styles.timelineItem}>
+                                Video: {resource.video.title}
+                              </span>
+                              <span className={styles.timelineItem}>
+                                {resource.video.status === 'ready'
+                                  ? 'Ready to watch'
+                                  : 'Video slot ready'}
+                              </span>
+                            </div>
+                          ) : null}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              ))}
+
+              <section className={styles.featureIndex}>
+                <div className={styles.playbookGroupHeader}>
+                  <div>
+                    <div className={styles.walletSettingsTitle}>Feature Index</div>
+                    <div className={styles.helperNote}>
+                      Use this when you already know which Sparkle Suite tool you need.
+                    </div>
+                  </div>
+                  <span className={styles.rosterTag}>Quick reference</span>
+                </div>
+                <div className={styles.featureIndexGrid}>
+                  {featureReferences.map((resource) => (
+                    <div key={resource.id} className={styles.featureIndexItem}>
+                      <div className={styles.customerName}>{resource.title}</div>
+                      <div className={styles.helperNote}>{resource.summary}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className={styles.supportPath}>
+                <div>
+                  <div className={styles.walletSettingsTitle}>Support Path</div>
+                  <div className={styles.helperNote}>
+                    Try the workflow first, ask Nic-Nac next, then send support the details if you are blocked.
+                  </div>
+                </div>
+                <div className={styles.actionRow}>
+                  {(supportResources[0]?.quickActions ?? [
+                    'Ask Nic-Nac to troubleshoot',
+                    'Gather support details',
+                    'Escalate to support',
+                  ]).map((action) => (
+                    <span key={`support-${action}`} className={styles.timelineItem}>
+                      {action}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            </div>
+          ) : state.status === 'error' ? (
+            <div className={styles.emptyState}>
+              Help resources are temporarily unavailable.
+            </div>
+          ) : (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          )}
           <div className={styles.siteSettingsSection}>
             <div className={styles.calendarHeader}>
               <div>
@@ -3925,48 +4082,6 @@ function HelpResourcesCard({
               ))}
             </div>
           </div>
-          {state.status === 'ready' && state.resources ? (
-            <div className={styles.resourceList}>
-              {state.resources.map((resource) => (
-                <div key={resource.id} className={styles.resourceCard}>
-                  <div className={styles.badgeRow}>
-                    <span className={styles.rosterTag}>{resource.category}</span>
-                  </div>
-                  <div className={styles.customerName}>{resource.title}</div>
-                  <div className={styles.helperNote}>{resource.summary}</div>
-                  <div className={styles.customerDate}>{resource.body}</div>
-                  {resource.video ? (
-                    <div className={styles.timelineList}>
-                      <span className={styles.timelineItem}>
-                        Video: {resource.video.title}
-                      </span>
-                      <span className={styles.timelineItem}>
-                        {resource.video.status === 'ready'
-                          ? 'Ready to watch'
-                          : 'Video slot ready'}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className={styles.actionRow}>
-                    {resource.quickActions.map((action) => (
-                      <span key={`${resource.id}-${action}`} className={styles.timelineItem}>
-                        {action}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : state.status === 'error' ? (
-            <div className={styles.emptyState}>
-              Help resources are temporarily unavailable.
-            </div>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
         </>
       }
     </div>

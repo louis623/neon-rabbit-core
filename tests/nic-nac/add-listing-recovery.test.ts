@@ -200,6 +200,8 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(result.requiredFields).toEqual(['designName', 'collectionName'])
     expect(result.optionalFields).toEqual([
       'piecePhotoUrl',
+      'piecePhotoIndex',
+      'listingPhotoIndex',
       'material',
       'mainStone',
       'bpMsrp',
@@ -210,7 +212,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     ])
   })
 
-  it('message instructs vision-first extraction, requires rep confirmation of collection, and explains automatic photo upload', async () => {
+  it('message instructs vision-first extraction, Birthday collection normalization, photo indexes, and automatic photo upload', async () => {
     addListingMock.mockRejectedValueOnce(errors.NEEDS_FULL_INFO('DR-999'))
 
     const tool = makeTool()
@@ -223,10 +225,10 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     const message = result.message as string
     expect(message).toContain("Use vision on the rep's photos")
     expect(message).toContain('designName and any optional metadata')
-    expect(message).toContain('ask the rep to confirm or provide collectionName')
-    expect(message).toContain(
-      'never extract or autofill the collection from vision',
-    )
+    expect(message).toContain('Sparkle Suite jewelry database')
+    expect(message).toContain('Birthday Collection month/year')
+    expect(message).toContain('collectionName like "March Birthday"')
+    expect(message).toContain('piecePhotoIndex or listingPhotoIndex')
     expect(message).toContain('handler uploads the photo from chat automatically')
     expect(message).toContain('do NOT ask the rep for a URL')
   })
@@ -476,6 +478,56 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
     expect(addListingMock).not.toHaveBeenCalled()
   })
+
+  it('uses an explicit listingPhotoIndex to pick the jewelry-front photo from a multi-photo message', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/for-keeps-front.png',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'First photo is the front, second is the label.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13743',
+      listingPhotoIndex: 1,
+    })
+
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'data:image/jpeg;base64,SkVXRUw=',
+      filenameStem: 'ER13743-listing-photo',
+    })
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      itemNumber: 'ER13743',
+      listingPhotoUrl:
+        'https://cdn.example.com/listings/rep-1/for-keeps-front.png',
+    })
+  })
 })
 
 describe('add_listing — vision-first photo extraction (Task 1.5B closure)', () => {
@@ -652,6 +704,152 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     expect(uploadStagedOriginalPhotoMock).not.toHaveBeenCalled()
     expect(createDesignMock).not.toHaveBeenCalled()
     expect(addListingMock).not.toHaveBeenCalled()
+  })
+
+  it('uses an explicit piecePhotoIndex to create a new design from the jewelry-front photo', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13743',
+      collectionId: 'coll-1',
+      collectionName: 'March Birthday',
+      typePrefix: 'ER',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/for-keeps.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/for-keeps.jpg',
+      signedUrl: 'https://signed.example.com/for-keeps',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'First photo is the front, second is the label.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUw=',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      collectionName: 'March Birthday',
+      collectionYear: 2026,
+      mainStone: 'Aquamarine Cubic Zirconia',
+      material: 'Rhodium Plating',
+      bpMsrp: 138,
+      piecePhotoIndex: 1,
+    })
+
+    expect(uploadJewelryPhotoMock.mock.calls[0][1]).toBe(
+      'data:image/png;base64,SkVXRUw=',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      collectionName: 'March Birthday',
+      collectionYear: 2026,
+      mainStone: 'Aquamarine Cubic Zirconia',
+      material: 'Rhodium Plating',
+      bpMsrp: 138,
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/for-keeps.jpg',
+    })
+    expect(result).toMatchObject({
+      mode: 'single',
+      itemNumber: 'ER13743',
+      createdNewDesign: true,
+    })
+  })
+
+  it('uses the later jewelry-front upload after an earlier label/details photo', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13743',
+      collectionId: 'coll-1',
+      collectionName: 'March Birthday',
+      typePrefix: 'ER',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/for-keeps-front.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/for-keeps-front.jpg',
+      signedUrl: 'https://signed.example.com/for-keeps-front',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Here is the jewelry-front photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SlRZ',
+          },
+        ],
+      },
+      {
+        parts: [
+          { type: 'text', text: 'Here is the label/details photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      collectionName: 'March Birthday',
+      collectionYear: 2026,
+      mainStone: 'Aquamarine Cubic Zirconia',
+      material: 'Rhodium Plating',
+      bpMsrp: 138,
+    })
+
+    expect(uploadJewelryPhotoMock.mock.calls[0][1]).toBe(
+      'data:image/png;base64,SlRZ',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'ER13743',
+      designName: 'For Keeps',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/for-keeps-front.jpg',
+    })
   })
 
   it('recovers a batch of same-item new designs by creating the design once and adding each physical unit', async () => {

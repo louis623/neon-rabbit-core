@@ -47,6 +47,23 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain("mode:'batch'")
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')
+    expect(prompt).toContain(
+      'When the rep starts "Add a piece to Trade Board", ask for the item number first',
+    )
+    expect(prompt).toContain('search_jewelry_database before asking for photos')
+    expect(prompt).toContain('If the item exists, confirm the match before add_listing')
+    expect(prompt).toContain('If the item is missing, ask for the label/details photo')
+    expect(prompt).toContain('The collection may be on packaging instead of the label')
+    expect(prompt).toContain('Ask for collection or a packaging photo if it is not visible')
+    expect(prompt).toContain(
+      'Ask for the jewelry-front photo only after catalog details are confirmed',
+    )
+    expect(prompt).toContain(
+      'After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded',
+    )
+    expect(prompt).toContain(
+      'Do not use the label/details or packaging photo as the final jewelry-front photo',
+    )
     expect(prompt).toContain('Never claim a piece is added until add_listing returns success')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')

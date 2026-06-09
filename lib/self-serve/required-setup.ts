@@ -28,11 +28,6 @@ export const REQUIRED_SETUP_STEPS = [
     required: true,
   },
   {
-    id: 'email_sms_update_readiness',
-    label: 'Email and SMS update readiness',
-    required: true,
-  },
-  {
     id: 'trade_board_orientation',
     label: 'Trade Board orientation',
     required: true,

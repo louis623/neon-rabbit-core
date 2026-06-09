@@ -35,7 +35,6 @@ describe('trade history route', () => {
         totalCompleted: 1,
         totalMsrpTraded: 80,
         avgFulfillmentDays: 3,
-        topDesign: null,
         repeatCustomers: [],
       },
     })

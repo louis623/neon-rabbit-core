@@ -444,21 +444,6 @@ export async function getTradeHistory(
   const avgFulfillmentDays =
     daysList.length > 0 ? daysList.reduce((s, d) => s + d, 0) / daysList.length : null
 
-  const designCounts = new Map<string, { itemNumber: string; designName: string; count: number }>()
-  for (const i of completed) {
-    const key = i.design.itemNumber
-    const cur = designCounts.get(key)
-    if (cur) cur.count += 1
-    else
-      designCounts.set(key, {
-        itemNumber: i.design.itemNumber,
-        designName: i.design.designName,
-        count: 1,
-      })
-  }
-  const topDesign =
-    [...designCounts.values()].sort((a, b) => b.count - a.count)[0] ?? null
-
   const customerCounts = new Map<string, number>()
   for (const i of completed) {
     customerCounts.set(i.customerName, (customerCounts.get(i.customerName) ?? 0) + 1)
@@ -474,7 +459,6 @@ export async function getTradeHistory(
       totalCompleted,
       totalMsrpTraded,
       avgFulfillmentDays,
-      topDesign,
       repeatCustomers,
     },
   }

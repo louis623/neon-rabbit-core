@@ -463,7 +463,6 @@ describe('get_trade_history — read-only flatten', () => {
         totalCompleted: 1,
         totalMsrpTraded: 128,
         avgFulfillmentDays: 2,
-        topDesign: { itemNumber: 'RG31452', designName: 'The Celeste Ring', count: 1 },
         repeatCustomers: [],
       },
     })
@@ -506,9 +505,9 @@ describe('get_trade_history — read-only flatten', () => {
       totalCompleted: 1,
       totalMsrpTraded: 128,
       avgFulfillmentDays: 2,
-      topDesign: { itemNumber: 'RG31452', designName: 'The Celeste Ring', count: 1 },
       repeatCustomers: [],
     })
+    expect(result.summary).not.toHaveProperty('topDesign')
   })
 
   it('forwards undefined limit when caller omits it', async () => {
@@ -518,7 +517,6 @@ describe('get_trade_history — read-only flatten', () => {
         totalCompleted: 0,
         totalMsrpTraded: 0,
         avgFulfillmentDays: null,
-        topDesign: null,
         repeatCustomers: [],
       },
     })
@@ -536,7 +534,6 @@ describe('get_trade_history — read-only flatten', () => {
         totalCompleted: 0,
         totalMsrpTraded: 0,
         avgFulfillmentDays: null,
-        topDesign: null,
         repeatCustomers: [],
       },
     })
@@ -550,9 +547,9 @@ describe('get_trade_history — read-only flatten', () => {
       totalCompleted: 0,
       totalMsrpTraded: 0,
       avgFulfillmentDays: null,
-      topDesign: null,
       repeatCustomers: [],
     })
+    expect(result.summary).not.toHaveProperty('topDesign')
   })
 
   it('translates ServiceError into NicNacToolError', async () => {

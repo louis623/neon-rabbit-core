@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const listSparkleFinderCatalogItemsMock = vi.fn()
+const listSparkleFinderCatalogFacetsMock = vi.fn()
 const getSparkleFinderCatalogItemMock = vi.fn()
 const getSparkleFinderAvailabilityMock = vi.fn()
 const listSparkleFinderLiveShowsMock = vi.fn()
@@ -12,6 +13,8 @@ vi.mock('@/lib/sparkle-finder/public-api', async () => {
 
   return {
     ...actual,
+    listSparkleFinderCatalogFacets: (...args: unknown[]) =>
+      listSparkleFinderCatalogFacetsMock(...args),
     listSparkleFinderCatalogItems: (...args: unknown[]) =>
       listSparkleFinderCatalogItemsMock(...args),
     getSparkleFinderCatalogItem: (...args: unknown[]) =>
@@ -25,11 +28,13 @@ vi.mock('@/lib/sparkle-finder/public-api', async () => {
 
 import { GET as getFinderAvailability } from '@/app/api/public/finder/availability/route'
 import { GET as getFinderCatalog } from '@/app/api/public/finder/catalog/route'
+import { GET as getFinderCatalogFacets } from '@/app/api/public/finder/catalog/facets/route'
 import { GET as getFinderCatalogDetail } from '@/app/api/public/finder/catalog/[designId]/route'
 import { GET as getFinderLiveShows } from '@/app/api/public/finder/live-shows/route'
 
 describe('Sparkle Finder public routes', () => {
   beforeEach(() => {
+    listSparkleFinderCatalogFacetsMock.mockReset()
     listSparkleFinderCatalogItemsMock.mockReset()
     getSparkleFinderCatalogItemMock.mockReset()
     getSparkleFinderAvailabilityMock.mockReset()
@@ -69,6 +74,40 @@ describe('Sparkle Finder public routes', () => {
     })
   })
 
+  it('passes public catalog browse filters into the shared catalog service', async () => {
+    listSparkleFinderCatalogItemsMock.mockResolvedValueOnce([])
+
+    const response = await getFinderCatalog(
+      new Request(
+        'http://localhost/api/public/finder/catalog?query=opal&type=ring&collection=Midnight%20Garden&material=Rose%20gold&stone=Pink%20opal&label=diamond&year=2026&limit=12',
+      ),
+    )
+
+    expect(response.status).toBe(200)
+    expect(listSparkleFinderCatalogItemsMock).toHaveBeenCalledWith({
+      query: 'opal',
+      jewelryType: 'ring',
+      collection: 'Midnight Garden',
+      material: 'Rose gold',
+      mainStone: 'Pink opal',
+      label: 'diamond',
+      collectionYear: 2026,
+      limit: 12,
+    })
+  })
+
+  it('rejects malformed public catalog collection years', async () => {
+    const response = await getFinderCatalog(
+      new Request('http://localhost/api/public/finder/catalog?year=twenty-six'),
+    )
+
+    expect(response.status).toBe(400)
+    expect(listSparkleFinderCatalogItemsMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'year must be a four-digit collection year.',
+    })
+  })
+
   it('rejects invalid catalog limits', async () => {
     const response = await getFinderCatalog(
       new Request('http://localhost/api/public/finder/catalog?limit=bad'),
@@ -78,6 +117,56 @@ describe('Sparkle Finder public routes', () => {
     expect(listSparkleFinderCatalogItemsMock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       error: 'limit must be a positive whole number.',
+    })
+  })
+
+  it('returns dynamic public catalog facets without caching', async () => {
+    listSparkleFinderCatalogFacetsMock.mockResolvedValueOnce({
+      collections: [{ value: 'Midnight Garden', count: 2 }],
+      materials: [{ value: 'Rose gold', count: 2 }],
+      stones: [{ value: 'Pearl', count: 1 }],
+      types: [{ value: 'ring', count: 2 }],
+      labels: [{ value: 'diamond', count: 1 }],
+      years: [{ value: '2026', count: 2 }],
+    })
+
+    const response = await getFinderCatalogFacets(
+      new Request(
+        'http://localhost/api/public/finder/catalog/facets?query=opal&type=ring&material=Rose%20gold&stone=Pearl&label=diamond&collection=Midnight%20Garden&year=2026',
+      ),
+    )
+
+    expect(listSparkleFinderCatalogFacetsMock).toHaveBeenCalledWith({
+      query: 'opal',
+      jewelryType: 'ring',
+      collection: 'Midnight Garden',
+      material: 'Rose gold',
+      mainStone: 'Pearl',
+      label: 'diamond',
+      collectionYear: 2026,
+    })
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    await expect(response.json()).resolves.toEqual({
+      facets: {
+        collections: [{ value: 'Midnight Garden', count: 2 }],
+        materials: [{ value: 'Rose gold', count: 2 }],
+        stones: [{ value: 'Pearl', count: 1 }],
+        types: [{ value: 'ring', count: 2 }],
+        labels: [{ value: 'diamond', count: 1 }],
+        years: [{ value: '2026', count: 2 }],
+      },
+    })
+  })
+
+  it('rejects malformed public catalog facet years', async () => {
+    const response = await getFinderCatalogFacets(
+      new Request('http://localhost/api/public/finder/catalog/facets?year=ancient'),
+    )
+
+    expect(response.status).toBe(400)
+    expect(listSparkleFinderCatalogFacetsMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'year must be a four-digit collection year.',
     })
   })
 

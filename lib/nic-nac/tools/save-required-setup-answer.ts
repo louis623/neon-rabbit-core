@@ -14,7 +14,6 @@ const requiredSetupStepSchema = z.enum([
   'show_schedule',
   'customer_site_orientation',
   'live_queue_setup',
-  'email_sms_update_readiness',
   'trade_board_orientation',
   'final_preview_approval',
 ])

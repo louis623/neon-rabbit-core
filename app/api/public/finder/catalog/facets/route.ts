@@ -1,10 +1,7 @@
 import {
-  DEFAULT_FINDER_CATALOG_LIMIT,
-  MAX_FINDER_CATALOG_LIMIT,
   type FinderCatalogLabel,
   type FinderJewelryType,
-  listSparkleFinderCatalogItems,
-  parseSparkleFinderLimit,
+  listSparkleFinderCatalogFacets,
 } from '@/lib/sparkle-finder/public-api'
 
 export const runtime = 'nodejs'
@@ -20,19 +17,7 @@ export async function GET(request: Request) {
     )
   }
 
-  const limit = parseSparkleFinderLimit(
-    url.searchParams.get('limit'),
-    DEFAULT_FINDER_CATALOG_LIMIT,
-    MAX_FINDER_CATALOG_LIMIT,
-  )
-  if (limit === null) {
-    return Response.json(
-      { error: 'limit must be a positive whole number.' },
-      { status: 400, headers: noStoreHeaders() },
-    )
-  }
-
-  const items = await listSparkleFinderCatalogItems({
+  const facets = await listSparkleFinderCatalogFacets({
     query: url.searchParams.get('query') ?? undefined,
     jewelryType: parseJewelryType(url.searchParams.get('type')),
     collection: parseTextFilter(url.searchParams.get('collection')),
@@ -40,15 +25,9 @@ export async function GET(request: Request) {
     mainStone: parseTextFilter(url.searchParams.get('stone')),
     label: parseCatalogLabel(url.searchParams.get('label')),
     collectionYear: collectionYear ?? undefined,
-    limit,
   })
 
-  return Response.json(
-    { items },
-    {
-      headers: noStoreHeaders(),
-    },
-  )
+  return Response.json({ facets }, { headers: noStoreHeaders() })
 }
 
 function noStoreHeaders() {

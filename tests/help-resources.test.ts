@@ -3,40 +3,79 @@ import { describe, expect, it } from 'vitest'
 import { getHelpResources } from '@/lib/services/help-resources'
 
 describe('help resources', () => {
-  it('covers the self-serve onboarding help hub categories and walkthrough video slots', () => {
+  it('defaults to the launch Workflow Playbook guides before feature references', () => {
     const resources = getHelpResources()
-    const combinedText = resources
-      .map((resource) =>
-        [
-          resource.category,
-          resource.title,
-          resource.summary,
-          resource.body,
-          ...resource.quickActions,
-          resource.video?.title ?? '',
-          resource.video?.status ?? '',
-        ].join(' '),
-      )
-      .join(' ')
+    const workflowTitles = resources
+      .filter((resource) => resource.type === 'workflow')
+      .map((resource) => resource.title)
 
-    expect(combinedText).toContain('Getting oriented in the workspace')
-    expect(combinedText).toContain('Meet Nic-Nac')
-    expect(combinedText).toContain('Backend workspace tour')
-    expect(combinedText).toContain('Editing the public site')
-    expect(combinedText).toContain('Adding and updating shows')
-    expect(combinedText).toContain('Managing trade board content')
-    expect(combinedText).toContain('Using the calculator')
-    expect(combinedText).toContain('Chrome extension and Live Queue overview')
-    expect(combinedText).toContain('Troubleshooting and escalation')
+    expect(workflowTitles).toEqual([
+      'Start here: Learn your Sparkle Suite workspace',
+      'Finish setup and approve your customer site',
+      'Update your customer-facing site',
+      'Get ready for a live show',
+      'Use Live Queue during a show',
+      'Add jewelry to your Trade Board',
+      'Handle trade requests',
+      'Manage customers and updates',
+      'Billing, SMS wallet, and account basics',
+      'Fix something or ask for help',
+    ])
+
+    const firstFeatureIndex = resources.findIndex(
+      (resource) => resource.type === 'feature_reference',
+    )
+    const lastWorkflowIndex = resources.reduce(
+      (lastIndex, resource, index) =>
+        resource.type === 'workflow' ? index : lastIndex,
+      -1,
+    )
+
+    expect(firstFeatureIndex).toBeGreaterThan(lastWorkflowIndex)
+  })
+
+  it('gives every workflow guide the standard operator-manual fields', () => {
+    const workflows = getHelpResources().filter((resource) => resource.type === 'workflow')
+
+    expect(workflows.length).toBe(10)
+
+    for (const workflow of workflows) {
+      expect(workflow.group).toMatch(/Setup|Live Shows|Trade Board|Customers & Account|Help/)
+      expect(workflow.goal).toBeTruthy()
+      expect(workflow.useWhen).toBeTruthy()
+      expect(workflow.beforeYouStart.length).toBeGreaterThanOrEqual(1)
+      expect(workflow.steps.length).toBeGreaterThanOrEqual(3)
+      expect(workflow.goodResult).toBeTruthy()
+      expect(workflow.nicNacPrompt).toMatch(/\w/)
+      expect(workflow.stillStuck).toBeTruthy()
+    }
+  })
+
+  it('keeps a compact Feature Index underneath the workflows', () => {
+    const featureReferences = getHelpResources()
+      .filter((resource) => resource.type === 'feature_reference')
+      .map((resource) => resource.title)
+
+    expect(featureReferences).toEqual([
+      'Customer Site',
+      'Trade Board',
+      'Live Queue',
+      'Live Event Calendar',
+      'Email Updates',
+      'SMS Updates',
+      'Nic-Nac',
+      'Billing',
+      'Account / Settings',
+    ])
+  })
+
+  it('covers the launch workflow video slots', () => {
+    const resources = getHelpResources()
 
     const requiredVideoResourceIds = [
-      'getting-started-after-purchase',
-      'meet-nic-nac',
-      'backend-workspace-tour',
-      'public-site-editing',
-      'shows-and-trade-board',
-      'calculator-walkthrough',
-      'chrome-extension-live-queue-overview',
+      'start-here-workspace',
+      'update-customer-site',
+      'add-jewelry-to-trade-board',
     ]
 
     for (const resourceId of requiredVideoResourceIds) {
@@ -72,13 +111,33 @@ describe('help resources', () => {
     expect(combinedText).toContain('empty')
   })
 
+  it('keeps Live Queue guidance honest about rollout and Web Store readiness', () => {
+    const liveQueueText = getHelpResources('live queue')
+      .map((resource) => [resource.title, resource.summary, resource.body].join(' '))
+      .join(' ')
+
+    expect(liveQueueText).toContain('coming soon or launch-gated')
+    expect(liveQueueText).toContain('Web Store')
+    expect(liveQueueText).not.toContain('fully live for every rep')
+  })
+
+  it('keeps Email and SMS update guidance honest about readiness', () => {
+    const updateText = getHelpResources('email sms updates')
+      .map((resource) => [resource.title, resource.summary, resource.body].join(' '))
+      .join(' ')
+
+    expect(updateText).toContain('coming soon or sandbox')
+    expect(updateText).toContain('opted-in')
+    expect(updateText).not.toContain('send production texts now')
+  })
+
   it.each([
-    ['sync code', 'live-queue-setup'],
-    ['Party Filter', 'live-queue-setup'],
-    ['Web Store', 'live-queue-rollout'],
-    ['unpacked', 'live-queue-rollout'],
-    ['stale queue', 'live-queue-troubleshooting'],
-    ['empty queue', 'live-queue-troubleshooting'],
+    ['sync code', 'use-live-queue-during-show'],
+    ['Party Filter', 'use-live-queue-during-show'],
+    ['Web Store', 'use-live-queue-during-show'],
+    ['unpacked', 'use-live-queue-during-show'],
+    ['stale queue', 'use-live-queue-during-show'],
+    ['empty queue', 'use-live-queue-during-show'],
   ])('retrieves Live Queue help for "%s"', (query, expectedResourceId) => {
     expect(getHelpResources(query).map((resource) => resource.id)).toContain(expectedResourceId)
   })
@@ -104,6 +163,34 @@ describe('help resources', () => {
     expect(combinedText).toContain('premium tech help')
     expect(combinedText).toContain('Nic-Nac')
     expect(combinedText).toContain('provider-specific DNS setup')
+  })
+
+  it('preserves the strict Add Jewelry workflow sequence and photo boundaries', () => {
+    const guide = getHelpResources('add jewelry trade board light box white background')
+      .find((resource) => resource.id === 'add-jewelry-to-trade-board')
+
+    expect(guide).toMatchObject({
+      type: 'workflow',
+      group: 'Trade Board',
+      title: 'Add jewelry to your Trade Board',
+      nicNacPrompt: 'Help me add a piece to my Trade Board.',
+    })
+
+    expect(guide?.steps).toEqual([
+      'Start with the item number.',
+      'Let Nic-Nac check the Sparkle Suite jewelry database.',
+      'If the item is already found, confirm the match and listing details.',
+      'If the item is missing, upload a readable label/details photo.',
+      'Confirm the collection name or upload packaging context if the collection is not clear.',
+      'Upload the final front-facing jewelry photo for the customer-facing board image.',
+      'Review the listing and add it to your board.',
+    ])
+
+    expect(guide?.body).toContain('Label/details and packaging photos are not final board photos')
+    expect(guide?.body).toContain('front-facing jewelry photo')
+    expect(guide?.body).toContain('white background')
+    expect(guide?.body).toContain('brightest setting')
+    expect(guide?.quickActions).toContain('Add a piece to Trade Board')
   })
 
   it.each([

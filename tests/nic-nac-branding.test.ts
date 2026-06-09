@@ -9,7 +9,6 @@ import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
 import { RequiredSetupLiveQueuePanel } from '@/app/nic-nac/components/RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
 import { RequiredSetupPreviewPanel } from '@/app/nic-nac/components/RequiredSetupPreviewPanel'
-import { RequiredSetupUpdatesPanel } from '@/app/nic-nac/components/RequiredSetupUpdatesPanel'
 import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
 import { ThinkingIndicator } from '@/app/nic-nac/components/ThinkingIndicator'
@@ -138,20 +137,6 @@ describe('Nic-Nac branding copy', () => {
     expect(html).not.toContain('064632')
     expect(html).not.toContain('orientation')
     expect(html).not.toContain('LiveQ')
-  })
-
-  it('renders email and SMS update readiness as a setup check', () => {
-    const html = renderToStaticMarkup(
-      createElement(RequiredSetupUpdatesPanel, {
-        onSend: () => {},
-      }),
-    )
-
-    expect(html).toContain('Email and SMS update readiness')
-    expect(html).toContain('Checkout does not text or email customers automatically')
-    expect(html).toContain('Review how customers opt in')
-    expect(html).toContain('Confirm update readiness')
-    expect(html).toContain('I need help with update setup')
   })
 
   it('renders final preview approval with an exact customer-facing website link', () => {

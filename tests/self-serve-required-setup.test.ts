@@ -118,7 +118,6 @@ describe('self-serve required setup service contract', () => {
     'show_schedule',
     'customer_site_orientation',
     'live_queue_setup',
-    'email_sms_update_readiness',
     'trade_board_orientation',
     'final_preview_approval',
   ] as const
@@ -142,7 +141,7 @@ describe('self-serve required setup service contract', () => {
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
       'Trade Board orientation',
     )
-    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
       'Email and SMS update readiness',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
@@ -241,7 +240,7 @@ describe('self-serve required setup service contract', () => {
       dashboardUnlockedAt: null,
       createdAt: '2026-06-02T14:30:00Z',
       updatedAt: '2026-06-02T14:35:00Z',
-      nextStep: 'email_sms_update_readiness',
+      nextStep: 'trade_board_orientation',
       canUnlockDashboard: false,
     })
   })

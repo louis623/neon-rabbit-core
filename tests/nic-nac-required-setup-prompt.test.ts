@@ -170,14 +170,12 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).not.toContain('Live Queue orientation')
   })
 
-  it('requires email and SMS update readiness without live customer sends', () => {
+  it('does not include email and SMS updates as a required setup step', () => {
     const prompt = buildRequiredSetupPrompt()
 
-    expect(prompt).toContain('Email and SMS update readiness')
-    expect(prompt).toContain('Do not send live customer messages during required setup')
-    expect(prompt).toContain(
-      'confirm the rep understands opt-in and update readiness',
-    )
+    expect(prompt).not.toContain('Email and SMS update readiness')
+    expect(prompt).not.toContain('Do not send live customer messages during required setup')
+    expect(prompt).not.toContain('update readiness')
   })
 
   it('requires the final preview approval panel without guessing link location', () => {

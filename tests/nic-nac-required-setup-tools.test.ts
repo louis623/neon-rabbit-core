@@ -167,7 +167,7 @@ describe('required setup tools', () => {
     )
 
     expect(source).toContain("'live_queue_setup'")
-    expect(source).toContain("'email_sms_update_readiness'")
+    expect(source).not.toContain("'email_sms_update_readiness'")
     expect(source).not.toContain("'live_queue_orientation'")
   })
 
@@ -238,7 +238,7 @@ describe('required setup tools', () => {
   it('saves structured Live Queue checklist evidence when completing setup', async () => {
     saveRequiredSetupAnswerMock.mockResolvedValue({ currentStep: 'live_queue_setup' })
     completeRequiredSetupStepMock.mockResolvedValue({
-      currentStep: 'email_sms_update_readiness',
+      currentStep: 'trade_board_orientation',
     })
     const { saveRequiredSetupAnswerTool } = await import(
       '@/lib/nic-nac/tools/save-required-setup-answer'
@@ -258,7 +258,7 @@ describe('required setup tools', () => {
         answer,
         completeStep: true,
       }),
-    ).resolves.toEqual({ currentStep: 'email_sms_update_readiness' })
+    ).resolves.toEqual({ currentStep: 'trade_board_orientation' })
 
     expect(saveRequiredSetupAnswerMock).toHaveBeenCalledWith(
       'rep-1',

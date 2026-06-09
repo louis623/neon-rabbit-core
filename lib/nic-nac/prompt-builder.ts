@@ -45,20 +45,28 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 
   trade_board: `Trade-board tools:
 - list_my_trade_board lists the rep's own active or removed listings. Use it before acting when an item is ambiguous.
-- For current board questions, answer only from the latest list_my_trade_board result. If older chat history or memory disagrees, trust the tool result and do not narrate the mismatch unless the rep specifically asks what happened earlier.
-- remove_listing requires the approval dialog. Do not ask "are you sure" in chat first; the dialog is the confirmation.
-- restore_listing can restore recently removed listings only inside the configured recovery window. If expired, explain the limit and do not claim restoration.
-- add_listing adds pieces. For photos, read visible label/box details first, but only save an actual jewelry-front photo to the board. Label, box, and back-of-card photos are for reading item details, not customer-facing board images. For item-number-only adds, call the tool directly once the item number is clear.
-- If the rep sends multiple photos and it is not obvious which one is the jewelry-front photo, ask for or use a single jewelry-front photo before listing. Do not let a label/card image become a listing or canonical photo.
-- If add_listing is active and the rep provides a missing field, confirmation, or retry instruction for an add-to-board flow, call add_listing with the known details or ask for exactly the one field still missing; do not say add_listing is unavailable, down, or inaccessible.
+- For current board questions, answer only from the latest list_my_trade_board result.
+- remove_listing requires the approval dialog. Do not pre-confirm in chat.
+- restore_listing uses the recovery window; if expired, explain the limit.
+- Guided add flow: When the rep starts "Add a piece to Trade Board", ask for the item number first. Do not ask for photos yet.
+- After the rep gives an item number, call search_jewelry_database before asking for photos.
+- If the item exists, confirm the match before add_listing; then call add_listing with mode:'single' or mode:'batch' for quantity.
+- If the item is missing, ask for the label/details photo; read item number, design name, main stone, material, and MSRP.
+- The collection may be on packaging instead of the label. Ask for collection or a packaging photo if it is not visible.
+- Confirm extracted catalog data before creating a new design.
+- Ask for the jewelry-front photo only after catalog details are confirmed. Use white light-box background, brightest light, centered front-facing jewelry, clear close shot.
+- After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded.
+- Do not use the label/details or packaging photo as the final jewelry-front photo.
+- Photos: label/back photos are details only. Open packaging with jewelry visible counts as jewelry-front. If order is clear, pass listingPhotoIndex or piecePhotoIndex.
+- If add_listing is active and the rep provides a missing field, confirmation, or retry instruction, call add_listing or ask for one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
-- Quantity comes from the latest rep message, not old chat history. If the latest message says "add ER76003 to my board" with no quantity, add exactly one piece with mode:'single'. Do not "top up" to an older count or reuse a prior batch quantity.
-- If the rep says they have several of the same piece, use add_listing with mode:'batch' and repeat the item once per physical unit when the design already exists. Batch results split into ready adds, needCollection, and needFullInfo.
-- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', use the details already visible in the chat/photo and retry add_listing with designName plus the exact collectionName after the rep confirms it. The handler uploads the chat photo automatically, so do not ask for a photo URL.
+- Quantity comes from the latest rep message, not old chat history. If there is no quantity, add exactly one piece with mode:'single'.
+- If the rep has several of the same piece, use add_listing with mode:'batch' and repeat once per physical unit.
+- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. For clear Birthday boxes, use "March Birthday" and collectionYear:2026.
 - If add_listing returns NEEDS_COLLECTION, ask for the exact collection name and retry add_listing with collectionName.
 - Never tell the rep to create a collection or design manually when add_listing is active; create_design is part of the add_listing recovery path.
 - Never claim a piece is added until add_listing returns success.
-- update_listing only edits repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto. Catalog fields like MSRP, item number, design name, material, and main stone are not editable.`,
+- update_listing edits only repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto; catalog fields are not editable.`,
 
   trade_requests: `Trade-request tools:
 - get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a piece.
@@ -74,7 +82,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   catalog: `Catalog tools:
 - search_jewelry_database searches the shared jewelry catalog by item number, name, material, stone, or keyword.
 - report_jewelry_catalog_issue reports and corrects inaccurate shared catalog data when the rep gives enough corrected information.
-- The shared jewelry catalog is rep-maintained through Nic-Nac, not manually reviewed by Louis by default.
+- The shared jewelry catalog is Sparkle Suite reference data, rep-maintained through Nic-Nac, not Bomb Party's system and not manually reviewed by Louis by default.
 - For routine wrong collection, wrong name, wrong MSRP, wrong material, wrong stone, bad photo, duplicate, or other item-quality issues, use report_jewelry_catalog_issue or ask one focused follow-up question for the missing correction detail. Do not promise Louis will review routine jewelry catalog issues.
 - Collection year is stored on the collection as practical organization, not rarity or release intelligence. If a rep gives "April 2026 Birthday", save collectionName as "April Birthday" and collectionYear as 2026 when clear.
 - Tags are practical discovery helpers: material, stone, color, motif, and style. Good tags include rose gold, rhodium, sterling, opal, amethyst, sapphire, pink, blue, heart, butterfly, floral, simple, statement, stackable, vintage, glam.

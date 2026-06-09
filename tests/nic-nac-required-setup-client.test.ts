@@ -45,6 +45,13 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('Setup state did not load')
   })
 
+  it('routes unauthenticated setup-state loads to login with a workspace return path', () => {
+    expect(client).toContain('buildLoginRedirectHref')
+    expect(client).toContain('res.status === 401')
+    expect(client).toContain('router.replace(buildLoginRedirectHref())')
+    expect(client).toContain("encodeURIComponent(returnPath)")
+  })
+
   it('syncs a returned Stripe checkout session before loading required setup', () => {
     expect(client).toContain('/api/stripe/sync')
     expect(client).toContain('CHECKOUT_SYNC_TIMEOUT_MS')
@@ -187,7 +194,7 @@ describe('required setup client mode precedence', () => {
     ).toBe('checkout_required')
   })
 
-  it('keeps the Stripe success return in required setup even if stale preview state says unlocked', () => {
+  it('uses unlocked server state after Stripe setup returns instead of staying in setup', () => {
     expect(
       resolveNicNacWorkspaceMode({
         setupStatus: 'dashboard_unlocked',
@@ -195,6 +202,6 @@ describe('required setup client mode precedence', () => {
         wantsRequiredSetup: true,
         isCheckoutSuccessReturn: true,
       }),
-    ).toBe('required_setup')
+    ).toBe('dashboard_unlocked')
   })
 })

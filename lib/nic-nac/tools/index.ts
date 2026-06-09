@@ -156,6 +156,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
     patterns.some((pattern) => pattern.test(normalized))
   const asksForResourceHelp = hasAny([
     /\bhow[- ]?to\b/,
+    /\bwalk me through\b/,
     /\bwalkthrough\b/,
     /\bvideo\b/,
     /\bwhere\b.*\b(help|resource|guide|walkthrough|video)\b/,
@@ -192,6 +193,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\blistings\b/,
       /\bpiece\b/,
       /\bitem number\b/,
+      /\b[A-Z]{1,4}\d{3,}\b/i,
       /\badd\b.*\b(item|piece|listing|inventory)\b/,
       /\b(item|piece|listing|inventory)\b.*\badd\b/,
       /\btake down\b/,
@@ -355,18 +357,23 @@ function isContextualFollowUp(text: string, previousAssistantText = ''): boolean
     /\bcolor\b/,
     /\bmaterial\b/,
     /\bitem\s*(number|#)\b/,
+    /\b[A-Z]{1,4}\d{3,}\b/i,
     /\bmsrp\b/,
     /^(yes|yeah|yep|sure|ok|okay|please|do that|go ahead)\b/,
+    /^(try again|retry|again|try it again|try once more)\b/,
     /\bdo that\b/,
     /\bgo ahead\b/,
     /\bcanonical\b/,
     /\bcustom photo\b/,
     /\bdata\s*base\b/,
     /\bdatabase\b/,
+    /\b(all|everything)\b.*\b(info|information|details|photo|photos|picture|pictures|image|images)\b/,
+    /\b(contained|inside|in)\b.*\b(photo|photos|picture|pictures|image|images)\b/,
+    /\byou (already )?(have|got|see)\b.*\b(info|information|details|photo|photos|picture|pictures|image|images)\b/,
   ].some((pattern) => pattern.test(normalized))
     || (
       wordCount(normalized) <= 8 &&
-      /collection|photo|picture|design|database|data\s*base|missing|what .*from/i.test(
+      /collection|photo|picture|image|label|design|database|data\s*base|missing|listing|board|item number|guided|add a piece|tool|available|retry|try again|what .*from/i.test(
         previousAssistantText,
       )
     )

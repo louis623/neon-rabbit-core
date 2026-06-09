@@ -481,12 +481,37 @@ export interface CreateRepSupportMessageInput {
   body: string
 }
 
+export type HelpResourceType =
+  | 'workflow'
+  | 'feature_reference'
+  | 'troubleshooting'
+  | 'support'
+
+export type HelpResourceGroup =
+  | 'Setup'
+  | 'Live Shows'
+  | 'Trade Board'
+  | 'Customers & Account'
+  | 'Help'
+  | 'Feature Index'
+  | 'Support'
+
 export interface HelpResource {
   id: string
+  type: HelpResourceType
+  group: HelpResourceGroup
   category: string
   title: string
   summary: string
   body: string
+  goal: string
+  useWhen: string
+  beforeYouStart: string[]
+  steps: string[]
+  goodResult: string
+  nicNacPrompt: string
+  stillStuck: string
+  relatedFeatureIds: string[]
   quickActions: string[]
   video?: {
     title: string
@@ -738,7 +763,6 @@ export interface TradeHistoryResult {
     totalCompleted: number
     totalMsrpTraded: number
     avgFulfillmentDays: number | null
-    topDesign: { itemNumber: string; designName: string; count: number } | null
     repeatCustomers: Array<{ customerName: string; count: number }>
   }
 }
