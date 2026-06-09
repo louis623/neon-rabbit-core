@@ -15,6 +15,10 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/page.tsx'),
     'utf8',
   )
+  const loginPage = readFileSync(
+    resolve(process.cwd(), 'app/login/page.tsx'),
+    'utf8',
+  )
   const requiredSetupHome = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
     'utf8',
@@ -88,6 +92,19 @@ describe('reviewer smoke UI wiring', () => {
     )
     expect(nicNacPage.indexOf('<NicNacClient')).toBeLessThan(
       nicNacPage.indexOf('<SparkleSuitePublicFooter'),
+    )
+  })
+
+  it('keeps public Sparkle Suite header and footer around login', () => {
+    expect(loginPage).toContain('SparkleSuitePublicHeader')
+    expect(loginPage).toContain('SparkleSuitePublicFooter')
+    expect(loginPage).toContain('sparkle-landing-v2')
+    expect(loginPage).toContain('sl2-shell')
+    expect(loginPage.indexOf('<SparkleSuitePublicHeader')).toBeLessThan(
+      loginPage.indexOf('<LoginClient'),
+    )
+    expect(loginPage.indexOf('<LoginClient')).toBeLessThan(
+      loginPage.indexOf('<SparkleSuitePublicFooter'),
     )
   })
 
