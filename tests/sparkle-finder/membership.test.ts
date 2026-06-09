@@ -40,6 +40,38 @@ describe("Sparkle Finder Silver membership", () => {
     });
   });
 
+  it("keeps Silver trial active through the exact trial end instant", () => {
+    const result = getSilverAccessState({
+      accessState: "silver_trial",
+      trialEndsAt: "2026-07-23T12:00:00.000Z",
+      now: "2026-07-23T12:00:00.000Z",
+    });
+
+    expect(result).toMatchObject({
+      effectiveState: "silver_trial",
+      hasSilverAccess: true,
+      isTrialActive: true,
+      isTrialExpired: false,
+      trialEndsAt: "2026-07-23T12:00:00.000Z",
+    });
+  });
+
+  it("prompts as Free immediately after the trial end instant", () => {
+    const result = getSilverAccessState({
+      accessState: "silver_trial",
+      trialEndsAt: "2026-07-23T12:00:00.000Z",
+      now: "2026-07-23T12:00:00.001Z",
+    });
+
+    expect(result).toMatchObject({
+      effectiveState: "free",
+      hasSilverAccess: false,
+      isTrialActive: false,
+      isTrialExpired: true,
+      trialEndsAt: "2026-07-23T12:00:00.000Z",
+    });
+  });
+
   it("downgrades an expired trial effectively to Free", () => {
     const result = getSilverAccessState({
       accessState: "silver_trial",
@@ -52,6 +84,22 @@ describe("Sparkle Finder Silver membership", () => {
       hasSilverAccess: false,
       isTrialActive: false,
       isTrialExpired: true,
+      trialEndsAt: "2026-05-30T12:00:00.000Z",
+    });
+  });
+
+  it("keeps paid Stripe Silver active even when the original trial date is expired", () => {
+    const result = getSilverAccessState({
+      accessState: "silver_paid",
+      trialEndsAt: "2026-05-30T12:00:00.000Z",
+      now: "2026-06-15T12:00:00.000Z",
+    });
+
+    expect(result).toMatchObject({
+      effectiveState: "silver_paid",
+      hasSilverAccess: true,
+      isTrialActive: false,
+      isTrialExpired: false,
       trialEndsAt: "2026-05-30T12:00:00.000Z",
     });
   });

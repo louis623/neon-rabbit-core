@@ -53,6 +53,7 @@ describe("Sparkle Finder Supabase proxy", () => {
     vi.unstubAllEnvs();
     vi.resetModules();
     vi.doUnmock("../../lib/supabase/server");
+    vi.doUnmock("../../lib/sparkle-finder/account-service");
   });
 
   it("returns a Next response without throwing when Supabase is unconfigured", async () => {
@@ -82,7 +83,9 @@ describe("Sparkle Finder Supabase proxy", () => {
     );
 
     expect(verifyOtp).toHaveBeenCalledWith({ token_hash: "abc123", type: "email" });
-    expect(response.headers.get("location")).toBe("http://localhost:4310/silver");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2Fsilver",
+    );
   });
 
   it("ignores external confirmation next URLs", async () => {
@@ -99,7 +102,9 @@ describe("Sparkle Finder Supabase proxy", () => {
       new Request("http://localhost:4310/auth/confirm?token_hash=abc123&type=email&next=https://evil.example"),
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2F",
+    );
   });
 
   it.each([
@@ -126,7 +131,9 @@ describe("Sparkle Finder Supabase proxy", () => {
       ),
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2F",
+    );
   });
 
   it("preserves safe confirmation next paths with query strings", async () => {
@@ -147,7 +154,9 @@ describe("Sparkle Finder Supabase proxy", () => {
       ),
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/silver?from=signup");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2Fsilver%3Ffrom%3Dsignup",
+    );
   });
 
   it("redirects failed confirmations to sign-in with a safe error", async () => {
@@ -165,6 +174,18 @@ describe("Sparkle Finder Supabase proxy", () => {
     expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=confirmation_failed");
   });
 
+  it("signs out to the public homepage and clears local preview auth", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+
+    const { GET } = await import("../../app/auth/sign-out/route");
+    const response = await GET(new Request("http://localhost:4310/auth/sign-out"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/");
+    expect(response.headers.get("set-cookie")).toContain(`${auth.sparkleFinderAuthCookieName}=anonymous`);
+    expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+  });
+
   it.each([
     [null],
     ["//evil.example"],
@@ -174,10 +195,10 @@ describe("Sparkle Finder Supabase proxy", () => {
     ["https://evil.example"],
     ["javascript:alert(1)"],
     ["silver"],
-  ])("normalizes unsafe next path %s to the dashboard", async (next) => {
+  ])("normalizes unsafe next path %s to the customer homepage", async (next) => {
     const { safeSparkleFinderNextPath } = await import("../../lib/sparkle-finder/safe-redirect");
 
-    expect(safeSparkleFinderNextPath(next)).toBe("/dashboard");
+    expect(safeSparkleFinderNextPath(next)).toBe("/");
   });
 
   it("preserves safe local next paths", async () => {
@@ -214,10 +235,12 @@ describe("Sparkle Finder Supabase proxy", () => {
     );
 
     expect(exchangeCodeForSession).toHaveBeenCalledWith("oauth-code");
-    expect(response.headers.get("location")).toBe("http://localhost:4310/account?setup=required");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2Faccount%3Fsetup%3Drequired",
+    );
   });
 
-  it("falls back to the dashboard when Google OAuth next is unsafe", async () => {
+  it("falls back to the customer homepage when Google OAuth next is unsafe", async () => {
     vi.doMock("../../lib/supabase/server", () => ({
       createClient: async () => ({
         auth: {
@@ -235,7 +258,9 @@ describe("Sparkle Finder Supabase proxy", () => {
       ),
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/post-login?next=%2F",
+    );
   });
 
   it("redirects failed Google OAuth exchanges to sign-in with a safe error", async () => {
@@ -251,6 +276,52 @@ describe("Sparkle Finder Supabase proxy", () => {
     const response = await GET(new Request("http://localhost:4310/api/auth/callback?code=bad-code&next=/account"));
 
     expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?error=oauth_exchange_failed");
+  });
+
+  it("routes expired trial users to the account billing prompt after login", async () => {
+    vi.doMock("../../lib/sparkle-finder/account-service", () => ({
+      getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(expiredTrialMappedToFreeAccountState()),
+    }));
+
+    const { GET } = await import("../../app/auth/post-login/route");
+    const response = await GET(new Request("http://localhost:4310/auth/post-login?next=/silver"));
+
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/account?message=silver_trial_ended",
+    );
+  });
+
+  it("routes active trial users to the requested safe path after login", async () => {
+    vi.doMock("../../lib/sparkle-finder/account-service", () => ({
+      getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(activeTrialAccountState()),
+    }));
+
+    const { GET } = await import("../../app/auth/post-login/route");
+    const response = await GET(new Request("http://localhost:4310/auth/post-login?next=/silver"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/silver");
+  });
+
+  it("routes paid Silver users to the requested safe path after login", async () => {
+    vi.doMock("../../lib/sparkle-finder/account-service", () => ({
+      getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(paidSilverAccountState()),
+    }));
+
+    const { GET } = await import("../../app/auth/post-login/route");
+    const response = await GET(new Request("http://localhost:4310/auth/post-login?next=/dashboard"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+  });
+
+  it("routes anonymous post-login requests back to sign-in", async () => {
+    vi.doMock("../../lib/sparkle-finder/account-service", () => ({
+      getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(anonymousAccountState()),
+    }));
+
+    const { GET } = await import("../../app/auth/post-login/route");
+    const response = await GET(new Request("http://localhost:4310/auth/post-login?next=/silver"));
+
+    expect(response.headers.get("location")).toBe("http://localhost:4310/auth/sign-in?next=%2Fsilver");
   });
 });
 
@@ -449,7 +520,9 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain("Save profile basics");
     expect(markup).toContain("Save communication preferences");
     expect(markup).toContain("name=\"privacyAcknowledged\"");
-    expect(markup).toContain("I acknowledge the Sparkle Finder privacy terms");
+    expect(markup).toContain('href="/privacy-policy"');
+    expect(markup).toContain("I acknowledge the");
+    expect(markup).toContain("Sparkle Finder privacy terms");
   });
 
   it("renders a self-facing Sparkle Suite rep marker on rep account surfaces", async () => {
@@ -521,9 +594,11 @@ describe("Sparkle Finder account route", () => {
     const { renderAccountPageContent } = await import("../../app/account/page");
     const markup = renderToStaticMarkup(renderAccountPageContent(expiredTrialMappedToFreeAccountState()));
 
-    expect(markup).toContain("Continue Silver at $4.99/month");
     expect(markup).toContain(
-      "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured.",
+      "Your 45-day Silver trial has ended",
+    );
+    expect(markup).toContain(
+      "Free access is still available. Continue Silver for $4.99/month to keep wishlist, collection, and Silver tools.",
     );
     expect(markup).toContain("disabled");
     expect(markup).not.toContain("/stripe");

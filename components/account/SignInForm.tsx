@@ -13,7 +13,7 @@ type SignInFormProps = {
   nextPath?: string | null;
 };
 
-export function SignInForm({ nextPath = "/dashboard" }: SignInFormProps) {
+export function SignInForm({ nextPath = "/" }: SignInFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const safeNextPath = safeSparkleFinderNextPath(nextPath);
@@ -37,7 +37,7 @@ export function SignInForm({ nextPath = "/dashboard" }: SignInFormProps) {
         return;
       }
 
-      window.location.assign(safeNextPath);
+      window.location.assign(`/auth/post-login?next=${encodeURIComponent(safeNextPath)}`);
     } catch {
       setErrorMessage("Sparkle Finder sign-in is not configured in this environment.");
       setIsSubmitting(false);

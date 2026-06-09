@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import {
+  applyStripeEventIdempotency,
   applyStripeMembershipUpdate,
   createStripeClient,
   getMembershipByStripeSubscriptionId,
@@ -36,6 +37,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid Stripe signature." }, { status: 400 });
   }
 
+  const idempotencyResult = await applyStripeEventIdempotency(event.id, event.type);
+
+  if (!idempotencyResult.ok) {
+    return NextResponse.json({ error: idempotencyResult.reason }, { status: 500 });
+  }
+
+  if (idempotencyResult.duplicate) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
   const update = await mapStripeEventToMembershipUpdate(event);
 
   if (!update) {
@@ -56,7 +67,13 @@ async function mapStripeEventToMembershipUpdate(event: Stripe.Event) {
     return mapCheckoutSessionCompletedToMembershipUpdate(event.data.object as Stripe.Checkout.Session);
   }
 
-  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+  if (
+    event.type === "customer.subscription.created" ||
+    event.type === "customer.subscription.updated" ||
+    event.type === "customer.subscription.deleted" ||
+    event.type === "customer.subscription.paused" ||
+    event.type === "customer.subscription.resumed"
+  ) {
     const subscription = event.data.object as Stripe.Subscription;
     const current = await getMembershipByStripeSubscriptionId(subscription.id);
 

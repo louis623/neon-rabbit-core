@@ -17,6 +17,7 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
   const shouldShowUpgrade =
     effectiveState === "free" ||
     (effectiveState === "silver_trial" && typeof trialDaysLeft === "number" && trialDaysLeft <= 7);
+  const isExpiredTrialPrompt = Boolean(membership?.isTrialExpired && effectiveState === "free");
   const isBillingConfigured = isSparkleFinderCheckoutConfigured();
 
   return (
@@ -80,18 +81,22 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
           <div className="flex items-start gap-3">
             <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[var(--sparkle-coral)]" />
             <div>
-              <h3 className="text-base font-bold text-[var(--sparkle-plum-deep)]">Continue Silver at $4.99/month</h3>
+              <h3 className="text-base font-bold text-[var(--sparkle-plum-deep)]">
+                {isExpiredTrialPrompt ? "Your 45-day Silver trial has ended" : "Continue Silver at $4.99/month"}
+              </h3>
               <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                {isBillingConfigured
-                  ? "Start secure Stripe-hosted Checkout for monthly Silver access."
-                  : "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured."}
+                {isExpiredTrialPrompt
+                  ? "Free access is still available. Continue Silver for $4.99/month to keep wishlist, collection, and Silver tools."
+                  : isBillingConfigured
+                    ? "Start secure Stripe-hosted Checkout for monthly Silver access."
+                    : "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured."}
               </p>
             </div>
           </div>
           {isBillingConfigured ? (
             <form action="/billing/checkout" method="post">
               <button
-                className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[#ee2c9b] px-5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(238,44,155,0.24)]"
                 type="submit"
               >
                 Continue Silver at $4.99/month

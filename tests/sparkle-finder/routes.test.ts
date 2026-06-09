@@ -3,7 +3,9 @@ import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
 import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
-import { renderPublicHomeContent } from "../../app/page";
+import PrivacyPolicyPage from "../../app/privacy-policy/page";
+import TermsAndConditionsPage from "../../app/terms-and-conditions/page";
+import { renderHomeContent, renderPublicHomeContent } from "../../app/page";
 import { renderAccountPageContent } from "../../app/account/page";
 import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
@@ -33,6 +35,11 @@ import {
   getSparkleSuiteRepBoardHref,
   getSparkleSuiteRepHref,
 } from "../../lib/sparkle-finder/route-hrefs";
+import {
+  sparkleFinderLegalFooterLinks,
+  sparkleFinderPrivacyPolicyDocument,
+  sparkleFinderTermsAndConditionsDocument,
+} from "../../lib/sparkle-finder/legal-content";
 
 const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
@@ -65,6 +72,22 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/shop");
   });
 
+  it("renders app navigation in a hub mobile menu with logout for signed-in visitors", () => {
+    const markup = renderToStaticMarkup(
+      renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
+    );
+
+    expect(markup).toContain("sparkle-finder-mobile-menu");
+    expect(markup).toContain("<summary");
+    expect(markup).toContain(">Menu<");
+    expect(markup).toContain('href="/library"');
+    expect(markup).toContain('href="/live-shows"');
+    expect(markup).toContain('href="/rep-boards"');
+    expect(markup).toContain('href="/shop"');
+    expect(markup).toContain('href="/auth/sign-out"');
+    expect(markup).toContain(">Log Out<");
+  });
+
   it("shows a sign-in wall for anonymous hub visitors", () => {
     const markup = renderToStaticMarkup(
       renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("anonymous")),
@@ -76,25 +99,193 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Finder Dashboard");
   });
 
+  it("labels the anonymous header account link as Sign In", () => {
+    const markup = renderToStaticMarkup(
+      renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("anonymous")),
+    );
+
+    expect(markup).toContain('href="/auth/sign-in"');
+    expect(markup).toContain(">Sign In<");
+    expect(markup).not.toContain(">Guest<");
+  });
+
+  it("renders the shared Sparkle Finder footer with Sparkle Suite links", () => {
+    const publicMarkup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
+    const hubMarkup = renderToStaticMarkup(
+      renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("anonymous")),
+    );
+
+    for (const markup of [publicMarkup, hubMarkup]) {
+      expect(markup).toContain('class="sparkle-finder-site-footer"');
+      expect(markup).toContain("Sparkle Finder");
+      expect(markup).toContain("Footer links");
+      expect(markup).toContain('href="/account"');
+      expect(markup).toContain('href="/affiliate-disclosure"');
+      expect(markup).toContain('href="/privacy-policy"');
+      expect(markup).toContain(">Privacy Policy<");
+      expect(markup).toContain('href="/terms-and-conditions"');
+      expect(markup).toContain(">Terms and Conditions<");
+      expect(markup).toContain('href="https://www.yoursparklesuite.com"');
+      expect(markup).toContain(">Sparkle Suite<");
+      expect(markup).toContain('class="sparkle-finder-site-footer__nav"');
+      expect(markup).toContain('class="sparkle-finder-site-footer__brand-stack"');
+      expect(markup).toContain('aria-label="Sparkle Finder social links"');
+      expect(markup).toContain('href="https://www.tiktok.com/@yoursparklesuite"');
+      expect(markup).toContain('aria-label="Sparkle Finder on TikTok"');
+      expect(markup).toContain('class="sparkle-finder-site-footer__social-bubble"');
+      expect(markup).not.toContain(">TikTok<");
+      expect(markup).toContain('href="https://www.youtube.com/@yoursparklesuite"');
+      expect(markup).toContain('aria-label="Sparkle Finder on YouTube"');
+      expect(markup).not.toContain(">YouTube<");
+      expect(markup).not.toContain(">Social<");
+      expect(markup).toContain('href="https://neonrabbit.net"');
+      expect(markup).toContain("Sparkle Finder is powered by Neon Rabbit Digital Services.");
+    }
+  });
+
+  it("defines Sparkle Finder legal documents with customer-specific coverage", () => {
+    expect(sparkleFinderLegalFooterLinks).toEqual([
+      { href: "/privacy-policy", label: "Privacy Policy" },
+      { href: "/terms-and-conditions", label: "Terms and Conditions" },
+    ]);
+
+    expect(sparkleFinderPrivacyPolicyDocument.pageTitle).toBe("Privacy Policy");
+    expect(sparkleFinderPrivacyPolicyDocument.seoTitle).toContain("Sparkle Finder Privacy Policy");
+    expect(sparkleFinderPrivacyPolicyDocument.description).toContain("Sparkle Finder customer accounts");
+    expect(sparkleFinderPrivacyPolicyDocument.sections.map((section) => section.title)).toEqual([
+      "What This Policy Covers",
+      "Information Sparkle Finder Collects",
+      "How Sparkle Finder Uses Information",
+      "Sparkle Suite Data And Rep Links",
+      "Affiliate And Shop Information",
+      "SMS And Email Choices",
+      "Data Sharing",
+      "Data Retention",
+      "Your Rights And Choices",
+      "Security",
+      "Children's Privacy",
+      "Changes To This Policy",
+      "Contact",
+    ]);
+
+    expect(sparkleFinderTermsAndConditionsDocument.pageTitle).toBe("Terms and Conditions");
+    expect(sparkleFinderTermsAndConditionsDocument.seoTitle).toContain("Sparkle Finder Terms");
+    expect(sparkleFinderTermsAndConditionsDocument.description).toContain("Sparkle Finder customer discovery hub");
+    expect(sparkleFinderTermsAndConditionsDocument.sections.map((section) => section.title)).toEqual([
+      "Agreement To These Terms",
+      "About Sparkle Finder",
+      "Customer Accounts And Silver Access",
+      "Library, Live Shows, Rep Boards, And Availability",
+      "Collection, Profile, And Watchlist Tools",
+      "Affiliate Shop And Product Information",
+      "Acceptable Use",
+      "Privacy",
+      "Third-Party Services",
+      "Payments, Trials, And Billing",
+      "No Marketplace, Escrow, Or Fulfillment",
+      "No Guarantees",
+      "Intellectual Property",
+      "Disclaimer Of Warranties",
+      "Limitation Of Liability",
+      "Changes To These Terms",
+      "Contact",
+    ]);
+  });
+
+  it("renders Sparkle Finder legal pages with Finder-specific content", () => {
+    const privacyMarkup = renderToStaticMarkup(createElement(PrivacyPolicyPage));
+    const termsMarkup = renderToStaticMarkup(createElement(TermsAndConditionsPage));
+
+    expect(privacyMarkup).toContain("Sparkle Finder Legal Center");
+    expect(privacyMarkup).toContain("Privacy Policy");
+    expect(privacyMarkup).toContain("Sparkle Finder customer accounts");
+    expect(privacyMarkup).toContain("We do not sell personal information.");
+    expect(privacyMarkup).toContain("Affiliate And Shop Information");
+    expect(privacyMarkup).toContain("Back to Sparkle Finder");
+
+    expect(termsMarkup).toContain("Sparkle Finder Legal Center");
+    expect(termsMarkup).toContain("Terms and Conditions");
+    expect(termsMarkup).toContain("No Marketplace, Escrow, Or Fulfillment");
+    expect(termsMarkup).toContain("Sparkle Finder is a discovery hub");
+    expect(termsMarkup).toContain(
+      "not owned by, operated by, endorsed by, sponsored by, or officially affiliated with Bomb Party",
+    );
+    expect(termsMarkup).toContain('href="/privacy-policy"');
+  });
+
   it("renders the selected trust-first public landing for anonymous visitors", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
     expect(markup).toContain("Sparkle Finder");
     expect(markup).toContain("Start free Silver trial");
     expect(markup).toContain("Sign in");
+    expect(markup).toContain("Sparkle Finder public navigation");
+    expect(markup).toContain('data-smoke="public-hero-editorial"');
+    expect(markup).toContain("Find it, favorite it, show it off.");
+    expect(markup).not.toContain("Collector-first discovery");
+    expect(markup).toContain("How Sparkle Finder works");
+    expect(markup).toContain("sparkle-home-primary-cta");
+    expect(markup).toContain("bg-[var(--sparkle-rose)]");
+    expect(markup).toContain("Find pieces you like.");
+    expect(markup).toContain("Check rep trade boards.");
+    expect(markup).toContain("Live show calendar.");
+    expect(markup).toContain("Save and show off.");
+    expect(markup).toContain("Included tools");
+    expect((markup.match(/data-tone="espresso"/g) ?? []).length).toBe(2);
+    expect((markup.match(/data-tone="light"/g) ?? []).length).toBe(2);
+    expect(markup).not.toContain("What Sparkle Finder helps with");
+    expect(markup).not.toContain("Public preview");
+    expect(markup).not.toContain("Start with this");
+    expect(markup).not.toContain("Sparkle Finder primary navigation");
+    expect(markup).not.toContain('href="/library"');
+    expect(markup).not.toContain('href="/live-shows"');
+    expect(markup).not.toContain('href="/rep-boards"');
+    expect(markup).not.toContain('href="/shop"');
+    expect(markup).not.toContain('href="/auth/sign-up?next=/library"');
+    expect(markup).not.toContain('href="/auth/sign-up?next=/live-shows"');
+    expect(markup).not.toContain('href="/auth/sign-up?next=/rep-boards"');
+    expect(markup).not.toContain('href="/auth/sign-up?next=/shop"');
     expect(markup).toContain("Master Jewelry Library");
     expect(markup).toContain("Live Show Calendar");
     expect(markup).toContain("Rep Trade Boards / Dance Floors");
     expect(markup).toContain("Collection Showcase");
     expect(markup).toContain("Collector &amp; Rep Essentials");
-    expect(markup).toContain("clean, organized place to help you find the reps, products, and shows you love");
+    expect(markup).toContain("Find the pieces you like, see which reps have them on trade boards");
+    expect(markup).toContain("Start with your 45-day Silver Tier trial");
+    expect(markup).toContain("Silver opens the full collector workflow");
+    expect(markup).toContain("$4.99/month");
+    expect(markup).toContain("Show off pieces you already own with a digital collection.");
+    expect(markup).toContain("Get Started");
+    expect(markup).not.toContain(">Free tier<");
+    expect(markup).not.toContain(">Silver tier<");
+    expect(markup).not.toContain("Create free account");
+  });
+
+  it("renders the main homepage with app navigation for signed-in customers", () => {
+    const markup = renderToStaticMarkup(renderHomeContent(getLocalDevAuthState("silver")));
+
+    expect(markup).toContain("Sparkle Finder primary navigation");
+    expect(markup).toContain('href="/library"');
+    expect(markup).toContain('href="/live-shows"');
+    expect(markup).toContain('href="/rep-boards"');
+    expect(markup).toContain('href="/shop"');
+    expect(markup).toContain('href="/account"');
+    expect(markup).toContain(">Silver<");
+    expect(markup).toContain("Today across Sparkle Suite");
+    expect(markup).toContain("Your Silver Collector Space");
+    expect(markup).toContain("Collector Essentials");
+    expect(markup).not.toContain("Sparkle Finder public navigation");
+    expect(markup).not.toContain("Start free Silver trial");
+    expect(markup).not.toContain(">Sign in<");
   });
 
   it("renders public landing independence and avoids live/demo jewelry data", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
-    expect(markup).toContain("Sparkle Finder does not sell Bomb Party jewelry.");
-    expect(markup).toContain("We are not Bomb Party, a Bomb Party affiliate, or a Bomb Party rep.");
+    expect(markup.indexOf("Master Jewelry Library")).toBeLessThan(markup.indexOf("Independent discovery hub"));
+    expect(markup).toContain("Built for collectors, independently.");
+    expect(markup).toContain("Sparkle Finder organizes the hunt");
+    expect(markup).toContain("Sparkle Finder is not Bomb Party, a Bomb Party affiliate, or a Bomb Party rep.");
     expect(markup).not.toContain("Rainbow Crown Ring");
     expect(markup).not.toContain("Celestial Lights Preview");
     expect(markup).not.toContain("Sierra Sparkle Studio");
@@ -150,10 +341,82 @@ describe("Sparkle Finder hub routes", () => {
     );
 
     expect(markup).toContain('value="rose"');
-    expect(markup).toContain('<option value="ring" selected="">ring</option>');
-    expect(markup).toContain('<option value="diamond" selected="">diamond</option>');
+    expect(markup).toContain("Type: ring");
+    expect(markup).toContain("Label: diamond");
+    expect(markup).toContain(">Filters<");
     expect(markup).toContain("Rose Crown Ring");
     expect(markup).not.toContain("Ocean Pearl Necklace");
+  });
+
+  it("renders shared catalog collection and material filters from Sparkle Suite metadata", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), {
+        q: "",
+        type: "all",
+        label: "all",
+        collection: "Garden Glow",
+        material: "Rose gold",
+      }, libraryFacetOptions()),
+    );
+
+    expect(markup).toContain(">Filters<");
+    expect(markup).toContain("Collections");
+    expect(markup).toContain("Garden Glow");
+    expect(markup).toContain("Materials");
+    expect(markup).toContain("Rose gold");
+    expect(markup).toContain("Rose Crown Ring");
+    expect(markup).not.toContain("Ocean Pearl Necklace");
+  });
+
+  it("renders searchable dynamic facets, stones, active chips, and Nic-Nac search help", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), {
+        q: "rose",
+        type: "ring",
+        label: "diamond",
+        collection: "Garden Glow",
+        material: "Rose gold",
+        stone: "Pink opal",
+        year: "2026",
+      }, libraryFacetOptions()),
+    );
+
+    expect(markup).toContain("Not sure what it is called?");
+    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).not.toContain("Need help hunting?");
+    expect(markup).not.toContain("bg-[#fff8e6]");
+    expect(markup).toContain("Selected filters");
+    expect(markup).toContain("Pink opal");
+    expect(markup).toContain("Stone / gem");
+    expect(markup).toContain("Search collections");
+    expect(markup).toContain("Search stones");
+    expect(markup).toContain("Garden Glow");
+    expect(markup).toContain("Rose gold");
+    expect(markup).toContain("2026");
+    expect(markup).toContain('href="/library?');
+    expect(markup).not.toContain("Pearl");
+  });
+
+  it("offers a load-more path when the catalog result set reaches the current page limit", () => {
+    const items = Array.from({ length: 24 }, (_, index): JewelryItem => ({
+      id: `design-load-more-${index}`,
+      name: `Load More Ring ${index}`,
+      collectionName: "Garden Glow",
+      collectionYear: 2026,
+      jewelryType: "ring",
+      material: "Rose gold",
+      mainStone: "Pink opal",
+      imageUrl: "",
+      bpLabel: "standard",
+      itemNumber: `RG-LM-${index}`,
+      availableListingCount: 1,
+      knownRepListingIds: [],
+    }));
+
+    const markup = renderToStaticMarkup(renderLibraryPageContent(items));
+
+    expect(markup).toContain("Load more pieces");
+    expect(markup).toContain("limit=48");
   });
 
   it("matches library searches by collection year", () => {
@@ -582,6 +845,8 @@ describe("Sparkle Finder hub routes", () => {
     );
     expect(markup).toContain("I acknowledge");
     expect(markup).toContain("privacy");
+    expect(markup).toContain('href="/privacy-policy"');
+    expect(markup).toContain("Sparkle Finder privacy terms");
   });
 
   it("renders anonymous account prompts and 45-day Silver trial account copy", () => {
@@ -661,8 +926,8 @@ describe("Sparkle Finder hub routes", () => {
       params: Promise.resolve({ mode: "anonymous" }),
     });
 
-    expect(freeResponse.headers.get("location")).toBe("http://127.0.0.1:4310/dashboard");
-    expect(silverResponse.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(freeResponse.headers.get("location")).toBe("http://127.0.0.1:4310/");
+    expect(silverResponse.headers.get("location")).toBe("http://localhost:4310/");
     expect(anonymousResponse.headers.get("location")).toBe("http://127.0.0.1:4310/");
   });
 
@@ -686,7 +951,7 @@ describe("Sparkle Finder hub routes", () => {
       params: Promise.resolve({ mode: "silver" }),
     });
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe("http://localhost:4310/");
     expect(response.headers.get("set-cookie") ?? "").toContain("sparkle_finder_auth_mode=silver");
   });
 
@@ -700,7 +965,7 @@ describe("Sparkle Finder hub routes", () => {
       },
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe("http://localhost:4310/");
   });
 
   it("uses a fixed safe local fallback when Host and request URL are untrusted", async () => {
@@ -708,7 +973,7 @@ describe("Sparkle Finder hub routes", () => {
       params: Promise.resolve({ mode: "free" }),
     });
 
-    expect(response.headers.get("location")).toBe("http://127.0.0.1:4310/dashboard");
+    expect(response.headers.get("location")).toBe("http://127.0.0.1:4310/");
   });
 
   it("uses a safe local Host header even when the request URL host is untrusted", async () => {
@@ -721,7 +986,7 @@ describe("Sparkle Finder hub routes", () => {
       },
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:4310/dashboard");
+    expect(response.headers.get("location")).toBe("http://localhost:4310/");
   });
 
   it("preserves bracketed IPv6 localhost Host redirects", async () => {
@@ -734,7 +999,7 @@ describe("Sparkle Finder hub routes", () => {
       },
     );
 
-    expect(response.headers.get("location")).toBe("http://[::1]:4310/dashboard");
+    expect(response.headers.get("location")).toBe("http://[::1]:4310/");
   });
 
   it("maps fixture rep URLs to local route hrefs", () => {
@@ -828,6 +1093,8 @@ function libraryFilterItems(): JewelryItem[] {
       collectionName: "Garden Glow",
       collectionYear: 2026,
       jewelryType: "ring",
+      material: "Rose gold",
+      mainStone: "Pink opal",
       imageUrl: "/fixtures/rose-crown-ring.jpg",
       bpLabel: "diamond",
       itemNumber: "RCR-001",
@@ -841,6 +1108,8 @@ function libraryFilterItems(): JewelryItem[] {
       collectionName: "Tide Line",
       collectionYear: 2026,
       jewelryType: "necklace",
+      material: "Sterling silver",
+      mainStone: "Pearl",
       imageUrl: "/fixtures/ocean-pearl-necklace.jpg",
       bpLabel: "diamond",
       itemNumber: "OPN-002",
@@ -849,6 +1118,17 @@ function libraryFilterItems(): JewelryItem[] {
       knownRepListingIds: [],
     },
   ];
+}
+
+function libraryFacetOptions() {
+  return {
+    collections: [{ value: "Garden Glow", count: 1 }],
+    materials: [{ value: "Rose gold", count: 1 }],
+    stones: [{ value: "Pink opal", count: 1 }],
+    types: [{ value: "ring", count: 1 }],
+    labels: [{ value: "diamond", count: 1 }],
+    years: [{ value: "2026", count: 1 }],
+  };
 }
 
 function finderLiveShowItems(): FinderLiveShow[] {

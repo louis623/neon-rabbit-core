@@ -260,6 +260,39 @@ export async function applyStripeMembershipUpdate(
   return { ok: true };
 }
 
+export async function applyStripeEventIdempotency(
+  eventId: string,
+  eventType: string,
+): Promise<{ ok: true; duplicate: boolean } | { ok: false; reason: string }> {
+  const admin = createSupabaseServiceRoleClient();
+
+  if (!admin) {
+    return {
+      ok: false,
+      reason:
+        "Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to process Stripe event without a service role client.",
+    };
+  }
+
+  const { error } = await admin.from("sparkle_finder_stripe_events").insert({
+    stripe_event_id: eventId,
+    event_type: eventType,
+  });
+
+  if (!error) {
+    return { ok: true, duplicate: false };
+  }
+
+  if ("code" in error && error.code === "23505") {
+    return { ok: true, duplicate: true };
+  }
+
+  return {
+    ok: false,
+    reason: error.message,
+  };
+}
+
 export async function fetchMembershipForUser(client: {
   from: (table: string) => {
     select: (columns: string) => {
@@ -354,7 +387,7 @@ function isPaidSubscriptionStatus(status: Stripe.Subscription.Status): boolean {
 }
 
 function isTerminalSubscriptionStatus(status: Stripe.Subscription.Status): boolean {
-  return status === "canceled" || status === "unpaid" || status === "incomplete_expired";
+  return status === "canceled" || status === "paused" || status === "unpaid" || status === "incomplete_expired";
 }
 
 function stripeSecondsToIso(value: number | null | undefined): string | null {

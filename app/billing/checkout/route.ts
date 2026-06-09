@@ -60,6 +60,13 @@ export async function POST() {
   }
 
   const membership = await fetchMembershipForUser(supabase, data.user.id);
+
+  if (membership?.access_state === "silver_paid") {
+    const accountUrl = new URL("/account", billingEnv.siteUrl);
+    accountUrl.searchParams.set("message", "silver_already_active");
+    return NextResponse.redirect(accountUrl, 303);
+  }
+
   const stripe = createStripeClient(billingEnv.stripeSecretKey);
   const customer =
     membership?.stripe_customer_id ??

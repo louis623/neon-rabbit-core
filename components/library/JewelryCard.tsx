@@ -29,6 +29,8 @@ export function JewelryCard({ item }: JewelryCardProps) {
   const metadata = [
     formatAvailabilityCount(item.availableListingCount, item.knownRepListingIds),
     item.collectionYear ? String(item.collectionYear) : null,
+    item.material,
+    item.mainStone,
     ...(item.searchTags ?? []).slice(0, 2),
   ].filter((value): value is string => Boolean(value));
 
@@ -62,10 +64,10 @@ export function JewelryCard({ item }: JewelryCardProps) {
         </h2>
         <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">{item.collectionName}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {metadata.map((value) => (
+          {metadata.map((value, index) => (
             <span
               className="rounded border border-[var(--sparkle-border)] bg-white px-2 py-1 text-xs font-bold text-[var(--sparkle-ink-muted)]"
-              key={value}
+              key={`${item.id}:${value}:${index}`}
             >
               {value}
             </span>

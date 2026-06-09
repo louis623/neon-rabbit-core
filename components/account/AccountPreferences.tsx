@@ -120,9 +120,12 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
             value="yes"
           />
           <span>
-            <span className="block font-bold text-[var(--sparkle-plum-deep)]">Privacy acknowledgment</span>I acknowledge
-            the Sparkle Finder privacy terms and agree that my account details are used to provide the 45-day Silver
-            trial and account support.
+            <span className="block font-bold text-[var(--sparkle-plum-deep)]">Privacy acknowledgment</span>
+            I acknowledge the{" "}
+            <a className="font-bold text-[var(--sparkle-rose)] underline-offset-4 hover:underline" href="/privacy-policy">
+              Sparkle Finder privacy terms
+            </a>{" "}
+            and agree that my account details are used to provide the 45-day Silver trial and account support.
           </span>
         </label>
 

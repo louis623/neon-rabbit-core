@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   getCatalogJewelryItemById,
+  getCatalogFacetOptions,
   getCatalogJewelryItems,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
@@ -26,6 +27,9 @@ describe("Sparkle Finder public API catalog service", () => {
       collectionName: "Midnight Garden",
       collectionYear: 2026,
       jewelryType: "ring",
+      material: "Rose gold",
+      mainStone: "Pink stone",
+      bpMsrp: 19.95,
       imageUrl: "https://cdn.example.test/design-123.jpg",
       bpLabel: "diamond",
       itemNumber: "RG1234",
@@ -35,8 +39,8 @@ describe("Sparkle Finder public API catalog service", () => {
     });
   });
 
-  it("uses the agreed Finder type fallback for Sparkle Suite stack items", () => {
-    expect(mapSparkleSuiteFinderJewelryType("stack")).toBe("other");
+  it("keeps Sparkle Suite stack items as a first-class Finder type", () => {
+    expect(mapSparkleSuiteFinderJewelryType("stack")).toBe("stack");
     expect(mapSparkleSuiteFinderJewelryType("bracelet")).toBe("bracelet");
     expect(mapSparkleSuiteFinderJewelryType("earrings")).toBe("earrings");
     expect(mapSparkleSuiteFinderJewelryType("necklace")).toBe("necklace");
@@ -59,11 +63,84 @@ describe("Sparkle Finder public API catalog service", () => {
       expect.objectContaining({
         id: "design-api",
         itemNumber: "RG1234",
+        material: "Rose gold",
+        mainStone: "Pink stone",
+        bpMsrp: 19.95,
         collectionYear: 2026,
         searchTags: ["rose gold"],
         availableListingCount: 2,
       }),
     ]);
+  });
+
+  it("passes structured catalog browse filters to the Sparkle Suite public Finder API", async () => {
+    const fetchCatalog = vi.fn(async () => jsonResponse({ items: [] }));
+
+    await getCatalogJewelryItems({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      useFixtureFallback: false,
+      query: "opal",
+      type: "ring",
+      collection: "Midnight Garden",
+      material: "Rose gold",
+      mainStone: "Pink stone",
+      label: "diamond",
+      collectionYear: 2026,
+      limit: 12,
+    });
+
+    expect(fetchCatalog).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/catalog?limit=12&query=opal&type=ring&collection=Midnight+Garden&material=Rose+gold&stone=Pink+stone&label=diamond&year=2026",
+      {
+        cache: "no-store",
+      },
+    );
+  });
+
+  it("reads dynamic catalog facets from the Sparkle Suite public Finder API", async () => {
+    const fetchFacets = vi.fn(async () =>
+      jsonResponse({
+        facets: {
+          collections: [{ value: "Midnight Garden", count: 2 }],
+          materials: [{ value: "Rose gold", count: 2 }],
+          stones: [{ value: "Pearl", count: 1 }],
+          types: [{ value: "ring", count: 2 }],
+          labels: [{ value: "diamond", count: 1 }],
+          years: [{ value: "2026", count: 2 }],
+        },
+      }),
+    );
+
+    const facets = await getCatalogFacetOptions({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchFacets,
+      useFixtureFallback: false,
+      query: "opal",
+      type: "ring",
+      collection: "Midnight Garden",
+      material: "Rose gold",
+      mainStone: "Pearl",
+      label: "diamond",
+      collectionYear: 2026,
+    });
+
+    expect(fetchFacets).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/catalog/facets?query=opal&type=ring&collection=Midnight+Garden&material=Rose+gold&stone=Pearl&label=diamond&year=2026",
+      { cache: "no-store" },
+    );
+    expect(facets.stones).toEqual([{ value: "Pearl", count: 1 }]);
+    expect(facets.materials).toEqual([{ value: "Rose gold", count: 2 }]);
+  });
+
+  it("derives fixture facet options without showing unused stone filters", async () => {
+    const facets = await getCatalogFacetOptions({
+      apiBaseUrl: "",
+    });
+
+    expect(facets.collections.length).toBeGreaterThan(0);
+    expect(facets.stones).toEqual([]);
+    expect(JSON.stringify(facets)).not.toContain("Pearl");
   });
 
   it("can disable fixture fallback when a live API read fails", async () => {

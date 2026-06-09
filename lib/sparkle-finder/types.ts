@@ -1,5 +1,5 @@
 export type CustomerTier = "free" | "silver";
-export type JewelryType = "ring" | "earrings" | "necklace" | "bracelet" | "other";
+export type JewelryType = "ring" | "earrings" | "necklace" | "bracelet" | "stack" | "other";
 export type BombPartyLabel = "diamond" | "unicorn" | "standard";
 export type CollectionItemState = "owned" | "wishlist" | "private_note_only";
 export type ListingStatus = "available" | "pending" | "unavailable";
@@ -40,6 +40,9 @@ export type JewelryItem = {
   collectionName: string;
   collectionYear?: number | null;
   jewelryType: JewelryType;
+  material?: string | null;
+  mainStone?: string | null;
+  bpMsrp?: number | null;
   imageUrl: string;
   bpLabel: BombPartyLabel;
   itemNumber: string;

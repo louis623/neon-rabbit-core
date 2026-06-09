@@ -7,7 +7,7 @@ import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
 export default function SignUpPage() {
   return (
     <>
-      <SparkleFinderNav accountState={getLocalDevAuthState("anonymous")} />
+      <SparkleFinderNav accountState={getLocalDevAuthState("anonymous")} variant="public" />
       <main className="min-h-screen bg-[var(--sparkle-warm-bg)] px-5 py-10 sm:px-8">
         <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div className="grid gap-5">
@@ -19,7 +19,7 @@ export default function SignUpPage() {
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
               Create one Sparkle Finder account for the jewelry library, rep availability, and Silver collector tools.
-              Your first 45 days include Silver access while the paid membership path is being connected.
+              Your first 45 days include Silver access. After that, continue Silver for $4.99/month or keep browsing on Free.
             </p>
             <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
               <div className="flex items-start gap-3">

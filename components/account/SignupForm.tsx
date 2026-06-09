@@ -157,8 +157,11 @@ export function SignupForm() {
         <label className="flex items-start gap-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
           <input className="mt-1" name="privacyAcknowledged" required type="checkbox" value="yes" />
           <span>
-            I acknowledge the Sparkle Finder privacy terms and agree that my account details are used to provide the
-            45-day Silver trial and account support.
+            I acknowledge the{" "}
+            <a className="font-bold text-[var(--sparkle-rose)] underline-offset-4 hover:underline" href="/privacy-policy">
+              Sparkle Finder privacy terms
+            </a>{" "}
+            and agree that my account details are used to provide the 45-day Silver trial and account support.
           </span>
         </label>
         <label className="flex items-start gap-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">

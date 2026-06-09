@@ -14,7 +14,7 @@ type PreviewAuthRouteContext = {
 export async function GET(_request: Request, context: PreviewAuthRouteContext) {
   const { mode } = await context.params;
   const authMode = parseSparkleFinderAuthMode(mode);
-  const redirectPath = authMode === "anonymous" ? "/" : "/dashboard";
+  const redirectPath = "/";
   const requestUrl = new URL(_request.url);
   const requestHost =
     getSafeLocalHost(_request.headers.get("host")) ?? getSafeLocalHost(requestUrl.host) ?? "127.0.0.1:4310";

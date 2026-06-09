@@ -1,4 +1,4 @@
-const sparkleFinderDefaultNextPath = "/dashboard";
+const sparkleFinderDefaultNextPath = "/";
 
 export function safeSparkleFinderNextPath(next: string | null): string {
   if (!next) {

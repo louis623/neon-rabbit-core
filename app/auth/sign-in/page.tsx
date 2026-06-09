@@ -27,7 +27,7 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
 
   return (
     <>
-      <SparkleFinderNav accountState={getLocalDevAuthState("anonymous")} />
+      <SparkleFinderNav accountState={getLocalDevAuthState("anonymous")} variant="public" />
       <main className="min-h-screen bg-[var(--sparkle-warm-bg)] px-5 py-10 sm:px-8">
         <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div className="grid gap-5">

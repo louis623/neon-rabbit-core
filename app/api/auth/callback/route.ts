@@ -24,7 +24,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/auth/sign-in?error=oauth_exchange_failed", requestUrl.origin));
   }
 
-  return NextResponse.redirect(
-    new URL(safeSparkleFinderNextPath(requestUrl.searchParams.get("next")), requestUrl.origin),
-  );
+  const postLoginUrl = new URL("/auth/post-login", requestUrl.origin);
+  postLoginUrl.searchParams.set("next", safeSparkleFinderNextPath(requestUrl.searchParams.get("next")));
+
+  return NextResponse.redirect(postLoginUrl);
 }

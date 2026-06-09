@@ -49,17 +49,35 @@ export type FinderAvailabilityResult = {
 };
 
 export type FinderLiveShow = SparkleSuiteFinderLeadShow;
+export type CatalogFacetKey = "collections" | "materials" | "stones" | "types" | "labels" | "years";
+
+export type CatalogFacetOption = {
+  value: string;
+  count: number;
+};
+
+export type CatalogFacetOptions = Record<CatalogFacetKey, CatalogFacetOption[]>;
 
 type CatalogReadOptions = {
   apiBaseUrl?: string;
   fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
+  collection?: string;
+  collectionYear?: number;
+  label?: BombPartyLabel | "all";
   limit?: number;
+  mainStone?: string;
+  material?: string;
   query?: string;
+  type?: JewelryType | "all";
   useFixtureFallback?: boolean;
 };
 
 type CatalogListResponse = {
   items?: SparkleSuiteFinderCatalogItem[];
+};
+
+type CatalogFacetsResponse = {
+  facets?: Partial<CatalogFacetOptions>;
 };
 
 type CatalogDetailResponse = {
@@ -99,12 +117,7 @@ export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): 
     return fallbackItems(options);
   }
 
-  const params = new URLSearchParams({ limit: String(options.limit ?? defaultCatalogLimit) });
-  const query = options.query?.trim();
-
-  if (query) {
-    params.set("query", query);
-  }
+  const params = buildCatalogParams(options, { includeLimit: true });
 
   try {
     const payload = await fetchJson<CatalogListResponse>(
@@ -116,6 +129,25 @@ export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): 
     return items.map(mapSparkleSuiteFinderCatalogItem);
   } catch {
     return fallbackItems(options);
+  }
+}
+
+export async function getCatalogFacetOptions(options: CatalogReadOptions = {}): Promise<CatalogFacetOptions> {
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
+
+  if (!apiBaseUrl) {
+    return deriveCatalogFacetOptions(getFixtureJewelryItems());
+  }
+
+  const params = buildCatalogParams(options, { includeLimit: false });
+  const queryString = params.toString();
+  const url = `${apiBaseUrl}/api/public/finder/catalog/facets${queryString ? `?${queryString}` : ""}`;
+
+  try {
+    const payload = await fetchJson<CatalogFacetsResponse>(url, options);
+    return normalizeCatalogFacetOptions(payload.facets);
+  } catch {
+    return options.useFixtureFallback === false ? emptyCatalogFacetOptions() : deriveCatalogFacetOptions(getFixtureJewelryItems());
   }
 }
 
@@ -212,6 +244,9 @@ export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalog
     collectionName: item.collectionName?.trim() || "Unassigned Collection",
     collectionYear: item.collectionYear,
     jewelryType: mapSparkleSuiteFinderJewelryType(item.jewelryType),
+    material: item.material,
+    mainStone: item.mainStone,
+    bpMsrp: item.bpMsrp,
     imageUrl: item.canonicalPhotoUrl?.trim() ?? "",
     bpLabel: deriveBombPartyLabel(item),
     itemNumber: item.itemNumber,
@@ -227,7 +262,7 @@ export function mapSparkleSuiteFinderJewelryType(jewelryType: SparkleSuiteFinder
     earrings: "earrings",
     necklace: "necklace",
     ring: "ring",
-    stack: "other",
+    stack: "stack",
   };
 
   return types[jewelryType];
@@ -281,6 +316,92 @@ function getSparkleSuiteFinderApiBaseUrl(options: Pick<CatalogReadOptions, "apiB
     defaultSparkleSuiteFinderApiBaseUrl;
 
   return configured.trim().replace(/\/+$/, "");
+}
+
+function buildCatalogParams(options: CatalogReadOptions, { includeLimit }: { includeLimit: boolean }): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (includeLimit) {
+    params.set("limit", String(options.limit ?? defaultCatalogLimit));
+  }
+
+  appendCatalogFilterParam(params, "query", options.query);
+  appendCatalogFilterParam(params, "type", options.type);
+  appendCatalogFilterParam(params, "collection", options.collection);
+  appendCatalogFilterParam(params, "material", options.material);
+  appendCatalogFilterParam(params, "stone", options.mainStone);
+  appendCatalogFilterParam(params, "label", options.label);
+  if (typeof options.collectionYear === "number") {
+    params.set("year", String(options.collectionYear));
+  }
+
+  return params;
+}
+
+function appendCatalogFilterParam(params: URLSearchParams, key: string, value: string | null | undefined): void {
+  const trimmed = value?.trim();
+
+  if (trimmed && trimmed !== "all") {
+    params.set(key, trimmed);
+  }
+}
+
+function normalizeCatalogFacetOptions(facets: Partial<CatalogFacetOptions> | undefined): CatalogFacetOptions {
+  const empty = emptyCatalogFacetOptions();
+
+  return {
+    collections: normalizeFacetList(facets?.collections ?? empty.collections),
+    materials: normalizeFacetList(facets?.materials ?? empty.materials),
+    stones: normalizeFacetList(facets?.stones ?? empty.stones),
+    types: normalizeFacetList(facets?.types ?? empty.types),
+    labels: normalizeFacetList(facets?.labels ?? empty.labels),
+    years: normalizeFacetList(facets?.years ?? empty.years),
+  };
+}
+
+function normalizeFacetList(options: CatalogFacetOption[]): CatalogFacetOption[] {
+  return options.flatMap((option) => {
+    const value = option.value?.trim();
+    const count = Number.isFinite(option.count) ? Math.max(0, option.count) : 0;
+
+    return value && count > 0 ? [{ value, count }] : [];
+  });
+}
+
+function deriveCatalogFacetOptions(items: JewelryItem[]): CatalogFacetOptions {
+  return {
+    collections: countFacetValues(items.map((item) => item.collectionName)),
+    materials: countFacetValues(items.map((item) => item.material ?? "")),
+    stones: countFacetValues(items.map((item) => item.mainStone ?? "")),
+    types: countFacetValues(items.map((item) => item.jewelryType)),
+    labels: countFacetValues(items.map((item) => item.bpLabel)),
+    years: countFacetValues(items.map((item) => (item.collectionYear ? String(item.collectionYear) : ""))),
+  };
+}
+
+function countFacetValues(values: string[]): CatalogFacetOption[] {
+  const counts = new Map<string, number>();
+
+  for (const value of values) {
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+    counts.set(trimmed, (counts.get(trimmed) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value));
+}
+
+function emptyCatalogFacetOptions(): CatalogFacetOptions {
+  return {
+    collections: [],
+    materials: [],
+    stones: [],
+    types: [],
+    labels: [],
+    years: [],
+  };
 }
 
 function deriveBombPartyLabel(item: SparkleSuiteFinderCatalogItem): BombPartyLabel {

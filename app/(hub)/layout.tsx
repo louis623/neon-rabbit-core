@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
   isSparkleFinderSignedIn,
@@ -25,6 +26,7 @@ export function renderHubChrome(children: React.ReactNode, accountState: Sparkle
           {isSparkleFinderSignedIn(accountState) ? children : <HubSignInWall />}
         </div>
       </main>
+      <SparkleFinderFooter />
     </>
   );
 }

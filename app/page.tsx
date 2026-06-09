@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { AuthenticatedHomePage } from "@/components/home/AuthenticatedHomePage";
 import { PublicLandingPage } from "@/components/home/PublicLandingPage";
 import {
   parseSparkleFinderAuthMode,
@@ -13,10 +14,18 @@ export function renderPublicHomeContent(accountState: CurrentSparkleFinderAccoun
   return <PublicLandingPage accountState={accountState} />;
 }
 
+export function renderHomeContent(accountState: CurrentSparkleFinderAccountState) {
+  return accountState.status === "authenticated" ? (
+    <AuthenticatedHomePage accountState={accountState} />
+  ) : (
+    renderPublicHomeContent(accountState)
+  );
+}
+
 export default async function Home() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
 
-  return renderPublicHomeContent(accountState);
+  return renderHomeContent(accountState);
 }

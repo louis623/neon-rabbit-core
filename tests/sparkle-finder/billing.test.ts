@@ -114,6 +114,29 @@ describe("Sparkle Finder Stripe billing", () => {
     });
   });
 
+  it.each(["paused", "unpaid", "incomplete_expired"] as const)(
+    "maps %s subscriptions to Free unless rep-included Silver applies",
+    (status) => {
+      const update = mapSubscriptionToMembershipUpdate(
+        subscription({
+          customer: "cus_123",
+          id: "sub_123",
+          metadata: { supabase_user_id: "user-123" },
+          status,
+          current_period_end: seconds("2026-07-15T00:00:00.000Z"),
+        }),
+        { currentAccessState: "silver_paid" },
+      );
+
+      expect(update).toMatchObject({
+        userId: "user-123",
+        accessState: "free",
+        silverSource: "none",
+        silverEndsAt: "2026-07-15T00:00:00.000Z",
+      });
+    },
+  );
+
   it("downgrades canceled paid subscriptions to Free after the subscription end", () => {
     const update = mapSubscriptionToMembershipUpdate(
       subscription({
@@ -324,6 +347,76 @@ describe("Sparkle Finder billing routes", () => {
     expect(response.headers.get("location")).toBe("https://checkout.stripe.test/session");
   });
 
+  it("reuses an existing Stripe customer for checkout", async () => {
+    const customersCreate = vi.fn();
+    const checkoutSessionsCreate = vi.fn().mockResolvedValue({ url: "https://checkout.stripe.test/session" });
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-123",
+              email: "casey@example.com",
+              email_confirmed_at: "2026-06-01T12:00:00.000Z",
+            },
+          },
+          error: null,
+        }),
+      },
+      from: membershipTableClient({ stripe_customer_id: "cus_existing", access_state: "free" }),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ customersCreate, checkoutSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/checkout/route");
+    const response = await POST();
+
+    expect(customersCreate).not.toHaveBeenCalled();
+    expect(checkoutSessionsCreate.mock.calls[0][0].customer).toBe("cus_existing");
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://checkout.stripe.test/session");
+  });
+
+  it("does not create another checkout session for already-paid Silver users", async () => {
+    const customersCreate = vi.fn();
+    const checkoutSessionsCreate = vi.fn();
+
+    stubBillingEnv();
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-123",
+              email: "casey@example.com",
+              email_confirmed_at: "2026-06-01T12:00:00.000Z",
+            },
+          },
+          error: null,
+        }),
+      },
+      from: membershipTableClient({
+        stripe_customer_id: "cus_existing",
+        stripe_subscription_id: "sub_existing",
+        access_state: "silver_paid",
+      }),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ customersCreate, checkoutSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/checkout/route");
+    const response = await POST();
+
+    expect(customersCreate).not.toHaveBeenCalled();
+    expect(checkoutSessionsCreate).not.toHaveBeenCalled();
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://sparkle.example/account?message=silver_already_active");
+  });
+
   it("requires an existing Stripe customer before opening the billing portal", async () => {
     const portalSessionsCreate = vi.fn();
 
@@ -426,6 +519,7 @@ describe("Sparkle Finder billing routes", () => {
 
   it("applies a membership update for valid checkout completion webhooks", async () => {
     const applyStripeMembershipUpdate = vi.fn().mockResolvedValue({ ok: true });
+    const applyStripeEventIdempotency = vi.fn().mockResolvedValue({ ok: true, duplicate: false });
     const constructEvent = vi.fn().mockReturnValue({
       id: "evt_123",
       object: "event",
@@ -443,6 +537,7 @@ describe("Sparkle Finder billing routes", () => {
     mockBillingModule({
       createStripeClient: vi.fn(() => stripeRouteClient({ constructEvent })),
       applyStripeMembershipUpdate,
+      applyStripeEventIdempotency,
     });
 
     const { POST } = await import("../../app/api/stripe/webhook/route");
@@ -457,6 +552,7 @@ describe("Sparkle Finder billing routes", () => {
     );
 
     expect(constructEvent).toHaveBeenCalledWith("raw=stripe", "t=123,v1=good", "whsec_123");
+    expect(applyStripeEventIdempotency).toHaveBeenCalledWith("evt_123", "checkout.session.completed");
     expect(applyStripeMembershipUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-123",
@@ -468,6 +564,46 @@ describe("Sparkle Finder billing routes", () => {
     );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ received: true });
+  });
+
+  it("does not apply duplicate Stripe webhook events twice", async () => {
+    const applyStripeMembershipUpdate = vi.fn();
+    const applyStripeEventIdempotency = vi.fn().mockResolvedValue({ ok: true, duplicate: true });
+    const constructEvent = vi.fn().mockReturnValue({
+      id: "evt_duplicate",
+      object: "event",
+      type: "checkout.session.completed",
+      data: {
+        object: checkoutSession({
+          client_reference_id: "user-123",
+          customer: "cus_123",
+          subscription: "sub_123",
+        }),
+      },
+    });
+
+    stubBillingEnv();
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ constructEvent })),
+      applyStripeMembershipUpdate,
+      applyStripeEventIdempotency,
+    });
+
+    const { POST } = await import("../../app/api/stripe/webhook/route");
+    const response = await POST(
+      new Request("https://sparkle.example/api/stripe/webhook", {
+        method: "POST",
+        body: "raw=stripe",
+        headers: {
+          "stripe-signature": "t=123,v1=good",
+        },
+      }),
+    );
+
+    expect(applyStripeEventIdempotency).toHaveBeenCalledWith("evt_duplicate", "checkout.session.completed");
+    expect(applyStripeMembershipUpdate).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ received: true, duplicate: true });
   });
 });
 
