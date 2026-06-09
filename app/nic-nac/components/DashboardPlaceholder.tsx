@@ -3830,9 +3830,11 @@ function getWorkflowResourcesByGroup(resources: HelpResource[] | undefined) {
 export function HelpResourcesCard({
   state,
   hasPaidWorkspace,
+  showSkinReference = true,
 }: {
   state: ResourcesState
   hasPaidWorkspace: boolean
+  showSkinReference?: boolean
 }) {
   const recommendedSkins = FIRST_START_SKIN_RECOMMENDATIONS.map((recommendation) => {
     const skin = AMETHYST_SKIN_CARDS.find((candidate) => candidate.id === recommendation.id)
@@ -3870,11 +3872,17 @@ export function HelpResourcesCard({
               </div>
 
               {workflowGroups.map((section) => (
-                <section key={section.group} className={styles.playbookGroup}>
-                  <div className={styles.playbookGroupHeader}>
-                    <div className={styles.customerName}>{section.group}</div>
-                    <span className={styles.rosterTag}>{section.resources.length} guides</span>
-                  </div>
+                <details key={section.group} className={styles.playbookGroup}>
+                  <summary className={styles.playbookGroupSummary}>
+                    <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
+                    <span className={styles.playbookSummaryCopy}>
+                      <span className={styles.customerName}>{section.group}</span>
+                      <span className={styles.helperNote}>
+                        {section.resources.length} guides
+                      </span>
+                    </span>
+                    <span className={styles.rosterTag}>Open section</span>
+                  </summary>
                   <div className={styles.playbookGuideList}>
                     {section.resources.map((resource) => (
                       <details key={resource.id} className={styles.playbookGuide}>
@@ -3938,19 +3946,20 @@ export function HelpResourcesCard({
                       </details>
                     ))}
                   </div>
-                </section>
+                </details>
               ))}
 
-              <section className={styles.featureIndex}>
-                <div className={styles.playbookGroupHeader}>
+              <details className={styles.featureIndex}>
+                <summary className={styles.playbookGroupSummary}>
+                  <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
                   <div>
                     <div className={styles.walletSettingsTitle}>Feature Index</div>
                     <div className={styles.helperNote}>
                       Use this when you already know which Sparkle Suite tool you need.
                     </div>
                   </div>
-                  <span className={styles.rosterTag}>Quick reference</span>
-                </div>
+                  <span className={styles.rosterTag}>Open section</span>
+                </summary>
                 <div className={styles.featureIndexGrid}>
                   {featureReferences.map((resource) => (
                     <div key={resource.id} className={styles.featureIndexItem}>
@@ -3959,15 +3968,19 @@ export function HelpResourcesCard({
                     </div>
                   ))}
                 </div>
-              </section>
+              </details>
 
-              <section className={styles.supportPath}>
-                <div>
-                  <div className={styles.walletSettingsTitle}>Support Path</div>
-                  <div className={styles.helperNote}>
-                    Try the workflow first, ask Nic-Nac next, then send support the details if you are blocked.
+              <details className={styles.supportPath}>
+                <summary className={styles.playbookGroupSummary}>
+                  <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
+                  <div>
+                    <div className={styles.walletSettingsTitle}>Support Path</div>
+                    <div className={styles.helperNote}>
+                      Try the workflow first, ask Nic-Nac next, then send support the details if you are blocked.
+                    </div>
                   </div>
-                </div>
+                  <span className={styles.rosterTag}>Open section</span>
+                </summary>
                 <div className={styles.actionRow}>
                   {(supportResources[0]?.quickActions ?? [
                     'Ask Nic-Nac to troubleshoot',
@@ -3979,7 +3992,7 @@ export function HelpResourcesCard({
                     </span>
                   ))}
                 </div>
-              </section>
+              </details>
             </div>
           ) : state.status === 'error' ? (
             <div className={styles.emptyState}>
@@ -3991,7 +4004,9 @@ export function HelpResourcesCard({
               <div className={styles.loadingLineShort} />
             </div>
           )}
-          <div className={styles.siteSettingsSection}>
+          {showSkinReference ? (
+          <>
+            <div className={styles.siteSettingsSection}>
             <div className={styles.calendarHeader}>
               <div>
                 <div className={styles.walletSettingsTitle}>Choose your look</div>
@@ -4032,8 +4047,8 @@ export function HelpResourcesCard({
                 </div>
               ))}
             </div>
-          </div>
-          <div className={styles.siteSettingsSection}>
+            </div>
+            <div className={styles.siteSettingsSection}>
             <div className={styles.calendarHeader}>
               <div className={styles.walletSettingsTitle}>Full skin gallery</div>
               <span className={styles.rosterTag}>
@@ -4081,7 +4096,9 @@ export function HelpResourcesCard({
                 </div>
               ))}
             </div>
-          </div>
+            </div>
+          </>
+          ) : null}
         </>
       }
     </div>

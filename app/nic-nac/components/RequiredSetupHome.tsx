@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import type { RequiredSetupState } from '@/lib/self-serve/required-setup'
+import { getHelpResources } from '@/lib/services/help-resources'
+import { HelpResourcesCard } from './DashboardPlaceholder'
 import { NicNacGlyph } from './NicNacGlyph'
 import styles from './RequiredSetupHome.module.css'
 
@@ -51,6 +53,15 @@ export function RequiredSetupHome({
             {reviewerActions}
           </div>
         ) : null}
+        <section className={styles.helpPanel} aria-label="Setup help and resources">
+          <p className={styles.kicker}>Help & Resources</p>
+          <p className={styles.helpIntro}>Setup help is available from the start.</p>
+          <HelpResourcesCard
+            state={{ status: 'ready', resources: getHelpResources() }}
+            hasPaidWorkspace={false}
+            showSkinReference={false}
+          />
+        </section>
       </section>
       <section className={styles.chatPanel} aria-label="Nic-Nac required setup chat">
         <header className={styles.chatHeader}>

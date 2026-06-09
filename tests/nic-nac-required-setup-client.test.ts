@@ -108,6 +108,13 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('requiredSetupStep={setupState?.currentStep ?? null}')
   })
 
+  it('makes Help & Resources available during required setup', () => {
+    expect(requiredSetupHome).toContain('HelpResourcesCard')
+    expect(requiredSetupHome).toContain('getHelpResources')
+    expect(requiredSetupHome).toContain('Setup help is available from the start.')
+    expect(requiredSetupHome).toContain('aria-label="Setup help and resources"')
+  })
+
   it('keeps Nic-Nac expanded on the Help & Resources workspace section', () => {
     expect(client).toContain("activeWorkspaceSection === 'help-resources'")
     expect(client).toContain('shouldKeepDesktopNicNacOpen')

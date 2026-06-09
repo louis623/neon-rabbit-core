@@ -461,6 +461,24 @@ describe('DashboardPlaceholder', () => {
     )
   })
 
+  it('keeps Help & Resources scannable with collapsed section disclosures', () => {
+    const html = renderToStaticMarkup(
+      createElement(HelpResourcesCard, {
+        state: { status: 'ready', resources: getHelpResources() },
+        hasPaidWorkspace: true,
+      }),
+    )
+
+    expect(html).toContain('<details class="')
+    expect(html).toContain('Setup')
+    expect(html).toContain('Live Shows')
+    expect(html).toContain('Feature Index')
+    expect(html).toContain('Support Path')
+    expect(html).toContain('aria-hidden="true"')
+    expect(html).toContain('Open section')
+    expect(html).not.toContain('<section class="')
+  })
+
   it('deep-links workspace sections without self-serve-started first-run routing', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')

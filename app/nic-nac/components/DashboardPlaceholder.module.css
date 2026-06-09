@@ -1042,8 +1042,7 @@
 }
 
 .playbookIntro,
-.playbookGroupHeader,
-.supportPath {
+.playbookGroupHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1056,9 +1055,54 @@
   gap: 10px;
 }
 
+.playbookGroupSummary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.playbookGroupSummary::-webkit-details-marker {
+  display: none;
+}
+
+.playbookSummaryCopy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.disclosureChevron {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--nic-nac-text-secondary);
+  background: rgba(255, 246, 250, 0.84);
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.playbookGroup[open] .disclosureChevron,
+.featureIndex[open] .disclosureChevron,
+.supportPath[open] .disclosureChevron {
+  transform: rotate(90deg);
+  color: var(--nic-nac-accent);
+  border-color: rgba(238, 44, 155, 0.24);
+}
+
 .playbookGuideList {
   display: grid;
   gap: 8px;
+  padding-top: 10px;
 }
 
 .playbookGuide {
@@ -1123,6 +1167,11 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  padding-top: 10px;
+}
+
+.supportPath .actionRow {
+  padding-top: 10px;
 }
 
 .featureIndexItem {
