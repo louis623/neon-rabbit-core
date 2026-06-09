@@ -78,6 +78,19 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('GS2-2335')
   })
 
+  it('keeps public Sparkle Suite header and footer around setup and workspace', () => {
+    expect(nicNacPage).toContain('SparkleSuitePublicHeader')
+    expect(nicNacPage).toContain('SparkleSuitePublicFooter')
+    expect(nicNacPage).toContain('sparkle-landing-v2')
+    expect(nicNacPage).toContain('sl2-shell')
+    expect(nicNacPage.indexOf('<SparkleSuitePublicHeader')).toBeLessThan(
+      nicNacPage.indexOf('<NicNacClient'),
+    )
+    expect(nicNacPage.indexOf('<NicNacClient')).toBeLessThan(
+      nicNacPage.indexOf('<SparkleSuitePublicFooter'),
+    )
+  })
+
   it('opens Nic-Nac with an empty starter chat in workspace review mode', () => {
     expect(nicNacClient).toContain('showWorkspaceReviewState')
     expect(nicNacClient).toContain('Workspace review mode starts fresh')

@@ -1,4 +1,8 @@
 import { Suspense } from 'react'
+import {
+  SparkleSuitePublicFooter,
+  SparkleSuitePublicHeader,
+} from '@/app/_components/sparkle-suite-public-chrome'
 import NicNacClient from './_client'
 import {
   reviewerSmokeModeEnabled,
@@ -10,12 +14,24 @@ export const dynamic = 'force-dynamic'
 
 export default function NicNacPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-      <NicNacClient
-        reviewerSmokeVisible={
-          reviewerSmokeModeEnabled() || workspaceReviewAccessEnabled()
-        }
-      />
-    </Suspense>
+    <main>
+      <div className="sparkle-landing-v2">
+        <div className="sl2-shell">
+          <SparkleSuitePublicHeader />
+        </div>
+      </div>
+      <Suspense fallback={<div style={{ padding: 24 }}>Loading...</div>}>
+        <NicNacClient
+          reviewerSmokeVisible={
+            reviewerSmokeModeEnabled() || workspaceReviewAccessEnabled()
+          }
+        />
+      </Suspense>
+      <div className="sparkle-landing-v2">
+        <div className="sl2-shell">
+          <SparkleSuitePublicFooter />
+        </div>
+      </div>
+    </main>
   )
 }
