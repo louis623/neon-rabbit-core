@@ -64,7 +64,6 @@ const WORKSPACE_SECTIONS = [
 const TRADE_WORKSPACE_REFRESH_MS = 15_000
 const TRADE_BOARD_PAGE_SIZE = 12
 const BOARD_INVENTORY_MOBILE_QUERY = '(max-width: 840px)'
-const LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY = '(min-width: 841px)'
 
 export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
   const params = new URLSearchParams({
@@ -92,19 +91,6 @@ function subscribeBoardInventoryViewport(callback: () => void) {
 function getBoardInventoryPageSizeSnapshot() {
   if (typeof window === 'undefined') return 3
   return window.matchMedia(BOARD_INVENTORY_MOBILE_QUERY).matches ? 1 : 3
-}
-
-function subscribeLiveSitePreviewViewport(callback: () => void) {
-  if (typeof window === 'undefined') return () => {}
-
-  const mediaQuery = window.matchMedia(LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY)
-  mediaQuery.addEventListener('change', callback)
-  return () => mediaQuery.removeEventListener('change', callback)
-}
-
-function getLiveSitePreviewViewportSnapshot() {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia(LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY).matches
 }
 
 export function formatHeaderRepShow(
@@ -1100,11 +1086,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [previewUnavailableMessage, setPreviewUnavailableMessage] = useState<
     string | null
   >(null)
-  const canUseEmbeddedLiveSitePreview = useSyncExternalStore(
-    subscribeLiveSitePreviewViewport,
-    getLiveSitePreviewViewportSnapshot,
-    () => true,
-  )
   const [repProfileState, setRepProfileState] = useState<RepProfileState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     repId: repIdOverride,
@@ -2664,13 +2645,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     repIdOverride ?? repProfileState.repId,
   )
   const openWorkspacePreview = (nextPreview: Extract<WorkspacePreviewState, { mode: 'live_site_preview' }>) => {
-    if (!canUseEmbeddedLiveSitePreview) {
-      setPreviewUnavailableMessage(
-        'Use a wider screen to preview and edit the live site with Nic-Nac side by side.',
-      )
-      return
-    }
-
     setPreviewUnavailableMessage(null)
     setWorkspacePreview(nextPreview)
     setPreviewFrameKey((current) => current + 1)
@@ -2703,9 +2677,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     accountBillingState.summary,
   )
   const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
+  const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
+  const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
 
   return (
-    <main className={styles.main} data-workspace-skin={workspaceSkinPreset}>
+    <main
+      className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
+      data-workspace-skin={workspaceSkinPreset}
+    >
+      {!isLiveSitePreview ? (
       <header className={styles.topbar}>
         <div className={styles.topbarCopy}>
           <SparkleSeal className={styles.brandSeal} />
@@ -2739,19 +2719,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           ) : null}
         </div>
       </header>
+      ) : null}
       {previewUnavailableMessage ? (
         <div className={styles.previewUnavailableNotice}>
           {previewUnavailableMessage}
         </div>
       ) : null}
-      {workspacePreview.mode === 'live_site_preview' ? (
-        <section className={styles.previewShell} aria-label={workspacePreview.title}>
-          <div className={styles.previewToolbar}>
+      {activeWorkspacePreview ? (
+        <section className={styles.previewFocusShell} aria-label={activeWorkspacePreview.title}>
+          <div className={styles.previewFocusBar}>
             <div className={styles.previewToolbarCopy}>
               <span className={styles.previewKicker}>Live Site Preview</span>
-              <span className={styles.previewTitle}>{workspacePreview.title}</span>
+              <span className={styles.previewTitle}>{activeWorkspacePreview.title}</span>
             </div>
-            <div className={styles.previewToolbarActions}>
+            <div className={styles.previewFocusActions}>
               <button
                 type="button"
                 className={styles.helperButton}
@@ -2769,12 +2750,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               >
                 Refresh preview
               </button>
+              <a
+                className={styles.helperLink}
+                href={activeWorkspacePreview.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open full site
+              </a>
             </div>
           </div>
           <iframe
-            key={`${previewFrameKey}:${workspacePreview.href}`}
-            className={styles.previewFrame}
-            src={workspacePreview.href}
+            key={`${previewFrameKey}:${activeWorkspacePreview.href}`}
+            className={styles.previewFocusFrame}
+            src={activeWorkspacePreview.href}
             title="Sparkle Suite live site preview"
           />
         </section>

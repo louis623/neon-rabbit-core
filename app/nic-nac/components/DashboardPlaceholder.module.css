@@ -48,6 +48,11 @@
   padding: 22px 28px 42px;
 }
 
+.mainPreviewFocus {
+  min-height: var(--nic-nac-app-height, 100vh);
+  padding: 12px;
+}
+
 .main[data-workspace-skin='sparkle_suite_morganite'] {
   --workspace-accent: #ee2c9b;
   --workspace-accent-hover: #d91d89;
@@ -455,6 +460,44 @@
   border-radius: 18px;
   background: var(--nic-nac-surface-primary-solid);
   box-shadow: 0 18px 42px rgba(54, 34, 29, 0.08);
+}
+
+.previewFocusShell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: calc(var(--nic-nac-app-height, 100vh) - 24px);
+  width: 100%;
+}
+
+.previewFocusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 24px rgba(54, 34, 29, 0.07);
+  padding: 8px 10px 8px 12px;
+}
+
+.previewFocusActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.previewFocusFrame {
+  width: 100%;
+  height: calc(var(--nic-nac-app-height, 100vh) - 92px);
+  min-height: min(760px, calc(var(--nic-nac-app-height, 100vh) - 92px));
+  border: 1px solid rgba(64, 41, 36, 0.14);
+  border-radius: 10px;
+  background: var(--nic-nac-surface-primary-solid);
+  box-shadow: 0 12px 28px rgba(54, 34, 29, 0.08);
 }
 
 .workspaceSidebar {
@@ -2831,8 +2874,18 @@
     display: none;
   }
 
-  .previewFrame {
-    display: none;
+  .previewFocusBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .previewFocusActions {
+    justify-content: flex-start;
+  }
+
+  .previewFocusFrame {
+    height: calc(var(--nic-nac-app-height, 100vh) - 146px);
+    min-height: 68vh;
   }
 
   .workspaceSidebar {

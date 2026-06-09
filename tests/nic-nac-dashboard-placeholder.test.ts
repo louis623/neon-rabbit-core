@@ -702,15 +702,23 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('href={customerSparkleSiteHref}\n              target="_blank"')
   })
 
-  it('uses a wider-screen fallback instead of embedding the live site on narrow workspaces', () => {
+  it('keeps live site focus preview available on narrow workspaces', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
     )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
 
-    expect(source).toContain('LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY')
-    expect(source).toContain('canUseEmbeddedLiveSitePreview')
-    expect(source).toContain('Use a wider screen to preview and edit the live site with Nic-Nac side by side.')
+    expect(source).toContain('styles.previewFocusFrame')
+    expect(source).toContain('Open full site')
+    expect(source).not.toContain('LIVE_SITE_PREVIEW_MIN_WIDTH_QUERY')
+    expect(source).not.toContain('canUseEmbeddedLiveSitePreview')
+    expect(source).not.toContain('Use a wider screen to preview and edit the live site with Nic-Nac side by side.')
+    expect(css).not.toMatch(/\.previewFrame\s*{[^}]*display:\s*none/s)
+    expect(css).toContain('min-height: 68vh')
   })
 
   it('renders board inventory piece cards after active search with a customer preview link', () => {
