@@ -1,5 +1,5 @@
 .root {
-  min-height: 100vh;
+  min-height: var(--nic-nac-app-height, 100vh);
   background:
     linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 52%, #fffdfc 100%);
   font-family: 'Geist', system-ui, sans-serif;
@@ -8,15 +8,17 @@
 
 @media (min-width: 1024px) {
   .root {
-    /* Reserve space for the fixed-right Nic-Nac column on desktop. */
-    padding-right: var(--nic-nac-column-width);
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width);
   }
   .rootMinimized {
-    padding-right: 0;
+    display: block;
   }
 }
 
 .setupRoot {
+  display: block;
   padding-right: 0;
 }
 

@@ -9,11 +9,13 @@
 }
 
 .desktop {
-  position: fixed;
+  align-self: start;
+  position: sticky;
   top: 0;
   right: 0;
   width: var(--nic-nac-column-width);
-  height: 100vh;
+  height: var(--nic-nac-app-height, 100vh);
+  max-height: 100dvh;
   border-left: 1px solid var(--nic-nac-border);
 }
 

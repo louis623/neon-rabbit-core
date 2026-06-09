@@ -1,0 +1,17 @@
+.page {
+  --nic-nac-app-height: calc(100dvh - 79px);
+  background: #fffdfc;
+}
+
+.chrome {
+  position: relative;
+  z-index: 2;
+}
+
+.chrome :global(.sl2-footer) {
+  margin-top: 0;
+}
+
+.app {
+  min-height: var(--nic-nac-app-height);
+}

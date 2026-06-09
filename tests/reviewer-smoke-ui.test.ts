@@ -35,6 +35,22 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'docs/sparkle-suite/testing/reviewer-smoke-standard.md'),
     'utf8',
   )
+  const nicNacShellCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/_shell.module.css'),
+    'utf8',
+  )
+  const nicNacColumnCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/NicNacColumn.module.css'),
+    'utf8',
+  )
+  const requiredSetupCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.module.css'),
+    'utf8',
+  )
+  const dashboardCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+    'utf8',
+  )
 
   it('adds reviewer controls to the start page without replacing normal signup', () => {
     expect(startForm).toContain('/api/reviewer-smoke/session')
@@ -106,6 +122,16 @@ describe('reviewer smoke UI wiring', () => {
     expect(loginPage.indexOf('<LoginClient')).toBeLessThan(
       loginPage.indexOf('<SparkleSuitePublicFooter'),
     )
+  })
+
+  it('keeps Nic-Nac page chrome from fighting the workspace layout', () => {
+    expect(nicNacPage).toContain('styles.chrome')
+    expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width)')
+    expect(nicNacColumnCss).not.toMatch(/\.desktop\s*{[^}]*position:\s*fixed/s)
+    expect(nicNacColumnCss).toMatch(/\.desktop\s*{[^}]*position:\s*sticky/s)
+    expect(requiredSetupCss).not.toMatch(/\.root\s*{[^}]*height:\s*100dvh/s)
+    expect(requiredSetupCss).toContain('var(--nic-nac-app-height')
+    expect(dashboardCss).toContain('var(--nic-nac-app-height')
   })
 
   it('opens Nic-Nac with an empty starter chat in workspace review mode', () => {
