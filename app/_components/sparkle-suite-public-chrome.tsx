@@ -2,6 +2,7 @@ import {
   sparkleSuitePublicLandingContent,
   sparkleSuitePublicLandingSafety,
 } from '@/lib/sparkle-suite/public-landing-content'
+import { SparkleSuitePublicAccountAction } from './SparkleSuitePublicAccountAction'
 
 export function SparkleSeal({ className }: { className?: string }) {
   return (
@@ -45,8 +46,7 @@ export function SparkleSuitePublicHeader({
           <span>{brand}</span>
         </a>
         <nav className="sl2-header__actions" aria-label="Account links">
-          <span>Already have Sparkle Suite?</span>
-          <a href="/login">Sign in here.</a>
+          <SparkleSuitePublicAccountAction />
         </nav>
       </div>
     </header>

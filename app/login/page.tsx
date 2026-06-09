@@ -18,19 +18,15 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main>
-      <div className="sparkle-landing-v2">
-        <div className="sl2-shell">
-          <SparkleSuitePublicHeader />
-        </div>
-      </div>
-      <Suspense fallback={<div style={{ padding: 24 }}>Loading...</div>}>
-        <LoginClient />
-      </Suspense>
-      <div className="sparkle-landing-v2">
-        <div className="sl2-shell">
-          <SparkleSuitePublicFooter />
-        </div>
+    <main className="sparkle-landing-v2">
+      <div className="sl2-shell">
+        <SparkleSuitePublicHeader />
+        <section className="sl2-login" aria-label="Sparkle Suite sign in">
+          <Suspense fallback={<div className="sl2-login__loading">Loading...</div>}>
+            <LoginClient />
+          </Suspense>
+        </section>
+        <SparkleSuitePublicFooter />
       </div>
     </main>
   )

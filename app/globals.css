@@ -4303,6 +4303,49 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   white-space: nowrap;
 }
 
+.sparkle-landing-v2 .sl2-header__account-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: rgba(246, 231, 218, 0.78);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-body), "DM Sans", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.sparkle-landing-v2 .sl2-header__account-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.sparkle-landing-v2 .sl2-header__account-button:focus-visible,
+.sparkle-landing-v2 .sl2-header__actions a:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid #ff4cae;
+  outline-offset: 4px;
+}
+
+.sparkle-landing-v2 .sl2-login {
+  align-items: start;
+  display: grid;
+  min-height: min(520px, calc(100vh - 72px));
+  padding: clamp(2rem, 6vw, 4rem) 0;
+}
+
+.sparkle-landing-v2 .sl2-login__card {
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 22px 60px rgba(64, 41, 36, 0.12);
+}
+
+.sparkle-landing-v2 .sl2-login__loading {
+  margin: 0 auto;
+  max-width: 360px;
+  padding: 24px;
+}
+
 .sparkle-landing-v2 .sl2-btn {
   align-items: center;
   border: 1px solid transparent;

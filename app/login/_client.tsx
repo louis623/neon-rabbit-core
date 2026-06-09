@@ -16,10 +16,11 @@ export default function LoginClient() {
 
   return (
     <div
+      className="sl2-login__card"
       style={{
         fontFamily: 'ui-sans-serif, system-ui, -apple-system',
         maxWidth: 360,
-        margin: '80px auto',
+        margin: '0 auto',
         padding: 24,
         border: '1px solid #e5e5e5',
         borderRadius: 6,
