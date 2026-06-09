@@ -39,6 +39,10 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/_shell.module.css'),
     'utf8',
   )
+  const nicNacPageCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/page.module.css'),
+    'utf8',
+  )
   const nicNacColumnCss = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/NicNacColumn.module.css'),
     'utf8',
@@ -126,6 +130,8 @@ describe('reviewer smoke UI wiring', () => {
 
   it('keeps Nic-Nac page chrome from fighting the workspace layout', () => {
     expect(nicNacPage).toContain('styles.chrome')
+    expect(nicNacPageCss).toContain('min-height: 0')
+    expect(nicNacPageCss).toContain('margin-top: 0')
     expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width)')
     expect(nicNacColumnCss).not.toMatch(/\.desktop\s*{[^}]*position:\s*fixed/s)
     expect(nicNacColumnCss).toMatch(/\.desktop\s*{[^}]*position:\s*sticky/s)

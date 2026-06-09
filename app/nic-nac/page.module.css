@@ -4,6 +4,9 @@
 }
 
 .chrome {
+  background: transparent;
+  min-height: 0;
+  overflow: visible;
   position: relative;
   z-index: 2;
 }
