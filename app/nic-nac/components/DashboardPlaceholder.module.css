@@ -1174,6 +1174,25 @@
   padding-top: 10px;
 }
 
+.customerSiteLooks {
+  border-radius: 14px;
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  background: rgba(255, 255, 255, 0.58);
+  overflow: hidden;
+}
+
+.customerSiteLooksBody {
+  display: grid;
+  gap: 14px;
+  padding: 0 12px 12px;
+}
+
+.customerSiteLooks[open] .disclosureChevron {
+  transform: rotate(90deg);
+  color: var(--nic-nac-accent);
+  border-color: rgba(238, 44, 155, 0.24);
+}
+
 .featureIndexItem {
   min-width: 0;
   border-radius: 12px;

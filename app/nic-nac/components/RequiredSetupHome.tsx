@@ -59,7 +59,6 @@ export function RequiredSetupHome({
           <HelpResourcesCard
             state={{ status: 'ready', resources: getHelpResources() }}
             hasPaidWorkspace={false}
-            showSkinReference={false}
           />
         </section>
       </section>

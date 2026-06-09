@@ -452,13 +452,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Still stuck')
     expect(html).toContain('Feature Index')
     expect(html).toContain('Support Path')
-
-    expect(html.indexOf('Workflow Playbook')).toBeLessThan(
-      html.indexOf('Choose your look'),
-    )
-    expect(html.indexOf('Feature Index')).toBeLessThan(
-      html.indexOf('Choose your look'),
-    )
+    expect(html).not.toContain('Choose your look')
+    expect(html).not.toContain('Customer Site Looks')
+    expect(html).not.toContain('Full skin gallery')
+    expect(html).not.toContain('Classic Sparkle')
   })
 
   it('keeps Help & Resources scannable with collapsed section disclosures', () => {
@@ -1131,6 +1128,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Soft glow')
     expect(html).toContain('Still')
     expect(html).toContain('Site appearance')
+    expect(html).toContain('Customer Site Looks')
+    expect(html).toContain('Reference polished customer-site looks')
+    expect(html).toContain('Recommended first picks')
+    expect(html).toContain('Full skin gallery')
+    expect(html).toContain('<details class="')
     expect(html).not.toContain('Site template')
     expect(html).toContain('Amethyst')
     expect(html).toContain('Sparkle Suite/Morganite')
@@ -1295,7 +1297,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Ask Nic-Nac')
   })
 
-  it('shows skin help without depending on self-serve-started onboarding', () => {
+  it('keeps customer site looks in Site Settings instead of Help & Resources', () => {
     const previousWindow = globalThis.window
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
@@ -1304,17 +1306,12 @@ describe('DashboardPlaceholder', () => {
 
     try {
       const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
-      const chooseIndex = html.indexOf('Choose your look')
-      const galleryIndex = html.indexOf('Full skin gallery')
 
-      expect(chooseIndex).toBeGreaterThanOrEqual(0)
-      expect(galleryIndex).toBeGreaterThanOrEqual(0)
-      expect(chooseIndex).toBeLessThan(galleryIndex)
-      expect(html).toContain('Recommended first picks')
-      expect(html).toContain('Classic Sparkle')
-      expect(html).toContain('Black Diamond')
-      expect(html).toContain('Rose Gold')
-      expect(html).toContain('Garnet')
+      expect(html).toContain('Help &amp; Resources')
+      expect(html).not.toContain('Choose your look')
+      expect(html).not.toContain('Customer Site Looks')
+      expect(html).not.toContain('Full skin gallery')
+      expect(html).not.toContain('Classic Sparkle')
       expect(html).not.toContain('Guided first-start')
       expect(html).not.toContain('after checkout')
       expect(html).not.toContain('Ready after checkout')
@@ -1377,6 +1374,7 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(source).toContain('AMETHYST_SKIN_CARDS')
+    expect(source).toContain('Customer Site Looks')
     expect(source).toContain('Full skin gallery')
     expect(source).toContain('skin.code')
     expect(source).toContain('SS-01')

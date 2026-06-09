@@ -3827,19 +3827,125 @@ function getWorkflowResourcesByGroup(resources: HelpResource[] | undefined) {
   })).filter((section) => section.resources.length > 0)
 }
 
-export function HelpResourcesCard({
-  state,
-  hasPaidWorkspace,
-  showSkinReference = true,
-}: {
-  state: ResourcesState
-  hasPaidWorkspace: boolean
-  showSkinReference?: boolean
-}) {
-  const recommendedSkins = FIRST_START_SKIN_RECOMMENDATIONS.map((recommendation) => {
+function getRecommendedCustomerSiteLooks() {
+  return FIRST_START_SKIN_RECOMMENDATIONS.map((recommendation) => {
     const skin = AMETHYST_SKIN_CARDS.find((candidate) => candidate.id === recommendation.id)
     return skin ? { ...recommendation, skin } : null
   }).filter((item): item is NonNullable<typeof item> => item !== null)
+}
+
+function CustomerSiteLooksReference() {
+  const recommendedSkins = getRecommendedCustomerSiteLooks()
+
+  return (
+    <details className={styles.customerSiteLooks}>
+      <summary className={styles.playbookGroupSummary}>
+        <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
+        <div>
+          <div className={styles.walletSettingsTitle}>Customer Site Looks</div>
+          <div className={styles.helperNote}>
+            Reference polished customer-site looks when you want a refreshed storefront.
+          </div>
+        </div>
+        <span className={styles.rosterTag}>Open section</span>
+      </summary>
+      <div className={styles.customerSiteLooksBody}>
+        <div className={styles.calendarHeader}>
+          <div>
+            <div className={styles.walletSettingsTitle}>Recommended first picks</div>
+            <div className={styles.helperNote}>
+              Good starting points when you want a clean, customer-ready look.
+            </div>
+          </div>
+          <span className={styles.rosterTag}>Quick reference</span>
+        </div>
+        <div className={styles.skinGallery}>
+          {recommendedSkins.map(({ label, reason, skin }) => (
+            <div key={skin.id} className={styles.skinCard}>
+              <div className={styles.skinCardHeader}>
+                <span className={styles.rosterTag}>{skin.code}</span>
+                <span className={styles.customerName}>{label}</span>
+              </div>
+              <div className={styles.skinPreview} aria-hidden="true">
+                <span
+                  className={styles.skinPreviewHero}
+                  style={{ background: skin.swatches[0]?.value }}
+                />
+                <span
+                  className={styles.skinPreviewCard}
+                  style={{
+                    borderColor: skin.swatches[1]?.value,
+                    background: skin.swatches[2]?.value,
+                  }}
+                />
+              </div>
+              <div className={styles.helperNote}>{reason}</div>
+              <div className={styles.timelineList}>
+                <span className={styles.timelineItem}>Select in Site appearance</span>
+                <span className={styles.timelineItem}>{skin.label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className={styles.calendarHeader}>
+          <div className={styles.walletSettingsTitle}>Full skin gallery</div>
+          <span className={styles.rosterTag}>
+            Featured {SITE_SKIN_GALLERY_FEATURED_CODES.join(' / ')}
+          </span>
+        </div>
+        <div className={styles.skinGallery}>
+          {AMETHYST_SKIN_CARDS.map((skin) => (
+            <div key={skin.id} className={styles.skinCard}>
+              <div className={styles.skinCardHeader}>
+                <span className={styles.rosterTag}>{skin.code}</span>
+                <span className={styles.customerName}>{skin.label}</span>
+              </div>
+              <div className={styles.skinPreview} aria-hidden="true">
+                <span
+                  className={styles.skinPreviewHero}
+                  style={{ background: skin.swatches[0]?.value }}
+                />
+                <span
+                  className={styles.skinPreviewCard}
+                  style={{
+                    borderColor: skin.swatches[1]?.value,
+                    background: skin.swatches[2]?.value,
+                  }}
+                />
+              </div>
+              <div className={styles.helperNote}>{skin.description}</div>
+              <div className={styles.skinSwatches}>
+                {skin.swatches.map((swatch) => (
+                  <span
+                    key={`${skin.id}-${swatch.label}`}
+                    className={styles.skinSwatch}
+                    style={{ background: swatch.value }}
+                    title={`${swatch.label}: ${swatch.value}`}
+                  />
+                ))}
+              </div>
+              <div className={styles.timelineList}>
+                <span className={styles.timelineItem}>
+                  {skin.headingFont} / {skin.bodyFont}
+                </span>
+                <span className={styles.timelineItem}>{skin.surfaceNote}</span>
+                <span className={styles.timelineItem}>{skin.motionNote}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </details>
+  )
+}
+
+export function HelpResourcesCard({
+  state,
+  hasPaidWorkspace: _hasPaidWorkspace,
+}: {
+  state: ResourcesState
+  hasPaidWorkspace: boolean
+}) {
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
@@ -4004,101 +4110,6 @@ export function HelpResourcesCard({
               <div className={styles.loadingLineShort} />
             </div>
           )}
-          {showSkinReference ? (
-          <>
-            <div className={styles.siteSettingsSection}>
-            <div className={styles.calendarHeader}>
-              <div>
-                <div className={styles.walletSettingsTitle}>Choose your look</div>
-                <div className={styles.helperNote}>
-                  Reference polished customer-site skins when you want a refreshed
-                  storefront look.
-                </div>
-              </div>
-              <span className={styles.rosterTag}>Recommended first picks</span>
-            </div>
-            <div className={styles.skinGallery}>
-              {recommendedSkins.map(({ label, reason, skin }) => (
-                <div key={skin.id} className={styles.skinCard}>
-                  <div className={styles.skinCardHeader}>
-                    <span className={styles.rosterTag}>{skin.code}</span>
-                    <span className={styles.customerName}>{label}</span>
-                  </div>
-                  <div className={styles.skinPreview} aria-hidden="true">
-                    <span
-                      className={styles.skinPreviewHero}
-                      style={{ background: skin.swatches[0]?.value }}
-                    />
-                    <span
-                      className={styles.skinPreviewCard}
-                      style={{
-                        borderColor: skin.swatches[1]?.value,
-                        background: skin.swatches[2]?.value,
-                      }}
-                    />
-                  </div>
-                  <div className={styles.helperNote}>{reason}</div>
-                  <div className={styles.timelineList}>
-                    <span className={styles.timelineItem}>
-                      {hasPaidWorkspace ? 'Ready to apply' : 'Skin reference'}
-                    </span>
-                    <span className={styles.timelineItem}>{skin.label}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            </div>
-            <div className={styles.siteSettingsSection}>
-            <div className={styles.calendarHeader}>
-              <div className={styles.walletSettingsTitle}>Full skin gallery</div>
-              <span className={styles.rosterTag}>
-                Featured {SITE_SKIN_GALLERY_FEATURED_CODES.join(' / ')}
-              </span>
-            </div>
-            <div className={styles.skinGallery}>
-              {AMETHYST_SKIN_CARDS.map((skin) => (
-                <div key={skin.id} className={styles.skinCard}>
-                  <div className={styles.skinCardHeader}>
-                    <span className={styles.rosterTag}>{skin.code}</span>
-                    <span className={styles.customerName}>{skin.label}</span>
-                  </div>
-                  <div className={styles.skinPreview} aria-hidden="true">
-                    <span
-                      className={styles.skinPreviewHero}
-                      style={{ background: skin.swatches[0]?.value }}
-                    />
-                    <span
-                      className={styles.skinPreviewCard}
-                      style={{
-                        borderColor: skin.swatches[1]?.value,
-                        background: skin.swatches[2]?.value,
-                      }}
-                    />
-                  </div>
-                  <div className={styles.helperNote}>{skin.description}</div>
-                  <div className={styles.skinSwatches}>
-                    {skin.swatches.map((swatch) => (
-                      <span
-                        key={`${skin.id}-${swatch.label}`}
-                        className={styles.skinSwatch}
-                        style={{ background: swatch.value }}
-                        title={`${swatch.label}: ${swatch.value}`}
-                      />
-                    ))}
-                  </div>
-                  <div className={styles.timelineList}>
-                    <span className={styles.timelineItem}>
-                      {skin.headingFont} / {skin.bodyFont}
-                    </span>
-                    <span className={styles.timelineItem}>{skin.surfaceNote}</span>
-                    <span className={styles.timelineItem}>{skin.motionNote}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            </div>
-          </>
-          ) : null}
         </>
       }
     </div>
@@ -4382,6 +4393,7 @@ export function SiteSettingsCard({
             </span>
           </label>
         </div>
+        <CustomerSiteLooksReference />
       </div>
 
       <div className={styles.siteSettingsSection}>
