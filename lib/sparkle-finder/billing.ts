@@ -4,6 +4,8 @@ import type {
   SparkleFinderAccessState,
   SparkleFinderSilverSource,
 } from "./account-types";
+import { getAllowedSparkleFinderSupabaseUrl } from "../supabase/config";
+import { getSparkleFinderOriginFromValue } from "./oauth-redirect";
 
 export const stripeApiVersion = "2026-02-25.clover";
 
@@ -60,6 +62,23 @@ export function getSparkleFinderBillingEnv(
   env: Record<string, string | undefined> = process.env,
 ): SparkleFinderBillingEnv {
   const missing = requiredBillingEnv.filter((name) => !env[name]?.trim());
+  const siteUrl = getSparkleFinderOriginFromValue(env.NEXT_PUBLIC_SITE_URL);
+  const supabaseUrl = getAllowedSparkleFinderSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL);
+
+  if (!siteUrl && !missing.includes("NEXT_PUBLIC_SITE_URL")) {
+    missing.push("NEXT_PUBLIC_SITE_URL");
+  }
+
+  if (!supabaseUrl && !missing.includes("NEXT_PUBLIC_SUPABASE_URL")) {
+    missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  }
+
+  if (!siteUrl || !supabaseUrl) {
+    return {
+      isConfigured: false,
+      missing,
+    };
+  }
 
   if (missing.length > 0) {
     return {
@@ -74,8 +93,8 @@ export function getSparkleFinderBillingEnv(
     stripeSecretKey: env.STRIPE_SECRET_KEY!.trim(),
     stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!.trim(),
     silverPriceId: env.STRIPE_SILVER_PRICE_ID!.trim(),
-    siteUrl: env.NEXT_PUBLIC_SITE_URL!.trim().replace(/\/+$/, ""),
-    supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+    siteUrl,
+    supabaseUrl,
     supabaseServiceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY!.trim(),
   };
 }

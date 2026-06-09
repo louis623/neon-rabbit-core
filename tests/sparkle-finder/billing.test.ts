@@ -16,7 +16,7 @@ describe("Sparkle Finder Stripe billing", () => {
       STRIPE_SECRET_KEY: "sk_test_123",
       STRIPE_WEBHOOK_SECRET: "whsec_123",
       STRIPE_SILVER_PRICE_ID: "price_silver",
-      NEXT_PUBLIC_SITE_URL: "https://sparkle.example",
+      NEXT_PUBLIC_SITE_URL: "https://yoursparklefinder.com",
       NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
       SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
     });
@@ -27,7 +27,7 @@ describe("Sparkle Finder Stripe billing", () => {
       stripeSecretKey: "sk_test_123",
       stripeWebhookSecret: "whsec_123",
       silverPriceId: "price_silver",
-      siteUrl: "https://sparkle.example",
+      siteUrl: "https://yoursparklefinder.com",
       supabaseUrl: "https://supabase.example",
       supabaseServiceRoleKey: "service-role-key",
     });
@@ -59,13 +59,15 @@ describe("Sparkle Finder Stripe billing", () => {
       STRIPE_SECRET_KEY: "sk_test_123",
       STRIPE_WEBHOOK_SECRET: "whsec_123",
       STRIPE_SILVER_PRICE_ID: "price_silver",
-      NEXT_PUBLIC_SITE_URL: "https://sparkle.example",
+      NEXT_PUBLIC_SITE_URL: "https://yoursparklefinder.com",
       NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
       SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
     };
 
     expect(isSparkleFinderCheckoutConfigured(completeEnv)).toBe(true);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, STRIPE_WEBHOOK_SECRET: "" })).toBe(false);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SITE_URL: "https://neon-rabbit-hq.vercel.app" })).toBe(false);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SUPABASE_URL: "https://bqhzfkgkjyuhlsozpylf.supabase.co" })).toBe(false);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SUPABASE_URL: "" })).toBe(false);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, SUPABASE_SERVICE_ROLE_KEY: "" })).toBe(false);
   });
@@ -282,7 +284,7 @@ describe("Sparkle Finder billing routes", () => {
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
-      "https://sparkle.example/account?error=email_verification_required",
+      "https://yoursparklefinder.com/account?error=email_verification_required",
     );
     expect(customersCreate).not.toHaveBeenCalled();
     expect(checkoutSessionsCreate).not.toHaveBeenCalled();
@@ -339,8 +341,8 @@ describe("Sparkle Finder billing routes", () => {
           supabase_user_id: "user-123",
         },
       },
-      success_url: "https://sparkle.example/account?message=silver_checkout_started",
-      cancel_url: "https://sparkle.example/account?message=silver_checkout_canceled",
+      success_url: "https://yoursparklefinder.com/account?message=silver_checkout_started",
+      cancel_url: "https://yoursparklefinder.com/account?message=silver_checkout_canceled",
     });
     expect(checkoutSessionsCreate.mock.calls[0][0].subscription_data).not.toHaveProperty("trial_period_days");
     expect(response.status).toBe(303);
@@ -414,7 +416,7 @@ describe("Sparkle Finder billing routes", () => {
     expect(customersCreate).not.toHaveBeenCalled();
     expect(checkoutSessionsCreate).not.toHaveBeenCalled();
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("https://sparkle.example/account?message=silver_already_active");
+    expect(response.headers.get("location")).toBe("https://yoursparklefinder.com/account?message=silver_already_active");
   });
 
   it("requires an existing Stripe customer before opening the billing portal", async () => {
@@ -438,7 +440,7 @@ describe("Sparkle Finder billing routes", () => {
     const response = await POST();
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("https://sparkle.example/account?error=missing_stripe_customer");
+    expect(response.headers.get("location")).toBe("https://yoursparklefinder.com/account?error=missing_stripe_customer");
     expect(portalSessionsCreate).not.toHaveBeenCalled();
   });
 
@@ -464,7 +466,7 @@ describe("Sparkle Finder billing routes", () => {
 
     expect(portalSessionsCreate).toHaveBeenCalledWith({
       customer: "cus_123",
-      return_url: "https://sparkle.example/account",
+      return_url: "https://yoursparklefinder.com/account",
     });
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://billing.stripe.test/session");
@@ -472,7 +474,7 @@ describe("Sparkle Finder billing routes", () => {
 
   it("rejects webhook requests without a Stripe signature before reading the body", async () => {
     const constructEvent = vi.fn();
-    const request = new Request("https://sparkle.example/api/stripe/webhook", {
+    const request = new Request("https://yoursparklefinder.com/api/stripe/webhook", {
       method: "POST",
       body: "raw=stripe",
     });
@@ -496,7 +498,7 @@ describe("Sparkle Finder billing routes", () => {
     const constructEvent = vi.fn(() => {
       throw new Error("invalid signature");
     });
-    const request = new Request("https://sparkle.example/api/stripe/webhook", {
+    const request = new Request("https://yoursparklefinder.com/api/stripe/webhook", {
       method: "POST",
       body: "raw=stripe",
       headers: {
@@ -542,7 +544,7 @@ describe("Sparkle Finder billing routes", () => {
 
     const { POST } = await import("../../app/api/stripe/webhook/route");
     const response = await POST(
-      new Request("https://sparkle.example/api/stripe/webhook", {
+      new Request("https://yoursparklefinder.com/api/stripe/webhook", {
         method: "POST",
         body: "raw=stripe",
         headers: {
@@ -591,7 +593,7 @@ describe("Sparkle Finder billing routes", () => {
 
     const { POST } = await import("../../app/api/stripe/webhook/route");
     const response = await POST(
-      new Request("https://sparkle.example/api/stripe/webhook", {
+      new Request("https://yoursparklefinder.com/api/stripe/webhook", {
         method: "POST",
         body: "raw=stripe",
         headers: {
@@ -646,7 +648,7 @@ function stubBillingEnv() {
   vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_123");
   vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_123");
   vi.stubEnv("STRIPE_SILVER_PRICE_ID", "price_silver");
-  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://sparkle.example");
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://yoursparklefinder.com");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://supabase.example");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
 }

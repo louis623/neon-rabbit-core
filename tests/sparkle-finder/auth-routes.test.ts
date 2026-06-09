@@ -66,6 +66,31 @@ describe("Sparkle Finder Supabase proxy", () => {
     expect(response.status).toBe(200);
   });
 
+  it("treats the old shared Supabase project as unconfigured for Sparkle Finder auth", async () => {
+    const { getSparkleFinderSupabaseConfig, isSupabaseConfigured } = await import("../../lib/supabase/config");
+    const env = {
+      NEXT_PUBLIC_SUPABASE_URL: "https://bqhzfkgkjyuhlsozpylf.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-key",
+    };
+
+    expect(getSparkleFinderSupabaseConfig(env)).toBeNull();
+    expect(isSupabaseConfigured(env)).toBe(false);
+  });
+
+  it("allows a dedicated Supabase project for Sparkle Finder auth", async () => {
+    const { getSparkleFinderSupabaseConfig, isSupabaseConfigured } = await import("../../lib/supabase/config");
+    const env = {
+      NEXT_PUBLIC_SUPABASE_URL: "https://sparklefinderauth123.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-key",
+    };
+
+    expect(getSparkleFinderSupabaseConfig(env)).toEqual({
+      url: "https://sparklefinderauth123.supabase.co",
+      publishableKey: "publishable-key",
+    });
+    expect(isSupabaseConfigured(env)).toBe(true);
+  });
+
   it("redirects successful email confirmations to a safe local next path", async () => {
     const verifyOtp = vi.fn().mockResolvedValue({ error: null });
 
@@ -214,6 +239,29 @@ describe("Sparkle Finder Supabase proxy", () => {
 
     expect(getSparkleFinderOAuthRedirectTo("/account?setup=required", "https://sparkle-finder-dev.vercel.app")).toBe(
       "https://yoursparklefinder.com/api/auth/callback?next=%2Faccount%3Fsetup%3Drequired",
+    );
+  });
+
+  it.each([
+    ["Neon Rabbit HQ", "https://neon-rabbit-hq.vercel.app"],
+    ["Sparkle Suite", "https://www.yoursparklesuite.com"],
+  ])("refuses to build Google OAuth redirects from the %s host", async (_label, siteUrl) => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", siteUrl);
+
+    const { getSparkleFinderOAuthRedirectTo } = await import("../../lib/sparkle-finder/oauth-redirect");
+
+    expect(getSparkleFinderOAuthRedirectTo("/account?setup=required", "https://sparkle-finder-dev.vercel.app")).toBe(
+      "https://sparkle-finder-dev.vercel.app/api/auth/callback?next=%2Faccount%3Fsetup%3Drequired",
+    );
+  });
+
+  it("falls back to local Google OAuth redirects when both configured and browser origins are not Sparkle Finder", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://neon-rabbit-hq.vercel.app");
+
+    const { getSparkleFinderOAuthRedirectTo } = await import("../../lib/sparkle-finder/oauth-redirect");
+
+    expect(getSparkleFinderOAuthRedirectTo("/account?setup=required", "https://www.yoursparklesuite.com")).toBe(
+      "http://localhost:3000/api/auth/callback?next=%2Faccount%3Fsetup%3Drequired",
     );
   });
 
@@ -393,6 +441,43 @@ describe("Sparkle Finder signup server actions", () => {
         },
       },
     });
+  });
+
+  it("does not send password signup confirmations through the Neon Rabbit HQ host", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://neon-rabbit-hq.vercel.app");
+
+    const signUp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signUp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("password", "sparkle-password");
+    formData.set("privacyAcknowledged", "yes");
+
+    const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
+
+    await expect(signUpWithPassword(formData)).rejects.toThrow("redirect:/auth/sign-in?message=check_email");
+    expect(signUp).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          emailRedirectTo: "http://localhost:3000/auth/confirm?next=%2Faccount",
+        }),
+      }),
+    );
   });
 
   it("requests an email magic link without requiring a password", async () => {

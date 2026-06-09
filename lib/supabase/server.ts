@@ -1,20 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { isSupabaseConfigured } from "./client";
+import { getSparkleFinderSupabaseConfig } from "./config";
 
 const missingSupabaseConfigMessage =
   "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.";
 
 export async function createClient() {
-  if (!isSupabaseConfigured()) {
+  const config = getSparkleFinderSupabaseConfig();
+
+  if (!config) {
     throw new Error(missingSupabaseConfigMessage);
   }
 
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    config.url,
+    config.publishableKey,
     {
       cookies: {
         getAll() {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getSparkleFinderSiteOrigin } from "@/lib/sparkle-finder/oauth-redirect";
 import {
   createStripeClient,
   fetchMembershipForUser,
@@ -108,7 +109,7 @@ export async function POST() {
   return NextResponse.redirect(session.url, 303);
 }
 
-function redirectToAccount(error: string, siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000") {
+function redirectToAccount(error: string, siteUrl = getSparkleFinderSiteOrigin()) {
   const url = new URL("/account", siteUrl);
   url.searchParams.set("error", error);
   return NextResponse.redirect(url, 303);

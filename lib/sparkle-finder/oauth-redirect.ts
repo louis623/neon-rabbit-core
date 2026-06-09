@@ -1,14 +1,32 @@
 export function getSparkleFinderOAuthRedirectTo(nextPath: string, browserOrigin?: string): string {
-  const origin = getConfiguredSparkleFinderSiteOrigin() ?? normalizeOrigin(browserOrigin) ?? "";
+  const origin = getSparkleFinderSiteOrigin(browserOrigin);
 
   return `${origin}/api/auth/callback?next=${encodeURIComponent(nextPath)}`;
 }
 
-function getConfiguredSparkleFinderSiteOrigin(): string | null {
-  return normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL);
+export function getSparkleFinderSiteOrigin(fallbackOrigin = "http://localhost:3000"): string {
+  return getConfiguredSparkleFinderSiteOrigin() ?? getSparkleFinderOriginFromValue(fallbackOrigin) ?? "http://localhost:3000";
 }
 
-function normalizeOrigin(value: string | undefined): string | null {
+export function getSparkleFinderOriginFromValue(value: string | undefined | null): string | null {
+  return getAllowedSparkleFinderOrigin(value);
+}
+
+function getConfiguredSparkleFinderSiteOrigin(): string | null {
+  return getSparkleFinderOriginFromValue(process.env.NEXT_PUBLIC_SITE_URL);
+}
+
+function getAllowedSparkleFinderOrigin(value: string | undefined | null): string | null {
+  const origin = normalizeOrigin(value);
+
+  if (!origin || !isAllowedSparkleFinderOrigin(origin)) {
+    return null;
+  }
+
+  return origin;
+}
+
+function normalizeOrigin(value: string | undefined | null): string | null {
   const candidate = value?.trim();
 
   if (!candidate) {
@@ -26,4 +44,18 @@ function normalizeOrigin(value: string | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+function isAllowedSparkleFinderOrigin(origin: string): boolean {
+  const hostname = new URL(origin).hostname.toLowerCase();
+
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname === "yoursparklefinder.com" ||
+    hostname === "www.yoursparklefinder.com" ||
+    hostname === "sparkle-finder-dev.vercel.app" ||
+    (hostname.startsWith("sparkle-finder-") && hostname.endsWith(".vercel.app"))
+  );
 }

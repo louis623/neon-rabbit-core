@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getSparkleFinderSiteOrigin } from "@/lib/sparkle-finder/oauth-redirect";
 import { createClient } from "@/lib/supabase/server";
 
 type SignupDetails = {
@@ -106,8 +107,7 @@ function getDisplayMetadata(details: SignupDetails) {
 }
 
 function getEmailRedirectTo(nextPath: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const origin = siteUrl.replace(/\/+$/, "");
+  const origin = getSparkleFinderSiteOrigin();
   const next = encodeURIComponent(nextPath);
 
   return `${origin}/auth/confirm?next=${next}`;
