@@ -207,6 +207,26 @@ describe("Sparkle Finder Supabase proxy", () => {
     expect(safeSparkleFinderNextPath("/account?setup=required")).toBe("/account?setup=required");
   });
 
+  it("builds Google OAuth redirects from the configured Sparkle Finder site URL", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://yoursparklefinder.com/");
+
+    const { getSparkleFinderOAuthRedirectTo } = await import("../../lib/sparkle-finder/oauth-redirect");
+
+    expect(getSparkleFinderOAuthRedirectTo("/account?setup=required", "https://sparkle-finder-dev.vercel.app")).toBe(
+      "https://yoursparklefinder.com/api/auth/callback?next=%2Faccount%3Fsetup%3Drequired",
+    );
+  });
+
+  it("falls back to the current browser origin for local Google OAuth previews", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+
+    const { getSparkleFinderOAuthRedirectTo } = await import("../../lib/sparkle-finder/oauth-redirect");
+
+    expect(getSparkleFinderOAuthRedirectTo("/account?setup=required", "http://127.0.0.1:4310")).toBe(
+      "http://127.0.0.1:4310/api/auth/callback?next=%2Faccount%3Fsetup%3Drequired",
+    );
+  });
+
   it("redirects missing Google OAuth codes to sign-in with a safe error", async () => {
     const { GET } = await import("../../app/api/auth/callback/route");
     const response = await GET(new Request("http://localhost:4310/api/auth/callback?next=/account"));

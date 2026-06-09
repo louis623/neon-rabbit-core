@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Gem, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { requestMagicLink, signUpWithPassword } from "@/app/auth/sign-up/actions";
+import { getSparkleFinderOAuthRedirectTo } from "@/lib/sparkle-finder/oauth-redirect";
 import { createClient } from "@/lib/supabase/client";
 
 const inputClassName =
@@ -17,9 +18,7 @@ export function SignupForm() {
 
     try {
       const supabase = createClient();
-      const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(
-        "/account?setup=required",
-      )}`;
+      const redirectTo = getSparkleFinderOAuthRedirectTo("/account?setup=required", window.location.origin);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },

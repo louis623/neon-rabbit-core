@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { KeyRound, Mail } from "lucide-react";
+import { getSparkleFinderOAuthRedirectTo } from "@/lib/sparkle-finder/oauth-redirect";
 import { safeSparkleFinderNextPath } from "@/lib/sparkle-finder/safe-redirect";
 import { createClient } from "@/lib/supabase/client";
 
@@ -50,7 +51,7 @@ export function SignInForm({ nextPath = "/" }: SignInFormProps) {
 
     try {
       const supabase = createClient();
-      const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
+      const redirectTo = getSparkleFinderOAuthRedirectTo(safeNextPath, window.location.origin);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
