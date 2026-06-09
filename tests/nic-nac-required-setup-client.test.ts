@@ -108,6 +108,16 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('requiredSetupStep={setupState?.currentStep ?? null}')
   })
 
+  it('keeps Nic-Nac expanded on the Help & Resources workspace section', () => {
+    expect(client).toContain("activeWorkspaceSection === 'help-resources'")
+    expect(client).toContain('shouldKeepDesktopNicNacOpen')
+    expect(client).toContain('desktopOpen || shouldKeepDesktopNicNacOpen')
+    expect(client).toContain(
+      'shouldKeepDesktopNicNacOpen ? undefined : () => setDesktopOpen(false)',
+    )
+    expect(client).toContain('!desktopOpen && !shouldKeepDesktopNicNacOpen')
+  })
+
   it('passes the assigned Live Queue sync code into chat for Live Queue setup', () => {
     expect(client).toContain('requiredSetupSyncCode={requiredSetupSyncCode}')
     expect(client).toContain('setupState?.liveQueueSyncCode ?? null')

@@ -227,6 +227,8 @@ export default function NicNacClient({
   const wantsRequiredSetup = searchParams.get('onboarding') === 'required-setup'
   const billingState = searchParams.get('billing')
   const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
+  const activeWorkspaceSection = searchParams.get('section')?.trim() ?? ''
+  const shouldKeepDesktopNicNacOpen = activeWorkspaceSection === 'help-resources'
   const isCheckoutSuccessReturn =
     wantsRequiredSetup &&
     billingState === 'subscription-success' &&
@@ -276,6 +278,11 @@ export default function NicNacClient({
   const [rolloverInFlight, setRolloverInFlight] = useState(false)
   const rolloverInFlightRef = useRef(false)
   const wasStreamingRef = useRef(false)
+
+  useEffect(() => {
+    if (!isDesktop || !shouldKeepDesktopNicNacOpen) return
+    setDesktopOpen(true)
+  }, [isDesktop, shouldKeepDesktopNicNacOpen])
 
   const loadSetupState = useCallback(
     async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
@@ -715,6 +722,7 @@ export default function NicNacClient({
   // Desktop Escape minimizes (only if no HITL pending).
   useEffect(() => {
     if (!isDesktop || !desktopOpen) return
+    if (shouldKeepDesktopNicNacOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       if (chatState.hasPendingApproval) return
@@ -726,7 +734,7 @@ export default function NicNacClient({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [isDesktop, desktopOpen, chatState.hasPendingApproval])
+  }, [isDesktop, desktopOpen, chatState.hasPendingApproval, shouldKeepDesktopNicNacOpen])
 
   const transport = useMemo(() => {
     if (!conversationId) return null
@@ -943,7 +951,9 @@ export default function NicNacClient({
   return (
     <div
       className={`${shellStyles.root} ${
-        isDesktop && !desktopOpen ? shellStyles.rootMinimized : ''
+        isDesktop && !desktopOpen && !shouldKeepDesktopNicNacOpen
+          ? shellStyles.rootMinimized
+          : ''
       }`}
     >
       <DashboardPlaceholder
@@ -954,10 +964,12 @@ export default function NicNacClient({
         reviewWorkspaceMode={showWorkspaceReviewState}
       />
       {isDesktop ? (
-        desktopOpen ? (
+        desktopOpen || shouldKeepDesktopNicNacOpen ? (
           <NicNacColumn
             variant="desktop"
-            onClose={() => setDesktopOpen(false)}
+            onClose={
+              shouldKeepDesktopNicNacOpen ? undefined : () => setDesktopOpen(false)
+            }
             onNewConversation={handleNewConversation}
             newConversationDisabled={newDisabled}
           >
