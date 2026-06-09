@@ -28,7 +28,7 @@
   margin: 0;
   color: #402924;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-size: clamp(1.25rem, 2.25vw, 1.76rem);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1.02;
@@ -37,7 +37,7 @@
 .header p:last-child {
   margin: 0;
   color: #654944;
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.55;
 }
 
@@ -149,7 +149,7 @@
 
 .copy h3 {
   color: #402924;
-  font-size: 1.02rem;
+  font-size: 0.9rem;
   font-weight: 900;
   line-height: 1.2;
 }
