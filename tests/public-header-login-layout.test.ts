@@ -18,6 +18,7 @@ describe('Sparkle Suite public header and login layout', () => {
     expect(accountAction).toContain('onAuthStateChange')
     expect(accountAction).toContain('signOut')
     expect(accountAction).toContain('Log out')
+    expect(accountAction).not.toContain('Signed into Sparkle Suite?')
   })
 
   it('keeps the login form inside the first Sparkle landing shell instead of below a full-height header wrapper', () => {

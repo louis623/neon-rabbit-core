@@ -47,17 +47,14 @@ export function SparkleSuitePublicAccountAction() {
 
   if (authState === 'signed_in') {
     return (
-      <>
-        <span>Signed into Sparkle Suite?</span>
-        <button
-          className="sl2-header__account-button"
-          disabled={busy}
-          onClick={() => void handleLogout()}
-          type="button"
-        >
-          {busy ? 'Logging out...' : 'Log out'}
-        </button>
-      </>
+      <button
+        className="sl2-header__account-button"
+        disabled={busy}
+        onClick={() => void handleLogout()}
+        type="button"
+      >
+        {busy ? 'Logging out...' : 'Log out'}
+      </button>
     )
   }
 
