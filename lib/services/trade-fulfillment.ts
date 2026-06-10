@@ -38,12 +38,13 @@ export async function updateFulfillmentStatus(
     id: string
     request_id: string
     fulfillment_status: FulfillmentStatus
+    completed_at: string | null
   } | null = null
 
   if ('requestId' in input && input.requestId) {
     const { data, error } = await supabase
       .from('trade_fulfillment')
-      .select('id, request_id, fulfillment_status')
+      .select('id, request_id, fulfillment_status, completed_at')
       .eq('request_id', input.requestId)
       .maybeSingle()
     if (error) throw error
@@ -52,17 +53,21 @@ export async function updateFulfillmentStatus(
       id: data.id as string,
       request_id: data.request_id as string,
       fulfillment_status: data.fulfillment_status as FulfillmentStatus,
+      completed_at: (data.completed_at as string | null) ?? null,
     }
   } else if ('customerName' in input && input.customerName) {
     const { data, error } = await supabase
       .from('trade_fulfillment')
-      .select('id, request_id, fulfillment_status, request:trade_requests!inner(customer_name)')
+      .select(
+        'id, request_id, fulfillment_status, completed_at, request:trade_requests!inner(customer_name)',
+      )
       .eq('request.customer_name', input.customerName)
     if (error) throw error
     const rows = (data ?? []) as Array<{
       id: string
       request_id: string
       fulfillment_status: FulfillmentStatus
+      completed_at: string | null
     }>
     if (rows.length === 0) throw errors.FULFILLMENT_NOT_FOUND()
     if (rows.length > 1) throw errors.AMBIGUOUS_CUSTOMER(input.customerName)
@@ -72,6 +77,18 @@ export async function updateFulfillmentStatus(
   }
 
   const previousStatus = fulfillmentRow.fulfillment_status
+  if (previousStatus === input.nextStatus) {
+    return {
+      fulfillmentId: fulfillmentRow.id,
+      requestId: fulfillmentRow.request_id,
+      previousStatus,
+      status: previousStatus,
+      completedAt: fulfillmentRow.completed_at,
+      changed: false,
+      shouldPromptAddToBoard: false,
+    }
+  }
+
   if (!isValidTransition(previousStatus, input.nextStatus)) {
     throw errors.INVALID_STATUS_TRANSITION(previousStatus, input.nextStatus)
   }
@@ -98,6 +115,7 @@ export async function updateFulfillmentStatus(
     previousStatus,
     status: updated.fulfillment_status as FulfillmentStatus,
     completedAt: (updated.completed_at as string | null) ?? null,
+    changed: true,
     shouldPromptAddToBoard:
       input.nextStatus === 'completed' && input.addToBoard === true,
   }

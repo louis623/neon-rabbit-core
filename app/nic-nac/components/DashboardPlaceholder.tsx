@@ -2477,6 +2477,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         body: JSON.stringify({
           requestId,
           nextStatus,
+          addToBoard: nextStatus === 'completed',
         }),
       })
       const payload = (await response.json().catch(() => null)) as
@@ -2493,7 +2494,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         helperMessage:
           nextStatus === 'shipped'
             ? 'Fulfillment moved to shipped.'
-            : 'Fulfillment marked completed.',
+            : 'Fulfillment marked completed. Add the received piece to your board when you are ready.',
       })
     } catch (error) {
       setTradeBoardActionState({

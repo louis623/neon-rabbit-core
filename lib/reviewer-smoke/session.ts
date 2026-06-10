@@ -28,6 +28,13 @@ type AuthUser = {
   email?: string | null
 }
 
+const REVIEWER_SMOKE_FULFILLMENT = {
+  designId: '00000000-0000-4000-8000-000000000101',
+  listingId: '00000000-0000-4000-8000-000000000102',
+  requestId: '00000000-0000-4000-8000-000000000103',
+  fulfillmentId: '00000000-0000-4000-8000-000000000104',
+}
+
 function completedStepsForState(state: ReviewerSmokeState): RequiredSetupStepId[] {
   if (state !== 'dashboard_unlocked') return []
   return REQUIRED_SETUP_STEPS.map((step) => step.id)
@@ -184,6 +191,78 @@ async function ensureReviewerSubscription(admin: AdminClient, repId: string) {
   if (error) throw error
 }
 
+async function seedReviewerFulfillmentSmokeData(
+  admin: AdminClient,
+  repId: string,
+) {
+  const now = new Date().toISOString()
+
+  const { error: designError } = await admin.from('jewelry_designs').upsert(
+    {
+      id: REVIEWER_SMOKE_FULFILLMENT.designId,
+      item_number: 'RG-SMOKE-001',
+      design_name: 'Reviewer Smoke Ring',
+      material: 'Sterling silver',
+      main_stone: 'Cubic zirconia',
+      bp_msrp: 38,
+      canonical_photo_url: null,
+      type_prefix: 'RG',
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  )
+  if (designError) throw designError
+
+  const { error: listingError } = await admin.from('trade_listings').upsert(
+    {
+      id: REVIEWER_SMOKE_FULFILLMENT.listingId,
+      rep_id: repId,
+      design_id: REVIEWER_SMOKE_FULFILLMENT.designId,
+      listing_photo_url: null,
+      uses_canonical_photo: true,
+      trade_preferences: 'Reviewer smoke fixture.',
+      rep_notes: 'Synthetic reviewer fulfillment seed.',
+      status: 'traded',
+      removal_reason: null,
+      listed_at: now,
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  )
+  if (listingError) throw listingError
+
+  const { error: requestError } = await admin.from('trade_requests').upsert(
+    {
+      id: REVIEWER_SMOKE_FULFILLMENT.requestId,
+      listing_id: REVIEWER_SMOKE_FULFILLMENT.listingId,
+      customer_name: 'Jamie Smoke',
+      customer_description: 'Reviewer smoke trade request.',
+      status: 'approved',
+      rejection_reason: null,
+      rep_notes: 'Synthetic reviewer fulfillment seed.',
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  )
+  if (requestError) throw requestError
+
+  const { error: fulfillmentError } = await admin
+    .from('trade_fulfillment')
+    .upsert(
+      {
+        id: REVIEWER_SMOKE_FULFILLMENT.fulfillmentId,
+        request_id: REVIEWER_SMOKE_FULFILLMENT.requestId,
+        fulfillment_status: 'approved',
+        shipping_notes: null,
+        received_listing_id: null,
+        status_updated_at: now,
+        completed_at: null,
+      },
+      { onConflict: 'id' },
+    )
+  if (fulfillmentError) throw fulfillmentError
+}
+
 export async function resetReviewerSmokeSession(
   requestedState: unknown,
   admin: AdminClient = createAdminClient(),
@@ -260,6 +339,7 @@ export async function resetReviewerSmokeSession(
   }
   if (state === 'dashboard_unlocked') {
     await ensureReviewerSubscription(admin, repId)
+    await seedReviewerFulfillmentSmokeData(admin, repId)
   }
 
   return {

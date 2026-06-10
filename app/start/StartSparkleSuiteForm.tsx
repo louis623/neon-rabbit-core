@@ -256,8 +256,8 @@ export function StartSparkleSuiteForm({
             <span>Reviewer smoke mode</span>
             <h3>Review the customer path</h3>
             <p>
-              Use Stripe test checkout for the real customer path, or skip Stripe
-              only to inspect the Nic-Nac setup screen.
+              Use Stripe test checkout for the real customer path, or open
+              seeded previews for setup and workspace smoke checks.
             </p>
           </div>
           <div className={styles.reviewerActions}>
@@ -279,6 +279,15 @@ export function StartSparkleSuiteForm({
               {reviewerBusy === 'required_setup'
                 ? 'Preparing...'
                 : 'Open setup preview'}
+            </button>
+            <button
+              type="button"
+              onClick={() => startReviewerSmoke('dashboard_unlocked')}
+              disabled={reviewerBusy !== null || busy}
+            >
+              {reviewerBusy === 'dashboard_unlocked'
+                ? 'Preparing...'
+                : 'Open workspace preview'}
             </button>
           </div>
           {reviewerError ? (

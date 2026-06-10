@@ -804,6 +804,7 @@ export interface UpdateFulfillmentResult {
   previousStatus: FulfillmentStatus
   status: FulfillmentStatus
   completedAt: string | null
+  changed: boolean
   shouldPromptAddToBoard: boolean
 }
 

@@ -30,6 +30,10 @@ function makeReviewerAdmin() {
   const repUpdate = vi.fn(() => ({ eq: repUpdateEq }))
   const setupUpsert = vi.fn().mockResolvedValue({ error: null })
   const subscriptionUpsert = vi.fn().mockResolvedValue({ error: null })
+  const designUpsert = vi.fn().mockResolvedValue({ error: null })
+  const listingUpsert = vi.fn().mockResolvedValue({ error: null })
+  const requestUpsert = vi.fn().mockResolvedValue({ error: null })
+  const fulfillmentUpsert = vi.fn().mockResolvedValue({ error: null })
   const conversationDelete = makeDeleteBuilder()
   const approvalDelete = makeDeleteBuilder()
   const runDelete = makeDeleteBuilder()
@@ -54,6 +58,10 @@ function makeReviewerAdmin() {
       if (table === 'subscriptions') {
         return { upsert: subscriptionUpsert }
       }
+      if (table === 'jewelry_designs') return { upsert: designUpsert }
+      if (table === 'trade_listings') return { upsert: listingUpsert }
+      if (table === 'trade_requests') return { upsert: requestUpsert }
+      if (table === 'trade_fulfillment') return { upsert: fulfillmentUpsert }
       if (table === 'nic_nac_conversations') return conversationDelete
       if (table === 'approval_events') return approvalDelete
       if (table === 'nic_nac_runs') return runDelete
@@ -69,6 +77,10 @@ function makeReviewerAdmin() {
       runDelete,
       setupUpsert,
       subscriptionUpsert,
+      designUpsert,
+      listingUpsert,
+      requestUpsert,
+      fulfillmentUpsert,
     },
   }
 }
@@ -147,6 +159,42 @@ describe('reviewer smoke session reset', () => {
         stripe_livemode: false,
       }),
       { onConflict: 'rep_id' },
+    )
+  })
+
+  it('seeds one active fulfillment item for dashboard workspace smoke sessions', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.designUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        item_number: 'RG-SMOKE-001',
+        design_name: 'Reviewer Smoke Ring',
+        type_prefix: 'RG',
+      }),
+      { onConflict: 'id' },
+    )
+    expect(spies.listingUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-reviewer',
+        status: 'traded',
+      }),
+      { onConflict: 'id' },
+    )
+    expect(spies.requestUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customer_name: 'Jamie Smoke',
+        status: 'approved',
+      }),
+      { onConflict: 'id' },
+    )
+    expect(spies.fulfillmentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fulfillment_status: 'approved',
+        completed_at: null,
+      }),
+      { onConflict: 'id' },
     )
   })
 })

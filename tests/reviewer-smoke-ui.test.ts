@@ -61,8 +61,9 @@ describe('reviewer smoke UI wiring', () => {
     expect(startForm).toContain('reviewerSmokeVisible')
     expect(startForm).toContain('Start smoke checkout')
     expect(startForm).toContain('Open setup preview')
+    expect(startForm).toContain('Open workspace preview')
     expect(startForm).toContain("startReviewerSmoke('required_setup')")
-    expect(startForm).not.toContain("startReviewerSmoke('dashboard_unlocked')")
+    expect(startForm).toContain("startReviewerSmoke('dashboard_unlocked')")
     expect(startForm).not.toContain('Review checkout recovery')
     expect(startForm).not.toContain('{reviewToken ? (')
     expect(startForm).toContain('/api/self-serve/signup')
@@ -168,6 +169,15 @@ describe('reviewer smoke UI wiring', () => {
     expect(componentSource.indexOf('Board Inventory')).toBeGreaterThan(-1)
     expect(componentSource.indexOf('Request inbox')).toBeLessThan(
       componentSource.indexOf('Board Inventory'),
+    )
+  })
+
+  it('prompts for received-piece intake after dashboard fulfillment completion', () => {
+    expect(dashboardPlaceholder).toContain(
+      'addToBoard: nextStatus === \'completed\'',
+    )
+    expect(dashboardPlaceholder).toContain(
+      'Add the received piece to your board when you are ready.',
     )
   })
 
