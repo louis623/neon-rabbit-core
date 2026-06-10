@@ -3,13 +3,16 @@ import {
   getStripe,
   stripeEnabled as isStripeEnabled,
 } from '@/lib/stripe/client'
+import { getAppUrl } from '@/lib/stripe/config'
 import { ServiceError } from '@/lib/services/errors'
 import type {
   AccountBillingDashboardResult,
   AccountBillingInvoiceSummary,
   AccountBillingPaymentMethodSummary,
+  AccountBillingReferralSummary,
   AccountBillingSubscriptionStatus,
 } from '@/lib/services/types'
+import { generateUniqueSparkleSuiteReferralCode } from '@/lib/services/sparkle-suite-referrals'
 
 type SubscriptionRow = {
   status: AccountBillingSubscriptionStatus
@@ -18,6 +21,14 @@ type SubscriptionRow = {
   cancel_at_period_end: boolean | null
   cancelled_at: string | null
   stripe_livemode: boolean | null
+}
+
+type RepReferralCodeRow = {
+  referral_code: string | null
+}
+
+type RepReferralStatusRow = {
+  reward_status: string | null
 }
 
 function toServiceError(
@@ -98,6 +109,51 @@ function getAccountBillingCheckoutMode(): AccountBillingDashboardResult['checkou
   return mode === 'true' || mode === '1' ? 'test_buyer' : 'standard'
 }
 
+function buildReferralLink(code: string | null) {
+  if (!code) return null
+  const url = new URL('/start', getAppUrl())
+  url.searchParams.set('ref', code)
+  return url.toString()
+}
+
+function mapReferralSummary(args: {
+  code: string | null
+  rows: RepReferralStatusRow[]
+}): AccountBillingReferralSummary {
+  return args.rows.reduce(
+    (summary, row) => {
+      if (row.reward_status === 'pending') summary.pendingCount += 1
+      if (row.reward_status === 'eligible') summary.earnedCount += 1
+      if (row.reward_status === 'credited') summary.creditedCount += 1
+      return summary
+    },
+    {
+      code: args.code,
+      link: buildReferralLink(args.code),
+      pendingCount: 0,
+      earnedCount: 0,
+      creditedCount: 0,
+    },
+  )
+}
+
+async function ensureAccountReferralCode(
+  supabase: SupabaseClient,
+  repId: string,
+  existingCode: string | null,
+) {
+  if (existingCode) return existingCode
+
+  const referralCode = await generateUniqueSparkleSuiteReferralCode(supabase)
+  const { error } = await supabase
+    .from('reps')
+    .update({ referral_code: referralCode })
+    .eq('id', repId)
+
+  if (error) throw error
+  return referralCode
+}
+
 export async function getAccountBillingDashboard(args: {
   supabase: SupabaseClient
   repId: string
@@ -123,6 +179,40 @@ export async function getAccountBillingDashboard(args: {
   }
 
   const subscriptionRow = (data as SubscriptionRow | null) ?? null
+  const [
+    { data: repReferralCodeRow, error: repReferralCodeError },
+    { data: referralRows, error: referralRowsError },
+  ] = await Promise.all([
+    args.supabase
+      .from('reps')
+      .select('referral_code')
+      .eq('id', args.repId)
+      .maybeSingle(),
+    args.supabase
+      .from('rep_referrals')
+      .select('reward_status')
+      .eq('referrer_rep_id', args.repId),
+  ])
+
+  if (repReferralCodeError || referralRowsError) {
+    throw toServiceError(
+      'ACCOUNT_BILLING_REFERRAL_LOOKUP_FAILED',
+      'failed to load referral summary',
+      "I couldn't load referral details right now.",
+      repReferralCodeError ?? referralRowsError,
+    )
+  }
+
+  const referralCode = await ensureAccountReferralCode(
+    args.supabase,
+    args.repId,
+    (repReferralCodeRow as RepReferralCodeRow | null)?.referral_code ?? null,
+  )
+
+  const referral = mapReferralSummary({
+    code: referralCode,
+    rows: (referralRows as RepReferralStatusRow[] | null) ?? [],
+  })
   const stripeConfigured = isStripeEnabled()
 
   let paymentMethod: AccountBillingPaymentMethodSummary | null = null
@@ -177,6 +267,7 @@ export async function getAccountBillingDashboard(args: {
     subscription,
     paymentMethod,
     invoices,
+    referral,
     canStartSubscription,
     canManageBilling,
   }

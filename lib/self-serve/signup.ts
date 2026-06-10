@@ -1,5 +1,9 @@
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  generateUniqueSparkleSuiteReferralCode,
+  normalizeSparkleSuiteReferralCode,
+} from '@/lib/services/sparkle-suite-referrals'
 
 type AdminClient = ReturnType<typeof createAdminClient>
 
@@ -10,12 +14,29 @@ export interface SelfServeWorkspaceAccount {
   authUserId: string
   email: string
   displayName: string
+  referralCode?: string | null
 }
 
 const selfServeSignupSchema = z.object({
   displayName: z.string().trim().min(2),
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
+  referralCode: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value, context) => {
+      if (!value) return null
+      const normalized = normalizeSparkleSuiteReferralCode(value)
+      if (!normalized) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Enter a valid Sparkle Suite referral code.',
+        })
+        return z.NEVER
+      }
+      return normalized
+    }),
 })
 
 export type SelfServeSignupInput = z.input<typeof selfServeSignupSchema>
@@ -116,6 +137,10 @@ export async function createSelfServeWorkspaceForAuthUser(
 ) {
   const displayName = account.displayName.trim() || 'Sparkle Rep'
   const email = account.email.trim().toLowerCase()
+  const referralCode = account.referralCode
+    ? normalizeSparkleSuiteReferralCode(account.referralCode)
+    : null
+  const ownReferralCode = await generateUniqueSparkleSuiteReferralCode(admin)
   const { data: rep, error: repError } = await admin
     .from('reps')
     .insert({
@@ -134,6 +159,7 @@ export async function createSelfServeWorkspaceForAuthUser(
       social_handles: {},
       template_id: 'default',
       status: 'onboarding',
+      referral_code: ownReferralCode,
     })
     .select('id, auth_user_id, email')
     .single()
@@ -171,6 +197,7 @@ export async function createSelfServeWorkspaceForAuthUser(
         answers: {
           displayName,
           email,
+          ...(referralCode ? { referralCode } : {}),
         },
       },
       { onConflict: 'rep_id' },
@@ -283,6 +310,7 @@ export async function createSelfServeSignup(
         authUserId,
         email: signup.email,
         displayName: signup.displayName,
+        referralCode: signup.referralCode,
       },
       admin,
     )

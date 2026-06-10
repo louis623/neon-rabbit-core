@@ -19,6 +19,7 @@ describe('help resources', () => {
       'Handle trade requests',
       'Manage customers and updates',
       'Billing, SMS wallet, and account basics',
+      'Share your referral code',
       'Fix something or ask for help',
     ])
 
@@ -37,7 +38,7 @@ describe('help resources', () => {
   it('gives every workflow guide the standard operator-manual fields', () => {
     const workflows = getHelpResources().filter((resource) => resource.type === 'workflow')
 
-    expect(workflows.length).toBe(10)
+    expect(workflows.length).toBe(11)
 
     for (const workflow of workflows) {
       expect(workflow.group).toMatch(/Setup|Live Shows|Trade Board|Customers & Account|Help/)

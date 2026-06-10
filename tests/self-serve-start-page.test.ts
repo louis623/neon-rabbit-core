@@ -1,7 +1,15 @@
 import { createElement } from 'react'
 import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}))
 
 import StartPage, { metadata } from '@/app/start/page'
 
@@ -39,7 +47,7 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).toContain('class="sl2-header"')
     expect(html).toContain('class="sl2-header__inner"')
     expect(html).toContain('aria-label="Sparkle Suite home"')
-    expect(html).toContain('Already have Sparkle Suite?')
+    expect(html).toContain('Sparkle Suite account')
     expect(html).toContain('class="sl2-footer"')
     expect(html).toContain('class="sl2-footer__inner"')
     expect(html).toContain('Privacy Policy')
@@ -80,6 +88,11 @@ describe('Sparkle Suite self-serve start page', () => {
   it('contains the checkout and Google OAuth client flow', () => {
     const source = readFileSync('app/start/StartSparkleSuiteForm.tsx', 'utf8')
 
+    expect(source).toContain("new URLSearchParams(window.location.search).get('ref')")
+    expect(source).toContain('const [referralCode]')
+    expect(source).toContain('referralCode: submittedReferralCode')
+    expect(source).toContain('name="referralCode"')
+    expect(source).toContain('Referral code')
     expect(source).toContain('/api/stripe/create-checkout')
     expect(source).toContain("planType: 'monthly'")
     expect(source).toContain('agreementAccepted: true')
@@ -87,9 +100,9 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(source).toContain("provider: 'google'")
     expect(source).toContain("form.get('passwordConfirm')")
     expect(source).toContain('setEmailSignupOpen(true)')
-    expect(source).toContain(
-      '/api/auth/callback?next=/nic-nac?onboarding=checkout-required',
-    )
+    expect(source).toContain("new URL('/api/auth/callback', window.location.origin)")
+    expect(source).toContain("authCallbackUrl.searchParams.set('ref', referralCode)")
+    expect(source).toContain('/nic-nac?onboarding=checkout-required')
   })
 
   it('keeps mobile form controls at comfortable tap-target sizes', () => {

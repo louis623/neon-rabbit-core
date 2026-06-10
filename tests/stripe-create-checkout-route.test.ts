@@ -41,32 +41,51 @@ import { POST } from '@/app/api/stripe/create-checkout/route'
 
 function createCheckoutAdminMock(paidSubscriptionStarts = 0) {
   return {
-    from: vi.fn(() => ({
-      select: vi.fn((_: string, options?: { count?: string }) => {
-        if (options?.count === 'exact') {
-          return {
-            in: vi.fn().mockResolvedValue({
-              count: paidSubscriptionStarts,
-              error: null,
-            }),
-          }
-        }
-
+    from: vi.fn((table: string) => {
+      if (table === 'subscriptions') {
         return {
-          eq: vi.fn(() => ({
-            in: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({ data: null }),
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: null,
+          select: vi.fn((_: string, options?: { count?: string }) => {
+            if (options?.count === 'exact') {
+              return {
+                in: vi.fn().mockResolvedValue({
+                  count: paidSubscriptionStarts,
                   error: null,
                 }),
+              }
+            }
+
+            return {
+              eq: vi.fn(() => ({
+                in: vi.fn(() => ({
+                  limit: vi.fn(() => ({
+                    single: vi.fn().mockResolvedValue({ data: null }),
+                    maybeSingle: vi.fn().mockResolvedValue({
+                      data: null,
+                      error: null,
+                    }),
+                  })),
+                })),
               })),
+            }
+          }),
+        }
+      }
+
+      if (table === 'self_serve_setup_sessions' || table === 'reps') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
             })),
           })),
         }
-      }),
-    })),
+      }
+
+      throw new Error(`Unexpected table ${table}`)
+    }),
   }
 }
 
@@ -156,6 +175,116 @@ describe('POST /api/stripe/create-checkout', () => {
       }),
     )
     expect(response.status).toBe(200)
+  })
+
+  it('adds a resolved referral to checkout and subscription metadata', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-referred',
+      rep: { id: 'rep-referred' },
+    })
+    const admin = {
+      from: vi.fn((table: string) => {
+        if (table === 'subscriptions') {
+          return {
+            select: vi.fn((_: string, options?: { count?: string }) => {
+              if (options?.count === 'exact') {
+                return {
+                  in: vi.fn().mockResolvedValue({ count: 0, error: null }),
+                }
+              }
+
+              return {
+                eq: vi.fn(() => ({
+                  in: vi.fn(() => ({
+                    limit: vi.fn(() => ({
+                      maybeSingle: vi
+                        .fn()
+                        .mockResolvedValue({ data: null, error: null }),
+                    })),
+                  })),
+                })),
+              }
+            }),
+          }
+        }
+
+        if (table === 'self_serve_setup_sessions') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: { answers: { referralCode: 'SS-K7M4Q9' } },
+                  error: null,
+                }),
+              })),
+            })),
+          }
+        }
+
+        if (table === 'reps') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'rep-referrer',
+                    referral_code: 'SS-K7M4Q9',
+                  },
+                  error: null,
+                }),
+              })),
+            })),
+          }
+        }
+
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+    createAdminClientMock.mockReturnValue(admin)
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_referred')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_referred',
+      url: 'https://checkout.stripe.test/cs_referred',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('https://sparkle-suite.example/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          referral_code_used: 'SS-K7M4Q9',
+          referrer_rep_id: 'rep-referrer',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            referral_code_used: 'SS-K7M4Q9',
+            referrer_rep_id: 'rep-referrer',
+          }),
+        }),
+      }),
+    )
   })
 
   it('returns Stripe checkout to the preview deployment origin that started checkout', async () => {

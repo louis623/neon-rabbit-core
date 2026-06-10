@@ -10,6 +10,10 @@ import {
   isRequiredNicNacSetupCheckout,
   transitionSetupSessionAfterCheckout,
 } from '@/lib/self-serve/required-setup-checkout'
+import {
+  createPendingReferralAfterPaidCheckout,
+  processReferralPaidSubscriptionInvoice,
+} from '@/lib/services/sparkle-suite-referral-rewards'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +48,13 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return typeof subDetails.subscription === 'string'
     ? subDetails.subscription
     : subDetails.subscription?.id ?? null
+}
+
+function getInvoiceCustomerId(invoice: Stripe.Invoice): string | null {
+  if (!invoice.customer) return null
+  return typeof invoice.customer === 'string'
+    ? invoice.customer
+    : invoice.customer.id
 }
 
 function mapStripeStatus(s: string): string {
@@ -568,6 +579,13 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
 
   if (error) throw error
 
+  await createPendingReferralAfterPaidCheckout({
+    supabase: admin,
+    referrerRepId: session.metadata?.referrer_rep_id,
+    referredRepId: repId,
+    referralCodeUsed: session.metadata?.referral_code_used,
+  })
+
   if (!isRequiredNicNacSetupCheckout(session)) {
     logStripeEvent('info', event, {
       phase: 'checkout_completed',
@@ -688,6 +706,19 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
 
   if (error) throw error
 
+  const stripe = getStripe()
+  await processReferralPaidSubscriptionInvoice({
+    supabase: admin,
+    stripe,
+    stripeInvoiceId: invoice.id,
+    stripeSubscriptionId: subscriptionId,
+    stripeCustomerId: getInvoiceCustomerId(invoice),
+    amountPaidCents: invoice.amount_paid ?? 0,
+    paidAtIso: new Date(
+      (invoice.status_transitions?.paid_at ?? event.created) * 1000,
+    ).toISOString(),
+  })
+
   logStripeEvent('info', event, {
     phase: 'invoice_payment_succeeded',
     subscription_id: subscriptionId,
@@ -722,6 +753,7 @@ const EVENT_HANDLERS: Record<string, (event: Stripe.Event) => Promise<void>> = {
   'checkout.session.completed': handleCheckoutCompleted,
   'customer.subscription.updated': handleSubscriptionUpdated,
   'customer.subscription.deleted': handleSubscriptionDeleted,
+  'invoice.paid': handleInvoicePaymentSucceeded,
   'invoice.payment_succeeded': handleInvoicePaymentSucceeded,
   'invoice.payment_failed': handleInvoicePaymentFailed,
   'payment_intent.succeeded': handlePaymentIntentSucceeded,

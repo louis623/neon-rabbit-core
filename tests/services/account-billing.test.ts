@@ -9,6 +9,7 @@ import { getAccountBillingDashboard } from '@/lib/services/account-billing'
 import { getStripe, stripeEnabled } from '@/lib/stripe/client'
 
 const originalTestBuyerMode = process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL
 
 function makeSelectSingle(response: { data: unknown; error: unknown }) {
   const single = vi.fn().mockResolvedValue(response)
@@ -24,11 +25,64 @@ function makeSelectSingle(response: { data: unknown; error: unknown }) {
   }
 }
 
+function makeSelectList(response: { data: unknown[]; error: unknown }) {
+  const eq = vi.fn().mockResolvedValue(response)
+  const select = vi.fn(() => ({ eq }))
+
+  return {
+    api: { select },
+    spies: { select, eq },
+  }
+}
+
+function makeAccountBillingSupabase(args: {
+  subscriptionsChain: ReturnType<typeof makeSelectSingle>
+  repCode?: string | null
+  referralRows?: unknown[]
+}) {
+  const referralsChain = makeSelectList({
+    data: args.referralRows ?? [],
+    error: null,
+  })
+  const repsUpdateEq = vi.fn().mockResolvedValue({ error: null })
+  const repsUpdate = vi.fn(() => ({ eq: repsUpdateEq }))
+
+  return {
+    from: vi.fn((table: string) => {
+      if (table === 'subscriptions') return args.subscriptionsChain.api
+      if (table === 'reps') {
+        return {
+          select: vi.fn((columns: string) => ({
+            eq: vi.fn(() => ({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data:
+                  columns === 'referral_code'
+                    ? {
+                        referral_code:
+                          args.repCode === undefined ? 'SS-ABC234' : args.repCode,
+                      }
+                    : null,
+                error: null,
+              }),
+            })),
+          })),
+          update: repsUpdate,
+        }
+      }
+      if (table === 'rep_referrals') return referralsChain.api
+      throw new Error(`Unexpected table ${table}`)
+    }),
+    repsUpdate,
+    repsUpdateEq,
+  }
+}
+
 describe('account billing service', () => {
   beforeEach(() => {
     vi.mocked(stripeEnabled).mockReset()
     vi.mocked(getStripe).mockReset()
     delete process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
+    process.env.NEXT_PUBLIC_APP_URL = 'https://sparkle-suite.example'
   })
 
   afterEach(() => {
@@ -36,6 +90,11 @@ describe('account billing service', () => {
       delete process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
     } else {
       process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = originalTestBuyerMode
+    }
+    if (originalAppUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_APP_URL
+    } else {
+      process.env.NEXT_PUBLIC_APP_URL = originalAppUrl
     }
   })
 
@@ -46,12 +105,7 @@ describe('account billing service', () => {
       data: null,
       error: null,
     })
-    const supabase = {
-      from: vi.fn((table: string) => {
-        if (table === 'subscriptions') return subscriptionsChain.api
-        throw new Error(`Unexpected table ${table}`)
-      }),
-    }
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
 
     const result = await getAccountBillingDashboard({
       supabase: supabase as never,
@@ -65,6 +119,13 @@ describe('account billing service', () => {
       subscription: null,
       paymentMethod: null,
       invoices: [],
+      referral: {
+        code: 'SS-ABC234',
+        link: 'https://sparkle-suite.example/start?ref=SS-ABC234',
+        pendingCount: 0,
+        earnedCount: 0,
+        creditedCount: 0,
+      },
       canStartSubscription: true,
       canManageBilling: false,
     })
@@ -118,12 +179,7 @@ describe('account billing service', () => {
     }
     vi.mocked(getStripe).mockReturnValue(stripeMock as never)
 
-    const supabase = {
-      from: vi.fn((table: string) => {
-        if (table === 'subscriptions') return subscriptionsChain.api
-        throw new Error(`Unexpected table ${table}`)
-      }),
-    }
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
 
     const result = await getAccountBillingDashboard({
       supabase: supabase as never,
@@ -161,6 +217,66 @@ describe('account billing service', () => {
     expect(result.checkoutMode).toBe('standard')
   })
 
+  it('returns the rep referral code, public link, and referral status counts', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: null,
+      error: null,
+    })
+    const supabase = makeAccountBillingSupabase({
+      subscriptionsChain,
+      repCode: 'SS-K7M4Q9',
+      referralRows: [
+        { reward_status: 'pending' },
+        { reward_status: 'eligible' },
+        { reward_status: 'credited' },
+      ],
+    })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: null,
+    })
+
+    expect(result.referral).toEqual({
+      code: 'SS-K7M4Q9',
+      link: 'https://sparkle-suite.example/start?ref=SS-K7M4Q9',
+      pendingCount: 1,
+      earnedCount: 1,
+      creditedCount: 1,
+    })
+  })
+
+  it('generates and saves a referral code for older reps that do not have one yet', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: null,
+      error: null,
+    })
+    const supabase = makeAccountBillingSupabase({
+      subscriptionsChain,
+      repCode: null,
+    })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-legacy',
+      stripeCustomerId: null,
+    })
+
+    expect(result.referral.code).toMatch(/^SS-[A-HJ-NP-Z2-9]{6}$/)
+    expect(result.referral.link).toBe(
+      `https://sparkle-suite.example/start?ref=${result.referral.code}`,
+    )
+    expect(supabase.repsUpdate).toHaveBeenCalledWith({
+      referral_code: result.referral.code,
+    })
+    expect(supabase.repsUpdateEq).toHaveBeenCalledWith('id', 'rep-legacy')
+  })
+
   it('allows billing portal access when a Stripe customer exists before subscription activation', async () => {
     vi.mocked(stripeEnabled).mockReturnValue(true)
 
@@ -183,12 +299,7 @@ describe('account billing service', () => {
     }
     vi.mocked(getStripe).mockReturnValue(stripeMock as never)
 
-    const supabase = {
-      from: vi.fn((table: string) => {
-        if (table === 'subscriptions') return subscriptionsChain.api
-        throw new Error(`Unexpected table ${table}`)
-      }),
-    }
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
 
     const result = await getAccountBillingDashboard({
       supabase: supabase as never,
@@ -212,12 +323,7 @@ describe('account billing service', () => {
       data: null,
       error: null,
     })
-    const supabase = {
-      from: vi.fn((table: string) => {
-        if (table === 'subscriptions') return subscriptionsChain.api
-        throw new Error(`Unexpected table ${table}`)
-      }),
-    }
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
 
     const result = await getAccountBillingDashboard({
       supabase: supabase as never,

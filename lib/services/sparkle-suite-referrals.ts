@@ -1,5 +1,6 @@
 const REFERRAL_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const REFERRAL_CODE_PATTERN = /^SS-[A-HJ-NP-Z2-9]{6}$/
+const REFERRAL_CODE_RETRY_LIMIT = 12
 
 export function generateSparkleSuiteReferralCode(
   random: () => number = Math.random,
@@ -20,4 +21,27 @@ export function generateSparkleSuiteReferralCode(
 export function normalizeSparkleSuiteReferralCode(input: string): string | null {
   const normalized = input.trim().toUpperCase()
   return REFERRAL_CODE_PATTERN.test(normalized) ? normalized : null
+}
+
+type ReferralCodeLookupClient = {
+  from(table: string): any
+}
+
+export async function generateUniqueSparkleSuiteReferralCode(
+  supabase: ReferralCodeLookupClient,
+  random: () => number = Math.random,
+): Promise<string> {
+  for (let attempt = 0; attempt < REFERRAL_CODE_RETRY_LIMIT; attempt += 1) {
+    const candidate = generateSparkleSuiteReferralCode(random)
+    const { data, error } = await supabase
+      .from('reps')
+      .select('id')
+      .eq('referral_code', candidate)
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) return candidate
+  }
+
+  throw new Error('Unable to generate a unique Sparkle Suite referral code.')
 }

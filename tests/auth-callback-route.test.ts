@@ -202,28 +202,31 @@ describe('GET /api/auth/callback', () => {
 
     const response = await GET(
       new Request(
-        'http://localhost/api/auth/callback?code=oauth-code&next=/nic-nac?onboarding=checkout-required',
+        'http://localhost/api/auth/callback?code=oauth-code&ref=SS-K7M4Q9&next=/nic-nac?onboarding=checkout-required',
       ),
     )
 
     expect(getUserMock).toHaveBeenCalled()
-    expect(admin.repsInsert).toHaveBeenCalledWith({
-      auth_user_id: 'auth-google',
-      email: 'google@example.com',
-      display_name: 'Google Rep',
-      business_name: 'Google Rep',
-      phone: null,
-      custom_domain: null,
-      public_site_slug: null,
-      shop_link: null,
-      streaming_links: {
-        primary: null,
-        secondary: null,
-      },
-      social_handles: {},
-      template_id: 'default',
-      status: 'onboarding',
-    })
+    expect(admin.repsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        auth_user_id: 'auth-google',
+        email: 'google@example.com',
+        display_name: 'Google Rep',
+        business_name: 'Google Rep',
+        phone: null,
+        custom_domain: null,
+        public_site_slug: null,
+        shop_link: null,
+        streaming_links: {
+          primary: null,
+          secondary: null,
+        },
+        social_handles: {},
+        template_id: 'default',
+        status: 'onboarding',
+        referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+      }),
+    )
     expect(admin.siteSettingsUpsert).toHaveBeenCalledWith(
       {
         rep_id: 'rep-google',
@@ -249,6 +252,7 @@ describe('GET /api/auth/callback', () => {
         answers: {
           displayName: 'Google Rep',
           email: 'google@example.com',
+          referralCode: 'SS-K7M4Q9',
         },
       },
       { onConflict: 'rep_id' },

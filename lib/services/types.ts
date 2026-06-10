@@ -435,12 +435,21 @@ export interface AccountBillingInvoiceSummary {
   invoicePdfUrl: string | null
 }
 
+export interface AccountBillingReferralSummary {
+  code: string | null
+  link: string | null
+  pendingCount: number
+  earnedCount: number
+  creditedCount: number
+}
+
 export interface AccountBillingDashboardResult {
   stripeConfigured: boolean
   checkoutMode: 'standard' | 'test_buyer'
   subscription: AccountBillingSubscriptionSummary | null
   paymentMethod: AccountBillingPaymentMethodSummary | null
   invoices: AccountBillingInvoiceSummary[]
+  referral: AccountBillingReferralSummary
   canStartSubscription: boolean
   canManageBilling: boolean
 }

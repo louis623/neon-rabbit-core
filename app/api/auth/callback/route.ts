@@ -68,6 +68,7 @@ export async function GET(request: Request) {
       authUserId: user.id,
       email: user.email,
       displayName: getSelfServeDisplayNameFromAuthUser(user),
+      referralCode: requestUrl.searchParams.get('ref'),
     },
     createAdminClient(),
     { allowCreate: selfServeSignupEnabled() },

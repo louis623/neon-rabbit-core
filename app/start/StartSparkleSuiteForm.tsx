@@ -61,6 +61,10 @@ export function StartSparkleSuiteForm({
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('review')?.trim() ?? ''
   })
+  const [referralCode] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    return new URLSearchParams(window.location.search).get('ref')?.trim() ?? ''
+  })
   const [agreementAccepted, setAgreementAccepted] = useState(false)
   const [emailSignupOpen, setEmailSignupOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -117,7 +121,7 @@ export function StartSparkleSuiteForm({
     }
   }
 
-  async function openCheckout() {
+  async function openCheckout(activeReferralCode = referralCode) {
     const checkoutResponse = await fetch('/api/stripe/create-checkout', {
       method: 'POST',
       credentials: 'include',
@@ -125,6 +129,7 @@ export function StartSparkleSuiteForm({
       body: JSON.stringify({
         planType: 'monthly',
         agreementAccepted: true,
+        referralCode: activeReferralCode || undefined,
       }),
     })
     const checkoutPayload = (await checkoutResponse
@@ -152,10 +157,19 @@ export function StartSparkleSuiteForm({
     setFieldErrors(undefined)
 
     const supabase = createClient()
+    const authCallbackUrl = new URL('/api/auth/callback', window.location.origin)
+    authCallbackUrl.searchParams.set(
+      'next',
+      '/nic-nac?onboarding=checkout-required',
+    )
+    if (referralCode) {
+      authCallbackUrl.searchParams.set('ref', referralCode)
+    }
+
     const { error: signInError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=/nic-nac?onboarding=checkout-required`,
+        redirectTo: authCallbackUrl.toString(),
       },
     })
 
@@ -175,6 +189,8 @@ export function StartSparkleSuiteForm({
     const email = String(form.get('email') ?? '').trim().toLowerCase()
     const password = String(form.get('password') ?? '')
     const passwordConfirm = String(form.get('passwordConfirm') ?? '')
+    const submittedReferralCode =
+      String(form.get('referralCode') ?? '').trim() || referralCode
 
     try {
       if (!agreementAccepted) {
@@ -196,6 +212,7 @@ export function StartSparkleSuiteForm({
           displayName: form.get('displayName'),
           email,
           password,
+          referralCode: submittedReferralCode || undefined,
         }),
       })
       const payload = (await response.json().catch(() => null)) as
@@ -219,7 +236,7 @@ export function StartSparkleSuiteForm({
         )
       }
 
-      await openCheckout()
+      await openCheckout(submittedReferralCode)
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -352,6 +369,19 @@ export function StartSparkleSuiteForm({
               <input name="email" type="email" autoComplete="email" required />
               {firstFieldError(fieldErrors, 'email') ? (
                 <em>{firstFieldError(fieldErrors, 'email')}</em>
+              ) : null}
+            </label>
+
+            <label>
+              <span>Referral code</span>
+              <input
+                name="referralCode"
+                autoComplete="off"
+                defaultValue={referralCode}
+                placeholder="SS-K7M4Q9"
+              />
+              {firstFieldError(fieldErrors, 'referralCode') ? (
+                <em>{firstFieldError(fieldErrors, 'referralCode')}</em>
               ) : null}
             </label>
 

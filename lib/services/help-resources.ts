@@ -328,6 +328,38 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
     quickActions: ['Open SMS wallet', 'Manage billing', 'Review auto-recharge'],
   }),
   helpResource({
+    id: 'referral-program-basics',
+    type: 'workflow',
+    group: 'Customers & Account',
+    category: 'Referrals',
+    title: 'Share your referral code',
+    summary: 'Find your code, share your link, and understand when rewards credit.',
+    body:
+      'Referral rewards are account credits, not cash. A referred rep needs three paid subscription months before the credit is issued.',
+    goal: 'Share the right referral link and know how pending, earned, and credited referrals are tracked.',
+    useWhen: 'Use this when a rep asks where their code is or how referral credit works.',
+    beforeYouStart: [
+      'Account billing section',
+      'Referral program card',
+      'Current subscription status',
+    ],
+    steps: [
+      'Open Account.',
+      'Find the Referral program card.',
+      'Copy the referral link or code.',
+      'Share the link with the new rep before they start checkout.',
+      'Review pending, earned, and credited counts after referred reps subscribe.',
+      'Keep the referring account active so earned credits can be applied.',
+    ],
+    goodResult:
+      'The rep can share a referral link and understands that the credit is automatic after three paid subscription months.',
+    nicNacPrompt: 'Help me share my referral code.',
+    stillStuck:
+      'Include the referral code, whether the referred rep already subscribed, and what status count looks wrong.',
+    relatedFeatureIds: ['billing', 'account-settings'],
+    quickActions: ['Open Account', 'Copy referral link', 'Review referral status'],
+  }),
+  helpResource({
     id: 'fix-something-or-ask-for-help',
     type: 'workflow',
     group: 'Help',

@@ -9,6 +9,7 @@ import {
   BusinessCalculatorCard,
   DashboardPlaceholder,
   HelpResourcesCard,
+  ReferralProgramCard,
   TradeBoardWorkspaceCard,
   CustomerRosterCard,
   SiteSettingsCard,
@@ -317,6 +318,13 @@ const ACCOUNT_BILLING_READY_STATE = {
         invoicePdfUrl: 'https://stripe.test/in_1.pdf',
       },
     ],
+    referral: {
+      code: 'SS-K7M4Q9',
+      link: 'https://sparkle-suite.example/start?ref=SS-K7M4Q9',
+      pendingCount: 2,
+      earnedCount: 1,
+      creditedCount: 3,
+    },
     canStartSubscription: false,
     canManageBilling: true,
   },
@@ -1223,6 +1231,23 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$99.00')
     expect(html).toContain('Manage billing and cancel')
     expect(html).toContain('Opened Stripe billing portal.')
+  })
+
+  it('renders the referral program card with code, link, and status counts', () => {
+    const html = renderToStaticMarkup(
+      createElement(ReferralProgramCard, {
+        referral: ACCOUNT_BILLING_READY_STATE.summary.referral,
+      }),
+    )
+
+    expect(html).toContain('Referral program')
+    expect(html).toContain('SS-K7M4Q9')
+    expect(html).toContain('https://sparkle-suite.example/start?ref=SS-K7M4Q9')
+    expect(html).toContain('2 pending')
+    expect(html).toContain('1 earned')
+    expect(html).toContain('3 credited')
+    expect(html).toContain('Copy code')
+    expect(html).toContain('Copy link')
   })
 
   it('renders terms acceptance before subscription checkout can start', () => {

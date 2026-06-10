@@ -1108,6 +1108,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       : undefined,
     customers: reviewWorkspaceMode ? [] : undefined,
   })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const requestedSection = getInitialWorkspaceSection(window.location.search)
+    setActiveSection((currentSection) =>
+      currentSection === requestedSection ? currentSection : requestedSection,
+    )
+  }, [])
   const [rosterFilter, setRosterFilter] = useState<RosterFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<RosterSort>('newest')
@@ -1181,6 +1189,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             },
             paymentMethod: null,
             invoices: [],
+            referral: {
+              code: null,
+              link: null,
+              pendingCount: 0,
+              earnedCount: 0,
+              creditedCount: 0,
+            },
             canStartSubscription: false,
             canManageBilling: false,
           }
@@ -2951,6 +2966,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 agreementAccepted={subscriptionAgreementAccepted}
                 onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
               />
+              {accountBillingState.status === 'ready' &&
+              accountBillingState.summary ? (
+                <ReferralProgramCard
+                  referral={accountBillingState.summary.referral}
+                />
+              ) : null}
               {hasPaidWorkspace ? (
                 <>
                   <WalletSummaryCard
@@ -5054,6 +5075,75 @@ export function AccountBillingCard({
               : 'Manage billing and cancel'}
           </button>
         ) : null}
+      </div>
+    </div>
+  )
+}
+
+export function ReferralProgramCard({
+  referral,
+}: {
+  referral: AccountBillingDashboardResult['referral']
+}) {
+  const [copiedTarget, setCopiedTarget] = useState<'code' | 'link' | null>(null)
+  const canCopyCode = Boolean(referral.code)
+  const canCopyLink = Boolean(referral.link)
+
+  async function copyReferralValue(
+    target: 'code' | 'link',
+    value: string | null,
+  ) {
+    if (!value) return
+    await navigator.clipboard.writeText(value)
+    setCopiedTarget(target)
+    window.setTimeout(() => setCopiedTarget(null), 1800)
+  }
+
+  return (
+    <div className={styles.referralCard}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Referral program</div>
+          <div className={styles.accountMuted}>
+            Share your code. After a referred rep has three paid subscription
+            months, your account gets one month credited.
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.referralCodePanel}>
+        <div className={styles.referralCodeBlock}>
+          <span className={styles.walletTransactionDate}>Your code</span>
+          <strong>{referral.code ?? 'Generating soon'}</strong>
+        </div>
+        <div className={styles.referralActions}>
+          <button
+            type="button"
+            className={styles.secondaryActionButton}
+            disabled={!canCopyCode}
+            onClick={() => copyReferralValue('code', referral.code)}
+          >
+            {copiedTarget === 'code' ? 'Copied' : 'Copy code'}
+          </button>
+          <button
+            type="button"
+            className={styles.secondaryActionButton}
+            disabled={!canCopyLink}
+            onClick={() => copyReferralValue('link', referral.link)}
+          >
+            {copiedTarget === 'link' ? 'Copied' : 'Copy link'}
+          </button>
+        </div>
+      </div>
+
+      {referral.link ? (
+        <div className={styles.referralLinkValue}>{referral.link}</div>
+      ) : null}
+
+      <div className={styles.referralStats} aria-label="Referral status counts">
+        <span>{referral.pendingCount} pending</span>
+        <span>{referral.earnedCount} earned</span>
+        <span>{referral.creditedCount} credited</span>
       </div>
     </div>
   )

@@ -112,23 +112,26 @@ describe('POST /api/self-serve/signup', () => {
       password: 'Sparkle2026!',
       email_confirm: true,
     })
-    expect(admin.repsInsert).toHaveBeenCalledWith({
-      auth_user_id: 'auth-self-serve',
-      email: 'jamie@example.com',
-      display_name: 'Jamie Hart',
-      business_name: 'Jamie Hart',
-      phone: null,
-      custom_domain: null,
-      public_site_slug: null,
-      shop_link: null,
-      streaming_links: {
-        primary: null,
-        secondary: null,
-      },
-      social_handles: {},
-      template_id: 'default',
-      status: 'onboarding',
-    })
+    expect(admin.repsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        auth_user_id: 'auth-self-serve',
+        email: 'jamie@example.com',
+        display_name: 'Jamie Hart',
+        business_name: 'Jamie Hart',
+        phone: null,
+        custom_domain: null,
+        public_site_slug: null,
+        shop_link: null,
+        streaming_links: {
+          primary: null,
+          secondary: null,
+        },
+        social_handles: {},
+        template_id: 'default',
+        status: 'onboarding',
+        referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+      }),
+    )
     expect(admin.siteSettingsUpsert).toHaveBeenCalledWith(
       {
         rep_id: 'rep-self-serve',
@@ -176,6 +179,43 @@ describe('POST /api/self-serve/signup', () => {
       email: 'jamie@example.com',
       next: '/nic-nac?onboarding=checkout-required',
     })
+  })
+
+  it('assigns the new rep a public referral code and preserves a valid referring code for checkout', async () => {
+    const admin = createAdminMock()
+    admin.repsMaybeSingle.mockResolvedValueOnce({ data: null, error: null })
+    admin.repsMaybeSingle.mockResolvedValueOnce({ data: null, error: null })
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+          password: 'Sparkle2026!',
+          referralCode: ' ss-k7m4q9 ',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(201)
+    expect(admin.repsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+      }),
+    )
+    expect(admin.setupSessionUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        answers: {
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+          referralCode: 'SS-K7M4Q9',
+        },
+      }),
+      { onConflict: 'rep_id' },
+    )
   })
 
   it('ignores setup source fields when a tiny signup payload contains legacy extras', async () => {

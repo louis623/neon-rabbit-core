@@ -766,6 +766,296 @@ describe('POST /api/stripe/webhook', () => {
     expect(createLightBoxFulfillmentTaskMock).not.toHaveBeenCalled()
   })
 
+  it('creates a pending referral row after a referred checkout is paid', async () => {
+    const repsUpdateMock = vi.fn(() => ({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    }))
+    const subscriptionsUpsertMock = vi.fn().mockResolvedValue({ error: null })
+    const referralMaybeSingleMock = vi.fn().mockResolvedValue({
+      data: { id: 'referral-1' },
+      error: null,
+    })
+    const referralUpsertMock = vi.fn(() => ({
+      select: vi.fn(() => ({
+        maybeSingle: referralMaybeSingleMock,
+      })),
+    }))
+    const rpcMock = createStripeEventRpcMock()
+    const admin = {
+      rpc: rpcMock,
+      from: vi.fn((table: string) => {
+        if (table === 'reps') {
+          return {
+            update: repsUpdateMock,
+          }
+        }
+
+        if (table === 'subscriptions') {
+          return {
+            upsert: subscriptionsUpsertMock,
+          }
+        }
+
+        if (table === 'rep_referrals') {
+          return {
+            upsert: referralUpsertMock,
+          }
+        }
+
+        throw new Error(`unexpected table ${table}`)
+      }),
+    }
+    const event = {
+      id: 'evt_referred_checkout',
+      type: 'checkout.session.completed',
+      livemode: false,
+      created: 1_779_120_000,
+      data: {
+        object: {
+          id: 'cs_referred_checkout',
+          mode: 'subscription',
+          payment_status: 'paid',
+          subscription: 'sub_referred_checkout',
+          metadata: {
+            rep_id: 'rep-referred',
+            plan_type: 'monthly',
+            pricing_tier: 'standard',
+            build_fee_charged: 'true',
+            referrer_rep_id: 'rep-referrer',
+            referral_code_used: 'SS-K7M4Q9',
+          },
+        },
+      },
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    getStripeMock.mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue(event),
+      },
+      subscriptions: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: 'sub_referred_checkout',
+          customer: 'cus_referred',
+          status: 'active',
+          start_date: 1_779_120_000,
+          billing_cycle_anchor: 1_781_712_000,
+          cancel_at_period_end: false,
+          schedule: null,
+          items: {
+            data: [
+              {
+                current_period_start: 1_779_120_000,
+                current_period_end: 1_781_712_000,
+              },
+            ],
+          },
+        }),
+      },
+      subscriptionSchedules: {
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': 'verified_sig' },
+        body: JSON.stringify({ id: 'evt_referred_checkout' }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(referralUpsertMock).toHaveBeenCalledWith(
+      {
+        referrer_rep_id: 'rep-referrer',
+        referred_rep_id: 'rep-referred',
+        referral_code_used: 'SS-K7M4Q9',
+        reward_status: 'pending',
+        updated_at: expect.any(String),
+      },
+      { onConflict: 'referred_rep_id' },
+    )
+  })
+
+  it('credits the referrer after the referred rep reaches three paid subscription invoices', async () => {
+    const subscriptionStatusUpdateEqMock = vi.fn().mockResolvedValue({ error: null })
+    const referralMonthInsertMock = vi.fn().mockResolvedValue({ error: null })
+    const referralUpdateEqMock = vi.fn().mockResolvedValue({ error: null })
+    const referralUpdateMock = vi.fn(() => ({ eq: referralUpdateEqMock }))
+    const createBalanceTransactionMock = vi.fn().mockResolvedValue({
+      id: 'cbtxn_referral_credit',
+    })
+    const rpcMock = createStripeEventRpcMock()
+    const admin = {
+      rpc: rpcMock,
+      from: vi.fn((table: string) => {
+        if (table === 'subscriptions') {
+          return {
+            update: vi.fn(() => ({ eq: subscriptionStatusUpdateEqMock })),
+            select: vi.fn((columns: string) => ({
+              eq: vi.fn(() => {
+                if (columns === 'rep_id') {
+                  return {
+                    maybeSingle: vi.fn().mockResolvedValue({
+                      data: { rep_id: 'rep-referred' },
+                      error: null,
+                    }),
+                  }
+                }
+
+                return {
+                  order: vi.fn(() => ({
+                    limit: vi.fn(() => ({
+                      maybeSingle: vi.fn().mockResolvedValue({
+                        data: {
+                          status: 'active',
+                          pricing_tier: 'standard',
+                        },
+                        error: null,
+                      }),
+                    })),
+                  })),
+                }
+              }),
+            })),
+          }
+        }
+
+        if (table === 'rep_referrals') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'referral-1',
+                    referrer_rep_id: 'rep-referrer',
+                    referred_rep_id: 'rep-referred',
+                    referral_code_used: 'SS-K7M4Q9',
+                    reward_status: 'pending',
+                    paid_service_months: 2,
+                    stripe_credit_id: null,
+                  },
+                  error: null,
+                }),
+              })),
+            })),
+            update: referralUpdateMock,
+          }
+        }
+
+        if (table === 'rep_referral_paid_months') {
+          return {
+            select: vi.fn((_: string, options?: { count?: string }) => ({
+              eq: vi.fn(() => {
+                if (options?.count === 'exact') {
+                  return Promise.resolve({ count: 3, error: null })
+                }
+
+                return {
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: null,
+                  }),
+                }
+              }),
+            })),
+            insert: referralMonthInsertMock,
+          }
+        }
+
+        if (table === 'reps') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'rep-referrer',
+                    stripe_customer_id: 'cus_referrer',
+                    pricing_tier: 'standard',
+                  },
+                  error: null,
+                }),
+              })),
+            })),
+          }
+        }
+
+        throw new Error(`unexpected table ${table}`)
+      }),
+    }
+    const event = {
+      id: 'evt_invoice_referral_credit',
+      type: 'invoice.payment_succeeded',
+      livemode: false,
+      created: 1_784_476_800,
+      data: {
+        object: {
+          id: 'in_referral_3',
+          amount_paid: 7499,
+          customer: 'cus_referred',
+          status_transitions: {
+            paid_at: 1_784_476_800,
+          },
+          parent: {
+            subscription_details: {
+              subscription: 'sub_referred',
+            },
+          },
+        },
+      },
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    getStripeMock.mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue(event),
+      },
+      customers: {
+        createBalanceTransaction: createBalanceTransactionMock,
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': 'verified_sig' },
+        body: JSON.stringify({ id: 'evt_invoice_referral_credit' }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(referralMonthInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        referral_id: 'referral-1',
+        referred_rep_id: 'rep-referred',
+        stripe_invoice_id: 'in_referral_3',
+        stripe_subscription_id: 'sub_referred',
+        stripe_customer_id: 'cus_referred',
+        amount_paid_cents: 7499,
+      }),
+    )
+    expect(createBalanceTransactionMock).toHaveBeenCalledWith(
+      'cus_referrer',
+      expect.objectContaining({
+        amount: -7499,
+        currency: 'usd',
+        description: 'Sparkle Suite referral reward',
+      }),
+      {
+        idempotencyKey: 'sparkle-suite-referral-credit-referral-1',
+      },
+    )
+    expect(referralUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reward_status: 'credited',
+        stripe_credit_id: 'cbtxn_referral_credit',
+        stripe_customer_id: 'cus_referrer',
+      }),
+    )
+  })
+
   it('does not rewind a required setup session that has progressed past account basics', async () => {
     const repsUpdateMock = vi.fn(() => ({
       eq: vi.fn().mockResolvedValue({ error: null }),

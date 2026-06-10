@@ -13,6 +13,10 @@ import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSelfServeAgreementVersion } from '@/lib/prelaunch/self-serve-agreement'
 import { resolveCheckoutReturnOrigin } from '@/lib/stripe/return-origin'
+import {
+  getPendingReferralCodeForRep,
+  resolveReferralCodeForCheckout,
+} from '@/lib/services/sparkle-suite-referral-rewards'
 
 const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
@@ -139,6 +143,22 @@ export async function POST(request: Request) {
     }
 
     const customerId = await getOrCreateStripeCustomer(repId)
+    const pendingReferralCode = await getPendingReferralCodeForRep({
+      supabase: admin,
+      repId,
+      fallbackCode: body?.referralCode,
+    })
+    const resolvedReferral = await resolveReferralCodeForCheckout({
+      supabase: admin,
+      referredRepId: repId,
+      referralCode: pendingReferralCode,
+    })
+    const referralMetadata: Record<string, string> = resolvedReferral
+      ? {
+          referrer_rep_id: resolvedReferral.referrerRepId,
+          referral_code_used: resolvedReferral.referralCodeUsed,
+        }
+      : {}
     const agreementMetadata = {
       agreement_provider: 'clickwrap',
       agreement_version: getSelfServeAgreementVersion(),
@@ -166,6 +186,7 @@ export async function POST(request: Request) {
         ...agreementMetadata,
         ...requiredSetupMetadata,
         ...pricing.metadata,
+        ...referralMetadata,
       },
       subscription_data: {
         metadata: {
@@ -174,6 +195,7 @@ export async function POST(request: Request) {
           ...agreementMetadata,
           ...requiredSetupMetadata,
           ...pricing.metadata,
+          ...referralMetadata,
         },
       },
     })
