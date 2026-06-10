@@ -37,6 +37,8 @@
   --nic-nac-text-secondary: var(--workspace-text-secondary);
   --nic-nac-text-inverse: var(--workspace-text-inverse);
   min-height: var(--nic-nac-app-height, 100vh);
+  min-width: 0;
+  box-sizing: border-box;
   background:
     radial-gradient(circle at 8% 12%, rgba(246, 237, 232, 0.84), transparent 22rem),
     linear-gradient(
@@ -239,7 +241,7 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
-  max-width: 1180px;
+  max-width: none;
   width: 100%;
 }
 
@@ -375,7 +377,7 @@
   display: grid;
   grid-template-columns: minmax(220px, 264px) minmax(0, 1fr);
   gap: 24px;
-  max-width: 1180px;
+  max-width: none;
   width: 100%;
 }
 
@@ -1354,8 +1356,8 @@
 
 .cardTitle {
   font-family: var(--font-prelaunch-display), Georgia, serif;
-  font-size: 24px;
-  line-height: 1.08;
+  font-size: 20px;
+  line-height: 1.15;
   font-weight: 700;
   color: var(--nic-nac-text-primary);
 }
@@ -1518,8 +1520,8 @@
 
 .referralCodeBlock strong {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 28px;
-  line-height: 1;
+  font-size: 21px;
+  line-height: 1.1;
   letter-spacing: 0;
   color: var(--nic-nac-text-primary);
 }
@@ -1800,7 +1802,7 @@
 
 .metricValue {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1.15;
   font-weight: 700;
   color: var(--nic-nac-text-primary);

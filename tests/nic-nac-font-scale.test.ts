@@ -6,6 +6,16 @@ function css(path: string) {
   return readFileSync(resolve(process.cwd(), path), 'utf8')
 }
 
+function cssBlock(source: string, selector: string) {
+  const start = source.indexOf(selector)
+  const openBrace = source.indexOf('{', start)
+  const closeBrace = source.indexOf('}', openBrace)
+
+  return start > -1 && openBrace > -1 && closeBrace > -1
+    ? source.slice(openBrace + 1, closeBrace)
+    : ''
+}
+
 describe('Nic-Nac readable font scale', () => {
   it('keeps workspace chat typography about 25 percent smaller than the oversized pass', () => {
     const bubble = css('app/nic-nac/components/Bubble.module.css')
@@ -44,5 +54,21 @@ describe('Nic-Nac readable font scale', () => {
     expect(lookPicker).not.toContain('font-size: clamp(1.65rem, 3vw, 2.35rem)')
     expect(preview).not.toContain('font-size: clamp(1.55rem, 3vw, 2.1rem)')
     expect(liveQueue).not.toContain('font-size: clamp(1.55rem, 3vw, 2.1rem)')
+  })
+
+  it('lets the rep workspace fill the left column while keeping account cards compact', () => {
+    const dashboard = css('app/nic-nac/components/DashboardPlaceholder.module.css')
+
+    expect(cssBlock(dashboard, '.topbar')).toContain('max-width: none')
+    expect(cssBlock(dashboard, '.workspaceShell')).toContain('max-width: none')
+    expect(cssBlock(dashboard, '.cardTitle')).toContain('font-size: 20px')
+    expect(cssBlock(dashboard, '.referralCodeBlock strong')).toContain('font-size: 21px')
+    expect(cssBlock(dashboard, '.metricValue')).toContain('font-size: 18px')
+
+    expect(cssBlock(dashboard, '.topbar')).not.toContain('max-width: 1180px')
+    expect(cssBlock(dashboard, '.workspaceShell')).not.toContain('max-width: 1180px')
+    expect(cssBlock(dashboard, '.cardTitle')).not.toContain('font-size: 24px')
+    expect(cssBlock(dashboard, '.referralCodeBlock strong')).not.toContain('font-size: 28px')
+    expect(cssBlock(dashboard, '.metricValue')).not.toContain('font-size: 19px')
   })
 })

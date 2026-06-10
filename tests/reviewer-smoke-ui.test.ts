@@ -131,6 +131,7 @@ describe('reviewer smoke UI wiring', () => {
   it('keeps Nic-Nac page chrome from fighting the workspace layout', () => {
     expect(nicNacPage).toContain('styles.chrome')
     expect(nicNacPageCss).toContain('min-height: 0')
+    expect(nicNacPageCss).toContain('overflow-x: clip')
     expect(nicNacPageCss).toContain('margin-top: 0')
     expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width)')
     expect(nicNacColumnCss).not.toMatch(/\.desktop\s*{[^}]*position:\s*fixed/s)

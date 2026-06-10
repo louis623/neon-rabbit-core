@@ -1,6 +1,7 @@
 .page {
   --nic-nac-app-height: calc(100dvh - 79px);
   background: #fffdfc;
+  overflow-x: clip;
 }
 
 .chrome {
