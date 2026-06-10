@@ -26,6 +26,7 @@ export interface TradeListingWithDesign {
   status: ListingStatus
   rep_notes: string | null
   trade_preferences: string | null
+  ring_size?: string | null
   listing_photo_url: string | null
   uses_canonical_photo: boolean
   listed_at: string | null
@@ -100,6 +101,7 @@ export interface AddListingInput {
   itemNumber: string
   clickwrapAccepted?: boolean
   collectionName?: string
+  ringSize?: string
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string // when omitted, falls back to canonical photo
@@ -116,6 +118,7 @@ export interface AddListingResult {
 
 export interface BatchListingItem {
   itemNumber: string
+  ringSize?: string
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string
@@ -141,6 +144,7 @@ export interface AddListingBatchResult {
 export interface UpdateListingInput {
   repNotes?: string | null
   tradePreferences?: string | null
+  ringSize?: string | null
   listingPhotoUrl?: string | null
   // When true, clears listing_photo_url and sets uses_canonical_photo=true
   useCanonicalPhoto?: boolean

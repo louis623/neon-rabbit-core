@@ -383,6 +383,23 @@ describe('addListing', () => {
     })
   })
 
+  it('saves ring size on the physical listing when a ring is added', async () => {
+    const { client, spies } = makeAddListingWithCollectionSupabase()
+
+    await addListing(client, 'rep-1', {
+      itemNumber: 'RG31452',
+      clickwrapAccepted: true,
+      collectionName: 'Lustre',
+      ringSize: '8',
+    })
+
+    expect(spies.insert.mock.calls[0][0]).toMatchObject({
+      rep_id: 'rep-1',
+      design_id: 'design-1',
+      ring_size: '8',
+    })
+  })
+
   it('adds another available listing when the rep already has the same design on the board', async () => {
     const { client, spies } = makeAddListingWithCollectionSupabase({
       existingListing: { id: 'listing-existing' },

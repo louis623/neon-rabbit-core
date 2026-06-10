@@ -34,6 +34,12 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'The collection may be on packaging instead of the label',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'For rings, the ring size is usually on the box rather than the label',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'ask for the ring size before add_listing',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Ask for collection or a packaging photo if it is not visible',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

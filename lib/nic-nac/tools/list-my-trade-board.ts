@@ -60,6 +60,7 @@ export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: Supabas
             mainStone: l.design.main_stone,
             msrp: l.design.bp_msrp,
             collection: l.design.collection?.name ?? null,
+            ringSize: l.ring_size,
             status: l.status,
             tradePreferences: l.trade_preferences,
             repNotes: l.rep_notes,

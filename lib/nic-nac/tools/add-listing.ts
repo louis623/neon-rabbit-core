@@ -36,6 +36,7 @@ import type { ToolDefinition } from './types'
 
 const itemBaseShape = {
   itemNumber: z.string(),
+  ringSize: z.string().optional(),
   repNotes: z.string().optional(),
   tradePreferences: z.string().optional(),
   listingPhotoUrl: z.string().optional(),
@@ -66,6 +67,7 @@ const inputSchema = z.object({
   // Single-mode top-level fields. itemNumber is optional in the schema so
   // batch-mode calls can omit it; runtime validates presence per mode.
   itemNumber: z.string().optional(),
+  ringSize: z.string().optional(),
   repNotes: z.string().optional(),
   tradePreferences: z.string().optional(),
   listingPhotoUrl: z.string().optional(),
@@ -322,6 +324,7 @@ async function runSingle(
           const existingResult = await addListing(admin, ctx.repId, {
             itemNumber,
             collectionName,
+            ringSize: input.ringSize,
             repNotes: input.repNotes,
             tradePreferences: input.tradePreferences,
           })
@@ -656,6 +659,7 @@ async function runSingle(
     result = await addListing(admin, ctx.repId, {
       itemNumber,
       collectionName: input.collectionName,
+      ringSize: input.ringSize,
       repNotes: input.repNotes,
       tradePreferences: input.tradePreferences,
       listingPhotoUrl: processedListingPhotoUrl,
@@ -763,6 +767,7 @@ async function runBatch(
 
     processedItems.push({
       itemNumber: item.itemNumber,
+      ringSize: item.ringSize,
       repNotes: item.repNotes,
       tradePreferences: item.tradePreferences,
       listingPhotoUrl,
@@ -804,6 +809,7 @@ async function runBatch(
         {
           mode: 'single',
           itemNumber: recoveryItem.itemNumber,
+          ringSize: recoveryItem.ringSize,
           repNotes: recoveryItem.repNotes,
           tradePreferences: recoveryItem.tradePreferences,
           listingPhotoUrl: recoveryItem.listingPhotoUrl,
@@ -833,6 +839,7 @@ async function runBatch(
         retryItems.push(
           ...candidates.slice(1).map((item) => ({
             itemNumber: item.itemNumber,
+            ringSize: item.ringSize,
             repNotes: item.repNotes,
             tradePreferences: item.tradePreferences,
             listingPhotoUrl: undefined,
@@ -940,6 +947,7 @@ export function makeAddListingTool(ctx: {
     description:
       "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
+      "For rings (RG item numbers), capture ringSize before saving. Ring size is usually printed on the box instead of the label; if you cannot read it from a box/details photo, ask the rep for the ring size. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
       "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. Open packaging with the jewelry clearly visible counts as a jewelry-front photo. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo. " +
       "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +

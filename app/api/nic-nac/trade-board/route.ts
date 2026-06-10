@@ -162,6 +162,7 @@ export async function POST(request: Request) {
       : undefined
     const result = await addListing(createAdminClient(), repId, {
       itemNumber,
+      ringSize: typeof body?.ringSize === 'string' ? body.ringSize : undefined,
       repNotes: typeof body?.repNotes === 'string' ? body.repNotes : undefined,
       tradePreferences:
         typeof body?.tradePreferences === 'string' ? body.tradePreferences : undefined,
@@ -212,6 +213,12 @@ export async function PATCH(request: Request) {
       repNotes: typeof body?.repNotes === 'string' ? body.repNotes : undefined,
       tradePreferences:
         typeof body?.tradePreferences === 'string' ? body.tradePreferences : undefined,
+      ringSize:
+        typeof body?.ringSize === 'string'
+          ? body.ringSize
+          : body?.ringSize === null
+            ? null
+            : undefined,
       listingPhotoUrl: processedListingPhotoUrl,
       useCanonicalPhoto: body?.useCanonicalPhoto === true ? true : undefined,
     })

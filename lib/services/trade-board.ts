@@ -77,7 +77,7 @@ const DESIGN_SELECT =
   'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection:collections(id, name)'
 
 const LISTING_SELECT = `
-  id, rep_id, status, rep_notes, trade_preferences, listing_photo_url,
+  id, rep_id, status, rep_notes, trade_preferences, ring_size, listing_photo_url,
   uses_canonical_photo, listed_at, removal_reason, deleted_at, created_at, updated_at,
   design:jewelry_designs(${DESIGN_SELECT})
 `
@@ -309,6 +309,13 @@ export async function getMyBoard(
     listings: pagedListings,
     summary: { totalPieces, totalMsrp, typeBreakdown, pendingRequestCount },
   }
+}
+
+function normalizeOptionalListingText(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  if (value === null) return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
 }
 
 export async function removeListing(
@@ -571,6 +578,7 @@ export async function addListing(
       status: 'available',
       rep_notes: input.repNotes ?? null,
       trade_preferences: input.tradePreferences ?? null,
+      ring_size: normalizeOptionalListingText(input.ringSize) ?? null,
       listing_photo_url: input.listingPhotoUrl ?? null,
       uses_canonical_photo: usesCanonicalPhoto,
       listed_at: new Date().toISOString(),
@@ -714,6 +722,7 @@ export async function addListingBatch(
     status: 'available' as const,
     rep_notes: r.item.repNotes ?? null,
     trade_preferences: r.item.tradePreferences ?? null,
+    ring_size: normalizeOptionalListingText(r.item.ringSize) ?? null,
     listing_photo_url: r.item.listingPhotoUrl ?? null,
     uses_canonical_photo: !r.item.listingPhotoUrl,
     listed_at: nowIso,
@@ -800,6 +809,9 @@ export async function updateListing(
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (patch.repNotes !== undefined) update.rep_notes = patch.repNotes
   if (patch.tradePreferences !== undefined) update.trade_preferences = patch.tradePreferences
+  if (patch.ringSize !== undefined) {
+    update.ring_size = normalizeOptionalListingText(patch.ringSize)
+  }
   if (patch.useCanonicalPhoto === true) {
     update.listing_photo_url = null
     update.uses_canonical_photo = true

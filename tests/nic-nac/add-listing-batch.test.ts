@@ -171,6 +171,35 @@ describe('add_listing — batch mode', () => {
     })
   })
 
+  it('forwards ring size to the trade listing service for ring entries', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'RG31452',
+      designName: 'Celeste Ring',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool()
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'RG31452',
+      collectionName: 'Lustre',
+      ringSize: '8',
+    })
+
+    expect(addListingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        itemNumber: 'RG31452',
+        collectionName: 'Lustre',
+        ringSize: '8',
+      }),
+    )
+  })
+
   it('writes one audit row per successfully added listing in batch mode', async () => {
     addListingBatchMock.mockResolvedValueOnce({
       added: [
