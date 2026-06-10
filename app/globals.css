@@ -4242,11 +4242,12 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   box-sizing: border-box;
   display: grid;
   gap: 24px;
-  grid-template-columns: auto minmax(0, 1fr);
-  margin: 0 auto;
-  max-width: 1240px;
+  grid-template-columns: minmax(0, auto) minmax(0, auto);
+  justify-content: space-between;
+  margin: 0;
+  max-width: none;
   min-height: 72px;
-  padding: 14px 20px;
+  padding: 14px clamp(20px, 6vw, 56px);
   width: 100%;
 }
 
@@ -5113,15 +5114,14 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 @media (max-width: 560px) {
   .sparkle-landing-v2 .sl2-header__inner {
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-    min-height: 78px;
+    grid-template-columns: minmax(0, auto) minmax(0, auto);
+    justify-content: space-between;
   }
 
   .sparkle-landing-v2 .sl2-header__actions {
-    justify-content: flex-start;
-    justify-self: start;
-    text-align: left;
+    justify-content: flex-end;
+    justify-self: end;
+    text-align: right;
   }
 
 }

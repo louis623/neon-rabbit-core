@@ -39,4 +39,15 @@ describe('Sparkle Suite public header and login layout', () => {
     expect(loginClient).not.toContain("margin: '80px auto'")
     expect(globals).toContain('.sparkle-landing-v2 .sl2-login')
   })
+
+  it('anchors the public chrome brand and account action to opposite viewport edges', () => {
+    const globals = source('app/globals.css')
+
+    expect(globals).toContain('max-width: none;')
+    expect(globals).toContain('justify-content: space-between;')
+    expect(globals).toContain('padding: 14px clamp(20px, 6vw, 56px);')
+    expect(globals).toContain('grid-template-columns: minmax(0, auto) minmax(0, auto);')
+    expect(globals).not.toContain('max-width: 1240px;\n  min-height: 72px;\n  padding: 14px 20px;')
+    expect(globals).not.toContain('grid-template-columns: minmax(0, 1fr);\n    justify-items: start;\n    min-height: 78px;')
+  })
 })
