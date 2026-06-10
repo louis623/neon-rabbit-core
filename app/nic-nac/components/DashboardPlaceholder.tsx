@@ -2178,6 +2178,18 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     ])
   }
 
+  async function refreshTradeWorkspaceSettled() {
+    if (reviewWorkspaceMode) return []
+
+    return Promise.allSettled([
+      loadTradeBoard(),
+      loadTradeRequests(),
+      loadFulfillmentQueue(),
+      loadTradeHistory(),
+      loadAnalytics(),
+    ])
+  }
+
   const handleEnsureInventoryBrowseLoaded = useCallback(async () => {
     if (reviewWorkspaceMode) return
     if (tradeBoardActionState.pendingKey === 'load-more-listings') return
@@ -2487,10 +2499,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         throw new Error(payload?.error || 'Unable to advance fulfillment right now.')
       }
 
-      await refreshTradeWorkspace()
+      const refreshResults = await refreshTradeWorkspaceSettled()
+      const refreshFailed = refreshResults.some(
+        (result) => result.status === 'rejected',
+      )
       setTradeBoardActionState({
         pendingKey: null,
-        error: null,
+        error: refreshFailed
+          ? 'Fulfillment updated, but part of the workspace did not refresh.'
+          : null,
         helperMessage:
           nextStatus === 'shipped'
             ? 'Fulfillment moved to shipped.'

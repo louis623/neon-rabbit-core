@@ -176,6 +176,10 @@ describe('reviewer smoke UI wiring', () => {
     expect(dashboardPlaceholder).toContain(
       'addToBoard: nextStatus === \'completed\'',
     )
+    expect(dashboardPlaceholder).toContain('Promise.allSettled')
+    expect(dashboardPlaceholder).toContain(
+      'Fulfillment updated, but part of the workspace did not refresh.',
+    )
     expect(dashboardPlaceholder).toContain(
       'Add the received piece to your board when you are ready.',
     )
