@@ -23,6 +23,7 @@ import type {
   TradeHistoryResult,
   TradeListingWithDesign,
   TradeRequestWithListing,
+  TradeSwapCleanupItem,
   WalletDashboardResult,
   WalletTransactionSummary,
 } from '@/lib/services/types'
@@ -273,6 +274,11 @@ type TradeHistoryState = {
   history?: TradeHistoryResult
 }
 
+type TradeSwapCleanupState = {
+  status: 'loading' | 'ready' | 'error'
+  items?: TradeSwapCleanupItem[]
+}
+
 type JewelryLibraryState = {
   status: 'idle' | 'loading' | 'ready' | 'error'
   results?: JewelryDatabaseResult[]
@@ -334,6 +340,7 @@ type TradeBoardResponsePayload = BoardResult
 type TradeRequestsResponsePayload = TradeRequestWithListing[]
 type FulfillmentQueueResponsePayload = FulfillmentQueueItem[]
 type TradeHistoryResponsePayload = TradeHistoryResult
+type TradeSwapCleanupResponsePayload = TradeSwapCleanupItem[]
 type JewelryLibraryResponsePayload = JewelryDatabaseResult[]
 type MessagesResponsePayload = RepMessagesDashboardResult
 type ResourcesResponsePayload = HelpResource[]
@@ -1279,6 +1286,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         }
       : undefined,
   })
+  const [tradeSwapCleanupState, setTradeSwapCleanupState] =
+    useState<TradeSwapCleanupState>({
+      status: reviewWorkspaceMode ? 'ready' : 'loading',
+      items: reviewWorkspaceMode ? [] : undefined,
+    })
   const [jewelryLibraryState, setJewelryLibraryState] =
     useState<JewelryLibraryState>({
       status: 'idle',
@@ -1512,6 +1524,22 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
+  async function loadTradeSwapCleanup(signal?: AbortSignal) {
+    const response = await fetch('/api/nic-nac/trade-swap-cleanup', {
+      credentials: 'include',
+      signal,
+    })
+    if (!response.ok) {
+      throw new Error(`trade swap cleanup request failed: ${response.status}`)
+    }
+
+    const payload = (await response.json()) as TradeSwapCleanupResponsePayload
+    setTradeSwapCleanupState({
+      status: 'ready',
+      items: payload,
+    })
+  }
+
   async function loadMessages(signal?: AbortSignal) {
     const response = await fetch('/api/nic-nac/messages?limit=10', {
       credentials: 'include',
@@ -1626,6 +1654,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadTradeHistory(signal).catch((error) => {
         if ((error as { name?: string }).name === 'AbortError') return
         setTradeHistoryState({ status: 'error' })
+      }),
+      loadTradeSwapCleanup(signal).catch((error) => {
+        if ((error as { name?: string }).name === 'AbortError') return
+        setTradeSwapCleanupState({ status: 'error' })
       }),
       loadMessages(signal).catch((error) => {
         if ((error as { name?: string }).name === 'AbortError') return
@@ -2174,6 +2206,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadTradeRequests(),
       loadFulfillmentQueue(),
       loadTradeHistory(),
+      loadTradeSwapCleanup(),
       loadAnalytics(),
     ])
   }
@@ -2186,6 +2219,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadTradeRequests(),
       loadFulfillmentQueue(),
       loadTradeHistory(),
+      loadTradeSwapCleanup(),
       loadAnalytics(),
     ])
   }
@@ -2425,6 +2459,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   async function handleTradeRequestDecision(
     requestId: string,
     action: 'approve' | 'reject',
+    swap?: { revealedItemNumber?: string; revealedRingSize?: string },
   ) {
     setTradeBoardActionState({
       pendingKey: `${action}:${requestId}`,
@@ -2441,22 +2476,42 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           action,
           requestId,
           ...(action === 'reject' ? { reason: 'not_interested' } : {}),
+          ...(swap?.revealedItemNumber
+            ? {
+                revealedItemNumber: swap.revealedItemNumber,
+                revealedRingSize: swap.revealedRingSize,
+              }
+            : {}),
         }),
       })
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
+        | {
+            error?: string
+            result?: {
+              replacementStatus?: string
+            }
+          }
         | null
       if (!response.ok) {
         throw new Error(payload?.error || 'Unable to update that request right now.')
       }
 
       await refreshTradeWorkspace()
+      const replacementStatus = payload?.result?.replacementStatus
+      const approveMessage =
+        replacementStatus === 'added_to_board'
+          ? 'Trade approved. Added the revealed piece back to your board.'
+          : replacementStatus === 'needs_ring_size'
+            ? 'Trade approved. I saved the item number to this swap; add the ring size after the show to put it on the board.'
+            : replacementStatus === 'needs_catalog_details'
+              ? 'Trade approved. I saved the item number to this swap; finish the catalog details after the show.'
+              : 'Trade request approved.'
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
         helperMessage:
           action === 'approve'
-            ? 'Trade request approved.'
+            ? approveMessage
             : 'Trade request denied.',
       })
     } catch (error) {
@@ -2861,10 +2916,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               tradeRequestsState={tradeRequestsState}
               fulfillmentQueueState={fulfillmentQueueState}
               tradeHistoryState={tradeHistoryState}
+              tradeSwapCleanupState={tradeSwapCleanupState}
               onQuickAddListing={handleQuickAddListing}
               onRemoveListing={handleRemoveTradeListing}
-              onApproveRequest={(requestId) =>
-                handleTradeRequestDecision(requestId, 'approve')
+              onApproveRequest={(requestId, swap) =>
+                handleTradeRequestDecision(requestId, 'approve', swap)
               }
               onRejectRequest={(requestId) =>
                 handleTradeRequestDecision(requestId, 'reject')
@@ -3030,6 +3086,7 @@ export function TradeBoardWorkspaceCard({
   tradeRequestsState,
   fulfillmentQueueState,
   tradeHistoryState,
+  tradeSwapCleanupState = { status: 'ready', items: [] },
   onQuickAddListing,
   onRemoveListing,
   onApproveRequest,
@@ -3051,9 +3108,13 @@ export function TradeBoardWorkspaceCard({
   tradeRequestsState: TradeRequestsState
   fulfillmentQueueState: FulfillmentQueueState
   tradeHistoryState: TradeHistoryState
+  tradeSwapCleanupState?: TradeSwapCleanupState
   onQuickAddListing: () => void
   onRemoveListing: (listingId: string) => void
-  onApproveRequest: (requestId: string) => void
+  onApproveRequest: (
+    requestId: string,
+    swap?: { revealedItemNumber?: string; revealedRingSize?: string },
+  ) => void
   onRejectRequest: (requestId: string) => void
   onAdvanceFulfillment: (
     requestId: string,
@@ -3068,6 +3129,12 @@ export function TradeBoardWorkspaceCard({
   const [previewListing, setPreviewListing] = useState<TradeListingWithDesign | null>(
     null,
   )
+  const [swapApprovalDraft, setSwapApprovalDraft] = useState<{
+    requestId: string
+    customerName: string
+  } | null>(null)
+  const [revealedItemNumber, setRevealedItemNumber] = useState('')
+  const [revealedRingSize, setRevealedRingSize] = useState('')
   const [inventoryJewelryType, setInventoryJewelryType] = useState('')
   const [inventoryCollection, setInventoryCollection] = useState('')
   const [inventoryCarouselIndex, setInventoryCarouselIndex] = useState(0)
@@ -3096,6 +3163,11 @@ export function TradeBoardWorkspaceCard({
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
   const history = tradeHistoryState.history
+  const cleanupItems = tradeSwapCleanupState.items ?? []
+  const normalizedRevealedItemNumber = revealedItemNumber.trim().toUpperCase()
+  const approvingSwap = swapApprovalDraft
+    ? actionState.pendingKey === `approve:${swapApprovalDraft.requestId}`
+    : false
 
   useEffect(() => {
     if (!hasMoreListings) return
@@ -3147,6 +3219,90 @@ export function TradeBoardWorkspaceCard({
         ) : null}
       </div>
 
+      {swapApprovalDraft ? (
+        <div
+          className={styles.imagePreviewMask}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Approve trade swap for ${swapApprovalDraft.customerName}`}
+          onClick={() => {
+            if (approvingSwap) return
+            setSwapApprovalDraft(null)
+          }}
+        >
+          <div
+            className={styles.imagePreviewDialog}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className={styles.imagePreviewClose}
+              onClick={() => setSwapApprovalDraft(null)}
+              disabled={approvingSwap}
+            >
+              Close
+            </button>
+            <div className={styles.walletSettingsTitle}>Approve trade</div>
+            <p className={styles.helperNote}>
+              {swapApprovalDraft.customerName} gets the board piece. Capture
+              the item number just revealed so the swap can stay tied together.
+            </p>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>
+                Which item number was just revealed for the customer?
+              </span>
+              <input
+                type="text"
+                className={`${styles.searchInput} ph-no-capture`}
+                value={revealedItemNumber}
+                onChange={(event) =>
+                  setRevealedItemNumber(event.target.value.toUpperCase())
+                }
+                placeholder="RG12345"
+                disabled={approvingSwap}
+              />
+            </label>
+            {normalizedRevealedItemNumber.startsWith('RG') ? (
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Ring size</span>
+                <input
+                  type="text"
+                  className={`${styles.searchInput} ph-no-capture`}
+                  value={revealedRingSize}
+                  onChange={(event) => setRevealedRingSize(event.target.value)}
+                  placeholder="8"
+                  disabled={approvingSwap}
+                />
+              </label>
+            ) : null}
+            <div className={styles.actionRow}>
+              <button
+                type="button"
+                className={styles.helperButton}
+                onClick={() => setSwapApprovalDraft(null)}
+                disabled={approvingSwap}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.actionButton}
+                disabled={!normalizedRevealedItemNumber || approvingSwap}
+                onClick={() => {
+                  onApproveRequest(swapApprovalDraft.requestId, {
+                    revealedItemNumber: normalizedRevealedItemNumber,
+                    revealedRingSize,
+                  })
+                  setSwapApprovalDraft(null)
+                }}
+              >
+                {approvingSwap ? 'Approving...' : 'Approve trade'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className={styles.workspaceSectionGrid}>
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
@@ -3180,7 +3336,14 @@ export function TradeBoardWorkspaceCard({
                           type="button"
                           className={styles.actionButton}
                           disabled={actionState.pendingKey === `approve:${request.id}`}
-                          onClick={() => onApproveRequest(request.id)}
+                          onClick={() => {
+                            setSwapApprovalDraft({
+                              requestId: request.id,
+                              customerName: request.customerName,
+                            })
+                            setRevealedItemNumber('')
+                            setRevealedRingSize('')
+                          }}
                         >
                           {actionState.pendingKey === `approve:${request.id}`
                             ? 'Approving...'
@@ -3202,6 +3365,47 @@ export function TradeBoardWorkspaceCard({
                 })
               ) : (
                 <div className={styles.emptyState}>No pending trade requests right now.</div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          )}
+        </div>
+
+        <div className={styles.workspacePanel}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.walletSettingsTitle}>Swap cleanup</div>
+            <span className={styles.rosterTag}>
+              {tradeSwapCleanupState.status === 'ready'
+                ? `${cleanupItems.length} to finish`
+                : 'Loading'}
+            </span>
+          </div>
+          {tradeSwapCleanupState.status === 'ready' ? (
+            <div className={styles.tradeList}>
+              {cleanupItems.length > 0 ? (
+                cleanupItems.map((item) => (
+                  <div key={item.swapId} className={styles.tradeRow}>
+                    <div className={styles.tradeIdentity}>
+                      <div className={styles.customerName}>{item.customerName}</div>
+                      <div className={styles.customerDate}>
+                        Revealed item number: {item.revealedItemNumber}
+                      </div>
+                      <div className={styles.helperNote}>
+                        {item.replacementStatus === 'needs_ring_size'
+                          ? 'Add ring size to put this reveal back on the board.'
+                          : 'Finish catalog details after the show to put this reveal back on the board.'}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyState}>
+                  No trade swaps need cleanup right now.
+                </div>
               )}
             </div>
           ) : (

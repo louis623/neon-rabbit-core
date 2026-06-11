@@ -781,6 +781,44 @@ export interface TradeHistoryResult {
 }
 
 // ============================================================================
+// trade-swaps domain
+// ============================================================================
+
+export type TradeSwapReplacementStatus =
+  | 'added_to_board'
+  | 'needs_catalog_details'
+  | 'needs_ring_size'
+
+export interface ApproveTradeSwapInput {
+  requestId: string
+  revealedItemNumber: string
+  revealedRingSize?: string
+  repNotes?: string
+}
+
+export interface ApproveTradeSwapResult {
+  requestId: string
+  fulfillmentId: string
+  outgoingListingId: string
+  customerName: string
+  revealedItemNumber: string
+  revealedDesignId: string | null
+  replacementListingId: string | null
+  replacementStatus: TradeSwapReplacementStatus
+}
+
+export interface TradeSwapCleanupItem {
+  swapId: string
+  requestId: string
+  customerName: string
+  outgoingListingId: string
+  revealedItemNumber: string
+  revealedRingSize: string | null
+  replacementStatus: TradeSwapReplacementStatus
+  createdAt: string
+}
+
+// ============================================================================
 // trade-fulfillment domain
 // ============================================================================
 

@@ -6,6 +6,7 @@ const getAuthenticatedRepMock = vi.fn()
 const getTradeRequestsMock = vi.fn()
 const approveTradeMock = vi.fn()
 const rejectTradeMock = vi.fn()
+const approveTradeWithRevealedItemCaptureMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -30,6 +31,11 @@ vi.mock('@/lib/services/trade-requests', () => ({
   rejectTrade: (...args: unknown[]) => rejectTradeMock(...args),
 }))
 
+vi.mock('@/lib/services/trade-swaps', () => ({
+  approveTradeWithRevealedItemCapture: (...args: unknown[]) =>
+    approveTradeWithRevealedItemCaptureMock(...args),
+}))
+
 import { GET, POST } from '@/app/api/nic-nac/trade-requests/route'
 import { ServiceError } from '@/lib/services/errors'
 
@@ -41,6 +47,58 @@ describe('trade requests route', () => {
     getTradeRequestsMock.mockReset()
     approveTradeMock.mockReset()
     rejectTradeMock.mockReset()
+    approveTradeWithRevealedItemCaptureMock.mockReset()
+  })
+
+  it('approves a live-show swap when the revealed item number is supplied', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    approveTradeWithRevealedItemCaptureMock.mockResolvedValueOnce({
+      requestId: 'request-1',
+      fulfillmentId: 'fulfillment-1',
+      outgoingListingId: 'listing-1',
+      customerName: 'Jamie',
+      revealedItemNumber: 'RG12345',
+      revealedDesignId: 'design-1',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/trade-requests', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'approve',
+          requestId: 'request-1',
+          revealedItemNumber: ' rg12345 ',
+          revealedRingSize: '8',
+          repNotes: 'Approved from dashboard',
+        }),
+      }),
+    )
+
+    expect(approveTradeMock).not.toHaveBeenCalled()
+    expect(approveTradeWithRevealedItemCaptureMock).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      'rep-1',
+      {
+        requestId: 'request-1',
+        revealedItemNumber: 'rg12345',
+        revealedRingSize: '8',
+        repNotes: 'Approved from dashboard',
+      },
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      result: {
+        replacementStatus: 'added_to_board',
+      },
+    })
   })
 
   it('returns pending requests for the authenticated rep', async () => {

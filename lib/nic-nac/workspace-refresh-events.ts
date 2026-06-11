@@ -10,6 +10,7 @@ const TRADE_WRITE_TOOL_TYPES = new Set([
   'tool-restore_listing',
   'tool-update_listing',
   'tool-approve_trade',
+  'tool-approve_trade_swap',
   'tool-reject_trade',
   'tool-update_fulfillment_status',
 ])

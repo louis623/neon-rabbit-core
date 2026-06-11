@@ -28,4 +28,17 @@ describe('Nic-Nac system prompt — post-show cleanup orchestration', () => {
       'Fulfillment queue review is a separate follow-on step after cleanup',
     )
   })
+
+  it('locks the live-show trade swap prompt and tool guidance', () => {
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('approve_trade_swap')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Which item number was just revealed for the customer?',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'The customer never has the just-revealed piece in their possession',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
+      'piece they revealed or want to offer',
+    )
+  })
 })

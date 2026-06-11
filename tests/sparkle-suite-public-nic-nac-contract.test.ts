@@ -128,10 +128,16 @@ describe('public Nic-Nac knowledge pack', () => {
       'request to trade for an available rep listing',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'describe the piece they just revealed',
+      'item number just revealed for them',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'rep can approve or decline',
+      'customers do not ship or photograph a separate trade item',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
+      'can approve or decline each trade request',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).not.toContain(
+      'piece they revealed or want to offer',
     )
   })
 
@@ -319,6 +325,8 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('customer-facing website')
     expect(prompt).toContain('Sparkle Suite does not handle shipping')
     expect(prompt).toContain('Customers do not add their own items')
+    expect(prompt).toContain('piece they just revealed')
+    expect(prompt).toContain('customers do not ship or photograph a separate trade item')
     expect(prompt).toContain('Do not say customers add dancers to the dance floor')
     expect(prompt).toContain('Treat dance floor as TradeBoard')
     expect(prompt).toContain('item-for-item only')
@@ -337,6 +345,7 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).not.toContain('Supabase')
     expect(prompt).not.toContain('SignWell')
     expect(prompt).not.toContain('service role')
+    expect(prompt).not.toContain('piece they revealed or want to offer')
   })
 
   it('public prompt renders shared Nic-Nac knowledge instead of a separate island', () => {

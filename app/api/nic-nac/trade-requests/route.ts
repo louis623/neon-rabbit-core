@@ -10,6 +10,7 @@ import {
   getTradeRequests,
   rejectTrade,
 } from '@/lib/services/trade-requests'
+import { approveTradeWithRevealedItemCapture } from '@/lib/services/trade-swaps'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -76,6 +77,27 @@ export async function POST(request: Request) {
     const supabase = createAdminClient()
 
     if (action === 'approve') {
+      const revealedItemNumber =
+        typeof body?.revealedItemNumber === 'string'
+          ? body.revealedItemNumber.trim()
+          : ''
+      if (revealedItemNumber) {
+        const result = await approveTradeWithRevealedItemCapture(
+          supabase,
+          repId,
+          {
+            requestId,
+            revealedItemNumber,
+            revealedRingSize:
+              typeof body?.revealedRingSize === 'string'
+                ? body.revealedRingSize
+                : undefined,
+            repNotes,
+          },
+        )
+        return NextResponse.json({ ok: true, result })
+      }
+
       const result = await approveTrade(supabase, repId, requestId, repNotes)
       return NextResponse.json({ ok: true, result })
     }

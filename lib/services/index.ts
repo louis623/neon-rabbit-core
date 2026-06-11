@@ -48,6 +48,10 @@ export type {
   GetTradeHistoryOptions,
   TradeHistoryItem,
   TradeHistoryResult,
+  TradeSwapReplacementStatus,
+  ApproveTradeSwapInput,
+  ApproveTradeSwapResult,
+  TradeSwapCleanupItem,
   UpdateFulfillmentInput,
   UpdateFulfillmentResult,
   FulfillmentQueueItem,
@@ -91,6 +95,12 @@ export {
   rejectTrade,
   getTradeHistory,
 } from './trade-requests'
+
+// Trade Swaps
+export {
+  approveTradeWithRevealedItemCapture,
+  getTradeSwapCleanupQueue,
+} from './trade-swaps'
 
 // Calendar / Shows
 export { addShow, listMyShows, updateShow, cancelShow } from './calendar'

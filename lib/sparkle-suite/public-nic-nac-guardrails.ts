@@ -92,7 +92,7 @@ export function publicNicNacHandoffMessage() {
 }
 
 function publicNicNacTradeBoardCorrectionMessage() {
-  return "Customers do not add their own items or dancers. Customers do not create TradeBoard listings. If a rep calls TradeBoard the dance floor, the dancers are the rep-listed trade-eligible pieces already shown there. A customer can request to trade for an available rep listing, or request a rep-listed dancer, by describing the piece they just revealed. The rep controls the board, sets the final trade rules, and can approve or decline each request."
+  return "Customers do not add their own items or dancers. Customers do not create TradeBoard listings. If a rep calls TradeBoard the dance floor, the dancers are the rep-listed trade-eligible pieces already shown there. A customer can request to trade for an available rep listing, or request a rep-listed dancer, when they do not want the piece they just revealed. The rep has both pieces during the live show; customers do not ship or photograph a separate trade item. The rep controls the board, sets the final trade rules, and can approve or decline each request."
 }
 
 function publicNicNacShippingCorrectionMessage() {

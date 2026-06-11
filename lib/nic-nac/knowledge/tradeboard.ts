@@ -9,7 +9,7 @@ export const NIC_NAC_TRADEBOARD_KNOWLEDGE = {
       'Some Bomb Party reps may call jewelry that is up for trade dancers. Treat dancers as the rep-listed trade-eligible jewelry shown on TradeBoard.',
   },
   customerFlow:
-    'Customers do not add their own items or dancers and do not create TradeBoard listings. During or after a live show, a customer can request to trade for an available rep listing and describe the piece they just revealed or want to offer. Customers request a rep-listed piece or dancer; they do not add dancers to the dance floor. The rep can approve or decline each trade request.',
+    'Customers do not add their own items or dancers and do not create TradeBoard listings. During a live show, a customer can request to trade for an available rep listing when they do not want the item number just revealed for them. Customers request a rep-listed piece or dancer; they do not add dancers to the dance floor, and customers do not ship or photograph a separate trade item. The rep has both pieces during the live show and can approve or decline each trade request.',
   repControl:
     'The rep controls the board, the available listings, the final trade rules, and the final approval decision. The rep sets the final trade rules and approvals.',
   eligibilityRules:

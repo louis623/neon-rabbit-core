@@ -128,6 +128,18 @@ describe('Amethyst trade page template wiring', () => {
     )
   })
 
+  it('frames customer trades as live reveal swaps instead of offered-piece trades', () => {
+    expect(defaultAmethystTradeTemplateData.faqAnswers.howTradeWorks).toContain(
+      'just revealed',
+    )
+    expect(defaultAmethystTradeTemplateData.faqAnswers.howTradeWorks).toContain(
+      'item number',
+    )
+    expect(defaultAmethystTradeTemplateData.faqAnswers.howTradeWorks).not.toContain(
+      'offered piece',
+    )
+  })
+
   it('does not render the customer-facing Trade rules section', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
@@ -162,6 +174,14 @@ describe('Amethyst trade page template wiring', () => {
       photoSource: 'listing',
     })
     expect(mapped.note).toContain('Item-for-item only')
+  })
+
+  it('maps trade listing ring size to the customer-facing board size', () => {
+    const mapped = mapTradeListingToAmethystTradeBoardListing(
+      makeTradeListing({ ring_size: '8' }),
+    )
+
+    expect(mapped.size).toBe('8')
   })
 
   it('marks canonical and missing photo source without exposing internal labels on the customer card', () => {
@@ -452,8 +472,8 @@ describe('Amethyst trade page template wiring', () => {
 
     expect(jsx).toContain('function RequestSheet')
     expect(jsx).toContain('<label>Your name</label>')
-    expect(jsx).toContain('<label>Describe your revealed piece</label>')
-    expect(jsx).toContain('placeholder="Collection, jewelry type, and any details you know."')
+    expect(jsx).toContain('<label>Which item number did you just reveal?</label>')
+    expect(jsx).toContain('placeholder="Example: RG12345"')
     expect(jsx).toContain('/api/amethyst/trade-requests')
     expect(jsx).toContain('/api/amethyst/trade-board')
     expect(jsx).toContain('function fetchTradeBoardListings')

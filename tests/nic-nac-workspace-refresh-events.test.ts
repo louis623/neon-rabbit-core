@@ -89,6 +89,19 @@ describe('Nic-Nac workspace refresh events', () => {
     ).toBe(true)
   })
 
+  it('requests a trade refresh after approve_trade_swap completes', () => {
+    expect(
+      isTradeWorkspaceMutationPart({
+        type: 'tool-approve_trade_swap',
+        state: 'output-available',
+        output: {
+          requestId: 'request-1',
+          replacementStatus: 'needs_catalog_details',
+        },
+      }),
+    ).toBe(true)
+  })
+
   it('requests a site preview refresh after site customization tools mutate settings', () => {
     const messages = [
       assistantWithToolPart({

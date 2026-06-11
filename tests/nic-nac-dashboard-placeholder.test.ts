@@ -817,6 +817,82 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Loading board pieces...')
   })
 
+  it('renders swap cleanup items in the Trade Board workspace', () => {
+    const html = renderToStaticMarkup(
+      createElement(TradeBoardWorkspaceCard, {
+        tradeBoardState: TRADE_BOARD_READY_STATE,
+        tradeRequestsState: { status: 'ready', requests: [] },
+        fulfillmentQueueState: { status: 'ready', items: [] },
+        tradeHistoryState: {
+          status: 'ready',
+          history: {
+            items: [],
+            summary: {
+              totalCompleted: 0,
+              totalMsrpTraded: 0,
+              avgFulfillmentDays: null,
+              repeatCustomers: [],
+            },
+          },
+        },
+        tradeSwapCleanupState: {
+          status: 'ready',
+          items: [
+            {
+              swapId: 'swap-1',
+              requestId: 'request-1',
+              customerName: 'Jamie',
+              outgoingListingId: 'listing-1',
+              revealedItemNumber: 'ER00001',
+              revealedRingSize: null,
+              replacementStatus: 'needs_catalog_details',
+              createdAt: '2026-06-11T20:00:00.000Z',
+            },
+          ],
+        },
+        tradeBoardSearchQuery: '',
+        onTradeBoardSearchQueryChange: () => {},
+        quickAddItemNumber: '',
+        onQuickAddItemNumberChange: () => {},
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+        onQuickAddListing: () => {},
+        onRemoveListing: () => {},
+        onApproveRequest: () => {},
+        onRejectRequest: () => {},
+        onAdvanceFulfillment: () => {},
+      }),
+    )
+
+    expect(html).toContain('Swap cleanup')
+    expect(html).toContain('1 to finish')
+    expect(html).toContain('Revealed item number: ER00001')
+    expect(html).toContain(
+      'Finish catalog details after the show to put this reveal back on the board.',
+    )
+  })
+
+  it('wires dashboard trade approval through revealed item capture', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('/api/nic-nac/trade-swap-cleanup')
+    expect(source).toContain('Swap cleanup')
+    expect(source).toContain('No trade swaps need cleanup right now.')
+    expect(source).toContain(
+      'Which item number was just revealed for the customer?',
+    )
+    expect(source).toContain('revealedItemNumber')
+    expect(source).toContain('revealedRingSize')
+    expect(source).toContain(
+      'Trade approved. Added the revealed piece back to your board.',
+    )
+    expect(source).toContain(
+      'I saved the item number to this swap; finish the catalog details after the show.',
+    )
+  })
+
   it('does not render the retired trade-history Top design metric', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),

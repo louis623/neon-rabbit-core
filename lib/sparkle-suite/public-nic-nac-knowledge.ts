@@ -40,7 +40,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
   tradeBoardLingo: [
     NIC_NAC_TRADEBOARD_KNOWLEDGE.lingo.danceFloor,
     NIC_NAC_TRADEBOARD_KNOWLEDGE.lingo.dancers,
-    'Do not say customers add dancers to the dance floor; customers request a rep-listed dancer and describe the piece they revealed or want to offer.',
+    'Do not say customers add dancers to the dance floor; customers request a rep-listed dancer when they do not want the item number just revealed for them.',
   ].join(' '),
   tradeBoardLiveShowFlow:
     "TradeBoard shows the rep's available trade listings. " +

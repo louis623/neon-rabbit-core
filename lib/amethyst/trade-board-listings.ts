@@ -147,7 +147,7 @@ export function mapTradeListingToAmethystTradeBoardListing(
     material,
     stone,
     msrp: listing.design.bp_msrp,
-    size: null,
+    size: listing.ring_size?.trim() || null,
     note,
     glyph: displayName.charAt(0).toUpperCase() || '?',
     tier: inferTradeBoardTier(listing),

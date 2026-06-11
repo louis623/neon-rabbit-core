@@ -126,7 +126,7 @@ export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
   ],
   faqAnswers: {
     howTradeWorks:
-      "When you do not love your reveal, you can request a piece from the board. The rep reviews the match after the show and, if approved, swaps your revealed piece for the board piece one-for-one.",
+      "When you do not love the item number just revealed for you, you can request a piece from the board. The rep has both pieces during the live show and, if approved, swaps your just revealed piece for the board piece one-for-one.",
     cashDifference:
       'No. Customers cannot add money to trade into a more expensive piece on this board.',
     tradeCredit:

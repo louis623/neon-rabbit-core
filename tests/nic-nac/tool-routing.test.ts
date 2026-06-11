@@ -223,6 +223,17 @@ describe('Nic-Nac tool routing', () => {
     )
   })
 
+  it('routes live trade swap language to the swap approval and cleanup tools', () => {
+    const intents = getToolIntentsForText(
+      'Approve the trade swap and save the item number Jamie just revealed.',
+    )
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toContain('trade_requests')
+    expect(toolNames).toContain('approve_trade_swap')
+    expect(toolNames).toContain('get_trade_swap_cleanup')
+  })
+
   it('keeps trade-board tools for terse collection-name replies', () => {
     const messages = [
       {

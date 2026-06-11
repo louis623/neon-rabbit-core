@@ -1072,7 +1072,7 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
           <div className="tp-card-expand-collection">{piece.collection} collection</div>
           <h2 className="tp-card-expand-name slot" data-slot="design name">{piece.name}</h2>
           <p className="tp-card-expand-desc slot" data-slot="description">
-            This {piece.type.toLowerCase()} can be requested as an item-for-item trade if your offered piece stays within the same collection and the same jewelry type.
+            This {piece.type.toLowerCase()} can be requested as an item-for-item trade if the item number just revealed for you stays within the same collection and the same jewelry type.
           </p>
           <dl className="tp-card-expand-specs">
             <div>
@@ -1158,7 +1158,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
           {piece.collection} - {piece.type}{piece.size ? ` - Size ${piece.size}` : ""}
         </div>
         <p className="tp-sheet-helper">
-          Keep it simple. Tell <strong>{repName}</strong> what piece you revealed and the closest details you know.
+          Keep it fast. Tell <strong>{repName}</strong> the item number that was just revealed for you.
         </p>
         <form
           className="tp-sheet-form"
@@ -1183,9 +1183,9 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
             />
           </div>
           <div className="tp-sheet-field">
-            <label>Describe your revealed piece</label>
+            <label>Which item number did you just reveal?</label>
             <textarea
-              placeholder="Collection, jewelry type, and any details you know."
+              placeholder="Example: RG12345"
               value={offering}
               onChange={(event) => setOffering(event.target.value)}
               required

@@ -70,8 +70,10 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 
   trade_requests: `Trade-request tools:
 - get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a piece.
-- approve_trade requires the approval dialog and is irreversible for v1. Identify the request first.
+- approve_trade_swap requires the approval dialog and is the primary path for normal live-show swaps. The customer requested a board piece because they did not want the item number just revealed for them. The customer never has the just-revealed piece in their possession, never photographs it, and never ships a separate item. The rep has both pieces during the live show. Ask exactly: "Which item number was just revealed for the customer?" If the revealed item is a ring and the rep knows the size, include revealedRingSize. Do not use LiveQ matching for this; LiveQ does not know item numbers.
+- approve_trade requires the approval dialog and is irreversible for v1. Use it only when approving without the live-show revealed item capture. Identify the request first.
 - reject_trade is reversible and does not need an approval dialog. Identify the request first.
+- get_trade_swap_cleanup lists approved swaps whose just-revealed item number still needs catalog details or ring size before it can return to the board.
 - get_trade_history is for completed or rejected trade history, not pending decisions.`,
 
   fulfillment: `Fulfillment tools:

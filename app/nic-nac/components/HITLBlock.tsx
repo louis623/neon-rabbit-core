@@ -15,6 +15,11 @@ export const APPROVAL_COPY: Record<
     confirm: 'Approve trade',
     cancel: 'Cancel',
   },
+  approve_trade_swap: {
+    title: 'Approve this swap?',
+    confirm: 'Approve swap',
+    cancel: 'Cancel',
+  },
   remove_listing: {
     title: 'Remove this listing from your board?',
     confirm: 'Remove listing',

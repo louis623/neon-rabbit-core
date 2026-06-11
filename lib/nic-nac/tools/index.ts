@@ -16,7 +16,9 @@ import { restoreListingTool } from './restore-listing'
 import { addListingTool } from './add-listing'
 import { getTradeRequestsTool } from './get-trade-requests'
 import { approveTradeTool } from './approve-trade'
+import { approveTradeSwapTool } from './approve-trade-swap'
 import { rejectTradeTool } from './reject-trade'
+import { getTradeSwapCleanupTool } from './get-trade-swap-cleanup'
 import { searchJewelryDatabaseTool } from './search-jewelry-database'
 import { reportJewelryCatalogIssueTool } from './report-jewelry-catalog-issue'
 import { updateListingTool } from './update-listing'
@@ -56,7 +58,9 @@ const REGISTRY: ToolDefinition[] = [
   addListingTool,
   getTradeRequestsTool,
   approveTradeTool,
+  approveTradeSwapTool,
   rejectTradeTool,
+  getTradeSwapCleanupTool,
   searchJewelryDatabaseTool,
   reportJewelryCatalogIssueTool,
   updateListingTool,
@@ -120,7 +124,9 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   trade_requests: [
     'get_trade_requests',
     'approve_trade',
+    'approve_trade_swap',
     'reject_trade',
+    'get_trade_swap_cleanup',
     'get_trade_history',
   ],
   fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
@@ -211,11 +217,15 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   if (
     hasAny([
       /\btrade request/,
+      /\btrade swap/,
+      /\bswap cleanup/,
       /\bpending request/,
       /\boffer\b/,
       /\bapprove\b/,
       /\breject\b/,
       /\bdeny\b/,
+      /\bjust revealed\b/,
+      /\brevealed item\b/,
       /\btrade history\b/,
       /\btraded\b/,
     ])
