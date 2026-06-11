@@ -122,10 +122,11 @@ async function getReservedCheckoutPricingAssignment(
   admin: ReturnType<typeof createAdminClient>,
   repId: string,
 ): Promise<SparkleSuitePricingAssignment | null> {
-  const rpc = (admin as unknown as SupabaseRpcCapable).rpc
-  if (typeof rpc !== 'function') return null
+  if (typeof (admin as unknown as SupabaseRpcCapable).rpc !== 'function') {
+    return null
+  }
 
-  const { data, error } = await rpc(CHECKOUT_PRICING_ASSIGNMENT_RPC, {
+  const { data, error } = await admin.rpc(CHECKOUT_PRICING_ASSIGNMENT_RPC, {
     p_rep_id: repId,
   })
 
@@ -161,10 +162,11 @@ async function releaseReservedCheckoutPricingAssignment({
     return
   }
 
-  const rpc = (admin as unknown as SupabaseRpcCapable).rpc
-  if (typeof rpc !== 'function') return
+  if (typeof (admin as unknown as SupabaseRpcCapable).rpc !== 'function') {
+    return
+  }
 
-  const { error } = await rpc('release_sparkle_suite_checkout_pricing', {
+  const { error } = await admin.rpc('release_sparkle_suite_checkout_pricing', {
     p_rep_id: repId,
     p_founder_sequence: pricingAssignment.founderSequence,
   })

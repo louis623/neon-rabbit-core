@@ -48,6 +48,7 @@ function createCheckoutAdminMock(
   paidSubscriptionStarts = 0,
   options: {
     pricingAssignment?: PricingAssignmentRow
+    requireRpcThis?: boolean
   } = {},
 ) {
   const pricingAssignment =
@@ -62,8 +63,15 @@ function createCheckoutAdminMock(
           founder_sequence: null,
         })
 
-  return {
-    rpc: vi.fn((functionName: string) => {
+  const admin = {
+    rpc: vi.fn(function (
+      this: unknown,
+      functionName: string,
+      _args?: Record<string, unknown>,
+    ) {
+      if (options.requireRpcThis && this !== admin) {
+        throw new Error('Supabase rpc called without client binding')
+      }
       if (functionName === 'assign_sparkle_suite_checkout_pricing') {
         return Promise.resolve({
           data: [pricingAssignment],
@@ -125,6 +133,8 @@ function createCheckoutAdminMock(
       throw new Error(`Unexpected table ${table}`)
     }),
   }
+
+  return admin
 }
 
 describe('POST /api/stripe/create-checkout', () => {
@@ -593,6 +603,7 @@ describe('POST /api/stripe/create-checkout', () => {
         pricing_tier: 'standard',
         founder_sequence: null,
       },
+      requireRpcThis: true,
     })
     createAdminClientMock.mockReturnValue(admin)
     getSparkleSuitePriceIdsMock.mockReturnValue({
