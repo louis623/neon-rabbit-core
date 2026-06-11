@@ -39,6 +39,10 @@ function createClient(
 }
 
 describe('ensure Stripe test webhook endpoint', () => {
+  it('subscribes to checkout expiration events for unpaid founder reservation cleanup', () => {
+    expect(STRIPE_TEST_WEBHOOK_EVENTS).toContain('checkout.session.expired')
+  })
+
   it('normalizes app origins to the Stripe webhook route', () => {
     expect(normalizeStripeWebhookTargetUrl('https://www.yoursparklesuite.com')).toBe(
       'https://www.yoursparklesuite.com/api/stripe/webhook',

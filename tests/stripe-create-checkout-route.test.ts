@@ -39,8 +39,46 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 import { POST } from '@/app/api/stripe/create-checkout/route'
 
-function createCheckoutAdminMock(paidSubscriptionStarts = 0) {
+type PricingAssignmentRow = {
+  pricing_tier: 'founder' | 'standard'
+  founder_sequence: number | null
+}
+
+function createCheckoutAdminMock(
+  paidSubscriptionStarts = 0,
+  options: {
+    pricingAssignment?: PricingAssignmentRow
+  } = {},
+) {
+  const pricingAssignment =
+    options.pricingAssignment ??
+    (paidSubscriptionStarts < 20
+      ? {
+          pricing_tier: 'founder' as const,
+          founder_sequence: paidSubscriptionStarts + 1,
+        }
+      : {
+          pricing_tier: 'standard' as const,
+          founder_sequence: null,
+        })
+
   return {
+    rpc: vi.fn((functionName: string) => {
+      if (functionName === 'assign_sparkle_suite_checkout_pricing') {
+        return Promise.resolve({
+          data: [pricingAssignment],
+          error: null,
+        })
+      }
+      if (functionName === 'release_sparkle_suite_checkout_pricing') {
+        return Promise.resolve({
+          data: true,
+          error: null,
+        })
+      }
+
+      throw new Error(`Unexpected rpc ${functionName}`)
+    }),
     from: vi.fn((table: string) => {
       if (table === 'subscriptions') {
         return {
@@ -145,7 +183,7 @@ describe('POST /api/stripe/create-checkout', () => {
       expect.objectContaining({
         line_items: [
           { price: 'price_build_fee', quantity: 1 },
-          { price: 'price_standard_monthly', quantity: 1 },
+          { price: 'price_founder_monthly', quantity: 1 },
         ],
         success_url:
           'https://sparkle-suite.example/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
@@ -158,10 +196,10 @@ describe('POST /api/stripe/create-checkout', () => {
           plan_type: 'monthly',
           first_run_setup: 'required_nic_nac',
           light_box_required: 'true',
-          pricing_tier: 'standard',
-          founder_sequence: '',
+          pricing_tier: 'founder',
+          founder_sequence: '1',
           build_fee_charged: 'true',
-          founder_rate_months: '',
+          founder_rate_months: '12',
           agreement_provider: 'clickwrap',
           agreement_version: 'sparkle-suite-terms-2026-05-09',
           signwell_required: 'false',
@@ -490,6 +528,246 @@ describe('POST /api/stripe/create-checkout', () => {
       }),
     )
     expect(response.status).toBe(200)
+  })
+
+  it('still uses founder monthly pricing for the twentieth paid subscription start', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-20',
+      rep: { id: 'rep-20' },
+    })
+    createAdminClientMock.mockReturnValue(createCheckoutAdminMock(19))
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_founder_20')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_founder_20',
+      url: 'https://checkout.stripe.test/cs_founder_20',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        line_items: [
+          { price: 'price_build_fee', quantity: 1 },
+          { price: 'price_founder_monthly', quantity: 1 },
+        ],
+        metadata: expect.objectContaining({
+          pricing_tier: 'founder',
+          founder_sequence: '20',
+          build_fee_charged: 'true',
+          founder_rate_months: '12',
+        }),
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('uses the database-reserved pricing assignment when available', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-reserved-standard',
+      rep: { id: 'rep-reserved-standard' },
+    })
+    const admin = createCheckoutAdminMock(0, {
+      pricingAssignment: {
+        pricing_tier: 'standard',
+        founder_sequence: null,
+      },
+    })
+    createAdminClientMock.mockReturnValue(admin)
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getAppUrlMock.mockReturnValue('https://sparkle-suite.example')
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_reserved_standard')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_reserved_standard',
+      url: 'https://checkout.stripe.test/cs_reserved_standard',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(admin.rpc).toHaveBeenCalledWith(
+      'assign_sparkle_suite_checkout_pricing',
+      { p_rep_id: 'rep-reserved-standard' },
+    )
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        line_items: [
+          { price: 'price_build_fee', quantity: 1 },
+          { price: 'price_standard_monthly', quantity: 1 },
+        ],
+        metadata: expect.objectContaining({
+          pricing_tier: 'standard',
+          founder_sequence: '',
+          founder_rate_months: '',
+        }),
+      }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('does not reserve founder pricing when checkout prices are not configured', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-missing-prices',
+      rep: { id: 'rep-missing-prices' },
+    })
+    const admin = createCheckoutAdminMock()
+    createAdminClientMock.mockReturnValue(admin)
+    getSparkleSuitePriceIdsMock.mockReturnValue({})
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    expect(admin.rpc).not.toHaveBeenCalledWith(
+      'assign_sparkle_suite_checkout_pricing',
+      expect.anything(),
+    )
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Sparkle Suite checkout prices are not configured.',
+      missingEnv: [
+        'STRIPE_PRICE_BUILD_FEE',
+        'STRIPE_PRICE_FOUNDER_MONTHLY',
+        'STRIPE_PRICE_STANDARD_MONTHLY',
+      ],
+    })
+  })
+
+  it('releases a founder pricing reservation when customer creation fails before checkout is created', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-customer-failure',
+      rep: { id: 'rep-customer-failure' },
+    })
+    const admin = createCheckoutAdminMock(4)
+    createAdminClientMock.mockReturnValue(admin)
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getOrCreateStripeCustomerMock.mockRejectedValueOnce(
+      new Error('Stripe customer unavailable'),
+    )
+
+    const createMock = vi.fn()
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(500)
+    expect(createMock).not.toHaveBeenCalled()
+    expect(admin.rpc).toHaveBeenCalledWith(
+      'assign_sparkle_suite_checkout_pricing',
+      { p_rep_id: 'rep-customer-failure' },
+    )
+    expect(admin.rpc).toHaveBeenCalledWith(
+      'release_sparkle_suite_checkout_pricing',
+      {
+        p_rep_id: 'rep-customer-failure',
+        p_founder_sequence: 5,
+      },
+    )
+  })
+
+  it('releases a founder pricing reservation when Stripe checkout creation fails', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-checkout-failure',
+      rep: { id: 'rep-checkout-failure' },
+    })
+    const admin = createCheckoutAdminMock(5)
+    createAdminClientMock.mockReturnValue(admin)
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_checkout_failure')
+
+    const createMock = vi.fn().mockRejectedValueOnce(
+      new Error('Stripe checkout unavailable'),
+    )
+    getStripeMock.mockReturnValue({
+      checkout: {
+        sessions: {
+          create: createMock,
+        },
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(500)
+    expect(createMock).toHaveBeenCalled()
+    expect(admin.rpc).toHaveBeenCalledWith(
+      'release_sparkle_suite_checkout_pricing',
+      {
+        p_rep_id: 'rep-checkout-failure',
+        p_founder_sequence: 6,
+      },
+    )
   })
 
   it('refuses checkout with an actionable error when Stripe env is missing', async () => {

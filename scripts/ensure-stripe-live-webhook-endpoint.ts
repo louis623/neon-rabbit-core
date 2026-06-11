@@ -7,6 +7,7 @@ import Stripe from 'stripe'
 
 export const STRIPE_LIVE_WEBHOOK_EVENTS = [
   'checkout.session.completed',
+  'checkout.session.expired',
   'customer.subscription.updated',
   'customer.subscription.deleted',
   'invoice.payment_succeeded',

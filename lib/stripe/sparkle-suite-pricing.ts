@@ -1,4 +1,4 @@
-export type SparkleSuitePricingTier = 'standard'
+export type SparkleSuitePricingTier = 'founder' | 'standard'
 
 export interface SparkleSuitePriceIds {
   buildFee?: string
@@ -29,6 +29,12 @@ export interface SparkleSuiteCheckoutPriceDataLineItem {
 interface BuildSparkleSuiteCheckoutPricingInput {
   paidSubscriptionStarts: number
   priceIds: SparkleSuitePriceIds
+  pricingAssignment?: SparkleSuitePricingAssignment | null
+}
+
+export interface SparkleSuitePricingAssignment {
+  tier: SparkleSuitePricingTier
+  founderSequence: number | null
 }
 
 export interface SparkleSuiteCheckoutPricingReady {
@@ -56,6 +62,8 @@ export type SparkleSuiteCheckoutPricing =
   | SparkleSuiteCheckoutPricingBlocked
 
 export const TEST_BUYER_CHECKOUT_AMOUNT_CENTS = 50
+export const FOUNDER_PRICING_REP_LIMIT = 20
+export const FOUNDER_RATE_MONTHS = 12
 
 export interface SparkleSuiteTestBuyerCheckoutPricing {
   ok: true
@@ -80,6 +88,7 @@ export function getMissingSparkleSuitePriceEnv(
   const missing: string[] = []
 
   if (!priceIds.buildFee) missing.push('STRIPE_PRICE_BUILD_FEE')
+  if (!priceIds.founderMonthly) missing.push('STRIPE_PRICE_FOUNDER_MONTHLY')
   if (!priceIds.standardMonthly) missing.push('STRIPE_PRICE_STANDARD_MONTHLY')
 
   return missing
@@ -88,28 +97,39 @@ export function getMissingSparkleSuitePriceEnv(
 export function buildSparkleSuiteCheckoutPricing({
   paidSubscriptionStarts,
   priceIds,
+  pricingAssignment,
 }: BuildSparkleSuiteCheckoutPricingInput): SparkleSuiteCheckoutPricing {
   const missingEnv = getMissingSparkleSuitePriceEnv(priceIds)
   if (missingEnv.length > 0) {
     return { ok: false, missingEnv }
   }
 
-  void paidSubscriptionStarts
-  const monthlyPrice = priceIds.standardMonthly
+  const founderSequence =
+    pricingAssignment !== undefined && pricingAssignment !== null
+      ? pricingAssignment.founderSequence
+      : paidSubscriptionStarts < FOUNDER_PRICING_REP_LIMIT
+        ? paidSubscriptionStarts + 1
+        : null
+  const tier: SparkleSuitePricingTier =
+    pricingAssignment?.tier ?? (founderSequence ? 'founder' : 'standard')
+  const monthlyPrice =
+    tier === 'founder' ? priceIds.founderMonthly : priceIds.standardMonthly
+  const founderRateMonths =
+    tier === 'founder' ? String(FOUNDER_RATE_MONTHS) : ''
 
   return {
     ok: true,
-    tier: 'standard',
-    founderSequence: null,
+    tier,
+    founderSequence,
     lineItems: [
       { price: priceIds.buildFee as string, quantity: 1 },
       { price: monthlyPrice as string, quantity: 1 },
     ],
     metadata: {
-      pricing_tier: 'standard',
-      founder_sequence: '',
+      pricing_tier: tier,
+      founder_sequence: founderSequence ? String(founderSequence) : '',
       build_fee_charged: 'true',
-      founder_rate_months: '',
+      founder_rate_months: founderRateMonths,
       build_fee_price_id: priceIds.buildFee as string,
       monthly_price_id: monthlyPrice as string,
     },

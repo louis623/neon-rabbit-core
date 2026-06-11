@@ -10,10 +10,18 @@ const founderScheduleMigrationPath = path.join(
   process.cwd(),
   'supabase/migrations/20260519192500_ss_founder_schedule_tracking.sql',
 )
+const founderUniquenessMigrationPath = path.join(
+  process.cwd(),
+  'supabase/migrations/20260611133605_ss_founder_pricing_uniqueness.sql',
+)
 
 describe('Sparkle Suite pricing and referrals migration', () => {
   const sql = readFileSync(migrationPath, 'utf8')
   const founderScheduleSql = readFileSync(founderScheduleMigrationPath, 'utf8')
+  const founderUniquenessSql = readFileSync(
+    founderUniquenessMigrationPath,
+    'utf8',
+  )
 
   it('stores public referral and pricing assignment fields on reps', () => {
     expect(sql).toContain('ALTER TABLE reps')
@@ -56,5 +64,58 @@ describe('Sparkle Suite pricing and referrals migration', () => {
       'ADD COLUMN IF NOT EXISTS stripe_subscription_schedule_id TEXT',
     )
     expect(founderScheduleSql).toContain('idx_subscriptions_stripe_schedule')
+  })
+
+  it('prevents duplicate founder pricing sequence assignments', () => {
+    expect(founderUniquenessSql).toContain(
+      'idx_reps_founder_sequence_unique',
+    )
+    expect(founderUniquenessSql).toContain(
+      "WHERE pricing_tier = 'founder'",
+    )
+    expect(founderUniquenessSql).toContain(
+      'idx_subscriptions_founder_sequence_unique',
+    )
+  })
+
+  it('reserves founder pricing assignments atomically for checkout', () => {
+    expect(founderUniquenessSql).toContain(
+      'CREATE OR REPLACE FUNCTION public.assign_sparkle_suite_checkout_pricing',
+    )
+    expect(founderUniquenessSql).toContain(
+      "pg_advisory_xact_lock(hashtext('sparkle_suite_founder_pricing'))",
+    )
+    expect(founderUniquenessSql).toContain(
+      'GRANT EXECUTE ON FUNCTION public.assign_sparkle_suite_checkout_pricing(UUID) TO service_role',
+    )
+    expect(founderUniquenessSql).toContain('generate_series(1, 20)')
+    expect(founderUniquenessSql).toContain(
+      'ORDER BY candidate_founder_sequence',
+    )
+    expect(founderUniquenessSql).toContain("NOTIFY pgrst, 'reload schema'")
+  })
+
+  it('does not permanently assign standard pricing before checkout is paid', () => {
+    expect(founderUniquenessSql).toContain(
+      "RETURN QUERY SELECT 'standard'::TEXT, NULL::INTEGER",
+    )
+    expect(founderUniquenessSql).not.toContain(
+      "SET pricing_tier = 'standard'",
+    )
+  })
+
+  it('releases unpaid founder checkout reservations safely', () => {
+    expect(founderUniquenessSql).toContain(
+      'CREATE OR REPLACE FUNCTION public.release_sparkle_suite_checkout_pricing',
+    )
+    expect(founderUniquenessSql).toContain(
+      "pricing_tier = NULL",
+    )
+    expect(founderUniquenessSql).toContain(
+      "founder_sequence = NULL",
+    )
+    expect(founderUniquenessSql).toContain(
+      'GRANT EXECUTE ON FUNCTION public.release_sparkle_suite_checkout_pricing(UUID, INTEGER) TO service_role',
+    )
   })
 })

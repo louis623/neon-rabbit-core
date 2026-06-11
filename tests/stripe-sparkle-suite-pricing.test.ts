@@ -14,7 +14,7 @@ describe('Sparkle Suite checkout pricing', () => {
     standardMonthly: 'price_standard_monthly',
   }
 
-  it('itemizes the build fee and standard monthly price for every paid start', () => {
+  it('itemizes the build fee and founder monthly price for the first paid start', () => {
     const pricing = buildSparkleSuiteCheckoutPricing({
       paidSubscriptionStarts: 0,
       priceIds,
@@ -22,24 +22,49 @@ describe('Sparkle Suite checkout pricing', () => {
 
     expect(pricing).toEqual({
       ok: true,
-      tier: 'standard',
-      founderSequence: null,
+      tier: 'founder',
+      founderSequence: 1,
       lineItems: [
         { price: 'price_build_fee', quantity: 1 },
-        { price: 'price_standard_monthly', quantity: 1 },
+        { price: 'price_founder_monthly', quantity: 1 },
       ],
       metadata: {
-        pricing_tier: 'standard',
-        founder_sequence: '',
+        pricing_tier: 'founder',
+        founder_sequence: '1',
         build_fee_charged: 'true',
-        founder_rate_months: '',
+        founder_rate_months: '12',
         build_fee_price_id: 'price_build_fee',
-        monthly_price_id: 'price_standard_monthly',
+        monthly_price_id: 'price_founder_monthly',
       },
     })
   })
 
-  it('keeps standard pricing even after many paid starts', () => {
+  it('keeps founder monthly pricing for the twentieth paid start', () => {
+    const pricing = buildSparkleSuiteCheckoutPricing({
+      paidSubscriptionStarts: 19,
+      priceIds,
+    })
+
+    expect(pricing).toEqual({
+      ok: true,
+      tier: 'founder',
+      founderSequence: 20,
+      lineItems: [
+        { price: 'price_build_fee', quantity: 1 },
+        { price: 'price_founder_monthly', quantity: 1 },
+      ],
+      metadata: {
+        pricing_tier: 'founder',
+        founder_sequence: '20',
+        build_fee_charged: 'true',
+        founder_rate_months: '12',
+        build_fee_price_id: 'price_build_fee',
+        monthly_price_id: 'price_founder_monthly',
+      },
+    })
+  })
+
+  it('uses standard monthly pricing starting with the twenty-first paid start', () => {
     const pricing = buildSparkleSuiteCheckoutPricing({
       paidSubscriptionStarts: 20,
       priceIds,
@@ -71,7 +96,11 @@ describe('Sparkle Suite checkout pricing', () => {
         founderMonthly: undefined,
         standardMonthly: undefined,
       }),
-    ).toEqual(['STRIPE_PRICE_BUILD_FEE', 'STRIPE_PRICE_STANDARD_MONTHLY'])
+    ).toEqual([
+      'STRIPE_PRICE_BUILD_FEE',
+      'STRIPE_PRICE_FOUNDER_MONTHLY',
+      'STRIPE_PRICE_STANDARD_MONTHLY',
+    ])
   })
 
   it('builds a local-only Stripe test buyer checkout at Stripe minimum amount', () => {

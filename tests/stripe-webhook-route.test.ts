@@ -264,6 +264,80 @@ describe('POST /api/stripe/webhook', () => {
     })
   })
 
+  it('releases a founder pricing reservation when checkout expires unpaid', async () => {
+    const rpcMock = vi.fn((functionName: string, args: Record<string, unknown>) => {
+      if (functionName === 'claim_stripe_event') {
+        return Promise.resolve({ data: true, error: null })
+      }
+      if (functionName === 'release_sparkle_suite_checkout_pricing') {
+        return Promise.resolve({ data: true, error: null })
+      }
+      if (functionName === 'mark_stripe_event_processed') {
+        return Promise.resolve({ data: null, error: null })
+      }
+      if (functionName === 'mark_stripe_event_failed') {
+        return Promise.resolve({ data: null, error: null })
+      }
+      throw new Error(`unexpected rpc ${functionName} ${JSON.stringify(args)}`)
+    })
+    const admin = {
+      rpc: rpcMock,
+      from: vi.fn((table: string) => {
+        throw new Error(`unexpected table ${table}`)
+      }),
+    }
+    const event = {
+      id: 'evt_checkout_expired',
+      type: 'checkout.session.expired',
+      livemode: false,
+      created: 1_779_120_000,
+      data: {
+        object: {
+          id: 'cs_expired_founder',
+          mode: 'subscription',
+          payment_status: 'unpaid',
+          metadata: {
+            rep_id: 'rep-expired-founder',
+            pricing_tier: 'founder',
+            founder_sequence: '4',
+          },
+        },
+      },
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    getStripeMock.mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue(event),
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': 'verified_sig' },
+        body: JSON.stringify({ id: 'evt_checkout_expired' }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(rpcMock).toHaveBeenCalledWith('claim_stripe_event', {
+      p_event_id: 'evt_checkout_expired',
+      p_event_type: 'checkout.session.expired',
+    })
+    expect(rpcMock).toHaveBeenCalledWith(
+      'release_sparkle_suite_checkout_pricing',
+      {
+        p_rep_id: 'rep-expired-founder',
+        p_founder_sequence: 4,
+      },
+    )
+    expect(rpcMock).toHaveBeenCalledWith('mark_stripe_event_processed', {
+      p_event_id: 'evt_checkout_expired',
+      p_event_type: 'checkout.session.expired',
+    })
+  })
+
   it('marks claimed Stripe events failed when a handler throws so Stripe retries can reclaim them', async () => {
     const rpcMock = createStripeEventRpcMock()
     const admin = {

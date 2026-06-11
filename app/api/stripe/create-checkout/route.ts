@@ -7,6 +7,8 @@ import {
 import {
   buildSparkleSuiteCheckoutPricing,
   buildSparkleSuiteTestBuyerCheckoutPricing,
+  getMissingSparkleSuitePriceEnv,
+  type SparkleSuitePricingAssignment,
 } from '@/lib/stripe/sparkle-suite-pricing'
 import { getOrCreateStripeCustomer } from '@/lib/stripe/customers'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
@@ -22,6 +24,23 @@ const STRIPE_PRICE_SETUP_ACTION =
   'Set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL, STRIPE_PRICE_BUILD_FEE, STRIPE_PRICE_FOUNDER_MONTHLY, and STRIPE_PRICE_STANDARD_MONTHLY before starting checkout.'
 
 const SPARKLE_SUITE_CHECKOUT_PAYMENT_METHODS = ['card', 'link'] as const
+const CHECKOUT_PRICING_ASSIGNMENT_RPC =
+  'assign_sparkle_suite_checkout_pricing'
+
+type CheckoutPricingAssignmentRpcResult = {
+  pricing_tier?: unknown
+  founder_sequence?: unknown
+}
+
+type SupabaseRpcCapable = {
+  rpc?: (
+    functionName: string,
+    args: Record<string, unknown>,
+  ) => Promise<{
+    data: unknown
+    error: { message?: string; code?: string } | null
+  }>
+}
 
 function isTestBuyerCheckoutEnabled() {
   return (
@@ -54,6 +73,109 @@ async function countPaidSubscriptionStarts(
   return count ?? 0
 }
 
+function isMissingPricingAssignmentRpcError(
+  error: { message?: string; code?: string },
+) {
+  const message = error.message ?? ''
+  return (
+    error.code === 'PGRST202' ||
+    /assign_sparkle_suite_checkout_pricing|function .* does not exist|could not find the function/i.test(
+      message,
+    )
+  )
+}
+
+function parseCheckoutPricingAssignment(
+  data: unknown,
+): SparkleSuitePricingAssignment {
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | CheckoutPricingAssignmentRpcResult
+    | undefined
+
+  if (!row) {
+    throw new Error('Sparkle Suite pricing assignment RPC returned no row.')
+  }
+
+  if (row.pricing_tier === 'standard') {
+    return { tier: 'standard', founderSequence: null }
+  }
+
+  if (row.pricing_tier === 'founder') {
+    const founderSequence =
+      typeof row.founder_sequence === 'number'
+        ? row.founder_sequence
+        : Number.parseInt(String(row.founder_sequence ?? ''), 10)
+
+    if (
+      Number.isInteger(founderSequence) &&
+      founderSequence >= 1 &&
+      founderSequence <= 20
+    ) {
+      return { tier: 'founder', founderSequence }
+    }
+  }
+
+  throw new Error('Sparkle Suite pricing assignment RPC returned invalid data.')
+}
+
+async function getReservedCheckoutPricingAssignment(
+  admin: ReturnType<typeof createAdminClient>,
+  repId: string,
+): Promise<SparkleSuitePricingAssignment | null> {
+  const rpc = (admin as unknown as SupabaseRpcCapable).rpc
+  if (typeof rpc !== 'function') return null
+
+  const { data, error } = await rpc(CHECKOUT_PRICING_ASSIGNMENT_RPC, {
+    p_rep_id: repId,
+  })
+
+  if (error) {
+    if (isMissingPricingAssignmentRpcError(error)) {
+      console.warn(
+        '[stripe/create-checkout] Founder pricing assignment RPC is unavailable; falling back to subscription count.',
+      )
+      return null
+    }
+
+    throw error
+  }
+
+  return parseCheckoutPricingAssignment(data)
+}
+
+async function releaseReservedCheckoutPricingAssignment({
+  admin,
+  repId,
+  pricingAssignment,
+}: {
+  admin: ReturnType<typeof createAdminClient> | null
+  repId: string | null
+  pricingAssignment: SparkleSuitePricingAssignment | null
+}) {
+  if (
+    !admin ||
+    !repId ||
+    pricingAssignment?.tier !== 'founder' ||
+    !pricingAssignment.founderSequence
+  ) {
+    return
+  }
+
+  const rpc = (admin as unknown as SupabaseRpcCapable).rpc
+  if (typeof rpc !== 'function') return
+
+  const { error } = await rpc('release_sparkle_suite_checkout_pricing', {
+    p_rep_id: repId,
+    p_founder_sequence: pricingAssignment.founderSequence,
+  })
+  if (error) {
+    console.error(
+      '[stripe/create-checkout] Failed to release founder pricing reservation:',
+      error,
+    )
+  }
+}
+
 export async function POST(request: Request) {
   if (!stripeEnabled()) {
     return NextResponse.json(
@@ -66,8 +188,14 @@ export async function POST(request: Request) {
     )
   }
 
+  let checkoutAdmin: ReturnType<typeof createAdminClient> | null = null
+  let checkoutRepId: string | null = null
+  let pricingAssignment: SparkleSuitePricingAssignment | null = null
+  let checkoutSessionCreated = false
+
   try {
     const { repId } = await getAuthenticatedRep()
+    checkoutRepId = repId
     const body = await request.json().catch(() => ({}))
     const requestedPlanType =
       typeof body?.planType === 'string' ? body.planType.trim() : ''
@@ -92,6 +220,7 @@ export async function POST(request: Request) {
 
     // Check for existing active subscription (Finding 16)
     const admin = createAdminClient()
+    checkoutAdmin = admin
     const { data: existing, error: existingError } = await admin
       .from('subscriptions')
       .select('id, status')
@@ -125,11 +254,32 @@ export async function POST(request: Request) {
       )
     }
 
+    const priceIds = getSparkleSuitePriceIds()
+    const missingPriceEnv = testBuyerCheckoutEnabled
+      ? []
+      : getMissingSparkleSuitePriceEnv(priceIds)
+    if (missingPriceEnv.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Sparkle Suite checkout prices are not configured.',
+          missingEnv: missingPriceEnv,
+          action: STRIPE_PRICE_SETUP_ACTION,
+        },
+        { status: 400 },
+      )
+    }
+
+    pricingAssignment = testBuyerCheckoutEnabled
+      ? null
+      : await getReservedCheckoutPricingAssignment(admin, repId)
     const pricing = testBuyerCheckoutEnabled
       ? buildSparkleSuiteTestBuyerCheckoutPricing()
       : buildSparkleSuiteCheckoutPricing({
-          paidSubscriptionStarts: await countPaidSubscriptionStarts(admin),
-          priceIds: getSparkleSuitePriceIds(),
+          pricingAssignment,
+          paidSubscriptionStarts: pricingAssignment
+            ? 0
+            : await countPaidSubscriptionStarts(admin),
+          priceIds,
         })
     if (!pricing.ok) {
       return NextResponse.json(
@@ -199,9 +349,18 @@ export async function POST(request: Request) {
         },
       },
     })
+    checkoutSessionCreated = true
 
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (error) {
+    if (!checkoutSessionCreated) {
+      await releaseReservedCheckoutPricingAssignment({
+        admin: checkoutAdmin,
+        repId: checkoutRepId,
+        pricingAssignment,
+      })
+    }
+
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }

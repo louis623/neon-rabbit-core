@@ -615,6 +615,43 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
   })
 }
 
+async function handleCheckoutExpired(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session
+  if (session.mode !== 'subscription') return
+  if (session.metadata?.pricing_tier !== 'founder') return
+
+  const repId = session.metadata?.rep_id
+  const founderSequence = parsePositiveIntMetadata(
+    session.metadata?.founder_sequence,
+  )
+  if (!repId || !founderSequence) {
+    logStripeEvent('warn', event, {
+      phase: 'checkout_expired',
+      skipped: true,
+      reason: 'missing_founder_reservation_metadata',
+      session_id: session.id,
+    })
+    return
+  }
+
+  const admin = createAdminClient()
+  const { data: released, error } = await admin.rpc(
+    'release_sparkle_suite_checkout_pricing',
+    {
+      p_rep_id: repId,
+      p_founder_sequence: founderSequence,
+    },
+  )
+  if (error) throw error
+
+  logStripeEvent('info', event, {
+    phase: 'checkout_expired',
+    rep_id: repId,
+    founder_sequence: founderSequence,
+    reservation_released: released === true,
+  })
+}
+
 async function handleSubscriptionUpdated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription
   const admin = createAdminClient()
@@ -751,6 +788,7 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
 
 const EVENT_HANDLERS: Record<string, (event: Stripe.Event) => Promise<void>> = {
   'checkout.session.completed': handleCheckoutCompleted,
+  'checkout.session.expired': handleCheckoutExpired,
   'customer.subscription.updated': handleSubscriptionUpdated,
   'customer.subscription.deleted': handleSubscriptionDeleted,
   'invoice.paid': handleInvoicePaymentSucceeded,
