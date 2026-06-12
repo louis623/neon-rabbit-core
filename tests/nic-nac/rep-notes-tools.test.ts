@@ -53,16 +53,19 @@ function makeCtx(supabase: { from: (table: string) => unknown }) {
 
 beforeEach(() => {
   logIncidentMock.mockReset()
+  vi.useRealTimers()
 })
 
 describe('rep note tools', () => {
   it('write_rep_note inserts a rep-scoped note and returns a truncated preview', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-12T21:45:00.000Z'))
     const summary =
       'Talked through tonight’s TikTok show, updated the banner copy, and agreed to feature the Celestial collection first with a join-page push after the stream.'
     const chain = makeInsertChain({
       data: {
         summary,
-        conversation_date: '2026-05-01T15:45:00.000Z',
+        conversation_date: '2026-06-12T21:45:00.000Z',
       },
       error: null,
     })
@@ -78,23 +81,25 @@ describe('rep note tools', () => {
     expect(chain.spies.insert).toHaveBeenCalledWith({
       rep_id: 'rep-1',
       summary,
-      conversation_date: '2026-05-01T15:45:00.000Z',
+      conversation_date: '2026-06-12T21:45:00.000Z',
       memory_type: 'general',
       memory_source: 'automatic_high_signal',
     })
     expect(result).toEqual({
       saved: true,
       summaryPreview: summary.slice(0, 100),
-      conversationDate: '2026-05-01T15:45:00.000Z',
+      conversationDate: '2026-06-12T21:45:00.000Z',
       memoryType: 'general',
       memorySource: 'automatic_high_signal',
     })
   })
 
   it('write_rep_note stores explicit memory category metadata when supplied', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-12T21:46:00.000Z'))
     const chain = makeInsertChain({
       data: {
-        conversation_date: '2026-05-01T15:45:00.000Z',
+        conversation_date: '2026-06-12T21:46:00.000Z',
       },
       error: null,
     })
@@ -110,6 +115,7 @@ describe('rep note tools', () => {
 
     expect(chain.spies.insert).toHaveBeenCalledWith(
       expect.objectContaining({
+        conversation_date: '2026-06-12T21:46:00.000Z',
         memory_type: 'preference',
         memory_source: 'explicit',
       }),
@@ -118,6 +124,36 @@ describe('rep note tools', () => {
       saved: true,
       memoryType: 'preference',
       memorySource: 'explicit',
+    })
+  })
+
+  it('write_rep_note ignores model-supplied stale dates and stores the server timestamp', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-12T21:47:00.000Z'))
+    const chain = makeInsertChain({
+      data: {
+        conversation_date: '2026-06-12T21:47:00.000Z',
+      },
+      error: null,
+    })
+    const from = vi.fn(() => chain.api)
+    const tool = makeWriteRepNoteTool(makeCtx({ from })) as unknown as ToolDef
+
+    const result = await tool.execute({
+      summary: 'Rep prefers tray-count reminders before live-show follow-up notes.',
+      conversationDate: '2025-01-08T00:00:00.000Z',
+      memoryType: 'preference',
+      memorySource: 'explicit',
+    })
+
+    expect(chain.spies.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        conversation_date: '2026-06-12T21:47:00.000Z',
+      }),
+    )
+    expect(result).toMatchObject({
+      saved: true,
+      conversationDate: '2026-06-12T21:47:00.000Z',
     })
   })
 

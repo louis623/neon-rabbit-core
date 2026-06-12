@@ -12,7 +12,7 @@ import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
   summary: z.string().min(1),
-  conversationDate: z.string().min(1),
+  conversationDate: z.string().min(1).optional(),
   memoryType: z.enum(REP_MEMORY_TYPES).default(DEFAULT_REP_MEMORY_TYPE),
   memorySource: z.enum(REP_MEMORY_SOURCES).default(DEFAULT_REP_MEMORY_SOURCE),
 })
@@ -40,11 +40,11 @@ export function makeWriteRepNoteTool(ctx: {
     inputSchema,
     execute: async ({
       summary,
-      conversationDate,
       memoryType = DEFAULT_REP_MEMORY_TYPE,
       memorySource = DEFAULT_REP_MEMORY_SOURCE,
     }) => {
       const summaryPreview = previewSummary(summary)
+      const conversationDate = new Date().toISOString()
 
       try {
         const { data, error } = await ctx.supabase
