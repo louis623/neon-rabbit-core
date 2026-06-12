@@ -25,7 +25,10 @@ import { compressImage } from '@/lib/nic-nac/image-compress'
 import { orderResolvedAttachments } from '@/lib/nic-nac/client-attachments'
 import { buildConversationStateUrl, readJsonResponse } from '@/lib/nic-nac/client-conversation-routing'
 import { findActionableApproval, type ActionableApproval } from '@/lib/nic-nac/hitl-state'
-import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
+import {
+  hasCompletedAssistantAfterLatestUser,
+  mergeServerMessages,
+} from '@/lib/nic-nac/client-message-refresh'
 import {
   isTradeRequestCardPart,
   type TradeRequestCardPart,
@@ -42,6 +45,7 @@ import type { RequiredSetupStepId } from '@/lib/self-serve/required-setup'
 
 const MAX_ATTACHMENTS = 10
 const CONVERSATION_MESSAGE_REFRESH_MS = 15_000
+const STREAM_COMPLETION_RECOVERY_MS = 12_000
 const REQUIRED_SETUP_SEND_ERROR_MESSAGE =
   'Nic-Nac could not send because required setup context is missing. Refresh, then try again.'
 const WORKSPACE_SEND_ERROR_MESSAGE = "Couldn't send. Try again?"
@@ -296,6 +300,7 @@ export function NicNacChatBody({
     error,
     regenerate,
     clearError,
+    stop,
     setMessages,
   } = useChat({
     transport,
@@ -401,6 +406,58 @@ export function NicNacChatBody({
       window.clearInterval(intervalId)
     }
   }, [conversationId, hasPendingApproval, refreshConversationMessages, status])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!conversationId || hasPendingApproval) return
+    if (status !== 'streaming' && status !== 'submitted') return
+
+    let cancelled = false
+    const timerId = window.setTimeout(async () => {
+      if (cancelled || document.visibilityState === 'hidden') return
+
+      let body: ConversationHydrateResponse | null = null
+      try {
+        const res = await fetch(buildConversationStateUrl(conversationId), {
+          credentials: 'include',
+        })
+        if (!res.ok || cancelled) return
+
+        body = (await readJsonResponse<ConversationHydrateResponse>(
+          res,
+          'conversation recovery history',
+        ).catch(() => null)) as ConversationHydrateResponse | null
+        if (!body?.messages || cancelled) return
+        if (shouldStartNicNacRollover(body.runHealth)) {
+          void onRolloverRecommended(conversationId)
+          return
+        }
+      } catch {
+        return
+      }
+
+      if (!hasCompletedAssistantAfterLatestUser(messages, body.messages)) return
+
+      setMessages((current) => mergeServerMessages(current, body.messages ?? []))
+      if (activeMessageIdRef.current) requestHide(activeMessageIdRef.current)
+      await stop()
+      textareaRef.current?.focus()
+    }, STREAM_COMPLETION_RECOVERY_MS)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timerId)
+    }
+  }, [
+    conversationId,
+    hasPendingApproval,
+    messages,
+    onRolloverRecommended,
+    requestHide,
+    setMessages,
+    status,
+    stop,
+  ])
 
   useEffect(() => {
     if (typeof window === 'undefined') return

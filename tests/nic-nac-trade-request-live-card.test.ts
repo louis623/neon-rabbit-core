@@ -144,6 +144,18 @@ describe('Nic-Nac live trade request card UI wiring', () => {
     expect(chatBodySource).toContain('CONVERSATION_MESSAGE_REFRESH_MS')
   })
 
+  it('recovers a stuck Nic-Nac stream from persisted server history', () => {
+    const source = readFileSync(chatBodyPath, 'utf8')
+
+    expect(source).toContain('const STREAM_COMPLETION_RECOVERY_MS')
+    expect(source).toContain('hasCompletedAssistantAfterLatestUser')
+    expect(source).toContain('stop')
+    expect(source).toContain('window.setTimeout(')
+    expect(source).toContain('status !== \'streaming\' && status !== \'submitted\'')
+    expect(source).toContain('mergeServerMessages(current, body.messages ?? [])')
+    expect(source).toContain('await stop()')
+  })
+
   it('keeps Nic-Nac live refresh guardrails silent and browser-notification free', () => {
     const guardedSources = [
       dashboardPath,

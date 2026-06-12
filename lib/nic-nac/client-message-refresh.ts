@@ -26,3 +26,27 @@ export function mergeServerMessages(
   if (appended.length > 0) changed = true
   return changed ? [...merged, ...appended] : current
 }
+
+export function hasCompletedAssistantAfterLatestUser(
+  current: UIMessage[],
+  incoming: UIMessage[],
+) {
+  for (let currentIndex = current.length - 1; currentIndex >= 0; currentIndex--) {
+    const latestUser = current[currentIndex]
+    if (latestUser.role !== 'user') continue
+
+    const incomingUserIndex = incoming.findIndex(
+      (message) => message.id === latestUser.id && message.role === 'user',
+    )
+    if (incomingUserIndex === -1) return false
+
+    return incoming
+      .slice(incomingUserIndex + 1)
+      .some(
+        (message) =>
+          message.role === 'assistant' && (message.parts?.length ?? 0) > 0,
+      )
+  }
+
+  return false
+}

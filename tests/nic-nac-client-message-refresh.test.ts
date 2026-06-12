@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { UIMessage } from 'ai'
 
-import { mergeServerMessages } from '@/lib/nic-nac/client-message-refresh'
+import {
+  hasCompletedAssistantAfterLatestUser,
+  mergeServerMessages,
+} from '@/lib/nic-nac/client-message-refresh'
 
 function message(id: string, role: UIMessage['role']): UIMessage {
   return {
@@ -83,5 +86,28 @@ describe('mergeServerMessages', () => {
       'local-user',
       'server-assistant',
     ])
+  })
+})
+
+describe('hasCompletedAssistantAfterLatestUser', () => {
+  it('detects when server history has recovered a completed assistant reply after the latest local user message', () => {
+    const current = [message('user-1', 'user')]
+    const incoming = [
+      message('user-1', 'user'),
+      message('assistant-1', 'assistant'),
+    ]
+
+    expect(hasCompletedAssistantAfterLatestUser(current, incoming)).toBe(true)
+  })
+
+  it('does not recover when server history has no assistant reply after the latest local user message', () => {
+    const current = [message('user-1', 'user'), message('user-2', 'user')]
+    const incoming = [
+      message('user-1', 'user'),
+      message('assistant-1', 'assistant'),
+      message('user-2', 'user'),
+    ]
+
+    expect(hasCompletedAssistantAfterLatestUser(current, incoming)).toBe(false)
   })
 })
