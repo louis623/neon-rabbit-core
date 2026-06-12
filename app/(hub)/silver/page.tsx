@@ -70,17 +70,17 @@ export function renderSilverPageContent(
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
-            Silver Membership
+            My Sparkle Finder
           </p>
           <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
-            {customer.displayName}&apos;s Silver Space
+            {customer.displayName}&apos;s Sparkle Finder Workspace
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {isLocalPreview
-              ? "View and stage local profile, collection, and watchlist updates for Sparkle Finder's fixture-backed preview."
+              ? "Stage favorites, owned pieces, and profile details against Sparkle Finder's fixture-backed preview."
               : entitlements.canUseSilverProfileActions
-                ? "View and save your signed-in Silver profile, collection, and watchlist updates."
-                : "View your signed-in profile and saved library state. Silver access unlocks profile and collection saves."}
+                ? "Save favorites in your wishlist, show off owned pieces in your digital collection, and keep profile details ready for Nic-Nac requests."
+                : "View your signed-in profile and saved library state. Silver access unlocks wishlist, collection, and profile saves."}
           </p>
         </div>
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
@@ -88,10 +88,10 @@ export function renderSilverPageContent(
             <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.5} />
             <div>
               <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">
-                {isLocalPreview ? "Local fixture mode" : "Account Silver access"}
+                {isLocalPreview ? "Local fixture mode" : "Silver access active"}
               </p>
               <p className="text-sm leading-5 text-[var(--sparkle-ink-muted)]">
-                {isLocalPreview ? "Preview-only state, ready for later actions." : "Your access is checked from the signed-in account."}
+                {isLocalPreview ? "Preview-only state, ready for later actions." : "Your account can save wishlist and collection updates."}
               </p>
             </div>
           </div>

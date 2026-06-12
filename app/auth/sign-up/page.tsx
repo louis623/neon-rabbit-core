@@ -3,8 +3,23 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { SignupForm } from "@/components/account/SignupForm";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
+import { safeSparkleFinderNextPath } from "@/lib/sparkle-finder/safe-redirect";
 
-export default function SignUpPage() {
+type SignUpPageProps = {
+  searchParams?: Promise<SignUpSearchParams> | SignUpSearchParams;
+};
+
+type SignUpSearchParams = Record<string, string | string[] | undefined>;
+
+export default async function SignUpPage({ searchParams }: SignUpPageProps = {}) {
+  return renderSignUpPageContent(await Promise.resolve(searchParams ?? {}));
+}
+
+export function renderSignUpPageContent(searchParams: SignUpSearchParams = {}) {
+  const nextPath = safeSparkleFinderNextPath(getSearchParam(searchParams.next) ?? "/account");
+  const notice = getSignUpNotice(getSearchParam(searchParams.error));
+  const signInHref = nextPath === "/" ? "/auth/sign-in" : `/auth/sign-in?next=${encodeURIComponent(nextPath)}`;
+
   return (
     <>
       <SparkleFinderNav accountState={getLocalDevAuthState("anonymous")} variant="public" />
@@ -34,7 +49,7 @@ export default function SignUpPage() {
               </div>
               <Link
                 className="inline-flex w-fit items-center gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)] underline-offset-4 hover:underline"
-                href="/auth/sign-in"
+                href={signInHref}
               >
                 Already have an account?
                 <ArrowRight aria-hidden="true" className="size-4" />
@@ -42,9 +57,29 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <SignupForm />
+          <SignupForm nextPath={nextPath} notice={notice} />
         </section>
       </main>
     </>
   );
+}
+
+function getSearchParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getSignUpNotice(error: string | undefined): string | null {
+  if (error === "missing_required_fields") {
+    return "Please complete the required account details before creating your Sparkle Finder account.";
+  }
+
+  if (error === "signup_failed") {
+    return "Sparkle Finder could not create that account. Try Google, try an email link, or use a different email address.";
+  }
+
+  if (error === "magic_link_failed") {
+    return "Sparkle Finder could not send that email sign-in link. Try again or continue with Google.";
+  }
+
+  return null;
 }

@@ -24,6 +24,7 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
   const previewAuthEnabled = isLocalPreviewAuthEnabled();
   const nextPath = safeSparkleFinderNextPath(getSearchParam(searchParams.next) ?? null);
   const notice = getSignInNotice(getSearchParam(searchParams.message), getSearchParam(searchParams.error));
+  const signUpHref = nextPath === "/" ? "/auth/sign-up" : `/auth/sign-up?next=${encodeURIComponent(nextPath)}`;
 
   return (
     <>
@@ -49,7 +50,7 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
             <div className="flex flex-wrap gap-3">
               <Link
                 className="inline-flex h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-                href="/auth/sign-up"
+                href={signUpHref}
               >
                 <UserPlus aria-hidden="true" className="size-4" />
                 Create account

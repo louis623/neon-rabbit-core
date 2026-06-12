@@ -1,9 +1,15 @@
+"use client";
+
 import { Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import { updateAccountProfile, updateCommunicationPreferences } from "@/app/account/actions";
 import type { CurrentSparkleFinderAccountState } from "@/lib/sparkle-finder/account-service";
+import { normalizeUsStateValue, usStates } from "@/lib/us-states";
 
 const inputClassName =
   "min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]";
+const buttonClassName =
+  "inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white transition active:translate-y-px disabled:cursor-wait disabled:opacity-70";
 
 type AccountPreferencesProps = {
   accountState: CurrentSparkleFinderAccountState & { status: "authenticated" };
@@ -12,6 +18,7 @@ type AccountPreferencesProps = {
 export function AccountPreferences({ accountState }: AccountPreferencesProps) {
   const consent = accountState.communicationConsent;
   const customer = accountState.customer;
+  const stateValue = normalizeUsStateValue(customer?.state);
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -68,22 +75,25 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
 
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           State
-          <input
+          <select
             autoComplete="address-level1"
             className={inputClassName}
-            defaultValue={customer?.state ?? ""}
-            maxLength={40}
+            defaultValue={stateValue}
             name="state"
-          />
+            required
+          >
+            <option value="" disabled>
+              Select your state
+            </option>
+            {usStates.map((state) => (
+              <option key={state.value} value={state.value}>
+                {state.label}
+              </option>
+            ))}
+          </select>
         </label>
 
-        <button
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-          type="submit"
-        >
-          <ShieldCheck aria-hidden="true" className="size-4" />
-          Save profile basics
-        </button>
+        <AccountSubmitButton pendingLabel="Saving profile..." readyLabel="Save profile basics" />
       </form>
 
       <form
@@ -177,14 +187,19 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
           Opting in records a server timestamp. Opting out clears promotional consent timestamps.
         </p>
 
-        <button
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-          type="submit"
-        >
-          <ShieldCheck aria-hidden="true" className="size-4" />
-          Save communication preferences
-        </button>
+        <AccountSubmitButton pendingLabel="Saving preferences..." readyLabel="Save communication preferences" />
       </form>
     </div>
+  );
+}
+
+function AccountSubmitButton({ pendingLabel, readyLabel }: { pendingLabel: string; readyLabel: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button aria-busy={pending} className={buttonClassName} disabled={pending} type="submit">
+      <ShieldCheck aria-hidden="true" className={pending ? "size-4 animate-pulse" : "size-4"} />
+      {pending ? pendingLabel : readyLabel}
+    </button>
   );
 }

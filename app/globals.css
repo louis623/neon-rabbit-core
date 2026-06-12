@@ -312,12 +312,12 @@ select {
 }
 
 .sparkle-home-primary-cta {
-  background: var(--sparkle-rose);
+  background: #d91b87;
   color: #ffffff;
 }
 
 .sparkle-home-primary-cta:hover {
-  background: #d91b87;
+  background: #c9157b;
 }
 
 [class*="bg-[var(--sparkle-plum)]"][class*="text-white"] {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Eye, LockKeyhole, Save, UserRound } from "lucide-react";
+import { Eye, LoaderCircle, LockKeyhole, Save, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
@@ -18,7 +18,7 @@ type ProfileEditorProps = {
 
 const realAccountInitialState: SilverSaveActionState = {
   status: "idle",
-  message: "Profile ready.",
+  message: "Profile ready to save.",
 };
 
 export function ProfileEditor({
@@ -58,7 +58,7 @@ export function ProfileEditor({
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Profile form</p>
           <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
-            Silver Profile
+            Collector Profile
           </h2>
         </div>
         <div className="grid size-16 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
@@ -114,12 +114,17 @@ export function ProfileEditor({
           </label>
         </fieldset>
         <button
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-55"
+          aria-busy={!isLocalPreview && isPending}
+          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55"
           disabled={!canSaveSilverActions || (!isLocalPreview && (!saveAction || isPending))}
           type="submit"
         >
-          <Save aria-hidden="true" className="size-4" />
-          {isLocalPreview ? "Preview save" : "Save profile"}
+          {!isLocalPreview && isPending ? (
+            <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+          ) : (
+            <Save aria-hidden="true" className="size-4" />
+          )}
+          {isLocalPreview ? "Preview save" : isPending ? "Saving profile..." : "Save profile"}
         </button>
         <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
           {statusMessage}

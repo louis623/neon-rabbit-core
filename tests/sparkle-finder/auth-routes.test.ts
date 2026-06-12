@@ -91,6 +91,26 @@ describe("Sparkle Finder Supabase proxy", () => {
     expect(isSupabaseConfigured(env)).toBe(true);
   });
 
+  it("reads browser Supabase config from direct NEXT_PUBLIC env references", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://sparklefinderauth123.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "publishable-key");
+    vi.resetModules();
+
+    const { isSupabaseConfigured } = await import("../../lib/supabase/client");
+
+    expect(isSupabaseConfigured()).toBe(true);
+  });
+
+  it("rejects the old shared Supabase project from browser Supabase config", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://bqhzfkgkjyuhlsozpylf.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "publishable-key");
+    vi.resetModules();
+
+    const { isSupabaseConfigured } = await import("../../lib/supabase/client");
+
+    expect(isSupabaseConfigured()).toBe(false);
+  });
+
   it("redirects successful email confirmations to a safe local next path", async () => {
     const verifyOtp = vi.fn().mockResolvedValue({ error: null });
 
@@ -520,6 +540,159 @@ describe("Sparkle Finder signup server actions", () => {
       },
     });
   });
+
+  it("preserves the requested next path through password signup email confirmation", async () => {
+    const signUp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signUp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("password", "sparkle-password");
+    formData.set("privacyAcknowledged", "yes");
+    formData.set("next", "/silver");
+
+    const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
+
+    await expect(signUpWithPassword(formData)).rejects.toThrow(
+      "redirect:/auth/sign-in?message=check_email&next=%2Fsilver",
+    );
+    expect(signUp.mock.calls[0][0].options.emailRedirectTo).toBe(
+      "http://localhost:3000/auth/confirm?next=%2Fsilver",
+    );
+  });
+
+  it("preserves next when password signup fails", async () => {
+    const signUp = vi.fn().mockResolvedValue({ error: new Error("duplicate") });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signUp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("password", "sparkle-password");
+    formData.set("privacyAcknowledged", "yes");
+    formData.set("next", "/silver");
+
+    const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
+
+    await expect(signUpWithPassword(formData)).rejects.toThrow(
+      "redirect:/auth/sign-up?next=%2Fsilver&error=signup_failed",
+    );
+  });
+
+  it("preserves the requested next path through magic-link signup", async () => {
+    const signInWithOtp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signInWithOtp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("privacyAcknowledged", "yes");
+    formData.set("next", "/library");
+
+    const { requestMagicLink } = await import("../../app/auth/sign-up/actions");
+
+    await expect(requestMagicLink(formData)).rejects.toThrow(
+      "redirect:/auth/sign-in?message=check_email&next=%2Flibrary",
+    );
+    expect(signInWithOtp.mock.calls[0][0].options.emailRedirectTo).toBe(
+      "http://localhost:3000/auth/confirm?next=%2Flibrary",
+    );
+  });
+});
+
+describe("Sparkle Finder signup page", () => {
+  it("renders visible sign-up recovery notices and preserves the intended next path", async () => {
+    const { renderSignUpPageContent } = await import("../../app/auth/sign-up/page");
+
+    const markup = renderToStaticMarkup(renderSignUpPageContent({ error: "signup_failed", next: "/silver" }));
+
+    expect(markup).toContain("Sparkle Finder could not create that account.");
+    expect(markup).toContain("Try Google, try an email link, or use a different email address.");
+    expect(markup).toContain('name="next"');
+    expect(markup).toContain('value="/silver"');
+    expect(markup).toContain('href="/auth/sign-in?next=%2Fsilver"');
+  });
+
+  it("uses customer-facing sign-up method copy without exposing Supabase", async () => {
+    const { renderSignUpPageContent } = await import("../../app/auth/sign-up/page");
+
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
+
+    expect(markup).toContain("Create a password and confirm your email.");
+    expect(markup).toContain("Password signup sends a confirmation email.");
+    expect(markup).not.toContain("Supabase");
+  });
+});
+
+describe("Sparkle Finder sign-in page", () => {
+  it("preserves the intended next path on create-account links", async () => {
+    const { renderSignInPageContent } = await import("../../app/auth/sign-in/page");
+
+    const markup = renderToStaticMarkup(renderSignInPageContent({ next: "/silver" }));
+
+    expect(markup).toContain('href="/auth/sign-up?next=%2Fsilver"');
+    expect(markup).not.toContain('href="/auth/sign-up">Create account</a>');
+  });
+});
+
+describe("Sparkle Finder dashboard routing", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("next/navigation");
+  });
+
+  it("redirects the old dashboard route to the signed-in customer home", async () => {
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+
+    const { default: DashboardPage } = await import("../../app/(hub)/dashboard/page");
+
+    await expect(DashboardPage()).rejects.toThrow("redirect:/");
+    expect(redirect).toHaveBeenCalledWith("/");
+  });
 });
 
 describe("Sparkle Finder account route", () => {
@@ -628,6 +801,53 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain('href="/privacy-policy"');
     expect(markup).toContain("I acknowledge the");
     expect(markup).toContain("Sparkle Finder privacy terms");
+    expect(markup).toContain("<select");
+    expect(markup).toContain('name="state"');
+    expect(markup).toContain("Select your state");
+    expect(markup).toContain('value="PA"');
+  });
+
+  it("normalizes existing state names before rendering the account dropdown", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const base = activeTrialAccountState() as CurrentSparkleFinderAccountState & {
+      status: "authenticated";
+      customer: NonNullable<CurrentSparkleFinderAccountState["customer"]>;
+    };
+    const accountState = {
+      ...base,
+      customer: {
+        ...base.customer,
+        state: "florida",
+      },
+    };
+
+    const markup = renderToStaticMarkup(renderAccountPageContent(accountState));
+
+    expect(markup).toContain('<option value="FL" selected="">Florida</option>');
+    expect(markup).not.toContain('<option value="AL" selected="">Alabama</option>');
+  });
+
+  it("renders account save notices from safe message and error states", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+
+    const savedMarkup = renderToStaticMarkup(
+      renderAccountPageContent(activeTrialAccountState(), undefined, {
+        tone: "success",
+        title: "Profile saved",
+        body: "Your Sparkle Finder profile basics were updated.",
+      }),
+    );
+    const errorMarkup = renderToStaticMarkup(
+      renderAccountPageContent(activeTrialAccountState(), undefined, {
+        tone: "error",
+        title: "Profile was not saved",
+        body: "Sparkle Finder could not save those profile basics. Please check the fields and try again.",
+      }),
+    );
+
+    expect(savedMarkup).toContain("Profile saved");
+    expect(savedMarkup).toContain("Your Sparkle Finder profile basics were updated.");
+    expect(errorMarkup).toContain("Profile was not saved");
   });
 
   it("renders a self-facing Sparkle Suite rep marker on rep account surfaces", async () => {
@@ -781,6 +1001,106 @@ describe("Sparkle Finder account route", () => {
       promotional_sms_opt_in: false,
       account_sms_allowed: false,
       privacy_acknowledged: false,
+    });
+    expect(revalidatePath).toHaveBeenCalledWith("/account");
+  });
+
+  it("updates profile basics for existing Google-created account rows", async () => {
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-123", email: "casey@example.com" } },
+      error: null,
+    });
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { user_id: "user-123" }, error: null });
+    const updateEq = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const insert = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+    const revalidatePath = vi.fn();
+    const update = vi.fn(() => ({
+      eq: updateEq,
+    }));
+    const from = vi.fn(() => ({
+      insert,
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({ maybeSingle })),
+      })),
+      update,
+    }));
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("next/cache", () => ({ revalidatePath }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: { getUser },
+        from,
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Casey Collector");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "Florida");
+
+    const { updateAccountProfile } = await import("../../app/account/actions");
+
+    await expect(updateAccountProfile(formData)).rejects.toThrow("redirect:/account?message=profile_saved");
+    expect(updateEq).toHaveBeenCalledWith("user_id", "user-123");
+    expect(update).toHaveBeenCalledWith({
+      display_name: "Casey Collector",
+      email: "casey@example.com",
+      phone_e164: "555-123-4567",
+      state: "FL",
+    });
+    expect(insert).not.toHaveBeenCalled();
+    expect(revalidatePath).toHaveBeenCalledWith("/account");
+  });
+
+  it("inserts profile basics when a Google-created account row is missing", async () => {
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-123", email: "casey@example.com" } },
+      error: null,
+    });
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    const updateEq = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const insert = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+    const revalidatePath = vi.fn();
+    const update = vi.fn(() => ({ eq: updateEq }));
+    const from = vi.fn(() => ({
+      insert,
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({ maybeSingle })),
+      })),
+      update,
+    }));
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("next/cache", () => ({ revalidatePath }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: { getUser },
+        from,
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Casey Collector");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "PA");
+
+    const { updateAccountProfile } = await import("../../app/account/actions");
+
+    await expect(updateAccountProfile(formData)).rejects.toThrow("redirect:/account?message=profile_saved");
+    expect(update).not.toHaveBeenCalled();
+    expect(insert).toHaveBeenCalledWith({
+      user_id: "user-123",
+      display_name: "Casey Collector",
+      email: "casey@example.com",
+      phone_e164: "555-123-4567",
+      state: "PA",
     });
     expect(revalidatePath).toHaveBeenCalledWith("/account");
   });

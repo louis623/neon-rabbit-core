@@ -2,7 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { getSparkleFinderSiteOrigin } from "@/lib/sparkle-finder/oauth-redirect";
+import { safeSparkleFinderNextPath } from "@/lib/sparkle-finder/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeUsStateValue } from "@/lib/us-states";
 
 type SignupDetails = {
   displayName: string;
@@ -13,13 +15,14 @@ type SignupDetails = {
   privacyAcknowledged: boolean;
   promotionalEmail: boolean;
   promotionalSms: boolean;
+  nextPath: string;
 };
 
 export async function signUpWithPassword(formData: FormData) {
-  const details = getSignupDetails(formData);
+  const details = getSignupDetails(formData, "/account");
 
   if (!details.displayName || !details.email || !details.phone || !details.state || !details.password || !details.privacyAcknowledged) {
-    redirect("/auth/sign-up?error=missing_required_fields");
+    redirect(getSignUpRedirect("missing_required_fields", details.nextPath));
   }
 
   let signupFailed = false;
@@ -30,7 +33,7 @@ export async function signUpWithPassword(formData: FormData) {
       email: details.email,
       password: details.password,
       options: {
-        emailRedirectTo: getEmailRedirectTo("/account"),
+        emailRedirectTo: getEmailRedirectTo(details.nextPath),
         data: getDisplayMetadata(details),
       },
     });
@@ -43,17 +46,17 @@ export async function signUpWithPassword(formData: FormData) {
   }
 
   if (signupFailed) {
-    redirect("/auth/sign-up?error=signup_failed");
+    redirect(getSignUpRedirect("signup_failed", details.nextPath));
   }
 
-  redirect("/auth/sign-in?message=check_email");
+  redirect(getSignInRedirect("check_email", details.nextPath));
 }
 
 export async function requestMagicLink(formData: FormData) {
-  const details = getSignupDetails(formData);
+  const details = getSignupDetails(formData, "/silver?from=signup");
 
   if (!details.displayName || !details.email || !details.phone || !details.state || !details.privacyAcknowledged) {
-    redirect("/auth/sign-up?error=missing_required_fields");
+    redirect(getSignUpRedirect("missing_required_fields", details.nextPath));
   }
 
   let magicLinkFailed = false;
@@ -63,7 +66,7 @@ export async function requestMagicLink(formData: FormData) {
     const { error } = await supabase.auth.signInWithOtp({
       email: details.email,
       options: {
-        emailRedirectTo: getEmailRedirectTo("/silver?from=signup"),
+        emailRedirectTo: getEmailRedirectTo(details.nextPath),
         data: getDisplayMetadata(details),
       },
     });
@@ -76,22 +79,23 @@ export async function requestMagicLink(formData: FormData) {
   }
 
   if (magicLinkFailed) {
-    redirect("/auth/sign-up?error=magic_link_failed");
+    redirect(getSignUpRedirect("magic_link_failed", details.nextPath));
   }
 
-  redirect("/auth/sign-in?message=check_email");
+  redirect(getSignInRedirect("check_email", details.nextPath));
 }
 
-function getSignupDetails(formData: FormData): SignupDetails {
+function getSignupDetails(formData: FormData, fallbackNextPath: string): SignupDetails {
   return {
     displayName: String(formData.get("displayName") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
     phone: String(formData.get("phone") ?? "").trim(),
-    state: String(formData.get("state") ?? "").trim(),
+    state: normalizeUsStateValue(String(formData.get("state") ?? "")),
     password: String(formData.get("password") ?? ""),
     privacyAcknowledged: formData.get("privacyAcknowledged") === "yes",
     promotionalEmail: formData.get("promotionalEmail") === "yes",
     promotionalSms: formData.get("promotionalSms") === "yes",
+    nextPath: safeSparkleFinderNextPath(String(formData.get("next") ?? fallbackNextPath)),
   };
 }
 
@@ -111,4 +115,26 @@ function getEmailRedirectTo(nextPath: string) {
   const next = encodeURIComponent(nextPath);
 
   return `${origin}/auth/confirm?next=${next}`;
+}
+
+function getSignUpRedirect(error: string, nextPath: string): string {
+  const params = new URLSearchParams();
+
+  if (nextPath !== "/") {
+    params.set("next", nextPath);
+  }
+
+  params.set("error", error);
+
+  return `/auth/sign-up?${params.toString()}`;
+}
+
+function getSignInRedirect(message: string, nextPath: string): string {
+  const params = new URLSearchParams({ message });
+
+  if (nextPath !== "/") {
+    params.set("next", nextPath);
+  }
+
+  return `/auth/sign-in?${params.toString()}`;
 }

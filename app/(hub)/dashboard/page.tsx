@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Gem, Library, Radio, UsersRound } from "lucide-react";
-import { getCatalogJewelryItems, getFinderLiveShows } from "@/lib/sparkle-finder/catalog-service";
 import { getJewelryItems, getRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
@@ -28,9 +28,7 @@ const cards = [
 ];
 
 export default async function DashboardPage() {
-  const [libraryItems, liveShows] = await Promise.all([getCatalogJewelryItems(), getFinderLiveShows()]);
-
-  return renderDashboardPageContent(libraryItems, liveShows.length);
+  redirect("/");
 }
 
 export function renderDashboardPageContent(

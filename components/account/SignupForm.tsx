@@ -1,24 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { Gem, KeyRound, Mail, ShieldCheck } from "lucide-react";
+import { useFormStatus } from "react-dom";
+import { Gem, KeyRound, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { requestMagicLink, signUpWithPassword } from "@/app/auth/sign-up/actions";
 import { getSparkleFinderOAuthRedirectTo } from "@/lib/sparkle-finder/oauth-redirect";
+import { safeSparkleFinderNextPath } from "@/lib/sparkle-finder/safe-redirect";
 import { createClient } from "@/lib/supabase/client";
+import { usStates } from "@/lib/us-states";
 
 const inputClassName =
   "min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]";
+const buttonClassName =
+  "inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] px-5 text-sm font-bold transition active:translate-y-px disabled:cursor-wait disabled:opacity-70";
 
-export function SignupForm() {
+type SignupFormProps = {
+  nextPath?: string | null;
+  notice?: string | null;
+};
+
+export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
   const [authMethod, setAuthMethod] = useState<"password" | "magic-link">("password");
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [isGoogleStarting, setIsGoogleStarting] = useState(false);
+  const safeNextPath = safeSparkleFinderNextPath(nextPath);
 
   async function handleGoogleSignup() {
     setGoogleError(null);
+    setIsGoogleStarting(true);
 
     try {
       const supabase = createClient();
-      const redirectTo = getSparkleFinderOAuthRedirectTo("/account?setup=required", window.location.origin);
+      const redirectTo = getSparkleFinderOAuthRedirectTo(safeNextPath, window.location.origin);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
@@ -26,9 +39,11 @@ export function SignupForm() {
 
       if (error) {
         setGoogleError("Google sign-up could not be started. Please try again.");
+        setIsGoogleStarting(false);
       }
     } catch {
       setGoogleError("Google sign-up is not configured in this environment.");
+      setIsGoogleStarting(false);
     }
   }
 
@@ -48,19 +63,30 @@ export function SignupForm() {
         </div>
       </div>
 
+      <input name="next" type="hidden" value={safeNextPath} />
+
       <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3">
         <button
-          className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
+          aria-busy={isGoogleStarting}
+          className={`${buttonClassName} border border-[var(--sparkle-border-strong)] bg-white text-[var(--sparkle-plum-deep)]`}
+          disabled={isGoogleStarting}
           onClick={handleGoogleSignup}
           type="button"
         >
-          Continue with Google
+          {isGoogleStarting ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+          {isGoogleStarting ? "Opening Google..." : "Continue with Google"}
         </button>
         <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
           After Google sign-up, Sparkle Finder may ask for the remaining account details needed for your Silver trial.
         </p>
         {googleError ? <p className="text-sm font-semibold text-[var(--sparkle-plum-deep)]">{googleError}</p> : null}
       </div>
+
+      {notice ? (
+        <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)]">
+          {notice}
+        </p>
+      ) : null}
 
       <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
         Display name
@@ -103,7 +129,16 @@ export function SignupForm() {
 
       <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
         State
-        <input autoComplete="address-level1" className={inputClassName} maxLength={40} name="state" required />
+        <select autoComplete="address-level1" className={inputClassName} name="state" required defaultValue="">
+          <option value="" disabled>
+            Select your state
+          </option>
+          {usStates.map((state) => (
+            <option key={state.value} value={state.value}>
+              {state.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
@@ -119,7 +154,7 @@ export function SignupForm() {
           />
           <span>
             <span className="block font-bold text-[var(--sparkle-plum-deep)]">Use a password</span>
-            Create a password and confirm your email with Supabase.
+            Create a password and confirm your email.
           </span>
         </label>
         <label className="flex items-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
@@ -173,29 +208,43 @@ export function SignupForm() {
         </label>
       </fieldset>
 
-      {authMethod === "password" ? (
-        <button
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-          type="submit"
-        >
-          <KeyRound aria-hidden="true" className="size-4" />
-          Create account
-        </button>
-      ) : (
-        <button
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
-          formAction={requestMagicLink}
-          type="submit"
-        >
-          <Mail aria-hidden="true" className="size-4" />
-          Email sign-in link
-        </button>
-      )}
+      <SignupSubmitButton authMethod={authMethod} />
 
       <p className="flex items-start gap-2 text-xs font-semibold leading-5 text-[var(--sparkle-ink-muted)]">
         <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--sparkle-coral)]" />
-        Password signup sends the normal Supabase confirmation email. Magic-link signup sends an email sign-in link.
+        Password signup sends a confirmation email. Magic-link signup sends an email sign-in link.
       </p>
     </form>
+  );
+}
+
+function SignupSubmitButton({ authMethod }: { authMethod: "password" | "magic-link" }) {
+  const { pending } = useFormStatus();
+
+  if (authMethod === "magic-link") {
+    return (
+      <button
+        aria-busy={pending}
+        className={`${buttonClassName} bg-[var(--sparkle-plum)] text-white`}
+        disabled={pending}
+        formAction={requestMagicLink}
+        type="submit"
+      >
+        {pending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Mail aria-hidden="true" className="size-4" />}
+        {pending ? "Sending link..." : "Email sign-in link"}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      aria-busy={pending}
+      className={`${buttonClassName} bg-[var(--sparkle-plum)] text-white`}
+      disabled={pending}
+      type="submit"
+    >
+      {pending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <KeyRound aria-hidden="true" className="size-4" />}
+      {pending ? "Creating account..." : "Create account"}
+    </button>
   );
 }

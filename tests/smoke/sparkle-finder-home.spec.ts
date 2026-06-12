@@ -15,18 +15,18 @@ const sparkleSuiteFinderBaseUrl = (
 
 const smokeTexts = [
   "Sparkle Finder",
-  "Collector-first discovery",
+  "Find it, favorite it, show it off.",
   "Start free Silver trial",
-  "Sparkle Finder is an independent jewelry and collector discovery hub",
-  "Sparkle Finder does not sell Bomb Party jewelry",
+  "Find the pieces you like",
+  "Built for collectors, independently.",
+  "Sparkle Finder is not Bomb Party",
   "Master Jewelry Library",
   "Live Show Calendar",
   "Rep Trade Boards / Dance Floors",
   "Collection Showcase",
   "Collector & Rep Essentials",
-  "Choose how you want to collect",
-  "Free tier",
-  "Silver tier",
+  "Start with your 45-day Silver Tier trial",
+  "45 days free",
   "$4.99/month",
 ];
 
@@ -65,22 +65,19 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
     await expectClickPath(page, page.getByRole("link", { name: "Start free Silver trial" }), "/auth/sign-up");
-    await expectClickPath(page, page.getByRole("link", { name: "Sign in" }), "/auth/sign-in");
+    await expectClickPath(page, page.locator("main").getByRole("link", { name: "Sign in" }), "/auth/sign-in");
   });
 
-  test("shop feature card remains present and routes through signup", async ({ page }) => {
+  test("shop feature card remains present without a temporary card link", async ({ page }) => {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
     const shopCard = page
       .locator('[data-smoke="public-feature-cards"]')
-      .getByRole("link", { name: /Collector & Rep Essentials/ });
+      .getByRole("article")
+      .filter({ hasText: "Collector & Rep Essentials" });
     await expect(shopCard).toBeVisible();
-    await expect(shopCard).toHaveAttribute("href", "/auth/sign-up?next=/shop");
     await expect(shopCard).toContainText("Browse care, storage, display, livestream, and setup gear");
-
-    await shopCard.click();
-    await expect(page).toHaveURL(`${baseUrl}/auth/sign-up?next=/shop`);
-    await expect(page.getByText("Start your 45-day Silver trial")).toBeVisible();
+    await expect(shopCard.getByRole("link")).toHaveCount(0);
   });
 
   test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
@@ -117,7 +114,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByRole("checkbox", { name: /Optional promotional SMS/ })).not.toBeChecked();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Sparkle Mama's Silver Space")).toBeVisible();
+    await expect(page.getByText("Sparkle Mama's Sparkle Finder Workspace")).toBeVisible();
     await expect(page.getByText("Local fixture mode")).toBeVisible();
   });
 
@@ -151,7 +148,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Marlena's Silver Space")).toBeVisible();
+    await expect(page.getByText("Marlena's Sparkle Finder Workspace")).toBeVisible();
     await expect(page.getByText("Silver preview is required to save profile updates.")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
@@ -159,7 +156,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByText("Your Silver Collector Space")).toBeVisible();
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Sparkle Mama's Silver Space")).toBeVisible();
+    await expect(page.getByText("Sparkle Mama's Sparkle Finder Workspace")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: "Continue as Guest" }).click();
@@ -179,7 +176,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
       },
     ]);
     await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Finder Dashboard")).toBeVisible();
+    await expect(page).toHaveURL(`${baseUrl}/`);
+    await expect(page.getByText("Your Silver Collector Space")).toBeVisible();
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();

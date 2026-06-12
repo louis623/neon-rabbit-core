@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { BookmarkPlus, Gem, LockKeyhole, Plus, ShieldCheck, Star, StickyNote } from "lucide-react";
+import { BookmarkPlus, Gem, LoaderCircle, Plus, Search, ShieldCheck, Star, StickyNote } from "lucide-react";
 import { addJewelryItemToCustomerCollection } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CollectionItem, JewelryItem } from "@/lib/sparkle-finder/types";
@@ -22,7 +22,7 @@ type CollectionManagerProps = {
 
 const realAccountInitialState: SilverSaveActionState = {
   status: "idle",
-  message: "Collection ready.",
+  message: "Wishlist and collection ready.",
 };
 
 export function CollectionManager({
@@ -63,9 +63,9 @@ export function CollectionManager({
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Collection preview</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Saved pieces</p>
             <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
-              Saved Library Pieces
+              Wishlist & Owned Collection
             </h2>
           </div>
           <span className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 py-1 text-xs font-bold text-[var(--sparkle-ink-muted)]">
@@ -82,9 +82,9 @@ export function CollectionManager({
 
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Catalog actions</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Library actions</p>
           <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
-            Add Existing Records
+            Add From Jewelry Library
           </h2>
         </div>
 
@@ -153,12 +153,12 @@ export function CollectionManager({
 
         <div className="mt-5 rounded-[var(--sparkle-radius-sm)] border border-dashed border-[var(--sparkle-border-strong)] bg-[var(--sparkle-blush-bg)] p-4">
           <div className="flex items-start gap-3">
-            <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[var(--sparkle-coral)]" />
+            <Search aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[var(--sparkle-coral)]" />
             <div>
-              <h3 className="font-bold text-[var(--sparkle-plum-deep)]">Future catalog request path</h3>
+              <h3 className="font-bold text-[var(--sparkle-plum-deep)]">Need a missing piece?</h3>
               <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                Uncataloged piece requests are parked for a later approved workflow. This preview only uses existing
-                library records.
+                Search the jewelry library first, then ask Nic-Nac to help track pieces that have not made it into the
+                database yet.
               </p>
             </div>
           </div>
@@ -191,15 +191,21 @@ function CollectionActionButton({
 }) {
   const className =
     state === "owned"
-      ? "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-sm font-bold text-[var(--sparkle-plum)] disabled:cursor-not-allowed disabled:opacity-55"
-      : "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] disabled:cursor-not-allowed disabled:opacity-55";
+      ? "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-sm font-bold text-[var(--sparkle-plum)] transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55"
+      : "inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55";
   const disabled = !canSave || (!isLocalPreview && isPending);
+  const buttonLabel = !isLocalPreview && isPending ? "Saving..." : label;
+  const buttonIcon = !isLocalPreview && isPending ? (
+    <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+  ) : (
+    <CollectionActionIcon state={icon} />
+  );
 
   if (isLocalPreview) {
     return (
-      <button className={className} disabled={disabled} onClick={() => onPreviewAdd(item, state)} type="button">
-        <CollectionActionIcon state={icon} />
-        {label}
+      <button aria-busy={false} className={className} disabled={disabled} onClick={() => onPreviewAdd(item, state)} type="button">
+        {buttonIcon}
+        {buttonLabel}
       </button>
     );
   }
@@ -210,9 +216,9 @@ function CollectionActionButton({
       <input name="state" type="hidden" value={state} />
       <input name="note" type="hidden" value={getDefaultCollectionNote(state, false)} />
       <input name="isHighlighted" type="hidden" value={state === "owned" ? "yes" : "no"} />
-      <button className={className} disabled={disabled} type="submit">
-        <CollectionActionIcon state={icon} />
-        {label}
+      <button aria-busy={isPending} className={className} disabled={disabled} type="submit">
+        {buttonIcon}
+        {buttonLabel}
       </button>
     </form>
   );

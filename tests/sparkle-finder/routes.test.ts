@@ -14,6 +14,7 @@ import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import ShopPage from "../../app/(hub)/shop/page";
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
+import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
@@ -685,12 +686,18 @@ describe("Sparkle Finder hub routes", () => {
   it("renders Silver profile and collection previews for Silver customers", () => {
     const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
 
-    expect(markup).toContain("Silver Profile");
+    expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Finder Workspace");
+    expect(markup).toContain("Collector Profile");
     expect(markup).toContain("Sparkle Mama");
+    expect(markup).toContain("Wishlist &amp; Owned Collection");
     expect(markup).toContain("Rainbow Crown Ring");
+    expect(markup).toContain("Add From Jewelry Library");
     expect(markup).toContain("Add to collection");
     expect(markup).toContain("Add to watchlist");
-    expect(markup).toContain("Future catalog request path");
+    expect(markup).toContain("Need a missing piece?");
+    expect(markup).not.toContain("Silver Space");
+    expect(markup).not.toContain("Catalog actions");
+    expect(markup).not.toContain("Future catalog request path");
   });
 
   it("renders real Silver account profile details without local fixture page copy", () => {
@@ -729,7 +736,9 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("@caseyfinds");
     expect(markup).toContain("Looking for jewel tones and unicorns.");
-    expect(markup).toContain("View and save your signed-in Silver profile, collection, and watchlist updates.");
+    expect(markup).toContain(
+      "Save favorites in your wishlist, show off owned pieces in your digital collection, and keep profile details ready for Nic-Nac requests.",
+    );
     expect(markup).toContain("Save profile");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
@@ -750,8 +759,9 @@ describe("Sparkle Finder hub routes", () => {
       renderSilverPageContent({ ...getLocalDevAuthState("free"), isLocalPreview: true }),
     );
 
-    expect(markup).toContain("Silver Profile");
+    expect(markup).toContain("Collector Profile");
     expect(markup).toContain("Silver preview is required to save profile updates.");
+    expect(markup).toContain("aria-busy=\"false\"");
     expect(markup).toContain("disabled");
     expect(markup).not.toContain("Silver preview needed");
   });
@@ -809,15 +819,13 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders a sign-up route with 45-day Silver trial copy", async () => {
-    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
-    const markup = renderToStaticMarkup(createElement(SignUpPage));
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain("45-day Silver trial");
   });
 
   it("renders sign-up choices for password or magic link", async () => {
-    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
-    const markup = renderToStaticMarkup(createElement(SignUpPage));
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain('name="authMethod"');
     expect(markup).toContain('value="password"');
@@ -827,8 +835,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders sign-up Google auth and remaining account details copy", async () => {
-    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
-    const markup = renderToStaticMarkup(createElement(SignUpPage));
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain("Continue with Google");
     expect(markup).toContain(
@@ -837,8 +844,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders sign-up phone and privacy copy", async () => {
-    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
-    const markup = renderToStaticMarkup(createElement(SignUpPage));
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain(
       "Used for account verification, recovery, and trial protection. Not sold. Marketing texts are optional.",
@@ -874,8 +880,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("leaves promotional SMS unchecked by default on the sign-up route", async () => {
-    const { default: SignUpPage } = await import("../../app/auth/sign-up/page");
-    const markup = renderToStaticMarkup(createElement(SignUpPage));
+    const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain('name="promotionalSms"');
     expect(markup).not.toContain('name="promotionalSms" checked=""');

@@ -3,16 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeUsStateValue } from "@/lib/us-states";
 
 type SparkleFinderServerClient = {
   auth: {
-    getUser: () => Promise<{ data: { user: { id: string } | null }; error: unknown }>;
+    getUser: () => Promise<{ data: { user: { id: string; email?: string | null } | null }; error: unknown }>;
   };
   rpc: (fn: string, args: Record<string, boolean>) => PromiseLike<{ data: unknown; error: unknown }>;
   from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => {
+        maybeSingle: () => PromiseLike<{ data: unknown; error: unknown }>;
+      };
+    };
     update: (values: Record<string, string>) => {
       eq: (column: string, value: string) => PromiseLike<{ data: unknown; error: unknown }>;
     };
+    insert: (values: Record<string, string>) => PromiseLike<{ data: unknown; error: unknown }>;
   };
 };
 
@@ -37,7 +44,7 @@ export async function updateCommunicationPreferences(formData: FormData) {
 export async function updateAccountProfile(formData: FormData) {
   const supabase = await getVerifiedAccountClient();
   const displayName = cleanText(formData.get("displayName"), 80);
-  const state = cleanText(formData.get("state"), 40);
+  const state = normalizeUsStateValue(cleanText(formData.get("state"), 40));
 
   if (!displayName) {
     redirect("/account?error=missing_display_name");
@@ -45,6 +52,7 @@ export async function updateAccountProfile(formData: FormData) {
 
   const profileUpdates: Record<string, string> = {
     display_name: displayName,
+    email: cleanText(supabase.user.email, 254),
     state,
   };
 
@@ -52,12 +60,20 @@ export async function updateAccountProfile(formData: FormData) {
     profileUpdates.phone_e164 = cleanText(formData.get("phone"), 40);
   }
 
-  const { error } = await supabase.client
+  const existingProfile = await supabase.client
     .from("sparkle_finder_profiles")
-    .update(profileUpdates)
-    .eq("user_id", supabase.userId);
+    .select("user_id")
+    .eq("user_id", supabase.user.id)
+    .maybeSingle();
 
-  if (error) {
+  const result = existingProfile.data
+    ? await supabase.client.from("sparkle_finder_profiles").update(profileUpdates).eq("user_id", supabase.user.id)
+    : await supabase.client.from("sparkle_finder_profiles").insert({
+        user_id: supabase.user.id,
+        ...profileUpdates,
+      });
+
+  if (existingProfile.error || result.error) {
     redirect("/account?error=profile_update_failed");
   }
 
@@ -82,11 +98,11 @@ async function getVerifiedAccountClient() {
 
   return {
     client,
-    userId: data.user.id,
+    user: data.user,
   };
 }
 
-function cleanText(value: FormDataEntryValue | null, maxLength: number): string {
+function cleanText(value: FormDataEntryValue | string | null | undefined, maxLength: number): string {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
