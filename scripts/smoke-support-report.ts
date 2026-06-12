@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 
 import { createSupportReport } from '@/lib/services/support-reports'
+import { resolveSupportReport } from '@/lib/services/support-lessons'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type SmokeEnv = Record<string, string | undefined>
@@ -11,6 +12,9 @@ export interface SupportReportSmokeSummaryInput {
   reportId: string
   repId: string
   notificationStatus: string
+  profileVerified: boolean
+  auditStatus: string
+  lessonCreated: boolean
   cleanedUp: boolean
   env?: SmokeEnv
 }
@@ -53,6 +57,9 @@ export function buildSupportReportSmokeSummary(
     `[support-report-smoke] report=${input.reportId}`,
     `rep=${input.repId}`,
     `notification=${input.notificationStatus}`,
+    `profile=${input.profileVerified}`,
+    `audit=${input.auditStatus}`,
+    `lesson=${input.lessonCreated}`,
     `cleanup=${input.cleanedUp}`,
     `supabase_host=${getSupabaseHost(env)}`,
     `google_chat_configured=${Boolean(
@@ -76,7 +83,11 @@ async function main() {
   let authUserId: string | null = null
   let repId: string | null = null
   let reportId: string | null = null
+  let lessonId: string | null = null
   let notificationStatus = 'not_started'
+  let profileVerified = false
+  let auditStatus = 'not_started'
+  let lessonCreated = false
   let cleanedUp = false
 
   try {
@@ -96,6 +107,7 @@ async function main() {
         display_name: 'Support Report Smoke Rep',
         business_name: 'Support Report Smoke Studio',
         email,
+        phone: '555-010-4242',
         status: 'active',
       })
       .select('id')
@@ -131,7 +143,9 @@ async function main() {
 
     const { data: reportRow, error: reportError } = await admin
       .from('support_reports')
-      .select('id, rep_id, source, report_type, urgency, status, notification_status')
+      .select(
+        'id, rep_id, client_account_profile_id, client_snapshot, source, report_type, urgency, status, notification_status, audit_status',
+      )
       .eq('id', reportId)
       .single()
     if (reportError) throw reportError
@@ -143,11 +157,86 @@ async function main() {
       reportRow.report_type !== 'bug' ||
       reportRow.urgency !== 'blocking' ||
       reportRow.status !== 'open' ||
-      reportRow.notification_status !== 'delivered'
+      reportRow.notification_status !== 'delivered' ||
+      reportRow.audit_status !== 'completed' ||
+      !reportRow.client_account_profile_id ||
+      !reportRow.client_snapshot ||
+      typeof reportRow.client_snapshot !== 'object'
     ) {
       throw new Error('support report smoke row did not match expected values')
     }
+
+    const clientSnapshot = reportRow.client_snapshot as Record<string, unknown>
+    if (
+      clientSnapshot.clientName !== 'Support Report Smoke Studio' ||
+      clientSnapshot.showName !== 'Support Report Smoke Studio' ||
+      clientSnapshot.email !== email ||
+      clientSnapshot.phone !== '555-010-4242'
+    ) {
+      throw new Error('support report smoke client snapshot did not match expected values')
+    }
+
+    const { data: profileRow, error: profileError } = await admin
+      .from('client_account_profiles')
+      .select('id, rep_id, client_name, show_name, email, phone')
+      .eq('id', reportRow.client_account_profile_id)
+      .single()
+    if (profileError) throw profileError
+
+    if (
+      !profileRow ||
+      profileRow.rep_id !== createdRepId ||
+      profileRow.client_name !== 'Support Report Smoke Studio' ||
+      profileRow.show_name !== 'Support Report Smoke Studio' ||
+      profileRow.email !== email ||
+      profileRow.phone !== '555-010-4242'
+    ) {
+      throw new Error('support report smoke client profile did not match expected values')
+    }
+    profileVerified = true
+    auditStatus = reportRow.audit_status
+
+    const { data: auditRow, error: auditError } = await admin
+      .from('support_audits')
+      .select('id, support_report_id, client_account_profile_id, status, facts, findings')
+      .eq('support_report_id', reportId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (auditError) throw auditError
+
+    if (
+      !auditRow ||
+      auditRow.support_report_id !== reportId ||
+      auditRow.client_account_profile_id !== reportRow.client_account_profile_id ||
+      auditRow.status !== 'completed'
+    ) {
+      throw new Error('support report smoke audit row did not match expected values')
+    }
+    auditStatus = auditRow.status
+
+    const resolution = await resolveSupportReport(admin, {
+      reportId,
+      clientAccountProfileId: reportRow.client_account_profile_id,
+      affectedArea: 'smoke_test',
+      symptom: 'Synthetic smoke report verified the support intake workflow.',
+      rootCause: 'Smoke run generated a support report for validation.',
+      fixOrWorkaround:
+        'Confirm profile, report snapshot, audit row, Google Chat delivery, lesson creation, and cleanup.',
+      tags: ['smoke', 'support-auditor'],
+      approvedForReuse: true,
+      createdBy: 'support-report-smoke',
+    })
+    lessonId =
+      resolution.lesson &&
+      typeof resolution.lesson === 'object' &&
+      'id' in resolution.lesson
+        ? String(resolution.lesson.id)
+        : null
+    if (!lessonId) throw new Error('support report smoke lesson was not created')
+    lessonCreated = true
   } finally {
+    if (lessonId) await admin.from('support_lessons').delete().eq('id', lessonId)
     if (reportId) await admin.from('support_reports').delete().eq('id', reportId)
     if (repId) await admin.from('reps').delete().eq('id', repId)
     if (authUserId) await admin.auth.admin.deleteUser(authUserId)
@@ -159,6 +248,9 @@ async function main() {
       reportId: reportId ?? 'missing',
       repId: repId ?? 'missing',
       notificationStatus,
+      profileVerified,
+      auditStatus,
+      lessonCreated,
       cleanedUp,
     }),
   )

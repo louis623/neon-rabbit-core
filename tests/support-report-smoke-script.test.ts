@@ -30,6 +30,9 @@ describe('support report smoke script', () => {
       reportId: 'report-123',
       repId: 'rep-123',
       notificationStatus: 'delivered',
+      profileVerified: true,
+      auditStatus: 'completed',
+      lessonCreated: true,
       cleanedUp: true,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: 'https://bqhzfkgkjyuhlsozpylf.supabase.co',
@@ -40,7 +43,7 @@ describe('support report smoke script', () => {
     })
 
     expect(summary).toBe(
-      '[support-report-smoke] report=report-123 rep=rep-123 notification=delivered cleanup=true supabase_host=bqhzfkgkjyuhlsozpylf.supabase.co google_chat_configured=true',
+      '[support-report-smoke] report=report-123 rep=rep-123 notification=delivered profile=true audit=completed lesson=true cleanup=true supabase_host=bqhzfkgkjyuhlsozpylf.supabase.co google_chat_configured=true',
     )
     expect(summary).not.toContain('service-role-secret')
     expect(summary).not.toContain('key=')
