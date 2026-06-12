@@ -111,7 +111,7 @@ export async function ensureClientAccountProfile(
 
   const { data: subscription, error: subscriptionError } = await supabase
     .from('subscriptions')
-    .select('status, tier, plan_tier, updated_at')
+    .select('status, plan_tier, pricing_tier, updated_at')
     .eq('rep_id', normalizedRepId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -152,7 +152,10 @@ export async function ensureClientAccountProfile(
     phone: textOrNull(repSource.phone),
     account_status: textOrNull(repSource.status),
     subscription_status: textOrNull(subscriptionSource?.status),
-    support_tier: textOrNull(subscriptionSource?.support_tier) ?? 'standard',
+    support_tier:
+      textOrNull(subscriptionSource?.pricing_tier) ??
+      textOrNull(subscriptionSource?.plan_tier) ??
+      'standard',
     public_site_slug:
       textOrNull(accountBasics.publicSiteSlug) ??
       textOrNull(repSource.public_site_slug),

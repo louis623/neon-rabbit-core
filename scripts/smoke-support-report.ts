@@ -1,6 +1,7 @@
 import { config } from 'dotenv'
 
 config({ path: '.env.local' })
+config({ path: '.env.smoke.local', override: true })
 
 import { createSupportReport } from '@/lib/services/support-reports'
 import { resolveSupportReport } from '@/lib/services/support-lessons'
