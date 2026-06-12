@@ -4236,13 +4236,10 @@ export function HelpResourcesCard({
     error: string | null
     message: string | null
   }>({ pending: false, error: null, message: null })
+  const supportReportTitleRef = useRef<HTMLInputElement | null>(null)
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
-  const supportResources = (state.resources ?? []).filter((resource) =>
-    resource.type === 'support' || resource.id === 'fix-something-or-ask-for-help',
-  )
-
   async function submitSupportReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setReportSubmitState({ pending: true, error: null, message: null })
@@ -4289,6 +4286,14 @@ export function HelpResourcesCard({
         message: null,
       })
     }
+  }
+
+  function focusSupportReportForm() {
+    supportReportTitleRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+    supportReportTitleRef.current?.focus()
   }
 
   function updateReportForm<Field extends keyof HelpSupportReportForm>(
@@ -4371,6 +4376,7 @@ export function HelpResourcesCard({
         <label className={styles.searchField}>
           <span className={styles.searchLabel}>Short title</span>
           <input
+            ref={supportReportTitleRef}
             type="text"
             className={styles.searchInput}
             value={reportForm.title}
@@ -4590,16 +4596,23 @@ export function HelpResourcesCard({
                   </div>
                   <span className={styles.rosterTag}>Open section</span>
                 </summary>
-                <div className={styles.actionRow}>
-                  {(supportResources[0]?.quickActions ?? [
-                    'Ask Nic-Nac to troubleshoot',
-                    'Gather support details',
-                    'Escalate to support',
-                  ]).map((action) => (
-                    <span key={`support-${action}`} className={styles.timelineItem}>
-                      {action}
-                    </span>
-                  ))}
+                <div className={styles.supportReportCallout}>
+                  <div>
+                    <div className={styles.walletSettingsTitle}>
+                      Send a report to support
+                    </div>
+                    <div className={styles.helperNote}>
+                      Bugs, site issues, workflow ideas, and upgrade requests go to
+                      Louis and the support dashboard queue.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.actionButton}
+                    onClick={focusSupportReportForm}
+                  >
+                    Start report
+                  </button>
                 </div>
                 {supportReportForm}
               </details>

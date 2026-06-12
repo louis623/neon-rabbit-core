@@ -17,6 +17,8 @@ describe('HelpResourcesCard support report form', () => {
     )
 
     expect(html).toContain('Support Path')
+    expect(html).toContain('Send a report to support')
+    expect(html).toContain('Start report')
     expect(html).toContain('Report an issue or suggest an upgrade')
     expect(html).toContain('Site issue')
     expect(html).toContain('Bug')
@@ -53,6 +55,10 @@ describe('HelpResourcesCard support report form', () => {
       'utf8',
     )
 
+    expect(source).toContain('supportReportTitleRef')
+    expect(source).toContain('focusSupportReportForm')
+    expect(source).toContain('Start report')
+    expect(source).not.toContain("className={styles.timelineItem}>\n                      {action}")
     expect(source).toContain("fetch('/api/nic-nac/support-reports'")
     expect(source).toContain("reportType: reportForm.reportType")
     expect(source).toContain("urgency: reportForm.urgency")

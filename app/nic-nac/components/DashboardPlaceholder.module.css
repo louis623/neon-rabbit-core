@@ -1219,6 +1219,22 @@
   padding-top: 10px;
 }
 
+.supportReportCallout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  border: 1px solid rgba(238, 44, 155, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 246, 250, 0.62);
+  padding: 12px;
+}
+
+.supportReportCallout .actionButton {
+  flex: 0 0 auto;
+}
+
 .supportReportForm {
   display: grid;
   gap: 12px;
@@ -3113,6 +3129,14 @@
   .supportReportChoiceGrid,
   .supportReportFieldGrid {
     grid-template-columns: 1fr;
+  }
+
+  .supportReportCallout {
+    flex-direction: column;
+  }
+
+  .supportReportCallout .actionButton {
+    width: 100%;
   }
 
   .playbookGuideSummary {
