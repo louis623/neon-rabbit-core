@@ -220,6 +220,55 @@ describe('Sparkle Finder public API contract helpers', () => {
     expect(counts.has('design-3')).toBe(false)
   })
 
+  it('does not count listings from reps without a resolvable public site slug', () => {
+    const counts = countListingsByDesignForQualifiedReps(
+      [
+        {
+          design_id: 'design-1',
+          rep_id: 'rep-valid',
+          rep: {
+            id: 'rep-valid',
+            display_name: 'Valid Rep',
+            business_name: 'Valid Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'validstudio',
+            status: 'active',
+          },
+        },
+        {
+          design_id: 'design-1',
+          rep_id: 'rep-missing-slug',
+          rep: {
+            id: 'rep-missing-slug',
+            display_name: 'Missing Slug',
+            business_name: 'Missing Slug Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: null,
+            status: 'active',
+          },
+        },
+        {
+          design_id: 'design-1',
+          rep_id: 'rep-invalid-slug',
+          rep: {
+            id: 'rep-invalid-slug',
+            display_name: 'Invalid Slug',
+            business_name: 'Invalid Slug Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'invalid-studio',
+            status: 'active',
+          },
+        },
+      ] as never,
+      new Set(['rep-valid', 'rep-missing-slug', 'rep-invalid-slug']),
+    )
+
+    expect(counts.get('design-1')).toBe(1)
+  })
+
   it('keeps live shows that started in the past and excludes past scheduled shows', () => {
     const shows = mapFinderShowRowsToNextShows(
       [
@@ -357,6 +406,71 @@ describe('Sparkle Finder public API contract helpers', () => {
     ])
     expect(JSON.stringify(shows)).not.toContain('trade')
     expect(JSON.stringify(shows)).not.toContain('businessName')
+  })
+
+  it('excludes Finder live shows when the rep has no resolvable public site slug', () => {
+    const shows = mapSparkleFinderLiveShowRows(
+      [
+        {
+          id: 'valid-show',
+          rep_id: 'rep-valid',
+          event_time: '2026-06-10T01:00:00.000Z',
+          title: 'Valid Reveal',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-valid',
+            display_name: 'Valid Rep',
+            business_name: 'Valid Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'validstudio',
+            status: 'active',
+          },
+        },
+        {
+          id: 'missing-slug-show',
+          rep_id: 'rep-missing-slug',
+          event_time: '2026-06-10T02:00:00.000Z',
+          title: 'Missing Slug Reveal',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-missing-slug',
+            display_name: 'Missing Slug',
+            business_name: 'Missing Slug Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: null,
+            status: 'active',
+          },
+        },
+        {
+          id: 'invalid-slug-show',
+          rep_id: 'rep-invalid-slug',
+          event_time: '2026-06-10T03:00:00.000Z',
+          title: 'Invalid Slug Reveal',
+          status: 'scheduled',
+          rep: {
+            id: 'rep-invalid-slug',
+            display_name: 'Invalid Slug',
+            business_name: 'Invalid Slug Studio',
+            profile_photo_url: null,
+            custom_domain: null,
+            public_site_slug: 'invalid-studio',
+            status: 'active',
+          },
+        },
+      ] as never,
+      '2026-06-06T00:00:00.000Z',
+    )
+
+    expect(shows).toEqual([
+      expect.objectContaining({
+        showId: 'valid-show',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/validstudio',
+      }),
+    ])
+    expect(JSON.stringify(shows)).not.toContain('missing-slug')
+    expect(JSON.stringify(shows)).not.toContain('invalid-studio')
   })
 
   it('normalizes public limit inputs', () => {

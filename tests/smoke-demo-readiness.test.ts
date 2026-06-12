@@ -967,6 +967,8 @@ describe('demo launch smoke readiness plan', () => {
           homepageTemplate: true,
           tradeTemplate: true,
           joinTemplate: true,
+          finderLiveShows: true,
+          customerCalendar: true,
         }),
       },
     )
@@ -979,7 +981,7 @@ describe('demo launch smoke readiness plan', () => {
           id: 'local_product_routes',
           ok: true,
           detail:
-            'public product routes homepage=true trade=true join=true homepage_template=true trade_template=true join_template=true',
+            'public product routes homepage=true trade=true join=true homepage_template=true trade_template=true join_template=true finder_live_shows=true customer_calendar=true',
         },
       ],
     })

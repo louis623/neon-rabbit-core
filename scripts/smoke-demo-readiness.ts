@@ -221,6 +221,8 @@ interface LocalProductVerification {
   homepageTemplate: boolean
   tradeTemplate: boolean
   joinTemplate: boolean
+  finderLiveShows: boolean
+  customerCalendar: boolean
 }
 
 interface StripeLocalRouteVerification {
@@ -1174,7 +1176,7 @@ export async function runDemoSmoke(
         {
           id: 'local_product_routes',
           ok,
-          detail: `public product routes homepage=${String(productResult.homepage)} trade=${String(productResult.trade)} join=${String(productResult.join)} homepage_template=${String(productResult.homepageTemplate)} trade_template=${String(productResult.tradeTemplate)} join_template=${String(productResult.joinTemplate)}`,
+          detail: `public product routes homepage=${String(productResult.homepage)} trade=${String(productResult.trade)} join=${String(productResult.join)} homepage_template=${String(productResult.homepageTemplate)} trade_template=${String(productResult.tradeTemplate)} join_template=${String(productResult.joinTemplate)} finder_live_shows=${String(productResult.finderLiveShows)} customer_calendar=${String(productResult.customerCalendar)}`,
         },
       ],
     }
@@ -1688,6 +1690,50 @@ async function verifyLocalProductSmoke(
     return text.includes(expected)
   }
 
+  async function checkFinderLiveShows() {
+    const response = await fetch(
+      withVercelProtectionBypass(`${appUrl}/api/public/finder/live-shows?limit=12`, env),
+    )
+    if (!response.ok) {
+      throw await buildSmokeHttpError('/api/public/finder/live-shows', response)
+    }
+
+    const payload = (await response.json()) as {
+      shows?: Array<{ customerSiteUrl?: string }>
+    }
+    const shows = Array.isArray(payload.shows) ? payload.shows : []
+    const advertisedCustomerSiteUrls = shows
+      .map((show) => show.customerSiteUrl?.trim())
+      .filter((url): url is string => Boolean(url))
+
+    if (advertisedCustomerSiteUrls.length === 0) {
+      return {
+        finderLiveShows: true,
+        customerCalendar: true,
+      }
+    }
+
+    const calendarChecks = await Promise.all(
+      advertisedCustomerSiteUrls.map(async (customerSiteUrl) => {
+        const url = new URL(customerSiteUrl)
+        const response = await fetch(
+          withVercelProtectionBypass(`${appUrl}${url.pathname}`, env),
+        )
+        if (!response.ok) return false
+        const text = await response.text()
+        return (
+          text.includes('/api/amethyst/homepage-template') ||
+          text.includes('window.AMETHYST_HOMEPAGE_TEMPLATE_DATA')
+        )
+      }),
+    )
+
+    return {
+      finderLiveShows: true,
+      customerCalendar: calendarChecks.every(Boolean),
+    }
+  }
+
   const [
     homepage,
     trade,
@@ -1695,6 +1741,7 @@ async function verifyLocalProductSmoke(
     homepageTemplate,
     tradeTemplate,
     joinTemplate,
+    finderCalendar,
   ] = await Promise.all([
     checkText('/amethyst/Homepage.html', '/api/amethyst/homepage-template'),
     checkText('/amethyst/Trade.html', '/api/amethyst/trade-template'),
@@ -1705,6 +1752,7 @@ async function verifyLocalProductSmoke(
     ),
     checkText('/api/amethyst/trade-template', 'window.AMETHYST_TRADE_TEMPLATE_DATA'),
     checkText('/api/amethyst/join-template', 'window.AMETHYST_JOIN_TEMPLATE_DATA'),
+    checkFinderLiveShows(),
   ])
 
   return {
@@ -1714,6 +1762,8 @@ async function verifyLocalProductSmoke(
     homepageTemplate,
     tradeTemplate,
     joinTemplate,
+    finderLiveShows: finderCalendar.finderLiveShows,
+    customerCalendar: finderCalendar.customerCalendar,
   }
 }
 

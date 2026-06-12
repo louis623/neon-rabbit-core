@@ -85,6 +85,8 @@ describe('reviewer smoke UI wiring', () => {
       'tests proving production review mode requires the explicit long review token',
     )
     expect(standard).toContain('no live charges')
+    expect(standard).toContain('npm run smoke:calendar')
+    expect(standard).toContain('Finder live-shows endpoint')
   })
 
   it('exposes a reviewer-only reset on the required setup preview', () => {

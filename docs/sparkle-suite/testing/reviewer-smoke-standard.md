@@ -46,4 +46,10 @@ When handing a customer-facing feature to Louis, include:
 - reset instructions
 - verification commands run
 
+For event-calendar work, run `npm run smoke:calendar` against the intended local
+or preview target before reviewer handoff. This smoke must verify the public
+Finder live-shows endpoint and every advertised customer-site calendar path, so
+the workspace can never promote a calendar link that the customer-facing site
+cannot resolve.
+
 If any item is missing, say so plainly before calling the work ready.

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PAID_WORKSPACE_STATUSES } from '@/lib/nic-nac/subscription-access'
-import { buildPublicSiteUrl, generatePublicSiteSlug } from '@/lib/public-site/show-link'
+import { buildPublicSiteUrl, validatePublicSiteSlug } from '@/lib/public-site/show-link'
 import type { JewelryType } from '@/lib/services/types'
 
 type FinderCollectionRelation =
@@ -617,7 +617,9 @@ async function countEligibleAvailableListings(
 
   const { data, error } = await supabase
     .from('trade_listings')
-    .select('design_id, rep_id')
+    .select(
+      'design_id, rep_id, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)',
+    )
     .eq('status', 'available')
     .in('design_id', designIds)
     .in('rep_id', Array.from(qualifiedRepIds))
@@ -630,12 +632,22 @@ async function countEligibleAvailableListings(
 }
 
 export function countListingsByDesignForQualifiedReps(
-  rows: Array<{ design_id: string; rep_id: string }>,
+  rows: Array<{ design_id: string; rep_id: string; rep?: FinderRepRow }>,
   qualifiedRepIds: Set<string>,
 ) {
   const counts = new Map<string, number>()
   for (const row of rows) {
     if (!qualifiedRepIds.has(row.rep_id)) continue
+    if (row.rep !== undefined) {
+      const rep = readSingle(row.rep)
+      if (
+        !rep ||
+        !isFinderPublicRepStatus(rep.status) ||
+        !hasFinderResolvablePublicSite(rep)
+      ) {
+        continue
+      }
+    }
     counts.set(row.design_id, (counts.get(row.design_id) ?? 0) + 1)
   }
   return counts
@@ -704,7 +716,13 @@ async function loadAvailableListingRows(
   const rows = ((data ?? []) as unknown as FinderListingRow[]).filter((row) => {
     const design = readSingle(row.design)
     const rep = readSingle(row.rep)
-    if (!design || !rep || rep.status === 'suspended' || rep.status === 'churned') {
+    if (
+      !design ||
+      !rep ||
+      rep.status === 'suspended' ||
+      rep.status === 'churned' ||
+      !hasFinderResolvablePublicSite(rep)
+    ) {
       return false
     }
     if (!options.collectionName && !options.jewelryType) return true
@@ -830,7 +848,11 @@ export function mapSparkleFinderLiveShowRows(
     .filter((row) => isFinderLeadShowRow(row, nowIso))
     .filter((row) => {
       const rep = readSingle(row.rep)
-      return Boolean(rep?.id && isFinderPublicRepStatus(rep.status))
+      return Boolean(
+        rep?.id &&
+          isFinderPublicRepStatus(rep.status) &&
+          hasFinderResolvablePublicSite(rep),
+      )
     })
     .sort((left, right) => {
       if (left.status === 'live' && right.status !== 'live') return -1
@@ -907,15 +929,24 @@ function getFinderRepFirstName(displayName: string | null) {
 }
 
 function buildFinderCustomerSiteUrl(rep: FinderRepSingle) {
-  const slug =
-    rep.public_site_slug?.trim() ||
-    generatePublicSiteSlug(getFinderShowName(rep)) ||
-    'sparkleshow'
+  const slug = getFinderResolvablePublicSiteSlug(rep)
+  if (!slug) {
+    throw new Error('Finder public rep is missing a resolvable public site slug.')
+  }
   return buildPublicSiteUrl(slug)
 }
 
 function isFinderPublicRepStatus(status: string | null) {
   return status !== 'suspended' && status !== 'churned'
+}
+
+function hasFinderResolvablePublicSite(rep: FinderRepSingle) {
+  return Boolean(getFinderResolvablePublicSiteSlug(rep))
+}
+
+function getFinderResolvablePublicSiteSlug(rep: FinderRepSingle) {
+  const slug = rep.public_site_slug?.trim().toLowerCase() ?? ''
+  return validatePublicSiteSlug(slug).ok ? slug : null
 }
 
 function readSingle<T>(value: T | T[] | null): T | null {
