@@ -80,6 +80,19 @@ describe('Nic-Nac tool routing', () => {
     ])
   })
 
+  it('routes explicit future live-show preferences to durable memory and show context', () => {
+    const intents = getToolIntentsForText(
+      'Please remember this preference for future chats: during live shows, remind me to confirm tray count before noting customer follow-ups.',
+    )
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toEqual(['memory', 'show_memory'])
+    expect(toolNames).toContain('read_recent_rep_notes')
+    expect(toolNames).toContain('write_rep_note')
+    expect(toolNames).toContain('get_show_session_context')
+    expect(toolNames).toContain('record_show_session_event')
+  })
+
   it.each([
     'Where is the Live Queue walkthrough video?',
     'Show me the how-to for editing my public site links.',
@@ -145,6 +158,25 @@ describe('Nic-Nac tool routing', () => {
     ])
 
     expect(intents).toEqual(['show_memory'])
+  })
+
+  it('requires a tool call when the latest user message asks to save a durable preference', () => {
+    const messages = [
+      {
+        id: 'latest',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Remember this for future chats: I prefer quick tray-count reminders before customer follow-up notes during live shows.',
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['memory', 'show_memory'])
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
   it('keeps trade-board tools available for a short missing-field follow-up', () => {

@@ -186,6 +186,9 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
     return ['resources']
   }
 
+  const asksForDurableMemory = isExplicitDurableMemoryRequest(normalized)
+  if (asksForDurableMemory) add('memory')
+
   if (
     hasAny([
       /\blive\b/,
@@ -335,6 +338,22 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   return intents.length ? intents : ['memory']
 }
 
+function isExplicitDurableMemoryRequest(normalizedText: string): boolean {
+  const hasAny = (patterns: RegExp[]) =>
+    patterns.some((pattern) => pattern.test(normalizedText))
+
+  return hasAny([
+    /\bremember\b[\s\S]{0,140}\b(future|future chats?|future shows?|next time|from now on|going forward|always|preference|prefer|workflow|process)\b/,
+    /\b(save|store|keep|note)\b[\s\S]{0,140}\b(preference|prefer|workflow|process|future|future chats?|future shows?|next time|from now on|going forward|always)\b/,
+    /\bfor future chats?\b/,
+    /\bfor future shows?\b/,
+    /\bfrom now on\b/,
+    /\bgoing forward\b/,
+    /\bi prefer\b/,
+    /\bmy (preference|workflow|process)\b/,
+  ])
+}
+
 type RoutableMessage = {
   id?: string
   role?: string
@@ -408,10 +427,16 @@ export function shouldRequireToolCallForMessages(
   intents: NicNacToolIntent[],
 ): boolean {
   if (intents.includes('required_setup')) return true
-  if (!intents.includes('trade_board')) return false
-
   const latestUser = [...messages].reverse().find((message) => message.role === 'user')
   const latestText = getMessageText(latestUser)
+  if (
+    intents.includes('memory') &&
+    isExplicitDurableMemoryRequest(latestText.toLowerCase())
+  ) {
+    return true
+  }
+  if (!intents.includes('trade_board')) return false
+
   return isTradeBoardContinuation(messages, latestText)
 }
 

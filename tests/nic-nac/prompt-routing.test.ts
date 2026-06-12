@@ -22,6 +22,28 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt.length).toBeLessThan(8_000)
   })
 
+  it('teaches durable memory turns to save explicit safe preferences instead of refusing memory', () => {
+    const prompt = buildNicNacSystemPrompt({
+      intents: ['memory', 'show_memory'],
+      activeToolNames: [
+        'read_recent_rep_notes',
+        'write_rep_note',
+        'get_show_session_context',
+        'start_show_session',
+        'record_show_session_event',
+      ],
+    })
+
+    expect(prompt).toContain('Safe explicit rep preferences are supported')
+    expect(prompt).toContain("memoryType:'preference'")
+    expect(prompt).toContain("memorySource:'explicit'")
+    expect(prompt).toContain(
+      'Do not claim lasting memory is unavailable when write_rep_note is active',
+    )
+    expect(prompt).toContain('record_show_session_event')
+    expect(prompt.length).toBeLessThan(8_500)
+  })
+
   it('includes trade-board safety without loading calendar or notification copy', () => {
     const prompt = buildNicNacSystemPrompt({
       intents: ['trade_board'],
