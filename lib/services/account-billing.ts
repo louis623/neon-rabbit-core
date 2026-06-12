@@ -179,40 +179,41 @@ export async function getAccountBillingDashboard(args: {
   }
 
   const subscriptionRow = (data as SubscriptionRow | null) ?? null
-  const [
-    { data: repReferralCodeRow, error: repReferralCodeError },
-    { data: referralRows, error: referralRowsError },
-  ] = await Promise.all([
-    args.supabase
-      .from('reps')
-      .select('referral_code')
-      .eq('id', args.repId)
-      .maybeSingle(),
-    args.supabase
-      .from('rep_referrals')
-      .select('reward_status')
-      .eq('referrer_rep_id', args.repId),
-  ])
+  let referral = mapReferralSummary({ code: null, rows: [] })
 
-  if (repReferralCodeError || referralRowsError) {
-    throw toServiceError(
-      'ACCOUNT_BILLING_REFERRAL_LOOKUP_FAILED',
-      'failed to load referral summary',
-      "I couldn't load referral details right now.",
-      repReferralCodeError ?? referralRowsError,
+  try {
+    const [
+      { data: repReferralCodeRow, error: repReferralCodeError },
+      { data: referralRows, error: referralRowsError },
+    ] = await Promise.all([
+      args.supabase
+        .from('reps')
+        .select('referral_code')
+        .eq('id', args.repId)
+        .maybeSingle(),
+      args.supabase
+        .from('rep_referrals')
+        .select('reward_status')
+        .eq('referrer_rep_id', args.repId),
+    ])
+
+    if (repReferralCodeError || referralRowsError) {
+      throw repReferralCodeError ?? referralRowsError
+    }
+
+    const referralCode = await ensureAccountReferralCode(
+      args.supabase,
+      args.repId,
+      (repReferralCodeRow as RepReferralCodeRow | null)?.referral_code ?? null,
     )
+
+    referral = mapReferralSummary({
+      code: referralCode,
+      rows: (referralRows as RepReferralStatusRow[] | null) ?? [],
+    })
+  } catch (cause) {
+    console.warn('[account-billing] Referral summary unavailable:', cause)
   }
-
-  const referralCode = await ensureAccountReferralCode(
-    args.supabase,
-    args.repId,
-    (repReferralCodeRow as RepReferralCodeRow | null)?.referral_code ?? null,
-  )
-
-  const referral = mapReferralSummary({
-    code: referralCode,
-    rows: (referralRows as RepReferralStatusRow[] | null) ?? [],
-  })
   const stripeConfigured = isStripeEnabled()
 
   let paymentMethod: AccountBillingPaymentMethodSummary | null = null
@@ -234,12 +235,7 @@ export async function getAccountBillingDashboard(args: {
       paymentMethod = mapPaymentMethod(customer)
       invoices = mapInvoices(invoiceList.data)
     } catch (cause) {
-      throw toServiceError(
-        'ACCOUNT_BILLING_STRIPE_LOOKUP_FAILED',
-        'failed to load Stripe billing details',
-        "I couldn't load the latest Stripe billing details right now.",
-        cause,
-      )
+      console.warn('[account-billing] Stripe billing details unavailable:', cause)
     }
   }
 

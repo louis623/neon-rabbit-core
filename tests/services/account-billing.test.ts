@@ -39,10 +39,12 @@ function makeAccountBillingSupabase(args: {
   subscriptionsChain: ReturnType<typeof makeSelectSingle>
   repCode?: string | null
   referralRows?: unknown[]
+  repReferralCodeError?: unknown
+  referralRowsError?: unknown
 }) {
   const referralsChain = makeSelectList({
     data: args.referralRows ?? [],
-    error: null,
+    error: args.referralRowsError ?? null,
   })
   const repsUpdateEq = vi.fn().mockResolvedValue({ error: null })
   const repsUpdate = vi.fn(() => ({ eq: repsUpdateEq }))
@@ -62,7 +64,7 @@ function makeAccountBillingSupabase(args: {
                           args.repCode === undefined ? 'SS-ABC234' : args.repCode,
                       }
                     : null,
-                error: null,
+                error: args.repReferralCodeError ?? null,
               }),
             })),
           })),
@@ -277,6 +279,42 @@ describe('account billing service', () => {
     expect(supabase.repsUpdateEq).toHaveBeenCalledWith('id', 'rep-legacy')
   })
 
+  it('keeps billing ready when referral lookup is unavailable', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: {
+        status: 'active',
+        plan_tier: 'monthly',
+        current_period_end: '2026-06-01T00:00:00Z',
+        cancel_at_period_end: false,
+        cancelled_at: null,
+        stripe_livemode: false,
+      },
+      error: null,
+    })
+    const supabase = makeAccountBillingSupabase({
+      subscriptionsChain,
+      referralRowsError: { message: 'rep_referrals unavailable' },
+    })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: null,
+    })
+
+    expect(result.subscription?.status).toBe('active')
+    expect(result.referral).toEqual({
+      code: null,
+      link: null,
+      pendingCount: 0,
+      earnedCount: 0,
+      creditedCount: 0,
+    })
+    expect(result.canStartSubscription).toBe(false)
+  })
+
   it('allows billing portal access when a Stripe customer exists before subscription activation', async () => {
     vi.mocked(stripeEnabled).mockReturnValue(true)
 
@@ -313,6 +351,45 @@ describe('account billing service', () => {
     expect(result.canStartSubscription).toBe(true)
     expect(result.canManageBilling).toBe(true)
     expect(result.checkoutMode).toBe('standard')
+  })
+
+  it('keeps paid access ready when Stripe details are temporarily unavailable', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(true)
+
+    const subscriptionsChain = makeSelectSingle({
+      data: {
+        status: 'active',
+        plan_tier: 'monthly',
+        current_period_end: '2026-06-01T00:00:00Z',
+        cancel_at_period_end: false,
+        cancelled_at: null,
+        stripe_livemode: false,
+      },
+      error: null,
+    })
+
+    vi.mocked(getStripe).mockReturnValue({
+      customers: {
+        retrieve: vi.fn().mockRejectedValue(new Error('Stripe timeout')),
+      },
+      invoices: {
+        list: vi.fn().mockResolvedValue({ data: [] }),
+      },
+    } as never)
+
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: 'cus_123',
+    })
+
+    expect(result.subscription?.status).toBe('active')
+    expect(result.paymentMethod).toBe(null)
+    expect(result.invoices).toEqual([])
+    expect(result.canStartSubscription).toBe(false)
+    expect(result.canManageBilling).toBe(true)
   })
 
   it('reports local Stripe test buyer checkout mode for billing review copy', async () => {
