@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { tool } from 'ai'
 import { startNicNacShowSession } from '@/lib/nic-nac/show-sessions'
+import { startShow } from '@/lib/services/calendar'
+import { ServiceError } from '@/lib/services/errors'
+import { NicNacToolError } from '@/lib/nic-nac/errors'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -26,7 +29,22 @@ export function makeStartShowSessionTool(ctx: {
       const resolvedSyncCode = needsAutoAnchor
         ? `NIC-NAC-AUTO-${ctx.conversationId}`
         : liveQueueSyncCode
-      return startNicNacShowSession(ctx.supabase, {
+      let calendarEvent: Awaited<ReturnType<typeof startShow>>['event'] | null = null
+      if (calendarEventId) {
+        try {
+          calendarEvent = (await startShow(ctx.supabase, ctx.repId, calendarEventId)).event
+        } catch (err) {
+          if (err instanceof ServiceError) {
+            throw new NicNacToolError({
+              code: err.code,
+              userMessage: err.userMessage,
+              cause: err,
+            })
+          }
+          throw err
+        }
+      }
+      const session = await startNicNacShowSession(ctx.supabase, {
         repId: ctx.repId,
         calendarEventId,
         liveQueueSyncCode: resolvedSyncCode,
@@ -37,6 +55,7 @@ export function makeStartShowSessionTool(ctx: {
           runId: ctx.runId,
         },
       })
+      return { ...session, calendarEvent }
     },
   })
 }

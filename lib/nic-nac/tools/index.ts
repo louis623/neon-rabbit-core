@@ -29,6 +29,7 @@ import { addShowTool } from './add-show'
 import { listMyShowsTool } from './list-my-shows'
 import { updateShowTool } from './update-show'
 import { cancelShowTool } from './cancel-show'
+import { endShowTool } from './end-show'
 import { updateBannerTextTool } from './update-banner-text'
 import { updateStreamingLinksTool } from './update-streaming-links'
 import { updateSiteSettingTool } from './update-site-setting'
@@ -72,6 +73,7 @@ const REGISTRY: ToolDefinition[] = [
   listMyShowsTool,
   updateShowTool,
   cancelShowTool,
+  endShowTool,
   updateBannerTextTool,
   updateStreamingLinksTool,
   updateSiteSettingTool,
@@ -112,6 +114,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   show_memory: [
     'get_show_session_context',
     'start_show_session',
+    'end_show',
     'record_show_session_event',
   ],
   trade_board: [
@@ -133,7 +136,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   ],
   fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
   catalog: ['search_jewelry_database', 'report_jewelry_catalog_issue'],
-  calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show'],
+  calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show', 'end_show'],
   site: ['update_banner_text', 'update_streaming_links', 'update_site_setting'],
   notification: [
     'send_sms_notification',

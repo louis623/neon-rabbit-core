@@ -39,6 +39,7 @@ export type {
   UpdateShowInput,
   UpdateShowResult,
   CancelShowResult,
+  ShowStatusTransitionResult,
   SubmitTradeRequestInput,
   SubmitTradeRequestResult,
   GetTradeRequestsFilters,
@@ -103,7 +104,7 @@ export {
 } from './trade-swaps'
 
 // Calendar / Shows
-export { addShow, listMyShows, updateShow, cancelShow } from './calendar'
+export { addShow, listMyShows, updateShow, cancelShow, startShow, endShow } from './calendar'
 
 // Trade Fulfillment
 export { updateFulfillmentStatus, getFulfillmentQueue } from './trade-fulfillment'

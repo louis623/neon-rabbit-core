@@ -6,8 +6,11 @@ import {
   isTelnyxSmsNumberAssigned,
 } from '@/lib/telnyx/config'
 import { assertMessageContentAllowed } from './message-content-screening'
-import { errors } from './errors'
-import { assertMessageSendAllowed } from './message-send-limits'
+import { ServiceError, errors } from './errors'
+import {
+  assertMessageSendAllowed,
+  mapAutomatedMessageLogInsertError,
+} from './message-send-limits'
 import { deductSmsCharge, refundSmsCharge } from './wallet'
 import { walletMilsToUsd } from './wallet-units'
 
@@ -134,7 +137,12 @@ export async function sendSmsNotification(
       .single()
 
     if (logError || !logRow?.id) {
-      throw logError ?? new Error('MESSAGE_LOG_INSERT_FAILED')
+      const duplicateError = mapAutomatedMessageLogInsertError(logError, {
+        channel: 'sms',
+        isAutomated: options.isAutomated,
+        automationKey: options.automationKey,
+      })
+      throw duplicateError ?? logError ?? new Error('MESSAGE_LOG_INSERT_FAILED')
     }
     logId = logRow.id
 
@@ -167,9 +175,18 @@ export async function sendSmsNotification(
 
     const detail = error instanceof Error ? error.message : 'Unknown Telnyx error'
     try {
-      await refundSmsCharge(repId, `SMS refund after send failure: ${detail}`)
+      const refundReason =
+        error instanceof ServiceError &&
+        error.code === 'AUTOMATED_MESSAGE_ALREADY_SENT'
+          ? `SMS refund after duplicate automated SMS reminder: ${detail}`
+          : `SMS refund after send failure: ${detail}`
+      await refundSmsCharge(repId, refundReason)
     } catch (refundError) {
       console.error('[sms] refund failed after send failure', { repId, refundError })
+    }
+
+    if (error instanceof ServiceError) {
+      throw error
     }
 
     throw errors.SMS_DELIVERY_FAILED(detail)

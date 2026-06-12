@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const startNicNacShowSessionMock = vi.fn()
 const recordNicNacShowSessionEventMock = vi.fn()
 const loadNicNacShowSessionContextMock = vi.fn()
+const startShowMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/show-sessions', async () => {
   const actual = await vi.importActual<typeof import('@/lib/nic-nac/show-sessions')>(
@@ -22,6 +23,10 @@ vi.mock('@/lib/nic-nac/show-sessions', async () => {
 vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logIncident: vi.fn(),
   logToolExecution: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@/lib/services/calendar', () => ({
+  startShow: (...args: unknown[]) => startShowMock(...args),
 }))
 
 import { buildAllTools } from '@/lib/nic-nac/tools'
@@ -47,10 +52,17 @@ beforeEach(() => {
   startNicNacShowSessionMock.mockReset()
   recordNicNacShowSessionEventMock.mockReset()
   loadNicNacShowSessionContextMock.mockReset()
+  startShowMock.mockReset()
 })
 
 describe('Nic-Nac show-session tools', () => {
   it('starts a show session using the authenticated rep and current conversation context', async () => {
+    startShowMock.mockResolvedValueOnce({
+      event: {
+        id: 'event-1',
+        status: 'live',
+      },
+    })
     startNicNacShowSessionMock.mockResolvedValueOnce({
       id: 'session-1',
       repId: 'rep-1',
@@ -77,6 +89,11 @@ describe('Nic-Nac show-session tools', () => {
         },
       },
     )
+    expect(startShowMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      'event-1',
+    )
     expect(result).toMatchObject({ id: 'session-1', status: 'active' })
   })
 
@@ -91,6 +108,7 @@ describe('Nic-Nac show-session tools', () => {
 
     await tool.execute({})
 
+    expect(startShowMock).not.toHaveBeenCalled()
     expect(startNicNacShowSessionMock).toHaveBeenCalledWith(
       { marker: 'supabase' },
       {
@@ -165,6 +183,7 @@ describe('Nic-Nac show-session tools', () => {
     expect(Object.keys(tools)).toEqual(
       expect.arrayContaining([
         'start_show_session',
+        'end_show',
         'record_show_session_event',
         'get_show_session_context',
       ]),
@@ -173,6 +192,7 @@ describe('Nic-Nac show-session tools', () => {
       "You have a scoped set of workspace tools available when the rep's request calls for them:",
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_show_session_context')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('end_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('record_show_session_event')
   })
 })

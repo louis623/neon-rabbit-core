@@ -10,6 +10,7 @@ import {
   type UpdateShowInput,
   type UpdateShowResult,
   type CancelShowResult,
+  type ShowStatusTransitionResult,
   type DiscountCode,
   type RecurringShowInput,
 } from './types'
@@ -138,14 +139,91 @@ function getRecurringOccurrenceCount(recurring: RecurringShowInput): number {
   return 26
 }
 
-function buildRecurringEventTimes(eventTime: string, recurring: RecurringShowInput): string[] {
+type ZonedDateTimeParts = {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+  second: number
+  millisecond: number
+}
+
+function getZonedDateTimeParts(date: Date, timeZone: string): ZonedDateTimeParts {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  })
+  const values = Object.fromEntries(
+    formatter.formatToParts(date).map((part) => [part.type, part.value]),
+  )
+  return {
+    year: Number(values.year),
+    month: Number(values.month),
+    day: Number(values.day),
+    hour: Number(values.hour),
+    minute: Number(values.minute),
+    second: Number(values.second),
+    millisecond: date.getUTCMilliseconds(),
+  }
+}
+
+function localPartsToUtcMs(parts: ZonedDateTimeParts): number {
+  return Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+    parts.millisecond,
+  )
+}
+
+function addDaysToLocalDate(parts: ZonedDateTimeParts, days: number): ZonedDateTimeParts {
+  const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + days))
+  return {
+    ...parts,
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate(),
+  }
+}
+
+function zonedLocalTimeToIso(parts: ZonedDateTimeParts, timeZone: string): string {
+  const targetLocalMs = localPartsToUtcMs(parts)
+  let utcMs = targetLocalMs
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const observed = getZonedDateTimeParts(new Date(utcMs), timeZone)
+    const delta = targetLocalMs - localPartsToUtcMs(observed)
+    if (delta === 0) break
+    utcMs += delta
+  }
+
+  return new Date(utcMs).toISOString()
+}
+
+function buildRecurringEventTimes(
+  eventTime: string,
+  timeZone: string,
+  recurring: RecurringShowInput,
+): string[] {
   const occurrences = getRecurringOccurrenceCount(recurring)
   const stepDays = recurring.cadence === 'daily' ? 1 : 7
-  const startTime = Date.parse(eventTime)
+  const startInstant = new Date(eventTime)
+  const startLocalParts = getZonedDateTimeParts(startInstant, timeZone)
 
   return Array.from({ length: occurrences }, (_, index) => {
-    const nextTime = startTime + index * stepDays * 24 * 60 * 60 * 1000
-    return new Date(nextTime).toISOString()
+    if (index === 0) return eventTime
+    const nextLocalParts = addDaysToLocalDate(startLocalParts, index * stepDays)
+    return zonedLocalTimeToIso(nextLocalParts, timeZone)
   })
 }
 
@@ -285,7 +363,7 @@ export async function addShow(
   }
 
   const recurrenceGroupId = randomUUID()
-  const eventRows = buildRecurringEventTimes(eventTime, input.recurring).map((nextEventTime) => ({
+  const eventRows = buildRecurringEventTimes(eventTime, timeZone, input.recurring).map((nextEventTime) => ({
     id: randomUUID(),
     rep_id: repId,
     platform,
@@ -404,6 +482,9 @@ export async function updateShow(
   const current = await getOwnedEvent(supabase, repId, eventId)
   if (current.status !== 'scheduled') throw errors.EVENT_NOT_EDITABLE()
   if (patch.applyToSeries && !current.recurrence_group_id) throw errors.NOT_A_SERIES()
+  if (patch.applyToSeries && patch.eventTime !== undefined) {
+    throw errors.SERIES_TIME_UPDATE_UNSUPPORTED()
+  }
 
   const update: CalendarEventUpdate = { updated_at: new Date().toISOString() }
   let hasPatch = false
@@ -508,4 +589,70 @@ export async function cancelShow(
   if (error) throw error
 
   return { event: mapEvent(data as CalendarEventRow) }
+}
+
+async function transitionShowStatus(
+  supabase: SupabaseClient,
+  repId: string,
+  eventId: string,
+  expectedStatus: EventStatus,
+  nextStatus: EventStatus,
+  errorFactory: () => Error,
+  options: { allowAlreadyTransitioned?: boolean } = {},
+): Promise<ShowStatusTransitionResult> {
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (!eventId) throw errors.EVENT_NOT_FOUND()
+
+  const current = await getOwnedEvent(supabase, repId, eventId)
+  if (options.allowAlreadyTransitioned && current.status === nextStatus) {
+    return { event: mapEvent(current) }
+  }
+  if (current.status !== expectedStatus) throw errorFactory()
+
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .update({
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', eventId)
+    .eq('rep_id', repId)
+    .eq('status', expectedStatus)
+    .select(EVENT_SELECT)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) throw errorFactory()
+
+  return { event: mapEvent(data as CalendarEventRow) }
+}
+
+export async function startShow(
+  supabase: SupabaseClient,
+  repId: string,
+  eventId: string,
+): Promise<ShowStatusTransitionResult> {
+  return transitionShowStatus(
+    supabase,
+    repId,
+    eventId,
+    'scheduled',
+    'live',
+    errors.EVENT_NOT_STARTABLE,
+    { allowAlreadyTransitioned: true },
+  )
+}
+
+export async function endShow(
+  supabase: SupabaseClient,
+  repId: string,
+  eventId: string,
+): Promise<ShowStatusTransitionResult> {
+  return transitionShowStatus(
+    supabase,
+    repId,
+    eventId,
+    'live',
+    'completed',
+    errors.EVENT_NOT_ENDABLE,
+  )
 }

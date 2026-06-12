@@ -154,7 +154,7 @@ export function buildPreShowReminderPlans(
       .filter((customer) => customer.canReceiveSms && customer.phone)
       .map((customer) => ({
         audienceId: customer.id,
-        automationKey: `show:${event.id}:pre-show-sms`,
+        automationKey: `show:${event.id}:audience:${customer.id}:pre-show-sms`,
         channel: 'sms' as const,
         eventId: event.id,
         eventTime: event.eventTime,

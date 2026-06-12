@@ -4,6 +4,8 @@ import {
   listMyShows,
   updateShow,
   cancelShow,
+  startShow,
+  endShow,
 } from '@/lib/services/calendar'
 
 type Chain = Record<string, unknown>
@@ -87,10 +89,11 @@ function makeInsertManyChain(result: { data: unknown[]; error: unknown | null })
 
 function makeUpdateSingleChain(result: { data: unknown; error: unknown | null }) {
   const single = vi.fn(() => Promise.resolve(result))
-  const select = vi.fn(() => ({ single }))
+  const maybeSingle = vi.fn(() => Promise.resolve(result))
+  const select = vi.fn(() => ({ single, maybeSingle }))
   const eq = vi.fn(() => chain)
   const chain: Chain = { eq, select }
-  return { chain, eq, select, single }
+  return { chain, eq, select, single, maybeSingle }
 }
 
 function makeUpdateManyChain(result: { data: unknown[]; error: unknown | null }) {
@@ -219,6 +222,62 @@ describe('calendar service', () => {
       recurrenceGroupId: 'group-1',
       recurrenceRule: 'weekly',
     })
+  })
+
+  it('addShow keeps recurring weekly shows at the same local time across DST', async () => {
+    const rows = [
+      baseRow({
+        id: 'event-1',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: '2027-03-08T01:00:00.000Z',
+      }),
+      baseRow({
+        id: 'event-2',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: '2027-03-15T00:00:00.000Z',
+      }),
+      baseRow({
+        id: 'event-3',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: '2027-03-22T00:00:00.000Z',
+      }),
+      baseRow({
+        id: 'event-4',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: '2027-03-29T00:00:00.000Z',
+      }),
+    ]
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2027-03-08T01:00:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Sunday Sparkles',
+      recurring: { cadence: 'weekly', duration: '1_month' },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload.map((row) => row.event_time)).toEqual([
+      '2027-03-08T01:00:00.000Z',
+      '2027-03-15T00:00:00.000Z',
+      '2027-03-22T00:00:00.000Z',
+      '2027-03-29T00:00:00.000Z',
+    ])
   })
 
   it('addShow rejects more than 10 discount codes', async () => {
@@ -404,6 +463,31 @@ describe('calendar service', () => {
     ).rejects.toMatchObject({ code: 'NOT_A_SERIES' })
   })
 
+  it('updateShow rejects eventTime when applying a patch to a recurring series', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({
+        id: 'event-1',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+      }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(
+      updateShow(supabase, 'rep-1', 'event-1', {
+        eventTime: '2099-06-01T20:00:00.000Z',
+        applyToSeries: true,
+      }),
+    ).rejects.toMatchObject({
+      code: 'SERIES_TIME_UPDATE_UNSUPPORTED',
+    })
+    expect(supabase.from).toHaveBeenCalledTimes(1)
+  })
+
   it('cancelShow only allows scheduled/live events and returns the cancelled row', async () => {
     const current = makeSelectSingleChain({
       data: baseRow({ status: 'scheduled' }),
@@ -425,5 +509,114 @@ describe('calendar service', () => {
     expect(updateCall.status).toBe('cancelled')
     expect(typeof updateCall.updated_at).toBe('string')
     expect(result.event.status).toBe('cancelled')
+  })
+
+  it('startShow moves a scheduled event to live and returns the live event', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'scheduled' }),
+      error: null,
+    })
+    const liveRow = baseRow({ status: 'live' })
+    const updated = makeUpdateSingleChain({ data: liveRow, error: null })
+
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
+      .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+
+    const supabase = { from } as never
+
+    const result = await startShow(supabase, 'rep-1', 'event-1')
+
+    const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateCall.status).toBe('live')
+    expect(typeof updateCall.updated_at).toBe('string')
+    expect(result.event.status).toBe('live')
+  })
+
+  it('startShow rejects events that are not scheduled', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'completed' }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(startShow(supabase, 'rep-1', 'event-1')).rejects.toMatchObject({
+      code: 'EVENT_NOT_STARTABLE',
+    })
+  })
+
+  it('startShow treats an already-live owned event as an idempotent retry', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'live' }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    const result = await startShow(supabase, 'rep-1', 'event-1')
+
+    expect(result.event.status).toBe('live')
+    expect(supabase.from).toHaveBeenCalledTimes(1)
+  })
+
+  it('endShow moves a live event to completed and returns the completed event', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'live' }),
+      error: null,
+    })
+    const completedRow = baseRow({ status: 'completed' })
+    const updated = makeUpdateSingleChain({ data: completedRow, error: null })
+
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
+      .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+
+    const supabase = { from } as never
+
+    const result = await endShow(supabase, 'rep-1', 'event-1')
+
+    const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateCall.status).toBe('completed')
+    expect(typeof updateCall.updated_at).toBe('string')
+    expect(result.event.status).toBe('completed')
+  })
+
+  it('endShow rejects events that are not live', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'scheduled' }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(endShow(supabase, 'rep-1', 'event-1')).rejects.toMatchObject({
+      code: 'EVENT_NOT_ENDABLE',
+    })
+  })
+
+  it('endShow rejects when the live event changed status before the update landed', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ status: 'live' }),
+      error: null,
+    })
+    const updated = makeUpdateSingleChain({ data: null, error: null })
+
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
+      .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+
+    const supabase = { from } as never
+
+    await expect(endShow(supabase, 'rep-1', 'event-1')).rejects.toMatchObject({
+      code: 'EVENT_NOT_ENDABLE',
+    })
+    expect(updated.eq).toHaveBeenCalledWith('status', 'live')
   })
 })

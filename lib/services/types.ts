@@ -239,6 +239,10 @@ export interface CancelShowResult {
   event: CalendarEvent
 }
 
+export interface ShowStatusTransitionResult {
+  event: CalendarEvent
+}
+
 // ============================================================================
 // trade-requests domain
 // ============================================================================

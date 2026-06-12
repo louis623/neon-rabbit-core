@@ -1669,6 +1669,55 @@ describe('DashboardPlaceholder', () => {
     expect(html).toMatch(/EDT|Eastern/)
   })
 
+  it('labels live, scheduled, completed, and cancelled calendar shows distinctly', () => {
+    const show = CALENDAR_READY_STATE.summary.upcomingEvents[0]
+    const recentShow = CALENDAR_READY_STATE.summary.recentEvents[0]
+    const html = renderToStaticMarkup(
+      createElement(ShowCalendarCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            upcomingEvents: [
+              {
+                ...show,
+                id: 'show-live',
+                title: 'Live tray sale',
+                status: 'live' as const,
+              },
+              {
+                ...show,
+                id: 'show-scheduled',
+                title: 'Scheduled sparkle drop',
+                status: 'scheduled' as const,
+                isRecurring: false,
+              },
+            ],
+            recentEvents: [
+              {
+                ...recentShow,
+                id: 'show-completed',
+                title: 'Completed tray sale',
+                status: 'completed' as const,
+              },
+              {
+                ...recentShow,
+                id: 'show-cancelled',
+                title: 'Cancelled tray sale',
+                status: 'cancelled' as const,
+              },
+            ],
+          },
+        },
+        referenceDate: new Date('2026-05-10T12:00:00.000Z'),
+      }),
+    )
+
+    expect(html).toContain('Live now')
+    expect(html).toContain('Scheduled')
+    expect(html).toContain('Completed')
+    expect(html).toContain('Cancelled')
+  })
+
   it('builds a five-week calendar grid anchored to the reference month', () => {
     const cells = buildShowCalendarCells(
       CALENDAR_READY_STATE.summary.upcomingEvents,

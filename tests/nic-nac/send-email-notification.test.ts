@@ -304,6 +304,7 @@ describe('send_email_notification', () => {
       'approve_trade',
       'approve_trade_swap',
       'cancel_show',
+      'end_show',
       'ensure_live_queue_sync_code',
       'get_customer_audience',
       'get_fulfillment_queue',

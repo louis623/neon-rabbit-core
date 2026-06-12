@@ -2956,6 +2956,30 @@
   color: var(--nic-nac-text-secondary);
 }
 
+.calendarStatusLive {
+  color: #9f145f;
+  background: rgba(255, 239, 248, 0.86);
+  border-color: rgba(238, 44, 155, 0.2);
+}
+
+.calendarStatusScheduled {
+  color: #235846;
+  background: rgba(235, 255, 247, 0.86);
+  border-color: rgba(95, 214, 167, 0.24);
+}
+
+.calendarStatusCompleted {
+  color: #35516f;
+  background: rgba(235, 245, 255, 0.88);
+  border-color: rgba(82, 132, 189, 0.2);
+}
+
+.calendarStatusCancelled {
+  color: #765045;
+  background: rgba(255, 244, 235, 0.9);
+  border-color: rgba(197, 111, 75, 0.22);
+}
+
 .rosterFallback {
   min-height: 120px;
   margin-top: 4px;

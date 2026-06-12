@@ -95,7 +95,7 @@ describe('pre-show reminders', () => {
     expect(plans).toEqual([
       {
         audienceId: 'aud-1',
-        automationKey: 'show:event-1:pre-show-sms',
+        automationKey: 'show:event-1:audience:aud-1:pre-show-sms',
         channel: 'sms',
         eventId: 'event-1',
         eventTime: '2026-05-17T20:30:00.000Z',
@@ -124,6 +124,25 @@ describe('pre-show reminders', () => {
 
     expect(plans).toHaveLength(1)
     expect(plans[0].recipient).toBe('+17206296507')
+  })
+
+  it('uses one automation key per show customer so multiple recipients can receive the same show reminder', () => {
+    const plans = buildPreShowReminderPlans({
+      now: new Date('2026-05-17T20:00:00.000Z'),
+      leadMinutes: 30,
+      events: [makeEvent()],
+      audienceByRepId: {
+        'rep-1': [
+          makeAudience({ id: 'aud-1', phone: '+15555550101' }),
+          makeAudience({ id: 'aud-2', phone: '+15555550102' }),
+        ],
+      },
+    })
+
+    expect(plans.map((plan) => plan.automationKey)).toEqual([
+      'show:event-1:audience:aud-1:pre-show-sms',
+      'show:event-1:audience:aud-2:pre-show-sms',
+    ])
   })
 
   it('blocks live processing unless pre-show SMS sends are explicitly enabled', async () => {

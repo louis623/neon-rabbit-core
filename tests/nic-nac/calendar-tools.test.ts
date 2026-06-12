@@ -5,6 +5,7 @@ const addShowMock = vi.fn()
 const listMyShowsMock = vi.fn()
 const updateShowMock = vi.fn()
 const cancelShowMock = vi.fn()
+const endShowMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 
@@ -13,6 +14,7 @@ vi.mock('@/lib/services/calendar', () => ({
   listMyShows: (...args: unknown[]) => listMyShowsMock(...args),
   updateShow: (...args: unknown[]) => updateShowMock(...args),
   cancelShow: (...args: unknown[]) => cancelShowMock(...args),
+  endShow: (...args: unknown[]) => endShowMock(...args),
 }))
 
 vi.mock('@/lib/nic-nac/audit', () => ({
@@ -29,6 +31,7 @@ import { makeAddShowTool } from '@/lib/nic-nac/tools/add-show'
 import { makeListMyShowsTool } from '@/lib/nic-nac/tools/list-my-shows'
 import { makeUpdateShowTool } from '@/lib/nic-nac/tools/update-show'
 import { makeCancelShowTool } from '@/lib/nic-nac/tools/cancel-show'
+import { makeEndShowTool } from '@/lib/nic-nac/tools/end-show'
 import { buildAllTools } from '@/lib/nic-nac/tools'
 import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
 import { APPROVAL_COPY } from '@/app/nic-nac/components/HITLBlock'
@@ -76,6 +79,7 @@ beforeEach(() => {
   listMyShowsMock.mockReset()
   updateShowMock.mockReset()
   cancelShowMock.mockReset()
+  endShowMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
 })
@@ -248,6 +252,41 @@ describe('calendar tools', () => {
     })
   })
 
+  it('end_show completes a live show, writes audit, and returns the completed event', async () => {
+    endShowMock.mockResolvedValueOnce({
+      event: calendarEvent({ status: 'completed' }),
+    })
+    const tool = makeEndShowTool(makeCtx()) as unknown as ToolDef
+
+    const result = await tool.execute({ eventId: VALID_EVENT_ID })
+
+    expect(endShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+    )
+    expect(writeTradeActionAuditMock).toHaveBeenCalledTimes(1)
+    expect(writeTradeActionAuditMock.mock.calls[0][0]).toMatchObject({
+      actionType: 'end_show',
+      repId: 'rep-1',
+      targetListingId: null,
+      details: { runId: 'run-1', conversationId: 'conv-1' },
+    })
+    expect(result).toMatchObject({
+      event: { status: 'completed' },
+    })
+  })
+
+  it('end_show translates ServiceError into NicNacToolError', async () => {
+    endShowMock.mockRejectedValueOnce(errors.EVENT_NOT_ENDABLE())
+    const tool = makeEndShowTool(makeCtx()) as unknown as ToolDef
+
+    await expect(tool.execute({ eventId: VALID_EVENT_ID })).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'EVENT_NOT_ENDABLE',
+    })
+  })
+
   it('add_show description makes the current ongoing horizon explicit', () => {
     const tool = makeAddShowTool(makeCtx()) as unknown as { description?: string }
     expect(tool.description).toContain('ongoing')
@@ -256,7 +295,7 @@ describe('calendar tools', () => {
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools exposes the four calendar tools without duplicate registry names', () => {
+  it('buildAllTools exposes the five calendar tools without duplicate registry names', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
@@ -266,6 +305,7 @@ describe('calendar registry and prompt wiring', () => {
       'list_my_shows',
       'update_show',
       'cancel_show',
+      'end_show',
     ]))
   })
 
@@ -277,10 +317,12 @@ describe('calendar registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('list_my_shows')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('cancel_show')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('end_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Recurring shows are now supported')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('How often')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('applyToSeries: true')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Do not combine applyToSeries: true with eventTime')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Calendar times must be timezone-explicit')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain("viewer's local browser timezone")
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('about six months ahead')

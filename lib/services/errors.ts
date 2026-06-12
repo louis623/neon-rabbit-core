@@ -185,6 +185,20 @@ export const errors = {
       userMessage: 'That show is already done or cancelled.',
       statusCode: 409,
     }),
+  EVENT_NOT_STARTABLE: () =>
+    new ServiceError({
+      code: 'EVENT_NOT_STARTABLE',
+      message: 'event is not scheduled and cannot be started',
+      userMessage: 'I can only start a show that is still scheduled.',
+      statusCode: 409,
+    }),
+  EVENT_NOT_ENDABLE: () =>
+    new ServiceError({
+      code: 'EVENT_NOT_ENDABLE',
+      message: 'event is not live and cannot be completed',
+      userMessage: 'I can only end a show that is currently live.',
+      statusCode: 409,
+    }),
   EVENT_TIME_PAST: () =>
     new ServiceError({
       code: 'EVENT_TIME_PAST',
@@ -228,6 +242,14 @@ export const errors = {
       message: 'event is not part of a recurring series',
       userMessage:
         "That show isn't part of a recurring series, so I can only update it individually.",
+      statusCode: 400,
+    }),
+  SERIES_TIME_UPDATE_UNSUPPORTED: () =>
+    new ServiceError({
+      code: 'SERIES_TIME_UPDATE_UNSUPPORTED',
+      message: 'event time cannot be updated across a recurring series patch',
+      userMessage:
+        'Title, platform, discount codes, and collections can be applied across a series, but changing the time for every future show needs a separate schedule update.',
       statusCode: 400,
     }),
   INVALID_PHONE_NUMBER: () =>

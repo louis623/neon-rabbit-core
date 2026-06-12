@@ -874,6 +874,33 @@ function getCalendarEventTitle(event: CalendarEvent) {
   return `${event.platform} live`
 }
 
+function getCalendarEventStatusLabel(event: CalendarEvent) {
+  switch (event.status) {
+    case 'live':
+      return 'Live now'
+    case 'completed':
+      return 'Completed'
+    case 'cancelled':
+      return 'Cancelled'
+    case 'scheduled':
+    default:
+      return 'Scheduled'
+  }
+}
+
+function getCalendarStatusClassName(event: CalendarEvent) {
+  const statusClass =
+    event.status === 'live'
+      ? styles.calendarStatusLive
+      : event.status === 'completed'
+        ? styles.calendarStatusCompleted
+        : event.status === 'cancelled'
+          ? styles.calendarStatusCancelled
+          : styles.calendarStatusScheduled
+
+  return statusClass
+}
+
 export function getShowCalendarMetrics(
   upcomingEvents: CalendarEvent[],
   recentEvents: CalendarEvent[],
@@ -5861,8 +5888,11 @@ export function ShowCalendarCard({
             <span className={styles.calendarCellDay}>{cell.dayNumber}</span>
             <div className={styles.calendarCellEvents}>
               {cell.events.slice(0, 2).map((event) => (
-                <span key={event.id} className={styles.calendarEventPill}>
-                  {getCalendarEventTitle(event)}
+                <span
+                  key={event.id}
+                  className={`${styles.calendarEventPill} ${getCalendarStatusClassName(event)}`}
+                >
+                  {getCalendarEventStatusLabel(event)}: {getCalendarEventTitle(event)}
                 </span>
               ))}
               {cell.events.length > 2 ? (
@@ -5893,9 +5923,16 @@ export function ShowCalendarCard({
                       {event.platform}
                     </span>
                   </div>
-                  {event.isRecurring ? (
-                    <span className={styles.timelineItem}>Recurring</span>
-                  ) : null}
+                  <div className={styles.timelineList}>
+                    <span
+                      className={`${styles.timelineItem} ${getCalendarStatusClassName(event)}`}
+                    >
+                      {getCalendarEventStatusLabel(event)}
+                    </span>
+                    {event.isRecurring ? (
+                      <span className={styles.timelineItem}>Recurring</span>
+                    ) : null}
+                  </div>
                 </div>
               ))
             )}
@@ -5918,8 +5955,10 @@ export function ShowCalendarCard({
                       {event.platform}
                     </span>
                   </div>
-                  <span className={styles.timelineItem}>
-                    {event.status === 'completed' ? 'Completed' : 'Cancelled'}
+                  <span
+                    className={`${styles.timelineItem} ${getCalendarStatusClassName(event)}`}
+                  >
+                    {getCalendarEventStatusLabel(event)}
                   </span>
                 </div>
               ))

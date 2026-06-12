@@ -1,8 +1,11 @@
 import { getResendConfig, isResendEnabled } from '@/lib/resend/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { assertMessageContentAllowed } from './message-content-screening'
-import { errors } from './errors'
-import { assertMessageSendAllowed } from './message-send-limits'
+import { ServiceError, errors } from './errors'
+import {
+  assertMessageSendAllowed,
+  mapAutomatedMessageLogInsertError,
+} from './message-send-limits'
 
 const MAX_CONTENT_PREVIEW = 160
 
@@ -150,7 +153,12 @@ export async function sendEmailNotification(
       .single()
 
     if (logError || !logRow?.id) {
-      throw logError ?? new Error('MESSAGE_LOG_INSERT_FAILED')
+      const duplicateError = mapAutomatedMessageLogInsertError(logError, {
+        channel: 'email',
+        isAutomated: options.isAutomated,
+        automationKey: options.automationKey,
+      })
+      throw duplicateError ?? logError ?? new Error('MESSAGE_LOG_INSERT_FAILED')
     }
     logId = logRow.id
 
@@ -204,6 +212,10 @@ export async function sendEmailNotification(
     }
 
     const detail = error instanceof Error ? error.message : 'Unknown Resend error'
+    if (error instanceof ServiceError) {
+      throw error
+    }
+
     throw errors.EMAIL_DELIVERY_FAILED(detail)
   }
 }

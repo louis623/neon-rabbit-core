@@ -14,8 +14,44 @@ export interface MessageSendLimitInput {
   now?: Date
 }
 
+type MessageLogInsertError = {
+  code?: string | null
+  message?: string | null
+  details?: string | null
+  hint?: string | null
+}
+
 function getManualWindowStart(now: Date) {
   return new Date(now.getTime() - ROLLING_WEEK_MS).toISOString()
+}
+
+export function mapAutomatedMessageLogInsertError(
+  error: unknown,
+  input: Pick<MessageSendLimitInput, 'channel' | 'isAutomated' | 'automationKey'>,
+) {
+  const automationKey = input.automationKey?.trim()
+  if (!input.isAutomated || !automationKey) return null
+
+  const candidate = error as MessageLogInsertError | null
+  if (!candidate || typeof candidate !== 'object') return null
+
+  const text = [
+    candidate.code,
+    candidate.message,
+    candidate.details,
+    candidate.hint,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  const isUniqueViolation =
+    candidate.code === '23505' ||
+    text.includes('idx_messages_automation_key_unique')
+
+  return isUniqueViolation
+    ? errors.AUTOMATED_MESSAGE_ALREADY_SENT(input.channel)
+    : null
 }
 
 export async function assertMessageSendAllowed(

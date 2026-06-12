@@ -34,5 +34,8 @@ describe('vercel cron config', () => {
     expect(workflow).toContain('/api/internal/show-reminders/pre-show/live')
     expect(workflow).toContain('SPARKLE_PRE_SHOW_CRON_SECRET')
     expect(workflow).toContain('SPARKLE_PRE_SHOW_CRON_SECRET is not configured')
+    expect(workflow).toMatch(/SPARKLE_PRE_SHOW_CRON_SECRET is not configured[^\n]+/i)
+    expect(workflow).toContain('exit 1')
+    expect(workflow).not.toContain('skipping reminder trigger')
   })
 })

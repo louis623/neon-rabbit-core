@@ -32,6 +32,7 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toEqual([
       'get_show_session_context',
       'start_show_session',
+      'end_show',
       'record_show_session_event',
     ])
   })
@@ -90,7 +91,15 @@ describe('Nic-Nac tool routing', () => {
     expect(toolNames).toContain('read_recent_rep_notes')
     expect(toolNames).toContain('write_rep_note')
     expect(toolNames).toContain('get_show_session_context')
+    expect(toolNames).toContain('end_show')
     expect(toolNames).toContain('record_show_session_event')
+  })
+
+  it('keeps end_show available for natural show-over wording', () => {
+    const intents = getToolIntentsForText('The show is over now.')
+
+    expect(intents).toEqual(['show_memory'])
+    expect(listToolNamesForIntents(intents)).toContain('end_show')
   })
 
   it.each([
@@ -127,6 +136,7 @@ describe('Nic-Nac tool routing', () => {
     const tools = buildToolsForIntents(makeCtx(), ['show_memory'])
 
     expect(Object.keys(tools).sort()).toEqual([
+      'end_show',
       'get_show_session_context',
       'record_show_session_event',
       'start_show_session',

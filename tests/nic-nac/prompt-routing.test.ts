@@ -8,14 +8,16 @@ describe('Nic-Nac routed system prompt', () => {
       activeToolNames: [
         'get_show_session_context',
         'start_show_session',
+        'end_show',
         'record_show_session_event',
       ],
     })
 
     expect(prompt).toContain('You are Nic-Nac')
     expect(prompt).toContain('get_show_session_context')
+    expect(prompt).toContain('end_show')
     expect(prompt).toContain('record_show_session_event')
-    expect(prompt).toContain('zero-provider state tools')
+    expect(prompt).toContain('zero-provider database tools')
     expect(prompt).toContain('Do not pre-announce tool calls')
     expect(prompt).not.toContain('You have twenty-nine tools')
     expect(prompt).not.toContain('send_sms_notification')
@@ -30,6 +32,7 @@ describe('Nic-Nac routed system prompt', () => {
         'write_rep_note',
         'get_show_session_context',
         'start_show_session',
+        'end_show',
         'record_show_session_event',
       ],
     })

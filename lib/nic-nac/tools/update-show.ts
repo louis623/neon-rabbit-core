@@ -57,7 +57,8 @@ export function makeUpdateShowTool(ctx: {
   return tool({
     description:
       'Update details on a scheduled show. Can change time, platform, title, description, discount codes, or featured collections. ' +
-      'Set applyToSeries=true to apply changes to all future shows in a recurring series.',
+      'Set applyToSeries=true to apply non-time changes to all future shows in a recurring series. ' +
+      'Do not combine applyToSeries=true with eventTime.',
     inputSchema,
     execute: async (input) => {
       const {
