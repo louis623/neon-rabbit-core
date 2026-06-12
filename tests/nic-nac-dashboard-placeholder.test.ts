@@ -16,6 +16,7 @@ import {
   ShowCalendarCard,
   TeamManagementCard,
   WalletSummaryCard,
+  WorkspaceAccessNotice,
   buildShowCalendarCells,
   buildCustomerSparkleSiteHref,
   getAutoRechargeAmountOptions,
@@ -26,6 +27,7 @@ import {
   hasPaidWorkspaceSubscription,
   isComingSoonWorkspaceSection,
   resolveWorkspaceSectionForAccess,
+  shouldShowWorkspaceAccessNotice,
   filterRosterCustomers,
   getWalletBannerMessage,
   getWalletLoadOptions,
@@ -541,6 +543,37 @@ describe('DashboardPlaceholder', () => {
       'trade-board',
     )
     expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('trade-board')
+  })
+
+  it('shows account access guidance instead of a blank panel for locked workspace sections', () => {
+    expect(shouldShowWorkspaceAccessNotice('trade-board', false)).toBe(true)
+    expect(shouldShowWorkspaceAccessNotice('show-calendar', false)).toBe(true)
+    expect(shouldShowWorkspaceAccessNotice('help-resources', false)).toBe(false)
+    expect(shouldShowWorkspaceAccessNotice('account', false)).toBe(false)
+    expect(shouldShowWorkspaceAccessNotice('trade-board', true)).toBe(false)
+
+    const html = renderToStaticMarkup(
+      createElement(WorkspaceAccessNotice, {
+        sectionLabel: 'Trade Board',
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            paymentMethod: null,
+            invoices: [],
+            canStartSubscription: true,
+            canManageBilling: true,
+          },
+        },
+        agreementAccepted: false,
+      }),
+    )
+
+    expect(html).toContain('Trade Board needs account setup')
+    expect(html).toContain('Your account page has the current checkout or billing step.')
+    expect(html).toContain('Open account')
+    expect(html).toContain('Continue to secure Stripe checkout')
   })
 
   it('renders the locked team management add-on skeleton', () => {

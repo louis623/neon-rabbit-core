@@ -173,6 +173,24 @@ export function resolveWorkspaceSectionForAccess(
   return section
 }
 
+export function shouldShowWorkspaceAccessNotice(
+  section: WorkspaceSectionKey,
+  hasPaidWorkspace: boolean,
+) {
+  return (
+    !hasPaidWorkspace &&
+    section !== 'help-resources' &&
+    section !== 'account'
+  )
+}
+
+function getWorkspaceSectionLabel(section: WorkspaceSectionKey) {
+  return (
+    WORKSPACE_SECTIONS.find((workspaceSection) => workspaceSection.key === section)
+      ?.label ?? 'Workspace'
+  )
+}
+
 export type RosterFilter =
   | 'all'
   | 'sms_reachable'
@@ -2817,6 +2835,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     accountBillingState.summary,
   )
   const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
+  const showWorkspaceAccessNotice = shouldShowWorkspaceAccessNotice(
+    activeSection,
+    hasPaidWorkspace,
+  )
   const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
   const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
 
@@ -2957,6 +2979,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </nav>
         </aside>
         <section className={styles.workspaceContent}>
+          {showWorkspaceAccessNotice ? (
+            <WorkspaceAccessNotice
+              sectionLabel={getWorkspaceSectionLabel(activeSection)}
+              state={accountBillingState}
+              actionState={accountBillingActionState}
+              onOpenAccount={() => setActiveSection('account')}
+              onStartSubscription={() => handleAccountBillingAction('subscribe')}
+              onManageBilling={() => handleAccountBillingAction('manage')}
+              statusMessage={accountBillingActionState.helperMessage}
+              agreementAccepted={subscriptionAgreementAccepted}
+              onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
+            />
+          ) : null}
+
           {hasPaidWorkspace && activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
@@ -3118,6 +3154,64 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       </div>
       )}
     </main>
+  )
+}
+
+export function WorkspaceAccessNotice({
+  sectionLabel,
+  state,
+  actionState,
+  onOpenAccount,
+  onStartSubscription,
+  onManageBilling,
+  statusMessage,
+  agreementAccepted,
+  onAgreementAcceptedChange,
+}: {
+  sectionLabel: string
+  state: AccountBillingState
+  actionState?: AccountBillingActionState
+  onOpenAccount?: () => void
+  onStartSubscription?: () => void
+  onManageBilling?: () => void
+  statusMessage?: string | null
+  agreementAccepted?: boolean
+  onAgreementAcceptedChange?: (accepted: boolean) => void
+}) {
+  const isLoading = state.status !== 'ready'
+  return (
+    <div className={styles.workspaceSectionStack}>
+      <div className={styles.workspaceIntroCard}>
+        <div>
+          <div className={styles.cardTitle}>
+            {isLoading ? 'Checking workspace access' : `${sectionLabel} needs account setup`}
+          </div>
+          <div className={styles.accountMuted}>
+            {isLoading
+              ? 'Sparkle Suite is loading your account status before showing this section.'
+              : 'Your account page has the current checkout or billing step. Once access is active, this section will open here.'}
+          </div>
+        </div>
+        <div className={styles.actionRow}>
+          <button
+            type="button"
+            className={styles.helperButton}
+            onClick={() => onOpenAccount?.()}
+          >
+            Open account
+          </button>
+        </div>
+      </div>
+      <AccountBillingCard
+        state={state}
+        actionState={actionState}
+        onStartSubscription={onStartSubscription}
+        onManageBilling={onManageBilling}
+        statusMessage={statusMessage}
+        agreementAccepted={agreementAccepted}
+        onAgreementAcceptedChange={onAgreementAcceptedChange}
+      />
+    </div>
   )
 }
 
