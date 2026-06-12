@@ -4585,7 +4585,7 @@ export function HelpResourcesCard({
                 </div>
               </details>
 
-              <details className={styles.supportPath}>
+              <details className={styles.supportPath} open>
                 <summary className={styles.playbookGroupSummary}>
                   <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
                   <div>

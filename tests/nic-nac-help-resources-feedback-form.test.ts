@@ -57,6 +57,7 @@ describe('HelpResourcesCard support report form', () => {
 
     expect(source).toContain('supportReportTitleRef')
     expect(source).toContain('focusSupportReportForm')
+    expect(source).toContain('<details className={styles.supportPath} open>')
     expect(source).toContain('Start report')
     expect(source).not.toContain("className={styles.timelineItem}>\n                      {action}")
     expect(source).toContain("fetch('/api/nic-nac/support-reports'")
