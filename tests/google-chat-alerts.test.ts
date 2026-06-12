@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { sendGoogleChatSupportAlert } from '@/lib/ops/google-chat-alerts'
+import {
+  buildSupportAuditAlertText,
+  sendGoogleChatSupportAlert,
+} from '@/lib/ops/google-chat-alerts'
 
 describe('sendGoogleChatSupportAlert', () => {
   const originalWebhook = process.env.GOOGLE_CHAT_SUPPORT_WEBHOOK_URL
@@ -87,5 +90,83 @@ describe('sendGoogleChatSupportAlert', () => {
         lines: ['Report ID: report-2'],
       }),
     ).rejects.toThrow(`Google Chat alert failed: 403 ${'x'.repeat(300)}`)
+  })
+
+  it('formats enriched Support Auditor alerts with client, issue, findings, and first action', () => {
+    const text = buildSupportAuditAlertText({
+      title: 'Bug: Trade board item vanished',
+      urgency: 'blocking',
+      clientName: 'Jane Roberts',
+      showName: "Jane's Sparkle Party",
+      phone: '555-123-4567',
+      email: 'jane@example.com',
+      reportId: 'report-1',
+      issue: 'Rep says a Trade Board item disappeared after approving a trade.',
+      source: 'Help form',
+      workflow: 'Trade Board',
+      auditStatus: 'completed',
+      summary:
+        'The account is active and a trade cleanup lesson may apply.',
+      findings: [
+        'Recent trade approval found for customer Melissa K.',
+        'Similar prior lesson: Replacement listing missing after approval.',
+      ],
+      recommendedFirstAction:
+        'Open Control Center and inspect the latest trade swap cleanup state.',
+    })
+
+    expect(text).toBe(
+      'Sparkle Suite support report\n\n' +
+        '[Blocking] Bug: Trade board item vanished\n\n' +
+        'Client: Jane Roberts\n' +
+        "Show: Jane's Sparkle Party\n" +
+        'Phone: 555-123-4567\n' +
+        'Email: jane@example.com\n' +
+        'Report ID: report-1\n\n' +
+        'Issue: Rep says a Trade Board item disappeared after approving a trade.\n' +
+        'Submitted from: Help form\n' +
+        'Workflow: Trade Board\n\n' +
+        'Support Auditor: Completed\n' +
+        'Summary: The account is active and a trade cleanup lesson may apply.\n\n' +
+        'Key findings:\n' +
+        '- Recent trade approval found for customer Melissa K.\n' +
+        '- Similar prior lesson: Replacement listing missing after approval.\n\n' +
+        'Recommended first action:\n' +
+        'Open Control Center and inspect the latest trade swap cleanup state.',
+    )
+  })
+
+  it('posts an enriched Support Auditor payload directly to Google Chat', async () => {
+    process.env.GOOGLE_CHAT_SUPPORT_WEBHOOK_URL =
+      'https://chat.googleapis.com/v1/spaces/support/messages?key=key&token=token'
+
+    const payload = {
+      title: 'Bug: Trade board item vanished',
+      urgency: 'blocking' as const,
+      clientName: 'Jane Roberts',
+      showName: "Jane's Sparkle Party",
+      phone: '555-123-4567',
+      email: 'jane@example.com',
+      reportId: 'report-1',
+      issue: 'Rep says a Trade Board item disappeared after approving a trade.',
+      source: 'Help form',
+      workflow: 'Trade Board',
+      auditStatus: 'completed' as const,
+      summary: 'The account is active.',
+      findings: ['Similar prior lesson found.'],
+      recommendedFirstAction: 'Open Control Center.',
+    }
+
+    const result = await sendGoogleChatSupportAlert(payload)
+
+    expect(result).toEqual({ delivered: true })
+    expect(fetch).toHaveBeenCalledWith(
+      'https://chat.googleapis.com/v1/spaces/support/messages?key=key&token=token',
+      expect.objectContaining({
+        body: JSON.stringify({
+          text: buildSupportAuditAlertText(payload),
+        }),
+      }),
+    )
   })
 })
