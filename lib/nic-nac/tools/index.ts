@@ -42,6 +42,7 @@ import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { customerAudienceTool } from './get-customer-audience'
 import { getHelpResourcesTool } from './get-help-resources'
+import { submitSupportReportTool } from './submit-support-report'
 import { getRequiredSetupStateTool } from './get-required-setup-state'
 import { ensureLiveQueueSyncCodeTool } from './ensure-live-queue-sync-code'
 import { saveRequiredSetupAnswerTool } from './save-required-setup-answer'
@@ -84,6 +85,7 @@ const REGISTRY: ToolDefinition[] = [
   getNotificationPreferencesTool,
   customerAudienceTool,
   getHelpResourcesTool,
+  submitSupportReportTool,
   getRequiredSetupStateTool,
   ensureLiveQueueSyncCodeTool,
   saveRequiredSetupAnswerTool,
@@ -140,7 +142,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'get_customer_audience',
   ],
   audience: ['get_customer_audience', 'get_notification_preferences'],
-  resources: ['get_help_resources'],
+  resources: ['get_help_resources', 'submit_support_report'],
   required_setup: [
     'get_required_setup_state',
     'ensure_live_queue_sync_code',
@@ -171,6 +173,18 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   ])
 
   if (asksForResourceHelp) return ['resources']
+
+  if (
+    hasAny([
+      /\breport\b.*\b(bug|issue|problem)\b/,
+      /\bfile\b.*\b(issue|bug|report)\b/,
+      /\bsuggest\b.*\b(upgrade|improvement|feature)\b/,
+      /\bworkflow idea\b/,
+      /\bnic[- ]?nac\b.*\b(broken|confusing|stuck|not responding|wrong)\b/,
+    ])
+  ) {
+    return ['resources']
+  }
 
   if (
     hasAny([

@@ -1219,6 +1219,96 @@
   padding-top: 10px;
 }
 
+.supportReportForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(64, 41, 36, 0.1);
+  padding-top: 12px;
+}
+
+.supportReportFieldset {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.supportReportChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.supportReportChoice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 9px 10px;
+}
+
+.supportReportChoice input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.supportReportChoice span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.supportReportFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.supportReportTextarea {
+  width: 100%;
+  min-height: 82px;
+  resize: vertical;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 10px 12px;
+}
+
+.supportReportTextarea:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
+}
+
+.supportReportContactToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.supportReportContactToggle input {
+  margin: 2px 0 0;
+}
+
 .customerSiteLooks {
   border-radius: 14px;
   border: 1px solid rgba(64, 41, 36, 0.12);
@@ -3017,6 +3107,11 @@
   }
 
   .featureIndexGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .supportReportChoiceGrid,
+  .supportReportFieldGrid {
     grid-template-columns: 1fr;
   }
 

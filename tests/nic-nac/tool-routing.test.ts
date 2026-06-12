@@ -74,7 +74,10 @@ describe('Nic-Nac tool routing', () => {
     )
 
     expect(intents).toEqual(['resources'])
-    expect(listToolNamesForIntents(intents)).toEqual(['get_help_resources'])
+    expect(listToolNamesForIntents(intents)).toEqual([
+      'get_help_resources',
+      'submit_support_report',
+    ])
   })
 
   it.each([
@@ -85,7 +88,26 @@ describe('Nic-Nac tool routing', () => {
     const intents = getToolIntentsForText(text)
 
     expect(intents).toEqual(['resources'])
-    expect(listToolNamesForIntents(intents)).toEqual(['get_help_resources'])
+    expect(listToolNamesForIntents(intents)).toEqual([
+      'get_help_resources',
+      'submit_support_report',
+    ])
+  })
+
+  it.each([
+    'report a bug',
+    'file an issue with my public site',
+    'suggest an upgrade for Trade Board cleanup',
+    'I have a workflow idea',
+    'Nic-Nac is broken',
+  ])('routes support report language "%s" to resources', (text) => {
+    const intents = getToolIntentsForText(text)
+
+    expect(intents).toEqual(['resources'])
+    expect(listToolNamesForIntents(intents)).toEqual([
+      'get_help_resources',
+      'submit_support_report',
+    ])
   })
 
   it('builds only the routed tools for a live-show turn', () => {

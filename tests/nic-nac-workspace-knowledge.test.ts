@@ -90,4 +90,20 @@ describe('workspace Nic-Nac shared knowledge', () => {
     expect(routedPrompt).toContain('Do not use rarity or hype tags')
     expect(routedPrompt).toContain('If unsure, skip the tag')
   })
+
+  it('teaches Nic-Nac support report filing and Help & Resources fallback', () => {
+    const routedPrompt = buildNicNacSystemPrompt({
+      intents: ['resources'],
+      activeToolNames: ['get_help_resources', 'submit_support_report'],
+    })
+
+    expect(routedPrompt).toContain('submit_support_report')
+    expect(routedPrompt).toContain('file support reports')
+    expect(routedPrompt).toContain('Help & Resources form')
+    expect(routedPrompt).toContain('does not depend on Nic-Nac')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('submit_support_report')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('file support reports')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Help & Resources form')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('does not depend on Nic-Nac')
+  })
 })

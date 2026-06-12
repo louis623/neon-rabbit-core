@@ -120,7 +120,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 
   resources: `Help/resource tools:
 - get_help_resources searches the approved Sparkle Suite help/how-to hub.
+- submit_support_report can file support reports for bugs, site issues, suggested upgrades, and workflow ideas when the rep gives enough detail.
 - Use it for setup, first-run onboarding, Nic-Nac usage, public-site edits, shows, trade board, calculator, Chrome extension, Live Queue overview, troubleshooting, and escalation questions.
+- If Nic-Nac itself is malfunctioning, confusing, or not responding correctly, direct the rep to the Help & Resources form because it does not depend on Nic-Nac.
 - Answer from the returned resources. Mention video slots only as available help resources; do not claim a walkthrough video is published unless the resource says it is ready.`,
 
   required_setup: buildRequiredSetupPrompt(),

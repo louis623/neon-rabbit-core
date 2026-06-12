@@ -1,5 +1,6 @@
 'use client'
 
+import type { FormEvent } from 'react'
 import {
   useCallback,
   useEffect,
@@ -377,6 +378,55 @@ const HELP_RESOURCE_GROUP_ORDER = [
   'Customers & Account',
   'Help',
 ] as const
+
+type HelpSupportReportType =
+  | 'site_issue'
+  | 'bug'
+  | 'suggested_upgrade'
+  | 'workflow_idea'
+
+type HelpSupportReportUrgency = 'normal' | 'blocking' | 'showtime_urgent'
+
+type HelpSupportReportForm = {
+  reportType: HelpSupportReportType
+  urgency: HelpSupportReportUrgency
+  pageOrWorkflow: string
+  title: string
+  details: string
+  expectedResult: string
+  actualResult: string
+  contactOk: boolean
+}
+
+const SUPPORT_REPORT_TYPE_OPTIONS: Array<{
+  value: HelpSupportReportType
+  label: string
+}> = [
+  { value: 'site_issue', label: 'Site issue' },
+  { value: 'bug', label: 'Bug' },
+  { value: 'suggested_upgrade', label: 'Suggested upgrade' },
+  { value: 'workflow_idea', label: 'Workflow idea' },
+]
+
+const SUPPORT_REPORT_URGENCY_OPTIONS: Array<{
+  value: HelpSupportReportUrgency
+  label: string
+}> = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'blocking', label: 'Blocking me' },
+  { value: 'showtime_urgent', label: 'Show-time urgent' },
+]
+
+const DEFAULT_SUPPORT_REPORT_FORM: HelpSupportReportForm = {
+  reportType: 'site_issue',
+  urgency: 'normal',
+  pageOrWorkflow: '',
+  title: '',
+  details: '',
+  expectedResult: '',
+  actualResult: '',
+  contactOk: true,
+}
 
 const SOCIAL_HANDLE_FIELDS = [
   { key: 'instagram', label: 'Instagram' },
@@ -4178,11 +4228,232 @@ export function HelpResourcesCard({
   state: ResourcesState
   hasPaidWorkspace: boolean
 }) {
+  const [reportForm, setReportForm] = useState<HelpSupportReportForm>(
+    DEFAULT_SUPPORT_REPORT_FORM,
+  )
+  const [reportSubmitState, setReportSubmitState] = useState<{
+    pending: boolean
+    error: string | null
+    message: string | null
+  }>({ pending: false, error: null, message: null })
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
   const supportResources = (state.resources ?? []).filter((resource) =>
     resource.type === 'support' || resource.id === 'fix-something-or-ask-for-help',
+  )
+
+  async function submitSupportReport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setReportSubmitState({ pending: true, error: null, message: null })
+
+    try {
+      const response = await fetch('/api/nic-nac/support-reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType: reportForm.reportType,
+          urgency: reportForm.urgency,
+          pageOrWorkflow: reportForm.pageOrWorkflow.trim() || undefined,
+          title: reportForm.title.trim(),
+          details: reportForm.details.trim(),
+          expectedResult: reportForm.expectedResult.trim() || undefined,
+          actualResult: reportForm.actualResult.trim() || undefined,
+          contactOk: reportForm.contactOk,
+        }),
+      })
+      const result = await response.json().catch(() => ({})) as {
+        notificationStatus?: 'delivered' | 'not_configured' | 'failed'
+        error?: string
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error ?? 'Support report could not be saved right now.')
+      }
+
+      const notificationStatus = result.notificationStatus
+      const message =
+        notificationStatus === 'not_configured' || notificationStatus === 'failed'
+          ? 'Report saved. The automatic Google Chat notification needs attention, so support may need to review the saved report manually.'
+          : 'Report saved. Support has the details.'
+
+      setReportSubmitState({ pending: false, error: null, message })
+      setReportForm(DEFAULT_SUPPORT_REPORT_FORM)
+    } catch (error) {
+      setReportSubmitState({
+        pending: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Support report could not be saved right now.',
+        message: null,
+      })
+    }
+  }
+
+  function updateReportForm<Field extends keyof HelpSupportReportForm>(
+    field: Field,
+    value: HelpSupportReportForm[Field],
+  ) {
+    setReportForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const supportReportForm = (
+    <form
+      className={styles.supportReportForm}
+      onSubmit={submitSupportReport}
+    >
+      <div>
+        <div className={styles.walletSettingsTitle}>
+          Report an issue or suggest an upgrade
+        </div>
+        <div className={styles.helperNote}>
+          Send the page, expected result, and actual result so support has the full trail.
+        </div>
+      </div>
+      <fieldset className={styles.supportReportFieldset}>
+        <legend className={styles.searchLabel}>Report type</legend>
+        <div className={styles.supportReportChoiceGrid}>
+          {SUPPORT_REPORT_TYPE_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className={styles.supportReportChoice}
+            >
+              <input
+                type="radio"
+                name="support-report-type"
+                value={option.value}
+                checked={reportForm.reportType === option.value}
+                onChange={() =>
+                  updateReportForm('reportType', option.value)
+                }
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className={styles.supportReportFieldset}>
+        <legend className={styles.searchLabel}>Urgency</legend>
+        <div className={styles.supportReportChoiceGrid}>
+          {SUPPORT_REPORT_URGENCY_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className={styles.supportReportChoice}
+            >
+              <input
+                type="radio"
+                name="support-report-urgency"
+                value={option.value}
+                checked={reportForm.urgency === option.value}
+                onChange={() =>
+                  updateReportForm('urgency', option.value)
+                }
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <div className={styles.supportReportFieldGrid}>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Page or workflow</span>
+          <input
+            type="text"
+            className={styles.searchInput}
+            value={reportForm.pageOrWorkflow}
+            onChange={(event) =>
+              updateReportForm('pageOrWorkflow', event.target.value)
+            }
+            placeholder="Trade Board, Site Settings, Live Queue"
+          />
+        </label>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Short title</span>
+          <input
+            type="text"
+            className={styles.searchInput}
+            value={reportForm.title}
+            required
+            minLength={3}
+            maxLength={160}
+            onChange={(event) =>
+              updateReportForm('title', event.target.value)
+            }
+            placeholder="What should support call this?"
+          />
+        </label>
+      </div>
+      <label className={styles.searchField}>
+        <span className={styles.searchLabel}>Details</span>
+        <textarea
+          className={styles.supportReportTextarea}
+          value={reportForm.details}
+          required
+          minLength={10}
+          maxLength={3000}
+          onChange={(event) =>
+            updateReportForm('details', event.target.value)
+          }
+          placeholder="What happened? Include steps, links, or timing if it helps."
+        />
+      </label>
+      <div className={styles.supportReportFieldGrid}>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Expected result</span>
+          <textarea
+            className={styles.supportReportTextarea}
+            value={reportForm.expectedResult}
+            maxLength={1200}
+            onChange={(event) =>
+              updateReportForm('expectedResult', event.target.value)
+            }
+            placeholder="What did you expect to happen?"
+          />
+        </label>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Actual result</span>
+          <textarea
+            className={styles.supportReportTextarea}
+            value={reportForm.actualResult}
+            maxLength={1200}
+            onChange={(event) =>
+              updateReportForm('actualResult', event.target.value)
+            }
+            placeholder="What happened instead?"
+          />
+        </label>
+      </div>
+      <label className={styles.supportReportContactToggle}>
+        <input
+          type="checkbox"
+          checked={reportForm.contactOk}
+          onChange={(event) =>
+            updateReportForm('contactOk', event.target.checked)
+          }
+        />
+        <span>Okay to contact me about this report</span>
+      </label>
+      {reportSubmitState.error ? (
+        <div className={styles.actionError}>
+          {reportSubmitState.error}
+        </div>
+      ) : null}
+      {reportSubmitState.message ? (
+        <div className={styles.helperMessage}>
+          {reportSubmitState.message}
+        </div>
+      ) : null}
+      <div className={styles.actionRow}>
+        <button
+          type="submit"
+          className={styles.actionButton}
+          disabled={reportSubmitState.pending}
+        >
+          {reportSubmitState.pending ? 'Saving...' : 'Send report'}
+        </button>
+      </div>
+    </form>
   )
 
   return (
@@ -4330,11 +4601,15 @@ export function HelpResourcesCard({
                     </span>
                   ))}
                 </div>
+                {supportReportForm}
               </details>
             </div>
           ) : state.status === 'error' ? (
-            <div className={styles.emptyState}>
-              Help resources are temporarily unavailable.
+            <div className={styles.playbookStack}>
+              <div className={styles.emptyState}>
+                Help resources are temporarily unavailable.
+              </div>
+              {supportReportForm}
             </div>
           ) : (
             <div className={styles.cardFill}>

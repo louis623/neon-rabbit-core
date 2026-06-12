@@ -328,6 +328,7 @@ describe('send_email_notification', () => {
       'send_email_notification',
       'send_sms_notification',
       'start_show_session',
+      'submit_support_report',
       'unlock_required_setup',
       'update_banner_text',
       'update_fulfillment_status',
