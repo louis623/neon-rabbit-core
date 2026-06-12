@@ -1,10 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const sendGoogleChatSupportAlertMock = vi.fn()
+const ensureClientAccountProfileMock = vi.fn()
+const runSupportAuditForReportMock = vi.fn()
 
 vi.mock('@/lib/ops/google-chat-alerts', () => ({
   sendGoogleChatSupportAlert: (...args: unknown[]) =>
     sendGoogleChatSupportAlertMock(...args),
+}))
+
+vi.mock('@/lib/services/client-account-profiles', () => ({
+  ensureClientAccountProfile: (...args: unknown[]) =>
+    ensureClientAccountProfileMock(...args),
+}))
+
+vi.mock('@/lib/services/support-auditor', () => ({
+  runSupportAuditForReport: (...args: unknown[]) =>
+    runSupportAuditForReportMock(...args),
 }))
 
 import {
@@ -14,6 +26,43 @@ import {
 } from '@/lib/services/support-reports'
 
 type SupportReportRow = Record<string, unknown>
+
+const supportReportSelect =
+  'id, rep_id, client_account_profile_id, client_snapshot, conversation_id, run_id, source, report_type, urgency, status, page_or_workflow, title, details, expected_result, actual_result, contact_ok, notification_channel, notification_status, notification_error, audit_status, audit_started_at, audit_completed_at, audit_error, resolution_snapshot, created_at, updated_at, support_audits(status, findings, recommended_first_action, ai_summary, template_summary, created_at)'
+
+const clientSnapshot = {
+  profileId: 'profile-1',
+  repId: 'rep-1',
+  clientName: "Jamie's Sparkles",
+  showName: "Jamie's Friday Live",
+  primaryContactName: 'Jamie Morgan',
+  email: 'jamie@example.com',
+  phone: '555-222-3333',
+  accountStatus: 'active',
+  subscriptionStatus: 'active',
+  supportTier: 'standard',
+  publicSiteSlug: 'jamies-sparkles',
+  customDomain: null,
+  sourceSnapshot: {},
+}
+
+const auditAlertPayload = {
+  title: 'Bug: Calendar save fails',
+  urgency: 'blocking',
+  clientName: "Jamie's Sparkles",
+  showName: "Jamie's Friday Live",
+  phone: '555-222-3333',
+  email: 'jamie@example.com',
+  reportId: 'report-1',
+  issue: 'Clicking save does nothing.',
+  source: 'Help form',
+  workflow: 'Calendar',
+  auditStatus: 'completed',
+  summary:
+    "Jamie's Sparkles account is active and the report includes expected versus actual behavior.",
+  findings: ['Report includes expected versus actual behavior details.'],
+  recommendedFirstAction: 'Open the report in Control Center and review manually.',
+} as const
 
 function createSupportReportsClient(options: {
   insertRow?: SupportReportRow
@@ -42,6 +91,8 @@ function createSupportReportsClient(options: {
     data: options.insertRow ?? {
       id: 'report-1',
       rep_id: 'rep-1',
+      client_account_profile_id: 'profile-1',
+      client_snapshot: clientSnapshot,
       source: 'help_form',
       report_type: 'bug',
       urgency: 'blocking',
@@ -125,10 +176,21 @@ function createSupportReportsClient(options: {
 describe('support reports service', () => {
   beforeEach(() => {
     sendGoogleChatSupportAlertMock.mockReset()
+    ensureClientAccountProfileMock.mockReset()
+    runSupportAuditForReportMock.mockReset()
+    ensureClientAccountProfileMock.mockResolvedValue(clientSnapshot)
+    runSupportAuditForReportMock.mockResolvedValue({
+      status: 'completed',
+      auditId: 'audit-1',
+      summary: auditAlertPayload.summary,
+      findings: auditAlertPayload.findings,
+      recommendedFirstAction: auditAlertPayload.recommendedFirstAction,
+      alertPayload: auditAlertPayload,
+    })
     sendGoogleChatSupportAlertMock.mockResolvedValue({ delivered: true })
   })
 
-  it('normalizes and inserts a support report before notifying Google Chat', async () => {
+  it('normalizes and inserts a support report before auditing and notifying Google Chat', async () => {
     const { client, insertMock, updateMock } = createSupportReportsClient()
 
     const result = await createSupportReport(client as never, {
@@ -145,8 +207,11 @@ describe('support reports service', () => {
       contactOk: true,
     })
 
+    expect(ensureClientAccountProfileMock).toHaveBeenCalledWith(client, 'rep-1')
     expect(insertMock).toHaveBeenCalledWith({
       rep_id: 'rep-1',
+      client_account_profile_id: 'profile-1',
+      client_snapshot: clientSnapshot,
       conversation_id: null,
       run_id: null,
       source: 'help_form',
@@ -161,18 +226,12 @@ describe('support reports service', () => {
       contact_ok: true,
       notification_channel: 'google_chat',
       notification_status: 'pending',
+      audit_status: 'pending',
     })
-    expect(sendGoogleChatSupportAlertMock).toHaveBeenCalledWith({
-      title: 'Bug: Calendar save fails',
-      urgency: 'blocking',
-      lines: [
-        'Report ID: report-1',
-        'Rep: jamie@example.com',
-        'Source: Help form',
-        'Page/workflow: Calendar',
-        'Details: Clicking save does nothing.',
-      ],
+    expect(runSupportAuditForReportMock).toHaveBeenCalledWith(client, {
+      reportId: 'report-1',
     })
+    expect(sendGoogleChatSupportAlertMock).toHaveBeenCalledWith(auditAlertPayload)
     expect(updateMock).toHaveBeenCalledWith({
       notification_status: 'delivered',
       notification_error: null,
@@ -235,6 +294,52 @@ describe('support reports service', () => {
       ok: true,
       reportId: 'report-1',
       notificationStatus: 'failed',
+    })
+  })
+
+  it('still alerts Louis with the auditor fallback when the audit is incomplete', async () => {
+    const { client, updateMock } = createSupportReportsClient()
+    runSupportAuditForReportMock.mockResolvedValueOnce({
+      status: 'failed',
+      auditId: null,
+      summary: 'The report was saved, but the account audit did not finish. Review manually.',
+      findings: [],
+      recommendedFirstAction: 'Open the report in Control Center and review manually.',
+      alertPayload: {
+        ...auditAlertPayload,
+        auditStatus: 'incomplete',
+        summary:
+          'The report was saved, but the account audit did not finish. Review manually.',
+        findings: [],
+        recommendedFirstAction:
+          'Open the report in Control Center and review manually.',
+      },
+    })
+
+    const result = await createSupportReport(client as never, {
+      repId: 'rep-1',
+      source: 'help_form',
+      reportType: 'bug',
+      title: 'Audit fallback report',
+      details: 'The report should still alert Louis after audit trouble.',
+    })
+
+    expect(sendGoogleChatSupportAlertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        auditStatus: 'incomplete',
+        summary:
+          'The report was saved, but the account audit did not finish. Review manually.',
+      }),
+    )
+    expect(updateMock).toHaveBeenCalledWith({
+      notification_status: 'delivered',
+      notification_error: null,
+      updated_at: expect.any(String),
+    })
+    expect(result).toEqual({
+      ok: true,
+      reportId: 'report-1',
+      notificationStatus: 'delivered',
     })
   })
 
@@ -302,9 +407,7 @@ describe('support reports service', () => {
       limit: 25,
     })
 
-    expect(selectMock).toHaveBeenCalledWith(
-      'id, rep_id, conversation_id, run_id, source, report_type, urgency, status, page_or_workflow, title, details, expected_result, actual_result, contact_ok, notification_channel, notification_status, notification_error, created_at, updated_at',
-    )
+    expect(selectMock).toHaveBeenCalledWith(supportReportSelect)
     expect(selectChain.eq).toHaveBeenCalledWith('status', 'open')
     expect(selectChain.order).toHaveBeenCalledWith('urgency_rank', { ascending: false })
     expect(selectChain.order).toHaveBeenCalledWith('created_at', { ascending: false })
@@ -337,9 +440,7 @@ describe('support reports service', () => {
       updated_at: expect.any(String),
     })
     expect(updateEqFirstMock).toHaveBeenCalledWith('id', 'report-1')
-    expect(updateSelectMock).toHaveBeenCalledWith(
-      'id, rep_id, conversation_id, run_id, source, report_type, urgency, status, page_or_workflow, title, details, expected_result, actual_result, contact_ok, notification_channel, notification_status, notification_error, created_at, updated_at',
-    )
+    expect(updateSelectMock).toHaveBeenCalledWith(supportReportSelect)
     expect(result).toMatchObject({
       id: 'report-1',
       status: 'reviewing',

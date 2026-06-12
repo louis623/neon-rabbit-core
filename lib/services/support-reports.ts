@@ -1,6 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { sendGoogleChatSupportAlert } from '@/lib/ops/google-chat-alerts'
+import {
+  type SupportAuditAlertPayload,
+  sendGoogleChatSupportAlert,
+} from '@/lib/ops/google-chat-alerts'
+import {
+  type ClientAccountSnapshot,
+  ensureClientAccountProfile,
+} from '@/lib/services/client-account-profiles'
+import { runSupportAuditForReport } from '@/lib/services/support-auditor'
 
 export type SupportReportSource = 'help_form' | 'nic_nac'
 export type SupportReportType =
@@ -42,8 +50,35 @@ export interface CreateSupportReportResult {
   notificationStatus: SupportReportNotificationStatus
 }
 
-const SUPPORT_REPORT_SELECT =
-  'id, rep_id, conversation_id, run_id, source, report_type, urgency, status, page_or_workflow, title, details, expected_result, actual_result, contact_ok, notification_channel, notification_status, notification_error, created_at, updated_at'
+const SUPPORT_REPORT_SELECT = [
+  'id',
+  'rep_id',
+  'client_account_profile_id',
+  'client_snapshot',
+  'conversation_id',
+  'run_id',
+  'source',
+  'report_type',
+  'urgency',
+  'status',
+  'page_or_workflow',
+  'title',
+  'details',
+  'expected_result',
+  'actual_result',
+  'contact_ok',
+  'notification_channel',
+  'notification_status',
+  'notification_error',
+  'audit_status',
+  'audit_started_at',
+  'audit_completed_at',
+  'audit_error',
+  'resolution_snapshot',
+  'created_at',
+  'updated_at',
+  'support_audits(status, findings, recommended_first_action, ai_summary, template_summary, created_at)',
+].join(', ')
 
 const createSupportReportSchema = z.object({
   repId: z.string().trim().min(1),
@@ -111,13 +146,64 @@ async function markNotification(
   }
 }
 
+async function markAuditFailed(
+  supabase: SupabaseClient,
+  reportId: string,
+  auditError: unknown,
+) {
+  const now = new Date().toISOString()
+  const { error } = await supabase
+    .from('support_reports')
+    .update({
+      audit_status: 'failed',
+      audit_completed_at: now,
+      audit_error: notificationErrorMessage(auditError),
+      updated_at: now,
+    })
+    .eq('id', reportId)
+
+  if (error) {
+    console.error('[support-reports] audit failure status update failed', {
+      reportId,
+      error,
+    })
+  }
+}
+
+function buildAuditFailureAlertPayload(input: {
+  report: z.infer<typeof createSupportReportSchema>
+  reportId: string
+  profile: ClientAccountSnapshot
+  auditError: unknown
+}): SupportAuditAlertPayload {
+  return {
+    title: `${reportTypeLabel(input.report.reportType)}: ${input.report.title.trim()}`,
+    urgency: input.report.urgency,
+    clientName: input.profile.clientName,
+    showName: input.profile.showName,
+    phone: input.profile.phone,
+    email: input.profile.email,
+    reportId: input.reportId,
+    issue: input.report.details.trim(),
+    source: sourceLabel(input.report.source),
+    workflow: emptyToNull(input.report.pageOrWorkflow) ?? 'Not provided',
+    auditStatus: 'incomplete',
+    summary: `The report was saved, but Support Auditor could not finish the account check: ${notificationErrorMessage(input.auditError)}`,
+    findings: [],
+    recommendedFirstAction: 'Open the report in Control Center and review manually.',
+  }
+}
+
 export async function createSupportReport(
   supabase: SupabaseClient,
   input: CreateSupportReportInput,
 ): Promise<CreateSupportReportResult> {
   const report = createSupportReportSchema.parse(input)
+  const clientProfile = await ensureClientAccountProfile(supabase, report.repId.trim())
   const insertPayload = {
     rep_id: report.repId.trim(),
+    client_account_profile_id: clientProfile.profileId,
+    client_snapshot: clientProfile,
     conversation_id: emptyToNull(report.conversationId),
     run_id: emptyToNull(report.runId),
     source: report.source,
@@ -132,6 +218,7 @@ export async function createSupportReport(
     contact_ok: report.contactOk,
     notification_channel: 'google_chat',
     notification_status: 'pending',
+    audit_status: 'pending',
   }
 
   const { data, error } = await supabase
@@ -145,18 +232,24 @@ export async function createSupportReport(
   }
 
   const row = data as { id: string }
+  let alertPayload: SupportAuditAlertPayload
   try {
-    const alertResult = await sendGoogleChatSupportAlert({
-      title: `${reportTypeLabel(report.reportType)}: ${report.title.trim()}`,
-      urgency: report.urgency,
-      lines: [
-        `Report ID: ${row.id}`,
-        `Rep: ${report.repEmail ?? report.repId}`,
-        `Source: ${sourceLabel(report.source)}`,
-        `Page/workflow: ${emptyToNull(report.pageOrWorkflow) ?? 'Not provided'}`,
-        `Details: ${report.details.trim()}`,
-      ],
+    const auditResult = await runSupportAuditForReport(supabase, {
+      reportId: row.id,
     })
+    alertPayload = auditResult.alertPayload
+  } catch (auditError) {
+    await markAuditFailed(supabase, row.id, auditError)
+    alertPayload = buildAuditFailureAlertPayload({
+      report,
+      reportId: row.id,
+      profile: clientProfile,
+      auditError,
+    })
+  }
+
+  try {
+    const alertResult = await sendGoogleChatSupportAlert(alertPayload)
 
     if (alertResult.delivered) {
       await markNotification(supabase, row.id, 'delivered', null)
