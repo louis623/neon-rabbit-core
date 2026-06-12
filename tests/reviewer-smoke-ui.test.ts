@@ -81,7 +81,9 @@ describe('reviewer smoke UI wiring', () => {
 
   it('captures reviewer smoke path as a standard process', () => {
     expect(standard).toContain('not ready for Louis review')
-    expect(standard).toContain('tests proving review mode is disabled in production')
+    expect(standard).toContain(
+      'tests proving production review mode requires the explicit long review token',
+    )
     expect(standard).toContain('no live charges')
   })
 

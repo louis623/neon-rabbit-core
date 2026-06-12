@@ -40,7 +40,33 @@ describe('POST /api/reviewer-smoke/session', () => {
     expect(resetReviewerSmokeSessionMock).toHaveBeenCalledWith('required_setup')
   })
 
-  it('blocks reviewer setup in production even with a matching token', async () => {
+  it('resets the reusable reviewer session in production when the token matches', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    resetReviewerSmokeSessionMock.mockResolvedValue({
+      ok: true,
+      email: 'sparkle-reviewer+preview@neonrabbit.net',
+      password: 'preview-only-password',
+      state: 'required_setup',
+      next: '/nic-nac?onboarding=required-setup',
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/reviewer-smoke/session', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          token: 'review-token-12345',
+          state: 'required_setup',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(resetReviewerSmokeSessionMock).toHaveBeenCalledWith('required_setup')
+  })
+
+  it('blocks reviewer setup in production without the matching token', async () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('VERCEL_ENV', 'production')
 
@@ -49,7 +75,6 @@ describe('POST /api/reviewer-smoke/session', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          token: 'review-token-12345',
           state: 'required_setup',
         }),
       }),

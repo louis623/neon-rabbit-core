@@ -15,12 +15,15 @@ board, email, SMS, and dashboard workflow must include:
 - a reset or reseed path for repeated testing
 - clear visual labeling when review mode is active
 - documented steps from first page to final expected state
-- tests proving review mode is disabled in production
+- tests proving production review mode requires the explicit long review token
 
 ## Reviewer Mode Rules
 
 Reviewer mode must be gated by environment and token. It may run in local
-development or Vercel preview. It must not run in production.
+development or Vercel preview. It may also run on the stable demo alias when a
+long `SPARKLE_REVIEWER_SMOKE_TOKEN` is configured and supplied through the
+`review` query parameter. Production reviewer mode must stay blocked without
+that matching token.
 
 Reviewer mode should use one reusable QA persona instead of disposable accounts:
 

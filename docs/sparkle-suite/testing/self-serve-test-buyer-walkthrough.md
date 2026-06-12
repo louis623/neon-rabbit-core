@@ -64,7 +64,7 @@ the app shows the unlocked dashboard before required Nic-Nac setup is complete.
 Use reviewer smoke mode when Louis needs to review the customer path without
 personal data or a real payment attempt.
 
-Required preview/local env:
+Required preview/local/stable-demo env:
 
 ```env
 SPARKLE_REVIEWER_SMOKE_MODE=true
@@ -87,5 +87,6 @@ Then choose:
 2. `Open setup preview` only when skipping Stripe to inspect the same required
    Nic-Nac setup state that should appear after successful checkout.
 
-Reviewer smoke mode is blocked in production. The UI is visibly labeled as test
-data only.
+Reviewer smoke mode is blocked in production unless the stable demo is configured
+with the long reviewer token and the URL includes `?review=...`. The UI is
+visibly labeled as test data only.

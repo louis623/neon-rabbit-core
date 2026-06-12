@@ -4,7 +4,7 @@ import {
   SparkleSuitePublicHeader,
 } from '@/app/_components/sparkle-suite-public-chrome'
 import { SparkleSuitePublicNicNac } from '@/app/_components/sparkle-suite-public-nic-nac'
-import { reviewerSmokeModeEnabled } from '@/lib/reviewer-smoke/config'
+import { reviewerSmokeControlsVisible } from '@/lib/reviewer-smoke/config'
 import { StartSparkleSuiteForm } from './StartSparkleSuiteForm'
 import styles from './start.module.css'
 
@@ -19,7 +19,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default function StartPage() {
+export default async function StartPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    review?: string | string[]
+  }>
+}) {
+  const query = searchParams ? await searchParams : {}
+  const reviewToken = Array.isArray(query.review) ? query.review[0] : query.review
+
   return (
     <main className={`${styles.page} sparkle-landing-v2`}>
       <div className="sl2-shell">
@@ -36,7 +45,7 @@ export default function StartPage() {
             </p>
             <div className={styles.accountArea}>
               <StartSparkleSuiteForm
-                reviewerSmokeVisible={reviewerSmokeModeEnabled()}
+                reviewerSmokeVisible={reviewerSmokeControlsVisible(reviewToken)}
               />
               <div className={`${styles.nicNacLauncher} sparkle-landing-v2`}>
                 <SparkleSuitePublicNicNac variant="compact" />
