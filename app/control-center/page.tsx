@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
 
-import { SupportCommandCenter } from '@/app/control-center/_components/SupportCommandCenter'
+import {
+  SupportCommandCenter,
+  type SupportReportRecord,
+} from '@/app/control-center/_components/SupportCommandCenter'
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -43,5 +46,7 @@ export default async function SparkleSuiteControlCenterPage() {
     limit: 50,
   })
 
-  return <SupportCommandCenter reports={reports} />
+  return (
+    <SupportCommandCenter reports={reports as unknown as SupportReportRecord[]} />
+  )
 }

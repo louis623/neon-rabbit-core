@@ -1,6 +1,6 @@
 import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle'
 
-type SupportReportRecord = {
+export type SupportReportRecord = {
   id: string
   source?: string | null
   report_type?: string | null
@@ -172,7 +172,7 @@ export function SupportCommandCenter({ reports }: SupportCommandCenterProps) {
                       {snapshotText(report.client_snapshot, 'showName')}
                     </p>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      {label(report.report_type)} · {label(report.source)} ·{' '}
+                      {label(report.report_type)} / {label(report.source)} /{' '}
                       {formatDate(report.created_at)}
                     </p>
                   </article>
@@ -290,43 +290,22 @@ export function SupportCommandCenter({ reports }: SupportCommandCenterProps) {
 
             <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="text-lg font-semibold">Resolution / Lesson</h2>
-              <form
-                action="/api/control-center/support-reports"
-                className="mt-4 grid gap-3"
-                method="post"
-              >
-                <input name="reportId" type="hidden" value={activeReport?.id ?? ''} />
-                <label className="grid gap-1 text-sm font-semibold">
-                  Root cause
-                  <textarea
-                    className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    name="rootCause"
-                    placeholder="What caused the issue?"
-                  />
-                </label>
-                <label className="grid gap-1 text-sm font-semibold">
-                  Fix or workaround
-                  <textarea
-                    className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    name="fixOrWorkaround"
-                    placeholder="What fixed it, or what should we try next?"
-                  />
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
-                    type="submit"
-                  >
-                    Save resolution
-                  </button>
-                  <button
-                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-                    type="button"
-                  >
-                    Approve lesson
-                  </button>
-                </div>
-              </form>
+              <dl className="mt-4 grid gap-3">
+                {[
+                  ['Root cause', 'Waiting on resolution review'],
+                  ['Fix or workaround', 'Waiting on resolution review'],
+                  ['Reusable lesson', 'Not approved yet'],
+                ].map(([term, value]) => (
+                  <div className="rounded-md border border-slate-200 p-3" key={term}>
+                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      {term}
+                    </dt>
+                    <dd className="mt-1 text-sm font-semibold text-slate-700">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </article>
           </section>
         </div>

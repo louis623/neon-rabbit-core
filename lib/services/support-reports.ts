@@ -231,7 +231,7 @@ export async function createSupportReport(
     throw error ?? new Error('support report insert failed')
   }
 
-  const row = data as { id: string }
+  const row = data as unknown as { id: string }
   let alertPayload: SupportAuditAlertPayload
   try {
     const auditResult = await runSupportAuditForReport(supabase, {
