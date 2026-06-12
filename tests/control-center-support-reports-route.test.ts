@@ -4,6 +4,7 @@ const getAuthenticatedOperatorMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const listOperatorSupportReportsMock = vi.fn()
 const updateOperatorSupportReportStatusMock = vi.fn()
+const resolveSupportReportMock = vi.fn()
 
 const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
   MockAuthError: class MockAuthError extends Error {},
@@ -28,6 +29,10 @@ vi.mock('@/lib/services/support-reports', () => ({
     updateOperatorSupportReportStatusMock(...args),
 }))
 
+vi.mock('@/lib/services/support-lessons', () => ({
+  resolveSupportReport: (...args: unknown[]) => resolveSupportReportMock(...args),
+}))
+
 import {
   GET,
   PATCH,
@@ -39,6 +44,7 @@ describe('/api/control-center/support-reports', () => {
     createAdminClientMock.mockReset()
     listOperatorSupportReportsMock.mockReset()
     updateOperatorSupportReportStatusMock.mockReset()
+    resolveSupportReportMock.mockReset()
     getAuthenticatedOperatorMock.mockResolvedValue({
       repId: 'operator-1',
       rep: { email: 'louis@neonrabbit.net' },
@@ -105,11 +111,71 @@ describe('/api/control-center/support-reports', () => {
         status: 'reviewing',
       },
     )
+    expect(resolveSupportReportMock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       ok: true,
       report: {
         id: 'report-1',
         status: 'reviewing',
+      },
+    })
+  })
+
+  it('resolves a support report with reusable lesson closeout fields', async () => {
+    resolveSupportReportMock.mockResolvedValueOnce({
+      report: {
+        id: 'report-1',
+        status: 'resolved',
+      },
+      lesson: {
+        id: 'lesson-1',
+        approved_for_reuse: true,
+      },
+    })
+
+    const response = await PATCH(
+      new Request('http://localhost/api/control-center/support-reports', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          reportId: 'report-1',
+          status: 'resolved',
+          clientAccountProfileId: 'profile-1',
+          affectedArea: 'trade_board',
+          symptom: 'Replacement listing did not show after trade approval.',
+          rootCause: 'The revealed ring was missing ring size.',
+          fixOrWorkaround: 'Open swap cleanup and enter ring size before shipping.',
+          tags: ['trade-board', 'ring-size'],
+          approvedForReuse: true,
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(updateOperatorSupportReportStatusMock).not.toHaveBeenCalled()
+    expect(resolveSupportReportMock).toHaveBeenCalledWith(
+      { from: expect.any(Function) },
+      {
+        reportId: 'report-1',
+        clientAccountProfileId: 'profile-1',
+        affectedArea: 'trade_board',
+        symptom: 'Replacement listing did not show after trade approval.',
+        rootCause: 'The revealed ring was missing ring size.',
+        fixOrWorkaround: 'Open swap cleanup and enter ring size before shipping.',
+        tags: ['trade-board', 'ring-size'],
+        approvedForReuse: true,
+        createdBy: 'louis@neonrabbit.net',
+      },
+    )
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      report: {
+        id: 'report-1',
+        status: 'resolved',
+      },
+      lesson: {
+        id: 'lesson-1',
+        approved_for_reuse: true,
       },
     })
   })
@@ -163,6 +229,31 @@ describe('/api/control-center/support-reports', () => {
 
     expect(response.status).toBe(400)
     expect(updateOperatorSupportReportStatusMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'Check the report status and try again.',
+    })
+  })
+
+  it('rejects incomplete resolved closeout before writing', async () => {
+    const response = await PATCH(
+      new Request('http://localhost/api/control-center/support-reports', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          reportId: 'report-1',
+          status: 'resolved',
+          affectedArea: 'trade_board',
+          symptom: '',
+          rootCause: 'Missing details',
+          fixOrWorkaround: 'Fix',
+          approvedForReuse: true,
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    expect(updateOperatorSupportReportStatusMock).not.toHaveBeenCalled()
+    expect(resolveSupportReportMock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       error: 'Check the report status and try again.',
     })

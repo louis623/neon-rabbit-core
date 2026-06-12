@@ -4,6 +4,7 @@ import {
   listOperatorSupportReports,
   updateOperatorSupportReportStatus,
 } from '@/lib/services/support-reports'
+import { resolveSupportReport } from '@/lib/services/support-lessons'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -24,6 +25,23 @@ const querySchema = z.object({
 const patchSchema = z.object({
   reportId: z.string().trim().min(1),
   status: z.enum(statuses),
+  clientAccountProfileId: z.string().trim().min(1).optional(),
+  affectedArea: z.string().trim().min(2).max(80).optional(),
+  symptom: z.string().trim().min(10).max(1200).optional(),
+  rootCause: z.string().trim().min(5).max(1200).optional(),
+  fixOrWorkaround: z.string().trim().min(5).max(1200).optional(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).optional(),
+  approvedForReuse: z.boolean().optional(),
+})
+
+const resolvedPatchSchema = patchSchema.extend({
+  status: z.literal('resolved'),
+  affectedArea: z.string().trim().min(2).max(80),
+  symptom: z.string().trim().min(10).max(1200),
+  rootCause: z.string().trim().min(5).max(1200),
+  fixOrWorkaround: z.string().trim().min(5).max(1200),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
+  approvedForReuse: z.boolean().default(false),
 })
 
 function authErrorResponse(error: unknown) {
@@ -69,9 +87,32 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    await getAuthenticatedOperator()
+    const operator = await getAuthenticatedOperator()
     const body = patchSchema.parse(await request.json())
-    const report = await updateOperatorSupportReportStatus(createAdminClient(), {
+    const admin = createAdminClient()
+
+    if (body.status === 'resolved') {
+      const resolvedBody = resolvedPatchSchema.parse(body)
+      const result = await resolveSupportReport(admin, {
+        reportId: resolvedBody.reportId,
+        clientAccountProfileId: resolvedBody.clientAccountProfileId,
+        affectedArea: resolvedBody.affectedArea,
+        symptom: resolvedBody.symptom,
+        rootCause: resolvedBody.rootCause,
+        fixOrWorkaround: resolvedBody.fixOrWorkaround,
+        tags: resolvedBody.tags,
+        approvedForReuse: resolvedBody.approvedForReuse,
+        createdBy: operator.rep.email,
+      })
+
+      return NextResponse.json({
+        ok: true,
+        report: result.report,
+        lesson: result.lesson,
+      })
+    }
+
+    const report = await updateOperatorSupportReportStatus(admin, {
       reportId: body.reportId,
       status: body.status,
     })

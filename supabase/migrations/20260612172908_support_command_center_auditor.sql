@@ -24,7 +24,8 @@ ALTER TABLE public.support_reports
   ADD COLUMN IF NOT EXISTS audit_status TEXT NOT NULL DEFAULT 'pending',
   ADD COLUMN IF NOT EXISTS audit_started_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS audit_completed_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS audit_error TEXT;
+  ADD COLUMN IF NOT EXISTS audit_error TEXT,
+  ADD COLUMN IF NOT EXISTS resolution_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 DO $$
 BEGIN
