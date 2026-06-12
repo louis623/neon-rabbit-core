@@ -20,7 +20,7 @@ export default async function SparkleSuiteControlCenterPage() {
     await getAuthenticatedOperator()
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect('/login')
+      redirect('/login?redirect=%2Fcontrol-center')
     }
 
     if (error instanceof OperatorAuthError) {

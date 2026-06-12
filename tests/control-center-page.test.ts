@@ -102,7 +102,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     )
 
     await expect(SparkleSuiteControlCenterPage()).rejects.toThrow(
-      'redirect:/login',
+      'redirect:/login?redirect=%2Fcontrol-center',
     )
 
     expect(listOperatorSupportReportsMock).not.toHaveBeenCalled()
