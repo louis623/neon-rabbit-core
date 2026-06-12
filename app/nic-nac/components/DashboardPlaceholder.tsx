@@ -390,6 +390,7 @@ type HelpSupportReportUrgency = 'normal' | 'blocking' | 'showtime_urgent'
 type HelpSupportReportForm = {
   reportType: HelpSupportReportType
   urgency: HelpSupportReportUrgency
+  workflowChecked: boolean
   pageOrWorkflow: string
   title: string
   details: string
@@ -420,6 +421,7 @@ const SUPPORT_REPORT_URGENCY_OPTIONS: Array<{
 const DEFAULT_SUPPORT_REPORT_FORM: HelpSupportReportForm = {
   reportType: 'site_issue',
   urgency: 'normal',
+  workflowChecked: false,
   pageOrWorkflow: '',
   title: '',
   details: '',
@@ -4310,12 +4312,27 @@ export function HelpResourcesCard({
     >
       <div>
         <div className={styles.walletSettingsTitle}>
-          Report an issue or suggest an upgrade
+          Submit a support report
         </div>
         <div className={styles.helperNote}>
-          Send the page, expected result, and actual result so support has the full trail.
+          Use this after you have started with the workflow guide, followed the
+          steps that apply, and asked Nic-Nac if you are still blocked.
         </div>
       </div>
+      <label className={styles.supportReportAcknowledgement}>
+        <input
+          type="checkbox"
+          required
+          checked={reportForm.workflowChecked}
+          onChange={(event) =>
+            updateReportForm('workflowChecked', event.target.checked)
+          }
+        />
+        <span>
+          I started at the top of Help & Resources, used the relevant workflow
+          guide, followed the steps that applied, and still need support.
+        </span>
+      </label>
       <fieldset className={styles.supportReportFieldset}>
         <legend className={styles.searchLabel}>Report type</legend>
         <div className={styles.supportReportChoiceGrid}>
@@ -4591,7 +4608,9 @@ export function HelpResourcesCard({
                   <div>
                     <div className={styles.walletSettingsTitle}>Support Path</div>
                     <div className={styles.helperNote}>
-                      Try the workflow first, ask Nic-Nac next, then send support the details if you are blocked.
+                      Start at the top of Help & Resources. Open the guide for
+                      the workflow you were trying to complete, follow the
+                      steps, then ask Nic-Nac if you are still blocked.
                     </div>
                   </div>
                   <span className={styles.rosterTag}>Open section</span>
@@ -4599,11 +4618,12 @@ export function HelpResourcesCard({
                 <div className={styles.supportReportCallout}>
                   <div>
                     <div className={styles.walletSettingsTitle}>
-                      Send a report to support
+                      Send a report after the workflow steps
                     </div>
                     <div className={styles.helperNote}>
-                      Bugs, site issues, workflow ideas, and upgrade requests go to
-                      Louis and the support dashboard queue.
+                      If the guide and Nic-Nac do not solve it, send the page,
+                      expected result, and actual result so support has the full
+                      trail.
                     </div>
                   </div>
                   <button

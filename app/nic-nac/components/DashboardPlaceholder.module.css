@@ -1252,6 +1252,26 @@
   padding: 0;
 }
 
+.supportReportAcknowledgement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.supportReportAcknowledgement input {
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+}
+
 .supportReportChoiceGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

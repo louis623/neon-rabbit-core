@@ -17,9 +17,11 @@ describe('HelpResourcesCard support report form', () => {
     )
 
     expect(html).toContain('Support Path')
-    expect(html).toContain('Send a report to support')
+    expect(html).toContain('Start at the top of Help &amp; Resources')
+    expect(html).toContain('Send a report after the workflow steps')
+    expect(html).toContain('Submit a support report')
+    expect(html).toContain('I started at the top of Help &amp; Resources')
     expect(html).toContain('Start report')
-    expect(html).toContain('Report an issue or suggest an upgrade')
     expect(html).toContain('Site issue')
     expect(html).toContain('Bug')
     expect(html).toContain('Suggested upgrade')
@@ -45,7 +47,8 @@ describe('HelpResourcesCard support report form', () => {
     )
 
     expect(html).toContain('Help resources are temporarily unavailable.')
-    expect(html).toContain('Report an issue or suggest an upgrade')
+    expect(html).toContain('Submit a support report')
+    expect(html).toContain('I started at the top of Help &amp; Resources')
     expect(html).toContain('Send report')
   })
 
@@ -58,6 +61,9 @@ describe('HelpResourcesCard support report form', () => {
     expect(source).toContain('supportReportTitleRef')
     expect(source).toContain('focusSupportReportForm')
     expect(source).toContain('<details className={styles.supportPath} open>')
+    expect(source).toContain('workflowChecked')
+    expect(source).toContain('required')
+    expect(source).toContain('I started at the top of Help & Resources')
     expect(source).toContain('Start report')
     expect(source).not.toContain("className={styles.timelineItem}>\n                      {action}")
     expect(source).toContain("fetch('/api/nic-nac/support-reports'")
