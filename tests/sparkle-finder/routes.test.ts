@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHubChrome } from "../../app/(hub)/layout";
-import AffiliateDisclosurePage from "../../app/affiliate-disclosure/page";
 import PrivacyPolicyPage from "../../app/privacy-policy/page";
 import TermsAndConditionsPage from "../../app/terms-and-conditions/page";
 import { renderHomeContent, renderPublicHomeContent } from "../../app/page";
@@ -12,25 +11,16 @@ import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/pa
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
-import ShopPage, { renderShopPageContent } from "../../app/shop/page";
+import PhotoSetupPage, { renderPhotoSetupPageContent } from "../../app/photo-setup/page";
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
-import type { AffiliateProductRecommendation, JewelryItem } from "../../lib/sparkle-finder/types";
-import {
-  affiliateDisclosureHref,
-  affiliateIssueReportHref,
-  affiliateIssueReportLabel,
-  affiliateLinkLabelCopy,
-  affiliateReviewActionCopy,
-  amazonAssociateDisclosure,
-} from "../../lib/sparkle-finder/affiliate-copy";
+import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
-import { getAffiliateProductRecommendations } from "../../lib/sparkle-finder/service";
 import {
   getLocalRepBoardHref,
   getLocalRepHref,
@@ -52,8 +42,7 @@ const routes = [
 ] as const;
 
 const publicRoutes = [
-  ["affiliate-disclosure", () => renderToStaticMarkup(createElement(AffiliateDisclosurePage))],
-  ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
+  ["photo-setup", () => renderToStaticMarkup(createElement(PhotoSetupPage))],
 ] as const;
 
 describe("Sparkle Finder hub routes", () => {
@@ -71,7 +60,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library");
     expect(markup).toContain("/rep-boards");
     expect(markup).toContain("/live-shows");
-    expect(markup).toContain("/shop");
+    expect(markup).not.toContain("/shop");
   });
 
   it("renders app navigation in a hub mobile menu with logout for signed-in visitors", () => {
@@ -85,7 +74,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/library"');
     expect(markup).toContain('href="/live-shows"');
     expect(markup).toContain('href="/rep-boards"');
-    expect(markup).toContain('href="/shop"');
+    expect(markup).not.toContain('href="/shop"');
     expect(markup).toContain('href="/auth/sign-out"');
     expect(markup).toContain(">Log Out<");
   });
@@ -122,7 +111,7 @@ describe("Sparkle Finder hub routes", () => {
       expect(markup).toContain("Sparkle Finder");
       expect(markup).toContain("Footer links");
       expect(markup).toContain('href="/account"');
-      expect(markup).toContain('href="/affiliate-disclosure"');
+      expect(markup).not.toContain('href="/affiliate-disclosure"');
       expect(markup).toContain('href="/privacy-policy"');
       expect(markup).toContain(">Privacy Policy<");
       expect(markup).toContain('href="/terms-and-conditions"');
@@ -160,7 +149,6 @@ describe("Sparkle Finder hub routes", () => {
       "How Sparkle Finder Uses Information",
       "Sparkle Suite Data And Rep Links",
       "Sparkle Showcase Sharing And Moderation",
-      "Affiliate And Shop Information",
       "SMS And Email Choices",
       "Data Sharing",
       "Data Retention",
@@ -181,7 +169,7 @@ describe("Sparkle Finder hub routes", () => {
       "Library, Live Shows, Rep Boards, And Availability",
       "Sparkle Showcase, Profile, And Watchlist Tools",
       "Follows, Comments, Reports, And Moderation",
-      "Affiliate Shop And Product Information",
+      "Third-Party Product Resources",
       "Acceptable Use",
       "Privacy",
       "Third-Party Services",
@@ -204,12 +192,13 @@ describe("Sparkle Finder hub routes", () => {
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Sparkle Finder customer accounts");
     expect(privacyMarkup).toContain("We do not sell personal information.");
-    expect(privacyMarkup).toContain("Affiliate And Shop Information");
+    expect(privacyMarkup).not.toContain("Affiliate And Shop Information");
     expect(privacyMarkup).toContain("Back to Sparkle Finder");
 
     expect(termsMarkup).toContain("Sparkle Finder Legal Center");
     expect(termsMarkup).toContain("Terms and Conditions");
     expect(termsMarkup).toContain("No Sales, Escrow, Or Fulfillment");
+    expect(termsMarkup).toContain("Third-Party Product Resources");
     expect(termsMarkup).toContain("Sparkle Finder is a discovery hub");
     expect(termsMarkup).toContain(
       "not owned by, operated by, endorsed by, sponsored by, or officially affiliated with Bomb Party",
@@ -253,7 +242,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Live Show Calendar");
     expect(markup).toContain("Rep Trade Boards / Dance Floors");
     expect(markup).toContain("Collection Showcase");
-    expect(markup).toContain("Collector &amp; Rep Essentials");
+    expect(markup).toContain("Photo-ready uploads");
     expect(markup).toContain("Find the pieces you like, see which reps have them on trade boards");
     expect(markup).toContain("Start with your 45-day Silver Tier trial");
     expect(markup).toContain("Silver opens the full collector workflow");
@@ -272,12 +261,13 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/library"');
     expect(markup).toContain('href="/live-shows"');
     expect(markup).toContain('href="/rep-boards"');
-    expect(markup).toContain('href="/shop"');
+    expect(markup).not.toContain('href="/shop"');
+    expect(markup).toContain('href="/photo-setup"');
     expect(markup).toContain('href="/account"');
     expect(markup).toContain(">Silver<");
     expect(markup).toContain("Today across Sparkle Suite");
     expect(markup).toContain("Your Silver Collector Space");
-    expect(markup).toContain("Collector Essentials");
+    expect(markup).toContain("Photo Setup Guide");
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
     expect(markup).not.toContain(">Sign in<");
@@ -631,117 +621,51 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Visit Rep Site");
   });
 
-  it("renders shop route content from fixture data", () => {
-    const markup = renderToStaticMarkup(createElement(ShopPage));
+  it("renders the public photo setup route with a plain light-box resource link", () => {
+    const markup = renderToStaticMarkup(createElement(PhotoSetupPage));
 
     expect(markup).toContain("Sparkle Finder public navigation");
-    expect(markup).toContain("Collector &amp; Rep Essentials");
-    expect(markup).toContain("Shop by need");
-    expect(markup).toContain("Rep Essentials");
-    expect(markup).toContain("Storage &amp; Display");
-    expect(markup).toContain("Livestream Gear");
-    expect(markup).toContain("Affiliate link after approval");
-    expect(markup).toContain("Louis review required");
+    expect(markup).toContain("Photo setup for jewelry uploads");
+    expect(markup).toContain("you do not need this exact one");
+    expect(markup).toContain("Any clean, well-lit light box can work.");
+    expect(markup).toContain('href="https://www.amazon.com/dp/B0C7Z93NPR"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('rel="noopener noreferrer"');
+    expect(markup).not.toContain("commission");
+    expect(markup).not.toContain("paid link");
+    expect(markup).not.toContain("Affiliate Disclosure");
+    expect(markup).not.toContain("Amazon Associate");
+    expect(markup).not.toContain('rel="sponsored');
   });
 
-  it("keeps shop publicly reachable without the anonymous hub sign-in wall", () => {
-    const markup = renderToStaticMarkup(createElement(ShopPage));
+  it("keeps photo setup publicly reachable without the anonymous hub sign-in wall", () => {
+    const markup = renderToStaticMarkup(createElement(PhotoSetupPage));
 
     expect(markup).not.toContain("Create a free Sparkle Finder account to open this tool.");
     expect(markup).not.toContain("Sign in to open Sparkle Finder");
-    expect(markup).toContain("Collector &amp; Rep Essentials");
-    expect(markup).toContain("Affiliate Disclosure");
+    expect(markup).toContain("Plain resource link");
+    expect(markup).toContain("not an advertisement or storefront");
   });
 
-  it("keeps the homepage shop card aligned to the new shop route", async () => {
+  it("keeps the homepage photo setup card aligned to the new guidance route", async () => {
     const { DiscoveryCards } = await import("../../components/home/DiscoveryCards");
     const markup = renderToStaticMarkup(createElement(DiscoveryCards));
 
-    expect(markup).toContain("Collector &amp; Rep Essentials");
-    expect(markup).toContain("Shop care, storage, display, livestream, and setup gear.");
-    expect(markup).toContain('href="/shop"');
+    expect(markup).toContain("Photo Setup Guide");
+    expect(markup).toContain("Prep clean light-box photos for Showcase Studio review.");
+    expect(markup).toContain('href="/photo-setup"');
+    expect(markup).not.toContain('href="/shop"');
     expect(markup).not.toContain("Diamonds &amp; Unicorns Library");
   });
 
-  it("renders shop affiliate disclosure and issue-reporting trust copy", () => {
-    const markup = renderToStaticMarkup(createElement(ShopPage));
+  it("renders photo setup content without affiliate or shop positioning", () => {
+    const markup = renderToStaticMarkup(renderPhotoSetupPageContent());
 
-    expect(markup).toContain(affiliateLinkLabelCopy);
-    expect(markup).toContain(amazonAssociateDisclosure);
-    expect(markup).toContain(affiliateDisclosureHref);
-    expect(markup).toContain(affiliateIssueReportLabel);
-    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
-    expect(markup).toContain(affiliateReviewActionCopy);
-  });
-
-  it("renders approved live affiliate products with nearby disclosure and issue reporting", () => {
-    const liveProduct: AffiliateProductRecommendation = {
-      id: "approved-light-box-test",
-      lane: "collector",
-      category: "Photo setup",
-      title: "Compact photo light box setup",
-      shortDescription: "A simple photo setup option for Showcase Studio submissions.",
-      whyItHelps: "Helps collectors take cleaner light-box photos without promising professional results.",
-      retailerProgram: "Amazon Associates",
-      status: "live",
-      affiliateUrl: "https://example.com/sparkle-finder-light-box",
-      approvedByLouisAt: "2026-06-13",
-      disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
-      trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-      placement: "Shop page, Showcase Studio light-box guide",
-    };
-
-    const markup = renderToStaticMarkup(
-      renderShopPageContent({
-        affiliateShopItems: [],
-        productRecommendations: [liveProduct],
-      }),
-    );
-
-    expect(markup).toContain("Approved product picks");
-    expect(markup).toContain("Compact photo light box setup");
-    expect(markup).toContain('href="https://example.com/sparkle-finder-light-box"');
-    expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('rel="sponsored noopener noreferrer"');
-    expect(markup).toContain("Paid link. Sparkle Finder may earn a commission at no extra cost to you.");
-    expect(markup).toContain(amazonAssociateDisclosure);
-    expect(markup).toContain("Approved by Louis on June 13, 2026");
-    expect(markup).toContain("Affiliate pick. Tell us if this product or company gives you trouble.");
-    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
-  });
-
-  it("publishes the approved Sparkle Suite rep photo box as the first live affiliate pick", () => {
-    const markup = renderToStaticMarkup(renderShopPageContent());
-
-    expect(markup).toContain("Photo box for jewelry uploads");
-    expect(markup).toContain('href="https://amzn.to/4gkKXi5"');
-    expect(markup).toContain("This is the photo box Sparkle Suite reps use for jewelry uploads");
-    expect(markup).toContain("You do not have to buy this exact photo box");
-    expect(markup).toContain("Approved by Louis on June 13, 2026");
-    expect(markup).toContain("Open paid link");
-    expect(markup).toContain(amazonAssociateDisclosure);
-  });
-
-  it("does not render a shop self-link CTA on the shop route", () => {
-    const markup = renderToStaticMarkup(createElement(ShopPage));
-
-    expect(markup).not.toContain('href="/shop"');
-    expect(markup).not.toContain("Shop affiliate picks");
-  });
-
-  it("renders the public affiliate disclosure route with careful trust wording", () => {
-    const markup = renderToStaticMarkup(createElement(AffiliateDisclosurePage));
-
-    expect(markup).toContain("Affiliate Disclosure");
-    expect(markup).toContain("Sparkle Finder is a discovery hub");
-    expect(markup).toContain("not a jewelry marketplace");
-    expect(markup).toContain("not officially affiliated with Bomb Party");
-    expect(markup).toContain(amazonAssociateDisclosure);
-    expect(markup).toContain("clear and conspicuous");
-    expect(markup).toContain(affiliateLinkLabelCopy);
-    expect(markup).toContain(affiliateIssueReportLabel);
-    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
-    expect(markup).toContain(affiliateReviewActionCopy);
+    expect(markup).toContain("What Nic-Nac needs to see");
+    expect(markup).toContain("The goal is a reviewable record, not a professional product shoot.");
+    expect(markup).not.toContain("Shop");
+    expect(markup).not.toContain("Affiliate");
+    expect(markup).not.toContain("Amazon Associate");
   });
 
   it("renders Silver profile and Sparkle Showcase previews for Silver customers", () => {
@@ -777,7 +701,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('name="jewelryFrontPhoto"');
     expect(markup).toContain('name="itemNumber"');
     expect(markup).toContain("Submit to Nic-Nac review");
-    expect(markup).toContain('href="/shop#collector-photo"');
+    expect(markup).toContain('href="/photo-setup"');
     expect(markup).not.toContain("Silver Space");
     expect(markup).not.toContain("Catalog actions");
     expect(markup).not.toContain("Future catalog request path");
@@ -850,13 +774,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
-    const approvedAffiliateUrls = getAffiliateProductRecommendations()
-      .filter((product) => product.status === "live" && product.affiliateUrl)
-      .map((product) => product.affiliateUrl!);
-    const copy = approvedAffiliateUrls.reduce(
-      (currentCopy, approvedUrl) => currentCopy.replaceAll(approvedUrl, "[approved affiliate link]"),
-      [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" "),
-    );
+    const copy = [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" ");
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

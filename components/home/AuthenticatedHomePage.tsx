@@ -1,10 +1,8 @@
-import { AffiliateStrip } from "@/components/shop/AffiliateStrip";
 import { HeroAndAgenda } from "@/components/home/HeroAndAgenda";
 import { SilverCollectorSpace, type SilverCollectionPreviewItem } from "@/components/silver/SilverCollectorSpace";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
-  getAffiliateShopItems,
   getCollectionItemsByCustomerId,
   getJewelryItemById,
   getLiveShows,
@@ -36,7 +34,6 @@ export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePagePro
           customer={customer}
           profile={getSilverProfileByCustomerId(customer.id)}
         />
-        <AffiliateStrip items={getAffiliateShopItems()} />
       </main>
       <SparkleFinderFooter />
     </>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, PackageCheck, UsersRound } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Camera, UsersRound } from "lucide-react";
 
 const discoveryCards = [
   {
@@ -21,10 +21,10 @@ const discoveryCards = [
     icon: BookOpen,
   },
   {
-    title: "Collector & Rep Essentials",
-    body: "Shop care, storage, display, livestream, and setup gear.",
-    href: "/shop",
-    icon: PackageCheck,
+    title: "Photo Setup Guide",
+    body: "Prep clean light-box photos for Showcase Studio review.",
+    href: "/photo-setup",
+    icon: Camera,
   },
 ];
 

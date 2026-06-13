@@ -92,45 +92,44 @@ Sources:
 
 The customer product should not be treated as just "make the rep board bigger." The existing notes point to a separate product surface with social identity, collection ownership, trust, community, search, and marketplace safety problems.
 
+## 2026-06-13 Shop Removal Addendum
+
+Louis decided Sparkle Finder should not carry a shop or paid-link storefront for now. The shop route, disclosure route, paid-link copy, Amazon program disclosure, product recommendation fixtures, and active shop docs should be removed from the current product surface.
+
+Current direction:
+
+- Sparkle Finder should feel like a polished discovery, Showcase, and rep-finding product, not a click-monetized storefront.
+- Showcase Studio can still include helpful photo setup guidance for Silver members.
+- The photo box Louis uses can be shared as a plain external resource link, without tracking tags, paid-link wording, sponsored rel attributes, or commission disclosure copy.
+- Copy should clearly say people do not need that exact photo box; any clean, well-lit light box that shows label evidence and jewelry clearly can work.
+
 ## 2026-05-31 Session Addendum
 
-Sparkle Finder moved from planning into a live, deployable customer discovery hub with affiliate readiness foundations.
+Sparkle Finder moved from planning into a live, deployable customer discovery hub. The earlier shop-readiness direction from this session is superseded by the June 13, 2026 shop removal decision above.
 
 Built and verified:
 
 - Next.js Sparkle Finder app on the custom domain `https://yoursparklefinder.com`.
-- Public affiliate disclosure route at `https://yoursparklefinder.com/affiliate-disclosure`.
-- Shop/affiliate trust copy with issue-reporting language.
-- Affiliate docs command center, program tracker, product-pick tracker, trust/copy rules, weekly log, and Louis candidate-review packet.
-- Eight first-pass affiliate content guide briefs split evenly between collector essentials and rep/livestream setup gear.
 - Route, copy guardrail, disclosure/trust wording, build, and smoke-test coverage.
 
 Key decisions:
 
 - Sparkle Finder remains a discovery hub, not a jewelry marketplace.
 - Sparkle Finder/Sparkle Suite must not imply official Bomb Party affiliation.
-- Affiliate revenue should be trust-first and split between collector essentials and rep/livestream setup gear.
-- No exact affiliate product links go live until Louis approves the exact product/listing, placement, disclosure copy, and trust/issue copy.
-- Do not use live prices, copied reviews, ratings, or retailer images unless current program terms allow them.
-- Public product placements need nearby disclosure plus a clear issue-reporting path so Sparkle Finder can pause, replace, remove, or contact the company.
-- Amazon Associates account exists with Associate ID `yoursparklefi-20`, but Amazon should be treated as provisionally active until final review/qualification requirements are satisfied.
+- The earlier shop monetization plan is no longer active.
 
 Next-session posture:
 
 - Stand by for Louis's direction.
-- Likely next work is either first Amazon-safe product candidate research, additional affiliate applications, or polishing Sparkle Finder public content.
-- Do not auto-publish links or select exact products without Louis approval.
+- Likely next work is polishing Sparkle Finder public content, Silver, Showcase, library, or photo setup flows.
 
 ## 2026-06-01 Session Addendum
 
-Sparkle Finder moved from affiliate/domain readiness into a real Silver account, auth, consent, billing, and shop-positioning buildout.
+Sparkle Finder moved from domain readiness into a real Silver account, auth, consent, and billing buildout. Any shop-positioning notes from this session are superseded by the June 13, 2026 shop removal decision above.
 
 Product and planning decisions captured:
 
-- Keep the public navigation/shop label straightforward: `Shop`, not a softer euphemism. The shop is allowed to be honest that Sparkle Finder recommends useful products and may earn affiliate commission.
-- The shop concept should serve both collectors and reps: collector jewelry care, cleaning, storage, display, travel, gifting, packaging, and rep livestream/show essentials such as cameras, phone mounts, lighting, audio, cases, labels, and shipping workflow gear.
 - The old standalone `Diamonds & Unicorns Library` card should be retired from the homepage card grid. Diamond/unicorn discovery belongs inside the Master Jewelry Library through filters and search.
-- The homepage/shop direction should follow Sparkle Suite branding more closely, especially stronger Sparkle Suite pink and espresso usage. Future visual polish should compare against the Sparkle Suite pre-launch and post-launch landing pages for brand guidance.
 - Keep Sparkle Finder as a discovery hub and recommendation surface, not a jewelry marketplace and not an official Bomb Party property.
 
 Silver account decisions captured:
@@ -179,8 +178,7 @@ Production rollout status:
 
 Guardrails for future agents:
 
-- Do not publish affiliate links, exact product selections, live prices, copied reviews, ratings, or retailer images without Louis approval and current program-term confirmation.
-- Every affiliate placement needs nearby disclosure plus issue-reporting/trust copy.
+- Do not reintroduce shop, paid-link, product-selection, live-price, copied-review, rating, or retailer-image surfaces unless Louis explicitly reopens that strategy.
 - Do not imply official Bomb Party affiliation.
 - Do not introduce customer-to-customer trading, buy/sell, or marketplace copy during the current Sparkle Finder phase.
 - Treat the untracked `public/sparkle-finder-smoke-test.html` helper as intentionally left alone unless Louis says otherwise.

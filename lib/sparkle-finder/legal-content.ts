@@ -34,9 +34,9 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
   pageTitle: "Privacy Policy",
   seoTitle: "Sparkle Finder Privacy Policy | Neon Rabbit Digital Services",
   seoDescription:
-    "Privacy Policy for Sparkle Finder customer accounts, Silver trial access, collector tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+    "Privacy Policy for Sparkle Finder customer accounts, Silver trial access, collector tools, Showcase features, and Sparkle Suite-powered discovery data.",
   description:
-    "Sparkle Finder customer accounts, Silver trial access, collector tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+    "Sparkle Finder customer accounts, Silver trial access, collector tools, Showcase features, and Sparkle Suite-powered discovery data.",
   lastUpdated,
   developer,
   contact,
@@ -53,7 +53,6 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "Sparkle Finder signup, sign-in, account, and Silver trial flows",
         "Sparkle Showcase, Showcase Collections, Reveal Spotlight, follow, comment, report, watchlist, and Nic-Nac request features",
         "Sparkle Suite-powered library, live show, rep board, and availability data shown in Sparkle Finder",
-        "affiliate shop and product concern reporting surfaces",
         "optional Sparkle Finder email or SMS update choices",
       ],
     },
@@ -103,13 +102,6 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
       paragraphs: [
         "If you make Sparkle Showcase content public, visitors may be able to view public showcase pages, Showcase Collections, Reveal Spotlight pages, selected jewelry records, reveal stories, display names, handles, follow counts, comments, and other information you choose to make visible.",
         "Sparkle Finder may store and review follows, comments, comment edits, comment deletions, reports, and moderation details to operate public sharing features, reduce spam, respond to abuse reports, and protect users.",
-      ],
-    },
-    {
-      title: "Affiliate And Shop Information",
-      paragraphs: [
-        "Sparkle Finder may include affiliate links or product recommendation surfaces. If Sparkle Finder includes a retailer affiliate link, Sparkle Suite or Neon Rabbit Digital Services may earn a commission when you make a qualifying purchase.",
-        "Affiliate disclosures should appear near relevant product links. A general footer link or disclosure page is not intended to replace clear disclosures near affiliate recommendations.",
       ],
     },
     {
@@ -178,19 +170,19 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
   pageTitle: "Terms and Conditions",
   seoTitle: "Sparkle Finder Terms and Conditions | Neon Rabbit Digital Services",
   seoDescription:
-    "Terms and Conditions for Sparkle Finder customer accounts, Silver access, collector tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+    "Terms and Conditions for Sparkle Finder customer accounts, Silver access, collector tools, Showcase features, and Sparkle Suite-powered discovery data.",
   description:
-    "Sparkle Finder customer discovery hub, customer accounts, Silver access, collector tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+    "Sparkle Finder customer discovery hub, customer accounts, Silver access, collector tools, Showcase features, and Sparkle Suite-powered discovery data.",
   lastUpdated,
   developer,
   contact,
   plainEnglishSummary:
-    "Sparkle Finder is a customer discovery hub by Sparkle Suite. These terms explain account use, Silver access, discovery data, Sparkle Showcase sharing, affiliate shop surfaces, and important limits: Sparkle Finder is not Bomb Party, not a jewelry marketplace, and not an escrow or fulfillment service.",
+    "Sparkle Finder is a customer discovery hub by Sparkle Suite. These terms explain account use, Silver access, discovery data, Sparkle Showcase sharing, and important limits: Sparkle Finder is not Bomb Party, not a jewelry marketplace, and not an escrow or fulfillment service.",
   sections: [
     {
       title: "Agreement To These Terms",
       paragraphs: [
-        "These Terms and Conditions explain the rules for using Sparkle Finder, including public pages, customer accounts, Silver access, Sparkle Showcase tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+        "These Terms and Conditions explain the rules for using Sparkle Finder, including public pages, customer accounts, Silver access, Sparkle Showcase tools, and Sparkle Suite-powered discovery data.",
         "By using Sparkle Finder, creating an account, submitting a form, using a Sparkle Showcase tool, joining a trial, opting in to messages, or clicking through to an external site, you agree to these Terms and Conditions.",
         "If you do not agree, do not use Sparkle Finder.",
       ],
@@ -232,11 +224,10 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       ],
     },
     {
-      title: "Affiliate Shop And Product Information",
+      title: "Third-Party Product Resources",
       paragraphs: [
-        "Sparkle Finder may organize affiliate shop categories, product ideas, product concern reporting paths, and educational product guidance.",
-        "If Sparkle Finder includes a retailer affiliate link, Sparkle Suite or Neon Rabbit Digital Services may earn a commission from qualifying purchases.",
-        "Product information is provided for discovery and convenience. Sparkle Finder does not manufacture, sell, ship, warrant, or guarantee third-party products.",
+        "Sparkle Finder may link to external retailer or product resources for convenience, including optional photo setup examples for Showcase Studio uploads.",
+        "Those links are informational resources. Sparkle Finder does not manufacture, sell, ship, warrant, or guarantee third-party products.",
       ],
     },
     {

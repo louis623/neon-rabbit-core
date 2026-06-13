@@ -103,29 +103,6 @@ export type NicNacFindResult = {
   confidenceLabel: string;
 };
 
-export type AffiliateShopItem = {
-  id: string;
-  title: string;
-  body: string;
-  category: "collector" | "livestream";
-};
-
-export type AffiliateProductRecommendation = {
-  id: string;
-  lane: "collector" | "rep";
-  category: string;
-  title: string;
-  shortDescription: string;
-  whyItHelps: string;
-  retailerProgram: string;
-  status: "research" | "needs_louis_review" | "approved" | "live" | "paused";
-  affiliateUrl?: string;
-  approvedByLouisAt?: string;
-  disclosure: string;
-  trustCopy: string;
-  placement: string;
-};
-
 export type RepBoardMatch = NicNacFindResult & {
   jewelryItemId: string;
   matchedJewelryItemId: string;

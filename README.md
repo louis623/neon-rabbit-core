@@ -25,7 +25,7 @@ The future customer side is a collector/community surface for Bomb Party custome
 - searchable jewelry library powered by the existing Sparkle Suite jewelry database
 - Diamonds & Unicorns Library powered by Bomb Party's own diamond/unicorn labels
 - traffic paths back to rep sites and shows
-- lightweight affiliate/shop layer for collector and live-streaming gear
+- plain photo setup guidance for Showcase Studio uploads, including an optional non-affiliate light-box resource link
 - optional Silver Membership for Nic-Nac Collector Assist
 - Silver customer profile and collection features
 - parked future expansion for customer-to-customer trading and community features
@@ -57,7 +57,6 @@ This repo is not for:
 - `docs/research/open-questions.md`
 - `docs/research/proof-of-ownership-and-trust.md`
 - `docs/research/monetization-concepts.md`
-- `docs/affiliate/README.md`
 - `docs/handoffs/2026-05-29-session-close-sparkle-finder-planning.md`
 - `docs/plans/2026-05-28-customer-platform-build-plan.md`
 - `docs/superpowers/plans/2026-05-29-sparkle-finder-v1-build.md`

@@ -240,7 +240,7 @@ function ShowcaseStudioIntakePanel({
         </div>
         <a
           className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] transition hover:border-[var(--sparkle-coral)] hover:text-[var(--sparkle-plum)]"
-          href="/shop#collector-photo"
+          href="/photo-setup"
         >
           <Sparkles aria-hidden="true" className="size-4" />
           Light-box setup guide
@@ -265,7 +265,6 @@ function ShowcaseStudioIntakePanel({
       <form
         action={studioFormAction}
         className="grid gap-4 border-t border-[rgba(238,44,155,0.14)] bg-[var(--sparkle-paper)] p-4"
-        encType="multipart/form-data"
       >
         <div className="grid gap-3 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">

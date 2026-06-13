@@ -1,6 +1,4 @@
 import {
-  sparkleFinderAffiliateProductRecommendations,
-  sparkleFinderAffiliateShopItems,
   sparkleFinderCollectionItems,
   sparkleFinderCustomers,
   sparkleFinderJewelryItems,
@@ -10,8 +8,6 @@ import {
   sparkleFinderSilverProfiles,
 } from "../fixtures/sparkle-finder-fixtures";
 import type {
-  AffiliateShopItem,
-  AffiliateProductRecommendation,
   BombPartyLabel,
   CollectionItem,
   CustomerAccount,
@@ -41,14 +37,6 @@ export function getRepBoardListings(): RepBoardListing[] {
 
 export function getJewelryItems(): JewelryItem[] {
   return cloneRecords(sparkleFinderJewelryItems);
-}
-
-export function getAffiliateShopItems(): AffiliateShopItem[] {
-  return cloneRecords(sparkleFinderAffiliateShopItems);
-}
-
-export function getAffiliateProductRecommendations(): AffiliateProductRecommendation[] {
-  return cloneRecords(sparkleFinderAffiliateProductRecommendations);
 }
 
 export function getCustomers(): CustomerAccount[] {

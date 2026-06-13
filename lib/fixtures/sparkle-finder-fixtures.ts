@@ -1,6 +1,4 @@
 import type {
-  AffiliateProductRecommendation,
-  AffiliateShopItem,
   CollectionItem,
   CustomerAccount,
   JewelryItem,
@@ -11,39 +9,6 @@ import type {
 } from "../sparkle-finder/types";
 import type { SparkleSuiteRepEntitlement } from "../sparkle-finder/rep-entitlements";
 import type { ShowcaseCollection, ShowcaseComment } from "../sparkle-finder/showcase-types";
-
-export const sparkleFinderAffiliateShopItems: AffiliateShopItem[] = [
-  {
-    id: "shop-jewelry-care",
-    title: "Jewelry Care",
-    body: "Keep it shining",
-    category: "collector",
-  },
-  {
-    id: "shop-storage-display",
-    title: "Storage & Display",
-    body: "Organize in style",
-    category: "collector",
-  },
-  {
-    id: "shop-packaging",
-    title: "Packaging",
-    body: "Gift-ready supplies",
-    category: "collector",
-  },
-  {
-    id: "shop-livestream-gear",
-    title: "Livestream Gear",
-    body: "Lights, mics & more",
-    category: "livestream",
-  },
-  {
-    id: "shop-phone-tech",
-    title: "Phone & Tech",
-    body: "Stream setup basics",
-    category: "livestream",
-  },
-];
 
 export const sparkleFinderReps: RepSummary[] = [
   {
@@ -345,65 +310,6 @@ export const sparkleFinderCollectionItems: CollectionItem[] = [
     state: "owned",
     note: "Highlighted bracelet stack.",
     isHighlighted: true,
-  },
-];
-
-export const sparkleFinderAffiliateProductRecommendations: AffiliateProductRecommendation[] = [
-  {
-    id: "photo-light-box-collector",
-    lane: "rep",
-    category: "Photo setup",
-    title: "Photo box for jewelry uploads",
-    shortDescription:
-      "This is the photo box Sparkle Suite reps use for jewelry uploads through Nic-Nac and Showcase Studio.",
-    whyItHelps:
-      "A clean photo box can make jewelry images easier to review before pieces move into the shared catalog. You do not have to buy this exact photo box to submit good images.",
-    retailerProgram: "Amazon Associates",
-    status: "live",
-    affiliateUrl: "https://amzn.to/4gkKXi5",
-    approvedByLouisAt: "2026-06-13",
-    disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
-    trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-    placement: "Shop page, rep photo setup, Showcase Studio light-box setup guide",
-  },
-  {
-    id: "storage-ring-tray-collector",
-    lane: "collector",
-    category: "Storage & Display",
-    title: "Stackable ring tray or organizer",
-    shortDescription: "A review slot for keeping growing collections easier to sort.",
-    whyItHelps: "Supports sorting pieces by collection, color, type, or wishlist priority.",
-    retailerProgram: "Amazon Associates / Walmart",
-    status: "research",
-    disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
-    trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-    placement: "Shop page, homepage strip",
-  },
-  {
-    id: "livestream-lighting-rep",
-    lane: "rep",
-    category: "Livestream lighting",
-    title: "Compact ring light or panel light",
-    shortDescription: "A review slot for clearer rep live-show visibility.",
-    whyItHelps: "Better visibility can make live shows easier for customers to follow.",
-    retailerProgram: "Amazon Associates / B&H",
-    status: "needs_louis_review",
-    disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
-    trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-    placement: "Shop page, livestream setup guide",
-  },
-  {
-    id: "phone-tripod-rep",
-    lane: "rep",
-    category: "Phone & tech",
-    title: "Adjustable phone tripod",
-    shortDescription: "A review slot for a stable phone streaming setup.",
-    whyItHelps: "A stable phone setup is one of the simplest upgrades for a live show table.",
-    retailerProgram: "Amazon Associates / Walmart / B&H",
-    status: "research",
-    disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
-    trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-    placement: "Shop page, livestream setup guide",
   },
 ];
 

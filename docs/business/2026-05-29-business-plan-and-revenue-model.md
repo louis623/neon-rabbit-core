@@ -11,7 +11,7 @@ The business model is intentionally light at launch:
 - Customer accounts create network value and lead data.
 - Silver Membership monetizes Nic-Nac-assisted piece hunting for customers who want faster answers.
 - Paid Sparkle Suite reps receive Silver for free as a membership perk through a Silver Membership Billing Credit or equivalent entitlement.
-- Affiliate/shop links monetize collector gear and live-streaming gear without turning the hub into a marketplace.
+- Shop links are paused for Sparkle Finder. Photo setup help can include plain external resource links without commission positioning.
 - Careful AdSense placements add background revenue without making the brand feel cheap.
 
 The core strategic value is rep acquisition and retention. Reps should want Sparkle Suite because joining gives them a presence on a shared customer discovery network, not just their own standalone site.
@@ -58,7 +58,7 @@ Free customer account holders can:
 - use normal manual search and filters
 - open rep sites and rep trade boards
 - see rep next-show context where available
-- browse affiliate/shop recommendations
+- review photo setup guidance for Showcase Studio uploads
 
 Public visitors can see the landing/teaser page, but the useful hub areas require login.
 
@@ -201,38 +201,29 @@ Sources:
 - Stripe card pricing: `https://stripe.com/us/pricing`
 - Stripe Billing pricing: `https://stripe.com/billing/pricing`
 
-### 2. Affiliate/Shop Revenue
+### 2. Photo Setup Resource Links
 
-Secondary revenue with low operational burden.
+Paused as a revenue source. Sparkle Finder can still include helpful product-resource links when they support Showcase Studio quality, but those links should not be positioned as paid placements.
 
-Product categories:
+Useful guidance categories:
 
 - light boxes
-- jewelry organizers
-- display stands
-- ring trays
-- travel cases
-- shipping supplies
-- phone tripods
-- lights
-- microphones
-- webcams/cameras
-- live-streaming accessories
-- label printers
-- storage systems
-- future Sparkle Suite branded products
+- plain backgrounds
+- photo sharpness and lighting
+- label evidence
 
 Why this fits:
 
-- collectors need storage and display gear
-- reps need live-streaming gear
-- it does not require Sparkle Suite to handle jewelry payments or disputes
-- every small affiliate path helps while keeping the core product simple
+- Silver members need clean photos for Showcase Studio review
+- reps and collectors can use the same polished photo standards
+- it does not require Sparkle Suite to handle product sales, fulfillment, or disputes
+- it keeps the product focused on discovery and Showcase quality
 
 Rules:
 
-- disclose affiliate relationships
-- keep shop optional
+- do not use paid-link, sponsored, or commission language
+- keep any external product resource optional
+- clearly say users do not need one exact light box
 - do not make it look like a jewelry marketplace
 
 ### 3. AdSense
@@ -335,14 +326,14 @@ Assumptions:
 - target AI budget: `$0.50/member/month`
 - estimated Silver contribution after payment fees and AI: `$4.01/member/month`
 - AdSense revenue shown as pageviews * estimated RPM / 1000
-- affiliate revenue shown as estimated monthly net commission
+- product-resource revenue is not included while the shop is paused
 
-| Scenario | Free Accounts | Paid Silver | Silver Contribution | Pageviews | Ad RPM | AdSense | Affiliate | Est. Monthly Total |
+| Scenario | Free Accounts | Paid Silver | Silver Contribution | Pageviews | Ad RPM | AdSense | Product Resources | Est. Monthly Total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Pilot | 250 | 25 | $100 | 10,000 | $1.50 | $15 | $50 | $165 |
-| Early | 1,000 | 100 | $401 | 40,000 | $2.00 | $80 | $150 | $631 |
-| Growth | 5,000 | 500 | $2,005 | 250,000 | $2.50 | $625 | $750 | $3,380 |
-| Upside | 10,000 | 1,500 | $6,015 | 700,000 | $3.00 | $2,100 | $2,000 | $10,115 |
+| Pilot | 250 | 25 | $100 | 10,000 | $1.50 | $15 | $0 | $115 |
+| Early | 1,000 | 100 | $401 | 40,000 | $2.00 | $80 | $0 | $481 |
+| Growth | 5,000 | 500 | $2,005 | 250,000 | $2.50 | $625 | $0 | $2,630 |
+| Upside | 10,000 | 1,500 | $6,015 | 700,000 | $3.00 | $2,100 | $0 | $8,115 |
 
 ## Conversion Targets
 
@@ -486,7 +477,7 @@ Customer metrics:
 - rep board views
 - library searches
 - master jewelry library diamond/unicorn filter views
-- affiliate clicks
+- photo setup guide views
 - Silver profile creations
 - Silver collection items saved
 - Silver trial starts
@@ -511,7 +502,7 @@ Business metrics:
 - Silver churn
 - Silver gross margin after payment and AI costs
 - AdSense monthly revenue
-- affiliate monthly revenue
+- product-resource revenue remains paused unless Louis reopens that model
 - hub-assisted rep signup attribution when available
 
 ## Recommendation
@@ -520,7 +511,7 @@ Launch the business model in this order:
 
 1. Secured discovery hub with new accounts starting in a 45-day Silver trial.
 2. Rep calendar, rep directory, rep board aggregation, and master jewelry library.
-3. Affiliate/shop layer with collector and live-streaming gear.
+3. Photo setup guidance for Showcase Studio uploads, without affiliate monetization.
 4. Silver Membership at `$4.99/month`, monthly only, with the 45-day trial and downgrade path.
 5. Included Silver access for paid Sparkle Suite reps through a Silver Membership Billing Credit or equivalent entitlement.
 7. Add more tiers only after there is clear usage data.

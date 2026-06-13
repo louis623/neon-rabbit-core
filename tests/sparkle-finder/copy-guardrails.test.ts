@@ -84,6 +84,12 @@ describe("findSparkleFinderCopyViolations", () => {
     ]);
   });
 
+  it("allows a plain Amazon product resource URL without an affiliate tag", () => {
+    const copy = "Photo setup resource: https://www.amazon.com/dp/B0C7Z93NPR";
+
+    expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
+  });
+
   it("flags prohibited exact affiliate-content categories", () => {
     const copy = [
       "Live price: $24.99 today only.",
@@ -108,10 +114,10 @@ describe("findSparkleFinderCopyViolations", () => {
     ]);
   });
 
-  it("allows normal affiliate disclaimer and compliance guidance", () => {
+  it("allows product-resource compliance guidance without monetized placement copy", () => {
     const copy = [
       "Sparkle Finder is not a jewelry marketplace.",
-      "Affiliate links must have clear disclosure.",
+      "Plain external resource links should avoid paid placement language.",
       "We do not call products guaranteed, perfect for everyone, or must-have.",
       "Do not use live prices, copied reviews, ratings, or retailer images.",
     ].join(" ");
@@ -133,7 +139,7 @@ describe("findSparkleFinderCopyViolations", () => {
 
   it("allows approved Sparkle Finder wording", () => {
     const copy =
-      "Browse for free. Let Nic-Nac hunt for you with Silver. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Nic-Nac, find this for me. Sparkle Finder is a discovery hub, not a jewelry marketplace. As an Amazon Associate I earn from qualifying purchases. Report a product or company concern.";
+      "Browse for free. Let Nic-Nac hunt for you with Silver. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Nic-Nac, find this for me. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

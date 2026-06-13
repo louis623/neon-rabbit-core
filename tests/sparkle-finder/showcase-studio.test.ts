@@ -103,7 +103,7 @@ describe("Sparkle Finder Showcase Studio intake", () => {
       status: "photo_rejected",
       message: "The jewelry photo needs a cleaner light-box retake.",
       photoFeedback: ["Use a plain white light-box background.", "Retake closer so the stones are sharp."],
-      lightBoxHelpHref: "/shop#collector-photo",
+      lightBoxHelpHref: "/photo-setup",
     });
   });
 

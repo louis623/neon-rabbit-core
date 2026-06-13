@@ -3,7 +3,6 @@ const footerLinkGroups = [
     title: "Links",
     links: [
       { label: "Account", href: "/account" },
-      { label: "Affiliate Disclosure", href: "/affiliate-disclosure" },
       { label: "Privacy Policy", href: "/privacy-policy" },
       { label: "Terms and Conditions", href: "/terms-and-conditions" },
     ],

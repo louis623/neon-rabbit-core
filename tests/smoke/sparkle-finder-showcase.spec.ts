@@ -103,7 +103,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByRole("button", { name: "Submit to Nic-Nac review" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Light-box setup guide" })).toHaveAttribute(
       "href",
-      "/shop#collector-photo",
+      "/photo-setup",
     );
     await expectNoGuardrailCopy(page);
 

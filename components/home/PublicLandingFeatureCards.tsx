@@ -1,4 +1,4 @@
-import { BookOpen, CalendarDays, Gem, PackageCheck, Search, UsersRound } from "lucide-react";
+import { BookOpen, CalendarDays, Camera, Gem, Search, UsersRound } from "lucide-react";
 
 const howItWorksSteps = [
   {
@@ -41,9 +41,9 @@ const includedTools = [
     icon: Gem,
   },
   {
-    title: "Collector & Rep Essentials",
-    body: "Browse care, storage, display, livestream, and setup gear after affiliate review.",
-    icon: PackageCheck,
+    title: "Photo-ready uploads",
+    body: "Use label evidence and clean light-box photos when Silver members submit missing pieces.",
+    icon: Camera,
   },
 ] as const;
 

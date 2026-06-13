@@ -41,7 +41,8 @@ These are working assumptions for research only unless a later decision note mar
 - Do not split reps into separate customer and rep accounts. Reps are also collectors and should be treated as Silver members with rep identity layered in.
 - Customer-facing Nic-Nac may be a Silver feature for focused search assist: `Nic-Nac, find this for me`.
 - Customer profile and customer collection features should be Silver Membership features.
-- Affiliate/shop monetization should include both collector products and live-streaming gear/tools for reps.
+- Shop monetization is paused. Sparkle Finder should not present a shop or paid links for now.
+- Showcase Studio can include plain photo setup guidance and an optional non-affiliate light-box resource link.
 
 ## Explicit Non-Assumptions
 

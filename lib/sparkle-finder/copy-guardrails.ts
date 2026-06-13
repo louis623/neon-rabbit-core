@@ -35,7 +35,7 @@ const BANNED_COPY_RULES: SparkleFinderCopyRule[] = [
   { phrase: "retailer image", pattern: /\bretailer\s+(?:images?|photos?)\b|\b(?:amazon|target|walmart|etsy)\s+retailer\s+(?:images?|photos?)\b/i, allowComplianceContext: true },
   { phrase: "exact product pick", pattern: /\bexact\s+product\s+picks?\b/i, allowComplianceContext: true },
   { phrase: "exact product selection", pattern: /\bexact\s+product\s+selections?\b/i, allowComplianceContext: true },
-  { phrase: "amazon product url", pattern: /https?:\/\/(?:www\.)?amazon\.[^\s/]+\/(?:[^?\s#]+\/)?(?:dp|gp\/product)\/[A-Z0-9]{10}\b/i },
+  { phrase: "amazon product url", pattern: /https?:\/\/(?:www\.)?amazon\.[^\s/]+\/(?:[^?\s#]+\/)?(?:dp|gp\/product)\/[A-Z0-9]{10}\b[^\s]*[?&]tag=/i },
   { phrase: "amazon affiliate url", pattern: /https?:\/\/amzn\.to\/[^\s]+/i },
   { phrase: "walmart product url", pattern: /https?:\/\/(?:www\.)?walmart\.com\/ip\/[^\s]+/i },
   { phrase: "target product url", pattern: /https?:\/\/(?:www\.)?target\.com\/p\/[^\s]+/i },

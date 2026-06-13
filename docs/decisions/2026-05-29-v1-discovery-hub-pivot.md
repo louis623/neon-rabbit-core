@@ -71,8 +71,8 @@ The rep pitch becomes:
 V1 monetization should stay lightweight:
 
 - careful Google AdSense placements
-- affiliate links for jewelry collector products
-- affiliate links for live-streaming gear and tools reps may want
+- Silver membership
+- plain photo setup resource links only when they support Showcase Studio quality
 - future Sparkle Suite merch
 
 Diamonds & Unicorns Library:
@@ -99,21 +99,8 @@ Silver Membership update:
 - under-$5/month target
 - paid Sparkle Suite reps receive Silver access for free
 
-## Affiliate Shop Scope
+## Superseded Shop Scope
 
-The affiliate/shop layer should include both customer collector gear and rep/live-streaming gear:
+This section was superseded on June 13, 2026. Sparkle Finder should not include a shop or paid links for now. The only retained product-resource concept is optional, plain photo setup guidance for Showcase Studio uploads.
 
 - light boxes
-- jewelry organizers
-- display stands
-- ring trays
-- travel cases
-- shipping supplies
-- phone tripods
-- lights
-- microphones
-- cameras/webcams
-- live-streaming accessories
-- label printers
-- storage systems
-- possible Sparkle Suite branded products later

@@ -24,7 +24,7 @@ const smokeTexts = [
   "Live Show Calendar",
   "Rep Trade Boards / Dance Floors",
   "Collection Showcase",
-  "Collector & Rep Essentials",
+  "Photo-ready uploads",
   "Start with your 45-day Silver Tier trial",
   "45 days free",
   "$4.99/month",
@@ -68,16 +68,16 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expectClickPath(page, page.locator("main").getByRole("link", { name: "Sign in" }), "/auth/sign-in");
   });
 
-  test("shop feature card remains present without a temporary card link", async ({ page }) => {
+  test("photo setup feature card remains present without a temporary card link", async ({ page }) => {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-    const shopCard = page
+    const photoSetupCard = page
       .locator('[data-smoke="public-feature-cards"]')
       .getByRole("article")
-      .filter({ hasText: "Collector & Rep Essentials" });
-    await expect(shopCard).toBeVisible();
-    await expect(shopCard).toContainText("Browse care, storage, display, livestream, and setup gear");
-    await expect(shopCard.getByRole("link")).toHaveCount(0);
+      .filter({ hasText: "Photo-ready uploads" });
+    await expect(photoSetupCard).toBeVisible();
+    await expect(photoSetupCard).toContainText("Use label evidence and clean light-box photos");
+    await expect(photoSetupCard.getByRole("link")).toHaveCount(0);
   });
 
   test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
@@ -121,7 +121,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
   test("hub routes still gate anonymous visitors", async ({ page }) => {
     await page.context().clearCookies();
 
-    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/shop", "/silver"]) {
+    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/silver"]) {
       await page.goto(`${baseUrl}${path}`, { waitUntil: "domcontentloaded" });
       await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
       await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();

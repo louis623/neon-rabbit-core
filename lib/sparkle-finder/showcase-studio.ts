@@ -64,7 +64,7 @@ type SubmitShowcaseStudioIntakeOptions = {
   fetcher?: ShowcaseStudioFetch;
 };
 
-const lightBoxHelpHref = "/shop#collector-photo";
+const lightBoxHelpHref = "/photo-setup";
 const missingLabelMessage = "Original Bomb Party label photo is required before Nic-Nac can review a missing piece.";
 
 export function getShowcaseStudioConfig(env: NodeJS.ProcessEnv = process.env): ShowcaseStudioConfig {
