@@ -1,5 +1,6 @@
 "use server";
 
+import { Buffer } from "node:buffer";
 import { revalidatePath } from "next/cache";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import {
@@ -8,6 +9,12 @@ import {
   persistSilverProfileForAccount,
   type SupabaseCustomerStateClient,
 } from "@/lib/sparkle-finder/customer-state";
+import {
+  persistShowcaseStudioSubmissionForAccount,
+  type ShowcaseStudioSubmissionFailureReason,
+  type SupabaseShowcaseStudioClient,
+} from "@/lib/sparkle-finder/showcase-studio-state";
+import { submitShowcaseStudioIntake } from "@/lib/sparkle-finder/showcase-studio";
 import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
 import { createClient } from "@/lib/supabase/server";
 import type { CollectionItem } from "@/lib/sparkle-finder/types";
@@ -18,7 +25,7 @@ export type SilverSaveActionState = {
   message: string;
 };
 
-type SparkleFinderSilverServerClient = SupabaseCustomerStateClient & {
+type SparkleFinderSilverServerClient = SupabaseCustomerStateClient & SupabaseShowcaseStudioClient & {
   auth: {
     getUser: () => Promise<{ data: { user: { id: string } | null }; error: unknown }>;
   };
@@ -156,6 +163,53 @@ export async function saveShowcasePieceAction(
   };
 }
 
+export async function submitShowcaseStudioRequestAction(
+  _previousState: SilverSaveActionState,
+  formData: FormData,
+): Promise<SilverSaveActionState> {
+  const verified = await getVerifiedSilverClient();
+
+  if (!verified.ok) {
+    return verified.state;
+  }
+
+  const originalLabelPhoto = readUploadFile(formData.get("originalLabelPhoto"));
+  const jewelryFrontPhoto = readUploadFile(formData.get("jewelryFrontPhoto"));
+  const itemNumber = String(formData.get("itemNumber") ?? "");
+  const customerNote = String(formData.get("customerNote") ?? "");
+
+  const result = await persistShowcaseStudioSubmissionForAccount(verified.client, verified.accountState, {
+    customerNote,
+    itemNumber,
+    jewelryFrontPhoto,
+    originalLabelPhoto,
+  });
+
+  if (!result.ok) {
+    return {
+      status: result.reason === "silver_required" ? "denied" : "error",
+      message: getShowcaseStudioFailureMessage(result.reason),
+    };
+  }
+
+  const suiteIntakeResult = await submitShowcaseStudioIntake({
+    finderSubmissionId: result.submissionId,
+    originalLabelImageDataUrl: await fileToDataUrl(originalLabelPhoto),
+    jewelryFrontImageDataUrl: await fileToDataUrl(jewelryFrontPhoto),
+    labelDetails: {
+      itemNumber,
+    },
+    customerNote,
+  });
+
+  revalidatePath("/silver");
+
+  return {
+    status: "saved",
+    message: getShowcaseStudioBridgeMessage(suiteIntakeResult.message),
+  };
+}
+
 async function getVerifiedSilverClient(): Promise<
   | {
       ok: true;
@@ -233,4 +287,46 @@ function parseShowcaseStatus(value: FormDataEntryValue | null): SparkleShowcaseI
 
 function parseShowcaseVisibility(value: FormDataEntryValue | null): SparkleShowcaseVisibility {
   return value === "public" ? "public" : "private";
+}
+
+function readUploadFile(value: FormDataEntryValue | null): File {
+  return value instanceof File ? value : new File([], "missing.jpg", { type: "image/jpeg" });
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  const bytes = Buffer.from(await file.arrayBuffer());
+
+  return `data:${file.type || "application/octet-stream"};base64,${bytes.toString("base64")}`;
+}
+
+function getShowcaseStudioBridgeMessage(message: string): string {
+  if (!message || message === "Showcase Studio publishing is not connected yet.") {
+    return "Showcase Studio request saved for Nic-Nac review.";
+  }
+
+  return `Showcase Studio request saved. ${message}`;
+}
+
+function getShowcaseStudioFailureMessage(reason: ShowcaseStudioSubmissionFailureReason): string {
+  if (reason === "silver_required") {
+    return "Silver access is required to submit Showcase Studio requests.";
+  }
+
+  if (reason === "original_label_required") {
+    return "Original Bomb Party label photo is required.";
+  }
+
+  if (reason === "jewelry_photo_required") {
+    return "Light-box jewelry photo is required.";
+  }
+
+  if (reason === "invalid_file_type") {
+    return "Upload image files for the label and jewelry photo.";
+  }
+
+  if (reason === "file_too_large") {
+    return "Studio images must be 10 MB or smaller.";
+  }
+
+  return "Showcase Studio request could not be saved.";
 }

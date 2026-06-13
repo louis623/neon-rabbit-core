@@ -76,12 +76,35 @@ test.describe("Sparkle Showcase smoke", () => {
     ]);
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
 
+    await expect(page.locator('[data-smoke="showcase-getting-started"]')).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Build your Sparkle Showcase in four simple steps." })).toBeVisible();
+    await expect(page.getByText("Add pieces you own.")).toBeVisible();
+    await expect(page.getByText("Mark pieces you are ISO.")).toBeVisible();
+    await expect(page.getByText("Feature your rarest reveals.")).toBeVisible();
+    await expect(page.getByText("Share your Sparkle Showcase.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Start Building My Sparkle Showcase" })).toHaveAttribute(
+      "href",
+      "#add-to-sparkle-showcase",
+    );
+    await expect(page.locator('[data-smoke="showcase-add-pieces"]')).toBeVisible();
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Mark as ISO" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();
+    await expect(page.locator('[data-smoke="showcase-studio-intake"]')).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Showcase Studio" })).toBeVisible();
+    await expect(page.getByText("Original Bomb Party label required")).toBeVisible();
+    await expect(page.getByText("Nic-Nac checks every image")).toBeVisible();
+    await expect(page.getByLabel("Original label photo")).toBeVisible();
+    await expect(page.getByLabel("Light-box jewelry photo")).toBeVisible();
+    await expect(page.getByLabel("Item number")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit to Nic-Nac review" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Light-box setup guide" })).toHaveAttribute(
+      "href",
+      "/shop#collector-photo",
+    );
     await expectNoGuardrailCopy(page);
 
     await page.getByRole("button", { name: "Mark as ISO" }).first().click();

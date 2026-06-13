@@ -689,6 +689,15 @@ describe("Sparkle Finder hub routes", () => {
     const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
 
     expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Showcase");
+    expect(markup).toContain("Build your Sparkle Showcase in four simple steps.");
+    expect(markup).toContain("Start Building My Sparkle Showcase");
+    expect(markup).toContain('href="#add-to-sparkle-showcase"');
+    expect(markup).toContain('id="add-to-sparkle-showcase"');
+    expect(markup).toContain("Step 1");
+    expect(markup).toContain("Add pieces you own.");
+    expect(markup).toContain("Mark pieces you are ISO.");
+    expect(markup).toContain("Feature your rarest reveals.");
+    expect(markup).toContain("Share your Sparkle Showcase.");
     expect(markup).toContain("Collector Profile");
     expect(markup).toContain("Sparkle Mama");
     expect(markup).toContain("Sparkle Showcase");
@@ -698,6 +707,18 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Add to Sparkle Showcase");
     expect(markup).toContain("Mark as ISO");
     expect(markup).toContain("Need a missing piece?");
+    expect(markup).toContain("Showcase Studio");
+    expect(markup).toContain('data-smoke="showcase-studio-intake"');
+    expect(markup).toContain("Original Bomb Party label required");
+    expect(markup).toContain("light-box photo");
+    expect(markup).toContain("Nic-Nac checks every image");
+    expect(markup).toContain("Original label photo");
+    expect(markup).toContain("Light-box jewelry photo");
+    expect(markup).toContain('name="originalLabelPhoto"');
+    expect(markup).toContain('name="jewelryFrontPhoto"');
+    expect(markup).toContain('name="itemNumber"');
+    expect(markup).toContain("Submit to Nic-Nac review");
+    expect(markup).toContain('href="/shop#collector-photo"');
     expect(markup).not.toContain("Silver Space");
     expect(markup).not.toContain("Catalog actions");
     expect(markup).not.toContain("Future catalog request path");

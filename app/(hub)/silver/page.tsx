@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Crown, Gem, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Crown, Gem, Sparkles } from "lucide-react";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import { ProfileEditor } from "@/components/silver/ProfileEditor";
 import { ShowcaseManager } from "@/components/showcase/ShowcaseManager";
 import {
   saveShowcasePieceAction,
   saveSilverProfileAction,
+  submitShowcaseStudioRequestAction,
 } from "@/app/(hub)/silver/actions";
 import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
 import {
@@ -102,6 +103,8 @@ export function renderSilverPageContent(
         </div>
       </div>
 
+      <ShowcaseGettingStartedGuide />
+
       <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
         <ProfileEditor
           accountState={accountState}
@@ -118,9 +121,64 @@ export function renderSilverPageContent(
           isLocalPreview={isLocalPreview}
           libraryItems={libraryItems}
           saveAction={isLocalPreview ? undefined : saveShowcasePieceAction}
+          studioAction={isLocalPreview ? undefined : submitShowcaseStudioRequestAction}
         />
       </div>
     </section>
+  );
+}
+
+function ShowcaseGettingStartedGuide() {
+  const steps = [
+    "Add pieces you own.",
+    "Mark pieces you are ISO.",
+    "Feature your rarest reveals.",
+    "Share your Sparkle Showcase.",
+  ];
+
+  return (
+    <article
+      className="overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[rgba(238,44,155,0.22)] bg-[linear-gradient(135deg,#fffefd_0%,#fff4f8_52%,#fff8ef_100%)] shadow-[var(--sparkle-shadow-sm)]"
+      data-smoke="showcase-getting-started"
+    >
+      <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
+            Start here
+          </p>
+          <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-3xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+            Build your Sparkle Showcase in four simple steps.
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+            New here? Start by adding a few pieces from the library. You can keep pieces private, make favorites public,
+            and come back anytime to polish the stories.
+          </p>
+        </div>
+        <a
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(64,41,36,0.2)] transition hover:bg-[var(--sparkle-plum-deep)]"
+          href="#add-to-sparkle-showcase"
+        >
+          Start Building My Sparkle Showcase
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </a>
+      </div>
+      <ol className="grid border-t border-[rgba(238,44,155,0.16)] bg-white/55 md:grid-cols-4">
+        {steps.map((step, index) => (
+          <li
+            className="flex gap-3 border-t border-[rgba(238,44,155,0.12)] p-4 first:border-t-0 md:border-l md:border-t-0 md:first:border-l-0"
+            key={step}
+          >
+            <CheckCircle2 aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[var(--sparkle-rose)]" />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--sparkle-coral)]">
+                Step {index + 1}
+              </p>
+              <p className="mt-1 text-sm font-bold leading-5 text-[var(--sparkle-plum-deep)]">{step}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </article>
   );
 }
 
