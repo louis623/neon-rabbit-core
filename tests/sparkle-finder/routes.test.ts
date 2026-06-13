@@ -12,14 +12,14 @@ import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/pa
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
-import ShopPage from "../../app/(hub)/shop/page";
+import ShopPage, { renderShopPageContent } from "../../app/shop/page";
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
-import type { JewelryItem } from "../../lib/sparkle-finder/types";
+import type { AffiliateProductRecommendation, JewelryItem } from "../../lib/sparkle-finder/types";
 import {
   affiliateDisclosureHref,
   affiliateIssueReportHref,
@@ -47,12 +47,12 @@ const routes = [
   ["library", () => renderToStaticMarkup(renderLibraryPageContent())],
   ["live-shows", () => renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
-  ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
   ["silver", () => renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")))],
 ] as const;
 
 const publicRoutes = [
   ["affiliate-disclosure", () => renderToStaticMarkup(createElement(AffiliateDisclosurePage))],
+  ["shop", () => renderToStaticMarkup(createElement(ShopPage))],
 ] as const;
 
 describe("Sparkle Finder hub routes", () => {
@@ -296,7 +296,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Nic-Nac, find this for me");
   });
 
-  it.each(["dashboard", "library", "live-shows", "rep-boards", "shop", "silver"] as const)(
+  it.each(["dashboard", "library", "live-shows", "rep-boards", "silver"] as const)(
     "gates anonymous visitors before rendering %s hub content",
     (routeName) => {
       const [, renderRoute] = routes.find(([name]) => name === routeName)!;
@@ -633,6 +633,7 @@ describe("Sparkle Finder hub routes", () => {
   it("renders shop route content from fixture data", () => {
     const markup = renderToStaticMarkup(createElement(ShopPage));
 
+    expect(markup).toContain("Sparkle Finder public navigation");
     expect(markup).toContain("Collector &amp; Rep Essentials");
     expect(markup).toContain("Shop by need");
     expect(markup).toContain("Rep Essentials");
@@ -640,6 +641,15 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Livestream Gear");
     expect(markup).toContain("Affiliate link after approval");
     expect(markup).toContain("Louis review required");
+  });
+
+  it("keeps shop publicly reachable without the anonymous hub sign-in wall", () => {
+    const markup = renderToStaticMarkup(createElement(ShopPage));
+
+    expect(markup).not.toContain("Create a free Sparkle Finder account to open this tool.");
+    expect(markup).not.toContain("Sign in to open Sparkle Finder");
+    expect(markup).toContain("Collector &amp; Rep Essentials");
+    expect(markup).toContain("Affiliate Disclosure");
   });
 
   it("keeps the homepage shop card aligned to the new shop route", async () => {
@@ -661,6 +671,42 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(affiliateIssueReportLabel);
     expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
     expect(markup).toContain(affiliateReviewActionCopy);
+  });
+
+  it("renders approved live affiliate products with nearby disclosure and issue reporting", () => {
+    const liveProduct: AffiliateProductRecommendation = {
+      id: "approved-light-box-test",
+      lane: "collector",
+      category: "Photo setup",
+      title: "Compact photo light box setup",
+      shortDescription: "A simple photo setup option for Showcase Studio submissions.",
+      whyItHelps: "Helps collectors take cleaner light-box photos without promising professional results.",
+      retailerProgram: "Amazon Associates",
+      status: "live",
+      affiliateUrl: "https://example.com/sparkle-finder-light-box",
+      approvedByLouisAt: "2026-06-13",
+      disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
+      trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
+      placement: "Shop page, Showcase Studio light-box guide",
+    };
+
+    const markup = renderToStaticMarkup(
+      renderShopPageContent({
+        affiliateShopItems: [],
+        productRecommendations: [liveProduct],
+      }),
+    );
+
+    expect(markup).toContain("Approved product picks");
+    expect(markup).toContain("Compact photo light box setup");
+    expect(markup).toContain('href="https://example.com/sparkle-finder-light-box"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('rel="sponsored noopener noreferrer"');
+    expect(markup).toContain("Paid link. Sparkle Finder may earn a commission at no extra cost to you.");
+    expect(markup).toContain(amazonAssociateDisclosure);
+    expect(markup).toContain("Approved by Louis on June 13, 2026");
+    expect(markup).toContain("Affiliate pick. Tell us if this product or company gives you trouble.");
+    expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
   });
 
   it("does not render a shop self-link CTA on the shop route", () => {

@@ -741,7 +741,8 @@ select {
 .sparkle-shop-tab-secondary,
 .sparkle-shop-chip,
 .sparkle-shop-status,
-.sparkle-shop-disabled-link {
+.sparkle-shop-disabled-link,
+.sparkle-shop-live-link {
   border-color: var(--ss-shop-hairline);
   background: rgba(255, 255, 255, 0.78);
   color: var(--ss-shop-ink);
@@ -802,4 +803,24 @@ select {
   border: 1px solid var(--ss-shop-hairline-strong);
   background: var(--ss-shop-bg);
   color: var(--ss-shop-muted);
+}
+
+.sparkle-shop-live-link {
+  border: 1px solid var(--ss-shop-pink);
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  box-shadow: 0 12px 30px rgba(238, 44, 155, 0.2);
+  color: #fff6fb;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sparkle-shop-live-link:hover {
+  box-shadow: 0 16px 34px rgba(238, 44, 155, 0.28);
+  transform: translateY(-1px);
+}
+
+.sparkle-shop-live-link:focus-visible {
+  outline: 2px solid var(--ss-shop-pink);
+  outline-offset: 4px;
 }

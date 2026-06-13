@@ -14,6 +14,8 @@ import {
   Truck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
+import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
   affiliateDisclosureHref,
   affiliateIssueReportEmail,
@@ -23,7 +25,8 @@ import {
   affiliateReviewActionCopy,
   amazonAssociateDisclosure,
 } from "@/lib/sparkle-finder/affiliate-copy";
-import { getAffiliateShopItems } from "@/lib/sparkle-finder/service";
+import { getAffiliateProductRecommendations, getAffiliateShopItems } from "@/lib/sparkle-finder/service";
+import type { AffiliateProductRecommendation, AffiliateShopItem } from "@/lib/sparkle-finder/types";
 
 type Need = {
   title: string;
@@ -162,9 +165,59 @@ const laneSummaries = [
 
 export default function ShopPage() {
   const affiliateShopItems = getAffiliateShopItems();
+  const productRecommendations = getAffiliateProductRecommendations();
   const collectorSlots = recommendationSlots.filter((slot) => slot.lane === "Collectors");
   const repSlots = recommendationSlots.filter((slot) => slot.lane === "Reps");
 
+  return (
+    <>
+      <SparkleFinderNav variant="public" />
+      <main className="min-h-screen bg-[var(--sparkle-warm-bg)]">
+        <div className="mx-auto max-w-[112rem] px-5 py-8 sm:px-8 lg:px-10">
+          <ShopPageContent
+            affiliateShopItems={affiliateShopItems}
+            collectorSlots={collectorSlots}
+            productRecommendations={productRecommendations}
+            repSlots={repSlots}
+          />
+        </div>
+      </main>
+      <SparkleFinderFooter />
+    </>
+  );
+}
+
+export function renderShopPageContent({
+  affiliateShopItems = getAffiliateShopItems(),
+  productRecommendations = getAffiliateProductRecommendations(),
+}: {
+  affiliateShopItems?: AffiliateShopItem[];
+  productRecommendations?: AffiliateProductRecommendation[];
+}) {
+  const collectorSlots = recommendationSlots.filter((slot) => slot.lane === "Collectors");
+  const repSlots = recommendationSlots.filter((slot) => slot.lane === "Reps");
+
+  return (
+    <ShopPageContent
+      affiliateShopItems={affiliateShopItems}
+      collectorSlots={collectorSlots}
+      productRecommendations={productRecommendations}
+      repSlots={repSlots}
+    />
+  );
+}
+
+function ShopPageContent({
+  affiliateShopItems,
+  collectorSlots,
+  productRecommendations,
+  repSlots,
+}: {
+  affiliateShopItems: AffiliateShopItem[];
+  collectorSlots: RecommendationSlot[];
+  productRecommendations: AffiliateProductRecommendation[];
+  repSlots: RecommendationSlot[];
+}) {
   return (
     <section className="sparkle-shop grid gap-8 px-4 py-5 sm:px-6 sm:py-7 lg:px-8" data-smoke="shop-store">
       <div className="sparkle-shop-hero grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:p-8">
@@ -292,6 +345,29 @@ export default function ShopPage() {
         </div>
       </section>
 
+      <section className="grid gap-4" aria-labelledby="approved-product-picks">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold" id="approved-product-picks">
+              Approved product picks
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-[var(--ss-shop-muted)]">
+              Exact affiliate links only become clickable after the product, retailer, placement, disclosure, and trust
+              copy clear Louis review.
+            </p>
+          </div>
+          <Link className="text-sm font-bold text-[var(--ss-shop-pink)] underline-offset-4 hover:underline" href={affiliateDisclosureHref}>
+            Affiliate Disclosure
+          </Link>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {productRecommendations.map((product) => (
+            <AffiliateProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
       <ShopLane
         description="For collectors who want practical supplies for care, organization, display, gifting, and photos."
         id="collector-care"
@@ -340,6 +416,106 @@ export default function ShopPage() {
       </footer>
     </section>
   );
+}
+
+function AffiliateProductCard({ product }: { product: AffiliateProductRecommendation }) {
+  const isLive = product.status === "live" && product.affiliateUrl;
+  const isAmazon = product.retailerProgram.toLowerCase().includes("amazon");
+
+  return (
+    <article className="sparkle-shop-rec grid min-h-[25rem] content-start gap-4 p-5">
+      <div className="grid gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ss-shop-tertiary)]">
+            {product.lane === "collector" ? "Collectors" : "Reps"} / {product.category}
+          </p>
+          <span className="sparkle-shop-status rounded-full px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.12em]">
+            {formatAffiliateStatus(product.status)}
+          </span>
+        </div>
+        <h3 className="text-lg font-bold leading-6">{product.title}</h3>
+        <p className="text-sm leading-6 text-[var(--ss-shop-muted)]">{product.shortDescription}</p>
+      </div>
+
+      <p className="text-sm leading-6 text-[var(--ss-shop-muted)]">
+        <strong className="text-[var(--ss-shop-ink)]">Why it helps:</strong> {product.whyItHelps}
+      </p>
+
+      <div className="grid gap-2 text-xs leading-5 text-[var(--ss-shop-muted)]">
+        <p>
+          <strong className="text-[var(--ss-shop-ink)]">Retailer/program:</strong> {product.retailerProgram}
+        </p>
+        <p>
+          <strong className="text-[var(--ss-shop-ink)]">Placement:</strong> {product.placement}
+        </p>
+        {product.approvedByLouisAt ? (
+          <p className="font-bold text-[var(--ss-shop-ink)]">
+            Approved by Louis on {formatApprovalDate(product.approvedByLouisAt)}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="mt-auto grid gap-3">
+        {isLive ? (
+          <a
+            className="sparkle-shop-live-link inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-bold"
+            href={product.affiliateUrl}
+            rel="sponsored noopener noreferrer"
+            target="_blank"
+          >
+            Open paid link
+          </a>
+        ) : (
+          <button
+            className="sparkle-shop-disabled-link inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-full px-4 text-sm font-bold"
+            disabled
+            type="button"
+          >
+            Affiliate link after approval
+          </button>
+        )}
+
+        <div className="grid gap-2 text-xs leading-5 text-[var(--ss-shop-muted)]">
+          <p>{product.disclosure}</p>
+          {isAmazon ? <p>{amazonAssociateDisclosure}</p> : null}
+          <p>
+            {product.trustCopy}{" "}
+            <a className="font-bold text-[var(--ss-shop-ink)] underline-offset-4 hover:underline" href={affiliateIssueReportHref}>
+              {affiliateIssueReportLabel}
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function formatAffiliateStatus(status: AffiliateProductRecommendation["status"]): string {
+  const labels: Record<AffiliateProductRecommendation["status"], string> = {
+    approved: "Approved",
+    live: "Live",
+    needs_louis_review: "Louis review required",
+    paused: "Paused",
+    research: "Researching picks",
+  };
+
+  return labels[status];
+}
+
+function formatApprovalDate(dateText: string): string {
+  const [year, month, day] = dateText.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return dateText;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
 }
 
 function ShopLane({
