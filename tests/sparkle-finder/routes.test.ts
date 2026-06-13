@@ -158,6 +158,7 @@ describe("Sparkle Finder hub routes", () => {
       "Information Sparkle Finder Collects",
       "How Sparkle Finder Uses Information",
       "Sparkle Suite Data And Rep Links",
+      "Sparkle Showcase Sharing And Moderation",
       "Affiliate And Shop Information",
       "SMS And Email Choices",
       "Data Sharing",
@@ -177,13 +178,14 @@ describe("Sparkle Finder hub routes", () => {
       "About Sparkle Finder",
       "Customer Accounts And Silver Access",
       "Library, Live Shows, Rep Boards, And Availability",
-      "Collection, Profile, And Watchlist Tools",
+      "Sparkle Showcase, Profile, And Watchlist Tools",
+      "Follows, Comments, Reports, And Moderation",
       "Affiliate Shop And Product Information",
       "Acceptable Use",
       "Privacy",
       "Third-Party Services",
       "Payments, Trials, And Billing",
-      "No Marketplace, Escrow, Or Fulfillment",
+      "No Sales, Escrow, Or Fulfillment",
       "No Guarantees",
       "Intellectual Property",
       "Disclaimer Of Warranties",
@@ -206,7 +208,7 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(termsMarkup).toContain("Sparkle Finder Legal Center");
     expect(termsMarkup).toContain("Terms and Conditions");
-    expect(termsMarkup).toContain("No Marketplace, Escrow, Or Fulfillment");
+    expect(termsMarkup).toContain("No Sales, Escrow, Or Fulfillment");
     expect(termsMarkup).toContain("Sparkle Finder is a discovery hub");
     expect(termsMarkup).toContain(
       "not owned by, operated by, endorsed by, sponsored by, or officially affiliated with Bomb Party",
@@ -683,17 +685,18 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(affiliateReviewActionCopy);
   });
 
-  it("renders Silver profile and collection previews for Silver customers", () => {
+  it("renders Silver profile and Sparkle Showcase previews for Silver customers", () => {
     const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
 
-    expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Finder Workspace");
+    expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Showcase");
     expect(markup).toContain("Collector Profile");
     expect(markup).toContain("Sparkle Mama");
-    expect(markup).toContain("Wishlist &amp; Owned Collection");
+    expect(markup).toContain("Sparkle Showcase");
+    expect(markup).toContain("The Rarest of Reveals");
+    expect(markup).toContain("Showcase Collection");
     expect(markup).toContain("Rainbow Crown Ring");
-    expect(markup).toContain("Add From Jewelry Library");
-    expect(markup).toContain("Add to collection");
-    expect(markup).toContain("Add to watchlist");
+    expect(markup).toContain("Add to Sparkle Showcase");
+    expect(markup).toContain("Mark as ISO");
     expect(markup).toContain("Need a missing piece?");
     expect(markup).not.toContain("Silver Space");
     expect(markup).not.toContain("Catalog actions");
@@ -737,7 +740,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("@caseyfinds");
     expect(markup).toContain("Looking for jewel tones and unicorns.");
     expect(markup).toContain(
-      "Save favorites in your wishlist, show off owned pieces in your digital collection, and keep profile details ready for Nic-Nac requests.",
+      "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
     expect(markup).toContain("Save profile");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");

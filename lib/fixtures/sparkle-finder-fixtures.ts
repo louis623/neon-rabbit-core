@@ -9,6 +9,7 @@ import type {
   SilverProfile,
 } from "../sparkle-finder/types";
 import type { SparkleSuiteRepEntitlement } from "../sparkle-finder/rep-entitlements";
+import type { ShowcaseCollection, ShowcaseComment } from "../sparkle-finder/showcase-types";
 
 export const sparkleFinderAffiliateShopItems: AffiliateShopItem[] = [
   {
@@ -343,5 +344,74 @@ export const sparkleFinderCollectionItems: CollectionItem[] = [
     state: "owned",
     note: "Highlighted bracelet stack.",
     isHighlighted: true,
+  },
+];
+
+export const sparkleFinderShowcaseCollections: ShowcaseCollection[] = [
+  {
+    id: "showcase-collection-never-leaving",
+    customerId: "customer-silver-sparkle-mama",
+    title: "Never Leaving",
+    slug: "never-leaving",
+    description: "The pieces that are staying with me.",
+    visibility: "public",
+    pieceIds: ["collection-owned-rainbow", "collection-owned-heart"],
+  },
+  {
+    id: "showcase-collection-pink-dreams",
+    customerId: "customer-silver-sparkle-mama",
+    title: "Pink Dreams",
+    slug: "pink-dreams",
+    description: "Soft pinks, warm stones, and sweet reveal memories.",
+    visibility: "public",
+    pieceIds: ["collection-highlight-rose", "collection-wishlist-aurora"],
+  },
+  {
+    id: "showcase-collection-private-notes",
+    customerId: "customer-silver-sparkle-mama",
+    title: "Private Notes",
+    slug: "private-notes",
+    description: "Hidden owner-only planning notes.",
+    visibility: "private",
+    pieceIds: ["collection-owned-starlit"],
+  },
+];
+
+export const sparkleFinderShowcaseComments: ShowcaseComment[] = [
+  {
+    id: "showcase-comment-profile-1",
+    showcaseCustomerId: "customer-silver-sparkle-mama",
+    authorCustomerId: "customer-free-marlena",
+    authorDisplayName: "Marlena",
+    targetType: "showcase",
+    targetId: "customer-silver-sparkle-mama",
+    body: "Your rare reveals are so fun to follow.",
+    createdAt: "2026-06-01T12:00:00.000Z",
+    updatedAt: "2026-06-01T12:00:00.000Z",
+    deletedAt: null,
+  },
+  {
+    id: "showcase-comment-rainbow-1",
+    showcaseCustomerId: "customer-silver-sparkle-mama",
+    authorCustomerId: "customer-free-marlena",
+    authorDisplayName: "Marlena",
+    targetType: "piece",
+    targetId: "collection-owned-rainbow",
+    body: "That reveal was unreal.",
+    createdAt: "2026-06-01T12:05:00.000Z",
+    updatedAt: "2026-06-01T12:05:00.000Z",
+    deletedAt: null,
+  },
+  {
+    id: "showcase-comment-deleted",
+    showcaseCustomerId: "customer-silver-sparkle-mama",
+    authorCustomerId: "customer-free-marlena",
+    authorDisplayName: "Marlena",
+    targetType: "showcase",
+    targetId: "customer-silver-sparkle-mama",
+    body: "Deleted comment should stay hidden.",
+    createdAt: "2026-06-01T12:10:00.000Z",
+    updatedAt: "2026-06-01T12:11:00.000Z",
+    deletedAt: "2026-06-01T12:11:00.000Z",
   },
 ];

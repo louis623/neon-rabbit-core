@@ -28,7 +28,7 @@ export const sparkleFinderLegalFooterLinks = [
 
 const developer = "Neon Rabbit Digital Services, Jacksonville, FL";
 const contact = "louis@neonrabbit.net";
-const lastUpdated = "June 7, 2026";
+const lastUpdated = "June 13, 2026";
 
 export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
   pageTitle: "Privacy Policy",
@@ -41,7 +41,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
   developer,
   contact,
   plainEnglishSummary:
-    "Sparkle Finder uses the information needed to run customer accounts, trial protection, account support, collector tools, optional updates, and discovery features. Neon Rabbit Digital Services does not sell personal information or SMS opt-in data.",
+    "Sparkle Finder uses the information needed to run customer accounts, trial protection, account support, Sparkle Showcase tools, optional updates, and discovery features. Neon Rabbit Digital Services does not sell personal information or SMS opt-in data.",
   sections: [
     {
       title: "What This Policy Covers",
@@ -51,7 +51,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
       bullets: [
         "Sparkle Finder public pages and customer account pages",
         "Sparkle Finder signup, sign-in, account, and Silver trial flows",
-        "collector profile, collection, watchlist, and Nic-Nac request features",
+        "Sparkle Showcase, Showcase Collections, Reveal Spotlight, follow, comment, report, watchlist, and Nic-Nac request features",
         "Sparkle Suite-powered library, live show, rep board, and availability data shown in Sparkle Finder",
         "affiliate shop and product concern reporting surfaces",
         "optional Sparkle Finder email or SMS update choices",
@@ -68,7 +68,8 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "phone number",
         "state",
         "TikTok handle or other social handle if you choose to provide it",
-        "collector profile details, collection items, watchlist items, notes, and visibility choices",
+        "Sparkle Showcase profile details, saved jewelry items, Showcase Collections, watchlist items, reveal stories, notes, and visibility choices",
+        "follows, comments, comment edits, comment deletions, reports, moderation details, and public sharing choices",
         "privacy acknowledgment status and consent timestamps",
         "optional promotional email or SMS opt-in status",
         "account, trial, membership, billing, and support status needed to provide Sparkle Finder",
@@ -82,7 +83,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
       bullets: [
         "create and manage Sparkle Finder customer accounts",
         "provide the 45-day Silver trial and Silver membership access",
-        "support collector profile, collection, watchlist, and Nic-Nac request features",
+        "support Sparkle Showcase, Showcase Collections, Reveal Spotlight, watchlist, follow, comment, report, and Nic-Nac request features",
         "show relevant library, live show, rep board, and availability information",
         "respond to support requests or product concern reports",
         "send account, security, trial, billing, or service notices",
@@ -95,6 +96,13 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
       paragraphs: [
         "Sparkle Finder may display catalog, live show, rep, rep board, and availability information read from or linked through Sparkle Suite systems.",
         "Sparkle Finder does not make every rep, listing, availability count, show time, or external link permanently available or guaranteed. Reps and third-party systems may change their own information.",
+      ],
+    },
+    {
+      title: "Sparkle Showcase Sharing And Moderation",
+      paragraphs: [
+        "If you make Sparkle Showcase content public, visitors may be able to view public showcase pages, Showcase Collections, Reveal Spotlight pages, selected jewelry records, reveal stories, display names, handles, follow counts, comments, and other information you choose to make visible.",
+        "Sparkle Finder may store and review follows, comments, comment edits, comment deletions, reports, and moderation details to operate public sharing features, reduce spam, respond to abuse reports, and protect users.",
       ],
     },
     {
@@ -123,7 +131,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
     {
       title: "Data Retention",
       paragraphs: [
-        "Sparkle Finder may retain account, consent, membership, billing, support, and customer tool data for as long as needed to provide services, maintain consent records, honor opt-out requests, comply with legal or carrier requirements, resolve disputes, enforce agreements, or operate Sparkle Finder.",
+        "Sparkle Finder may retain account, consent, membership, billing, support, Sparkle Showcase, comment, report, moderation, and customer tool data for as long as needed to provide services, maintain consent records, honor opt-out requests, comply with legal or carrier requirements, resolve disputes, enforce agreements, or operate Sparkle Finder.",
         "SMS opt-in, opt-out, and consent records may be retained as needed to document compliance and prevent unwanted messages.",
       ],
     },
@@ -131,6 +139,8 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
       title: "Your Rights And Choices",
       bullets: [
         "You can update account profile and preference details from available account tools.",
+        "You can change available Sparkle Showcase visibility choices and delete or edit your own comments where those tools are provided.",
+        "You can report spam or bad behavior from available Sparkle Showcase surfaces.",
         "You can opt out of SMS messages by replying STOP.",
         "You can request help for SMS messages by replying HELP.",
         "You can unsubscribe from email messages by using the unsubscribe method provided in the email, if available, or by contacting us.",
@@ -175,13 +185,13 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
   developer,
   contact,
   plainEnglishSummary:
-    "Sparkle Finder is a customer discovery hub by Sparkle Suite. These terms explain account use, Silver access, discovery data, affiliate shop surfaces, and important limits: Sparkle Finder is not Bomb Party, not a jewelry marketplace, and not an escrow or fulfillment service.",
+    "Sparkle Finder is a customer discovery hub by Sparkle Suite. These terms explain account use, Silver access, discovery data, Sparkle Showcase sharing, affiliate shop surfaces, and important limits: Sparkle Finder is not Bomb Party, not a jewelry marketplace, and not an escrow or fulfillment service.",
   sections: [
     {
       title: "Agreement To These Terms",
       paragraphs: [
-        "These Terms and Conditions explain the rules for using Sparkle Finder, including public pages, customer accounts, Silver access, collector tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
-        "By using Sparkle Finder, creating an account, submitting a form, using a collector tool, joining a trial, opting in to messages, or clicking through to an external site, you agree to these Terms and Conditions.",
+        "These Terms and Conditions explain the rules for using Sparkle Finder, including public pages, customer accounts, Silver access, Sparkle Showcase tools, affiliate shop surfaces, and Sparkle Suite-powered discovery data.",
+        "By using Sparkle Finder, creating an account, submitting a form, using a Sparkle Showcase tool, joining a trial, opting in to messages, or clicking through to an external site, you agree to these Terms and Conditions.",
         "If you do not agree, do not use Sparkle Finder.",
       ],
     },
@@ -208,10 +218,17 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       ],
     },
     {
-      title: "Collection, Profile, And Watchlist Tools",
+      title: "Sparkle Showcase, Profile, And Watchlist Tools",
       paragraphs: [
-        "Silver and account tools may let customers save profile details, collection items, watchlist items, notes, preferences, and related information.",
+        "Silver and account tools may let customers save Sparkle Showcase profile details, saved jewelry items, Showcase Collections, watchlist items, notes, reveal stories, preferences, and related information.",
         "You are responsible for information you choose to save or make visible. Sparkle Finder may change, pause, or limit these tools as the product develops.",
+      ],
+    },
+    {
+      title: "Follows, Comments, Reports, And Moderation",
+      paragraphs: [
+        "Sparkle Showcase sharing may let signed-in users follow public showcases, comment on public showcases or Reveal Spotlight pages, edit or delete their own comments, and report spam or bad behavior.",
+        "Showcase owners may be able to delete comments on their own Sparkle Showcase. Sparkle Finder may remove, hide, limit, preserve, or review content and reports to reduce spam, protect users, investigate abuse, or enforce these Terms.",
       ],
     },
     {
@@ -228,6 +245,7 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       bullets: [
         "send unlawful, deceptive, abusive, harassing, or harmful content",
         "misrepresent your identity, affiliation, products, ownership, or availability",
+        "pressure, harass, spam, or mislead collectors, reps, or other visitors",
         "scrape, overload, attack, reverse engineer, or interfere with Sparkle Finder systems",
         "attempt to access data or accounts you are not authorized to access",
         "post or save content that violates intellectual property rights or privacy rights",
@@ -255,16 +273,16 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       ],
     },
     {
-      title: "No Marketplace, Escrow, Or Fulfillment",
+      title: "No Sales, Escrow, Or Fulfillment",
       paragraphs: [
         "Sparkle Finder is a discovery hub, not a jewelry marketplace.",
-        "Sparkle Finder does not process customer-to-customer jewelry payments, provide escrow, hold inventory, verify every item, guarantee trades, ship items, or settle disputes between customers, reps, retailers, or third parties.",
+        "Sparkle Finder does not process jewelry payments between customers, provide escrow, hold inventory, verify every item, ship items, or settle disputes between customers, reps, retailers, or third parties.",
       ],
     },
     {
       title: "No Guarantees",
       paragraphs: [
-        "Sparkle Finder does not guarantee that you will find a specific item, complete a purchase, complete a trade, receive a particular offer, reach a specific rep, or get a particular collector outcome.",
+        "Sparkle Finder does not guarantee that you will find a specific item, complete a purchase from a rep or retailer, receive a particular offer, reach a specific rep, or get a particular collector outcome.",
       ],
     },
     {

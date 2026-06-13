@@ -1,6 +1,7 @@
 import type { SparkleFinderAccountState } from "./auth";
 import type { CurrentSparkleFinderAccountState } from "./account-service";
 import type { CollectionItem, SilverProfile } from "./types";
+import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "./showcase-types";
 
 export type CustomerStateDeniedReason = "silver_required" | "account_mismatch" | "save_failed";
 
@@ -23,6 +24,15 @@ export type CollectionItemUpsertInput = Pick<
   CollectionItem,
   "isHighlighted" | "jewelryItemId" | "note" | "state"
 >;
+
+export type ShowcasePieceUpdateInput = {
+  isRarestReveal: boolean;
+  jewelryItemId: string;
+  note: string;
+  revealStory: string;
+  showcaseStatus: SparkleShowcaseItemStatus;
+  visibility: SparkleShowcaseVisibility;
+};
 
 export type CollectionItemUpsertResult =
   | {
@@ -141,6 +151,33 @@ export async function persistCollectionItemForAccount(
   return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
 }
 
+export async function persistShowcasePieceForAccount(
+  supabase: SupabaseCustomerStateClient,
+  accountState: CurrentSparkleFinderAccountState,
+  input: ShowcasePieceUpdateInput,
+): Promise<PersistedCustomerStateResult> {
+  if (!canSaveSilverState(accountState)) {
+    return { ok: false, reason: "silver_required" };
+  }
+
+  const values = {
+    user_id: accountState.customer.id,
+    jewelry_item_id: input.jewelryItemId,
+    state: mapShowcaseStatusToLegacyCollectionState(input.showcaseStatus),
+    note: cleanText(input.note, 500),
+    is_highlighted: input.isRarestReveal,
+    visibility: input.visibility,
+    showcase_status: input.showcaseStatus,
+    reveal_story: cleanText(input.revealStory, 700),
+    is_rarest_reveal: input.isRarestReveal,
+  };
+  const result = await supabase.from("sparkle_finder_collection_items").upsert(values, {
+    onConflict: "user_id,jewelry_item_id",
+  });
+
+  return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
+}
+
 export function addJewelryItemToCustomerCollection(
   accountState: SparkleFinderAccountState,
   collectionItems: CollectionItem[],
@@ -189,6 +226,14 @@ function canSaveSilverState(
 
 function createLocalCollectionItemId(jewelryItemId: string): string {
   return `collection-local-${jewelryItemId}`;
+}
+
+function mapShowcaseStatusToLegacyCollectionState(status: SparkleShowcaseItemStatus): CollectionItem["state"] {
+  if (status === "private_note_only") {
+    return "private_note_only";
+  }
+
+  return status === "owned" ? "owned" : "wishlist";
 }
 
 async function safeMaybeSingle(builder: SupabasePersistenceFilterBuilder): Promise<{ data: unknown; error: unknown }> {

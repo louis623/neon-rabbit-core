@@ -1,0 +1,96 @@
+import { expect, test, type Page } from "@playwright/test";
+import { mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
+
+const baseUrl = process.env.SPARKLE_FINDER_BASE_URL ?? "http://127.0.0.1:4310";
+const screenshotDir = process.env.SPARKLE_FINDER_SCREENSHOT_DIR ?? "verification/sparkle-finder";
+
+test.describe("Sparkle Showcase smoke", () => {
+  test("public Sparkle Showcase renders shareable collection and conversation surfaces", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 950 });
+    await page.goto(`${baseUrl}/showcase/sparkle-mama`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator('[data-smoke="sparkle-showcase"]')).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sparkle Mama's Sparkle Showcase" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The Rarest of Reveals" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Showcase Collections" })).toBeVisible();
+    await expect(page.getByText("Never Leaving")).toBeVisible();
+    await expect(page.getByText("Showcase Conversation")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in to follow" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Share Showcase" })).toHaveAttribute(
+      "href",
+      "/showcase/sparkle-mama",
+    );
+    await expectNoGuardrailCopy(page);
+
+    mkdirSync(screenshotDir, { recursive: true });
+    await page.screenshot({
+      fullPage: true,
+      path: join(screenshotDir, "sparkle-showcase-public-desktop.png"),
+    });
+  });
+
+  test("Reveal Spotlight keeps the rare-piece story and rep-first find path visible", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`${baseUrl}/showcase/sparkle-mama/pieces/jewel-rainbow-crown-ring`, {
+      waitUntil: "domcontentloaded",
+    });
+
+    await expect(page.locator('[data-smoke="reveal-spotlight"]')).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Rainbow Crown Ring" })).toBeVisible();
+    await expect(page.getByText("Reveal Spotlight", { exact: true })).toBeVisible();
+    await expect(page.getByText("Diamond Reveal", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Rep leads" })).toBeVisible();
+    await expect(page.getByText("That reveal was unreal.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Share Reveal Spotlight" })).toHaveAttribute(
+      "href",
+      "/showcase/sparkle-mama/pieces/jewel-rainbow-crown-ring",
+    );
+    await expectNoGuardrailCopy(page);
+  });
+
+  test("Showcase Collection page uses the customer grouping language", async ({ page }) => {
+    await page.goto(`${baseUrl}/showcase/sparkle-mama/showcase-collections/never-leaving`, {
+      waitUntil: "domcontentloaded",
+    });
+
+    await expect(page.getByRole("link", { name: "Back to Sparkle Showcase" })).toHaveAttribute(
+      "href",
+      "/showcase/sparkle-mama",
+    );
+    await expect(page.getByText("Showcase Collection", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Never Leaving", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Never Leaving Showcase Collection" })).toBeVisible();
+    await expectNoGuardrailCopy(page);
+  });
+
+  test("Silver preview exposes owner Sparkle Showcase controls without trading language", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+    await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
+    await expect(page.getByText("Owner tools")).toBeVisible();
+    await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mark as ISO" }).first()).toBeVisible();
+    await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
+    await expect(page.getByText("Need a missing piece?")).toBeVisible();
+    await expectNoGuardrailCopy(page);
+
+    await page.getByRole("button", { name: "Mark as ISO" }).first().click();
+    await expect(page.getByText("ISO piece added to your Sparkle Showcase preview.")).toBeVisible();
+  });
+});
+
+async function expectNoGuardrailCopy(page: Page) {
+  const visibleCopy = await page.locator("body").innerText();
+
+  expect(findSparkleFinderCopyViolations(visibleCopy)).toEqual([]);
+}

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Crown, Gem, Sparkles } from "lucide-react";
-import { CollectionManager, type ManagedCollectionItem } from "@/components/silver/CollectionManager";
+import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import { ProfileEditor } from "@/components/silver/ProfileEditor";
+import { ShowcaseManager } from "@/components/showcase/ShowcaseManager";
 import {
-  saveSilverCollectionItemAction,
+  saveShowcasePieceAction,
   saveSilverProfileAction,
 } from "@/app/(hub)/silver/actions";
 import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
@@ -70,17 +71,20 @@ export function renderSilverPageContent(
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
-            My Sparkle Finder
+            My Sparkle Showcase
           </p>
           <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
-            {customer.displayName}&apos;s Sparkle Finder Workspace
+            {customer.displayName}&apos;s Sparkle Showcase
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {isLocalPreview
-              ? "Stage favorites, owned pieces, and profile details against Sparkle Finder's fixture-backed preview."
+              ? "Stage owned pieces, ISO hunts, rare reveals, and profile details against Sparkle Finder's fixture-backed preview."
               : entitlements.canUseSilverProfileActions
-                ? "Save favorites in your wishlist, show off owned pieces in your digital collection, and keep profile details ready for Nic-Nac requests."
-                : "View your signed-in profile and saved library state. Silver access unlocks wishlist, collection, and profile saves."}
+                ? "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears."
+                : "View your signed-in profile and saved library state. Silver access unlocks Sparkle Showcase saves."}
+          </p>
+          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--sparkle-ink-muted)]">
+            Sparkle Showcase is for discovery, tracking, highlighting, and sharing with rep-first find paths.
           </p>
         </div>
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
@@ -91,7 +95,7 @@ export function renderSilverPageContent(
                 {isLocalPreview ? "Local fixture mode" : "Silver access active"}
               </p>
               <p className="text-sm leading-5 text-[var(--sparkle-ink-muted)]">
-                {isLocalPreview ? "Preview-only state, ready for later actions." : "Your account can save wishlist and collection updates."}
+                {isLocalPreview ? "Preview-only state, ready for later actions." : "Your account can save Sparkle Showcase updates."}
               </p>
             </div>
           </div>
@@ -107,13 +111,13 @@ export function renderSilverPageContent(
           profile={profile}
           saveAction={isLocalPreview ? undefined : saveSilverProfileAction}
         />
-        <CollectionManager
+        <ShowcaseManager
           accountState={accountState}
           canSaveSilverActions={entitlements.canUseSilverCollectionActions}
           collectionItems={collectionItems}
           isLocalPreview={isLocalPreview}
           libraryItems={libraryItems}
-          saveAction={isLocalPreview ? undefined : saveSilverCollectionItemAction}
+          saveAction={isLocalPreview ? undefined : saveShowcasePieceAction}
         />
       </div>
     </section>
@@ -133,12 +137,12 @@ function SilverUpgradePrompt({ accountState }: { accountState: SilverPageAccount
           {isLocalPreview ? "Silver preview needed" : "Silver access needed"}
         </p>
         <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold text-[var(--sparkle-plum-deep)]">
-          {isLocalPreview ? "Open Silver to save profile and collection previews" : "Open Silver to view and stage your workspace"}
+          {isLocalPreview ? "Open Silver to save Sparkle Showcase previews" : "Open Silver to view and stage your Sparkle Showcase"}
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
           {isLocalPreview
-            ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, collection records, and watchlist records against local fixture data."
-            : "Free accounts can keep browsing the library. Silver accounts can view and stage profile details, collection records, and watchlist records while persistent saves are still in progress."}
+            ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, Sparkle Showcase records, and ISO records against local fixture data."
+            : "Free accounts can keep browsing the library. Silver accounts can view and stage profile details, Sparkle Showcase records, and ISO records while persistent saves are still in progress."}
         </p>
       </div>
       <Link

@@ -114,7 +114,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByRole("checkbox", { name: /Optional promotional SMS/ })).not.toBeChecked();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Sparkle Mama's Sparkle Finder Workspace")).toBeVisible();
+    await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();
     await expect(page.getByText("Local fixture mode")).toBeVisible();
   });
 
@@ -148,7 +148,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Marlena's Sparkle Finder Workspace")).toBeVisible();
+    await expect(page.getByText("Marlena's Sparkle Showcase")).toBeVisible();
     await expect(page.getByText("Silver preview is required to save profile updates.")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
@@ -156,7 +156,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByText("Your Silver Collector Space")).toBeVisible();
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Sparkle Mama's Sparkle Finder Workspace")).toBeVisible();
+    await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: "Continue as Guest" }).click();

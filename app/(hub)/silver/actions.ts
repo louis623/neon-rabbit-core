@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import {
   persistCollectionItemForAccount,
+  persistShowcasePieceForAccount,
   persistSilverProfileForAccount,
   type SupabaseCustomerStateClient,
 } from "@/lib/sparkle-finder/customer-state";
 import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
 import { createClient } from "@/lib/supabase/server";
 import type { CollectionItem } from "@/lib/sparkle-finder/types";
+import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "@/lib/sparkle-finder/showcase-types";
 
 export type SilverSaveActionState = {
   status: "idle" | "saved" | "denied" | "error";
@@ -103,6 +105,57 @@ export async function saveSilverCollectionItemAction(
   };
 }
 
+export async function saveShowcasePieceAction(
+  _previousState: SilverSaveActionState,
+  formData: FormData,
+): Promise<SilverSaveActionState> {
+  const verified = await getVerifiedSilverClient();
+
+  if (!verified.ok) {
+    return verified.state;
+  }
+
+  const jewelryItemId = String(formData.get("jewelryItemId") ?? "").trim();
+
+  if (!jewelryItemId) {
+    return {
+      status: "error",
+      message: "Sparkle Showcase piece could not be saved.",
+    };
+  }
+
+  if (!(await getCatalogJewelryItemById(jewelryItemId, { useFixtureFallback: false }))) {
+    return {
+      status: "denied",
+      message: "Sparkle Showcase piece is not available in the Sparkle Finder library.",
+    };
+  }
+
+  const result = await persistShowcasePieceForAccount(verified.client, verified.accountState, {
+    jewelryItemId,
+    note: String(formData.get("note") ?? ""),
+    showcaseStatus: parseShowcaseStatus(formData.get("showcaseStatus")),
+    visibility: parseShowcaseVisibility(formData.get("visibility")),
+    revealStory: String(formData.get("revealStory") ?? ""),
+    isRarestReveal: formData.get("isRarestReveal") === "yes",
+  });
+
+  if (!result.ok) {
+    return {
+      status: result.reason === "silver_required" ? "denied" : "error",
+      message:
+        result.reason === "silver_required" ? "Silver access is required to save Sparkle Showcase updates." : "Sparkle Showcase piece could not be saved.",
+    };
+  }
+
+  revalidatePath("/silver");
+
+  return {
+    status: "saved",
+    message: "Sparkle Showcase piece saved.",
+  };
+}
+
 async function getVerifiedSilverClient(): Promise<
   | {
       ok: true;
@@ -168,4 +221,16 @@ function parseCollectionState(value: FormDataEntryValue | null): CollectionItem[
   }
 
   return "owned";
+}
+
+function parseShowcaseStatus(value: FormDataEntryValue | null): SparkleShowcaseItemStatus {
+  if (value === "wishlist" || value === "iso" || value === "private_note_only") {
+    return value;
+  }
+
+  return "owned";
+}
+
+function parseShowcaseVisibility(value: FormDataEntryValue | null): SparkleShowcaseVisibility {
+  return value === "public" ? "public" : "private";
 }

@@ -35,14 +35,25 @@ async function main() {
 
   try {
     await waitForServer(server, baseUrl);
-    runCommand(npxCommand, ["playwright", "test", "tests/smoke/sparkle-finder-home.spec.ts", "--reporter=line"], {
-      SPARKLE_FINDER_BASE_URL: baseUrl,
-      SPARKLE_FINDER_SCREENSHOT_DIR: screenshotDir,
-    });
+    runCommand(
+      npxCommand,
+      [
+        "playwright",
+        "test",
+        "tests/smoke/sparkle-finder-home.spec.ts",
+        "tests/smoke/sparkle-finder-showcase.spec.ts",
+        "--reporter=line",
+      ],
+      {
+        SPARKLE_FINDER_BASE_URL: baseUrl,
+        SPARKLE_FINDER_SCREENSHOT_DIR: screenshotDir,
+      },
+    );
 
     console.log(`Sparkle Finder smoke passed at ${baseUrl}`);
     console.log(`Screenshots written to ${join(screenshotDir, "sparkle-finder-home-desktop.png")}`);
     console.log(`Screenshots written to ${join(screenshotDir, "sparkle-finder-home-mobile.png")}`);
+    console.log(`Screenshots written to ${join(screenshotDir, "sparkle-showcase-public-desktop.png")}`);
   } finally {
     process.removeListener("exit", cleanup);
     cleanup();
