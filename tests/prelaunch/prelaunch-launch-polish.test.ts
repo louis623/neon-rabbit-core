@@ -24,7 +24,7 @@ describe('Sparkle Suite launch polish', () => {
         short_name: 'Sparkle Suite',
         start_url: '/prelaunch',
         display: 'browser',
-        theme_color: '#5a345c',
+        theme_color: '#ee2c9b',
         icons: expect.arrayContaining([
           expect.objectContaining({
             src: '/icon',

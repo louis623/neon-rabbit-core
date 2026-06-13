@@ -13,19 +13,39 @@ export default function Icon() {
       <div
         style={{
           alignItems: 'center',
-          background: '#5a345c',
-          border: '10px solid #f3cfa8',
-          color: '#fff9fc',
+          background: 'transparent',
+          color: '#ee2c9b',
           display: 'flex',
-          fontFamily: 'Georgia, serif',
-          fontSize: 116,
+          fontFamily: '"Playfair Display", Georgia, serif',
+          fontSize: 104,
           height: '100%',
           justifyContent: 'center',
           lineHeight: 1,
           width: '100%',
         }}
       >
-        S
+        <div
+          style={{
+            alignItems: 'center',
+            background: '#ffffff',
+            border: '3px solid #ee2c9b',
+            borderRadius: '999px',
+            display: 'flex',
+            height: 168,
+            justifyContent: 'center',
+            width: 168,
+          }}
+        >
+          <span
+            style={{
+              fontStyle: 'italic',
+              fontWeight: 500,
+              transform: 'skewX(-10deg) translateY(7px)',
+            }}
+          >
+            S
+          </span>
+        </div>
       </div>
     ),
     {
