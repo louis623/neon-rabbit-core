@@ -88,3 +88,40 @@ Use this log for lightweight weekly operating notes. Keep entries short enough t
 1. Use the Louis candidate-review packet to screen the first Amazon-safe candidate set before publishing any links.
 2. Decide whether to apply to Walmart and B&H now or wait until Amazon's first reviewed candidate set is ready.
 3. Use the Louis candidate-review packet for the first exact product candidate only after guide and program readiness are confirmed.
+
+## Week Of 2026-06-08
+
+### Applications Submitted
+
+- None.
+
+### Approvals / Rejections
+
+- Louis approved the first live Amazon Associates product link: the photo box Sparkle Suite reps use for jewelry uploads through Nic-Nac and Showcase Studio.
+
+### Product Picks Added Or Changed
+
+- Moved the photo-box recommendation to `live` in app data and `product-picks.md`.
+- Added public copy saying people do not have to buy this exact photo box to get acceptable upload photos.
+- Kept nearby paid-link disclosure, Amazon Associate disclosure, and product/company concern reporting copy with the placement.
+
+### Clicks / Revenue Snapshot
+
+- Clicks: not tracked yet.
+- Revenue: not tracked yet.
+
+### Problems Discovered
+
+- None.
+
+### Issue Reports
+
+| Date Reported | Source | Affected Product / Program | Complaint Or Concern | Credibility Check | Paused Status | Owner | Action Taken | Resolution | Remove / Replace Decision |
+|---|---|---|---|---|---|---|---|---|---|
+| None. |  |  |  |  |  |  |  |  |  |
+
+### Next Week's Top 3 Actions
+
+1. Smoke-test the live photo-box paid link after deployment.
+2. Decide whether the photo-box recommendation should also appear near Showcase Studio upload instructions.
+3. Start the next Louis-approved candidate review for rep phone/tripod or lighting gear.

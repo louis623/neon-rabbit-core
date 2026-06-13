@@ -193,7 +193,7 @@ export function renderShopPageContent({
 }: {
   affiliateShopItems?: AffiliateShopItem[];
   productRecommendations?: AffiliateProductRecommendation[];
-}) {
+} = {}) {
   const collectorSlots = recommendationSlots.filter((slot) => slot.lane === "Collectors");
   const repSlots = recommendationSlots.filter((slot) => slot.lane === "Reps");
 
@@ -218,6 +218,8 @@ function ShopPageContent({
   productRecommendations: AffiliateProductRecommendation[];
   repSlots: RecommendationSlot[];
 }) {
+  const liveProductCount = productRecommendations.filter((product) => product.status === "live").length;
+
   return (
     <section className="sparkle-shop grid gap-8 px-4 py-5 sm:px-6 sm:py-7 lg:px-8" data-smoke="shop-store">
       <div className="sparkle-shop-hero grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:p-8">
@@ -288,7 +290,7 @@ function ShopPageContent({
             </p>
           </div>
           <span className="sparkle-shop-chip rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.16em]">
-            No live product links yet
+            {liveProductCount > 0 ? `${liveProductCount} live paid link` : "No live product links yet"}
           </span>
         </div>
 

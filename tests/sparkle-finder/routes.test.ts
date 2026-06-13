@@ -30,6 +30,7 @@ import {
 } from "../../lib/sparkle-finder/affiliate-copy";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
+import { getAffiliateProductRecommendations } from "../../lib/sparkle-finder/service";
 import {
   getLocalRepBoardHref,
   getLocalRepHref,
@@ -709,6 +710,18 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(affiliateIssueReportHref.replaceAll("&", "&amp;"));
   });
 
+  it("publishes the approved Sparkle Suite rep photo box as the first live affiliate pick", () => {
+    const markup = renderToStaticMarkup(renderShopPageContent());
+
+    expect(markup).toContain("Photo box for jewelry uploads");
+    expect(markup).toContain('href="https://amzn.to/4gkKXi5"');
+    expect(markup).toContain("This is the photo box Sparkle Suite reps use for jewelry uploads");
+    expect(markup).toContain("You do not have to buy this exact photo box");
+    expect(markup).toContain("Approved by Louis on June 13, 2026");
+    expect(markup).toContain("Open paid link");
+    expect(markup).toContain(amazonAssociateDisclosure);
+  });
+
   it("does not render a shop self-link CTA on the shop route", () => {
     const markup = renderToStaticMarkup(createElement(ShopPage));
 
@@ -837,7 +850,13 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
-    const copy = [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" ");
+    const approvedAffiliateUrls = getAffiliateProductRecommendations()
+      .filter((product) => product.status === "live" && product.affiliateUrl)
+      .map((product) => product.affiliateUrl!);
+    const copy = approvedAffiliateUrls.reduce(
+      (currentCopy, approvedUrl) => currentCopy.replaceAll(approvedUrl, "[approved affiliate link]"),
+      [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" "),
+    );
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

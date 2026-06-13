@@ -351,16 +351,20 @@ export const sparkleFinderCollectionItems: CollectionItem[] = [
 export const sparkleFinderAffiliateProductRecommendations: AffiliateProductRecommendation[] = [
   {
     id: "photo-light-box-collector",
-    lane: "collector",
+    lane: "rep",
     category: "Photo setup",
-    title: "Compact photo light box",
-    shortDescription: "A review slot for the Showcase Studio light-box photo workflow.",
-    whyItHelps: "Helps collectors prepare cleaner jewelry photos without promising professional results.",
+    title: "Photo box for jewelry uploads",
+    shortDescription:
+      "This is the photo box Sparkle Suite reps use for jewelry uploads through Nic-Nac and Showcase Studio.",
+    whyItHelps:
+      "A clean photo box can make jewelry images easier to review before pieces move into the shared catalog. You do not have to buy this exact photo box to submit good images.",
     retailerProgram: "Amazon Associates",
-    status: "needs_louis_review",
+    status: "live",
+    affiliateUrl: "https://amzn.to/4gkKXi5",
+    approvedByLouisAt: "2026-06-13",
     disclosure: "Paid link. Sparkle Finder may earn a commission at no extra cost to you.",
     trustCopy: "Affiliate pick. Tell us if this product or company gives you trouble.",
-    placement: "Shop page, Showcase Studio light-box setup guide",
+    placement: "Shop page, rep photo setup, Showcase Studio light-box setup guide",
   },
   {
     id: "storage-ring-tray-collector",
