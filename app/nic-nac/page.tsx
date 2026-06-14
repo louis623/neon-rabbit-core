@@ -18,7 +18,7 @@ export default function NicNacPage() {
     <main className={styles.page}>
       <div className={`sparkle-landing-v2 ${styles.chrome}`}>
         <div className="sl2-shell">
-          <SparkleSuitePublicHeader />
+          <SparkleSuitePublicHeader accountMode="workspace" />
         </div>
       </div>
       <div className={styles.app}>

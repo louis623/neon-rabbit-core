@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 type AuthState = 'checking' | 'signed_in' | 'signed_out'
+type AccountActionMode = 'public' | 'workspace'
 
 const workspaceHref = '/nic-nac'
 const loginHref = '/login?redirect=%2Fnic-nac'
@@ -15,10 +16,20 @@ function redirectToWorkspaceUnlessAlreadyThere() {
   }
 }
 
-export function SparkleSuitePublicAccountAction() {
+export function SparkleSuitePublicAccountAction({
+  mode = 'public',
+}: {
+  mode?: AccountActionMode
+}) {
   const [authState, setAuthState] = useState<AuthState>('checking')
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
+    if (mode === 'workspace') {
+      setAuthState('signed_in')
+      return
+    }
+
     const supabase = createClient()
     let cancelled = false
 
@@ -47,7 +58,27 @@ export function SparkleSuitePublicAccountAction() {
       cancelled = true
       subscription.unsubscribe()
     }
-  }, [])
+  }, [mode])
+
+  async function handleLogout() {
+    setBusy(true)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.assign('/')
+  }
+
+  if (mode === 'workspace') {
+    return (
+      <button
+        className="sl2-header__account-button"
+        disabled={busy}
+        onClick={() => void handleLogout()}
+        type="button"
+      >
+        {busy ? 'Logging out...' : 'Log out'}
+      </button>
+    )
+  }
 
   return (
     <a
