@@ -41,7 +41,8 @@ import {
   getCustomerTimeline,
   getEstimatedTextsRemaining,
   getShowCalendarMetrics,
-  getSiteSettingsSaveStatusText,
+  getSiteSettingsManualSaveStatusText,
+  hasSiteSettingsUnsavedChanges,
   getWorkspaceSkinPreset,
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
@@ -1371,6 +1372,8 @@ describe('DashboardPlaceholder', () => {
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
         draft: SITE_SETTINGS_READY_STATE.settings,
+        hasUnsavedChanges: false,
+        statusMessage: 'No unsaved changes.',
       }),
     )
 
@@ -1414,11 +1417,13 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
-    expect(html).not.toContain('Save site settings')
+    expect(html).toContain('Save site settings')
     expect(html).not.toContain('All changes saved.')
+    expect(html).toContain('No unsaved changes.')
+    expect(html).toContain('disabled=""')
   })
 
-  it('keeps site settings save status out of the card controls', () => {
+  it('shows manual save state without auto-save copy for changed site settings drafts', () => {
     const html = renderToStaticMarkup(
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
@@ -1427,25 +1432,37 @@ describe('DashboardPlaceholder', () => {
           tagline: 'Fresh draft tagline',
         },
         actionState: { pending: false, error: null, helperMessage: null },
+        hasUnsavedChanges: true,
+        statusMessage: 'Unsaved changes.',
       }),
     )
 
     expect(html).not.toContain('Changes will auto-save.')
-    expect(html).not.toContain('Save site settings')
+    expect(html).toContain('Unsaved changes.')
+    expect(html).toContain('Save site settings')
     expect(html).not.toContain('No unsaved changes')
     expect(html).not.toContain('disabled=""')
   })
 
-  it('derives global site settings auto-save status text', () => {
+  it('derives manual site settings save status text', () => {
     expect(
-      getSiteSettingsSaveStatusText({
+      getSiteSettingsManualSaveStatusText({
         settings: SITE_SETTINGS_READY_STATE.settings,
         draft: SITE_SETTINGS_READY_STATE.settings,
         actionState: { pending: false, error: null, helperMessage: null },
       }),
-    ).toBe('All changes saved.')
+    ).toBe('No unsaved changes.')
     expect(
-      getSiteSettingsSaveStatusText({
+      hasSiteSettingsUnsavedChanges({
+        settings: SITE_SETTINGS_READY_STATE.settings,
+        draft: {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          tagline: 'Fresh draft tagline',
+        },
+      }),
+    ).toBe(true)
+    expect(
+      getSiteSettingsManualSaveStatusText({
         settings: SITE_SETTINGS_READY_STATE.settings,
         draft: {
           ...SITE_SETTINGS_READY_STATE.settings,
@@ -1453,16 +1470,16 @@ describe('DashboardPlaceholder', () => {
         },
         actionState: { pending: false, error: null, helperMessage: null },
       }),
-    ).toBe('Changes will auto-save.')
+    ).toBe('Unsaved changes.')
     expect(
-      getSiteSettingsSaveStatusText({
+      getSiteSettingsManualSaveStatusText({
         settings: SITE_SETTINGS_READY_STATE.settings,
         draft: SITE_SETTINGS_READY_STATE.settings,
         actionState: { pending: true, error: null, helperMessage: null },
       }),
     ).toBe('Saving changes...')
     expect(
-      getSiteSettingsSaveStatusText({
+      getSiteSettingsManualSaveStatusText({
         settings: SITE_SETTINGS_READY_STATE.settings,
         draft: SITE_SETTINGS_READY_STATE.settings,
         actionState: {
@@ -1474,7 +1491,7 @@ describe('DashboardPlaceholder', () => {
     ).toBe('Changes need attention.')
   })
 
-  it('renders one global workspace save indicator outside the site settings card', () => {
+  it('renders the manual Site Settings save button without a global save indicator', () => {
     const previousWindow = globalThis.window
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
@@ -1492,8 +1509,9 @@ describe('DashboardPlaceholder', () => {
         }),
       )
 
-      expect(html).toContain('data-testid="workspace-save-status"')
-      expect(html).toContain('All changes saved.')
+      expect(html).not.toContain('data-testid="workspace-save-status"')
+      expect(html).toContain('Save site settings')
+      expect(html).toContain('No unsaved changes.')
       expect(html).not.toContain('siteSettingsAutoSaveStatus')
     } finally {
       Object.defineProperty(globalThis, 'window', {
@@ -1503,7 +1521,7 @@ describe('DashboardPlaceholder', () => {
     }
   })
 
-  it('places the site settings auto-save indicator globally beside Nic-Nac', () => {
+  it('strips out Site Settings auto-save wiring and floating save UI', () => {
     const styles = readFileSync(
       resolve(
         process.cwd(),
@@ -1511,17 +1529,23 @@ describe('DashboardPlaceholder', () => {
       ),
       'utf8',
     )
-
-    expect(styles).toContain('.workspaceSaveStatus')
-    expect(styles).toContain('position: fixed')
-    expect(styles).toContain(
-      'right: calc(var(--nic-nac-column-width, 380px) + 24px)',
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.tsx',
+      ),
+      'utf8',
     )
-    expect(styles).toContain('pointer-events: none')
+
+    expect(styles).toContain('.siteSettingsSaveFooter')
+    expect(styles).toContain('.siteSettingsSaveButton')
+    expect(styles).not.toContain('.workspaceSaveStatus')
     expect(styles).not.toContain('.siteSettingsAutoSaveStatus')
     expect(styles).not.toContain('.siteSettingsSaveBar')
-    expect(styles).not.toContain('.siteSettingsSaveButton')
     expect(styles).not.toContain('calc(96px + env(safe-area-inset-bottom))')
+    expect(source).not.toContain('siteSettingsAutosaveTimerRef')
+    expect(source).not.toContain('void saveSiteSettingsDraft(normalizedDraft)')
+    expect(source).toContain('function handleSaveSiteSettings()')
   })
 
   it('renders the account billing card with monthly status, payment method, and invoice history', () => {

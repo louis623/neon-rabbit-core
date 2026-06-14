@@ -740,7 +740,29 @@ export function getWorkspaceSkinPreset(
   return WORKSPACE_APPEARANCE_PRESET
 }
 
-export function getSiteSettingsSaveStatusText({
+export function getNormalizedSiteSettingsDraft(
+  draft: SiteSettingsDraft,
+): SiteSettingsDraft {
+  return {
+    ...draft,
+    appearancePreset: normalizeAmethystAppearancePreset(
+      draft.appearancePreset,
+    ) as SiteAppearancePreset,
+  }
+}
+
+export function hasSiteSettingsUnsavedChanges({
+  settings,
+  draft,
+}: {
+  settings?: SiteSettingsDashboardResult | null
+  draft?: SiteSettingsDraft | null
+}) {
+  if (!settings || !draft) return false
+  return JSON.stringify(getNormalizedSiteSettingsDraft(draft)) !== JSON.stringify(settings)
+}
+
+export function getSiteSettingsManualSaveStatusText({
   settings,
   draft,
   actionState,
@@ -754,10 +776,10 @@ export function getSiteSettingsSaveStatusText({
   if (!settings || !draft) return null
   if (actionState?.error) return 'Changes need attention.'
   if (actionState?.pending) return 'Saving changes...'
-  if (JSON.stringify(draft) !== JSON.stringify(settings)) {
-    return 'Changes will auto-save.'
+  if (hasSiteSettingsUnsavedChanges({ settings, draft })) {
+    return 'Unsaved changes.'
   }
-  return statusMessage ?? 'All changes saved.'
+  return statusMessage ?? 'No unsaved changes.'
 }
 
 export function formatAccountBillingAmount(amountCents: number) {
@@ -1339,9 +1361,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const siteSettingsDraftRef = useRef<SiteSettingsDraft | null>(
     siteSettingsDraft,
   )
-  const siteSettingsAutosaveTimerRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null)
   const siteSettingsSaveRequestRef = useRef(0)
   const [tradeBoardState, setTradeBoardState] = useState<TradeBoardState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
@@ -2183,6 +2202,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   function handleSiteSettingsDraftChange(
     patch: Partial<SiteSettingsDraft>,
   ) {
+    setSiteSettingsActionState((current) => ({
+      pending: current.pending,
+      error: null,
+      helperMessage: null,
+    }))
     setSiteSettingsDraft((current) => {
       if (!current) return current
       return {
@@ -2196,6 +2220,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   function handleSocialHandleChange(platform: string, value: string) {
+    setSiteSettingsActionState((current) => ({
+      pending: current.pending,
+      error: null,
+      helperMessage: null,
+    }))
     setSiteSettingsDraft((current) => {
       if (!current) return current
       return {
@@ -2217,12 +2246,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   async function saveSiteSettingsDraft(draftToSave: SiteSettingsDraft) {
     const requestId = siteSettingsSaveRequestRef.current + 1
     siteSettingsSaveRequestRef.current = requestId
-    const normalizedDraft = {
-      ...draftToSave,
-      appearancePreset: normalizeAmethystAppearancePreset(
-        draftToSave.appearancePreset,
-      ) as SiteAppearancePreset,
-    }
+    const normalizedDraft = getNormalizedSiteSettingsDraft(draftToSave)
 
     setSiteSettingsActionState({
       pending: true,
@@ -2261,7 +2285,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         setSiteSettingsActionState({
           pending: false,
           error: null,
-          helperMessage: 'All changes saved.',
+          helperMessage: 'Site settings saved.',
         })
       }
       refreshLiveSitePreviewAfterSiteSettingsSave()
@@ -2277,41 +2301,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  useEffect(() => {
+  function handleSaveSiteSettings() {
     if (siteSettingsState.status !== 'ready' || !siteSettingsState.settings) return
     if (!siteSettingsDraft) return
-
-    const normalizedDraft = {
-      ...siteSettingsDraft,
-      appearancePreset: normalizeAmethystAppearancePreset(
-        siteSettingsDraft.appearancePreset,
-      ) as SiteAppearancePreset,
-    }
-
-    if (siteSettingsDraft.appearancePreset !== normalizedDraft.appearancePreset) {
-      setSiteSettingsDraft(normalizedDraft)
+    if (
+      !hasSiteSettingsUnsavedChanges({
+        settings: siteSettingsState.settings,
+        draft: siteSettingsDraft,
+      })
+    ) {
+      setSiteSettingsActionState({
+        pending: false,
+        error: null,
+        helperMessage: 'No unsaved changes.',
+      })
       return
     }
 
-    if (JSON.stringify(normalizedDraft) === JSON.stringify(siteSettingsState.settings)) {
-      return
-    }
-
-    if (siteSettingsAutosaveTimerRef.current) {
-      clearTimeout(siteSettingsAutosaveTimerRef.current)
-    }
-
-    siteSettingsAutosaveTimerRef.current = setTimeout(() => {
-      void saveSiteSettingsDraft(normalizedDraft)
-    }, 800)
-
-    return () => {
-      if (siteSettingsAutosaveTimerRef.current) {
-        clearTimeout(siteSettingsAutosaveTimerRef.current)
-        siteSettingsAutosaveTimerRef.current = null
-      }
-    }
-  }, [siteSettingsDraft, siteSettingsState.status, siteSettingsState.settings])
+    void saveSiteSettingsDraft(getNormalizedSiteSettingsDraft(siteSettingsDraft))
+  }
 
   async function handleAccountBillingAction(action: 'subscribe' | 'manage') {
     setAccountBillingActionState({
@@ -2957,7 +2965,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         activeWorkspacePreview.href.includes('?') ? '&' : '?'
       }previewRefresh=${previewFrameKey}`
     : null
-  const siteSettingsSaveStatusText = getSiteSettingsSaveStatusText({
+  const siteSettingsHasUnsavedChanges = hasSiteSettingsUnsavedChanges({
+    settings: siteSettingsState.settings,
+    draft: siteSettingsDraft,
+  })
+  const siteSettingsSaveStatusText = getSiteSettingsManualSaveStatusText({
     settings: siteSettingsState.settings,
     draft: siteSettingsDraft,
     actionState: siteSettingsActionState,
@@ -3231,6 +3243,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 actionState={siteSettingsActionState}
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
+                onSave={handleSaveSiteSettings}
+                hasUnsavedChanges={siteSettingsHasUnsavedChanges}
+                statusMessage={siteSettingsSaveStatusText}
               />
             </div>
           ) : null}
@@ -3278,25 +3293,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
         </section>
-        {siteSettingsSaveStatusText ? (
-          <div
-            className={`${styles.workspaceSaveStatus} ${
-              siteSettingsActionState.pending
-                ? styles.workspaceSaveStatusPending
-                : ''
-            } ${
-              siteSettingsActionState.error
-                ? styles.workspaceSaveStatusError
-                : ''
-            }`}
-            data-testid="workspace-save-status"
-            role="status"
-            aria-live="polite"
-          >
-            <span className={styles.workspaceSaveStatusDot} aria-hidden="true" />
-            <span>{siteSettingsSaveStatusText}</span>
-          </div>
-        ) : null}
       </div>
       )}
     </main>
@@ -4871,12 +4867,18 @@ export function SiteSettingsCard({
   actionState,
   onDraftChange,
   onSocialHandleChange,
+  onSave,
+  hasUnsavedChanges = false,
+  statusMessage,
 }: {
   state: SiteSettingsState
   draft?: SiteSettingsDraft | null
   actionState?: SiteSettingsActionState
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
+  onSave?: () => void
+  hasUnsavedChanges?: boolean
+  statusMessage?: string | null
 }) {
   if (state.status === 'error') {
     return (
@@ -5069,6 +5071,25 @@ export function SiteSettingsCard({
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
       ) : null}
+      <div className={styles.siteSettingsSaveFooter}>
+        {statusMessage ? (
+          <span
+            className={styles.siteSettingsSaveStatus}
+            role="status"
+            aria-live="polite"
+          >
+            {statusMessage}
+          </span>
+        ) : null}
+        <button
+          type="button"
+          className={styles.siteSettingsSaveButton}
+          onClick={onSave}
+          disabled={actionState?.pending || !hasUnsavedChanges}
+        >
+          {actionState?.pending ? 'Saving settings...' : 'Save site settings'}
+        </button>
+      </div>
     </div>
   )
 }
