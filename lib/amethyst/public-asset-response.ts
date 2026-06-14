@@ -46,6 +46,7 @@ const AMETHYST_ASSETS = new Set([
   'trade.css',
   'Trade.html',
   'trade.jsx',
+  'template-loader.js',
   'tweaks-panel.jsx',
   'Unsubscribe.html',
   'unsubscribe.jsx',
@@ -285,10 +286,11 @@ function rewriteTemplateScriptTarget(
   const query = new URLSearchParams({ c: target })
   if (publicSiteSlug) query.set('publicSiteSlug', publicSiteSlug)
 
-  return html.replace(
-    `src="${endpoint}"`,
-    `src="${endpoint}?${escapeHtmlAttribute(query.toString())}"`,
-  )
+  const rewrittenEndpoint = `${endpoint}?${escapeHtmlAttribute(query.toString())}`
+
+  return html
+    .replace(`src="${endpoint}"`, `src="${rewrittenEndpoint}"`)
+    .replace(`data-template-src="${endpoint}"`, `data-template-src="${rewrittenEndpoint}"`)
 }
 
 function rewriteAmethystStaticAssetUrls(html: string) {

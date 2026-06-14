@@ -220,7 +220,12 @@ describe('Amethyst trade page template wiring', () => {
       'utf8',
     )
 
-    expect(html).toContain('<script src="/api/amethyst/trade-template"></script>')
+    expect(html).toContain(
+      '<script src="template-loader.js" data-template-src="/api/amethyst/trade-template"></script>',
+    )
+    expect(html.indexOf('template-loader.js')).toBeLessThan(
+      html.indexOf('trade.jsx'),
+    )
   })
 
   it('ships crawl and sharing metadata with the locked trade export', () => {

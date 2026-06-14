@@ -90,7 +90,12 @@ describe('Amethyst join page template data wiring', () => {
       'utf8',
     )
 
-    expect(html).toContain('<script src="/api/amethyst/join-template"></script>')
+    expect(html).toContain(
+      '<script src="template-loader.js" data-template-src="/api/amethyst/join-template"></script>',
+    )
+    expect(html.indexOf('template-loader.js')).toBeLessThan(
+      html.indexOf('join.jsx'),
+    )
   })
 
   it('ships crawl and sharing metadata with the locked join export', () => {

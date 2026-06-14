@@ -2697,16 +2697,16 @@
   padding: 14px;
 }
 
-.siteSettingsSaveDock {
+.workspaceSaveDock {
   position: fixed;
   right: calc(var(--nic-nac-column-width, 380px) + 24px);
-  bottom: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom));
   z-index: 900;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  width: min(420px, calc(100vw - var(--nic-nac-column-width, 380px) - 48px));
+  width: min(440px, calc(100vw - var(--nic-nac-column-width, 380px) - 56px));
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 246, 250, 0.62));
@@ -2718,7 +2718,7 @@
   backdrop-filter: blur(16px);
 }
 
-.siteSettingsSaveStatus {
+.workspaceSaveStatus {
   color: var(--nic-nac-text-secondary);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
@@ -2726,9 +2726,9 @@
   line-height: 1.3;
 }
 
-.siteSettingsSaveButton {
+.workspaceSaveButton {
   flex: 0 0 auto;
-  min-width: 154px;
+  min-width: 136px;
   max-width: 100%;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -2746,16 +2746,16 @@
     0 10px 22px rgba(54, 34, 29, 0.1);
 }
 
-.siteSettingsSaveButton:hover {
+.workspaceSaveButton:hover {
   background: linear-gradient(180deg, #f73fa5 0%, var(--nic-nac-accent-hover) 100%);
 }
 
-.siteSettingsSaveButton:disabled {
+.workspaceSaveButton:disabled {
   opacity: 0.58;
   cursor: default;
 }
 
-.siteSettingsSaveButton:disabled:hover {
+.workspaceSaveButton:disabled:hover {
   background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
 }
 
@@ -3492,16 +3492,16 @@
     grid-template-columns: 1fr;
   }
 
-  .siteSettingsSaveDock {
+  .workspaceSaveDock {
     left: 16px;
     right: 16px;
-    bottom: 86px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
     width: auto;
     align-items: stretch;
     flex-direction: column;
   }
 
-  .siteSettingsSaveButton {
+  .workspaceSaveButton {
     width: 100%;
   }
 

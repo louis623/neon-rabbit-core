@@ -2975,6 +2975,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     actionState: siteSettingsActionState,
     statusMessage: siteSettingsActionState.helperMessage,
   })
+  const shouldShowWorkspaceSaveDock =
+    !isLiveSitePreview && canRenderWorkspaceSections && siteSettingsState.status === 'ready'
 
   return (
     <main
@@ -3244,12 +3246,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
               />
-              <SiteSettingsSaveDock
-                actionState={siteSettingsActionState}
-                hasUnsavedChanges={siteSettingsHasUnsavedChanges}
-                statusMessage={siteSettingsSaveStatusText}
-                onSave={handleSaveSiteSettings}
-              />
             </div>
           ) : null}
 
@@ -3296,6 +3292,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
         </section>
+        {shouldShowWorkspaceSaveDock ? (
+          <WorkspaceSaveDock
+            actionState={siteSettingsActionState}
+            hasUnsavedChanges={siteSettingsHasUnsavedChanges}
+            statusMessage={siteSettingsSaveStatusText}
+            onSave={handleSaveSiteSettings}
+          />
+        ) : null}
       </div>
       )}
     </main>
@@ -5072,7 +5076,7 @@ export function SiteSettingsCard({
   )
 }
 
-export function SiteSettingsSaveDock({
+export function WorkspaceSaveDock({
   actionState,
   hasUnsavedChanges,
   statusMessage,
@@ -5084,9 +5088,10 @@ export function SiteSettingsSaveDock({
   onSave: () => void
 }) {
   return (
-    <div className={styles.siteSettingsSaveDock}>
+    <div className={styles.workspaceSaveDock} data-testid="workspace-save-dock">
       <span
-        className={styles.siteSettingsSaveStatus}
+        className={styles.workspaceSaveStatus}
+        data-testid="workspace-save-status"
         role="status"
         aria-live="polite"
       >
@@ -5094,11 +5099,11 @@ export function SiteSettingsSaveDock({
       </span>
       <button
         type="button"
-        className={styles.siteSettingsSaveButton}
+        className={styles.workspaceSaveButton}
         onClick={onSave}
         disabled={actionState.pending || !hasUnsavedChanges}
       >
-        {actionState.pending ? 'Saving settings...' : 'Save site settings'}
+        {actionState.pending ? 'Saving changes...' : 'Save changes'}
       </button>
     </div>
   )

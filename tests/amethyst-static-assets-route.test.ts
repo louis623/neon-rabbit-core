@@ -76,6 +76,45 @@ describe('Amethyst static asset route', () => {
     expect(html).toContain('/api/amethyst/homepage-template?c=rep-clean')
   })
 
+  it.each([
+    ['Homepage.html', 'homepage-template'],
+    ['Trade.html', 'trade-template'],
+    ['Join.html', 'join-template'],
+  ])(
+    'forwards preview rep targets through the %s template loader',
+    async (assetName, endpoint) => {
+      const response = await GET(
+        new Request(
+          `https://preview.example/amethyst/${assetName}?c=rep-clean&previewRefresh=7`,
+        ),
+        { params: Promise.resolve({ asset: [assetName] }) },
+      )
+      const html = await response.text()
+
+      expect(html).toContain('src="/amethyst/template-loader.js"')
+      expect(html).toContain(
+        `data-template-src="/api/amethyst/${endpoint}?c=rep-clean"`,
+      )
+      expect(html).not.toContain(`src="/api/amethyst/${endpoint}"></script>`)
+    },
+  )
+
+  it('ships the template loader that merges page query params before React renders', async () => {
+    const response = await GET(
+      new Request('https://preview.example/amethyst/template-loader.js'),
+      { params: Promise.resolve({ asset: ['template-loader.js'] }) },
+    )
+    const script = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/javascript')
+    expect(script).toContain('window.location.search')
+    expect(script).toContain('document.write')
+    expect(script).toContain(`"></scr' + 'ipt>'`)
+    expect(script).not.toContain('<\\\\/script>')
+    expect(script).toContain('data-template-src')
+  })
+
   it('rejects path traversal outside the public Amethyst export folder', async () => {
     const response = await GET(
       new Request('http://localhost:3001/amethyst/../package.json'),

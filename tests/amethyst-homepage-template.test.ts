@@ -172,7 +172,12 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(html).toContain('<script src="/api/amethyst/homepage-template"></script>')
+    expect(html).toContain(
+      '<script src="template-loader.js" data-template-src="/api/amethyst/homepage-template"></script>',
+    )
+    expect(html.indexOf('template-loader.js')).toBeLessThan(
+      html.indexOf('homepage.jsx'),
+    )
   })
 
   it('uses two clear optional About media slots instead of a tiny three-card gallery', () => {
