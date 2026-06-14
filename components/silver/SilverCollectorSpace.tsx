@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, SVGProps } from "react";
 import { BookOpen, Camera, CheckCircle2, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { RepBadge } from "@/components/account/RepBadge";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
@@ -74,7 +74,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
                 {customer.state}, USA
               </p>
               {profile?.tiktokHandle ? (
-                <p className="mt-1 truncate text-sm text-[var(--sparkle-ink-muted)]">{profile.tiktokHandle}</p>
+                <TikTokHandleLink value={profile.tiktokHandle} />
               ) : (
                 <p className="mt-1 truncate text-sm text-[var(--sparkle-ink-muted)]">TikTok handle not added</p>
               )}
@@ -205,6 +205,76 @@ function CommandLink({
       {label}
     </Link>
   );
+}
+
+function TikTokHandleLink({ value }: { value: string }) {
+  const profile = normalizeTikTokProfile(value);
+
+  if (!profile) {
+    return <p className="mt-1 truncate text-sm text-[var(--sparkle-ink-muted)]">{value}</p>;
+  }
+
+  return (
+    <Link
+      aria-label={`${profile.handle} on TikTok`}
+      className="mt-1 inline-flex max-w-full items-center gap-1.5 text-sm font-semibold text-[var(--sparkle-ink-muted)] transition hover:text-[var(--sparkle-plum)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+      href={profile.href}
+      rel="noreferrer"
+      target="_blank"
+    >
+      <TikTokIcon aria-hidden="true" className="size-4 shrink-0" />
+      <span className="truncate">{profile.handle}</span>
+    </Link>
+  );
+}
+
+function TikTokIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" {...props}>
+      <path
+        d="M14.9 3.5c.4 2.6 1.9 4.1 4.3 4.3v3.2a7.1 7.1 0 0 1-4.2-1.3v5.8c0 3.1-2.2 5.2-5.4 5.2-2.9 0-5-1.9-5-4.6 0-2.9 2.2-4.8 5.5-4.8.4 0 .7 0 1 .1v3.4a3.2 3.2 0 0 0-1.2-.2c-1.2 0-2 .6-2 1.6s.7 1.5 1.7 1.5c1.2 0 2-.7 2-2.1V3.5h3.3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function normalizeTikTokProfile(value: string): { handle: string; href: string } | null {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  let candidate = trimmed;
+
+  try {
+    const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+
+    if (url.hostname.includes("tiktok.com")) {
+      candidate = url.pathname.split("/").find((part) => part.startsWith("@")) ?? "";
+    }
+  } catch {
+    candidate = trimmed;
+  }
+
+  const handle = candidate
+    .replace(/^https?:\/\/(www\.)?tiktok\.com\//i, "")
+    .replace(/^\/+/, "")
+    .split(/[/?#]/)[0]
+    .trim();
+
+  if (!handle) {
+    return null;
+  }
+
+  const displayHandle = handle.startsWith("@") ? handle : `@${handle}`;
+  const encodedHandle = encodeURIComponent(displayHandle.slice(1));
+
+  return {
+    handle: displayHandle,
+    href: `https://www.tiktok.com/@${encodedHandle}`,
+  };
 }
 
 function CollectionPreviewCard({ item }: { item: SilverCollectionPreviewItem }) {

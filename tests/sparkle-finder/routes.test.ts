@@ -300,7 +300,7 @@ describe("Sparkle Finder hub routes", () => {
         silverProfile: {
           customerId: "customer-silver-sparkle-mama",
           photoUrl: "data:image/jpeg;base64,abc123",
-          tiktokHandle: "@louis_sparkle",
+          tiktokHandle: "https://www.tiktok.com/@louis_sparkle",
           bio: "Profile changed on the live site.",
           visibility: "private",
         },
@@ -309,6 +309,9 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("Louis Sparkle");
     expect(markup).toContain("@louis_sparkle");
+    expect(markup).toContain('href="https://www.tiktok.com/@louis_sparkle"');
+    expect(markup).toContain('aria-label="@louis_sparkle on TikTok"');
+    expect(markup).not.toContain(">https://www.tiktok.com/@louis_sparkle<");
     expect(markup).toContain("data:image/jpeg;base64,abc123");
     expect(markup).not.toContain("Sparkle Mama");
   });
