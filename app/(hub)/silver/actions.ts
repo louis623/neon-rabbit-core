@@ -50,8 +50,18 @@ export async function saveSilverProfileAction(
     return profilePhoto.state;
   }
 
+  const displayName = String(formData.get("displayName") ?? "").trim();
+
+  if (!displayName) {
+    return {
+      status: "error",
+      message: "Display name is required.",
+    };
+  }
+
   const result = await persistSilverProfileForAccount(verified.client, verified.accountState, {
     bio: String(formData.get("bio") ?? ""),
+    displayName,
     photoUrl: profilePhoto.photoUrl ?? String(formData.get("photoUrl") ?? ""),
     tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
     visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
@@ -166,6 +176,7 @@ export async function saveShowcasePieceAction(
   }
 
   revalidatePath("/silver");
+  revalidatePath("/account");
 
   return {
     status: "saved",

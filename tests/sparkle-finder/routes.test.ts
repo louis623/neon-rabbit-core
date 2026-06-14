@@ -705,6 +705,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("The Rarest of Reveals");
     expect(markup).toContain("Showcase Collection");
     expect(markup).toContain("Rainbow Crown Ring");
+    expect(markup).toContain("Display name");
+    expect(markup).toContain('name="displayName"');
     expect(markup).toContain("Profile photo");
     expect(markup).toContain('name="profilePhoto"');
     expect(markup).toContain('type="file"');

@@ -7,7 +7,9 @@ export type CustomerStateDeniedReason = "silver_required" | "account_mismatch" |
 
 export type SilverProfileUpdateInput = Partial<
   Pick<SilverProfile, "bio" | "photoUrl" | "tiktokHandle" | "visibility">
->;
+> & {
+  displayName?: string;
+};
 
 export type SilverProfileUpdateResult =
   | {
@@ -88,11 +90,14 @@ export function updateSilverProfilePreview(
     };
   }
 
+  const { displayName: omittedDisplayName, ...profileInput } = input;
+  void omittedDisplayName;
+
   return {
     ok: true,
     profile: {
       ...profile,
-      ...input,
+      ...profileInput,
       customerId: accountState.customer.id,
     },
   };
@@ -108,6 +113,7 @@ export async function persistSilverProfileForAccount(
   }
 
   const values = {
+    display_name: cleanText(input.displayName, 80) || cleanText(accountState.customer.displayName, 80),
     tiktok_handle: cleanText(input.tiktokHandle, 80),
     bio: cleanText(input.bio, 500),
     photo_url: cleanText(input.photoUrl, profilePhotoMaxCharacters),
@@ -122,7 +128,6 @@ export async function persistSilverProfileForAccount(
     ? await supabase.from("sparkle_finder_profiles").update(values).eq("user_id", accountState.customer.id)
     : await supabase.from("sparkle_finder_profiles").insert({
         user_id: accountState.customer.id,
-        display_name: cleanText(accountState.customer.displayName, 80),
         email: cleanText(accountState.customer.email, 254),
         state: cleanText(accountState.customer.state, 40),
         ...values,

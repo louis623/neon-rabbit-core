@@ -91,6 +91,11 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
+    const displayNameInput = page.getByLabel("Display name");
+
+    await expect(displayNameInput).toBeEditable();
+    await displayNameInput.fill("Sparkle Preview");
+    await expect(displayNameInput).toHaveValue("Sparkle Preview");
     const profilePhotoInput = page.locator('input[name="profilePhoto"][type="file"]');
 
     await expect(profilePhotoInput).toHaveCount(1);

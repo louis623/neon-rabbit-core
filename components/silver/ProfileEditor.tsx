@@ -33,6 +33,7 @@ export function ProfileEditor({
   profile,
   saveAction,
 }: ProfileEditorProps) {
+  const [previewCustomer, setPreviewCustomer] = useState(customer);
   const [previewProfile, setPreviewProfile] = useState(profile);
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<{ name: string; url: string } | null>(null);
   const [profilePhotoMessage, setProfilePhotoMessage] = useState("JPG, PNG, or WebP.");
@@ -45,6 +46,13 @@ export function ProfileEditor({
   const activeProfilePhotoUrl = selectedProfilePhoto?.url ?? previewProfile.photoUrl;
 
   async function handlePreviewSave(formData: FormData) {
+    const displayName = String(formData.get("displayName") ?? "").trim();
+
+    if (!displayName) {
+      setLocalStatusMessage("Display name is required.");
+      return;
+    }
+
     const profilePhoto = await readProfilePhotoDataUrl(formData.get("profilePhoto"));
 
     if (!profilePhoto.ok) {
@@ -54,6 +62,7 @@ export function ProfileEditor({
 
     const result = updateSilverProfilePreview(accountState, previewProfile, {
       bio: String(formData.get("bio") ?? ""),
+      displayName,
       photoUrl: profilePhoto.photoUrl ?? String(formData.get("photoUrl") ?? ""),
       tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
       visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
@@ -65,6 +74,10 @@ export function ProfileEditor({
     }
 
     setPreviewProfile(result.profile);
+    setPreviewCustomer((currentCustomer) => ({
+      ...currentCustomer,
+      displayName,
+    }));
     setSelectedProfilePhoto(null);
     setProfilePhotoMessage("JPG, PNG, or WebP.");
     setLocalStatusMessage("Profile preview saved locally.");
@@ -112,7 +125,7 @@ export function ProfileEditor({
         <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
           {activeProfilePhotoUrl ? (
             <span
-              aria-label={`${customer.displayName} profile photo`}
+              aria-label={`${previewCustomer.displayName} profile photo`}
               className="size-full bg-cover bg-center"
               role="img"
               style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
@@ -132,8 +145,10 @@ export function ProfileEditor({
           Display name
           <input
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 text-sm font-normal text-[var(--sparkle-ink)]"
-            defaultValue={customer.displayName}
-            readOnly
+            defaultValue={previewCustomer.displayName}
+            maxLength={80}
+            name="displayName"
+            required
           />
         </label>
         <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
@@ -143,7 +158,7 @@ export function ProfileEditor({
             <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
               {activeProfilePhotoUrl ? (
                 <span
-                  aria-label={`${customer.displayName} selected profile photo`}
+                  aria-label={`${previewCustomer.displayName} selected profile photo`}
                   className="size-full bg-cover bg-center"
                   role="img"
                   style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}

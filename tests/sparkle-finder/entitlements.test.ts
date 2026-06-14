@@ -304,6 +304,7 @@ describe("Sparkle Finder entitlements", () => {
         table: "sparkle_finder_profiles",
         type: "update",
         values: {
+          display_name: "Casey Collector",
           tiktok_handle: "@casey_silver",
           bio: "Keeps a tidy signed-in collection.",
           photo_url: "https://cdn.example.test/casey.jpg",
@@ -468,9 +469,40 @@ describe("Sparkle Finder entitlements", () => {
       table: "sparkle_finder_profiles",
       type: "update",
       values: {
+        display_name: "Casey Collector",
         tiktok_handle: "@casey_photo",
         bio: "Photo upload profile.",
         photo_url: photoDataUrl,
+        profile_visibility: "private",
+      },
+      filters: [
+        ["user_id", "user-123"],
+      ],
+    });
+  });
+
+  it("persists Silver profile display name edits", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      profile: { user_id: accountState.customer.id },
+    });
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      bio: "Renamed from the Silver profile form.",
+      displayName: "Louis Sparkle",
+      tiktokHandle: "@louis_sparkle",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_profiles",
+      type: "update",
+      values: {
+        display_name: "Louis Sparkle",
+        tiktok_handle: "@louis_sparkle",
+        bio: "Renamed from the Silver profile form.",
+        photo_url: "",
         profile_visibility: "private",
       },
       filters: [
