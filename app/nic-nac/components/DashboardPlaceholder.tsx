@@ -3243,9 +3243,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 actionState={siteSettingsActionState}
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
-                onSave={handleSaveSiteSettings}
+              />
+              <SiteSettingsSaveDock
+                actionState={siteSettingsActionState}
                 hasUnsavedChanges={siteSettingsHasUnsavedChanges}
                 statusMessage={siteSettingsSaveStatusText}
+                onSave={handleSaveSiteSettings}
               />
             </div>
           ) : null}
@@ -4867,18 +4870,12 @@ export function SiteSettingsCard({
   actionState,
   onDraftChange,
   onSocialHandleChange,
-  onSave,
-  hasUnsavedChanges = false,
-  statusMessage,
 }: {
   state: SiteSettingsState
   draft?: SiteSettingsDraft | null
   actionState?: SiteSettingsActionState
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
-  onSave?: () => void
-  hasUnsavedChanges?: boolean
-  statusMessage?: string | null
 }) {
   if (state.status === 'error') {
     return (
@@ -5071,25 +5068,38 @@ export function SiteSettingsCard({
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
       ) : null}
-      <div className={styles.siteSettingsSaveFooter}>
-        {statusMessage ? (
-          <span
-            className={styles.siteSettingsSaveStatus}
-            role="status"
-            aria-live="polite"
-          >
-            {statusMessage}
-          </span>
-        ) : null}
-        <button
-          type="button"
-          className={styles.siteSettingsSaveButton}
-          onClick={onSave}
-          disabled={actionState?.pending || !hasUnsavedChanges}
-        >
-          {actionState?.pending ? 'Saving settings...' : 'Save site settings'}
-        </button>
-      </div>
+    </div>
+  )
+}
+
+export function SiteSettingsSaveDock({
+  actionState,
+  hasUnsavedChanges,
+  statusMessage,
+  onSave,
+}: {
+  actionState: SiteSettingsActionState
+  hasUnsavedChanges: boolean
+  statusMessage: string | null
+  onSave: () => void
+}) {
+  return (
+    <div className={styles.siteSettingsSaveDock}>
+      <span
+        className={styles.siteSettingsSaveStatus}
+        role="status"
+        aria-live="polite"
+      >
+        {statusMessage ?? 'No unsaved changes.'}
+      </span>
+      <button
+        type="button"
+        className={styles.siteSettingsSaveButton}
+        onClick={onSave}
+        disabled={actionState.pending || !hasUnsavedChanges}
+      >
+        {actionState.pending ? 'Saving settings...' : 'Save site settings'}
+      </button>
     </div>
   )
 }

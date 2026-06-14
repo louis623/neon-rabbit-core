@@ -13,6 +13,7 @@ import {
   TradeBoardWorkspaceCard,
   CustomerRosterCard,
   SiteSettingsCard,
+  SiteSettingsSaveDock,
   ShowCalendarCard,
   TeamManagementCard,
   WalletSummaryCard,
@@ -1417,23 +1418,18 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
-    expect(html).toContain('Save site settings')
+    expect(html).not.toContain('Save site settings')
     expect(html).not.toContain('All changes saved.')
-    expect(html).toContain('No unsaved changes.')
-    expect(html).toContain('disabled=""')
+    expect(html).not.toContain('No unsaved changes.')
   })
 
-  it('shows manual save state without auto-save copy for changed site settings drafts', () => {
+  it('shows the workspace-level manual save dock without auto-save copy', () => {
     const html = renderToStaticMarkup(
-      createElement(SiteSettingsCard, {
-        state: SITE_SETTINGS_READY_STATE,
-        draft: {
-          ...SITE_SETTINGS_READY_STATE.settings,
-          tagline: 'Fresh draft tagline',
-        },
+      createElement(SiteSettingsSaveDock, {
         actionState: { pending: false, error: null, helperMessage: null },
         hasUnsavedChanges: true,
         statusMessage: 'Unsaved changes.',
+        onSave: () => undefined,
       }),
     )
 
@@ -1491,7 +1487,7 @@ describe('DashboardPlaceholder', () => {
     ).toBe('Changes need attention.')
   })
 
-  it('renders the manual Site Settings save button without a global save indicator', () => {
+  it('renders the manual Site Settings save dock in the workspace corner without auto-save UI', () => {
     const previousWindow = globalThis.window
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
@@ -1512,6 +1508,7 @@ describe('DashboardPlaceholder', () => {
       expect(html).not.toContain('data-testid="workspace-save-status"')
       expect(html).toContain('Save site settings')
       expect(html).toContain('No unsaved changes.')
+      expect(html).toContain('siteSettingsSaveDock')
       expect(html).not.toContain('siteSettingsAutoSaveStatus')
     } finally {
       Object.defineProperty(globalThis, 'window', {
@@ -1537,8 +1534,10 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(styles).toContain('.siteSettingsSaveFooter')
+    expect(styles).toContain('.siteSettingsSaveDock')
+    expect(styles).toContain('right: calc(var(--nic-nac-column-width, 380px) + 24px)')
     expect(styles).toContain('.siteSettingsSaveButton')
+    expect(styles).not.toContain('.siteSettingsSaveFooter')
     expect(styles).not.toContain('.workspaceSaveStatus')
     expect(styles).not.toContain('.siteSettingsAutoSaveStatus')
     expect(styles).not.toContain('.siteSettingsSaveBar')
