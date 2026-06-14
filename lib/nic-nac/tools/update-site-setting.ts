@@ -3,10 +3,10 @@ import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import {
+  DEFAULT_AMETHYST_APPEARANCE_PRESET,
   normalizeAmethystAppearancePreset,
   normalizeCustomerSiteTemplate,
 } from '@/lib/amethyst/appearance-presets'
-import { normalizeAmethystSkinSelection } from '@/lib/amethyst/skin-cards'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -109,8 +109,7 @@ export function makeUpdateSiteSettingTool(ctx: {
           normalizeCustomerSiteTemplate(customerSiteTemplate)
       }
       if (appearancePreset !== undefined) {
-        siteSettingsPatch.appearance_preset =
-          normalizeAmethystSkinSelection(appearancePreset)
+        siteSettingsPatch.appearance_preset = DEFAULT_AMETHYST_APPEARANCE_PRESET
       }
 
       const updatedFields: string[] = []

@@ -1,20 +1,9 @@
 'use client'
 
-import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import styles from './RequiredSetupLookPicker.module.css'
 
-const LOOK_LABELS: Record<string, string> = {
-  amethyst: 'Original Sparkle',
-  sparkle_suite_morganite: 'Warm + Polished',
-  black_diamond: 'Dark + Dramatic',
-  rose_gold: 'Soft Jewelry Polish',
-  garnet: 'Bold Boutique Red',
-  amber: 'Bright + Energetic',
-  velvet: 'Purple Boutique',
-  rose_quartz: 'Fun Pink Sparkle',
-}
-
-const RECOMMENDED_LOOK_ID = 'sparkle_suite_morganite'
+const LOCKED_LOOK_MESSAGE =
+  'Use the Sparkle Suite/Morganite theme for my customer site.'
 
 export function RequiredSetupLookPicker({
   onChoose,
@@ -24,74 +13,75 @@ export function RequiredSetupLookPicker({
   disabled?: boolean
 }) {
   return (
-    <section className={styles.panel} aria-label="Customer-site Look options">
+    <section className={styles.panel} aria-label="Sparkle Suite theme">
       <div className={styles.header}>
-        <p className={styles.kicker}>Customer-site Look</p>
-        <h2>Choose your customer-site Look</h2>
+        <p className={styles.kicker}>Sparkle Suite theme</p>
+        <h2>Sparkle Suite/Morganite is ready</h2>
         <p>
-          These are starting points, so choose the one that feels closest to
-          your live show style. You can change your Look later, and we will keep
-          adding new Looks over time.
+          Sparkle Suite uses one polished Morganite look for every workspace and
+          customer site, so setup can stay focused on your name, copy, shows,
+          and launch details.
         </p>
       </div>
-      <div className={styles.grid}>
-        {AMETHYST_SKIN_CARDS.map((card) => {
-          const lookLabel = LOOK_LABELS[card.id] ?? card.label
-          const isRecommended = card.id === RECOMMENDED_LOOK_ID
-          const choiceMessage = `I choose the ${lookLabel} Look (${card.label}, ${card.code}).`
-
-          return (
-            <article key={card.id} className={styles.card}>
-              <div className={styles.cardTop}>
-                <span className={styles.code}>{card.code}</span>
-                {isRecommended ? (
-                  <span className={styles.recommended}>Recommended</span>
-                ) : null}
-              </div>
-              <div className={styles.preview} aria-hidden="true">
-                <div
-                  className={styles.previewHero}
-                  style={{ background: card.swatches[0]?.value }}
-                />
-                <div
-                  className={styles.previewCard}
-                  style={{
-                    borderColor: card.swatches[1]?.value,
-                    background: card.swatches[2]?.value,
-                  }}
-                >
-                  <span style={{ background: card.swatches[1]?.value }} />
-                  <span />
-                  <span />
-                </div>
-              </div>
-              <div className={styles.copy}>
-                <h3>{lookLabel}</h3>
-                <p className={styles.styleName}>{card.label}</p>
-                <p>{card.description}</p>
-              </div>
-              <div className={styles.swatches} aria-label={`${lookLabel} colors`}>
-                {card.swatches.map((swatch) => (
-                  <span
-                    key={`${card.id}-${swatch.label}`}
-                    className={styles.swatch}
-                    style={{ background: swatch.value }}
-                    title={swatch.label}
-                  />
-                ))}
-              </div>
-              <button
-                type="button"
-                className={styles.choose}
-                onClick={() => onChoose(choiceMessage)}
-                disabled={disabled}
-              >
-                Choose this Look
-              </button>
-            </article>
-          )
-        })}
-      </div>
+      <article className={styles.card}>
+        <div className={styles.cardTop}>
+          <span className={styles.code}>SS-01</span>
+          <span className={styles.recommended}>Locked theme</span>
+        </div>
+        <div className={styles.preview} aria-hidden="true">
+          <div
+            className={styles.previewHero}
+            style={{
+              background:
+                'linear-gradient(135deg, #fff8fb 0%, #ffe5f2 48%, #f5d1dc 100%)',
+            }}
+          />
+          <div
+            className={styles.previewCard}
+            style={{
+              borderColor: '#f6bdd4',
+              background: '#fffafb',
+            }}
+          >
+            <span style={{ background: '#e11d8f' }} />
+            <span />
+            <span />
+          </div>
+        </div>
+        <div className={styles.copy}>
+          <h3>Sparkle Suite/Morganite</h3>
+          <p className={styles.styleName}>Warm, polished, and readable</p>
+          <p>
+            The same Sparkle Suite look is applied to your workspace preview and
+            public Amethyst customer site.
+          </p>
+        </div>
+        <div className={styles.swatches} aria-label="Morganite theme colors">
+          <span
+            className={styles.swatch}
+            style={{ background: '#fff8fb' }}
+            title="Soft blush"
+          />
+          <span
+            className={styles.swatch}
+            style={{ background: '#e11d8f' }}
+            title="Sparkle pink"
+          />
+          <span
+            className={styles.swatch}
+            style={{ background: '#43231f' }}
+            title="Warm cocoa"
+          />
+        </div>
+        <button
+          type="button"
+          className={styles.choose}
+          onClick={() => onChoose(LOCKED_LOOK_MESSAGE)}
+          disabled={disabled}
+        >
+          Continue with Morganite
+        </button>
+      </article>
     </section>
   )
 }

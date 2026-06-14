@@ -31,8 +31,7 @@ import type {
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
-import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
-import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
+import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
@@ -476,52 +475,8 @@ const SOCIAL_HANDLE_FIELDS = [
   { key: 'youtube', label: 'YouTube' },
 ]
 
-const SITE_APPEARANCE_PRESET_OPTIONS: Array<{
-  value: SiteAppearancePreset
-  label: string
-}> = [
-  { value: 'amethyst', label: 'Amethyst' },
-  { value: 'sparkle_suite_morganite', label: 'Sparkle Suite/Morganite' },
-  { value: 'black_diamond', label: 'Black Diamond' },
-  { value: 'rose_gold', label: 'Rose Gold' },
-  { value: 'garnet', label: 'Garnet' },
-  { value: 'amber', label: 'Amber' },
-  { value: 'velvet', label: 'Velvet' },
-  { value: 'rose_quartz', label: 'Rose Quartz' },
-]
-
-const SITE_SKIN_GALLERY_FEATURED_CODES = [
-  'SS-01',
-  'BD-01',
-  'RG-01',
-  'GN-01',
-  'AB-01',
-  'VE-01',
-  'RQ-01',
-] as const
-
-const FIRST_START_SKIN_RECOMMENDATIONS = [
-  {
-    id: 'sparkle_suite_morganite',
-    label: 'Classic Sparkle',
-    reason: 'Best default for a polished Sparkle Suite launch.',
-  },
-  {
-    id: 'black_diamond',
-    label: 'Black Diamond',
-    reason: 'Stronger reveal-night contrast for bold live sellers.',
-  },
-  {
-    id: 'rose_gold',
-    label: 'Rose Gold',
-    reason: 'Soft, jewelry-forward warmth for boutique styling.',
-  },
-  {
-    id: 'garnet',
-    label: 'Garnet',
-    reason: 'Confident red accents for high-energy show branding.',
-  },
-] as const
+const LOCKED_SITE_APPEARANCE_PRESET: SiteAppearancePreset =
+  DEFAULT_AMETHYST_APPEARANCE_PRESET
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -763,6 +718,7 @@ export function getSiteSettingsDraft(
 ): SiteSettingsDraft {
   return {
     ...settings,
+    appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
     socialHandles: { ...settings.socialHandles },
   }
 }
@@ -771,9 +727,7 @@ export function getWorkspaceSkinPreset(
   settings?: Pick<SiteSettingsDashboardResult, 'appearancePreset'> | null,
   draft?: Pick<SiteSettingsDraft, 'appearancePreset'> | null,
 ): SiteAppearancePreset {
-  return normalizeAmethystAppearancePreset(
-    draft?.appearancePreset ?? settings?.appearancePreset,
-  )
+  return LOCKED_SITE_APPEARANCE_PRESET
 }
 
 export function formatAccountBillingAmount(amountCents: number) {
@@ -1352,6 +1306,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     useState<SiteSettingsDraft | null>(
       initialSiteSettings ? getSiteSettingsDraft(initialSiteSettings) : null,
     )
+  const siteSettingsDraftRef = useRef<SiteSettingsDraft | null>(
+    siteSettingsDraft,
+  )
+  const siteSettingsAutosaveTimerRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
+  const siteSettingsSaveRequestRef = useRef(0)
   const [tradeBoardState, setTradeBoardState] = useState<TradeBoardState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     board: reviewWorkspaceMode
@@ -1885,6 +1846,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setSiteSettingsDraft(getSiteSettingsDraft(siteSettingsState.settings))
   }, [siteSettingsState.status, siteSettingsState.settings])
 
+  useEffect(() => {
+    siteSettingsDraftRef.current = siteSettingsDraft
+  }, [siteSettingsDraft])
+
   async function handleUnsubscribe(
     audienceId: string,
     channel: 'sms' | 'email',
@@ -2193,6 +2158,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return {
         ...current,
         ...patch,
+        appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
         socialHandles: patch.socialHandles
           ? { ...patch.socialHandles }
           : current.socialHandles,
@@ -2205,6 +2171,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       if (!current) return current
       return {
         ...current,
+        appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
         socialHandles: {
           ...current.socialHandles,
           [platform]: value,
@@ -2219,8 +2186,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleSaveSiteSettings() {
-    if (!siteSettingsDraft) return
+  async function saveSiteSettingsDraft(draftToSave: SiteSettingsDraft) {
+    const requestId = siteSettingsSaveRequestRef.current + 1
+    siteSettingsSaveRequestRef.current = requestId
+    const lockedDraft = {
+      ...draftToSave,
+      appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
+    }
 
     setSiteSettingsActionState({
       pending: true,
@@ -2233,7 +2205,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(siteSettingsDraft),
+        body: JSON.stringify(lockedDraft),
       })
 
       const payload = (await response.json().catch(() => null)) as
@@ -2248,22 +2220,66 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         status: 'ready',
         settings: payload.settings,
       })
-      setSiteSettingsDraft(getSiteSettingsDraft(payload.settings))
-      setSiteSettingsActionState({
-        pending: false,
-        error: null,
-        helperMessage: 'Site settings saved.',
-      })
+      const latestDraft = siteSettingsDraftRef.current
+      if (
+        !latestDraft ||
+        JSON.stringify(latestDraft) === JSON.stringify(lockedDraft)
+      ) {
+        setSiteSettingsDraft(getSiteSettingsDraft(payload.settings))
+      }
+      if (siteSettingsSaveRequestRef.current === requestId) {
+        setSiteSettingsActionState({
+          pending: false,
+          error: null,
+          helperMessage: 'All changes saved.',
+        })
+      }
       refreshLiveSitePreviewAfterSiteSettingsSave()
     } catch (error) {
-      setSiteSettingsActionState({
-        pending: false,
-        error:
-          error instanceof Error ? error.message : 'Unable to save site settings.',
-        helperMessage: null,
-      })
+      if (siteSettingsSaveRequestRef.current === requestId) {
+        setSiteSettingsActionState({
+          pending: false,
+          error:
+            error instanceof Error ? error.message : 'Unable to save site settings.',
+          helperMessage: null,
+        })
+      }
     }
   }
+
+  useEffect(() => {
+    if (siteSettingsState.status !== 'ready' || !siteSettingsState.settings) return
+    if (!siteSettingsDraft) return
+
+    const lockedDraft = {
+      ...siteSettingsDraft,
+      appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
+    }
+
+    if (siteSettingsDraft.appearancePreset !== LOCKED_SITE_APPEARANCE_PRESET) {
+      setSiteSettingsDraft(lockedDraft)
+      return
+    }
+
+    if (JSON.stringify(lockedDraft) === JSON.stringify(siteSettingsState.settings)) {
+      return
+    }
+
+    if (siteSettingsAutosaveTimerRef.current) {
+      clearTimeout(siteSettingsAutosaveTimerRef.current)
+    }
+
+    siteSettingsAutosaveTimerRef.current = setTimeout(() => {
+      void saveSiteSettingsDraft(lockedDraft)
+    }, 800)
+
+    return () => {
+      if (siteSettingsAutosaveTimerRef.current) {
+        clearTimeout(siteSettingsAutosaveTimerRef.current)
+        siteSettingsAutosaveTimerRef.current = null
+      }
+    }
+  }, [siteSettingsDraft, siteSettingsState.status, siteSettingsState.settings])
 
   async function handleAccountBillingAction(action: 'subscribe' | 'manage') {
     setAccountBillingActionState({
@@ -3177,7 +3193,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 actionState={siteSettingsActionState}
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
-                onSave={handleSaveSiteSettings}
                 statusMessage={siteSettingsActionState.helperMessage}
               />
             </div>
@@ -4280,118 +4295,6 @@ function getWorkflowResourcesByGroup(resources: HelpResource[] | undefined) {
   })).filter((section) => section.resources.length > 0)
 }
 
-function getRecommendedCustomerSiteLooks() {
-  return FIRST_START_SKIN_RECOMMENDATIONS.map((recommendation) => {
-    const skin = AMETHYST_SKIN_CARDS.find((candidate) => candidate.id === recommendation.id)
-    return skin ? { ...recommendation, skin } : null
-  }).filter((item): item is NonNullable<typeof item> => item !== null)
-}
-
-function CustomerSiteLooksReference() {
-  const recommendedSkins = getRecommendedCustomerSiteLooks()
-
-  return (
-    <details className={styles.customerSiteLooks}>
-      <summary className={styles.playbookGroupSummary}>
-        <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
-        <div>
-          <div className={styles.walletSettingsTitle}>Customer Site Looks</div>
-          <div className={styles.helperNote}>
-            Reference polished customer-site looks when you want a refreshed storefront.
-          </div>
-        </div>
-        <span className={styles.rosterTag}>Open section</span>
-      </summary>
-      <div className={styles.customerSiteLooksBody}>
-        <div className={styles.calendarHeader}>
-          <div>
-            <div className={styles.walletSettingsTitle}>Recommended first picks</div>
-            <div className={styles.helperNote}>
-              Good starting points when you want a clean, customer-ready look.
-            </div>
-          </div>
-          <span className={styles.rosterTag}>Quick reference</span>
-        </div>
-        <div className={styles.skinGallery}>
-          {recommendedSkins.map(({ label, reason, skin }) => (
-            <div key={skin.id} className={styles.skinCard}>
-              <div className={styles.skinCardHeader}>
-                <span className={styles.rosterTag}>{skin.code}</span>
-                <span className={styles.customerName}>{label}</span>
-              </div>
-              <div className={styles.skinPreview} aria-hidden="true">
-                <span
-                  className={styles.skinPreviewHero}
-                  style={{ background: skin.swatches[0]?.value }}
-                />
-                <span
-                  className={styles.skinPreviewCard}
-                  style={{
-                    borderColor: skin.swatches[1]?.value,
-                    background: skin.swatches[2]?.value,
-                  }}
-                />
-              </div>
-              <div className={styles.helperNote}>{reason}</div>
-              <div className={styles.timelineList}>
-                <span className={styles.timelineItem}>Select in Site appearance</span>
-                <span className={styles.timelineItem}>{skin.label}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className={styles.calendarHeader}>
-          <div className={styles.walletSettingsTitle}>Full skin gallery</div>
-          <span className={styles.rosterTag}>
-            Featured {SITE_SKIN_GALLERY_FEATURED_CODES.join(' / ')}
-          </span>
-        </div>
-        <div className={styles.skinGallery}>
-          {AMETHYST_SKIN_CARDS.map((skin) => (
-            <div key={skin.id} className={styles.skinCard}>
-              <div className={styles.skinCardHeader}>
-                <span className={styles.rosterTag}>{skin.code}</span>
-                <span className={styles.customerName}>{skin.label}</span>
-              </div>
-              <div className={styles.skinPreview} aria-hidden="true">
-                <span
-                  className={styles.skinPreviewHero}
-                  style={{ background: skin.swatches[0]?.value }}
-                />
-                <span
-                  className={styles.skinPreviewCard}
-                  style={{
-                    borderColor: skin.swatches[1]?.value,
-                    background: skin.swatches[2]?.value,
-                  }}
-                />
-              </div>
-              <div className={styles.helperNote}>{skin.description}</div>
-              <div className={styles.skinSwatches}>
-                {skin.swatches.map((swatch) => (
-                  <span
-                    key={`${skin.id}-${swatch.label}`}
-                    className={styles.skinSwatch}
-                    style={{ background: swatch.value }}
-                    title={`${swatch.label}: ${swatch.value}`}
-                  />
-                ))}
-              </div>
-              <div className={styles.timelineList}>
-                <span className={styles.timelineItem}>
-                  {skin.headingFont} / {skin.bodyFont}
-                </span>
-                <span className={styles.timelineItem}>{skin.surfaceNote}</span>
-                <span className={styles.timelineItem}>{skin.motionNote}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </details>
-  )
-}
-
 export function HelpResourcesCard({
   state,
   hasPaidWorkspace: _hasPaidWorkspace,
@@ -4912,7 +4815,6 @@ export function SiteSettingsCard({
   actionState,
   onDraftChange,
   onSocialHandleChange,
-  onSave,
   statusMessage,
 }: {
   state: SiteSettingsState
@@ -4920,7 +4822,6 @@ export function SiteSettingsCard({
   actionState?: SiteSettingsActionState
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
-  onSave?: () => void
   statusMessage?: string | null
 }) {
   if (state.status === 'error') {
@@ -4943,10 +4844,10 @@ export function SiteSettingsCard({
   const hasUnsavedChanges =
     JSON.stringify(draft) !== JSON.stringify(state.settings)
   const saveStatusText = actionState?.pending
-    ? 'Saving...'
+    ? 'Saving changes...'
     : hasUnsavedChanges
-      ? 'Unsaved changes'
-      : 'No unsaved changes'
+      ? 'Changes will auto-save.'
+      : statusMessage ?? 'All changes saved.'
 
   return (
     <div className={styles.siteSettingsCard}>
@@ -4957,8 +4858,8 @@ export function SiteSettingsCard({
             Keep your public profile, customer pages, and brand details tuned up.
           </div>
         </div>
-        <span className={styles.rosterTag}>
-          Preview updates before your customer site changes.
+        <span className={styles.siteSettingsAutoSaveStatus}>
+          {saveStatusText}
         </span>
       </div>
       <div className={styles.calendarHeader}>
@@ -5039,28 +4940,17 @@ export function SiteSettingsCard({
       <div className={styles.siteSettingsSection}>
         <div className={styles.walletSettingsTitle}>Branding and visuals</div>
         <div className={styles.siteSettingsGrid}>
-          <label className={styles.sortFieldWide}>
-            <span className={styles.sortLabel}>Site appearance</span>
-            <select
-              className={styles.sortSelect}
-              value={draft.appearancePreset}
-              onChange={(event) =>
-                onDraftChange?.({
-                  appearancePreset: event.target.value as SiteAppearancePreset,
-                })
-              }
-            >
-              {SITE_APPEARANCE_PRESET_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <span className={styles.siteSettingsPreviewNote}>
-              Your workspace preview updates right away. Tap Save site settings to
-              update your customer site.
+          <div className={`${styles.sortFieldWide} ${styles.lockedAppearanceField}`}>
+            <span className={styles.sortLabel}>Sparkle Suite theme</span>
+            <span className={styles.lockedAppearanceValue}>
+              Sparkle Suite/Morganite
             </span>
-          </label>
+            <span className={styles.siteSettingsPreviewNote}>
+              Morganite is locked in for every Sparkle Suite workspace and
+              Amethyst customer site. Changes auto-save to your workspace and
+              customer site.
+            </span>
+          </div>
           <label className={styles.searchField}>
             <span className={styles.searchLabel}>Team name</span>
             <input
@@ -5102,7 +4992,13 @@ export function SiteSettingsCard({
             </span>
           </label>
         </div>
-        <CustomerSiteLooksReference />
+        <div className={styles.customerSiteLooksSummary}>
+          <div className={styles.walletSettingsTitle}>Customer Site Looks</div>
+          <div className={styles.helperNote}>
+            Morganite is the active Sparkle Suite look. Alternate skin cards stay out
+            of the workspace while the suite is locked to one stable style.
+          </div>
+        </div>
       </div>
 
       <div className={styles.siteSettingsSection}>
@@ -5129,18 +5025,6 @@ export function SiteSettingsCard({
       {statusMessage ? (
         <div className={styles.helperMessage}>{statusMessage}</div>
       ) : null}
-
-      <div className={styles.siteSettingsSaveBar}>
-        <span className={styles.siteSettingsSaveStatus}>{saveStatusText}</span>
-        <button
-          type="button"
-          className={`${styles.actionButton} ${styles.siteSettingsSaveButton}`}
-          onClick={() => onSave?.()}
-          disabled={actionState?.pending || !hasUnsavedChanges}
-        >
-          {actionState?.pending ? 'Saving...' : 'Save site settings'}
-        </button>
-      </div>
     </div>
   )
 }

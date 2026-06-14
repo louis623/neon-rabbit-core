@@ -25,7 +25,8 @@ describe('self-serve onboarding checklist', () => {
       .join(' ')
 
     expect(combinedText).toContain('Confirm business/profile basics')
-    expect(combinedText).toContain('Choose or confirm the customer-site skin')
+    expect(combinedText).toContain('Confirm the Sparkle Suite/Morganite theme')
+    expect(combinedText).not.toContain('Choose or confirm the customer-site skin')
     expect(combinedText).toContain('Add public links and social profiles')
     expect(combinedText).toContain('Adjust site copy')
     expect(combinedText).toContain('Add or update shows')

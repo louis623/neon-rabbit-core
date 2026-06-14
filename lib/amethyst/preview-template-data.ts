@@ -9,7 +9,6 @@ import {
 } from './homepage-template-data'
 import {
   DEFAULT_AMETHYST_APPEARANCE_PRESET,
-  normalizeAmethystAppearancePreset,
   type AmethystAppearancePresetId,
 } from './appearance-presets'
 import {
@@ -110,7 +109,7 @@ function applyRequiredSetupDraftToSettings(
     bannerVisible: Boolean(bannerText) || settings.bannerVisible,
     tagline,
     teamName,
-    appearancePreset: draft.appearancePreset || settings.appearancePreset,
+    appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
     socialHandles: mergePrimarySocialLink(
       settings.socialHandles,
       draft.primaryLiveShowOrSocialLink,
@@ -557,9 +556,7 @@ export async function loadAmethystPreviewTemplateData(
     const draftExtras = applyRequiredSetupDraftToExtras(extras, requiredSetupState)
 
     return applyCustomerTarget({
-      appearancePreset: normalizeAmethystAppearancePreset(
-        draftSettings.appearancePreset,
-      ),
+      appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
       homepage: applyRequiredSetupDraftToHomepage(
         mapPreviewSettingsToHomepageTemplateData(draftSettings, draftExtras),
         requiredSetupState,

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ServiceError, errors } from '@/lib/services/errors'
 import {
-  normalizeAmethystAppearancePreset,
+  DEFAULT_AMETHYST_APPEARANCE_PRESET,
   normalizeCustomerSiteTemplate,
 } from '@/lib/amethyst/appearance-presets'
 import type {
@@ -102,9 +102,7 @@ function buildDashboardResult(args: {
     customerSiteTemplate: normalizeCustomerSiteTemplate(
       args.siteSettings?.customer_site_template,
     ),
-    appearancePreset: normalizeAmethystAppearancePreset(
-      args.siteSettings?.appearance_preset,
-    ),
+    appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
     socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
   }
 }
@@ -217,9 +215,7 @@ export async function updateSiteSettingsDashboard(
     )
   }
   if (input.appearancePreset !== undefined) {
-    siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(
-      input.appearancePreset,
-    )
+    siteSettingsPatch.appearance_preset = DEFAULT_AMETHYST_APPEARANCE_PRESET
   }
 
   if (input.displayName !== undefined) {
@@ -247,6 +243,8 @@ export async function updateSiteSettingsDashboard(
       'Tell me what you want to change on your site.',
     )
   }
+
+  siteSettingsPatch.appearance_preset = DEFAULT_AMETHYST_APPEARANCE_PRESET
 
   let siteSettingsRow: SiteSettingsRow | null = null
   let repProfileRow: RepProfileRow | null = null

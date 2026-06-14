@@ -136,7 +136,7 @@ describe('self-serve required setup service contract', () => {
       'Live Queue setup',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
-      'Customer-site Look',
+      'Sparkle Suite theme',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
       'Trade Board orientation',
@@ -146,6 +146,9 @@ describe('self-serve required setup service contract', () => {
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
       'Site skin',
+    )
+    expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
+      'Customer-site Look',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
       'Live queue orientation',
@@ -932,7 +935,7 @@ describe('self-serve required setup service contract', () => {
           'Join me for fun jewelry reveals, friendly live shows, and sparkle you can shop anytime.',
         team_name: "Gracie's Sparkle Party Live",
         customer_site_template: 'amethyst',
-        appearance_preset: 'rose_quartz',
+        appearance_preset: 'sparkle_suite_morganite',
       }),
       { onConflict: 'rep_id' },
     )

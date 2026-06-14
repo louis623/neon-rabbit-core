@@ -2,6 +2,7 @@ import {
   firstRequiredSetupDraftText as firstText,
   normalizeRequiredSetupDraftState,
 } from './required-setup-draft'
+import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import type { RequiredSetupState } from './required-setup'
 
 type RequiredSetupDraftAdminClient = {
@@ -64,7 +65,7 @@ export async function publishRequiredSetupCustomerSiteDraft(
     tagline: draft.welcomeSupportingLine,
     team_name: firstText(draft.liveShowName, draft.customerFacingDisplayName),
     customer_site_template: 'amethyst',
-    appearance_preset: draft.appearancePreset ?? undefined,
+    appearance_preset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
   })
 
   if (Object.keys(repPatch).length > 0) {

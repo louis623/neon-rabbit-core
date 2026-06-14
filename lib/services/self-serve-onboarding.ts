@@ -14,9 +14,9 @@ export const SELF_SERVE_ONBOARDING_CHECKLIST: SelfServeOnboardingChecklistItem[]
   },
   {
     id: 'skin-and-branding',
-    title: 'Choose or confirm the customer-site skin',
-    description: 'Pick the public-site look that best fits the rep brand before deeper edits.',
-    nicNacPrompt: 'Ask Nic-Nac to help choose or confirm my customer-site skin.',
+    title: 'Confirm the Sparkle Suite/Morganite theme',
+    description: 'Use the locked Sparkle Suite look before deeper public-site edits.',
+    nicNacPrompt: 'Ask Nic-Nac to confirm my Sparkle Suite/Morganite theme.',
   },
   {
     id: 'public-links',

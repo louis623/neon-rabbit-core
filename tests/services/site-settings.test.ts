@@ -101,7 +101,7 @@ describe('site settings service', () => {
         team_name: 'Moonstone Squad',
         show_join_page: false,
         customer_site_template: 'amethyst',
-        appearance_preset: 'rose_gold',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       error: null,
     })
@@ -163,7 +163,7 @@ describe('site settings service', () => {
         team_name: 'Moonstone Squad',
         show_join_page: false,
         customer_site_template: 'amethyst',
-        appearance_preset: 'rose_gold',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       { onConflict: 'rep_id' },
     )
@@ -184,7 +184,7 @@ describe('site settings service', () => {
     expect(result.showJoinPage).toBe(false)
     expect(result.heroAnimationType).toBe('soft_glow')
     expect(result.customerSiteTemplate).toBe('amethyst')
-    expect(result.appearancePreset).toBe('rose_gold')
+    expect(result.appearancePreset).toBe('sparkle_suite_morganite')
   })
 
   it('lets Nic-Nac save only the customer-site appearance preset', async () => {
@@ -346,7 +346,7 @@ describe('site settings service', () => {
     expect(result.appearancePreset).toBe('sparkle_suite_morganite')
   })
 
-  it('saves the Black Diamond skin while keeping the customer-site template Amethyst', async () => {
+  it('keeps Morganite when an old Black Diamond skin value is submitted', async () => {
     const siteSettingsChain = makeUpsertSingle({
       data: {
         banner_text: null,
@@ -359,7 +359,7 @@ describe('site settings service', () => {
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
-        appearance_preset: 'black_diamond',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       error: null,
     })
@@ -391,15 +391,15 @@ describe('site settings service', () => {
       {
         rep_id: 'rep-1',
         customer_site_template: 'amethyst',
-        appearance_preset: 'black_diamond',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       { onConflict: 'rep_id' },
     )
     expect(result.customerSiteTemplate).toBe('amethyst')
-    expect(result.appearancePreset).toBe('black_diamond')
+    expect(result.appearancePreset).toBe('sparkle_suite_morganite')
   })
 
-  it('saves the Rose Gold skin while keeping the customer-site template Amethyst', async () => {
+  it('keeps Morganite when an old Rose Gold skin value is submitted', async () => {
     const siteSettingsChain = makeUpsertSingle({
       data: {
         banner_text: null,
@@ -412,7 +412,7 @@ describe('site settings service', () => {
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
-        appearance_preset: 'rose_gold',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       error: null,
     })
@@ -444,12 +444,12 @@ describe('site settings service', () => {
       {
         rep_id: 'rep-1',
         customer_site_template: 'amethyst',
-        appearance_preset: 'rose_gold',
+        appearance_preset: 'sparkle_suite_morganite',
       },
       { onConflict: 'rep_id' },
     )
     expect(result.customerSiteTemplate).toBe('amethyst')
-    expect(result.appearancePreset).toBe('rose_gold')
+    expect(result.appearancePreset).toBe('sparkle_suite_morganite')
   })
 
   it.each([
@@ -458,7 +458,7 @@ describe('site settings service', () => {
     'velvet',
     'rose_quartz',
   ] as const)(
-    'saves the %s skin while keeping the customer-site template Amethyst',
+    'keeps Morganite when the old %s skin value is submitted',
     async (appearancePreset) => {
       const siteSettingsChain = makeUpsertSingle({
         data: {
@@ -472,7 +472,7 @@ describe('site settings service', () => {
           team_name: null,
           show_join_page: true,
           customer_site_template: 'amethyst',
-          appearance_preset: appearancePreset,
+          appearance_preset: 'sparkle_suite_morganite',
         },
         error: null,
       })
@@ -504,12 +504,12 @@ describe('site settings service', () => {
         {
           rep_id: 'rep-1',
           customer_site_template: 'amethyst',
-          appearance_preset: appearancePreset,
+          appearance_preset: 'sparkle_suite_morganite',
         },
         { onConflict: 'rep_id' },
       )
       expect(result.customerSiteTemplate).toBe('amethyst')
-      expect(result.appearancePreset).toBe(appearancePreset)
+      expect(result.appearancePreset).toBe('sparkle_suite_morganite')
     },
   )
 })

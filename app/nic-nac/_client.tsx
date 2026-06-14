@@ -106,7 +106,6 @@ function buildReviewSiteSettings(
   if (!isWorkspaceReviewSetupState(state)) return undefined
 
   const accountBasics = getSetupAnswerRecord(state, 'account_basics')
-  const siteSkin = getSetupAnswerRecord(state, 'site_skin')
   const welcomeCopy = getSetupAnswerRecord(state, 'welcome_copy')
 
   return {
@@ -124,8 +123,7 @@ function buildReviewSiteSettings(
     teamName: getStringAnswer(accountBasics, 'teamName'),
     showJoinPage: true,
     customerSiteTemplate: 'amethyst',
-    appearancePreset:
-      getStringAnswer(siteSkin, 'preset', 'sparkle_suite_morganite') as SiteSettingsDashboardResult['appearancePreset'],
+    appearancePreset: 'sparkle_suite_morganite',
     socialHandles: {},
   }
 }

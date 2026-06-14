@@ -88,27 +88,26 @@ describe('Nic-Nac branding copy', () => {
     expect(chipsHtml).not.toContain('What do you need from me?')
   })
 
-  it('renders a proactive customer-site Look picker for required setup', () => {
+  it('renders a locked Morganite theme confirmation for required setup', () => {
     const html = renderToStaticMarkup(
       createElement(RequiredSetupLookPicker, {
         onChoose: () => {},
       }),
     )
 
-    expect(html).toContain('Choose your customer-site Look')
-    expect(html).toContain('You can change your Look later')
-    expect(html).toContain('new Looks over time')
-    expect(html).toContain('Recommended')
-    expect(html).toContain('Warm + Polished')
+    expect(html).toContain('Sparkle Suite theme')
+    expect(html).toContain('Sparkle Suite/Morganite is ready')
+    expect(html).toContain('one polished Morganite look')
+    expect(html).toContain('Locked theme')
     expect(html).toContain('Sparkle Suite/Morganite')
-    expect(html).toContain('Dark + Dramatic')
-    expect(html).toContain('Black Diamond')
-    expect(html).toContain('Soft Jewelry Polish')
-    expect(html).toContain('Rose Gold')
-    expect(html).toContain('Original Sparkle')
-    expect(html).toContain('Choose this Look')
+    expect(html).toContain('Warm, polished, and readable')
+    expect(html).toContain('Continue with Morganite')
     expect(html).toContain('SS-01')
-    expect(html).toContain('BD-01')
+    expect(html).not.toContain('Choose your customer-site Look')
+    expect(html).not.toContain('You can change your Look later')
+    expect(html).not.toContain('Black Diamond')
+    expect(html).not.toContain('Rose Gold')
+    expect(html).not.toContain('BD-01')
     expect(html).not.toContain('skin')
     expect(html).not.toContain('Skin')
   })
@@ -155,7 +154,7 @@ describe('Nic-Nac branding copy', () => {
     expect(html).not.toContain('dashboard')
   })
 
-  it('keeps Nic-Nac and rep message text large and bold for live-show readability', () => {
+  it('keeps Nic-Nac and rep message text readable and bold for live-show use', () => {
     const bubbleCss = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/Bubble.module.css'),
       'utf8',
@@ -174,16 +173,16 @@ describe('Nic-Nac branding copy', () => {
     )
 
     expect(bubbleCss).toContain('.nicNac')
-    expect(bubbleCss).toContain('font-size: 21px')
+    expect(bubbleCss).toContain('font-size: 16px')
     expect(bubbleCss).toContain('font-weight: 700')
     expect(bubbleCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
-    expect(streamingCss).toContain('font-size: 21px')
+    expect(streamingCss).toContain('font-size: 16px')
     expect(streamingCss).toContain('font-weight: 700')
     expect(streamingCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
-    expect(greetingCss).toContain('font-size: 21px')
+    expect(greetingCss).toContain('font-size: 16px')
     expect(greetingCss).toContain('font-weight: 700')
     expect(bubbleCss).toContain('.rep')
-    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-size: 21px/s)
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-size: 16px/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-weight: 700/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*line-height: 1\.45/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*color: var\(--nic-nac-speaker-rep\)/s)
@@ -215,15 +214,15 @@ describe('Nic-Nac branding copy', () => {
     expect(requiredSetupHome).toContain('<NicNacGlyph size={40} />')
     expect(requiredSetupHome).not.toContain('Required setup resumes automatically')
     expect(requiredSetupHome).not.toContain('chatStatus')
-    expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-size: 1\.15rem/s)
+    expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-size: 0\.86rem/s)
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-weight: 900/s)
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*text-transform: none/s)
     expect(requiredSetupCss).not.toContain('.chatStatus')
     expect(headerCss).toContain('min-height: 60px')
-    expect(headerCss).toMatch(/\.title\s*\{[^}]*font-size: 19px/s)
+    expect(headerCss).toMatch(/\.title\s*\{[^}]*font-size: 14px/s)
     expect(headerCss).toMatch(/\.closeBtn\s*\{[^}]*width: 40px/s)
     expect(headerCss).toMatch(/\.newBtn\s*\{[^}]*width: 40px/s)
-    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-size: 18px/s)
+    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-size: 14px/s)
     expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-weight: 700/s)
     expect(inputCss).toMatch(/\.iconBtn\s*\{[^}]*width: 42px/s)
     expect(inputCss).toMatch(/\.send\s*\{[^}]*width: 42px/s)
@@ -239,9 +238,9 @@ describe('Nic-Nac branding copy', () => {
       'utf8',
     )
 
-    expect(requiredSetupCss).toMatch(/\.root\s*\{[^}]*height: 100dvh/s)
+    expect(requiredSetupCss).toMatch(/\.root\s*\{[^}]*min-height: var\(--nic-nac-app-height, 100dvh\)/s)
     expect(requiredSetupCss).toMatch(/\.root\s*\{[^}]*overflow: hidden/s)
-    expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*height: calc\(100dvh - 2rem\)/s)
+    expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*height: calc\(var\(--nic-nac-app-height, 100dvh\) - 2rem\)/s)
     expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*min-height: 0/s)
     expect(requiredSetupCss).toMatch(/\.chatPanel\s*\{[^}]*overflow: hidden/s)
     expect(requiredSetupCss).toMatch(/\.chatBody\s*\{[^}]*min-height: 0/s)

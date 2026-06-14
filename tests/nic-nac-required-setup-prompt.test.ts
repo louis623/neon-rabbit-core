@@ -49,23 +49,26 @@ describe('required Nic-Nac setup prompt', () => {
       'After these account basics are captured, summarize them and ask the rep to confirm before marking account_basics complete',
     )
     expect(prompt).toContain(
-      'Do not advance to the customer-site Look until the rep confirms the account basics summary',
+      'Do not advance to the Sparkle Suite/Morganite theme until the rep confirms the account basics summary',
     )
-    expect(prompt).toContain('Does that all look right before we pick your customer-site Look?')
+    expect(prompt).toContain(
+      'Does that all look right before we confirm your Sparkle Suite/Morganite theme?',
+    )
     expect(prompt).not.toContain('display name, business name, best contact detail, shop link')
     expect(prompt).not.toContain('Your business name')
     expect(prompt).not.toContain('Link to your shop or website')
   })
 
-  it('uses customer-friendly Look language for the customer-site appearance step', () => {
+  it('locks required setup to Morganite instead of offering appearance choices', () => {
     const prompt = buildRequiredSetupPrompt()
 
-    expect(prompt).toContain('Customer-site Look')
-    expect(prompt).toContain('The app shows the Look cards automatically')
-    expect(prompt).toContain('You can change your Look later')
-    expect(prompt).toContain('new Looks over time')
-    expect(prompt).toContain('Do not make the rep ask to see the available Looks')
-    expect(prompt).toContain('Do not call them skins when talking to the rep')
+    expect(prompt).toContain('Sparkle Suite/Morganite theme')
+    expect(prompt).toContain('Do not offer theme, skin, or Look choices')
+    expect(prompt).toContain('The app shows the locked Morganite confirmation panel automatically')
+    expect(prompt).toContain('appearancePreset: "sparkle_suite_morganite"')
+    expect(prompt).not.toContain('The app shows the Look cards automatically')
+    expect(prompt).not.toContain('You can change your Look later')
+    expect(prompt).not.toContain('new Looks over time')
     expect(prompt).not.toContain('Customer-site look: pick or confirm the customer-site skin')
   })
 
@@ -208,7 +211,7 @@ describe('required Nic-Nac setup prompt', () => {
     )
     expect(prompt).toContain('Do not amplify hype claims')
     expect(prompt).toContain(
-      'Use customer-facing website, Sparkle Suite Workspace, Live Queue, Trade Board, and Look',
+      'Use customer-facing website, Sparkle Suite Workspace, Live Queue, Trade Board, and Sparkle Suite/Morganite theme',
     )
     expect(prompt).not.toContain('LiveQ')
     expect(prompt).not.toContain('TradeBoard')

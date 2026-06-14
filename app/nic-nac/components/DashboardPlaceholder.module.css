@@ -2704,36 +2704,47 @@
   color: var(--nic-nac-text-secondary);
 }
 
-.siteSettingsSaveBar {
-  position: sticky;
-  bottom: calc(8px + env(safe-area-inset-bottom));
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
+.siteSettingsAutoSaveStatus {
+  align-self: flex-start;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 2px;
+  min-height: 32px;
   border: 1px solid rgba(238, 44, 155, 0.16);
-  border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 250, 0.92));
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.84),
-    0 18px 38px rgba(54, 34, 29, 0.12);
-  padding: 12px;
-}
-
-.siteSettingsSaveStatus {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 7px 12px;
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: var(--nic-nac-text-secondary);
 }
 
-.siteSettingsSaveButton {
-  min-height: 44px;
-  padding-inline: 18px;
+.lockedAppearanceField {
+  min-height: 92px;
+}
+
+.lockedAppearanceValue {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
+.customerSiteLooksSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px;
 }
 
 .siteSettingsTextarea {
@@ -3044,7 +3055,7 @@
 .main[data-workspace-skin='black_diamond'] .accountBillingCard,
 .main[data-workspace-skin='black_diamond'] .referralCard,
 .main[data-workspace-skin='black_diamond'] .siteSettingsSection,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSaveBar,
+.main[data-workspace-skin='black_diamond'] .customerSiteLooksSummary,
 .main[data-workspace-skin='black_diamond'] .walletSettingsPanel,
 .main[data-workspace-skin='black_diamond'] .walletReferencePanel,
 .main[data-workspace-skin='black_diamond'] .calendarPanel,
@@ -3173,7 +3184,7 @@
 .main[data-workspace-skin='black_diamond'] .sortLabel,
 .main[data-workspace-skin='black_diamond'] .helperNote,
 .main[data-workspace-skin='black_diamond'] .siteSettingsPreviewNote,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSaveStatus,
+.main[data-workspace-skin='black_diamond'] .siteSettingsAutoSaveStatus,
 .main[data-workspace-skin='black_diamond'] .metricLabel,
 .main[data-workspace-skin='black_diamond'] .tradeMeta,
 .main[data-workspace-skin='black_diamond'] .topbarInfoLabel,
@@ -3188,8 +3199,7 @@
 }
 
 .main[data-workspace-skin='black_diamond'] .liveSiteButton,
-.main[data-workspace-skin='black_diamond'] .actionButton,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSaveButton {
+.main[data-workspace-skin='black_diamond'] .actionButton {
   background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
   color: #141111;
 }
@@ -3260,12 +3270,6 @@
 
   .calculatorResultValue {
     text-align: left;
-  }
-}
-
-@media (hover: none), (pointer: coarse) {
-  .siteSettingsSaveButton {
-    min-height: 44px;
   }
 }
 
@@ -3440,19 +3444,6 @@
 
   .siteSettingsToggleGrid {
     grid-template-columns: 1fr;
-  }
-
-  .siteSettingsSaveBar {
-    bottom: calc(96px + env(safe-area-inset-bottom));
-    align-items: stretch;
-  }
-
-  .siteSettingsSaveStatus {
-    width: 100%;
-  }
-
-  .siteSettingsSaveButton {
-    width: 100%;
   }
 
   .calendarPanels {

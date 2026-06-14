@@ -669,14 +669,14 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain('text-align: center;')
   })
 
-  it('derives the workspace skin from the current site settings draft first', () => {
+  it('keeps the workspace shell on the Morganite Sparkle Suite skin regardless of saved or draft appearance rows', () => {
     expect(getWorkspaceSkinPreset()).toBe('sparkle_suite_morganite')
     expect(
       getWorkspaceSkinPreset({
         ...SITE_SETTINGS_READY_STATE.settings,
         appearancePreset: 'velvet',
       }),
-    ).toBe('velvet')
+    ).toBe('sparkle_suite_morganite')
     expect(
       getWorkspaceSkinPreset(
         {
@@ -688,7 +688,7 @@ describe('DashboardPlaceholder', () => {
           appearancePreset: 'black_diamond',
         },
       ),
-    ).toBe('black_diamond')
+    ).toBe('sparkle_suite_morganite')
     expect(
       getWorkspaceSkinPreset({
         ...SITE_SETTINGS_READY_STATE.settings,
@@ -707,7 +707,7 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('data-workspace-skin="velvet"')
+    expect(html).toContain('data-workspace-skin="sparkle_suite_morganite"')
     expect(html).not.toContain('data-nic-nac-skin="velvet"')
   })
 
@@ -1370,7 +1370,7 @@ describe('DashboardPlaceholder', () => {
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
         draft: SITE_SETTINGS_READY_STATE.settings,
-        statusMessage: 'Site settings saved.',
+        statusMessage: 'All changes saved.',
       }),
     )
 
@@ -1389,38 +1389,37 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Sparkle rise')
     expect(html).toContain('Soft glow')
     expect(html).toContain('Still')
-    expect(html).toContain('Site appearance')
+    expect(html).toContain('Sparkle Suite theme')
     expect(html).toContain('Customer Site Looks')
-    expect(html).toContain('Reference polished customer-site looks')
-    expect(html).toContain('Recommended first picks')
-    expect(html).toContain('Full skin gallery')
-    expect(html).toContain('<details class="')
+    expect(html).toContain('Morganite is locked in for every Sparkle Suite workspace and Amethyst customer site.')
+    expect(html).not.toContain('Reference polished customer-site looks')
+    expect(html).not.toContain('Recommended first picks')
+    expect(html).not.toContain('Full skin gallery')
     expect(html).not.toContain('Site template')
     expect(html).toContain('Amethyst')
     expect(html).toContain('Sparkle Suite/Morganite')
-    expect(html).toContain('Black Diamond')
-    expect(html).toContain('Rose Gold')
-    expect(html).toContain('Garnet')
-    expect(html).toContain('Amber')
-    expect(html).toContain('Velvet')
-    expect(html).toContain('Rose Quartz')
+    expect(html).not.toContain('Black Diamond')
+    expect(html).not.toContain('Rose Gold')
+    expect(html).not.toContain('Garnet')
+    expect(html).not.toContain('Amber')
+    expect(html).not.toContain('Velvet')
+    expect(html).not.toContain('Rose Quartz')
     expect(html).not.toContain('Editorial')
     expect(html).not.toContain('Soft Glam')
     expect(html).not.toContain('Sparkle Party')
     expect(html).not.toContain('Maximum')
     expect(html).toContain(
-      'Your workspace preview updates right away. Tap Save site settings to update your customer site.',
+      'Changes auto-save to your workspace and customer site.',
     )
     expect(html).toContain('Join page visible')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
-    expect(html).toContain('Save site settings')
-    expect(html).toContain('No unsaved changes')
-    expect(html).toContain('disabled=""')
-    expect(html).toContain('Site settings saved.')
+    expect(html).not.toContain('Save site settings')
+    expect(html).toContain('All changes saved.')
+    expect(html).toContain('All changes saved.')
   })
 
-  it('shows a dirty-state cue and enabled save control for changed site settings drafts', () => {
+  it('shows an auto-save cue without a manual save control for changed site settings drafts', () => {
     const html = renderToStaticMarkup(
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
@@ -1429,17 +1428,16 @@ describe('DashboardPlaceholder', () => {
           tagline: 'Fresh draft tagline',
         },
         actionState: { pending: false, error: null, helperMessage: null },
-        onSave: () => {},
       }),
     )
 
-    expect(html).toContain('Unsaved changes')
-    expect(html).toContain('Save site settings')
+    expect(html).toContain('Changes will auto-save.')
+    expect(html).not.toContain('Save site settings')
     expect(html).not.toContain('No unsaved changes')
     expect(html).not.toContain('disabled=""')
   })
 
-  it('keeps the site settings save area sticky and touch-friendly on mobile', () => {
+  it('keeps the site settings auto-save indicator inline instead of a sticky bottom save bar', () => {
     const styles = readFileSync(
       resolve(
         process.cwd(),
@@ -1448,14 +1446,10 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(styles).toContain('.siteSettingsSaveBar')
-    expect(styles).toContain('position: sticky')
-    expect(styles).toContain('env(safe-area-inset-bottom)')
-    expect(styles).toContain('.siteSettingsSaveButton')
-    expect(styles).toContain('min-height: 44px')
-    expect(styles).toContain('@media (hover: none), (pointer: coarse)')
-    expect(styles).toMatch(/@media\s+\(max-width:\s*840px\)[\s\S]*?\.siteSettingsSaveBar[\s\S]*?bottom:\s*calc\(96px \+ env\(safe-area-inset-bottom\)\);/)
-    expect(styles).toMatch(/@media\s+\(max-width:\s*840px\)[\s\S]*?\.siteSettingsSaveButton[\s\S]*?width:\s*100%;/)
+    expect(styles).toContain('.siteSettingsAutoSaveStatus')
+    expect(styles).not.toContain('.siteSettingsSaveBar')
+    expect(styles).not.toContain('.siteSettingsSaveButton')
+    expect(styles).not.toContain('calc(96px + env(safe-area-inset-bottom))')
   })
 
   it('renders the account billing card with monthly status, payment method, and invoice history', () => {
@@ -1646,23 +1640,19 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('await loadAccountBilling()')
   })
 
-  it('renders static skin browsing cards for low-cost appearance selection', () => {
+  it('keeps alternate skin browsing out of the workspace settings source', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
     )
 
-    expect(source).toContain('AMETHYST_SKIN_CARDS')
     expect(source).toContain('Customer Site Looks')
-    expect(source).toContain('Full skin gallery')
-    expect(source).toContain('skin.code')
-    expect(source).toContain('SS-01')
-    expect(source).toContain('BD-01')
-    expect(source).toContain('RG-01')
-    expect(source).toContain('GN-01')
-    expect(source).toContain('AB-01')
-    expect(source).toContain('VE-01')
-    expect(source).toContain('RQ-01')
+    expect(source).toContain('LOCKED_SITE_APPEARANCE_PRESET')
+    expect(source).not.toContain('AMETHYST_SKIN_CARDS')
+    expect(source).not.toContain('Full skin gallery')
+    expect(source).not.toContain('skin.code')
+    expect(source).not.toContain('BD-01')
+    expect(source).not.toContain('RG-01')
   })
 
   it('calculates show and monthly take-home estimates from manual inputs', () => {
