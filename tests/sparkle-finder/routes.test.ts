@@ -771,7 +771,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(
       "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
-    expect(markup).toContain("Save profile");
+    expect(markup).toContain("Auto-save profile");
+    expect(markup).not.toContain("Save profile");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
     expect(markup).not.toContain("Local fixture mode");

@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
-import { Eye, ImagePlus, LoaderCircle, LockKeyhole, Save, UserRound } from "lucide-react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
+import { Eye, ImagePlus, LockKeyhole, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, PointerEvent } from "react";
 
 type ProfileEditorProps = {
   accountState: SparkleFinderAccountState;
@@ -25,6 +25,27 @@ const realAccountInitialState: SilverSaveActionState = {
 const profilePhotoSourceMaxBytes = 10 * 1024 * 1024;
 const profilePhotoDataUrlMaxCharacters = 700_000;
 const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const profileCropFrameSize = 160;
+const profileCropOutputSize = 320;
+const profileAutosaveDelayMs = 900;
+const profilePhotoDecodeTimeoutMs = 2500;
+
+type ProfilePhotoCropState = {
+  height: number;
+  name: string;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  sourceFile?: File;
+  src: string;
+  width: number;
+};
+
+type CropDragState = {
+  crop: ProfilePhotoCropState;
+  pointerX: number;
+  pointerY: number;
+};
 
 export function ProfileEditor({
   accountState,
@@ -34,17 +55,84 @@ export function ProfileEditor({
   profile,
   saveAction,
 }: ProfileEditorProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const hiddenSubmitRef = useRef<HTMLButtonElement>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cropDragRef = useRef<CropDragState | null>(null);
   const [previewCustomer, setPreviewCustomer] = useState(customer);
   const [previewProfile, setPreviewProfile] = useState(profile);
+  const [profilePhotoCrop, setProfilePhotoCrop] = useState<ProfilePhotoCropState | null>(null);
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<{ name: string; url: string } | null>(null);
   const [profilePhotoMessage, setProfilePhotoMessage] = useState("JPG, PNG, or WebP.");
+  const [autosaveMessage, setAutosaveMessage] = useState<string | null>(null);
   const [localStatusMessage, setLocalStatusMessage] = useState(
-    canSaveSilverActions ? "Local preview ready." : "Silver preview is required to save profile updates.",
+    canSaveSilverActions ? "Changes auto-save." : "Silver preview is required to save profile updates.",
   );
   const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledProfileAction, realAccountInitialState);
-  const statusMessage = isLocalPreview ? localStatusMessage : actionState.message;
+  const statusMessage = isPending
+    ? "Saving changes..."
+    : isLocalPreview
+      ? localStatusMessage
+      : actionState.status !== "idle"
+        ? actionState.message
+        : (autosaveMessage ?? actionState.message);
   const profilePhotoInputId = useId();
   const activeProfilePhotoUrl = selectedProfilePhoto?.url ?? previewProfile.photoUrl;
+
+  useEffect(() => {
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  function scheduleProfileAutosave(delayMs = profileAutosaveDelayMs) {
+    if (!canSaveSilverActions) {
+      setLocalStatusMessage("Silver preview is required to save profile updates.");
+      return;
+    }
+
+    cancelPendingProfileAutosave();
+
+    if (isLocalPreview) {
+      setLocalStatusMessage("Saving changes...");
+    } else {
+      setAutosaveMessage("Saving changes...");
+    }
+
+    autosaveTimerRef.current = setTimeout(() => {
+      autosaveTimerRef.current = null;
+      void submitProfileAutosave();
+    }, delayMs);
+  }
+
+  function cancelPendingProfileAutosave() {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+  }
+
+  async function submitProfileAutosave() {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    if (isLocalPreview) {
+      await handlePreviewSave(new FormData(form));
+      return;
+    }
+
+    if (!saveAction) {
+      setAutosaveMessage("Sign in to auto-save profile updates.");
+      return;
+    }
+
+    form.requestSubmit(hiddenSubmitRef.current ?? undefined);
+  }
 
   async function handlePreviewSave(formData: FormData) {
     const displayName = String(formData.get("displayName") ?? "").trim();
@@ -82,40 +170,100 @@ export function ProfileEditor({
       ...currentCustomer,
       displayName,
     }));
-    setSelectedProfilePhoto(null);
-    setProfilePhotoMessage("JPG, PNG, or WebP.");
     setLocalStatusMessage("Profile preview saved locally.");
   }
 
   async function handleProfilePhotoChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    cancelPendingProfileAutosave();
 
     if (!file) {
+      setProfilePhotoCrop(null);
       setSelectedProfilePhoto(null);
       setProfilePhotoMessage("JPG, PNG, or WebP.");
       return;
     }
 
+    setSelectedProfilePhoto({
+      name: file.name,
+      url: activeProfilePhotoUrl || previewProfile.photoUrl,
+    });
     setProfilePhotoMessage("Preparing preview...");
-    const profilePhoto = await prepareProfilePhotoDataUrl(file);
+    const profilePhoto = await prepareProfilePhotoCrop(file);
+    input.value = "";
 
     if (!profilePhoto.ok) {
-      event.currentTarget.value = "";
+      setProfilePhotoCrop(null);
       setSelectedProfilePhoto(null);
       setProfilePhotoMessage(profilePhoto.message);
       setLocalStatusMessage(profilePhoto.message);
       return;
     }
 
+    setProfilePhotoCrop(profilePhoto.crop);
     setSelectedProfilePhoto({
       name: file.name,
-      url: profilePhoto.photoUrl ?? "",
+      url: profilePhoto.photoUrl,
     });
-    setProfilePhotoMessage("Ready to save.");
+    setProfilePhotoMessage("Drag photo to center. Auto-saved.");
 
-    if (isLocalPreview) {
-      setLocalStatusMessage("Profile photo ready to preview save.");
+    scheduleProfileAutosave(300);
+  }
+
+  function handleCropPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (!profilePhotoCrop) {
+      return;
     }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    cropDragRef.current = {
+      crop: profilePhotoCrop,
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+    };
+    setProfilePhotoMessage("Release to auto-save the new center.");
+  }
+
+  function handleCropPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const drag = cropDragRef.current;
+
+    if (!drag) {
+      return;
+    }
+
+    setProfilePhotoCrop(getDraggedCrop(drag, event.clientX, event.clientY));
+  }
+
+  async function handleCropPointerUp(event: PointerEvent<HTMLDivElement>) {
+    const drag = cropDragRef.current;
+
+    if (!drag) {
+      return;
+    }
+
+    cropDragRef.current = null;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    const crop = getDraggedCrop(drag, event.clientX, event.clientY);
+    setProfilePhotoCrop(crop);
+    await applyProfilePhotoCrop(crop);
+  }
+
+  async function applyProfilePhotoCrop(crop: ProfilePhotoCropState) {
+    const profilePhoto = await cropProfilePhoto(crop);
+
+    if (!profilePhoto.ok) {
+      setProfilePhotoMessage(profilePhoto.message);
+      setLocalStatusMessage(profilePhoto.message);
+      return;
+    }
+
+    setSelectedProfilePhoto({
+      name: crop.name,
+      url: profilePhoto.photoUrl,
+    });
+    setProfilePhotoMessage("Centered and auto-saved.");
+    scheduleProfileAutosave(300);
   }
 
   return (
@@ -145,6 +293,7 @@ export function ProfileEditor({
         action={isLocalPreview ? handlePreviewSave : formAction}
         className="mt-5 grid gap-4"
         aria-label={isLocalPreview ? "Silver profile preview form" : "Silver profile form"}
+        ref={formRef}
       >
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           Display name
@@ -153,6 +302,7 @@ export function ProfileEditor({
             defaultValue={previewCustomer.displayName}
             maxLength={80}
             name="displayName"
+            onChange={() => scheduleProfileAutosave()}
             required
           />
         </label>
@@ -161,18 +311,41 @@ export function ProfileEditor({
           <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
           <input name="profilePhotoDataUrl" readOnly type="hidden" value={selectedProfilePhoto?.url ?? ""} />
           <div className="grid justify-items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-5 text-center">
-            <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
-              {activeProfilePhotoUrl ? (
-                <span
-                  aria-label={`${previewCustomer.displayName} selected profile photo`}
-                  className="size-full bg-cover bg-center"
-                  role="img"
-                  style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
+            {profilePhotoCrop ? (
+              <div
+                aria-label="Drag profile photo to center"
+                className="relative size-40 touch-none overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)] shadow-inner"
+                onPointerDown={handleCropPointerDown}
+                onPointerMove={handleCropPointerMove}
+                onPointerUp={handleCropPointerUp}
+                role="img"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt=""
+                  className="pointer-events-none absolute max-w-none select-none"
+                  src={profilePhotoCrop.src}
+                  style={{
+                    height: profilePhotoCrop.height * profilePhotoCrop.scale,
+                    transform: `translate(${profilePhotoCrop.offsetX}px, ${profilePhotoCrop.offsetY}px)`,
+                    width: profilePhotoCrop.width * profilePhotoCrop.scale,
+                  }}
                 />
-              ) : (
-                <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+                {activeProfilePhotoUrl ? (
+                  <span
+                    aria-label={`${previewCustomer.displayName} selected profile photo`}
+                    className="size-full bg-cover bg-center"
+                    role="img"
+                    style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
+                  />
+                ) : (
+                  <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
+                )}
+              </div>
+            )}
             <div className="grid w-full justify-items-center gap-2">
               <input
                 accept="image/jpeg,image/png,image/webp"
@@ -204,6 +377,7 @@ export function ProfileEditor({
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]"
             defaultValue={previewProfile.tiktokHandle}
             name="tiktokHandle"
+            onChange={() => scheduleProfileAutosave()}
           />
         </label>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
@@ -212,12 +386,19 @@ export function ProfileEditor({
             className="min-h-28 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 py-3 text-sm font-normal leading-6 text-[var(--sparkle-ink)]"
             defaultValue={previewProfile.bio}
             name="bio"
+            onChange={() => scheduleProfileAutosave()}
           />
         </label>
         <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
           <legend className="px-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">Visibility</legend>
           <label className="flex min-h-10 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
-            <input defaultChecked={previewProfile.visibility === "private"} name="visibility" type="radio" value="private" />
+            <input
+              defaultChecked={previewProfile.visibility === "private"}
+              name="visibility"
+              onChange={() => scheduleProfileAutosave(200)}
+              type="radio"
+              value="private"
+            />
             <LockKeyhole aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
             Private
           </label>
@@ -225,6 +406,7 @@ export function ProfileEditor({
             <input
               defaultChecked={previewProfile.visibility === "sparkle_finder"}
               name="visibility"
+              onChange={() => scheduleProfileAutosave(200)}
               type="radio"
               value="sparkle_finder"
             />
@@ -232,18 +414,8 @@ export function ProfileEditor({
             Sparkle Finder preview
           </label>
         </fieldset>
-        <button
-          aria-busy={!isLocalPreview && isPending}
-          className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55"
-          disabled={!canSaveSilverActions || (!isLocalPreview && (!saveAction || isPending))}
-          type="submit"
-        >
-          {!isLocalPreview && isPending ? (
-            <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-          ) : (
-            <Save aria-hidden="true" className="size-4" />
-          )}
-          {isLocalPreview ? "Preview save" : isPending ? "Saving profile..." : "Save profile"}
+        <button className="sr-only" disabled={!canSaveSilverActions || (!isLocalPreview && !saveAction)} ref={hiddenSubmitRef} type="submit">
+          Auto-save profile
         </button>
         <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
           {statusMessage}
@@ -270,60 +442,77 @@ async function readPreparedProfilePhotoDataUrl(
     return validatePreparedProfilePhotoDataUrl(preparedPhotoUrl);
   }
 
-  return prepareProfilePhotoDataUrl(fileValue);
-}
-
-async function prepareProfilePhotoDataUrl(
-  value: FormDataEntryValue | null,
-): Promise<{ ok: true; photoUrl?: string } | { ok: false; message: string }> {
-  if (!(value instanceof File) || value.size === 0) {
+  if (!(fileValue instanceof File) || fileValue.size === 0) {
     return { ok: true };
   }
 
-  if (!profilePhotoTypes.has(value.type)) {
+  const prepared = await prepareProfilePhotoCrop(fileValue);
+
+  return prepared.ok ? { ok: true, photoUrl: prepared.photoUrl } : prepared;
+}
+
+async function prepareProfilePhotoCrop(
+  file: File,
+): Promise<{ ok: true; crop: ProfilePhotoCropState; photoUrl: string } | { ok: false; message: string }> {
+  if (!profilePhotoTypes.has(file.type)) {
     return { ok: false, message: "Upload a JPG, PNG, or WebP profile photo." };
   }
 
-  if (value.size > profilePhotoSourceMaxBytes) {
+  if (file.size > profilePhotoSourceMaxBytes) {
     return { ok: false, message: "Profile photo must be 10 MB or smaller." };
   }
 
   try {
-    return await resizeProfilePhoto(value);
+    const objectUrl = URL.createObjectURL(file);
+    const image = await loadProfilePhotoBitmap(file);
+    try {
+      const crop = createInitialProfilePhotoCrop(file.name, objectUrl, image.width, image.height, file);
+      const cropped = await cropProfilePhoto(crop);
+
+      return cropped.ok ? { ok: true, crop, photoUrl: cropped.photoUrl } : cropped;
+    } finally {
+      image.close();
+    }
   } catch {
     return { ok: false, message: "Profile photo could not be previewed. Try a JPG, PNG, or WebP." };
   }
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+async function cropProfilePhoto(crop: ProfilePhotoCropState | null): Promise<{ ok: true; photoUrl: string } | { ok: false; message: string }> {
+  if (!crop) {
+    return { ok: false, message: "Profile photo could not be prepared." };
+  }
 
-    reader.addEventListener("load", () => resolve(String(reader.result ?? "")));
-    reader.addEventListener("error", () => reject(new Error("Profile photo could not be read.")));
-    reader.readAsDataURL(file);
-  });
-}
+  let bitmap: ImageBitmap | null = null;
+  let image: CanvasImageSource;
 
-async function resizeProfilePhoto(file: File): Promise<{ ok: true; photoUrl: string } | { ok: false; message: string }> {
-  const sourceDataUrl = await fileToDataUrl(file);
-  const image = await loadImage(sourceDataUrl);
-  const maxDimension = 640;
-  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-  const width = Math.max(1, Math.round(image.naturalWidth * scale));
-  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  if (crop.sourceFile) {
+    bitmap = await loadProfilePhotoBitmap(crop.sourceFile);
+    image = bitmap;
+  } else {
+    image = await loadImage(crop.src);
+  }
+
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
 
   if (!context) {
+    bitmap?.close();
     return { ok: false, message: "Profile photo could not be previewed." };
   }
 
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = profileCropOutputSize;
+  canvas.height = profileCropOutputSize;
   context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, width, height);
-  context.drawImage(image, 0, 0, width, height);
+  context.fillRect(0, 0, profileCropOutputSize, profileCropOutputSize);
+  context.drawImage(
+    image,
+    (crop.offsetX * profileCropOutputSize) / profileCropFrameSize,
+    (crop.offsetY * profileCropOutputSize) / profileCropFrameSize,
+    (crop.width * crop.scale * profileCropOutputSize) / profileCropFrameSize,
+    (crop.height * crop.scale * profileCropOutputSize) / profileCropFrameSize,
+  );
+  bitmap?.close();
 
   for (const quality of [0.86, 0.78, 0.7, 0.62]) {
     const photoUrl = canvas.toDataURL("image/jpeg", quality);
@@ -337,12 +526,76 @@ async function resizeProfilePhoto(file: File): Promise<{ ok: true; photoUrl: str
   return { ok: false, message: "Profile photo is still too large after resizing. Try a smaller image." };
 }
 
+function createInitialProfilePhotoCrop(
+  name: string,
+  src: string,
+  width: number,
+  height: number,
+  sourceFile?: File,
+): ProfilePhotoCropState {
+  const scale = Math.max(profileCropFrameSize / width, profileCropFrameSize / height);
+
+  return clampProfilePhotoCrop({
+    height,
+    name,
+    offsetX: (profileCropFrameSize - width * scale) / 2,
+    offsetY: (profileCropFrameSize - height * scale) / 2,
+    scale,
+    sourceFile,
+    src,
+    width,
+  });
+}
+
+function getDraggedCrop(drag: CropDragState, pointerX: number, pointerY: number): ProfilePhotoCropState {
+  return clampProfilePhotoCrop({
+    ...drag.crop,
+    offsetX: drag.crop.offsetX + pointerX - drag.pointerX,
+    offsetY: drag.crop.offsetY + pointerY - drag.pointerY,
+  });
+}
+
+function clampProfilePhotoCrop(crop: ProfilePhotoCropState): ProfilePhotoCropState {
+  const renderedWidth = crop.width * crop.scale;
+  const renderedHeight = crop.height * crop.scale;
+  const minX = Math.min(0, profileCropFrameSize - renderedWidth);
+  const minY = Math.min(0, profileCropFrameSize - renderedHeight);
+
+  return {
+    ...crop,
+    offsetX: Math.min(0, Math.max(minX, crop.offsetX)),
+    offsetY: Math.min(0, Math.max(minY, crop.offsetY)),
+  };
+}
+
+function loadProfilePhotoBitmap(file: File): Promise<ImageBitmap> {
+  if (!("createImageBitmap" in window)) {
+    return Promise.reject(new Error("Profile photo preview is not supported in this browser."));
+  }
+
+  return Promise.race([
+    window.createImageBitmap(file),
+    new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error("Profile photo image decode timed out.")), profilePhotoDecodeTimeoutMs);
+    }),
+  ]);
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Profile photo image preview timed out."));
+    }, 5000);
 
-    image.addEventListener("load", () => resolve(image));
-    image.addEventListener("error", () => reject(new Error("Profile photo image could not be loaded.")));
+    image.addEventListener("load", () => {
+      window.clearTimeout(timeoutId);
+      resolve(image);
+    });
+    image.addEventListener("error", () => {
+      window.clearTimeout(timeoutId);
+      reject(new Error("Profile photo image could not be loaded."));
+    });
     image.src = src;
   });
 }

@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "@playwright/test";
-import { Buffer } from "node:buffer";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
@@ -103,16 +102,10 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('input[name="photoUrl"][type="hidden"]')).toHaveCount(1);
     await expect(page.locator('input[name="profilePhotoDataUrl"][type="hidden"]')).toHaveCount(1);
     await expect(page.getByText("Profile photo URL")).toHaveCount(0);
-    await profilePhotoInput.setInputFiles({
-      buffer: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
-        "base64",
-      ),
-      mimeType: "image/png",
-      name: "profile-preview.png",
-    });
-    await expect(page.getByText("profile-preview.png")).toBeVisible();
-    await expect(page.getByText("Ready to save.")).toBeVisible();
+    await profilePhotoInput.setInputFiles(join(process.cwd(), "brand-assets", "sparkle-finder-s-logo-256.png"));
+    await expect(page.getByText("sparkle-finder-s-logo-256.png")).toBeVisible();
+    await expect(page.getByText("Drag photo to center. Auto-saved.")).toBeVisible();
+    await expect(page.getByLabel("Drag profile photo to center")).toBeVisible();
     await expect(page.locator('input[name="profilePhotoDataUrl"]')).toHaveValue(/^data:image\/jpeg;base64,/);
     await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
