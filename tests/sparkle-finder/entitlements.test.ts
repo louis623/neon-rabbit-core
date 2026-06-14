@@ -434,7 +434,120 @@ describe("Sparkle Finder entitlements", () => {
     });
 
     expect(result).toEqual({ ok: true });
-    expect(client.operations).toContainEqual({
+    expect(client.operations).toEqual([
+      {
+        table: "sparkle_finder_profiles",
+        type: "insert",
+        values: {
+          user_id: "user-123",
+          display_name: "Casey Collector",
+          email: "casey@example.test",
+          state: "PA",
+          tiktok_handle: "@casey_new",
+          bio: "Fresh profile row.",
+          profile_visibility: "private",
+        },
+      },
+      {
+        table: "sparkle_finder_profiles",
+        type: "update",
+        values: {
+          display_name: "Casey Collector",
+          tiktok_handle: "@casey_new",
+          bio: "Fresh profile row.",
+          photo_url: "",
+          profile_visibility: "private",
+        },
+        filters: [
+          ["user_id", "user-123"],
+        ],
+      },
+    ]);
+  });
+
+  it("recovers missing persisted profile rows before saving uploaded profile photos", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({ profile: null });
+    const photoDataUrl = `data:image/png;base64,${"a".repeat(640)}`;
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      bio: "Fresh photo profile.",
+      photoUrl: photoDataUrl,
+      tiktokHandle: "@casey_photo",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toEqual([
+      {
+        table: "sparkle_finder_profiles",
+        type: "insert",
+        values: {
+          user_id: "user-123",
+          display_name: "Casey Collector",
+          email: "casey@example.test",
+          state: "PA",
+          tiktok_handle: "@casey_photo",
+          bio: "Fresh photo profile.",
+          profile_visibility: "private",
+        },
+      },
+      {
+        table: "sparkle_finder_profiles",
+        type: "update",
+        values: {
+          display_name: "Casey Collector",
+          tiktok_handle: "@casey_photo",
+          bio: "Fresh photo profile.",
+          photo_url: photoDataUrl,
+          profile_visibility: "private",
+        },
+        filters: [
+          ["user_id", "user-123"],
+        ],
+      },
+    ]);
+  });
+
+  it("fails missing profile recovery when the base profile row cannot be inserted", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({ profile: null, profileInsertError: new Error("insert denied") });
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      bio: "Cannot create this row.",
+      tiktokHandle: "@casey_blocked",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: false, reason: "save_failed" });
+    expect(client.operations).toEqual([
+      {
+        table: "sparkle_finder_profiles",
+        type: "insert",
+        values: {
+          user_id: "user-123",
+          display_name: "Casey Collector",
+          email: "casey@example.test",
+          state: "PA",
+          tiktok_handle: "@casey_blocked",
+          bio: "Cannot create this row.",
+          profile_visibility: "private",
+        },
+      },
+    ]);
+  });
+
+  it("does not insert photo_url while recovering a missing persisted profile row", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({ profile: null });
+    const photoDataUrl = `data:image/png;base64,${"a".repeat(640)}`;
+
+    await persistSilverProfileForAccount(client, accountState, {
+      photoUrl: photoDataUrl,
+      visibility: "private",
+    });
+
+    expect(client.operations[0]).toEqual({
       table: "sparkle_finder_profiles",
       type: "insert",
       values: {
@@ -442,9 +555,8 @@ describe("Sparkle Finder entitlements", () => {
         display_name: "Casey Collector",
         email: "casey@example.test",
         state: "PA",
-        tiktok_handle: "@casey_new",
-        bio: "Fresh profile row.",
-        photo_url: "",
+        tiktok_handle: "",
+        bio: "",
         profile_visibility: "private",
       },
     });
@@ -633,11 +745,13 @@ function currentAccountState(accessState: SparkleFinderAccessState): CurrentSpar
 function createFakePersistenceClient({
   profile = null,
   profileWriteResult,
+  profileInsertError = null,
   collectionItem = null,
   collectionSelectError = null,
 }: {
   profile?: { user_id: string } | null;
   profileWriteResult?: { user_id: string } | null;
+  profileInsertError?: Error | null;
   collectionItem?: { id: string; user_id: string } | null;
   collectionSelectError?: Error | null;
 }) {
@@ -668,6 +782,9 @@ function createFakePersistenceClient({
           }),
         insert: async (values: Record<string, unknown>) => {
           operations.push({ table, type: "insert", values });
+          if (table === "sparkle_finder_profiles" && profileInsertError) {
+            return { data: null, error: profileInsertError };
+          }
           if (table === "sparkle_finder_profiles") {
             profileRecord = profileWriteResult === undefined ? values : profileWriteResult;
           }

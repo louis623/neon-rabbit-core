@@ -124,14 +124,25 @@ export async function persistSilverProfileForAccount(
     supabase.from("sparkle_finder_profiles").select("user_id").eq("user_id", accountState.customer.id),
   );
 
-  const result = existingProfile.data
-    ? await supabase.from("sparkle_finder_profiles").update(values).eq("user_id", accountState.customer.id)
-    : await supabase.from("sparkle_finder_profiles").insert({
-        user_id: accountState.customer.id,
-        email: cleanText(accountState.customer.email, 254),
-        state: cleanText(accountState.customer.state, 40),
-        ...values,
-      });
+  let result: { data: unknown; error: unknown };
+
+  if (existingProfile.data) {
+    result = await supabase.from("sparkle_finder_profiles").update(values).eq("user_id", accountState.customer.id);
+  } else {
+    const insertResult = await supabase.from("sparkle_finder_profiles").insert({
+      user_id: accountState.customer.id,
+      display_name: values.display_name,
+      email: cleanText(accountState.customer.email, 254),
+      state: cleanText(accountState.customer.state, 40),
+      tiktok_handle: values.tiktok_handle,
+      bio: values.bio,
+      profile_visibility: values.profile_visibility,
+    });
+
+    result = insertResult.error
+      ? insertResult
+      : await supabase.from("sparkle_finder_profiles").update(values).eq("user_id", accountState.customer.id);
+  }
 
   if (result.error) {
     return { ok: false, reason: "save_failed" };

@@ -29,7 +29,7 @@ export function GlobalSaveIndicator({ status }: GlobalSaveIndicatorProps) {
 
   return (
     <p
-      className={`sparkle-global-save-indicator pointer-events-none fixed right-3 top-24 z-[80] inline-flex min-h-9 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border px-3 text-sm font-bold shadow-[0_10px_26px_rgba(64,41,36,0.14)] sm:right-5 ${toneClassName}`}
+      className={`sparkle-global-save-indicator pointer-events-none fixed bottom-4 right-3 z-[80] inline-flex min-h-9 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border px-3 text-sm font-bold shadow-[0_10px_26px_rgba(64,41,36,0.14)] sm:bottom-5 sm:right-5 ${toneClassName}`}
       role="status"
     >
       <Icon aria-hidden="true" className={`size-4 shrink-0 ${status.tone === "saving" ? "animate-spin" : ""}`} />

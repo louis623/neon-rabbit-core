@@ -80,6 +80,7 @@ export async function saveSilverProfileAction(
 
   revalidatePath("/silver");
   revalidatePath("/account");
+  revalidatePath("/");
 
   return {
     status: "saved",

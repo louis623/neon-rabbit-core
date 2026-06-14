@@ -148,7 +148,12 @@ export function ProfileEditor({
       ? await saveAction(previousState, formData)
       : await disabledProfileAction();
 
-    setAutosaveMessage(result.status === "saved" ? "Saved just now." : null);
+    if (result.status === "saved") {
+      applySavedProfileDraftFromFormData(formData);
+      setAutosaveMessage("Saved just now.");
+    } else {
+      setAutosaveMessage(null);
+    }
 
     return result;
   }
@@ -171,6 +176,26 @@ export function ProfileEditor({
     }
 
     form.requestSubmit(hiddenSubmitRef.current ?? undefined);
+  }
+
+  function applySavedProfileDraftFromFormData(formData: FormData) {
+    const displayName = String(formData.get("displayName") ?? "").trim();
+    const photoUrl = String(formData.get("profilePhotoDataUrl") || formData.get("photoUrl") || "");
+
+    setPreviewProfile((currentProfile) => ({
+      ...currentProfile,
+      bio: String(formData.get("bio") ?? ""),
+      photoUrl,
+      tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
+      visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
+    }));
+
+    if (displayName) {
+      setPreviewCustomer((currentCustomer) => ({
+        ...currentCustomer,
+        displayName,
+      }));
+    }
   }
 
   async function handlePreviewSave(formData: FormData) {

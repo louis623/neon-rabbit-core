@@ -90,11 +90,21 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
+    const saveIndicator = page.locator(".sparkle-global-save-indicator");
+    const viewport = page.viewportSize();
+
+    await expect(saveIndicator).toContainText("Changes auto-save.");
+    await expect(saveIndicator).toHaveClass(/bottom-4/);
+    const saveIndicatorBox = await saveIndicator.boundingBox();
+
+    expect(saveIndicatorBox).not.toBeNull();
+    expect(saveIndicatorBox?.y ?? 0).toBeGreaterThan((viewport?.height ?? 0) / 2);
     const displayNameInput = page.getByLabel("Display name");
 
     await expect(displayNameInput).toBeEditable();
     await displayNameInput.fill("Sparkle Preview");
     await expect(displayNameInput).toHaveValue("Sparkle Preview");
+    await expect(saveIndicator).toContainText("Saved just now.", { timeout: 4000 });
     await page.waitForTimeout(1200);
     await expect(displayNameInput).toHaveValue("Sparkle Preview");
     const tiktokInput = page.getByLabel("TikTok handle");
