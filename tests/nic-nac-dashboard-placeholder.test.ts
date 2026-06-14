@@ -46,7 +46,9 @@ import {
   buildTradeBoardFetchUrl,
   getJewelryLibrarySearchErrorMessage,
   type DashboardPlaceholderProps,
+  formatHeaderRepName,
   formatHeaderRepShow,
+  formatHeaderShowName,
   formatWalletAmount,
   needsFreshOptIn,
   sortRosterCustomers,
@@ -418,9 +420,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Workspace')
     expect(html).not.toContain('Sparkle Suite workspace')
-    expect(html).toContain('Rep / show')
+    expect(html).toContain('>Rep<')
+    expect(html).toContain('>Show<')
+    expect(html).not.toContain('Rep / show')
     expect(html).toContain('Live Queue sync code')
-    expect(html).toContain('Saved here for future extension setup.')
+    expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -603,6 +607,10 @@ describe('DashboardPlaceholder', () => {
     )
     expect(formatHeaderRepShow('', 'Sparkle by Sasha')).toBe('Sparkle by Sasha')
     expect(formatHeaderRepShow(undefined, undefined)).toBe('Rep info loading')
+    expect(formatHeaderRepName('Louis')).toBe('Louis')
+    expect(formatHeaderRepName(undefined)).toBe('Rep info loading')
+    expect(formatHeaderShowName('Sparkle by Sasha')).toBe('Sparkle by Sasha')
+    expect(formatHeaderShowName(undefined)).toBe('Show info loading')
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -616,11 +624,22 @@ describe('DashboardPlaceholder', () => {
         liveQueueSyncCodeOverride: 'MHF-7342',
       }),
     )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
 
     expect(html).toContain('Live Queue sync code')
     expect(html).toContain('MHF-7342')
-    expect(html).toContain('Saved here for future extension setup.')
+    expect(html).toContain('>Rep<')
+    expect(html).toContain('>Show<')
+    expect(html).not.toContain('Rep / show')
+    expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Extension code')
+    expect(css).toContain('align-items: center;')
+    expect(css).toContain('min-height: 52px;')
+    expect(css).toContain('font-size: 14px;')
+    expect(css).toContain('text-align: center;')
   })
 
   it('derives the workspace skin from the current site settings draft first', () => {

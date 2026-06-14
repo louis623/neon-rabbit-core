@@ -291,15 +291,16 @@
 .topbarInfoPill {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 42px;
+  min-height: 52px;
   max-width: 220px;
   border-radius: 999px;
   border: 1px solid rgba(64, 41, 36, 0.16);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 250, 0.72));
-  padding: 8px 14px;
+  padding: 8px 16px;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.9),
     0 10px 22px rgba(54, 34, 29, 0.08);
@@ -312,6 +313,7 @@
   font-weight: 800;
   line-height: 1;
   color: var(--nic-nac-text-secondary);
+  text-align: center;
   text-transform: uppercase;
 }
 
@@ -320,29 +322,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
   color: var(--nic-nac-text-primary);
+  text-align: center;
+  width: 100%;
 }
 
 .topbarInfoValueCode {
   white-space: nowrap;
-  font-size: 14px;
   font-family: 'Geist Mono', 'Courier New', monospace;
   letter-spacing: 0.04em;
   line-height: 1.2;
-}
-
-.topbarInfoHint {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--nic-nac-text-secondary);
 }
 
 .liveSiteButton {
@@ -3185,7 +3177,6 @@
 .main[data-workspace-skin='black_diamond'] .metricLabel,
 .main[data-workspace-skin='black_diamond'] .tradeMeta,
 .main[data-workspace-skin='black_diamond'] .topbarInfoLabel,
-.main[data-workspace-skin='black_diamond'] .topbarInfoHint,
 .main[data-workspace-skin='black_diamond'] .accountMuted,
 .main[data-workspace-skin='black_diamond'] .walletTransactionDate {
   color: #d8cbbd;

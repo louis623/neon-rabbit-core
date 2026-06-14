@@ -105,6 +105,14 @@ export function formatHeaderRepShow(
   return rep || show || 'Rep info loading'
 }
 
+export function formatHeaderRepName(displayName?: string | null) {
+  return displayName?.trim() || 'Rep info loading'
+}
+
+export function formatHeaderShowName(businessName?: string | null) {
+  return businessName?.trim() || 'Show info loading'
+}
+
 function mergeTradeBoardResults(
   current: BoardResult | undefined,
   next: BoardResult,
@@ -2856,8 +2864,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       title: 'Customer Trade Board Preview',
     })
   }
-  const headerRepShow = formatHeaderRepShow(
+  const headerRepName = formatHeaderRepName(
     siteSettingsState.settings?.displayName ?? repProfileState.displayName,
+  )
+  const headerShowName = formatHeaderShowName(
     siteSettingsState.settings?.businessName,
   )
   const headerLiveQueueSyncCode =
@@ -2898,16 +2908,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         </div>
         <div className={styles.topbarActions}>
           <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Rep / show</span>
-            <span className={styles.topbarInfoValue}>{headerRepShow}</span>
+            <span className={styles.topbarInfoLabel}>Rep</span>
+            <span className={styles.topbarInfoValue}>{headerRepName}</span>
+          </div>
+          <div className={styles.topbarInfoPill}>
+            <span className={styles.topbarInfoLabel}>Show</span>
+            <span className={styles.topbarInfoValue}>{headerShowName}</span>
           </div>
           <div className={styles.topbarInfoPill}>
             <span className={styles.topbarInfoLabel}>Live Queue sync code</span>
             <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
               {headerLiveQueueSyncCode}
-            </span>
-            <span className={styles.topbarInfoHint}>
-              Saved here for future extension setup.
             </span>
           </div>
           {hasPaidWorkspace ? (
