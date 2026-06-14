@@ -133,7 +133,22 @@ export async function persistSilverProfileForAccount(
         ...values,
       });
 
-  return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
+  if (result.error) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  const savedProfile = await safeMaybeSingle(
+    supabase
+      .from("sparkle_finder_profiles")
+      .select("user_id,display_name,tiktok_handle,bio,photo_url,profile_visibility")
+      .eq("user_id", accountState.customer.id),
+  );
+
+  if (savedProfile.error || !matchesSavedProfile(savedProfile.data, accountState.customer.id, values)) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  return { ok: true };
 }
 
 export async function persistCollectionItemForAccount(
@@ -260,4 +275,21 @@ function cleanText(value: string | undefined, maxLength: number): string {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function matchesSavedProfile(data: unknown, userId: string, values: Record<string, string>): boolean {
+  if (!data || typeof data !== "object") {
+    return false;
+  }
+
+  const row = data as Record<string, unknown>;
+
+  return (
+    row.user_id === userId &&
+    row.display_name === values.display_name &&
+    row.tiktok_handle === values.tiktok_handle &&
+    row.bio === values.bio &&
+    row.photo_url === values.photo_url &&
+    row.profile_visibility === values.profile_visibility
+  );
 }

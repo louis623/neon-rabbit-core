@@ -288,6 +288,31 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
   });
 
+  it("renders authenticated home profile details from the signed-in account state", () => {
+    const markup = renderToStaticMarkup(
+      renderHomeContent({
+        ...getLocalDevAuthState("silver"),
+        customer: {
+          ...getLocalDevAuthState("silver").customer,
+          displayName: "Louis Sparkle",
+        },
+        displayName: "Louis Sparkle",
+        silverProfile: {
+          customerId: "customer-silver-sparkle-mama",
+          photoUrl: "data:image/jpeg;base64,abc123",
+          tiktokHandle: "@louis_sparkle",
+          bio: "Profile changed on the live site.",
+          visibility: "private",
+        },
+      }),
+    );
+
+    expect(markup).toContain("Louis Sparkle");
+    expect(markup).toContain("@louis_sparkle");
+    expect(markup).toContain("data:image/jpeg;base64,abc123");
+    expect(markup).not.toContain("Sparkle Mama");
+  });
+
   it("renders public landing independence and avoids live/demo jewelry data", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
@@ -772,6 +797,7 @@ describe("Sparkle Finder hub routes", () => {
       "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
     expect(markup).toContain("Auto-save profile");
+    expect(markup).toContain("Changes auto-save.");
     expect(markup).not.toContain("Save profile");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");

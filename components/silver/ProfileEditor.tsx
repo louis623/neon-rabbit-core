@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
-import { Eye, ImagePlus, LockKeyhole, UserRound } from "lucide-react";
+import { AlertCircle, CheckCircle2, Eye, ImagePlus, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
@@ -19,7 +19,7 @@ type ProfileEditorProps = {
 
 const realAccountInitialState: SilverSaveActionState = {
   status: "idle",
-  message: "Profile ready to save.",
+  message: "Changes auto-save.",
 };
 
 const profilePhotoSourceMaxBytes = 10 * 1024 * 1024;
@@ -54,6 +54,11 @@ type ProfileDraftState = {
   visibility: SilverProfile["visibility"];
 };
 
+type ProfileSaveStatus = {
+  message: string;
+  tone: "idle" | "saving" | "saved" | "error";
+};
+
 export function ProfileEditor({
   accountState,
   canSaveSilverActions,
@@ -81,14 +86,14 @@ export function ProfileEditor({
   const [localStatusMessage, setLocalStatusMessage] = useState(
     canSaveSilverActions ? "Changes auto-save." : "Silver preview is required to save profile updates.",
   );
-  const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledProfileAction, realAccountInitialState);
-  const statusMessage = isPending
-    ? "Saving changes..."
-    : isLocalPreview
-      ? localStatusMessage
-      : actionState.status !== "idle"
-        ? actionState.message
-        : (autosaveMessage ?? actionState.message);
+  const [actionState, formAction, isPending] = useActionState(handleProfileFormAction, realAccountInitialState);
+  const saveStatus = getProfileSaveStatus({
+    actionState,
+    autosaveMessage,
+    isLocalPreview,
+    isPending,
+    localStatusMessage,
+  });
   const profilePhotoInputId = useId();
   const activeProfilePhotoUrl = selectedProfilePhoto?.url ?? previewProfile.photoUrl;
 
@@ -137,6 +142,19 @@ export function ProfileEditor({
       [field]: value,
     }));
     scheduleProfileAutosave(delayMs);
+  }
+
+  async function handleProfileFormAction(
+    previousState: SilverSaveActionState,
+    formData: FormData,
+  ): Promise<SilverSaveActionState> {
+    const result = saveAction
+      ? await saveAction(previousState, formData)
+      : await disabledProfileAction();
+
+    setAutosaveMessage(result.status === "saved" ? "Saved just now." : null);
+
+    return result;
   }
 
   async function submitProfileAutosave() {
@@ -195,7 +213,7 @@ export function ProfileEditor({
       ...currentCustomer,
       displayName,
     }));
-    setLocalStatusMessage("Profile preview saved locally.");
+    setLocalStatusMessage("Saved just now.");
   }
 
   async function handleProfilePhotoChange(event: ChangeEvent<HTMLInputElement>) {
@@ -299,6 +317,7 @@ export function ProfileEditor({
           <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
             Collector Profile
           </h2>
+          <ProfileSaveStatusBadge status={saveStatus} />
         </div>
         <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
           {activeProfilePhotoUrl ? (
@@ -442,12 +461,89 @@ export function ProfileEditor({
         <button className="sr-only" disabled={!canSaveSilverActions || (!isLocalPreview && !saveAction)} ref={hiddenSubmitRef} type="submit">
           Auto-save profile
         </button>
-        <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
-          {statusMessage}
-        </p>
       </form>
     </section>
   );
+}
+
+function ProfileSaveStatusBadge({ status }: { status: ProfileSaveStatus }) {
+  const Icon = status.tone === "error" ? AlertCircle : status.tone === "saved" ? CheckCircle2 : status.tone === "saving" ? LoaderCircle : CheckCircle2;
+  const toneClassName =
+    status.tone === "error"
+      ? "border-red-200 bg-red-50 text-red-700"
+      : status.tone === "saved"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+        : status.tone === "saving"
+          ? "border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] text-[var(--sparkle-plum)]"
+          : "border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-ink-muted)]";
+
+  return (
+    <p
+      className={`mt-3 inline-flex min-h-9 items-center gap-2 rounded-full border px-3 text-sm font-bold ${toneClassName}`}
+      role="status"
+    >
+      <Icon aria-hidden="true" className={`size-4 ${status.tone === "saving" ? "animate-spin" : ""}`} />
+      {status.message}
+    </p>
+  );
+}
+
+function getProfileSaveStatus({
+  actionState,
+  autosaveMessage,
+  isLocalPreview,
+  isPending,
+  localStatusMessage,
+}: {
+  actionState: SilverSaveActionState;
+  autosaveMessage: string | null;
+  isLocalPreview: boolean;
+  isPending: boolean;
+  localStatusMessage: string;
+}): ProfileSaveStatus {
+  if (isPending) {
+    return { message: "Saving changes...", tone: "saving" };
+  }
+
+  if (isLocalPreview) {
+    return {
+      message: localStatusMessage,
+      tone: getStatusTone(localStatusMessage, "idle"),
+    };
+  }
+
+  if (autosaveMessage) {
+    return {
+      message: autosaveMessage,
+      tone: getStatusTone(autosaveMessage, "saving"),
+    };
+  }
+
+  if (actionState.status === "saved") {
+    return { message: "Saved just now.", tone: "saved" };
+  }
+
+  if (actionState.status === "error" || actionState.status === "denied") {
+    return { message: actionState.message, tone: "error" };
+  }
+
+  return { message: actionState.message, tone: "idle" };
+}
+
+function getStatusTone(message: string, fallback: ProfileSaveStatus["tone"]): ProfileSaveStatus["tone"] {
+  if (/could not|required|sign in|silver preview|silver access/i.test(message)) {
+    return "error";
+  }
+
+  if (/saved/i.test(message)) {
+    return "saved";
+  }
+
+  if (/saving/i.test(message)) {
+    return "saving";
+  }
+
+  return fallback;
 }
 
 async function disabledProfileAction(): Promise<SilverSaveActionState> {

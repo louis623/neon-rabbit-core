@@ -10,9 +10,12 @@ import {
   getSilverProfileByCustomerId,
 } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import type { SilverProfile } from "@/lib/sparkle-finder/types";
 
 type AuthenticatedHomePageProps = {
-  accountState: Extract<SparkleFinderAccountState, { status: "authenticated" }>;
+  accountState: Extract<SparkleFinderAccountState, { status: "authenticated" }> & {
+    silverProfile?: SilverProfile;
+  };
 };
 
 export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePageProps) {
@@ -32,7 +35,7 @@ export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePagePro
           accountState={accountState}
           collectionItems={collectionItems}
           customer={customer}
-          profile={getSilverProfileByCustomerId(customer.id)}
+          profile={accountState.silverProfile ?? getSilverProfileByCustomerId(customer.id)}
         />
       </main>
       <SparkleFinderFooter />

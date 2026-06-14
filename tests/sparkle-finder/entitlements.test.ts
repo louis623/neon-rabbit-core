@@ -511,6 +511,22 @@ describe("Sparkle Finder entitlements", () => {
     });
   });
 
+  it("rejects persisted Silver profile saves when Supabase does not return the saved profile row", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      profile: { user_id: accountState.customer.id },
+      profileWriteResult: null,
+    });
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      displayName: "Louis Sparkle",
+      tiktokHandle: "@louis_sparkle",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: false, reason: "save_failed" });
+  });
+
   it("denies persisted Silver profile and collection writes for Free accounts", async () => {
     const accountState = currentAccountState("free");
     const client = createFakePersistenceClient({});
@@ -616,10 +632,12 @@ function currentAccountState(accessState: SparkleFinderAccessState): CurrentSpar
 
 function createFakePersistenceClient({
   profile = null,
+  profileWriteResult,
   collectionItem = null,
   collectionSelectError = null,
 }: {
   profile?: { user_id: string } | null;
+  profileWriteResult?: { user_id: string } | null;
   collectionItem?: { id: string; user_id: string } | null;
   collectionSelectError?: Error | null;
 }) {
@@ -630,6 +648,7 @@ function createFakePersistenceClient({
     filters?: Array<[string, string]>;
     options?: Record<string, unknown>;
   }> = [];
+  let profileRecord: Record<string, unknown> | null = profile;
 
   return {
     operations,
@@ -639,10 +658,19 @@ function createFakePersistenceClient({
         update: (values: Record<string, unknown>) =>
           createFilterBuilder(async (filters) => {
             operations.push({ table, type: "update", values, filters });
+            if (table === "sparkle_finder_profiles") {
+              profileRecord =
+                profileWriteResult === undefined
+                  ? { ...(profileRecord ?? { user_id: filters.find(([column]) => column === "user_id")?.[1] ?? "" }), ...values }
+                  : profileWriteResult;
+            }
             return { data: null, error: null };
           }),
         insert: async (values: Record<string, unknown>) => {
           operations.push({ table, type: "insert", values });
+          if (table === "sparkle_finder_profiles") {
+            profileRecord = profileWriteResult === undefined ? values : profileWriteResult;
+          }
           return { data: null, error: null };
         },
         upsert: async (values: Record<string, unknown>, options: Record<string, unknown>) => {
@@ -655,7 +683,7 @@ function createFakePersistenceClient({
 
   function selectResultForTable(table: string): Promise<{ data: unknown; error: unknown }> {
     const selectRows: Record<string, unknown> = {
-      sparkle_finder_profiles: profile,
+      sparkle_finder_profiles: profileRecord,
       sparkle_finder_collection_items: collectionItem,
     };
 
