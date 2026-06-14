@@ -17,7 +17,6 @@ import {
 import { submitShowcaseStudioIntake } from "@/lib/sparkle-finder/showcase-studio";
 import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
 import { createClient } from "@/lib/supabase/server";
-import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import type { CollectionItem } from "@/lib/sparkle-finder/types";
 import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "@/lib/sparkle-finder/showcase-types";
 
@@ -64,16 +63,7 @@ export async function saveSilverProfileAction(
     };
   }
 
-  const profileWriteClient = createSupabaseServiceRoleClient() as SupabaseCustomerStateClient | null;
-
-  if (!profileWriteClient) {
-    return {
-      status: "error",
-      message: "Profile saves are not configured right now.",
-    };
-  }
-
-  const result = await persistSilverProfileForAccount(profileWriteClient, verified.accountState, {
+  const result = await persistSilverProfileForAccount(verified.client, verified.accountState, {
     bio: String(formData.get("bio") ?? ""),
     displayName,
     ...(profilePhoto.photoUrl ? { photoUrl: profilePhoto.photoUrl } : {}),

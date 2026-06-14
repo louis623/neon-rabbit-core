@@ -101,7 +101,7 @@ describe("Sparkle Finder launch hardening", () => {
     });
   });
 
-  it("uses the server-only service-role client for verified Silver profile saves", async () => {
+  it("uses the verified session client for Silver profile saves", async () => {
     const sessionClient = {
       auth: {
         getUser: vi.fn().mockResolvedValue({
@@ -111,17 +111,12 @@ describe("Sparkle Finder launch hardening", () => {
       },
       from: vi.fn(),
     };
-    const serviceClient = { from: vi.fn() };
-    const createServiceClient = vi.fn(() => serviceClient);
     const persistSilverProfileForAccount = vi.fn().mockResolvedValue({ ok: true });
     const revalidatePath = vi.fn();
 
     vi.doMock("next/cache", () => ({ revalidatePath }));
     vi.doMock("@/lib/supabase/server", () => ({
       createClient: vi.fn().mockResolvedValue(sessionClient),
-    }));
-    vi.doMock("@/lib/supabase/service-role", () => ({
-      createSupabaseServiceRoleClient: createServiceClient,
     }));
     vi.doMock("@/lib/sparkle-finder/account-service", () => ({
       getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(realSilverAccountState()),
@@ -141,9 +136,8 @@ describe("Sparkle Finder launch hardening", () => {
     const result = await saveSilverProfileAction({ status: "idle", message: "" }, formData);
 
     expect(result).toEqual({ status: "saved", message: "Profile saved." });
-    expect(createServiceClient).toHaveBeenCalled();
     expect(persistSilverProfileForAccount).toHaveBeenCalledWith(
-      serviceClient,
+      sessionClient,
       expect.objectContaining({ customer: expect.objectContaining({ id: "user-123" }) }),
       expect.objectContaining({
         bio: "Testing live profile saves.",
@@ -152,11 +146,12 @@ describe("Sparkle Finder launch hardening", () => {
         visibility: "private",
       }),
     );
-    expect(sessionClient.from).not.toHaveBeenCalledWith("sparkle_finder_profiles");
     expect(revalidatePath).toHaveBeenCalledWith("/");
   });
 
-  it("fails profile saves closed when the service-role client is unavailable", async () => {
+  it("keeps a safe profile-save error when persistence fails", async () => {
+    const persistSilverProfileForAccount = vi.fn().mockResolvedValue({ ok: false, reason: "save_failed" });
+
     vi.doMock("@/lib/supabase/server", () => ({
       createClient: vi.fn().mockResolvedValue({
         auth: {
@@ -167,11 +162,12 @@ describe("Sparkle Finder launch hardening", () => {
         },
       }),
     }));
-    vi.doMock("@/lib/supabase/service-role", () => ({
-      createSupabaseServiceRoleClient: vi.fn(() => null),
-    }));
     vi.doMock("@/lib/sparkle-finder/account-service", () => ({
       getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(realSilverAccountState()),
+    }));
+    vi.doMock("@/lib/sparkle-finder/customer-state", async (importOriginal) => ({
+      ...((await importOriginal()) as Record<string, unknown>),
+      persistSilverProfileForAccount,
     }));
 
     const { saveSilverProfileAction } = await import("../../app/(hub)/silver/actions");
@@ -182,7 +178,7 @@ describe("Sparkle Finder launch hardening", () => {
 
     expect(result).toEqual({
       status: "error",
-      message: "Profile saves are not configured right now.",
+      message: "Profile could not be saved.",
     });
   });
 
