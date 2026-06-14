@@ -39,6 +39,7 @@ export function ProfileEditor({
   function handlePreviewSave(formData: FormData) {
     const result = updateSilverProfilePreview(accountState, previewProfile, {
       bio: String(formData.get("bio") ?? ""),
+      photoUrl: String(formData.get("photoUrl") ?? ""),
       tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
       visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
     });
@@ -61,8 +62,17 @@ export function ProfileEditor({
             Collector Profile
           </h2>
         </div>
-        <div className="grid size-16 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
-          <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
+        <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+          {previewProfile.photoUrl ? (
+            <span
+              aria-label={`${customer.displayName} profile photo`}
+              className="size-full bg-cover bg-center"
+              role="img"
+              style={{ backgroundImage: `url("${previewProfile.photoUrl}")` }}
+            />
+          ) : (
+            <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
+          )}
         </div>
       </div>
 
@@ -77,6 +87,16 @@ export function ProfileEditor({
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 text-sm font-normal text-[var(--sparkle-ink)]"
             defaultValue={customer.displayName}
             readOnly
+          />
+        </label>
+        <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
+          Profile photo URL
+          <input
+            className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]"
+            defaultValue={previewProfile.photoUrl}
+            name="photoUrl"
+            placeholder="https://..."
+            type="text"
           />
         </label>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">

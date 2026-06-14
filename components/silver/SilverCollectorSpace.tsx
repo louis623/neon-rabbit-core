@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { BookOpen, Camera, CheckCircle2, Crown, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, Camera, CheckCircle2, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { RepBadge } from "@/components/account/RepBadge";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
@@ -27,34 +27,43 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
   const wishlistCount = collectionItems.filter((item) => item.state === "wishlist").length;
   const highlightedCount = collectionItems.filter((item) => item.isHighlighted).length;
   const isProfileReady = Boolean(profile?.bio.trim() || profile?.tiktokHandle.trim());
+  const profilePhotoUrl = profile?.photoUrl?.trim();
 
   return (
     <section
       className="border-b border-[var(--sparkle-border-strong)] bg-[linear-gradient(180deg,rgba(255,254,253,0.98),rgba(255,246,250,0.78))]"
-      data-smoke="silver-command-center"
+      data-smoke="collector-profile-panel"
       id="silver"
     >
       <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(18rem,0.74fr)_minmax(0,1.55fr)_minmax(23rem,0.9fr)] lg:items-stretch lg:px-10 lg:py-7">
         <article className="grid min-h-[24rem] content-start gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <div className="flex items-start justify-between gap-3 text-[var(--sparkle-ink-muted)]">
             <div className="flex items-center gap-3">
-              <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
+              <Sparkles aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Silver command center</p>
-                <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-[1.55rem] font-semibold leading-tight text-[var(--sparkle-plum-deep)]">Silver Membership</h2>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Collector profile</p>
+                <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-[1.55rem] font-semibold leading-tight text-[var(--sparkle-plum-deep)]">Your Finder Space</h2>
               </div>
             </div>
             <span className="rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 py-1 text-xs font-black text-[var(--sparkle-plum)]">
-              Trial
+              Trial access
             </span>
           </div>
 
           <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-4">
             <div
               aria-label={`${customer.displayName} avatar`}
-              className="grid size-[5.25rem] shrink-0 place-items-center rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#eeeeee)] font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
+              className="grid size-[5.25rem] shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fff8f5,#eeeeee)] font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum)] shadow-inner"
             >
-              {getInitials(customer.displayName)}
+              {profilePhotoUrl ? (
+                <span
+                  aria-hidden="true"
+                  className="size-full bg-cover bg-center"
+                  style={{ backgroundImage: `url("${profilePhotoUrl}")` }}
+                />
+              ) : (
+                getInitials(customer.displayName)
+              )}
             </div>
             <div className="min-w-0 pt-1">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -83,7 +92,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
           </div>
 
           <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--sparkle-ink-muted)]">Unlocked in Silver</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--sparkle-ink-muted)]">Collector tools</p>
             <FeatureLine>Save collection and pieces you are looking for.</FeatureLine>
             <FeatureLine>Build a Sparkle Showcase from owned pieces.</FeatureLine>
             <FeatureLine>Ask Nic-Nac for bounded rep and next-show leads.</FeatureLine>
@@ -102,7 +111,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
               className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-4 text-sm font-bold text-[var(--sparkle-ink-muted)]"
               role="link"
             >
-              Silver profile preview
+              Profile preview
             </span>
           )}
         </article>
@@ -111,7 +120,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-                Your Silver Collector Space
+                Your Collector Space
               </p>
               <h2 className="mt-1 text-base font-medium leading-tight text-[var(--sparkle-plum-deep)]">
                 My Collection Preview

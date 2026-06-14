@@ -43,6 +43,7 @@ export async function saveSilverProfileAction(
 
   const result = await persistSilverProfileForAccount(verified.client, verified.accountState, {
     bio: String(formData.get("bio") ?? ""),
+    photoUrl: String(formData.get("photoUrl") ?? ""),
     tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
     visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
   });

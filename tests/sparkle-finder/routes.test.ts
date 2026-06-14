@@ -266,22 +266,25 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/account"');
     expect(markup).toContain(">Silver<");
     expect(markup).toContain("Today across Sparkle Suite");
-    expect(markup).toContain("Your Silver Collector Space");
+    expect(markup).toContain("Your Collector Space");
     expect(markup).toContain("Photo Setup Guide");
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
     expect(markup).not.toContain(">Sign in<");
   });
 
-  it("renders authenticated home as a filled Silver command center without a dead-space shell", () => {
+  it("renders authenticated home as a filled collector profile panel without a dead-space shell", () => {
     const markup = renderToStaticMarkup(renderHomeContent(getLocalDevAuthState("silver")));
 
-    expect(markup).toContain('data-smoke="silver-command-center"');
-    expect(markup).toContain("Silver command center");
+    expect(markup).toContain('data-smoke="collector-profile-panel"');
+    expect(markup).toContain("Collector profile");
+    expect(markup).toContain("Your Finder Space");
+    expect(markup).toContain("Trial access");
     expect(markup).toContain("Profile ready");
     expect(markup).toContain("Collection next steps");
     expect(markup).toContain("Open Showcase Studio");
     expect(markup).toContain("Find a library piece");
+    expect(markup).not.toContain("Silver command center");
     expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
   });
 

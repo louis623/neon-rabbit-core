@@ -37,6 +37,7 @@ type SparkleFinderProfileRow = {
   state: string | null;
   tiktok_handle?: string | null;
   bio?: string | null;
+  photo_url?: string | null;
   profile_visibility?: SilverProfile["visibility"] | null;
   is_rep?: boolean | null;
   sparkle_suite_rep_id?: string | null;
@@ -239,7 +240,7 @@ export function mapSparkleFinderAccountRows({
       : createDefaultCommunicationConsent(),
     silverProfile: {
       customerId: user.id,
-      photoUrl: "",
+      photoUrl: profile?.photo_url ?? "",
       tiktokHandle: profile?.tiktok_handle ?? "",
       bio: profile?.bio ?? "",
       visibility: profile?.profile_visibility ?? "private",

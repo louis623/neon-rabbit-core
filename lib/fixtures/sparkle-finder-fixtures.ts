@@ -255,7 +255,7 @@ export const sparkleFinderCustomers: CustomerAccount[] = [
 export const sparkleFinderSilverProfiles: SilverProfile[] = [
   {
     customerId: "customer-silver-sparkle-mama",
-    photoUrl: "/fixtures/customers/sparkle-mama.jpg",
+    photoUrl: "/fixtures/customers/sparkle-mama.svg",
     tiktokHandle: "@sparklemama_tx",
     bio: "Collects warm golds, hearts, and statement rings.",
     visibility: "sparkle_finder",

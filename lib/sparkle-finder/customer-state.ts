@@ -108,6 +108,7 @@ export async function persistSilverProfileForAccount(
   const values = {
     tiktok_handle: cleanText(input.tiktokHandle, 80),
     bio: cleanText(input.bio, 500),
+    photo_url: cleanText(input.photoUrl, 500),
     profile_visibility: input.visibility === "sparkle_finder" ? "sparkle_finder" : "private",
   };
 

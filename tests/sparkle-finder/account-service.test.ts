@@ -24,7 +24,7 @@ describe("Sparkle Finder account service", () => {
   it("maps active trial rows to Trial Silver", () => {
     const account = mapSparkleFinderAccountRows({
       user,
-      profile: profileRow(),
+      profile: profileRow({ photo_url: "https://cdn.example.test/casey.jpg" }),
       membership: membershipRow({
         access_state: "silver_trial",
         silver_source: "trial",
@@ -36,6 +36,7 @@ describe("Sparkle Finder account service", () => {
 
     expect(account.status).toBe("authenticated");
     expect(account.tier).toBe("silver");
+    expect(account.silverProfile?.photoUrl).toBe("https://cdn.example.test/casey.jpg");
     expect(account.membership?.effectiveState).toBe("silver_trial");
     expect(getSparkleFinderNavStatusLabel(account)).toBe("Trial Silver");
   });

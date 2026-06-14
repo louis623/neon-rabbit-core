@@ -186,7 +186,7 @@ describe("Sparkle Finder entitlements", () => {
     const silverAccount = getLocalDevAuthState("silver");
     const profile: SilverProfile = {
       customerId: "customer-silver-sparkle-mama",
-      photoUrl: "/fixtures/customers/sparkle-mama.jpg",
+      photoUrl: "/fixtures/customers/sparkle-mama.svg",
       tiktokHandle: "@sparklemama_tx",
       bio: "Collects warm golds.",
       visibility: "private",
@@ -273,6 +273,7 @@ describe("Sparkle Finder entitlements", () => {
 
       const profileResult = await persistSilverProfileForAccount(client, accountState, {
         bio: "Keeps a tidy signed-in collection.",
+        photoUrl: "https://cdn.example.test/casey.jpg",
         tiktokHandle: "@casey_silver",
         visibility: "sparkle_finder",
       });
@@ -305,6 +306,7 @@ describe("Sparkle Finder entitlements", () => {
         values: {
           tiktok_handle: "@casey_silver",
           bio: "Keeps a tidy signed-in collection.",
+          photo_url: "https://cdn.example.test/casey.jpg",
           profile_visibility: "sparkle_finder",
         },
         filters: [
@@ -441,6 +443,7 @@ describe("Sparkle Finder entitlements", () => {
         state: "PA",
         tiktok_handle: "@casey_new",
         bio: "Fresh profile row.",
+        photo_url: "",
         profile_visibility: "private",
       },
     });
