@@ -1,10 +1,10 @@
 import Stripe from "stripe";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type {
   SparkleFinderAccessState,
   SparkleFinderSilverSource,
 } from "./account-types";
 import { getAllowedSparkleFinderSupabaseUrl } from "../supabase/config";
+import { createSupabaseServiceRoleClient } from "../supabase/service-role";
 import { getSparkleFinderOriginFromValue } from "./oauth-redirect";
 
 export const stripeApiVersion = "2026-02-25.clover";
@@ -429,20 +429,4 @@ function stripeId(value: string | { id?: string | null } | null | undefined): st
 
 function firstPresent(...values: Array<string | null | undefined>): string | null {
   return values.find((value) => value?.trim())?.trim() ?? null;
-}
-
-function createSupabaseServiceRoleClient() {
-  const supabaseUrl = getAllowedSparkleFinderSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    return null;
-  }
-
-  return createSupabaseClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
 }
