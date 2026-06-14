@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, Eye, ImagePlus, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
+import { Eye, ImagePlus, LockKeyhole, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
+import { GlobalSaveIndicator, type GlobalSaveIndicatorStatus } from "@/components/ui/GlobalSaveIndicator";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
@@ -52,11 +53,6 @@ type ProfileDraftState = {
   displayName: string;
   tiktokHandle: string;
   visibility: SilverProfile["visibility"];
-};
-
-type ProfileSaveStatus = {
-  message: string;
-  tone: "idle" | "saving" | "saved" | "error";
 };
 
 export function ProfileEditor({
@@ -311,13 +307,13 @@ export function ProfileEditor({
 
   return (
     <section className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+      <GlobalSaveIndicator status={saveStatus} />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Profile form</p>
           <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
             Collector Profile
           </h2>
-          <ProfileSaveStatusBadge status={saveStatus} />
         </div>
         <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
           {activeProfilePhotoUrl ? (
@@ -466,28 +462,6 @@ export function ProfileEditor({
   );
 }
 
-function ProfileSaveStatusBadge({ status }: { status: ProfileSaveStatus }) {
-  const Icon = status.tone === "error" ? AlertCircle : status.tone === "saved" ? CheckCircle2 : status.tone === "saving" ? LoaderCircle : CheckCircle2;
-  const toneClassName =
-    status.tone === "error"
-      ? "border-red-200 bg-red-50 text-red-700"
-      : status.tone === "saved"
-        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-        : status.tone === "saving"
-          ? "border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] text-[var(--sparkle-plum)]"
-          : "border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-ink-muted)]";
-
-  return (
-    <p
-      className={`mt-3 inline-flex min-h-9 items-center gap-2 rounded-full border px-3 text-sm font-bold ${toneClassName}`}
-      role="status"
-    >
-      <Icon aria-hidden="true" className={`size-4 ${status.tone === "saving" ? "animate-spin" : ""}`} />
-      {status.message}
-    </p>
-  );
-}
-
 function getProfileSaveStatus({
   actionState,
   autosaveMessage,
@@ -500,7 +474,7 @@ function getProfileSaveStatus({
   isLocalPreview: boolean;
   isPending: boolean;
   localStatusMessage: string;
-}): ProfileSaveStatus {
+}): GlobalSaveIndicatorStatus {
   if (isPending) {
     return { message: "Saving changes...", tone: "saving" };
   }
@@ -530,7 +504,7 @@ function getProfileSaveStatus({
   return { message: actionState.message, tone: "idle" };
 }
 
-function getStatusTone(message: string, fallback: ProfileSaveStatus["tone"]): ProfileSaveStatus["tone"] {
+function getStatusTone(message: string, fallback: GlobalSaveIndicatorStatus["tone"]): GlobalSaveIndicatorStatus["tone"] {
   if (/could not|required|sign in|silver preview|silver access/i.test(message)) {
     return "error";
   }

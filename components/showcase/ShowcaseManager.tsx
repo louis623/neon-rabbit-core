@@ -405,7 +405,7 @@ function ShowcaseRecordCard({
           type="submit"
         >
           {!isLocalPreview && isPending ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : <Sparkles aria-hidden="true" className="size-4" />}
-          Save Sparkle Showcase piece
+          Update Showcase piece
         </button>
         <span className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
           {record.visibility === "public" ? <Eye aria-hidden="true" className="size-3.5" /> : <EyeOff aria-hidden="true" className="size-3.5" />}

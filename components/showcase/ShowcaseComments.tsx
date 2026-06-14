@@ -166,7 +166,7 @@ function CommentCard({
             type="submit"
           >
             <Pencil aria-hidden="true" className="size-3.5" />
-            Save edit
+            Update comment
           </button>
           <p className="text-xs font-semibold text-[var(--sparkle-ink-muted)]" role="status">
             {editState.message}

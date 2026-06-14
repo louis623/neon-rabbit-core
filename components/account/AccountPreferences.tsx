@@ -93,7 +93,7 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
           </select>
         </label>
 
-        <AccountSubmitButton pendingLabel="Saving profile..." readyLabel="Save profile basics" />
+        <AccountSubmitButton pendingLabel="Updating profile..." readyLabel="Update profile basics" />
       </form>
 
       <form
@@ -187,7 +187,7 @@ export function AccountPreferences({ accountState }: AccountPreferencesProps) {
           Opting in records a server timestamp. Opting out clears promotional consent timestamps.
         </p>
 
-        <AccountSubmitButton pendingLabel="Saving preferences..." readyLabel="Save communication preferences" />
+        <AccountSubmitButton pendingLabel="Updating preferences..." readyLabel="Update communication preferences" />
       </form>
     </div>
   );

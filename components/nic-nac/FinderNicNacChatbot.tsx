@@ -187,5 +187,5 @@ function buildTypedResponse(status: FinderNicNacChatbotProps["status"], leadCoun
 
   return leadCount > 0
     ? `I found ${leadCount} bounded lead${leadCount === 1 ? "" : "s"} for this Finder piece. Start with exact matches, then check same collection and type.`
-    : "I do not have a strong lead yet. Save the piece to your wishlist and I will keep the search scoped to known rep board paths.";
+    : "I do not have a strong lead yet. Add the piece to your wishlist and I will keep the search scoped to known rep board paths.";
 }

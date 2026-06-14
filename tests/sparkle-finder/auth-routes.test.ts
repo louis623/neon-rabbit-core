@@ -795,8 +795,10 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain(
       "Google sign-in created your secure login. Add the remaining details needed for trial protection, account support, and privacy acknowledgment.",
     );
-    expect(markup).toContain("Save profile basics");
-    expect(markup).toContain("Save communication preferences");
+    expect(markup).toContain("Update profile basics");
+    expect(markup).toContain("Update communication preferences");
+    expect(markup).not.toContain("Save profile basics");
+    expect(markup).not.toContain("Save communication preferences");
     expect(markup).toContain("name=\"privacyAcknowledged\"");
     expect(markup).toContain('href="/privacy-policy"');
     expect(markup).toContain("I acknowledge the");

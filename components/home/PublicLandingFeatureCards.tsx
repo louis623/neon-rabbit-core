@@ -14,7 +14,7 @@ const howItWorksSteps = [
     body: "Find the next show with the piece you want.",
   },
   {
-    title: "Save and show off.",
+    title: "Collect and show off.",
     body: "Keep favorites in a digital wishlist and show pieces you already own in your collection.",
   },
 ] as const;

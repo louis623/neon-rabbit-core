@@ -3,7 +3,7 @@ import { CheckCircle2, Gem } from "lucide-react";
 
 const silverTrialHighlights = [
   "Find pieces you like, follow reps, and track the next shows in one workflow.",
-  "Save favorites in your digital wishlist and keep notes on what you are watching.",
+  "Keep favorites in your digital wishlist and add notes on what you are watching.",
   "Show off pieces you already own with a digital collection.",
 ] as const;
 

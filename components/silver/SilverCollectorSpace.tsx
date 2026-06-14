@@ -90,7 +90,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
 
           <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--sparkle-ink-muted)]">Collector tools</p>
-            <FeatureLine>Save collection and pieces you are looking for.</FeatureLine>
+            <FeatureLine>Keep owned pieces and pieces you are looking for.</FeatureLine>
             <FeatureLine>Build a Sparkle Showcase from owned pieces.</FeatureLine>
             <FeatureLine>Ask Nic-Nac for bounded rep and next-show leads.</FeatureLine>
           </div>

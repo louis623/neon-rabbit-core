@@ -222,7 +222,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Find pieces you like.");
     expect(markup).toContain("Check rep trade boards.");
     expect(markup).toContain("Live show calendar.");
-    expect(markup).toContain("Save and show off.");
+    expect(markup).toContain("Collect and show off.");
     expect(markup).toContain("Included tools");
     expect((markup.match(/data-tone="espresso"/g) ?? []).length).toBe(2);
     expect((markup.match(/data-tone="light"/g) ?? []).length).toBe(2);
@@ -796,9 +796,11 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(
       "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
-    expect(markup).toContain("Auto-save profile");
+    expect(markup).toContain("sparkle-global-save-indicator");
     expect(markup).toContain("Changes auto-save.");
+    expect(markup).not.toContain(">Save");
     expect(markup).not.toContain("Save profile");
+    expect(markup).not.toContain("Save Sparkle Showcase piece");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
     expect(markup).not.toContain("Local fixture mode");
