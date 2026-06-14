@@ -139,8 +139,8 @@ export function ProfileEditor({
         <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           <span>Profile photo</span>
           <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
-          <div className="flex flex-wrap items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3">
-            <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+          <div className="grid justify-items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-5 text-center">
+            <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
               {activeProfilePhotoUrl ? (
                 <span
                   aria-label={`${customer.displayName} selected profile photo`}
@@ -149,10 +149,10 @@ export function ProfileEditor({
                   style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
                 />
               ) : (
-                <UserRound aria-hidden="true" className="size-7" strokeWidth={1.5} />
+                <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
               )}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="grid w-full justify-items-center gap-2">
               <input
                 accept="image/jpeg,image/png,image/webp"
                 className="sr-only"
@@ -161,19 +161,17 @@ export function ProfileEditor({
                 onChange={handleProfilePhotoChange}
                 type="file"
               />
-              <div className="flex flex-wrap items-center gap-2">
-                <label
-                  className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white transition hover:bg-[var(--sparkle-plum-deep)] active:translate-y-px"
-                  htmlFor={profilePhotoInputId}
-                >
-                  <ImagePlus aria-hidden="true" className="size-4" />
-                  Upload photo
-                </label>
-                <span className="min-w-0 truncate text-xs font-semibold text-[var(--sparkle-ink-muted)]">
-                  {selectedProfilePhoto?.name ?? (activeProfilePhotoUrl ? "Current photo" : "No photo selected")}
-                </span>
-              </div>
-              <p className="mt-2 text-xs font-semibold text-[var(--sparkle-ink-muted)]">{profilePhotoMessage}</p>
+              <label
+                className="inline-flex min-h-10 w-full max-w-48 cursor-pointer items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white transition hover:bg-[var(--sparkle-plum-deep)] active:translate-y-px"
+                htmlFor={profilePhotoInputId}
+              >
+                <ImagePlus aria-hidden="true" className="size-4" />
+                Upload photo
+              </label>
+              <span className="max-w-full truncate text-xs font-semibold text-[var(--sparkle-ink-muted)]">
+                {selectedProfilePhoto?.name ?? (activeProfilePhotoUrl ? "Current photo" : "No photo selected")}
+              </span>
+              <p className="text-xs font-semibold text-[var(--sparkle-ink-muted)]">{profilePhotoMessage}</p>
             </div>
           </div>
         </div>
