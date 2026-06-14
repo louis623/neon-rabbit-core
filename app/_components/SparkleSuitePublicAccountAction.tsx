@@ -8,6 +8,13 @@ type AuthState = 'checking' | 'signed_in' | 'signed_out'
 const workspaceHref = '/nic-nac'
 const loginHref = '/login?redirect=%2Fnic-nac'
 
+function redirectToWorkspaceUnlessAlreadyThere() {
+  const currentPathname = window.location.pathname.replace(/\/+$/, '') || '/'
+  if (currentPathname !== workspaceHref) {
+    window.location.replace(workspaceHref)
+  }
+}
+
 export function SparkleSuitePublicAccountAction() {
   const [authState, setAuthState] = useState<AuthState>('checking')
 
@@ -19,7 +26,7 @@ export function SparkleSuitePublicAccountAction() {
       if (cancelled) return
       if (data.session) {
         setAuthState('signed_in')
-        window.location.replace(workspaceHref)
+        redirectToWorkspaceUnlessAlreadyThere()
         return
       }
       setAuthState('signed_out')
@@ -30,7 +37,7 @@ export function SparkleSuitePublicAccountAction() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setAuthState('signed_in')
-        window.location.replace(workspaceHref)
+        redirectToWorkspaceUnlessAlreadyThere()
         return
       }
       setAuthState('signed_out')
@@ -47,7 +54,9 @@ export function SparkleSuitePublicAccountAction() {
       className="sl2-header__account-button"
       href={authState === 'signed_in' ? workspaceHref : loginHref}
     >
-      Log in to your Sparkle Suite workspace
+      {authState === 'signed_in'
+        ? 'Sparkle Suite workspace'
+        : 'Log in to your Sparkle Suite workspace'}
     </a>
   )
 }
