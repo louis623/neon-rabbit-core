@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState } from "react";
-import { Eye, ImagePlus, LockKeyhole, UserRound } from "lucide-react";
+import { useActionState, useId, useRef, useState } from "react";
+import { CheckCircle2, Eye, ImagePlus, LockKeyhole, Save, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
-import { GlobalSaveIndicator, type GlobalSaveIndicatorStatus } from "@/components/ui/GlobalSaveIndicator";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
@@ -20,15 +19,14 @@ type ProfileEditorProps = {
 
 const realAccountInitialState: SilverSaveActionState = {
   status: "idle",
-  message: "Changes auto-save.",
+  message: "Make your changes, then save your profile.",
 };
 
 const profilePhotoSourceMaxBytes = 10 * 1024 * 1024;
 const profilePhotoDataUrlMaxCharacters = 700_000;
 const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const profileCropFrameSize = 160;
+const profileCropFrameSize = 132;
 const profileCropOutputSize = 320;
-const profileAutosaveDelayMs = 900;
 const profilePhotoDecodeTimeoutMs = 2500;
 
 type ProfilePhotoCropState = {
@@ -63,9 +61,6 @@ export function ProfileEditor({
   profile,
   saveAction,
 }: ProfileEditorProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-  const hiddenSubmitRef = useRef<HTMLButtonElement>(null);
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cropDragRef = useRef<CropDragState | null>(null);
   const [previewCustomer, setPreviewCustomer] = useState(customer);
   const [previewProfile, setPreviewProfile] = useState(profile);
@@ -78,66 +73,21 @@ export function ProfileEditor({
   const [profilePhotoCrop, setProfilePhotoCrop] = useState<ProfilePhotoCropState | null>(null);
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<{ name: string; url: string } | null>(null);
   const [profilePhotoMessage, setProfilePhotoMessage] = useState("JPG, PNG, or WebP.");
-  const [autosaveMessage, setAutosaveMessage] = useState<string | null>(null);
   const [localStatusMessage, setLocalStatusMessage] = useState(
-    canSaveSilverActions ? "Changes auto-save." : "Silver preview is required to save profile updates.",
+    canSaveSilverActions ? "Make your changes, then save your profile." : "Silver preview is required to save profile updates.",
   );
   const [actionState, formAction, isPending] = useActionState(handleProfileFormAction, realAccountInitialState);
-  const saveStatus = getProfileSaveStatus({
-    actionState,
-    autosaveMessage,
-    isLocalPreview,
-    isPending,
-    localStatusMessage,
-  });
+  const statusMessage = getProfileStatusMessage({ actionState, isLocalPreview, isPending, localStatusMessage });
+  const statusTone = getStatusTone(statusMessage, actionState.status === "saved" ? "saved" : "idle");
   const profilePhotoInputId = useId();
   const activeProfilePhotoUrl = selectedProfilePhoto?.url ?? previewProfile.photoUrl;
 
-  useEffect(() => {
-    return () => {
-      if (autosaveTimerRef.current) {
-        clearTimeout(autosaveTimerRef.current);
-      }
-    };
-  }, []);
-
-  function scheduleProfileAutosave(delayMs = profileAutosaveDelayMs) {
-    if (!canSaveSilverActions) {
-      setLocalStatusMessage("Silver preview is required to save profile updates.");
-      return;
-    }
-
-    cancelPendingProfileAutosave();
-
-    if (isLocalPreview) {
-      setLocalStatusMessage("Saving changes...");
-    } else {
-      setAutosaveMessage("Saving changes...");
-    }
-
-    autosaveTimerRef.current = setTimeout(() => {
-      autosaveTimerRef.current = null;
-      void submitProfileAutosave();
-    }, delayMs);
-  }
-
-  function cancelPendingProfileAutosave() {
-    if (autosaveTimerRef.current) {
-      clearTimeout(autosaveTimerRef.current);
-      autosaveTimerRef.current = null;
-    }
-  }
-
-  function updateProfileDraft<Field extends keyof ProfileDraftState>(
-    field: Field,
-    value: ProfileDraftState[Field],
-    delayMs = profileAutosaveDelayMs,
-  ) {
+  function updateProfileDraft<Field extends keyof ProfileDraftState>(field: Field, value: ProfileDraftState[Field]) {
     setProfileDraft((currentDraft) => ({
       ...currentDraft,
       [field]: value,
     }));
-    scheduleProfileAutosave(delayMs);
+    setLocalStatusMessage(canSaveSilverActions ? "Unsaved profile changes." : "Silver preview is required to save profile updates.");
   }
 
   async function handleProfileFormAction(
@@ -150,32 +100,12 @@ export function ProfileEditor({
 
     if (result.status === "saved") {
       applySavedProfileDraftFromFormData(formData);
-      setAutosaveMessage("Saved just now.");
+      setLocalStatusMessage("Profile saved.");
     } else {
-      setAutosaveMessage(null);
+      setLocalStatusMessage(result.message);
     }
 
     return result;
-  }
-
-  async function submitProfileAutosave() {
-    const form = formRef.current;
-
-    if (!form) {
-      return;
-    }
-
-    if (isLocalPreview) {
-      await handlePreviewSave(new FormData(form));
-      return;
-    }
-
-    if (!saveAction) {
-      setAutosaveMessage("Sign in to auto-save profile updates.");
-      return;
-    }
-
-    form.requestSubmit(hiddenSubmitRef.current ?? undefined);
   }
 
   function applySavedProfileDraftFromFormData(formData: FormData) {
@@ -199,6 +129,7 @@ export function ProfileEditor({
   }
 
   async function handlePreviewSave(formData: FormData) {
+    setLocalStatusMessage("Saving profile...");
     const displayName = String(formData.get("displayName") ?? "").trim();
 
     if (!displayName) {
@@ -234,13 +165,12 @@ export function ProfileEditor({
       ...currentCustomer,
       displayName,
     }));
-    setLocalStatusMessage("Saved just now.");
+    setLocalStatusMessage("Profile saved.");
   }
 
   async function handleProfilePhotoChange(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
     const file = input.files?.[0];
-    cancelPendingProfileAutosave();
 
     if (!file) {
       setProfilePhotoCrop(null);
@@ -270,9 +200,8 @@ export function ProfileEditor({
       name: file.name,
       url: profilePhoto.photoUrl,
     });
-    setProfilePhotoMessage("Drag photo to center. Auto-saved.");
-
-    scheduleProfileAutosave(300);
+    setProfilePhotoMessage("Drag photo to center, then save your profile.");
+    setLocalStatusMessage("Unsaved profile photo.");
   }
 
   function handleCropPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -286,7 +215,7 @@ export function ProfileEditor({
       pointerX: event.clientX,
       pointerY: event.clientY,
     };
-    setProfilePhotoMessage("Release to auto-save the new center.");
+    setProfilePhotoMessage("Release to keep the new center.");
   }
 
   function handleCropPointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -326,13 +255,15 @@ export function ProfileEditor({
       name: crop.name,
       url: profilePhoto.photoUrl,
     });
-    setProfilePhotoMessage("Centered and auto-saved.");
-    scheduleProfileAutosave(300);
+    setProfilePhotoMessage("Centered. Save your profile to keep it.");
+    setLocalStatusMessage("Unsaved profile photo.");
   }
 
   return (
-    <section className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-      <GlobalSaveIndicator status={saveStatus} />
+    <section
+      className="h-fit rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]"
+      data-smoke="profile-editor-card"
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Profile form</p>
@@ -356,9 +287,8 @@ export function ProfileEditor({
 
       <form
         action={isLocalPreview ? handlePreviewSave : formAction}
-        className="mt-5 grid gap-4"
+        className="mt-4 grid gap-3"
         aria-label={isLocalPreview ? "Silver profile preview form" : "Silver profile form"}
-        ref={formRef}
       >
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           Display name
@@ -375,15 +305,16 @@ export function ProfileEditor({
           <span>Profile photo</span>
           <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
           <input name="profilePhotoDataUrl" readOnly type="hidden" value={selectedProfilePhoto?.url ?? ""} />
-          <div className="grid justify-items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-5 text-center">
+          <div className="grid justify-items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-4 text-center">
             {profilePhotoCrop ? (
               <div
                 aria-label="Drag profile photo to center"
-                className="relative size-40 touch-none overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)] shadow-inner"
+                className="relative touch-none overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)] shadow-inner"
                 onPointerDown={handleCropPointerDown}
                 onPointerMove={handleCropPointerMove}
                 onPointerUp={handleCropPointerUp}
                 role="img"
+                style={{ height: profileCropFrameSize, width: profileCropFrameSize }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -398,7 +329,7 @@ export function ProfileEditor({
                 />
               </div>
             ) : (
-              <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+              <div className="grid size-14 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
                 {activeProfilePhotoUrl ? (
                   <span
                     aria-label={`${previewCustomer.displayName} selected profile photo`}
@@ -407,7 +338,7 @@ export function ProfileEditor({
                     style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
                   />
                 ) : (
-                  <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
+                  <UserRound aria-hidden="true" className="size-7" strokeWidth={1.5} />
                 )}
               </div>
             )}
@@ -448,30 +379,30 @@ export function ProfileEditor({
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           Collector notes
           <textarea
-            className="min-h-28 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 py-3 text-sm font-normal leading-6 text-[var(--sparkle-ink)]"
+            className="min-h-24 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 py-3 text-sm font-normal leading-6 text-[var(--sparkle-ink)]"
             name="bio"
             onChange={(event) => updateProfileDraft("bio", event.target.value)}
             value={profileDraft.bio}
           />
         </label>
-        <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
+        <fieldset className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
           <legend className="px-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">Visibility</legend>
-          <label className="flex min-h-10 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
+          <label className="flex min-h-9 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
             <input
               checked={profileDraft.visibility === "private"}
               name="visibility"
-              onChange={() => updateProfileDraft("visibility", "private", 200)}
+              onChange={() => updateProfileDraft("visibility", "private")}
               type="radio"
               value="private"
             />
             <LockKeyhole aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
             Private
           </label>
-          <label className="flex min-h-10 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
+          <label className="flex min-h-9 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
             <input
               checked={profileDraft.visibility === "sparkle_finder"}
               name="visibility"
-              onChange={() => updateProfileDraft("visibility", "sparkle_finder", 200)}
+              onChange={() => updateProfileDraft("visibility", "sparkle_finder")}
               type="radio"
               value="sparkle_finder"
             />
@@ -479,57 +410,57 @@ export function ProfileEditor({
             Sparkle Finder preview
           </label>
         </fieldset>
-        <button className="sr-only" disabled={!canSaveSilverActions || (!isLocalPreview && !saveAction)} ref={hiddenSubmitRef} type="submit">
-          Auto-save profile
+        <div
+          className={`inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border px-3 text-sm font-bold ${getStatusClassName(statusTone)}`}
+          role="status"
+        >
+          <CheckCircle2 aria-hidden="true" className="size-4 shrink-0" />
+          <span>{statusMessage}</span>
+        </div>
+        <button
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(64,41,36,0.16)] transition hover:bg-[var(--sparkle-plum-deep)] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isPending || !canSaveSilverActions || (!isLocalPreview && !saveAction)}
+          type="submit"
+        >
+          <Save aria-hidden="true" className="size-4" />
+          {isPending ? "Saving profile..." : "Save profile"}
         </button>
       </form>
     </section>
   );
 }
 
-function getProfileSaveStatus({
+function getProfileStatusMessage({
   actionState,
-  autosaveMessage,
   isLocalPreview,
   isPending,
   localStatusMessage,
 }: {
   actionState: SilverSaveActionState;
-  autosaveMessage: string | null;
   isLocalPreview: boolean;
   isPending: boolean;
   localStatusMessage: string;
-}): GlobalSaveIndicatorStatus {
+}): string {
   if (isPending) {
-    return { message: "Saving changes...", tone: "saving" };
+    return "Saving profile...";
   }
 
   if (isLocalPreview) {
-    return {
-      message: localStatusMessage,
-      tone: getStatusTone(localStatusMessage, "idle"),
-    };
-  }
-
-  if (autosaveMessage) {
-    return {
-      message: autosaveMessage,
-      tone: getStatusTone(autosaveMessage, "saving"),
-    };
+    return localStatusMessage;
   }
 
   if (actionState.status === "saved") {
-    return { message: "Saved just now.", tone: "saved" };
+    return localStatusMessage || "Profile saved.";
   }
 
   if (actionState.status === "error" || actionState.status === "denied") {
-    return { message: actionState.message, tone: "error" };
+    return localStatusMessage || actionState.message;
   }
 
-  return { message: actionState.message, tone: "idle" };
+  return localStatusMessage || actionState.message;
 }
 
-function getStatusTone(message: string, fallback: GlobalSaveIndicatorStatus["tone"]): GlobalSaveIndicatorStatus["tone"] {
+function getStatusTone(message: string, fallback: "idle" | "saving" | "saved" | "error"): "idle" | "saving" | "saved" | "error" {
   if (/could not|required|sign in|silver preview|silver access/i.test(message)) {
     return "error";
   }
@@ -543,6 +474,22 @@ function getStatusTone(message: string, fallback: GlobalSaveIndicatorStatus["ton
   }
 
   return fallback;
+}
+
+function getStatusClassName(tone: "idle" | "saving" | "saved" | "error"): string {
+  if (tone === "error") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+
+  if (tone === "saved") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (tone === "saving") {
+    return "border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] text-[var(--sparkle-plum)]";
+  }
+
+  return "border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-ink-muted)]";
 }
 
 async function disabledProfileAction(): Promise<SilverSaveActionState> {

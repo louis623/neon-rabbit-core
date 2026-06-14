@@ -90,31 +90,27 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
-    const saveIndicator = page.locator(".sparkle-global-save-indicator");
-    const viewport = page.viewportSize();
+    const profileCard = page.locator('[data-smoke="profile-editor-card"]');
+    const profileCardBox = await profileCard.boundingBox();
 
-    await expect(saveIndicator).toContainText("Changes auto-save.");
-    await expect(saveIndicator).toHaveClass(/bottom-4/);
-    const saveIndicatorBox = await saveIndicator.boundingBox();
-
-    expect(saveIndicatorBox).not.toBeNull();
-    expect(saveIndicatorBox?.y ?? 0).toBeGreaterThan((viewport?.height ?? 0) / 2);
+    expect(profileCardBox).not.toBeNull();
+    expect(profileCardBox?.height ?? 0).toBeLessThan(900);
+    await expect(page.locator(".sparkle-global-save-indicator")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Save profile" })).toBeVisible();
+    await expect(page.getByText("Make your changes, then save your profile.")).toBeVisible();
     const displayNameInput = page.getByLabel("Display name");
 
     await expect(displayNameInput).toBeEditable();
     await displayNameInput.fill("Sparkle Preview");
     await expect(displayNameInput).toHaveValue("Sparkle Preview");
-    await expect(saveIndicator).toContainText("Saved just now.", { timeout: 4000 });
-    await page.waitForTimeout(1200);
-    await expect(displayNameInput).toHaveValue("Sparkle Preview");
     const tiktokInput = page.getByLabel("TikTok handle");
     const collectorNotesInput = page.getByLabel("Collector notes");
 
     await tiktokInput.fill("@sparkle_preview");
-    await collectorNotesInput.fill("Testing that profile typing stays put after auto-save.");
-    await page.waitForTimeout(1200);
+    await collectorNotesInput.fill("Testing that profile fields save only after clicking the button.");
     await expect(tiktokInput).toHaveValue("@sparkle_preview");
-    await expect(collectorNotesInput).toHaveValue("Testing that profile typing stays put after auto-save.");
+    await expect(collectorNotesInput).toHaveValue("Testing that profile fields save only after clicking the button.");
+    await expect(page.getByText("Unsaved profile changes.")).toBeVisible();
     const profilePhotoInput = page.locator('input[name="profilePhoto"][type="file"]');
 
     await expect(profilePhotoInput).toHaveCount(1);
@@ -124,9 +120,11 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByText("Profile photo URL")).toHaveCount(0);
     await profilePhotoInput.setInputFiles(join(process.cwd(), "brand-assets", "sparkle-finder-s-logo-256.png"));
     await expect(page.getByText("sparkle-finder-s-logo-256.png")).toBeVisible();
-    await expect(page.getByText("Drag photo to center. Auto-saved.")).toBeVisible();
+    await expect(page.getByText("Drag photo to center, then save your profile.")).toBeVisible();
     await expect(page.getByLabel("Drag profile photo to center")).toBeVisible();
     await expect(page.locator('input[name="profilePhotoDataUrl"]')).toHaveValue(/^data:image\/jpeg;base64,/);
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(page.getByText("Profile saved.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();

@@ -105,7 +105,7 @@ export function renderSilverPageContent(
 
       <ShowcaseGettingStartedGuide />
 
-      <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
+      <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)] xl:items-start">
         <ProfileEditor
           accountState={accountState}
           canSaveSilverActions={entitlements.canUseSilverProfileActions}

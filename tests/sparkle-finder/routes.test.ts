@@ -735,6 +735,9 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Profile photo");
     expect(markup).toContain('name="profilePhoto"');
     expect(markup).toContain('type="file"');
+    expect(markup).toContain('data-smoke="profile-editor-card"');
+    expect(markup).toContain("Save profile");
+    expect(markup).toContain("Make your changes, then save your profile.");
     expect(markup).toContain("Add to Sparkle Showcase");
     expect(markup).toContain("Mark as looking for");
     expect(markup).toContain("Need a missing piece?");
@@ -796,10 +799,11 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(
       "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
-    expect(markup).toContain("sparkle-global-save-indicator");
-    expect(markup).toContain("Changes auto-save.");
-    expect(markup).not.toContain(">Save");
-    expect(markup).not.toContain("Save profile");
+    expect(markup).toContain("Save profile");
+    expect(markup).toContain("Make your changes, then save your profile.");
+    expect(markup).not.toContain("sparkle-global-save-indicator");
+    expect(markup).not.toContain("Changes auto-save.");
+    expect(markup).not.toContain("Auto-save profile");
     expect(markup).not.toContain("Save Sparkle Showcase piece");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
