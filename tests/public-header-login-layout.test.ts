@@ -7,7 +7,7 @@ function source(path: string) {
 }
 
 describe('Sparkle Suite public header and login layout', () => {
-  it('uses a client account action so signed-in reps can log out from public chrome', () => {
+  it('uses one workspace login CTA and routes signed-in reps into the workspace', () => {
     const header = source('app/_components/sparkle-suite-public-chrome.tsx')
     const accountAction = source('app/_components/SparkleSuitePublicAccountAction.tsx')
 
@@ -16,9 +16,14 @@ describe('Sparkle Suite public header and login layout', () => {
     expect(accountAction).toContain("'use client'")
     expect(accountAction).toContain('getSession')
     expect(accountAction).toContain('onAuthStateChange')
-    expect(accountAction).toContain('signOut')
-    expect(accountAction).toContain('Log out')
-    expect(accountAction).not.toContain('Signed into Sparkle Suite?')
+    expect(accountAction).toContain('window.location.replace(workspaceHref)')
+    expect(accountAction).toContain("const workspaceHref = '/nic-nac'")
+    expect(accountAction).toContain("const loginHref = '/login?redirect=%2Fnic-nac'")
+    expect(accountAction).toContain('Log in to your Sparkle Suite workspace')
+    expect(accountAction).not.toContain('signOut')
+    expect(accountAction).not.toContain('Log out')
+    expect(accountAction).not.toContain('Already have Sparkle Suite?')
+    expect(accountAction).not.toContain('Sign in here.')
   })
 
   it('keeps the login form inside the first Sparkle landing shell instead of below a full-height header wrapper', () => {

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import HomePage, { metadata } from '@/app/page'
+import { metadata } from '@/app/page'
 import { SparkleSuitePublicLanding } from '@/app/_components/sparkle-suite-public-landing'
 import {
   sparkleSuitePublicLandingContent,
@@ -123,8 +123,9 @@ describe('Sparkle Suite public landing page', () => {
 
     expect(html).toContain('class="sparkle-landing sparkle-landing-v2"')
     expect(html).toContain('class="sl2-shell"')
-    expect(headerHtml).toContain('Already have Sparkle Suite?')
-    expect(headerHtml).toContain('Sign in here.')
+    expect(headerHtml).toContain('Log in to your Sparkle Suite workspace')
+    expect(headerHtml).not.toContain('Already have Sparkle Suite?')
+    expect(headerHtml).not.toContain('Sign in here.')
     expect(headerHtml).not.toContain('Start Sparkle Suite')
     expect(headerHtml).not.toContain('Level up your live stream')
     expect(heroIndex).toBeGreaterThan(-1)
@@ -530,13 +531,15 @@ describe('Sparkle Suite public landing page', () => {
     expect(heroHtml).not.toContain('modules')
   })
 
-  it('routes the root page to the public landing page without a redirect', () => {
-    const html = renderToStaticMarkup(createElement(HomePage))
+  it('routes signed-in root visits into the workspace before rendering the public landing', () => {
+    const source = readFileSync(join(process.cwd(), 'app', 'page.tsx'), 'utf8')
 
-    expect(html).toContain('A better customer experience starts with a better rep setup.')
-    expect(html).toContain('Sparkle Suite gives reps a polished customer site')
-    expect(html).toContain('application/ld+json')
-    expect(html).not.toContain('NEXT_REDIRECT')
+    expect(source).toContain("export const dynamic = 'force-dynamic'")
+    expect(source).toContain('createServerSupabaseClient')
+    expect(source).toContain('supabase.auth.getUser()')
+    expect(source).toContain("redirect('/nic-nac')")
+    expect(source).toContain('<SparkleSuitePublicLanding />')
+    expect(source).toContain('application/ld+json')
   })
 
   it('exports public landing metadata without third-party brand-led framing', () => {

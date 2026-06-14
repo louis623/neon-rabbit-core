@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 import { SparkleSuitePublicLanding } from '@/app/_components/sparkle-suite-public-landing'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 
 export const metadata: Metadata = {
@@ -44,6 +46,8 @@ export const metadata: Metadata = {
   },
 }
 
+export const dynamic = 'force-dynamic'
+
 const sparkleSuiteJsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -86,7 +90,16 @@ const sparkleSuiteJsonLd = {
   ],
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect('/nic-nac')
+  }
+
   return (
     <>
       <script

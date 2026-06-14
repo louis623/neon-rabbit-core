@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 type AuthState = 'checking' | 'signed_in' | 'signed_out'
 
+const workspaceHref = '/nic-nac'
+const loginHref = '/login?redirect=%2Fnic-nac'
+
 export function SparkleSuitePublicAccountAction() {
-  const router = useRouter()
   const [authState, setAuthState] = useState<AuthState>('checking')
-  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -17,13 +17,23 @@ export function SparkleSuitePublicAccountAction() {
 
     supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return
-      setAuthState(data.session ? 'signed_in' : 'signed_out')
+      if (data.session) {
+        setAuthState('signed_in')
+        window.location.replace(workspaceHref)
+        return
+      }
+      setAuthState('signed_out')
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthState(session ? 'signed_in' : 'signed_out')
+      if (session) {
+        setAuthState('signed_in')
+        window.location.replace(workspaceHref)
+        return
+      }
+      setAuthState('signed_out')
     })
 
     return () => {
@@ -32,36 +42,12 @@ export function SparkleSuitePublicAccountAction() {
     }
   }, [])
 
-  async function handleLogout() {
-    setBusy(true)
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setAuthState('signed_out')
-    router.replace('/')
-    router.refresh()
-  }
-
-  if (authState === 'checking') {
-    return <span>Sparkle Suite account</span>
-  }
-
-  if (authState === 'signed_in') {
-    return (
-      <button
-        className="sl2-header__account-button"
-        disabled={busy}
-        onClick={() => void handleLogout()}
-        type="button"
-      >
-        {busy ? 'Logging out...' : 'Log out'}
-      </button>
-    )
-  }
-
   return (
-    <>
-      <span>Already have Sparkle Suite?</span>
-      <a href="/login">Sign in here.</a>
-    </>
+    <a
+      className="sl2-header__account-button"
+      href={authState === 'signed_in' ? workspaceHref : loginHref}
+    >
+      Log in to your Sparkle Suite workspace
+    </a>
   )
 }
