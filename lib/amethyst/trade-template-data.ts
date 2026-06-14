@@ -48,7 +48,7 @@ export interface AmethystTradeTemplateData {
   footerLinks: {
     home: string
     tradeBoard: string
-    joinTeam: string
+    joinTeam?: string
     catalog: string
     preOrders: string
     pastShows: string

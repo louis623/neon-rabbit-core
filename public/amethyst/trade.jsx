@@ -150,6 +150,7 @@ const FOOTER_LINKS = CONTENT.footerLinks || {};
 const FOOTER_SOCIALS = CONTENT.socialLinks || [];
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
+const JOIN_TEAM_HREF = FOOTER_LINKS.joinTeam || "";
 const SHOP_HREF = CONTENT.shopUrl || FOOTER_LINKS.catalog || "#";
 
 function ComingSoonNavItem({ label = "Join Team" }) {
@@ -623,7 +624,7 @@ function Header({ businessName }) {
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Trade Board</a>
-          <ComingSoonNavItem />
+          {JOIN_TEAM_HREF && <ComingSoonNavItem />}
         </nav>
         <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop live</a>
       </div>
@@ -1261,7 +1262,7 @@ function Footer({ businessName }) {
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
             <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.joinTeam || "/amethyst/Join.html")}>Join Team</a></li>
+            {JOIN_TEAM_HREF && <li><a {...linkProps(JOIN_TEAM_HREF)}>Join Team</a></li>}
           </ul>
         </div>
         <div className="hp-footer-col">

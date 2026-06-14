@@ -36,12 +36,12 @@ describe('Nic-Nac rep customer links', () => {
     )
   })
 
-  it('keeps trade board links on rep ids even when a public slug is present', () => {
+  it('uses public site slugs for customer-facing trade boards', () => {
     expect(
       buildCustomerTradeBoardHref({
         repId: 'rep-1',
         publicSiteSlug: 'graciesparkleparty',
       }),
-    ).toBe('/amethyst/Trade.html?c=rep-1')
+    ).toBe('/graciesparkleparty/trade')
   })
 })

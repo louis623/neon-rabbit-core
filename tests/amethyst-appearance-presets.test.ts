@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import {
   AMETHYST_APPEARANCE_PRESET_IDS,
@@ -255,6 +257,30 @@ describe('Amethyst appearance presets', () => {
     expect(normalizeAmethystSkinSelection('Black Diamond')).toBe(
       'black_diamond',
     )
+  })
+
+  it('keeps Black Diamond public controls readable on homepage and trade pages', () => {
+    const homepageCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const tradeCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(homepageCss).toContain(
+      'body.bg-black-velvet .hp-step-num',
+    )
+    expect(homepageCss).toContain(
+      'body.bg-black-velvet .hp-video-play',
+    )
+    expect(homepageCss).toContain('color: #080808')
+    expect(homepageCss).toContain('color: #00d9ff')
+    expect(tradeCss).toContain(
+      'body.bg-black-velvet .tp-filter-pill.active',
+    )
+    expect(tradeCss).toContain('color: #080808')
   })
 
   it('adds Rose Gold as a visual-only Amethyst skin with a browsing card', () => {

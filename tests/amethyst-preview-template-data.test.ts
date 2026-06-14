@@ -145,6 +145,21 @@ describe('Amethyst preview template data', () => {
     )
   })
 
+  it('hides Join Team customer links when the rep has not launched that page', () => {
+    const settings: SiteSettingsDashboardResult = {
+      ...demoSettings,
+      showJoinPage: false,
+    }
+
+    const homepage = mapPreviewSettingsToHomepageTemplateData(settings, repExtras)
+    const trade = mapPreviewSettingsToTradeTemplateData(settings, repExtras)
+
+    expect(homepage.showJoinPage).toBe(false)
+    expect(homepage.joinTeamUrl).toBe('')
+    expect(homepage.footerLinks.joinTeam).toBeUndefined()
+    expect(trade.footerLinks.joinTeam).toBeUndefined()
+  })
+
   it('returns defaults when Supabase env is missing', async () => {
     const data = await loadAmethystPreviewTemplateData({
       env: {},
@@ -201,6 +216,34 @@ describe('Amethyst preview template data', () => {
     expect(data.join.footerLinks.tradeBoard).toBe(
       '/amethyst/Trade.html?c=rep-target',
     )
+  })
+
+  it('keeps Join Team hidden after applying a customer target', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-hidden-join',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient:
+          vi.fn(() => ({ from: vi.fn() })) as unknown as typeof createAdminClient,
+        resolveAmethystPreviewRep: vi.fn(async () => ({
+          id: 'rep-hidden-join',
+          email: 'hidden-join@example.com',
+          shop_link: null,
+          streaming_links: {},
+        })),
+        getSiteSettingsDashboard: vi.fn(async () => ({
+          ...demoSettings,
+          showJoinPage: false,
+        })),
+      },
+    })
+
+    expect(data.homepage.joinTeamUrl).toBe('')
+    expect(data.homepage.footerLinks.joinTeam).toBeUndefined()
+    expect(data.trade.footerLinks.joinTeam).toBeUndefined()
   })
 
   it('overlays required setup draft copy onto the targeted customer-site preview', async () => {

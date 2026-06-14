@@ -2192,6 +2192,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
+  function refreshLiveSitePreviewAfterSiteSettingsSave() {
+    if (workspacePreview.mode === 'live_site_preview') {
+      setPreviewFrameKey((current) => current + 1)
+    }
+  }
+
   async function handleSaveSiteSettings() {
     if (!siteSettingsDraft) return
 
@@ -2227,6 +2233,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error: null,
         helperMessage: 'Site settings saved.',
       })
+      refreshLiveSitePreviewAfterSiteSettingsSave()
     } catch (error) {
       setSiteSettingsActionState({
         pending: false,
@@ -2826,9 +2833,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     repId: repIdOverride ?? repProfileState.repId,
     publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
   })
-  const customerTradeBoardHref = buildCustomerTradeBoardHref(
-    repIdOverride ?? repProfileState.repId,
-  )
+  const customerTradeBoardHref = buildCustomerTradeBoardHref({
+    repId: repIdOverride ?? repProfileState.repId,
+    publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
+  })
   const openWorkspacePreview = (nextPreview: Extract<WorkspacePreviewState, { mode: 'live_site_preview' }>) => {
     setPreviewUnavailableMessage(null)
     setWorkspacePreview(nextPreview)
@@ -2868,6 +2876,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
   const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
+  const activeWorkspacePreviewSrc = activeWorkspacePreview
+    ? `${activeWorkspacePreview.href}${
+        activeWorkspacePreview.href.includes('?') ? '&' : '?'
+      }previewRefresh=${previewFrameKey}`
+    : null
 
   return (
     <main
@@ -2952,7 +2965,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           <iframe
             key={`${previewFrameKey}:${activeWorkspacePreview.href}`}
             className={styles.previewFocusFrame}
-            src={activeWorkspacePreview.href}
+            src={activeWorkspacePreviewSrc ?? activeWorkspacePreview.href}
             title="Sparkle Suite live site preview"
           />
         </section>

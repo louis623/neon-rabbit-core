@@ -21,6 +21,7 @@ import { getPublicRepName } from '@/lib/amethyst/public-rep-name'
 interface RenderAmethystPublicAssetResponseOptions {
   repIdOverride?: string | null
   canonicalPathOverride?: string | null
+  publicSiteSlugOverride?: string | null
 }
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -267,23 +268,26 @@ function rewriteTemplateScriptTarget(
   html: string,
   page: AmethystPublicPage,
   requestUrl: URL,
-  repIdOverride?: string | null,
+  options: RenderAmethystPublicAssetResponseOptions = {},
 ) {
   const target =
-    repIdOverride?.trim() ||
+    options.repIdOverride?.trim() ||
     requestUrl.searchParams.get('c') ||
     requestUrl.searchParams.get('repId')
   if (!target) return html
+  const publicSiteSlug = options.publicSiteSlugOverride?.trim()
   const endpoint =
     page === 'homepage'
       ? '/api/amethyst/homepage-template'
       : page === 'trade'
         ? '/api/amethyst/trade-template'
         : '/api/amethyst/join-template'
+  const query = new URLSearchParams({ c: target })
+  if (publicSiteSlug) query.set('publicSiteSlug', publicSiteSlug)
 
   return html.replace(
     `src="${endpoint}"`,
-    `src="${endpoint}?c=${escapeHtmlAttribute(target)}"`,
+    `src="${endpoint}?${escapeHtmlAttribute(query.toString())}"`,
   )
 }
 
@@ -318,7 +322,7 @@ function rewriteAmethystPublicHtml(
 
   return injectAmethystJsonLd(
     rewriteAmethystStaticAssetUrls(
-      rewriteTemplateScriptTarget(rewritten, page, requestUrl, options.repIdOverride),
+      rewriteTemplateScriptTarget(rewritten, page, requestUrl, options),
     ),
     page,
     origin,
@@ -364,14 +368,18 @@ export async function renderAmethystPublicAssetResponse(
           html,
           templateScriptPage,
           requestUrl,
-          options.repIdOverride,
+          options,
         )
       }
     }
 
+    const cacheControl = contentType.startsWith('text/html')
+      ? 'no-store'
+      : 'public, max-age=0, must-revalidate'
+
     return new Response(responseBody, {
       headers: {
-        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'Cache-Control': cacheControl,
         'Content-Type': contentType,
       },
     })

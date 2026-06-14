@@ -685,6 +685,43 @@ describe('DashboardPlaceholder', () => {
     expect(styles).not.toContain(".main[data-workspace-skin='velvet'] .nic")
   })
 
+  it('refreshes an open live-site preview after saving site settings', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('refreshLiveSitePreviewAfterSiteSettingsSave')
+    expect(source).toContain("workspacePreview.mode === 'live_site_preview'")
+    expect(source).toContain('setPreviewFrameKey((current) => current + 1)')
+  })
+
+  it('keeps Black Diamond workspace surfaces readable with dark-theme overrides', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .topbar",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .workspaceSidebar",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .timelineItem",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .rosterTag",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag",
+    )
+  })
+
   it('keeps the workspace Nic-Nac glyph backed by the shared mark', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/NicNacGlyph.tsx'),

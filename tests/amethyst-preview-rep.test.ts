@@ -295,6 +295,69 @@ describe('Amethyst preview rep resolver', () => {
     })
   })
 
+  it('resolves a final custom domain after a rep has active workspace access', async () => {
+    const admin = makeAdminClient({
+      repsByCustomDomain: {
+        'customsparkle.example': {
+          id: 'rep-custom-domain',
+          email: 'rep@example.test',
+        },
+      },
+      paidRepIds: ['rep-custom-domain'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        repId: 'customsparkle.example',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-custom-domain',
+      email: 'rep@example.test',
+    })
+  })
+
+  it('resolves a www custom domain alternate after cutover', async () => {
+    const admin = makeAdminClient({
+      repsByCustomDomain: {
+        'customsparkle.example': {
+          id: 'rep-custom-domain',
+          email: 'rep@example.test',
+        },
+      },
+      paidRepIds: ['rep-custom-domain'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        repId: 'www.customsparkle.example',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-custom-domain',
+      email: 'rep@example.test',
+    })
+  })
+
+  it('resolves Mile High Fizz by public site slug when Lindsey has active workspace access', async () => {
+    const admin = makeAdminClient({
+      repsByPublicSiteSlug: {
+        milehighfizz: {
+          id: 'rep-mile-high-fizz',
+          email: 'lindseychapman1188@gmail.com',
+        },
+      },
+      paidRepIds: ['rep-mile-high-fizz'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, {
+        publicSiteSlug: 'MileHighFizz',
+      }),
+    ).resolves.toEqual({
+      id: 'rep-mile-high-fizz',
+      email: 'lindseychapman1188@gmail.com',
+    })
+  })
+
   it('falls back to preview reps when a host has no custom-domain match', async () => {
     const admin = makeAdminClient({
       repsByEmail: {

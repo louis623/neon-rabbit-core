@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const createAdminClientMock = vi.hoisted(() => vi.fn())
 const resolveAmethystPreviewRepMock = vi.hoisted(() => vi.fn())
@@ -21,6 +23,7 @@ vi.mock('@/lib/amethyst/preview-template-data', async (importOriginal) => {
 })
 
 import { GET } from '@/app/[publicSiteSlug]/route'
+import { GET as GET_TRADE } from '@/app/[publicSiteSlug]/trade/route'
 import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import { defaultAmethystHomepageTemplateData } from '@/lib/amethyst/homepage-template-data'
 import { defaultAmethystJoinTemplateData } from '@/lib/amethyst/join-template-data'
@@ -84,6 +87,7 @@ describe('public site slug route', () => {
     const html = await response.text()
 
     expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
     expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
       repId: 'rep-gracie',
     })
@@ -101,9 +105,59 @@ describe('public site slug route', () => {
     expect(html).toContain('href="/amethyst/homepage.css"')
     expect(html).toContain('src="/amethyst/tweaks-panel.jsx"')
     expect(html).toContain('src="/amethyst/homepage.jsx"')
-    expect(html).toContain('/api/amethyst/homepage-template?c=rep-gracie')
+    expect(html).toContain(
+      '/api/amethyst/homepage-template?c=rep-gracie&amp;publicSiteSlug=graciesparkleparty',
+    )
     expect(html).not.toContain('href="tokens.css"')
     expect(html).not.toContain('src="homepage.jsx"')
     expect(html).not.toContain('?c=graciesparkleparty')
+  })
+
+  it('keeps public slug and template routes dynamic for saved theme changes', () => {
+    const routeFiles = [
+      'app/[publicSiteSlug]/route.ts',
+      'app/[publicSiteSlug]/trade/route.ts',
+      'app/api/amethyst/homepage-template/route.ts',
+      'app/api/amethyst/trade-template/route.ts',
+    ]
+
+    for (const routeFile of routeFiles) {
+      const source = readFileSync(resolve(process.cwd(), routeFile), 'utf8')
+      expect(source).toContain("export const dynamic = 'force-dynamic'")
+    }
+  })
+
+  it('renders the trade board with slug canonicals and rep-targeted template data', async () => {
+    const admin = { marker: 'admin' }
+    createAdminClientMock.mockReturnValue(admin)
+    resolveAmethystPreviewRepMock.mockResolvedValue({
+      id: 'rep-mile-high-fizz',
+      email: 'lindsey@example.test',
+    })
+
+    const response = await GET_TRADE(
+      new Request('https://www.yoursparklesuite.com/MileHighFizz/trade'),
+      { params: Promise.resolve({ publicSiteSlug: 'MileHighFizz' }) },
+    )
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
+      repId: 'rep-mile-high-fizz',
+    })
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/milehighfizz/trade" />',
+    )
+    expect(html).toContain(
+      '<meta property="og:url" content="https://www.yoursparklesuite.com/milehighfizz/trade" />',
+    )
+    expect(html).toContain(
+      '"@id":"https://www.yoursparklesuite.com/milehighfizz/trade#webpage"',
+    )
+    expect(html).toContain(
+      '/api/amethyst/trade-template?c=rep-mile-high-fizz&amp;publicSiteSlug=milehighfizz',
+    )
+    expect(html).not.toContain('?c=milehighfizz')
   })
 })

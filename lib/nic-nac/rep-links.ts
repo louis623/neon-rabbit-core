@@ -33,6 +33,9 @@ function getPublicSiteSlug(target: RepLinkTarget) {
 }
 
 export function buildCustomerTradeBoardHref(target?: RepLinkTarget) {
+  const publicSiteSlug = getPublicSiteSlug(target)
+  if (publicSiteSlug) return `/${encodeURIComponent(publicSiteSlug)}/trade`
+
   const cleanedRepId = getRepId(target)
   if (!cleanedRepId) return '/amethyst/Trade.html'
   return `/amethyst/Trade.html?c=${encodeURIComponent(cleanedRepId)}`

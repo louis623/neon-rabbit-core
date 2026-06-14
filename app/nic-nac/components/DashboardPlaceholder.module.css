@@ -109,6 +109,89 @@
   --workspace-button-shadow: rgba(0, 0, 0, 0.3);
 }
 
+.main[data-workspace-skin='black_diamond'] .topbar {
+  color: var(--nic-nac-text-primary);
+}
+
+.main[data-workspace-skin='black_diamond'] .topbarInfoPill,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebar,
+.main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
+.main[data-workspace-skin='black_diamond'] .workspacePanel,
+.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSection,
+.main[data-workspace-skin='black_diamond'] .walletSettingsPanel,
+.main[data-workspace-skin='black_diamond'] .walletReferencePanel,
+.main[data-workspace-skin='black_diamond'] .calendarPanel,
+.main[data-workspace-skin='black_diamond'] .calendarGrid,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSaveBar,
+.main[data-workspace-skin='black_diamond'] .previewFocusBar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+  border-color: var(--workspace-border);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 42px var(--workspace-panel-shadow);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceIntroCard {
+  background:
+    radial-gradient(circle at 96% 16%, rgba(0, 217, 255, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+}
+
+.main[data-workspace-skin='black_diamond'] .workspacePanel::before,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebar::before,
+.main[data-workspace-skin='black_diamond'] .siteSettingsCard::before {
+  background: linear-gradient(90deg, #d4af37 0%, #00d9ff 72%, #f4c2c2 100%);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButton:hover {
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive,
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive:hover {
+  border-color: rgba(212, 175, 55, 0.48);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(0, 217, 255, 0.12));
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag,
+.main[data-workspace-skin='black_diamond'] .rosterTag,
+.main[data-workspace-skin='black_diamond'] .timelineItem,
+.main[data-workspace-skin='black_diamond'] .walletToggleRow,
+.main[data-workspace-skin='black_diamond'] .teamManagementPanel,
+.main[data-workspace-skin='black_diamond'] .teamMessagePreview,
+.main[data-workspace-skin='black_diamond'] .calendarWeekdayRow,
+.main[data-workspace-skin='black_diamond'] .calendarCell,
+.main[data-workspace-skin='black_diamond'] .calendarEventPill,
+.main[data-workspace-skin='black_diamond'] .calendarEventMore,
+.main[data-workspace-skin='black_diamond'] .walletTransactionRow {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(244, 207, 98, 0.2);
+  color: var(--nic-nac-text-primary);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavLabel,
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavSubtitle {
+  color: rgba(216, 203, 189, 0.72);
+}
+
+.main[data-workspace-skin='black_diamond'] .liveSiteButton,
+.main[data-workspace-skin='black_diamond'] .actionButton,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSaveButton {
+  background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
+  color: #141111;
+}
+
+.main[data-workspace-skin='black_diamond'] .helperButton,
+.main[data-workspace-skin='black_diamond'] .helperLink {
+  color: #e8fbff;
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.08);
+}
+
 .main[data-workspace-skin='rose_gold'] {
   --workspace-accent: #e04f73;
   --workspace-accent-hover: #c73b5e;

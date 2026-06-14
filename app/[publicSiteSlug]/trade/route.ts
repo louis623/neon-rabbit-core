@@ -23,9 +23,9 @@ export async function GET(
   })
   if (!rep) return new Response('Not found', { status: 404 })
 
-  return renderAmethystPublicAssetResponse(request, ['Homepage.html'], {
+  return renderAmethystPublicAssetResponse(request, ['Trade.html'], {
     repIdOverride: rep.id,
-    canonicalPathOverride: `/${slug}`,
+    canonicalPathOverride: `/${slug}/trade`,
     publicSiteSlugOverride: slug,
   })
 }

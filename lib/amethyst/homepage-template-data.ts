@@ -51,6 +51,7 @@ export interface AmethystHomepageTemplateData {
   legalDisclaimer: string
   showcaseVideoCaption: string
   showcaseVideoUrl: string
+  showJoinPage: boolean
   streamLinks: {
     shop: string
     watch: string
@@ -168,6 +169,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
   showcaseVideoCaption: '@sparklebysasha - "When the box hits different..."',
   showcaseVideoUrl: '#',
+  showJoinPage: true,
   streamLinks: {
     shop: 'https://bombparty.com',
     watch: '#',
@@ -320,7 +322,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  href('.hp-hero-ctas .hp-btn-watch', streamLinks.watch || streamLinks.tiktok || '#');`,
     `  href('.hp-signup-consent a', footerLinks.privacy || '#');`,
     `  all('.hp-footer-socials a').forEach(function (node, index) { if (socialLinks[index]) node.setAttribute('href', socialLinks[index].href); });`,
-    `  [footerLinks.home || '/amethyst/Homepage.html', footerLinks.tradeBoard || '/amethyst/Trade.html', footerLinks.joinTeam || '/amethyst/Join.html'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(2) a')[index]; if (node && value) node.setAttribute('href', value); });`,
+    `  [footerLinks.home || '/amethyst/Homepage.html', footerLinks.tradeBoard || '/amethyst/Trade.html', footerLinks.joinTeam || ''].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(2) a')[index]; if (node && value) node.setAttribute('href', value); if (node && !value) { var item = node.closest('li'); if (item) item.style.display = 'none'; } });`,
     `  [footerLinks.faq || '#signup', footerLinks.contact || '#signup'].forEach(function (value, index) { var node = all('.hp-footer-col:nth-of-type(3) a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `  [footerLinks.privacy, footerLinks.terms, footerLinks.accessibility].forEach(function (value, index) { var node = all('.legal-row a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `  (content.aboutMediaSlots || []).forEach(function (slot, index) { var card = document.querySelector('[data-slot="about media ' + (index + 1) + '"]'); if (!card || !slot) return; var typeNode = card.querySelector('.hp-about-media-type'); var captionNode = card.querySelector('.hp-about-media-caption'); if (typeNode && slot.typeLabel) typeNode.textContent = slot.typeLabel; if (captionNode && slot.caption) captionNode.textContent = slot.caption; if (slot.mediaUrl) { card.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.24), rgba(14, 8, 32, 0.52)), url("' + slot.mediaUrl + '")'; card.style.backgroundPosition = 'center'; card.style.backgroundSize = 'cover'; } if (slot.href) { card.style.cursor = 'pointer'; card.onclick = function () { if (/^https?:\\/\\//.test(slot.href)) window.open(slot.href, '_blank', 'noopener,noreferrer'); else window.location.href = slot.href; }; } });`,

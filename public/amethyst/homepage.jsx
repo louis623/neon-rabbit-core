@@ -1170,6 +1170,8 @@ function Signup({ repName, businessName }) {
 // Footer
 // ============================================================
 function Footer({ businessName }) {
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "";
+
   return (
     <footer className="hp-footer">
       <div className="hp-footer-inner">
@@ -1199,7 +1201,7 @@ function Footer({ businessName }) {
           <ul>
             <li><a {...linkProps(CONTENT.footerLinks?.home || withCurrentSearch("/amethyst/Homepage.html"))}>Home</a></li>
             <li><a {...linkProps(getTradeBoardHref())}>Trade Board</a></li>
-            <li><a {...linkProps(CONTENT.footerLinks?.joinTeam || withCurrentSearch("/amethyst/Join.html"))}>Join Team</a></li>
+            {joinTeamHref && <li><a {...linkProps(joinTeamHref)}>Join Team</a></li>}
           </ul>
         </div>
         <div className="hp-footer-col">
@@ -1388,7 +1390,7 @@ function App() {
             <nav className="hp-header-nav" aria-label="Primary">
               <a href="#top" className="hp-header-link" aria-current="page">Home</a>
               <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
-              <ComingSoonNavItem />
+              {CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />}
             </nav>
             <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
           </div>

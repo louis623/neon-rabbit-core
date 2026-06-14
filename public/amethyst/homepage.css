@@ -2841,6 +2841,20 @@ body.bg-black-velvet .tp-filter-chip {
   background: rgba(0, 217, 255, 0.08);
 }
 
+body.bg-black-velvet .hp-step-num {
+  background: #d4af37;
+  color: #080808;
+}
+
+body.bg-black-velvet .hp-video-play {
+  background: #080808;
+  color: #00d9ff;
+  border: 1px solid rgba(0, 217, 255, 0.34);
+  box-shadow:
+    0 0 0 6px rgba(0, 217, 255, 0.08),
+    0 22px 42px rgba(0, 0, 0, 0.28);
+}
+
 body.btn-diamond-lift .hp-btn-primary:hover,
 body.btn-diamond-lift .hp-btn-outline:hover,
 body.btn-diamond-lift .hp-shop-btn:hover,

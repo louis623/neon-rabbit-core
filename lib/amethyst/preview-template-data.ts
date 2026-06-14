@@ -336,7 +336,9 @@ function applyCustomerTarget(
       showcaseVideoCaption: targeted
         ? 'Intro video coming soon.'
         : data.homepage.showcaseVideoCaption,
-      joinTeamUrl: withCustomerTarget(data.homepage.joinTeamUrl, repId),
+      joinTeamUrl: data.homepage.joinTeamUrl
+        ? withCustomerTarget(data.homepage.joinTeamUrl, repId)
+        : '',
       footerLinks: {
         ...data.homepage.footerLinks,
         home: withCustomerTarget(
@@ -344,10 +346,9 @@ function applyCustomerTarget(
           repId,
         ),
         tradeBoard: withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
-        joinTeam: withCustomerTarget(
-          data.homepage.footerLinks.joinTeam || data.homepage.joinTeamUrl,
-          repId,
-        ),
+        joinTeam: data.homepage.footerLinks.joinTeam
+          ? withCustomerTarget(data.homepage.footerLinks.joinTeam, repId)
+          : undefined,
       },
     },
     trade: {
@@ -356,7 +357,9 @@ function applyCustomerTarget(
         ...data.trade.footerLinks,
         home: withCustomerTarget(data.trade.footerLinks.home, repId),
         tradeBoard: withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
-        joinTeam: withCustomerTarget(data.trade.footerLinks.joinTeam, repId),
+        joinTeam: data.trade.footerLinks.joinTeam
+          ? withCustomerTarget(data.trade.footerLinks.joinTeam, repId)
+          : undefined,
       },
     },
     join: {
@@ -399,6 +402,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
   )
   const tagline = firstText(settings.tagline, defaultAmethystHomepageTemplateData.tagline)
   const streamLinks = resolveStreamingLinks(settings, extras)
+  const showJoinPage = settings.showJoinPage !== false
 
   return {
     ...defaultAmethystHomepageTemplateData,
@@ -418,10 +422,17 @@ export function mapPreviewSettingsToHomepageTemplateData(
     signupConsent: `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Msg & data rates may apply. Reply STOP to unsubscribe.`,
     footerTagline: tagline,
     legalDisclaimer: buildLegalDisclaimer(businessName, 'homepage'),
+    showJoinPage,
+    joinTeamUrl: showJoinPage
+      ? defaultAmethystHomepageTemplateData.joinTeamUrl
+      : '',
     streamLinks,
     socialLinks: buildSocialLinks(settings),
     footerLinks: {
       ...defaultAmethystHomepageTemplateData.footerLinks,
+      joinTeam: showJoinPage
+        ? defaultAmethystHomepageTemplateData.footerLinks.joinTeam
+        : undefined,
       catalog: streamLinks.shop,
       preOrders: streamLinks.shop,
     },
@@ -437,6 +448,7 @@ export function mapPreviewSettingsToTradeTemplateData(
     defaultAmethystTradeTemplateData.businessName,
   )
   const shopUrl = resolveShopUrl(extras)
+  const showJoinPage = settings.showJoinPage !== false
 
   const repName = getPublicRepName(
     firstText(settings.displayName, defaultAmethystTradeTemplateData.repName),
@@ -453,6 +465,9 @@ export function mapPreviewSettingsToTradeTemplateData(
     socialLinks: buildSocialLinks(settings),
     footerLinks: {
       ...defaultAmethystTradeTemplateData.footerLinks,
+      joinTeam: showJoinPage
+        ? defaultAmethystTradeTemplateData.footerLinks.joinTeam
+        : undefined,
       catalog: shopUrl,
       preOrders: shopUrl,
     },

@@ -514,6 +514,12 @@ body.tradepage h4 {
   color: white;
   border-color: var(--hp-primary);
 }
+
+body.bg-black-velvet .tp-filter-pill.active {
+  background: #d4af37;
+  color: #080808;
+  border-color: #d4af37;
+}
 .tp-filter-pill .count {
   font-size: 11px;
   opacity: 0.7;
