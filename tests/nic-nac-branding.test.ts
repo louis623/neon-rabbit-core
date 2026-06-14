@@ -88,28 +88,25 @@ describe('Nic-Nac branding copy', () => {
     expect(chipsHtml).not.toContain('What do you need from me?')
   })
 
-  it('renders a locked Morganite theme confirmation for required setup', () => {
+  it('renders customer-facing site Look choices for required setup', () => {
     const html = renderToStaticMarkup(
       createElement(RequiredSetupLookPicker, {
         onChoose: () => {},
       }),
     )
 
-    expect(html).toContain('Sparkle Suite theme')
-    expect(html).toContain('Sparkle Suite/Morganite is ready')
-    expect(html).toContain('one polished Morganite look')
-    expect(html).toContain('Locked theme')
+    expect(html).toContain('Customer-facing site theme')
+    expect(html).toContain('Choose the Look for your public site')
+    expect(html).toContain('This only changes the public customer-facing Amethyst site.')
     expect(html).toContain('Sparkle Suite/Morganite')
-    expect(html).toContain('Warm, polished, and readable')
-    expect(html).toContain('Continue with Morganite')
+    expect(html).toContain('Black Diamond')
+    expect(html).toContain('Rose Gold')
+    expect(html).toContain('Choose this customer-site Look')
     expect(html).toContain('SS-01')
-    expect(html).not.toContain('Choose your customer-site Look')
-    expect(html).not.toContain('You can change your Look later')
-    expect(html).not.toContain('Black Diamond')
-    expect(html).not.toContain('Rose Gold')
-    expect(html).not.toContain('BD-01')
-    expect(html).not.toContain('skin')
-    expect(html).not.toContain('Skin')
+    expect(html).toContain('BD-01')
+    expect(html).not.toContain('Sparkle Suite/Morganite is ready')
+    expect(html).not.toContain('Locked theme')
+    expect(html).not.toContain('Continue with Morganite')
   })
 
   it('renders required Live Queue setup as an operational setup panel', () => {

@@ -1,4 +1,4 @@
-import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
+import { normalizeAmethystSkinSelection } from '@/lib/amethyst/skin-cards'
 import type { RequiredSetupState } from './required-setup'
 
 type JsonObject = Record<string, unknown>
@@ -49,16 +49,14 @@ export function normalizeRequiredSetupDraftState(
   const aboutGenerated = stepObject(state, 'generatedCopy', 'about_page')
   const scheduleAnswers = stepObject(state, 'answers', 'show_schedule')
   const scheduleGenerated = stepObject(state, 'generatedCopy', 'show_schedule')
-  const hasThemeStepAnswer = Boolean(
-    firstRequiredSetupDraftText(
-      siteSkin.appearancePreset,
-      siteSkin.selectedLook,
-      siteSkin.selectedLookId,
-      siteSkin.selectedLookCode,
-      siteSkin.lookCode,
-      siteSkin.code,
-      siteSkin.label,
-    ),
+  const selectedTheme = firstRequiredSetupDraftText(
+    siteSkin.appearancePreset,
+    siteSkin.selectedLook,
+    siteSkin.selectedLookId,
+    siteSkin.selectedLookCode,
+    siteSkin.lookCode,
+    siteSkin.code,
+    siteSkin.label,
   )
   const primaryLiveShowOrSocialLink = firstRequiredSetupDraftText(
     accountBasics.primaryLiveShowOrSocialLink,
@@ -87,8 +85,8 @@ export function normalizeRequiredSetupDraftState(
             primaryLiveShowOrSocialLink,
         }
       : {},
-    appearancePreset: hasThemeStepAnswer
-      ? DEFAULT_AMETHYST_APPEARANCE_PRESET
+    appearancePreset: selectedTheme
+      ? normalizeAmethystSkinSelection(selectedTheme)
       : null,
     welcomeHeadline: firstRequiredSetupDraftText(
       welcomeAnswers.headline,

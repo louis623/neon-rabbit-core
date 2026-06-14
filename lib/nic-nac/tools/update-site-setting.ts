@@ -3,10 +3,10 @@ import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import {
-  DEFAULT_AMETHYST_APPEARANCE_PRESET,
   normalizeAmethystAppearancePreset,
   normalizeCustomerSiteTemplate,
 } from '@/lib/amethyst/appearance-presets'
+import { normalizeAmethystSkinSelection } from '@/lib/amethyst/skin-cards'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -57,7 +57,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, controlled hero motion, team name, join-page visibility, the approved Amethyst appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
+      'This can patch banner, ticker, tagline, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -109,7 +109,8 @@ export function makeUpdateSiteSettingTool(ctx: {
           normalizeCustomerSiteTemplate(customerSiteTemplate)
       }
       if (appearancePreset !== undefined) {
-        siteSettingsPatch.appearance_preset = DEFAULT_AMETHYST_APPEARANCE_PRESET
+        siteSettingsPatch.appearance_preset =
+          normalizeAmethystSkinSelection(appearancePreset)
       }
 
       const updatedFields: string[] = []

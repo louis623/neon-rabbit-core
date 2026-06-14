@@ -214,7 +214,7 @@ describe('site customization tools', () => {
     })
   })
 
-  it('update_site_setting keeps Morganite when Nic-Nac receives the old Black Diamond skin code', async () => {
+  it('update_site_setting saves Black Diamond when Nic-Nac receives the skin code', async () => {
     const siteSettingsChain = makeUpdateChain({
       data: {
         banner_text: null,
@@ -227,7 +227,7 @@ describe('site customization tools', () => {
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
-        appearance_preset: 'sparkle_suite_morganite',
+        appearance_preset: 'black_diamond',
       },
       error: null,
     })
@@ -241,17 +241,17 @@ describe('site customization tools', () => {
     })
 
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
-      appearance_preset: 'sparkle_suite_morganite',
+      appearance_preset: 'black_diamond',
     })
     expect(result).toEqual({
       updatedFields: ['appearancePreset'],
       updated: {
-        appearancePreset: 'sparkle_suite_morganite',
+        appearancePreset: 'black_diamond',
       },
     })
   })
 
-  it('update_site_setting keeps Morganite when Nic-Nac receives the old Rose Gold skin code', async () => {
+  it('update_site_setting saves Rose Gold when Nic-Nac receives the skin code', async () => {
     const siteSettingsChain = makeUpdateChain({
       data: {
         banner_text: null,
@@ -264,7 +264,7 @@ describe('site customization tools', () => {
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
-        appearance_preset: 'sparkle_suite_morganite',
+        appearance_preset: 'rose_gold',
       },
       error: null,
     })
@@ -278,12 +278,12 @@ describe('site customization tools', () => {
     })
 
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
-      appearance_preset: 'sparkle_suite_morganite',
+      appearance_preset: 'rose_gold',
     })
     expect(result).toEqual({
       updatedFields: ['appearancePreset'],
       updated: {
-        appearancePreset: 'sparkle_suite_morganite',
+        appearancePreset: 'rose_gold',
       },
     })
   })
@@ -293,7 +293,7 @@ describe('site customization tools', () => {
     ['AB-01', 'amber'],
     ['VE-01', 'velvet'],
     ['RQ-01', 'rose_quartz'],
-  ])('update_site_setting keeps Morganite when Nic-Nac receives the old %s skin code', async (code) => {
+  ])('update_site_setting saves %s as the supported customer-facing skin code', async (code, expectedPreset) => {
     const siteSettingsChain = makeUpdateChain({
       data: {
         banner_text: null,
@@ -306,7 +306,7 @@ describe('site customization tools', () => {
         team_name: null,
         show_join_page: true,
         customer_site_template: 'amethyst',
-        appearance_preset: 'sparkle_suite_morganite',
+        appearance_preset: expectedPreset,
       },
       error: null,
     })
@@ -320,12 +320,12 @@ describe('site customization tools', () => {
     })
 
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
-      appearance_preset: 'sparkle_suite_morganite',
+      appearance_preset: expectedPreset,
     })
     expect(result).toEqual({
       updatedFields: ['appearancePreset'],
       updated: {
-        appearancePreset: 'sparkle_suite_morganite',
+        appearancePreset: expectedPreset,
       },
     })
   })
@@ -349,7 +349,7 @@ describe('site customization registry and prompt wiring', () => {
     expect(updateSiteSettingTool.readOnly).toBe(false)
   })
 
-  it('system prompt documents site customization tools and the locked Morganite appearance rule', () => {
+  it('system prompt documents site customization tools and the customer-facing appearance rule', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       "You have a scoped set of workspace tools available when the rep's request calls for them:",
     )
@@ -360,10 +360,11 @@ describe('site customization registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('social handles')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Amethyst')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Sparkle Suite/Morganite')
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Do not offer skin switching')
-    expect(NIC_NAC_SYSTEM_PROMPT).not.toContain('BD-01')
-    expect(NIC_NAC_SYSTEM_PROMPT).not.toContain('Black Diamond')
-    expect(NIC_NAC_SYSTEM_PROMPT).not.toContain('RG-01')
-    expect(NIC_NAC_SYSTEM_PROMPT).not.toContain('Rose Gold')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('change the customer-facing Amethyst site theme')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('The Sparkle Suite Workspace keeps the standard workspace theme')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('BD-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Black Diamond')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('RG-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Rose Gold')
   })
 })

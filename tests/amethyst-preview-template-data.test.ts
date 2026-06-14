@@ -314,7 +314,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
-    expect(data.appearancePreset).toBe('sparkle_suite_morganite')
+    expect(data.appearancePreset).toBe('rose_quartz')
     expect(data.homepage.businessName).toBe("Gracie's Sparkle Party")
     expect(data.homepage.teamName).toBe("Gracie's Sparkle Party Live")
     expect(data.homepage.heroHeadline).toBe("Welcome to Gracie's Sparkle Party.")
@@ -390,7 +390,7 @@ describe('Amethyst preview template data', () => {
   })
 
   it.each(AMETHYST_APPEARANCE_PRESET_IDS)(
-    'keeps required setup copy Morganite when an old %s Look is present',
+    'keeps required setup copy and applies the %s customer-facing Look',
     async (appearancePreset) => {
       const data = await loadAmethystPreviewTemplateData({
         repId: `rep-${appearancePreset}`,
@@ -441,7 +441,7 @@ describe('Amethyst preview template data', () => {
         },
       })
 
-      expect(data.appearancePreset).toBe('sparkle_suite_morganite')
+      expect(data.appearancePreset).toBe(appearancePreset)
       expect(data.homepage.businessName).toBe('Every Look Sparkle')
       expect(data.homepage.heroHeadline).toBe(
         'Every Look gets the same Nic-Nac copy.',
@@ -452,7 +452,7 @@ describe('Amethyst preview template data', () => {
     },
   )
 
-  it('keeps Morganite when a partial setup draft has no theme confirmation yet', async () => {
+  it('keeps the saved customer-facing Look when a partial setup draft has no theme confirmation yet', async () => {
     const data = await loadAmethystPreviewTemplateData({
       repId: 'rep-partial-look',
       env: {
@@ -497,7 +497,7 @@ describe('Amethyst preview template data', () => {
       },
     })
 
-    expect(data.appearancePreset).toBe('sparkle_suite_morganite')
+    expect(data.appearancePreset).toBe('black_diamond')
     expect(data.homepage.businessName).toBe('Partial Look Sparkle')
     expect(data.homepage.heroHeadline).toBe(
       'Partial drafts should not reset the Look.',

@@ -13,7 +13,7 @@ type AdminClient = ReturnType<
 
 export const REQUIRED_SETUP_STEPS = [
   { id: 'account_basics', label: 'Account basics', required: true },
-  { id: 'site_skin', label: 'Sparkle Suite theme', required: true },
+  { id: 'site_skin', label: 'Customer-facing site theme', required: true },
   { id: 'welcome_copy', label: 'Welcome copy', required: true },
   { id: 'about_page', label: 'About page', required: true },
   { id: 'show_schedule', label: 'Show schedule', required: true },

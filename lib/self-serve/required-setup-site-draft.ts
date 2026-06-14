@@ -65,7 +65,7 @@ export async function publishRequiredSetupCustomerSiteDraft(
     tagline: draft.welcomeSupportingLine,
     team_name: firstText(draft.liveShowName, draft.customerFacingDisplayName),
     customer_site_template: 'amethyst',
-    appearance_preset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
+    appearance_preset: draft.appearancePreset ?? DEFAULT_AMETHYST_APPEARANCE_PRESET,
   })
 
   if (Object.keys(repPatch).length > 0) {

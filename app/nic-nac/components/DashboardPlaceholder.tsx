@@ -31,7 +31,11 @@ import type {
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
-import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
+import {
+  DEFAULT_AMETHYST_APPEARANCE_PRESET,
+  normalizeAmethystAppearancePreset,
+} from '@/lib/amethyst/appearance-presets'
+import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
@@ -475,8 +479,12 @@ const SOCIAL_HANDLE_FIELDS = [
   { key: 'youtube', label: 'YouTube' },
 ]
 
-const LOCKED_SITE_APPEARANCE_PRESET: SiteAppearancePreset =
+const WORKSPACE_APPEARANCE_PRESET: SiteAppearancePreset =
   DEFAULT_AMETHYST_APPEARANCE_PRESET
+const SITE_APPEARANCE_PRESET_OPTIONS = AMETHYST_SKIN_CARDS.map((skin) => ({
+  value: skin.id as SiteAppearancePreset,
+  label: `${skin.label} (${skin.code})`,
+}))
 
 const SIGNUP_FORM_PATH = '/amethyst/Homepage.html#signup'
 const MESSAGE_TYPE_LABELS: Record<string, string> = {
@@ -718,7 +726,9 @@ export function getSiteSettingsDraft(
 ): SiteSettingsDraft {
   return {
     ...settings,
-    appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
+    appearancePreset: normalizeAmethystAppearancePreset(
+      settings.appearancePreset,
+    ) as SiteAppearancePreset,
     socialHandles: { ...settings.socialHandles },
   }
 }
@@ -727,7 +737,7 @@ export function getWorkspaceSkinPreset(
   settings?: Pick<SiteSettingsDashboardResult, 'appearancePreset'> | null,
   draft?: Pick<SiteSettingsDraft, 'appearancePreset'> | null,
 ): SiteAppearancePreset {
-  return LOCKED_SITE_APPEARANCE_PRESET
+  return WORKSPACE_APPEARANCE_PRESET
 }
 
 export function formatAccountBillingAmount(amountCents: number) {
@@ -2158,7 +2168,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return {
         ...current,
         ...patch,
-        appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
         socialHandles: patch.socialHandles
           ? { ...patch.socialHandles }
           : current.socialHandles,
@@ -2171,7 +2180,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       if (!current) return current
       return {
         ...current,
-        appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
         socialHandles: {
           ...current.socialHandles,
           [platform]: value,
@@ -2189,9 +2197,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   async function saveSiteSettingsDraft(draftToSave: SiteSettingsDraft) {
     const requestId = siteSettingsSaveRequestRef.current + 1
     siteSettingsSaveRequestRef.current = requestId
-    const lockedDraft = {
+    const normalizedDraft = {
       ...draftToSave,
-      appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
+      appearancePreset: normalizeAmethystAppearancePreset(
+        draftToSave.appearancePreset,
+      ) as SiteAppearancePreset,
     }
 
     setSiteSettingsActionState({
@@ -2205,7 +2215,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(lockedDraft),
+        body: JSON.stringify(normalizedDraft),
       })
 
       const payload = (await response.json().catch(() => null)) as
@@ -2223,7 +2233,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       const latestDraft = siteSettingsDraftRef.current
       if (
         !latestDraft ||
-        JSON.stringify(latestDraft) === JSON.stringify(lockedDraft)
+        JSON.stringify(latestDraft) === JSON.stringify(normalizedDraft)
       ) {
         setSiteSettingsDraft(getSiteSettingsDraft(payload.settings))
       }
@@ -2251,17 +2261,19 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     if (siteSettingsState.status !== 'ready' || !siteSettingsState.settings) return
     if (!siteSettingsDraft) return
 
-    const lockedDraft = {
+    const normalizedDraft = {
       ...siteSettingsDraft,
-      appearancePreset: LOCKED_SITE_APPEARANCE_PRESET,
+      appearancePreset: normalizeAmethystAppearancePreset(
+        siteSettingsDraft.appearancePreset,
+      ) as SiteAppearancePreset,
     }
 
-    if (siteSettingsDraft.appearancePreset !== LOCKED_SITE_APPEARANCE_PRESET) {
-      setSiteSettingsDraft(lockedDraft)
+    if (siteSettingsDraft.appearancePreset !== normalizedDraft.appearancePreset) {
+      setSiteSettingsDraft(normalizedDraft)
       return
     }
 
-    if (JSON.stringify(lockedDraft) === JSON.stringify(siteSettingsState.settings)) {
+    if (JSON.stringify(normalizedDraft) === JSON.stringify(siteSettingsState.settings)) {
       return
     }
 
@@ -2270,7 +2282,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     siteSettingsAutosaveTimerRef.current = setTimeout(() => {
-      void saveSiteSettingsDraft(lockedDraft)
+      void saveSiteSettingsDraft(normalizedDraft)
     }, 800)
 
     return () => {
@@ -4940,17 +4952,28 @@ export function SiteSettingsCard({
       <div className={styles.siteSettingsSection}>
         <div className={styles.walletSettingsTitle}>Branding and visuals</div>
         <div className={styles.siteSettingsGrid}>
-          <div className={`${styles.sortFieldWide} ${styles.lockedAppearanceField}`}>
-            <span className={styles.sortLabel}>Sparkle Suite theme</span>
-            <span className={styles.lockedAppearanceValue}>
-              Sparkle Suite/Morganite
-            </span>
+          <label className={styles.sortFieldWide}>
+            <span className={styles.sortLabel}>Customer-facing site theme</span>
+            <select
+              className={styles.sortSelect}
+              value={draft.appearancePreset}
+              onChange={(event) =>
+                onDraftChange?.({
+                  appearancePreset: event.target.value as SiteAppearancePreset,
+                })
+              }
+            >
+              {SITE_APPEARANCE_PRESET_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <span className={styles.siteSettingsPreviewNote}>
-              Morganite is locked in for every Sparkle Suite workspace and
-              Amethyst customer site. Changes auto-save to your workspace and
-              customer site.
+              Applies only to your public customer-facing site. Your Sparkle
+              Suite workspace keeps the standard workspace theme.
             </span>
-          </div>
+          </label>
           <label className={styles.searchField}>
             <span className={styles.searchLabel}>Team name</span>
             <input
@@ -4991,13 +5014,6 @@ export function SiteSettingsCard({
               its polish on desktop and mobile.
             </span>
           </label>
-        </div>
-        <div className={styles.customerSiteLooksSummary}>
-          <div className={styles.walletSettingsTitle}>Customer Site Looks</div>
-          <div className={styles.helperNote}>
-            Morganite is the active Sparkle Suite look. Alternate skin cards stay out
-            of the workspace while the suite is locked to one stable style.
-          </div>
         </div>
       </div>
 

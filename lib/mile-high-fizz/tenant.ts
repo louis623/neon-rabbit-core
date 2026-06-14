@@ -1,6 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
 
@@ -209,7 +208,7 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
       team_name: 'Mile High Fizz',
       show_join_page: false,
       hero_animation_type: 'sparkle_rise',
-      appearance_preset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
+      appearance_preset: 'black_diamond',
       customer_site_template: 'amethyst',
     },
     { onConflict: 'rep_id' },
