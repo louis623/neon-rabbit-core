@@ -41,6 +41,7 @@ import {
   getCustomerTimeline,
   getEstimatedTextsRemaining,
   getShowCalendarMetrics,
+  getSiteSettingsSaveStatusText,
   getWorkspaceSkinPreset,
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
@@ -1370,7 +1371,6 @@ describe('DashboardPlaceholder', () => {
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
         draft: SITE_SETTINGS_READY_STATE.settings,
-        statusMessage: 'All changes saved.',
       }),
     )
 
@@ -1415,11 +1415,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).not.toContain('Save site settings')
-    expect(html).toContain('All changes saved.')
-    expect(html).toContain('All changes saved.')
+    expect(html).not.toContain('All changes saved.')
   })
 
-  it('shows an auto-save cue without a manual save control for changed site settings drafts', () => {
+  it('keeps site settings save status out of the card controls', () => {
     const html = renderToStaticMarkup(
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
@@ -1431,13 +1430,80 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Changes will auto-save.')
+    expect(html).not.toContain('Changes will auto-save.')
     expect(html).not.toContain('Save site settings')
     expect(html).not.toContain('No unsaved changes')
     expect(html).not.toContain('disabled=""')
   })
 
-  it('keeps the site settings auto-save indicator inline instead of a sticky bottom save bar', () => {
+  it('derives global site settings auto-save status text', () => {
+    expect(
+      getSiteSettingsSaveStatusText({
+        settings: SITE_SETTINGS_READY_STATE.settings,
+        draft: SITE_SETTINGS_READY_STATE.settings,
+        actionState: { pending: false, error: null, helperMessage: null },
+      }),
+    ).toBe('All changes saved.')
+    expect(
+      getSiteSettingsSaveStatusText({
+        settings: SITE_SETTINGS_READY_STATE.settings,
+        draft: {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          tagline: 'Fresh draft tagline',
+        },
+        actionState: { pending: false, error: null, helperMessage: null },
+      }),
+    ).toBe('Changes will auto-save.')
+    expect(
+      getSiteSettingsSaveStatusText({
+        settings: SITE_SETTINGS_READY_STATE.settings,
+        draft: SITE_SETTINGS_READY_STATE.settings,
+        actionState: { pending: true, error: null, helperMessage: null },
+      }),
+    ).toBe('Saving changes...')
+    expect(
+      getSiteSettingsSaveStatusText({
+        settings: SITE_SETTINGS_READY_STATE.settings,
+        draft: SITE_SETTINGS_READY_STATE.settings,
+        actionState: {
+          pending: false,
+          error: 'Unable to save settings.',
+          helperMessage: null,
+        },
+      }),
+    ).toBe('Changes need attention.')
+  })
+
+  it('renders one global workspace save indicator outside the site settings card', () => {
+    const previousWindow = globalThis.window
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { location: { search: '?section=site-settings' } },
+    })
+
+    try {
+      const html = renderToStaticMarkup(
+        createElement(DashboardPlaceholder, {
+          reviewWorkspaceMode: true,
+          initialSiteSettings: SITE_SETTINGS_READY_STATE.settings,
+          repIdOverride: 'rep-1',
+          publicSiteSlugOverride: 'sparkle-test',
+          liveQueueSyncCodeOverride: 'LCH-5032',
+        }),
+      )
+
+      expect(html).toContain('data-testid="workspace-save-status"')
+      expect(html).toContain('All changes saved.')
+      expect(html).not.toContain('siteSettingsAutoSaveStatus')
+    } finally {
+      Object.defineProperty(globalThis, 'window', {
+        configurable: true,
+        value: previousWindow,
+      })
+    }
+  })
+
+  it('places the site settings auto-save indicator globally beside Nic-Nac', () => {
     const styles = readFileSync(
       resolve(
         process.cwd(),
@@ -1446,7 +1512,13 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(styles).toContain('.siteSettingsAutoSaveStatus')
+    expect(styles).toContain('.workspaceSaveStatus')
+    expect(styles).toContain('position: fixed')
+    expect(styles).toContain(
+      'right: calc(var(--nic-nac-column-width, 380px) + 24px)',
+    )
+    expect(styles).toContain('pointer-events: none')
+    expect(styles).not.toContain('.siteSettingsAutoSaveStatus')
     expect(styles).not.toContain('.siteSettingsSaveBar')
     expect(styles).not.toContain('.siteSettingsSaveButton')
     expect(styles).not.toContain('calc(96px + env(safe-area-inset-bottom))')

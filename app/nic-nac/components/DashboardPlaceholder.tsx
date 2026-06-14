@@ -740,6 +740,26 @@ export function getWorkspaceSkinPreset(
   return WORKSPACE_APPEARANCE_PRESET
 }
 
+export function getSiteSettingsSaveStatusText({
+  settings,
+  draft,
+  actionState,
+  statusMessage,
+}: {
+  settings?: SiteSettingsDashboardResult | null
+  draft?: SiteSettingsDraft | null
+  actionState?: SiteSettingsActionState
+  statusMessage?: string | null
+}) {
+  if (!settings || !draft) return null
+  if (actionState?.error) return 'Changes need attention.'
+  if (actionState?.pending) return 'Saving changes...'
+  if (JSON.stringify(draft) !== JSON.stringify(settings)) {
+    return 'Changes will auto-save.'
+  }
+  return statusMessage ?? 'All changes saved.'
+}
+
 export function formatAccountBillingAmount(amountCents: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -2937,6 +2957,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         activeWorkspacePreview.href.includes('?') ? '&' : '?'
       }previewRefresh=${previewFrameKey}`
     : null
+  const siteSettingsSaveStatusText = getSiteSettingsSaveStatusText({
+    settings: siteSettingsState.settings,
+    draft: siteSettingsDraft,
+    actionState: siteSettingsActionState,
+    statusMessage: siteSettingsActionState.helperMessage,
+  })
 
   return (
     <main
@@ -3205,7 +3231,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 actionState={siteSettingsActionState}
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
-                statusMessage={siteSettingsActionState.helperMessage}
               />
             </div>
           ) : null}
@@ -3253,6 +3278,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
         </section>
+        {siteSettingsSaveStatusText ? (
+          <div
+            className={`${styles.workspaceSaveStatus} ${
+              siteSettingsActionState.pending
+                ? styles.workspaceSaveStatusPending
+                : ''
+            } ${
+              siteSettingsActionState.error
+                ? styles.workspaceSaveStatusError
+                : ''
+            }`}
+            data-testid="workspace-save-status"
+            role="status"
+            aria-live="polite"
+          >
+            <span className={styles.workspaceSaveStatusDot} aria-hidden="true" />
+            <span>{siteSettingsSaveStatusText}</span>
+          </div>
+        ) : null}
       </div>
       )}
     </main>
@@ -4827,14 +4871,12 @@ export function SiteSettingsCard({
   actionState,
   onDraftChange,
   onSocialHandleChange,
-  statusMessage,
 }: {
   state: SiteSettingsState
   draft?: SiteSettingsDraft | null
   actionState?: SiteSettingsActionState
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
-  statusMessage?: string | null
 }) {
   if (state.status === 'error') {
     return (
@@ -4853,14 +4895,6 @@ export function SiteSettingsCard({
     )
   }
 
-  const hasUnsavedChanges =
-    JSON.stringify(draft) !== JSON.stringify(state.settings)
-  const saveStatusText = actionState?.pending
-    ? 'Saving changes...'
-    : hasUnsavedChanges
-      ? 'Changes will auto-save.'
-      : statusMessage ?? 'All changes saved.'
-
   return (
     <div className={styles.siteSettingsCard}>
       <div className={styles.workspaceSectionHeader}>
@@ -4870,9 +4904,6 @@ export function SiteSettingsCard({
             Keep your public profile, customer pages, and brand details tuned up.
           </div>
         </div>
-        <span className={styles.siteSettingsAutoSaveStatus}>
-          {saveStatusText}
-        </span>
       </div>
       <div className={styles.calendarHeader}>
         <div className={styles.walletSettingsTitle}>Profile basics</div>
@@ -5037,9 +5068,6 @@ export function SiteSettingsCard({
 
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
-      ) : null}
-      {statusMessage ? (
-        <div className={styles.helperMessage}>{statusMessage}</div>
       ) : null}
     </div>
   )
