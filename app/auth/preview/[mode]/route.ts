@@ -4,6 +4,7 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
+import { getSparkleFinderOriginFromValue } from "@/lib/sparkle-finder/oauth-redirect";
 
 type PreviewAuthRouteContext = {
   params: Promise<{
@@ -16,9 +17,7 @@ export async function GET(_request: Request, context: PreviewAuthRouteContext) {
   const authMode = parseSparkleFinderAuthMode(mode);
   const redirectPath = "/";
   const requestUrl = new URL(_request.url);
-  const requestHost =
-    getSafeLocalHost(_request.headers.get("host")) ?? getSafeLocalHost(requestUrl.host) ?? "127.0.0.1:4310";
-  const requestOrigin = `${requestUrl.protocol}//${requestHost}`;
+  const requestOrigin = getSafeRequestOrigin(_request, requestUrl) ?? "http://127.0.0.1:4310";
 
   if (!isLocalPreviewAuthEnabled()) {
     return NextResponse.redirect(new URL("/auth/sign-in", requestOrigin));
@@ -35,7 +34,14 @@ export async function GET(_request: Request, context: PreviewAuthRouteContext) {
   return response;
 }
 
-function getSafeLocalHost(host: string | null): string | null {
+function getSafeRequestOrigin(request: Request, requestUrl: URL): string | null {
+  return (
+    getSafeOriginFromHost(request.headers.get("host"), requestUrl.protocol) ??
+    getSparkleFinderOriginFromValue(requestUrl.origin)
+  );
+}
+
+function getSafeOriginFromHost(host: string | null, protocol: string): string | null {
   if (!host) {
     return null;
   }
@@ -48,7 +54,7 @@ function getSafeLocalHost(host: string | null): string | null {
     return null;
   }
 
-  const hostname = parsedHost.hostname.replace(/^\[(.*)\]$/, "$1");
+  const safeProtocol = protocol === "https:" ? "https:" : "http:";
 
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" ? host : null;
+  return getSparkleFinderOriginFromValue(`${safeProtocol}//${parsedHost.host}`);
 }

@@ -993,6 +993,40 @@ describe("Sparkle Finder hub routes", () => {
     expect(response.headers.get("set-cookie") ?? "").toContain("sparkle_finder_auth_mode=silver");
   });
 
+  it("keeps disabled preview auth redirects on the deployed Sparkle Finder host", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "");
+
+    const response = await previewAuthGET(
+      new Request("https://sparkle-finder-dev.vercel.app/auth/preview/silver", {
+        headers: { host: "sparkle-finder-dev.vercel.app" },
+      }),
+      {
+        params: Promise.resolve({ mode: "silver" }),
+      },
+    );
+
+    expect(response.headers.get("location")).toBe("https://sparkle-finder-dev.vercel.app/auth/sign-in");
+    expect(response.headers.get("set-cookie") ?? "").not.toContain("sparkle_finder_auth_mode");
+  });
+
+  it("keeps enabled preview auth redirects on the deployed Sparkle Finder host", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "true");
+
+    const response = await previewAuthGET(
+      new Request("https://sparkle-finder-dev.vercel.app/auth/preview/silver", {
+        headers: { host: "sparkle-finder-dev.vercel.app" },
+      }),
+      {
+        params: Promise.resolve({ mode: "silver" }),
+      },
+    );
+
+    expect(response.headers.get("location")).toBe("https://sparkle-finder-dev.vercel.app/");
+    expect(response.headers.get("set-cookie") ?? "").toContain("sparkle_finder_auth_mode=silver");
+  });
+
   it("ignores an untrusted Host header when the request URL host is local", async () => {
     const response = await previewAuthGET(
       new Request("http://localhost:4310/auth/preview/free", {
