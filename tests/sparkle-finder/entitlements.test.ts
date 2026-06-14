@@ -455,7 +455,6 @@ describe("Sparkle Finder entitlements", () => {
           display_name: "Casey Collector",
           tiktok_handle: "@casey_new",
           bio: "Fresh profile row.",
-          photo_url: "",
           profile_visibility: "private",
         },
         filters: [
@@ -614,13 +613,49 @@ describe("Sparkle Finder entitlements", () => {
         display_name: "Louis Sparkle",
         tiktok_handle: "@louis_sparkle",
         bio: "Renamed from the Silver profile form.",
-        photo_url: "",
         profile_visibility: "private",
       },
       filters: [
         ["user_id", "user-123"],
       ],
     });
+  });
+
+  it("preserves the existing persisted profile photo on text-only profile edits", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      profile: {
+        user_id: accountState.customer.id,
+        photo_url: "data:image/jpeg;base64,current-photo",
+      },
+    });
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      bio: "Text-only profile edit.",
+      displayName: "Louis Text Edit",
+      tiktokHandle: "@louis_text",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_profiles",
+      type: "update",
+      values: {
+        display_name: "Louis Text Edit",
+        tiktok_handle: "@louis_text",
+        bio: "Text-only profile edit.",
+        profile_visibility: "private",
+      },
+      filters: [
+        ["user_id", "user-123"],
+      ],
+    });
+    expect(client.operations).not.toContainEqual(
+      expect.objectContaining({
+        values: expect.objectContaining({ photo_url: expect.any(String) }),
+      }),
+    );
   });
 
   it("rejects persisted Silver profile saves when Supabase does not return the saved profile row", async () => {

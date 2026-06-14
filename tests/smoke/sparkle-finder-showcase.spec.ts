@@ -115,7 +115,7 @@ test.describe("Sparkle Showcase smoke", () => {
 
     await expect(profilePhotoInput).toHaveCount(1);
     await expect(page.getByText("Upload photo")).toBeVisible();
-    await expect(page.locator('input[name="photoUrl"][type="hidden"]')).toHaveCount(1);
+    await expect(page.locator('input[name="photoUrl"][type="hidden"]')).toHaveCount(0);
     await expect(page.locator('input[name="profilePhotoDataUrl"][type="hidden"]')).toHaveCount(1);
     await expect(page.getByText("Profile photo URL")).toHaveCount(0);
     await profilePhotoInput.setInputFiles(join(process.cwd(), "brand-assets", "sparkle-finder-s-logo-256.png"));

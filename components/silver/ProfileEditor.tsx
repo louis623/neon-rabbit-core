@@ -110,12 +110,12 @@ export function ProfileEditor({
 
   function applySavedProfileDraftFromFormData(formData: FormData) {
     const displayName = String(formData.get("displayName") ?? "").trim();
-    const photoUrl = String(formData.get("profilePhotoDataUrl") || formData.get("photoUrl") || "");
+    const photoUrl = String(formData.get("profilePhotoDataUrl") || "");
 
     setPreviewProfile((currentProfile) => ({
       ...currentProfile,
       bio: String(formData.get("bio") ?? ""),
-      photoUrl,
+      ...(photoUrl ? { photoUrl } : {}),
       tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
       visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
     }));
@@ -150,7 +150,7 @@ export function ProfileEditor({
     const result = updateSilverProfilePreview(accountState, previewProfile, {
       bio: String(formData.get("bio") ?? ""),
       displayName,
-      photoUrl: profilePhoto.photoUrl ?? String(formData.get("photoUrl") ?? ""),
+      ...(profilePhoto.photoUrl ? { photoUrl: profilePhoto.photoUrl } : {}),
       tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
       visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
     });
@@ -303,7 +303,6 @@ export function ProfileEditor({
         </label>
         <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           <span>Profile photo</span>
-          <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
           <input name="profilePhotoDataUrl" readOnly type="hidden" value={selectedProfilePhoto?.url ?? ""} />
           <div className="grid justify-items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-4 text-center">
             {profilePhotoCrop ? (

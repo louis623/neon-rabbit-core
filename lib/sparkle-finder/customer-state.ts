@@ -112,13 +112,16 @@ export async function persistSilverProfileForAccount(
     return { ok: false, reason: "silver_required" };
   }
 
-  const values = {
+  const values: Record<string, string> = {
     display_name: cleanText(input.displayName, 80) || cleanText(accountState.customer.displayName, 80),
     tiktok_handle: cleanText(input.tiktokHandle, 80),
     bio: cleanText(input.bio, 500),
-    photo_url: cleanText(input.photoUrl, profilePhotoMaxCharacters),
     profile_visibility: input.visibility === "sparkle_finder" ? "sparkle_finder" : "private",
   };
+
+  if (input.photoUrl !== undefined) {
+    values.photo_url = cleanText(input.photoUrl, profilePhotoMaxCharacters);
+  }
 
   const existingProfile = await safeMaybeSingle(
     supabase.from("sparkle_finder_profiles").select("user_id").eq("user_id", accountState.customer.id),
@@ -295,12 +298,5 @@ function matchesSavedProfile(data: unknown, userId: string, values: Record<strin
 
   const row = data as Record<string, unknown>;
 
-  return (
-    row.user_id === userId &&
-    row.display_name === values.display_name &&
-    row.tiktok_handle === values.tiktok_handle &&
-    row.bio === values.bio &&
-    row.photo_url === values.photo_url &&
-    row.profile_visibility === values.profile_visibility
-  );
+  return row.user_id === userId && Object.entries(values).every(([key, value]) => row[key] === value);
 }
