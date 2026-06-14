@@ -95,6 +95,16 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(displayNameInput).toBeEditable();
     await displayNameInput.fill("Sparkle Preview");
     await expect(displayNameInput).toHaveValue("Sparkle Preview");
+    await page.waitForTimeout(1200);
+    await expect(displayNameInput).toHaveValue("Sparkle Preview");
+    const tiktokInput = page.getByLabel("TikTok handle");
+    const collectorNotesInput = page.getByLabel("Collector notes");
+
+    await tiktokInput.fill("@sparkle_preview");
+    await collectorNotesInput.fill("Testing that profile typing stays put after auto-save.");
+    await page.waitForTimeout(1200);
+    await expect(tiktokInput).toHaveValue("@sparkle_preview");
+    await expect(collectorNotesInput).toHaveValue("Testing that profile typing stays put after auto-save.");
     const profilePhotoInput = page.locator('input[name="profilePhoto"][type="file"]');
 
     await expect(profilePhotoInput).toHaveCount(1);

@@ -47,6 +47,13 @@ type CropDragState = {
   pointerY: number;
 };
 
+type ProfileDraftState = {
+  bio: string;
+  displayName: string;
+  tiktokHandle: string;
+  visibility: SilverProfile["visibility"];
+};
+
 export function ProfileEditor({
   accountState,
   canSaveSilverActions,
@@ -61,6 +68,12 @@ export function ProfileEditor({
   const cropDragRef = useRef<CropDragState | null>(null);
   const [previewCustomer, setPreviewCustomer] = useState(customer);
   const [previewProfile, setPreviewProfile] = useState(profile);
+  const [profileDraft, setProfileDraft] = useState<ProfileDraftState>(() => ({
+    bio: profile.bio,
+    displayName: customer.displayName,
+    tiktokHandle: profile.tiktokHandle,
+    visibility: profile.visibility,
+  }));
   const [profilePhotoCrop, setProfilePhotoCrop] = useState<ProfilePhotoCropState | null>(null);
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<{ name: string; url: string } | null>(null);
   const [profilePhotoMessage, setProfilePhotoMessage] = useState("JPG, PNG, or WebP.");
@@ -112,6 +125,18 @@ export function ProfileEditor({
       clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
     }
+  }
+
+  function updateProfileDraft<Field extends keyof ProfileDraftState>(
+    field: Field,
+    value: ProfileDraftState[Field],
+    delayMs = profileAutosaveDelayMs,
+  ) {
+    setProfileDraft((currentDraft) => ({
+      ...currentDraft,
+      [field]: value,
+    }));
+    scheduleProfileAutosave(delayMs);
   }
 
   async function submitProfileAutosave() {
@@ -299,11 +324,11 @@ export function ProfileEditor({
           Display name
           <input
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 text-sm font-normal text-[var(--sparkle-ink)]"
-            defaultValue={previewCustomer.displayName}
             maxLength={80}
             name="displayName"
-            onChange={() => scheduleProfileAutosave()}
+            onChange={(event) => updateProfileDraft("displayName", event.target.value)}
             required
+            value={profileDraft.displayName}
           />
         </label>
         <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
@@ -375,27 +400,27 @@ export function ProfileEditor({
           TikTok handle
           <input
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]"
-            defaultValue={previewProfile.tiktokHandle}
             name="tiktokHandle"
-            onChange={() => scheduleProfileAutosave()}
+            onChange={(event) => updateProfileDraft("tiktokHandle", event.target.value)}
+            value={profileDraft.tiktokHandle}
           />
         </label>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           Collector notes
           <textarea
             className="min-h-28 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 py-3 text-sm font-normal leading-6 text-[var(--sparkle-ink)]"
-            defaultValue={previewProfile.bio}
             name="bio"
-            onChange={() => scheduleProfileAutosave()}
+            onChange={(event) => updateProfileDraft("bio", event.target.value)}
+            value={profileDraft.bio}
           />
         </label>
         <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
           <legend className="px-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">Visibility</legend>
           <label className="flex min-h-10 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
             <input
-              defaultChecked={previewProfile.visibility === "private"}
+              checked={profileDraft.visibility === "private"}
               name="visibility"
-              onChange={() => scheduleProfileAutosave(200)}
+              onChange={() => updateProfileDraft("visibility", "private", 200)}
               type="radio"
               value="private"
             />
@@ -404,9 +429,9 @@ export function ProfileEditor({
           </label>
           <label className="flex min-h-10 items-center gap-3 text-sm text-[var(--sparkle-ink-muted)]">
             <input
-              defaultChecked={previewProfile.visibility === "sparkle_finder"}
+              checked={profileDraft.visibility === "sparkle_finder"}
               name="visibility"
-              onChange={() => scheduleProfileAutosave(200)}
+              onChange={() => updateProfileDraft("visibility", "sparkle_finder", 200)}
               type="radio"
               value="sparkle_finder"
             />
