@@ -161,7 +161,7 @@ export async function persistSilverProfileForAccount(
   const savedProfile = await safeMaybeSingle(
     supabase
       .from("sparkle_finder_profiles")
-      .select("user_id,display_name,tiktok_handle,bio,photo_url,profile_visibility")
+      .select(["user_id", ...Object.keys(values)].join(","))
       .eq("user_id", accountState.customer.id),
   );
 
