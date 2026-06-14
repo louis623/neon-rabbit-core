@@ -127,6 +127,10 @@ export async function persistSilverProfileForAccount(
     supabase.from("sparkle_finder_profiles").select("user_id").eq("user_id", accountState.customer.id),
   );
 
+  if (existingProfile.error) {
+    logProfileSaveFailure("select_existing_profile", existingProfile.error);
+  }
+
   let result: { data: unknown; error: unknown };
 
   if (existingProfile.data) {
@@ -148,6 +152,9 @@ export async function persistSilverProfileForAccount(
   }
 
   if (result.error) {
+    logProfileSaveFailure(existingProfile.data ? "update_profile" : "insert_profile", result.error, {
+      valueKeys: Object.keys(values),
+    });
     return { ok: false, reason: "save_failed" };
   }
 
@@ -158,7 +165,16 @@ export async function persistSilverProfileForAccount(
       .eq("user_id", accountState.customer.id),
   );
 
-  if (savedProfile.error || !matchesSavedProfile(savedProfile.data, accountState.customer.id, values)) {
+  if (savedProfile.error) {
+    logProfileSaveFailure("select_saved_profile", savedProfile.error);
+    return { ok: false, reason: "save_failed" };
+  }
+
+  if (!matchesSavedProfile(savedProfile.data, accountState.customer.id, values)) {
+    logProfileSaveFailure("verify_saved_profile", null, {
+      expectedKeys: Object.keys(values),
+      savedKeys: savedProfile.data && typeof savedProfile.data === "object" ? Object.keys(savedProfile.data) : [],
+    });
     return { ok: false, reason: "save_failed" };
   }
 
@@ -299,4 +315,31 @@ function matchesSavedProfile(data: unknown, userId: string, values: Record<strin
   const row = data as Record<string, unknown>;
 
   return row.user_id === userId && Object.entries(values).every(([key, value]) => row[key] === value);
+}
+
+function logProfileSaveFailure(stage: string, error: unknown, context: Record<string, unknown> = {}) {
+  console.error(
+    "[sparkle-finder] silver profile save failed",
+    JSON.stringify({
+      stage,
+      error: summarizePersistenceError(error),
+      ...context,
+    }),
+  );
+}
+
+function summarizePersistenceError(error: unknown): Record<string, unknown> | null {
+  if (!error || typeof error !== "object") {
+    return error ? { message: String(error) } : null;
+  }
+
+  const record = error as Record<string, unknown>;
+
+  return {
+    code: record.code,
+    details: record.details,
+    hint: record.hint,
+    message: record.message,
+    name: record.name,
+  };
 }
