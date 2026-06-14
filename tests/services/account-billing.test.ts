@@ -392,6 +392,38 @@ describe('account billing service', () => {
     expect(result.canManageBilling).toBe(true)
   })
 
+  it('keeps the account dashboard available when Stripe configuration is unavailable', async () => {
+    vi.mocked(stripeEnabled).mockImplementation(() => {
+      throw new Error('Stripe configuration is incomplete — cannot start in production')
+    })
+
+    const subscriptionsChain = makeSelectSingle({
+      data: {
+        status: 'active',
+        plan_tier: 'monthly',
+        current_period_end: '2026-06-01T00:00:00Z',
+        cancel_at_period_end: false,
+        cancelled_at: null,
+        stripe_livemode: false,
+      },
+      error: null,
+    })
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      stripeCustomerId: 'cus_123',
+    })
+
+    expect(result.stripeConfigured).toBe(false)
+    expect(result.subscription?.status).toBe('active')
+    expect(result.paymentMethod).toBe(null)
+    expect(result.invoices).toEqual([])
+    expect(result.canStartSubscription).toBe(false)
+    expect(result.canManageBilling).toBe(false)
+  })
+
   it('reports local Stripe test buyer checkout mode for billing review copy', async () => {
     process.env.SPARKLE_STRIPE_TEST_BUYER_MODE = 'true'
     vi.mocked(stripeEnabled).mockReturnValue(false)

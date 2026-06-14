@@ -531,15 +531,21 @@ describe('Sparkle Suite public landing page', () => {
     expect(heroHtml).not.toContain('modules')
   })
 
-  it('routes signed-in root visits into the workspace before rendering the public landing', () => {
-    const source = readFileSync(join(process.cwd(), 'app', 'page.tsx'), 'utf8')
+  it('keeps the root landing server render public-safe and lets the client account action redirect signed-in reps', () => {
+    const pageSource = readFileSync(join(process.cwd(), 'app', 'page.tsx'), 'utf8')
+    const accountActionSource = readFileSync(
+      join(process.cwd(), 'app', '_components', 'SparkleSuitePublicAccountAction.tsx'),
+      'utf8',
+    )
 
-    expect(source).toContain("export const dynamic = 'force-dynamic'")
-    expect(source).toContain('createServerSupabaseClient')
-    expect(source).toContain('supabase.auth.getUser()')
-    expect(source).toContain("redirect('/nic-nac')")
-    expect(source).toContain('<SparkleSuitePublicLanding />')
-    expect(source).toContain('application/ld+json')
+    expect(pageSource).not.toContain("export const dynamic = 'force-dynamic'")
+    expect(pageSource).not.toContain('createServerSupabaseClient')
+    expect(pageSource).not.toContain('supabase.auth.getUser()')
+    expect(pageSource).not.toContain("redirect('/nic-nac')")
+    expect(pageSource).toContain('<SparkleSuitePublicLanding />')
+    expect(pageSource).toContain('application/ld+json')
+    expect(accountActionSource).toContain('getSession')
+    expect(accountActionSource).toContain('redirectToWorkspaceUnlessAlreadyThere')
   })
 
   it('exports public landing metadata without third-party brand-led framing', () => {

@@ -109,6 +109,15 @@ function getAccountBillingCheckoutMode(): AccountBillingDashboardResult['checkou
   return mode === 'true' || mode === '1' ? 'test_buyer' : 'standard'
 }
 
+function getAccountBillingStripeConfigured() {
+  try {
+    return isStripeEnabled()
+  } catch (cause) {
+    console.warn('[account-billing] Stripe configuration unavailable:', cause)
+    return false
+  }
+}
+
 function buildReferralLink(code: string | null) {
   if (!code) return null
   const url = new URL('/start', getAppUrl())
@@ -214,7 +223,7 @@ export async function getAccountBillingDashboard(args: {
   } catch (cause) {
     console.warn('[account-billing] Referral summary unavailable:', cause)
   }
-  const stripeConfigured = isStripeEnabled()
+  const stripeConfigured = getAccountBillingStripeConfigured()
 
   let paymentMethod: AccountBillingPaymentMethodSummary | null = null
   let invoices: AccountBillingInvoiceSummary[] = []
