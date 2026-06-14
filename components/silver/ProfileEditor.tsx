@@ -22,7 +22,8 @@ const realAccountInitialState: SilverSaveActionState = {
   message: "Profile ready to save.",
 };
 
-const profilePhotoMaxBytes = 500 * 1024;
+const profilePhotoSourceMaxBytes = 10 * 1024 * 1024;
+const profilePhotoDataUrlMaxCharacters = 700_000;
 const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export function ProfileEditor({
@@ -53,7 +54,10 @@ export function ProfileEditor({
       return;
     }
 
-    const profilePhoto = await readProfilePhotoDataUrl(formData.get("profilePhoto"));
+    const profilePhoto = await readPreparedProfilePhotoDataUrl(
+      formData.get("profilePhotoDataUrl"),
+      formData.get("profilePhoto"),
+    );
 
     if (!profilePhoto.ok) {
       setLocalStatusMessage(profilePhoto.message);
@@ -92,7 +96,8 @@ export function ProfileEditor({
       return;
     }
 
-    const profilePhoto = await readProfilePhotoDataUrl(file);
+    setProfilePhotoMessage("Preparing preview...");
+    const profilePhoto = await prepareProfilePhotoDataUrl(file);
 
     if (!profilePhoto.ok) {
       event.currentTarget.value = "";
@@ -154,6 +159,7 @@ export function ProfileEditor({
         <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           <span>Profile photo</span>
           <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
+          <input name="profilePhotoDataUrl" readOnly type="hidden" value={selectedProfilePhoto?.url ?? ""} />
           <div className="grid justify-items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 py-5 text-center">
             <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
               {activeProfilePhotoUrl ? (
@@ -186,7 +192,9 @@ export function ProfileEditor({
               <span className="max-w-full truncate text-xs font-semibold text-[var(--sparkle-ink-muted)]">
                 {selectedProfilePhoto?.name ?? (activeProfilePhotoUrl ? "Current photo" : "No photo selected")}
               </span>
-              <p className="text-xs font-semibold text-[var(--sparkle-ink-muted)]">{profilePhotoMessage}</p>
+              <p className="text-xs font-semibold text-[var(--sparkle-ink-muted)]" role="status">
+                {profilePhotoMessage}
+              </p>
             </div>
           </div>
         </div>
@@ -252,7 +260,20 @@ async function disabledProfileAction(): Promise<SilverSaveActionState> {
   };
 }
 
-async function readProfilePhotoDataUrl(
+async function readPreparedProfilePhotoDataUrl(
+  preparedValue: FormDataEntryValue | null,
+  fileValue: FormDataEntryValue | null,
+): Promise<{ ok: true; photoUrl?: string } | { ok: false; message: string }> {
+  const preparedPhotoUrl = typeof preparedValue === "string" ? preparedValue.trim() : "";
+
+  if (preparedPhotoUrl) {
+    return validatePreparedProfilePhotoDataUrl(preparedPhotoUrl);
+  }
+
+  return prepareProfilePhotoDataUrl(fileValue);
+}
+
+async function prepareProfilePhotoDataUrl(
   value: FormDataEntryValue | null,
 ): Promise<{ ok: true; photoUrl?: string } | { ok: false; message: string }> {
   if (!(value instanceof File) || value.size === 0) {
@@ -263,17 +284,14 @@ async function readProfilePhotoDataUrl(
     return { ok: false, message: "Upload a JPG, PNG, or WebP profile photo." };
   }
 
-  if (value.size > profilePhotoMaxBytes) {
-    return { ok: false, message: "Profile photo must be 500 KB or smaller." };
+  if (value.size > profilePhotoSourceMaxBytes) {
+    return { ok: false, message: "Profile photo must be 10 MB or smaller." };
   }
 
   try {
-    return {
-      ok: true,
-      photoUrl: await fileToDataUrl(value),
-    };
+    return await resizeProfilePhoto(value);
   } catch {
-    return { ok: false, message: "Profile photo could not be read." };
+    return { ok: false, message: "Profile photo could not be previewed. Try a JPG, PNG, or WebP." };
   }
 }
 
@@ -285,4 +303,64 @@ function fileToDataUrl(file: File): Promise<string> {
     reader.addEventListener("error", () => reject(new Error("Profile photo could not be read.")));
     reader.readAsDataURL(file);
   });
+}
+
+async function resizeProfilePhoto(file: File): Promise<{ ok: true; photoUrl: string } | { ok: false; message: string }> {
+  const sourceDataUrl = await fileToDataUrl(file);
+  const image = await loadImage(sourceDataUrl);
+  const maxDimension = 640;
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return { ok: false, message: "Profile photo could not be previewed." };
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  for (const quality of [0.86, 0.78, 0.7, 0.62]) {
+    const photoUrl = canvas.toDataURL("image/jpeg", quality);
+    const validated = validatePreparedProfilePhotoDataUrl(photoUrl);
+
+    if (validated.ok) {
+      return validated as { ok: true; photoUrl: string };
+    }
+  }
+
+  return { ok: false, message: "Profile photo is still too large after resizing. Try a smaller image." };
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", () => reject(new Error("Profile photo image could not be loaded.")));
+    image.src = src;
+  });
+}
+
+function validatePreparedProfilePhotoDataUrl(
+  photoUrl: string,
+): { ok: true; photoUrl: string } | { ok: false; message: string } {
+  if (!photoUrl) {
+    return { ok: true, photoUrl };
+  }
+
+  if (!photoUrl.startsWith("data:image/")) {
+    return { ok: false, message: "Profile photo could not be prepared." };
+  }
+
+  if (photoUrl.length > profilePhotoDataUrlMaxCharacters) {
+    return { ok: false, message: "Profile photo is too large. Try a smaller image." };
+  }
+
+  return { ok: true, photoUrl };
 }

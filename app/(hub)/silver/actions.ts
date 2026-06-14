@@ -32,6 +32,7 @@ type SparkleFinderSilverServerClient = SupabaseCustomerStateClient & SupabaseSho
 };
 
 const profilePhotoMaxBytes = 500 * 1024;
+const profilePhotoDataUrlMaxCharacters = 700_000;
 const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function saveSilverProfileAction(
@@ -44,7 +45,10 @@ export async function saveSilverProfileAction(
     return verified.state;
   }
 
-  const profilePhoto = await readOptionalProfilePhotoDataUrl(formData.get("profilePhoto"));
+  const profilePhoto = await readOptionalProfilePhotoDataUrl(
+    formData.get("profilePhoto"),
+    formData.get("profilePhotoDataUrl"),
+  );
 
   if (!profilePhoto.ok) {
     return profilePhoto.state;
@@ -75,6 +79,7 @@ export async function saveSilverProfileAction(
   }
 
   revalidatePath("/silver");
+  revalidatePath("/account");
 
   return {
     status: "saved",
@@ -176,7 +181,6 @@ export async function saveShowcasePieceAction(
   }
 
   revalidatePath("/silver");
-  revalidatePath("/account");
 
   return {
     status: "saved",
@@ -316,7 +320,14 @@ function readUploadFile(value: FormDataEntryValue | null): File {
 
 async function readOptionalProfilePhotoDataUrl(
   value: FormDataEntryValue | null,
+  preparedValue: FormDataEntryValue | null = null,
 ): Promise<{ ok: true; photoUrl?: string } | { ok: false; state: SilverSaveActionState }> {
+  const preparedPhotoUrl = typeof preparedValue === "string" ? preparedValue.trim() : "";
+
+  if (preparedPhotoUrl) {
+    return validatePreparedProfilePhotoDataUrl(preparedPhotoUrl);
+  }
+
   if (!(value instanceof File) || value.size === 0) {
     return { ok: true };
   }
@@ -355,6 +366,35 @@ async function readOptionalProfilePhotoDataUrl(
       },
     };
   }
+}
+
+function validatePreparedProfilePhotoDataUrl(
+  photoUrl: string,
+): { ok: true; photoUrl: string } | { ok: false; state: SilverSaveActionState } {
+  if (!/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/]+=*$/i.test(photoUrl)) {
+    return {
+      ok: false,
+      state: {
+        status: "error",
+        message: "Profile photo could not be prepared. Choose a JPG, PNG, or WebP.",
+      },
+    };
+  }
+
+  if (photoUrl.length > profilePhotoDataUrlMaxCharacters) {
+    return {
+      ok: false,
+      state: {
+        status: "error",
+        message: "Profile photo is too large. Try a smaller image.",
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    photoUrl,
+  };
 }
 
 async function fileToDataUrl(file: File): Promise<string> {
