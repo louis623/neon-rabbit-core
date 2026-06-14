@@ -33,7 +33,6 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
   return (
     <FinderNicNacChatbot
       compact={compact}
-      intro="I can check this Finder piece against saved rep board paths and upcoming show context."
       leadCountLabel={formatLeadCount(result.results.length, result.dataSource)}
       leads={result.results.map((match) => buildLead(match, result.dataSource))}
       quickBubbles={[
@@ -62,7 +61,6 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
   return (
     <FinderNicNacChatbot
       compact={compact}
-      intro="Browse for free. Let Nic-Nac hunt for you with Silver."
       quickBubbles={[
         {
           label: "Check saved pieces",
@@ -90,7 +88,6 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
     <FinderNicNacChatbot
       compact={compact}
       emptyState={emptyState}
-      intro={emptyState}
       quickBubbles={[
         {
           label: "Find a library piece",

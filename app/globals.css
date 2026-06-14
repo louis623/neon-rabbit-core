@@ -335,9 +335,9 @@ select {
 
 .finder-nic-nac-chatbot {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  max-height: 48rem;
-  min-height: 24rem;
+  grid-template-rows: auto auto minmax(16rem, 1fr) auto;
+  max-height: 52rem;
+  min-height: 32rem;
   overflow: hidden;
   border: 1px solid rgba(64, 41, 36, 0.14);
   border-radius: var(--sparkle-radius-sm);
@@ -346,15 +346,13 @@ select {
 }
 
 .finder-nic-nac-chatbot--compact {
-  min-height: 34rem;
+  min-height: 39rem;
 }
 
 .finder-nic-nac-chatbot__head {
   align-items: center;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  padding: 1.125rem 1.125rem 0;
+  display: flex;
+  padding: 1.125rem 1.125rem 0.25rem;
 }
 
 .finder-nic-nac-chatbot__brand {
@@ -372,7 +370,6 @@ select {
   line-height: 1;
 }
 
-.finder-nic-nac-chatbot__head p,
 .finder-nic-nac-chatbot__message,
 .finder-nic-nac-chatbot__lead-meta {
   color: #775d57;
@@ -400,7 +397,7 @@ select {
 }
 
 .finder-nic-nac-chatbot__starters {
-  padding: 1rem 1.125rem 0;
+  padding: 0.625rem 1.125rem 0.875rem;
 }
 
 .finder-nic-nac-chatbot__starters button,
@@ -427,10 +424,11 @@ select {
   align-content: start;
   display: grid;
   gap: 0.625rem;
-  min-height: 0;
+  min-height: 18rem;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 1rem 1.125rem;
+  border-top: 1px solid rgba(64, 41, 36, 0.08);
 }
 
 .finder-nic-nac-chatbot__message-row {
@@ -552,8 +550,10 @@ select {
   gap: 0.5rem;
 }
 
-.finder-nic-nac-chatbot__form input {
+.finder-nic-nac-chatbot__form textarea {
   width: 100%;
+  min-height: 3rem;
+  max-height: 8.25rem;
   min-width: 0;
   border: 1px solid rgba(64, 41, 36, 0.16);
   border-radius: 0.75rem;
@@ -561,6 +561,8 @@ select {
   color: #402924;
   font: inherit;
   padding: 0.6875rem 0.75rem;
+  resize: none;
+  overflow-y: auto;
 }
 
 .finder-nic-nac-chatbot__form button {
@@ -579,7 +581,7 @@ select {
 
 .finder-nic-nac-chatbot__starters button:focus-visible,
 .finder-nic-nac-chatbot__action-bubbles a:focus-visible,
-.finder-nic-nac-chatbot__form input:focus-visible,
+.finder-nic-nac-chatbot__form textarea:focus-visible,
 .finder-nic-nac-chatbot__form button:focus-visible,
 .finder-nic-nac-chatbot__lead-actions a:focus-visible {
   outline: 2px solid #ee2c9b;

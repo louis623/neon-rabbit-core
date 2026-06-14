@@ -33,7 +33,7 @@ describe("Sparkle Finder launch hardening", () => {
       await ItemDetailPage({ params: Promise.resolve({ itemId: "jewel-rainbow-crown-ring" }) }),
     );
 
-    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).not.toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
   });

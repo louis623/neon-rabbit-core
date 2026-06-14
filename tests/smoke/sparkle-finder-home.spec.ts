@@ -181,7 +181,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Ask Nic-Nac" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     await expect(page.getByText("Exact item", { exact: true }).first()).toBeVisible();
     await expectNoGuardrailCopy(page);
@@ -208,7 +208,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     ]);
 
     await page.goto(`${baseUrl}/library/${apiItemId}`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: "Ask Nic-Nac" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     const repSiteLink = page.getByRole("link", { name: "Visit Rep Site" }).first();
     await expect(repSiteLink).toBeVisible();

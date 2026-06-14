@@ -541,7 +541,7 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Sierra Sparkle Studio");
-    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).toContain("Exact item");
     expect(markup).toContain("/rep-boards?listing=rainbow-crown");
@@ -602,7 +602,9 @@ describe("Sparkle Finder hub routes", () => {
       renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("free")),
     );
 
-    expect(markup).toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
+    expect(markup).toContain(">Nic-Nac</h2>");
+    expect(markup).toContain("Show timing context");
+    expect(markup).not.toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
     expect(markup).not.toContain("Exact item lead");
     expect(markup).not.toContain("Next show");
   });

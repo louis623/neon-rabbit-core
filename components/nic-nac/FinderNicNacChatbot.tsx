@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { NicNacMark } from "@/components/nic-nac/NicNacMark";
@@ -32,7 +32,6 @@ export type FinderNicNacLead = {
 
 type FinderNicNacChatbotProps = {
   status: "ready" | "empty" | "upgrade";
-  intro: string;
   quickBubbles: FinderNicNacQuickBubble[];
   leads?: FinderNicNacLead[];
   leadCountLabel?: string;
@@ -42,7 +41,6 @@ type FinderNicNacChatbotProps = {
 
 export function FinderNicNacChatbot({
   status,
-  intro,
   quickBubbles,
   leads = [],
   leadCountLabel,
@@ -50,8 +48,13 @@ export function FinderNicNacChatbot({
   compact = false,
 }: FinderNicNacChatbotProps) {
   const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", text: intro }]);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  function resizeInput(element: HTMLTextAreaElement) {
+    element.style.height = "auto";
+    element.style.height = `${Math.min(element.scrollHeight, 132)}px`;
+  }
 
   function askNicNac(label: string, response: string) {
     setMessages([
@@ -74,6 +77,14 @@ export function FinderNicNacChatbot({
       { role: "assistant", text: buildTypedResponse(status, leads.length, emptyState) },
     ]);
     setQuestion("");
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+  }
+
+  function handleQuestionChange(event: ChangeEvent<HTMLTextAreaElement>) {
+    setQuestion(event.target.value);
+    resizeInput(event.target);
   }
 
   return (
@@ -84,12 +95,8 @@ export function FinderNicNacChatbot({
       <div className="finder-nic-nac-chatbot__head">
         <div className="finder-nic-nac-chatbot__brand">
           <NicNacMark size={28} />
-          <div>
-            <h2>Ask Nic-Nac</h2>
-            <p>Same Nic-Nac from Sparkle Suite, focused on your Finder hunt.</p>
-          </div>
+          <h2>Nic-Nac</h2>
         </div>
-        {leadCountLabel ? <span className="finder-nic-nac-chatbot__count">{leadCountLabel}</span> : null}
       </div>
 
       <div className="finder-nic-nac-chatbot__starters" aria-label="Nic-Nac quick bubbles">
@@ -105,6 +112,7 @@ export function FinderNicNacChatbot({
       </div>
 
       <div className="finder-nic-nac-chatbot__thread" aria-live="polite">
+        {leadCountLabel ? <p className="sr-only">{leadCountLabel}</p> : null}
         {messages.map((message, index) => (
           <div
             className={`finder-nic-nac-chatbot__message-row finder-nic-nac-chatbot__message-row--${message.role}`}
@@ -124,30 +132,17 @@ export function FinderNicNacChatbot({
             ))}
           </div>
         ) : null}
-
-        {status === "empty" ? (
-          <div className="finder-nic-nac-chatbot__action-bubbles" aria-label="Finder actions">
-            <Link href="/library">Find a library piece</Link>
-            <Link href="/silver#showcase-studio">Open Showcase Studio</Link>
-          </div>
-        ) : null}
-
-        {status === "upgrade" ? (
-          <div className="finder-nic-nac-chatbot__action-bubbles" aria-label="Silver actions">
-            <Link href="/silver">Open Silver preview</Link>
-          </div>
-        ) : null}
       </div>
 
       <form className="finder-nic-nac-chatbot__form" onSubmit={handleSubmit}>
-        <label htmlFor="sparkle-finder-nic-nac-question">Ask Nic-Nac</label>
+        <label htmlFor="sparkle-finder-nic-nac-question">Message Nic-Nac</label>
         <div>
-          <input
+          <textarea
             id="sparkle-finder-nic-nac-question"
-            onChange={(event) => setQuestion(event.target.value)}
+            onChange={handleQuestionChange}
             placeholder="Ask about this piece"
             ref={inputRef}
-            type="text"
+            rows={1}
             value={question}
           />
           <button type="submit">Ask</button>

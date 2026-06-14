@@ -135,8 +135,9 @@ describe("Nic-Nac find-this-for-me flow", () => {
       reason: "silver_required",
       results: [],
     });
-    expect(freeMarkup).toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
-    expect(freeMarkup).toContain("/silver");
+    expect(freeMarkup).toContain(">Nic-Nac</h2>");
+    expect(freeMarkup).toContain("Show timing context");
+    expect(freeMarkup).not.toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
     expect(freeMarkup).not.toContain("Sierra Sparkle Studio");
   });
 
@@ -148,7 +149,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).toContain("Sierra Sparkle Studio");
     expect(markup).toContain("Open rep board path");
@@ -199,7 +200,8 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("Add an existing library record");
+    expect(markup).toContain("Find a library piece");
+    expect(markup).toContain("Open Showcase Studio");
     expect(markup).not.toContain("Sierra Sparkle Studio");
     expect(markup).not.toContain("Exact item lead");
   });
@@ -215,11 +217,14 @@ describe("Nic-Nac find-this-for-me flow", () => {
 
     expect(markup).toContain("sparkle-nic-nac-mark");
     expect(markup).toContain("finder-nic-nac-chatbot__starters");
-    expect(markup).toContain("finder-nic-nac-chatbot__message-row--assistant");
-    expect(markup).toContain("Same Nic-Nac from Sparkle Suite, focused on your Finder hunt.");
+    expect(markup).toContain(">Nic-Nac</h2>");
+    expect(markup).toContain("finder-nic-nac-chatbot__thread");
+    expect(markup).not.toContain("Same Nic-Nac from Sparkle Suite");
     expect(markup).toContain("Check saved pieces");
     expect(markup).toContain("Match rep leads");
     expect(markup).toContain("Next show context");
+    expect(markup).toContain("<textarea");
+    expect(markup).toContain("Message Nic-Nac");
     expect(markup).toContain("Ask about this piece");
     expect(markup).not.toContain("sparkle-nic-nac-panel");
     expect(markup).not.toContain("radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)");
