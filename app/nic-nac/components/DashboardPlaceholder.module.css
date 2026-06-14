@@ -109,89 +109,6 @@
   --workspace-button-shadow: rgba(0, 0, 0, 0.3);
 }
 
-.main[data-workspace-skin='black_diamond'] .topbar {
-  color: var(--nic-nac-text-primary);
-}
-
-.main[data-workspace-skin='black_diamond'] .topbarInfoPill,
-.main[data-workspace-skin='black_diamond'] .workspaceSidebar,
-.main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
-.main[data-workspace-skin='black_diamond'] .workspacePanel,
-.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSection,
-.main[data-workspace-skin='black_diamond'] .walletSettingsPanel,
-.main[data-workspace-skin='black_diamond'] .walletReferencePanel,
-.main[data-workspace-skin='black_diamond'] .calendarPanel,
-.main[data-workspace-skin='black_diamond'] .calendarGrid,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSaveBar,
-.main[data-workspace-skin='black_diamond'] .previewFocusBar {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-    #15110f;
-  border-color: var(--workspace-border);
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.08),
-    0 18px 42px var(--workspace-panel-shadow);
-}
-
-.main[data-workspace-skin='black_diamond'] .workspaceIntroCard {
-  background:
-    radial-gradient(circle at 96% 16%, rgba(0, 217, 255, 0.08), transparent 18rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-    #15110f;
-}
-
-.main[data-workspace-skin='black_diamond'] .workspacePanel::before,
-.main[data-workspace-skin='black_diamond'] .workspaceSidebar::before,
-.main[data-workspace-skin='black_diamond'] .siteSettingsCard::before {
-  background: linear-gradient(90deg, #d4af37 0%, #00d9ff 72%, #f4c2c2 100%);
-}
-
-.main[data-workspace-skin='black_diamond'] .workspaceNavButton:hover {
-  background: rgba(212, 175, 55, 0.12);
-}
-
-.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive,
-.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive:hover {
-  border-color: rgba(212, 175, 55, 0.48);
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(0, 217, 255, 0.12));
-}
-
-.main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag,
-.main[data-workspace-skin='black_diamond'] .rosterTag,
-.main[data-workspace-skin='black_diamond'] .timelineItem,
-.main[data-workspace-skin='black_diamond'] .walletToggleRow,
-.main[data-workspace-skin='black_diamond'] .teamManagementPanel,
-.main[data-workspace-skin='black_diamond'] .teamMessagePreview,
-.main[data-workspace-skin='black_diamond'] .calendarWeekdayRow,
-.main[data-workspace-skin='black_diamond'] .calendarCell,
-.main[data-workspace-skin='black_diamond'] .calendarEventPill,
-.main[data-workspace-skin='black_diamond'] .calendarEventMore,
-.main[data-workspace-skin='black_diamond'] .walletTransactionRow {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(244, 207, 98, 0.2);
-  color: var(--nic-nac-text-primary);
-}
-
-.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavLabel,
-.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavSubtitle {
-  color: rgba(216, 203, 189, 0.72);
-}
-
-.main[data-workspace-skin='black_diamond'] .liveSiteButton,
-.main[data-workspace-skin='black_diamond'] .actionButton,
-.main[data-workspace-skin='black_diamond'] .siteSettingsSaveButton {
-  background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
-  color: #141111;
-}
-
-.main[data-workspace-skin='black_diamond'] .helperButton,
-.main[data-workspace-skin='black_diamond'] .helperLink {
-  color: #e8fbff;
-  border-color: rgba(0, 217, 255, 0.45);
-  background: rgba(0, 217, 255, 0.08);
-}
-
 .main[data-workspace-skin='rose_gold'] {
   --workspace-accent: #e04f73;
   --workspace-accent-hover: #c73b5e;
@@ -3110,6 +3027,200 @@
   border-radius: 999px;
   background: rgba(64, 41, 36, 0.08);
   margin: 10px 12px 0;
+}
+
+.main[data-workspace-skin='black_diamond'] .topbar,
+.main[data-workspace-skin='black_diamond'] .topbarSubtitle,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebarTitle,
+.main[data-workspace-skin='black_diamond'] .cardTitle,
+.main[data-workspace-skin='black_diamond'] .customerName,
+.main[data-workspace-skin='black_diamond'] .walletSettingsTitle,
+.main[data-workspace-skin='black_diamond'] .walletTransactionTitle,
+.main[data-workspace-skin='black_diamond'] .walletTransactionAmount,
+.main[data-workspace-skin='black_diamond'] .accountDetailValue,
+.main[data-workspace-skin='black_diamond'] .referralCodeBlock strong {
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .topbarInfoPill,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebar,
+.main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
+.main[data-workspace-skin='black_diamond'] .workspacePanel,
+.main[data-workspace-skin='black_diamond'] .walletCard,
+.main[data-workspace-skin='black_diamond'] .calendarCard,
+.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
+.main[data-workspace-skin='black_diamond'] .accountBillingCard,
+.main[data-workspace-skin='black_diamond'] .referralCard,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSection,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSaveBar,
+.main[data-workspace-skin='black_diamond'] .walletSettingsPanel,
+.main[data-workspace-skin='black_diamond'] .walletReferencePanel,
+.main[data-workspace-skin='black_diamond'] .calendarPanel,
+.main[data-workspace-skin='black_diamond'] .calendarGrid,
+.main[data-workspace-skin='black_diamond'] .customerSiteLooks,
+.main[data-workspace-skin='black_diamond'] .customerSiteLooksBody,
+.main[data-workspace-skin='black_diamond'] .playbookIntro,
+.main[data-workspace-skin='black_diamond'] .playbookGroup,
+.main[data-workspace-skin='black_diamond'] .featureIndex,
+.main[data-workspace-skin='black_diamond'] .supportPath,
+.main[data-workspace-skin='black_diamond'] .previewFocusBar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+  border-color: rgba(244, 207, 98, 0.24);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(0, 0, 0, 0.3);
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
+.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
+.main[data-workspace-skin='black_diamond'] .accountBillingCard,
+.main[data-workspace-skin='black_diamond'] .referralCard {
+  background:
+    radial-gradient(circle at 96% 16%, rgba(0, 217, 255, 0.08), transparent 18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+}
+
+.main[data-workspace-skin='black_diamond'] .workspacePanel::before,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebar::before,
+.main[data-workspace-skin='black_diamond'] .siteSettingsCard::before,
+.main[data-workspace-skin='black_diamond'] .accountBillingCard::before,
+.main[data-workspace-skin='black_diamond'] .referralCard::before {
+  background: linear-gradient(90deg, #d4af37 0%, #00d9ff 72%, #f4c2c2 100%);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButton:hover {
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive,
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonActive:hover {
+  border-color: rgba(212, 175, 55, 0.48);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(0, 217, 255, 0.12));
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag,
+.main[data-workspace-skin='black_diamond'] .rosterTag,
+.main[data-workspace-skin='black_diamond'] .libraryTag,
+.main[data-workspace-skin='black_diamond'] .timelineItem,
+.main[data-workspace-skin='black_diamond'] .walletToggleRow,
+.main[data-workspace-skin='black_diamond'] .teamManagementPanel,
+.main[data-workspace-skin='black_diamond'] .teamMessagePreview,
+.main[data-workspace-skin='black_diamond'] .metricBlock,
+.main[data-workspace-skin='black_diamond'] .tradeControls,
+.main[data-workspace-skin='black_diamond'] .tradePieceCard,
+.main[data-workspace-skin='black_diamond'] .customerRow,
+.main[data-workspace-skin='black_diamond'] .calendarWeekdayRow,
+.main[data-workspace-skin='black_diamond'] .calendarCell,
+.main[data-workspace-skin='black_diamond'] .calendarEventPill,
+.main[data-workspace-skin='black_diamond'] .calendarEventMore,
+.main[data-workspace-skin='black_diamond'] .walletTransactionRow,
+.main[data-workspace-skin='black_diamond'] .featureIndexItem,
+.main[data-workspace-skin='black_diamond'] .guideField,
+.main[data-workspace-skin='black_diamond'] .supportReportCallout,
+.main[data-workspace-skin='black_diamond'] .resourceCard,
+.main[data-workspace-skin='black_diamond'] .playbookGuide,
+.main[data-workspace-skin='black_diamond'] .disclosureChevron,
+.main[data-workspace-skin='black_diamond'] .supportReportAcknowledgement,
+.main[data-workspace-skin='black_diamond'] .supportReportChoice,
+.main[data-workspace-skin='black_diamond'] .accountDetailList,
+.main[data-workspace-skin='black_diamond'] .accountDetailRow,
+.main[data-workspace-skin='black_diamond'] .accountStatusBadge,
+.main[data-workspace-skin='black_diamond'] .referralCodePanel,
+.main[data-workspace-skin='black_diamond'] .referralLinkValue,
+.main[data-workspace-skin='black_diamond'] .referralStats span,
+.main[data-workspace-skin='black_diamond'] .statusBadge,
+.main[data-workspace-skin='black_diamond'] .emptyState,
+.main[data-workspace-skin='black_diamond'] .statusBadgeNeutral {
+  background: #211c18;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: #f8efe4;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.main[data-workspace-skin='black_diamond'] .emptyState {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03)),
+    #120f0d;
+  border-color: rgba(244, 207, 98, 0.3);
+}
+
+.main[data-workspace-skin='black_diamond'] .searchInput,
+.main[data-workspace-skin='black_diamond'] .sortSelect,
+.main[data-workspace-skin='black_diamond'] .siteSettingsTextarea,
+.main[data-workspace-skin='black_diamond'] .supportReportTextarea,
+.main[data-workspace-skin='black_diamond'] .calculatorInput {
+  background: rgba(0, 0, 0, 0.34);
+  border-color: rgba(244, 207, 98, 0.34);
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .searchInput::placeholder,
+.main[data-workspace-skin='black_diamond'] .siteSettingsTextarea::placeholder,
+.main[data-workspace-skin='black_diamond'] .supportReportTextarea::placeholder,
+.main[data-workspace-skin='black_diamond'] .calculatorInput::placeholder {
+  color: rgba(216, 203, 189, 0.66);
+}
+
+.main[data-workspace-skin='black_diamond'] .searchInput:focus,
+.main[data-workspace-skin='black_diamond'] .sortSelect:focus,
+.main[data-workspace-skin='black_diamond'] .siteSettingsTextarea:focus,
+.main[data-workspace-skin='black_diamond'] .supportReportTextarea:focus,
+.main[data-workspace-skin='black_diamond'] .calculatorInput:focus {
+  outline-color: rgba(0, 217, 255, 0.28);
+  border-color: rgba(0, 217, 255, 0.52);
+}
+
+.main[data-workspace-skin='black_diamond'] .cardSubtitle,
+.main[data-workspace-skin='black_diamond'] .workspaceSidebarIntro,
+.main[data-workspace-skin='black_diamond'] .workspaceNavSubtitle,
+.main[data-workspace-skin='black_diamond'] .searchLabel,
+.main[data-workspace-skin='black_diamond'] .sortLabel,
+.main[data-workspace-skin='black_diamond'] .helperNote,
+.main[data-workspace-skin='black_diamond'] .siteSettingsPreviewNote,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSaveStatus,
+.main[data-workspace-skin='black_diamond'] .metricLabel,
+.main[data-workspace-skin='black_diamond'] .tradeMeta,
+.main[data-workspace-skin='black_diamond'] .topbarInfoLabel,
+.main[data-workspace-skin='black_diamond'] .topbarInfoHint,
+.main[data-workspace-skin='black_diamond'] .accountMuted,
+.main[data-workspace-skin='black_diamond'] .walletTransactionDate {
+  color: #d8cbbd;
+}
+
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavLabel,
+.main[data-workspace-skin='black_diamond'] .workspaceNavButtonComingSoon .workspaceNavSubtitle {
+  color: rgba(216, 203, 189, 0.72);
+}
+
+.main[data-workspace-skin='black_diamond'] .liveSiteButton,
+.main[data-workspace-skin='black_diamond'] .actionButton,
+.main[data-workspace-skin='black_diamond'] .siteSettingsSaveButton {
+  background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
+  color: #141111;
+}
+
+.main[data-workspace-skin='black_diamond'] .actionButton:disabled,
+.main[data-workspace-skin='black_diamond'] .secondaryActionButton:disabled {
+  background: #342b25;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: rgba(248, 239, 228, 0.72);
+  opacity: 1;
+}
+
+.main[data-workspace-skin='black_diamond'] .helperButton,
+.main[data-workspace-skin='black_diamond'] .helperLink {
+  color: #e8fbff;
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.08);
+}
+
+.main[data-workspace-skin='black_diamond'] .loadingLine,
+.main[data-workspace-skin='black_diamond'] .loadingLineShort {
+  background: rgba(244, 207, 98, 0.16);
 }
 
 @container (max-width: 620px) {

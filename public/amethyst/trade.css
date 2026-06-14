@@ -520,6 +520,22 @@ body.bg-black-velvet .tp-filter-pill.active {
   color: #080808;
   border-color: #d4af37;
 }
+
+body.bg-suite-paper .tp-filter-pill.active,
+body.bg-rose-gold-paper .tp-filter-pill.active,
+body.bg-amber-paper .tp-filter-pill.active,
+body.bg-quartz-paper .tp-filter-pill.active {
+  color: #080808;
+}
+
+body.bg-black-velvet .tp-filter-pill.active .count,
+body.bg-suite-paper .tp-filter-pill.active .count,
+body.bg-rose-gold-paper .tp-filter-pill.active .count,
+body.bg-amber-paper .tp-filter-pill.active .count,
+body.bg-quartz-paper .tp-filter-pill.active .count {
+  color: currentColor;
+  opacity: 1;
+}
 .tp-filter-pill .count {
   font-size: 11px;
   opacity: 0.7;

@@ -283,6 +283,39 @@ describe('Amethyst appearance presets', () => {
     expect(tradeCss).toContain('color: #080808')
   })
 
+  it('keeps light-accent public badges and active filters readable', () => {
+    const homepageCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const tradeCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    for (const bgClass of [
+      'body.bg-suite-paper',
+      'body.bg-rose-gold-paper',
+      'body.bg-amber-paper',
+      'body.bg-quartz-paper',
+    ]) {
+      expect(homepageCss).toContain(`${bgClass} .hp-step-num`)
+    }
+
+    for (const bgClass of [
+      'body.bg-suite-paper',
+      'body.bg-rose-gold-paper',
+      'body.bg-amber-paper',
+      'body.bg-quartz-paper',
+    ]) {
+      expect(tradeCss).toContain(`${bgClass} .tp-filter-pill.active`)
+    }
+
+    expect(homepageCss).toContain('color: #141111')
+    expect(tradeCss).toContain('.tp-filter-pill.active .count')
+    expect(tradeCss).toContain('color: currentColor')
+  })
+
   it('adds Rose Gold as a visual-only Amethyst skin with a browsing card', () => {
     const preset = getAmethystAppearancePreset('rose_gold')
     const homepage = applyAmethystAppearancePreset(

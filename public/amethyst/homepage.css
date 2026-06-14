@@ -1656,6 +1656,13 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   align-items: center;
   justify-content: center;
 }
+
+body.bg-suite-paper .hp-step-num,
+body.bg-rose-gold-paper .hp-step-num,
+body.bg-amber-paper .hp-step-num,
+body.bg-quartz-paper .hp-step-num {
+  color: #141111;
+}
 .hp-step-label {
   font-size: 14px;
   font-weight: 600;

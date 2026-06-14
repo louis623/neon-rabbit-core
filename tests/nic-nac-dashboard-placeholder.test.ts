@@ -705,6 +705,14 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
+    const siteSettingsBaseIndex = css.indexOf('.siteSettingsTextarea:focus')
+    const blackDiamondSiteSettingsIndex = css.lastIndexOf(
+      ".main[data-workspace-skin='black_diamond'] .siteSettingsCard",
+    )
+
+    expect(blackDiamondSiteSettingsIndex).toBeGreaterThan(
+      siteSettingsBaseIndex,
+    )
     expect(css).toContain(
       ".main[data-workspace-skin='black_diamond'] .topbar",
     )
@@ -720,6 +728,52 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain(
       ".main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag",
     )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .emptyState",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .searchInput",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .sortSelect",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .siteSettingsTextarea",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .siteSettingsPreviewNote",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .customerSiteLooks",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .accountBillingCard",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .referralCard",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .accountDetailRow",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .referralCodePanel",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .playbookGroup",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .supportPath",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .supportReportChoice",
+    )
+    expect(css).toContain(
+      ".main[data-workspace-skin='black_diamond'] .supportReportTextarea",
+    )
+    expect(css).toContain('#15110f')
+    expect(css).toContain('#211c18')
+    expect(css).toContain('color: #f8efe4')
+    expect(css).toContain('color: #d8cbbd')
   })
 
   it('keeps the workspace Nic-Nac glyph backed by the shared mark', () => {
