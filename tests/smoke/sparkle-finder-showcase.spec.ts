@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { Buffer } from "node:buffer";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
@@ -90,9 +91,22 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
-    await expect(page.locator('input[name="profilePhoto"][type="file"]')).toBeVisible();
+    const profilePhotoInput = page.locator('input[name="profilePhoto"][type="file"]');
+
+    await expect(profilePhotoInput).toHaveCount(1);
+    await expect(page.getByText("Upload photo")).toBeVisible();
     await expect(page.locator('input[name="photoUrl"][type="hidden"]')).toHaveCount(1);
     await expect(page.getByText("Profile photo URL")).toHaveCount(0);
+    await profilePhotoInput.setInputFiles({
+      buffer: Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15,
+        0xc4, 0x89,
+      ]),
+      mimeType: "image/png",
+      name: "profile-preview.png",
+    });
+    await expect(page.getByText("profile-preview.png")).toBeVisible();
     await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();

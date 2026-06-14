@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { Eye, LoaderCircle, LockKeyhole, Save, UserRound } from "lucide-react";
+import { useActionState, useId, useState } from "react";
+import { Eye, ImagePlus, LoaderCircle, LockKeyhole, Save, UserRound } from "lucide-react";
 import { updateSilverProfilePreview } from "@/lib/sparkle-finder/customer-state";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CustomerAccount, SilverProfile } from "@/lib/sparkle-finder/types";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
+import type { ChangeEvent } from "react";
 
 type ProfileEditorProps = {
   accountState: SparkleFinderAccountState;
@@ -33,11 +34,15 @@ export function ProfileEditor({
   saveAction,
 }: ProfileEditorProps) {
   const [previewProfile, setPreviewProfile] = useState(profile);
+  const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<{ name: string; url: string } | null>(null);
+  const [profilePhotoMessage, setProfilePhotoMessage] = useState("JPG, PNG, or WebP.");
   const [localStatusMessage, setLocalStatusMessage] = useState(
     canSaveSilverActions ? "Local preview ready." : "Silver preview is required to save profile updates.",
   );
   const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledProfileAction, realAccountInitialState);
   const statusMessage = isLocalPreview ? localStatusMessage : actionState.message;
+  const profilePhotoInputId = useId();
+  const activeProfilePhotoUrl = selectedProfilePhoto?.url ?? previewProfile.photoUrl;
 
   async function handlePreviewSave(formData: FormData) {
     const profilePhoto = await readProfilePhotoDataUrl(formData.get("profilePhoto"));
@@ -60,7 +65,39 @@ export function ProfileEditor({
     }
 
     setPreviewProfile(result.profile);
+    setSelectedProfilePhoto(null);
+    setProfilePhotoMessage("JPG, PNG, or WebP.");
     setLocalStatusMessage("Profile preview saved locally.");
+  }
+
+  async function handleProfilePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+
+    if (!file) {
+      setSelectedProfilePhoto(null);
+      setProfilePhotoMessage("JPG, PNG, or WebP.");
+      return;
+    }
+
+    const profilePhoto = await readProfilePhotoDataUrl(file);
+
+    if (!profilePhoto.ok) {
+      event.currentTarget.value = "";
+      setSelectedProfilePhoto(null);
+      setProfilePhotoMessage(profilePhoto.message);
+      setLocalStatusMessage(profilePhoto.message);
+      return;
+    }
+
+    setSelectedProfilePhoto({
+      name: file.name,
+      url: profilePhoto.photoUrl ?? "",
+    });
+    setProfilePhotoMessage("Ready to save.");
+
+    if (isLocalPreview) {
+      setLocalStatusMessage("Profile photo ready to preview save.");
+    }
   }
 
   return (
@@ -73,12 +110,12 @@ export function ProfileEditor({
           </h2>
         </div>
         <div className="grid size-16 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
-          {previewProfile.photoUrl ? (
+          {activeProfilePhotoUrl ? (
             <span
               aria-label={`${customer.displayName} profile photo`}
               className="size-full bg-cover bg-center"
               role="img"
-              style={{ backgroundImage: `url("${previewProfile.photoUrl}")` }}
+              style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
             />
           ) : (
             <UserRound aria-hidden="true" className="size-8" strokeWidth={1.5} />
@@ -99,17 +136,47 @@ export function ProfileEditor({
             readOnly
           />
         </label>
-        <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
-          Profile photo
+        <div className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
+          <span>Profile photo</span>
           <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
-          <input
-            className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]"
-            accept="image/jpeg,image/png,image/webp"
-            name="profilePhoto"
-            type="file"
-          />
-          <span className="text-xs font-semibold text-[var(--sparkle-ink-muted)]">Upload a JPG, PNG, or WebP from your device.</span>
-        </label>
+          <div className="flex flex-wrap items-center gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3">
+            <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum)]">
+              {activeProfilePhotoUrl ? (
+                <span
+                  aria-label={`${customer.displayName} selected profile photo`}
+                  className="size-full bg-cover bg-center"
+                  role="img"
+                  style={{ backgroundImage: `url("${activeProfilePhotoUrl}")` }}
+                />
+              ) : (
+                <UserRound aria-hidden="true" className="size-7" strokeWidth={1.5} />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                id={profilePhotoInputId}
+                name="profilePhoto"
+                onChange={handleProfilePhotoChange}
+                type="file"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <label
+                  className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white transition hover:bg-[var(--sparkle-plum-deep)] active:translate-y-px"
+                  htmlFor={profilePhotoInputId}
+                >
+                  <ImagePlus aria-hidden="true" className="size-4" />
+                  Upload photo
+                </label>
+                <span className="min-w-0 truncate text-xs font-semibold text-[var(--sparkle-ink-muted)]">
+                  {selectedProfilePhoto?.name ?? (activeProfilePhotoUrl ? "Current photo" : "No photo selected")}
+                </span>
+              </div>
+              <p className="mt-2 text-xs font-semibold text-[var(--sparkle-ink-muted)]">{profilePhotoMessage}</p>
+            </div>
+          </div>
+        </div>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           TikTok handle
           <input
