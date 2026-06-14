@@ -923,7 +923,7 @@ describe("Sparkle Finder account route", () => {
       "Your 45-day Silver trial has ended",
     );
     expect(markup).toContain(
-      "Free access is still available. Continue Silver for $4.99/month to keep wishlist, collection, and Silver tools.",
+      "Silver trial access is open for beta. Paid checkout is intentionally disabled until Stripe is fully smoked.",
     );
     expect(markup).toContain("disabled");
     expect(markup).not.toContain("/stripe");

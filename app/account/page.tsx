@@ -141,6 +141,30 @@ function getAccountNotice(searchParams: AccountSearchParams | undefined): Accoun
     };
   }
 
+  if (message === "silver_already_active") {
+    return {
+      tone: "success",
+      title: "Silver is already active",
+      body: "You already have paid Silver access. You can manage the subscription from your account billing controls.",
+    };
+  }
+
+  if (message === "silver_checkout_started") {
+    return {
+      tone: "success",
+      title: "Silver checkout started",
+      body: "Stripe is opening your Silver checkout. Return here after checkout to confirm your membership status.",
+    };
+  }
+
+  if (message === "silver_checkout_canceled") {
+    return {
+      tone: "success",
+      title: "Silver checkout canceled",
+      body: "Your Silver checkout was canceled. Your Silver trial and account access are still safe.",
+    };
+  }
+
   if (error === "missing_display_name") {
     return {
       tone: "error",
@@ -165,11 +189,51 @@ function getAccountNotice(searchParams: AccountSearchParams | undefined): Accoun
     };
   }
 
+  if (error === "billing_not_configured") {
+    return {
+      tone: "error",
+      title: "Silver billing is not configured yet",
+      body: "Paid Silver checkout is not available in this environment. Your Silver trial and account access are still safe.",
+    };
+  }
+
+  if (error === "paid_billing_disabled") {
+    return {
+      tone: "error",
+      title: "Paid Silver is not open for beta yet",
+      body: "Your 45-day Silver trial remains available while checkout stays closed.",
+    };
+  }
+
+  if (error === "email_verification_required") {
+    return {
+      tone: "error",
+      title: "Verify your email first",
+      body: "Confirm your Sparkle Finder email before starting paid Silver checkout.",
+    };
+  }
+
+  if (error === "checkout_session_failed") {
+    return {
+      tone: "error",
+      title: "Silver checkout could not start",
+      body: "Stripe could not create a Silver checkout session. Please try again before upgrading.",
+    };
+  }
+
+  if (error === "missing_stripe_customer") {
+    return {
+      tone: "error",
+      title: "Billing portal is not ready",
+      body: "Sparkle Finder could not find a Stripe customer record for this account yet.",
+    };
+  }
+
   if (error === "account_unavailable") {
     return {
       tone: "error",
-      title: "Account unavailable",
-      body: "Sparkle Finder could not verify the signed-in account. Please sign out and sign back in.",
+      title: "Account was unavailable",
+      body: "Sparkle Finder could not read your account securely. Please sign in again and retry.",
     };
   }
 

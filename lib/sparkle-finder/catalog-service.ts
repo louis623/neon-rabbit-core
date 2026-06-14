@@ -272,6 +272,10 @@ export function getSparkleSuiteFinderPublicBaseUrl(options: Pick<CatalogReadOpti
   return getSparkleSuiteFinderApiBaseUrl(options);
 }
 
+export function shouldUseCatalogFixtureFallback(env: Record<string, string | undefined> = process.env): boolean {
+  return env.NODE_ENV !== "production" || env.SPARKLE_FINDER_ENABLE_PREVIEW_AUTH === "true";
+}
+
 function mapAvailabilityMatches(matches: SparkleSuiteFinderAvailabilityMatch[] | undefined): FinderAvailabilityMatch[] {
   return (matches ?? []).flatMap((match) => {
     if (!match.nextShow || !match.customerSiteUrl || !match.showName || !match.repFirstName) {

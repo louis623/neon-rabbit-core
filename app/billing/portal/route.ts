@@ -5,6 +5,7 @@ import {
   createStripeClient,
   fetchMembershipForUser,
   getSparkleFinderBillingEnv,
+  isSparkleFinderPaidBillingEnabled,
 } from "@/lib/sparkle-finder/billing";
 
 type SparkleFinderPortalClient = {
@@ -24,6 +25,10 @@ type SparkleFinderPortalClient = {
 };
 
 export async function POST() {
+  if (!isSparkleFinderPaidBillingEnabled()) {
+    return redirectToAccount("paid_billing_disabled");
+  }
+
   const billingEnv = getSparkleFinderBillingEnv();
 
   if (!billingEnv.isConfigured) {

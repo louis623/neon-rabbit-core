@@ -1,5 +1,7 @@
 # Sparkle Finder Affiliate Organization Handoff
 
+> Superseded on 2026-06-13: Louis paused Sparkle Finder shop and affiliate monetization. Do not use this handoff as active implementation guidance. Sparkle Finder should not present a shop, paid links, affiliate readiness layer, product-selection surface, live prices, copied reviews, ratings, or retailer imagery unless Louis explicitly reopens that strategy.
+
 Created: 2026-05-31
 
 ## Session Summary

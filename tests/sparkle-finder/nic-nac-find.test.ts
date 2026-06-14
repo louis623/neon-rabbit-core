@@ -202,6 +202,24 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).not.toContain("Sierra Sparkle Studio");
     expect(markup).not.toContain("Exact item lead");
   });
+
+  it("uses the shared Sparkle Suite Nic-Nac brand language and mark", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FindThisForMe, {
+        accountState: getLocalDevAuthState("silver"),
+        jewelryItemId: "jewel-rainbow-crown-ring",
+        compact: true,
+      }),
+    );
+
+    expect(markup).toContain('aria-label="Nic-Nac assistant mark"');
+    expect(markup).toContain("sparkle-nic-nac-panel");
+    expect(markup).toContain("Same Nic-Nac, focused on your Finder hunt.");
+    expect(markup).toContain("Checking saved pieces");
+    expect(markup).toContain("Matching rep leads");
+    expect(markup).toContain("Next show context");
+    expect(markup).not.toContain("radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)");
+  });
 });
 
 function apiAvailability(): FinderAvailabilityResult {

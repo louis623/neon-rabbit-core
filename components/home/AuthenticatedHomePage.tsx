@@ -26,7 +26,7 @@ export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePagePro
   return (
     <>
       <SparkleFinderNav accountState={accountState} />
-      <main className="min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]" data-smoke="authenticated-home">
+      <main className="overflow-hidden bg-[var(--sparkle-warm-bg)]" data-smoke="authenticated-home">
         <HeroAndAgenda liveShows={getLiveShows()} reps={getReps()} />
         <SilverCollectorSpace
           accountState={accountState}

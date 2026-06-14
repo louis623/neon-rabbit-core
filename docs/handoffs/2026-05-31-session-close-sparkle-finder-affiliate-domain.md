@@ -1,5 +1,7 @@
 # Sparkle Finder Affiliate And Domain Session Closeout
 
+> Superseded on 2026-06-13: Louis removed Sparkle Finder shop and affiliate storefront strategy. `/shop` and `/affiliate-disclosure` should remain removed/404, and this document is historical only. Use `docs/deployments/2026-06-15-sparkle-finder-beta-launch-runbook.md` for beta launch readiness.
+
 Created: 2026-05-31
 
 ## Session Summary

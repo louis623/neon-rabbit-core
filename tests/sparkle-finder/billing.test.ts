@@ -59,12 +59,15 @@ describe("Sparkle Finder Stripe billing", () => {
       STRIPE_SECRET_KEY: "sk_test_123",
       STRIPE_WEBHOOK_SECRET: "whsec_123",
       STRIPE_SILVER_PRICE_ID: "price_silver",
+      SPARKLE_FINDER_ENABLE_PAID_BILLING: "true",
       NEXT_PUBLIC_SITE_URL: "https://yoursparklefinder.com",
       NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
       SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
     };
 
     expect(isSparkleFinderCheckoutConfigured(completeEnv)).toBe(true);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, SPARKLE_FINDER_ENABLE_PAID_BILLING: "" })).toBe(false);
+    expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, SPARKLE_FINDER_ENABLE_PAID_BILLING: "false" })).toBe(false);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, STRIPE_WEBHOOK_SECRET: "" })).toBe(false);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SITE_URL: "https://neon-rabbit-hq.vercel.app" })).toBe(false);
     expect(isSparkleFinderCheckoutConfigured({ ...completeEnv, NEXT_PUBLIC_SUPABASE_URL: "https://bqhzfkgkjyuhlsozpylf.supabase.co" })).toBe(false);
@@ -349,6 +352,39 @@ describe("Sparkle Finder billing routes", () => {
     expect(response.headers.get("location")).toBe("https://checkout.stripe.test/session");
   });
 
+  it("keeps checkout fail-closed when paid billing exposure is disabled", async () => {
+    const customersCreate = vi.fn();
+    const checkoutSessionsCreate = vi.fn();
+
+    stubBillingEnv({ SPARKLE_FINDER_ENABLE_PAID_BILLING: "false" });
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-123",
+              email: "casey@example.com",
+              email_confirmed_at: "2026-06-01T12:00:00.000Z",
+            },
+          },
+          error: null,
+        }),
+      },
+      from: membershipTableClient(null),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ customersCreate, checkoutSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/checkout/route");
+    const response = await POST();
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://yoursparklefinder.com/account?error=paid_billing_disabled");
+    expect(customersCreate).not.toHaveBeenCalled();
+    expect(checkoutSessionsCreate).not.toHaveBeenCalled();
+  });
+
   it("reuses an existing Stripe customer for checkout", async () => {
     const customersCreate = vi.fn();
     const checkoutSessionsCreate = vi.fn().mockResolvedValue({ url: "https://checkout.stripe.test/session" });
@@ -470,6 +506,31 @@ describe("Sparkle Finder billing routes", () => {
     });
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://billing.stripe.test/session");
+  });
+
+  it("keeps the billing portal fail-closed when paid billing exposure is disabled", async () => {
+    const portalSessionsCreate = vi.fn();
+
+    stubBillingEnv({ SPARKLE_FINDER_ENABLE_PAID_BILLING: "false" });
+    mockSupabaseServerClient({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-123" } },
+          error: null,
+        }),
+      },
+      from: membershipTableClient({ stripe_customer_id: "cus_123" }),
+    });
+    mockBillingModule({
+      createStripeClient: vi.fn(() => stripeRouteClient({ portalSessionsCreate })),
+    });
+
+    const { POST } = await import("../../app/billing/portal/route");
+    const response = await POST();
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://yoursparklefinder.com/account?error=paid_billing_disabled");
+    expect(portalSessionsCreate).not.toHaveBeenCalled();
   });
 
   it("rejects webhook requests without a Stripe signature before reading the body", async () => {
@@ -644,13 +705,21 @@ function seconds(value: string): number {
   return Math.floor(new Date(value).getTime() / 1000);
 }
 
-function stubBillingEnv() {
-  vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_123");
-  vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_123");
-  vi.stubEnv("STRIPE_SILVER_PRICE_ID", "price_silver");
-  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://yoursparklefinder.com");
-  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://supabase.example");
-  vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
+function stubBillingEnv(overrides: Record<string, string> = {}) {
+  const env = {
+    STRIPE_SECRET_KEY: "sk_test_123",
+    STRIPE_WEBHOOK_SECRET: "whsec_123",
+    STRIPE_SILVER_PRICE_ID: "price_silver",
+    SPARKLE_FINDER_ENABLE_PAID_BILLING: "true",
+    NEXT_PUBLIC_SITE_URL: "https://yoursparklefinder.com",
+    NEXT_PUBLIC_SUPABASE_URL: "https://supabase.example",
+    SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+    ...overrides,
+  };
+
+  for (const [key, value] of Object.entries(env)) {
+    vi.stubEnv(key, value);
+  }
 }
 
 function mockSupabaseServerClient(client: unknown) {

@@ -43,6 +43,7 @@ These are working assumptions for research only unless a later decision note mar
 - Customer profile and customer collection features should be Silver Membership features.
 - Shop monetization is paused. Sparkle Finder should not present a shop or paid links for now.
 - Showcase Studio can include plain photo setup guidance and an optional non-affiliate light-box resource link.
+- Sparkle Finder customer auth has its own product boundary by default. Sparkle Finder may read/link Sparkle Suite product data through approved APIs, but shared login redirects, OAuth fallback URLs, Site URLs, Google OAuth branding, and customer auth user pools require explicit product-specific approval.
 
 ## Explicit Non-Assumptions
 

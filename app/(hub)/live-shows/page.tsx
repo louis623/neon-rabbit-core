@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { Radio } from "lucide-react";
-import { getFinderLiveShows, type FinderLiveShow } from "@/lib/sparkle-finder/catalog-service";
+import {
+  getFinderLiveShows,
+  shouldUseCatalogFixtureFallback,
+  type FinderLiveShow,
+} from "@/lib/sparkle-finder/catalog-service";
 
 export default async function LiveShowsPage() {
-  const shows = await getFinderLiveShows();
+  const shows = await getFinderLiveShows({ useFixtureFallback: shouldUseCatalogFixtureFallback() });
 
   return renderLiveShowsPageContent(shows);
 }

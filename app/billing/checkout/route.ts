@@ -5,6 +5,7 @@ import {
   createStripeClient,
   fetchMembershipForUser,
   getSparkleFinderBillingEnv,
+  isSparkleFinderPaidBillingEnabled,
   isSupabaseUserEmailVerified,
 } from "@/lib/sparkle-finder/billing";
 
@@ -36,6 +37,10 @@ type SparkleFinderCheckoutClient = {
 };
 
 export async function POST() {
+  if (!isSparkleFinderPaidBillingEnabled()) {
+    return redirectToAccount("paid_billing_disabled");
+  }
+
   const billingEnv = getSparkleFinderBillingEnv();
 
   if (!billingEnv.isConfigured) {

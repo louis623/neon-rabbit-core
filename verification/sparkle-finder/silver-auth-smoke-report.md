@@ -2,14 +2,16 @@
 
 Date: 2026-06-01
 
+> Superseded on 2026-06-13 for shop/affiliate expectations. `/shop` and `/affiliate-disclosure` should now return 404, and `/photo-setup` is the retained plain non-affiliate resource guide.
+
 ## Coverage
 
 - Homepage smoke still verifies the Sparkle Finder discovery hub on desktop and mobile.
-- The new `Collector & Rep Essentials` shop card remains present, points to `/shop`, and reaches the local gated shop route.
+- The current `Photo-ready uploads` card remains present and points customers toward the plain `/photo-setup` guidance strategy through Showcase Studio surfaces, not a shop route.
 - `/auth/sign-up` shows 45-day Silver trial copy, phone privacy copy, and leaves optional promotional SMS unchecked by default.
 - `/account` prompts anonymous visitors before account controls are shown.
 - A local development Silver preview account can access `/account` and `/silver`.
-- Anonymous visitors are still gated from hub routes: `/dashboard`, `/library`, `/live-shows`, `/rep-boards`, `/shop`, and `/silver`.
+- Anonymous visitors are still gated from hub routes: `/dashboard`, `/library`, `/live-shows`, `/rep-boards`, and `/silver`.
 - Silver local preview state still opens the Silver item detail path, bounded Nic-Nac copy, and local rep-board route.
 
 ## Local Caveats

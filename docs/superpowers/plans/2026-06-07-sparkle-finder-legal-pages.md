@@ -1,5 +1,7 @@
 # Sparkle Finder Legal Pages Implementation Plan
 
+> Superseded on 2026-06-13 for affiliate/shop scope. Current legal copy should cover plain third-party photo setup resources only; do not restore affiliate/shop legal sections unless Louis explicitly reopens that strategy.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build Sparkle Finder-local Privacy Policy and Terms and Conditions pages, link them from the footer, and make the legal copy accurately cover customer accounts, Silver access, affiliate/shop surfaces, Sparkle Suite read-through data, and independence from Bomb Party.

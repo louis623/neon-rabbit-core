@@ -5,9 +5,10 @@ import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
   getCatalogJewelryItemById,
   getFinderAvailabilityForJewelryItem,
+  shouldUseCatalogFixtureFallback,
 } from "@/lib/sparkle-finder/catalog-service";
+import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import {
-  getLocalDevAuthState,
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
@@ -27,10 +28,14 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const resolvedParams = await params;
-  const item = await getCatalogJewelryItemById(resolvedParams.itemId);
-  const availability = item ? await getFinderAvailabilityForJewelryItem(item.id) : undefined;
+  const catalogOptions = { useFixtureFallback: shouldUseCatalogFixtureFallback() };
+  const [accountState, item] = await Promise.all([
+    getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode }),
+    getCatalogJewelryItemById(resolvedParams.itemId, catalogOptions),
+  ]);
+  const availability = item ? await getFinderAvailabilityForJewelryItem(item.id, catalogOptions) : undefined;
 
-  return renderItemDetailPageContent(resolvedParams, getLocalDevAuthState(authMode), item, availability);
+  return renderItemDetailPageContent(resolvedParams, accountState, item, availability);
 }
 
 export function renderItemDetailPageContent(

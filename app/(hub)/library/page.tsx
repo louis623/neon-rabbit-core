@@ -1,6 +1,11 @@
 import { JewelryCard } from "@/components/library/JewelryCard";
 import { LibrarySearch } from "@/components/library/LibrarySearch";
-import { getCatalogFacetOptions, getCatalogJewelryItems, type CatalogFacetOptions } from "@/lib/sparkle-finder/catalog-service";
+import {
+  getCatalogFacetOptions,
+  getCatalogJewelryItems,
+  shouldUseCatalogFixtureFallback,
+  type CatalogFacetOptions,
+} from "@/lib/sparkle-finder/catalog-service";
 import { getJewelryItems } from "@/lib/sparkle-finder/service";
 import type { BombPartyLabel, JewelryItem, JewelryType } from "@/lib/sparkle-finder/types";
 
@@ -56,6 +61,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps = {
     mainStone: filters.stone ?? "",
     collectionYear: normalizeCollectionYearFilter(filters.year),
     limit: filters.limit,
+    useFixtureFallback: shouldUseCatalogFixtureFallback(),
   };
   const [items, facets] = await Promise.all([
     getCatalogJewelryItems(catalogOptions),

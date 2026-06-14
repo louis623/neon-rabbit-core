@@ -102,7 +102,13 @@ export function getSparkleFinderBillingEnv(
 export function isSparkleFinderCheckoutConfigured(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  return getSparkleFinderBillingEnv(env).isConfigured;
+  return isSparkleFinderPaidBillingEnabled(env) && getSparkleFinderBillingEnv(env).isConfigured;
+}
+
+export function isSparkleFinderPaidBillingEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return env.SPARKLE_FINDER_ENABLE_PAID_BILLING === "true";
 }
 
 export function createStripeClient(secretKey: string): Stripe {
@@ -248,7 +254,7 @@ export async function applyStripeMembershipUpdate(
     return {
       ok: false,
       reason:
-        "Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to update membership with the publishable client.",
+        "Missing or invalid SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to update membership with an unsafe service role client.",
     };
   }
 
@@ -289,7 +295,7 @@ export async function applyStripeEventIdempotency(
     return {
       ok: false,
       reason:
-        "Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to process Stripe event without a service role client.",
+        "Missing or invalid SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to process Stripe event without an unsafe service role client.",
     };
   }
 
@@ -426,7 +432,7 @@ function firstPresent(...values: Array<string | null | undefined>): string | nul
 }
 
 function createSupabaseServiceRoleClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const supabaseUrl = getAllowedSparkleFinderSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!supabaseUrl || !serviceRoleKey) {

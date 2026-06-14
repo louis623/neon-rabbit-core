@@ -273,6 +273,18 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain(">Sign in<");
   });
 
+  it("renders authenticated home as a filled Silver command center without a dead-space shell", () => {
+    const markup = renderToStaticMarkup(renderHomeContent(getLocalDevAuthState("silver")));
+
+    expect(markup).toContain('data-smoke="silver-command-center"');
+    expect(markup).toContain("Silver command center");
+    expect(markup).toContain("Profile ready");
+    expect(markup).toContain("Collection next steps");
+    expect(markup).toContain("Open Showcase Studio");
+    expect(markup).toContain("Find a library piece");
+    expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
+  });
+
   it("renders public landing independence and avoids live/demo jewelry data", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 

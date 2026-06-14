@@ -4,9 +4,11 @@ Date: 2026-05-30
 Branch: codex-sparkle-finder-v1
 Local smoke URL: http://127.0.0.1:4310
 
+> Superseded on 2026-06-13 for shop/affiliate expectations. The current product removes the affiliate row/shop surface and uses `/photo-setup` for plain non-affiliate setup guidance.
+
 ## Summary
 
-Sparkle Finder V1 is ready for local smoke-test handoff after automated desktop, mobile, auth-preview, gated-route, and item-detail smoke checks. The app renders the locked homepage direction with the SF seal, Sparkle Finder brand lock, top navigation, hero/discovery composition, today agenda, Silver Collector Space, bounded Nic-Nac module, and affiliate row.
+Sparkle Finder V1 was ready for local smoke-test handoff after automated desktop, mobile, auth-preview, gated-route, and item-detail smoke checks. The current product renders the locked homepage direction with the SF seal, Sparkle Finder brand lock, top navigation, hero/discovery composition, today agenda, Silver Collector Space, bounded Nic-Nac module, and plain photo setup guidance without an affiliate row.
 
 ## Commands Run
 

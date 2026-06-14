@@ -1,5 +1,7 @@
 # Sparkle Finder V1 Build Implementation Plan
 
+> Superseded on 2026-06-13 for shop/affiliate scope. Current Sparkle Finder beta launch excludes shop, affiliate strip, paid links, product recommendation surfaces, live prices, copied reviews, ratings, and retailer imagery. Use `/photo-setup` for plain non-affiliate photo setup guidance.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build Sparkle Finder V1 as a secured customer discovery hub that closely matches the locked homepage concept image and can be smoke-tested by Louis after the agent/controller passes local build, route, and visual checks.

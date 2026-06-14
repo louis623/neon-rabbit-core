@@ -1,6 +1,6 @@
 import { CalendarDays, Gem, LockKeyhole, Mail } from "lucide-react";
 import type { CurrentSparkleFinderAccountState } from "@/lib/sparkle-finder/account-service";
-import { isSparkleFinderCheckoutConfigured } from "@/lib/sparkle-finder/billing";
+import { isSparkleFinderCheckoutConfigured, isSparkleFinderPaidBillingEnabled } from "@/lib/sparkle-finder/billing";
 import { getSilverTrialAccountNotice } from "@/lib/sparkle-finder/trial-notifications";
 
 type SilverStatusPanelProps = {
@@ -18,7 +18,13 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
     effectiveState === "free" ||
     (effectiveState === "silver_trial" && typeof trialDaysLeft === "number" && trialDaysLeft <= 7);
   const isExpiredTrialPrompt = Boolean(membership?.isTrialExpired && effectiveState === "free");
+  const isPaidBillingEnabled = isSparkleFinderPaidBillingEnabled();
   const isBillingConfigured = isSparkleFinderCheckoutConfigured();
+  const upgradePromptBody = getUpgradePromptBody({
+    isBillingConfigured,
+    isExpiredTrialPrompt,
+    isPaidBillingEnabled,
+  });
 
   return (
     <section className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
@@ -85,11 +91,7 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
                 {isExpiredTrialPrompt ? "Your 45-day Silver trial has ended" : "Continue Silver at $4.99/month"}
               </h3>
               <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                {isExpiredTrialPrompt
-                  ? "Free access is still available. Continue Silver for $4.99/month to keep wishlist, collection, and Silver tools."
-                  : isBillingConfigured
-                    ? "Start secure Stripe-hosted Checkout for monthly Silver access."
-                    : "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured."}
+                {upgradePromptBody}
               </p>
             </div>
           </div>
@@ -115,6 +117,24 @@ export function SilverStatusPanel({ accountState, now = new Date() }: SilverStat
       ) : null}
     </section>
   );
+}
+
+function getUpgradePromptBody(input: {
+  isBillingConfigured: boolean;
+  isExpiredTrialPrompt: boolean;
+  isPaidBillingEnabled: boolean;
+}): string {
+  if (!input.isPaidBillingEnabled) {
+    return "Silver trial access is open for beta. Paid checkout is intentionally disabled until Stripe is fully smoked.";
+  }
+
+  if (input.isExpiredTrialPrompt) {
+    return "Free access is still available. Continue Silver for $4.99/month to keep wishlist, collection, and Silver tools.";
+  }
+
+  return input.isBillingConfigured
+    ? "Start secure Stripe-hosted Checkout for monthly Silver access."
+    : "Paid checkout is temporarily unavailable until Stripe webhooks and secure membership writes are fully configured.";
 }
 
 function formatAccessState(state: string): string {

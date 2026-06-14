@@ -4,7 +4,12 @@ Created: 2026-06-01
 
 ## Current Status
 
-Production rollout is not complete.
+Production rollout is not complete. Updated June 13, 2026 after the launch-readiness audit:
+
+- Sparkle Finder customer auth must use the dedicated Sparkle Finder Supabase project, not the old shared Neon Rabbit/Sparkle Suite project.
+- Dedicated Sparkle Finder project ref: `pzksocboqauqjdtsgpdp`.
+- The old shared project ref `bqhzfkgkjyuhlsozpylf` is explicitly blocked by runtime guardrails and must not be used for Sparkle Finder customer auth, OAuth redirects, Site URL, service-role writes, or customer user pools.
+- Vercel currently has public Supabase, service-role, Sparkle Suite API, and Showcase Studio intake variables configured for Development/Production as applicable; Stripe live billing variables and the paid-billing exposure flag are still missing. Monday beta should keep paid Silver checkout disabled with `SPARKLE_FINDER_ENABLE_PAID_BILLING=false`.
 
 - Production deployment has not been run for the Silver auth/billing work.
 - Remote Supabase migrations were applied through the authenticated Supabase SQL Editor because local Supabase CLI auth is unavailable.
@@ -13,7 +18,7 @@ Production rollout is not complete.
 - Production Vercel env now includes `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for browser/server Supabase auth.
 - Development Vercel env now includes `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 - Preview Vercel env is not configured yet because `sparkle-finder-dev` does not have a connected Git repository, so Vercel rejected branch-scoped preview env setup.
-- Stripe and Supabase service-role production env vars are still not configured in Vercel.
+- Stripe production env vars and `SPARKLE_FINDER_ENABLE_PAID_BILLING` are still not configured in Vercel.
 - Supabase CLI management access is not authenticated in this local session. `supabase projects list -o json` reached the API and returned `Unauthorized`.
 - Google Auth is enabled in Supabase. Public Auth settings return `external.google=true`.
 - Supabase redirect allow-list now includes Sparkle Finder production callback/confirm URLs and `http://127.0.0.1:3000/**`.
@@ -34,8 +39,9 @@ Configure these in Vercel before a production deploy. Production values should b
 | `STRIPE_SECRET_KEY` | Server only | Checkout, billing portal, webhook API reads | Use the live key for production rollout. |
 | `STRIPE_WEBHOOK_SECRET` | Server only | Stripe webhook signature verification | From the production webhook endpoint configured in Stripe. |
 | `STRIPE_SILVER_PRICE_ID` | Server only | Paid Silver checkout | Recurring monthly price ID for the Silver Membership product. Target price is `$4.99/month`. |
+| `SPARKLE_FINDER_ENABLE_PAID_BILLING` | Server only | Paid checkout exposure | Keep `false` for Monday beta. Set to `true` only after Stripe checkout, portal, and webhook smoke tests pass and Louis approves paid Silver exposure. |
 
-Do not deploy full production paid auth/billing until all required variables are present. The current code is designed to fail closed for paid billing when Stripe or Supabase service-role configuration is missing.
+Do not deploy full production paid auth/billing until all required variables are present and `SPARKLE_FINDER_ENABLE_PAID_BILLING=true` is intentionally set. The current code is designed to fail closed for paid billing when the exposure flag is off, or when Stripe or Supabase service-role configuration is missing.
 
 ## Vercel Commands
 
@@ -49,6 +55,7 @@ npx vercel env add SUPABASE_SERVICE_ROLE_KEY production
 npx vercel env add STRIPE_SECRET_KEY production
 npx vercel env add STRIPE_WEBHOOK_SECRET production
 npx vercel env add STRIPE_SILVER_PRICE_ID production
+npx vercel env add SPARKLE_FINDER_ENABLE_PAID_BILLING production
 npx vercel env ls
 ```
 
@@ -62,6 +69,7 @@ SUPABASE_SERVICE_ROLE_KEY=<supabase service role key>
 STRIPE_SECRET_KEY=<stripe live secret key>
 STRIPE_WEBHOOK_SECRET=<stripe live webhook signing secret>
 STRIPE_SILVER_PRICE_ID=<stripe recurring monthly price id>
+SPARKLE_FINDER_ENABLE_PAID_BILLING=false
 ```
 
 ## Supabase Requirements
@@ -133,7 +141,7 @@ Required Supabase Auth redirect URLs:
 
 Supabase management API values needed to complete this from the CLI/API:
 
-- Project ref: `bqhzfkgkjyuhlsozpylf`
+- Project ref: `pzksocboqauqjdtsgpdp`
 - Site URL: `https://yoursparklefinder.com`
 - Redirect URLs: include `https://yoursparklefinder.com/api/auth/callback`, `https://yoursparklefinder.com/auth/confirm`, and approved local/preview equivalents.
 - Google provider: enable Google and set the approved Google Client ID/Secret in Supabase Auth provider configuration.
@@ -143,7 +151,7 @@ Current public Auth settings check:
 ```powershell
 $anon = "<NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY>"
 curl.exe -L `
-  https://bqhzfkgkjyuhlsozpylf.supabase.co/auth/v1/settings `
+  https://pzksocboqauqjdtsgpdp.supabase.co/auth/v1/settings `
   -H "apikey: $anon"
 ```
 
@@ -166,7 +174,7 @@ OAuth start verification:
 $anon = "<NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY>"
 $redirect = [System.Uri]::EscapeDataString("https://yoursparklefinder.com/api/auth/callback?next=/account")
 curl.exe -s -D - -o NUL `
-  "https://bqhzfkgkjyuhlsozpylf.supabase.co/auth/v1/authorize?provider=google&redirect_to=$redirect" `
+  "https://pzksocboqauqjdtsgpdp.supabase.co/auth/v1/authorize?provider=google&redirect_to=$redirect" `
   -H "apikey: $anon"
 ```
 
@@ -190,7 +198,7 @@ $body = @{
 
 Invoke-RestMethod `
   -Method Patch `
-  -Uri "https://api.supabase.com/v1/projects/bqhzfkgkjyuhlsozpylf/config/auth" `
+  -Uri "https://api.supabase.com/v1/projects/pzksocboqauqjdtsgpdp/config/auth" `
   -Headers $headers `
   -Body $body
 ```
@@ -254,7 +262,7 @@ Record the production deployment URL and verify the custom domain alias before c
 - Promotional SMS must remain unchecked by default.
 - Do not send SMS marketing without explicit consent and a chosen compliant provider.
 - Do not sell customer personal information.
-- Do not publish affiliate links, exact product selections, live prices, copied reviews, ratings, or retailer images without Louis approval and current program-term confirmation.
-- Every affiliate placement needs nearby disclosure plus issue-reporting/trust copy.
+- Do not publish affiliate links, exact product selections, live prices, copied reviews, ratings, or retailer images.
+- Sparkle Finder should not present a shop, paid links, or an affiliate storefront unless Louis explicitly reopens that strategy.
 - Sparkle Finder remains a discovery hub, not a jewelry marketplace.
 - Do not imply official Bomb Party affiliation.

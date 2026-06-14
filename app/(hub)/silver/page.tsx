@@ -9,7 +9,7 @@ import {
   saveSilverProfileAction,
   submitShowcaseStudioRequestAction,
 } from "@/app/(hub)/silver/actions";
-import { getCatalogJewelryItems } from "@/lib/sparkle-finder/catalog-service";
+import { getCatalogJewelryItems, shouldUseCatalogFixtureFallback } from "@/lib/sparkle-finder/catalog-service";
 import {
   getCollectionItemsByCustomerId,
   getJewelryItemById,
@@ -35,7 +35,7 @@ export default async function SilverPage() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-  const libraryItems = await getCatalogJewelryItems();
+  const libraryItems = await getCatalogJewelryItems({ useFixtureFallback: shouldUseCatalogFixtureFallback() });
   const persistedCollectionItems =
     accountState.status === "authenticated" && accountState.isLocalPreview !== true
       ? await getPersistedCollectionItems(accountState.customer.id, libraryItems)

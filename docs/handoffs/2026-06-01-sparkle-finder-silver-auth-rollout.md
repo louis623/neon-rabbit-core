@@ -2,6 +2,8 @@
 
 Created: 2026-06-01
 
+> Updated 2026-06-13: The `/shop` and `/affiliate-disclosure` launch guidance in this historical handoff is superseded. Sparkle Finder beta launch should use `/photo-setup` as the plain non-affiliate resource guide, keep `/shop` and `/affiliate-disclosure` removed/404, and follow `docs/deployments/2026-06-15-sparkle-finder-beta-launch-runbook.md`.
+
 ## Status
 
 DONE_WITH_CONCERNS: implementation through Silver/auth smoke tests is in the branch, but production rollout is blocked by missing external configuration.
@@ -151,8 +153,8 @@ After deployment, inspect the live custom domain:
 - Email confirmation link lands through `/auth/confirm` and safely redirects to `/account` or the intended in-app path.
 - `/account`: signed-in user sees current Silver state, trial timing, phone/privacy controls, and billing CTA if applicable.
 - `/silver`: anonymous users remain gated; signed-in Silver trial users can access Silver surfaces.
-- `/shop`: remains a straightforward shop/affiliate surface, but does not include unapproved exact products or affiliate links.
-- `/shop`: nearby affiliate disclosure and issue-reporting/trust copy are present wherever affiliate placement exists.
+- `/photo-setup`: renders the plain non-affiliate photo setup guide.
+- `/shop` and `/affiliate-disclosure`: remain removed/404.
 - Navigation labels show Guest, Trial Silver, Silver, Rep Silver, or Free appropriately.
 - Stripe checkout starts only for an authenticated user.
 - Stripe webhook updates paid membership only after verified webhook delivery.
@@ -161,8 +163,8 @@ After deployment, inspect the live custom domain:
 
 ## Guardrails To Preserve
 
-- Do not publish affiliate links, exact product selections, live prices, copied reviews, ratings, or retailer images without Louis approval and current program-term confirmation.
-- Every affiliate placement needs nearby disclosure plus issue-reporting/trust copy.
+- Do not publish affiliate links, exact product selections, live prices, copied reviews, ratings, or retailer images.
+- Do not reintroduce shop, paid-link, or affiliate storefront surfaces unless Louis explicitly reopens that strategy.
 - Sparkle Finder is a discovery hub, not a jewelry marketplace.
 - Do not introduce customer-to-customer transaction language during this rollout.
 - Do not imply official Bomb Party affiliation.
