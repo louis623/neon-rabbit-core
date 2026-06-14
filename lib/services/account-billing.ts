@@ -109,7 +109,17 @@ function getAccountBillingCheckoutMode(): AccountBillingDashboardResult['checkou
   return mode === 'true' || mode === '1' ? 'test_buyer' : 'standard'
 }
 
+function hasAccountBillingStripeEnvironment() {
+  return Boolean(
+    process.env.STRIPE_SECRET_KEY?.startsWith('sk_') &&
+      process.env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_') &&
+      process.env.NEXT_PUBLIC_APP_URL,
+  )
+}
+
 function getAccountBillingStripeConfigured() {
+  if (!hasAccountBillingStripeEnvironment()) return false
+
   try {
     return isStripeEnabled()
   } catch (cause) {

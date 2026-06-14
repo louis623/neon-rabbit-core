@@ -10,6 +10,8 @@ import { getStripe, stripeEnabled } from '@/lib/stripe/client'
 
 const originalTestBuyerMode = process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
 const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL
+const originalStripeSecretKey = process.env.STRIPE_SECRET_KEY
+const originalStripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 function makeSelectSingle(response: { data: unknown; error: unknown }) {
   const single = vi.fn().mockResolvedValue(response)
@@ -85,6 +87,8 @@ describe('account billing service', () => {
     vi.mocked(getStripe).mockReset()
     delete process.env.SPARKLE_STRIPE_TEST_BUYER_MODE
     process.env.NEXT_PUBLIC_APP_URL = 'https://sparkle-suite.example'
+    process.env.STRIPE_SECRET_KEY = 'sk_test_account_billing'
+    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_account_billing'
   })
 
   afterEach(() => {
@@ -97,6 +101,16 @@ describe('account billing service', () => {
       delete process.env.NEXT_PUBLIC_APP_URL
     } else {
       process.env.NEXT_PUBLIC_APP_URL = originalAppUrl
+    }
+    if (originalStripeSecretKey === undefined) {
+      delete process.env.STRIPE_SECRET_KEY
+    } else {
+      process.env.STRIPE_SECRET_KEY = originalStripeSecretKey
+    }
+    if (originalStripeWebhookSecret === undefined) {
+      delete process.env.STRIPE_WEBHOOK_SECRET
+    } else {
+      process.env.STRIPE_WEBHOOK_SECRET = originalStripeWebhookSecret
     }
   })
 
@@ -393,6 +407,8 @@ describe('account billing service', () => {
   })
 
   it('keeps the account dashboard available when Stripe configuration is unavailable', async () => {
+    delete process.env.STRIPE_SECRET_KEY
+    delete process.env.STRIPE_WEBHOOK_SECRET
     vi.mocked(stripeEnabled).mockImplementation(() => {
       throw new Error('Stripe configuration is incomplete — cannot start in production')
     })
@@ -416,6 +432,7 @@ describe('account billing service', () => {
       stripeCustomerId: 'cus_123',
     })
 
+    expect(stripeEnabled).not.toHaveBeenCalled()
     expect(result.stripeConfigured).toBe(false)
     expect(result.subscription?.status).toBe('active')
     expect(result.paymentMethod).toBe(null)
