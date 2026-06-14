@@ -428,6 +428,9 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).not.toContain('Open account')
+    expect(html).toContain('Track active pieces, requests, fulfillment, and trade history from one place.')
+    expect(html).toContain('Request inbox')
+    expect(html).toContain('Loading board')
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -586,6 +589,22 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Your account page has the current checkout or billing step.')
     expect(html).toContain('Open account')
     expect(html).toContain('Continue to secure Stripe checkout')
+  })
+
+  it('starts workspace section data loading without waiting on billing access data', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const loadEffectStart = source.indexOf('void loadPaidWorkspaceData(controller.signal)')
+    const loadEffectSource = source.slice(
+      source.lastIndexOf('useEffect(() => {', loadEffectStart),
+      source.indexOf('}, [reviewWorkspaceMode])', loadEffectStart),
+    )
+
+    expect(loadEffectStart).toBeGreaterThan(-1)
+    expect(loadEffectSource).not.toContain("accountBillingState.status !== 'ready'")
+    expect(loadEffectSource).not.toContain('hasPaidWorkspaceSubscription(accountBillingState.summary)')
   })
 
   it('renders the locked team management add-on skeleton', () => {

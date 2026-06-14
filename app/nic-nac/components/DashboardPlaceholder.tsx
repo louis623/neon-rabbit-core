@@ -2465,14 +2465,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
   useEffect(() => {
     if (reviewWorkspaceMode) return
-    if (accountBillingState.status !== 'ready') return
-    if (!hasPaidWorkspaceSubscription(accountBillingState.summary)) return
 
     const controller = new AbortController()
     void loadPaidWorkspaceData(controller.signal)
 
     return () => controller.abort()
-  }, [accountBillingState.status, accountBillingState.summary, reviewWorkspaceMode])
+  }, [reviewWorkspaceMode])
 
   useEffect(() => {
     if (accountBillingState.status !== 'ready') return
@@ -2893,6 +2891,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     accountBillingState.summary,
   )
   const isWorkspaceAccessLoading = accountBillingState.status !== 'ready'
+  const canRenderWorkspaceSections = isWorkspaceAccessLoading || hasPaidWorkspace
   const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
   const showWorkspaceAccessNotice = shouldShowWorkspaceAccessNotice(
     activeSection,
@@ -3062,14 +3061,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
             />
           ) : null}
-          {showWorkspaceLoadingSkeleton ? (
+          {showWorkspaceLoadingSkeleton && !canRenderWorkspaceSections ? (
             <div className={styles.cardFill}>
               <div className={styles.loadingLine} />
               <div className={styles.loadingLineShort} />
             </div>
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'trade-board' ? (
+          {canRenderWorkspaceSections && activeSection === 'trade-board' ? (
             <TradeBoardWorkspaceCard
               tradeBoardState={tradeBoardState}
               tradeBoardSearchQuery={tradeBoardSearchQuery}
@@ -3100,7 +3099,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             />
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'jewelry-library' ? (
+          {canRenderWorkspaceSections && activeSection === 'jewelry-library' ? (
             <JewelryLibraryCard
               state={jewelryLibraryState}
               searchQuery={librarySearchQuery}
@@ -3111,25 +3110,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             />
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'show-calendar' ? (
+          {canRenderWorkspaceSections && activeSection === 'show-calendar' ? (
             <div className={styles.workspaceSectionStack}>
               <ShowCalendarCard state={calendarState} />
             </div>
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'business-calculator' ? (
+          {canRenderWorkspaceSections && activeSection === 'business-calculator' ? (
             <div className={styles.workspaceSectionStack}>
               <BusinessCalculatorCard />
             </div>
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'team-management' ? (
+          {canRenderWorkspaceSections && activeSection === 'team-management' ? (
             <div className={styles.workspaceSectionStack}>
               <TeamManagementCard />
             </div>
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'messages' ? (
+          {canRenderWorkspaceSections && activeSection === 'messages' ? (
             <div className={styles.workspaceSectionStack}>
               <MessagesCenterCard
                 state={messagesState}
@@ -3170,7 +3169,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
 
-          {hasPaidWorkspace && activeSection === 'site-settings' ? (
+          {canRenderWorkspaceSections && activeSection === 'site-settings' ? (
             <div className={styles.workspaceSectionStack}>
               <SiteSettingsCard
                 state={siteSettingsState}
@@ -3210,7 +3209,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                   referral={accountBillingState.summary.referral}
                 />
               ) : null}
-              {hasPaidWorkspace ? (
+              {canRenderWorkspaceSections ? (
                 <>
                   <WalletSummaryCard
                     state={walletState}
