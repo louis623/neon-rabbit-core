@@ -102,7 +102,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
-    await expect(page.getByText("Your Collector Space")).toBeVisible();
+    await expect(page.getByText("Your Collection")).toBeVisible();
 
     await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Sparkle Finder account", exact: true })).toBeVisible();
@@ -154,7 +154,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Your Collector Space")).toBeVisible();
+    await expect(page.getByText("Your Collection")).toBeVisible();
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();
 
@@ -177,7 +177,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     ]);
     await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Your Collector Space")).toBeVisible();
+    await expect(page.getByText("Your Collection")).toBeVisible();
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();

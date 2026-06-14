@@ -266,7 +266,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/account"');
     expect(markup).toContain(">Silver<");
     expect(markup).toContain("Today across Sparkle Suite");
-    expect(markup).toContain("Your Collector Space");
+    expect(markup).toContain("Your Collection");
     expect(markup).toContain("Photo Setup Guide");
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
@@ -279,7 +279,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('data-smoke="collector-profile-panel"');
     expect(markup).toContain("Collector profile");
     expect(markup).toContain("Your Finder Space");
-    expect(markup).toContain("Trial access");
+    expect(markup).not.toContain("Trial access");
     expect(markup).toContain("Profile ready");
     expect(markup).toContain("Collection next steps");
     expect(markup).toContain("Open Showcase Studio");

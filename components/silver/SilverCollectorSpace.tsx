@@ -37,17 +37,14 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
     >
       <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(18rem,0.74fr)_minmax(0,1.55fr)_minmax(23rem,0.9fr)] lg:items-stretch lg:px-10 lg:py-7">
         <article className="grid min-h-[24rem] content-start gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-          <div className="flex items-start justify-between gap-3 text-[var(--sparkle-ink-muted)]">
+          <div className="flex items-start gap-3 text-[var(--sparkle-ink-muted)]">
             <div className="flex items-center gap-3">
               <Sparkles aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.6} />
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Collector profile</p>
-                <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-[1.55rem] font-semibold leading-tight text-[var(--sparkle-plum-deep)]">Your Finder Space</h2>
+                <h2 className="mt-1 whitespace-nowrap font-[family-name:var(--font-playfair)] text-[1.45rem] font-semibold leading-tight text-[var(--sparkle-plum-deep)]">Your Finder Space</h2>
               </div>
             </div>
-            <span className="rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-3 py-1 text-xs font-black text-[var(--sparkle-plum)]">
-              Trial access
-            </span>
           </div>
 
           <div className="flex gap-4 border-b border-[var(--sparkle-border)] pb-4">
@@ -120,7 +117,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-                Your Collector Space
+                Your Collection
               </p>
               <h2 className="mt-1 text-base font-medium leading-tight text-[var(--sparkle-plum-deep)]">
                 My Collection Preview
