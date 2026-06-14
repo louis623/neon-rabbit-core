@@ -181,7 +181,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();
-    await expect(page.getByText("Nic-Nac, find this for me")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ask Nic-Nac" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     await expect(page.getByText("Exact item", { exact: true }).first()).toBeVisible();
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
@@ -207,7 +208,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
     ]);
 
     await page.goto(`${baseUrl}/library/${apiItemId}`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Nic-Nac, find this for me")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ask Nic-Nac" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     const repSiteLink = page.getByRole("link", { name: "Visit Rep Site" }).first();
     await expect(repSiteLink).toBeVisible();
     await expect(repSiteLink).toHaveAttribute(
@@ -278,7 +280,7 @@ async function expectNoPublicHomepageDemoData(page: Page) {
   expect(html).not.toContain("Celestial Lights Preview");
   expect(html).not.toContain("Sierra Sparkle Studio");
   expect(html).not.toContain("Add to collection");
-  expect(html).not.toContain("Nic-Nac, find this for me");
+  expect(html).not.toContain("Ask Nic-Nac");
 }
 
 async function expectReadableControls(page: Page) {

@@ -7,9 +7,8 @@ export function NicNacMark({
 }) {
   return (
     <span
-      aria-label="Nic-Nac assistant mark"
+      aria-hidden="true"
       className={className ? `sparkle-nic-nac-mark ${className}` : "sparkle-nic-nac-mark"}
-      role="img"
       style={{ width: size, height: size, fontSize: Math.round(size * 0.6) }}
     >
       N

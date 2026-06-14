@@ -139,7 +139,7 @@ describe("findSparkleFinderCopyViolations", () => {
 
   it("allows approved Sparkle Finder wording", () => {
     const copy =
-      "Browse for free. Let Nic-Nac hunt for you with Silver. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Nic-Nac, find this for me. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
+      "Browse for free. Let Nic-Nac hunt for you with Silver. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Ask Nic-Nac. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

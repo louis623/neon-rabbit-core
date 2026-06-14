@@ -541,7 +541,8 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Sierra Sparkle Studio");
-    expect(markup).toContain("Nic-Nac, find this for me");
+    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).toContain("Exact item");
     expect(markup).toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("sparklesuite.example");

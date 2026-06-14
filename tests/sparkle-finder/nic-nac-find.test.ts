@@ -148,12 +148,13 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("Nic-Nac, find this for me");
+    expect(markup).toContain("Ask Nic-Nac");
+    expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).toContain("Sierra Sparkle Studio");
     expect(markup).toContain("Open rep board path");
     expect(markup).toContain("Open rep profile");
     expect(markup).toContain("Next show");
-    expect(markup).not.toContain("chat");
+    expect(markup).toContain("Check saved pieces");
   });
 
   it("renders API-backed Sparkle Suite leads with public rep site links", () => {
@@ -203,7 +204,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).not.toContain("Exact item lead");
   });
 
-  it("uses the shared Sparkle Suite Nic-Nac brand language and mark", () => {
+  it("uses the shared Sparkle Suite Nic-Nac chatbot language and mark", () => {
     const markup = renderToStaticMarkup(
       createElement(FindThisForMe, {
         accountState: getLocalDevAuthState("silver"),
@@ -212,12 +213,15 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain('aria-label="Nic-Nac assistant mark"');
-    expect(markup).toContain("sparkle-nic-nac-panel");
-    expect(markup).toContain("Same Nic-Nac, focused on your Finder hunt.");
-    expect(markup).toContain("Checking saved pieces");
-    expect(markup).toContain("Matching rep leads");
+    expect(markup).toContain("sparkle-nic-nac-mark");
+    expect(markup).toContain("finder-nic-nac-chatbot__starters");
+    expect(markup).toContain("finder-nic-nac-chatbot__message-row--assistant");
+    expect(markup).toContain("Same Nic-Nac from Sparkle Suite, focused on your Finder hunt.");
+    expect(markup).toContain("Check saved pieces");
+    expect(markup).toContain("Match rep leads");
     expect(markup).toContain("Next show context");
+    expect(markup).toContain("Ask about this piece");
+    expect(markup).not.toContain("sparkle-nic-nac-panel");
     expect(markup).not.toContain("radial-gradient(circle,#ffe2df_0_48%,#fff8f5_49%)");
   });
 });
