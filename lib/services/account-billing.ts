@@ -3,7 +3,6 @@ import {
   getStripe,
   stripeEnabled as isStripeEnabled,
 } from '@/lib/stripe/client'
-import { getAppUrl } from '@/lib/stripe/config'
 import { ServiceError } from '@/lib/services/errors'
 import type {
   AccountBillingDashboardResult,
@@ -117,6 +116,10 @@ function hasAccountBillingStripeEnvironment() {
   )
 }
 
+function getAccountBillingReferralBaseUrl() {
+  return process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+}
+
 function getAccountBillingStripeConfigured() {
   if (!hasAccountBillingStripeEnvironment()) return false
 
@@ -130,7 +133,7 @@ function getAccountBillingStripeConfigured() {
 
 function buildReferralLink(code: string | null) {
   if (!code) return null
-  const url = new URL('/start', getAppUrl())
+  const url = new URL('/start', getAccountBillingReferralBaseUrl())
   url.searchParams.set('ref', code)
   return url.toString()
 }
