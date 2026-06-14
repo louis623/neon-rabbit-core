@@ -3,7 +3,7 @@ import type { SparkleShowcasePiece } from "@/lib/sparkle-finder/showcase-types";
 
 export function PieceStatusBadge({ piece }: { piece: SparkleShowcasePiece }) {
   const labels: Record<SparkleShowcasePiece["showcaseStatus"], string> = {
-    iso: "ISO",
+    iso: "Looking for",
     owned: "Owned",
     private_note_only: "Private",
     wishlist: "Wishlist",

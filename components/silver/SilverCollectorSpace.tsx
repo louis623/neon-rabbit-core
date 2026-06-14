@@ -84,7 +84,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
 
           <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--sparkle-ink-muted)]">Unlocked in Silver</p>
-            <FeatureLine>Save collection and ISO watchlist pieces.</FeatureLine>
+            <FeatureLine>Save collection and pieces you are looking for.</FeatureLine>
             <FeatureLine>Build a Sparkle Showcase from owned pieces.</FeatureLine>
             <FeatureLine>Ask Nic-Nac for bounded rep and next-show leads.</FeatureLine>
           </div>
@@ -133,7 +133,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
               <h3 className="text-sm font-black uppercase tracking-[0.14em] text-[var(--sparkle-ink-muted)]">Collection next steps</h3>
               <div className="mt-3 grid gap-2">
                 <FeatureLine>Highlight rare owned pieces for your Sparkle Showcase.</FeatureLine>
-                <FeatureLine>Mark ISO pieces so Nic-Nac has a clear target.</FeatureLine>
+                <FeatureLine>Mark pieces you are looking for so Nic-Nac has a clear target.</FeatureLine>
                 <FeatureLine>Use clean light-box photos before Showcase Studio review.</FeatureLine>
               </div>
             </div>

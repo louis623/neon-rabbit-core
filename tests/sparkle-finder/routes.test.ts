@@ -693,7 +693,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('id="add-to-sparkle-showcase"');
     expect(markup).toContain("Step 1");
     expect(markup).toContain("Add pieces you own.");
-    expect(markup).toContain("Mark pieces you are ISO.");
+    expect(markup).toContain("Mark pieces you are looking for.");
     expect(markup).toContain("Feature your rarest reveals.");
     expect(markup).toContain("Share your Sparkle Showcase.");
     expect(markup).toContain("Collector Profile");
@@ -703,7 +703,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Showcase Collection");
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Add to Sparkle Showcase");
-    expect(markup).toContain("Mark as ISO");
+    expect(markup).toContain("Mark as looking for");
     expect(markup).toContain("Need a missing piece?");
     expect(markup).toContain("Showcase Studio");
     expect(markup).toContain('data-smoke="showcase-studio-intake"');

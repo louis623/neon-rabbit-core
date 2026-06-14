@@ -63,7 +63,7 @@ export function ShowcaseManager({
     setRecords((current) => upsertLocalRecord(current, item, nextStatus));
     setLocalStatus(
       nextStatus === "iso"
-        ? "ISO piece added to your Sparkle Showcase preview."
+        ? "Looking-for piece added to your Sparkle Showcase preview."
         : nextStatus === "wishlist"
           ? "Wishlist piece added to your Sparkle Showcase preview."
           : "Sparkle Showcase preview updated.",
@@ -158,7 +158,7 @@ export function ShowcaseManager({
                   icon="iso"
                   isLocalPreview={isLocalPreview}
                   item={item}
-                  label="Mark as ISO"
+                  label="Mark as looking for"
                   onPreviewUpdate={previewUpdate}
                   status="iso"
                 />
@@ -330,7 +330,7 @@ function ShowcaseStudioIntakePanel({
 
       <div className="flex flex-wrap items-center gap-2 border-t border-[rgba(238,44,155,0.14)] bg-[var(--sparkle-paper)] px-4 py-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
         <Search aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
-        Mark the piece as ISO while the Studio review is pending, then use rep leads when a matching library record appears.
+        Mark the piece as something you are looking for while the Studio review is pending, then use rep leads when a matching library record appears.
       </div>
     </div>
   );
@@ -375,7 +375,7 @@ function ShowcaseRecordCard({
           <select className="min-h-10 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm" defaultValue={record.showcaseStatus} name="showcaseStatus">
             <option value="owned">Owned</option>
             <option value="wishlist">Wishlist</option>
-            <option value="iso">ISO</option>
+            <option value="iso">Looking for</option>
             <option value="private_note_only">Private note only</option>
           </select>
         </label>
@@ -510,7 +510,7 @@ function createRecord(item: JewelryItem, status: SparkleShowcaseItemStatus): Loc
 
 function getDefaultRevealStory(item: JewelryItem, status: SparkleShowcaseItemStatus): string {
   if (status === "iso") {
-    return `ISO ${item.name}.`;
+    return `Looking for ${item.name}.`;
   }
 
   if (status === "wishlist") {

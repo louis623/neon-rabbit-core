@@ -55,7 +55,7 @@ export function ShowcaseComments({
             Showcase Conversation
           </h2>
           <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Talk about favorite reveals, ISO finds, and the stories behind the pieces.
+            Talk about favorite reveals, pieces people are looking for, and the stories behind the pieces.
           </p>
         </div>
       </div>

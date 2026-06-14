@@ -64,7 +64,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
       quickBubbles={[
         {
           label: "Check saved pieces",
-          response: "Silver lets me check saved collection and ISO pieces for bounded Finder leads.",
+          response: "Silver lets me check saved collection and pieces you are looking for against bounded Finder leads.",
         },
         {
           label: "Match rep leads",

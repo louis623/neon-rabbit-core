@@ -47,7 +47,7 @@ describe("Sparkle Showcase actions", () => {
       jewelryItemId: "jewel-aurora-drop-earrings",
       showcaseStatus: "iso",
       visibility: "public",
-      revealStory: "ISO the pink Aurora drops.",
+      revealStory: "Looking for the pink Aurora drops.",
       note: "Private owner note.",
       isRarestReveal: true,
     });
@@ -65,7 +65,7 @@ describe("Sparkle Showcase actions", () => {
           is_highlighted: true,
           visibility: "public",
           showcase_status: "iso",
-          reveal_story: "ISO the pink Aurora drops.",
+          reveal_story: "Looking for the pink Aurora drops.",
           is_rarest_reveal: true,
         },
         options: {

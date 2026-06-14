@@ -79,7 +79,7 @@ export function renderSilverPageContent(
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {isLocalPreview
-              ? "Stage owned pieces, ISO hunts, rare reveals, and profile details against Sparkle Finder's fixture-backed preview."
+              ? "Stage owned pieces, pieces you are looking for, rare reveals, and profile details against Sparkle Finder's fixture-backed preview."
               : entitlements.canUseSilverProfileActions
                 ? "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears."
                 : "View your signed-in profile and saved library state. Silver access unlocks Sparkle Showcase saves."}
@@ -131,7 +131,7 @@ export function renderSilverPageContent(
 function ShowcaseGettingStartedGuide() {
   const steps = [
     "Add pieces you own.",
-    "Mark pieces you are ISO.",
+    "Mark pieces you are looking for.",
     "Feature your rarest reveals.",
     "Share your Sparkle Showcase.",
   ];
@@ -199,8 +199,8 @@ function SilverUpgradePrompt({ accountState }: { accountState: SilverPageAccount
         </h1>
         <p className="mt-3 text-base leading-7 text-[var(--sparkle-ink-muted)]">
           {isLocalPreview
-            ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, Sparkle Showcase records, and ISO records against local fixture data."
-            : "Free accounts can keep browsing the library. Silver accounts can view and stage profile details, Sparkle Showcase records, and ISO records while persistent saves are still in progress."}
+            ? "Free accounts can keep browsing the library. Silver preview accounts can stage profile edits, Sparkle Showcase records, and looking-for records against local fixture data."
+            : "Free accounts can keep browsing the library. Silver accounts can view and stage profile details, Sparkle Showcase records, and looking-for records while persistent saves are still in progress."}
         </p>
       </div>
       <Link

@@ -59,7 +59,7 @@ const fixtureShowcasePieceOverrides: Record<
   "collection-wishlist-aurora": {
     visibility: "public",
     showcaseStatus: "iso",
-    revealStory: "ISO the pink Aurora drops for my dream earring stack.",
+    revealStory: "Looking for the pink Aurora drops for my dream earring stack.",
     isRarestReveal: true,
   },
   "collection-highlight-rose": {

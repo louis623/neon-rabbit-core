@@ -79,7 +79,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-getting-started"]')).toBeVisible();
     await expect(page.getByRole("heading", { name: "Build your Sparkle Showcase in four simple steps." })).toBeVisible();
     await expect(page.getByText("Add pieces you own.")).toBeVisible();
-    await expect(page.getByText("Mark pieces you are ISO.")).toBeVisible();
+    await expect(page.getByText("Mark pieces you are looking for.")).toBeVisible();
     await expect(page.getByText("Feature your rarest reveals.")).toBeVisible();
     await expect(page.getByText("Share your Sparkle Showcase.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Start Building My Sparkle Showcase" })).toHaveAttribute(
@@ -90,7 +90,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark as ISO" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();
     await expect(page.locator('[data-smoke="showcase-studio-intake"]')).toBeVisible();
@@ -107,8 +107,8 @@ test.describe("Sparkle Showcase smoke", () => {
     );
     await expectNoGuardrailCopy(page);
 
-    await page.getByRole("button", { name: "Mark as ISO" }).first().click();
-    await expect(page.getByText("ISO piece added to your Sparkle Showcase preview.")).toBeVisible();
+    await page.getByRole("button", { name: "Mark as looking for" }).first().click();
+    await expect(page.getByText("Looking-for piece added to your Sparkle Showcase preview.")).toBeVisible();
   });
 });
 
