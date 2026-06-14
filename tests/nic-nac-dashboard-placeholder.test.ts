@@ -27,6 +27,7 @@ import {
   hasPaidWorkspaceSubscription,
   isComingSoonWorkspaceSection,
   resolveWorkspaceSectionForAccess,
+  shouldShowWorkspaceLoadingSkeleton,
   shouldShowWorkspaceAccessNotice,
   filterRosterCustomers,
   getWalletBannerMessage,
@@ -425,6 +426,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Rep / show')
     expect(html).toContain('Live Queue sync code')
     expect(html).not.toContain('Saved here for future extension setup.')
+    expect(html).not.toContain('Checking workspace access')
+    expect(html).not.toContain('Open account')
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
     expect(html).toContain('viewBox="0 0 64 64"')
@@ -551,10 +554,15 @@ describe('DashboardPlaceholder', () => {
 
   it('shows account access guidance instead of a blank panel for locked workspace sections', () => {
     expect(shouldShowWorkspaceAccessNotice('trade-board', false)).toBe(true)
+    expect(shouldShowWorkspaceAccessNotice('trade-board', false, true)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('show-calendar', false)).toBe(true)
     expect(shouldShowWorkspaceAccessNotice('help-resources', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('account', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('trade-board', true)).toBe(false)
+    expect(shouldShowWorkspaceLoadingSkeleton('trade-board', true)).toBe(true)
+    expect(shouldShowWorkspaceLoadingSkeleton('account', true)).toBe(false)
+    expect(shouldShowWorkspaceLoadingSkeleton('help-resources', true)).toBe(false)
+    expect(shouldShowWorkspaceLoadingSkeleton('trade-board', false)).toBe(false)
 
     const html = renderToStaticMarkup(
       createElement(WorkspaceAccessNotice, {

@@ -184,9 +184,22 @@ export function resolveWorkspaceSectionForAccess(
 export function shouldShowWorkspaceAccessNotice(
   section: WorkspaceSectionKey,
   hasPaidWorkspace: boolean,
+  isAccessLoading = false,
 ) {
   return (
+    !isAccessLoading &&
     !hasPaidWorkspace &&
+    section !== 'help-resources' &&
+    section !== 'account'
+  )
+}
+
+export function shouldShowWorkspaceLoadingSkeleton(
+  section: WorkspaceSectionKey,
+  isAccessLoading: boolean,
+) {
+  return (
+    isAccessLoading &&
     section !== 'help-resources' &&
     section !== 'account'
   )
@@ -2879,10 +2892,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const hasPaidWorkspace = hasPaidWorkspaceSubscription(
     accountBillingState.summary,
   )
+  const isWorkspaceAccessLoading = accountBillingState.status !== 'ready'
   const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
   const showWorkspaceAccessNotice = shouldShowWorkspaceAccessNotice(
     activeSection,
     hasPaidWorkspace,
+    isWorkspaceAccessLoading,
+  )
+  const showWorkspaceLoadingSkeleton = shouldShowWorkspaceLoadingSkeleton(
+    activeSection,
+    isWorkspaceAccessLoading,
   )
   const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
   const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
@@ -3042,6 +3061,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               agreementAccepted={subscriptionAgreementAccepted}
               onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
             />
+          ) : null}
+          {showWorkspaceLoadingSkeleton ? (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
           ) : null}
 
           {hasPaidWorkspace && activeSection === 'trade-board' ? (
