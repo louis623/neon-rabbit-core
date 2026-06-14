@@ -705,6 +705,9 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("The Rarest of Reveals");
     expect(markup).toContain("Showcase Collection");
     expect(markup).toContain("Rainbow Crown Ring");
+    expect(markup).toContain("Profile photo");
+    expect(markup).toContain('name="profilePhoto"');
+    expect(markup).toContain('type="file"');
     expect(markup).toContain("Add to Sparkle Showcase");
     expect(markup).toContain("Mark as looking for");
     expect(markup).toContain("Need a missing piece?");
@@ -720,6 +723,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('name="itemNumber"');
     expect(markup).toContain("Submit to Nic-Nac review");
     expect(markup).toContain('href="/photo-setup"');
+    expect(markup).not.toContain("Profile photo URL");
+    expect(markup).not.toContain('placeholder="https://..."');
     expect(markup).not.toContain("Silver Space");
     expect(markup).not.toContain("Catalog actions");
     expect(markup).not.toContain("Future catalog request path");

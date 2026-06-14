@@ -61,6 +61,8 @@ type SupabasePersistenceFilterBuilder = PromiseLike<{ data: unknown; error: unkn
   maybeSingle?: () => SupabasePersistenceResult;
 };
 
+const profilePhotoMaxCharacters = 700_000;
+
 export type SupabaseCustomerStateClient = {
   from: (table: string) => {
     select: (columns: string) => SupabasePersistenceFilterBuilder;
@@ -108,7 +110,7 @@ export async function persistSilverProfileForAccount(
   const values = {
     tiktok_handle: cleanText(input.tiktokHandle, 80),
     bio: cleanText(input.bio, 500),
-    photo_url: cleanText(input.photoUrl, 500),
+    photo_url: cleanText(input.photoUrl, profilePhotoMaxCharacters),
     profile_visibility: input.visibility === "sparkle_finder" ? "sparkle_finder" : "private",
   };
 

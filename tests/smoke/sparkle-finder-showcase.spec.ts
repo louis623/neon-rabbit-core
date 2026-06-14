@@ -90,6 +90,9 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
     await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
+    await expect(page.locator('input[name="profilePhoto"][type="file"]')).toBeVisible();
+    await expect(page.locator('input[name="photoUrl"][type="hidden"]')).toHaveCount(1);
+    await expect(page.getByText("Profile photo URL")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();

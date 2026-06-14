@@ -31,6 +31,9 @@ type SparkleFinderSilverServerClient = SupabaseCustomerStateClient & SupabaseSho
   };
 };
 
+const profilePhotoMaxBytes = 500 * 1024;
+const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 export async function saveSilverProfileAction(
   _previousState: SilverSaveActionState,
   formData: FormData,
@@ -41,9 +44,15 @@ export async function saveSilverProfileAction(
     return verified.state;
   }
 
+  const profilePhoto = await readOptionalProfilePhotoDataUrl(formData.get("profilePhoto"));
+
+  if (!profilePhoto.ok) {
+    return profilePhoto.state;
+  }
+
   const result = await persistSilverProfileForAccount(verified.client, verified.accountState, {
     bio: String(formData.get("bio") ?? ""),
-    photoUrl: String(formData.get("photoUrl") ?? ""),
+    photoUrl: profilePhoto.photoUrl ?? String(formData.get("photoUrl") ?? ""),
     tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
     visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
   });
@@ -292,6 +301,49 @@ function parseShowcaseVisibility(value: FormDataEntryValue | null): SparkleShowc
 
 function readUploadFile(value: FormDataEntryValue | null): File {
   return value instanceof File ? value : new File([], "missing.jpg", { type: "image/jpeg" });
+}
+
+async function readOptionalProfilePhotoDataUrl(
+  value: FormDataEntryValue | null,
+): Promise<{ ok: true; photoUrl?: string } | { ok: false; state: SilverSaveActionState }> {
+  if (!(value instanceof File) || value.size === 0) {
+    return { ok: true };
+  }
+
+  if (!profilePhotoTypes.has(value.type)) {
+    return {
+      ok: false,
+      state: {
+        status: "error",
+        message: "Upload a JPG, PNG, or WebP profile photo.",
+      },
+    };
+  }
+
+  if (value.size > profilePhotoMaxBytes) {
+    return {
+      ok: false,
+      state: {
+        status: "error",
+        message: "Profile photo must be 500 KB or smaller.",
+      },
+    };
+  }
+
+  try {
+    return {
+      ok: true,
+      photoUrl: await fileToDataUrl(value),
+    };
+  } catch {
+    return {
+      ok: false,
+      state: {
+        status: "error",
+        message: "Profile photo could not be saved.",
+      },
+    };
+  }
 }
 
 async function fileToDataUrl(file: File): Promise<string> {

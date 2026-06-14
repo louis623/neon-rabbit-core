@@ -449,6 +449,36 @@ describe("Sparkle Finder entitlements", () => {
     });
   });
 
+  it("persists uploaded profile photo data without truncating it like a URL", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      profile: { user_id: accountState.customer.id },
+    });
+    const photoDataUrl = `data:image/png;base64,${"a".repeat(640)}`;
+
+    const result = await persistSilverProfileForAccount(client, accountState, {
+      bio: "Photo upload profile.",
+      photoUrl: photoDataUrl,
+      tiktokHandle: "@casey_photo",
+      visibility: "private",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_profiles",
+      type: "update",
+      values: {
+        tiktok_handle: "@casey_photo",
+        bio: "Photo upload profile.",
+        photo_url: photoDataUrl,
+        profile_visibility: "private",
+      },
+      filters: [
+        ["user_id", "user-123"],
+      ],
+    });
+  });
+
   it("denies persisted Silver profile and collection writes for Free accounts", async () => {
     const accountState = currentAccountState("free");
     const client = createFakePersistenceClient({});

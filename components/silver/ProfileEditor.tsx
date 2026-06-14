@@ -21,6 +21,9 @@ const realAccountInitialState: SilverSaveActionState = {
   message: "Profile ready to save.",
 };
 
+const profilePhotoMaxBytes = 500 * 1024;
+const profilePhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 export function ProfileEditor({
   accountState,
   canSaveSilverActions,
@@ -36,10 +39,17 @@ export function ProfileEditor({
   const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledProfileAction, realAccountInitialState);
   const statusMessage = isLocalPreview ? localStatusMessage : actionState.message;
 
-  function handlePreviewSave(formData: FormData) {
+  async function handlePreviewSave(formData: FormData) {
+    const profilePhoto = await readProfilePhotoDataUrl(formData.get("profilePhoto"));
+
+    if (!profilePhoto.ok) {
+      setLocalStatusMessage(profilePhoto.message);
+      return;
+    }
+
     const result = updateSilverProfilePreview(accountState, previewProfile, {
       bio: String(formData.get("bio") ?? ""),
-      photoUrl: String(formData.get("photoUrl") ?? ""),
+      photoUrl: profilePhoto.photoUrl ?? String(formData.get("photoUrl") ?? ""),
       tiktokHandle: String(formData.get("tiktokHandle") ?? ""),
       visibility: formData.get("visibility") === "sparkle_finder" ? "sparkle_finder" : "private",
     });
@@ -90,14 +100,15 @@ export function ProfileEditor({
           />
         </label>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
-          Profile photo URL
+          Profile photo
+          <input name="photoUrl" readOnly type="hidden" value={previewProfile.photoUrl} />
           <input
             className="min-h-11 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-normal text-[var(--sparkle-ink)]"
-            defaultValue={previewProfile.photoUrl}
-            name="photoUrl"
-            placeholder="https://..."
-            type="text"
+            accept="image/jpeg,image/png,image/webp"
+            name="profilePhoto"
+            type="file"
           />
+          <span className="text-xs font-semibold text-[var(--sparkle-ink-muted)]">Upload a JPG, PNG, or WebP from your device.</span>
         </label>
         <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           TikTok handle
@@ -159,4 +170,39 @@ async function disabledProfileAction(): Promise<SilverSaveActionState> {
     status: "denied",
     message: "Silver access is required to save profile updates.",
   };
+}
+
+async function readProfilePhotoDataUrl(
+  value: FormDataEntryValue | null,
+): Promise<{ ok: true; photoUrl?: string } | { ok: false; message: string }> {
+  if (!(value instanceof File) || value.size === 0) {
+    return { ok: true };
+  }
+
+  if (!profilePhotoTypes.has(value.type)) {
+    return { ok: false, message: "Upload a JPG, PNG, or WebP profile photo." };
+  }
+
+  if (value.size > profilePhotoMaxBytes) {
+    return { ok: false, message: "Profile photo must be 500 KB or smaller." };
+  }
+
+  try {
+    return {
+      ok: true,
+      photoUrl: await fileToDataUrl(value),
+    };
+  } catch {
+    return { ok: false, message: "Profile photo could not be read." };
+  }
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => resolve(String(reader.result ?? "")));
+    reader.addEventListener("error", () => reject(new Error("Profile photo could not be read.")));
+    reader.readAsDataURL(file);
+  });
 }
