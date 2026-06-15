@@ -71,6 +71,11 @@ create index if not exists idx_trade_board_intake_photos_session
 alter table public.trade_board_intake_sessions enable row level security;
 alter table public.trade_board_intake_photos enable row level security;
 
+grant select on table public.trade_board_intake_sessions to authenticated;
+grant select on table public.trade_board_intake_photos to authenticated;
+grant select, insert, update, delete on table public.trade_board_intake_sessions to service_role;
+grant select, insert, update, delete on table public.trade_board_intake_photos to service_role;
+
 do $$
 begin
   if not exists (

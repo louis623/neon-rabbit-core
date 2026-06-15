@@ -67,4 +67,19 @@ describe('Nic-Nac Trade Board intake workflow migration', () => {
       'rep_id = (select id from public.reps where auth_user_id = auth.uid())',
     )
   })
+
+  it('grants explicit Data API privileges for workflow access roles', () => {
+    expect(migration).toContain(
+      'grant select on table public.trade_board_intake_sessions to authenticated',
+    )
+    expect(migration).toContain(
+      'grant select on table public.trade_board_intake_photos to authenticated',
+    )
+    expect(migration).toContain(
+      'grant select, insert, update, delete on table public.trade_board_intake_sessions to service_role',
+    )
+    expect(migration).toContain(
+      'grant select, insert, update, delete on table public.trade_board_intake_photos to service_role',
+    )
+  })
 })
