@@ -231,6 +231,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(message).toContain('piecePhotoIndex or listingPhotoIndex')
     expect(message).toContain('recent add-flow photo order')
     expect(message).toContain('Boxed display photos with clear jewelry are acceptable')
+    expect(message).toContain('Do not ask for unboxed, no-packaging, or plain-background retakes')
     expect(message).toContain('handler uploads the photo from chat automatically')
     expect(message).toContain('do NOT ask the rep for a URL')
   })

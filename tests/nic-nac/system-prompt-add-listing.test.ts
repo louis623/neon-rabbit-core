@@ -25,18 +25,20 @@ describe('Nic-Nac system prompt — add listing flow', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'upload a clear item-info tag or label photo',
     )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Order does not matter')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'search_jewelry_database before asking for photos',
+      'Use photos and facts in whatever order the rep provides them',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'If the item exists, confirm the match before add_listing',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'If the item is missing, ask for the label/details photo',
+      'If missing, ask for whichever single input is actually missing or unusable',
     )
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'The collection may be on packaging instead of the label',
-    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Two quality checks only')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('readable item details')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('website-worthy jewelry image')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Accept clear rep-provided collection')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'For rings, the ring size is usually on the box rather than the label',
     )
@@ -44,19 +46,22 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'ask for the ring size before add_listing',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Ask for collection or a packaging photo if it is not visible',
+      'Do not require packaging proof after the rep gives the collection',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Ask for the jewelry-front photo only after catalog details are confirmed',
+      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded',
+      'Rejecting or demanding a retake is a last resort',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Do not use label/details or back-of-card photos as the final jewelry-front photo',
+      'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear',
+      'If enough usable inputs already exist in recent conversation photos or chat text, call add_listing',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Use recent add-flow photos, not just the latest message',
     )
   })
 

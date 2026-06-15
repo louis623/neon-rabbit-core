@@ -166,8 +166,8 @@ describe('help resources', () => {
     expect(combinedText).toContain('provider-specific DNS setup')
   })
 
-  it('preserves the strict Add Jewelry workflow sequence and photo boundaries', () => {
-    const guide = getHelpResources('add jewelry trade board light box white background')
+  it('documents flexible Add Jewelry intake with only the real photo/readability boundaries', () => {
+    const guide = getHelpResources('add jewelry trade board boxed display clear centered')
       .find((resource) => resource.id === 'add-jewelry-to-trade-board')
 
     expect(guide).toMatchObject({
@@ -178,19 +178,20 @@ describe('help resources', () => {
     })
 
     expect(guide?.steps).toEqual([
-      'Start with the item number.',
-      'Let Nic-Nac check the Sparkle Suite jewelry database.',
+      'Send the item number or a readable item-info tag/photo.',
+      'Let Nic-Nac check the Sparkle Suite jewelry database and read any details you already sent.',
       'If the item is already found, confirm the match and listing details.',
-      'If the item is missing, upload a readable label/details photo.',
-      'Confirm the collection name or upload packaging context if the collection is not clear.',
-      'Upload the final front-facing jewelry photo for the customer-facing board image.',
+      'If the item is missing, provide any missing details in chat or with a readable label/details photo.',
+      'Provide a clear, close, centered jewelry photo for the customer-facing board image.',
       'Review the listing and add it to your board.',
     ])
 
-    expect(guide?.body).toContain('Label/details and packaging photos are not final board photos')
-    expect(guide?.body).toContain('front-facing jewelry photo')
-    expect(guide?.body).toContain('white background')
-    expect(guide?.body).toContain('brightest setting')
+    expect(guide?.body).toContain('The order does not matter')
+    expect(guide?.body).toContain('readable item details')
+    expect(guide?.body).toContain('clear, close, centered jewelry photo')
+    expect(guide?.body).toContain('A boxed display photo is fine')
+    expect(guide?.body).not.toContain('packaging photos are not final board photos')
+    expect(guide?.body).not.toContain('white background')
     expect(guide?.quickActions).toContain('Add a piece to Trade Board')
   })
 

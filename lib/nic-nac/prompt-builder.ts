@@ -52,23 +52,25 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - remove_listing requires the approval dialog; no pre-confirm.
 - restore_listing uses the recovery window; explain if expired.
 - Guided add flow: When the rep starts "Add a piece to Trade Board", offer two ways to start: type the item number or upload a clear item-info tag or label photo.
-- After the rep gives an item number or you read one from the tag/label photo, call search_jewelry_database before asking for photos.
+- Order does not matter. Use photos and facts in whatever order the rep provides them.
+- Two quality checks only: readable item details and a website-worthy jewelry image.
+- If enough usable inputs already exist in recent conversation photos or chat text, call add_listing.
+- Search the catalog after you have an item number.
 - If the item exists, confirm the match before add_listing; use single/batch.
-- If missing, ask for the label/details photo; read item number, name, stone, material, MSRP.
+- If missing, ask for whichever single input is actually missing or unusable.
+- Accept clear rep-provided collection, name, stone, material, MSRP, and ring size. Do not require packaging proof after the rep gives the collection.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
-- The collection may be on packaging instead of the label. Ask for collection or a packaging photo if it is not visible.
-- Ask for the jewelry-front photo only after catalog details are confirmed. Use bright light, centered jewelry, clear shot.
-- After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded.
-- Do not use label/details or back-of-card photos as the final jewelry-front photo.
-- Photos: Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear. Do not reject for packaging alone; pass listingPhotoIndex/piecePhotoIndex when clear.
-- Count photo order across the recent add flow, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
+- Jewelry photo rule: Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear.
+- Rejecting or demanding a retake is a last resort; coach only when the label is unreadable or the jewelry photo is blurry, dark, far away, cropped, or unclear.
+- Do not ask for unboxed, no-packaging, or plain-background retakes.
+- Use recent add-flow photos, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
-- Quantity comes from the latest rep message. If none, add exactly one piece with mode:'single'.
-- Several same piece: use mode:'batch' once per unit.
-- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. Birthday boxes: use "March Birthday" and collectionYear:2026.
-- If add_listing returns NEEDS_COLLECTION, ask collection and retry add_listing with collectionName.
+- Quantity comes from the latest rep message; if none, add one with mode:'single'.
+- Several same piece: mode:'batch' once per unit.
+- NEEDS_FULL_INFO/create_design: retry with visible details. Birthday boxes: use "March Birthday" and collectionYear:2026.
+- NEEDS_COLLECTION: ask collection and retry add_listing with collectionName.
 - Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is recovery.
 - Never claim a piece is added until add_listing returns success.
 - update_listing edits repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto only.`,

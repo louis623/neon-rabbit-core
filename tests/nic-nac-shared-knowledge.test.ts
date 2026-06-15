@@ -35,7 +35,7 @@ describe('shared Nic-Nac knowledge', () => {
     )
     expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.customerFlow).toContain('request')
     expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.customerFlow).toContain(
-      'piece they just revealed',
+      'item number just revealed',
     )
   })
 

@@ -77,31 +77,37 @@ describe('Nic-Nac routed system prompt', () => {
     )
     expect(prompt).toContain('type the item number')
     expect(prompt).toContain('upload a clear item-info tag or label photo')
-    expect(prompt).toContain('search_jewelry_database before asking for photos')
+    expect(prompt).toContain('Order does not matter')
+    expect(prompt).toContain('Use photos and facts in whatever order the rep provides them')
     expect(prompt).toContain('If the item exists, confirm the match before add_listing')
-    expect(prompt).toContain('If missing, ask for the label/details photo')
+    expect(prompt).toContain('If missing, ask for whichever single input is actually missing or unusable')
     expect(prompt).toContain(
       'Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns',
     )
-    expect(prompt).toContain('The collection may be on packaging instead of the label')
-    expect(prompt).toContain('Ask for collection or a packaging photo if it is not visible')
+    expect(prompt).toContain('Two quality checks only')
+    expect(prompt).toContain('readable item details')
+    expect(prompt).toContain('website-worthy jewelry image')
+    expect(prompt).toContain('Accept clear rep-provided collection')
     expect(prompt).toContain(
-      'Ask for the jewelry-front photo only after catalog details are confirmed',
+      'Do not require packaging proof after the rep gives the collection',
     )
     expect(prompt).toContain(
-      'After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded',
+      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
     )
     expect(prompt).toContain(
-      'Do not use label/details or back-of-card photos as the final jewelry-front photo',
+      'Rejecting or demanding a retake is a last resort',
     )
     expect(prompt).toContain(
-      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear',
+      'Do not ask for unboxed, no-packaging, or plain-background retakes',
+    )
+    expect(prompt).toContain(
+      'If enough usable inputs already exist in recent conversation photos or chat text, call add_listing',
     )
     expect(prompt).toContain(
       'If the rep insists a clear boxed display photo is final, proceed instead of arguing',
     )
     expect(prompt).toContain(
-      'Count photo order across the recent add flow, not just the latest message',
+      'Use recent add-flow photos, not just the latest message',
     )
     expect(prompt).toContain(
       'If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload',
