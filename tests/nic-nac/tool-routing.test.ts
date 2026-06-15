@@ -709,6 +709,77 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps trade-board tools when the rep accepts the boxed jewelry photo as final', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-item',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'item-number',
+        role: 'user',
+        parts: [{ type: 'text', text: 'er13229' }],
+      },
+      {
+        id: 'assistant-label',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "The item number ER13229 isn't in the catalog yet. Can you send me a photo of the label or box so I can pull the design details?",
+          },
+        ],
+      },
+      {
+        id: 'label',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+      {
+        id: 'assistant-collection',
+        role: 'assistant',
+        parts: [{ type: 'text', text: 'What collection is The Florence Earrings from?' }],
+      },
+      {
+        id: 'collection',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Birthday collection for July 2026.' }],
+      },
+      {
+        id: 'assistant-photo',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "You just sent one photo. Is this the clearest shot of the earrings you have, or do you want to retake it?",
+          },
+        ],
+      },
+      {
+        id: 'use-photo',
+        role: 'user',
+        parts: [{ type: 'text', text: "Nope, this is as good as it's gonna get." }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('routes required setup mode to setup tools only', () => {
     const names = listToolNamesForIntents(['required_setup'])
 

@@ -229,6 +229,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(message).toContain('Birthday Collection month/year')
     expect(message).toContain('collectionName like "March Birthday"')
     expect(message).toContain('piecePhotoIndex or listingPhotoIndex')
+    expect(message).toContain('Boxed display photos with clear jewelry are acceptable')
     expect(message).toContain('handler uploads the photo from chat automatically')
     expect(message).toContain('do NOT ask the rep for a URL')
   })

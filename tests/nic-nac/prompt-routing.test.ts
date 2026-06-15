@@ -77,9 +77,9 @@ describe('Nic-Nac routed system prompt', () => {
     )
     expect(prompt).toContain('search_jewelry_database before asking for photos')
     expect(prompt).toContain('If the item exists, confirm the match before add_listing')
-    expect(prompt).toContain('If the item is missing, ask for the label/details photo')
+    expect(prompt).toContain('If missing, ask for the label/details photo')
     expect(prompt).toContain(
-      'Treat messy item numbers, design names, "add this one", corrections, and script/tool references as add-flow turns',
+      'Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns',
     )
     expect(prompt).toContain('The collection may be on packaging instead of the label')
     expect(prompt).toContain('Ask for collection or a packaging photo if it is not visible')
@@ -90,7 +90,10 @@ describe('Nic-Nac routed system prompt', () => {
       'After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded',
     )
     expect(prompt).toContain(
-      'Do not use the label/details or packaging photo as the final jewelry-front photo',
+      'Do not use label/details or back-of-card photos as the final jewelry-front photo',
+    )
+    expect(prompt).toContain(
+      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear',
     )
     expect(prompt).toContain(
       'Never send the rep to backend/Louis/manual creation when add_listing is active',

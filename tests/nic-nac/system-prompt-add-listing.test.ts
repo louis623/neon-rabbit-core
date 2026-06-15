@@ -49,7 +49,10 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Do not use the label/details or packaging photo as the final jewelry-front photo',
+      'Do not use label/details or back-of-card photos as the final jewelry-front photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear',
     )
   })
 

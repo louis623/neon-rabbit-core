@@ -419,6 +419,8 @@ function isContextualFollowUp(text: string, previousAssistantText = ''): boolean
     /\b(that is|that's|this is)\s+wrong\b/,
     /\bnot how this works\b/,
     /\byou (do )?have\b.*\b(tool|access|script|process|workflow)\b/,
+    /^(no|nope|nah)\b.*\b(good|best|clearest|works|use|fine)\b/,
+    /\bas good as (it'?s|it is) gonna get\b/,
   ].some((pattern) => pattern.test(normalized))
     || (
       wordCount(normalized) <= 8 &&
