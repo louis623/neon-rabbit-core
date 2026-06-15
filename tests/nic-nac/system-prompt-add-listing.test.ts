@@ -19,7 +19,11 @@ describe('Nic-Nac system prompt — add listing flow', () => {
 
   it('starts guided trade-board intake with item number lookup before photos', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'When the rep starts "Add a piece to Trade Board", ask for the item number first',
+      'When the rep starts "Add a piece to Trade Board", offer two ways to start',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('type the item number')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'upload a clear item-info tag or label photo',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'search_jewelry_database before asking for photos',

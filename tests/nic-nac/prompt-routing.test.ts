@@ -73,8 +73,10 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')
     expect(prompt).toContain(
-      'When the rep starts "Add a piece to Trade Board", ask for the item number first',
+      'When the rep starts "Add a piece to Trade Board", offer two ways to start',
     )
+    expect(prompt).toContain('type the item number')
+    expect(prompt).toContain('upload a clear item-info tag or label photo')
     expect(prompt).toContain('search_jewelry_database before asking for photos')
     expect(prompt).toContain('If the item exists, confirm the match before add_listing')
     expect(prompt).toContain('If missing, ask for the label/details photo')
