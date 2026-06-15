@@ -47,6 +47,11 @@ import {
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
+import {
+  getOrCreateTradeBoardIntakeContext,
+  mergeWorkflowToolIntents,
+} from '@/lib/nic-nac/workflows/trade-board-intake-context'
+import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -229,13 +234,47 @@ export async function POST(request: Request) {
     })
   }
 
-  const toolIntents: NicNacToolIntent[] =
+  const latestUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === 'user')
+  const tradeBoardWorkflowContext = await getOrCreateTradeBoardIntakeContext({
+    supabase,
+    repId,
+    conversationId,
+    messages,
+    latestUserMessageId: latestUserMessage?.id,
+    mode,
+    nowIso: new Date().toISOString(),
+  })
+  const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
+  const latestToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? ['required_setup']
       : getToolIntentsForMessages(messages)
+  const workflowToolIntents = tradeBoardWorkflowContext.workflowIntents
+  const toolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? latestToolIntents
+      : mergeWorkflowToolIntents(latestToolIntents, workflowToolIntents)
+  const toolPolicySource =
+    mode === 'required_setup'
+      ? 'mode_required_setup'
+      : tradeBoardWorkflowContext.toolPolicySource === 'active_workflow'
+        ? tradeBoardWorkflowContext.toolPolicySource
+        : latestToolIntents.includes('resources')
+          ? 'fallback_resources'
+          : latestToolIntents.includes('memory')
+            ? 'fallback_memory'
+            : 'latest_turn_intent'
   const requireToolCall = shouldRequireToolCallForMessages(messages, toolIntents)
   const tools = buildToolsForIntents(
-    { repId, supabase, conversationId, runId },
+    {
+      repId,
+      supabase,
+      conversationId,
+      runId,
+      activeTradeBoardWorkflow,
+    },
     toolIntents,
   )
   const activeToolNames = Object.keys(tools)
@@ -264,6 +303,7 @@ export async function POST(request: Request) {
     intents: toolIntents,
     activeToolNames,
     mode,
+    workflowPromptState: tradeBoardWorkflowContext.workflowPromptState,
   })
   let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined
@@ -392,6 +432,11 @@ export async function POST(request: Request) {
       // assistant rows from the model's view).
       try {
         const normalizedParts = normalizeNicNacAssistantParts(responseMessage.parts)
+        const hardFailSummary = summarizeHardFailDetection(
+          responseMessage.parts
+            .filter((part) => (part as { type?: string }).type === 'text')
+            .map((part) => (part as { text?: string }).text ?? ''),
+        )
         if (sdkIsContinuation) {
           await checkpointAssistant(supabase, {
             conversationId,
@@ -429,6 +474,29 @@ export async function POST(request: Request) {
           },
           usage: runUsage,
           errorMessage: streamErrorMessage,
+          workflow: activeTradeBoardWorkflow
+            ? {
+                id: activeTradeBoardWorkflow.id,
+                type: activeTradeBoardWorkflow.workflowType,
+                phaseBefore:
+                  tradeBoardWorkflowContext.sessionBefore?.phase ??
+                  activeTradeBoardWorkflow.phase,
+                phaseAfter: activeTradeBoardWorkflow.phase,
+                statusBefore:
+                  tradeBoardWorkflowContext.sessionBefore?.status ??
+                  activeTradeBoardWorkflow.status,
+                statusAfter: activeTradeBoardWorkflow.status,
+                toolPolicySource,
+                photoRoles: activeTradeBoardWorkflow.photos.map((photo) => ({
+                  declaredRole: photo.declaredRole,
+                  visualRole: photo.visualRole,
+                  roleConfirmed: photo.roleConfirmed,
+                  quality: photo.quality,
+                })),
+                hardFailPhraseCount: hardFailSummary.count,
+                hardFailPhrases: hardFailSummary.phrases,
+              }
+            : undefined,
         })
       } catch (err) {
         console.error('[nic-nac] persistence onFinish error:', err)

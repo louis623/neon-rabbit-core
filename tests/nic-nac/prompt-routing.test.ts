@@ -116,6 +116,12 @@ describe('Nic-Nac routed system prompt', () => {
       'Do not say "the photo of the earrings needs" unless the rep actually uploaded a dedicated jewelry photo',
     )
     expect(prompt).toContain(
+      'Do not call a label/details photo a boxed display photo',
+    )
+    expect(prompt).toContain(
+      'After a label/details photo, ask for the separate customer-facing jewelry photo without critiquing label-photo distance or framing',
+    )
+    expect(prompt).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(prompt).toContain(
@@ -137,6 +143,21 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')
     expect(prompt.length).toBeLessThan(9_000)
+  })
+
+  it('includes active workflow prompt state before Trade Board instructions', () => {
+    const prompt = buildNicNacSystemPrompt({
+      intents: ['trade_board'],
+      activeToolNames: ['add_listing', 'search_jewelry_database'],
+      workflowPromptState:
+        'Active workflow: trade_board_add_listing\nMissing: jewelryFrontPhoto\nNext action: ask_for_jewelry_front_photo',
+    })
+
+    expect(prompt).toContain('Active workflow: trade_board_add_listing')
+    expect(prompt).toContain('Missing: jewelryFrontPhoto')
+    expect(prompt.indexOf('Active workflow: trade_board_add_listing')).toBeLessThan(
+      prompt.indexOf('Trade-board tools:'),
+    )
   })
 
   it('keeps provider guardrails in notification prompts', () => {

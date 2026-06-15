@@ -65,6 +65,18 @@ export async function logNicNacRun(args: {
   modelContext: NicNacRunModelContext
   usage?: NicNacRunUsage
   errorMessage?: string
+  workflow?: {
+    id: string
+    type: string
+    phaseBefore?: string
+    phaseAfter?: string
+    statusBefore?: string
+    statusAfter?: string
+    toolPolicySource?: string
+    photoRoles?: unknown[]
+    hardFailPhraseCount?: number
+    hardFailPhrases?: string[]
+  }
 }): Promise<void> {
   try {
     const thresholds = evaluateNicNacRunThresholds({
@@ -98,6 +110,16 @@ export async function logNicNacRun(args: {
       context_compacted: args.modelContext.wasCompacted,
       rollover_recommended: thresholds.rolloverRecommended,
       rollover_reasons: thresholds.reasons,
+      workflow_id: args.workflow?.id ?? null,
+      workflow_type: args.workflow?.type ?? null,
+      workflow_phase_before: args.workflow?.phaseBefore ?? null,
+      workflow_phase_after: args.workflow?.phaseAfter ?? null,
+      workflow_status_before: args.workflow?.statusBefore ?? null,
+      workflow_status_after: args.workflow?.statusAfter ?? null,
+      tool_policy_source: args.workflow?.toolPolicySource ?? null,
+      workflow_photo_roles: args.workflow?.photoRoles ?? [],
+      hard_fail_phrase_count: args.workflow?.hardFailPhraseCount ?? 0,
+      hard_fail_phrases: args.workflow?.hardFailPhrases ?? [],
       error_message: args.errorMessage ?? null,
     })
     if (error) {

@@ -16,6 +16,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ServiceError, errors } from '@/lib/services/errors'
+import type { ToolContext } from '@/lib/nic-nac/tools'
+import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
 const addListingMock = vi.fn()
 const addListingBatchMock = vi.fn()
@@ -116,13 +118,50 @@ interface AddListingToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(supabase: unknown = makeConversationLookupMock([])): AddListingToolDef {
+function makeTool(
+  supabase: unknown = makeConversationLookupMock([]),
+  contextOverrides: Partial<ToolContext> = {},
+): AddListingToolDef {
   return makeAddListingTool({
     repId: 'rep-1',
     supabase: supabase as never,
     conversationId: 'conv-1',
     runId: 'run-1',
-  }) as unknown as AddListingToolDef
+    ...contextOverrides,
+  } as ToolContext) as unknown as AddListingToolDef
+}
+
+function activeWorkflow(
+  overrides: Partial<TradeBoardIntakeSessionState> = {},
+): TradeBoardIntakeSessionState {
+  return {
+    id: 'workflow-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'trade_board_add_listing',
+    status: 'active',
+    phase: 'photo_capture',
+    known: {
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      collectionName: 'July Birthday',
+    },
+    missing: ['jewelryFrontPhoto'],
+    blockers: [],
+    warnings: [],
+    photos: [
+      {
+        attachmentIndex: 1,
+        declaredRole: 'label_details',
+        visualRole: 'jewelry',
+        roleConfirmed: true,
+        quality: 'usable',
+        qualityIssues: [],
+        notes: ['backs of earrings visible'],
+      },
+    ],
+    ...overrides,
+  }
 }
 
 function makeImageResponse(
@@ -1662,6 +1701,68 @@ describe('add_listing - direct listing without ownership clickwrap', () => {
       expect.not.objectContaining({ clickwrapAccepted: expect.anything() }),
     )
     expect(createDesignMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('add_listing - active workflow readiness guard', () => {
+  it('does not use label_details photos as listing photos when server workflow state says jewelry-front is missing', async () => {
+    const supabaseMock = makeConversationLookupMock([])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow(),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday',
+      }),
+    ).rejects.toMatchObject({
+      code: 'WORKFLOW_NOT_READY',
+      userMessage: expect.stringContaining('customer-facing jewelry photo'),
+    })
+    expect(addListingMock).not.toHaveBeenCalled()
+    expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
+  })
+
+  it('allows add_listing when active workflow readiness is satisfied', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    const supabaseMock = makeConversationLookupMock([])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            quality: 'usable',
+            qualityIssues: [],
+            notes: ['boxed display jewelry is centered and clear'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        collectionName: 'July Birthday',
+      }),
+    ).resolves.toMatchObject({
+      listingId: 'listing-1',
+    })
   })
 })
 

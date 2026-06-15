@@ -12,6 +12,7 @@ import {
   listToolNamesForIntents,
   shouldRequireToolCallForMessages,
 } from '@/lib/nic-nac/tools'
+import { mergeWorkflowToolIntents } from '@/lib/nic-nac/workflows/trade-board-intake-context'
 
 function makeCtx() {
   return {
@@ -54,7 +55,7 @@ describe('Nic-Nac tool routing', () => {
   it('routes the guided add-a-piece chip to trade-board tools', () => {
     const intents = getToolIntentsForText('Add a piece to Trade Board')
 
-    expect(intents).toEqual(['trade_board'])
+    expect(intents).toContain('trade_board')
     expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
   })
@@ -141,6 +142,21 @@ describe('Nic-Nac tool routing', () => {
       'record_show_session_event',
       'start_show_session',
     ])
+  })
+
+  it('keeps add-listing tools active when workflow state requires Trade Board tools', () => {
+    const intents = mergeWorkflowToolIntents(['memory'], ['trade_board', 'catalog'])
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toEqual(['memory', 'trade_board', 'catalog'])
+    expect(toolNames).toContain('add_listing')
+    expect(toolNames).toContain('search_jewelry_database')
+  })
+
+  it('does not duplicate routed tools when latest turn and workflow both include Trade Board', () => {
+    const intents = mergeWorkflowToolIntents(['trade_board'], ['trade_board', 'catalog'])
+
+    expect(intents).toEqual(['trade_board', 'catalog'])
   })
 
   it('routes from the latest user message text parts', () => {
@@ -267,7 +283,7 @@ describe('Nic-Nac tool routing', () => {
   it('routes physical inventory add language to trade-board tools', () => {
     const intents = getToolIntentsForText('I have 4 of this item to add')
 
-    expect(intents).toEqual(['trade_board'])
+    expect(intents).toContain('trade_board')
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
   })
 
@@ -860,6 +876,83 @@ describe('Nic-Nac tool routing', () => {
         ],
       },
     ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when the rep corrects a label photo mistaken for jewelry', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-start',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'Two ways to start: type the item number or upload a photo of the item-info tag/label.',
+          },
+        ],
+      },
+      {
+        id: 'label-photo',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+      {
+        id: 'assistant-collection',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "The Florence Earrings ER13229 isn't in the catalog yet, so I'll need one more piece of info: What collection are these from?",
+          },
+        ],
+      },
+      {
+        id: 'collection',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'They are part of the July birthday collection, 2026.',
+          },
+        ],
+      },
+      {
+        id: 'assistant-bad-photo',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'The boxed display photo needs a little help — it is too far out. Can you snap a closer, clearer shot of just the earrings so they fill more of the frame?',
+          },
+        ],
+      },
+      {
+        id: 'rep-corrects-photo-role',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: "I didn't give you any photos. I only gave you a photo with a label in it.",
+          },
+        ],
+      },
+    ]
+
     const intents = getToolIntentsForMessages(messages)
 
     expect(intents).toContain('trade_board')

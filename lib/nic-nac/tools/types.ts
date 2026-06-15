@@ -4,12 +4,14 @@
 
 import type { Tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
 export type ToolContext = {
   repId: string
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
 }
 
 export type ToolDefinition = {

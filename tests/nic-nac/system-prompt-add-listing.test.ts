@@ -70,6 +70,12 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'Do not say "the photo of the earrings needs" unless the rep actually uploaded a dedicated jewelry photo',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not call a label/details photo a boxed display photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'After a label/details photo, ask for the separate customer-facing jewelry photo without critiquing label-photo distance or framing',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

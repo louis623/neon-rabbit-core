@@ -32,7 +32,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
-import type { ToolDefinition } from './types'
+import { computeTradeBoardIntakeReadiness } from '@/lib/nic-nac/workflows/trade-board-intake-controller'
+import type { ToolContext, ToolDefinition } from './types'
 
 const itemBaseShape = {
   itemNumber: z.string(),
@@ -284,6 +285,7 @@ async function runSingle(
     conversationId: string
     runId: string
     supabase: SupabaseClient
+    activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
   },
   admin: SupabaseClient,
 ) {
@@ -294,6 +296,20 @@ async function runSingle(
       code: 'MISSING_ITEM_INPUT',
       userMessage: 'I need an item number to add a piece to your board.',
     })
+  }
+
+  const activeWorkflow = ctx.activeTradeBoardWorkflow
+  if (activeWorkflow?.status === 'active') {
+    const readiness = computeTradeBoardIntakeReadiness(activeWorkflow)
+    if (!readiness.ready) {
+      const needsJewelryPhoto = readiness.missing.includes('jewelryFrontPhoto')
+      throw new NicNacToolError({
+        code: 'WORKFLOW_NOT_READY',
+        userMessage: needsJewelryPhoto
+          ? 'I still need the customer-facing jewelry photo before I can save this listing.'
+          : 'I still need one more required detail before I can save this listing.',
+      })
+    }
   }
 
   let createdNewDesign = false
@@ -750,6 +766,7 @@ async function runBatch(
     conversationId: string
     runId: string
     supabase: SupabaseClient
+    activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
   },
   admin: SupabaseClient,
 ) {
@@ -956,6 +973,7 @@ export function makeAddListingTool(ctx: {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
 }) {
   return tool({
     description:
@@ -1001,5 +1019,6 @@ export const addListingTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      activeTradeBoardWorkflow: ctx.activeTradeBoardWorkflow,
     }),
 }

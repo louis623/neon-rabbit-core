@@ -89,7 +89,66 @@ describe('Nic-Nac run telemetry', () => {
       context_compacted: true,
       rollover_recommended: true,
       rollover_reasons: ['context_compacted'],
+      workflow_id: null,
+      workflow_type: null,
+      workflow_phase_before: null,
+      workflow_phase_after: null,
+      workflow_status_before: null,
+      workflow_status_after: null,
+      tool_policy_source: null,
+      workflow_photo_roles: [],
+      hard_fail_phrase_count: 0,
+      hard_fail_phrases: [],
       error_message: null,
+    })
+  })
+
+  it('writes workflow observability fields when provided', async () => {
+    await logNicNacRun({
+      runId: 'run-workflow-1',
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      model: 'claude-haiku-4-5-20251001',
+      status: 'complete',
+      latencyMs: 1234,
+      intents: ['trade_board'],
+      toolNames: ['add_listing'],
+      modelContext: {
+        originalMessageCount: 3,
+        modelMessageCount: 3,
+        droppedMessageCount: 0,
+        estimatedTokens: 500,
+        wasCompacted: false,
+      },
+      workflow: {
+        id: 'workflow-1',
+        type: 'trade_board_add_listing',
+        phaseBefore: 'photo_capture',
+        phaseAfter: 'photo_capture',
+        statusBefore: 'active',
+        statusAfter: 'active',
+        toolPolicySource: 'active_workflow',
+        photoRoles: [
+          { declaredRole: 'label_details', visualRole: 'label_or_packaging' },
+        ],
+        hardFailPhraseCount: 0,
+        hardFailPhrases: [],
+      },
+    })
+
+    expect(insertMock.mock.calls[0][0]).toMatchObject({
+      workflow_id: 'workflow-1',
+      workflow_type: 'trade_board_add_listing',
+      workflow_phase_before: 'photo_capture',
+      workflow_phase_after: 'photo_capture',
+      workflow_status_before: 'active',
+      workflow_status_after: 'active',
+      tool_policy_source: 'active_workflow',
+      workflow_photo_roles: [
+        { declaredRole: 'label_details', visualRole: 'label_or_packaging' },
+      ],
+      hard_fail_phrase_count: 0,
+      hard_fail_phrases: [],
     })
   })
 
