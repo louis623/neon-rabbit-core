@@ -99,6 +99,12 @@ describe('Nic-Nac routed system prompt', () => {
       'If the rep insists a clear boxed display photo is final, proceed instead of arguing',
     )
     expect(prompt).toContain(
+      'Count photo order across the recent add flow, not just the latest message',
+    )
+    expect(prompt).toContain(
+      'If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload',
+    )
+    expect(prompt).toContain(
       'Never send the rep to backend/Louis/manual creation when add_listing is active',
     )
     expect(prompt).toContain('Never claim a piece is added until add_listing returns success')

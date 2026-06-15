@@ -780,6 +780,58 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps trade-board tools when the rep confirms the prior boxed display photo', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-label',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "The item number ER13229 isn't in the catalog yet. I need collection and a jewelry-front photo.",
+          },
+        ],
+      },
+      {
+        id: 'photo-and-collection',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+          { type: 'text', text: 'It is July Birthday 2026.' },
+        ],
+      },
+      {
+        id: 'assistant-confirm',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'I see the boxed display with the earrings clear. That is the jewelry-front photo, right?',
+          },
+        ],
+      },
+      {
+        id: 'confirm',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Correct.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('keeps trade-board tools when the rep says to stop pushing back on a usable photo', () => {
     const messages = [
       {

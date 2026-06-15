@@ -47,29 +47,30 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Keep current-show memory factual and operational. Do not claim that you sent reminders, updated a live feed, or took provider action unless another real tool result says so.`,
 
   trade_board: `Trade-board tools:
-- list_my_trade_board lists the rep's own active or removed listings. Use it before acting when an item is ambiguous.
+- list_my_trade_board lists own active/removed listings; use before ambiguous item.
 - For current board questions, answer only from the latest list_my_trade_board result.
-- remove_listing requires the approval dialog. Do not pre-confirm in chat.
-- restore_listing uses the recovery window; if expired, explain the limit.
+- remove_listing requires the approval dialog; no pre-confirm.
+- restore_listing uses the recovery window; explain if expired.
 - Guided add flow: When the rep starts "Add a piece to Trade Board", ask for the item number first. Do not ask for photos yet.
 - After the rep gives an item number, call search_jewelry_database before asking for photos.
-- If the item exists, confirm the match before add_listing; then use mode:'single' or mode:'batch'.
-- If missing, ask for the label/details photo; read item number, design name, stone, material, MSRP.
+- If the item exists, confirm the match before add_listing; use single/batch.
+- If missing, ask for the label/details photo; read item number, name, stone, material, MSRP.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
 - The collection may be on packaging instead of the label. Ask for collection or a packaging photo if it is not visible.
-- Confirm extracted data.
-- Ask for the jewelry-front photo only after catalog details are confirmed. Use bright light, centered jewelry, clear close shot.
+- Confirm data.
+- Ask for the jewelry-front photo only after catalog details are confirmed. Use bright light, centered jewelry, clear shot.
 - After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded.
 - Do not use label/details or back-of-card photos as the final jewelry-front photo.
-- Photos: label/back photos are details only. Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear. Do not reject solely because packaging is visible; pass listingPhotoIndex/piecePhotoIndex when clear.
+- Photos: Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear. Do not reject for packaging alone; pass listingPhotoIndex/piecePhotoIndex when clear.
+- Count photo order across the recent add flow, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
-- If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask for one missing field; do not say add_listing is unavailable.
+- If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
 - Quantity comes from the latest rep message. If none, add exactly one piece with mode:'single'.
-- If the rep has several of the same piece, use mode:'batch' and repeat once per physical unit.
-- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. For Birthday boxes, use "March Birthday" and collectionYear:2026.
+- If the rep has several of the same piece, use mode:'batch' once per physical unit.
+- If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. Birthday boxes: use "March Birthday" and collectionYear:2026.
 - If add_listing returns NEEDS_COLLECTION, ask collection and retry add_listing with collectionName.
-- Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is add_listing recovery.
+- Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is recovery.
 - Never claim a piece is added until add_listing returns success.
 - update_listing edits repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto; catalog fields are not editable.`,
 

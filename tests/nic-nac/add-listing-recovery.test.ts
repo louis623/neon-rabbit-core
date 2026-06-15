@@ -229,6 +229,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(message).toContain('Birthday Collection month/year')
     expect(message).toContain('collectionName like "March Birthday"')
     expect(message).toContain('piecePhotoIndex or listingPhotoIndex')
+    expect(message).toContain('recent add-flow photo order')
     expect(message).toContain('Boxed display photos with clear jewelry are acceptable')
     expect(message).toContain('handler uploads the photo from chat automatically')
     expect(message).toContain('do NOT ask the rep for a URL')
@@ -527,6 +528,119 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       itemNumber: 'ER13743',
       listingPhotoUrl:
         'https://cdn.example.com/listings/rep-1/for-keeps-front.png',
+    })
+  })
+
+  it('uses the most recent prior chat photo after the rep confirms it in a text-only turn', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [{ type: 'text', text: 'Correct.' }],
+      },
+      {
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+          {
+            type: 'text',
+            text: 'It is a July birthday collection, 2026.',
+          },
+        ],
+      },
+      {
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUxfUEhPVE8=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13229',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+    })
+
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+      filenameStem: 'ER13229-listing-photo',
+    })
+    expect(addListingMock.mock.calls[0][2]).toMatchObject({
+      itemNumber: 'ER13229',
+      collectionName: 'July Birthday',
+      listingPhotoUrl:
+        'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+    })
+  })
+
+  it('treats listingPhotoIndex as a recent-conversation photo number when the latest turn is text-only', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [{ type: 'text', text: 'Correct.' }],
+      },
+      {
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+        ],
+      },
+      {
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUxfUEhPVE8=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock)
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13229',
+      listingPhotoIndex: 2,
+    })
+
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+      filenameStem: 'ER13229-listing-photo',
     })
   })
 })

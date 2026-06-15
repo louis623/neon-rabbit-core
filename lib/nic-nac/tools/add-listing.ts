@@ -138,8 +138,12 @@ async function writeAuditIsolated(args: {
 }
 
 // Look up a user-uploaded image part in this conversation and return its
-// client-compressed data URL. When the model knows which attached photo is the
-// jewelry-front image, photoIndex is 1-based within the relevant message.
+// client-compressed data URL. Explicit photo indexes are treated as 1-based
+// numbers across recent conversation photos in normal conversation order, which
+// matches how reps and Nic-Nac talk about "the second photo" across a guided
+// add flow. Without an explicit index, choose the most recent user turn that
+// contains exactly one image; still ask for a choice when a single turn includes
+// multiple images and the model did not identify which one is jewelry-front.
 async function resolvePhotoFromConversation(ctx: {
   supabase: SupabaseClient
   conversationId: string
@@ -150,7 +154,7 @@ async function resolvePhotoFromConversation(ctx: {
 } | null> {
   const { data, error } = await ctx.supabase
     .from('nic_nac_conversations')
-    .select('parts')
+    .select('message_id, parts, created_at')
     .eq('conversation_id', ctx.conversationId)
     .eq('role', 'user')
     .eq('status', 'complete')
@@ -158,33 +162,44 @@ async function resolvePhotoFromConversation(ctx: {
     .order('id', { ascending: false })
   if (error) throw error
   const rows = ctx.latestUserMessageOnly ? (data ?? []).slice(0, 1) : (data ?? [])
-  for (const row of rows) {
-    const parts = row.parts as Array<{
-      type?: string
-      mediaType?: string
-      url?: string
-    }> | null
-    if (!parts) continue
-    const imageParts = parts.filter(
-      (p) =>
-        p?.type === 'file' &&
-        typeof p.mediaType === 'string' &&
-        p.mediaType.startsWith('image/') &&
-        typeof p.url === 'string',
-    )
-    if (imageParts.length === 0) continue
-    if (ctx.photoIndex !== undefined) {
-      const imagePart = imageParts[ctx.photoIndex - 1]
-      if (!imagePart?.url) {
-        throw new NicNacToolError({
-          code: 'PHOTO_CHOICE_REQUIRED',
-          userMessage: `I only see ${imageParts.length} photo${imageParts.length === 1 ? '' : 's'} in that message, so I couldn't use photo ${ctx.photoIndex}. Tell me which attached image is the jewelry-front photo.`,
-        })
-      }
-      return {
-        imageDataUrl: imagePart.url,
-      }
+  const rowsWithImages = rows
+    .map((row) => {
+      const parts = row.parts as Array<{
+        type?: string
+        mediaType?: string
+        url?: string
+      }> | null
+      const imageParts = (parts ?? []).filter(
+        (p) =>
+          p?.type === 'file' &&
+          typeof p.mediaType === 'string' &&
+          p.mediaType.startsWith('image/') &&
+          typeof p.url === 'string',
+      )
+      return { imageParts }
+    })
+    .filter((row) => row.imageParts.length > 0)
+
+  if (ctx.photoIndex !== undefined) {
+    const conversationPhotos = [...rowsWithImages]
+      .reverse()
+      .flatMap((row) => row.imageParts)
+    const imagePart = conversationPhotos[ctx.photoIndex - 1]
+    if (!imagePart?.url) {
+      throw new NicNacToolError({
+        code: 'PHOTO_CHOICE_REQUIRED',
+        userMessage: `I found ${conversationPhotos.length} recent photo${
+          conversationPhotos.length === 1 ? '' : 's'
+        } in this add flow, so I couldn't use photo ${ctx.photoIndex}. Tell me which attached image is the jewelry-front photo.`,
+      })
     }
+    return {
+      imageDataUrl: imagePart.url,
+    }
+  }
+
+  for (const row of rowsWithImages) {
+    const imageParts = row.imageParts
     if (imageParts.length > 1) {
       throw new NicNacToolError({
         code: 'PHOTO_CHOICE_REQUIRED',
@@ -638,7 +653,6 @@ async function runSingle(
     const resolvedListingPhoto = await resolvePhotoFromConversation({
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
-      latestUserMessageOnly: true,
       photoIndex: input.listingPhotoIndex,
     })
     if (resolvedListingPhoto) {
@@ -683,7 +697,7 @@ async function runSingle(
             'specialFeatures',
             'lengthInfo',
           ],
-          message: `${itemNumber} isn't in the Sparkle Suite jewelry database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read. If a box clearly shows a Birthday Collection month/year, normalize it to collectionName like "March Birthday" and collectionYear like 2026; otherwise ask the rep for the exact collection. Boxed display photos with clear jewelry are acceptable as the jewelry-front photo. When multiple photos are attached, pass piecePhotoIndex or listingPhotoIndex for the jewelry-front photo instead of asking for another upload. The handler uploads the photo from chat automatically — do NOT ask the rep for a URL or include piecePhotoUrl unless they explicitly volunteered a real one.`,
+          message: `${itemNumber} isn't in the Sparkle Suite jewelry database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read. If a box clearly shows a Birthday Collection month/year, normalize it to collectionName like "March Birthday" and collectionYear like 2026; otherwise ask the rep for the exact collection. Boxed display photos with clear jewelry are acceptable as the jewelry-front photo. When multiple photos are attached, pass piecePhotoIndex or listingPhotoIndex using recent add-flow photo order for the jewelry-front photo instead of asking for another upload. The handler uploads the photo from chat automatically — do NOT ask the rep for a URL or include piecePhotoUrl unless they explicitly volunteered a real one.`,
         }
       }
       if (err.code === 'NEEDS_COLLECTION') {
@@ -949,7 +963,7 @@ export function makeAddListingTool(ctx: {
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "For rings (RG item numbers), capture ringSize before saving. Ring size is usually printed on the box instead of the label; if you cannot read it from a box/details photo, ask the rep for the ring size. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
-      "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. Boxed display photos for earrings, rings, necklaces, and similar pieces count as jewelry-front photos when the jewelry is clear, even with Bomb Party packaging visible. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo. " +
+      "Label, box, and back-of-card photos are for reading details only; the saved listing/canonical image must be an actual jewelry-front photo. Boxed display photos for earrings, rings, necklaces, and similar pieces count as jewelry-front photos when the jewelry is clear, even with Bomb Party packaging visible. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based recent add-flow photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo, and do not ask for a reupload when the rep has already confirmed a prior jewelry-front photo. " +
       "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
