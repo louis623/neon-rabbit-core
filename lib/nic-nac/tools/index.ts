@@ -463,7 +463,7 @@ function isTradeBoardContinuation(
   const latestHasImage = hasImagePart(latestUser)
   const isPhotoFollowUp =
     latestHasImage &&
-    /photo|picture|image|label|upload|database|data\s*base|missing/i.test(
+    /photo|picture|image|label|upload|database|data\s*base|missing|item\s*(number|#)|trade\s*board|add (a |this )?(piece|item|listing)/i.test(
       previousAssistantText,
     )
   if (!isContextualFollowUp(latestText, previousAssistantText) && !isPhotoFollowUp) {

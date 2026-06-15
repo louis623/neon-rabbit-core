@@ -430,6 +430,89 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps trade-board tools for a photo-only reply during guided item-number intake', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'label-photo',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when a frustrated rep references the add script after denial', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-ask',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'label-photo',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+      {
+        id: 'assistant-denial',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "I don't have a direct tool to add pieces to your Trade Board from here.",
+          },
+        ],
+      },
+      {
+        id: 'rep-frustrated',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: "Bullcrap, you do have access to add things to the jewelry database, and you should have a script that you're supposed to follow.",
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('keeps trade-board tools available when the rep retries after a tool failure', () => {
     const messages = [
       {

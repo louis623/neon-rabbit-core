@@ -89,6 +89,9 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain(
       'Do not use the label/details or packaging photo as the final jewelry-front photo',
     )
+    expect(prompt).toContain(
+      'Never send the rep to backend/Louis/manual creation when add_listing is active',
+    )
     expect(prompt).toContain('Never claim a piece is added until add_listing returns success')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')

@@ -67,7 +67,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If the rep has several of the same piece, use add_listing with mode:'batch' and repeat once per physical unit.
 - If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. For clear Birthday boxes, use "March Birthday" and collectionYear:2026.
 - If add_listing returns NEEDS_COLLECTION, ask for the exact collection name and retry add_listing with collectionName.
-- Never tell the rep to create a collection or design manually when add_listing is active; create_design is part of the add_listing recovery path.
+- Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is part of add_listing recovery.
 - Never claim a piece is added until add_listing returns success.
 - update_listing edits only repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto; catalog fields are not editable.`,
 
