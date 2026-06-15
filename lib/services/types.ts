@@ -867,6 +867,12 @@ export interface FulfillmentQueueItem {
 
 export interface SearchJewelryInput {
   query: string
+  jewelryType?: JewelryType
+  collection?: string
+  material?: string
+  mainStone?: string
+  label?: 'diamond' | 'unicorn' | 'standard'
+  collectionYear?: number
   limit?: number
 }
 

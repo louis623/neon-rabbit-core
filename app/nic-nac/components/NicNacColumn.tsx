@@ -20,6 +20,7 @@ export function NicNacColumn({
   const closeLabel = variant === 'desktop' ? 'Minimize Nic-Nac' : 'Close Nic-Nac'
   return (
     <aside
+      id="nic-nac-workspace-chat"
       className={`${styles.column} ${variant === 'mobile' ? styles.mobile : styles.desktop}`}
     >
       <NicNacHeader

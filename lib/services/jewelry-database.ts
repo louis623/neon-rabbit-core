@@ -58,6 +58,92 @@ export function normalizeItemNumber(itemNumber: string): string {
   return itemNumber.trim().toUpperCase()
 }
 
+function escapeIlikePattern(value: string): string {
+  return value.replace(/[%_\\]/g, (match) => `\\${match}`)
+}
+
+function hasJewelryBrowseFilters(input: SearchJewelryInput): boolean {
+  return Boolean(
+    input.jewelryType ||
+      input.collection?.trim() ||
+      input.material?.trim() ||
+      input.mainStone?.trim() ||
+      input.label ||
+      typeof input.collectionYear === 'number',
+  )
+}
+
+function deriveCatalogLabel(row: {
+  design_name: string
+  material: string | null
+  main_stone: string | null
+  search_tags: string[] | null
+  collection:
+    | { name: string | null; collection_year: number | null }
+    | { name: string | null; collection_year: number | null }[]
+    | null
+}): 'diamond' | 'unicorn' | 'standard' {
+  const collectionRel = row.collection
+  const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+  const searchableText = [
+    row.design_name,
+    row.material,
+    row.main_stone,
+    collection?.name,
+    ...(Array.isArray(row.search_tags) ? row.search_tags : []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  if (searchableText.includes('unicorn')) return 'unicorn'
+  if (searchableText.includes('diamond')) return 'diamond'
+  return 'standard'
+}
+
+async function loadJewelryCollectionFilterIds(
+  supabase: SupabaseClient,
+  input: SearchJewelryInput,
+  limit: number,
+): Promise<string[] | null> {
+  const collection = input.collection?.trim()
+  const hasCollectionFilter = Boolean(collection)
+  const hasYearFilter = typeof input.collectionYear === 'number'
+  if (!hasCollectionFilter && !hasYearFilter) return null
+
+  let request = supabase.from('collections').select('id')
+  if (collection) {
+    request = request.ilike('name', `%${escapeIlikePattern(collection)}%`)
+  }
+  if (typeof input.collectionYear === 'number') {
+    request = request.eq('collection_year', input.collectionYear)
+  }
+
+  const { data, error } = await request.limit(limit)
+  if (error) throw error
+  return ((data ?? []) as Array<{ id: string }>).map((row) => row.id)
+}
+
+function applyJewelryBrowseFilters(
+  request: any,
+  input: SearchJewelryInput,
+  collectionIds: string[] | null,
+) {
+  if (input.jewelryType) {
+    request = request.eq('type_prefix', input.jewelryType)
+  }
+  if (input.material?.trim()) {
+    request = request.ilike('material', `%${escapeIlikePattern(input.material)}%`)
+  }
+  if (input.mainStone?.trim()) {
+    request = request.ilike('main_stone', `%${escapeIlikePattern(input.mainStone)}%`)
+  }
+  if (collectionIds) {
+    request = request.in('collection_id', collectionIds)
+  }
+  return request
+}
+
 function normalizeCollectionYear(collectionYear?: number | null): number | null {
   if (collectionYear === undefined || collectionYear === null) return null
   if (!Number.isInteger(collectionYear) || collectionYear < 2020 || collectionYear > 2040) {
@@ -222,10 +308,12 @@ export async function searchJewelryDatabase(
   input: SearchJewelryInput
 ): Promise<JewelryDatabaseResult[]> {
   if (!repId) throw errors.UNAUTHORIZED('repId required')
-  if (!input.query?.trim()) return []
 
   const limit = input.limit ?? 20
   const q = input.query.trim()
+  const hasQuery = Boolean(q)
+  const collectionIds = await loadJewelryCollectionFilterIds(supabase, input, limit)
+  if (collectionIds && collectionIds.length === 0) return []
 
   // Try GIN full-text first via the .textSearch helper; expression must mirror
   // the indexed expression in supabase/migrations/006_*.sql:
@@ -250,24 +338,35 @@ export async function searchJewelryDatabase(
   }
   let designs: DesignRow[] = []
 
-  try {
-    const { data, error } = await supabase
-      .from('jewelry_designs')
-      .select(
-        'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
-      )
-      .textSearch('design_name', q, { type: 'plain', config: 'english' })
-      .limit(limit)
-    if (!error && data && data.length > 0) {
-      designs = data as unknown as DesignRow[]
+  if (!hasQuery) {
+    let request = supabase.from('jewelry_designs').select(
+      'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)',
+    )
+    request = applyJewelryBrowseFilters(request, input, collectionIds)
+    const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
+    if (error) throw error
+    designs = (data ?? []) as unknown as DesignRow[]
+  } else {
+    try {
+      let request = supabase
+        .from('jewelry_designs')
+        .select(
+          'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
+        )
+        .textSearch('design_name', q, { type: 'plain', config: 'english' })
+      request = applyJewelryBrowseFilters(request, input, collectionIds)
+      const { data, error } = await request.limit(limit)
+      if (!error && data && data.length > 0) {
+        designs = data as unknown as DesignRow[]
+      }
+    } catch {
+      /* fall through to ILIKE */
     }
-  } catch {
-    /* fall through to ILIKE */
   }
 
-  if (designs.length === 0) {
-    const pattern = `%${q.replace(/[%_]/g, (m) => `\\${m}`)}%`
-    const { data, error } = await supabase
+  if (hasQuery && designs.length === 0) {
+    const pattern = `%${escapeIlikePattern(q)}%`
+    let request = supabase
       .from('jewelry_designs')
       .select(
         'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
@@ -275,27 +374,29 @@ export async function searchJewelryDatabase(
       .or(
         `design_name.ilike.${pattern},material.ilike.${pattern},main_stone.ilike.${pattern},item_number.ilike.${pattern}`
       )
-      .limit(limit)
+    request = applyJewelryBrowseFilters(request, input, collectionIds)
+    const { data, error } = await request.limit(limit)
     if (error) throw error
     designs = (data ?? []) as unknown as DesignRow[]
   }
 
-  if (designs.length === 0) {
+  if (hasQuery && designs.length === 0) {
     const normalizedTagQuery = normalizeJewelryCatalogTags([q])
     if (normalizedTagQuery.length > 0) {
-      const { data, error } = await supabase
+      let request = supabase
         .from('jewelry_designs')
         .select(
           'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
         )
         .overlaps('search_tags', normalizedTagQuery)
-        .limit(limit)
+      request = applyJewelryBrowseFilters(request, input, collectionIds)
+      const { data, error } = await request.limit(limit)
       if (error) throw error
       designs = (data ?? []) as unknown as DesignRow[]
     }
   }
 
-  if (designs.length === 0 && /^20[2-4]\d$/.test(q)) {
+  if (hasQuery && designs.length === 0 && /^20[2-4]\d$/.test(q) && !hasJewelryBrowseFilters(input)) {
     const { data: collections, error: collectionErr } = await supabase
       .from('collections')
       .select('id')
@@ -317,6 +418,10 @@ export async function searchJewelryDatabase(
       if (error) throw error
       designs = (data ?? []) as unknown as DesignRow[]
     }
+  }
+
+  if (input.label) {
+    designs = designs.filter((design) => deriveCatalogLabel(design) === input.label)
   }
 
   if (designs.length === 0) return []

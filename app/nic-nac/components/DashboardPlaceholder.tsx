@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -47,6 +48,7 @@ import {
   hasActiveBoardInventoryBrowse,
 } from '@/lib/nic-nac/board-inventory-view'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
+import { Gem, Search, Sparkles, X } from 'lucide-react'
 import styles from './DashboardPlaceholder.module.css'
 
 export {
@@ -325,6 +327,7 @@ type TradeSwapCleanupState = {
 type JewelryLibraryState = {
   status: 'idle' | 'loading' | 'ready' | 'error'
   results?: JewelryDatabaseResult[]
+  facets?: JewelryLibraryFacets
 }
 
 type MessagesState = {
@@ -384,10 +387,223 @@ type TradeRequestsResponsePayload = TradeRequestWithListing[]
 type FulfillmentQueueResponsePayload = FulfillmentQueueItem[]
 type TradeHistoryResponsePayload = TradeHistoryResult
 type TradeSwapCleanupResponsePayload = TradeSwapCleanupItem[]
-type JewelryLibraryResponsePayload = JewelryDatabaseResult[]
+type JewelryLibraryFacetOption = {
+  value: string
+  count: number
+}
+type JewelryLibraryFacets = {
+  collections: JewelryLibraryFacetOption[]
+  materials: JewelryLibraryFacetOption[]
+  stones: JewelryLibraryFacetOption[]
+  types: JewelryLibraryFacetOption[]
+  labels: JewelryLibraryFacetOption[]
+  years: JewelryLibraryFacetOption[]
+}
+type JewelryLibraryFilters = {
+  q: string
+  type: string
+  collection: string
+  material: string
+  stone: string
+  label: string
+  year: string
+  limit: number
+}
+type JewelryLibraryResponsePayload =
+  | JewelryDatabaseResult[]
+  | {
+      items?: JewelryDatabaseResult[]
+      facets?: Partial<JewelryLibraryFacets>
+    }
 type MessagesResponsePayload = RepMessagesDashboardResult
 type ResourcesResponsePayload = HelpResource[]
 type AnalyticsResponsePayload = SiteAnalyticsDashboardResult
+
+const JEWELRY_LIBRARY_DEFAULT_LIMIT = 24
+const EMPTY_JEWELRY_LIBRARY_FACETS: JewelryLibraryFacets = {
+  collections: [],
+  materials: [],
+  stones: [],
+  types: [],
+  labels: [],
+  years: [],
+}
+const EMPTY_JEWELRY_LIBRARY_FILTERS: JewelryLibraryFilters = {
+  q: '',
+  type: '',
+  collection: '',
+  material: '',
+  stone: '',
+  label: '',
+  year: '',
+  limit: JEWELRY_LIBRARY_DEFAULT_LIMIT,
+}
+
+type JewelryLibraryFilterField =
+  | 'q'
+  | 'type'
+  | 'collection'
+  | 'material'
+  | 'stone'
+  | 'label'
+  | 'year'
+
+type JewelryLibraryActiveFilter = {
+  field: JewelryLibraryFilterField
+  label: string
+  value: string
+}
+
+const JEWELRY_LIBRARY_FACET_GROUPS: Array<{
+  ariaLabel: string
+  field: JewelryLibraryFilterField
+  key: keyof JewelryLibraryFacets
+  searchPlaceholder: string
+  title: string
+}> = [
+  {
+    ariaLabel: 'Search collections',
+    field: 'collection',
+    key: 'collections',
+    searchPlaceholder: 'Search collections',
+    title: 'Collections',
+  },
+  {
+    ariaLabel: 'Search materials',
+    field: 'material',
+    key: 'materials',
+    searchPlaceholder: 'Search materials',
+    title: 'Materials',
+  },
+  {
+    ariaLabel: 'Search stones',
+    field: 'stone',
+    key: 'stones',
+    searchPlaceholder: 'Search stones',
+    title: 'Stone / gem',
+  },
+  {
+    ariaLabel: 'Search types',
+    field: 'type',
+    key: 'types',
+    searchPlaceholder: 'Search types',
+    title: 'Type',
+  },
+  {
+    ariaLabel: 'Search labels',
+    field: 'label',
+    key: 'labels',
+    searchPlaceholder: 'Search labels',
+    title: 'Label',
+  },
+  {
+    ariaLabel: 'Search years',
+    field: 'year',
+    key: 'years',
+    searchPlaceholder: 'Search years',
+    title: 'Year',
+  },
+]
+
+function countJewelryFacetValues(values: Array<string | null | undefined>) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    const trimmed = value?.trim()
+    if (!trimmed) continue
+    counts.set(trimmed, (counts.get(trimmed) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value))
+}
+
+function formatJewelryLibraryType(typePrefix: JewelryDatabaseResult['typePrefix']) {
+  const labels: Record<JewelryDatabaseResult['typePrefix'], string> = {
+    BR: 'bracelet',
+    ER: 'earrings',
+    NK: 'necklace',
+    RG: 'ring',
+    ST: 'stack',
+  }
+  return labels[typePrefix] ?? typePrefix.toLowerCase()
+}
+
+function deriveJewelryLibraryLabel(result: JewelryDatabaseResult) {
+  const searchableText = [
+    result.designName,
+    result.material,
+    result.mainStone,
+    result.collectionName,
+    ...(result.searchTags ?? []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+  if (searchableText.includes('unicorn')) return 'unicorn'
+  if (searchableText.includes('diamond')) return 'diamond'
+  return 'standard'
+}
+
+function deriveJewelryLibraryFacets(results: JewelryDatabaseResult[]): JewelryLibraryFacets {
+  return {
+    collections: countJewelryFacetValues(results.map((result) => result.collectionName)),
+    materials: countJewelryFacetValues(results.map((result) => result.material)),
+    stones: countJewelryFacetValues(results.map((result) => result.mainStone)),
+    types: countJewelryFacetValues(results.map((result) => formatJewelryLibraryType(result.typePrefix))),
+    labels: countJewelryFacetValues(results.map(deriveJewelryLibraryLabel)),
+    years: countJewelryFacetValues(
+      results.map((result) =>
+        result.collectionYear ? String(result.collectionYear) : undefined,
+      ),
+    ),
+  }
+}
+
+function normalizeJewelryLibraryFacetList(
+  options: JewelryLibraryFacetOption[] | undefined,
+) {
+  return (options ?? []).flatMap((option) => {
+    const value = option.value?.trim()
+    const count = Number.isFinite(option.count) ? Math.max(0, option.count) : 0
+    return value && count > 0 ? [{ value, count }] : []
+  })
+}
+
+function normalizeJewelryLibraryFacets(
+  facets: Partial<JewelryLibraryFacets> | undefined,
+): JewelryLibraryFacets {
+  return {
+    collections: normalizeJewelryLibraryFacetList(facets?.collections),
+    materials: normalizeJewelryLibraryFacetList(facets?.materials),
+    stones: normalizeJewelryLibraryFacetList(facets?.stones),
+    types: normalizeJewelryLibraryFacetList(facets?.types),
+    labels: normalizeJewelryLibraryFacetList(facets?.labels),
+    years: normalizeJewelryLibraryFacetList(facets?.years),
+  }
+}
+
+function getJewelryLibraryActiveFilters(
+  filters: JewelryLibraryFilters,
+): JewelryLibraryActiveFilter[] {
+  const values: JewelryLibraryActiveFilter[] = []
+  if (filters.q.trim()) values.push({ field: 'q', label: 'Search', value: filters.q.trim() })
+  if (filters.type) values.push({ field: 'type', label: 'Type', value: filters.type })
+  if (filters.collection) {
+    values.push({ field: 'collection', label: 'Collection', value: filters.collection })
+  }
+  if (filters.material) values.push({ field: 'material', label: 'Material', value: filters.material })
+  if (filters.stone) values.push({ field: 'stone', label: 'Stone', value: filters.stone })
+  if (filters.label) values.push({ field: 'label', label: 'Label', value: filters.label })
+  if (filters.year) values.push({ field: 'year', label: 'Year', value: filters.year })
+  return values
+}
+
+function formatJewelryFacetValue(field: JewelryLibraryFilterField, value: string) {
+  if (field === 'type' || field === 'label') {
+    return value.replace(/^\w/, (letter) => letter.toUpperCase())
+  }
+  return value
+}
 
 type CalendarDayCell = {
   isoDate: string
@@ -1423,6 +1639,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     useState<JewelryLibraryState>({
       status: 'idle',
       results: [],
+      facets: EMPTY_JEWELRY_LIBRARY_FACETS,
     })
   const [messagesState, setMessagesState] = useState<MessagesState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
@@ -1474,6 +1691,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [tradeBoardSearchQuery, setTradeBoardSearchQuery] = useState('')
   const [quickAddItemNumber, setQuickAddItemNumber] = useState('')
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
+  const [libraryFilters, setLibraryFilters] = useState<JewelryLibraryFilters>(
+    EMPTY_JEWELRY_LIBRARY_FILTERS,
+  )
   const [supportSubject, setSupportSubject] = useState('Need help from Neon Rabbit')
   const [supportBody, setSupportBody] = useState('')
 
@@ -1716,36 +1936,40 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
-  async function loadJewelryLibrary(query: string, signal?: AbortSignal) {
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setJewelryLibraryState({
-        status: 'idle',
-        results: [],
-      })
-      return
-    }
-
+  async function loadJewelryLibrary(filters: JewelryLibraryFilters, signal?: AbortSignal) {
     setJewelryLibraryState({
       status: 'loading',
       results: [],
+      facets: jewelryLibraryState.facets ?? EMPTY_JEWELRY_LIBRARY_FACETS,
     })
 
-    const response = await fetch(
-      `/api/nic-nac/jewelry-library?query=${encodeURIComponent(trimmed)}&limit=16`,
-      {
-        credentials: 'include',
-        signal,
-      },
-    )
+    const params = new URLSearchParams()
+    params.set('limit', String(filters.limit))
+    if (filters.q.trim()) params.set('query', filters.q.trim())
+    if (filters.type) params.set('type', filters.type)
+    if (filters.collection) params.set('collection', filters.collection)
+    if (filters.material) params.set('material', filters.material)
+    if (filters.stone) params.set('stone', filters.stone)
+    if (filters.label) params.set('label', filters.label)
+    if (filters.year) params.set('year', filters.year)
+
+    const response = await fetch(`/api/nic-nac/jewelry-library?${params.toString()}`, {
+      credentials: 'include',
+      signal,
+    })
     if (!response.ok) {
       throw new Error(getJewelryLibrarySearchErrorMessage(response.status))
     }
 
     const payload = (await response.json()) as JewelryLibraryResponsePayload
+    const nextResults = Array.isArray(payload) ? payload : (payload.items ?? [])
+    const nextFacets = Array.isArray(payload)
+      ? deriveJewelryLibraryFacets(payload)
+      : normalizeJewelryLibraryFacets(payload.facets)
     setJewelryLibraryState({
       status: 'ready',
-      results: payload,
+      results: nextResults,
+      facets: nextFacets,
     })
   }
 
@@ -2491,6 +2715,26 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }, [activeSection, reviewWorkspaceMode])
 
   useEffect(() => {
+    if (activeSection !== 'jewelry-library') return
+    if (jewelryLibraryState.status !== 'idle') return
+
+    void loadJewelryLibrary(libraryFilters).catch((error) => {
+      setJewelryLibraryState({
+        status: 'error',
+        results: [],
+        facets: EMPTY_JEWELRY_LIBRARY_FACETS,
+      })
+      setTradeBoardActionState((current) => ({
+        ...current,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to search the jewelry library right now.',
+      }))
+    })
+  }, [activeSection, jewelryLibraryState.status])
+
+  useEffect(() => {
     const refreshAfterNicNacMutation = (event: Event) => {
       const detail = (event as CustomEvent<{ topic?: string }>).detail
       const topic = detail?.topic
@@ -2759,13 +3003,73 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleLibrarySearch() {
+  async function handleLibrarySearch(nextQuery = librarySearchQuery) {
+    const nextFilters = {
+      ...libraryFilters,
+      q: nextQuery.trim(),
+      limit: JEWELRY_LIBRARY_DEFAULT_LIMIT,
+    }
+    setLibrarySearchQuery(nextFilters.q)
+    setLibraryFilters(nextFilters)
     try {
-      await loadJewelryLibrary(librarySearchQuery)
+      await loadJewelryLibrary(nextFilters)
     } catch (error) {
       setJewelryLibraryState({
         status: 'error',
         results: [],
+        facets: EMPTY_JEWELRY_LIBRARY_FACETS,
+      })
+      setTradeBoardActionState((current) => ({
+        ...current,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to search the jewelry library right now.',
+      }))
+    }
+  }
+
+  async function handleLibraryFilterChange(
+    field: JewelryLibraryFilterField,
+    value: string,
+  ) {
+    const nextFilters = {
+      ...libraryFilters,
+      [field]: value,
+      limit: JEWELRY_LIBRARY_DEFAULT_LIMIT,
+    }
+    if (field === 'q') {
+      setLibrarySearchQuery(value)
+    }
+    setLibraryFilters(nextFilters)
+    try {
+      await loadJewelryLibrary(nextFilters)
+    } catch (error) {
+      setJewelryLibraryState({
+        status: 'error',
+        results: [],
+        facets: EMPTY_JEWELRY_LIBRARY_FACETS,
+      })
+      setTradeBoardActionState((current) => ({
+        ...current,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to search the jewelry library right now.',
+      }))
+    }
+  }
+
+  async function handleLibraryClear() {
+    setLibrarySearchQuery('')
+    setLibraryFilters(EMPTY_JEWELRY_LIBRARY_FILTERS)
+    try {
+      await loadJewelryLibrary(EMPTY_JEWELRY_LIBRARY_FILTERS)
+    } catch (error) {
+      setJewelryLibraryState({
+        status: 'error',
+        results: [],
+        facets: EMPTY_JEWELRY_LIBRARY_FACETS,
       })
       setTradeBoardActionState((current) => ({
         ...current,
@@ -2800,7 +3104,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         throw new Error(payload?.error || 'Unable to add that piece right now.')
       }
 
-      await Promise.all([refreshTradeWorkspace(), loadJewelryLibrary(librarySearchQuery)])
+      await Promise.all([refreshTradeWorkspace(), loadJewelryLibrary(libraryFilters)])
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
@@ -3168,8 +3472,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             <JewelryLibraryCard
               state={jewelryLibraryState}
               searchQuery={librarySearchQuery}
+              filters={libraryFilters}
               onSearchQueryChange={setLibrarySearchQuery}
               onSearch={handleLibrarySearch}
+              onFilterChange={handleLibraryFilterChange}
+              onClear={handleLibraryClear}
               onAddToBoard={handleAddFromLibrary}
               actionState={tradeBoardActionState}
             />
@@ -4085,130 +4392,311 @@ export function TradeBoardWorkspaceCard({
   )
 }
 
-function JewelryLibraryCard({
+export function JewelryLibraryCard({
   state,
   searchQuery,
+  filters,
   onSearchQueryChange,
   onSearch,
+  onFilterChange,
+  onClear,
   onAddToBoard,
   actionState,
 }: {
   state: JewelryLibraryState
   searchQuery: string
+  filters: JewelryLibraryFilters
   onSearchQueryChange: (value: string) => void
-  onSearch: () => void
+  onSearch: (query: string) => void
+  onFilterChange: (field: JewelryLibraryFilterField, value: string) => void
+  onClear: () => void
   onAddToBoard: (itemNumber: string) => void
   actionState: TradeBoardActionState
 }) {
+  const results = state.results ?? []
+  const facets = state.facets ?? EMPTY_JEWELRY_LIBRARY_FACETS
+  const activeFilters = getJewelryLibraryActiveFilters(filters)
+  const hasActiveFilters = activeFilters.length > 0
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    onSearch(String(formData.get('librarySearchQuery') ?? ''))
+  }
+
   return (
     <div className={styles.workspaceSectionStack}>
-      <div className={styles.workspaceIntroCard}>
-        <div className={styles.workspaceSectionHeader}>
-          <div>
-            <div className={styles.cardTitle}>Jewelry Library</div>
-            <div className={styles.cardSubtitle}>
-              Search the shared catalog, spot pieces already on your board, and use the fallback button to list something fast.
-            </div>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Master Jewelry Library</div>
+          <div className={styles.cardSubtitle}>
+            Search the Jewelry Library by piece, collection, type, material, stone, and Bomb Party label.
           </div>
         </div>
-        <div className={styles.workspaceFormRow}>
-          <label className={styles.searchField}>
-            <span className={styles.searchLabel}>Search designs or item numbers</span>
-            <input
-              type="text"
-              className={`${styles.searchInput} ph-no-capture`}
-              value={searchQuery}
-              onChange={(event) => onSearchQueryChange(event.target.value)}
-              placeholder="Aurora, birthday, RG100"
-            />
-          </label>
-          <button type="button" className={styles.actionButton} onClick={onSearch}>
-            Search library
-          </button>
-        </div>
+      </div>
+      <div className={styles.librarySearchCard}>
+        <form className={styles.librarySearchForm} onSubmit={handleSubmit}>
+          <div className={styles.librarySearchPrimary}>
+            <label className={styles.librarySearchLabel}>
+              Search the Jewelry Library
+              <input
+                type="search"
+                name="librarySearchQuery"
+                className={`${styles.librarySearchInput} ph-no-capture`}
+                value={searchQuery}
+                onChange={(event) => onSearchQueryChange(event.target.value)}
+                placeholder="Try a stone, collection, item number, or piece name"
+              />
+            </label>
+            <p className={styles.librarySearchHint}>
+              Not sure what it is called? Ask Nic-Nac from here.
+            </p>
+          </div>
+          <div className={styles.librarySearchActions}>
+            <button type="submit" className={styles.libraryPrimaryButton}>
+              <Search aria-hidden="true" className={styles.libraryButtonIcon} strokeWidth={2} />
+              Search
+            </button>
+            <a className={styles.librarySecondaryButton} href="#nic-nac-workspace-chat">
+              <Sparkles aria-hidden="true" className={styles.libraryButtonIcon} strokeWidth={1.8} />
+              Ask Nic-Nac
+            </a>
+            <button type="button" className={styles.libraryTertiaryButton} onClick={onClear}>
+              <X aria-hidden="true" className={styles.libraryButtonIcon} strokeWidth={2} />
+              Clear
+            </button>
+          </div>
+        </form>
+        {hasActiveFilters ? (
+          <div className={styles.librarySelectedFilters}>
+            <div className={styles.librarySelectedFiltersLabel}>Selected filters</div>
+            <div className={styles.librarySelectedFilterList}>
+              {activeFilters.map((filter) => (
+                <button
+                  type="button"
+                  className={styles.librarySelectedFilter}
+                  key={`${filter.field}:${filter.value}`}
+                  onClick={() => onFilterChange(filter.field, '')}
+                >
+                  {filter.label}: {filter.value}
+                  <X aria-hidden="true" className={styles.libraryChipIcon} strokeWidth={2} />
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        <details className={styles.libraryFacetPanel}>
+          <summary className={styles.libraryFacetSummary}>
+            <span>Filters</span>
+            <span className={styles.libraryFacetCount}>
+              {activeFilters.length > 0 ? `${activeFilters.length} active` : 'Browse options'}
+            </span>
+          </summary>
+          <div className={styles.libraryFacetGrid}>
+            {JEWELRY_LIBRARY_FACET_GROUPS.map((group) => (
+              <JewelryLibraryFacetGroup
+                activeValue={filters[group.field] ?? ''}
+                ariaLabel={group.ariaLabel}
+                field={group.field}
+                key={group.key}
+                onFilterChange={onFilterChange}
+                options={facets[group.key]}
+                searchPlaceholder={group.searchPlaceholder}
+                title={group.title}
+              />
+            ))}
+          </div>
+        </details>
         {actionState.error ? <div className={styles.actionError}>{actionState.error}</div> : null}
         {actionState.helperMessage ? (
           <div className={styles.helperMessage}>{actionState.helperMessage}</div>
         ) : null}
       </div>
-      <div className={styles.workspacePanel}>
-        {state.status === 'idle' ? (
-          <div className={styles.emptyState}>
-            Start with a design name, collection word, stone, or item number.
-          </div>
-        ) : state.status === 'loading' ? (
-          <div className={styles.cardFill}>
-            <div className={styles.loadingLine} />
-            <div className={styles.loadingLineShort} />
-          </div>
-        ) : state.status === 'error' ? (
-          <div className={styles.emptyState}>
-            The library search is temporarily unavailable.
-          </div>
-        ) : state.results && state.results.length > 0 ? (
-          <div className={styles.tradeList}>
-            {state.results.map((result) => {
-              const collectionLabel = [
-                result.collectionName,
-                result.collectionYear ? String(result.collectionYear) : null,
-              ]
-                .filter(Boolean)
-                .join(' - ')
-              const visibleTags = (result.searchTags ?? []).slice(0, 4)
+      {state.status === 'idle' || state.status === 'loading' ? (
+        <div className={styles.libraryGrid}>
+          {Array.from({ length: 4 }, (_, index) => (
+            <div className={styles.librarySkeletonCard} key={`library-skeleton-${index}`}>
+              <div className={styles.librarySkeletonImage} />
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          ))}
+        </div>
+      ) : state.status === 'error' ? (
+        <div className={styles.libraryEmptyState}>
+          The library search is temporarily unavailable.
+        </div>
+      ) : results.length > 0 ? (
+        <div className={styles.libraryGrid}>
+          {results.map((result) => (
+            <JewelryLibraryResultCard
+              actionState={actionState}
+              key={result.designId}
+              onAddToBoard={onAddToBoard}
+              result={result}
+            />
+          ))}
+        </div>
+      ) : hasActiveFilters ? (
+        <div className={styles.libraryEmptyState}>
+          <p>No library records match those filters.</p>
+          <p>Not sure what it is called? Ask Nic-Nac to help broaden the search.</p>
+        </div>
+      ) : (
+        <div className={styles.libraryEmptyState}>
+          The shared Sparkle Suite jewelry catalog is not available in this environment yet.
+        </div>
+      )}
+    </div>
+  )
+}
 
-              return (
-                <div key={result.designId} className={styles.tradeRow}>
-                  <div className={styles.tradeIdentity}>
-                    <div className={styles.customerName}>{result.designName}</div>
-                    <div className={styles.customerDate}>
-                      {result.itemNumber}
-                      {collectionLabel ? ` - ${collectionLabel}` : ''}
-                      {result.material ? ` - ${result.material}` : ''}
-                    </div>
-                    {visibleTags.length > 0 ? (
-                      <div className={styles.libraryTagList}>
-                        {visibleTags.map((tag) => (
-                          <span key={`${result.designId}:${tag}`} className={styles.libraryTag}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className={styles.tradeMeta}>
-                    <span className={styles.timelineItem}>
-                      {result.isOnMyBoard ? 'Already on my board' : 'Not on my board'}
-                    </span>
-                    <span className={styles.timelineItem}>
-                      {result.activeListingsCount} active board{result.activeListingsCount === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                  <div className={styles.actionRow}>
-                    <button
-                      type="button"
-                      className={styles.actionButton}
-                      disabled={
-                        result.isOnMyBoard ||
-                        actionState.pendingKey === `library:${result.itemNumber}`
-                      }
-                      onClick={() => onAddToBoard(result.itemNumber)}
-                    >
-                      {actionState.pendingKey === `library:${result.itemNumber}`
-                        ? 'Adding...'
-                        : result.isOnMyBoard
-                          ? 'Already listed'
-                          : 'Add to board'}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+function JewelryLibraryFacetGroup({
+  activeValue,
+  ariaLabel,
+  field,
+  onFilterChange,
+  options,
+  searchPlaceholder,
+  title,
+}: {
+  activeValue: string
+  ariaLabel: string
+  field: JewelryLibraryFilterField
+  onFilterChange: (field: JewelryLibraryFilterField, value: string) => void
+  options: JewelryLibraryFacetOption[]
+  searchPlaceholder: string
+  title: string
+}) {
+  const [facetSearch, setFacetSearch] = useState('')
+  const visibleOptions = useMemo(() => {
+    const normalized = facetSearch.trim().toLocaleLowerCase()
+    if (!normalized) return options
+    return options.filter((option) =>
+      option.value.toLocaleLowerCase().includes(normalized),
+    )
+  }, [facetSearch, options])
+
+  return (
+    <section className={styles.libraryFacetGroup}>
+      <h3 className={styles.libraryFacetTitle}>{title}</h3>
+      <input
+        aria-label={ariaLabel}
+        className={`${styles.libraryFacetSearch} ph-no-capture`}
+        onChange={(event) => setFacetSearch(event.target.value)}
+        placeholder={searchPlaceholder}
+        type="search"
+        value={facetSearch}
+      />
+      <div className={styles.libraryFacetOptions}>
+        {visibleOptions.length > 0 ? (
+          visibleOptions.map((option) => {
+            const isActive = activeValue === option.value
+
+            return (
+              <button
+                type="button"
+                aria-current={isActive ? 'true' : undefined}
+                className={
+                  isActive
+                    ? styles.libraryFacetOptionActive
+                    : styles.libraryFacetOption
+                }
+                key={`${field}:${option.value}`}
+                onClick={() => onFilterChange(field, isActive ? '' : option.value)}
+              >
+                <span>{formatJewelryFacetValue(field, option.value)}</span>
+                <span className={styles.libraryFacetOptionCount}>{option.count}</span>
+              </button>
+            )
+          })
         ) : (
-          <div className={styles.emptyState}>No catalog matches for that search yet.</div>
+          <p className={styles.libraryFacetEmpty}>
+            No available options in this group.
+          </p>
         )}
       </div>
-    </div>
+    </section>
+  )
+}
+
+function JewelryLibraryResultCard({
+  actionState,
+  onAddToBoard,
+  result,
+}: {
+  actionState: TradeBoardActionState
+  onAddToBoard: (itemNumber: string) => void
+  result: JewelryDatabaseResult
+}) {
+  const label = deriveJewelryLibraryLabel(result)
+  const metadata = [
+    result.activeListingsCount < 1
+      ? 'No current listings'
+      : result.activeListingsCount === 1
+        ? '1 available'
+        : `${result.activeListingsCount} available`,
+    result.collectionYear ? String(result.collectionYear) : null,
+    result.material,
+    result.mainStone,
+    ...(result.searchTags ?? []).slice(0, 2),
+  ].filter((value): value is string => Boolean(value))
+
+  return (
+    <article className={styles.libraryResultCard}>
+      <div className={styles.libraryResultImageFrame}>
+        {result.canonicalPhotoUrl ? (
+          <div
+            aria-label={result.designName}
+            className={styles.libraryResultImage}
+            role="img"
+            style={{ backgroundImage: `url("${result.canonicalPhotoUrl}")` }}
+          />
+        ) : (
+          <Gem aria-hidden="true" className={styles.libraryGemIcon} strokeWidth={1.4} />
+        )}
+      </div>
+      <div className={styles.libraryResultBody}>
+        <div className={styles.libraryBadgeRow}>
+          <span className={styles.libraryTypeBadge}>
+            {formatJewelryLibraryType(result.typePrefix)}
+          </span>
+          {label !== 'standard' ? (
+            <span className={styles.libraryRarityBadge}>{label}</span>
+          ) : null}
+        </div>
+        <h2 className={styles.libraryResultTitle}>{result.designName}</h2>
+        <p className={styles.libraryResultCollection}>
+          {result.collectionName || 'Unassigned Collection'}
+        </p>
+        <p className={styles.libraryResultItemNumber}>{result.itemNumber}</p>
+        <div className={styles.libraryMetadataList}>
+          {metadata.map((value, index) => (
+            <span
+              className={styles.libraryMetadataChip}
+              key={`${result.designId}:${value}:${index}`}
+            >
+              {value}
+            </span>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={styles.libraryAddButton}
+          disabled={
+            result.isOnMyBoard ||
+            actionState.pendingKey === `library:${result.itemNumber}`
+          }
+          onClick={() => onAddToBoard(result.itemNumber)}
+        >
+          {actionState.pendingKey === `library:${result.itemNumber}`
+            ? 'Adding...'
+            : result.isOnMyBoard
+              ? 'Already listed'
+              : 'Add to board'}
+        </button>
+      </div>
+    </article>
   )
 }
 

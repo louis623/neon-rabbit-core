@@ -44,18 +44,61 @@ describe('jewelry library route', () => {
       repId: 'rep-1',
       rep: { id: 'rep-1' },
     })
-    searchJewelryDatabaseMock.mockResolvedValueOnce([{ designId: 'design-1' }])
+    searchJewelryDatabaseMock.mockResolvedValueOnce([
+      {
+        designId: 'design-1',
+        itemNumber: 'RG100',
+        designName: 'Aurora Diamond Ring',
+        material: 'Rose gold',
+        mainStone: 'Pink opal',
+        bpMsrp: 19.95,
+        canonicalPhotoUrl: null,
+        typePrefix: 'RG',
+        collectionName: 'Birthday',
+        collectionYear: 2026,
+        searchTags: ['diamond'],
+        isOnMyBoard: false,
+        activeListingsCount: 1,
+      },
+    ])
 
     const response = await GET(
-      new Request('http://localhost/api/nic-nac/jewelry-library?query=aurora&limit=10'),
+      new Request(
+        'http://localhost/api/nic-nac/jewelry-library?query=aurora&type=ring&collection=Birthday&material=Rose%20gold&stone=Pink%20opal&label=diamond&year=2026&limit=10',
+      ),
     )
 
     expect(searchJewelryDatabaseMock).toHaveBeenCalledWith(
       { marker: 'admin' },
       'rep-1',
-      { query: 'aurora', limit: 10 },
+      {
+        query: 'aurora',
+        jewelryType: 'RG',
+        collection: 'Birthday',
+        material: 'Rose gold',
+        mainStone: 'Pink opal',
+        label: 'diamond',
+        collectionYear: 2026,
+        limit: 10,
+      },
     )
     expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          designId: 'design-1',
+          itemNumber: 'RG100',
+        }),
+      ],
+      facets: {
+        collections: [{ value: 'Birthday', count: 1 }],
+        labels: [{ value: 'diamond', count: 1 }],
+        materials: [{ value: 'Rose gold', count: 1 }],
+        stones: [{ value: 'Pink opal', count: 1 }],
+        types: [{ value: 'ring', count: 1 }],
+        years: [{ value: '2026', count: 1 }],
+      },
+    })
   })
 
   it('rejects malformed search limit params before loading the catalog', async () => {
@@ -68,6 +111,19 @@ describe('jewelry library route', () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       error: 'limit must be a whole number.',
+    })
+  })
+
+  it('rejects malformed collection year params before loading the catalog', async () => {
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/jewelry-library?year=twenty-six'),
+    )
+
+    expect(getAuthenticatedRepMock).not.toHaveBeenCalled()
+    expect(searchJewelryDatabaseMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'year must be a four-digit year.',
     })
   })
 

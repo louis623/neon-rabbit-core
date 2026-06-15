@@ -5,9 +5,20 @@ import { ServiceError } from '@/lib/services/errors'
 import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import { searchJewelryDatabase } from '@/lib/services/jewelry-database'
 import { addListing } from '@/lib/services/trade-board'
+import type { JewelryDatabaseResult, JewelryType } from '@/lib/services/types'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const VALID_JEWELRY_TYPES = new Set<JewelryType>(['RG', 'NK', 'ER', 'ST', 'BR'])
+const TYPE_PARAM_TO_PREFIX: Record<string, JewelryType> = {
+  bracelet: 'BR',
+  earrings: 'ER',
+  necklace: 'NK',
+  ring: 'RG',
+  stack: 'ST',
+}
+const VALID_LABELS = new Set(['diamond', 'unicorn', 'standard'])
 
 function readLimit(url: URL) {
   const raw = url.searchParams.get('limit')
@@ -15,6 +26,84 @@ function readLimit(url: URL) {
   if (!/^\d+$/.test(raw)) return null
   const parsed = Number.parseInt(raw, 10)
   return parsed > 0 ? parsed : null
+}
+
+function readCollectionYear(url: URL) {
+  const raw = url.searchParams.get('year')?.trim()
+  if (!raw) return undefined
+  if (!/^\d{4}$/.test(raw)) return null
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isInteger(parsed) ? parsed : null
+}
+
+function readJewelryType(url: URL): JewelryType | undefined {
+  const raw = url.searchParams.get('type')?.trim()
+  if (!raw || raw === 'all') return undefined
+  const normalized = raw.toLowerCase()
+  const mapped = TYPE_PARAM_TO_PREFIX[normalized]
+  if (mapped) return mapped
+  const upper = raw.toUpperCase() as JewelryType
+  return VALID_JEWELRY_TYPES.has(upper) ? upper : undefined
+}
+
+function readLabel(url: URL): 'diamond' | 'unicorn' | 'standard' | undefined {
+  const raw = url.searchParams.get('label')?.trim().toLowerCase()
+  if (!raw || raw === 'all') return undefined
+  return VALID_LABELS.has(raw) ? (raw as 'diamond' | 'unicorn' | 'standard') : undefined
+}
+
+function countFacetValues(values: Array<string | null | undefined>) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    const trimmed = value?.trim()
+    if (!trimmed) continue
+    counts.set(trimmed, (counts.get(trimmed) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value))
+}
+
+function deriveLabel(result: JewelryDatabaseResult) {
+  const searchableText = [
+    result.designName,
+    result.material,
+    result.mainStone,
+    result.collectionName,
+    ...(result.searchTags ?? []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+  if (searchableText.includes('unicorn')) return 'unicorn'
+  if (searchableText.includes('diamond')) return 'diamond'
+  return 'standard'
+}
+
+function formatTypeFacet(typePrefix: JewelryType) {
+  const labels: Record<JewelryType, string> = {
+    BR: 'bracelet',
+    ER: 'earrings',
+    NK: 'necklace',
+    RG: 'ring',
+    ST: 'stack',
+  }
+  return labels[typePrefix] ?? typePrefix.toLowerCase()
+}
+
+function deriveFacets(results: JewelryDatabaseResult[]) {
+  return {
+    collections: countFacetValues(results.map((result) => result.collectionName)),
+    materials: countFacetValues(results.map((result) => result.material)),
+    stones: countFacetValues(results.map((result) => result.mainStone)),
+    types: countFacetValues(results.map((result) => formatTypeFacet(result.typePrefix))),
+    labels: countFacetValues(results.map(deriveLabel)),
+    years: countFacetValues(
+      results.map((result) =>
+        result.collectionYear ? String(result.collectionYear) : undefined,
+      ),
+    ),
+  }
 }
 
 function serviceErrorResponse(error: ServiceError) {
@@ -27,19 +116,29 @@ function serviceErrorResponse(error: ServiceError) {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
-    const query = url.searchParams.get('query')?.trim() ?? ''
+    const query = (url.searchParams.get('query') ?? url.searchParams.get('q'))?.trim() ?? ''
     const limit = readLimit(url)
     if (limit === null) {
       return NextResponse.json({ error: 'limit must be a whole number.' }, { status: 400 })
+    }
+    const collectionYear = readCollectionYear(url)
+    if (collectionYear === null) {
+      return NextResponse.json({ error: 'year must be a four-digit year.' }, { status: 400 })
     }
 
     const { repId } = await getPaidNicNacContext()
     const results = await searchJewelryDatabase(createAdminClient(), repId, {
       query,
+      jewelryType: readJewelryType(url),
+      collection: url.searchParams.get('collection')?.trim() || undefined,
+      material: url.searchParams.get('material')?.trim() || undefined,
+      mainStone: url.searchParams.get('stone')?.trim() || undefined,
+      label: readLabel(url),
+      collectionYear,
       limit: limit ?? undefined,
     })
 
-    return NextResponse.json(results)
+    return NextResponse.json({ items: results, facets: deriveFacets(results) })
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })

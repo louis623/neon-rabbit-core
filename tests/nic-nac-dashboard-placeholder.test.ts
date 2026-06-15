@@ -9,6 +9,7 @@ import {
   BusinessCalculatorCard,
   DashboardPlaceholder,
   HelpResourcesCard,
+  JewelryLibraryCard,
   ReferralProgramCard,
   TradeBoardWorkspaceCard,
   CustomerRosterCard,
@@ -452,6 +453,94 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Account')
     expect(html).toContain('Listings, requests, queue, and history')
     expect(html).not.toContain('I confirm I own the piece')
+  })
+
+  it('renders Finder-matching jewelry library search controls and board actions', () => {
+    const html = renderToStaticMarkup(
+      createElement(JewelryLibraryCard as any, {
+        state: {
+          status: 'ready',
+          results: [
+            {
+              designId: 'design-1',
+              itemNumber: 'RG100',
+              designName: 'Aurora Diamond Ring',
+              material: 'Rose gold',
+              mainStone: 'Pink opal',
+              bpMsrp: 19.95,
+              canonicalPhotoUrl: 'https://cdn.example.com/aurora.jpg',
+              typePrefix: 'RG',
+              collectionName: 'Birthday',
+              collectionYear: 2026,
+              searchTags: ['diamond', 'garden'],
+              isOnMyBoard: false,
+              activeListingsCount: 2,
+            },
+            {
+              designId: 'design-2',
+              itemNumber: 'NK200',
+              designName: 'Moonlit Necklace',
+              material: 'Silver',
+              mainStone: 'Moonstone',
+              bpMsrp: 24.95,
+              canonicalPhotoUrl: null,
+              typePrefix: 'NK',
+              collectionName: 'Celestial',
+              collectionYear: 2025,
+              searchTags: [],
+              isOnMyBoard: true,
+              activeListingsCount: 1,
+            },
+          ],
+          facets: {
+            collections: [{ value: 'Birthday', count: 1 }],
+            materials: [{ value: 'Rose gold', count: 1 }],
+            stones: [{ value: 'Pink opal', count: 1 }],
+            types: [{ value: 'ring', count: 1 }],
+            labels: [{ value: 'diamond', count: 1 }],
+            years: [{ value: '2026', count: 1 }],
+          },
+        },
+        searchQuery: 'aurora',
+        filters: {
+          q: 'aurora',
+          type: 'ring',
+          collection: '',
+          material: '',
+          stone: '',
+          label: '',
+          year: '',
+          limit: 24,
+        },
+        onSearchQueryChange: () => {},
+        onSearch: () => {},
+        onFilterChange: () => {},
+        onClear: () => {},
+        onAddToBoard: () => {},
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+      }),
+    )
+
+    expect(html).toContain('Master Jewelry Library')
+    expect(html).toContain('Search the Jewelry Library')
+    expect(html).toContain('Try a stone, collection, item number, or piece name')
+    expect(html).toContain('Not sure what it is called? Ask Nic-Nac from here.')
+    expect(html).toContain('Ask Nic-Nac')
+    expect(html).toContain('Clear')
+    expect(html).toContain('Selected filters')
+    expect(html).toContain('Search: aurora')
+    expect(html).toContain('Type: ring')
+    expect(html).toContain('Filters')
+    expect(html).toContain('2 active')
+    expect(html).toContain('Collections')
+    expect(html).toContain('Materials')
+    expect(html).toContain('Stone / gem')
+    expect(html).toContain('Label')
+    expect(html).toContain('Year')
+    expect(html).toContain('Aurora Diamond Ring')
+    expect(html).toContain('2 available')
+    expect(html).toContain('Add to board')
+    expect(html).toContain('Already listed')
   })
 
   it('renders Help & Resources as a workflow playbook with a secondary feature index', () => {
