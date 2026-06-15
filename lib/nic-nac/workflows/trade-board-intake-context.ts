@@ -76,36 +76,46 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
     return emptyWorkflowContext('mode_required_setup')
   }
 
-  const existing = await getActiveTradeBoardIntakeSession(args.supabase, {
-    repId: args.repId,
-    conversationId: args.conversationId,
-    nowIso: args.nowIso,
-  })
-  const shouldStart = existing !== null || hasTradeBoardIntakeSignal(args.messages)
-  if (!shouldStart) {
-    return emptyWorkflowContext('latest_turn_intent')
-  }
-
-  const baseSession =
-    existing ??
-    (await createTradeBoardIntakeSession(args.supabase, {
+  try {
+    const existing = await getActiveTradeBoardIntakeSession(args.supabase, {
       repId: args.repId,
       conversationId: args.conversationId,
-      lastUserMessageId: args.latestUserMessageId,
-    }))
-  const ingested = await ingestLatestTradeBoardIntakeTurn(args.supabase, {
-    session: baseSession,
-    messages: args.messages,
-    latestUserMessageId: args.latestUserMessageId,
-  })
-  const promptState = buildTradeBoardIntakePromptState(ingested)
+      nowIso: args.nowIso,
+    })
+    const shouldStart = existing !== null || hasTradeBoardIntakeSignal(args.messages)
+    if (!shouldStart) {
+      return emptyWorkflowContext('latest_turn_intent')
+    }
 
-  return {
-    sessionBefore: existing,
-    sessionAfter: ingested,
-    workflowIntents: getTradeBoardIntakeToolsRequired(ingested),
-    toolPolicySource: 'active_workflow',
-    workflowPromptState: renderTradeBoardIntakePromptState(promptState),
+    const baseSession =
+      existing ??
+      (await createTradeBoardIntakeSession(args.supabase, {
+        repId: args.repId,
+        conversationId: args.conversationId,
+        lastUserMessageId: args.latestUserMessageId,
+      }))
+    const ingested = await ingestLatestTradeBoardIntakeTurn(args.supabase, {
+      session: baseSession,
+      messages: args.messages,
+      latestUserMessageId: args.latestUserMessageId,
+    })
+    const promptState = buildTradeBoardIntakePromptState(ingested)
+
+    return {
+      sessionBefore: existing,
+      sessionAfter: ingested,
+      workflowIntents: getTradeBoardIntakeToolsRequired(ingested),
+      toolPolicySource: 'active_workflow',
+      workflowPromptState: renderTradeBoardIntakePromptState(promptState),
+    }
+  } catch (err) {
+    if (isMissingWorkflowSchemaError(err)) {
+      console.warn('[nic-nac] Trade Board intake workflow schema is unavailable', {
+        conversationId: args.conversationId,
+      })
+      return emptyWorkflowContext('latest_turn_intent')
+    }
+    throw err
   }
 }
 
@@ -241,6 +251,16 @@ function emptyWorkflowContext(
     toolPolicySource,
     workflowPromptState: '',
   }
+}
+
+function isMissingWorkflowSchemaError(err: unknown): boolean {
+  const error = err as { code?: string; message?: string } | null
+  return (
+    error?.code === '42P01' ||
+    /trade_board_intake_(sessions|photos)|relation .* does not exist/i.test(
+      error?.message ?? '',
+    )
+  )
 }
 
 function inferRoleFromText(text: string): TradeBoardPhotoDeclaredRole {

@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { UIMessage } from 'ai'
 import {
+  getOrCreateTradeBoardIntakeContext,
   inferDeclaredPhotoRoleFromConversation,
   mergeWorkflowToolIntents,
 } from '@/lib/nic-nac/workflows/trade-board-intake-context'
@@ -98,5 +99,39 @@ describe('Trade Board intake route context', () => {
     expect(rendered).toContain('declaredRole=label_details')
     expect(rendered).toContain('Missing: jewelryFrontPhoto')
     expect(rendered).toContain('Next action: ask_for_jewelry_front_photo')
+  })
+
+  it('falls back cleanly when workflow tables are not deployed yet', async () => {
+    const supabase = {
+      from: vi.fn(() => {
+        throw {
+          code: '42P01',
+          message: 'relation "trade_board_intake_sessions" does not exist',
+        }
+      }),
+    }
+
+    await expect(
+      getOrCreateTradeBoardIntakeContext({
+        supabase: supabase as never,
+        repId: 'rep-1',
+        conversationId: 'conv-1',
+        messages: [
+          {
+            id: 'user-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Add ER13229 to my Trade Board' }],
+          } as UIMessage,
+        ],
+        latestUserMessageId: 'user-1',
+        mode: 'workspace',
+        nowIso: '2026-06-15T00:00:00.000Z',
+      }),
+    ).resolves.toMatchObject({
+      sessionAfter: null,
+      workflowIntents: [],
+      toolPolicySource: 'latest_turn_intent',
+      workflowPromptState: '',
+    })
   })
 })
