@@ -98,6 +98,12 @@ describe('Nic-Nac routed system prompt', () => {
       'Rejecting or demanding a retake is a last resort',
     )
     expect(prompt).toContain(
+      'Do not critique a label/details photo as if it is a bad jewelry photo',
+    )
+    expect(prompt).toContain(
+      'If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo',
+    )
+    expect(prompt).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(prompt).toContain(

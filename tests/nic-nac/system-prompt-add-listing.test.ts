@@ -55,6 +55,12 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'Rejecting or demanding a retake is a last resort',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not critique a label/details photo as if it is a bad jewelry photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
