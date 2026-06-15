@@ -430,6 +430,107 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it.each([
+    'ER 13229',
+    'er-13229',
+    'item # ER13229',
+    '13229',
+  ])('keeps trade-board tools for messy item-number reply "%s"', (reply) => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'item-number',
+        role: 'user',
+        parts: [{ type: 'text', text: reply }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when the rep chooses a prior search result with "add this one"', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Find The Florence Earrings for my trade board.' }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'I found ER13229 - The Florence Earrings. Want me to add this listing?',
+          },
+        ],
+      },
+      {
+        id: 'confirm',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add this one.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps trade-board tools when the rep corrects a tool-access denial without naming the script', () => {
+    const messages = [
+      {
+        id: 'start',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-ask',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "What's the item number?" }],
+      },
+      {
+        id: 'item-number',
+        role: 'user',
+        parts: [{ type: 'text', text: 'ER13229' }],
+      },
+      {
+        id: 'assistant-denial',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: "I don't have a direct tool to add pieces to your Trade Board from here.",
+          },
+        ],
+      },
+      {
+        id: 'correction',
+        role: 'user',
+        parts: [{ type: 'text', text: 'No, that is wrong. You do have the tool.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['trade_board'])
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('keeps trade-board tools for a photo-only reply during guided item-number intake', () => {
     const messages = [
       {

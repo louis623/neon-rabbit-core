@@ -78,6 +78,9 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('search_jewelry_database before asking for photos')
     expect(prompt).toContain('If the item exists, confirm the match before add_listing')
     expect(prompt).toContain('If the item is missing, ask for the label/details photo')
+    expect(prompt).toContain(
+      'Treat messy item numbers, design names, "add this one", corrections, and script/tool references as add-flow turns',
+    )
     expect(prompt).toContain('The collection may be on packaging instead of the label')
     expect(prompt).toContain('Ask for collection or a packaging photo if it is not visible')
     expect(prompt).toContain(

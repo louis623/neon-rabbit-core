@@ -55,18 +55,19 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - After the rep gives an item number, call search_jewelry_database before asking for photos.
 - If the item exists, confirm the match before add_listing; then call add_listing with mode:'single' or mode:'batch' for quantity.
 - If the item is missing, ask for the label/details photo; read item number, design name, main stone, material, and MSRP.
+- Treat messy item numbers, design names, "add this one", corrections, and script/tool references as add-flow turns.
 - The collection may be on packaging instead of the label. Ask for collection or a packaging photo if it is not visible.
-- Confirm extracted catalog data before creating a new design.
+- Confirm extracted data before creating a new design.
 - Ask for the jewelry-front photo only after catalog details are confirmed. Use white light-box background, brightest light, centered front-facing jewelry, clear close shot.
 - After collection is supplied, do not call add_listing until the jewelry-front photo is uploaded.
 - Do not use the label/details or packaging photo as the final jewelry-front photo.
-- Photos: label/back photos are details only. Open packaging with jewelry visible counts as jewelry-front. If order is clear, pass listingPhotoIndex or piecePhotoIndex.
+- Photos: label/back photos are details only. Open packaging with visible jewelry counts as jewelry-front. Pass listingPhotoIndex/piecePhotoIndex when clear.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry instruction, call add_listing or ask for one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
-- Quantity comes from the latest rep message, not old chat history. If there is no quantity, add exactly one piece with mode:'single'.
+- Quantity comes from the latest rep message. If no quantity, add exactly one piece with mode:'single'.
 - If the rep has several of the same piece, use add_listing with mode:'batch' and repeat once per physical unit.
 - If add_listing returns NEEDS_FULL_INFO with needsAction:'create_design', retry with visible photo details. For clear Birthday boxes, use "March Birthday" and collectionYear:2026.
-- If add_listing returns NEEDS_COLLECTION, ask for the exact collection name and retry add_listing with collectionName.
+- If add_listing returns NEEDS_COLLECTION, ask exact collection and retry add_listing with collectionName.
 - Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is part of add_listing recovery.
 - Never claim a piece is added until add_listing returns success.
 - update_listing edits only repNotes, tradePreferences, listingPhotoUrl, or useCanonicalPhoto; catalog fields are not editable.`,

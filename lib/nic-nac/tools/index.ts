@@ -416,6 +416,9 @@ function isContextualFollowUp(text: string, previousAssistantText = ''): boolean
     /\b(all|everything)\b.*\b(info|information|details|photo|photos|picture|pictures|image|images)\b/,
     /\b(contained|inside|in)\b.*\b(photo|photos|picture|pictures|image|images)\b/,
     /\byou (already )?(have|got|see)\b.*\b(info|information|details|photo|photos|picture|pictures|image|images)\b/,
+    /\b(that is|that's|this is)\s+wrong\b/,
+    /\bnot how this works\b/,
+    /\byou (do )?have\b.*\b(tool|access|script|process|workflow)\b/,
   ].some((pattern) => pattern.test(normalized))
     || (
       wordCount(normalized) <= 8 &&
