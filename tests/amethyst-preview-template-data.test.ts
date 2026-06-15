@@ -504,6 +504,64 @@ describe('Amethyst preview template data', () => {
     )
   })
 
+  it('uses saved site settings after dashboard unlock instead of stale setup skin answers', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-unlocked-stale-look',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient: vi.fn(() => ({ from: vi.fn() })) as unknown as typeof createAdminClient,
+        resolveAmethystPreviewRep: vi.fn(async () => ({
+          id: 'rep-unlocked-stale-look',
+          email: 'unlocked@example.com',
+          shop_link: null,
+          streaming_links: {},
+        })),
+        getSiteSettingsDashboard: vi.fn(async () => ({
+          ...demoSettings,
+          displayName: 'Unlocked Rep',
+          businessName: 'Unlocked Sparkle',
+          teamName: 'Unlocked Sparkle',
+          tagline: 'The saved workspace tagline.',
+          appearancePreset: 'amber',
+        })),
+        getRequiredSetupState: vi.fn(async () => ({
+          id: 'setup-unlocked-stale-look',
+          repId: 'rep-unlocked-stale-look',
+          status: 'dashboard_unlocked',
+          currentStep: 'final_preview_approval',
+          completedSteps: [],
+          steps: [],
+          answers: {
+            account_basics: {
+              customerFacingDisplayName: 'Old Setup Sparkle',
+            },
+            site_skin: {
+              selectedLook: 'AM-01',
+              selectedLookName: 'Original Sparkle Look (Amethyst)',
+            },
+            welcome_copy: {
+              headline: 'Old setup headline.',
+            },
+          },
+          generatedCopy: {},
+          supportState: {},
+          dashboardUnlockedAt: '2026-06-08T21:11:33.698Z',
+          createdAt: null,
+          updatedAt: null,
+          nextStep: null,
+          canUnlockDashboard: true,
+        })),
+      },
+    })
+
+    expect(data.appearancePreset).toBe('amber')
+    expect(data.homepage.businessName).toBe('Unlocked Sparkle')
+    expect(data.homepage.heroHeadline).not.toBe('Old setup headline.')
+  })
+
   it('falls back to defaults when lookup fails', async () => {
     const data = await loadAmethystPreviewTemplateData({
       env: {

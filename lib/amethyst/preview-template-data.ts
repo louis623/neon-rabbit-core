@@ -548,15 +548,20 @@ export async function loadAmethystPreviewTemplateData(
     } catch {
       requiredSetupState = null
     }
+    const activeSetupDraftState =
+      requiredSetupState?.status === 'required_setup' ||
+      requiredSetupState?.status === 'setup_blocked'
+        ? requiredSetupState
+        : null
     const draftSettings = applyRequiredSetupDraftToSettings(
       settings,
-      requiredSetupState,
+      activeSetupDraftState,
     )
     const extras = {
       shopLink: rep.shop_link,
       streamingLinks: rep.streaming_links,
     }
-    const draftExtras = applyRequiredSetupDraftToExtras(extras, requiredSetupState)
+    const draftExtras = applyRequiredSetupDraftToExtras(extras, activeSetupDraftState)
 
     return applyCustomerTarget({
       appearancePreset: normalizeAmethystAppearancePreset(
@@ -564,7 +569,7 @@ export async function loadAmethystPreviewTemplateData(
       ),
       homepage: applyRequiredSetupDraftToHomepage(
         mapPreviewSettingsToHomepageTemplateData(draftSettings, draftExtras),
-        requiredSetupState,
+        activeSetupDraftState,
       ),
       trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
       join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
