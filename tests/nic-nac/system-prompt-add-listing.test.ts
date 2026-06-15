@@ -61,6 +61,15 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'A label/details photo is only a label/details photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not say "the photo of the earrings needs" unless the rep actually uploaded a dedicated jewelry photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

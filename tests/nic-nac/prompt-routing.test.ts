@@ -104,6 +104,18 @@ describe('Nic-Nac routed system prompt', () => {
       'If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo',
     )
     expect(prompt).toContain(
+      'Tiny or partial jewelry visible in a label/details photo does not make it the jewelry photo',
+    )
+    expect(prompt).toContain(
+      'A label/details photo is only a label/details photo',
+    )
+    expect(prompt).toContain(
+      'Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement',
+    )
+    expect(prompt).toContain(
+      'Do not say "the photo of the earrings needs" unless the rep actually uploaded a dedicated jewelry photo',
+    )
+    expect(prompt).toContain(
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(prompt).toContain(

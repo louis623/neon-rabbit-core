@@ -47,15 +47,14 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Keep current-show memory factual and operational. Do not claim that you sent reminders, updated a live feed, or took provider action unless another real tool result says so.`,
 
   trade_board: `Trade-board tools:
-- list_my_trade_board lists own active/removed listings.
 - For current board questions, answer only from the latest list_my_trade_board result.
 - remove_listing requires the approval dialog.
-- restore_listing uses the recovery window.
-- Guided add flow: When the rep starts "Add a piece to Trade Board", offer two ways to start: type the item number or upload a clear item-info tag or label photo.
+- recovery window.
+- When the rep starts "Add a piece to Trade Board", offer two ways to start: type the item number or upload a clear item-info tag or label photo.
 - Order does not matter. Use photos and facts in whatever order the rep provides them.
 - Two quality checks only: readable item details and a website-worthy jewelry image.
 - If enough usable inputs already exist in recent conversation photos or chat text, call add_listing.
-- If the item exists, confirm the match before add_listing; use single/batch.
+- If the item exists, confirm the match before add_listing.
 - If missing, ask for whichever single input is actually missing or unusable.
 - Accept clear rep-provided collection, name, stone, material, MSRP, and ring size. Do not require packaging proof after the rep gives the collection.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
@@ -63,18 +62,18 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Rejecting or demanding a retake is a last resort; coach only when the label is unreadable or the jewelry photo is blurry, dark, far away, cropped, or unclear.
 - Do not critique a label/details photo as if it is a bad jewelry photo.
 - If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo.
+- A label/details photo is only a label/details photo. Tiny or partial jewelry visible in a label/details photo does not make it the jewelry photo. Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement.
+- Do not say "the photo of the earrings needs" unless the rep actually uploaded a dedicated jewelry photo.
 - Do not ask for unboxed, no-packaging, or plain-background retakes.
 - Use recent add-flow photos, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number; create one listing per physical piece.
-- Quantity comes from the latest rep message; if none, add one.
-- Several same piece: mode:'batch'.
-- NEEDS_FULL_INFO/create_design: retry with visible details. Birthday boxes: use "March Birthday" and collectionYear:2026.
-- NEEDS_COLLECTION: ask collection and retry add_listing with collectionName.
+- Quantity comes from the latest rep message.
+- mode:'batch'
+- NEEDS_FULL_INFO/create_design: retry. Birthday boxes: "March Birthday", collectionYear:2026.
 - Never send the rep to backend/Louis/manual creation when add_listing is active; create_design is recovery.
-- Never claim a piece is added until add_listing returns success.
-- update_listing edits repNotes, tradePreferences, listingPhotoUrl, useCanonicalPhoto only.`,
+- Never claim a piece is added until add_listing returns success.`,
 
   trade_requests: `Trade-request tools:
 - get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a piece.
