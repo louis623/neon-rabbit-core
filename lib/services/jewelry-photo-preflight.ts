@@ -53,6 +53,8 @@ const CRITICAL_SUBJECT_COVERAGE = 0.18
 const LIGHT_BOX_GRACE_MIN_COVERAGE = 0.12
 const LIGHT_BOX_GRACE_MAX_DETAIL_RISK = 0.4
 const LIGHT_BOX_GRACE_MAX_BACKGROUND_RISK = 0.24
+const DISPLAY_GRACE_MIN_COVERAGE = 0.1
+const DISPLAY_GRACE_MAX_DETAIL_RISK = 0.55
 
 export function assessJewelryPhotoPreflight(
   input: JewelryPhotoPreflightInput
@@ -231,6 +233,24 @@ function evaluateBackground(input: JewelryPhotoPreflightInput): RuleResult | nul
   if (backgroundRisk === null) return null
 
   if (backgroundRisk >= CRITICAL_BACKGROUND_RISK) {
+    const subjectCoverage = normalizeCoverage(input.subjectCoverage)
+    const detailRisk = normalizeRisk(input.detailRisk)
+    if (
+      subjectCoverage !== null &&
+      isReadableDisplayCandidate(input, subjectCoverage, detailRisk)
+    ) {
+      return {
+        penalty: 15,
+        issue: {
+          code: 'background_distraction',
+          severity: 'warning',
+          message: 'The packaging or background is visible, but the jewelry still reads.',
+        },
+        coaching:
+          'This should still be workable for testing when the jewelry is clear and centered.',
+      }
+    }
+
     return {
       penalty: 25,
       issue: {
@@ -278,6 +298,19 @@ function evaluateFraming(input: JewelryPhotoPreflightInput): RuleResult | null {
       }
     }
 
+    if (isReadableDisplayCandidate(input, subjectCoverage, detailRisk)) {
+      return {
+        penalty: 15,
+        issue: {
+          code: 'subject_framing',
+          severity: 'warning',
+          message: 'The jewelry is smaller in the frame, but still readable.',
+        },
+        coaching:
+          'This should still be workable for testing, though a closer crop would look cleaner.',
+      }
+    }
+
     return {
       penalty: 30,
       issue: {
@@ -317,6 +350,20 @@ function evaluateFraming(input: JewelryPhotoPreflightInput): RuleResult | null {
   }
 
   return null
+}
+
+function isReadableDisplayCandidate(
+  input: JewelryPhotoPreflightInput,
+  subjectCoverage: number,
+  detailRisk: number | null,
+): boolean {
+  if (subjectCoverage < DISPLAY_GRACE_MIN_COVERAGE) return false
+  if (input.subjectCentered === false) return false
+  if (detailRisk !== null && detailRisk > DISPLAY_GRACE_MAX_DETAIL_RISK) {
+    return false
+  }
+
+  return true
 }
 
 function isCleanLightBoxCandidate(

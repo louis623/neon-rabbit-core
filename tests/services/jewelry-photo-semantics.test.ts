@@ -49,6 +49,28 @@ describe('jewelry photo semantics', () => {
     })
   })
 
+  it('does not classify a clear centered boxed display photo as packaging only', () => {
+    expect(
+      classifyJewelryPhotoSemantics({
+        width: 1512,
+        height: 2016,
+        blurRisk: 0.12,
+        lightingRisk: 0.28,
+        detailRisk: 0.22,
+        backgroundDistractionRisk: 0.72,
+        subjectCoverage: 0.14,
+        subjectCentered: true,
+        detailConfidence: 0.78,
+        backgroundUniformity: 0.3,
+        backgroundCleanliness: 0.38,
+      }),
+    ).toMatchObject({
+      role: 'uncertain',
+      canAttemptCrop: true,
+      reasons: expect.arrayContaining(['boxed display jewelry appears clear enough']),
+    })
+  })
+
   it('marks a clear but small centered subject as a crop candidate instead of auto-approving it', () => {
     expect(
       classifyJewelryPhotoSemantics({

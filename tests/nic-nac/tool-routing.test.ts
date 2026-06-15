@@ -780,6 +780,41 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps trade-board tools when the rep says to stop pushing back on a usable photo', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      },
+      {
+        id: 'assistant-photo',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'The boxed display shot still has packaging visible. Can you take a cleaner jewelry-front photo?',
+          },
+        ],
+      },
+      {
+        id: 'pushback',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: "No, you don't. This is a perfect photo. You should use it. Stop pushing back.",
+          },
+        ],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)).toContain('add_listing')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('routes required setup mode to setup tools only', () => {
     const names = listToolNamesForIntents(['required_setup'])
 

@@ -50,6 +50,23 @@ export function classifyJewelryPhotoSemantics(
     }
   }
 
+  const boxedDisplayCropCandidate =
+    packagingDominates &&
+    input.subjectCentered &&
+    input.subjectCoverage >= 0.08 &&
+    input.detailConfidence >= 0.65 &&
+    input.blurRisk <= 0.45 &&
+    input.detailRisk <= 0.55
+
+  if (boxedDisplayCropCandidate) {
+    return {
+      role: 'uncertain',
+      confidence: 0.68,
+      reasons: ['boxed display jewelry appears clear enough'],
+      canAttemptCrop: true,
+    }
+  }
+
   const clearSmallCropCandidate =
     smallSubject &&
     input.subjectCentered &&

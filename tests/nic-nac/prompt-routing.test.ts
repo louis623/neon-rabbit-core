@@ -96,6 +96,9 @@ describe('Nic-Nac routed system prompt', () => {
       'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is clear',
     )
     expect(prompt).toContain(
+      'If the rep insists a clear boxed display photo is final, proceed instead of arguing',
+    )
+    expect(prompt).toContain(
       'Never send the rep to backend/Louis/manual creation when add_listing is active',
     )
     expect(prompt).toContain('Never claim a piece is added until add_listing returns success')

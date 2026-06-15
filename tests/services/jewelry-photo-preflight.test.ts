@@ -90,4 +90,32 @@ describe('assessJewelryPhotoPreflight', () => {
       ],
     })
   })
+
+  it('passes centered boxed display photos with warnings instead of hard-blocking packaging', () => {
+    const result = assessJewelryPhotoPreflight({
+      width: 1512,
+      height: 2016,
+      blurRisk: 0.12,
+      lightingRisk: 0.28,
+      detailRisk: 0.22,
+      backgroundDistractionRisk: 0.72,
+      subjectCoverage: 0.14,
+      subjectCentered: true,
+    })
+
+    expect(result.passed).toBe(true)
+    expect(result.score).toBeGreaterThanOrEqual(70)
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'background_distraction',
+          severity: 'warning',
+        }),
+        expect.objectContaining({
+          code: 'subject_framing',
+          severity: 'warning',
+        }),
+      ]),
+    )
+  })
 })

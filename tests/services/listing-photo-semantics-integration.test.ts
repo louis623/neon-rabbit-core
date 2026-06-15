@@ -72,6 +72,31 @@ const croppedJewelryAnalysis = {
   subjectCoverage: 0.34,
 }
 
+const boxedDisplayAnalysis = {
+  contentType: 'image/jpeg',
+  width: 1512,
+  height: 2016,
+  blurRisk: 0.12,
+  lightingRisk: 0.28,
+  detailRisk: 0.22,
+  backgroundDistractionRisk: 0.72,
+  subjectCoverage: 0.14,
+  subjectCentered: true,
+  detailConfidence: 0.78,
+  backgroundUniformity: 0.3,
+  backgroundCleanliness: 0.38,
+}
+
+const boxedDisplayCroppedAnalysis = {
+  ...boxedDisplayAnalysis,
+  width: 1300,
+  height: 1300,
+  backgroundDistractionRisk: 0.42,
+  subjectCoverage: 0.3,
+  backgroundUniformity: 0.55,
+  backgroundCleanliness: 0.58,
+}
+
 describe('listing/design photo semantic integration', () => {
   beforeEach(() => {
     analyzeServerImageQualityMock.mockReset()
@@ -161,6 +186,85 @@ describe('listing/design photo semantic integration', () => {
       selectedSource: 'cropped',
       image: {
         subjectCoverage: 0.34,
+      },
+    })
+  })
+
+  it('accepts boxed display listing photos when the jewelry is clear', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(boxedDisplayAnalysis)
+    createGuardedJewelryPhotoCropMock.mockResolvedValueOnce({
+      bytes: new Uint8Array([7, 8, 9]),
+      selectedSource: 'cropped',
+      analysis: boxedDisplayCroppedAnalysis,
+      preflight: {
+        passed: true,
+        score: 78,
+        issues: [],
+        coachingMessages: ['boxed display passed'],
+      },
+      semantic: {
+        role: 'jewelry',
+        confidence: 0.75,
+        reasons: ['boxed display jewelry is clear'],
+        canAttemptCrop: false,
+      },
+    })
+    uploadJewelryPhotoMock
+      .mockResolvedValueOnce('https://cdn.example.com/boxed-original.jpg')
+      .mockResolvedValueOnce('https://cdn.example.com/boxed-cropped.jpg')
+
+    const result = await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://images.example.com/boxed-earrings.jpg',
+        filenameStem: 'boxed-earrings',
+      },
+      { fetch: vi.fn().mockResolvedValueOnce(makeImageResponse()) },
+    )
+
+    expect(result).toMatchObject({
+      photoUrl: 'https://cdn.example.com/boxed-cropped.jpg',
+      originalPhotoUrl: 'https://cdn.example.com/boxed-original.jpg',
+      selectedSource: 'cropped',
+    })
+  })
+
+  it('accepts boxed display new design photos when the jewelry is clear', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(boxedDisplayAnalysis)
+    createGuardedJewelryPhotoCropMock.mockResolvedValueOnce({
+      bytes: new Uint8Array([7, 8, 9]),
+      selectedSource: 'cropped',
+      analysis: boxedDisplayCroppedAnalysis,
+      preflight: {
+        passed: true,
+        score: 78,
+        issues: [],
+        coachingMessages: ['boxed display passed'],
+      },
+      semantic: {
+        role: 'jewelry',
+        confidence: 0.75,
+        reasons: ['boxed display jewelry is clear'],
+        canAttemptCrop: false,
+      },
+    })
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/boxed-earrings-original.jpg',
+      signedUrl: 'https://signed.example.com/boxed-earrings-original.jpg',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce('https://cdn.example.com/boxed-design.jpg')
+
+    const result = await prepareDesignSourcePhoto({
+      repId: 'rep-1',
+      filenameStem: 'boxed-earrings',
+      sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
+    })
+
+    expect(result).toMatchObject({
+      publicPhotoUrl: 'https://cdn.example.com/boxed-design.jpg',
+      selectedSource: 'cropped',
+      stagedOriginal: {
+        objectPath: 'rep-1/originals/boxed-earrings-original.jpg',
       },
     })
   })
