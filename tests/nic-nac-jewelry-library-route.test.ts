@@ -101,6 +101,47 @@ describe('jewelry library route', () => {
     })
   })
 
+  it('does not mark cubic zirconia diamond descriptions as diamond labels', async () => {
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+    })
+    searchJewelryDatabaseMock.mockResolvedValueOnce([
+      {
+        designId: 'design-elodie',
+        itemNumber: 'ER76003',
+        designName: 'The Elodie Luxe',
+        material: 'Hematite Plating',
+        mainStone: 'Diamond Cubic Zirconia',
+        bpMsrp: 19.95,
+        canonicalPhotoUrl: 'https://cdn.example.com/elodie.jpg',
+        typePrefix: 'ER',
+        collectionName: 'April 2026 birthday collection',
+        collectionYear: null,
+        searchTags: [],
+        isOnMyBoard: false,
+        activeListingsCount: 1,
+      },
+    ])
+
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/jewelry-library?query=ER76003'),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          designName: 'The Elodie Luxe',
+          mainStone: 'Diamond Cubic Zirconia',
+        }),
+      ],
+      facets: expect.objectContaining({
+        labels: [{ value: 'standard', count: 1 }],
+      }),
+    })
+  })
+
   it('rejects malformed search limit params before loading the catalog', async () => {
     const response = await GET(
       new Request('http://localhost/api/nic-nac/jewelry-library?query=aurora&limit=16abc'),

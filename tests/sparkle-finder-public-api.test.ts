@@ -61,9 +61,9 @@ describe('Sparkle Finder public API contract helpers', () => {
       {
         id: 'design-2',
         item_number: 'NK200',
-        design_name: 'Orbit Necklace',
-        material: 'Rhodium',
-        main_stone: 'Citrine',
+        design_name: 'Orbit Diamond Necklace',
+        material: 'Diamond-look rhodium',
+        main_stone: 'Diamond Cubic Zirconia',
         bp_msrp: 49.95,
         canonical_photo_url: null,
         type_prefix: 'NK',
@@ -89,11 +89,11 @@ describe('Sparkle Finder public API contract helpers', () => {
       { value: 'Galaxy', count: 1 },
     ])
     expect(facets.materials).toEqual([
-      { value: 'Rhodium', count: 1 },
+      { value: 'Diamond-look rhodium', count: 1 },
       { value: 'Rose gold', count: 1 },
     ])
     expect(facets.stones).toEqual([
-      { value: 'Citrine', count: 1 },
+      { value: 'Diamond Cubic Zirconia', count: 1 },
       { value: 'Pearl', count: 1 },
     ])
     expect(facets.types).toEqual([

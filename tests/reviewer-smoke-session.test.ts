@@ -11,8 +11,9 @@ import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 
 function makeDeleteBuilder() {
   const eq = vi.fn().mockResolvedValue({ error: null })
-  const deleteMock = vi.fn(() => ({ eq }))
-  return { delete: deleteMock, eq }
+  const or = vi.fn().mockResolvedValue({ error: null })
+  const deleteMock = vi.fn(() => ({ eq, or }))
+  return { delete: deleteMock, eq, or }
 }
 
 function makeReviewerAdmin() {
@@ -30,10 +31,11 @@ function makeReviewerAdmin() {
   const repUpdate = vi.fn(() => ({ eq: repUpdateEq }))
   const setupUpsert = vi.fn().mockResolvedValue({ error: null })
   const subscriptionUpsert = vi.fn().mockResolvedValue({ error: null })
-  const designUpsert = vi.fn().mockResolvedValue({ error: null })
-  const listingUpsert = vi.fn().mockResolvedValue({ error: null })
-  const requestUpsert = vi.fn().mockResolvedValue({ error: null })
-  const fulfillmentUpsert = vi.fn().mockResolvedValue({ error: null })
+  const designDelete = makeDeleteBuilder()
+  const listingDelete = makeDeleteBuilder()
+  const requestDelete = makeDeleteBuilder()
+  const fulfillmentDelete = makeDeleteBuilder()
+  const swapDelete = makeDeleteBuilder()
   const conversationDelete = makeDeleteBuilder()
   const approvalDelete = makeDeleteBuilder()
   const runDelete = makeDeleteBuilder()
@@ -58,10 +60,11 @@ function makeReviewerAdmin() {
       if (table === 'subscriptions') {
         return { upsert: subscriptionUpsert }
       }
-      if (table === 'jewelry_designs') return { upsert: designUpsert }
-      if (table === 'trade_listings') return { upsert: listingUpsert }
-      if (table === 'trade_requests') return { upsert: requestUpsert }
-      if (table === 'trade_fulfillment') return { upsert: fulfillmentUpsert }
+      if (table === 'jewelry_designs') return designDelete
+      if (table === 'trade_listings') return listingDelete
+      if (table === 'trade_requests') return requestDelete
+      if (table === 'trade_fulfillment') return fulfillmentDelete
+      if (table === 'trade_swaps') return swapDelete
       if (table === 'nic_nac_conversations') return conversationDelete
       if (table === 'approval_events') return approvalDelete
       if (table === 'nic_nac_runs') return runDelete
@@ -77,10 +80,11 @@ function makeReviewerAdmin() {
       runDelete,
       setupUpsert,
       subscriptionUpsert,
-      designUpsert,
-      listingUpsert,
-      requestUpsert,
-      fulfillmentUpsert,
+      designDelete,
+      listingDelete,
+      requestDelete,
+      fulfillmentDelete,
+      swapDelete,
     },
   }
 }
@@ -162,39 +166,30 @@ describe('reviewer smoke session reset', () => {
     )
   })
 
-  it('seeds one active fulfillment item for dashboard workspace smoke sessions', async () => {
+  it('clears legacy synthetic fulfillment jewelry from dashboard smoke sessions', async () => {
     const { admin, spies } = makeReviewerAdmin()
 
     await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
 
-    expect(spies.designUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        item_number: 'RG-SMOKE-001',
-        design_name: 'Reviewer Smoke Ring',
-        type_prefix: 'RG',
-      }),
-      { onConflict: 'id' },
+    expect(spies.swapDelete.delete).toHaveBeenCalled()
+    expect(spies.swapDelete.or).toHaveBeenCalledWith(
+      expect.stringContaining('revealed_design_id.eq.00000000-0000-4000-8000-000000000101'),
     )
-    expect(spies.listingUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rep_id: 'rep-reviewer',
-        status: 'traded',
-      }),
-      { onConflict: 'id' },
+    expect(spies.fulfillmentDelete.eq).toHaveBeenCalledWith(
+      'id',
+      '00000000-0000-4000-8000-000000000104',
     )
-    expect(spies.requestUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        customer_name: 'Jamie Smoke',
-        status: 'approved',
-      }),
-      { onConflict: 'id' },
+    expect(spies.requestDelete.eq).toHaveBeenCalledWith(
+      'id',
+      '00000000-0000-4000-8000-000000000103',
     )
-    expect(spies.fulfillmentUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        fulfillment_status: 'approved',
-        completed_at: null,
-      }),
-      { onConflict: 'id' },
+    expect(spies.listingDelete.eq).toHaveBeenCalledWith(
+      'id',
+      '00000000-0000-4000-8000-000000000102',
+    )
+    expect(spies.designDelete.eq).toHaveBeenCalledWith(
+      'id',
+      '00000000-0000-4000-8000-000000000101',
     )
   })
 })

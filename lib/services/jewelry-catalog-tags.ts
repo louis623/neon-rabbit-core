@@ -13,8 +13,6 @@ const TYPE_TAGS: Record<JewelryType, string> = {
 const BLOCKED_TAGS = new Set([
   'rare',
   'rarity',
-  'unicorn',
-  'diamond',
   'diamonds',
   'valuable',
   'value',
@@ -24,6 +22,8 @@ const BLOCKED_TAGS = new Set([
   'limited',
   'scarce',
 ])
+
+const EXPLICIT_RARITY_TAGS = new Set(['diamond', 'unicorn'])
 
 const PHRASE_TAGS = [
   'rose gold',
@@ -81,7 +81,10 @@ function hasWord(source: string, token: string) {
   return new RegExp(`\\b${escaped}\\b`).test(source)
 }
 
-export function normalizeJewelryCatalogTags(tags: readonly string[] = []): string[] {
+export function normalizeJewelryCatalogTags(
+  tags: readonly string[] = [],
+  options: { allowExplicitRarity?: boolean } = {},
+): string[] {
   const normalized: string[] = []
   const seen = new Set<string>()
 
@@ -89,6 +92,7 @@ export function normalizeJewelryCatalogTags(tags: readonly string[] = []): strin
     const tag = normalizeOneTag(raw)
     if (!tag) continue
     if (tag.length < 2 || tag.length > 32) continue
+    if (EXPLICIT_RARITY_TAGS.has(tag) && !options.allowExplicitRarity) continue
     if (BLOCKED_TAGS.has(tag)) continue
     if (seen.has(tag)) continue
 
@@ -128,7 +132,12 @@ export function deriveJewelryCatalogTags(input: {
     if (hasWord(sourceText, token)) candidates.push(token)
   }
 
-  candidates.push(...(input.explicitTags ?? []))
+  const generatedTags = normalizeJewelryCatalogTags(candidates)
+  const explicitTags = normalizeJewelryCatalogTags(input.explicitTags ?? [], {
+    allowExplicitRarity: true,
+  })
 
-  return normalizeJewelryCatalogTags(candidates)
+  return normalizeJewelryCatalogTags([...generatedTags, ...explicitTags], {
+    allowExplicitRarity: true,
+  })
 }

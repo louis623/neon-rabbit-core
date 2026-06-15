@@ -74,30 +74,13 @@ function hasJewelryBrowseFilters(input: SearchJewelryInput): boolean {
 }
 
 function deriveCatalogLabel(row: {
-  design_name: string
-  material: string | null
-  main_stone: string | null
   search_tags: string[] | null
-  collection:
-    | { name: string | null; collection_year: number | null }
-    | { name: string | null; collection_year: number | null }[]
-    | null
 }): 'diamond' | 'unicorn' | 'standard' {
-  const collectionRel = row.collection
-  const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
-  const searchableText = [
-    row.design_name,
-    row.material,
-    row.main_stone,
-    collection?.name,
-    ...(Array.isArray(row.search_tags) ? row.search_tags : []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-
-  if (searchableText.includes('unicorn')) return 'unicorn'
-  if (searchableText.includes('diamond')) return 'diamond'
+  const explicitTags = Array.isArray(row.search_tags)
+    ? row.search_tags.map((tag) => tag.trim().toLowerCase())
+    : []
+  if (explicitTags.includes('unicorn')) return 'unicorn'
+  if (explicitTags.includes('diamond')) return 'diamond'
   return 'standard'
 }
 

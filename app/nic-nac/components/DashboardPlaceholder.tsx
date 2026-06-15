@@ -529,18 +529,11 @@ function formatJewelryLibraryType(typePrefix: JewelryDatabaseResult['typePrefix'
 }
 
 function deriveJewelryLibraryLabel(result: JewelryDatabaseResult) {
-  const searchableText = [
-    result.designName,
-    result.material,
-    result.mainStone,
-    result.collectionName,
-    ...(result.searchTags ?? []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-  if (searchableText.includes('unicorn')) return 'unicorn'
-  if (searchableText.includes('diamond')) return 'diamond'
+  const explicitTags = (result.searchTags ?? []).map((tag) =>
+    tag.trim().toLowerCase(),
+  )
+  if (explicitTags.includes('unicorn')) return 'unicorn'
+  if (explicitTags.includes('diamond')) return 'diamond'
   return 'standard'
 }
 

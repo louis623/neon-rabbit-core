@@ -191,76 +191,45 @@ async function ensureReviewerSubscription(admin: AdminClient, repId: string) {
   if (error) throw error
 }
 
-async function seedReviewerFulfillmentSmokeData(
+async function clearReviewerFulfillmentSmokeData(
   admin: AdminClient,
-  repId: string,
 ) {
-  const now = new Date().toISOString()
-
-  const { error: designError } = await admin.from('jewelry_designs').upsert(
-    {
-      id: REVIEWER_SMOKE_FULFILLMENT.designId,
-      item_number: 'RG-SMOKE-001',
-      design_name: 'Reviewer Smoke Ring',
-      material: 'Sterling silver',
-      main_stone: 'Cubic zirconia',
-      bp_msrp: 38,
-      canonical_photo_url: null,
-      type_prefix: 'RG',
-      updated_at: now,
-    },
-    { onConflict: 'id' },
-  )
-  if (designError) throw designError
-
-  const { error: listingError } = await admin.from('trade_listings').upsert(
-    {
-      id: REVIEWER_SMOKE_FULFILLMENT.listingId,
-      rep_id: repId,
-      design_id: REVIEWER_SMOKE_FULFILLMENT.designId,
-      listing_photo_url: null,
-      uses_canonical_photo: true,
-      trade_preferences: 'Reviewer smoke fixture.',
-      rep_notes: 'Synthetic reviewer fulfillment seed.',
-      status: 'traded',
-      removal_reason: null,
-      listed_at: now,
-      updated_at: now,
-    },
-    { onConflict: 'id' },
-  )
-  if (listingError) throw listingError
-
-  const { error: requestError } = await admin.from('trade_requests').upsert(
-    {
-      id: REVIEWER_SMOKE_FULFILLMENT.requestId,
-      listing_id: REVIEWER_SMOKE_FULFILLMENT.listingId,
-      customer_name: 'Jamie Smoke',
-      customer_description: 'Reviewer smoke trade request.',
-      status: 'approved',
-      rejection_reason: null,
-      rep_notes: 'Synthetic reviewer fulfillment seed.',
-      updated_at: now,
-    },
-    { onConflict: 'id' },
-  )
-  if (requestError) throw requestError
+  const { error: swapError } = await admin
+    .from('trade_swaps')
+    .delete()
+    .or(
+      [
+        `request_id.eq.${REVIEWER_SMOKE_FULFILLMENT.requestId}`,
+        `outgoing_listing_id.eq.${REVIEWER_SMOKE_FULFILLMENT.listingId}`,
+        `replacement_listing_id.eq.${REVIEWER_SMOKE_FULFILLMENT.listingId}`,
+        `revealed_design_id.eq.${REVIEWER_SMOKE_FULFILLMENT.designId}`,
+      ].join(','),
+    )
+  if (swapError) throw swapError
 
   const { error: fulfillmentError } = await admin
     .from('trade_fulfillment')
-    .upsert(
-      {
-        id: REVIEWER_SMOKE_FULFILLMENT.fulfillmentId,
-        request_id: REVIEWER_SMOKE_FULFILLMENT.requestId,
-        fulfillment_status: 'approved',
-        shipping_notes: null,
-        received_listing_id: null,
-        status_updated_at: now,
-        completed_at: null,
-      },
-      { onConflict: 'id' },
-    )
+    .delete()
+    .eq('id', REVIEWER_SMOKE_FULFILLMENT.fulfillmentId)
   if (fulfillmentError) throw fulfillmentError
+
+  const { error: requestError } = await admin
+    .from('trade_requests')
+    .delete()
+    .eq('id', REVIEWER_SMOKE_FULFILLMENT.requestId)
+  if (requestError) throw requestError
+
+  const { error: listingError } = await admin
+    .from('trade_listings')
+    .delete()
+    .eq('id', REVIEWER_SMOKE_FULFILLMENT.listingId)
+  if (listingError) throw listingError
+
+  const { error: designError } = await admin
+    .from('jewelry_designs')
+    .delete()
+    .eq('id', REVIEWER_SMOKE_FULFILLMENT.designId)
+  if (designError) throw designError
 }
 
 export async function resetReviewerSmokeSession(
@@ -289,6 +258,7 @@ export async function resetReviewerSmokeSession(
     existingRepId,
   )
   await clearReviewerNicNacHistory(admin, repId)
+  await clearReviewerFulfillmentSmokeData(admin)
   const now = new Date().toISOString()
   const status = state
   const completedSteps = completedStepsForState(state)
@@ -339,7 +309,6 @@ export async function resetReviewerSmokeSession(
   }
   if (state === 'dashboard_unlocked') {
     await ensureReviewerSubscription(admin, repId)
-    await seedReviewerFulfillmentSmokeData(admin, repId)
   }
 
   return {

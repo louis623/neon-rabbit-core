@@ -31,7 +31,7 @@ describe('normalizeJewelryCatalogTags', () => {
     ])
   })
 
-  it('blocks rarity, hype, and value judgment tags', () => {
+  it('blocks rarity, hype, and value judgment tags by default', () => {
     expect(
       normalizeJewelryCatalogTags([
         'rare',
@@ -44,6 +44,14 @@ describe('normalizeJewelryCatalogTags', () => {
     ).toEqual(['heart'])
   })
 
+  it('keeps exact rarity tags only when they were explicitly supplied', () => {
+    expect(
+      normalizeJewelryCatalogTags(['diamond', 'unicorn', 'diamonds', 'heart'], {
+        allowExplicitRarity: true,
+      }),
+    ).toEqual(['diamond', 'unicorn', 'heart'])
+  })
+
   it('derives practical tags from item context without rarity guesses', () => {
     expect(
       deriveJewelryCatalogTags({
@@ -54,6 +62,14 @@ describe('normalizeJewelryCatalogTags', () => {
         collectionName: 'April Birthday',
         explicitTags: ['Unicorn', 'statement'],
       }),
-    ).toEqual(['ring', 'rose gold', 'pink', 'opal', 'heart', 'statement'])
+    ).toEqual([
+      'ring',
+      'rose gold',
+      'pink',
+      'opal',
+      'heart',
+      'unicorn',
+      'statement',
+    ])
   })
 })

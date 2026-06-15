@@ -564,19 +564,11 @@ function escapeIlikePattern(value: string) {
 }
 
 function deriveSparkleFinderCatalogLabel(row: FinderDesignRow): FinderCatalogLabel {
-  const haystack = [
-    row.design_name,
-    row.material,
-    row.main_stone,
-    readSingle(row.collection)?.name,
-    ...(Array.isArray(row.search_tags) ? row.search_tags : []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-
-  if (haystack.includes('unicorn')) return 'unicorn'
-  if (haystack.includes('diamond')) return 'diamond'
+  const explicitTags = Array.isArray(row.search_tags)
+    ? row.search_tags.map((tag) => tag.trim().toLowerCase())
+    : []
+  if (explicitTags.includes('unicorn')) return 'unicorn'
+  if (explicitTags.includes('diamond')) return 'diamond'
   return 'standard'
 }
 
