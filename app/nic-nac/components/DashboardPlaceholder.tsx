@@ -2975,9 +2975,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     actionState: siteSettingsActionState,
     statusMessage: siteSettingsActionState.helperMessage,
   })
-  const shouldShowWorkspaceSaveDock =
-    !isLiveSitePreview && canRenderWorkspaceSections && siteSettingsState.status === 'ready'
-
   return (
     <main
       className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
@@ -3243,8 +3240,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 state={siteSettingsState}
                 draft={siteSettingsDraft}
                 actionState={siteSettingsActionState}
+                hasUnsavedChanges={siteSettingsHasUnsavedChanges}
+                statusMessage={siteSettingsSaveStatusText}
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
+                onSave={handleSaveSiteSettings}
               />
             </div>
           ) : null}
@@ -3292,14 +3292,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
         </section>
-        {shouldShowWorkspaceSaveDock ? (
-          <WorkspaceSaveDock
-            actionState={siteSettingsActionState}
-            hasUnsavedChanges={siteSettingsHasUnsavedChanges}
-            statusMessage={siteSettingsSaveStatusText}
-            onSave={handleSaveSiteSettings}
-          />
-        ) : null}
       </div>
       )}
     </main>
@@ -4872,14 +4864,20 @@ export function SiteSettingsCard({
   state,
   draft,
   actionState,
+  hasUnsavedChanges = false,
+  statusMessage,
   onDraftChange,
   onSocialHandleChange,
+  onSave,
 }: {
   state: SiteSettingsState
   draft?: SiteSettingsDraft | null
   actionState?: SiteSettingsActionState
+  hasUnsavedChanges?: boolean
+  statusMessage?: string | null
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
+  onSave?: () => void
 }) {
   if (state.status === 'error') {
     return (
@@ -4906,6 +4904,24 @@ export function SiteSettingsCard({
           <div className={styles.cardSubtitle}>
             Keep your public profile, customer pages, and brand details tuned up.
           </div>
+        </div>
+        <div className={styles.siteSettingsSaveActions}>
+          <span
+            className={styles.siteSettingsSaveStatus}
+            data-testid="site-settings-save-status"
+            role="status"
+            aria-live="polite"
+          >
+            {statusMessage ?? 'No unsaved changes.'}
+          </span>
+          <button
+            type="button"
+            className={styles.siteSettingsSaveButton}
+            onClick={onSave}
+            disabled={actionState?.pending || !hasUnsavedChanges}
+          >
+            {actionState?.pending ? 'Saving...' : 'Save site settings'}
+          </button>
         </div>
       </div>
       <div className={styles.calendarHeader}>
@@ -5072,39 +5088,6 @@ export function SiteSettingsCard({
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
       ) : null}
-    </div>
-  )
-}
-
-export function WorkspaceSaveDock({
-  actionState,
-  hasUnsavedChanges,
-  statusMessage,
-  onSave,
-}: {
-  actionState: SiteSettingsActionState
-  hasUnsavedChanges: boolean
-  statusMessage: string | null
-  onSave: () => void
-}) {
-  return (
-    <div className={styles.workspaceSaveDock} data-testid="workspace-save-dock">
-      <span
-        className={styles.workspaceSaveStatus}
-        data-testid="workspace-save-status"
-        role="status"
-        aria-live="polite"
-      >
-        {statusMessage ?? 'No unsaved changes.'}
-      </span>
-      <button
-        type="button"
-        className={styles.workspaceSaveButton}
-        onClick={onSave}
-        disabled={actionState.pending || !hasUnsavedChanges}
-      >
-        {actionState.pending ? 'Saving changes...' : 'Save changes'}
-      </button>
     </div>
   )
 }
