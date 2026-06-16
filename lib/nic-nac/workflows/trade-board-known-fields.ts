@@ -62,12 +62,11 @@ export function extractKnownFieldsFromText(
 export function extractKnownFieldsFromCatalogToolOutputs(
   messages: UIMessage[],
 ): TradeBoardIntakeKnownFields {
-  const toolParts = messages
-    .flatMap((message) => message.parts ?? [])
-    .filter((part): part is CatalogToolPart => {
-      const type = (part as CatalogToolPart).type
-      return type === 'tool-search_jewelry_database'
-    })
+  const parts = messages.flatMap(
+    (message) => (message.parts ?? []) as CatalogToolPart[],
+  )
+  const toolParts = parts
+    .filter((part) => part.type === 'tool-search_jewelry_database')
     .filter((part) => part.state === 'output-available')
     .reverse()
 
