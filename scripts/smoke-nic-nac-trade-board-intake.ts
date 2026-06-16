@@ -8,6 +8,8 @@ import { config } from 'dotenv'
 import type { UIMessage } from 'ai'
 
 import { loadCanonicalHistory } from '@/lib/nic-nac/persistence'
+import { getReviewerSmokePersona } from '@/lib/reviewer-smoke/config'
+import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 import { DEFAULT_DEMO_PASSWORD } from '@/scripts/seed-demo-rep'
 
 const DEFAULT_FIXTURE_DIR = 'C:\\Users\\louis\\sparkle-suite-smoke-assets'
@@ -71,6 +73,12 @@ export interface TradeBoardIntakeSmokeCase {
 interface DemoSessionCookie {
   cookie: string
   email: string
+}
+
+interface SmokeAccount {
+  email: string
+  password: string
+  source: 'demo_env' | 'reviewer_smoke'
 }
 
 interface SmokeTurnResult {
@@ -240,7 +248,8 @@ export async function runTradeBoardIntakeSmoke(
     env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } },
   )
-  const session = await createDemoSessionCookie(env)
+  const smokeAccount = await prepareSmokeAccount(env, supabase)
+  const session = await createDemoSessionCookie(env, smokeAccount)
   const rep = await fetchNicNacMe(appUrl, env, session.cookie)
   const conversationId = `nic-nac-er13229-smoke-${Date.now()}-${randomUUID()}`
   const turns: SmokeTurnResult[] = []
@@ -435,7 +444,6 @@ export async function runTradeBoardIntakeSmoke(
 
 function getMissingLiveSmokeEnv(env: Env): string[] {
   return [
-    'DEMO_REP_EMAIL',
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
@@ -450,13 +458,42 @@ function getSmokeAppUrl(env: Env): string {
   ).replace(/\/+$/, '')
 }
 
-async function createDemoSessionCookie(env: Env): Promise<DemoSessionCookie> {
-  const email = env.DEMO_REP_EMAIL?.trim()
-  const password = env.DEMO_REP_PASSWORD?.trim() || DEFAULT_DEMO_PASSWORD
+async function prepareSmokeAccount(
+  env: Env,
+  supabase: SupabaseClient,
+): Promise<SmokeAccount> {
+  const demoEmail = env.DEMO_REP_EMAIL?.trim()
+  if (demoEmail) {
+    return {
+      email: demoEmail,
+      password: env.DEMO_REP_PASSWORD?.trim() || DEFAULT_DEMO_PASSWORD,
+      source: 'demo_env',
+    }
+  }
+
+  const persona = getReviewerSmokePersona(env as NodeJS.ProcessEnv)
+  await resetReviewerSmokeSession(
+    'dashboard_unlocked',
+    supabase as Parameters<typeof resetReviewerSmokeSession>[1],
+  )
+
+  return {
+    email: persona.email,
+    password: persona.password,
+    source: 'reviewer_smoke',
+  }
+}
+
+async function createDemoSessionCookie(
+  env: Env,
+  account: SmokeAccount,
+): Promise<DemoSessionCookie> {
+  const email = account.email
+  const password = account.password
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL?.trim()
   const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 
-  if (!email || !supabaseUrl || !anonKey) {
+  if (!supabaseUrl || !anonKey) {
     throw new Error('Demo Supabase auth environment is incomplete.')
   }
 
