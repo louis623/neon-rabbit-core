@@ -453,7 +453,6 @@ function getMissingLiveSmokeEnv(env: Env): string[] {
 function getSmokeAppUrl(env: Env): string {
   return (
     env.SPARKLE_NIC_NAC_SMOKE_APP_URL?.trim() ||
-    env.NEXT_PUBLIC_APP_URL?.trim() ||
     DEFAULT_APP_URL
   ).replace(/\/+$/, '')
 }
