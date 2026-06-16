@@ -114,6 +114,11 @@ describe('Trade Board intake store', () => {
     })
 
     expect(supabase.from).toHaveBeenCalledWith('trade_board_intake_sessions')
+    expect(calls).toContainEqual(['select', ['*']])
+    expect(calls).not.toContainEqual([
+      'select',
+      ['*, trade_board_intake_photos(*)'],
+    ])
     expect(calls).toContainEqual(['eq', ['rep_id', 'rep-1']])
     expect(calls).toContainEqual(['eq', ['conversation_id', 'conv-1']])
     expect(calls).toContainEqual(['eq', ['status', 'active']])
@@ -157,5 +162,10 @@ describe('Trade Board intake store', () => {
 
     expect(supabase.from).toHaveBeenCalledWith('trade_board_intake_sessions')
     expect(supabase.from).toHaveBeenCalledWith('trade_board_intake_photos')
+    expect(sessionBuilder.calls).toContainEqual(['select', ['*']])
+    expect(sessionBuilder.calls).not.toContainEqual([
+      'select',
+      ['*, trade_board_intake_photos(*)'],
+    ])
   })
 })

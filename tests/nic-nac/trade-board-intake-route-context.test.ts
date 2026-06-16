@@ -194,4 +194,85 @@ describe('Trade Board intake route context', () => {
       workflowPromptState: '',
     })
   })
+
+  it('can use a server-owned workflow client when the rep-scoped client cannot write workflow state', async () => {
+    const blockedRepClient = {
+      from: vi.fn(() => {
+        throw {
+          code: '42501',
+          message: 'permission denied for table trade_board_intake_sessions',
+        }
+      }),
+    }
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'started',
+      missing_fields: [],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: null, error: null })),
+    }
+    const createBuilder = {
+      insert: vi.fn(() => createBuilder),
+      select: vi.fn(() => createBuilder),
+      single: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const photoBuilder = {
+      select: vi.fn(() => photoBuilder),
+      eq: vi.fn(() => photoBuilder),
+      order: vi.fn(() => ({ data: [], error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'trade_board_intake_photos') return photoBuilder
+        const sessionCallCount = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === 'trade_board_intake_sessions',
+        ).length
+        if (sessionCallCount === 1) return activeBuilder
+        if (sessionCallCount === 2) return createBuilder
+        return updateBuilder
+      }),
+    }
+
+    await expect(
+      getOrCreateTradeBoardIntakeContext({
+        supabase: blockedRepClient as never,
+        workflowSupabase: workflowSupabase as never,
+        repId: 'rep-1',
+        conversationId: 'conv-1',
+        messages: [
+          {
+            id: 'user-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+          } as UIMessage,
+        ],
+        latestUserMessageId: 'user-1',
+        mode: 'workspace',
+        nowIso: '2026-06-15T00:00:00.000Z',
+      } as never),
+    ).resolves.toMatchObject({
+      sessionAfter: expect.objectContaining({
+        id: 'workflow-1',
+        workflowType: 'trade_board_add_listing',
+      }),
+      workflowIntents: ['trade_board', 'catalog'],
+      toolPolicySource: 'active_workflow',
+    })
+  })
 })

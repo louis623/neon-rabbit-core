@@ -109,7 +109,7 @@ export async function getActiveTradeBoardIntakeSession(
 ): Promise<TradeBoardIntakeSessionState | null> {
   const { data, error } = await supabase
     .from('trade_board_intake_sessions')
-    .select('*, trade_board_intake_photos(*)')
+    .select('*')
     .eq('rep_id', args.repId)
     .eq('conversation_id', args.conversationId)
     .eq('status', 'active')
@@ -119,7 +119,19 @@ export async function getActiveTradeBoardIntakeSession(
     .maybeSingle()
 
   if (error) throw error
-  return data ? mapTradeBoardIntakeSessionRow(data as Record<string, unknown>) : null
+  if (!data) return null
+
+  const { data: photos, error: photoError } = await supabase
+    .from('trade_board_intake_photos')
+    .select('*')
+    .eq('session_id', (data as { id: string }).id)
+    .order('created_at', { ascending: true })
+  if (photoError) throw photoError
+
+  return mapTradeBoardIntakeSessionRow({
+    ...(data as Record<string, unknown>),
+    trade_board_intake_photos: photos ?? [],
+  })
 }
 
 export async function createTradeBoardIntakeSession(
@@ -140,7 +152,7 @@ export async function createTradeBoardIntakeSession(
       current_phase: 'started',
       last_user_message_id: args.lastUserMessageId ?? null,
     })
-    .select('*, trade_board_intake_photos(*)')
+    .select('*')
     .single()
 
   if (error) throw error

@@ -59,6 +59,7 @@ export function mergeWorkflowToolIntents(
 
 export async function getOrCreateTradeBoardIntakeContext(args: {
   supabase: SupabaseClient
+  workflowSupabase?: SupabaseClient
   repId: string
   conversationId: string
   messages: UIMessage[]
@@ -77,7 +78,8 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
   }
 
   try {
-    const existing = await getActiveTradeBoardIntakeSession(args.supabase, {
+    const workflowSupabase = args.workflowSupabase ?? args.supabase
+    const existing = await getActiveTradeBoardIntakeSession(workflowSupabase, {
       repId: args.repId,
       conversationId: args.conversationId,
       nowIso: args.nowIso,
@@ -89,12 +91,12 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
 
     const baseSession =
       existing ??
-      (await createTradeBoardIntakeSession(args.supabase, {
+      (await createTradeBoardIntakeSession(workflowSupabase, {
         repId: args.repId,
         conversationId: args.conversationId,
         lastUserMessageId: args.latestUserMessageId,
       }))
-    const ingested = await ingestLatestTradeBoardIntakeTurn(args.supabase, {
+    const ingested = await ingestLatestTradeBoardIntakeTurn(workflowSupabase, {
       session: baseSession,
       messages: args.messages,
       latestUserMessageId: args.latestUserMessageId,
@@ -257,7 +259,10 @@ function isMissingWorkflowSchemaError(err: unknown): boolean {
   const error = err as { code?: string; message?: string } | null
   return (
     error?.code === '42P01' ||
-    /trade_board_intake_(sessions|photos)|relation .* does not exist/i.test(
+    /\brelation\s+"?(?:public\.)?trade_board_intake_(?:sessions|photos)"?\s+does\s+not\s+exist\b/i.test(
+      error?.message ?? '',
+    ) ||
+    /\bcould\s+not\s+find\s+the\s+table\b[\s\S]{0,120}\btrade_board_intake_(?:sessions|photos)\b/i.test(
       error?.message ?? '',
     )
   )

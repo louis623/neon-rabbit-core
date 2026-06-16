@@ -46,6 +46,7 @@ import {
   normalizeRunUsage,
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 import {
   getOrCreateTradeBoardIntakeContext,
@@ -239,6 +240,7 @@ export async function POST(request: Request) {
     .find((message) => message.role === 'user')
   const tradeBoardWorkflowContext = await getOrCreateTradeBoardIntakeContext({
     supabase,
+    workflowSupabase: createAdminClient(),
     repId,
     conversationId,
     messages,
