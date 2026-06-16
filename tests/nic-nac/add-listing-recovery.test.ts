@@ -369,8 +369,9 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       listingId: 'listing-1',
       itemNumber: 'NEW-100',
       createdNewDesign: true,
-      photoPipelineStatus: 'ready',
     })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
     expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
   })
 
@@ -849,12 +850,9 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     expect(result).toMatchObject({
       createdNewDesign: true,
       listingId: 'listing-1',
-      photoPipelineStatus: 'ready',
-      photoPreflight: {
-        passed: true,
-        score: 100,
-      },
     })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
   })
 
   it('uses the only chat image as the new canonical design photo', async () => {
@@ -1482,8 +1480,9 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     })
     expect(result).toMatchObject({
       createdNewDesign: true,
-      photoPipelineStatus: 'qa_review',
     })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
   })
 
   it('publishes the enhanced photo as canonical when the conservative helper explicitly approves it', async () => {
@@ -1596,8 +1595,9 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     expect(result).toMatchObject({
       createdNewDesign: true,
       usesCanonicalPhoto: true,
-      photoPipelineStatus: 'published',
     })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
   })
 
   it('holds the enhancement when the conservative helper rejects auto-publish', async () => {
@@ -1701,8 +1701,9 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
     })
     expect(result).toMatchObject({
       createdNewDesign: true,
-      photoPipelineStatus: 'rejected',
     })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
   })
 })
 
@@ -2139,7 +2140,6 @@ describe('add_listing - active workflow readiness guard', () => {
       listingId: 'listing-1',
       itemNumber: 'ER13229',
       createdNewDesign: true,
-      photoPipelineStatus: 'error',
     })
 
     expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
@@ -2238,6 +2238,100 @@ describe('add_listing - active workflow readiness guard', () => {
           'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
       }),
     )
+  })
+
+  it('does not expose accepted-photo warning details in successful add_listing results', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK75454',
+      designName: 'The Piper Necklace',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'NK75454',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday',
+      typePrefix: 'NK',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/piper.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/piper.jpg',
+      signedUrl: 'https://signed.example.com/piper-original',
+    })
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      makeCleanAnalysis({
+        width: 1300,
+        height: 1300,
+        backgroundDistractionRisk: 0.72,
+        subjectCoverage: 0.3,
+        detailConfidence: 0.6,
+      }),
+    )
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        known: {
+          itemNumber: 'NK75454',
+          designName: 'The Piper Necklace',
+          collectionName: 'July Birthday',
+          collectionYear: 2026,
+          material: 'Rhodium Plating',
+          mainStone: 'Lab-Created Ruby',
+          bpMsrp: 138,
+        },
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as label/details source'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,UElQRVJfTkVDS0xBQ0U=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'NK75454',
+      designName: 'The Piper Necklace',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+      material: 'Rhodium Plating',
+      mainStone: 'Lab-Created Ruby',
+      bpMsrp: 138,
+      piecePhotoIndex: 2,
+    })
+
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK75454',
+      createdNewDesign: true,
+    })
+    expect(result).not.toHaveProperty('photoPipelineStatus')
+    expect(result).not.toHaveProperty('photoPreflight')
   })
 
   it('treats piecePhotoIndex as the model-facing workflow photo number when several jewelry photos are confirmed', async () => {

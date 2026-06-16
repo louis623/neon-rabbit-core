@@ -532,7 +532,6 @@ async function runSingle(
   let photoPreflight:
     | ReturnType<typeof assessJewelryPhotoPreflight>
     | null = null
-  let photoPipelineStatus: string | null = null
   let sourcePhotoWidth = 0
   let sourcePhotoHeight = 0
   let sourcePhotoAnalysis:
@@ -673,7 +672,6 @@ async function runSingle(
         subjectCoverage: preparedSource.analysis.subjectCoverage,
         subjectCentered: preparedSource.analysis.subjectCentered,
       }
-      photoPipelineStatus = 'ready'
     } else if (workflowConfirmedPhotoUrl) {
       let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
       try {
@@ -702,7 +700,6 @@ async function runSingle(
         subjectCoverage: preparedSource.analysis.subjectCoverage,
         subjectCentered: preparedSource.analysis.subjectCentered,
       }
-      photoPipelineStatus = 'ready'
     } else {
       const resolvedPhoto = await resolvePhotoFromConversation({
         supabase: ctx.supabase,
@@ -745,7 +742,6 @@ async function runSingle(
         subjectCoverage: preparedSource.analysis.subjectCoverage,
         subjectCentered: preparedSource.analysis.subjectCentered,
       }
-      photoPipelineStatus = 'ready'
     }
 
     let createResult: Awaited<ReturnType<typeof createDesign>>
@@ -871,7 +867,6 @@ async function runSingle(
                 qaDecision: outputQa.qaDecision,
                 processedAt: new Date().toISOString(),
               })
-              photoPipelineStatus = 'published'
             } else {
               await updatePhotoPipelineState(admin, createResult.designId, {
                 provider: 'photoroom',
@@ -880,7 +875,6 @@ async function runSingle(
                 qaDecision: outputQa.qaDecision,
                 processedAt: new Date().toISOString(),
               })
-              photoPipelineStatus = 'qa_review'
             }
           } else {
             await updatePhotoPipelineState(admin, createResult.designId, {
@@ -889,11 +883,9 @@ async function runSingle(
               qaDecision: outputQa.qaDecision,
               processedAt: new Date().toISOString(),
             })
-            photoPipelineStatus = 'rejected'
           }
         }
       } catch (photoErr) {
-        photoPipelineStatus = 'error'
         try {
           await updatePhotoPipelineState(admin, createResult.designId, {
             provider: 'photoroom',
@@ -1033,8 +1025,6 @@ async function runSingle(
     status: result.status,
     usesCanonicalPhoto: result.usesCanonicalPhoto,
     createdNewDesign,
-    ...(photoPipelineStatus ? { photoPipelineStatus } : {}),
-    ...(photoPreflight ? { photoPreflight } : {}),
   }
 }
 
@@ -1138,12 +1128,12 @@ async function runBatch(
         admin,
       )
 
-      if ('listingId' in firstResult) {
+      if (typeof firstResult.listingId === 'string') {
         recoveredNewDesignAdds.push({
           listingId: firstResult.listingId,
-          itemNumber: firstResult.itemNumber,
-          designName: firstResult.designName,
-          status: firstResult.status,
+          itemNumber: firstResult.itemNumber ?? recoveryItem.itemNumber,
+          designName: firstResult.designName ?? recoveryItem.designName,
+          status: firstResult.status ?? 'available',
         })
         recoveredItemNumbers.add(itemNumber)
         retryItems.push(
