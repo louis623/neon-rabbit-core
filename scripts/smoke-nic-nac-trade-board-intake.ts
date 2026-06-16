@@ -251,7 +251,7 @@ export async function runTradeBoardIntakeSmoke(
   const smokeAccount = await prepareSmokeAccount(env, supabase)
   const session = await createDemoSessionCookie(env, smokeAccount)
   const rep = await fetchNicNacMe(appUrl, env, session.cookie)
-  const conversationId = `nic-nac-er13229-smoke-${Date.now()}-${randomUUID()}`
+  const conversationId = randomUUID()
   const turns: SmokeTurnResult[] = []
   let messages: UIMessage[] = []
 
