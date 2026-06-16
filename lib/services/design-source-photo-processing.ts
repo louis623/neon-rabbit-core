@@ -34,6 +34,11 @@ export interface DesignSourcePhotoResult {
   selectedSource: 'original' | 'cropped'
 }
 
+export interface DesignSourcePhotoOptions {
+  fetch?: typeof fetch
+  confirmedJewelryFront?: boolean
+}
+
 function isDataUrl(value: string): boolean {
   return /^data:[^;]+;base64,/i.test(value)
 }
@@ -85,9 +90,10 @@ async function fetchRemoteImage(
 
 export async function prepareDesignSourcePhoto(
   input: DesignSourcePhotoInput,
-  options: { fetch?: typeof fetch } = {},
+  options: DesignSourcePhotoOptions = {},
 ): Promise<DesignSourcePhotoResult> {
   const fetchImpl = options.fetch ?? fetch
+  const confirmedJewelryFront = options.confirmedJewelryFront === true
   const fetched =
     'sourceImageDataUrl' in input
       ? decodeDataUrl(input.sourceImageDataUrl)
@@ -97,7 +103,7 @@ export async function prepareDesignSourcePhoto(
 
   const analysis = await analyzeServerImageQuality(fetched.bytes)
   const semantic = classifyJewelryPhotoSemantics(analysis)
-  if (semantic.role === 'label_or_packaging') {
+  if (semantic.role === 'label_or_packaging' && !confirmedJewelryFront) {
     throw new ServiceError({
       code: 'PIECE_PHOTO_NOT_JEWELRY',
       message: `piece photo appears to be packaging or a label: ${semantic.reasons.join(
@@ -128,7 +134,10 @@ export async function prepareDesignSourcePhoto(
   const selectedAnalysis = crop?.analysis ?? analysis
   const selectedPreflight = crop?.preflight ?? preflight
 
-  if (!selectedPreflight.passed) {
+  if (
+    !selectedPreflight.passed &&
+    !canUseWorkflowConfirmedJewelryPhoto(selectedPreflight, confirmedJewelryFront)
+  ) {
     throw new ServiceError({
       code: 'PHOTO_PREFLIGHT_FAILED',
       message: `piece photo preflight failed: ${selectedPreflight.coachingMessages.join(' ')}`,
@@ -162,4 +171,18 @@ export async function prepareDesignSourcePhoto(
     analysis: selectedAnalysis,
     selectedSource: crop ? 'cropped' : 'original',
   }
+}
+
+function canUseWorkflowConfirmedJewelryPhoto(
+  preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
+  confirmedJewelryFront: boolean,
+): boolean {
+  if (!confirmedJewelryFront) return false
+
+  return preflight.issues.every(
+    (issue) =>
+      issue.severity !== 'critical' ||
+      issue.code === 'background_distraction' ||
+      issue.code === 'subject_framing',
+  )
 }

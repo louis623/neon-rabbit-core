@@ -1765,6 +1765,201 @@ describe('add_listing - active workflow readiness guard', () => {
       listingId: 'listing-1',
     })
   })
+
+  it('uses the workflow-confirmed jewelry-front photo instead of a stale label index', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday',
+      typePrefix: 'ER',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/florence-boxed.jpg',
+      signedUrl: 'https://signed.example.com/florence-boxed',
+    })
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Here is the boxed display jewelry photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+          },
+        ],
+      },
+      {
+        parts: [
+          { type: 'text', text: 'Here is the label/details photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,TEFCRUw=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'usable',
+            qualityIssues: [],
+            notes: ['declared as label/details source'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+      material: 'Rhodium Plating',
+      mainStone: 'Lab-Created Ruby',
+      bpMsrp: 160,
+      piecePhotoIndex: 1,
+    })
+
+    expect(uploadJewelryPhotoMock.mock.calls[0][1]).toBe(
+      'data:image/png;base64,SkVXRUxSWQ==',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'ER13229',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
+    })
+  })
+
+  it('trusts a workflow-confirmed boxed display jewelry photo when generic semantics see packaging', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      makeCleanAnalysis({
+        subjectCoverage: 0.06,
+        backgroundDistractionRisk: 0.9,
+        backgroundUniformity: 0.2,
+        backgroundCleanliness: 0.2,
+        detailConfidence: 0.9,
+        detailRisk: 0.2,
+        blurRisk: 0.05,
+      }),
+    )
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/florence-boxed.jpg',
+      signedUrl: 'https://signed.example.com/florence-boxed',
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday',
+      typePrefix: 'ER',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Use this boxed display as the jewelry photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRUQ=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        known: {
+          itemNumber: 'ER13229',
+          designName: 'The Florence Earrings',
+          collectionName: 'July Birthday',
+          collectionYear: 2026,
+          material: 'Rhodium Plating',
+          mainStone: 'Lab-Created Ruby',
+          bpMsrp: 160,
+        },
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday',
+        collectionYear: 2026,
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 160,
+        piecePhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'ER13229',
+      createdNewDesign: true,
+    })
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
+    })
+  })
 })
 
 // Sanity: make sure ServiceError import resolves (avoids the test file

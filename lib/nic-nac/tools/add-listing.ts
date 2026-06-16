@@ -268,6 +268,52 @@ async function latestUserMessageHasExplicitQuantity(ctx: {
   return textHasExplicitQuantity(text)
 }
 
+function getConfirmedJewelryFrontPhotos(
+  workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
+) {
+  if (workflow?.status !== 'active') return []
+  return workflow.photos.filter(
+    (photo) =>
+      photo.declaredRole === 'jewelry_front' &&
+      photo.roleConfirmed &&
+      photo.quality !== 'blocked',
+  )
+}
+
+function workflowConfirmsJewelryFrontPhoto(
+  workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
+  photoIndex?: number,
+): boolean {
+  const confirmedPhotos = getConfirmedJewelryFrontPhotos(workflow)
+  if (confirmedPhotos.length === 0) return false
+  if (photoIndex === undefined) return confirmedPhotos.length === 1
+  return (
+    confirmedPhotos.some((photo) => photo.attachmentIndex === photoIndex) ||
+    confirmedPhotos.length === 1
+  )
+}
+
+function getWorkflowConfirmedJewelryFrontImageUrl(
+  workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
+  photoIndex?: number,
+): string | null {
+  const confirmedPhotos = getConfirmedJewelryFrontPhotos(workflow)
+  if (confirmedPhotos.length === 0) return null
+
+  if (photoIndex !== undefined) {
+    const matchingPhoto = confirmedPhotos.find(
+      (photo) => photo.attachmentIndex === photoIndex,
+    )
+    if (matchingPhoto?.imageUrl) return matchingPhoto.imageUrl
+  }
+
+  if (confirmedPhotos.length === 1) {
+    return confirmedPhotos[0]?.imageUrl ?? null
+  }
+
+  return null
+}
+
 async function shouldCollapseRepeatedBatchToSingle(
   input: ToolInput,
   ctx: { supabase: SupabaseClient; conversationId: string },
@@ -391,6 +437,15 @@ async function runSingle(
     }
 
     let resolvedPhotoUrl: string | null = piecePhotoUrl?.trim() || null
+    const designSourcePhotoIndex = input.piecePhotoIndex ?? input.listingPhotoIndex
+    const workflowConfirmedDesignPhoto = workflowConfirmsJewelryFrontPhoto(
+      activeWorkflow,
+      designSourcePhotoIndex,
+    )
+    const workflowConfirmedPhotoUrl = getWorkflowConfirmedJewelryFrontImageUrl(
+      activeWorkflow,
+      designSourcePhotoIndex,
+    )
     let stagedOriginal:
       | {
           objectPath: string
@@ -400,11 +455,18 @@ async function runSingle(
     if (resolvedPhotoUrl) {
       let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
       try {
-        preparedSource = await prepareDesignSourcePhoto({
-          repId: ctx.repId,
-          sourceImageUrl: resolvedPhotoUrl,
-          filenameStem: itemNumber,
-        })
+        preparedSource = await prepareDesignSourcePhoto(
+          {
+            repId: ctx.repId,
+            sourceImageUrl: resolvedPhotoUrl,
+            filenameStem: itemNumber,
+          },
+          {
+            confirmedJewelryFront:
+              workflowConfirmedDesignPhoto &&
+              workflowConfirmedPhotoUrl === resolvedPhotoUrl,
+          },
+        )
       } catch (err) {
         explainServiceError(err)
       }
@@ -423,11 +485,40 @@ async function runSingle(
         subjectCentered: preparedSource.analysis.subjectCentered,
       }
       photoPipelineStatus = 'ready'
+    } else if (workflowConfirmedPhotoUrl) {
+      let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
+      try {
+        preparedSource = await prepareDesignSourcePhoto(
+          {
+            repId: ctx.repId,
+            sourceImageUrl: workflowConfirmedPhotoUrl,
+            filenameStem: itemNumber,
+          },
+          { confirmedJewelryFront: true },
+        )
+      } catch (err) {
+        explainServiceError(err)
+      }
+      stagedOriginal = preparedSource.stagedOriginal
+      resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      photoPreflight = preparedSource.preflight
+      sourcePhotoWidth = preparedSource.analysis.width
+      sourcePhotoHeight = preparedSource.analysis.height
+      sourcePhotoAnalysis = {
+        blurRisk: preparedSource.analysis.blurRisk,
+        lightingRisk: preparedSource.analysis.lightingRisk,
+        detailRisk: preparedSource.analysis.detailRisk,
+        backgroundDistractionRisk:
+          preparedSource.analysis.backgroundDistractionRisk,
+        subjectCoverage: preparedSource.analysis.subjectCoverage,
+        subjectCentered: preparedSource.analysis.subjectCentered,
+      }
+      photoPipelineStatus = 'ready'
     } else {
       const resolvedPhoto = await resolvePhotoFromConversation({
         supabase: ctx.supabase,
         conversationId: ctx.conversationId,
-        photoIndex: input.piecePhotoIndex,
+        photoIndex: designSourcePhotoIndex,
       })
       if (!resolvedPhoto) {
         throw new NicNacToolError({
@@ -438,11 +529,16 @@ async function runSingle(
       }
       let preparedSource: Awaited<ReturnType<typeof prepareDesignSourcePhoto>>
       try {
-        preparedSource = await prepareDesignSourcePhoto({
-          repId: ctx.repId,
-          sourceImageDataUrl: resolvedPhoto.imageDataUrl,
-          filenameStem: itemNumber,
-        })
+        preparedSource = await prepareDesignSourcePhoto(
+          {
+            repId: ctx.repId,
+            sourceImageDataUrl: resolvedPhoto.imageDataUrl,
+            filenameStem: itemNumber,
+          },
+          {
+            confirmedJewelryFront: workflowConfirmedDesignPhoto,
+          },
+        )
       } catch (err) {
         explainServiceError(err)
       }
