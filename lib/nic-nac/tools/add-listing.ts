@@ -326,33 +326,41 @@ async function processListingPhotoForAdd(input: {
   allowImplicitConversationPhoto?: boolean
 }): Promise<string | undefined> {
   const itemNumber = input.itemNumber ?? 'listing'
-  if (input.listingPhotoUrl) {
-    try {
-      return (
-        await processRepListingPhotoUrl({
-          repId: input.repId,
-          sourceImageUrl: input.listingPhotoUrl,
-          filenameStem: `${itemNumber}-listing-photo`,
-        })
-      ).photoUrl
-    } catch (err) {
-      explainServiceError(err)
-    }
-  }
-
   const photoIndex = input.photoIndex ?? input.listingPhotoIndex
   const workflowPhotoUrl = getWorkflowConfirmedJewelryFrontImageUrl(
     input.activeTradeBoardWorkflow,
     photoIndex,
   )
+  if (input.listingPhotoUrl) {
+    try {
+      const processInput = {
+        repId: input.repId,
+        sourceImageUrl: input.listingPhotoUrl,
+        filenameStem: `${itemNumber}-listing-photo`,
+      }
+      const processed =
+        workflowPhotoUrl === input.listingPhotoUrl
+          ? await processRepListingPhotoUrl(processInput, {
+              confirmedJewelryFront: true,
+            })
+          : await processRepListingPhotoUrl(processInput)
+      return processed.photoUrl
+    } catch (err) {
+      explainServiceError(err)
+    }
+  }
+
   if (workflowPhotoUrl) {
     try {
       return (
-        await processRepListingPhotoUrl({
-          repId: input.repId,
-          sourceImageUrl: workflowPhotoUrl,
-          filenameStem: `${itemNumber}-listing-photo`,
-        })
+        await processRepListingPhotoUrl(
+          {
+            repId: input.repId,
+            sourceImageUrl: workflowPhotoUrl,
+            filenameStem: `${itemNumber}-listing-photo`,
+          },
+          { confirmedJewelryFront: true },
+        )
       ).photoUrl
     } catch (err) {
       explainServiceError(err)
@@ -371,13 +379,21 @@ async function processListingPhotoForAdd(input: {
   if (!resolvedListingPhoto) return undefined
 
   try {
-    return (
-      await processRepListingPhotoUrl({
-        repId: input.repId,
-        sourceImageUrl: resolvedListingPhoto.imageDataUrl,
-        filenameStem: `${itemNumber}-listing-photo`,
-      })
-    ).photoUrl
+    const processInput = {
+      repId: input.repId,
+      sourceImageUrl: resolvedListingPhoto.imageDataUrl,
+      filenameStem: `${itemNumber}-listing-photo`,
+    }
+    const isWorkflowConfirmed = workflowConfirmsJewelryFrontPhoto(
+      input.activeTradeBoardWorkflow,
+      photoIndex,
+    )
+    const processed = isWorkflowConfirmed
+      ? await processRepListingPhotoUrl(processInput, {
+          confirmedJewelryFront: true,
+        })
+      : await processRepListingPhotoUrl(processInput)
+    return processed.photoUrl
   } catch (err) {
     explainServiceError(err)
   }

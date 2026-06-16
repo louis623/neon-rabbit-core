@@ -14,6 +14,8 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
     expect(HARD_FAIL_PHRASES).toContain('Unboxed')
     expect(HARD_FAIL_PHRASES).toContain('Plain background')
     expect(HARD_FAIL_PHRASES).toContain('Packaging is too prominent')
+    expect(HARD_FAIL_PHRASES).toContain('just the earrings')
+    expect(HARD_FAIL_PHRASES).toContain('outside or clearly apart')
   })
 
   it('parses smoke cases from cases.txt-style content', () => {

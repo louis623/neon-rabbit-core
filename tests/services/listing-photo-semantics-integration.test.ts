@@ -97,6 +97,21 @@ const boxedDisplayCroppedAnalysis = {
   backgroundCleanliness: 0.58,
 }
 
+const confirmedBoxedDisplayAnalysisClassifiedAsPackaging = {
+  contentType: 'image/jpeg',
+  width: 1512,
+  height: 2016,
+  blurRisk: 0.12,
+  lightingRisk: 0.28,
+  detailRisk: 0.22,
+  backgroundDistractionRisk: 0.86,
+  subjectCoverage: 0.07,
+  subjectCentered: true,
+  detailConfidence: 0.78,
+  backgroundUniformity: 0.22,
+  backgroundCleanliness: 0.22,
+}
+
 describe('listing/design photo semantic integration', () => {
   beforeEach(() => {
     analyzeServerImageQualityMock.mockReset()
@@ -122,6 +137,46 @@ describe('listing/design photo semantic integration', () => {
       userMessage: expect.stringContaining('actual jewelry photo'),
     })
     expect(uploadJewelryPhotoMock).not.toHaveBeenCalled()
+  })
+
+  it('accepts a workflow-confirmed boxed display listing photo even when semantic heuristics call it packaging', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      confirmedBoxedDisplayAnalysisClassifiedAsPackaging,
+    )
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/confirmed-boxed-display.jpg',
+    )
+
+    const result = await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://images.example.com/confirmed-boxed-display.jpg',
+        filenameStem: 'confirmed-boxed-display',
+      },
+      {
+        fetch: vi.fn().mockResolvedValueOnce(makeImageResponse()),
+        confirmedJewelryFront: true,
+      },
+    )
+
+    expect(createGuardedJewelryPhotoCropMock).not.toHaveBeenCalled()
+    expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
+      'rep-1',
+      expect.stringMatching(/^data:image\/jpeg;base64,/),
+      'confirmed-boxed-display-source',
+    )
+    expect(result).toMatchObject({
+      photoUrl: 'https://cdn.example.com/confirmed-boxed-display.jpg',
+      originalPhotoUrl: 'https://cdn.example.com/confirmed-boxed-display.jpg',
+      selectedSource: 'original',
+      preflight: {
+        passed: false,
+        issues: expect.arrayContaining([
+          expect.objectContaining({ code: 'background_distraction' }),
+          expect.objectContaining({ code: 'subject_framing' }),
+        ]),
+      },
+    })
   })
 
   it('rejects a new design source photo that looks like packaging/card instead of jewelry', async () => {

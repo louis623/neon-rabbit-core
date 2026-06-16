@@ -7,6 +7,8 @@ export const HARD_FAIL_PHRASES = [
   'Packaging is too prominent',
   'Have Louis add it manually on the backend',
   'Without the box or card',
+  'just the earrings',
+  'outside or clearly apart',
   'Plain surface',
 ] as const
 

@@ -472,7 +472,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,Qk9YRUQ=',
       filenameStem: 'ER13229-listing-photo',
-    })
+    }, { confirmedJewelryFront: true })
     expect(addListingMock).toHaveBeenCalledWith(
       {},
       'rep-1',

@@ -14,6 +14,11 @@ export interface ProcessRepListingPhotoUrlInput {
   filenameStem: string
 }
 
+export interface ProcessRepListingPhotoUrlOptions {
+  fetch?: typeof fetch
+  confirmedJewelryFront?: boolean
+}
+
 export interface ProcessRepListingPhotoUrlResult {
   photoUrl: string
   originalPhotoUrl: string
@@ -71,13 +76,14 @@ async function fetchImageBytes(
 
 export async function processRepListingPhotoUrl(
   input: ProcessRepListingPhotoUrlInput,
-  options: { fetch?: typeof fetch } = {},
+  options: ProcessRepListingPhotoUrlOptions = {},
 ): Promise<ProcessRepListingPhotoUrlResult> {
   const fetchImpl = options.fetch ?? fetch
+  const confirmedJewelryFront = options.confirmedJewelryFront === true
   const fetched = await fetchImageBytes(input, fetchImpl)
   const metadata = await analyzeServerImageQuality(fetched.bytes)
   const semantic = classifyJewelryPhotoSemantics(metadata)
-  if (semantic.role === 'label_or_packaging') {
+  if (semantic.role === 'label_or_packaging' && !confirmedJewelryFront) {
     throw new ServiceError({
       code: 'LISTING_PHOTO_NOT_JEWELRY',
       message: `listing photo appears to be packaging or a label: ${semantic.reasons.join(
@@ -109,7 +115,10 @@ export async function processRepListingPhotoUrl(
   const selectedMetadata = crop?.analysis ?? metadata
   const selectedPreflight = crop?.preflight ?? preflight
 
-  if (!selectedPreflight.passed) {
+  if (
+    !selectedPreflight.passed &&
+    !canUseWorkflowConfirmedJewelryPhoto(selectedPreflight, confirmedJewelryFront)
+  ) {
     throw errors.LISTING_PHOTO_PREFLIGHT_FAILED(preflight.coachingMessages)
   }
 
@@ -264,6 +273,20 @@ export async function processRepListingPhotoUrl(
       },
     }
   }
+}
+
+function canUseWorkflowConfirmedJewelryPhoto(
+  preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
+  confirmedJewelryFront: boolean,
+): boolean {
+  if (!confirmedJewelryFront) return false
+
+  return preflight.issues.every(
+    (issue) =>
+      issue.severity !== 'critical' ||
+      issue.code === 'background_distraction' ||
+      issue.code === 'subject_framing',
+  )
 }
 
 export const processRepCustomListingPhotoUrl = processRepListingPhotoUrl
