@@ -46,6 +46,7 @@ import {
   normalizeRunUsage,
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
+import { chooseNicNacToolChoiceForStep } from '@/lib/nic-nac/tool-choice-policy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 import {
@@ -353,7 +354,12 @@ export async function POST(request: Request) {
         messages: modelMessages,
         tools,
         prepareStep: ({ steps }) => ({
-          toolChoice: requireToolCall && steps.length === 0 ? 'required' : 'auto',
+          toolChoice: chooseNicNacToolChoiceForStep({
+            requireToolCall,
+            stepsLength: steps.length,
+            activeToolNames,
+            activeTradeBoardWorkflow,
+          }),
         }),
         stopWhen: stepCountIs(5),
         providerOptions: {
