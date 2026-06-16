@@ -12,6 +12,14 @@ This spec starts with Trade Board add-listing because `ER13229 / The Florence Ea
 
 The v2 target is not a rigid form. It is a flexible assistant over a reliable workflow controller.
 
+## June 16 Shared-Core Addendum
+
+Forefront architecture decision from Louis: Nic-Nac should be one shared Sparkle ecosystem agent, not separate copy-pasted assistants for Sparkle Suite and Sparkle Finder.
+
+Sparkle Suite remains the launch priority. Sparkle Finder work can wait, but Sparkle Suite Nic-Nac work should preserve the shared-core path instead of baking in Suite-only assumptions. The target is one shared Nic-Nac core with shared model adapter, workflow engine, jewelry intake state, photo-role rules, catalog truth, tool registry, evals, and smoke harness.
+
+Sparkle Suite and Sparkle Finder should call that same core with product context, account tier, permissions, and final mutation destination. For Sparkle Suite, jewelry intake may end by adding a rep Trade Board listing. For Sparkle Finder Silver, the same intake should later end by adding or updating jewelry library/catalog data. Nic-Nac's identity, intake behavior, photo rules, and eval gates stay shared; product context decides what tools are allowed and where the mutation lands.
+
 ## Why This Spec Exists
 
 Nic-Nac has repeatedly failed the Trade Board add-listing flow for `ER13229 / The Florence Earrings`. The most important failure was not that the model misunderstood one sentence. The system allowed one ambiguous visual interpretation to collapse the whole workflow:

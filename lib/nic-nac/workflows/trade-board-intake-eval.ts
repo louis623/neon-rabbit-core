@@ -75,6 +75,33 @@ export const TRADE_BOARD_INTAKE_HARD_FAIL_PATTERNS: Array<{
     phrase: 'Escalate this to Louis',
     pattern: /\bescalate\s+this\s+to\s+louis\b/i,
   },
+  {
+    id: 'backend_preflight_rejection',
+    phrase: 'Backend preflight rejection',
+    pattern:
+      /\b(?:system|backend)[\s\S]{0,80}\breject(?:ing|ed|s)?\b[\s\S]{0,120}\b(?:photo|image|preflight)\b|\bpreflight\s+stage\b/i,
+  },
+  {
+    id: 'backend_not_under_control',
+    phrase: 'Backend validation is not under my control',
+    pattern:
+      /\bbackend\s+validation\b[\s\S]{0,120}\bnot\s+under\s+my\s+control\b|\bnot\s+under\s+my\s+control\b[\s\S]{0,120}\bbackend\s+validation\b/i,
+  },
+  {
+    id: 'flag_to_louis',
+    phrase: 'Flag this for Louis',
+    pattern: /\bflag\s+this\s+for\s+louis\b/i,
+  },
+  {
+    id: 'photo_quality_settings',
+    phrase: 'Photo quality settings',
+    pattern: /\bphoto\s+quality\s+settings\b/i,
+  },
+  {
+    id: 'escalate_to_team',
+    phrase: 'Escalate this to the team',
+    pattern: /\bescalate\s+this\s+to\s+the\s+team\b/i,
+  },
 ]
 
 export function detectTradeBoardIntakeHardFails(text: string): {

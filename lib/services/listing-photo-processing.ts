@@ -304,17 +304,15 @@ export async function processRepListingPhotoUrl(
 }
 
 function canUseWorkflowConfirmedJewelryPhoto(
-  preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
+  _preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
   confirmedJewelryFront: boolean,
 ): boolean {
   if (!confirmedJewelryFront) return false
 
-  return preflight.issues.every(
-    (issue) =>
-      issue.severity !== 'critical' ||
-      issue.code === 'background_distraction' ||
-      issue.code === 'subject_framing',
-  )
+  // Once the workflow has positively identified and accepted the customer-facing
+  // jewelry photo, this service should not re-litigate subjective photo quality.
+  // Corrupt/unreadable files still fail before this point during decode/analysis.
+  return true
 }
 
 export const processRepCustomListingPhotoUrl = processRepListingPhotoUrl

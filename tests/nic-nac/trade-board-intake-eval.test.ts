@@ -65,6 +65,20 @@ describe('Trade Board intake hard-fail detection', () => {
     ])
   })
 
+  it('detects backend preflight abdication language from accepted photo failures', () => {
+    const result = detectTradeBoardIntakeHardFails(
+      "Got it - the system's rejecting the photo at the preflight stage. This is a backend validation that's not under my control, and it's blocking the add. Let me flag this for Louis so he can look at the photo quality settings. In the meantime, do you want to try a tighter crop or higher resolution, or should I escalate this to the team?",
+    )
+
+    expect(result.matches.map((m) => m.id)).toEqual([
+      'backend_preflight_rejection',
+      'backend_not_under_control',
+      'flag_to_louis',
+      'photo_quality_settings',
+      'escalate_to_team',
+    ])
+  })
+
   it('summarizes a clean transcript', () => {
     const result = summarizeHardFailDetection([
       'Got it. That first image is just the label/details source.',

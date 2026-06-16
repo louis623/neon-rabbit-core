@@ -112,6 +112,21 @@ const confirmedBoxedDisplayAnalysisClassifiedAsPackaging = {
   backgroundCleanliness: 0.22,
 }
 
+const workflowAcceptedPhotoWithSubjectivePreflightFailures = {
+  contentType: 'image/jpeg',
+  width: 640,
+  height: 640,
+  blurRisk: 0.9,
+  lightingRisk: 0.88,
+  detailRisk: 0.9,
+  backgroundDistractionRisk: 0.9,
+  subjectCoverage: 0.04,
+  subjectCentered: true,
+  detailConfidence: 0.82,
+  backgroundUniformity: 0.2,
+  backgroundCleanliness: 0.2,
+}
+
 describe('listing/design photo semantic integration', () => {
   beforeEach(() => {
     analyzeServerImageQualityMock.mockReset()
@@ -175,6 +190,49 @@ describe('listing/design photo semantic integration', () => {
         passed: false,
         issues: expect.arrayContaining([
           expect.objectContaining({ code: 'background_distraction' }),
+          expect.objectContaining({ code: 'subject_framing' }),
+        ]),
+      },
+    })
+  })
+
+  it('does not let subjective preflight reject a workflow-accepted listing photo', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      workflowAcceptedPhotoWithSubjectivePreflightFailures,
+    )
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/rep-approved-boxed-display.jpg',
+    )
+
+    const result = await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://images.example.com/rep-approved-boxed-display.jpg',
+        filenameStem: 'rep-approved-boxed-display',
+      },
+      {
+        fetch: vi.fn().mockResolvedValueOnce(makeImageResponse()),
+        confirmedJewelryFront: true,
+      },
+    )
+
+    expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
+      'rep-1',
+      expect.stringMatching(/^data:image\/jpeg;base64,/),
+      expect.stringMatching(
+        /^rep-approved-boxed-display-[0-9a-f-]+-source$/,
+      ),
+    )
+    expect(result).toMatchObject({
+      photoUrl: 'https://cdn.example.com/rep-approved-boxed-display.jpg',
+      selectedSource: 'original',
+      preflight: {
+        passed: false,
+        issues: expect.arrayContaining([
+          expect.objectContaining({ code: 'low_resolution' }),
+          expect.objectContaining({ code: 'blur_risk' }),
+          expect.objectContaining({ code: 'lighting_risk' }),
+          expect.objectContaining({ code: 'detail_risk' }),
           expect.objectContaining({ code: 'subject_framing' }),
         ]),
       },
@@ -322,6 +380,46 @@ describe('listing/design photo semantic integration', () => {
       selectedSource: 'cropped',
       stagedOriginal: {
         objectPath: 'rep-1/originals/boxed-earrings-original.jpg',
+      },
+    })
+  })
+
+  it('does not let subjective preflight reject a workflow-accepted new design source photo', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      workflowAcceptedPhotoWithSubjectivePreflightFailures,
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/rep-approved-original.jpg',
+      signedUrl: 'https://signed.example.com/rep-approved-original.jpg',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/rep-approved-design.jpg',
+    )
+
+    const result = await prepareDesignSourcePhoto(
+      {
+        repId: 'rep-1',
+        filenameStem: 'rep-approved-design',
+        sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
+      },
+      { confirmedJewelryFront: true },
+    )
+
+    expect(result).toMatchObject({
+      publicPhotoUrl: 'https://cdn.example.com/rep-approved-design.jpg',
+      selectedSource: 'original',
+      preflight: {
+        passed: false,
+        issues: expect.arrayContaining([
+          expect.objectContaining({ code: 'low_resolution' }),
+          expect.objectContaining({ code: 'blur_risk' }),
+          expect.objectContaining({ code: 'lighting_risk' }),
+          expect.objectContaining({ code: 'detail_risk' }),
+          expect.objectContaining({ code: 'subject_framing' }),
+        ]),
+      },
+      stagedOriginal: {
+        objectPath: 'rep-1/originals/rep-approved-original.jpg',
       },
     })
   })

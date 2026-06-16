@@ -36,6 +36,12 @@ export const HARD_FAIL_PHRASES = [
   'cloud link',
   'escalate this to Louis',
   'use the catalog photo',
+  'backend validation',
+  'not under my control',
+  'photo quality settings',
+  'escalate this to the team',
+  'flag this for Louis',
+  'preflight stage',
 ] as const
 
 export const REQUIRED_SMOKE_ASSETS = [

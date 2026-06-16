@@ -22,6 +22,12 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
     expect(HARD_FAIL_PHRASES).toContain('direct image link')
     expect(HARD_FAIL_PHRASES).toContain('cloud link')
     expect(HARD_FAIL_PHRASES).toContain('escalate this to Louis')
+    expect(HARD_FAIL_PHRASES).toContain('backend validation')
+    expect(HARD_FAIL_PHRASES).toContain('not under my control')
+    expect(HARD_FAIL_PHRASES).toContain('photo quality settings')
+    expect(HARD_FAIL_PHRASES).toContain('escalate this to the team')
+    expect(HARD_FAIL_PHRASES).toContain('flag this for Louis')
+    expect(HARD_FAIL_PHRASES).toContain('preflight stage')
   })
 
   it('parses smoke cases from cases.txt-style content', () => {
@@ -62,6 +68,18 @@ END
         'Do you have a direct image link or cloud link? The system needs a photo URL.',
       ),
     ).toEqual(['photo URL', 'direct image link', 'cloud link'])
+    expect(
+      findHardFailPhrases(
+        "The system's rejecting the photo at the preflight stage. This is a backend validation that's not under my control. Let me flag this for Louis to check the photo quality settings, or I can escalate this to the team.",
+      ),
+    ).toEqual([
+      'backend validation',
+      'not under my control',
+      'photo quality settings',
+      'escalate this to the team',
+      'flag this for Louis',
+      'preflight stage',
+    ])
   })
 
   it('reports missing required ER13229 smoke assets before live calls', () => {

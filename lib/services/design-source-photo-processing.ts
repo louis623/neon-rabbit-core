@@ -174,15 +174,13 @@ export async function prepareDesignSourcePhoto(
 }
 
 function canUseWorkflowConfirmedJewelryPhoto(
-  preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
+  _preflight: ReturnType<typeof assessJewelryPhotoPreflight>,
   confirmedJewelryFront: boolean,
 ): boolean {
   if (!confirmedJewelryFront) return false
 
-  return preflight.issues.every(
-    (issue) =>
-      issue.severity !== 'critical' ||
-      issue.code === 'background_distraction' ||
-      issue.code === 'subject_framing',
-  )
+  // Once workflow state has positively accepted the customer-facing jewelry
+  // photo, do not block on subjective photo-quality scoring here. Decode,
+  // fetch, and analysis failures still fail before this point.
+  return true
 }
