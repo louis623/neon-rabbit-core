@@ -10,13 +10,17 @@
     "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.84",
+    "@ai-sdk/react": "^3.0.207",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.100.1",
+    "ai": "^6.0.205",
     "lucide-react": "^0.468.0",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "stripe": "^22.2.0"
+    "stripe": "^22.2.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

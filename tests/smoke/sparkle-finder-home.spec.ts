@@ -149,7 +149,8 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Marlena's Sparkle Showcase")).toBeVisible();
-    await expect(page.getByText("Silver preview is required to save profile updates.")).toBeVisible();
+    await expect(page.locator('[data-smoke="finder-nic-nac-curator"]')).toBeVisible();
+    await expect(page.getByPlaceholder("Tell Nic-Nac what you want to add, find, or update...")).toBeVisible();
 
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();

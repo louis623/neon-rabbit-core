@@ -714,19 +714,17 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Amazon Associate");
   });
 
-  it("renders Silver profile and Sparkle Showcase previews for Silver customers", () => {
+  it("renders Silver profile and a Nic-Nac-first curator workspace for Silver customers", () => {
     const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
 
     expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Showcase");
-    expect(markup).toContain("Build your Sparkle Showcase in four simple steps.");
-    expect(markup).toContain("Start Building My Sparkle Showcase");
-    expect(markup).toContain('href="#add-to-sparkle-showcase"');
-    expect(markup).toContain('id="add-to-sparkle-showcase"');
-    expect(markup).toContain("Step 1");
-    expect(markup).toContain("Add pieces you own.");
-    expect(markup).toContain("Mark pieces you are looking for.");
-    expect(markup).toContain("Feature your rarest reveals.");
-    expect(markup).toContain("Share your Sparkle Showcase.");
+    expect(markup).toContain("Nic-Nac Collection Curator");
+    expect(markup).toContain("Tell Nic-Nac what you want to add, find, or update");
+    expect(markup).toContain("Add a piece I own");
+    expect(markup).toContain("I am looking for a piece");
+    expect(markup).toContain("Upload a missing piece");
+    expect(markup).toContain("Favorite reps");
+    expect(markup).toContain("Nic-Nac remembers");
     expect(markup).toContain("Collector Profile");
     expect(markup).toContain("Sparkle Mama");
     expect(markup).toContain("Sparkle Showcase");
@@ -741,8 +739,6 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('data-smoke="profile-editor-card"');
     expect(markup).toContain("Save profile");
     expect(markup).toContain("Make your changes, then save your profile.");
-    expect(markup).toContain("Add to Sparkle Showcase");
-    expect(markup).toContain("Mark as looking for");
     expect(markup).toContain("Need a missing piece?");
     expect(markup).toContain("Showcase Studio");
     expect(markup).toContain('data-smoke="showcase-studio-intake"');
@@ -756,6 +752,9 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('name="itemNumber"');
     expect(markup).toContain("Submit to Nic-Nac review");
     expect(markup).toContain('href="/photo-setup"');
+    expect(markup).not.toContain('id="add-to-sparkle-showcase"');
+    expect(markup).not.toContain(">Library actions<");
+    expect(markup).not.toContain(">Add to Sparkle Showcase<");
     expect(markup).not.toContain("Profile photo URL");
     expect(markup).not.toContain('placeholder="https://..."');
     expect(markup).not.toContain("Silver Space");

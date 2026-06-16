@@ -76,20 +76,22 @@ test.describe("Sparkle Showcase smoke", () => {
     ]);
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
 
-    await expect(page.locator('[data-smoke="showcase-getting-started"]')).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Build your Sparkle Showcase in four simple steps." })).toBeVisible();
-    await expect(page.getByText("Add pieces you own.")).toBeVisible();
-    await expect(page.getByText("Mark pieces you are looking for.")).toBeVisible();
-    await expect(page.getByText("Feature your rarest reveals.")).toBeVisible();
-    await expect(page.getByText("Share your Sparkle Showcase.")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Start Building My Sparkle Showcase" })).toHaveAttribute(
-      "href",
-      "#add-to-sparkle-showcase",
-    );
+    await expect(page.locator('[data-smoke="finder-nic-nac-curator"]')).toBeVisible();
+    await expect(page.getByText("Nic-Nac Collection Curator")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /What are we adding today/ })).toBeVisible();
+    await expect(page.getByPlaceholder("Tell Nic-Nac what you want to add, find, or update...")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Add a piece I own/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /I am looking for a piece/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Upload a missing piece/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Organize my Showcase/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Find favorite reps/ })).toBeVisible();
+    await expect(page.getByText("Nic-Nac remembers")).toBeVisible();
+    await expect(page.getByText("Favorite reps", { exact: true })).toBeVisible();
+
+    await page.getByText("Advanced profile and Showcase controls").click();
     await expect(page.locator('[data-smoke="showcase-add-pieces"]')).toBeVisible();
     await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
     await expect(page.getByText("Owner tools")).toBeVisible();
-    await expect(page.getByText("Sparkle Showcase preview ready.")).toBeVisible();
     const profileCard = page.locator('[data-smoke="profile-editor-card"]');
     const profileCardBox = await profileCard.boundingBox();
 
@@ -125,7 +127,6 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('input[name="profilePhotoDataUrl"]')).toHaveValue(/^data:image\/jpeg;base64,/);
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Profile saved.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark as looking for" }).first()).toBeVisible();
     await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
     await expect(page.getByText("Need a missing piece?")).toBeVisible();
     await expect(page.locator('[data-smoke="showcase-studio-intake"]')).toBeVisible();
@@ -141,9 +142,6 @@ test.describe("Sparkle Showcase smoke", () => {
       "/photo-setup",
     );
     await expectNoGuardrailCopy(page);
-
-    await page.getByRole("button", { name: "Mark as looking for" }).first().click();
-    await expect(page.getByText("Looking-for piece added to your Sparkle Showcase preview.")).toBeVisible();
   });
 });
 

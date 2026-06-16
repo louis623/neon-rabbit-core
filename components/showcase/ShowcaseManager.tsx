@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Camera, CheckCircle2, Eye, EyeOff, Gem, LoaderCircle, Plus, Search, Sparkles, Star } from "lucide-react";
+import { Camera, CheckCircle2, Eye, EyeOff, LoaderCircle, Search, Sparkles, Star } from "lucide-react";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
@@ -52,7 +52,6 @@ export function ShowcaseManager({
   );
   const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledShowcaseAction, initialState);
   const statusMessage = isLocalPreview ? localStatus : actionState.message;
-  const savedIds = new Set(records.map((record) => record.item.id));
 
   function previewUpdate(item: JewelryItem, nextStatus: SparkleShowcaseItemStatus) {
     if (!canSaveSilverActions || accountState.status !== "authenticated") {
@@ -75,7 +74,6 @@ export function ShowcaseManager({
       <article
         className="scroll-mt-24 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]"
         data-smoke="showcase-add-pieces"
-        id="add-to-sparkle-showcase"
       >
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -107,70 +105,7 @@ export function ShowcaseManager({
       </article>
 
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Library actions</p>
-          <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
-            Add to Sparkle Showcase
-          </h2>
-        </div>
-
-        <div className="mt-5 grid gap-3 xl:grid-cols-2">
-          {libraryItems.map((item) => (
-            <div
-              className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-4"
-              key={item.id}
-            >
-              <div className="flex items-start gap-3">
-                <div className="grid size-12 shrink-0 place-items-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white text-[var(--sparkle-plum)]">
-                  <Gem aria-hidden="true" className="size-6" strokeWidth={1.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold leading-tight text-[var(--sparkle-plum-deep)]">{item.name}</h3>
-                  <p className="mt-1 text-sm leading-5 text-[var(--sparkle-ink-muted)]">
-                    Bomb Party Collection: {item.collectionName}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <PreviewActionButton
-                  disabled={!canSaveSilverActions}
-                  formAction={formAction}
-                  icon="owned"
-                  isLocalPreview={isLocalPreview}
-                  item={item}
-                  label={savedIds.has(item.id) ? "Update owned" : "Add owned"}
-                  onPreviewUpdate={previewUpdate}
-                  status="owned"
-                />
-                <PreviewActionButton
-                  disabled={!canSaveSilverActions}
-                  formAction={formAction}
-                  icon="wishlist"
-                  isLocalPreview={isLocalPreview}
-                  item={item}
-                  label="Add wishlist"
-                  onPreviewUpdate={previewUpdate}
-                  status="wishlist"
-                />
-                <PreviewActionButton
-                  disabled={!canSaveSilverActions}
-                  formAction={formAction}
-                  icon="iso"
-                  isLocalPreview={isLocalPreview}
-                  item={item}
-                  label="Mark as looking for"
-                  onPreviewUpdate={previewUpdate}
-                  status="iso"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className="mt-4 text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
-          {statusMessage}
-        </p>
-
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Advanced intake</p>
         <ShowcaseStudioIntakePanel
           canSaveSilverActions={canSaveSilverActions}
           isLocalPreview={isLocalPreview}
@@ -413,61 +348,6 @@ function ShowcaseRecordCard({
         </span>
       </div>
     </form>
-  );
-}
-
-function PreviewActionButton({
-  disabled,
-  formAction,
-  icon,
-  isLocalPreview,
-  item,
-  label,
-  onPreviewUpdate,
-  status,
-}: {
-  disabled: boolean;
-  formAction: (formData: FormData) => void;
-  icon: SparkleShowcaseItemStatus;
-  isLocalPreview: boolean;
-  item: JewelryItem;
-  label: string;
-  onPreviewUpdate: (item: JewelryItem, status: SparkleShowcaseItemStatus) => void;
-  status: SparkleShowcaseItemStatus;
-}) {
-  const Icon = icon === "owned" ? Plus : icon === "iso" ? Search : Star;
-
-  if (!isLocalPreview) {
-    return (
-      <form action={formAction}>
-        <input name="isRarestReveal" type="hidden" value={item.bpLabel !== "standard" ? "yes" : "no"} />
-        <input name="jewelryItemId" type="hidden" value={item.id} />
-        <input name="note" type="hidden" value="" />
-        <input name="revealStory" type="hidden" value={getDefaultRevealStory(item, status)} />
-        <input name="showcaseStatus" type="hidden" value={status} />
-        <input name="visibility" type="hidden" value="public" />
-        <button
-          className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] disabled:cursor-not-allowed disabled:opacity-55"
-          disabled={disabled}
-          type="submit"
-        >
-          <Icon aria-hidden="true" className="size-4" />
-          {label}
-        </button>
-      </form>
-    );
-  }
-
-  return (
-    <button
-      className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] disabled:cursor-not-allowed disabled:opacity-55"
-      disabled={disabled}
-      onClick={() => onPreviewUpdate(item, status)}
-      type="button"
-    >
-      <Icon aria-hidden="true" className="size-4" />
-      {label}
-    </button>
   );
 }
 
