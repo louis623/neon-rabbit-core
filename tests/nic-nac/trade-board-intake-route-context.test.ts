@@ -385,4 +385,252 @@ describe('Trade Board intake route context', () => {
       }),
     )
   })
+
+  it('parses rep confirmation of trailing Birthday collection without capturing ection', async () => {
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'details_capture',
+      item_number: 'ER13229',
+      design_name: 'The Florence Earrings',
+      collection_name: null,
+      collection_year: null,
+      missing_fields: ['collectionName'],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const selectPhotosBuilder = {
+      select: vi.fn(() => selectPhotosBuilder),
+      eq: vi.fn(() => selectPhotosBuilder),
+      order: vi.fn(() => ({
+        data: [
+          {
+            conversation_message_id: 'photo-msg-1',
+            attachment_index: 1,
+            declared_role: 'jewelry_front',
+            visual_role: 'jewelry',
+            role_confirmed: true,
+            image_url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            quality: 'usable',
+            quality_issues: [],
+            notes: ['boxed display jewelry is centered and clear'],
+          },
+        ],
+        error: null,
+      })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'trade_board_intake_sessions') {
+          return workflowSupabase.from.mock.calls.filter(
+            ([name]) => name === table,
+          ).length === 1
+            ? activeBuilder
+            : updateBuilder
+        }
+        if (table === 'trade_board_intake_photos') return selectPhotosBuilder
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'assistant-1',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'text',
+              text:
+                'The system has July Birthday 2026 on file. Can you confirm the collection?',
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-1',
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text:
+                'That is correct. This is the July Birthday collection, 2026.',
+            },
+          ],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-1',
+      mode: 'workspace',
+      nowIso: '2026-06-16T00:00:00.000Z',
+    } as never)
+
+    expect(context.sessionAfter?.known).toMatchObject({
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+    })
+    expect(context.sessionAfter?.known.collectionName).not.toBe('ection')
+    expect(updateBuilder.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection_name: 'July Birthday',
+        collection_year: 2026,
+      }),
+    )
+  })
+
+  it('persists catalog truth from search_jewelry_database output before the jewelry-only photo turn', async () => {
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'photo_capture',
+      item_number: null,
+      design_name: null,
+      collection_name: null,
+      collection_year: null,
+      missing_fields: ['itemNumber', 'designName', 'jewelryFrontPhoto'],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const selectPhotosBuilder = {
+      select: vi.fn(() => selectPhotosBuilder),
+      eq: vi.fn(() => selectPhotosBuilder),
+      order: vi.fn(() => ({
+        data: [
+          {
+            conversation_message_id: 'label-msg-1',
+            attachment_index: 1,
+            declared_role: 'label_details',
+            visual_role: 'label_or_packaging',
+            role_confirmed: true,
+            image_url: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'unknown',
+            quality_issues: [],
+            notes: ['declared as label/details source'],
+          },
+        ],
+        error: null,
+      })),
+    }
+    const upsertPhotoBuilder = {
+      upsert: vi.fn(() => ({ error: null })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        const callsForTable = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === table,
+        ).length
+        if (table === 'trade_board_intake_sessions') {
+          return callsForTable === 1 ? activeBuilder : updateBuilder
+        }
+        if (table === 'trade_board_intake_photos') {
+          return callsForTable === 1 ? selectPhotosBuilder : upsertPhotoBuilder
+        }
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'assistant-search',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'tool-search_jewelry_database',
+              state: 'output-available',
+              input: { query: 'ER13229' },
+              output: {
+                results: [
+                  {
+                    itemNumber: 'ER13229',
+                    designName: 'The Florence Earrings',
+                    collectionName: 'July Birthday',
+                    collectionYear: 2026,
+                    mainStone: 'Lab-Created Ruby',
+                    material: 'Rhodium Plating',
+                    bpMsrp: 160,
+                  },
+                ],
+              },
+            } as never,
+            {
+              type: 'text',
+              text:
+                'Perfect! I found ER13229. Just need the customer-facing jewelry photo.',
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-jewelry',
+          role: 'user',
+          parts: [
+            {
+              type: 'file',
+              mediaType: 'image/jpeg',
+              url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            },
+          ],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-jewelry',
+      mode: 'workspace',
+      nowIso: '2026-06-16T00:00:00.000Z',
+    } as never)
+
+    expect(context.sessionAfter?.known).toMatchObject({
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+      mainStone: 'Lab-Created Ruby',
+      material: 'Rhodium Plating',
+      bpMsrp: 160,
+    })
+    expect(context.sessionAfter?.photos).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ declaredRole: 'label_details' }),
+        expect.objectContaining({ declaredRole: 'jewelry_front' }),
+      ]),
+    )
+    expect(context.sessionAfter?.missing).toEqual([])
+    expect(context.sessionAfter?.phase).toBe('ready_to_add')
+  })
 })

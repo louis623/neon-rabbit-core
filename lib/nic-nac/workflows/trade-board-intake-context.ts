@@ -2,13 +2,17 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { UIMessage } from 'ai'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 import {
+  extractKnownFieldsFromCatalogToolOutputs,
+  extractKnownFieldsFromText,
+  mergeTradeBoardKnownFields,
+} from './trade-board-known-fields'
+import {
   buildTradeBoardIntakePromptState,
   computeTradeBoardIntakeReadiness,
   getTradeBoardIntakeToolsRequired,
 } from './trade-board-intake-controller'
 import { renderTradeBoardIntakePromptState } from './trade-board-intake-prompt'
 import type {
-  TradeBoardIntakeKnownFields,
   TradeBoardIntakeSessionState,
   TradeBoardIntakeToolPolicySource,
   TradeBoardPhotoDeclaredRole,
@@ -151,8 +155,11 @@ export async function ingestLatestTradeBoardIntakeTurn(
   if (latestUserIndex === -1) return args.session
   const latestUser = args.messages[latestUserIndex]
   const latestUserText = getMessageText(latestUser)
-  const known = mergeKnownFields(
-    args.session.known,
+  const known = mergeTradeBoardKnownFields(
+    mergeTradeBoardKnownFields(
+      args.session.known,
+      extractKnownFieldsFromCatalogToolOutputs(args.messages),
+    ),
     extractKnownFieldsFromText(latestUserText),
   )
   const photos = [...args.session.photos]
@@ -313,100 +320,6 @@ function inferVisualRole(
   if (declaredRole === 'label_details') return 'label_or_packaging'
   if (declaredRole === 'jewelry_front') return 'jewelry'
   return 'uncertain'
-}
-
-function extractKnownFieldsFromText(text: string): TradeBoardIntakeKnownFields {
-  const known: TradeBoardIntakeKnownFields = {}
-  const normalizedText = text.replace(/\s+/g, ' ').trim()
-  const itemNumber = normalizedText.match(/\b[A-Z]{1,4}\d{3,}\b/i)?.[0]
-  if (itemNumber) known.itemNumber = itemNumber.toUpperCase()
-  const designName = itemNumber
-    ? extractDesignNameNearItemNumber(normalizedText, itemNumber)
-    : null
-  if (designName) known.designName = designName
-  const collection = normalizedText.match(
-    /\b(?:collection|coll)\s*(?:is|:|-)?\s*([A-Za-z]+(?:\s+(?:Birthday|Originals|Luxe|Stacks?))?)(?:\s+Collection)?(?:\s+(20\d{2}))?/i,
-  )
-  if (collection?.[1]) {
-    known.collectionName = normalizeCollectionName(collection[1])
-    if (collection[2]) known.collectionYear = Number(collection[2])
-  }
-  const mainStone = normalizedText.match(
-    /\b(Lab[-\s]?Created\s+[A-Z][A-Za-z]+)\b/i,
-  )?.[1]
-  if (mainStone) known.mainStone = normalizeCapitalizedPhrase(mainStone)
-  const material = normalizedText.match(
-    /\b((?:Rhodium|Rose Gold|Gold|Silver|Sterling Silver)\s+Plating)\b/i,
-  )?.[1]
-  if (material) known.material = normalizeCapitalizedPhrase(material)
-  const msrp = normalizedText.match(/\$\s*(\d+(?:\.\d{1,2})?)\s*(?:MSRP)?\b/i)
-  if (msrp?.[1]) known.bpMsrp = Number(msrp[1])
-  const quantity = normalizedText.match(
-    /\b(?:qty|quantity|count)\s*(?:is|:|-)?\s*(\d+)\b/i,
-  )
-  if (quantity?.[1]) known.quantity = Number(quantity[1])
-  return known
-}
-
-function extractDesignNameNearItemNumber(
-  text: string,
-  itemNumber: string,
-): string | null {
-  const escapedItemNumber = escapeRegExp(itemNumber)
-  const match = text.match(
-    new RegExp(`\\b${escapedItemNumber}\\b\\s*(?:[,;:\\-=]|is)?\\s*([^.;\\n]+)`, 'i'),
-  )
-  const rawCandidate = match?.[1]?.split(/\s*,\s*/)[0]?.trim() ?? ''
-  const candidate = rawCandidate.replace(/^["']|["']$/g, '').trim()
-  if (!candidate) return null
-  if (
-    !/\b(rings?|earrings?|necklaces?|bracelets?|pendants?|stacks?|hoops?|studs?)\b/i.test(
-      candidate,
-    )
-  ) {
-    return null
-  }
-  return candidate
-}
-
-function mergeKnownFields(
-  current: TradeBoardIntakeKnownFields,
-  next: TradeBoardIntakeKnownFields,
-): TradeBoardIntakeKnownFields {
-  return {
-    ...current,
-    ...Object.fromEntries(
-      Object.entries(next).filter(([, value]) => value !== undefined),
-    ),
-  }
-}
-
-function normalizeCollectionName(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/\bcollection\b$/i, '')
-    .trim()
-}
-
-function normalizeCapitalizedPhrase(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\s+/g, ' ')
-    .split(' ')
-    .map((word) =>
-      word
-        .split('-')
-        .map((part) =>
-          part ? `${part[0].toUpperCase()}${part.slice(1).toLowerCase()}` : part,
-        )
-        .join('-'),
-    )
-    .join(' ')
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 function findLatestUserMessageIndex(messages: UIMessage[]): number {
