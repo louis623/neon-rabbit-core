@@ -408,6 +408,83 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     })
   })
 
+  it('uses a confirmed workflow photo as a listing photo when recovery fields find an existing design', async () => {
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      hasCollection: true,
+      design: {
+        id: 'design-existing',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+      },
+    })
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,Qk9YRUQ=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday',
+        collectionYear: 2026,
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 160,
+        piecePhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      createdNewDesign: false,
+    })
+
+    expect(createDesignMock).not.toHaveBeenCalled()
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith({
+      repId: 'rep-1',
+      sourceImageUrl: 'data:image/jpeg;base64,Qk9YRUQ=',
+      filenameStem: 'ER13229-listing-photo',
+    })
+    expect(addListingMock).toHaveBeenCalledWith(
+      {},
+      'rep-1',
+      expect.objectContaining({
+        itemNumber: 'ER13229',
+        collectionName: 'July Birthday',
+        listingPhotoUrl:
+          'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+      }),
+    )
+  })
+
   it('processes a rep-level custom listing photo before creating the board listing', async () => {
     fetchMock.mockResolvedValueOnce(makeImageResponse(new Uint8Array([4, 5, 6])))
     createDesignMock.mockResolvedValueOnce({

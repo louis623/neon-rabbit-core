@@ -229,6 +229,48 @@ describe('processRepListingPhotoUrl', () => {
     expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
   })
 
+  it('keeps the original upload when optional Photoroom config throws in production', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        makeImageResponse(await makePngBytes(1800, 1800, 'cleanLightBox')),
+      )
+
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/listings/rep-1/ring-source.png',
+    )
+    getPhotoroomConfigMock.mockImplementationOnce(() => {
+      throw new Error(
+        'Photoroom configuration is incomplete - cannot start in production',
+      )
+    })
+
+    const result = await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://images.example.com/ring.png',
+        filenameStem: 'ring-shot',
+      },
+      { fetch: fetchMock },
+    )
+
+    expect(uploadJewelryPhotoMock).toHaveBeenCalledTimes(1)
+    expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      photoUrl: 'https://cdn.example.com/listings/rep-1/ring-source.png',
+      originalPhotoUrl: 'https://cdn.example.com/listings/rep-1/ring-source.png',
+      enhancedPhotoUrl: null,
+      selectedSource: 'original',
+      enhancement: {
+        attempted: true,
+        selected: false,
+        decision: 'error',
+        errorMessage:
+          'Photoroom configuration is incomplete - cannot start in production',
+      },
+    })
+  })
+
   it('prefers the enhanced upload when Photoroom output lands in review and still clears image preflight', async () => {
     const fetchMock = vi
       .fn()

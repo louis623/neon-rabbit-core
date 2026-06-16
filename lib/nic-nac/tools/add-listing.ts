@@ -314,6 +314,75 @@ function getWorkflowConfirmedJewelryFrontImageUrl(
   return null
 }
 
+async function processListingPhotoForAdd(input: {
+  listingPhotoUrl?: string
+  listingPhotoIndex?: number
+  itemNumber?: string
+  activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
+  repId: string
+  supabase: SupabaseClient
+  conversationId: string
+  photoIndex?: number
+  allowImplicitConversationPhoto?: boolean
+}): Promise<string | undefined> {
+  const itemNumber = input.itemNumber ?? 'listing'
+  if (input.listingPhotoUrl) {
+    try {
+      return (
+        await processRepListingPhotoUrl({
+          repId: input.repId,
+          sourceImageUrl: input.listingPhotoUrl,
+          filenameStem: `${itemNumber}-listing-photo`,
+        })
+      ).photoUrl
+    } catch (err) {
+      explainServiceError(err)
+    }
+  }
+
+  const photoIndex = input.photoIndex ?? input.listingPhotoIndex
+  const workflowPhotoUrl = getWorkflowConfirmedJewelryFrontImageUrl(
+    input.activeTradeBoardWorkflow,
+    photoIndex,
+  )
+  if (workflowPhotoUrl) {
+    try {
+      return (
+        await processRepListingPhotoUrl({
+          repId: input.repId,
+          sourceImageUrl: workflowPhotoUrl,
+          filenameStem: `${itemNumber}-listing-photo`,
+        })
+      ).photoUrl
+    } catch (err) {
+      explainServiceError(err)
+    }
+  }
+
+  if (photoIndex === undefined && !input.allowImplicitConversationPhoto) {
+    return undefined
+  }
+
+  const resolvedListingPhoto = await resolvePhotoFromConversation({
+    supabase: input.supabase,
+    conversationId: input.conversationId,
+    photoIndex,
+  })
+  if (!resolvedListingPhoto) return undefined
+
+  try {
+    return (
+      await processRepListingPhotoUrl({
+        repId: input.repId,
+        sourceImageUrl: resolvedListingPhoto.imageDataUrl,
+        filenameStem: `${itemNumber}-listing-photo`,
+      })
+    ).photoUrl
+  } catch (err) {
+    explainServiceError(err)
+  }
+}
+
 async function shouldCollapseRepeatedBatchToSingle(
   input: ToolInput,
   ctx: { supabase: SupabaseClient; conversationId: string },
@@ -375,6 +444,7 @@ async function runSingle(
         subjectCentered: boolean
       }
     | null = null
+  let newDesignListingPhotoUrl: string | undefined
 
   // New-design recovery: rep is retrying after a prior NEEDS_FULL_INFO.
   // Require collectionName here even though the service layer accepts a
@@ -394,46 +464,55 @@ async function runSingle(
     // Recovery fields can arrive after the design has already been created by
     // another attempt. Use a read-only catalog lookup before creating so stale
     // retries do not duplicate catalog designs.
-    if (!input.listingPhotoUrl) {
-      try {
-        const existingDesign = await resolveItemNumber(admin, itemNumber)
-        if (existingDesign.found) {
-          const existingResult = await addListing(admin, ctx.repId, {
-            itemNumber,
-            collectionName,
-            ringSize: input.ringSize,
-            repNotes: input.repNotes,
-            tradePreferences: input.tradePreferences,
-          })
-          await writeAuditIsolated({
-            actionType: 'add_listing',
-            repId: ctx.repId,
-            targetListingId: existingResult.listingId,
-            beforeState: { itemNumber, repId: ctx.repId, status: '' },
-            afterState: {
-              listingId: existingResult.listingId,
-              designId: existingResult.designId,
-              itemNumber: existingResult.itemNumber,
-              repId: ctx.repId,
-              status: existingResult.status,
-            },
-            conversationId: ctx.conversationId,
-            runId: ctx.runId,
-          })
-          return {
-            mode: 'single' as const,
+    try {
+      const existingDesign = await resolveItemNumber(admin, itemNumber)
+      if (existingDesign.found) {
+        const existingListingPhotoUrl = await processListingPhotoForAdd({
+          listingPhotoUrl: input.listingPhotoUrl,
+          listingPhotoIndex: input.listingPhotoIndex,
+          itemNumber,
+          activeTradeBoardWorkflow: activeWorkflow,
+          repId: ctx.repId,
+          supabase: ctx.supabase,
+          conversationId: ctx.conversationId,
+          photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
+        })
+        const existingResult = await addListing(admin, ctx.repId, {
+          itemNumber,
+          collectionName,
+          ringSize: input.ringSize,
+          repNotes: input.repNotes,
+          tradePreferences: input.tradePreferences,
+          listingPhotoUrl: existingListingPhotoUrl,
+        })
+        await writeAuditIsolated({
+          actionType: 'add_listing',
+          repId: ctx.repId,
+          targetListingId: existingResult.listingId,
+          beforeState: { itemNumber, repId: ctx.repId, status: '' },
+          afterState: {
             listingId: existingResult.listingId,
             designId: existingResult.designId,
             itemNumber: existingResult.itemNumber,
-            designName: existingResult.designName,
+            repId: ctx.repId,
             status: existingResult.status,
-            usesCanonicalPhoto: existingResult.usesCanonicalPhoto,
-            createdNewDesign: false,
-          }
+          },
+          conversationId: ctx.conversationId,
+          runId: ctx.runId,
+        })
+        return {
+          mode: 'single' as const,
+          listingId: existingResult.listingId,
+          designId: existingResult.designId,
+          itemNumber: existingResult.itemNumber,
+          designName: existingResult.designName,
+          status: existingResult.status,
+          usesCanonicalPhoto: existingResult.usesCanonicalPhoto,
+          createdNewDesign: false,
         }
-      } catch (err) {
-        explainServiceError(err)
       }
+    } catch (err) {
+      explainServiceError(err)
     }
 
     let resolvedPhotoUrl: string | null = piecePhotoUrl?.trim() || null
@@ -589,6 +668,9 @@ async function runSingle(
       explainServiceError(err)
     }
     createdNewDesign = true
+    if (workflowConfirmedDesignPhoto && resolvedPhotoUrl) {
+      newDesignListingPhotoUrl = resolvedPhotoUrl
+    }
     if (stagedOriginal) {
       try {
         const photoroomConfig = getPhotoroomConfig()
@@ -748,38 +830,19 @@ async function runSingle(
   }
 
   let result: Awaited<ReturnType<typeof addListing>>
-  let processedListingPhotoUrl: string | undefined
-  if (input.listingPhotoUrl) {
-    try {
-      processedListingPhotoUrl = (
-        await processRepListingPhotoUrl({
-          repId: ctx.repId,
-          sourceImageUrl: input.listingPhotoUrl,
-          filenameStem: `${itemNumber}-listing-photo`,
-        })
-      ).photoUrl
-    } catch (err) {
-      explainServiceError(err)
-    }
-  } else if (!designName) {
-    const resolvedListingPhoto = await resolvePhotoFromConversation({
-      supabase: ctx.supabase,
-      conversationId: ctx.conversationId,
-      photoIndex: input.listingPhotoIndex,
-    })
-    if (resolvedListingPhoto) {
-      try {
-        processedListingPhotoUrl = (
-          await processRepListingPhotoUrl({
-            repId: ctx.repId,
-            sourceImageUrl: resolvedListingPhoto.imageDataUrl,
-            filenameStem: `${itemNumber}-listing-photo`,
-          })
-        ).photoUrl
-      } catch (err) {
-        explainServiceError(err)
-      }
-    }
+  let processedListingPhotoUrl: string | undefined = newDesignListingPhotoUrl
+  if (input.listingPhotoUrl || !designName) {
+    processedListingPhotoUrl =
+      (await processListingPhotoForAdd({
+        listingPhotoUrl: input.listingPhotoUrl,
+        listingPhotoIndex: input.listingPhotoIndex,
+        itemNumber,
+        activeTradeBoardWorkflow: activeWorkflow,
+        repId: ctx.repId,
+        supabase: ctx.supabase,
+        conversationId: ctx.conversationId,
+        allowImplicitConversationPhoto: !designName,
+      })) ?? processedListingPhotoUrl
   }
   try {
     result = await addListing(admin, ctx.repId, {

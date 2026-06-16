@@ -151,7 +151,23 @@ export async function processRepListingPhotoUrl(
     },
   }
 
-  const photoroomConfig = getPhotoroomConfig()
+  let photoroomConfig: ReturnType<typeof getPhotoroomConfig>
+  try {
+    photoroomConfig = getPhotoroomConfig()
+  } catch (error) {
+    return {
+      ...baseResult,
+      enhancement: {
+        attempted: true,
+        selected: false,
+        decision: 'error',
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : 'unknown enhancement configuration error',
+      },
+    }
+  }
   if (!photoroomConfig) {
     return baseResult
   }
