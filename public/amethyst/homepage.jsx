@@ -128,8 +128,26 @@ function linkProps(href) {
     : { href: href || "#" };
 }
 
+function runtimeText(value) {
+  return String(value || "").trim();
+}
+
+function buildContextSearch() {
+  const params = new URLSearchParams(window.location.search || "");
+  const repId = runtimeText(RUNTIME_CONTEXT.repId);
+  const publicSiteSlug = runtimeText(RUNTIME_CONTEXT.publicSiteSlug).toLowerCase();
+
+  if (repId && !params.has("c") && !params.has("repId")) params.set("c", repId);
+  if (publicSiteSlug && !params.has("publicSiteSlug")) {
+    params.set("publicSiteSlug", publicSiteSlug);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 function withCurrentSearch(path) {
-  return `${path}${window.location.search || ""}`;
+  return `${path}${buildContextSearch()}`;
 }
 
 function getShopHref() {

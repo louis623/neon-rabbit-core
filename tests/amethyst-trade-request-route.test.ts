@@ -6,6 +6,7 @@ const createAdminClientMock = vi.fn(() => ({ admin: true }))
 const submitTradeRequestMock = vi.fn()
 const getTradeRequestNotificationSummaryMock = vi.fn()
 const notifyRepOfTradeRequestMock = vi.fn()
+const resolveAmethystPreviewRepMock = vi.fn()
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => createAdminClientMock(),
@@ -22,6 +23,11 @@ vi.mock('@/lib/nic-nac/trade-request-notifications', () => ({
     notifyRepOfTradeRequestMock(...args),
 }))
 
+vi.mock('@/lib/amethyst/preview-rep', () => ({
+  resolveAmethystPreviewRep: (...args: unknown[]) =>
+    resolveAmethystPreviewRepMock(...args),
+}))
+
 import { POST } from '@/app/api/amethyst/trade-requests/route'
 
 describe('POST /api/amethyst/trade-requests', () => {
@@ -30,6 +36,7 @@ describe('POST /api/amethyst/trade-requests', () => {
     submitTradeRequestMock.mockReset()
     getTradeRequestNotificationSummaryMock.mockReset()
     notifyRepOfTradeRequestMock.mockReset()
+    resolveAmethystPreviewRepMock.mockReset()
   })
 
   it('submits the request through the trade-request service and returns 201', async () => {
@@ -91,6 +98,49 @@ describe('POST /api/amethyst/trade-requests', () => {
       requestId: 'request-1',
       listingId: 'listing-1',
     })
+  })
+
+  it('binds customer-site trade requests to the resolved public site rep', async () => {
+    resolveAmethystPreviewRepMock.mockResolvedValueOnce({
+      id: 'rep-louis',
+      email: 'louis@example.test',
+    })
+    submitTradeRequestMock.mockResolvedValueOnce({
+      requestId: 'request-1',
+      listingId: 'listing-1',
+    })
+    getTradeRequestNotificationSummaryMock.mockResolvedValueOnce(null)
+
+    const response = await POST(
+      new Request('https://www.yoursparklesuite.com/api/amethyst/trade-requests', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          referer: 'https://www.yoursparklesuite.com/LouisFizzFest/trade',
+        },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          customerName: 'Jamie',
+          customerDescription: 'Birthday ring, size 8',
+        }),
+      }),
+    )
+
+    expect(resolveAmethystPreviewRepMock).toHaveBeenCalledWith(
+      { admin: true },
+      expect.objectContaining({
+        publicSiteSlug: 'louisfizzfest',
+        repId: null,
+      }),
+    )
+    expect(submitTradeRequestMock).toHaveBeenCalledWith(
+      { admin: true },
+      expect.objectContaining({
+        expectedRepId: 'rep-louis',
+        listingId: 'listing-1',
+      }),
+    )
+    expect(response.status).toBe(201)
   })
 
   it('still returns 201 when the Nic-Nac notification follow-up fails', async () => {

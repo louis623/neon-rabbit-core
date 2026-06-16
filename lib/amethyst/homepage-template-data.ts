@@ -23,6 +23,8 @@ export interface AmethystHomepageSocialLink {
 
 export interface AmethystRuntimeContext {
   targeted: boolean
+  repId?: string | null
+  publicSiteSlug?: string | null
 }
 
 export interface AmethystHomepageTemplateData {
@@ -263,13 +265,25 @@ function safeScriptJson(value: unknown) {
   return JSON.stringify(value).replace(/</g, '\\u003c')
 }
 
+function buildPublicRuntimeContext(runtimeContext: AmethystRuntimeContext) {
+  const repId = runtimeContext.repId?.trim()
+  const publicSiteSlug = runtimeContext.publicSiteSlug?.trim().toLowerCase()
+
+  return {
+    targeted: Boolean(runtimeContext.targeted),
+    ...(repId ? { repId } : {}),
+    ...(publicSiteSlug ? { publicSiteSlug } : {}),
+  }
+}
+
 export function buildAmethystHomepageBootstrapScript(
   data: AmethystHomepageTemplateData = defaultAmethystHomepageTemplateData,
   events: AmethystHomepageEventCard[] = defaultAmethystHomepageEvents,
   appearancePreset?: AmethystAppearancePresetId | string | null,
   runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
-  const targeted = Boolean(runtimeContext.targeted)
+  const publicRuntimeContext = buildPublicRuntimeContext(runtimeContext)
+  const targeted = publicRuntimeContext.targeted
   const publicData: AmethystHomepageTemplateData = {
     ...data,
     repName: getPublicRepName(data.repName),
@@ -292,7 +306,7 @@ export function buildAmethystHomepageBootstrapScript(
   }
 
   return [
-    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
+    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson(publicRuntimeContext)};`,
     `window.AMETHYST_HOMEPAGE_TEMPLATE_DATA = ${safeScriptJson(publicData)};`,
     `window.HOMEPAGE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_HOMEPAGE_EVENTS = ${safeScriptJson(events)};`,

@@ -1,11 +1,9 @@
 import type { AmethystHomepageEventCard } from './homepage-upcoming-shows'
 import type { AmethystPreviewTemplateData } from './preview-template-data'
-import { validatePublicSiteSlug } from '@/lib/public-site/show-link'
+import { readPublicSiteSlugFromUrl } from './request-rep-target'
 
 export function getPublicSiteSlugFromRequest(request: Request) {
-  const slug = new URL(request.url).searchParams.get('publicSiteSlug')?.trim().toLowerCase()
-  if (!slug || !validatePublicSiteSlug(slug).ok) return null
-  return slug
+  return readPublicSiteSlugFromUrl(new URL(request.url))
 }
 
 function rewriteTradeHrefForPublicSlug(href: string, slug: string) {

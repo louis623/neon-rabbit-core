@@ -111,6 +111,23 @@ describe('Amethyst trade page template wiring', () => {
     expect(script).toContain('"/amethyst/Join.html"')
   })
 
+  it('serializes public-site identity into the targeted runtime context', () => {
+    const script = buildAmethystTradeBootstrapScript(
+      defaultAmethystTradeTemplateData,
+      [],
+      undefined,
+      {
+        publicSiteSlug: 'louisfizzfest',
+        repId: 'rep-louis',
+        targeted: true,
+      },
+    )
+
+    expect(script).toContain(
+      'window.AMETHYST_RUNTIME_CONTEXT = {"targeted":true,"repId":"rep-louis","publicSiteSlug":"louisfizzfest"};',
+    )
+  })
+
   it('keeps the trade hero subcopy concise without pay-difference fine print', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
@@ -479,8 +496,12 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('<label>Your name</label>')
     expect(jsx).toContain('<label>Which item number did you just reveal?</label>')
     expect(jsx).toContain('placeholder="Example: RG12345"')
-    expect(jsx).toContain('/api/amethyst/trade-requests')
-    expect(jsx).toContain('/api/amethyst/trade-board')
+    expect(jsx).toContain(
+      'const TRADE_REQUEST_ENDPOINT = withCurrentSearch("/api/amethyst/trade-requests")',
+    )
+    expect(jsx).toContain(
+      'const TRADE_BOARD_ENDPOINT = withCurrentSearch("/api/amethyst/trade-board")',
+    )
     expect(jsx).toContain('function fetchTradeBoardListings')
     expect(jsx).toContain('await refreshTradeBoardListings()')
     expect(jsx).toContain('TRADE_BOARD_REFRESH_MS')

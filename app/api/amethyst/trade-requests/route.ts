@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
+import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { ServiceError } from '@/lib/services/errors'
 import {
   getTradeRequestNotificationSummary,
@@ -12,12 +14,29 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const admin = createAdminClient()
+    const target = resolveAmethystRequestTarget(request)
+    const targetRep = target.targeted
+      ? await resolveAmethystPreviewRep(admin, {
+          env: process.env,
+          publicSiteSlug: target.publicSiteSlug,
+          repId: target.repId ?? target.customDomain,
+          select: 'id, email',
+        })
+      : null
+
+    if (target.targeted && !targetRep?.id) {
+      return NextResponse.json(
+        { error: 'Trade requests are temporarily unavailable right now.' },
+        { status: 503 },
+      )
+    }
 
     const result = await submitTradeRequest(admin, {
       listingId: typeof body?.listingId === 'string' ? body.listingId : '',
       customerName: typeof body?.customerName === 'string' ? body.customerName : '',
       customerDescription:
         typeof body?.customerDescription === 'string' ? body.customerDescription : '',
+      expectedRepId: targetRep?.id,
     })
 
     try {

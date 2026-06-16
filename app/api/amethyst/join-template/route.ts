@@ -2,18 +2,23 @@ import { NextResponse } from 'next/server'
 
 import { buildAmethystJoinBootstrapScript } from '@/lib/amethyst/join-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
-import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 
 export async function GET(request: Request) {
-  const repId = resolveAmethystRequestRepId(request)
-  const targeted = Boolean(repId)
-  const templateData = await loadAmethystPreviewTemplateData({ repId })
+  const target = resolveAmethystRequestTarget(request)
+  const repId = target.repId ?? target.customDomain
+  const targeted = target.targeted
+  const publicSiteSlug = target.publicSiteSlug
+  const templateData = await loadAmethystPreviewTemplateData({
+    ...(publicSiteSlug ? { publicSiteSlug } : {}),
+    repId,
+  })
 
   return new NextResponse(
     buildAmethystJoinBootstrapScript(
       templateData.join,
       templateData.appearancePreset,
-      { targeted },
+      { publicSiteSlug, repId, targeted },
     ),
     {
       headers: {

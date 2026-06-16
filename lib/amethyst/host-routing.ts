@@ -2,6 +2,11 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]'
 
 const PREVIEW_HOST_SUFFIXES = ['.vercel.app', '.vercel.sh', '.now.sh']
 
+const PLATFORM_HOSTS = new Set([
+  'yoursparklesuite.com',
+  'www.yoursparklesuite.com',
+])
+
 function firstHost(value: string | null | undefined) {
   return value?.split(',')[0]?.trim() || null
 }
@@ -31,11 +36,22 @@ export function isAmethystLocalOrPreviewHost(value: string | null | undefined) {
   )
 }
 
+export function isAmethystPlatformHost(value: string | null | undefined) {
+  const host = normalizeAmethystHost(value)
+  if (!host) return false
+  return PLATFORM_HOSTS.has(host)
+}
+
 export function normalizeAmethystCustomDomainCandidate(
   value: string | null | undefined,
 ) {
   const host = normalizeAmethystHost(value)
-  if (!host || isAmethystLocalOrPreviewHost(host) || !host.includes('.')) {
+  if (
+    !host ||
+    isAmethystLocalOrPreviewHost(host) ||
+    isAmethystPlatformHost(host) ||
+    !host.includes('.')
+  ) {
     return null
   }
 

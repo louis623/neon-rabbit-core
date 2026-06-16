@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import {
+  resolveAmethystRequestRepId,
+  resolveAmethystRequestTarget,
+} from '@/lib/amethyst/request-rep-target'
 
 describe('Amethyst request rep target', () => {
   it('reads an explicit customer target from the API query string', () => {
@@ -23,6 +26,24 @@ describe('Amethyst request rep target', () => {
     ).toBe('rep-2')
   })
 
+  it('reads the public site slug from a customer-site referer path', () => {
+    expect(
+      resolveAmethystRequestTarget(
+        new Request('https://www.yoursparklesuite.com/api/amethyst/trade-board', {
+          headers: {
+            referer: 'https://www.yoursparklesuite.com/LouisFizzFest/trade',
+          },
+        }),
+      ),
+    ).toEqual({
+      customDomain: null,
+      publicSiteSlug: 'louisfizzfest',
+      repId: null,
+      source: 'referer-public-site-slug',
+      targeted: true,
+    })
+  })
+
   it('normalizes a custom-domain request host when there is no explicit target', () => {
     expect(
       resolveAmethystRequestRepId(
@@ -41,6 +62,14 @@ describe('Amethyst request rep target', () => {
     expect(
       resolveAmethystRequestRepId(
         new Request('https://sparkle-suite-git-wave-1.vercel.app/api/amethyst/homepage-template'),
+      ),
+    ).toBeNull()
+  })
+
+  it('ignores the canonical Sparkle Suite platform host so slug pages do not become custom-domain lookups', () => {
+    expect(
+      resolveAmethystRequestRepId(
+        new Request('https://www.yoursparklesuite.com/api/amethyst/trade-board'),
       ),
     ).toBeNull()
   })

@@ -6,19 +6,23 @@ import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template
 import {
   applyPublicSiteSlugToHomepageEvents,
   applyPublicSiteSlugToTemplateData,
-  getPublicSiteSlugFromRequest,
 } from '@/lib/amethyst/public-site-links'
-import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const repId = resolveAmethystRequestRepId(request)
-  const targeted = Boolean(repId)
-  const publicSiteSlug = getPublicSiteSlugFromRequest(request)
+  const target = resolveAmethystRequestTarget(request)
+  const repId = target.repId ?? target.customDomain
+  const targeted = target.targeted
+  const publicSiteSlug = target.publicSiteSlug
+  const lookupTarget = {
+    ...(publicSiteSlug ? { publicSiteSlug } : {}),
+    repId,
+  }
   const [events, templateData] = await Promise.all([
-    loadAmethystHomepageUpcomingShows({ repId, targeted }),
-    loadAmethystPreviewTemplateData({ repId }),
+    loadAmethystHomepageUpcomingShows({ ...lookupTarget, targeted }),
+    loadAmethystPreviewTemplateData(lookupTarget),
   ])
   const linkedTemplateData = applyPublicSiteSlugToTemplateData(
     templateData,
@@ -31,7 +35,7 @@ export async function GET(request: Request) {
       linkedTemplateData.homepage,
       linkedEvents,
       linkedTemplateData.appearancePreset,
-      { targeted },
+      { publicSiteSlug, repId, targeted },
     ),
     {
       headers: {

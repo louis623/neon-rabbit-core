@@ -59,6 +59,21 @@ export async function submitTradeRequest(
     )
   }
 
+  if (input.expectedRepId?.trim()) {
+    const { data: listing, error: listingError } = await supabase
+      .from('trade_listings')
+      .select('id, rep_id')
+      .eq('id', input.listingId)
+      .maybeSingle()
+
+    if (listingError) throw listingError
+    const row = listing as { id: string; rep_id: string } | null
+    if (!row) throw errors.LISTING_NOT_FOUND(input.listingId)
+    if (row.rep_id !== input.expectedRepId.trim()) {
+      throw errors.LISTING_NOT_FOUND(input.listingId)
+    }
+  }
+
   const { data, error } = await supabase.rpc('rpc_submit_trade_request', {
     p_listing_id: input.listingId,
     p_customer_name: input.customerName,

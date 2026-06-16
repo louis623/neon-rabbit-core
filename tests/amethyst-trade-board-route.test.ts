@@ -25,10 +25,37 @@ describe('GET /api/amethyst/trade-board', () => {
 
     expect(loadAmethystTradeBoardPreviewListingsMock).toHaveBeenCalledWith({
       repId: 'rep-1',
+      targeted: true,
     })
     expect(response.headers.get('cache-control')).toBe('no-store')
     await expect(response.json()).resolves.toEqual({
       listings: [{ id: 'listing-1', name: 'Birthday Bloom Ring' }],
+    })
+  })
+
+  it('uses the public site slug from the customer-site referer before refreshing board listings', async () => {
+    loadAmethystTradeBoardPreviewListingsMock.mockResolvedValueOnce([
+      { id: 'listing-2', name: 'The Florence Earrings' },
+    ])
+
+    const response = await GET(
+      new Request(
+        'https://www.yoursparklesuite.com/api/amethyst/trade-board?previewRefresh=7',
+        {
+          headers: {
+            referer: 'https://www.yoursparklesuite.com/LouisFizzFest/trade',
+          },
+        },
+      ),
+    )
+
+    expect(loadAmethystTradeBoardPreviewListingsMock).toHaveBeenCalledWith({
+      publicSiteSlug: 'louisfizzfest',
+      repId: null,
+      targeted: true,
+    })
+    await expect(response.json()).resolves.toEqual({
+      listings: [{ id: 'listing-2', name: 'The Florence Earrings' }],
     })
   })
 })

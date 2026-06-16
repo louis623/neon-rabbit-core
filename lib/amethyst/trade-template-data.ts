@@ -18,6 +18,8 @@ export interface AmethystTradeFooterLink {
 
 export interface AmethystRuntimeContext {
   targeted: boolean
+  repId?: string | null
+  publicSiteSlug?: string | null
 }
 
 export interface AmethystTradeTemplateData {
@@ -230,13 +232,25 @@ function safeScriptJson(value: unknown) {
   return JSON.stringify(value).replace(/</g, '\\u003c')
 }
 
+function buildPublicRuntimeContext(runtimeContext: AmethystRuntimeContext) {
+  const repId = runtimeContext.repId?.trim()
+  const publicSiteSlug = runtimeContext.publicSiteSlug?.trim().toLowerCase()
+
+  return {
+    targeted: Boolean(runtimeContext.targeted),
+    ...(repId ? { repId } : {}),
+    ...(publicSiteSlug ? { publicSiteSlug } : {}),
+  }
+}
+
 export function buildAmethystTradeBootstrapScript(
   data: AmethystTradeTemplateData = defaultAmethystTradeTemplateData,
   listings: AmethystTradeBoardListing[] = [],
   appearancePreset?: AmethystAppearancePresetId | string | null,
   runtimeContext: AmethystRuntimeContext = { targeted: false },
 ) {
-  const targeted = Boolean(runtimeContext.targeted)
+  const publicRuntimeContext = buildPublicRuntimeContext(runtimeContext)
+  const targeted = publicRuntimeContext.targeted
   const publicData: AmethystTradeTemplateData = {
     ...data,
     repName: getPublicRepName(data.repName),
@@ -253,7 +267,7 @@ export function buildAmethystTradeBootstrapScript(
   }
 
   return [
-    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson({ targeted })};`,
+    `window.AMETHYST_RUNTIME_CONTEXT = ${safeScriptJson(publicRuntimeContext)};`,
     `window.AMETHYST_TRADE_TEMPLATE_DATA = ${safeScriptJson(publicData)};`,
     `window.TRADE_TWEAK_DEFAULTS = ${safeScriptJson(defaults)};`,
     `window.AMETHYST_TRADE_BOARD_LISTINGS = ${safeScriptJson(listings)};`,

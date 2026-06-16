@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
-import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { ServiceError } from '@/lib/services/errors'
 import { unsubscribeCustomerAudienceByContact } from '@/lib/services/customer-audience'
 import type { CustomerAudienceUnsubscribeInput } from '@/lib/services/types'
@@ -61,10 +61,11 @@ export async function POST(request: Request) {
   try {
     const payload = await parseUnsubscribePayload(request)
     const admin = createAdminClient()
-    const repId = resolveAmethystRequestRepId(request)
+    const target = resolveAmethystRequestTarget(request)
     const rep = await resolveAmethystPreviewRep(admin, {
       env: process.env,
-      repId,
+      publicSiteSlug: target.publicSiteSlug,
+      repId: target.repId ?? target.customDomain,
       select: 'id, email',
     })
 

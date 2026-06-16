@@ -41,6 +41,7 @@ interface PreviewTemplateDataDependencies {
 interface LoadPreviewTemplateDataOptions {
   env?: Record<string, string | undefined>
   repId?: string | null
+  publicSiteSlug?: string | null
   dependencies?: PreviewTemplateDataDependencies
 }
 
@@ -524,6 +525,8 @@ export async function loadAmethystPreviewTemplateData(
   options: LoadPreviewTemplateDataOptions = {},
 ): Promise<AmethystPreviewTemplateData> {
   const env = options.env ?? process.env
+  const requestedRepId = options.repId?.trim() ?? null
+  const requestedPublicSiteSlug = options.publicSiteSlug?.trim().toLowerCase() ?? null
   if (!canLoadPreviewData(env)) return defaultPreviewTemplateData
 
   const dependencies = options.dependencies ?? {}
@@ -533,7 +536,8 @@ export async function loadAmethystPreviewTemplateData(
     const rep = await (dependencies.resolveAmethystPreviewRep ??
       resolveAmethystPreviewRep)(admin, {
       env,
-      repId: options.repId,
+      publicSiteSlug: requestedPublicSiteSlug,
+      repId: requestedRepId,
       select: 'id, email, shop_link, streaming_links',
     })
 
@@ -573,7 +577,7 @@ export async function loadAmethystPreviewTemplateData(
       ),
       trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
       join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
-    }, options.repId)
+    }, requestedRepId ?? rep.id)
   } catch {
     return defaultPreviewTemplateData
   }

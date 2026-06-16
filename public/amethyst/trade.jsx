@@ -70,7 +70,7 @@ const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
   ? window.AMETHYST_TRADE_BOARD_LISTINGS
   : [];
-const TRADE_REQUEST_ENDPOINT = "/api/amethyst/trade-requests";
+const TRADE_REQUEST_ENDPOINT = withCurrentSearch("/api/amethyst/trade-requests");
 const TRADE_BOARD_ENDPOINT = withCurrentSearch("/api/amethyst/trade-board");
 const TRADE_BOARD_REFRESH_MS = 45_000;
 const BOARD_PAGE_SIZE = 24;
@@ -126,8 +126,26 @@ function SocialLogo({ label, shortLabel }) {
   return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
 }
 
+function runtimeText(value) {
+  return String(value || "").trim();
+}
+
+function buildContextSearch() {
+  const params = new URLSearchParams(window.location.search || "");
+  const repId = runtimeText(RUNTIME_CONTEXT.repId);
+  const publicSiteSlug = runtimeText(RUNTIME_CONTEXT.publicSiteSlug).toLowerCase();
+
+  if (repId && !params.has("c") && !params.has("repId")) params.set("c", repId);
+  if (publicSiteSlug && !params.has("publicSiteSlug")) {
+    params.set("publicSiteSlug", publicSiteSlug);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 function withCurrentSearch(path) {
-  return `${path}${window.location.search || ""}`;
+  return `${path}${buildContextSearch()}`;
 }
 
 function setMetaContent(selector, value) {

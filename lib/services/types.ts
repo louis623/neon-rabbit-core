@@ -252,6 +252,7 @@ export interface SubmitTradeRequestInput {
   customerName: string
   customerDescription: string
   clickwrapAcknowledged?: boolean
+  expectedRepId?: string
 }
 
 export interface SubmitTradeRequestResult {

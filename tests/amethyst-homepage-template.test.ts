@@ -431,7 +431,8 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(jsx).toContain('/api/amethyst/customer-audience')
+    expect(jsx).toContain('withCurrentSearch("/api/amethyst/customer-audience")')
+    expect(jsx).toContain('function buildContextSearch')
     expect(jsx).toContain('firstName')
     expect(jsx).toContain('lastName')
     expect(jsx).toContain('smsConsent')

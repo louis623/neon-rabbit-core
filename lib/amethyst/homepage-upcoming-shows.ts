@@ -198,6 +198,7 @@ export function mapCalendarEventToHomepageEvent(
 interface LoadAmethystHomepageUpcomingShowsOptions {
   limit?: number
   repId?: string | null
+  publicSiteSlug?: string | null
   targeted?: boolean
 }
 
@@ -205,8 +206,15 @@ export async function loadAmethystHomepageUpcomingShows(
   options: LoadAmethystHomepageUpcomingShowsOptions | number = {},
 ): Promise<AmethystHomepageEventCard[]> {
   const limit = typeof options === 'number' ? options : options.limit ?? 2
-  const repId = typeof options === 'number' ? null : options.repId
-  const targeted = typeof options === 'number' ? false : Boolean(options.targeted || repId)
+  const repId = typeof options === 'number' ? null : options.repId?.trim() ?? null
+  const publicSiteSlug =
+    typeof options === 'number'
+      ? null
+      : options.publicSiteSlug?.trim().toLowerCase() ?? null
+  const targeted =
+    typeof options === 'number'
+      ? false
+      : Boolean(options.targeted || repId || publicSiteSlug)
 
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -219,6 +227,7 @@ export async function loadAmethystHomepageUpcomingShows(
     const admin = createAdminClient()
     const rep = await resolveAmethystPreviewRep(admin, {
       env: process.env,
+      publicSiteSlug,
       repId,
       select: 'id, email, streaming_links',
     })
