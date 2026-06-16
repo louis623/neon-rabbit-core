@@ -276,6 +276,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
       'Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement',
     )
     expect(message).toContain('Do not ask for unboxed, no-packaging, or plain-background retakes')
+    expect(message).toContain('Do not ask for retakes without the box/card or on a plain surface')
     expect(message).toContain('handler uploads the photo from chat automatically')
     expect(message).toContain('do NOT ask the rep for a URL')
   })

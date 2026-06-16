@@ -264,8 +264,33 @@ function isMissingWorkflowSchemaError(err: unknown): boolean {
 }
 
 function inferRoleFromText(text: string): TradeBoardPhotoDeclaredRole {
-  if (/\b(label|details|tag|back.of.card|item-info|item info)\b/i.test(text)) {
+  const asksForJewelryPhoto =
+    /\b(?:need|needs|send|upload|snap|take|provide|use|show|get|got)\b[\s\S]{0,120}\b(?:jewelry|customer-facing|front\s+(?:photo|shot|image)|boxed display|piece photo|listing photo|earrings themselves|just the earrings|actual jewelry)\b/i.test(
+      text,
+    ) ||
+    /\b(?:jewelry|customer-facing|front\s+(?:photo|shot|image)|boxed display|piece photo|listing photo|earrings themselves|just the earrings|actual jewelry)\b[\s\S]{0,80}\b(?:photo|shot|image|front and center|clear|close)\b/i.test(
+      text,
+    )
+  const asksForLabelPhoto =
+    /\b(?:need|needs|send|upload|snap|take|provide|use|show|get|got)\b[\s\S]{0,120}\b(?:label|details|tag|back.of.card|item-info|item info)\b/i.test(
+      text,
+    ) ||
+    /\b(?:label|details|tag|back.of.card|item-info|item info)\b[\s\S]{0,80}\b(?:photo|shot|image|source)\b/i.test(
+      text,
+    )
+  const rejectsLabelAsListingPhoto =
+    /\blabel\s+photo\b[\s\S]{0,80}\b(?:doesn'?t|does not|isn'?t|is not|won'?t|will not|can'?t|cannot)\b[\s\S]{0,120}\b(?:listing|jewelry|earrings|front|photo|shot|image)\b/i.test(
+      text,
+    )
+
+  if (asksForJewelryPhoto && (rejectsLabelAsListingPhoto || !asksForLabelPhoto)) {
+    return 'jewelry_front'
+  }
+  if (asksForLabelPhoto && !asksForJewelryPhoto) {
     return 'label_details'
+  }
+  if (asksForJewelryPhoto && asksForLabelPhoto) {
+    return 'unknown'
   }
   if (
     /\b(jewelry|customer-facing|front photo|boxed display|piece photo)\b/i.test(

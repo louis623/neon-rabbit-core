@@ -125,6 +125,9 @@ describe('Nic-Nac routed system prompt', () => {
       'Do not ask for unboxed, no-packaging, or plain-background retakes',
     )
     expect(prompt).toContain(
+      'Do not ask for retakes without the box/card or on a plain surface',
+    )
+    expect(prompt).toContain(
       'If enough usable inputs already exist in recent conversation photos or chat text, call add_listing',
     )
     expect(prompt).toContain(

@@ -39,6 +39,18 @@ describe('Trade Board intake hard-fail detection', () => {
     ])
   })
 
+  it('detects manual backend workaround and box/card retake language from the ER13229 regression', () => {
+    const result = detectTradeBoardIntakeHardFails(
+      "The system's flagging the image resolution on its end. If you want to move forward, I can escalate this to Louis and have him add it manually on the backend, or you can try one more shot without the box or card on a plain surface.",
+    )
+
+    expect(result.matches.map((m) => m.id)).toEqual([
+      'manual_backend_add',
+      'without_box_or_card',
+      'plain_surface',
+    ])
+  })
+
   it('summarizes a clean transcript', () => {
     const result = summarizeHardFailDetection([
       'Got it. That first image is just the label/details source.',

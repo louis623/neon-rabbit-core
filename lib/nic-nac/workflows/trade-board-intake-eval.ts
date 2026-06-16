@@ -38,6 +38,22 @@ export const TRADE_BOARD_INTAKE_HARD_FAIL_PATTERNS: Array<{
     phrase: 'Packaging is too prominent',
     pattern: /\bpackaging\s+is\s+too\s+prominent\b/i,
   },
+  {
+    id: 'manual_backend_add',
+    phrase: 'Have Louis add it manually on the backend',
+    pattern:
+      /\b(?:escalate|send|hand|route)[\s\S]{0,80}\b(?:louis|backend|support|team)\b[\s\S]{0,160}\badd\s+it\s+manually\b|\badd\s+it\s+manually\b[\s\S]{0,160}\b(?:backend|louis|support|team)\b/i,
+  },
+  {
+    id: 'without_box_or_card',
+    phrase: 'Without the box or card',
+    pattern: /\bwithout\s+(?:the\s+)?(?:box|card|box\s+or\s+card|card\s+or\s+box)\b/i,
+  },
+  {
+    id: 'plain_surface',
+    phrase: 'Plain surface',
+    pattern: /\bplain\s+surface\b/i,
+  },
 ]
 
 export function detectTradeBoardIntakeHardFails(text: string): {

@@ -55,6 +55,66 @@ describe('Trade Board intake route context', () => {
     )
   })
 
+  it('treats an upload as jewelry_front when Nic-Nac contrasts the old label photo with the requested jewelry shot', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'assistant-1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              "The label photo doesn't work as the listing photo - I need a clearer shot of just the earrings themselves. Can you snap a photo of the jewelry front and center?",
+          },
+        ],
+      } as UIMessage,
+      {
+        id: 'user-1',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+        ],
+      } as UIMessage,
+    ]
+
+    expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe(
+      'jewelry_front',
+    )
+  })
+
+  it('leaves a photo ambiguous when Nic-Nac offers either a label photo or jewelry photo', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'assistant-1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Upload a photo - snap a pic of the item-info tag or label, or the jewelry itself.',
+          },
+        ],
+      } as UIMessage,
+      {
+        id: 'user-1',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,QU1CSUdVT1VT',
+          },
+        ],
+      } as UIMessage,
+    ]
+
+    expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe('unknown')
+  })
+
   it('keeps trade board intents when workflow intents are active', () => {
     expect(mergeWorkflowToolIntents(['memory'], ['trade_board', 'catalog'])).toEqual([
       'memory',

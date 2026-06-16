@@ -5,6 +5,9 @@ export const HARD_FAIL_PHRASES = [
   'Unboxed',
   'Plain background',
   'Packaging is too prominent',
+  'Have Louis add it manually on the backend',
+  'Without the box or card',
+  'Plain surface',
 ] as const
 
 export interface TradeBoardIntakeSmokeCase {
