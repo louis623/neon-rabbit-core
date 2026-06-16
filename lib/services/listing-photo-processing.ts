@@ -1,4 +1,5 @@
 import { getPhotoroomConfig } from '@/lib/photoroom/config'
+import { randomUUID } from 'crypto'
 import { errors, ServiceError } from '@/lib/services/errors'
 import { assessJewelryPhotoPreflight } from '@/lib/services/jewelry-photo-preflight'
 import { executePhotoEnhancement } from '@/lib/services/photo-enhancement'
@@ -122,16 +123,17 @@ export async function processRepListingPhotoUrl(
     throw errors.LISTING_PHOTO_PREFLIGHT_FAILED(preflight.coachingMessages)
   }
 
+  const uploadStem = `${input.filenameStem}-${randomUUID()}`
   const originalPhotoUrl = await uploadJewelryPhoto(
     input.repId,
     toDataUrl(metadata.contentType, fetched.bytes),
-    `${input.filenameStem}-source`,
+    `${uploadStem}-source`,
   )
   const croppedPhotoUrl = crop
     ? await uploadJewelryPhoto(
         input.repId,
         toDataUrl(selectedMetadata.contentType, selectedBytes),
-        `${input.filenameStem}-cropped`,
+        `${uploadStem}-cropped`,
       )
     : null
 
@@ -247,7 +249,7 @@ export async function processRepListingPhotoUrl(
     const enhancedPhotoUrl = await uploadJewelryPhoto(
       input.repId,
       toDataUrl(outputMetadata.contentType, enhanced.output.bytes),
-      `${input.filenameStem}-enhanced`,
+      `${uploadStem}-enhanced`,
     )
 
     return {

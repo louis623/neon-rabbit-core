@@ -163,7 +163,9 @@ describe('listing/design photo semantic integration', () => {
     expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
       'rep-1',
       expect.stringMatching(/^data:image\/jpeg;base64,/),
-      'confirmed-boxed-display-source',
+      expect.stringMatching(
+        /^confirmed-boxed-display-[0-9a-f-]+-source$/,
+      ),
     )
     expect(result).toMatchObject({
       photoUrl: 'https://cdn.example.com/confirmed-boxed-display.jpg',
@@ -233,7 +235,7 @@ describe('listing/design photo semantic integration', () => {
       2,
       'rep-1',
       expect.stringMatching(/^data:image\/jpeg;base64,/),
-      'small-jewelry-cropped',
+      expect.stringMatching(/^small-jewelry-[0-9a-f-]+-cropped$/),
     )
     expect(result).toMatchObject({
       photoUrl: 'https://cdn.example.com/cropped.jpg',

@@ -199,7 +199,7 @@ describe('processRepListingPhotoUrl', () => {
     expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
       'rep-1',
       expect.stringMatching(/^data:image\/png;base64,/),
-      'ring-shot-source',
+      expect.stringMatching(/^ring-shot-[0-9a-f-]+-source$/),
     )
     expect(result).toMatchObject({
       photoUrl: 'https://cdn.example.com/listings/rep-1/ring-source.png',
@@ -227,6 +227,41 @@ describe('processRepListingPhotoUrl', () => {
     expect(result.image.lightingRisk).toBeLessThan(0.05)
     expect(result.image.subjectCoverage).toBeGreaterThan(0.28)
     expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
+  })
+
+  it('uses unique public object names when retrying the same listing photo input', async () => {
+    const imageBytes = await makePngBytes(1800, 1800, 'cleanLightBox')
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(makeImageResponse(imageBytes)))
+
+    uploadJewelryPhotoMock
+      .mockResolvedValueOnce(
+        'https://cdn.example.com/listings/rep-1/ring-source-1.png',
+      )
+      .mockResolvedValueOnce(
+        'https://cdn.example.com/listings/rep-1/ring-source-2.png',
+      )
+
+    const input = {
+      repId: 'rep-1',
+      sourceImageUrl: 'https://images.example.com/ring.png',
+      filenameStem: 'retry-ring',
+    }
+
+    await processRepListingPhotoUrl(input, { fetch: fetchMock })
+    await processRepListingPhotoUrl(input, { fetch: fetchMock })
+
+    const uploadedNames = uploadJewelryPhotoMock.mock.calls.map(
+      (call) => call[2],
+    )
+    expect(uploadedNames[0]).toMatch(
+      /^retry-ring-[0-9a-f-]+-source$/,
+    )
+    expect(uploadedNames[1]).toMatch(
+      /^retry-ring-[0-9a-f-]+-source$/,
+    )
+    expect(uploadedNames[1]).not.toBe(uploadedNames[0])
   })
 
   it('keeps the original upload when optional Photoroom config throws in production', async () => {
@@ -362,7 +397,7 @@ describe('processRepListingPhotoUrl', () => {
       2,
       'rep-1',
       expect.stringMatching(/^data:image\/png;base64,/),
-      'ring-shot-enhanced',
+      expect.stringMatching(/^ring-shot-[0-9a-f-]+-enhanced$/),
     )
     expect(result).toMatchObject({
       photoUrl: 'https://cdn.example.com/listings/rep-1/ring-enhanced.png',
