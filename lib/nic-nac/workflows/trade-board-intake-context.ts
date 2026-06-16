@@ -361,7 +361,10 @@ function maybeConfirmLatestJewelryFrontPhoto(args: {
   previousAssistantText: string
 }): TradeBoardIntakeSessionState['photos'][number] | null {
   if (!isPositiveConfirmation(args.latestUserText)) return null
-  if (!assistantAskedToConfirmJewelryFront(args.previousAssistantText)) {
+  if (
+    !assistantAskedToConfirmJewelryFront(args.previousAssistantText) &&
+    !assistantIdentifiedJewelryFront(args.previousAssistantText)
+  ) {
     return null
   }
 
@@ -407,6 +410,20 @@ function assistantAskedToConfirmJewelryFront(text: string): boolean {
       text,
     ) ||
     /\b(?:jewelry[-\s]?front|customer-facing|boxed display|listing)\b[\s\S]{0,160}\bconfirm\b/i.test(
+      text,
+    )
+  )
+}
+
+function assistantIdentifiedJewelryFront(text: string): boolean {
+  return (
+    /\b(?:great|clear|usable|perfect|good|solid)\b[\s\S]{0,80}\bboxed\s+display\s+photo\b[\s\S]{0,120}\b(?:earrings|jewelry)\b/i.test(
+      text,
+    ) ||
+    /\bboxed\s+display\s+photo\b[\s\S]{0,120}\b(?:earrings|jewelry)\b[\s\S]{0,120}\b(?:clearly|clear|usable|counts|customer-facing)\b/i.test(
+      text,
+    ) ||
+    /\b(?:earrings|jewelry)\b[\s\S]{0,120}\b(?:clearly|clear|usable|customer-facing)\b[\s\S]{0,120}\bboxed\s+display\b/i.test(
       text,
     )
   )

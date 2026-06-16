@@ -821,4 +821,119 @@ describe('Trade Board intake route context', () => {
       { onConflict: 'session_id,conversation_message_id,attachment_index' },
     )
   })
+
+  it('promotes the latest unknown photo when Nic-Nac identified it as a boxed display before confirming collection', async () => {
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'photo_capture',
+      item_number: 'ER13229',
+      design_name: 'The Florence Earrings',
+      collection_name: 'July Birthday',
+      collection_year: 2026,
+      missing_fields: ['jewelryFrontPhoto'],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const selectPhotosBuilder = {
+      select: vi.fn(() => selectPhotosBuilder),
+      eq: vi.fn(() => selectPhotosBuilder),
+      order: vi.fn(() => ({
+        data: [
+          {
+            conversation_message_id: 'label-msg-1',
+            attachment_index: 1,
+            declared_role: 'label_details',
+            visual_role: 'label_or_packaging',
+            role_confirmed: true,
+            image_url: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'unknown',
+            quality_issues: [],
+            notes: ['declared as label/details source'],
+          },
+          {
+            conversation_message_id: 'jewelry-msg-1',
+            attachment_index: 1,
+            declared_role: 'unknown',
+            visual_role: 'uncertain',
+            role_confirmed: false,
+            image_url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            quality: 'unknown',
+            quality_issues: [],
+            notes: [],
+          },
+        ],
+        error: null,
+      })),
+    }
+    const upsertPhotoBuilder = {
+      upsert: vi.fn(() => ({ error: null })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        const callsForTable = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === table,
+        ).length
+        if (table === 'trade_board_intake_sessions') {
+          return callsForTable === 1 ? activeBuilder : updateBuilder
+        }
+        if (table === 'trade_board_intake_photos') {
+          return callsForTable === 1 ? selectPhotosBuilder : upsertPhotoBuilder
+        }
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'assistant-boxed-collection-confirm',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'text',
+              text:
+                'Perfect - that is a great boxed display photo of the earrings. I can see them clearly in the Bomb Party packaging. July Birthday 2026 still the right collection for these?',
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-confirm',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Confirmed.' }],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-confirm',
+      mode: 'workspace',
+      nowIso: '2026-06-16T00:00:00.000Z',
+    } as never)
+
+    expect(context.sessionAfter?.photos[1]).toMatchObject({
+      declaredRole: 'jewelry_front',
+      visualRole: 'jewelry',
+      roleConfirmed: true,
+      imageUrl: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+    })
+    expect(context.sessionAfter?.missing).toEqual([])
+    expect(context.sessionAfter?.phase).toBe('ready_to_add')
+  })
 })
