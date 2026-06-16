@@ -86,6 +86,37 @@ describe('Trade Board intake route context', () => {
     )
   })
 
+  it('inherits jewelry_front when Nic-Nac says the label/details photo shows info but asks for the jewelry photo', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'assistant-1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Perfect—I found The Florence Earrings (ER13229). Now I need the customer-facing jewelry photo—a clear shot of the earrings themselves (like a boxed display photo or close-up). This label/details photo shows the info, but I still need to see the earrings clearly for the listing. Can you upload the jewelry photo?',
+          },
+        ],
+      } as UIMessage,
+      {
+        id: 'user-1',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+        ],
+      } as UIMessage,
+    ]
+
+    expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe(
+      'jewelry_front',
+    )
+  })
+
   it('treats an upload as jewelry_front when Nic-Nac contrasts the old label photo with the requested jewelry shot', () => {
     const messages: UIMessage[] = [
       {
