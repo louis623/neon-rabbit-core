@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   HARD_FAIL_PHRASES,
+  findHardFailPhrases,
   parseTradeBoardIntakeSmokeCases,
+  requireTradeBoardSmokeAssets,
 } from '@/scripts/smoke-nic-nac-trade-board-intake'
 
 describe('Nic-Nac Trade Board intake smoke script', () => {
@@ -36,6 +38,30 @@ END
         expect: ['ask_for_jewelry_front_photo'],
         fail: ['The photo of the earrings needs'],
       },
+    ])
+  })
+
+  it('detects hard-fail phrases in assistant text case-insensitively', () => {
+    expect(
+      findHardFailPhrases(
+        'I can escalate this to Louis and have him add it manually on the backend.',
+      ),
+    ).toEqual(['Have Louis add it manually on the backend'])
+    expect(findHardFailPhrases('Please use a plain background.')).toEqual([
+      'Plain background',
+    ])
+  })
+
+  it('reports missing required ER13229 smoke assets before live calls', () => {
+    const result = requireTradeBoardSmokeAssets('C:/missing-smoke-assets', {
+      existsSync: () => false,
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) throw new Error('expected missing fixture result')
+    expect(result.missing).toEqual([
+      'ER13229-label.jpg',
+      'ER13229-jewelry-boxed-front.jpg',
     ])
   })
 })
