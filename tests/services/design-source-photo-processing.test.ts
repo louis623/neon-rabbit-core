@@ -205,7 +205,7 @@ describe('prepareDesignSourcePhoto', () => {
 
     await expect(failingCall).rejects.toMatchObject({
       code: 'PIECE_PHOTO_FETCH_FAILED',
-      userMessage: expect.stringContaining("couldn't fetch"),
+      userMessage: expect.stringContaining("couldn't read"),
     })
   })
 })

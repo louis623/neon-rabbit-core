@@ -208,6 +208,35 @@ export async function ingestLatestTradeBoardIntakeTurn(
     })
   }
 
+  if (fileParts.length === 0) {
+    const confirmedPhoto = maybeConfirmLatestJewelryFrontPhoto({
+      photos,
+      latestUserText,
+      previousAssistantText: getMessageText(
+        args.messages
+          .slice(0, latestUserIndex)
+          .reverse()
+          .find((message) => message.role === 'assistant'),
+      ),
+    })
+    if (confirmedPhoto) {
+      await upsertTradeBoardIntakePhoto(supabase, {
+        sessionId: args.session.id,
+        repId: args.session.repId,
+        conversationId: args.session.conversationId,
+        conversationMessageId: confirmedPhoto.conversationMessageId,
+        attachmentIndex: confirmedPhoto.attachmentIndex,
+        declaredRole: confirmedPhoto.declaredRole,
+        visualRole: confirmedPhoto.visualRole,
+        roleConfirmed: confirmedPhoto.roleConfirmed,
+        imageUrl: confirmedPhoto.imageUrl,
+        quality: confirmedPhoto.quality,
+        qualityIssues: confirmedPhoto.qualityIssues,
+        notes: confirmedPhoto.notes,
+      })
+    }
+  }
+
   const updated: TradeBoardIntakeSessionState = {
     ...args.session,
     known,
@@ -294,8 +323,20 @@ function inferRoleFromText(text: string): TradeBoardPhotoDeclaredRole {
     /\blabel\s+photo\b[\s\S]{0,80}\b(?:doesn'?t|does not|isn'?t|is not|won'?t|will not|can'?t|cannot)\b[\s\S]{0,120}\b(?:listing|jewelry|earrings|front|photo|shot|image)\b/i.test(
       text,
     )
+  const treatsLabelAsDetailsSource =
+    /\blabel\s+photo\b[\s\S]{0,120}\b(?:helpful|details|source|read|got\s+the\s+details|super\s+helpful)\b/i.test(
+      text,
+    ) ||
+    /\blabel\s+photo\b[\s\S]{0,160}\bbut\b[\s\S]{0,160}\b(?:need|see|show|get|use)\b[\s\S]{0,120}\b(?:earrings|jewelry|customer-facing|front|boxed display|listing)\b/i.test(
+      text,
+    )
 
-  if (asksForJewelryPhoto && (rejectsLabelAsListingPhoto || !asksForLabelPhoto)) {
+  if (
+    asksForJewelryPhoto &&
+    (rejectsLabelAsListingPhoto ||
+      treatsLabelAsDetailsSource ||
+      !asksForLabelPhoto)
+  ) {
     return 'jewelry_front'
   }
   if (asksForLabelPhoto && !asksForJewelryPhoto) {
@@ -312,6 +353,63 @@ function inferRoleFromText(text: string): TradeBoardPhotoDeclaredRole {
     return 'jewelry_front'
   }
   return 'unknown'
+}
+
+function maybeConfirmLatestJewelryFrontPhoto(args: {
+  photos: TradeBoardIntakeSessionState['photos']
+  latestUserText: string
+  previousAssistantText: string
+}): TradeBoardIntakeSessionState['photos'][number] | null {
+  if (!isPositiveConfirmation(args.latestUserText)) return null
+  if (!assistantAskedToConfirmJewelryFront(args.previousAssistantText)) {
+    return null
+  }
+
+  for (let index = args.photos.length - 1; index >= 0; index--) {
+    const photo = args.photos[index]
+    if (!photo) continue
+    if (photo.declaredRole === 'label_details') continue
+    if (photo.quality === 'blocked') continue
+    if (!photo.imageUrl) continue
+    if (photo.declaredRole === 'jewelry_front' && photo.roleConfirmed) {
+      return photo
+    }
+    if (photo.declaredRole !== 'unknown' && photo.declaredRole !== 'other') {
+      continue
+    }
+
+    const confirmed = {
+      ...photo,
+      declaredRole: 'jewelry_front' as const,
+      visualRole: 'jewelry' as const,
+      roleConfirmed: true,
+      notes: [
+        ...photo.notes,
+        'confirmed by rep as customer-facing jewelry photo',
+      ],
+    }
+    args.photos[index] = confirmed
+    return confirmed
+  }
+
+  return null
+}
+
+function isPositiveConfirmation(text: string): boolean {
+  return /\b(?:confirmed|confirm|yes|yep|yeah|correct|that'?s right|that is right|that is correct|exactly|use it|use that|good enough)\b/i.test(
+    text,
+  )
+}
+
+function assistantAskedToConfirmJewelryFront(text: string): boolean {
+  return (
+    /\bconfirm\b[\s\S]{0,160}\b(?:jewelry[-\s]?front|customer-facing|listing|photo|shot|image)\b/i.test(
+      text,
+    ) ||
+    /\b(?:jewelry[-\s]?front|customer-facing|boxed display|listing)\b[\s\S]{0,160}\bconfirm\b/i.test(
+      text,
+    )
+  )
 }
 
 function inferVisualRole(

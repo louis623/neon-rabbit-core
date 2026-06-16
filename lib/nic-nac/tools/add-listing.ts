@@ -276,12 +276,28 @@ function getConfirmedJewelryFrontPhotos(
   workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
 ) {
   if (workflow?.status !== 'active') return []
-  return workflow.photos.filter(
-    (photo) =>
-      photo.declaredRole === 'jewelry_front' &&
-      photo.roleConfirmed &&
-      photo.quality !== 'blocked',
+  return workflow.photos.filter(isConfirmedJewelryFrontPhoto)
+}
+
+function isConfirmedJewelryFrontPhoto(
+  photo:
+    | NonNullable<ToolContext['activeTradeBoardWorkflow']>['photos'][number]
+    | undefined,
+): boolean {
+  return (
+    photo?.declaredRole === 'jewelry_front' &&
+    photo.roleConfirmed &&
+    photo.quality !== 'blocked'
   )
+}
+
+function getWorkflowPhotoByModelIndex(
+  workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
+  photoIndex: number | undefined,
+) {
+  if (workflow?.status !== 'active' || photoIndex === undefined) return null
+  const photo = workflow.photos[photoIndex - 1]
+  return isConfirmedJewelryFrontPhoto(photo) ? photo : null
 }
 
 function workflowConfirmsJewelryFrontPhoto(
@@ -291,6 +307,7 @@ function workflowConfirmsJewelryFrontPhoto(
   const confirmedPhotos = getConfirmedJewelryFrontPhotos(workflow)
   if (confirmedPhotos.length === 0) return false
   if (photoIndex === undefined) return confirmedPhotos.length === 1
+  if (getWorkflowPhotoByModelIndex(workflow, photoIndex)) return true
   return (
     confirmedPhotos.some((photo) => photo.attachmentIndex === photoIndex) ||
     confirmedPhotos.length === 1
@@ -305,6 +322,9 @@ function getWorkflowConfirmedJewelryFrontImageUrl(
   if (confirmedPhotos.length === 0) return null
 
   if (photoIndex !== undefined) {
+    const modelIndexedPhoto = getWorkflowPhotoByModelIndex(workflow, photoIndex)
+    if (modelIndexedPhoto?.imageUrl) return modelIndexedPhoto.imageUrl
+
     const matchingPhoto = confirmedPhotos.find(
       (photo) => photo.attachmentIndex === photoIndex,
     )
@@ -531,8 +551,8 @@ async function runSingle(
   // Require collectionName here even though the service layer accepts a
   // null collection — addListing rejects any design without a collection,
   // so creating one without it would dead-end on the very next call.
-  // The photo URL is resolved server-side: prefer the manual fallback if the
-  // model passed one, otherwise upload the most recent chat image.
+  // Photo uploads are resolved server-side from workflow state or recent chat
+  // images; a manual source remains accepted only when explicitly provided.
   if (designName) {
     if (!collectionName) {
       throw new NicNacToolError({
@@ -931,6 +951,7 @@ async function runSingle(
         repId: ctx.repId,
         supabase: ctx.supabase,
         conversationId: ctx.conversationId,
+        photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
         allowImplicitConversationPhoto: !designName,
       })) ?? processedListingPhotoUrl
   }
@@ -951,7 +972,6 @@ async function runSingle(
           itemNumber,
           requiredFields: ['designName', 'collectionName'],
           optionalFields: [
-            'piecePhotoUrl',
             'piecePhotoIndex',
             'listingPhotoIndex',
             'material',
@@ -962,7 +982,7 @@ async function runSingle(
             'specialFeatures',
             'lengthInfo',
           ],
-          message: `${itemNumber} isn't in the Sparkle Suite jewelry database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read, and accept clear rep-provided details such as collectionName or collectionYear. If a box clearly shows a Birthday Collection month/year, normalize it to collectionName like "March Birthday" and collectionYear like 2026. Boxed display photos with clear jewelry are acceptable as the jewelry-front photo. Do not treat label/details photos as bad jewelry photos. A label/details photo is only a label/details photo. Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement. Do not ask for unboxed, no-packaging, or plain-background retakes. Do not ask for retakes without the box/card or on a plain surface. When multiple photos are attached, pass piecePhotoIndex or listingPhotoIndex using recent add-flow photo order for the jewelry-front photo instead of asking for another upload. The handler uploads the photo from chat automatically — do NOT ask the rep for a URL or include piecePhotoUrl unless they explicitly volunteered a real one.`,
+          message: `${itemNumber} isn't in the Sparkle Suite jewelry database yet. Use vision on the rep's photos to extract designName and any optional metadata you can read, and accept clear rep-provided details such as collectionName or collectionYear. If a box clearly shows a Birthday Collection month/year, normalize it to collectionName like "March Birthday" and collectionYear like 2026. Boxed display photos with clear jewelry are acceptable as the jewelry-front photo. Do not treat label/details photos as bad jewelry photos. A label/details photo is only a label/details photo. Visible jewelry in that label/details photo does not satisfy the jewelry photo requirement. Do not ask for unboxed, no-packaging, or plain-background retakes. Do not ask for retakes without the box/card or on a plain surface. When multiple photos are attached, pass piecePhotoIndex or listingPhotoIndex using recent add-flow photo order for the jewelry-front photo instead of asking for another upload. The handler uploads the photo from chat automatically.`,
         }
       }
       if (err.code === 'NEEDS_COLLECTION') {
@@ -1242,7 +1262,7 @@ export function makeAddListingTool(ctx: {
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +
       "Order does not matter; use photos and facts in whatever order the rep provides them. Only block on unreadable item details or a genuinely unusable jewelry image. Accept clear rep-provided collection, name, stone, material, MSRP, and ring size instead of requiring proof photos. " +
       "Label, box, and back-of-card photos can provide details; the saved listing/canonical image must show the jewelry clearly. Boxed display photos for earrings, rings, necklaces, and similar pieces count as jewelry-front photos when the jewelry is centered, close, and clear, even with Bomb Party packaging visible. Do not treat label/details photos as bad jewelry photos; a label/details photo is only a label/details photo, and visible jewelry in that label/details photo does not satisfy the jewelry photo requirement. If the only uploaded image is a label/details or back-of-card photo, ask for the first customer-facing jewelry photo. Do not ask for unboxed, no-packaging, or plain-background retakes. Do not ask for retakes without the box/card or on a plain surface. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based recent add-flow photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo, and do not ask for a reupload when the rep has already confirmed a prior jewelry-front photo. " +
-      "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata, and use clear rep-provided fields. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically; only include piecePhotoUrl if the rep volunteered a real URL. " +
+      "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata, and use clear rep-provided fields. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,

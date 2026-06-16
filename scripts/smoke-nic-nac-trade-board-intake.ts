@@ -31,6 +31,11 @@ export const HARD_FAIL_PHRASES = [
   'Plain surface',
   'incomplete data on file',
   'report this to Louis',
+  'photo URL',
+  'direct image link',
+  'cloud link',
+  'escalate this to Louis',
+  'use the catalog photo',
 ] as const
 
 export const REQUIRED_SMOKE_ASSETS = [
@@ -301,13 +306,7 @@ export async function runTradeBoardIntakeSmoke(
       conversationId,
       currentMessages: messages,
       turn: 'jewelry_photo',
-      parts: [
-        {
-          type: 'text',
-          text: 'Here is the customer-facing jewelry photo in the box.',
-        },
-        await makeImagePart(assets.paths['ER13229-jewelry-boxed-front.jpg']),
-      ],
+      parts: [await makeImagePart(assets.paths['ER13229-jewelry-boxed-front.jpg'])],
       expectedAssistantCount: 3,
       turns,
     })
@@ -329,7 +328,7 @@ export async function runTradeBoardIntakeSmoke(
         parts: [
           {
             type: 'text',
-            text: 'That is correct. This is the July Birthday collection, 2026.',
+            text: 'Confirmed.',
           },
         ],
         expectedAssistantCount: 4,

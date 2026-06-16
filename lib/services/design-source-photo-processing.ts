@@ -75,7 +75,7 @@ async function fetchRemoteImage(
       code: 'PIECE_PHOTO_FETCH_FAILED',
       message: `piece photo fetch failed with status ${response.status}`,
       userMessage:
-        "I couldn't fetch that piece photo URL. Try sending the photo another way or use a direct image link.",
+        "I couldn't read that uploaded piece photo. Please upload it again and I'll retry.",
       statusCode: 422,
     })
   }

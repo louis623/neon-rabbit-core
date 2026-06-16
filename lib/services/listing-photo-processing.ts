@@ -53,17 +53,43 @@ function toDataUrl(contentType: string, bytes: Uint8Array): string {
   return `data:${contentType};base64,${Buffer.from(bytes).toString('base64')}`
 }
 
+function isDataUrl(value: string): boolean {
+  return /^data:[^;]+;base64,/i.test(value)
+}
+
+function decodeDataUrl(input: string): { bytes: Uint8Array; contentType: string } {
+  const match = /^data:([^;]+);base64,(.+)$/i.exec(input)
+  if (!match) {
+    throw new ServiceError({
+      code: 'LISTING_PHOTO_INVALID_DATA_URL',
+      message: 'listing photo data URL is malformed',
+      userMessage:
+        "I couldn't read that uploaded listing photo. Please upload it again and I'll retry.",
+      statusCode: 422,
+    })
+  }
+
+  return {
+    bytes: new Uint8Array(Buffer.from(match[2], 'base64')),
+    contentType: match[1],
+  }
+}
+
 async function fetchImageBytes(
   input: ProcessRepListingPhotoUrlInput,
   fetchImpl: typeof fetch,
 ): Promise<{ bytes: Uint8Array; contentType: string }> {
+  if (isDataUrl(input.sourceImageUrl)) {
+    return decodeDataUrl(input.sourceImageUrl)
+  }
+
   const response = await fetchImpl(input.sourceImageUrl)
   if (!response.ok) {
     throw new ServiceError({
       code: 'LISTING_PHOTO_FETCH_FAILED',
       message: `listing photo fetch failed with status ${response.status}`,
       userMessage:
-        "I couldn't fetch that listing photo URL. Try uploading it again or use a direct image link.",
+        "I couldn't read that uploaded listing photo. Please upload it again and I'll retry.",
       statusCode: 422,
     })
   }

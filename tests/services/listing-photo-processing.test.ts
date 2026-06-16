@@ -229,6 +229,61 @@ describe('processRepListingPhotoUrl', () => {
     expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
   })
 
+  it('processes an uploaded data URL without asking fetch for a photo URL', async () => {
+    const imageBytes = await makePngBytes(1800, 1800, 'cleanLightBox')
+    const dataUrl = `data:image/png;base64,${Buffer.from(imageBytes).toString(
+      'base64',
+    )}`
+    const fetchMock = vi.fn()
+
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/listings/rep-1/florence-boxed-source.png',
+    )
+
+    const result = await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: dataUrl,
+        filenameStem: 'florence-boxed',
+      },
+      { fetch: fetchMock, confirmedJewelryFront: true },
+    )
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
+      'rep-1',
+      expect.stringMatching(/^data:image\/png;base64,/),
+      expect.stringMatching(/^florence-boxed-[0-9a-f-]+-source$/),
+    )
+    expect(result.photoUrl).toBe(
+      'https://cdn.example.com/listings/rep-1/florence-boxed-source.png',
+    )
+  })
+
+  it('does not tell reps to use direct image links when a remote fetch fails', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('nope', {
+        status: 403,
+      }),
+    )
+
+    await expect(
+      processRepListingPhotoUrl(
+        {
+          repId: 'rep-1',
+          sourceImageUrl: 'https://images.example.com/blocked.png',
+          filenameStem: 'blocked-listing',
+        },
+        { fetch: fetchMock },
+      ),
+    ).rejects.toMatchObject({
+      code: 'LISTING_PHOTO_FETCH_FAILED',
+      userMessage: expect.not.stringMatching(
+        /\b(?:photo URL|direct image link|direct link|cloud link)\b/i,
+      ),
+    })
+  })
+
   it('uses unique public object names when retrying the same listing photo input', async () => {
     const imageBytes = await makePngBytes(1800, 1800, 'cleanLightBox')
     const fetchMock = vi

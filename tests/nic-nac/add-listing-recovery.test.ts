@@ -245,7 +245,6 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(result.itemNumber).toBe('DR-999')
     expect(result.requiredFields).toEqual(['designName', 'collectionName'])
     expect(result.optionalFields).toEqual([
-      'piecePhotoUrl',
       'piecePhotoIndex',
       'listingPhotoIndex',
       'material',
@@ -285,7 +284,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(message).toContain('Do not ask for unboxed, no-packaging, or plain-background retakes')
     expect(message).toContain('Do not ask for retakes without the box/card or on a plain surface')
     expect(message).toContain('handler uploads the photo from chat automatically')
-    expect(message).toContain('do NOT ask the rep for a URL')
+    expect(message).not.toMatch(/\b(?:photo URL|direct image link|direct link|cloud link)\b/i)
   })
 })
 
@@ -2237,6 +2236,91 @@ describe('add_listing - active workflow readiness guard', () => {
         collectionName: 'July Birthday',
         listingPhotoUrl:
           'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+      }),
+    )
+  })
+
+  it('treats piecePhotoIndex as the model-facing workflow photo number when several jewelry photos are confirmed', async () => {
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl:
+        'https://cdn.example.com/listings/rep-1/florence-second-boxed-display.png',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as label/details source'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,RklSU1Q=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,U0VDT05E',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        collectionName: 'July Birthday',
+        piecePhotoIndex: 3,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'ER13229',
+    })
+
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'data:image/jpeg;base64,U0VDT05E',
+        filenameStem: 'ER13229-listing-photo',
+      },
+      { confirmedJewelryFront: true },
+    )
+    expect(addListingMock).toHaveBeenCalledWith(
+      {},
+      'rep-1',
+      expect.objectContaining({
+        listingPhotoUrl:
+          'https://cdn.example.com/listings/rep-1/florence-second-boxed-display.png',
       }),
     )
   })

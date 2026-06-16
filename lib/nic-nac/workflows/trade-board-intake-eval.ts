@@ -54,6 +54,27 @@ export const TRADE_BOARD_INTAKE_HARD_FAIL_PATTERNS: Array<{
     phrase: 'Plain surface',
     pattern: /\bplain\s+surface\b/i,
   },
+  {
+    id: 'direct_photo_link',
+    phrase: 'Direct link to a photo',
+    pattern:
+      /\bdirect\s+(?:image\s+)?link\b[\s\S]{0,120}\b(?:photo|image|picture|cloud)\b|\b(?:photo|image|picture)\b[\s\S]{0,120}\bdirect\s+(?:image\s+)?link\b/i,
+  },
+  {
+    id: 'cloud_photo_link',
+    phrase: 'Cloud link',
+    pattern: /\bcloud\s+link\b/i,
+  },
+  {
+    id: 'photo_url_request',
+    phrase: 'Photo URL',
+    pattern: /\bphoto\s+url\b/i,
+  },
+  {
+    id: 'escalate_to_louis',
+    phrase: 'Escalate this to Louis',
+    pattern: /\bescalate\s+this\s+to\s+louis\b/i,
+  },
 ]
 
 export function detectTradeBoardIntakeHardFails(text: string): {

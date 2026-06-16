@@ -48,6 +48,20 @@ describe('Trade Board intake hard-fail detection', () => {
       'manual_backend_add',
       'without_box_or_card',
       'plain_surface',
+      'escalate_to_louis',
+    ])
+  })
+
+  it('detects photo URL and cloud-link workaround language from tool failures', () => {
+    const result = detectTradeBoardIntakeHardFails(
+      'Do you have a direct link to the photo or a cloud link? The system needs a photo URL for this one, so I can escalate this to Louis if needed.',
+    )
+
+    expect(result.matches.map((m) => m.id)).toEqual([
+      'direct_photo_link',
+      'cloud_photo_link',
+      'photo_url_request',
+      'escalate_to_louis',
     ])
   })
 

@@ -18,6 +18,10 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
     expect(HARD_FAIL_PHRASES).toContain('Packaging is too prominent')
     expect(HARD_FAIL_PHRASES).toContain('just the earrings')
     expect(HARD_FAIL_PHRASES).toContain('outside or clearly apart')
+    expect(HARD_FAIL_PHRASES).toContain('photo URL')
+    expect(HARD_FAIL_PHRASES).toContain('direct image link')
+    expect(HARD_FAIL_PHRASES).toContain('cloud link')
+    expect(HARD_FAIL_PHRASES).toContain('escalate this to Louis')
   })
 
   it('parses smoke cases from cases.txt-style content', () => {
@@ -46,10 +50,18 @@ END
       findHardFailPhrases(
         'I can escalate this to Louis and have him add it manually on the backend.',
       ),
-    ).toEqual(['Have Louis add it manually on the backend'])
+    ).toEqual([
+      'Have Louis add it manually on the backend',
+      'escalate this to Louis',
+    ])
     expect(findHardFailPhrases('Please use a plain background.')).toEqual([
       'Plain background',
     ])
+    expect(
+      findHardFailPhrases(
+        'Do you have a direct image link or cloud link? The system needs a photo URL.',
+      ),
+    ).toEqual(['photo URL', 'direct image link', 'cloud link'])
   })
 
   it('reports missing required ER13229 smoke assets before live calls', () => {
