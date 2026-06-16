@@ -275,4 +275,114 @@ describe('Trade Board intake route context', () => {
       toolPolicySource: 'active_workflow',
     })
   })
+
+  it('extracts rep-typed ER13229 product truth before asking for more intake details', async () => {
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'details_capture',
+      missing_fields: ['designName', 'jewelryFrontPhoto'],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const selectPhotosBuilder = {
+      select: vi.fn(() => selectPhotosBuilder),
+      eq: vi.fn(() => selectPhotosBuilder),
+      order: vi.fn(() => ({ data: [], error: null })),
+    }
+    const upsertPhotoBuilder = {
+      upsert: vi.fn(() => ({ error: null })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        const callsForTable = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === table,
+        ).length
+        if (table === 'trade_board_intake_sessions') {
+          return callsForTable === 1 ? activeBuilder : updateBuilder
+        }
+        if (table === 'trade_board_intake_photos') {
+          return callsForTable === 1 ? selectPhotosBuilder : upsertPhotoBuilder
+        }
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'assistant-1',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'text',
+              text: 'Upload a photo - snap a pic of the item-info tag or label, or the jewelry itself.',
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-1',
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text:
+                'ER13229, The Florence Earrings. Lab-Created Ruby, Rhodium Plating, $160 MSRP. Collection is July Birthday Collection 2026. Use the attached boxed display photo as the customer-facing jewelry photo.',
+            },
+            {
+              type: 'file',
+              mediaType: 'image/jpeg',
+              url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            },
+          ],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-1',
+      mode: 'workspace',
+      nowIso: '2026-06-15T00:00:00.000Z',
+    } as never)
+
+    expect(context.sessionAfter?.known).toMatchObject({
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+      mainStone: 'Lab-Created Ruby',
+      material: 'Rhodium Plating',
+      bpMsrp: 160,
+    })
+    expect(context.sessionAfter?.phase).toBe('ready_to_add')
+    expect(context.sessionAfter?.missing).toEqual([])
+    expect(updateBuilder.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design_name: 'The Florence Earrings',
+        collection_name: 'July Birthday',
+        collection_year: 2026,
+        main_stone: 'Lab-Created Ruby',
+        material: 'Rhodium Plating',
+        bp_msrp: 160,
+        current_phase: 'ready_to_add',
+        missing_fields: [],
+      }),
+    )
+  })
 })
