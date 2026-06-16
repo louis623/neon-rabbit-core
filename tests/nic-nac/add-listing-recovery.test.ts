@@ -35,6 +35,7 @@ const decideCanonicalEnhancedPhotoMock = vi.fn()
 const processRepListingPhotoUrlMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
+const updateTradeBoardIntakeSessionMock = vi.fn()
 const fetchMock = vi.fn()
 
 function makeCleanAnalysis(overrides: Partial<Record<string, unknown>> = {}) {
@@ -110,6 +111,11 @@ vi.mock('@/lib/nic-nac/audit', () => ({
 
 vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logIncident: (...args: unknown[]) => logIncidentMock(...args),
+}))
+
+vi.mock('@/lib/nic-nac/workflows/trade-board-intake-store', () => ({
+  updateTradeBoardIntakeSession: (...args: unknown[]) =>
+    updateTradeBoardIntakeSessionMock(...args),
 }))
 
 import { makeAddListingTool } from '@/lib/nic-nac/tools/add-listing'
@@ -217,6 +223,7 @@ beforeEach(() => {
   processRepListingPhotoUrlMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
+  updateTradeBoardIntakeSessionMock.mockReset()
   fetchMock.mockReset()
   vi.stubGlobal('fetch', fetchMock)
   analyzeServerImageQualityMock.mockResolvedValue(makeCleanAnalysis())
@@ -1841,6 +1848,20 @@ describe('add_listing - active workflow readiness guard', () => {
     ).resolves.toMatchObject({
       listingId: 'listing-1',
     })
+    expect(updateTradeBoardIntakeSessionMock).toHaveBeenCalledWith(
+      {},
+      {
+        sessionId: 'workflow-1',
+        patch: expect.objectContaining({
+          status: 'completed',
+          current_phase: 'completed',
+          created_listing_ids: ['listing-1'],
+          created_design_id: 'design-1',
+          missing_fields: [],
+          hard_blockers: [],
+        }),
+      },
+    )
   })
 
   it('uses the workflow-confirmed jewelry-front photo instead of a stale label index', async () => {

@@ -32,7 +32,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
-import { computeTradeBoardIntakeReadiness } from '@/lib/nic-nac/workflows/trade-board-intake-controller'
+import {
+  computeTradeBoardIntakeReadiness,
+  transitionTradeBoardIntake,
+} from '@/lib/nic-nac/workflows/trade-board-intake-controller'
+import { updateTradeBoardIntakeSession } from '@/lib/nic-nac/workflows/trade-board-intake-store'
 import type { ToolContext, ToolDefinition } from './types'
 
 const itemBaseShape = {
@@ -399,6 +403,61 @@ async function processListingPhotoForAdd(input: {
   }
 }
 
+async function markActiveTradeBoardWorkflowCompleted(input: {
+  workflow?: ToolContext['activeTradeBoardWorkflow']
+  admin: SupabaseClient
+  listingId: string
+  designId: string
+  repId: string
+  conversationId: string
+  runId: string
+}) {
+  const workflow = input.workflow
+  if (workflow?.status !== 'active') return
+
+  const completed = transitionTradeBoardIntake(workflow, {
+    type: 'mark_completed',
+    listingIds: [input.listingId],
+    designId: input.designId,
+  })
+
+  try {
+    await updateTradeBoardIntakeSession(input.admin, {
+      sessionId: workflow.id,
+      patch: {
+        status: completed.status,
+        current_phase: completed.phase,
+        created_listing_ids: completed.createdListingIds ?? [input.listingId],
+        created_design_id: completed.createdDesignId ?? input.designId,
+        missing_fields: [],
+        hard_blockers: [],
+        soft_warnings: [],
+      },
+    })
+  } catch (error) {
+    try {
+      await logIncident({
+        errorType: 'trade_board_intake_completion_failed',
+        repId: input.repId,
+        conversationId: input.conversationId,
+        severity: 'warn',
+        details: {
+          toolName: 'add_listing',
+          runId: input.runId,
+          workflowId: workflow.id,
+          listingId: input.listingId,
+          message:
+            error instanceof Error
+              ? error.message
+              : 'unknown workflow completion error',
+        },
+      })
+    } catch {
+      /* swallow - workflow telemetry must not undo a successful listing */
+    }
+  }
+}
+
 async function shouldCollapseRepeatedBatchToSingle(
   input: ToolInput,
   ctx: { supabase: SupabaseClient; conversationId: string },
@@ -500,6 +559,15 @@ async function runSingle(
           repNotes: input.repNotes,
           tradePreferences: input.tradePreferences,
           listingPhotoUrl: existingListingPhotoUrl,
+        })
+        await markActiveTradeBoardWorkflowCompleted({
+          workflow: activeWorkflow,
+          admin,
+          listingId: existingResult.listingId,
+          designId: existingResult.designId,
+          repId: ctx.repId,
+          conversationId: ctx.conversationId,
+          runId: ctx.runId,
         })
         await writeAuditIsolated({
           actionType: 'add_listing',
@@ -903,6 +971,16 @@ async function runSingle(
     }
     explainServiceError(err)
   }
+
+  await markActiveTradeBoardWorkflowCompleted({
+    workflow: activeWorkflow,
+    admin,
+    listingId: result.listingId,
+    designId: result.designId,
+    repId: ctx.repId,
+    conversationId: ctx.conversationId,
+    runId: ctx.runId,
+  })
 
   await writeAuditIsolated({
     actionType: 'add_listing',
