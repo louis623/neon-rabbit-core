@@ -590,9 +590,9 @@ async function runSingle(
     }
     createdNewDesign = true
     if (stagedOriginal) {
-      const photoroomConfig = getPhotoroomConfig()
-      if (photoroomConfig) {
-        try {
+      try {
+        const photoroomConfig = getPhotoroomConfig()
+        if (photoroomConfig) {
           await updatePhotoPipelineState(admin, createResult.designId, {
             provider: 'photoroom',
             status: 'processing',
@@ -699,34 +699,34 @@ async function runSingle(
             })
             photoPipelineStatus = 'rejected'
           }
-        } catch (photoErr) {
-          photoPipelineStatus = 'error'
-          try {
-            await updatePhotoPipelineState(admin, createResult.designId, {
-              provider: 'photoroom',
-              status: 'error',
-              processedAt: new Date().toISOString(),
-            })
-          } catch {
-            /* swallow - listing itself already succeeded */
-          }
-          try {
-            await logIncident({
-              errorType: 'photo_pipeline_failed',
-              repId: ctx.repId,
-              conversationId: ctx.conversationId,
-              severity: 'warn',
-              details: {
-                toolName: 'add_listing',
-                runId: ctx.runId,
-                itemNumber,
-                designId: createResult.designId,
-                message: (photoErr as Error)?.message,
-              },
-            })
-          } catch {
-            /* swallow - observability must not affect outcome */
-          }
+        }
+      } catch (photoErr) {
+        photoPipelineStatus = 'error'
+        try {
+          await updatePhotoPipelineState(admin, createResult.designId, {
+            provider: 'photoroom',
+            status: 'error',
+            processedAt: new Date().toISOString(),
+          })
+        } catch {
+          /* swallow - listing itself already succeeded */
+        }
+        try {
+          await logIncident({
+            errorType: 'photo_pipeline_failed',
+            repId: ctx.repId,
+            conversationId: ctx.conversationId,
+            severity: 'warn',
+            details: {
+              toolName: 'add_listing',
+              runId: ctx.runId,
+              itemNumber,
+              designId: createResult.designId,
+              message: (photoErr as Error)?.message,
+            },
+          })
+        } catch {
+          /* swallow - observability must not affect outcome */
         }
       }
     }

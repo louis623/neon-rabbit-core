@@ -1960,6 +1960,115 @@ describe('add_listing - active workflow readiness guard', () => {
         'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
     })
   })
+
+  it('still saves the listing when optional Photoroom config is unavailable in production', async () => {
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/florence-boxed.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/florence-boxed.jpg',
+      signedUrl: 'https://signed.example.com/florence-boxed',
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday',
+      typePrefix: 'ER',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    getPhotoroomConfigMock.mockImplementationOnce(() => {
+      throw new Error(
+        'Photoroom configuration is incomplete - cannot start in production',
+      )
+    })
+    updatePhotoPipelineStateMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      photoPipelineStatus: 'error',
+      enhancedPhotoUrl: null,
+    })
+
+    const supabaseMock = makeConversationLookupMock([
+      {
+        parts: [
+          { type: 'text', text: 'Use this boxed display as the jewelry photo.' },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRUQ=',
+          },
+        ],
+      },
+    ])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday',
+        collectionYear: 2026,
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 160,
+        piecePhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'ER13229',
+      createdNewDesign: true,
+      photoPipelineStatus: 'error',
+    })
+
+    expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
+    expect(updatePhotoPipelineStateMock).toHaveBeenCalledWith(
+      {},
+      'design-1',
+      expect.objectContaining({
+        provider: 'photoroom',
+        status: 'error',
+      }),
+    )
+    expect(logIncidentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: 'photo_pipeline_failed',
+        severity: 'warn',
+        details: expect.objectContaining({
+          toolName: 'add_listing',
+          itemNumber: 'ER13229',
+          designId: 'design-1',
+          message:
+            'Photoroom configuration is incomplete - cannot start in production',
+        }),
+      }),
+    )
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+  })
 })
 
 // Sanity: make sure ServiceError import resolves (avoids the test file
