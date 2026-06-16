@@ -33,7 +33,7 @@ import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import {
-  computeTradeBoardIntakeReadiness,
+  computeTradeBoardAddAttemptReadiness,
   transitionTradeBoardIntake,
 } from '@/lib/nic-nac/workflows/trade-board-intake-controller'
 import { updateTradeBoardIntakeSession } from '@/lib/nic-nac/workflows/trade-board-intake-store'
@@ -490,14 +490,20 @@ async function runSingle(
 
   const activeWorkflow = ctx.activeTradeBoardWorkflow
   if (activeWorkflow?.status === 'active') {
-    const readiness = computeTradeBoardIntakeReadiness(activeWorkflow)
+    const readiness = computeTradeBoardAddAttemptReadiness(activeWorkflow, {
+      itemNumber,
+      designName: input.designName,
+      collectionName: input.collectionName,
+      collectionYear: input.collectionYear,
+    })
     if (!readiness.ready) {
       const needsJewelryPhoto = readiness.missing.includes('jewelryFrontPhoto')
+      const missing = readiness.missing.join(', ')
       throw new NicNacToolError({
         code: 'WORKFLOW_NOT_READY',
         userMessage: needsJewelryPhoto
           ? 'I still need the customer-facing jewelry photo before I can save this listing.'
-          : 'I still need one more required detail before I can save this listing.',
+          : `I still need these details before I can save this listing: ${missing}.`,
       })
     }
   }

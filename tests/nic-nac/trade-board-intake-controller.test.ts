@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 import {
   buildTradeBoardIntakePromptState,
+  computeTradeBoardAddAttemptReadiness,
   computeTradeBoardIntakeReadiness,
   createEmptyTradeBoardIntakeState,
   getTradeBoardIntakeToolsRequired,
@@ -172,5 +173,74 @@ describe('Trade Board intake controller', () => {
 
     expect(next.phase).toBe('adding')
     expect(next.status).toBe('active')
+  })
+
+  it('allows an add attempt when current tool input supplies stale workflow item fields and jewelry photo is confirmed', () => {
+    const state = baseState({
+      phase: 'details_capture',
+      known: {
+        collectionName: 'ection',
+      },
+      missing: ['itemNumber', 'designName'],
+      photos: [
+        {
+          attachmentIndex: 1,
+          declaredRole: 'label_details',
+          visualRole: 'label_or_packaging',
+          roleConfirmed: true,
+          quality: 'unknown',
+          qualityIssues: [],
+          notes: ['declared as label/details source'],
+        },
+        {
+          attachmentIndex: 1,
+          declaredRole: 'jewelry_front',
+          visualRole: 'jewelry',
+          roleConfirmed: true,
+          quality: 'unknown',
+          qualityIssues: [],
+          notes: ['declared as customer-facing jewelry photo'],
+        },
+      ],
+    })
+
+    const readiness = computeTradeBoardAddAttemptReadiness(state, {
+      itemNumber: 'ER13229',
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+    })
+
+    expect(readiness.ready).toBe(true)
+    expect(readiness.missing).toEqual([])
+    expect(readiness.blockers).toEqual([])
+  })
+
+  it('still blocks an add attempt when the only workflow photo is label_details', () => {
+    const state = baseState({
+      known: {
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday',
+      },
+      photos: [
+        {
+          attachmentIndex: 1,
+          declaredRole: 'label_details',
+          visualRole: 'jewelry',
+          roleConfirmed: true,
+          quality: 'unknown',
+          qualityIssues: [],
+          notes: ['backs of earrings visible'],
+        },
+      ],
+    })
+
+    const readiness = computeTradeBoardAddAttemptReadiness(state, {
+      itemNumber: 'ER13229',
+      collectionName: 'July Birthday',
+    })
+
+    expect(readiness.ready).toBe(false)
+    expect(readiness.missing).toContain('jewelryFrontPhoto')
   })
 })

@@ -2167,6 +2167,79 @@ describe('add_listing - active workflow readiness guard', () => {
     )
     expect(addListingMock).toHaveBeenCalledTimes(1)
   })
+
+  it('does not let stale workflow catalog fields veto a valid ER13229 add attempt with a confirmed jewelry photo', async () => {
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl:
+        'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'details_capture',
+        known: {
+          collectionName: 'ection',
+        },
+        missing: ['itemNumber', 'designName'],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,TEFCRUw=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as label/details source'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        collectionName: 'July Birthday',
+        collectionYear: 2026,
+        piecePhotoIndex: 2,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      designId: 'design-existing',
+      itemNumber: 'ER13229',
+    })
+
+    expect(addListingMock).toHaveBeenCalledWith(
+      {},
+      'rep-1',
+      expect.objectContaining({
+        itemNumber: 'ER13229',
+        collectionName: 'July Birthday',
+        listingPhotoUrl:
+          'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
+      }),
+    )
+  })
 })
 
 // Sanity: make sure ServiceError import resolves (avoids the test file

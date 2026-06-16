@@ -1,4 +1,5 @@
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
+import { mergeTradeBoardKnownFields } from './trade-board-known-fields'
 import type {
   TradeBoardIntakeNextAction,
   TradeBoardIntakePhase,
@@ -63,6 +64,56 @@ export function computeTradeBoardIntakeReadiness(
   if (!known.designName) missing.push('designName')
   if (!known.collectionName) missing.push('collectionName')
   if (!labelDetailsPhoto && !known.itemNumber) missing.push('labelDetailsPhoto')
+  if (!jewelryFrontPhoto) missing.push('jewelryFrontPhoto')
+  if (blockedLabel) blockers.push('labelPhotoUnreadable')
+  if (blockedJewelry) blockers.push('jewelryPhotoUnusable')
+
+  const ready = missing.length === 0 && blockers.length === 0
+  return {
+    ready,
+    missing,
+    blockers,
+    nextAction: chooseNextAction({ ready, missing, blockers }),
+  }
+}
+
+export function computeTradeBoardAddAttemptReadiness(
+  state: TradeBoardIntakeSessionState,
+  input: {
+    itemNumber?: string
+    designName?: string
+    collectionName?: string
+    collectionYear?: number
+  },
+): {
+  ready: boolean
+  missing: string[]
+  blockers: string[]
+  nextAction: TradeBoardIntakeNextAction
+} {
+  const known = mergeTradeBoardKnownFields(state.known, {
+    itemNumber: normalizeOptionalText(input.itemNumber)?.toUpperCase(),
+    designName: normalizeOptionalText(input.designName),
+    collectionName: normalizeOptionalText(input.collectionName),
+    collectionYear: input.collectionYear,
+  })
+  const missing: string[] = []
+  const blockers: string[] = []
+
+  const jewelryFrontPhoto = state.photos.find(
+    (photo) =>
+      photo.declaredRole === 'jewelry_front' && photo.quality !== 'blocked',
+  )
+  const blockedLabel = state.photos.find(
+    (photo) =>
+      photo.declaredRole === 'label_details' && photo.quality === 'blocked',
+  )
+  const blockedJewelry = state.photos.find(
+    (photo) =>
+      photo.declaredRole === 'jewelry_front' && photo.quality === 'blocked',
+  )
+
+  if (!known.itemNumber) missing.push('itemNumber')
   if (!jewelryFrontPhoto) missing.push('jewelryFrontPhoto')
   if (blockedLabel) blockers.push('labelPhotoUnreadable')
   if (blockedJewelry) blockers.push('jewelryPhotoUnusable')
@@ -186,6 +237,11 @@ function inferPhase(state: TradeBoardIntakeSessionState): TradeBoardIntakePhase 
   if (state.missing.includes('jewelryFrontPhoto')) return 'photo_capture'
   if (state.known.itemNumber) return 'ready_to_add'
   return 'started'
+}
+
+function normalizeOptionalText(value: string | undefined): string | undefined {
+  const normalized = value?.trim()
+  return normalized ? normalized : undefined
 }
 
 function chooseNextAction(args: {
