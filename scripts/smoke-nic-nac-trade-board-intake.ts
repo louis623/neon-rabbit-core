@@ -251,6 +251,11 @@ export async function runTradeBoardIntakeSmoke(
   const smokeAccount = await prepareSmokeAccount(env, supabase)
   const session = await createDemoSessionCookie(env, smokeAccount)
   const rep = await fetchNicNacMe(appUrl, env, session.cookie)
+  await cleanupPriorSmokeListingsForItem({
+    supabase,
+    repId: rep.id,
+    itemNumber: 'ER13229',
+  })
   const conversationId = randomUUID()
   const turns: SmokeTurnResult[] = []
   let messages: UIMessage[] = []
@@ -798,6 +803,33 @@ async function cleanupSmokeListings(input: {
     skipped: false,
     removedListingIds: input.listingIds,
   }
+}
+
+async function cleanupPriorSmokeListingsForItem(input: {
+  supabase: SupabaseClient
+  repId: string
+  itemNumber: string
+}): Promise<void> {
+  const { data: design, error: designError } = await input.supabase
+    .from('jewelry_designs')
+    .select('id')
+    .eq('item_number', input.itemNumber)
+    .maybeSingle<{ id: string }>()
+  if (designError) throw designError
+  if (!design?.id) return
+
+  const { error } = await input.supabase
+    .from('trade_listings')
+    .update({
+      status: 'removed',
+      removal_reason: 'mistake',
+      deleted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('rep_id', input.repId)
+    .eq('design_id', design.id)
+    .neq('status', 'removed')
+  if (error) throw error
 }
 
 function withVercelProtectionBypass(rawUrl: string, env: Env): string {
