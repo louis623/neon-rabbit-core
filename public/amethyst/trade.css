@@ -1182,6 +1182,38 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
   border-color: var(--hp-primary);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--hp-primary) 16%, transparent);
 }
+.tp-sheet-upload {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px dashed color-mix(in oklab, var(--hp-primary) 34%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--hp-primary) 6%, var(--hp-bg));
+  padding: 12px;
+}
+.tp-sheet-upload input[type="file"] {
+  width: min(180px, 38vw);
+  max-width: 100%;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+.tp-sheet-upload strong,
+.tp-sheet-upload span {
+  display: block;
+  line-height: 1.35;
+}
+.tp-sheet-upload strong {
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.tp-sheet-upload span {
+  color: var(--fg-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
 .tp-sheet-error {
   border: 1px solid color-mix(in oklab, #b42318 28%, var(--border));
   background: color-mix(in oklab, #b42318 10%, white);

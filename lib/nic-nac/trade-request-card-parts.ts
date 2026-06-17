@@ -15,6 +15,10 @@ export type TradeRequestCardData = {
     bpMsrp: number | null
   }
   offeredText: string
+  revealScreenshot?: {
+    viewUrl: string
+    expiresAt: string
+  } | null
   ruleCheck: {
     status: 'needs_review'
     label: string
@@ -48,6 +52,12 @@ export function buildTradeRequestCardPart(
         bpMsrp: summary.listing.bpMsrp,
       },
       offeredText: summary.customerDescription,
+      revealScreenshot: summary.revealScreenshot
+        ? {
+            viewUrl: `/api/nic-nac/trade-requests/${summary.requestId}/reveal-screenshot`,
+            expiresAt: summary.revealScreenshot.expiresAt,
+          }
+        : null,
       ruleCheck: {
         status: 'needs_review',
         label: `Compare against ${comparisonTarget}`,
@@ -89,6 +99,11 @@ export function isTradeRequestCardPart(
     (typeof requestedItem.bpMsrp === 'number' ||
       requestedItem.bpMsrp === null) &&
     typeof data.offeredText === 'string' &&
+    (data.revealScreenshot === undefined ||
+      data.revealScreenshot === null ||
+      (typeof data.revealScreenshot === 'object' &&
+        typeof data.revealScreenshot.viewUrl === 'string' &&
+        typeof data.revealScreenshot.expiresAt === 'string')) &&
     !!ruleCheck &&
     typeof ruleCheck === 'object' &&
     ruleCheck.status === 'needs_review' &&

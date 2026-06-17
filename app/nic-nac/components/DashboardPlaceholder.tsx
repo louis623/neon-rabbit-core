@@ -3914,6 +3914,28 @@ export function TradeBoardWorkspaceCard({
                           Wants {request.listing.design.itemNumber} - {request.listing.design.designName}
                         </div>
                         <div className={styles.helperNote}>{request.customerDescription}</div>
+                        {request.revealScreenshot ? (
+                          <a
+                            className={styles.tradeScreenshotLink}
+                            href={`/api/nic-nac/trade-requests/${request.id}/reveal-screenshot`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <img
+                              className={styles.tradeScreenshotThumb}
+                              src={`/api/nic-nac/trade-requests/${request.id}/reveal-screenshot`}
+                              alt={`Reveal screenshot from ${request.customerName}`}
+                            />
+                            <span>
+                              <span className={styles.tradeScreenshotTitle}>
+                                Reveal screenshot
+                              </span>
+                              <span className={styles.tradeScreenshotMeta}>
+                                View customer upload
+                              </span>
+                            </span>
+                          </a>
+                        ) : null}
                         <div className={styles.helperNote}>
                           Rule check: compare against {ruleCheckTarget}
                         </div>

@@ -494,8 +494,12 @@ describe('Amethyst trade page template wiring', () => {
 
     expect(jsx).toContain('function RequestSheet')
     expect(jsx).toContain('<label>Your name</label>')
-    expect(jsx).toContain('<label>Which item number did you just reveal?</label>')
-    expect(jsx).toContain('placeholder="Example: RG12345"')
+    expect(jsx).toContain('<label>What did you just reveal?</label>')
+    expect(jsx).toContain('placeholder="Example: July Birthday 2026 necklace"')
+    expect(jsx).toContain('<label>Screenshot of your reveal (recommended)</label>')
+    expect(jsx).toContain('A screenshot helps the rep confirm the piece quickly. It expires after 48 hours.')
+    expect(jsx).toContain('new FormData()')
+    expect(jsx).toContain('form.append("revealScreenshot", payload.revealScreenshot)')
     expect(jsx).toContain(
       'const TRADE_REQUEST_ENDPOINT = withCurrentSearch("/api/amethyst/trade-requests")',
     )
@@ -511,6 +515,6 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('acceptedTerms')
     expect(jsx).not.toContain('tp-sheet-consent')
     expect(jsx).toContain('setSubmittedListingIds')
-    expect(jsx).not.toContain('type="file"')
+    expect(jsx).toContain('type="file"')
   })
 })

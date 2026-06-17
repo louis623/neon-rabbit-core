@@ -14,7 +14,18 @@ import { randomUUID } from 'crypto'
 
 const PUBLIC_BUCKET = 'jewelry-photos'
 const STAGING_BUCKET = 'jewelry-photo-staging'
+const TRADE_REQUEST_SCREENSHOT_BUCKET = 'trade-request-screenshots'
 const STAGING_URL_TTL_SECONDS = 60 * 60
+const TRADE_REQUEST_SCREENSHOT_URL_TTL_SECONDS = 10 * 60
+export const TRADE_REQUEST_SCREENSHOT_RETENTION_HOURS = 48
+export const TRADE_REQUEST_SCREENSHOT_MAX_BYTES = 8 * 1024 * 1024
+
+const TRADE_REQUEST_SCREENSHOT_MIME_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+}
 
 const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -49,6 +60,26 @@ function toBuffer(data: Buffer | Uint8Array | ArrayBuffer): Buffer {
   if (Buffer.isBuffer(data)) return data
   if (data instanceof Uint8Array) return Buffer.from(data)
   return Buffer.from(data)
+}
+
+function normalizeScreenshotContentType(contentType: string): string {
+  const normalized = contentType.toLowerCase()
+  if (normalized === 'image/jpg') return 'image/jpeg'
+  if (TRADE_REQUEST_SCREENSHOT_MIME_EXT[normalized]) return normalized
+  throw new Error('UNSUPPORTED_TRADE_REQUEST_SCREENSHOT_TYPE')
+}
+
+function tradeRequestScreenshotKey(
+  repId: string,
+  requestId: string,
+  contentType: string,
+  filename?: string,
+) {
+  const ext = TRADE_REQUEST_SCREENSHOT_MIME_EXT[contentType] ?? 'jpg'
+  const baseName = filename
+    ? sanitizeFilename(stripKnownExtension(filename))
+    : 'reveal-screenshot'
+  return `${repId}/${requestId}/${randomUUID()}-${baseName}.${ext}`
 }
 
 export async function uploadJewelryPhoto(
@@ -111,6 +142,83 @@ export async function getStagedOriginalPhotoSignedUrl(
   const signed = await bucket.createSignedUrl(objectPath, ttlSeconds)
   if (signed.error) throw signed.error
   return signed.data.signedUrl
+}
+
+export async function uploadTradeRequestRevealScreenshot(
+  repId: string,
+  requestId: string,
+  binaryData: Buffer | Uint8Array | ArrayBuffer,
+  options: {
+    contentType: string
+    filename?: string
+    now?: Date
+  },
+): Promise<{
+  objectPath: string
+  contentType: string
+  sizeBytes: number
+  uploadedAt: string
+  expiresAt: string
+}> {
+  const contentType = normalizeScreenshotContentType(options.contentType)
+  const buffer = toBuffer(binaryData)
+  if (buffer.byteLength <= 0) {
+    throw new Error('EMPTY_TRADE_REQUEST_SCREENSHOT')
+  }
+  if (buffer.byteLength > TRADE_REQUEST_SCREENSHOT_MAX_BYTES) {
+    throw new Error('TRADE_REQUEST_SCREENSHOT_TOO_LARGE')
+  }
+
+  const uploadedAtDate = options.now ?? new Date()
+  const expiresAtDate = new Date(
+    uploadedAtDate.getTime() + TRADE_REQUEST_SCREENSHOT_RETENTION_HOURS * 60 * 60 * 1000,
+  )
+  const key = tradeRequestScreenshotKey(
+    repId,
+    requestId,
+    contentType,
+    options.filename,
+  )
+
+  const admin = createAdminClient()
+  const bucket = admin.storage.from(TRADE_REQUEST_SCREENSHOT_BUCKET)
+  const { error } = await bucket.upload(key, buffer, {
+    contentType,
+    upsert: false,
+  })
+  if (error) throw error
+
+  return {
+    objectPath: key,
+    contentType,
+    sizeBytes: buffer.byteLength,
+    uploadedAt: uploadedAtDate.toISOString(),
+    expiresAt: expiresAtDate.toISOString(),
+  }
+}
+
+export async function getTradeRequestRevealScreenshotSignedUrl(
+  objectPath: string,
+  ttlSeconds = TRADE_REQUEST_SCREENSHOT_URL_TTL_SECONDS,
+): Promise<string> {
+  const admin = createAdminClient()
+  const bucket = admin.storage.from(TRADE_REQUEST_SCREENSHOT_BUCKET)
+  const signed = await bucket.createSignedUrl(objectPath, ttlSeconds)
+  if (signed.error) throw signed.error
+  return signed.data.signedUrl
+}
+
+export async function removeTradeRequestRevealScreenshots(
+  objectPaths: string[],
+): Promise<void> {
+  const paths = objectPaths.map((path) => path.trim()).filter(Boolean)
+  if (paths.length === 0) return
+
+  const admin = createAdminClient()
+  const { error } = await admin.storage
+    .from(TRADE_REQUEST_SCREENSHOT_BUCKET)
+    .remove(paths)
+  if (error) throw error
 }
 
 export async function publishApprovedPhoto(

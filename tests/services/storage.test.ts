@@ -7,7 +7,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import {
+  getTradeRequestRevealScreenshotSignedUrl,
   publishApprovedPhoto,
+  removeTradeRequestRevealScreenshots,
+  uploadTradeRequestRevealScreenshot,
   uploadJewelryPhoto,
   uploadStagedOriginalPhoto,
 } from '@/lib/services/storage'
@@ -17,6 +20,7 @@ function makeStorageBucket() {
     upload: vi.fn(),
     createSignedUrl: vi.fn(),
     getPublicUrl: vi.fn(),
+    remove: vi.fn(),
   }
 }
 
@@ -149,5 +153,106 @@ describe('storage service', () => {
       },
     )
     expect(result).toBe('https://cdn.example.com/rep-photo.jpg')
+  })
+
+  it('uploads a trade request reveal screenshot to the private temporary bucket', async () => {
+    const screenshotBucket = makeStorageBucket()
+    screenshotBucket.upload.mockResolvedValue({ error: null })
+
+    createAdminClientMock.mockReturnValue({
+      storage: {
+        from: vi.fn((bucket: string) => {
+          if (bucket === 'trade-request-screenshots') {
+            return screenshotBucket
+          }
+          throw new Error(`Unexpected bucket ${bucket}`)
+        }),
+      },
+    })
+
+    const result = await uploadTradeRequestRevealScreenshot(
+      'rep-7',
+      'request-9',
+      Buffer.from('screenshot'),
+      {
+        contentType: 'image/jpg',
+        filename: 'Reveal shot!!.jpg',
+        now: new Date('2026-06-17T12:00:00.000Z'),
+      },
+    )
+
+    expect(screenshotBucket.upload).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^rep-7\/request-9\/[0-9a-f-]+-Reveal_shot_+\.jpg$/,
+      ),
+      Buffer.from('screenshot'),
+      {
+        contentType: 'image/jpeg',
+        upsert: false,
+      },
+    )
+    expect(result).toEqual({
+      objectPath: expect.stringMatching(
+        /^rep-7\/request-9\/[0-9a-f-]+-Reveal_shot_+\.jpg$/,
+      ),
+      contentType: 'image/jpeg',
+      sizeBytes: Buffer.from('screenshot').byteLength,
+      uploadedAt: '2026-06-17T12:00:00.000Z',
+      expiresAt: '2026-06-19T12:00:00.000Z',
+    })
+  })
+
+  it('rejects unsupported or oversized trade request screenshots before upload', async () => {
+    await expect(
+      uploadTradeRequestRevealScreenshot(
+        'rep-7',
+        'request-9',
+        Buffer.from('svg'),
+        { contentType: 'image/svg+xml' },
+      ),
+    ).rejects.toThrow('UNSUPPORTED_TRADE_REQUEST_SCREENSHOT_TYPE')
+
+    await expect(
+      uploadTradeRequestRevealScreenshot(
+        'rep-7',
+        'request-9',
+        Buffer.alloc(8 * 1024 * 1024 + 1),
+        { contentType: 'image/png' },
+      ),
+    ).rejects.toThrow('TRADE_REQUEST_SCREENSHOT_TOO_LARGE')
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+  })
+
+  it('creates signed URLs and removes trade request reveal screenshots from the private bucket', async () => {
+    const screenshotBucket = makeStorageBucket()
+    screenshotBucket.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: 'https://signed.example.com/reveal' },
+      error: null,
+    })
+    screenshotBucket.remove.mockResolvedValue({ error: null })
+
+    createAdminClientMock.mockReturnValue({
+      storage: {
+        from: vi.fn((bucket: string) => {
+          if (bucket === 'trade-request-screenshots') {
+            return screenshotBucket
+          }
+          throw new Error(`Unexpected bucket ${bucket}`)
+        }),
+      },
+    })
+
+    await expect(
+      getTradeRequestRevealScreenshotSignedUrl('rep-7/request-9/reveal.jpg'),
+    ).resolves.toBe('https://signed.example.com/reveal')
+    await removeTradeRequestRevealScreenshots(['rep-7/request-9/reveal.jpg'])
+
+    expect(screenshotBucket.createSignedUrl).toHaveBeenCalledWith(
+      'rep-7/request-9/reveal.jpg',
+      10 * 60,
+    )
+    expect(screenshotBucket.remove).toHaveBeenCalledWith([
+      'rep-7/request-9/reveal.jpg',
+    ])
   })
 })

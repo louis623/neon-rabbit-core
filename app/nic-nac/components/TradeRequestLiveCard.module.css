@@ -55,6 +55,33 @@
   background: var(--nic-nac-surface-dashboard-placeholder);
 }
 
+.screenshotLink {
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 8px;
+  background: var(--nic-nac-surface-rep-message);
+  color: inherit;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  text-decoration: none;
+}
+
+.screenshotLink:focus-visible {
+  outline: 2px solid var(--nic-nac-focus-ring);
+  outline-offset: 2px;
+}
+
+.screenshotThumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--nic-nac-surface-dashboard-placeholder);
+  border: 1px solid var(--nic-nac-border);
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

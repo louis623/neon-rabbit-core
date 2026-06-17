@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createAdminClientMock = vi.fn()
 const processReadyPhotoEnhancementQueueMock = vi.fn()
+const getExpiredTradeRequestRevealScreenshotPathsMock = vi.fn()
+const clearExpiredTradeRequestRevealScreenshotsMock = vi.fn()
+const removeTradeRequestRevealScreenshotsMock = vi.fn()
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: (...args: unknown[]) => createAdminClientMock(...args),
@@ -12,12 +15,30 @@ vi.mock('@/lib/services/photo-enhancement-queue', () => ({
     processReadyPhotoEnhancementQueueMock(...args),
 }))
 
+vi.mock('@/lib/services/trade-requests', () => ({
+  getExpiredTradeRequestRevealScreenshotPaths: (...args: unknown[]) =>
+    getExpiredTradeRequestRevealScreenshotPathsMock(...args),
+  clearExpiredTradeRequestRevealScreenshots: (...args: unknown[]) =>
+    clearExpiredTradeRequestRevealScreenshotsMock(...args),
+}))
+
+vi.mock('@/lib/services/storage', () => ({
+  removeTradeRequestRevealScreenshots: (...args: unknown[]) =>
+    removeTradeRequestRevealScreenshotsMock(...args),
+}))
+
 import { GET } from '@/app/api/internal/photo-enhancement/queue/route'
 
 describe('GET /api/internal/photo-enhancement/queue', () => {
   beforeEach(() => {
     createAdminClientMock.mockReset()
     processReadyPhotoEnhancementQueueMock.mockReset()
+    getExpiredTradeRequestRevealScreenshotPathsMock.mockReset()
+    clearExpiredTradeRequestRevealScreenshotsMock.mockReset()
+    removeTradeRequestRevealScreenshotsMock.mockReset()
+    getExpiredTradeRequestRevealScreenshotPathsMock.mockResolvedValue([])
+    clearExpiredTradeRequestRevealScreenshotsMock.mockResolvedValue(0)
+    removeTradeRequestRevealScreenshotsMock.mockResolvedValue(undefined)
     delete process.env.CRON_SECRET
   })
 
@@ -102,6 +123,47 @@ describe('GET /api/internal/photo-enhancement/queue', () => {
         errorCount: 0,
         skippedCount: 0,
         items: [],
+      },
+      tradeRequestScreenshotCleanup: {
+        removedCount: 0,
+      },
+    })
+  })
+
+  it('removes expired trade request reveal screenshots during daily maintenance', async () => {
+    process.env.CRON_SECRET = 'secret-123'
+    createAdminClientMock.mockReturnValueOnce({ marker: 'admin' })
+    processReadyPhotoEnhancementQueueMock.mockResolvedValueOnce({
+      processedCount: 0,
+      publishedCount: 0,
+      reviewCount: 0,
+      rejectedCount: 0,
+      errorCount: 0,
+      skippedCount: 0,
+      items: [],
+    })
+    getExpiredTradeRequestRevealScreenshotPathsMock.mockResolvedValueOnce([
+      'rep-1/req-1/screenshot.jpg',
+    ])
+    clearExpiredTradeRequestRevealScreenshotsMock.mockResolvedValueOnce(1)
+
+    const response = await GET(
+      new Request('http://localhost/api/internal/photo-enhancement/queue', {
+        headers: { authorization: 'Bearer secret-123' },
+      }),
+    )
+
+    expect(removeTradeRequestRevealScreenshotsMock).toHaveBeenCalledWith([
+      'rep-1/req-1/screenshot.jpg',
+    ])
+    expect(clearExpiredTradeRequestRevealScreenshotsMock).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      ['rep-1/req-1/screenshot.jpg'],
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      tradeRequestScreenshotCleanup: {
+        removedCount: 1,
       },
     })
   })

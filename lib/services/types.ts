@@ -261,6 +261,14 @@ export interface SubmitTradeRequestResult {
   listingId: string
 }
 
+export interface TradeRequestRevealScreenshot {
+  objectPath: string
+  contentType: string
+  sizeBytes: number
+  uploadedAt: string
+  expiresAt: string
+}
+
 export interface CustomerAudienceSignupInput {
   firstName: string
   lastName: string
@@ -703,6 +711,7 @@ export interface TradeRequestWithListing {
   status: TradeRequestStatus
   customerName: string
   customerDescription: string
+  revealScreenshot?: TradeRequestRevealScreenshot | null
   rejectionReason: RejectionReason | null
   repNotes: string | null
   createdAt: string
@@ -731,6 +740,7 @@ export interface TradeRequestNotificationSummary {
   repId: string
   customerName: string
   customerDescription: string
+  revealScreenshot?: TradeRequestRevealScreenshot | null
   listing: {
     id: string
     itemNumber: string

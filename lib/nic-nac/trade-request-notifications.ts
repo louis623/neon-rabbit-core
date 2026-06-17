@@ -20,10 +20,13 @@ export function buildTradeRequestNotificationText(
   return [
     `New trade request from ${summary.customerName} for ${summary.listing.designName} (${summary.listing.itemNumber}).`,
     `They offered: ${summary.customerDescription}`,
+    summary.revealScreenshot
+      ? 'They included a reveal screenshot in the Trade Board request inbox.'
+      : null,
     `Review it against the same-collection + same-type rule first: ${collectionLine}.`,
     msrpLine,
     'Open your pending trade requests in Nic-Nac when you want to approve or deny it.',
-  ].join('\n\n')
+  ].filter(Boolean).join('\n\n')
 }
 
 export async function notifyRepOfTradeRequest(

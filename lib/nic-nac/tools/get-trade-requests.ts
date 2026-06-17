@@ -60,6 +60,13 @@ export function makeGetTradeRequestsTool(ctx: {
           status: r.status,
           customerName: r.customerName,
           customerDescription: r.customerDescription,
+          revealScreenshot: r.revealScreenshot
+            ? {
+                available: true,
+                viewUrl: `/api/nic-nac/trade-requests/${r.id}/reveal-screenshot`,
+                expiresAt: r.revealScreenshot.expiresAt,
+              }
+            : { available: false },
           rejectionReason: r.rejectionReason,
           repNotes: r.repNotes,
           createdAt: r.createdAt,

@@ -75,6 +75,8 @@ const TRADE_BOARD_ENDPOINT = withCurrentSearch("/api/amethyst/trade-board");
 const TRADE_BOARD_REFRESH_MS = 45_000;
 const BOARD_PAGE_SIZE = 24;
 const DEFAULT_TRADE_REQUEST_ERROR = "We couldn't submit that request. Please try again.";
+const TRADE_REQUEST_SCREENSHOT_MAX_BYTES = 8 * 1024 * 1024;
+const TRADE_REQUEST_SCREENSHOT_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -556,13 +558,32 @@ function sortTradeBoardListings(listings, sortMode) {
 }
 
 async function submitTradeRequestRequest(payload) {
-  const response = await fetch(TRADE_REQUEST_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  const hasScreenshot = payload.revealScreenshot instanceof File;
+  const requestOptions = hasScreenshot
+    ? (() => {
+        const form = new FormData();
+        form.append("listingId", payload.listingId);
+        form.append("customerName", payload.customerName);
+        form.append("customerDescription", payload.customerDescription);
+        form.append("revealScreenshot", payload.revealScreenshot);
+        return {
+          method: "POST",
+          body: form,
+        };
+      })()
+    : {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          listingId: payload.listingId,
+          customerName: payload.customerName,
+          customerDescription: payload.customerDescription,
+        }),
+      };
+
+  const response = await fetch(TRADE_REQUEST_ENDPOINT, requestOptions);
 
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -1135,15 +1156,19 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
 function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repName }) {
   const [name, setName] = useState("");
   const [offering, setOffering] = useState("");
+  const [screenshot, setScreenshot] = useState(null);
+  const [screenshotError, setScreenshotError] = useState("");
 
   useEffect(() => {
     setName("");
     setOffering("");
+    setScreenshot(null);
+    setScreenshotError("");
   }, [piece?.id, success]);
 
   const trimmedName = name.trim();
   const trimmedOffering = offering.trim();
-  const canSubmit = Boolean(trimmedName && trimmedOffering && !pending);
+  const canSubmit = Boolean(trimmedName && trimmedOffering && !screenshotError && !pending);
 
   if (!piece && !success) return null;
 
@@ -1177,7 +1202,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
           {piece.collection} - {piece.type}{piece.size ? ` - Size ${piece.size}` : ""}
         </div>
         <p className="tp-sheet-helper">
-          Keep it fast. Tell <strong>{repName}</strong> the item number that was just revealed for you.
+          Briefly describe the piece you just revealed for <strong>{repName}</strong>. Include the collection and jewelry type if you know them.
         </p>
         <form
           className="tp-sheet-form"
@@ -1188,6 +1213,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               listingId: piece.id,
               customerName: trimmedName,
               customerDescription: trimmedOffering,
+              revealScreenshot: screenshot,
             });
           }}
         >
@@ -1202,13 +1228,51 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
             />
           </div>
           <div className="tp-sheet-field">
-            <label>Which item number did you just reveal?</label>
+            <label>What did you just reveal?</label>
             <textarea
-              placeholder="Example: RG12345"
+              placeholder="Example: July Birthday 2026 necklace"
               value={offering}
               onChange={(event) => setOffering(event.target.value)}
               required
             />
+          </div>
+          <div className="tp-sheet-field">
+            <label>Screenshot of your reveal (recommended)</label>
+            <div className="tp-sheet-upload">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] || null;
+                  setScreenshotError("");
+                  setScreenshot(null);
+                  if (!file) return;
+                  if (!TRADE_REQUEST_SCREENSHOT_TYPES.has(file.type)) {
+                    setScreenshotError("Please upload a JPG, PNG, or WebP screenshot.");
+                    event.target.value = "";
+                    return;
+                  }
+                  if (file.size > TRADE_REQUEST_SCREENSHOT_MAX_BYTES) {
+                    setScreenshotError("Please upload a screenshot under 8 MB.");
+                    event.target.value = "";
+                    return;
+                  }
+                  setScreenshot(file);
+                }}
+                disabled={pending}
+              />
+              <div>
+                <strong>{screenshot ? screenshot.name : "Add a screenshot"}</strong>
+                <span>
+                  A screenshot helps the rep confirm the piece quickly. It expires after 48 hours.
+                </span>
+              </div>
+            </div>
+            {screenshotError && (
+              <div className="tp-sheet-error" role="alert">
+                {screenshotError}
+              </div>
+            )}
           </div>
           {error && (
             <div className="tp-sheet-error" role="alert">

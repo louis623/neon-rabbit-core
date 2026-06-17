@@ -39,6 +39,24 @@ export function TradeRequestLiveCard({
           <div className={styles.label}>Rule check</div>
           <div className={styles.value}>{request.ruleCheck.label}</div>
         </div>
+        {request.revealScreenshot ? (
+          <a
+            className={styles.screenshotLink}
+            href={request.revealScreenshot.viewUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src={request.revealScreenshot.viewUrl}
+              alt={`Reveal screenshot from ${request.customerName}`}
+              className={styles.screenshotThumb}
+            />
+            <span>
+              <span className={styles.label}>Reveal screenshot</span>
+              <span className={styles.value}>View customer upload</span>
+            </span>
+          </a>
+        ) : null}
       </div>
 
       <div className={styles.actions}>

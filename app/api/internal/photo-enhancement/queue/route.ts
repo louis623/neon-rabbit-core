@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
 import { processReadyPhotoEnhancementQueue } from '@/lib/services/photo-enhancement-queue'
+import {
+  clearExpiredTradeRequestRevealScreenshots,
+  getExpiredTradeRequestRevealScreenshotPaths,
+} from '@/lib/services/trade-requests'
+import { removeTradeRequestRevealScreenshots } from '@/lib/services/storage'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
@@ -41,12 +46,26 @@ export async function GET(request: Request) {
     )
   }
 
-  const result = await processReadyPhotoEnhancementQueue(createAdminClient(), {
+  const admin = createAdminClient()
+  const result = await processReadyPhotoEnhancementQueue(admin, {
     limit: limit ?? 25,
   })
+  const expiredScreenshotPaths =
+    await getExpiredTradeRequestRevealScreenshotPaths(admin)
+
+  if (expiredScreenshotPaths.length > 0) {
+    await removeTradeRequestRevealScreenshots(expiredScreenshotPaths)
+    await clearExpiredTradeRequestRevealScreenshots(
+      admin,
+      expiredScreenshotPaths,
+    )
+  }
 
   return NextResponse.json({
     ok: true,
     result,
+    tradeRequestScreenshotCleanup: {
+      removedCount: expiredScreenshotPaths.length,
+    },
   })
 }

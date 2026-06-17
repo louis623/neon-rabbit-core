@@ -896,6 +896,54 @@
   gap: 4px;
 }
 
+.tradeScreenshotLink {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 10px;
+  background: rgba(255, 246, 250, 0.66);
+  color: var(--nic-nac-text-primary);
+  padding: 7px;
+  text-decoration: none;
+}
+
+.tradeScreenshotLink:focus-visible {
+  outline: 2px solid var(--nic-nac-focus-ring);
+  outline-offset: 2px;
+}
+
+.tradeScreenshotThumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--nic-nac-surface-secondary);
+  border: 1px solid var(--nic-nac-border);
+}
+
+.tradeScreenshotTitle,
+.tradeScreenshotMeta {
+  display: block;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  line-height: 1.25;
+}
+
+.tradeScreenshotTitle {
+  color: var(--nic-nac-text-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tradeScreenshotMeta {
+  color: var(--nic-nac-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .tradeMeta {
   display: flex;
   flex-wrap: wrap;

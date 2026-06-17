@@ -23,6 +23,7 @@ import {
   type SubmitTradeRequestResult,
   type GetTradeRequestsFilters,
   type TradeRequestWithListing,
+  type TradeRequestRevealScreenshot,
   type TradeRequestNotificationSummary,
   type ApproveTradeResult,
   type RejectTradeResult,
@@ -31,6 +32,36 @@ import {
   type TradeHistoryResult,
 } from './types'
 import { ServiceError, errors } from './errors'
+
+function mapRevealScreenshot(row: {
+  reveal_screenshot_path?: string | null
+  reveal_screenshot_content_type?: string | null
+  reveal_screenshot_size_bytes?: number | null
+  reveal_screenshot_uploaded_at?: string | null
+  reveal_screenshot_expires_at?: string | null
+}): TradeRequestRevealScreenshot | null {
+  if (
+    !row.reveal_screenshot_path ||
+    !row.reveal_screenshot_content_type ||
+    !row.reveal_screenshot_size_bytes ||
+    !row.reveal_screenshot_uploaded_at ||
+    !row.reveal_screenshot_expires_at
+  ) {
+    return null
+  }
+
+  if (new Date(row.reveal_screenshot_expires_at).getTime() <= Date.now()) {
+    return null
+  }
+
+  return {
+    objectPath: row.reveal_screenshot_path,
+    contentType: row.reveal_screenshot_content_type,
+    sizeBytes: row.reveal_screenshot_size_bytes,
+    uploadedAt: row.reveal_screenshot_uploaded_at,
+    expiresAt: row.reveal_screenshot_expires_at,
+  }
+}
 
 function rpcError(err: PostgrestError | null): ServiceError | null {
   if (!err) return null
@@ -88,8 +119,39 @@ export async function submitTradeRequest(
   return { requestId: payload.request_id, listingId: payload.listing_id }
 }
 
+export async function attachTradeRequestRevealScreenshot(
+  supabase: SupabaseClient,
+  requestId: string,
+  screenshot: TradeRequestRevealScreenshot,
+): Promise<void> {
+  if (!requestId) throw errors.MISSING_ITEM_INPUT()
+  if (!screenshot.objectPath) {
+    throw errors.INVALID_INPUT(
+      'reveal screenshot path required',
+      'That screenshot could not be attached to the trade request.',
+    )
+  }
+
+  const { error } = await supabase
+    .from('trade_requests')
+    .update({
+      reveal_screenshot_path: screenshot.objectPath,
+      reveal_screenshot_content_type: screenshot.contentType,
+      reveal_screenshot_size_bytes: screenshot.sizeBytes,
+      reveal_screenshot_uploaded_at: screenshot.uploadedAt,
+      reveal_screenshot_expires_at: screenshot.expiresAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', requestId)
+  if (error) throw error
+}
+
 const REQUEST_LISTING_SELECT = `
-  id, status, customer_name, customer_description, rejection_reason,
+  id, status, customer_name, customer_description,
+  reveal_screenshot_path, reveal_screenshot_content_type,
+  reveal_screenshot_size_bytes, reveal_screenshot_uploaded_at,
+  reveal_screenshot_expires_at,
+  rejection_reason,
   rep_notes, created_at, updated_at,
   listing:trade_listings(
     id, rep_id, listing_photo_url, uses_canonical_photo,
@@ -154,6 +216,11 @@ export async function getTradeRequests(
     status: TradeRequestStatus
     customer_name: string
     customer_description: string
+    reveal_screenshot_path: string | null
+    reveal_screenshot_content_type: string | null
+    reveal_screenshot_size_bytes: number | null
+    reveal_screenshot_uploaded_at: string | null
+    reveal_screenshot_expires_at: string | null
     rejection_reason: RejectionReason | null
     rep_notes: string | null
     created_at: string
@@ -176,6 +243,7 @@ export async function getTradeRequests(
         status: row.status,
         customerName: row.customer_name,
         customerDescription: row.customer_description,
+        revealScreenshot: mapRevealScreenshot(row),
         rejectionReason: row.rejection_reason,
         repNotes: row.rep_notes,
         createdAt: row.created_at,
@@ -206,6 +274,9 @@ export async function getTradeRequests(
 
 const REQUEST_NOTIFICATION_SELECT = `
   id, customer_name, customer_description,
+  reveal_screenshot_path, reveal_screenshot_content_type,
+  reveal_screenshot_size_bytes, reveal_screenshot_uploaded_at,
+  reveal_screenshot_expires_at,
   listing:trade_listings!inner(
     id, rep_id,
     design:jewelry_designs!inner(
@@ -245,6 +316,11 @@ export async function getTradeRequestNotificationSummary(
     id: string
     customer_name: string
     customer_description: string
+    reveal_screenshot_path: string | null
+    reveal_screenshot_content_type: string | null
+    reveal_screenshot_size_bytes: number | null
+    reveal_screenshot_uploaded_at: string | null
+    reveal_screenshot_expires_at: string | null
     listing: RawListing | RawListing[] | null
   }
 
@@ -261,6 +337,7 @@ export async function getTradeRequestNotificationSummary(
     repId: listing.rep_id,
     customerName: row.customer_name,
     customerDescription: row.customer_description,
+    revealScreenshot: mapRevealScreenshot(row),
     listing: {
       id: listing.id,
       itemNumber: design.item_number,
@@ -270,6 +347,89 @@ export async function getTradeRequestNotificationSummary(
       bpMsrp: design.bp_msrp,
     },
   }
+}
+
+export async function getTradeRequestRevealScreenshotForRep(
+  supabase: SupabaseClient,
+  repId: string,
+  requestId: string,
+): Promise<TradeRequestRevealScreenshot | null> {
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (!requestId) throw errors.MISSING_ITEM_INPUT()
+
+  const { data, error } = await supabase
+    .from('trade_requests')
+    .select(`
+      id,
+      reveal_screenshot_path,
+      reveal_screenshot_content_type,
+      reveal_screenshot_size_bytes,
+      reveal_screenshot_uploaded_at,
+      reveal_screenshot_expires_at,
+      listing:trade_listings!inner(rep_id)
+    `)
+    .eq('id', requestId)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) throw errors.LISTING_NOT_FOUND(`request ${requestId}`)
+
+  type RawRow = {
+    reveal_screenshot_path: string | null
+    reveal_screenshot_content_type: string | null
+    reveal_screenshot_size_bytes: number | null
+    reveal_screenshot_uploaded_at: string | null
+    reveal_screenshot_expires_at: string | null
+    listing: { rep_id: string } | Array<{ rep_id: string }> | null
+  }
+
+  const row = data as unknown as RawRow
+  const listing = Array.isArray(row.listing) ? row.listing[0] : row.listing
+  if (!listing || listing.rep_id !== repId) {
+    throw errors.UNAUTHORIZED(`request ${requestId} not owned by rep`)
+  }
+
+  return mapRevealScreenshot(row)
+}
+
+export async function getExpiredTradeRequestRevealScreenshotPaths(
+  supabase: SupabaseClient,
+  now = new Date(),
+  limit = 100,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('trade_requests')
+    .select('reveal_screenshot_path')
+    .not('reveal_screenshot_path', 'is', null)
+    .lte('reveal_screenshot_expires_at', now.toISOString())
+    .limit(limit)
+  if (error) throw error
+
+  return ((data ?? []) as Array<{ reveal_screenshot_path: string | null }>)
+    .map((row) => row.reveal_screenshot_path)
+    .filter((path): path is string => Boolean(path))
+}
+
+export async function clearExpiredTradeRequestRevealScreenshots(
+  supabase: SupabaseClient,
+  objectPaths: string[],
+): Promise<number> {
+  const paths = objectPaths.map((path) => path.trim()).filter(Boolean)
+  if (paths.length === 0) return 0
+
+  const { error } = await supabase
+    .from('trade_requests')
+    .update({
+      reveal_screenshot_path: null,
+      reveal_screenshot_content_type: null,
+      reveal_screenshot_size_bytes: null,
+      reveal_screenshot_uploaded_at: null,
+      reveal_screenshot_expires_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .in('reveal_screenshot_path', paths)
+  if (error) throw error
+
+  return paths.length
 }
 
 async function assertRequestOwnedByRep(

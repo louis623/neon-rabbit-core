@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { submitTradeRequest } from '@/lib/services/trade-requests'
+import {
+  attachTradeRequestRevealScreenshot,
+  getTradeRequestRevealScreenshotForRep,
+  submitTradeRequest,
+} from '@/lib/services/trade-requests'
 
 describe('submitTradeRequest', () => {
   const rpc = vi.fn()
@@ -69,5 +73,83 @@ describe('submitTradeRequest', () => {
     expect(from).toHaveBeenCalledWith('trade_listings')
     expect(eq).toHaveBeenCalledWith('id', 'listing-1')
     expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('attaches reveal screenshot metadata to an existing trade request', async () => {
+    const updateEq = vi.fn().mockResolvedValueOnce({ error: null })
+    const update = vi.fn(() => ({ eq: updateEq }))
+    from.mockReturnValueOnce({ update })
+
+    await attachTradeRequestRevealScreenshot(supabaseWithListingLookup as never, 'request-1', {
+      objectPath: 'rep-1/request-1/reveal.png',
+      contentType: 'image/png',
+      sizeBytes: 123,
+      uploadedAt: '2026-06-17T12:00:00.000Z',
+      expiresAt: '2026-06-19T12:00:00.000Z',
+    })
+
+    expect(from).toHaveBeenCalledWith('trade_requests')
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reveal_screenshot_path: 'rep-1/request-1/reveal.png',
+        reveal_screenshot_content_type: 'image/png',
+        reveal_screenshot_size_bytes: 123,
+        reveal_screenshot_uploaded_at: '2026-06-17T12:00:00.000Z',
+        reveal_screenshot_expires_at: '2026-06-19T12:00:00.000Z',
+      }),
+    )
+    expect(updateEq).toHaveBeenCalledWith('id', 'request-1')
+  })
+
+  it('returns a reveal screenshot only for the owning rep and before expiry', async () => {
+    maybeSingle.mockResolvedValueOnce({
+      data: {
+        id: 'request-1',
+        reveal_screenshot_path: 'rep-1/request-1/reveal.png',
+        reveal_screenshot_content_type: 'image/png',
+        reveal_screenshot_size_bytes: 123,
+        reveal_screenshot_uploaded_at: '2026-06-17T12:00:00.000Z',
+        reveal_screenshot_expires_at: '2999-06-19T12:00:00.000Z',
+        listing: { rep_id: 'rep-1' },
+      },
+      error: null,
+    })
+
+    await expect(
+      getTradeRequestRevealScreenshotForRep(
+        supabaseWithListingLookup as never,
+        'rep-1',
+        'request-1',
+      ),
+    ).resolves.toEqual({
+      objectPath: 'rep-1/request-1/reveal.png',
+      contentType: 'image/png',
+      sizeBytes: 123,
+      uploadedAt: '2026-06-17T12:00:00.000Z',
+      expiresAt: '2999-06-19T12:00:00.000Z',
+    })
+  })
+
+  it('returns null for expired reveal screenshots', async () => {
+    maybeSingle.mockResolvedValueOnce({
+      data: {
+        id: 'request-1',
+        reveal_screenshot_path: 'rep-1/request-1/reveal.png',
+        reveal_screenshot_content_type: 'image/png',
+        reveal_screenshot_size_bytes: 123,
+        reveal_screenshot_uploaded_at: '2026-06-17T12:00:00.000Z',
+        reveal_screenshot_expires_at: '2020-06-19T12:00:00.000Z',
+        listing: { rep_id: 'rep-1' },
+      },
+      error: null,
+    })
+
+    await expect(
+      getTradeRequestRevealScreenshotForRep(
+        supabaseWithListingLookup as never,
+        'rep-1',
+        'request-1',
+      ),
+    ).resolves.toBeNull()
   })
 })
