@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
+import { REQUIRED_SETUP_STEPS } from '@/lib/self-serve/required-setup'
 
 type AdminClient = SupabaseClient
 
@@ -195,6 +196,9 @@ async function upsertRep(
 }
 
 async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
+  const now = new Date().toISOString()
+  const completedRequiredSetupSteps = REQUIRED_SETUP_STEPS.map((step) => step.id)
+
   const { error: siteSettingsError } = await admin.from('site_settings').upsert(
     {
       rep_id: repId,
@@ -231,6 +235,53 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
       { onConflict: 'rep_id' },
     )
   if (onboardingError) throw onboardingError
+
+  const { error: setupSessionError } = await admin
+    .from('self_serve_setup_sessions')
+    .upsert(
+      {
+        rep_id: repId,
+        status: 'dashboard_unlocked',
+        current_step: 'final_preview_approval',
+        completed_steps: completedRequiredSetupSteps,
+        answers: {
+          account_basics: {
+            repName: MILE_HIGH_FIZZ_PROFILE.publicName,
+            businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
+            email: MILE_HIGH_FIZZ_PROFILE.email,
+            liveShowName: MILE_HIGH_FIZZ_PROFILE.businessName,
+            publicSiteSlug: MILE_HIGH_FIZZ_PROFILE.publicSiteSlug,
+            publicSiteUrl: `https://www.yoursparklesuite.com/${MILE_HIGH_FIZZ_PROFILE.publicSiteSlug}`,
+            publicSiteSlugStatus: 'accepted',
+            publicSiteSlugRedFlag: null,
+            publicSiteSlugAlternatives: [],
+          },
+          site_skin: {
+            preset: 'black_diamond',
+          },
+          welcome_copy: {
+            tagline: 'Revealing something magical together.',
+            bannerText:
+              'Place your order, hop into the live party, and watch Lindsey reveal your sparkle.',
+            tickerText:
+              'Live reveals, fizz parties, and customer-first sparkle with Mile High Fizz.',
+          },
+        },
+        generated_copy: {},
+        support_state: {
+          migrated_existing_client: {
+            enabled: true,
+            source: 'mile_high_fizz_migration',
+            reason:
+              'Existing migrated site preview should bypass new-rep required setup.',
+          },
+        },
+        dashboard_unlocked_at: now,
+        updated_at: now,
+      },
+      { onConflict: 'rep_id' },
+    )
+  if (setupSessionError) throw setupSessionError
 
   const { error: subscriptionError } = await admin
     .from('subscriptions')

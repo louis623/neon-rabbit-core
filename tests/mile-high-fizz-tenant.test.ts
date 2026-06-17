@@ -57,6 +57,7 @@ function makeAdminClient({
     repUpdate: vi.fn((payload: unknown) => makeRepUpdateResult(candidateReps[0]?.id ?? repId)),
     siteSettingsUpsert: vi.fn().mockResolvedValue({ error: null }),
     onboardingUpsert: vi.fn().mockResolvedValue({ error: null }),
+    setupSessionUpsert: vi.fn().mockResolvedValue({ error: null }),
     subscriptionUpsert: vi.fn().mockResolvedValue({ error: null }),
     createUser: vi.fn().mockResolvedValue({
       data: { user: { id: createdAuthUserId } },
@@ -89,6 +90,10 @@ function makeAdminClient({
 
     if (table === 'onboarding_status') {
       return { upsert: calls.onboardingUpsert }
+    }
+
+    if (table === 'self_serve_setup_sessions') {
+      return { upsert: calls.setupSessionUpsert }
     }
 
     if (table === 'subscriptions') {
@@ -173,6 +178,32 @@ describe('Mile High Fizz tenant attachment', () => {
         plan_tier: 'monthly',
         status: 'active',
         monthly_amount: 0,
+      }),
+      { onConflict: 'rep_id' },
+    )
+    expect(calls.setupSessionUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-mile-high-fizz',
+        status: 'dashboard_unlocked',
+        current_step: 'final_preview_approval',
+        completed_steps: [
+          'account_basics',
+          'site_skin',
+          'welcome_copy',
+          'about_page',
+          'show_schedule',
+          'customer_site_orientation',
+          'live_queue_setup',
+          'trade_board_orientation',
+          'final_preview_approval',
+        ],
+        dashboard_unlocked_at: expect.any(String),
+        support_state: expect.objectContaining({
+          migrated_existing_client: expect.objectContaining({
+            enabled: true,
+            source: 'mile_high_fizz_migration',
+          }),
+        }),
       }),
       { onConflict: 'rep_id' },
     )
