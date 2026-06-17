@@ -47,7 +47,7 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   ctaEmphasis: "pulse",
   tradeFlair: "tier-glow",
   cursorEffect: "default",
-  tickerSpeed: 0.6,
+  tickerSpeed: 1.25,
   showSlots: false,
 };
 

@@ -210,7 +210,7 @@ const lockedTweakDefaults: Omit<
   ctaEmphasis: 'standard',
   tradeFlair: 'holo-unicorn',
   cursorEffect: 'sparkle',
-  tickerSpeed: 0.6,
+  tickerSpeed: 1.25,
   showSlots: false,
 }
 

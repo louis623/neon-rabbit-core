@@ -7,6 +7,7 @@ import {
   buildAmethystHomepageTweakDefaults,
   defaultAmethystHomepageTemplateData,
 } from '@/lib/amethyst/homepage-template-data'
+import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
@@ -80,6 +81,48 @@ describe('Amethyst homepage template data wiring', () => {
     }
     expect(css).toContain('.hp-ticker-sr')
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
+  })
+
+  it('keeps customer-facing tickers at a medium readable speed', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const componentsCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/components.css'),
+      'utf8',
+    )
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const trade = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const shell = readFileSync(
+      resolve(process.cwd(), 'components/amethyst/site-shell.tsx'),
+      'utf8',
+    )
+
+    expect(css).toContain('animation: hp-ticker-scroll 40s linear infinite;')
+    expect(css).toContain('animation-duration: calc(40s / var(--ticker-speed, 1));')
+    expect(css).toContain('animation-duration: calc(45s / var(--ticker-speed, 1));')
+    expect(componentsCss).toContain('animation: tickerScroll 32s linear infinite;')
+    expect(componentsCss).toContain('animation-duration: 36s;')
+    expect(shell).toContain('amethyst-scroll 32s linear infinite')
+    expect(shell).toContain('amethyst-scroll 36s linear infinite reverse')
+
+    for (const jsx of [homepage, trade, join]) {
+      expect(jsx).toContain('tickerSpeed: 1.25')
+    }
+    for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
+      expect(preset.values.tickerSpeed).toBe(1.25)
+    }
   })
 
   it('ships shared customer-facing mobile CSS containment and motion safeguards', () => {

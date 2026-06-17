@@ -105,6 +105,8 @@ function HeaderRow({ content }: { content: AmethystSiteContent }) {
 function AmethystTicker({ content }: { content: AmethystSiteContent }) {
   const announcementItems = repeatItems(content.announcementItems)
   const tradeItems = repeatItems(content.tradeBoardListings)
+  const announcementTickerAnimation = 'amethyst-scroll 32s linear infinite'
+  const tradeTickerAnimation = 'amethyst-scroll 36s linear infinite reverse'
 
   return (
     <div className="border-b border-[var(--amethyst-border)] bg-white">
@@ -114,7 +116,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
         </div>
         <div
           className="amethyst-ticker-track pl-[170px]"
-          style={{ animation: 'amethyst-scroll 50s linear infinite' }}
+          style={{ animation: announcementTickerAnimation }}
         >
           {announcementItems.map((item, index) => (
             <span
@@ -134,7 +136,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
         </div>
         <div
           className="amethyst-ticker-track pl-[170px]"
-          style={{ animation: 'amethyst-scroll 50s linear infinite reverse' }}
+          style={{ animation: tradeTickerAnimation }}
         >
           {tradeItems.map((listing, index) => (
             <a

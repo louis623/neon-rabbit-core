@@ -72,7 +72,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'holo-unicorn',
       cursorEffect: 'sparkle',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   sparkle_suite_morganite: {
@@ -99,7 +99,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'soft-pink-lift',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   black_diamond: {
@@ -126,7 +126,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'cyan-diamond',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   rose_gold: {
@@ -153,7 +153,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'champagne-rose',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   garnet: {
@@ -180,7 +180,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'ruby-polish',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   amber: {
@@ -207,7 +207,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'citrine-glow',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   velvet: {
@@ -234,7 +234,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'orchid-gloss',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
   rose_quartz: {
@@ -261,7 +261,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
       ctaEmphasis: 'standard',
       tradeFlair: 'pink-spark',
       cursorEffect: 'default',
-      tickerSpeed: 0.6,
+      tickerSpeed: 1.25,
     },
   },
 }

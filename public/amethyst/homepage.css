@@ -369,10 +369,13 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 36px;
   white-space: nowrap;
   padding-left: 170px;
-  animation: hp-ticker-scroll 50s linear infinite;
-  animation-duration: calc(50s / var(--ticker-speed, 1));
+  animation: hp-ticker-scroll 40s linear infinite;
+  animation-duration: calc(40s / var(--ticker-speed, 1));
 }
-.hp-ticker-row.reverse .hp-ticker-track { animation-direction: reverse; }
+.hp-ticker-row.reverse .hp-ticker-track {
+  animation-direction: reverse;
+  animation-duration: calc(45s / var(--ticker-speed, 1));
+}
 @keyframes hp-ticker-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
