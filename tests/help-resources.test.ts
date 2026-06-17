@@ -195,6 +195,39 @@ describe('help resources', () => {
     expect(guide?.quickActions).toContain('Add a piece to Trade Board')
   })
 
+  it('documents the customer reveal screenshot flow for trade requests', () => {
+    const guide = getHelpResources('trade request reveal screenshot')
+      .find((resource) => resource.id === 'handle-trade-requests')
+
+    expect(guide).toMatchObject({
+      type: 'workflow',
+      group: 'Trade Board',
+      category: 'Trade Requests',
+      title: 'Handle trade requests',
+      nicNacPrompt: 'Help me handle my trade requests.',
+    })
+
+    const combinedText = [
+      guide?.summary,
+      guide?.body,
+      ...(guide?.beforeYouStart ?? []),
+      ...(guide?.steps ?? []),
+      guide?.goodResult,
+      guide?.stillStuck,
+      ...(guide?.quickActions ?? []),
+    ].join(' ')
+
+    expect(combinedText).toContain('Customers describe the piece they just revealed')
+    expect(combinedText).toContain('recommended reveal screenshot')
+    expect(combinedText).toContain('Trade Board request inbox')
+    expect(combinedText).toContain('Nic-Nac trade request cards')
+    expect(combinedText).toContain('expires after 48 hours')
+    expect(combinedText).toContain('same collection and same jewelry type')
+    expect(combinedText).toContain('just-revealed item number')
+    expect(combinedText).toContain('A missing screenshot alone should not block the trade')
+    expect(guide?.quickActions).toContain('View reveal screenshot')
+  })
+
   it.each([
     'domain',
     'forwarding',
