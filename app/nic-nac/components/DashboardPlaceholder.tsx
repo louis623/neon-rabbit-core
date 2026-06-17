@@ -3890,7 +3890,7 @@ export function TradeBoardWorkspaceCard({
         </div>
       ) : null}
 
-      <div className={styles.workspaceSectionGrid}>
+      <div className={styles.tradeBoardFlow}>
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
             <div className={styles.walletSettingsTitle}>Request inbox</div>
@@ -3952,47 +3952,6 @@ export function TradeBoardWorkspaceCard({
                 })
               ) : (
                 <div className={styles.emptyState}>No pending trade requests right now.</div>
-              )}
-            </div>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
-        </div>
-
-        <div className={styles.workspacePanel}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Swap cleanup</div>
-            <span className={styles.rosterTag}>
-              {tradeSwapCleanupState.status === 'ready'
-                ? `${cleanupItems.length} to finish`
-                : 'Loading'}
-            </span>
-          </div>
-          {tradeSwapCleanupState.status === 'ready' ? (
-            <div className={styles.tradeList}>
-              {cleanupItems.length > 0 ? (
-                cleanupItems.map((item) => (
-                  <div key={item.swapId} className={styles.tradeRow}>
-                    <div className={styles.tradeIdentity}>
-                      <div className={styles.customerName}>{item.customerName}</div>
-                      <div className={styles.customerDate}>
-                        Revealed item number: {item.revealedItemNumber}
-                      </div>
-                      <div className={styles.helperNote}>
-                        {item.replacementStatus === 'needs_ring_size'
-                          ? 'Add ring size to put this reveal back on the board.'
-                          : 'Finish catalog details after the show to put this reveal back on the board.'}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.emptyState}>
-                  No trade swaps need cleanup right now.
-                </div>
               )}
             </div>
           ) : (
@@ -4250,6 +4209,47 @@ export function TradeBoardWorkspaceCard({
                 </div>
               ) : null}
             </>
+          ) : (
+            <div className={styles.cardFill}>
+              <div className={styles.loadingLine} />
+              <div className={styles.loadingLineShort} />
+            </div>
+          )}
+        </div>
+
+        <div className={styles.workspacePanel}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.walletSettingsTitle}>Swap cleanup</div>
+            <span className={styles.rosterTag}>
+              {tradeSwapCleanupState.status === 'ready'
+                ? `${cleanupItems.length} to finish`
+                : 'Loading'}
+            </span>
+          </div>
+          {tradeSwapCleanupState.status === 'ready' ? (
+            <div className={styles.tradeList}>
+              {cleanupItems.length > 0 ? (
+                cleanupItems.map((item) => (
+                  <div key={item.swapId} className={styles.tradeRow}>
+                    <div className={styles.tradeIdentity}>
+                      <div className={styles.customerName}>{item.customerName}</div>
+                      <div className={styles.customerDate}>
+                        Revealed item number: {item.revealedItemNumber}
+                      </div>
+                      <div className={styles.helperNote}>
+                        {item.replacementStatus === 'needs_ring_size'
+                          ? 'Add ring size to put this reveal back on the board.'
+                          : 'Finish catalog details after the show to put this reveal back on the board.'}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyState}>
+                  No trade swaps need cleanup right now.
+                </div>
+              )}
+            </div>
           ) : (
             <div className={styles.cardFill}>
               <div className={styles.loadingLine} />

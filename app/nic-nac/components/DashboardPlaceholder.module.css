@@ -705,6 +705,13 @@
   align-items: start;
 }
 
+.tradeBoardFlow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
 .workspaceFormRow {
   display: grid;
   grid-template-columns: minmax(150px, 1fr);
