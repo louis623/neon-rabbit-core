@@ -1406,13 +1406,15 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
         </div>
       </section>
 
-      <div className="mhf-automation-stack">
-        {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
-        {t.showEvents && <Events count={t.eventCount} />}
-        {t.showWibp && <Wibp repName={repName} />}
-        {t.showAbout && <AboutSection repName={repName} />}
-        {t.showSignup && <Signup repName={repName} businessName={businessName} />}
-        {t.showFooter && <Footer businessName={businessName} />}
+      <div className="mhf-below-hero-shell">
+        <div className="mhf-automation-panel">
+          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
+          {t.showEvents && <Events count={t.eventCount} />}
+          {t.showWibp && <Wibp repName={repName} />}
+          {t.showAbout && <AboutSection repName={repName} />}
+          {t.showSignup && <Signup repName={repName} businessName={businessName} />}
+          {t.showFooter && <Footer businessName={businessName} />}
+        </div>
       </div>
     </div>
   );

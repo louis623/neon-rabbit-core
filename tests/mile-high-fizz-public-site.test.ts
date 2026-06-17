@@ -137,6 +137,28 @@ describe('Mile High Fizz hybrid public site contract', () => {
     ).toBe(true)
   })
 
+  it('restyles below-hero Sparkle automations in Mile High Fizz branding', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('mhf-below-hero-shell')
+    expect(jsx).toContain('mhf-automation-panel')
+    expect(css).toContain('.mhf-below-hero-shell')
+    expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-section')
+    expect(css).toContain('body.mile-high-fizz .mhf-automation-panel #wibp')
+    expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-event-card')
+    expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-signup-card')
+    expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-footer')
+    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
+    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
+  })
+
   it('keeps Trade Board standard while dressing it for Mile High Fizz', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       mileHighFizzSettings,

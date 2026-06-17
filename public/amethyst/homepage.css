@@ -3548,31 +3548,287 @@ body.mile-high-fizz .mhf-hero-title {
   background: linear-gradient(90deg, #2563eb, #9333ea);
 }
 
-.mhf-automation-stack {
+.mhf-below-hero-shell {
+  position: relative;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 16% 8%, rgba(236, 72, 153, 0.2), transparent 28rem),
-    radial-gradient(circle at 86% 14%, rgba(59, 130, 246, 0.18), transparent 30rem),
-    #05020a;
+    radial-gradient(circle at 12% 6%, rgba(236, 72, 153, 0.18), transparent 26rem),
+    radial-gradient(circle at 88% 8%, rgba(59, 130, 246, 0.16), transparent 28rem),
+    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+  color: #1f2937;
 }
 
-body.mile-high-fizz .mhf-automation-stack .hp-trade-preview,
-body.mile-high-fizz .mhf-automation-stack #events,
-body.mile-high-fizz .mhf-automation-stack #wibp,
-body.mile-high-fizz .mhf-automation-stack #about,
-body.mile-high-fizz .mhf-automation-stack .hp-signup {
-  background: transparent;
+.mhf-below-hero-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(236, 72, 153, 0.16) 0 1px, transparent 1px),
+    radial-gradient(circle, rgba(147, 51, 234, 0.12) 0 1px, transparent 1px);
+  background-position: 0 0, 34px 28px;
+  background-size: 92px 92px, 118px 118px;
+  opacity: 0.42;
 }
 
-body.mile-high-fizz .mhf-automation-stack .hp-section-kicker,
-body.mile-high-fizz .mhf-automation-stack .hp-section-title,
-body.mile-high-fizz .mhf-automation-stack .hp-footer-brand {
+.mhf-automation-panel {
+  position: relative;
+  z-index: 1;
+  --hp-primary: #ec4899;
+  --hp-accent: #9333ea;
+  --hp-bg: #fdf2f8;
+  --hp-bg-elevated: rgba(255, 255, 255, 0.84);
+  --hp-form-panel-bg: rgba(255, 255, 255, 0.72);
+  --hp-form-panel-fg: #374151;
+  --hp-field-bg: rgba(255, 255, 255, 0.92);
+  --hp-field-fg: #1f2937;
+  --fg: #1f2937;
+  --fg-muted: #6b5d6c;
+  --border: rgba(236, 72, 153, 0.18);
+  --hp-radius-card: 28px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview,
+body.mile-high-fizz .mhf-automation-panel .hp-section,
+body.mile-high-fizz .mhf-automation-panel .hp-signup {
+  background: transparent !important;
+  border-top: 0;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview {
+  padding: 58px 24px 18px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-inner {
+  max-width: 1040px;
+  min-height: 112px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(236, 72, 153, 0.18);
+  border-radius: 30px;
+  box-shadow: 0 28px 80px rgba(147, 51, 234, 0.13);
+  backdrop-filter: blur(18px);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-head {
+  color: #1f2937;
+  font-size: 18px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-head .live-dot {
+  background: #ec4899;
+  box-shadow: 0 0 0 7px rgba(236, 72, 153, 0.13);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill {
+  background: #ffffff;
+  border-color: rgba(236, 72, 153, 0.22);
+  box-shadow: 0 12px 30px rgba(236, 72, 153, 0.1);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill .pos {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
   color: #ffffff;
 }
 
-body.mile-high-fizz .mhf-automation-stack .hp-section-sub,
-body.mile-high-fizz .mhf-automation-stack .hp-about-copy,
-body.mile-high-fizz .mhf-automation-stack .hp-footer-tag {
-  color: rgba(255, 255, 255, 0.76);
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill .label,
+body.mile-high-fizz .mhf-automation-panel .hp-event-meta-row,
+body.mile-high-fizz .mhf-automation-panel .hp-event-section-icon,
+body.mile-high-fizz .mhf-automation-panel .hp-event-copy,
+body.mile-high-fizz .mhf-automation-panel .hp-event-collection-pill {
+  color: #ec4899;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill .name,
+body.mile-high-fizz .mhf-automation-panel .hp-event-name,
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-title,
+body.mile-high-fizz .mhf-automation-panel .hp-step-label,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-title {
+  color: #1f2937;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-link,
+body.mile-high-fizz .mhf-automation-panel .hp-event-platform.tt,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-submit {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 16px 38px rgba(236, 72, 153, 0.22);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-container {
+  max-width: 1180px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-section {
+  padding: 78px 0;
+}
+
+body.mile-high-fizz .mhf-automation-panel #wibp {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(236, 72, 153, 0.13), transparent 24rem),
+    radial-gradient(circle at 86% 14%, rgba(59, 130, 246, 0.12), transparent 25rem),
+    transparent !important;
+  border-top: 0 !important;
+}
+
+body.mile-high-fizz .mhf-automation-panel #events {
+  padding-top: 64px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-events-head {
+  margin-bottom: 42px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-section-eyebrow,
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-eyebrow,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-eyebrow {
+  color: #ec4899;
+  letter-spacing: 0.14em;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-section-eyebrow::before,
+body.mile-high-fizz .mhf-automation-panel .hp-events-head .hp-section-eyebrow::after {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-section-title,
+body.mile-high-fizz .mhf-automation-panel .hp-footer-brand {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-section-sub,
+body.mile-high-fizz .mhf-automation-panel .hp-about-body p,
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-body,
+body.mile-high-fizz .mhf-automation-panel .hp-step-desc,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-sub,
+body.mile-high-fizz .mhf-automation-panel .hp-footer-tag,
+body.mile-high-fizz .mhf-automation-panel .hp-footer-bottom p {
+  color: #6b5d6c;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-grid {
+  max-width: 1060px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-card,
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-card,
+body.mile-high-fizz .mhf-automation-panel .hp-about-copy,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72)),
+    #ffffff;
+  border-color: rgba(236, 72, 153, 0.18);
+  box-shadow: 0 24px 70px rgba(147, 51, 234, 0.12);
+  color: #1f2937;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-card.featured {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(253, 242, 248, 0.82)),
+    #ffffff;
+  border-color: rgba(236, 72, 153, 0.32);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-pill {
+  background: linear-gradient(90deg, #ec4899, #9333ea);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-code-row,
+body.mile-high-fizz .mhf-automation-panel .hp-step,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-consent-box {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(236, 72, 153, 0.16);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-collection-pill {
+  background: rgba(236, 72, 153, 0.09);
+  border-color: rgba(236, 72, 153, 0.18);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-event-copy:hover,
+body.mile-high-fizz .mhf-automation-panel .hp-event-copy.copied,
+body.mile-high-fizz .mhf-automation-panel .hp-event-collection-pill:hover,
+body.mile-high-fizz .mhf-automation-panel .hp-event-add:hover {
+  background: #ec4899;
+  border-color: #ec4899;
+  color: #ffffff;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-grid,
+body.mile-high-fizz .mhf-automation-panel .hp-about-grid {
+  max-width: 1120px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-step-num {
+  background: linear-gradient(135deg, #ec4899, #9333ea);
+  color: #ffffff;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-video,
+body.mile-high-fizz .mhf-automation-panel .hp-about-media-card {
+  border-color: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 28px 80px rgba(59, 130, 246, 0.16);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.04), rgba(15, 23, 42, 0.22)),
+    radial-gradient(circle at 26% 22%, rgba(236, 72, 153, 0.72), transparent 38%),
+    radial-gradient(circle at 72% 26%, rgba(59, 130, 246, 0.58), transparent 42%),
+    linear-gradient(135deg, #ec4899, #9333ea, #3b82f6);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-wibp-video::after {
+  background:
+    radial-gradient(ellipse at 34% 26%, rgba(255, 255, 255, 0.18), transparent 40%),
+    linear-gradient(180deg, transparent 0%, rgba(26, 4, 38, 0.34) 100%);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-video-play {
+  color: #ec4899;
+  border: 0;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-about-copy::before,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-card::before,
+body.mile-high-fizz .mhf-automation-panel .hp-signup-card::after {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.18), transparent 70%);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-signup-input {
+  border-width: 2px;
+  border-color: rgba(236, 72, 153, 0.2);
+  border-radius: 18px;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-signup-input:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-footer {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(236, 72, 153, 0.22), transparent 24rem),
+    radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.18), transparent 25rem),
+    linear-gradient(135deg, #111827 0%, #3b0f5f 48%, #831843 100%);
+  border-top: 0;
+  color: #ffffff;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-footer a,
+body.mile-high-fizz .mhf-automation-panel .hp-footer-col a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-footer a:hover,
+body.mile-high-fizz .mhf-automation-panel .hp-footer-col a:hover {
+  color: #f9a8d4;
+}
+
+body.mile-high-fizz .mhf-automation-panel .hp-footer-bottom,
+body.mile-high-fizz .mhf-automation-panel .legal-row {
+  color: rgba(255, 255, 255, 0.68);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 @media (max-width: 760px) {
