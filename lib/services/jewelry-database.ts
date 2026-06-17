@@ -138,6 +138,35 @@ function normalizeCollectionYear(collectionYear?: number | null): number | null 
   return collectionYear
 }
 
+export function normalizeCollectionStorageName(
+  rawCollectionName: string,
+  collectionYear?: number | null,
+): string {
+  const name = rawCollectionName
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\bcollection\b$/i, '')
+    .trim()
+  if (!name) return name
+
+  const yearFromName = name.match(/\b(20[2-4]\d)\b/)?.[1]
+  const normalizedYear =
+    typeof collectionYear === 'number'
+      ? collectionYear
+      : yearFromName
+        ? Number(yearFromName)
+        : null
+
+  if (!/\bbirthday\b/i.test(name) || normalizedYear === null) return name
+
+  const baseName = name
+    .replace(/\b20[2-4]\d\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return `${normalizeCapitalizedPhrase(baseName)} ${normalizedYear}`
+}
+
 async function findOrCreateCollection(
   supabase: SupabaseClient,
   rawCollectionName: string,
@@ -151,11 +180,12 @@ async function findOrCreateCollection(
     )
   }
   const normalizedYear = normalizeCollectionYear(collectionYear)
+  const storageName = normalizeCollectionStorageName(name, normalizedYear)
 
   const { data: existing, error: lookupErr } = await supabase
     .from('collections')
     .select('id, name, collection_year')
-    .eq('name', name)
+    .eq('name', storageName)
     .maybeSingle()
   if (lookupErr) throw lookupErr
   if (existing) {
@@ -183,9 +213,34 @@ async function findOrCreateCollection(
     }
   }
 
+  const bareName = normalizeCollectionStorageName(name, null)
+  if (normalizedYear !== null && storageName !== bareName) {
+    const { data: legacyExisting, error: legacyLookupErr } = await supabase
+      .from('collections')
+      .select('id, name, collection_year')
+      .eq('name', bareName)
+      .maybeSingle()
+    if (legacyLookupErr) throw legacyLookupErr
+    if (legacyExisting) {
+      const { data: updated, error: updateErr } = await supabase
+        .from('collections')
+        .update({ name: storageName, collection_year: normalizedYear })
+        .eq('id', legacyExisting.id)
+        .select('id, name, collection_year')
+        .single()
+      if (updateErr) throw updateErr
+
+      return {
+        id: updated.id as string,
+        name: updated.name as string,
+        collectionYear: (updated.collection_year as number | null) ?? null,
+      }
+    }
+  }
+
   const { data: created, error: insErr } = await supabase
     .from('collections')
-    .insert({ name, collection_year: normalizedYear })
+    .insert({ name: storageName, collection_year: normalizedYear })
     .select('id, name, collection_year')
     .single()
   if (insErr) throw insErr
@@ -568,7 +623,11 @@ export async function updateDesignCollection(
 ): Promise<UpdateDesignCollectionResult> {
   if (!input.designId) throw errors.MISSING_ITEM_INPUT()
 
-  const collection = await findOrCreateCollection(supabase, input.collectionName)
+  const collection = await findOrCreateCollection(
+    supabase,
+    input.collectionName,
+    input.collectionYear,
+  )
 
   const { data, error } = await supabase
     .from('jewelry_designs')
@@ -593,6 +652,22 @@ export async function updateDesignCollection(
     collectionId: collection.id,
     collectionName: collection.name,
   }
+}
+
+function normalizeCapitalizedPhrase(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((word) =>
+      word
+        .split('-')
+        .map((part) =>
+          part ? `${part[0].toUpperCase()}${part.slice(1).toLowerCase()}` : part,
+        )
+        .join('-'),
+    )
+    .join(' ')
 }
 
 export async function updateCanonicalPhoto(

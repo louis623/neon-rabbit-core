@@ -272,7 +272,7 @@ describe('add_listing — NEEDS_FULL_INFO recovery payload', () => {
     expect(message).toContain('designName and any optional metadata')
     expect(message).toContain('Sparkle Suite jewelry database')
     expect(message).toContain('Birthday Collection month/year')
-    expect(message).toContain('collectionName like "March Birthday"')
+    expect(message).toContain('collectionName like "March Birthday 2026"')
     expect(message).toContain('piecePhotoIndex or listingPhotoIndex')
     expect(message).toContain('recent add-flow photo order')
     expect(message).toContain('Boxed display photos with clear jewelry are acceptable')

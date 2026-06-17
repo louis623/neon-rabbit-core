@@ -2,7 +2,10 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { errors } from './errors'
 import { writeJewelryCatalogChange } from './jewelry-catalog-audit'
 import { normalizeJewelryCatalogTags } from './jewelry-catalog-tags'
-import { normalizeItemNumber } from './jewelry-database'
+import {
+  normalizeCollectionStorageName,
+  normalizeItemNumber,
+} from './jewelry-database'
 import type {
   ReportJewelryCatalogIssueInput,
   ReportJewelryCatalogIssueResult,
@@ -87,14 +90,16 @@ async function findOrCreateCollectionId(
     )
   }
 
+  const normalizedYear = normalizeCorrectionYear(collectionYear)
+  const storageName = normalizeCollectionStorageName(name, normalizedYear)
+
   const { data: existing, error: lookupErr } = await supabase
-      .from('collections')
+    .from('collections')
     .select('id, collection_year')
-    .eq('name', name)
+    .eq('name', storageName)
     .maybeSingle()
   if (lookupErr) throw lookupErr
   if (existing?.id) {
-    const normalizedYear = normalizeCorrectionYear(collectionYear)
     if (normalizedYear !== undefined && normalizedYear !== existing.collection_year) {
       const { data: updated, error: updateErr } = await supabase
         .from('collections')
@@ -115,9 +120,32 @@ async function findOrCreateCollectionId(
     }
   }
 
+  const bareName = normalizeCollectionStorageName(name, null)
+  if (normalizedYear !== undefined && normalizedYear !== null && storageName !== bareName) {
+    const { data: legacyExisting, error: legacyLookupErr } = await supabase
+      .from('collections')
+      .select('id, collection_year')
+      .eq('name', bareName)
+      .maybeSingle()
+    if (legacyLookupErr) throw legacyLookupErr
+    if (legacyExisting?.id) {
+      const { data: updated, error: updateErr } = await supabase
+        .from('collections')
+        .update({ name: storageName, collection_year: normalizedYear })
+        .eq('id', legacyExisting.id)
+        .select('id, collection_year')
+        .single()
+      if (updateErr) throw updateErr
+      return {
+        id: updated.id as string,
+        collectionYear: (updated.collection_year as number | null) ?? null,
+      }
+    }
+  }
+
   const { data: created, error: insertErr } = await supabase
     .from('collections')
-    .insert({ name, collection_year: normalizeCorrectionYear(collectionYear) ?? null })
+    .insert({ name: storageName, collection_year: normalizedYear ?? null })
     .select('id, collection_year')
     .single()
   if (insertErr) throw insertErr

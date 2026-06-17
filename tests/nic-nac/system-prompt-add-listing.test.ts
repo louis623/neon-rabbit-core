@@ -49,6 +49,10 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'Do not require packaging proof after the rep gives the collection',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Birthday collection names must include the year',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('July Birthday 2026')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

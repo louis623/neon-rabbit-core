@@ -91,6 +91,8 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain(
       'Do not require packaging proof after the rep gives the collection',
     )
+    expect(prompt).toContain('Birthday collection names must include the year')
+    expect(prompt).toContain('July Birthday 2026')
     expect(prompt).toContain(
       'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
     )

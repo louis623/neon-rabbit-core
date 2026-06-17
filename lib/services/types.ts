@@ -101,6 +101,7 @@ export interface AddListingInput {
   itemNumber: string
   clickwrapAccepted?: boolean
   collectionName?: string
+  collectionYear?: number
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
@@ -944,6 +945,7 @@ export interface CreateDesignResult {
 export interface UpdateDesignCollectionInput {
   designId: string
   collectionName: string
+  collectionYear?: number | null
 }
 
 export interface UpdateDesignCollectionResult {

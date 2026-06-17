@@ -550,6 +550,7 @@ export async function addListing(
     await updateDesignCollection(supabase, {
       designId: resolved.design.id,
       collectionName: input.collectionName,
+      collectionYear: input.collectionYear,
     })
   }
   if (

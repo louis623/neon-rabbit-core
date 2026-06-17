@@ -136,6 +136,7 @@ function makeAddListingWithCollectionSupabase(
   options: {
     existingListing?: Record<string, unknown> | null
     canonicalPhotoUrl?: string | null
+    collection?: { id: string; name: string; collection_year: number | null }
   } = {},
 ) {
   const resolveMaybeSingle = vi.fn().mockResolvedValue({
@@ -156,7 +157,11 @@ function makeAddListingWithCollectionSupabase(
   const resolveEq = vi.fn().mockReturnValue({ maybeSingle: resolveMaybeSingle })
 
   const collectionMaybeSingle = vi.fn().mockResolvedValue({
-    data: { id: 'collection-1', name: 'Lustre' },
+    data: options.collection ?? {
+      id: 'collection-1',
+      name: 'Lustre',
+      collection_year: null,
+    },
     error: null,
   })
   const collectionEq = vi.fn().mockReturnValue({
@@ -398,6 +403,33 @@ describe('addListing', () => {
       design_id: 'design-1',
       ring_size: '8',
     })
+  })
+
+  it('uses the Birthday collection year when patching a missing design collection', async () => {
+    const { client, spies } = makeAddListingWithCollectionSupabase({
+      collection: {
+        id: 'collection-2026',
+        name: 'July Birthday 2026',
+        collection_year: 2026,
+      },
+    })
+
+    await addListing(client, 'rep-1', {
+      itemNumber: 'RG31452',
+      clickwrapAccepted: true,
+      collectionName: 'July Birthday',
+      collectionYear: 2026,
+    })
+
+    expect(spies.collectionEq).toHaveBeenCalledWith(
+      'name',
+      'July Birthday 2026',
+    )
+    expect(spies.patchUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection_id: 'collection-2026',
+      }),
+    )
   })
 
   it('adds another available listing when the rep already has the same design on the board', async () => {

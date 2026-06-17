@@ -140,6 +140,20 @@ function extractCollectionFields(text: string): {
     }
   }
 
+  const standaloneBirthday = text.match(
+    /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+Birthday)(?:\s+Collection)?\s*,?\s*(20\d{2})\b/i,
+  )
+  if (standaloneBirthday?.[1]) {
+    return {
+      collectionName: normalizeCapitalizedPhrase(
+        normalizeCollectionName(standaloneBirthday[1]),
+      ),
+      collectionYear: standaloneBirthday[2]
+        ? Number(standaloneBirthday[2])
+        : undefined,
+    }
+  }
+
   return {}
 }
 

@@ -279,6 +279,32 @@ describe('reportJewelryCatalogIssue', () => {
     })
   })
 
+  it('stores corrected Birthday collection names with the year included', async () => {
+    const { state, supabase } = makeSupabaseMock()
+
+    const result = await reportJewelryCatalogIssue(supabase as never, {
+      itemNumber: 'RG100',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      issueType: 'wrong_collection',
+      reason: 'The collection should include the birthday year.',
+      correction: {
+        collectionName: 'March Birthday',
+        collectionYear: 2026,
+      },
+    })
+
+    expect(result.corrected).toBe(true)
+    expect(result.changedFields).toEqual(['collectionName', 'collectionYear'])
+    expect(state.collections.get('March Birthday 2026')).toMatchObject({
+      name: 'March Birthday 2026',
+      collection_year: 2026,
+    })
+    expect(state.designUpdates[0]).toMatchObject({
+      collection_id: state.collections.get('March Birthday 2026')?.id,
+    })
+  })
+
   it('updates normalized tags and records quiet history', async () => {
     const { state, supabase } = makeSupabaseMock()
 
