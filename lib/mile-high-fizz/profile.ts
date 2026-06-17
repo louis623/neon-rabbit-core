@@ -142,19 +142,23 @@ export function applyMileHighFizzJoin(
 ): AmethystJoinTemplateData {
   return {
     ...join,
+    publicSiteVariant: 'mile_high_fizz_hybrid',
     repName: MILE_HIGH_FIZZ_PROFILE.publicName,
     repCity: 'Littleton',
     repState: 'Colorado',
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
     teamName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    promoText: '',
+    heroTitle: 'Welcome to the Diamond Peak Society',
+    promoText:
+      '$599 Launch Pack includes a guaranteed Diamond reveal for the 10th Anniversary Special.',
     heroPitch:
-      'Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the Mile High Fizz family.',
+      'Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the Mile High Fizz family. For a limited time, start with a Diamond reveal in your launch pack.',
     heroCtaText: 'Join the Team Now',
     finalPitch:
-      'Join the Mile High Fizz team today and turn your passion for jewelry into a thriving business.',
+      'Join the Diamond Peak Society today and turn your passion for jewelry into a thriving business.',
+    bpReferralUrl: MILE_HIGH_FIZZ_PROFILE.joinPackUrl,
     tickerTopText:
-      'Join the Mile High Fizz Team | Supportive community | Flexible income | Training and mentorship | Work from anywhere',
+      'Join the Diamond Peak Society | Supportive community | Flexible income | Training and mentorship | Work from anywhere',
     footerTagline:
       'Build your own Bomb Party business with the support and energy of the Mile High Fizz family.',
     repSocialLinks: {
@@ -185,7 +189,7 @@ export function applyMileHighFizzJoin(
     teamMembers: [],
     faqAnswers: {
       whatIsTeam:
-        'Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.',
+        'The Diamond Peak Society is the community of independent Bomb Party Representatives led by Lindsey under the Mile High Fizz banner. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.',
       cost:
         'Starter pack details and current promotions are handled by Bomb Party. Use the join button to review the current options.',
       experience:

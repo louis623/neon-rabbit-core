@@ -210,9 +210,18 @@ describe('Mile High Fizz hybrid public site contract', () => {
 
     expect(join.businessName).toBe('Mile High Fizz')
     expect(join.teamName).toBe('Mile High Fizz')
+    expect((join as { publicSiteVariant?: string }).publicSiteVariant).toBe(
+      'mile_high_fizz_hybrid',
+    )
+    expect((join as { heroTitle?: string }).heroTitle).toBe(
+      'Welcome to the Diamond Peak Society',
+    )
+    expect(join.promoText).toContain('$599 Launch Pack')
     expect(join.heroPitch).toContain('Turn Your Passion into Profit')
+    expect(join.heroPitch).toContain('Diamond reveal')
     expect(join.finalPitch).toContain('turn your passion for jewelry into a thriving business')
     expect(join.faqAnswers.whatIsTeam).toContain('Supportive Community')
+    expect(join.faqAnswers.whatIsTeam).toContain('Diamond Peak Society')
     expect(join.faqAnswers.support).toContain('one-on-one support')
     expect(join.footerLinks.home).toBe('/amethyst/Homepage.html')
     expect(join.footerLinks.tradeBoard).toBe('/amethyst/Trade.html')
@@ -256,11 +265,43 @@ describe('Mile High Fizz hybrid public site contract', () => {
     })
 
     expect(data.homepage.publicSiteVariant).toBe('mile_high_fizz_hybrid')
+    expect((data.join as { publicSiteVariant?: string }).publicSiteVariant).toBe(
+      'mile_high_fizz_hybrid',
+    )
+    expect((data.join as { heroTitle?: string }).heroTitle).toBe(
+      'Welcome to the Diamond Peak Society',
+    )
     expect(data.join.heroPitch).toContain('Turn Your Passion into Profit')
+    expect(data.join.heroPitch).toContain('Diamond reveal')
     expect(data.join.faqAnswers.whatIsTeam).toContain('Supportive Community')
     expect(data.homepage.footerLinks.home).toBe('/milehighfizz')
     expect(data.homepage.footerLinks.tradeBoard).toBe('/milehighfizz/trade')
     expect(data.homepage.footerLinks.joinTeam).toBe('/milehighfizz/join')
     expect(data.join.footerLinks.joinTeam).toBe('/milehighfizz/join')
+  })
+
+  it('renders the public Join page in Mile High Fizz styling with migrated Join copy', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('const isMileHighFizzHybrid')
+    expect(jsx).toContain('mhf-join-page')
+    expect(jsx).toContain('mhf-join-shell')
+    expect(jsx).toContain('CONTENT.heroTitle')
+    expect(css).toContain('body.mile-high-fizz-join')
+    expect(css).toContain('.mhf-join-shell')
+    expect(css).toContain('body.mile-high-fizz-join .jp-hero')
+    expect(css).toContain('body.mile-high-fizz-join .jp-section')
+    expect(css).toContain('body.mile-high-fizz-join .jp-benefit-card')
+    expect(css).toContain('body.mile-high-fizz-join .jp-faq-item')
+    expect(css).toContain('body.mile-high-fizz-join .jp-final-card')
+    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
+    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
   })
 })

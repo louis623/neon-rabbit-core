@@ -16,6 +16,7 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   teamMemberCount: 6,
   showPromo: true,
   promoText: "November Promo: New reps get a guaranteed Diamond in their first launch pack.",
+  heroTitle: "Welcome to Sparkle by Sasha",
   heroPitch: "Join a crew of independent reps building real businesses on their own terms. We do live jewelry reveals, support each other through it, and yes, we have a lot of fun. There's a spot waiting for you.",
   heroCtaText: "See starter packs",
   finalPitch: "Pick your starter pack, follow the steps on Bomb Party, and you're in. We'll set up your onboarding call within 24 hours.",
@@ -70,6 +71,7 @@ function redactPublicRepText(text, repName) {
 
 const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
+const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -469,13 +471,13 @@ function LiveQueueModal({ open, onClose }) {
   );
 }
 
-function Hero({ teamName, pitch, ctaText, ctaUrl, showPromo, promoText, repName, locationLabel }) {
+function Hero({ teamName, title, pitch, ctaText, ctaUrl, showPromo, promoText, repName, locationLabel }) {
   return (
     <section className="jp-hero">
       <div className="jp-hero-media slot" data-slot="hero photo" />
       <div className="jp-hero-inner">
         <div className="jp-hero-card">
-          <div className="jp-hero-eyebrow">Join the team</div>
+          <div className="jp-hero-eyebrow">{isMileHighFizzHybrid ? "Join the Mile High Fizz Team" : "Join the team"}</div>
           {showPromo ? (
             <div className="jp-hero-promo slot" data-slot="current BP promo">
               <span className="pip" />
@@ -483,7 +485,7 @@ function Hero({ teamName, pitch, ctaText, ctaUrl, showPromo, promoText, repName,
             </div>
           ) : null}
           <h1 className="jp-hero-title slot" data-slot="team name headline">
-            Welcome to <span className="slot" data-slot="team name">{teamName}</span>
+            {title || <>Welcome to <span className="slot" data-slot="team name">{teamName}</span></>}
           </h1>
           <p className="jp-hero-pitch slot" data-slot="recruitment pitch">{pitch}</p>
           <p className="jp-hero-localized">
@@ -608,12 +610,13 @@ const BENEFITS = [
 ];
 
 function WhyJoin({ teamName, repName, locationLabel }) {
+  const displayTeamName = isMileHighFizzHybrid ? "the Diamond Peak Society" : teamName;
   return (
     <section className="jp-section jp-why" id="why">
       <div className="jp-container">
         <div className="jp-section-head">
           <div className="jp-section-eyebrow">Why join</div>
-          <h2 className="jp-section-title">Why Join {teamName}?</h2>
+          <h2 className="jp-section-title">Why Join {displayTeamName}?</h2>
           <p className="jp-section-sub">Turn your passion into profit with support from {repName}{locationLabel ? ` in ${locationLabel}` : ""}. This isn't a side gig you grind through - it's a community that helps you grow at your pace, however far you want to take it.</p>
         </div>
         <div className="jp-benefits">
@@ -665,14 +668,15 @@ const FAQ_QUESTIONS = (teamName, repName) => ([
 
 function Faq({ teamName, repName, locationLabel }) {
   const [open, setOpen] = useState(0);
-  const questions = FAQ_QUESTIONS(teamName, repName);
+  const displayTeamName = isMileHighFizzHybrid ? "the Diamond Peak Society" : teamName;
+  const questions = FAQ_QUESTIONS(displayTeamName, repName);
   return (
     <section className="jp-section" id="faq">
       <div className="jp-faq-wrap">
         <div className="jp-section-head">
           <div className="jp-section-eyebrow">FAQ</div>
           <h2 className="jp-section-title">Frequently Asked Questions</h2>
-          <p className="jp-section-sub">Everything you need to know about joining {teamName}{locationLabel ? ` with ${repName} in ${locationLabel}` : ""}.</p>
+          <p className="jp-section-sub">Everything you need to know about joining {displayTeamName}{locationLabel ? ` with ${repName} in ${locationLabel}` : ""}.</p>
         </div>
         <div className="jp-faq-list">
           {questions.map((item, index) => (
@@ -829,6 +833,9 @@ function App() {
     }
 
     document.title = `Join ${t.teamName} | ${repName}${locationSuffix}`;
+    if (isMileHighFizzHybrid) {
+      document.title = "Join the Mile High Fizz Team - Colorado Bomb Party Business Opportunity";
+    }
     meta.setAttribute("content", description);
     applyTargetedMetadata(document.title, description);
   }, [locationLabel, repName, t.teamName]);
@@ -836,6 +843,7 @@ function App() {
   useEffect(() => {
     const body = document.body;
     body.className = "joinpage";
+    if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz-join");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -904,53 +912,58 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className="hp-sticky-stack">
-        <Header businessName={t.businessName} />
+      <div className={isMileHighFizzHybrid ? "mhf-join-page" : ""}>
+        <div className="hp-sticky-stack">
+          <Header businessName={t.businessName} />
 
-        {t.showTicker ? <Ticker topText={t.tickerTopText} /> : null}
+          {t.showTicker ? <Ticker topText={t.tickerTopText} /> : null}
 
-        <LiveQueueStrip onOpen={() => setQueueOpen(true)} />
-      </div>
+          <LiveQueueStrip onOpen={() => setQueueOpen(true)} />
+        </div>
 
-      <div className="hp-saturate">
-        {t.showHero ? (
-          <Hero
-            teamName={t.teamName}
-            pitch={redactPublicRepText(t.heroPitch, t.repName)}
-            ctaText={t.heroCtaText}
-            ctaUrl={t.bpReferralUrl}
-            showPromo={t.showPromo}
-            promoText={t.promoText}
-            repName={repName}
-            locationLabel={locationLabel}
-          />
-        ) : null}
+        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-join-shell" : "hp-saturate"}>
+          <div className={isMileHighFizzHybrid ? "mhf-join-content" : ""}>
+            {t.showHero ? (
+              <Hero
+                teamName={t.teamName}
+                title={t.heroTitle || CONTENT.heroTitle}
+                pitch={redactPublicRepText(t.heroPitch, t.repName)}
+                ctaText={t.heroCtaText}
+                ctaUrl={t.bpReferralUrl}
+                showPromo={t.showPromo}
+                promoText={t.promoText}
+                repName={repName}
+                locationLabel={locationLabel}
+              />
+            ) : null}
 
-        {t.showTeam ? (
-          <TeamSection
-            rep={repCard}
-            members={visibleMembers}
-            ctaUrl={t.bpReferralUrl}
-            ctaText="Apply to the Team"
-          />
-        ) : null}
+            {t.showTeam ? (
+              <TeamSection
+                rep={repCard}
+                members={visibleMembers}
+                ctaUrl={t.bpReferralUrl}
+                ctaText="Apply to the Team"
+              />
+            ) : null}
 
-        {t.showWhy ? <WhyJoin teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
+            {t.showWhy ? <WhyJoin teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
 
-        {t.showFaq ? <Faq teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
+            {t.showFaq ? <Faq teamName={t.teamName} repName={repName} locationLabel={locationLabel} /> : null}
 
-        {t.showFinalCta ? (
-          <FinalCta
-            teamName={t.teamName}
-            ctaUrl={t.bpReferralUrl}
-            ctaText="Join The Team Now"
-            pitch={redactPublicRepText(t.finalPitch, t.repName)}
-            repName={repName}
-            locationLabel={locationLabel}
-          />
-        ) : null}
+            {t.showFinalCta ? (
+              <FinalCta
+                teamName={isMileHighFizzHybrid ? "the Diamond Peak Society" : t.teamName}
+                ctaUrl={t.bpReferralUrl}
+                ctaText="Join The Team Now"
+                pitch={redactPublicRepText(t.finalPitch, t.repName)}
+                repName={repName}
+                locationLabel={locationLabel}
+              />
+            ) : null}
 
-        {t.showFooter ? <Footer businessName={t.businessName} /> : null}
+            {t.showFooter ? <Footer businessName={t.businessName} /> : null}
+          </div>
+        </div>
       </div>
 
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} />
@@ -961,6 +974,7 @@ function App() {
           <TweakText label="Rep name" value={t.repName} onChange={(value) => setTweak("repName", value)} />
           <TweakText label="Rep city" value={t.repCity} onChange={(value) => setTweak("repCity", value)} />
           <TweakText label="Rep state" value={t.repState} onChange={(value) => setTweak("repState", value)} />
+          <TweakText label="Hero title" value={t.heroTitle} onChange={(value) => setTweak("heroTitle", value)} />
           <TweakSlider
             label="Team members shown"
             value={t.teamMemberCount}

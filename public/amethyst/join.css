@@ -706,3 +706,414 @@ body.shape-soft .jp-final-card { border-radius: 28px; }
 
 body.density-compact .jp-section { padding: 56px 0; }
 body.density-spacious .jp-section { padding: 110px 0; }
+
+/* ---------- Mile High Fizz hybrid join page ---------- */
+body.mile-high-fizz-join {
+  --hp-primary: #ec4899;
+  --hp-accent: #9333ea;
+  --hp-bg: #fdf2f8;
+  --hp-bg-elevated: rgba(255, 255, 255, 0.86);
+  --bg-deep: #eff6ff;
+  --fg: #1f2937;
+  --fg-muted: #6b5d6c;
+  --border: rgba(236, 72, 153, 0.18);
+  --hp-radius-card: 26px;
+  --hp-display-font: "Playfair Display", Georgia, serif;
+  --hp-body-font: "DM Sans", "Inter", system-ui, sans-serif;
+  --hp-heading-weight: 700;
+  --hp-heading-tracking: 0;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(236, 72, 153, 0.18), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgba(59, 130, 246, 0.18), transparent 30%),
+    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+  color: var(--fg);
+}
+
+body.mile-high-fizz-join::before {
+  opacity: 0.22;
+  mix-blend-mode: normal;
+}
+
+.mhf-join-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(236, 72, 153, 0.2), transparent 26%),
+    radial-gradient(circle at 92% 10%, rgba(59, 130, 246, 0.18), transparent 28%),
+    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+}
+
+.mhf-join-shell {
+  min-height: 100vh;
+  padding-bottom: 1px;
+  background:
+    radial-gradient(circle at 14% 20%, rgba(236, 72, 153, 0.2), transparent 30%),
+    radial-gradient(circle at 84% 2%, rgba(147, 51, 234, 0.18), transparent 30%),
+    radial-gradient(circle at 78% 76%, rgba(59, 130, 246, 0.14), transparent 34%),
+    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mhf-join-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 1px, transparent 1.7px),
+    radial-gradient(circle, rgba(236, 72, 153, 0.22) 0 1px, transparent 1.8px);
+  background-position: 0 0, 48px 36px;
+  background-size: 120px 120px, 160px 160px;
+  opacity: 0.28;
+}
+
+.mhf-join-content {
+  position: relative;
+  z-index: 1;
+}
+
+body.mile-high-fizz-join .hp-sticky-stack {
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 36px rgba(31, 41, 55, 0.12);
+}
+
+body.mile-high-fizz-join .hp-header {
+  background: #050505;
+  color: white;
+}
+
+body.mile-high-fizz-join .hp-brand-name {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.mile-high-fizz-join .hp-brand-sub {
+  color: #f472b6;
+}
+
+body.mile-high-fizz-join .hp-header-link {
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.08em;
+}
+
+body.mile-high-fizz-join .hp-header-link[aria-current="page"],
+body.mile-high-fizz-join .hp-header-link:hover {
+  color: white;
+}
+
+body.mile-high-fizz-join .hp-header-link::after {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+}
+
+body.mile-high-fizz-join .hp-shop-btn {
+  background: linear-gradient(90deg, #facc15, #f9a8d4, #9333ea);
+  color: #111827;
+  border-color: rgba(255, 255, 255, 0.42);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.42),
+    0 16px 34px rgba(147, 51, 234, 0.32);
+}
+
+body.mile-high-fizz-join .hp-ticker {
+  background: #280d48;
+  color: white;
+  border: 0;
+}
+
+body.mile-high-fizz-join .hp-ticker-row {
+  background: linear-gradient(90deg, #2b0d45, #42136b, #2b0d45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+body.mile-high-fizz-join .hp-ticker-row.reverse {
+  background: linear-gradient(90deg, #38bdf8, #60a5fa, #ec4899);
+  color: white;
+}
+
+body.mile-high-fizz-join .hp-ticker-label {
+  background: linear-gradient(90deg, #2b0d45 0%, #2b0d45 70%, rgba(43, 13, 69, 0) 100%);
+  color: #fce7f3;
+}
+
+body.mile-high-fizz-join .hp-ticker-row.reverse .hp-ticker-label {
+  background: linear-gradient(90deg, #38bdf8 0%, #38bdf8 70%, rgba(56, 189, 248, 0) 100%);
+  color: white;
+}
+
+body.mile-high-fizz-join .hp-ticker-item,
+body.mile-high-fizz-join .hp-ticker-trade,
+body.mile-high-fizz-join .hp-ticker-row.reverse .hp-ticker-trade {
+  color: white;
+  text-shadow: 0 1px 10px rgba(15, 23, 42, 0.22);
+}
+
+body.mile-high-fizz-join .hp-ticker-item .dot,
+body.mile-high-fizz-join .hp-ticker-trade .pip {
+  background: #facc15;
+}
+
+body.mile-high-fizz-join .hp-trade-preview {
+  background: rgba(5, 5, 5, 0.86);
+  color: rgba(255, 255, 255, 0.86);
+  border-color: rgba(236, 72, 153, 0.22);
+}
+
+body.mile-high-fizz-join .hp-trade-preview-link {
+  color: #fecdd3;
+}
+
+body.mile-high-fizz-join .jp-hero {
+  min-height: 620px;
+  padding: 92px 0;
+}
+
+body.mile-high-fizz-join .jp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.32), rgba(20, 10, 34, 0.58)),
+    radial-gradient(circle at 50% 12%, rgba(236, 72, 153, 0.44), transparent 36%),
+    linear-gradient(135deg, #1f1140 0%, #4c1d95 48%, #0f172a 100%);
+}
+
+body.mile-high-fizz-join .jp-hero-media::before {
+  background:
+    linear-gradient(160deg, transparent 0 58%, rgba(15, 23, 42, 0.62) 58% 64%, transparent 64%),
+    linear-gradient(200deg, transparent 0 52%, rgba(255, 255, 255, 0.18) 52% 56%, transparent 56%),
+    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.4) 0 1px, transparent 2px),
+    radial-gradient(circle at 76% 28%, rgba(255, 255, 255, 0.36) 0 1px, transparent 2px);
+  background-size: 100% 100%, 100% 100%, 180px 180px, 220px 220px;
+}
+
+body.mile-high-fizz-join .jp-hero-card {
+  max-width: 780px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(244, 114, 182, 0.6);
+  border-radius: 30px;
+  box-shadow:
+    0 0 40px rgba(244, 114, 182, 0.36),
+    0 0 80px rgba(147, 51, 234, 0.22),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28);
+}
+
+body.mile-high-fizz-join .jp-hero-eyebrow,
+body.mile-high-fizz-join .jp-hero-compliance {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.mile-high-fizz-join .jp-hero-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(42px, 5.8vw, 72px);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  background: linear-gradient(90deg, #f9a8d4, #c4b5fd, #7dd3fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.mile-high-fizz-join .jp-hero-pitch {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+body.mile-high-fizz-join .jp-hero-promo {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(244, 114, 182, 0.52);
+  color: white;
+}
+
+body.mile-high-fizz-join .jp-hero-promo .pip {
+  background: #facc15;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.76);
+}
+
+body.mile-high-fizz-join .jp-hero-localized {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+body.mile-high-fizz-join .jp-hero .hp-btn-primary {
+  background: #a855f7;
+  color: white;
+  box-shadow: 0 0 26px rgba(168, 85, 247, 0.48);
+}
+
+body.mile-high-fizz-join .jp-section {
+  background: transparent;
+}
+
+body.mile-high-fizz-join .jp-why {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+body.mile-high-fizz-join .jp-section-title,
+body.mile-high-fizz-join .jp-team-business {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.mile-high-fizz-join .jp-section-eyebrow {
+  color: #ec4899;
+}
+
+body.mile-high-fizz-join .jp-section-eyebrow::before,
+body.mile-high-fizz-join .jp-section-eyebrow::after {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+}
+
+body.mile-high-fizz-join .jp-team-card,
+body.mile-high-fizz-join .jp-benefit-card,
+body.mile-high-fizz-join .jp-faq-note {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 24px 54px rgba(31, 41, 55, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.mile-high-fizz-join .jp-team-card:hover,
+body.mile-high-fizz-join .jp-benefit-card:hover {
+  border-color: rgba(147, 51, 234, 0.3);
+  box-shadow: 0 28px 70px rgba(147, 51, 234, 0.16);
+}
+
+body.mile-high-fizz-join .jp-team-card.is-leader {
+  background:
+    linear-gradient(180deg, rgba(236, 72, 153, 0.1), rgba(59, 130, 246, 0.08)),
+    rgba(255, 255, 255, 0.9);
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+body.mile-high-fizz-join .jp-team-card.is-leader::before {
+  color: #9333ea;
+  border-color: rgba(236, 72, 153, 0.24);
+}
+
+body.mile-high-fizz-join .jp-team-avatar,
+body.mile-high-fizz-join .jp-benefit-icon,
+body.mile-high-fizz-join .jp-final-icon,
+body.mile-high-fizz-join .jp-spot-btn {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  box-shadow: 0 14px 30px rgba(147, 51, 234, 0.24);
+}
+
+body.mile-high-fizz-join .jp-team-card.is-spot {
+  background:
+    linear-gradient(135deg, rgba(253, 242, 248, 0.82), rgba(239, 246, 255, 0.86)),
+    rgba(255, 255, 255, 0.82);
+  border: 2px dashed rgba(236, 72, 153, 0.42);
+}
+
+body.mile-high-fizz-join .jp-spot-glyph {
+  color: #9333ea;
+  border-color: rgba(147, 51, 234, 0.34);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+body.mile-high-fizz-join .jp-faq-wrap {
+  max-width: 980px;
+  padding: 36px 28px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(236, 72, 153, 0.18);
+  border-radius: 28px;
+  box-shadow: 0 24px 54px rgba(31, 41, 55, 0.1);
+}
+
+body.mile-high-fizz-join .jp-faq-item {
+  border-color: rgba(236, 72, 153, 0.18);
+}
+
+body.mile-high-fizz-join .jp-faq-q,
+body.mile-high-fizz-join .jp-team-name,
+body.mile-high-fizz-join .jp-benefit-title,
+body.mile-high-fizz-join .jp-spot-title {
+  color: #1f2937;
+}
+
+body.mile-high-fizz-join .jp-faq-a-inner,
+body.mile-high-fizz-join .jp-section-sub,
+body.mile-high-fizz-join .jp-benefit-desc,
+body.mile-high-fizz-join .jp-team-location,
+body.mile-high-fizz-join .jp-spot-sub {
+  color: #6b5d6c;
+}
+
+body.mile-high-fizz-join .jp-faq-link a,
+body.mile-high-fizz-join .jp-faq-note a {
+  color: #9333ea;
+}
+
+body.mile-high-fizz-join .jp-final {
+  padding-top: 64px;
+}
+
+body.mile-high-fizz-join .jp-final-card {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2), transparent 50%),
+    linear-gradient(135deg, #ec4899, #9333ea, #3b82f6);
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(147, 51, 234, 0.28);
+}
+
+body.mile-high-fizz-join .jp-final-btn {
+  color: #9333ea;
+}
+
+body.mile-high-fizz-join .hp-footer {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(236, 72, 153, 0.24), transparent 32%),
+    linear-gradient(135deg, #111827 0%, #2e1065 52%, #0f172a 100%);
+  color: rgba(255, 255, 255, 0.74);
+}
+
+body.mile-high-fizz-join .hp-footer-brand {
+  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.mile-high-fizz-join .hp-footer a,
+body.mile-high-fizz-join .hp-footer-col a {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+body.mile-high-fizz-join .hp-footer a:hover,
+body.mile-high-fizz-join .hp-footer-col a:hover {
+  color: white;
+}
+
+@media (max-width: 720px) {
+  body.mile-high-fizz-join .jp-hero {
+    min-height: 560px;
+    padding: 64px 0;
+  }
+
+  body.mile-high-fizz-join .jp-hero-card {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    padding: 28px 20px;
+  }
+
+  body.mile-high-fizz-join .jp-hero-title {
+    font-size: clamp(30px, 9vw, 42px);
+    max-width: 100%;
+  }
+
+  body.mile-high-fizz-join .jp-hero-pitch {
+    font-size: 15px;
+    max-width: 28ch;
+  }
+
+  body.mile-high-fizz-join .jp-faq-wrap {
+    padding: 28px 18px;
+    border-radius: 22px;
+  }
+}

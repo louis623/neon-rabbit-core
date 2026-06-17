@@ -34,11 +34,13 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystJoinTemplateData {
+  publicSiteVariant?: 'mile_high_fizz_hybrid'
   repName: string
   repCity: string
   repState: string
   businessName: string
   teamName: string
+  heroTitle?: string
   promoText: string
   heroPitch: string
   heroCtaText: string
@@ -91,6 +93,7 @@ export interface AmethystJoinTemplateData {
 
 export interface AmethystJoinTweakDefaults {
   teamName: string
+  heroTitle: string
   repName: string
   repCity: string
   repState: string
@@ -139,6 +142,7 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   repState: 'Texas',
   businessName: 'Sparkle by Sasha',
   teamName: 'Sparkle by Sasha',
+  heroTitle: 'Welcome to Sparkle by Sasha',
   promoText:
     'November Promo: New reps get a guaranteed Diamond in their first launch pack.',
   heroPitch:
@@ -270,6 +274,7 @@ const lockedTweakDefaults: Omit<
   | 'repState'
   | 'businessName'
   | 'teamMemberCount'
+  | 'heroTitle'
   | 'promoText'
   | 'heroPitch'
   | 'heroCtaText'
@@ -314,6 +319,7 @@ export function buildAmethystJoinTweakDefaults(
 ): AmethystJoinTweakDefaults {
   return applyAmethystAppearancePreset({
     teamName: data.teamName,
+    heroTitle: data.heroTitle || `Welcome to ${data.teamName}`,
     repName: getPublicRepName(data.repName),
     repCity: data.repCity,
     repState: data.repState,
