@@ -105,8 +105,8 @@ function HeaderRow({ content }: { content: AmethystSiteContent }) {
 function AmethystTicker({ content }: { content: AmethystSiteContent }) {
   const announcementItems = repeatItems(content.announcementItems)
   const tradeItems = repeatItems(content.tradeBoardListings)
-  const announcementTickerAnimation = 'amethyst-scroll 32s linear infinite'
-  const tradeTickerAnimation = 'amethyst-scroll 36s linear infinite reverse'
+  const announcementTickerAnimation = 'amethyst-scroll 16s linear infinite'
+  const tradeTickerAnimation = 'amethyst-scroll 18s linear infinite reverse'
 
   return (
     <div className="border-b border-[var(--amethyst-border)] bg-white">

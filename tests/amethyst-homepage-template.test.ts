@@ -83,7 +83,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
   })
 
-  it('keeps customer-facing tickers at a medium readable speed', () => {
+  it('keeps customer-facing tickers at a faster readable ticker speed', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
       'utf8',
@@ -112,16 +112,16 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('animation: hp-ticker-scroll 40s linear infinite;')
     expect(css).toContain('animation-duration: calc(40s / var(--ticker-speed, 1));')
     expect(css).toContain('animation-duration: calc(45s / var(--ticker-speed, 1));')
-    expect(componentsCss).toContain('animation: tickerScroll 32s linear infinite;')
-    expect(componentsCss).toContain('animation-duration: 36s;')
-    expect(shell).toContain('amethyst-scroll 32s linear infinite')
-    expect(shell).toContain('amethyst-scroll 36s linear infinite reverse')
+    expect(componentsCss).toContain('animation: tickerScroll 16s linear infinite;')
+    expect(componentsCss).toContain('animation-duration: 18s;')
+    expect(shell).toContain('amethyst-scroll 16s linear infinite')
+    expect(shell).toContain('amethyst-scroll 18s linear infinite reverse')
 
     for (const jsx of [homepage, trade, join]) {
-      expect(jsx).toContain('tickerSpeed: 1.25')
+      expect(jsx).toContain('tickerSpeed: 2.5')
     }
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
-      expect(preset.values.tickerSpeed).toBe(1.25)
+      expect(preset.values.tickerSpeed).toBe(2.5)
     }
   })
 

@@ -312,7 +312,7 @@
 .ticker-track {
   display: inline-flex;
   gap: 48px;
-  animation: tickerScroll 32s linear infinite;
+  animation: tickerScroll 16s linear infinite;
   padding-left: 48px;
 }
 .ticker-item {
@@ -354,8 +354,8 @@
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .ticker-row:last-child { border-bottom: 0; }
-.ticker-row .ticker-track { animation-duration: 32s; }
-.ticker-row.reverse .ticker-track { animation-direction: reverse; animation-duration: 36s; }
+.ticker-row .ticker-track { animation-duration: 16s; }
+.ticker-row.reverse .ticker-track { animation-direction: reverse; animation-duration: 18s; }
 
 /* T4: vertical rotator */
 .ticker-rotator {
