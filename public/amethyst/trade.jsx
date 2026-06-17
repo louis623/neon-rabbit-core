@@ -67,6 +67,7 @@ function redactPublicRepText(text, repName) {
 
 const CONTENT = window.AMETHYST_TRADE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
+const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
   ? window.AMETHYST_TRADE_BOARD_LISTINGS
   : [];
@@ -1464,6 +1465,7 @@ function App() {
   useEffect(() => {
     const body = document.body;
     body.className = "tradepage";
+    if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz-trade");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -1584,84 +1586,88 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className="hp-sticky-stack">
-        <Header businessName={t.businessName} />
-        {t.showTicker && <Ticker topText={t.tickerTopText} />}
-        <LiveQueueStrip live={live} onOpen={() => setQueueOpen(true)} />
-      </div>
+      <div className={isMileHighFizzHybrid ? "mhf-trade-page" : ""}>
+        <div className="hp-sticky-stack">
+          <Header businessName={t.businessName} />
+          {t.showTicker && <Ticker topText={t.tickerTopText} />}
+          <LiveQueueStrip live={live} onOpen={() => setQueueOpen(true)} />
+        </div>
 
-      <div className="hp-saturate">
-        {t.showHero && (
-          <TradeHero
-            tweakRepName={repName}
-            tweakHeroTitle={t.tradeHeroTitle}
-            tweakHeroSub={redactPublicRepText(t.tradeHeroSub, t.repName)}
-          />
-        )}
+        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-trade-shell" : "hp-saturate"}>
+          {t.showHero && (
+            <TradeHero
+              tweakRepName={repName}
+              tweakHeroTitle={t.tradeHeroTitle}
+              tweakHeroSub={redactPublicRepText(t.tradeHeroSub, t.repName)}
+            />
+          )}
 
-        <section className="tp-board">
-          <div className="tp-board-inner no-lrq">
-            <div>
-              <Filters
-                style={t.filterStyle}
-                listings={availableSamples}
-                resultCount={filtered.length}
-                visibleCount={visibleTradeBoardPieces.length}
-                filters={filters}
-                setFilters={setFilters}
-                boardSearch={boardSearch}
-                setBoardSearch={setBoardSearch}
-                sortMode={sortMode}
-                setSortMode={setSortMode}
-                collectionSearch={collectionSearch}
-                setCollectionSearch={setCollectionSearch}
-                secondaryOpen={secondaryFiltersOpen}
-                setSecondaryOpen={setSecondaryFiltersOpen}
-              />
-              {isEmpty ? (
-                <div className="tp-grid-wrap"><EmptyState repName={repName} /></div>
-              ) : showNoMatches ? (
-                <div className="tp-grid-wrap"><NoMatchesState onClear={clearFilters} /></div>
-              ) : (
-                <div className="tp-grid-wrap">
-                  <div className={`tp-grid aspect-${t.cardAspect}`}>
-                    {visibleTradeBoardPieces.map((piece) => (
-                      <TradeCard
-                        key={piece.id}
-                        piece={piece}
-                        onTap={(selectedPiece) => setExpanded(selectedPiece)}
-                        repName={repName}
-                        tierVisible={t.tierVisibility}
-                      />
-                    ))}
-                  </div>
-                  <div className="tp-board-pagination">
-                    <div className="tp-board-showing">
-                      Showing {visibleTradeBoardPieces.length} of {filtered.length} pieces
+          <div className={isMileHighFizzHybrid ? "mhf-trade-board-panel" : ""}>
+            <section className="tp-board">
+              <div className="tp-board-inner no-lrq">
+                <div>
+                  <Filters
+                    style={t.filterStyle}
+                    listings={availableSamples}
+                    resultCount={filtered.length}
+                    visibleCount={visibleTradeBoardPieces.length}
+                    filters={filters}
+                    setFilters={setFilters}
+                    boardSearch={boardSearch}
+                    setBoardSearch={setBoardSearch}
+                    sortMode={sortMode}
+                    setSortMode={setSortMode}
+                    collectionSearch={collectionSearch}
+                    setCollectionSearch={setCollectionSearch}
+                    secondaryOpen={secondaryFiltersOpen}
+                    setSecondaryOpen={setSecondaryFiltersOpen}
+                  />
+                  {isEmpty ? (
+                    <div className="tp-grid-wrap"><EmptyState repName={repName} /></div>
+                  ) : showNoMatches ? (
+                    <div className="tp-grid-wrap"><NoMatchesState onClear={clearFilters} /></div>
+                  ) : (
+                    <div className="tp-grid-wrap">
+                      <div className={`tp-grid aspect-${t.cardAspect}`}>
+                        {visibleTradeBoardPieces.map((piece) => (
+                          <TradeCard
+                            key={piece.id}
+                            piece={piece}
+                            onTap={(selectedPiece) => setExpanded(selectedPiece)}
+                            repName={repName}
+                            tierVisible={t.tierVisibility}
+                          />
+                        ))}
+                      </div>
+                      <div className="tp-board-pagination">
+                        <div className="tp-board-showing">
+                          Showing {visibleTradeBoardPieces.length} of {filtered.length} pieces
+                        </div>
+                        {hasMoreTradeBoardPieces && (
+                          <button
+                            type="button"
+                            className="tp-load-more"
+                            onClick={() => setVisibleCount((count) => count + BOARD_PAGE_SIZE)}
+                          >
+                            Load more
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    {hasMoreTradeBoardPieces && (
-                      <button
-                        type="button"
-                        className="tp-load-more"
-                        onClick={() => setVisibleCount((count) => count + BOARD_PAGE_SIZE)}
-                      >
-                        Load more
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        </section>
+              </div>
+            </section>
 
-        {t.showLegal && (
-          <div className="tp-legal slot" data-slot="brand separation footer">
-            {CONTENT.legalDisclaimer || "Trades are private agreements between the customer and the rep. Bomb Party MSRP is shown for reference only and does not drive trade eligibility."}
-          </div>
-        )}
+            {t.showLegal && (
+              <div className="tp-legal slot" data-slot="brand separation footer">
+                {CONTENT.legalDisclaimer || "Trades are private agreements between the customer and the rep. Bomb Party MSRP is shown for reference only and does not drive trade eligibility."}
+              </div>
+            )}
 
-        {t.showFooter && <Footer businessName={t.businessName} />}
+            {t.showFooter && <Footer businessName={t.businessName} />}
+          </div>
+        </div>
       </div>
 
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} live={live} />

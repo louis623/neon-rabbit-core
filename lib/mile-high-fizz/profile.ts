@@ -115,6 +115,7 @@ export function applyMileHighFizzTrade(
 ): AmethystTradeTemplateData {
   return {
     ...trade,
+    publicSiteVariant: 'mile_high_fizz_hybrid',
     repName: MILE_HIGH_FIZZ_PROFILE.publicName,
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
     tradeHeroTitle: 'Mile High Fizz Trade Board',

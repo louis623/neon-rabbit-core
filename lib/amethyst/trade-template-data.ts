@@ -23,6 +23,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystTradeTemplateData {
+  publicSiteVariant?: 'mile_high_fizz_hybrid'
   repName: string
   businessName: string
   tradeHeroTitle: string

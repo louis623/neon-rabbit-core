@@ -172,6 +172,34 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(trade.footerLinks.home).toBe('/amethyst/Homepage.html')
     expect(trade.footerLinks.tradeBoard).toBe('/amethyst/Trade.html')
     expect(trade.footerLinks.joinTeam).toBe('/amethyst/Join.html')
+    expect((trade as { publicSiteVariant?: string }).publicSiteVariant).toBe(
+      'mile_high_fizz_hybrid',
+    )
+  })
+
+  it('renders the public Trade Board in Mile High Fizz styling without changing mechanics', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('const isMileHighFizzHybrid')
+    expect(jsx).toContain('mhf-trade-page')
+    expect(jsx).toContain('mhf-trade-shell')
+    expect(jsx).toContain('mhf-trade-board-panel')
+    expect(css).toContain('body.mile-high-fizz-trade')
+    expect(css).toContain('.mhf-trade-shell')
+    expect(css).toContain('body.mile-high-fizz-trade .tp-hero')
+    expect(css).toContain('body.mile-high-fizz-trade .tp-filters')
+    expect(css).toContain('body.mile-high-fizz-trade .tp-card')
+    expect(css).toContain('body.mile-high-fizz-trade .tp-sheet')
+    expect(css).toContain('body.mile-high-fizz-trade .hp-footer')
+    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
+    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
   })
 
   it('recreates Lindsey join page content for the internal Sparkle page', () => {
