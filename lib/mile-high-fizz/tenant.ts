@@ -3,21 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
 import { REQUIRED_SETUP_STEPS } from '@/lib/self-serve/required-setup'
+import { MILE_HIGH_FIZZ_PROFILE } from './profile'
 
 type AdminClient = SupabaseClient
 
-export const MILE_HIGH_FIZZ_PROFILE = {
-  email: 'lindseychapman1188@gmail.com',
-  displayName: 'Lindsey Chapman',
-  publicName: 'Lindsey',
-  businessName: 'Mile High Fizz',
-  publicSiteSlug: 'milehighfizz',
-  futureCustomDomain: 'milehighfizz.com',
-  timeZone: 'America/Denver',
-  tiktokUrl: 'https://www.tiktok.com/@lindze1188',
-  tiktokHandle: '@lindze1188',
-  sourceSite: 'https://milehighfizz.com/',
-} as const
+export { MILE_HIGH_FIZZ_PROFILE } from './profile'
 
 export interface AttachMileHighFizzTenantInput {
   temporaryPassword?: string | null
@@ -210,7 +200,7 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
         'Live reveals, fizz parties, and customer-first sparkle with Mile High Fizz.',
       ticker_visible: true,
       team_name: 'Mile High Fizz',
-      show_join_page: false,
+      show_join_page: true,
       hero_animation_type: 'sparkle_rise',
       appearance_preset: 'black_diamond',
       customer_site_template: 'amethyst',

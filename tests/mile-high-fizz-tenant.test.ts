@@ -167,7 +167,7 @@ describe('Mile High Fizz tenant attachment', () => {
       expect.objectContaining({
         rep_id: 'rep-mile-high-fizz',
         team_name: MILE_HIGH_FIZZ_PROFILE.businessName,
-        show_join_page: false,
+        show_join_page: true,
         customer_site_template: 'amethyst',
       }),
       { onConflict: 'rep_id' },

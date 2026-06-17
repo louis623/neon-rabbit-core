@@ -23,6 +23,7 @@ vi.mock('@/lib/amethyst/preview-template-data', async (importOriginal) => {
 })
 
 import { GET } from '@/app/[publicSiteSlug]/route'
+import { GET as GET_JOIN } from '@/app/[publicSiteSlug]/join/route'
 import { GET as GET_TRADE } from '@/app/[publicSiteSlug]/trade/route'
 import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import { defaultAmethystHomepageTemplateData } from '@/lib/amethyst/homepage-template-data'
@@ -90,6 +91,7 @@ describe('public site slug route', () => {
     expect(response.headers.get('cache-control')).toBe('no-store')
     expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
       repId: 'rep-gracie',
+      publicSiteSlug: 'graciesparkleparty',
     })
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/graciesparkleparty" />',
@@ -116,6 +118,7 @@ describe('public site slug route', () => {
   it('keeps public slug and template routes dynamic for saved theme changes', () => {
     const routeFiles = [
       'app/[publicSiteSlug]/route.ts',
+      'app/[publicSiteSlug]/join/route.ts',
       'app/[publicSiteSlug]/trade/route.ts',
       'app/api/amethyst/homepage-template/route.ts',
       'app/api/amethyst/trade-template/route.ts',
@@ -145,6 +148,7 @@ describe('public site slug route', () => {
     expect(response.headers.get('cache-control')).toBe('no-store')
     expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
       repId: 'rep-mile-high-fizz',
+      publicSiteSlug: 'milehighfizz',
     })
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/milehighfizz/trade" />',
@@ -157,6 +161,41 @@ describe('public site slug route', () => {
     )
     expect(html).toContain(
       '/api/amethyst/trade-template?c=rep-mile-high-fizz&amp;publicSiteSlug=milehighfizz',
+    )
+    expect(html).not.toContain('?c=milehighfizz')
+  })
+
+  it('renders the join page with slug canonicals and rep-targeted template data', async () => {
+    const admin = { marker: 'admin' }
+    createAdminClientMock.mockReturnValue(admin)
+    resolveAmethystPreviewRepMock.mockResolvedValue({
+      id: 'rep-mile-high-fizz',
+      email: 'lindsey@example.test',
+    })
+
+    const response = await GET_JOIN(
+      new Request('https://www.yoursparklesuite.com/MileHighFizz/join'),
+      { params: Promise.resolve({ publicSiteSlug: 'MileHighFizz' }) },
+    )
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
+      repId: 'rep-mile-high-fizz',
+      publicSiteSlug: 'milehighfizz',
+    })
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/milehighfizz/join" />',
+    )
+    expect(html).toContain(
+      '<meta property="og:url" content="https://www.yoursparklesuite.com/milehighfizz/join" />',
+    )
+    expect(html).toContain(
+      '"@id":"https://www.yoursparklesuite.com/milehighfizz/join#webpage"',
+    )
+    expect(html).toContain(
+      '/api/amethyst/join-template?c=rep-mile-high-fizz&amp;publicSiteSlug=milehighfizz',
     )
     expect(html).not.toContain('?c=milehighfizz')
   })

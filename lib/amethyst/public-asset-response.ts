@@ -351,7 +351,10 @@ export async function renderAmethystPublicAssetResponse(
     const repId = options.repIdOverride?.trim() || resolveAmethystRequestRepId(request)
     const templateData =
       page && contentType.startsWith('text/html') && repId
-        ? await loadAmethystPreviewTemplateData({ repId })
+        ? await loadAmethystPreviewTemplateData({
+            repId,
+            publicSiteSlug: options.publicSiteSlugOverride,
+          })
         : null
     let responseBody: BodyInit = new Uint8Array(body)
     if (contentType.startsWith('text/html')) {

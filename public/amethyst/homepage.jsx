@@ -58,6 +58,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
 };
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
+const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 
 function publicRepName(value, fallback = "your rep") {
   const cleaned = String(value || "").trim().replace(/\s+/g, " ");
@@ -497,12 +498,18 @@ function LRQRail({ state }) {
 // Hero (HE2)
 // ============================================================
 function Hero({ t, isLive, liveShow }) {
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "";
+  const mileHighFizzKicker = t.heroEyebrow || CONTENT.heroEyebrow || "With Lindsey";
+
   return (
     <section className="hp-hero">
       <div className="hp-hero-media" aria-hidden="true" />
       <SparkleFx level={t.sparkleLevel} motion={t.heroMotion} />
       <div className="hp-hero-inner">
         <div>
+          {isMileHighFizzHybrid && (
+            <div className="hp-mhf-hero-kicker">{mileHighFizzKicker}</div>
+          )}
           <h1 className="hp-hero-headline slot" data-slot="hero headline">
             {t.heroHeadline.split(/(?<=[.!?])\s+/).map((line, i) => (
               <span key={i} style={{ display: 'block' }}>{line}</span>
@@ -510,15 +517,31 @@ function Hero({ t, isLive, liveShow }) {
           </h1>
           <p className="hp-hero-sub slot" data-slot="hero sub">{t.heroSub}</p>
           <div className="hp-hero-ctas">
-            <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle">
-              Browse the trade board
-              <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
-            </a>
-            <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
-            <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
-              {isLive && <span className="hp-watch-dot" />}
-              {getWatchCtaLabel(isLive)}
-            </a>
+            {isMileHighFizzHybrid ? (
+              <>
+                <a {...linkProps(getShopHref())} className="hp-btn-primary hp-btn-sparkle">
+                  Shop Bomb Party
+                  <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
+                </a>
+                {joinTeamHref && <a {...linkProps(joinTeamHref)} className="hp-btn-outline">Join My Team</a>}
+                <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
+                  {isLive && <span className="hp-watch-dot" />}
+                  Watch Live Reveal
+                </a>
+              </>
+            ) : (
+              <>
+                <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle">
+                  Browse the trade board
+                  <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
+                </a>
+                <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
+                <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
+                  {isLive && <span className="hp-watch-dot" />}
+                  {getWatchCtaLabel(isLive)}
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1189,23 +1212,34 @@ function Signup({ repName, businessName }) {
 // ============================================================
 function Footer({ businessName }) {
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "";
+  const defaultSocials = [
+    { label: "TikTok", shortLabel: "TT", href: getSocialHref("TT") },
+    { label: "Facebook", shortLabel: "FB", href: getSocialHref("FB") },
+    { label: "Instagram", shortLabel: "IG", href: getSocialHref("IG") },
+    { label: "YouTube", shortLabel: "YT", href: getSocialHref("YT") },
+  ];
+  const footerSocials = (Array.isArray(CONTENT.socialLinks) && CONTENT.socialLinks.length
+    ? CONTENT.socialLinks
+    : defaultSocials
+  ).filter((social) => social?.href && social.href !== "#").slice(0, 4);
+  const mileHighFizzFooterLinks = [
+    { label: "Watch Live", href: CONTENT.streamLinks?.tiktok || CONTENT.streamLinks?.watch || "#" },
+    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
+  ];
 
   return (
     <footer className="hp-footer">
       <div className="hp-footer-inner">
         <div>
           <div className="hp-footer-brand slot" data-slot="business name">{businessName}</div>
-          <p className="hp-footer-tag">Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.</p>
+          <p className="hp-footer-tag">
+            {CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}
+          </p>
           <div className="hp-footer-socials">
-            {[
-              { label: "TikTok", shortLabel: "TT" },
-              { label: "Facebook", shortLabel: "FB" },
-              { label: "Instagram", shortLabel: "IG" },
-              { label: "YouTube", shortLabel: "YT" },
-            ].map((social) => (
+            {footerSocials.map((social) => (
               <a
-                key={social.shortLabel}
-                {...linkProps(getSocialHref(social.shortLabel))}
+                key={social.shortLabel || social.label}
+                {...linkProps(social.href)}
                 className="hp-footer-social"
                 aria-label={social.label}
                 title={social.label}
@@ -1224,8 +1258,16 @@ function Footer({ businessName }) {
         </div>
         <div className="hp-footer-col">
           <ul>
-            <li><a {...linkProps(CONTENT.footerLinks?.faq || "#signup")}>FAQ</a></li>
-            <li><a {...linkProps(CONTENT.footerLinks?.contact || "#signup")}>Contact</a></li>
+            {isMileHighFizzHybrid ? (
+              mileHighFizzFooterLinks.map((link) => (
+                <li key={link.label}><a {...linkProps(link.href)}>{link.label}</a></li>
+              ))
+            ) : (
+              <>
+                <li><a {...linkProps(CONTENT.footerLinks?.faq || "#signup")}>FAQ</a></li>
+                <li><a {...linkProps(CONTENT.footerLinks?.contact || "#signup")}>Contact</a></li>
+              </>
+            )}
           </ul>
         </div>
       </div>
@@ -1319,6 +1361,7 @@ function App() {
   useEffect(() => {
     const body = document.body;
     body.className = "homepage";
+    if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -1408,7 +1451,11 @@ function App() {
             <nav className="hp-header-nav" aria-label="Primary">
               <a href="#top" className="hp-header-link" aria-current="page">Home</a>
               <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
-              {CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />}
+              {isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam ? (
+                <a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>
+              ) : (
+                CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />
+              )}
             </nav>
             <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
           </div>

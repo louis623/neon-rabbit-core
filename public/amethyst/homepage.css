@@ -542,6 +542,14 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   margin-right: auto;
   margin-bottom: 36px;
 }
+.hp-mhf-hero-kicker {
+  margin-bottom: 14px;
+  color: rgba(255,255,255,0.78);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
 .hp-hero-ctas {
   display: flex;
   flex-wrap: wrap;
@@ -2764,6 +2772,50 @@ body.bg-black-velvet .hp-hero::after {
   z-index: 1;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(5, 5, 5, 0), #050505 84%);
+}
+
+body.mile-high-fizz .hp-hero {
+  min-height: clamp(620px, 84vh, 780px);
+}
+
+body.mile-high-fizz .hp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(4, 6, 12, 0.08) 0%, rgba(4, 6, 12, 0.5) 58%, rgba(4, 6, 12, 0.9) 100%),
+    radial-gradient(circle at 50% 18%, rgba(244, 194, 194, 0.24), transparent 20rem),
+    linear-gradient(145deg, #050505 0%, #151018 38%, #352113 68%, #050505 100%);
+}
+
+body.mile-high-fizz .hp-hero-headline {
+  max-width: none;
+  font-size: clamp(52px, 7vw, 96px);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+body.mile-high-fizz .hp-hero-sub {
+  max-width: 620px;
+  color: rgba(255,255,255,0.86);
+  font-size: clamp(17px, 1.6vw, 22px);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+body.mile-high-fizz .hp-btn-primary {
+  background: linear-gradient(135deg, #d4af37, #f4c2c2 54%, #d4af37);
+  color: #111;
+}
+
+body.mile-high-fizz .hp-btn-outline {
+  border-color: rgba(244, 194, 194, 0.5);
+  background: rgba(255,255,255,0.08);
+  color: #fff8f9;
+}
+
+@media (max-width: 640px) {
+  body.mile-high-fizz .hp-hero-headline {
+    max-width: 12ch;
+    white-space: normal;
+  }
 }
 
 body.bg-black-velvet #events,

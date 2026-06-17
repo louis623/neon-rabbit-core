@@ -28,6 +28,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystHomepageTemplateData {
+  publicSiteVariant?: 'mile_high_fizz_hybrid'
   repName: string
   businessName: string
   teamName: string

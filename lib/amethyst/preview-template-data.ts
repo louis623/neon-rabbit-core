@@ -30,6 +30,12 @@ import {
   type AmethystTradeTemplateData,
 } from './trade-template-data'
 import { getPublicRepName } from './public-rep-name'
+import {
+  applyMileHighFizzHomepage,
+  applyMileHighFizzJoin,
+  applyMileHighFizzTrade,
+  isMileHighFizzSettings,
+} from '@/lib/mile-high-fizz/profile'
 
 interface PreviewTemplateDataDependencies {
   createAdminClient?: typeof createAdminClient
@@ -326,8 +332,19 @@ function targetedJoinFaq(teamName: string, repName: string): AmethystJoinTemplat
 function applyCustomerTarget(
   data: AmethystPreviewTemplateData,
   repId: string | null | undefined,
+  publicSiteSlug?: string | null,
 ): AmethystPreviewTemplateData {
   const targeted = Boolean(repId?.trim())
+  const isMileHighFizzHybrid =
+    data.homepage.publicSiteVariant === 'mile_high_fizz_hybrid'
+  const mileHighFizzSlugLinks =
+    isMileHighFizzHybrid && publicSiteSlug?.trim()
+      ? {
+          home: `/${publicSiteSlug.trim().toLowerCase()}`,
+          tradeBoard: `/${publicSiteSlug.trim().toLowerCase()}/trade`,
+          joinTeam: `/${publicSiteSlug.trim().toLowerCase()}/join`,
+        }
+      : null
 
   return {
     appearancePreset: data.appearancePreset,
@@ -340,17 +357,23 @@ function applyCustomerTarget(
         ? 'Intro video coming soon.'
         : data.homepage.showcaseVideoCaption,
       joinTeamUrl: data.homepage.joinTeamUrl
-        ? withCustomerTarget(data.homepage.joinTeamUrl, repId)
+        ? mileHighFizzSlugLinks?.joinTeam ??
+          withCustomerTarget(data.homepage.joinTeamUrl, repId)
         : '',
       footerLinks: {
         ...data.homepage.footerLinks,
-        home: withCustomerTarget(
-          data.homepage.footerLinks.home || '/amethyst/Homepage.html',
-          repId,
-        ),
-        tradeBoard: withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
+        home:
+          mileHighFizzSlugLinks?.home ??
+          withCustomerTarget(
+            data.homepage.footerLinks.home || '/amethyst/Homepage.html',
+            repId,
+          ),
+        tradeBoard:
+          mileHighFizzSlugLinks?.tradeBoard ??
+          withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
         joinTeam: data.homepage.footerLinks.joinTeam
-          ? withCustomerTarget(data.homepage.footerLinks.joinTeam, repId)
+          ? mileHighFizzSlugLinks?.joinTeam ??
+            withCustomerTarget(data.homepage.footerLinks.joinTeam, repId)
           : undefined,
       },
     },
@@ -358,18 +381,23 @@ function applyCustomerTarget(
       ...data.trade,
       footerLinks: {
         ...data.trade.footerLinks,
-        home: withCustomerTarget(data.trade.footerLinks.home, repId),
-        tradeBoard: withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
+        home:
+          mileHighFizzSlugLinks?.home ??
+          withCustomerTarget(data.trade.footerLinks.home, repId),
+        tradeBoard:
+          mileHighFizzSlugLinks?.tradeBoard ??
+          withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
         joinTeam: data.trade.footerLinks.joinTeam
-          ? withCustomerTarget(data.trade.footerLinks.joinTeam, repId)
+          ? mileHighFizzSlugLinks?.joinTeam ??
+            withCustomerTarget(data.trade.footerLinks.joinTeam, repId)
           : undefined,
       },
     },
     join: {
       ...data.join,
-      teamMembers: targeted ? [] : data.join.teamMembers,
-      promoText: targeted ? '' : data.join.promoText,
-      footerColumn: targeted
+      teamMembers: targeted && !isMileHighFizzHybrid ? [] : data.join.teamMembers,
+      promoText: targeted && !isMileHighFizzHybrid ? '' : data.join.promoText,
+      footerColumn: targeted && !isMileHighFizzHybrid
         ? {
             title: 'Team Notes',
             links: [
@@ -379,14 +407,20 @@ function applyCustomerTarget(
             ],
           }
         : data.join.footerColumn,
-      faqAnswers: targeted
+      faqAnswers: targeted && !isMileHighFizzHybrid
         ? targetedJoinFaq(data.join.teamName, data.join.repName)
         : data.join.faqAnswers,
       footerLinks: {
         ...data.join.footerLinks,
-        home: withCustomerTarget(data.join.footerLinks.home, repId),
-        tradeBoard: withCustomerTarget(data.join.footerLinks.tradeBoard, repId),
-        joinTeam: withCustomerTarget(data.join.footerLinks.joinTeam, repId),
+        home:
+          mileHighFizzSlugLinks?.home ??
+          withCustomerTarget(data.join.footerLinks.home, repId),
+        tradeBoard:
+          mileHighFizzSlugLinks?.tradeBoard ??
+          withCustomerTarget(data.join.footerLinks.tradeBoard, repId),
+        joinTeam:
+          mileHighFizzSlugLinks?.joinTeam ??
+          withCustomerTarget(data.join.footerLinks.joinTeam, repId),
       },
     },
   }
@@ -407,7 +441,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
   const streamLinks = resolveStreamingLinks(settings, extras)
   const showJoinPage = settings.showJoinPage !== false
 
-  return {
+  const homepage: AmethystHomepageTemplateData = {
     ...defaultAmethystHomepageTemplateData,
     repName,
     businessName,
@@ -440,6 +474,10 @@ export function mapPreviewSettingsToHomepageTemplateData(
       preOrders: streamLinks.shop,
     },
   }
+
+  return isMileHighFizzSettings(settings)
+    ? applyMileHighFizzHomepage(homepage)
+    : homepage
 }
 
 export function mapPreviewSettingsToTradeTemplateData(
@@ -457,7 +495,7 @@ export function mapPreviewSettingsToTradeTemplateData(
     firstText(settings.displayName, defaultAmethystTradeTemplateData.repName),
   )
 
-  return {
+  const trade: AmethystTradeTemplateData = {
     ...defaultAmethystTradeTemplateData,
     repName,
     businessName,
@@ -475,6 +513,8 @@ export function mapPreviewSettingsToTradeTemplateData(
       preOrders: shopUrl,
     },
   }
+
+  return isMileHighFizzSettings(settings) ? applyMileHighFizzTrade(trade) : trade
 }
 
 export function mapPreviewSettingsToJoinTemplateData(
@@ -491,7 +531,7 @@ export function mapPreviewSettingsToJoinTemplateData(
   const teamName = firstText(settings.teamName, defaultAmethystJoinTemplateData.teamName)
   const shopUrl = resolveShopUrl(extras)
 
-  return {
+  const join: AmethystJoinTemplateData = {
     ...defaultAmethystJoinTemplateData,
     repName,
     businessName,
@@ -515,6 +555,8 @@ export function mapPreviewSettingsToJoinTemplateData(
       preOrders: shopUrl,
     },
   }
+
+  return isMileHighFizzSettings(settings) ? applyMileHighFizzJoin(join) : join
 }
 
 function canLoadPreviewData(env: Record<string, string | undefined>) {
@@ -567,17 +609,21 @@ export async function loadAmethystPreviewTemplateData(
     }
     const draftExtras = applyRequiredSetupDraftToExtras(extras, activeSetupDraftState)
 
-    return applyCustomerTarget({
-      appearancePreset: normalizeAmethystAppearancePreset(
-        draftSettings.appearancePreset,
-      ),
-      homepage: applyRequiredSetupDraftToHomepage(
-        mapPreviewSettingsToHomepageTemplateData(draftSettings, draftExtras),
-        activeSetupDraftState,
-      ),
-      trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
-      join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
-    }, requestedRepId ?? rep.id)
+    return applyCustomerTarget(
+      {
+        appearancePreset: normalizeAmethystAppearancePreset(
+          draftSettings.appearancePreset,
+        ),
+        homepage: applyRequiredSetupDraftToHomepage(
+          mapPreviewSettingsToHomepageTemplateData(draftSettings, draftExtras),
+          activeSetupDraftState,
+        ),
+        trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
+        join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
+      },
+      requestedRepId ?? rep.id,
+      requestedPublicSiteSlug,
+    )
   } catch {
     return defaultPreviewTemplateData
   }
