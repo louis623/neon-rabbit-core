@@ -11,9 +11,18 @@ export const MILE_HIGH_FIZZ_PROFILE = {
   publicSiteSlug: 'milehighfizz',
   futureCustomDomain: 'milehighfizz.com',
   timeZone: 'America/Denver',
+  heroVideoUrl: '/mile-high-fizz/hero.mp4',
+  shopUrl: 'https://bombparty.com/Lindseychapman/products',
+  joinPackUrl: 'https://bombparty.com/lindseychapman/packs',
   tiktokUrl: 'https://www.tiktok.com/@lindze1188',
+  watchUrl:
+    'https://www.tiktok.com/@lindze1188?is_from_webapp=1&sender_device=pc',
   tiktokHandle: '@lindze1188',
   sourceSite: 'https://milehighfizz.com/',
+  announcementText:
+    'Introducing the Sterling Club & 12k Gold Vermeil Collection - our most luxurious reveals ever.',
+  promoTickerText:
+    '10TH ANNIVERSARY SPECIAL: EVERY $599 LAUNCH PACK NOW INCLUDES A GUARANTEED DIAMOND REVEAL! - JOIN THE DIAMOND PEAK SOCIETY TODAY - START YOUR CLIMB WITH LINDSEY! - MSRP UP TO $3,500 - OFFER ENDS DEC 31, 2026!',
 } as const
 
 export function isMileHighFizzSettings(settings: SiteSettingsDashboardResult) {
@@ -42,6 +51,11 @@ export function applyMileHighFizzHomepage(
     heroHeadline: 'Mile High Fizz',
     heroSub:
       'Revealing something magical together. Place your order and return to the live party to watch your reveal.',
+    heroVideoUrl: MILE_HIGH_FIZZ_PROFILE.heroVideoUrl,
+    announcementText: MILE_HIGH_FIZZ_PROFILE.announcementText,
+    announcementLinkLabel: 'Learn More',
+    announcementHref: '#about',
+    promoTickerText: MILE_HIGH_FIZZ_PROFILE.promoTickerText,
     aboutHeadline: 'What is a Bomb Party?',
     aboutParagraphs: [
       'Experience the thrilling, must-watch excitement of a Bomb Party jewelry reveal. Submit your order and watch live as Lindsey fizzes, opens, and reveals your beautiful, unique piece of handcrafted jewelry.',
@@ -64,7 +78,8 @@ export function applyMileHighFizzHomepage(
     showJoinPage: true,
     streamLinks: {
       ...homepage.streamLinks,
-      watch: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
+      shop: MILE_HIGH_FIZZ_PROFILE.shopUrl,
+      watch: MILE_HIGH_FIZZ_PROFILE.watchUrl,
       tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
     socialLinks: [
@@ -79,15 +94,15 @@ export function applyMileHighFizzHomepage(
         shortLabel: 'VIP',
         href: homepage.streamLinks.facebook || homepage.socialLinks[1]?.href || '#',
       },
-      { label: 'Shop', shortLabel: 'BP', href: homepage.streamLinks.shop },
+      { label: 'Shop', shortLabel: 'BP', href: MILE_HIGH_FIZZ_PROFILE.shopUrl },
     ],
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
       joinTeam: '/amethyst/Join.html',
-      catalog: homepage.streamLinks.shop,
-      preOrders: homepage.streamLinks.shop,
+      catalog: MILE_HIGH_FIZZ_PROFILE.shopUrl,
+      preOrders: MILE_HIGH_FIZZ_PROFILE.shopUrl,
       pastShows: '#events',
       faq: '#signup',
       contact: '#signup',

@@ -36,6 +36,11 @@ export interface AmethystHomepageTemplateData {
   heroEyebrow: string
   heroHeadline: string
   heroSub: string
+  heroVideoUrl?: string
+  announcementText?: string
+  announcementLinkLabel?: string
+  announcementHref?: string
+  promoTickerText?: string
   heroMotion: string
   tickerTopText: string
   aboutHeadline: string

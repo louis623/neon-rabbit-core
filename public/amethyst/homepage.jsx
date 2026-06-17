@@ -1320,6 +1320,104 @@ function SparkleFx({ level, motion }) {
   );
 }
 
+function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
+  const announcementText = CONTENT.announcementText || "Introducing the Sterling Club & 12k Gold Vermeil Collection - our most luxurious reveals ever.";
+  const announcementHref = CONTENT.announcementHref || "#about";
+  const announcementLabel = CONTENT.announcementLinkLabel || "Learn More";
+  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
+  const tickerItems = [promoTickerText, promoTickerText];
+  const heroVideoUrl = CONTENT.heroVideoUrl || "/mile-high-fizz/hero.mp4";
+
+  const menuLinks = [
+    { label: "Home", href: "#top" },
+    { label: "Trade Board", href: getTradeBoardHref() },
+    { label: "Join My Team", href: joinTeamHref },
+    { label: "Shop Bomb Party", href: getShopHref() },
+    { label: "Watch Live Reveal", href: getWatchHref(liveShow) },
+    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
+  ].filter((link) => link.href && link.href !== "#");
+
+  return (
+    <div className="mhf-page" id="top">
+      <div className="mhf-announcement-banner">
+        <span className="mhf-announcement-star" aria-hidden="true">+</span>
+        <span className="mhf-announcement-new">NEW:</span>
+        <span>{announcementText}</span>
+        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
+        <span className="mhf-announcement-star" aria-hidden="true">+</span>
+      </div>
+      <div className="mhf-promo-ticker" aria-label="Mile High Fizz promotion">
+        <div className="mhf-promo-track">
+          {tickerItems.map((item, index) => (
+            <span key={index}>{item}</span>
+          ))}
+        </div>
+      </div>
+      <header className="mhf-header">
+        <div className="mhf-header-inner">
+          <div className="mhf-menu-wrap">
+            <button
+              type="button"
+              className="mhf-header-menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((value) => !value)}
+            >
+              Menu
+              <span aria-hidden="true">⌄</span>
+            </button>
+            {menuOpen && (
+              <nav className="mhf-menu-panel" aria-label="Mile High Fizz navigation">
+                {menuLinks.map((link) => (
+                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            )}
+          </div>
+          <a href="#top" className="mhf-header-logo mhf-logo-gradient" aria-label="Mile High Fizz home">
+            Mile High Fizz
+          </a>
+          <a {...linkProps(getShopHref())} className="mhf-header-shop">Buy Now</a>
+        </div>
+      </header>
+
+      <section className="mhf-hero" aria-labelledby="mhf-hero-title">
+        <video className="mhf-hero-video" autoPlay muted loop playsInline poster="">
+          <source src={CONTENT.heroVideoUrl || heroVideoUrl} type="video/mp4" />
+        </video>
+        <div className="mhf-hero-shade" aria-hidden="true" />
+        <div className="mhf-hero-content">
+          <h1 id="mhf-hero-title" className="mhf-hero-title mhf-logo-gradient">
+            {businessName}
+          </h1>
+          <p className="mhf-hero-with">WITH {repName.toUpperCase()}</p>
+          <p className="mhf-hero-line">REVEALING SOMETHING MAGICAL TOGETHER</p>
+          <p className="mhf-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
+          <div className="mhf-hero-ctas">
+            <a {...linkProps(getShopHref())} className="mhf-cta mhf-cta-shop">Shop Bomb Party</a>
+            <a {...linkProps(joinTeamHref)} className="mhf-cta mhf-cta-join">Join My Team</a>
+            <a {...linkProps(getWatchHref(liveShow))} className={`mhf-cta mhf-cta-watch ${isLive ? "is-live" : ""}`}>
+              Watch Live Reveal
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="mhf-automation-stack">
+        {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
+        {t.showEvents && <Events count={t.eventCount} />}
+        {t.showWibp && <Wibp repName={repName} />}
+        {t.showAbout && <AboutSection repName={repName} />}
+        {t.showSignup && <Signup repName={repName} businessName={businessName} />}
+        {t.showFooter && <Footer businessName={businessName} />}
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // Main App
 // ============================================================
@@ -1437,6 +1535,18 @@ function App() {
 
   return (
     <>
+      {isMileHighFizzHybrid ? (
+        <MileHighFizzHomepage
+          t={{ ...t, heroSub: redactPublicRepText(t.heroSub, t.repName) }}
+          repName={repName}
+          businessName={t.businessName}
+          isLive={scheduleIsLive}
+          liveShow={activeLiveShow}
+          queueState={effectiveLrqState}
+          onOpenQueue={() => setQueueOpen(true)}
+        />
+      ) : (
+        <>
       <div className="hp-sticky-stack">
         {/* Header */}
         <header className="hp-header">
@@ -1486,6 +1596,8 @@ function App() {
       {/* Footer */}
       {t.showFooter && <Footer businessName={t.businessName} />}
       </div>
+        </>
+      )}
 
       <LiveQueueModal open={queueOpen} onClose={() => setQueueOpen(false)} state={effectiveLrqState} />
 

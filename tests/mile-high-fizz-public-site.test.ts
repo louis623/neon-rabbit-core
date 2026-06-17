@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import {
@@ -58,6 +58,15 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(homepage.businessName).toBe('Mile High Fizz')
     expect(homepage.heroHeadline).toBe('Mile High Fizz')
     expect(homepage.heroSub).toContain('Revealing something magical together')
+    expect((homepage as { heroVideoUrl?: string }).heroVideoUrl).toBe(
+      '/mile-high-fizz/hero.mp4',
+    )
+    expect((homepage as { promoTickerText?: string }).promoTickerText).toContain(
+      '10TH ANNIVERSARY SPECIAL',
+    )
+    expect((homepage as { announcementText?: string }).announcementText).toContain(
+      'Introducing the Sterling Club',
+    )
     expect(homepage.aboutHeadline).toBe('What is a Bomb Party?')
     expect(homepage.aboutParagraphs.join(' ')).toContain(
       'Experience the thrilling, must-watch excitement of a Bomb Party jewelry reveal',
@@ -94,7 +103,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(jsx).toContain('Join Team</a>')
   })
 
-  it('keeps the Mile High Fizz public homepage presentation distinct from the generic shell', () => {
+  it('renders Mile High Fizz as the migrated Readdy site shell instead of a generic Amethyst hero', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -104,16 +113,28 @@ describe('Mile High Fizz hybrid public site contract', () => {
       'utf8',
     )
 
-    expect(jsx).toContain('hp-mhf-hero-kicker')
-    expect(jsx).toContain('CONTENT.heroEyebrow || "With Lindsey"')
+    expect(jsx).toContain('function MileHighFizzHomepage')
+    expect(jsx).toContain('mhf-announcement-banner')
+    expect(jsx).toContain('mhf-promo-ticker')
+    expect(jsx).toContain('mhf-header-menu')
+    expect(jsx).toContain('<video')
+    expect(jsx).toContain('CONTENT.heroVideoUrl')
     expect(jsx).toContain('Shop Bomb Party')
     expect(jsx).toContain('Join My Team')
     expect(jsx).toContain('Watch Live Reveal')
-    expect(jsx).toContain('CONTENT.footerTagline ||')
-    expect(jsx).toContain('VIP Group')
+    expect(jsx).toContain('MileHighFizzHomepage')
     expect(jsx).toContain('body.classList.add("mile-high-fizz")')
-    expect(css).toContain('body.mile-high-fizz .hp-hero-media')
-    expect(css).toContain('body.mile-high-fizz .hp-btn-primary')
+    expect(css).toContain('.mhf-hero-video')
+    expect(css).toContain('.mhf-logo-gradient')
+    expect(css).toContain('.mhf-cta-shop')
+    expect(css).toContain('.mhf-cta-join')
+    expect(css).toContain('.mhf-cta-watch')
+  })
+
+  it('self-hosts the Mile High Fizz hero video asset', () => {
+    expect(
+      existsSync(resolve(process.cwd(), 'public/mile-high-fizz/hero.mp4')),
+    ).toBe(true)
   })
 
   it('keeps Trade Board standard while dressing it for Mile High Fizz', () => {
