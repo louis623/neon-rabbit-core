@@ -16,6 +16,7 @@ import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
+import { JewelryCard } from "../../components/library/JewelryCard";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
@@ -565,6 +566,33 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("No current listings");
   });
 
+  it("renders library photos with containment framing instead of cover cropping", () => {
+    const markup = renderToStaticMarkup(
+      createElement(JewelryCard, {
+        item: {
+          id: "bp-necklace-piper",
+          name: "The Piper Necklace",
+          collectionName: "July Birthday",
+          collectionYear: 2026,
+          jewelryType: "necklace",
+          material: "Rhodium Plating",
+          mainStone: "Lab-Created Ruby",
+          bpMsrp: 39.95,
+          imageUrl: "https://cdn.example.test/piper-necklace.jpg",
+          bpLabel: "standard",
+          itemNumber: "NK1234",
+          searchTags: ["necklace", "ruby"],
+          availableListingCount: 0,
+          knownRepListingIds: [],
+        },
+      }),
+    );
+
+    expect(markup).toContain("object-contain");
+    expect(markup).toContain("object-position:center 58%");
+    expect(markup).not.toContain("bg-cover");
+  });
+
   it("renders the item detail route with rep availability and focused Nic-Nac CTA", () => {
     const markup = renderToStaticMarkup(
       renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
@@ -626,6 +654,35 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Rep: Demo");
     expect(markup).toContain("Visit Rep Site");
     expect(markup).not.toContain("Open rep board path");
+  });
+
+  it("renders library detail photos with full-photo framing", () => {
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent(
+        { itemId: "bp-necklace-piper" },
+        getLocalDevAuthState("silver"),
+        {
+          id: "bp-necklace-piper",
+          name: "The Piper Necklace",
+          collectionName: "July Birthday",
+          collectionYear: 2026,
+          jewelryType: "necklace",
+          material: "Rhodium Plating",
+          mainStone: "Lab-Created Ruby",
+          bpMsrp: 39.95,
+          imageUrl: "https://cdn.example.test/piper-necklace.jpg",
+          bpLabel: "standard",
+          itemNumber: "NK1234",
+          searchTags: ["necklace", "ruby"],
+          availableListingCount: 0,
+          knownRepListingIds: [],
+        },
+      ),
+    );
+
+    expect(markup).toContain("object-contain");
+    expect(markup).toContain("object-position:center 58%");
+    expect(markup).not.toContain("bg-cover");
   });
 
   it("renders the item detail Silver prompt for Free customers", () => {

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { Gem } from "lucide-react";
+import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
   getCatalogJewelryItemById,
@@ -77,17 +77,8 @@ export function renderItemDetailPageContent(
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
       <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 shadow-[var(--sparkle-shadow-sm)]">
-        <div className="grid aspect-[16/10] place-items-center overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
-          {item.imageUrl ? (
-            <div
-              aria-label={item.name}
-              className="size-full bg-cover bg-center"
-              role="img"
-              style={{ backgroundImage: `url("${item.imageUrl}")` }}
-            />
-          ) : (
-            <Gem aria-hidden="true" className="size-20" strokeWidth={1.2} />
-          )}
+        <div className="grid aspect-[16/10] place-items-center overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)]">
+          <JewelryImageFrame imageUrl={item.imageUrl} jewelryType={item.jewelryType} name={item.name} variant="detail" />
         </div>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
           {item.collectionName}

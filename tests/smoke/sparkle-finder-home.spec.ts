@@ -180,8 +180,12 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByText("Your Collection")).toBeVisible();
 
+    await page.goto(`${baseUrl}/library`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator('[data-smoke="library-image-frame"] img').first()).toBeVisible();
+
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();
+    await expect(page.locator('[data-smoke="library-image-frame"] img').first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     await expect(page.getByText("Exact item", { exact: true }).first()).toBeVisible();
