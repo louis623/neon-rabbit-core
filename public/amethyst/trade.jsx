@@ -1,5 +1,5 @@
 /* global React, ReactDOM */
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 
 const {
   TweaksPanel, useTweaks,
@@ -1412,6 +1412,8 @@ function App() {
     () => samples.filter((piece) => !submittedListingIds.includes(piece.id)),
     [samples, submittedListingIds],
   );
+  const availableSamplesRef = useRef(availableSamples);
+  availableSamplesRef.current = availableSamples;
   const filteredByFacets = useMemo(
     () => filterTradeBoardListings(availableSamples, filters),
     [availableSamples, filters],
@@ -1429,7 +1431,7 @@ function App() {
 
   useEffect(() => {
     if (t.demoSheet === "form") {
-      setRequesting(availableSamples[0] || null);
+      setRequesting(availableSamplesRef.current[0] || null);
       setSuccess(false);
       setRequestError("");
       setExpanded(null);
@@ -1443,7 +1445,7 @@ function App() {
       setSuccess(false);
       setRequestError("");
     }
-  }, [availableSamples, t.demoSheet]);
+  }, [t.demoSheet]);
 
   useEffect(() => {
     const root = document.documentElement;

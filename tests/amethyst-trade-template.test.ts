@@ -517,4 +517,17 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('setSubmittedListingIds')
     expect(jsx).toContain('type="file"')
   })
+
+  it('keeps trade request success and error sheets visible after board refreshes', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('setSuccess(true)')
+    expect(jsx).toContain('<h3 className="tp-sheet-success-title">Request sent.</h3>')
+    expect(jsx).toContain('setRequestError(error?.message || DEFAULT_TRADE_REQUEST_ERROR)')
+    expect(jsx).not.toContain('}, [availableSamples, t.demoSheet]);')
+    expect(jsx).toContain('}, [t.demoSheet]);')
+  })
 })
