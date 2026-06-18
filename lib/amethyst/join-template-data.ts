@@ -16,12 +16,20 @@ export interface AmethystJoinFooterLink {
 }
 
 export interface AmethystJoinTeamMember {
+  id?: string
   name: string
   business: string
   state: string
   initials?: string
+  imageUrl?: string
+  imageAlt?: string
+  imageClassName?: string
+  bio?: string
+  isVisible?: boolean
   socialLinks: {
     tiktok?: string
+    facebook?: string
+    instagram?: string
     website?: string
     youtube?: string
   }
@@ -34,7 +42,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystJoinTemplateData {
-  publicSiteVariant?: 'mile_high_fizz_hybrid'
+  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid'
   repName: string
   repCity: string
   repState: string

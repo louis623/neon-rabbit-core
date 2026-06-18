@@ -2,7 +2,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getSiteSettingsDashboard,
 } from '@/lib/services/site-settings'
-import type { SiteSettingsDashboardResult } from '@/lib/services/types'
+import { getJoinTeamRoster } from '@/lib/services/join-team-roster'
+import type {
+  JoinTeamMember,
+  SiteSettingsDashboardResult,
+} from '@/lib/services/types'
 import {
   defaultAmethystHomepageTemplateData,
   type AmethystHomepageTemplateData,
@@ -14,6 +18,7 @@ import {
 } from './appearance-presets'
 import {
   defaultAmethystJoinTemplateData,
+  type AmethystJoinTeamMember,
   type AmethystJoinTemplateData,
 } from './join-template-data'
 import { resolveAmethystPreviewRep } from './preview-rep'
@@ -36,11 +41,18 @@ import {
   applyMileHighFizzTrade,
   isMileHighFizzSettings,
 } from '@/lib/mile-high-fizz/profile'
+import {
+  applyBrittWithBlingHomepage,
+  applyBrittWithBlingJoin,
+  applyBrittWithBlingTrade,
+  isBrittWithBlingSettings,
+} from '@/lib/britt-with-bling/profile'
 
 interface PreviewTemplateDataDependencies {
   createAdminClient?: typeof createAdminClient
   resolveAmethystPreviewRep?: typeof resolveAmethystPreviewRep
   getSiteSettingsDashboard?: typeof getSiteSettingsDashboard
+  getJoinTeamRoster?: typeof getJoinTeamRoster
   getRequiredSetupState?: typeof getRequiredSetupState
 }
 
@@ -337,14 +349,22 @@ function applyCustomerTarget(
   const targeted = Boolean(repId?.trim())
   const isMileHighFizzHybrid =
     data.homepage.publicSiteVariant === 'mile_high_fizz_hybrid'
-  const mileHighFizzSlugLinks =
-    isMileHighFizzHybrid && publicSiteSlug?.trim()
+  const isBrittWithBlingHybrid =
+    data.homepage.publicSiteVariant === 'britt_with_bling_hybrid'
+  const isBespokeHybrid = isMileHighFizzHybrid || isBrittWithBlingHybrid
+  const hasDatabaseRoster = data.join.teamMembers.some(
+    (member) => typeof member.id === 'string' && member.id.trim().length > 0,
+  )
+  const bespokeSlugLinks =
+    isBespokeHybrid && publicSiteSlug?.trim()
       ? {
           home: `/${publicSiteSlug.trim().toLowerCase()}`,
           tradeBoard: `/${publicSiteSlug.trim().toLowerCase()}/trade`,
           joinTeam: `/${publicSiteSlug.trim().toLowerCase()}/join`,
         }
       : null
+  const scrubGenericJoin =
+    targeted && !isBespokeHybrid && !hasDatabaseRoster
 
   return {
     appearancePreset: data.appearancePreset,
@@ -357,22 +377,22 @@ function applyCustomerTarget(
         ? 'Intro video coming soon.'
         : data.homepage.showcaseVideoCaption,
       joinTeamUrl: data.homepage.joinTeamUrl
-        ? mileHighFizzSlugLinks?.joinTeam ??
+        ? bespokeSlugLinks?.joinTeam ??
           withCustomerTarget(data.homepage.joinTeamUrl, repId)
         : '',
       footerLinks: {
         ...data.homepage.footerLinks,
         home:
-          mileHighFizzSlugLinks?.home ??
+          bespokeSlugLinks?.home ??
           withCustomerTarget(
             data.homepage.footerLinks.home || '/amethyst/Homepage.html',
             repId,
           ),
         tradeBoard:
-          mileHighFizzSlugLinks?.tradeBoard ??
+          bespokeSlugLinks?.tradeBoard ??
           withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
         joinTeam: data.homepage.footerLinks.joinTeam
-          ? mileHighFizzSlugLinks?.joinTeam ??
+          ? bespokeSlugLinks?.joinTeam ??
             withCustomerTarget(data.homepage.footerLinks.joinTeam, repId)
           : undefined,
       },
@@ -382,22 +402,22 @@ function applyCustomerTarget(
       footerLinks: {
         ...data.trade.footerLinks,
         home:
-          mileHighFizzSlugLinks?.home ??
+          bespokeSlugLinks?.home ??
           withCustomerTarget(data.trade.footerLinks.home, repId),
         tradeBoard:
-          mileHighFizzSlugLinks?.tradeBoard ??
+          bespokeSlugLinks?.tradeBoard ??
           withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
         joinTeam: data.trade.footerLinks.joinTeam
-          ? mileHighFizzSlugLinks?.joinTeam ??
+          ? bespokeSlugLinks?.joinTeam ??
             withCustomerTarget(data.trade.footerLinks.joinTeam, repId)
           : undefined,
       },
     },
     join: {
       ...data.join,
-      teamMembers: targeted && !isMileHighFizzHybrid ? [] : data.join.teamMembers,
-      promoText: targeted && !isMileHighFizzHybrid ? '' : data.join.promoText,
-      footerColumn: targeted && !isMileHighFizzHybrid
+      teamMembers: scrubGenericJoin ? [] : data.join.teamMembers,
+      promoText: scrubGenericJoin ? '' : data.join.promoText,
+      footerColumn: scrubGenericJoin
         ? {
             title: 'Team Notes',
             links: [
@@ -407,19 +427,19 @@ function applyCustomerTarget(
             ],
           }
         : data.join.footerColumn,
-      faqAnswers: targeted && !isMileHighFizzHybrid
+      faqAnswers: scrubGenericJoin
         ? targetedJoinFaq(data.join.teamName, data.join.repName)
         : data.join.faqAnswers,
       footerLinks: {
         ...data.join.footerLinks,
         home:
-          mileHighFizzSlugLinks?.home ??
+          bespokeSlugLinks?.home ??
           withCustomerTarget(data.join.footerLinks.home, repId),
         tradeBoard:
-          mileHighFizzSlugLinks?.tradeBoard ??
+          bespokeSlugLinks?.tradeBoard ??
           withCustomerTarget(data.join.footerLinks.tradeBoard, repId),
         joinTeam:
-          mileHighFizzSlugLinks?.joinTeam ??
+          bespokeSlugLinks?.joinTeam ??
           withCustomerTarget(data.join.footerLinks.joinTeam, repId),
       },
     },
@@ -477,7 +497,9 @@ export function mapPreviewSettingsToHomepageTemplateData(
 
   return isMileHighFizzSettings(settings)
     ? applyMileHighFizzHomepage(homepage)
-    : homepage
+    : isBrittWithBlingSettings(settings)
+      ? applyBrittWithBlingHomepage(homepage)
+      : homepage
 }
 
 export function mapPreviewSettingsToTradeTemplateData(
@@ -514,12 +536,15 @@ export function mapPreviewSettingsToTradeTemplateData(
     },
   }
 
-  return isMileHighFizzSettings(settings) ? applyMileHighFizzTrade(trade) : trade
+  if (isMileHighFizzSettings(settings)) return applyMileHighFizzTrade(trade)
+  if (isBrittWithBlingSettings(settings)) return applyBrittWithBlingTrade(trade)
+  return trade
 }
 
 export function mapPreviewSettingsToJoinTemplateData(
   settings: SiteSettingsDashboardResult,
   extras: PreviewRepExtras = {},
+  teamMembers?: AmethystJoinTeamMember[],
 ): AmethystJoinTemplateData {
   const repName = getPublicRepName(
     firstText(settings.displayName, defaultAmethystJoinTemplateData.repName),
@@ -554,9 +579,40 @@ export function mapPreviewSettingsToJoinTemplateData(
       catalog: shopUrl,
       preOrders: shopUrl,
     },
+    ...(teamMembers ? { teamMembers } : {}),
   }
 
-  return isMileHighFizzSettings(settings) ? applyMileHighFizzJoin(join) : join
+  if (isMileHighFizzSettings(settings)) return applyMileHighFizzJoin(join)
+  if (isBrittWithBlingSettings(settings)) {
+    return applyBrittWithBlingJoin(join, teamMembers ?? [])
+  }
+  return join
+}
+
+function mapJoinTeamRosterToTemplateMembers(
+  members: JoinTeamMember[],
+): AmethystJoinTeamMember[] {
+  return members.map((member) => ({
+    id: member.id,
+    name: member.displayName,
+    business: member.businessName,
+    state: member.city
+      ? `${member.city}${member.state ? `, ${member.state}` : ''}`
+      : member.state,
+    initials: member.initials || undefined,
+    imageUrl: member.photoUrl || undefined,
+    imageAlt: member.photoAlt || member.displayName,
+    imageClassName: member.imageClassName || undefined,
+    bio: member.bio || undefined,
+    isVisible: member.isVisible,
+    socialLinks: {
+      tiktok: member.links.tiktok,
+      facebook: member.links.facebook,
+      instagram: member.links.instagram,
+      website: member.links.website,
+      youtube: member.links.youtube,
+    },
+  }))
 }
 
 function canLoadPreviewData(env: Record<string, string | undefined>) {
@@ -587,6 +643,14 @@ export async function loadAmethystPreviewTemplateData(
 
     const settings = await (dependencies.getSiteSettingsDashboard ??
       getSiteSettingsDashboard)(admin, rep.id)
+    let joinTeamMembers: AmethystJoinTeamMember[] | undefined
+    try {
+      joinTeamMembers = mapJoinTeamRosterToTemplateMembers(
+        await (dependencies.getJoinTeamRoster ?? getJoinTeamRoster)(admin, rep.id),
+      )
+    } catch {
+      joinTeamMembers = []
+    }
     let requiredSetupState: RequiredSetupState | null = null
     try {
       requiredSetupState = await (dependencies.getRequiredSetupState ??
@@ -619,7 +683,11 @@ export async function loadAmethystPreviewTemplateData(
           activeSetupDraftState,
         ),
         trade: mapPreviewSettingsToTradeTemplateData(draftSettings, draftExtras),
-        join: mapPreviewSettingsToJoinTemplateData(draftSettings, draftExtras),
+        join: mapPreviewSettingsToJoinTemplateData(
+          draftSettings,
+          draftExtras,
+          joinTeamMembers,
+        ),
       },
       requestedRepId ?? rep.id,
       requestedPublicSiteSlug,

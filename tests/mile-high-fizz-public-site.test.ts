@@ -9,6 +9,7 @@ import {
   mapPreviewSettingsToTradeTemplateData,
 } from '@/lib/amethyst/preview-template-data'
 import { buildAmethystHomepageBootstrapScript } from '@/lib/amethyst/homepage-template-data'
+import { REQUIRED_SETUP_STEPS } from '@/lib/self-serve/required-setup'
 import type { createAdminClient } from '@/lib/supabase/admin'
 import type { SiteSettingsDashboardResult } from '@/lib/services/types'
 
@@ -251,7 +252,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
           status: 'dashboard_unlocked',
           currentStep: 'final_preview_approval',
           completedSteps: [],
-          steps: [],
+          steps: REQUIRED_SETUP_STEPS,
           answers: {},
           generatedCopy: {},
           supportState: {},

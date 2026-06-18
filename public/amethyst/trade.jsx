@@ -68,6 +68,7 @@ function redactPublicRepText(text, repName) {
 const CONTENT = window.AMETHYST_TRADE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
+const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
 const BOOTSTRAP_LISTINGS = Array.isArray(window.AMETHYST_TRADE_BOARD_LISTINGS)
   ? window.AMETHYST_TRADE_BOARD_LISTINGS
   : [];
@@ -664,7 +665,13 @@ function Header({ businessName }) {
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Trade Board</a>
-          {JOIN_TEAM_HREF && <ComingSoonNavItem />}
+          {JOIN_TEAM_HREF && (
+            isBrittWithBlingHybrid ? (
+              <a {...linkProps(JOIN_TEAM_HREF)} className="hp-header-link">Join Team</a>
+            ) : (
+              <ComingSoonNavItem />
+            )
+          )}
         </nav>
         <a {...linkProps(SHOP_HREF)} className="hp-shop-btn">Shop live</a>
       </div>
@@ -1468,6 +1475,7 @@ function App() {
     const body = document.body;
     body.className = "tradepage";
     if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz-trade");
+    if (isBrittWithBlingHybrid) body.classList.add("britt-with-bling-trade");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -1588,14 +1596,14 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className={isMileHighFizzHybrid ? "mhf-trade-page" : ""}>
+      <div className={isMileHighFizzHybrid ? "mhf-trade-page" : isBrittWithBlingHybrid ? "bwb-trade-page" : ""}>
         <div className="hp-sticky-stack">
           <Header businessName={t.businessName} />
           {t.showTicker && <Ticker topText={t.tickerTopText} />}
           <LiveQueueStrip live={live} onOpen={() => setQueueOpen(true)} />
         </div>
 
-        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-trade-shell" : "hp-saturate"}>
+        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-trade-shell" : isBrittWithBlingHybrid ? "hp-saturate bwb-trade-shell" : "hp-saturate"}>
           {t.showHero && (
             <TradeHero
               tweakRepName={repName}
@@ -1604,7 +1612,7 @@ function App() {
             />
           )}
 
-          <div className={isMileHighFizzHybrid ? "mhf-trade-board-panel" : ""}>
+          <div className={isMileHighFizzHybrid ? "mhf-trade-board-panel" : isBrittWithBlingHybrid ? "bwb-trade-board-panel" : ""}>
             <section className="tp-board">
               <div className="tp-board-inner no-lrq">
                 <div>

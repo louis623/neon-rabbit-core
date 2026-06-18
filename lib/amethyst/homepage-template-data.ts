@@ -21,6 +21,37 @@ export interface AmethystHomepageSocialLink {
   href: string
 }
 
+export interface AmethystHomepageFeaturedReveal {
+  eyebrow: string
+  title: string
+  body: string
+  ctaLabel: string
+  ctaHref: string
+  videoUrl: string
+  videoTitle: string
+}
+
+export interface AmethystHomepageRevealExplainerStep {
+  title: string
+  body: string
+}
+
+export interface AmethystHomepageRevealExplainer {
+  title: string
+  body: string
+  videoCaption: string
+  videoHandle: string
+  videoUrl: string
+  videoTitle: string
+  ctaLabel: string
+  ctaHref: string
+  steps: [
+    AmethystHomepageRevealExplainerStep,
+    AmethystHomepageRevealExplainerStep,
+    AmethystHomepageRevealExplainerStep,
+  ]
+}
+
 export interface AmethystRuntimeContext {
   targeted: boolean
   repId?: string | null
@@ -28,7 +59,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystHomepageTemplateData {
-  publicSiteVariant?: 'mile_high_fizz_hybrid'
+  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid'
   repName: string
   businessName: string
   teamName: string
@@ -37,10 +68,14 @@ export interface AmethystHomepageTemplateData {
   heroHeadline: string
   heroSub: string
   heroVideoUrl?: string
+  heroImageUrl?: string
   announcementText?: string
   announcementLinkLabel?: string
   announcementHref?: string
   promoTickerText?: string
+  shopCtaLabel?: string
+  featuredReveal?: AmethystHomepageFeaturedReveal
+  revealExplainer?: AmethystHomepageRevealExplainer
   heroMotion: string
   tickerTopText: string
   aboutHeadline: string

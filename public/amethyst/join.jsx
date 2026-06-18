@@ -72,6 +72,7 @@ function redactPublicRepText(text, repName) {
 const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
+const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -519,6 +520,17 @@ function PinIcon() {
 
 function SocialIcon({ kind }) {
   if (kind === "tt") return <span title="TikTok">TT</span>;
+  if (kind === "fb") return <span title="Facebook">FB</span>;
+  if (kind === "ig") return <span title="Instagram">IG</span>;
+  if (kind === "web") {
+    return (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" />
+      </svg>
+    );
+  }
   if (kind === "crown") {
     return (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -540,19 +552,29 @@ function TeamSocial({ href, label, kind }) {
 }
 
 function TeamCard({ member, isLeader }) {
+  const avatarLabel = member.imageAlt || member.name || "Team member";
   return (
     <article className={`jp-team-card ${isLeader ? "is-leader" : ""}`}>
       <div className="jp-team-avatar slot" data-slot={isLeader ? "rep headshot" : "team member headshot"}>
-        {member.initials}
+        {member.imageUrl ? (
+          <img
+            src={member.imageUrl}
+            alt={avatarLabel}
+            className={`jp-team-avatar-img ${member.imageClassName || ""}`}
+          />
+        ) : member.initials}
       </div>
       <div className="jp-team-business slot" data-slot="business name">{member.business}</div>
       <div className="jp-team-name slot" data-slot="first name">{member.name}</div>
       <div className="jp-team-location"><PinIcon /><span className="slot" data-slot="state">{member.state}</span></div>
+      {member.bio ? <p className="jp-team-bio">{member.bio}</p> : null}
       <div className="jp-team-connect">
         <div className="jp-team-connect-label">Connect</div>
         <div className="jp-team-socials">
           <TeamSocial href={member.socialLinks?.tiktok} label="TikTok" kind="tt" />
-          <TeamSocial href={member.socialLinks?.website} label="Website" kind="crown" />
+          <TeamSocial href={member.socialLinks?.facebook} label="Facebook VIP" kind="fb" />
+          <TeamSocial href={member.socialLinks?.instagram} label="Instagram" kind="ig" />
+          <TeamSocial href={member.socialLinks?.website} label="Website" kind="web" />
           <TeamSocial href={member.socialLinks?.youtube} label="YouTube" kind="yt" />
         </div>
       </div>
@@ -835,6 +857,8 @@ function App() {
     document.title = `Join ${t.teamName} | ${repName}${locationSuffix}`;
     if (isMileHighFizzHybrid) {
       document.title = "Join the Mile High Fizz Team - Colorado Bomb Party Business Opportunity";
+    } else if (isBrittWithBlingHybrid) {
+      document.title = "Join The Virtuous Fizzers | Britt with Bling";
     }
     meta.setAttribute("content", description);
     applyTargetedMetadata(document.title, description);
@@ -844,6 +868,7 @@ function App() {
     const body = document.body;
     body.className = "joinpage";
     if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz-join");
+    if (isBrittWithBlingHybrid) body.classList.add("britt-with-bling-join");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -912,7 +937,7 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className={isMileHighFizzHybrid ? "mhf-join-page" : ""}>
+      <div className={isMileHighFizzHybrid ? "mhf-join-page" : isBrittWithBlingHybrid ? "bwb-join-page" : ""}>
         <div className="hp-sticky-stack">
           <Header businessName={t.businessName} />
 
@@ -921,8 +946,8 @@ function App() {
           <LiveQueueStrip onOpen={() => setQueueOpen(true)} />
         </div>
 
-        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-join-shell" : "hp-saturate"}>
-          <div className={isMileHighFizzHybrid ? "mhf-join-content" : ""}>
+        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-join-shell" : isBrittWithBlingHybrid ? "hp-saturate bwb-join-shell" : "hp-saturate"}>
+          <div className={isMileHighFizzHybrid ? "mhf-join-content" : isBrittWithBlingHybrid ? "bwb-join-content" : ""}>
             {t.showHero ? (
               <Hero
                 teamName={t.teamName}

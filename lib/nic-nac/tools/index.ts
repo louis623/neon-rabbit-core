@@ -33,6 +33,10 @@ import { endShowTool } from './end-show'
 import { updateBannerTextTool } from './update-banner-text'
 import { updateStreamingLinksTool } from './update-streaming-links'
 import { updateSiteSettingTool } from './update-site-setting'
+import {
+  listJoinTeamRosterTool,
+  manageJoinTeamRosterTool,
+} from './join-team-roster'
 import { writeRepNoteTool } from './write-rep-note'
 import { readRecentRepNotesTool } from './read-recent-rep-notes'
 import { startShowSessionTool } from './start-show-session'
@@ -77,6 +81,8 @@ const REGISTRY: ToolDefinition[] = [
   updateBannerTextTool,
   updateStreamingLinksTool,
   updateSiteSettingTool,
+  listJoinTeamRosterTool,
+  manageJoinTeamRosterTool,
   writeRepNoteTool,
   readRecentRepNotesTool,
   startShowSessionTool,
@@ -137,7 +143,13 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
   catalog: ['search_jewelry_database', 'report_jewelry_catalog_issue'],
   calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show', 'end_show'],
-  site: ['update_banner_text', 'update_streaming_links', 'update_site_setting'],
+  site: [
+    'update_banner_text',
+    'update_streaming_links',
+    'update_site_setting',
+    'list_join_team_roster',
+    'manage_join_team_roster',
+  ],
   notification: [
     'send_sms_notification',
     'send_email_notification',
@@ -297,6 +309,10 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\btagline\b/,
       /\bticker\b/,
       /\bteam name\b/,
+      /\bjoin team\b/,
+      /\bteam member\b/,
+      /\broster\b/,
+      /\bvip group\b/,
       /\bsocial\b/,
     ])
   ) {

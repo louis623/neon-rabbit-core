@@ -583,6 +583,53 @@ export interface SiteAnalyticsDashboardResult {
   operationalSnapshot: SiteAnalyticsOperationalSnapshot
 }
 
+export interface JoinTeamMemberLinks {
+  tiktok?: string
+  facebook?: string
+  instagram?: string
+  website?: string
+  youtube?: string
+}
+
+export interface JoinTeamMember {
+  id: string
+  repId: string
+  displayName: string
+  businessName: string
+  state: string
+  city: string
+  initials: string
+  photoUrl: string
+  photoAlt: string
+  imageClassName: string
+  bio: string
+  links: JoinTeamMemberLinks
+  sortOrder: number
+  isVisible: boolean
+  createdAt: string | null
+  updatedAt: string | null
+}
+
+export interface UpsertJoinTeamMemberInput {
+  id?: string
+  displayName: string
+  businessName?: string
+  state?: string
+  city?: string
+  initials?: string
+  photoUrl?: string
+  photoAlt?: string
+  imageClassName?: string
+  bio?: string
+  links?: JoinTeamMemberLinks
+  sortOrder?: number
+  isVisible?: boolean
+}
+
+export interface ReorderJoinTeamRosterInput {
+  memberIds: string[]
+}
+
 export interface LiveQueueSnapshot {
   syncCode: string
   queue: string[]

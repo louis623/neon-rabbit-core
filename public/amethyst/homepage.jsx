@@ -59,6 +59,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
+const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
 
 function publicRepName(value, fallback = "your rep") {
   const cleaned = String(value || "").trim().replace(/\s+/g, " ");
@@ -1420,6 +1421,180 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
   );
 }
 
+function BrittWithBlingFeaturedReveal() {
+  const reveal = CONTENT.featuredReveal;
+  if (!reveal) return null;
+
+  return (
+    <section id="legacy" className="bwb-featured-reveal" aria-labelledby="bwb-featured-title">
+      <div className="bwb-source-shell bwb-featured-grid">
+        <div className="bwb-featured-copy">
+          <p className="bwb-source-eyebrow">{reveal.eyebrow}</p>
+          <h2 id="bwb-featured-title" className="bwb-source-title">{reveal.title}</h2>
+          <div className="bwb-source-rule" aria-hidden="true" />
+          <p className="bwb-source-body">{reveal.body}</p>
+          <a {...linkProps(reveal.ctaHref)} className="bwb-source-cta">
+            {reveal.ctaLabel}
+          </a>
+        </div>
+        <div className="bwb-featured-video" aria-label={reveal.videoTitle}>
+          <iframe
+            src={reveal.videoUrl}
+            title={reveal.videoTitle}
+            allow="encrypted-media"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BrittWithBlingRevealExplainer() {
+  const explainer = CONTENT.revealExplainer;
+  if (!explainer) return null;
+
+  return (
+    <section id="wibp" className="bwb-source-explainer" aria-labelledby="bwb-explainer-title">
+      <div className="bwb-source-shell bwb-explainer-grid">
+        <div className="bwb-explainer-copy">
+          <h2 id="bwb-explainer-title" className="bwb-source-title">{explainer.title}</h2>
+          <p className="bwb-source-body">{explainer.body}</p>
+          <div className="bwb-explainer-steps">
+            {explainer.steps.map((step, index) => (
+              <article key={step.title} className="bwb-explainer-step">
+                <span>{index + 1}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="bwb-tiktok-card">
+          <div className="bwb-tiktok-head">
+            <div className="bwb-tiktok-mark">TT</div>
+            <div>
+              <h3>{explainer.videoCaption}</h3>
+              <p>{explainer.videoHandle}</p>
+            </div>
+          </div>
+          <div className="bwb-tiktok-frame">
+            <iframe
+              src={explainer.videoUrl}
+              title={explainer.videoTitle}
+              allow="encrypted-media"
+              allowFullScreen
+            />
+          </div>
+          <a {...linkProps(explainer.ctaHref)} className="bwb-tiktok-cta">
+            {explainer.ctaLabel}
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
+  const announcementText = CONTENT.announcementText || "Sterling Club & 12k Gold Vermeil collections are here - genuine precious metals, elevated designs.";
+  const announcementHref = CONTENT.announcementHref || "#wibp";
+  const announcementLabel = CONTENT.announcementLinkLabel || "Learn More";
+  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
+  const shopCtaLabel = CONTENT.shopCtaLabel || "Shop";
+  const heroImageUrl = CONTENT.heroImageUrl || "https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/76f968c944f6b1dd16c30e418f371af6.jpeg";
+  const tickerItems = [promoTickerText, promoTickerText, promoTickerText];
+
+  const menuLinks = [
+    { label: "Home", href: "#top" },
+    { label: "Trade Board", href: getTradeBoardHref() },
+    { label: "Join The Team", href: joinTeamHref },
+    { label: shopCtaLabel, href: getShopHref() },
+    { label: "Watch on TikTok", href: getWatchHref(liveShow) },
+    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
+  ].filter((link) => link.href && link.href !== "#");
+
+  return (
+    <div className="bwb-page" id="top">
+      <div className="bwb-announcement-banner">
+        <span className="bwb-announcement-new">NEW:</span>
+        <span>{announcementText}</span>
+        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
+      </div>
+      <a {...linkProps(joinTeamHref)} className="bwb-promo-ticker" aria-label="Britt with Bling promotion">
+        <div className="bwb-promo-track">
+          {tickerItems.map((item, index) => (
+            <span key={index}>{item}</span>
+          ))}
+        </div>
+      </a>
+      <header className="bwb-header">
+        <div className="bwb-header-inner">
+          <div className="bwb-menu-wrap">
+            <button
+              type="button"
+              className="bwb-header-menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((value) => !value)}
+            >
+              Menu
+              <span aria-hidden="true">⌄</span>
+            </button>
+            {menuOpen && (
+              <nav className="bwb-menu-panel" aria-label="Britt with Bling navigation">
+                {menuLinks.map((link) => (
+                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            )}
+          </div>
+          <a href="#top" className="bwb-header-logo" aria-label="Britt with Bling home">
+            Britt with Bling
+          </a>
+          <a {...linkProps(getShopHref())} className="bwb-header-shop">{shopCtaLabel}</a>
+        </div>
+      </header>
+
+      <section className="bwb-hero" aria-labelledby="bwb-hero-title">
+        <img className="bwb-hero-image" src={heroImageUrl} alt="" />
+        <div className="bwb-hero-shade" aria-hidden="true" />
+        <div className="bwb-hero-content">
+          <p className="bwb-hero-team">The Virtuous Fizzers</p>
+          <h1 id="bwb-hero-title" className="bwb-hero-title">
+            {businessName}
+          </h1>
+          <p className="bwb-hero-line">Where Faith Meets Fizz & Every Reveal is a VIP Experience</p>
+          <p className="bwb-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
+          <div className="bwb-hero-ctas">
+            <a {...linkProps(getShopHref())} className="bwb-cta bwb-cta-shop">{shopCtaLabel}</a>
+            <a {...linkProps(joinTeamHref)} className="bwb-cta bwb-cta-join">Join the Team</a>
+            <a {...linkProps(getWatchHref(liveShow))} className={`bwb-cta bwb-cta-watch ${isLive ? "is-live" : ""}`}>
+              Watch on TikTok
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="bwb-below-hero-shell">
+        <BrittWithBlingFeaturedReveal />
+        <div className="bwb-automation-panel">
+          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
+          {t.showEvents && <Events count={t.eventCount} />}
+          {t.showWibp && <BrittWithBlingRevealExplainer />}
+          {t.showAbout && <AboutSection repName={repName} />}
+          {t.showSignup && <Signup repName={repName} businessName={businessName} />}
+          {t.showFooter && <Footer businessName={businessName} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // Main App
 // ============================================================
@@ -1462,6 +1637,7 @@ function App() {
     const body = document.body;
     body.className = "homepage";
     if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz");
+    if (isBrittWithBlingHybrid) body.classList.add("britt-with-bling");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -1537,7 +1713,17 @@ function App() {
 
   return (
     <>
-      {isMileHighFizzHybrid ? (
+      {isBrittWithBlingHybrid ? (
+        <BrittWithBlingHomepage
+          t={t}
+          repName={repName}
+          businessName={t.businessName}
+          isLive={scheduleIsLive}
+          liveShow={activeLiveShow}
+          queueState={effectiveLrqState}
+          onOpenQueue={() => setQueueOpen(true)}
+        />
+      ) : isMileHighFizzHybrid ? (
         <MileHighFizzHomepage
           t={{ ...t, heroSub: redactPublicRepText(t.heroSub, t.repName) }}
           repName={repName}

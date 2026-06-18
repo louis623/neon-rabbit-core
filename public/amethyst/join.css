@@ -1117,3 +1117,270 @@ body.mile-high-fizz-join .hp-footer-col a:hover {
     border-radius: 22px;
   }
 }
+
+.jp-team-avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jp-team-avatar-img.object-left,
+.jp-team-avatar-img.object-left.rotate-left {
+  object-position: left center;
+}
+
+.jp-team-avatar-img.object-top {
+  object-position: center top;
+}
+
+.jp-team-avatar-img.rotate-left {
+  transform: rotate(-25deg) scale(1.2);
+}
+
+.jp-team-bio {
+  margin: 0.75rem 0 0;
+  color: color-mix(in srgb, var(--hp-body) 70%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+body.britt-with-bling-join {
+  --bwb-black: #0a0a0a;
+  --bwb-panel: #1a1a1a;
+  --bwb-gold: #d4af37;
+  --bwb-blush: #f4c2c2;
+  --bwb-cyan: #00d9ff;
+  --hp-primary: var(--bwb-gold);
+  --hp-accent: var(--bwb-cyan);
+  --hp-bg: var(--bwb-black);
+  --hp-bg-elevated: var(--bwb-panel);
+  background: var(--bwb-black);
+  color: #fff;
+}
+
+body.britt-with-bling-join::before {
+  display: none;
+}
+
+.bwb-join-page {
+  min-height: 100vh;
+  background: var(--bwb-black);
+}
+
+.bwb-join-shell {
+  position: relative;
+  background: var(--bwb-black);
+}
+
+.bwb-join-content {
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+body.britt-with-bling-join .hp-sticky-stack,
+body.britt-with-bling-join .hp-header {
+  background: rgba(10, 10, 10, 0.92);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+body.britt-with-bling-join .hp-brand-name {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.45rem);
+  font-weight: 900;
+}
+
+body.britt-with-bling-join .hp-brand-sub,
+body.britt-with-bling-join .hp-header-link {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.britt-with-bling-join .hp-header-link[aria-current="page"],
+body.britt-with-bling-join .hp-header-link:hover {
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-join .hp-shop-btn {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush));
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-join .hp-ticker {
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  border-bottom: 1px solid rgba(0, 217, 255, 0.25);
+  background: #0a0a0a;
+}
+
+body.britt-with-bling-join .hp-ticker-row {
+  background: linear-gradient(90deg, #0a0a0a, #1a1a1a, #0a0a0a);
+}
+
+body.britt-with-bling-join .hp-ticker-label {
+  background: var(--bwb-blush);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-join .hp-ticker-row.reverse .hp-ticker-label {
+  background: var(--bwb-cyan);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-join .hp-ticker-item,
+body.britt-with-bling-join .hp-ticker-trade {
+  color: var(--bwb-gold);
+}
+
+body.britt-with-bling-join .hp-ticker-row.reverse .hp-ticker-track:has(.hp-ticker-empty) {
+  animation: none;
+  transform: none;
+}
+
+body.britt-with-bling-join .hp-trade-preview {
+  background: transparent;
+}
+
+body.britt-with-bling-join .jp-hero {
+  min-height: 720px;
+  background: var(--bwb-black);
+}
+
+body.britt-with-bling-join .jp-hero-media {
+  background-image:
+    linear-gradient(180deg, rgba(10, 10, 10, 0.28), rgba(10, 10, 10, 0.84)),
+    url("https://readdy.ai/api/search-image?query=Cinematic%20macro%20photography%20of%20luxury%20jewelry%20reveals%20with%20gold%20sparkles%2C%20pink%20glitter%2C%20cyan%20neon%20accents%2C%20black%20velvet%20background%2C%20premium%20Bomb%20Party%20aesthetic%2C%20dramatic%20lighting%2C%20bokeh%2C%20celebration%20energy&width=1920&height=1080&seq=promo-hero-glitter-001&orientation=landscape");
+  background-position: center;
+  background-size: cover;
+}
+
+body.britt-with-bling-join .jp-hero-card {
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: rgba(10, 10, 10, 0.64);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+}
+
+body.britt-with-bling-join .jp-hero-eyebrow,
+body.britt-with-bling-join .jp-hero-compliance {
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-join .jp-hero-title {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(3.2rem, 7vw, 7rem);
+}
+
+body.britt-with-bling-join .jp-hero-pitch,
+body.britt-with-bling-join .jp-hero-localized,
+body.britt-with-bling-join .jp-section-sub {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+body.britt-with-bling-join .jp-hero-promo {
+  border-color: rgba(244, 194, 194, 0.35);
+  background: rgba(244, 194, 194, 0.12);
+  color: #fff;
+}
+
+body.britt-with-bling-join .jp-hero .hp-btn-primary,
+body.britt-with-bling-join .jp-final-btn,
+body.britt-with-bling-join .jp-spot-btn {
+  background: var(--bwb-cyan);
+  color: #0a0a0a;
+  box-shadow: 0 18px 44px rgba(0, 217, 255, 0.22);
+}
+
+body.britt-with-bling-join .jp-section {
+  background: var(--bwb-black);
+}
+
+body.britt-with-bling-join .jp-why {
+  background: #111;
+}
+
+body.britt-with-bling-join .jp-section-title,
+body.britt-with-bling-join .jp-team-business {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.britt-with-bling-join .jp-section-eyebrow {
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-join .jp-team-card,
+body.britt-with-bling-join .jp-benefit-card,
+body.britt-with-bling-join .jp-faq-note,
+body.britt-with-bling-join .jp-faq-item,
+body.britt-with-bling-join .jp-final-card {
+  border: 1px solid rgba(212, 175, 55, 0.26);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.96), rgba(10, 10, 10, 0.98));
+  color: #fff;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+}
+
+body.britt-with-bling-join .jp-team-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+}
+
+body.britt-with-bling-join .jp-team-avatar,
+body.britt-with-bling-join .jp-benefit-icon,
+body.britt-with-bling-join .jp-final-icon,
+body.britt-with-bling-join .jp-spot-glyph {
+  border: 2px solid rgba(212, 175, 55, 0.35);
+  background: #0a0a0a;
+  color: var(--bwb-gold);
+}
+
+body.britt-with-bling-join .jp-team-name,
+body.britt-with-bling-join .jp-benefit-title,
+body.britt-with-bling-join .jp-faq-q,
+body.britt-with-bling-join .jp-spot-title {
+  color: #fff;
+}
+
+body.britt-with-bling-join .jp-team-location,
+body.britt-with-bling-join .jp-benefit-desc,
+body.britt-with-bling-join .jp-faq-a-inner,
+body.britt-with-bling-join .jp-spot-sub,
+body.britt-with-bling-join .jp-team-bio {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+body.britt-with-bling-join .jp-team-social {
+  border-color: rgba(0, 217, 255, 0.3);
+  background: rgba(0, 217, 255, 0.08);
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-join .jp-final {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+}
+
+body.britt-with-bling-join .hp-footer {
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
+  background: var(--bwb-black);
+}
+
+body.britt-with-bling-join .hp-footer-brand {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

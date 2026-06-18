@@ -115,7 +115,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   site: `Site tools:
 - update_banner_text is for quick banner copy changes.
 - update_streaming_links replaces the full streaming-links map. If the rep gives only one link and you do not know the full set, ask for the full set.
-- update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.`,
+- update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.
+- list_join_team_roster reads editable Join Team roster cards.
+- manage_join_team_roster adds, updates, removes, hides/shows, or reorders Join Team roster cards, including photos and TikTok/Facebook VIP/Instagram/globe website/YouTube links.`,
 
   notification: `Notification tools:
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.

@@ -42,6 +42,201 @@ body.tradepage h4 {
   max-width: 16ch;
   overflow: visible;
 }
+
+body.britt-with-bling-trade {
+  --bwb-black: #0a0a0a;
+  --bwb-panel: #1a1a1a;
+  --bwb-gold: #d4af37;
+  --bwb-blush: #f4c2c2;
+  --bwb-cyan: #00d9ff;
+  --hp-primary: var(--bwb-gold);
+  --hp-accent: var(--bwb-cyan);
+  --hp-bg: var(--bwb-black);
+  --hp-bg-elevated: var(--bwb-panel);
+  background: var(--bwb-black);
+  color: #fff;
+}
+
+body.britt-with-bling-trade::before {
+  display: none;
+}
+
+.bwb-trade-page {
+  min-height: 100vh;
+  background: var(--bwb-black);
+}
+
+.bwb-trade-shell {
+  position: relative;
+  background:
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 34rem),
+    radial-gradient(circle at top right, rgba(0, 217, 255, 0.12), transparent 34rem),
+    var(--bwb-black);
+  padding-bottom: 4rem;
+}
+
+.bwb-trade-board-panel,
+.bwb-trade-shell > .tp-hero {
+  width: min(1240px, calc(100% - 32px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.britt-with-bling-trade .hp-sticky-stack,
+body.britt-with-bling-trade .hp-header {
+  background: rgba(10, 10, 10, 0.92);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+body.britt-with-bling-trade .hp-brand-name,
+body.britt-with-bling-trade .tp-hero-title,
+body.britt-with-bling-trade .hp-footer-brand {
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.britt-with-bling-trade .hp-brand-name {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.45rem);
+  font-weight: 900;
+}
+
+body.britt-with-bling-trade .hp-brand-sub,
+body.britt-with-bling-trade .hp-header-link {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.britt-with-bling-trade .hp-header-link[aria-current="page"],
+body.britt-with-bling-trade .hp-header-link:hover {
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-trade .hp-shop-btn,
+body.britt-with-bling-trade .hp-header-shop,
+body.britt-with-bling-trade .tp-load-more,
+body.britt-with-bling-trade .tp-card-expand-cta,
+body.britt-with-bling-trade .tp-sheet-submit,
+body.britt-with-bling-trade .tp-empty-reset {
+  background: var(--bwb-cyan);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-trade .hp-ticker-row {
+  background: linear-gradient(90deg, #0a0a0a, #1a1a1a, #0a0a0a);
+}
+
+body.britt-with-bling-trade .hp-ticker-label {
+  background: var(--bwb-blush);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-trade .hp-ticker-row.reverse .hp-ticker-label {
+  background: var(--bwb-cyan);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-trade .hp-ticker-row.reverse .hp-ticker-track:has(.hp-ticker-empty) {
+  animation: none;
+  transform: none;
+}
+
+body.britt-with-bling-trade .hp-ticker-item,
+body.britt-with-bling-trade .hp-ticker-trade {
+  color: var(--bwb-gold);
+}
+
+body.britt-with-bling-trade .tp-hero {
+  background: transparent;
+  color: #fff;
+  padding-top: clamp(4rem, 8vw, 7rem);
+}
+
+body.britt-with-bling-trade .tp-hero-sub,
+body.britt-with-bling-trade .tp-filter-results,
+body.britt-with-bling-trade .tp-board-showing,
+body.britt-with-bling-trade .tp-card-meta,
+body.britt-with-bling-trade .tp-card-material,
+body.britt-with-bling-trade .tp-card-rep,
+body.britt-with-bling-trade .tp-card-expand-desc,
+body.britt-with-bling-trade .tp-sheet-helper,
+body.britt-with-bling-trade .tp-empty-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.britt-with-bling-trade .tp-board {
+  background: transparent;
+}
+
+body.britt-with-bling-trade .tp-filters,
+body.britt-with-bling-trade .tp-filter-panel,
+body.britt-with-bling-trade .tp-card,
+body.britt-with-bling-trade .tp-card-expand,
+body.britt-with-bling-trade .tp-sheet,
+body.britt-with-bling-trade .tp-empty,
+body.britt-with-bling-trade .tp-sheet-success-legal,
+body.britt-with-bling-trade .tp-legal {
+  border-color: rgba(212, 175, 55, 0.25);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.96), rgba(10, 10, 10, 0.98));
+  color: #fff;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+}
+
+body.britt-with-bling-trade .tp-filter-link,
+body.britt-with-bling-trade .tp-filter-toggle,
+body.britt-with-bling-trade .tp-filter-pill,
+body.britt-with-bling-trade .tp-filter-chip,
+body.britt-with-bling-trade .tp-filter-sort,
+body.britt-with-bling-trade .tp-filter-drop,
+body.britt-with-bling-trade .tp-board-search input,
+body.britt-with-bling-trade .tp-board-sort select,
+body.britt-with-bling-trade .tp-sheet-field input,
+body.britt-with-bling-trade .tp-sheet-field textarea {
+  border-color: rgba(0, 217, 255, 0.24);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+}
+
+body.britt-with-bling-trade .tp-filter-pill.active,
+body.britt-with-bling-trade .tp-filter-chip.active,
+body.britt-with-bling-trade .tp-filter-toggle.active {
+  background: var(--bwb-cyan);
+  color: #0a0a0a;
+}
+
+body.britt-with-bling-trade .tp-card-photo,
+body.britt-with-bling-trade .tp-card-expand-photo {
+  background: #050505;
+  border-color: rgba(244, 194, 194, 0.24);
+}
+
+body.britt-with-bling-trade .tp-card-name,
+body.britt-with-bling-trade .tp-card-expand-name,
+body.britt-with-bling-trade .tp-sheet-title,
+body.britt-with-bling-trade .tp-empty-title {
+  color: #fff;
+}
+
+body.britt-with-bling-trade .tp-card-msrp,
+body.britt-with-bling-trade .tp-card-expand-specs,
+body.britt-with-bling-trade .tp-card-expand-box {
+  color: var(--bwb-gold);
+}
+
+body.britt-with-bling-trade .tp-card-tier.diamond {
+  color: var(--bwb-cyan);
+}
+
+body.britt-with-bling-trade .tp-card-tier.unicorn {
+  color: var(--bwb-blush);
+}
+
+body.britt-with-bling-trade .hp-footer {
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
+  background: transparent;
+}
 .tp-hero-sub {
   font-size: 17px;
   line-height: 1.55;
