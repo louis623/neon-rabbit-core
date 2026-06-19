@@ -38,8 +38,23 @@ const quickPrompts = [
   },
   {
     icon: Users,
-    label: "Find favorite reps",
-    prompt: "Tell me a rep name or what kind of lives you like, and I will help you find them.",
+    label: "Show my favorite reps",
+    prompt: "List the reps I have saved and any safe notes you remember.",
+  },
+  {
+    icon: Heart,
+    label: "Find my favorite reps' next lives",
+    prompt: "Check favorite reps and rep leads for upcoming live show times.",
+  },
+  {
+    icon: Users,
+    label: "Review public Showcase discovery",
+    prompt: "Search bounded public Showcase discovery with one-way follows and safety filters.",
+  },
+  {
+    icon: Star,
+    label: "Review followed collector status",
+    prompt: "Review one-way followed collectors and their public Showcase status.",
   },
 ];
 
@@ -183,7 +198,7 @@ export function FinderNicNacWorkspace({
         </aside>
       </div>
 
-      <div className="grid gap-2 border-t border-[rgba(238,44,155,0.14)] bg-white/60 p-4 md:grid-cols-5">
+      <div className="grid gap-2 border-t border-[rgba(238,44,155,0.14)] bg-white/60 p-4 md:grid-cols-3 xl:grid-cols-5">
         {quickPrompts.map((prompt) => {
           const Icon = prompt.icon;
 

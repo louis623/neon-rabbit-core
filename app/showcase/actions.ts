@@ -26,9 +26,7 @@ type ShowcaseActionClient = {
   rpc?: (functionName: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
   from: (table: string) => {
     select: (columns: string) => {
-      eq: (column: string, value: string) => {
-        maybeSingle: () => PromiseLike<{ data: unknown; error: unknown }>;
-      };
+      eq: (column: string, value: string) => ShowcaseSelectBuilder;
     };
     insert: (values: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
     upsert?: (
@@ -48,6 +46,11 @@ type ShowcaseActionClient = {
   };
 };
 
+type ShowcaseSelectBuilder = {
+  eq: (column: string, value: string) => ShowcaseSelectBuilder;
+  maybeSingle: () => PromiseLike<{ data: unknown; error: unknown }>;
+};
+
 export async function followShowcaseAction(formData: FormData): Promise<void> {
   const verified = await getVerifiedShowcaseClient();
 
@@ -58,7 +61,11 @@ export async function followShowcaseAction(formData: FormData): Promise<void> {
   const showcaseUserId = String(formData.get("showcaseUserId") ?? "").trim();
   const handle = String(formData.get("handle") ?? "").trim();
 
-  if (!canFollowShowcase(verified.userId, showcaseUserId) || !(await isPublicShowcase(verified.client, showcaseUserId))) {
+  if (
+    !canFollowShowcase(verified.userId, showcaseUserId) ||
+    !(await isPublicShowcase(verified.client, showcaseUserId)) ||
+    (await isBlockedShowcaseRelationship(verified.client, verified.userId, showcaseUserId))
+  ) {
     return;
   }
 
@@ -126,6 +133,10 @@ export async function createShowcaseCommentAction(
 
   if (!(await isPublicCommentTarget(verified.client, showcaseUserId, targetType, targetId))) {
     return createShowcaseActionError("not_found", "This Sparkle Showcase conversation is not available.");
+  }
+
+  if (await isBlockedShowcaseRelationship(verified.client, verified.userId, showcaseUserId)) {
+    return createShowcaseActionError("not_allowed", "This Sparkle Showcase conversation is not available.");
   }
 
   const result = await verified.client.from("sparkle_finder_showcase_comments").insert({
@@ -244,6 +255,10 @@ export async function reportShowcaseTargetAction(
     return createShowcaseActionError("not_found", "This Sparkle Showcase item is not available to report.");
   }
 
+  if (await isBlockedShowcaseRelationship(verified.client, verified.userId, showcaseUserId)) {
+    return createShowcaseActionError("not_allowed", "This Sparkle Showcase item is not available to report.");
+  }
+
   const result = await verified.client.from("sparkle_finder_showcase_reports").insert({
     reporter_user_id: verified.userId,
     showcase_user_id: showcaseUserId,
@@ -328,12 +343,51 @@ async function isPublicShowcase(client: ShowcaseActionClient, showcaseUserId: st
 
   const result = await client
     .from("sparkle_finder_profiles")
-    .select("user_id,showcase_visibility")
+    .select("user_id,profile_visibility,showcase_visibility")
     .eq("user_id", showcaseUserId)
     .maybeSingle();
   const row = asRecord(result.data);
 
-  return !result.error && row?.user_id === showcaseUserId && row.showcase_visibility === "public";
+  return (
+    !result.error &&
+    row?.user_id === showcaseUserId &&
+    row.profile_visibility === "sparkle_finder" &&
+    row.showcase_visibility === "public"
+  );
+}
+
+async function isBlockedShowcaseRelationship(
+  client: ShowcaseActionClient,
+  viewerUserId: string,
+  showcaseUserId: string,
+): Promise<boolean> {
+  if (!viewerUserId || !showcaseUserId || viewerUserId === showcaseUserId) {
+    return false;
+  }
+
+  return (
+    (await hasCollectorBlock(client, viewerUserId, showcaseUserId)) ||
+    (await hasCollectorBlock(client, showcaseUserId, viewerUserId))
+  );
+}
+
+async function hasCollectorBlock(
+  client: ShowcaseActionClient,
+  blockerUserId: string,
+  blockedUserId: string,
+): Promise<boolean> {
+  try {
+    const result = await client
+      .from("sparkle_finder_collector_blocks")
+      .select("id")
+      .eq("blocker_user_id", blockerUserId)
+      .eq("blocked_user_id", blockedUserId)
+      .maybeSingle();
+
+    return Boolean(!result.error && result.data);
+  } catch {
+    return true;
+  }
 }
 
 async function isPublicCommentTarget(

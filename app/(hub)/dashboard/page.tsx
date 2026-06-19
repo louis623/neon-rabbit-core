@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Gem, Library, Radio, UsersRound } from "lucide-react";
+import { Gem, Heart, Library, Radio, UsersRound } from "lucide-react";
 import { getJewelryItems, getRepBoardListings } from "@/lib/sparkle-finder/service";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
@@ -18,6 +18,16 @@ const cards = [
   {
     title: "Rep Trade Boards / Dance Floors",
     href: "/rep-boards",
+    icon: UsersRound,
+  },
+  {
+    title: "Favorite Reps",
+    href: "/favorites",
+    icon: Heart,
+  },
+  {
+    title: "Public Collectors",
+    href: "/collectors",
     icon: UsersRound,
   },
   {

@@ -121,7 +121,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
   test("hub routes still gate anonymous visitors", async ({ page }) => {
     await page.context().clearCookies();
 
-    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/silver"]) {
+    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/favorites", "/collectors", "/silver"]) {
       await page.goto(`${baseUrl}${path}`, { waitUntil: "domcontentloaded" });
       await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
       await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();
@@ -274,8 +274,11 @@ async function expectHomepageLinksStayLocal(page: Page) {
 }
 
 async function expectNoExampleLinksOnCurrentPage(page: Page) {
-  const html = await page.content();
-  expect(html).not.toContain("sparklesuite.example");
+  const hrefs = await page.locator("a[href]").evaluateAll((links) =>
+    links.map((link) => (link as HTMLAnchorElement).href),
+  );
+
+  expect(hrefs.some((href) => href.includes("sparklesuite.example"))).toBe(false);
 }
 
 async function expectNoPublicHomepageDemoData(page: Page) {

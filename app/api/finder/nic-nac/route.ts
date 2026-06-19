@@ -7,10 +7,13 @@ import {
 } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
+import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import {
   createSupabaseCustomerMemoryStore,
   type SupabaseCustomerMemoryClient,
 } from "@/lib/sparkle-finder/customer-memory";
+import type { SupabaseCollectorSocialReadClient } from "@/lib/sparkle-finder/collector-social-service";
+import type { SupabaseFavoriteRepsReadClient } from "@/lib/sparkle-finder/favorite-reps-service";
 import {
   buildFinderNicNacTools,
   getFinderNicNacToolIntentsForMessages,
@@ -37,6 +40,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 
+  const entitlements = getSparkleFinderAccountEntitlements(accountState);
+
+  if (!entitlements.canUseNicNacFindRequests) {
+    return NextResponse.json({ error: "silver_required" }, { status: 403 });
+  }
+
   let body: FinderNicNacPostBody;
 
   try {
@@ -55,7 +64,8 @@ export async function POST(request: Request) {
   const activeToolNames = listFinderNicNacToolNamesForIntents(intents);
   const supabase = await createClient();
   const memoryStore = createSupabaseCustomerMemoryStore(supabase as unknown as SupabaseCustomerMemoryClient);
-  const tools = buildFinderNicNacTools({ memoryStore, userId: accountState.customer.id }, intents);
+  const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
+  const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
   const modelMessages = await convertToModelMessages(messages);
   const result = streamText({
     model: anthropic(finderNicNacModel),

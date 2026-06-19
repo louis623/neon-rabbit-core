@@ -50,6 +50,32 @@ describe("findSparkleFinderCopyViolations", () => {
     );
   });
 
+  it("flags social trading and marketplace drift in visible app copy", () => {
+    const copy = [
+      "Trade with this collector.",
+      "Buy from this member.",
+      "Sell your jewelry.",
+      "Message seller.",
+      "Customer marketplace.",
+      "Send a friend request.",
+      "DM me for details.",
+      "Escrow is available.",
+    ].join(" ");
+
+    expect(findSparkleFinderCopyViolations(copy)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ phrase: "trade with this collector" }),
+        expect.objectContaining({ phrase: "buy from this member" }),
+        expect.objectContaining({ phrase: "sell your jewelry" }),
+        expect.objectContaining({ phrase: "message seller" }),
+        expect.objectContaining({ phrase: "customer marketplace" }),
+        expect.objectContaining({ phrase: "friend request" }),
+        expect.objectContaining({ phrase: "dm me" }),
+        expect.objectContaining({ phrase: "escrow" }),
+      ]),
+    );
+  });
+
   it("flags hypey affiliate claims and official Bomb Party gear positioning", () => {
     const copy = [
       "The best ever organizer is guaranteed to be perfect for everyone.",
@@ -125,6 +151,140 @@ describe("findSparkleFinderCopyViolations", () => {
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });
 
+  it("allows legal disclaimers only when they clearly say Sparkle Finder does not support social commerce", () => {
+    const compliantCopy = [
+      "Sparkle Finder does not support DMs, friend requests, customer-to-customer trading, customer marketplace features, escrow, payment, fulfillment, or disputes.",
+      "Sparkle Finder does not support buying from members, selling your jewelry, or message seller workflows.",
+    ].join(" ");
+    const nonCompliantCopy = [
+      "Sparkle Finder explains DMs, friend requests, customer marketplace features, escrow, and message seller workflows.",
+      "Collectors can buy from this member or trade with this collector.",
+    ].join(" ");
+
+    expect(findSparkleFinderCopyViolations(compliantCopy)).toEqual([]);
+    expect(violationPhrases(nonCompliantCopy)).toEqual(
+      expect.arrayContaining([
+        "customer marketplace",
+        "escrow",
+        "message seller",
+        "buy from this member",
+        "trade with this collector",
+      ]),
+    );
+  });
+
+  it("does not treat generic no copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("No fee customer marketplace for collectors.")).toContain("customer marketplace");
+  });
+
+  it("does not treat generic do-not marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("Do not miss our customer marketplace for collectors.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat generic avoid marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("Avoid escrow delays with our customer marketplace.")).toEqual(
+      expect.arrayContaining(["escrow", "customer marketplace"]),
+    );
+  });
+
+  it("only exempts the compliant banned phrase and still flags promotional mixed clauses", () => {
+    expect(violationPhrases("Do not use DMs; use our customer marketplace for escrow.")).toEqual(
+      expect.arrayContaining(["customer marketplace", "escrow"]),
+    );
+  });
+
+  it("does not let comma-separated compliance phrasing hide later promotional clauses", () => {
+    expect(violationPhrases("Do not use DMs, use our customer marketplace for escrow.")).toEqual(
+      expect.arrayContaining(["customer marketplace", "escrow"]),
+    );
+  });
+
+  it("does not let comma-separated compliance phrasing hide later try clauses", () => {
+    expect(violationPhrases("Do not use DMs, try our customer marketplace for escrow.")).toEqual(
+      expect.arrayContaining(["customer marketplace", "escrow"]),
+    );
+  });
+
+  it("does not let comma-separated compliance phrasing hide later visit clauses", () => {
+    expect(violationPhrases("Do not use DMs, visit our customer marketplace for escrow.")).toEqual(
+      expect.arrayContaining(["customer marketplace", "escrow"]),
+    );
+  });
+
+  it("does not let prior sentence compliance phrasing hide later promotional sentences", () => {
+    expect(violationPhrases("Do not use DMs! Use our customer marketplace for escrow.")).toEqual(
+      expect.arrayContaining(["customer marketplace", "escrow"]),
+    );
+  });
+
+  it("does not treat generic not-a marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("Not a boring customer marketplace for collectors.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat generic not-an escrow marketplace copy as a compliance disclaimer", () => {
+    expect(violationPhrases("Not an escrow marketplace, a collector shortcut.")).toEqual(
+      expect.arrayContaining(["escrow", "marketplace"]),
+    );
+  });
+
+  it("does not treat generic must-not marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("Must not miss our customer marketplace for collectors.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat generic prohibited marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("The previously prohibited customer marketplace is now open.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat generic never-call marketing copy as a social-commerce compliance disclaimer", () => {
+    expect(violationPhrases("Never call our customer marketplace boring.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat promotional does-not-support copy as a social-commerce compliance disclaimer", () => {
+    expect(
+      violationPhrases("Our customer marketplace does not support boring collector searches."),
+    ).toContain("customer marketplace");
+  });
+
+  it("does not treat do-not-call customer marketplace copy as a compliance disclaimer", () => {
+    expect(violationPhrases("Do not call our customer marketplace boring.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat do-not-call escrow marketplace copy as a compliance disclaimer", () => {
+    expect(violationPhrases("Do not call our escrow marketplace boring.")).toEqual(
+      expect.arrayContaining(["escrow", "marketplace"]),
+    );
+  });
+
+  it("does not treat do-not-call prohibited customer marketplace copy as a compliance disclaimer", () => {
+    expect(violationPhrases("Do not call this customer marketplace prohibited.")).toContain(
+      "customer marketplace",
+    );
+  });
+
+  it("does not treat unrelated Sparkle Finder does-not-support copy as a compliance disclaimer", () => {
+    expect(
+      violationPhrases("Sparkle Finder does not support boring collector searches in our customer marketplace."),
+    ).toContain("customer marketplace");
+  });
+
+  it("does not treat previously prohibited Sparkle Finder copy as a compliance disclaimer", () => {
+    expect(
+      violationPhrases("Sparkle Finder says the previously prohibited customer marketplace is now open."),
+    ).toContain("customer marketplace");
+  });
+
   it("flags later promotional uses after allowed compliance guidance for the same phrase", () => {
     const copy = [
       "Do not call products guaranteed.",
@@ -139,7 +299,7 @@ describe("findSparkleFinderCopyViolations", () => {
 
   it("allows approved Sparkle Finder wording", () => {
     const copy =
-      "Nic-Nac. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
+      "Nic-Nac. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Favorite Reps. Rep leads. Public Showcases. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

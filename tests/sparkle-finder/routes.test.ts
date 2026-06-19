@@ -10,15 +10,19 @@ import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
+import { renderFavoritesPageContent } from "../../app/(hub)/favorites/page";
+import { renderCollectorsPageContent } from "../../app/(hub)/collectors/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
 import PhotoSetupPage, { renderPhotoSetupPageContent } from "../../app/photo-setup/page";
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
+import { FavoriteRepsPanel } from "../../components/favorites/FavoriteRepsPanel";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { JewelryCard } from "../../components/library/JewelryCard";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
+import type { FavoriteRepCard, PublicCollectorProfile } from "../../lib/sparkle-finder/social-types";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
@@ -38,6 +42,8 @@ const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
   ["library", () => renderToStaticMarkup(renderLibraryPageContent())],
   ["live-shows", () => renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()))],
+  ["favorites", () => renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver")))],
+  ["collectors", () => renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("silver")))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
   ["silver", () => renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")))],
 ] as const;
@@ -61,6 +67,10 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library");
     expect(markup).toContain("/rep-boards");
     expect(markup).toContain("/live-shows");
+    expect(markup).toContain("/favorites");
+    expect(markup).toContain(">Favorites<");
+    expect(markup).toContain("/collectors");
+    expect(markup).toContain(">Collectors<");
     expect(markup).not.toContain("/shop");
   });
 
@@ -75,6 +85,10 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/library"');
     expect(markup).toContain('href="/live-shows"');
     expect(markup).toContain('href="/rep-boards"');
+    expect(markup).toContain('href="/favorites"');
+    expect(markup).toContain(">Favorites<");
+    expect(markup).toContain('href="/collectors"');
+    expect(markup).toContain(">Collectors<");
     expect(markup).not.toContain('href="/shop"');
     expect(markup).toContain('href="/auth/sign-out"');
     expect(markup).toContain(">Log Out<");
@@ -169,7 +183,7 @@ describe("Sparkle Finder hub routes", () => {
       "Customer Accounts And Silver Access",
       "Library, Live Shows, Rep Boards, And Availability",
       "Sparkle Showcase, Profile, And Watchlist Tools",
-      "Follows, Comments, Reports, And Moderation",
+      "Follows, Blocking, Reports, And Moderation",
       "Third-Party Product Resources",
       "Acceptable Use",
       "Privacy",
@@ -192,19 +206,38 @@ describe("Sparkle Finder hub routes", () => {
     expect(privacyMarkup).toContain("Sparkle Finder Legal Center");
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Sparkle Finder customer accounts");
+    expect(privacyMarkup).toContain("Favorite Reps");
+    expect(privacyMarkup).toContain("Public Showcases");
+    expect(privacyMarkup).toContain("one-way follows");
+    expect(privacyMarkup).toContain("follower counts");
+    expect(privacyMarkup).toContain("public sharing links");
+    expect(privacyMarkup).toContain("blocking, reporting, and moderation review");
     expect(privacyMarkup).toContain("We do not sell personal information.");
     expect(privacyMarkup).not.toContain("Affiliate And Shop Information");
+    expect(privacyMarkup).not.toContain("comments");
     expect(privacyMarkup).toContain("Back to Sparkle Finder");
 
     expect(termsMarkup).toContain("Sparkle Finder Legal Center");
     expect(termsMarkup).toContain("Terms and Conditions");
     expect(termsMarkup).toContain("No Sales, Escrow, Or Fulfillment");
     expect(termsMarkup).toContain("Third-Party Product Resources");
+    expect(termsMarkup).toContain("Favorite Reps");
+    expect(termsMarkup).toContain("Public Showcases");
+    expect(termsMarkup).toContain("one-way follows");
+    expect(termsMarkup).toContain("blocking, reporting, and moderation review");
+    expect(termsMarkup).toContain(
+      "Sparkle Finder does not support DMs, friend requests, customer-to-customer trading, customer marketplace features, escrow, payment, fulfillment, or disputes.",
+    );
+    expect(termsMarkup).toContain(
+      "Sparkle Finder does not support buying from members, selling your jewelry, message seller workflows, customer-to-customer jewelry trading, or customer-to-customer marketplace workflows.",
+    );
     expect(termsMarkup).toContain("Sparkle Finder is a discovery hub");
+    expect(termsMarkup).not.toContain("comments");
     expect(termsMarkup).toContain(
       "not owned by, operated by, endorsed by, sponsored by, or officially affiliated with Bomb Party",
     );
     expect(termsMarkup).toContain('href="/privacy-policy"');
+    expect(findSparkleFinderCopyViolations(`${privacyMarkup} ${termsMarkup}`)).toEqual([]);
   });
 
   it("renders the selected trust-first public landing for anonymous visitors", () => {
@@ -256,7 +289,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders the main homepage with app navigation for signed-in customers", () => {
-    const markup = renderToStaticMarkup(renderHomeContent(getLocalDevAuthState("silver")));
+    const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
 
     expect(markup).toContain("Sparkle Finder primary navigation");
     expect(markup).toContain('href="/library"');
@@ -275,7 +308,7 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders authenticated home as a filled collector profile panel without a dead-space shell", () => {
-    const markup = renderToStaticMarkup(renderHomeContent(getLocalDevAuthState("silver")));
+    const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
 
     expect(markup).toContain('data-smoke="collector-profile-panel"');
     expect(markup).toContain("Collector profile");
@@ -290,11 +323,12 @@ describe("Sparkle Finder hub routes", () => {
   });
 
   it("renders authenticated home profile details from the signed-in account state", () => {
+    const silverState = silverPreviewRouteAccountState();
     const markup = renderToStaticMarkup(
       renderHomeContent({
-        ...getLocalDevAuthState("silver"),
+        ...silverState,
         customer: {
-          ...getLocalDevAuthState("silver").customer,
+          ...silverState.customer,
           displayName: "Louis Sparkle",
         },
         displayName: "Louis Sparkle",
@@ -331,7 +365,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Nic-Nac, find this for me");
   });
 
-  it.each(["dashboard", "library", "live-shows", "rep-boards", "silver"] as const)(
+  it.each(["dashboard", "library", "live-shows", "favorites", "collectors", "rep-boards", "silver"] as const)(
     "gates anonymous visitors before rendering %s hub content",
     (routeName) => {
       const [, renderRoute] = routes.find(([name]) => name === routeName)!;
@@ -371,6 +405,165 @@ describe("Sparkle Finder hub routes", () => {
     expect(liveShowsMarkup).toContain("Rep: Demo");
     expect(liveShowsMarkup).toContain("Visit Rep Site");
     expect(liveShowsMarkup).not.toContain("Preview calendar data");
+  });
+
+  it("renders favorite reps dashboards for free and Silver customers", () => {
+    const freeMarkup = renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("free")));
+    const silverMarkup = renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver")));
+
+    expect(freeMarkup).toContain("Favorites");
+    expect(freeMarkup).toContain("Favorite Reps");
+    expect(freeMarkup).toContain("Next show");
+    expect(freeMarkup).toContain("Trade board");
+    expect(freeMarkup).toContain("Visit Rep Site");
+    expect(freeMarkup).toContain("Silver unlocks rep notes");
+    expect(freeMarkup).not.toContain("Rep notes");
+    expect(freeMarkup).not.toContain("Ask Nic-Nac");
+
+    expect(silverMarkup).toContain("Favorite Reps");
+    expect(silverMarkup).toContain("Next show");
+    expect(silverMarkup).toContain("Trade board");
+    expect(silverMarkup).toContain("Rep notes");
+    expect(silverMarkup).toContain("Ask Nic-Nac");
+  });
+
+  it("renders injected persisted favorite rep cards on Favorites and Silver", () => {
+    const favoriteCard = persistedFavoriteRepCard({
+      repDisplayName: "Persisted Glow Rep",
+      notes: "Saved from Supabase.",
+    });
+    const favoritesMarkup = renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver"), [favoriteCard]));
+    const silverMarkup = renderToStaticMarkup(
+      renderSilverPageContent(getLocalDevAuthState("silver"), undefined, undefined, [favoriteCard]),
+    );
+
+    expect(favoritesMarkup).toContain("Persisted Glow Rep");
+    expect(favoritesMarkup).toContain("Saved from Supabase.");
+    expect(silverMarkup).toContain("Persisted Glow Rep");
+    expect(silverMarkup).toContain("Saved from Supabase.");
+  });
+
+  it("renders collector discovery as a focused public Showcase utility", () => {
+    const markup = renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("free")));
+
+    expect(markup).toContain("Collectors");
+    expect(markup).toContain("Sparkle Showcase");
+    expect(markup).toContain("Public Showcases");
+    expect(markup).toContain("Follow");
+    expect(markup).toContain("View Showcase");
+    expect(markup).toContain("Report");
+    expect(markup).toContain("Block");
+    expect(markup).not.toContain("Friend request");
+    expect(markup).not.toContain("DM");
+    expect(markup).not.toContain("Marketplace");
+    expect(markup).not.toContain("Trade with this collector");
+  });
+
+  it("renders injected persisted collector discovery rows", () => {
+    const collectors: PublicCollectorProfile[] = [
+      {
+        userId: "user-persisted-collector",
+        handle: "persisted-casey",
+        displayName: "Persisted Casey",
+        tagline: "Public Supabase Showcase.",
+        photoUrl: null,
+        showcaseUrl: "/showcase/persisted-casey",
+        followerCount: 7,
+        followingCount: 3,
+        publicPieceCount: 5,
+        isFollowedByViewer: true,
+        isBlockedByViewer: false,
+      },
+    ];
+    const markup = renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("silver"), "", collectors));
+
+    expect(markup).toContain("Persisted Casey");
+    expect(markup).toContain("Public Supabase Showcase.");
+    expect(markup).toContain("/showcase/persisted-casey");
+    expect(markup).toContain("Following");
+  });
+
+  it("renders a collector sign-in prompt for anonymous visitors", () => {
+    const markup = renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("anonymous")));
+
+    expect(markup).toContain("Collectors");
+    expect(markup).toContain("Sign in to discover public collector Showcases.");
+    expect(markup).toContain('href="/auth/sign-in"');
+    expect(markup).not.toContain("Friend request");
+    expect(markup).not.toContain("DM");
+  });
+
+  it("surfaces favorite rep controls across Silver, live shows, and rep boards", () => {
+    const silverMarkup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
+    const liveShowsMarkup = renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()));
+    const repBoardsMarkup = renderToStaticMarkup(createElement(RepBoardsPage));
+
+    expect(silverMarkup).toContain("Favorite Reps");
+    expect(silverMarkup).toContain('href="/favorites"');
+    expect(liveShowsMarkup).toContain('aria-label="Add rep to favorites"');
+    expect(liveShowsMarkup).toContain("Favorite reps");
+    expect(repBoardsMarkup).toContain('aria-label="Add rep to favorites"');
+    expect(repBoardsMarkup).toContain("Favorite reps");
+  });
+
+  it("surfaces safe Nic-Nac prompts for favorite reps and public collectors", () => {
+    const markup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
+
+    expect(markup).toContain("Show my favorite reps");
+    expect(markup).toContain("Find my favorite reps&#x27; next lives");
+    expect(markup).toContain("Review public Showcase discovery");
+    expect(markup).toContain("Review followed collector status");
+    expect(markup).toContain("Search bounded public Showcase discovery with one-way follows and safety filters.");
+    expect(markup).toContain("Review one-way followed collectors and their public Showcase status.");
+    expect(markup).not.toContain("Find collectors with public Showcases like mine");
+    expect(markup).not.toContain("Show followed collectors");
+    expect(markup).toContain("rep leads");
+    expect(markup).not.toContain("buy from");
+    expect(markup).not.toContain("message seller");
+  });
+
+  it("keeps favorite rep UI inside Sparkle Finder copy guardrails", () => {
+    const markup = [
+      renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver"))),
+      renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems())),
+      renderToStaticMarkup(createElement(RepBoardsPage)),
+    ].join(" ");
+
+    expect(markup).not.toContain("Friend request");
+    expect(markup).not.toContain("DM");
+    expect(markup).not.toContain("Marketplace");
+    expect(markup).not.toContain("Trade with this collector");
+  });
+
+  it("keeps favorite form persistence URLs separate from visible local hrefs", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FavoriteRepsPanel, {
+        cards: [
+          {
+            id: "favorite-rep-kelli",
+            userId: "customer-silver-sparkle-mama",
+            repId: "rep-kelli",
+            repDisplayName: "Kelli Jo",
+            repSiteUrl: "https://sparklesuite.example/reps/kelli",
+            repBoardUrl: "https://sparklesuite.example/reps/kelli/board/moon-orbit",
+            notes: "Great ring lives and easy Saturday rewatch.",
+            notifyNextShow: true,
+            createdAt: "2026-06-17T12:00:00.000Z",
+            updatedAt: "2026-06-17T12:00:00.000Z",
+            nextShowAt: "2026-06-17T20:00:00.000Z",
+            nextShowTitle: "Moon Orbit Preview",
+            boardItemCount: 1,
+            isSilverEnhanced: true,
+          },
+        ],
+        isSilver: true,
+      }),
+    );
+
+    expect(markup).toContain('name="repSiteUrl" value="https://sparklesuite.example/reps/kelli"');
+    expect(markup).toContain('name="repBoardUrl" value="https://sparklesuite.example/reps/kelli/board/moon-orbit"');
+    expect(markup).toContain('href="/rep-boards?rep=kelli"');
+    expect(markup).toContain('href="/rep-boards?listing=moon-orbit"');
   });
 
   it("preserves selected library filters and only shows matching records", () => {
@@ -712,7 +905,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Offer Item");
     expect(markup).not.toContain("Swap With Customer");
     expect(markup).not.toContain("Post Message");
-    expect(markup).not.toContain("sparklesuite.example");
+    expect(markup).not.toContain('href="https://sparklesuite.example');
   });
 
   it("renders live show route content from Finder API-shaped data", () => {
@@ -905,7 +1098,7 @@ describe("Sparkle Finder hub routes", () => {
       renderToStaticMarkup(renderSignInPageContent()),
     ].join(" ");
 
-    expect(markup).not.toContain("sparklesuite.example");
+    expect(stripHiddenInputValues(markup)).not.toContain("sparklesuite.example");
   });
 
   it("renders sign-in choices for Guest, Free preview, and Silver preview", () => {
@@ -1248,6 +1441,32 @@ function activeTrialRouteAccountState(): CurrentSparkleFinderAccountState {
   };
 }
 
+function silverPreviewRouteAccountState(): CurrentSparkleFinderAccountState & { status: "authenticated" } {
+  const accountState = getLocalDevAuthState("silver");
+
+  if (accountState.status !== "authenticated") {
+    throw new Error("Expected local Silver preview account");
+  }
+
+  return {
+    ...accountState,
+    communicationConsent: {
+      accountEmailRequired: true,
+      accountSmsAllowed: false,
+      accountSmsConsentedAt: null,
+      promotionalEmailOptIn: false,
+      promotionalEmailConsentedAt: null,
+      promotionalSmsOptIn: false,
+      promotionalSmsConsentedAt: null,
+      privacyAcknowledgedAt: "2026-06-01T12:00:00.000Z",
+    },
+  };
+}
+
+function stripHiddenInputValues(markup: string): string {
+  return markup.replace(/<input\b(?=[^>]*type="hidden")[^>]*>/g, "");
+}
+
 function libraryFilterItems(): JewelryItem[] {
   return [
     {
@@ -1305,4 +1524,24 @@ function finderLiveShowItems(): FinderLiveShow[] {
       customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
     },
   ];
+}
+
+function persistedFavoriteRepCard(overrides: Partial<FavoriteRepCard> = {}): FavoriteRepCard {
+  return {
+    id: "persisted-favorite",
+    userId: "customer-silver-sparkle-mama",
+    repId: "rep-persisted",
+    repDisplayName: "Persisted Rep",
+    repSiteUrl: "https://www.yoursparklesuite.com/reps/persisted",
+    repBoardUrl: "https://www.yoursparklesuite.com/reps/persisted/board",
+    notes: "",
+    notifyNextShow: false,
+    createdAt: "2026-06-17T12:00:00.000Z",
+    updatedAt: "2026-06-17T12:00:00.000Z",
+    nextShowAt: null,
+    nextShowTitle: null,
+    boardItemCount: 0,
+    isSilverEnhanced: true,
+    ...overrides,
+  };
 }

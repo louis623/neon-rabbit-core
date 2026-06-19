@@ -84,9 +84,11 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByRole("button", { name: /I am looking for a piece/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /Upload a missing piece/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /Organize my Showcase/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Find favorite reps/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Show my favorite reps/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Review public Showcase discovery/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Review followed collector status/ })).toBeVisible();
     await expect(page.getByText("Nic-Nac remembers")).toBeVisible();
-    await expect(page.getByText("Favorite reps", { exact: true })).toBeVisible();
+    await expect(page.locator('[data-smoke="finder-nic-nac-curator"]')).toContainText("Favorite reps");
 
     await page.getByText("Advanced profile and Showcase controls").click();
     await expect(page.locator('[data-smoke="showcase-add-pieces"]')).toBeVisible();

@@ -14,9 +14,17 @@ const BANNED_COPY_RULES: SparkleFinderCopyRule[] = [
   { phrase: "buy, sell", pattern: /\bbuy\s*,\s*sell\b/i },
   { phrase: "buy and sell", pattern: /\bbuy\s+(?:\/|and)\s+sell\b/i },
   { phrase: "buy/sell", pattern: /\bbuy\s*\/\s*sell\b/i },
-  { phrase: "marketplace", pattern: /(?<!not a jewelry )\bmarketplace\b/i },
-  { phrase: "customer-to-customer", pattern: /\bcustomer\s*(?:-to-|to\s*)customer\b/i },
-  { phrase: "customer trading", pattern: /\bcustomer\s+trading\b/i },
+  { phrase: "marketplace", pattern: /\bmarketplace\b/i, allowComplianceContext: true },
+  { phrase: "customer marketplace", pattern: /\bcustomer\s+marketplace\b/i, allowComplianceContext: true },
+  { phrase: "customer-to-customer", pattern: /\bcustomer\s*(?:-to-|to\s*)customer\b/i, allowComplianceContext: true },
+  { phrase: "customer trading", pattern: /\bcustomer\s+trading\b/i, allowComplianceContext: true },
+  { phrase: "trade with this collector", pattern: /\btrade\s+with\s+this\s+collector\b/i, allowComplianceContext: true },
+  { phrase: "buy from this member", pattern: /\bbuy(?:ing)?\s+from\s+(?:this\s+)?members?\b/i, allowComplianceContext: true },
+  { phrase: "sell your jewelry", pattern: /\bsell(?:ing)?\s+(?:your\s+)?jewelry\b/i, allowComplianceContext: true },
+  { phrase: "message seller", pattern: /\bmessage\s+seller\b/i, allowComplianceContext: true },
+  { phrase: "friend request", pattern: /\bfriend\s+requests?\b/i, allowComplianceContext: true },
+  { phrase: "dm me", pattern: /\bdm\s+me\b|\bdms?\b/i, allowComplianceContext: true },
+  { phrase: "escrow", pattern: /\bescrow\b/i, allowComplianceContext: true },
   { phrase: "best ever", pattern: /\bbest\s+ever\b/i, allowComplianceContext: true },
   { phrase: "guaranteed", pattern: /\bguaranteed\b/i, allowComplianceContext: true },
   { phrase: "perfect for everyone", pattern: /\bperfect\s+for\s+everyone\b/i, allowComplianceContext: true },
@@ -93,18 +101,102 @@ function findPatternMatches(pattern: RegExp, copy: string): Array<{ index: numbe
 }
 
 function isComplianceContext(copy: string, matchIndex: number): boolean {
+  const sentenceStart = getSentenceStart(copy, matchIndex);
   const sentence = getSentenceAtIndex(copy, matchIndex);
+  const localMatchIndex = matchIndex - sentenceStart;
+  const clause = getClauseAtIndex(sentence, localMatchIndex);
 
-  return /\b(?:do\s+not|does\s+not|don't|not\s+call|never\s+call|avoid|prohibit(?:ed)?|should\s+not|must\s+not)\b/i.test(sentence);
+  return [
+    /\bdo\s+not\s+(?:use|request|arrange|suggest|add|create)\b/i,
+    /\b(?:Sparkle Finder|this service|the app|this app|the platform)\s+does\s+not\s+(?:make|process|provide|manufacture|sell|ship|warrant|guarantee)\b/i,
+    /\bdon't\s+(?:use|request|arrange|suggest|add|create)\b/i,
+    /\bdo\s+not\s+call\s+products?\s+(?:guaranteed|perfect\s+for\s+everyone|must\s*-\s*have)\b/i,
+    /\bnot\s+call\s+products?\s+(?:guaranteed|perfect\s+for\s+everyone|must\s*-\s*have)\b/i,
+    /\bnot\s+a\s+jewelry\s+marketplace\b/i,
+    /\bnot\s+an?\s+escrow\s+(?:or\s+fulfillment\s+)?service\b/i,
+    /\bnot\s+an?\s+fulfillment\s+(?:or\s+escrow\s+)?service\b/i,
+    /\b(?:is|are)\s+prohibit(?:ed)?\b/i,
+    /\bshould\s+not\s+(?:use|request|arrange|suggest|add|create|call)\b/i,
+    /\bmust\s+not\s+(?:use|request|arrange|suggest|add|create)\b/i,
+    /\bno\b(?=.*\bcan\s+be\s+guaranteed\b)/i,
+  ].some((pattern) => pattern.test(clause)) || isSupportedSurfaceDisclaimer(sentence, localMatchIndex);
+}
+
+function isSupportedSurfaceDisclaimer(sentence: string, localMatchIndex: number): boolean {
+  const supportMatch =
+    /\b(?:Sparkle Finder|this service|the app|this app|the platform)\s+does\s+not\s+support\s+/i.exec(sentence);
+
+  if (!supportMatch) {
+    return false;
+  }
+
+  const supportListStart = supportMatch.index + supportMatch[0].length;
+  const allowedSurfacePattern =
+    /\b(?:DMs?|friend requests?|customer-to-customer(?:\s+jewelry)?\s+trading|customer-to-customer marketplace workflows?|customer marketplace features|escrow|payment|fulfillment|disputes|buying from members|selling your jewelry|message seller workflows?)\b/gi;
+
+  for (const surfaceMatch of sentence.slice(supportListStart).matchAll(allowedSurfacePattern)) {
+    if (surfaceMatch.index === undefined) {
+      continue;
+    }
+
+    const surfaceStart = supportListStart + surfaceMatch.index;
+    const surfaceEnd = surfaceStart + surfaceMatch[0].length;
+
+    if (localMatchIndex >= surfaceStart && localMatchIndex < surfaceEnd) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function getSentenceAtIndex(copy: string, matchIndex: number): string {
   const sentenceStart = getSentenceStart(copy, matchIndex);
-  const sentenceEnd = copy.indexOf(".", matchIndex);
+  const sentenceEnd = findNextBoundary(copy, matchIndex, /[.?!\n]/g);
 
   return copy.slice(sentenceStart, sentenceEnd === -1 ? undefined : sentenceEnd + 1);
 }
 
 function getSentenceStart(copy: string, matchIndex: number): number {
-  return Math.max(copy.lastIndexOf(".", matchIndex - 1), copy.lastIndexOf("\n", matchIndex - 1)) + 1;
+  return findPreviousBoundary(copy, matchIndex, /[.?!\n]/g) + 1;
+}
+
+function getClauseAtIndex(sentence: string, localMatchIndex: number): string {
+  const beforeMatch = sentence.slice(0, localMatchIndex);
+  const clauseStart = findPreviousBoundary(beforeMatch, beforeMatch.length, /[;\n]|,\s+(?=(?:use|try|open|join|visit)\b)/gi) + 1;
+  const clauseEnd = findNextClauseBoundary(sentence, localMatchIndex);
+
+  return sentence.slice(clauseStart, clauseEnd === -1 ? undefined : clauseEnd);
+}
+
+function findPreviousBoundary(copy: string, endIndex: number, pattern: RegExp): number {
+  let boundary = -1;
+  const globalPattern = new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`);
+
+  for (const match of copy.slice(0, endIndex).matchAll(globalPattern)) {
+    if (match.index !== undefined) {
+      boundary = match.index;
+    }
+  }
+
+  return boundary;
+}
+
+function findNextBoundary(copy: string, startIndex: number, pattern: RegExp): number {
+  const globalPattern = new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`);
+  const match = globalPattern.exec(copy.slice(startIndex));
+
+  return match?.index === undefined ? -1 : startIndex + match.index;
+}
+
+function findNextClauseBoundary(sentence: string, localMatchIndex: number): number {
+  const afterMatch = sentence.slice(localMatchIndex);
+  const semicolonEnd = afterMatch.search(/[;\n]/);
+  const commaEnd = afterMatch.search(/,\s+(?=(?:use|try|open|join|visit)\b)/i);
+  const clauseEndCandidates = [semicolonEnd, commaEnd]
+    .filter((index) => index !== -1)
+    .map((index) => localMatchIndex + index);
+  const clauseEnd = clauseEndCandidates.length > 0 ? Math.min(...clauseEndCandidates) : sentence.length;
+
+  return clauseEnd;
 }

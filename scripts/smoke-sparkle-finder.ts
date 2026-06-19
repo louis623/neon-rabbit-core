@@ -42,6 +42,7 @@ async function main() {
         "test",
         "tests/smoke/sparkle-finder-home.spec.ts",
         "tests/smoke/sparkle-finder-showcase.spec.ts",
+        "tests/smoke/sparkle-finder-social-favorites.spec.ts",
         "--reporter=line",
       ],
       {
@@ -54,6 +55,7 @@ async function main() {
     console.log(`Screenshots written to ${join(screenshotDir, "sparkle-finder-home-desktop.png")}`);
     console.log(`Screenshots written to ${join(screenshotDir, "sparkle-finder-home-mobile.png")}`);
     console.log(`Screenshots written to ${join(screenshotDir, "sparkle-showcase-public-desktop.png")}`);
+    console.log(`Screenshots written to ${join(screenshotDir, "sparkle-social-favorites-desktop.png")}`);
   } finally {
     process.removeListener("exit", cleanup);
     cleanup();

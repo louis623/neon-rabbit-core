@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Heart, Search } from "lucide-react";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 
@@ -64,12 +65,22 @@ export function JewelryCard({ item }: JewelryCardProps) {
             </span>
           ))}
         </div>
-        <Link
-          className="mt-4 inline-flex text-sm font-bold text-[var(--sparkle-rose)] underline-offset-4 hover:underline"
-          href={`/library/${item.id}`}
-        >
-          View piece
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-3 text-sm font-bold text-white"
+            href={`/library/${item.id}`}
+          >
+            <Search aria-hidden="true" className="size-4" />
+            View piece
+          </Link>
+          <Link
+            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)]"
+            href={`/silver?piece=${encodeURIComponent(item.id)}#add-to-sparkle-showcase`}
+          >
+            <Heart aria-hidden="true" className="size-4" />
+            Save
+          </Link>
+        </div>
       </div>
     </article>
   );

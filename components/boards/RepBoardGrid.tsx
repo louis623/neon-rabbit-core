@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, ExternalLink } from "lucide-react";
+import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { JewelryItem, LiveShow, RepBoardListing, RepSummary } from "@/lib/sparkle-finder/types";
 
@@ -41,9 +42,17 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
                 </h2>
                 <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">{item.collectionName}</p>
               </div>
-              <span className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-2 py-1 text-xs font-bold capitalize text-[var(--sparkle-plum)]">
-                {listing.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <FavoriteRepHeartButton
+                  repBoardUrl={listing.boardUrl}
+                  repDisplayName={rep.displayName}
+                  repId={rep.id}
+                  repSiteUrl={rep.siteUrl}
+                />
+                <span className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-2 py-1 text-xs font-bold capitalize text-[var(--sparkle-plum)]">
+                  {listing.status}
+                </span>
+              </div>
             </div>
             {show ? (
               <p className="mt-4 inline-flex items-center gap-2 text-sm text-[var(--sparkle-ink-muted)]">

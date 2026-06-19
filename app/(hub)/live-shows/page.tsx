@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Radio } from "lucide-react";
+import { Heart, Radio } from "lucide-react";
+import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import {
   getFinderLiveShows,
   shouldUseCatalogFixtureFallback,
@@ -23,6 +24,15 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
           See eligible Sparkle Suite shows that are live now or scheduled ahead, then visit the rep site for the board,
           calendar, and live details.
         </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] hover:border-[var(--sparkle-coral)]"
+            href="/favorites"
+          >
+            <Heart aria-hidden="true" className="size-4" />
+            Favorite reps
+          </Link>
+        </div>
       </div>
       {shows.length > 0 ? (
         <div className="grid gap-4">
@@ -39,10 +49,17 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
                   </h2>
                   <p className="mt-1 text-sm text-[var(--sparkle-ink-muted)]">Rep: {show.repFirstName}</p>
                 </div>
-                <span className="inline-flex min-h-8 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
-                  <Radio aria-hidden="true" className="size-4 text-[var(--sparkle-rose)]" />
-                  {show.status === "live" ? "Live now" : "Scheduled"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <FavoriteRepHeartButton
+                    repDisplayName={show.repFirstName}
+                    repId={getLiveShowRepId(show)}
+                    repSiteUrl={show.customerSiteUrl}
+                  />
+                  <span className="inline-flex min-h-8 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
+                    <Radio aria-hidden="true" className="size-4 text-[var(--sparkle-rose)]" />
+                    {show.status === "live" ? "Live now" : "Scheduled"}
+                  </span>
+                </div>
               </div>
               <Link
                 className="mt-4 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
@@ -60,6 +77,13 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
       )}
     </section>
   );
+}
+
+function getLiveShowRepId(show: FinderLiveShow): string {
+  const sitePath = new URL(show.customerSiteUrl, "https://www.yoursparklesuite.com").pathname;
+  const repSlug = sitePath.split("/").filter(Boolean).at(-1);
+
+  return repSlug ? `rep-${repSlug}` : `rep-${show.repFirstName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
 
 function formatShowTime(value: string) {

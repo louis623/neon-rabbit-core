@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Crown, Gem, Sparkles } from "lucide-react";
+import { FavoriteRepsPanel } from "@/components/favorites/FavoriteRepsPanel";
 import { FinderNicNacWorkspace } from "@/components/nic-nac/FinderNicNacWorkspace";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import { ProfileEditor } from "@/components/silver/ProfileEditor";
@@ -18,6 +19,11 @@ import {
   getSilverProfileByCustomerId,
 } from "@/lib/sparkle-finder/service";
 import {
+  getFavoriteRepCardsForUser,
+  getPersistedFavoriteRepCardsForUser,
+  type SupabaseFavoriteRepsReadClient,
+} from "@/lib/sparkle-finder/favorite-reps-service";
+import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
@@ -25,6 +31,7 @@ import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-ser
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import { createClient } from "@/lib/supabase/server";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import type { FavoriteRepCard } from "@/lib/sparkle-finder/social-types";
 import type { CollectionItem, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
 
 type SilverPageAccountState = SparkleFinderAccountState & {
@@ -41,14 +48,19 @@ export default async function SilverPage() {
     accountState.status === "authenticated" && accountState.isLocalPreview !== true
       ? await getPersistedCollectionItems(accountState.customer.id, libraryItems)
       : undefined;
+  const persistedFavoriteRepCards =
+    accountState.status === "authenticated" && accountState.isLocalPreview !== true
+      ? await getPersistedFavoriteRepCards(accountState)
+      : undefined;
 
-  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems);
+  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems, persistedFavoriteRepCards);
 }
 
 export function renderSilverPageContent(
   accountState: SilverPageAccountState,
   persistedCollectionItems?: ManagedCollectionItem[],
   libraryItems: JewelryItem[] = getJewelryItems(),
+  persistedFavoriteRepCards?: FavoriteRepCard[],
 ) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
@@ -66,6 +78,12 @@ export function renderSilverPageContent(
       const jewelryItem = findLibraryItemById(item.jewelryItemId, libraryItems) ?? getJewelryItemById(item.jewelryItemId);
 
       return jewelryItem ? [{ ...item, jewelryItem }] : [];
+    });
+  const favoriteRepCards =
+    persistedFavoriteRepCards ??
+    getFavoriteRepCardsForUser({
+      userId: customer.id,
+      hasSilverAccess: entitlements.canUseNicNacFindRequests,
     });
 
   return (
@@ -110,6 +128,8 @@ export function renderSilverPageContent(
         libraryItems={libraryItems}
         profile={profile}
       />
+
+      <FavoriteRepsPanel cards={favoriteRepCards} isSilver={entitlements.canUseNicNacFindRequests} />
 
       <details className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] shadow-[var(--sparkle-shadow-sm)]">
         <summary className="cursor-pointer px-5 py-4 text-sm font-bold text-[var(--sparkle-plum-deep)]">
@@ -199,6 +219,25 @@ async function getPersistedCollectionItems(userId: string, libraryItems: Jewelry
 
       return item && jewelryItem ? [{ ...item, jewelryItem }] : [];
     });
+  } catch {
+    return [];
+  }
+}
+
+async function getPersistedFavoriteRepCards(
+  accountState: SilverPageAccountState & { status: "authenticated" },
+): Promise<FavoriteRepCard[]> {
+  try {
+    const entitlements = getSparkleFinderAccountEntitlements(accountState);
+    const supabase = await createClient();
+    const readClient = supabase as unknown as SupabaseFavoriteRepsReadClient;
+    const cards = await getPersistedFavoriteRepCardsForUser({
+      supabase: readClient,
+      userId: accountState.customer.id,
+      hasSilverAccess: entitlements.canUseNicNacFindRequests,
+    });
+
+    return cards ?? [];
   } catch {
     return [];
   }

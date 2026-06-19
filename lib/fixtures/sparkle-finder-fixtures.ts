@@ -9,6 +9,7 @@ import type {
 } from "../sparkle-finder/types";
 import type { SparkleSuiteRepEntitlement } from "../sparkle-finder/rep-entitlements";
 import type { ShowcaseCollection, ShowcaseComment } from "../sparkle-finder/showcase-types";
+import type { CollectorBlock, CollectorFollow, FavoriteRep, SocialReport } from "../sparkle-finder/social-types";
 
 export const sparkleFinderReps: RepSummary[] = [
   {
@@ -250,6 +251,34 @@ export const sparkleFinderCustomers: CustomerAccount[] = [
     state: "TX",
     tier: "silver",
   },
+  {
+    id: "customer-silver-celeste",
+    displayName: "Celeste",
+    email: "celeste@example.test",
+    state: "WA",
+    tier: "silver",
+  },
+  {
+    id: "customer-silver-ivy",
+    displayName: "Ivy",
+    email: "ivy@example.test",
+    state: "OR",
+    tier: "silver",
+  },
+  {
+    id: "customer-silver-jules",
+    displayName: "Jules",
+    email: "jules@example.test",
+    state: "MI",
+    tier: "silver",
+  },
+  {
+    id: "customer-silver-riley",
+    displayName: "Riley",
+    email: "riley@example.test",
+    state: "OH",
+    tier: "silver",
+  },
 ];
 
 export const sparkleFinderSilverProfiles: SilverProfile[] = [
@@ -260,7 +289,136 @@ export const sparkleFinderSilverProfiles: SilverProfile[] = [
     bio: "Collects warm golds, hearts, and statement rings.",
     visibility: "sparkle_finder",
   },
+  {
+    customerId: "customer-silver-celeste",
+    photoUrl: "",
+    tiktokHandle: "@celeste_stacks",
+    bio: "Stacks cool-toned rings and bright daily favorites.",
+    visibility: "sparkle_finder",
+  },
+  {
+    customerId: "customer-silver-ivy",
+    photoUrl: "",
+    tiktokHandle: "@ivy_curates",
+    bio: "Curates tiny sets of public reveal favorites.",
+    visibility: "sparkle_finder",
+  },
+  {
+    customerId: "customer-silver-jules",
+    photoUrl: "",
+    tiktokHandle: "@jules_private_box",
+    bio: "Private collector profile for owner-only discovery tests.",
+    visibility: "private",
+  },
+  {
+    customerId: "customer-silver-riley",
+    photoUrl: "",
+    tiktokHandle: "@riley_reveals",
+    bio: "Public profile used for block boundary coverage.",
+    visibility: "sparkle_finder",
+  },
 ];
+
+export const sparkleFinderCollectorFollows = [
+  {
+    id: "collector-follow-marlena-sparkle-mama",
+    followerUserId: "customer-free-marlena",
+    followedUserId: "customer-silver-sparkle-mama",
+    createdAt: "2026-06-17T13:00:00.000Z",
+  },
+  {
+    id: "collector-follow-celeste-sparkle-mama",
+    followerUserId: "customer-silver-celeste",
+    followedUserId: "customer-silver-sparkle-mama",
+    createdAt: "2026-06-17T13:05:00.000Z",
+  },
+  {
+    id: "collector-follow-sparkle-mama-celeste",
+    followerUserId: "customer-silver-sparkle-mama",
+    followedUserId: "customer-silver-celeste",
+    createdAt: "2026-06-17T13:10:00.000Z",
+  },
+  {
+    id: "collector-follow-riley-sparkle-mama-blocked",
+    followerUserId: "customer-silver-riley",
+    followedUserId: "customer-silver-sparkle-mama",
+    createdAt: "2026-06-17T13:12:00.000Z",
+  },
+  {
+    id: "collector-follow-sparkle-mama-private-jules",
+    followerUserId: "customer-silver-sparkle-mama",
+    followedUserId: "customer-silver-jules",
+    createdAt: "2026-06-17T13:13:00.000Z",
+  },
+] satisfies CollectorFollow[];
+
+export const sparkleFinderCollectorBlocks = [
+  {
+    id: "collector-block-sparkle-mama-riley",
+    blockerUserId: "customer-silver-sparkle-mama",
+    blockedUserId: "customer-silver-riley",
+    reason: "Protecting collector boundaries.",
+    createdAt: "2026-06-17T13:15:00.000Z",
+  },
+  {
+    id: "collector-block-ivy-sparkle-mama",
+    blockerUserId: "customer-silver-ivy",
+    blockedUserId: "customer-silver-sparkle-mama",
+    reason: "Hide profile from this collector.",
+    createdAt: "2026-06-17T13:20:00.000Z",
+  },
+] satisfies CollectorBlock[];
+
+export const sparkleFinderSocialReports = [
+  {
+    id: "social-report-profile-sparkle-mama",
+    reporterUserId: "customer-free-marlena",
+    targetType: "collector_profile",
+    targetId: "customer-silver-sparkle-mama",
+    reason: "other",
+    details: "Fixture report for moderation-only visibility.",
+    createdAt: "2026-06-17T13:25:00.000Z",
+  },
+] satisfies SocialReport[];
+
+export const sparkleFinderFavoriteReps = [
+  {
+    id: "favorite-rep-kelli",
+    userId: "customer-silver-sparkle-mama",
+    repId: "rep-kelli",
+    repDisplayName: "Kelli Jo",
+    repSiteUrl: "https://sparklesuite.example/reps/kelli",
+    repBoardUrl: "https://sparklesuite.example/reps/kelli/board/moon-orbit",
+    notes: "Great ring lives and easy Saturday rewatch.",
+    notifyNextShow: true,
+    createdAt: "2026-06-17T12:00:00.000Z",
+    updatedAt: "2026-06-17T12:00:00.000Z",
+  },
+  {
+    id: "favorite-rep-sierra",
+    userId: "customer-silver-sparkle-mama",
+    repId: "rep-sierra",
+    repDisplayName: "Lindsay Lucas",
+    repSiteUrl: "https://sparklesuite.example/reps/sierra",
+    repBoardUrl: "https://sparklesuite.example/reps/sierra/board/rainbow-crown",
+    notes: "",
+    notifyNextShow: false,
+    createdAt: "2026-06-17T12:10:00.000Z",
+    updatedAt: "2026-06-17T12:10:00.000Z",
+  },
+  {
+    id: "favorite-rep-maya",
+    userId: "customer-free-marlena",
+    repId: "rep-maya",
+    repDisplayName: "Danielle Redner",
+    repSiteUrl: "https://sparklesuite.example/reps/maya",
+    repBoardUrl: "https://sparklesuite.example/reps/maya/board/starlit-crown",
+    notes: "Free users should not see this private note.",
+    notifyNextShow: true,
+    createdAt: "2026-06-17T12:20:00.000Z",
+    updatedAt: "2026-06-17T12:20:00.000Z",
+  },
+] satisfies FavoriteRep[];
 
 export const sparkleFinderCollectionItems: CollectionItem[] = [
   {

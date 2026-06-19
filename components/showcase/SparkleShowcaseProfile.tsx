@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Share2, Sparkles } from "lucide-react";
-import { followShowcaseAction, unfollowShowcaseAction, createShowcaseCommentAction, deleteShowcaseCommentAction, editShowcaseCommentAction, reportShowcaseTargetAction } from "@/app/showcase/actions";
-import { FollowButton } from "./FollowButton";
+import { blockCollectorAction, followCollectorAction, reportCollectorAction, unfollowCollectorAction } from "@/app/(hub)/collectors/actions";
+import { createShowcaseCommentAction, deleteShowcaseCommentAction, editShowcaseCommentAction, reportShowcaseTargetAction } from "@/app/showcase/actions";
+import { CollectorFollowButton } from "@/components/social/CollectorFollowButton";
+import { SocialSafetyControls } from "@/components/social/SocialSafetyControls";
 import { RarestReveals } from "./RarestReveals";
 import { ShowcaseCollectionRail } from "./ShowcaseCollectionRail";
 import { ShowcaseComments } from "./ShowcaseComments";
@@ -49,13 +51,13 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <FollowButton
-            followAction={followShowcaseAction}
+          <CollectorFollowButton
+            followAction={followCollectorAction}
             handle={profile.handle}
             isFollowing={profile.isFollowedByViewer}
             isSelf={isSelf}
-            showcaseUserId={profile.customer.id}
-            unfollowAction={unfollowShowcaseAction}
+            targetUserId={profile.customer.id}
+            unfollowAction={unfollowCollectorAction}
             viewerUserId={viewerUserId}
           />
           <Link
@@ -65,6 +67,14 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
             <Share2 aria-hidden="true" className="size-4" />
             Share Showcase
           </Link>
+          <SocialSafetyControls
+            blockAction={blockCollectorAction}
+            handle={profile.handle}
+            isSelf={isSelf}
+            reportAction={reportCollectorAction}
+            targetUserId={profile.customer.id}
+            viewerUserId={viewerUserId}
+          />
         </div>
       </header>
 

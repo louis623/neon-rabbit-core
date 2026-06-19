@@ -8,7 +8,8 @@ export type FinderNicNacToolIntent =
   | "studio"
   | "availability"
   | "profile"
-  | "rep_discovery";
+  | "rep_discovery"
+  | "social";
 
 export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToolIntent[] {
   const normalized = text.toLowerCase();
@@ -31,7 +32,6 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
       /\bhunting\b/,
       /\bfavorite reps?\b/,
       /\bfavourite reps?\b/,
-      /\bbuy from\b/,
     ])
   ) {
     add("memory");
@@ -46,8 +46,9 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
       /\brep near me\b/,
       /\blive show\b/,
       /\bnext live\b/,
+      /\bshow[-\s]?times?\b/,
+      /\bnext show\b/,
       /\bwho has\b/,
-      /\bbuy from\b/,
       /\bkelli\b/,
       /\blindsey\b/,
       /\blindsay\b/,
@@ -68,11 +69,24 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
     add("showcase");
   }
 
+  if (
+    hasAny([
+      /\bcollectors?\b/,
+      /\bpublic showcases?\b/,
+      /\bfollow(?:ed|ing)?\b/,
+      /\bwho am i following\b/,
+      /\bshow followed collectors?\b/,
+      /\bone-way follows?\b/,
+    ])
+  ) {
+    add("social");
+  }
+
   if (hasAny([/\bsearch\b/, /\blibrary\b/, /\bitem number\b/, /\b[A-Z]{1,4}\d{3,}\b/i])) {
     add("catalog");
   }
 
-  if (hasAny([/\bfind this\b/, /\bwho has\b/, /\blead\b/, /\bavailability\b/])) {
+  if (hasAny([/\bfind this\b/, /\bwho has\b/, /\blead\b/, /\bavailability\b/, /\bshow[-\s]?times?\b/, /\bnext show\b/])) {
     add("availability");
   }
 

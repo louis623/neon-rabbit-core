@@ -3,6 +3,7 @@ import {
   getFinderNicNacToolIntentsForText,
   summarizeFinderNicNacMemoryHints,
 } from "../../lib/sparkle-finder/nic-nac/curator";
+import { listFinderNicNacToolNamesForIntents } from "../../lib/sparkle-finder/nic-nac/tools";
 import {
   createInMemoryCustomerMemoryStore,
   getSafeCustomerMemoryForPrompt,
@@ -15,6 +16,37 @@ describe("Sparkle Finder Nic-Nac curator", () => {
     expect(getFinderNicNacToolIntentsForText("Kelli Jo is one of my favorite reps.")).toEqual(["memory", "rep_discovery"]);
     expect(getFinderNicNacToolIntentsForText("Find Lindsey's next live show for this necklace.")).toContain("rep_discovery");
     expect(getFinderNicNacToolIntentsForText("Upload a missing piece from the April birthday collection.")).toContain("studio");
+  });
+
+  it("routes favorite-rep and public-collector social requests without purchase intent", () => {
+    expect(getFinderNicNacToolIntentsForText("Who are my favorite reps?")).toEqual(["memory", "rep_discovery"]);
+    expect(getFinderNicNacToolIntentsForText("Show me Lindsey's next live.")).toEqual(["rep_discovery"]);
+    expect(getFinderNicNacToolIntentsForText("Remember Kelli Jo as one of my favorite reps.")).toEqual([
+      "memory",
+      "rep_discovery",
+    ]);
+    expect(getFinderNicNacToolIntentsForText("Find collectors with public Showcases like mine.")).toContain("social");
+    expect(getFinderNicNacToolIntentsForText("Who am I following?")).toEqual(["social"]);
+    expect(getFinderNicNacToolIntentsForText("Show followed collectors.")).toEqual(["social"]);
+    expect(getFinderNicNacToolIntentsForText("Buy from this member.")).not.toContain("rep_discovery");
+  });
+
+  it("routes show-time requests to rep discovery and availability tools", () => {
+    expect(getFinderNicNacToolIntentsForText("What is the next show time?")).toEqual([
+      "rep_discovery",
+      "availability",
+    ]);
+    expect(getFinderNicNacToolIntentsForText("Find my show-time for tonight")).toEqual([
+      "rep_discovery",
+      "availability",
+    ]);
+  });
+
+  it("lists bounded social tool names for public collector prompts", () => {
+    expect(listFinderNicNacToolNamesForIntents(["social"])).toEqual([
+      "find_public_showcases",
+      "list_followed_collectors",
+    ]);
   });
 
   it("stores safe customer-scoped curator memory without leaking between customers", async () => {

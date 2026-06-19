@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, SVGProps } from "react";
-import { BookOpen, Camera, CheckCircle2, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, Camera, CheckCircle2, Gem, Heart, MapPin, Search, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
 import { RepBadge } from "@/components/account/RepBadge";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import { getLocalDevAuthState } from "@/lib/sparkle-finder/auth";
@@ -145,6 +145,8 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
             </div>
             <div className="grid content-start gap-2">
               <CommandLink href="/library" icon={Search} label="Find a library piece" />
+              <CommandLink href="/favorites" icon={Heart} label="Favorite reps" />
+              <CommandLink href="/collectors" icon={UsersRound} label="Find collectors" />
               <CommandLink href="/silver#add-to-sparkle-showcase" icon={Sparkles} label="Build Showcase" />
               <CommandLink href="/silver#showcase-studio" icon={Camera} label="Open Showcase Studio" />
               <CommandLink href="/photo-setup" icon={BookOpen} label="Photo setup guide" />

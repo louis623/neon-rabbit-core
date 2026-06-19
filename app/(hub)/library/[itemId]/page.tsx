@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Heart, Sparkles } from "lucide-react";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
@@ -93,6 +95,31 @@ export function renderItemDetailPageContent(
       </article>
 
       <aside className="grid gap-4">
+        <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+            Save this piece
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+            Add it to your owned pieces or watchlist from Sparkle Showcase, then Nic-Nac can keep the hunt organized.
+          </p>
+          <div className="mt-4 grid gap-2">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white"
+              href={`/silver?piece=${encodeURIComponent(item.id)}#add-to-sparkle-showcase`}
+            >
+              <Heart aria-hidden="true" className="size-4" />
+              Save in Showcase
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 text-sm font-bold text-[var(--sparkle-rose)]"
+              href="/silver#showcase-studio"
+            >
+              <Sparkles aria-hidden="true" className="size-4" />
+              Missing-piece review
+            </Link>
+          </div>
+        </article>
+
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
             Known rep availability

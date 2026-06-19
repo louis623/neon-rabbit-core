@@ -1,4 +1,6 @@
 import { RepBoardGrid } from "@/components/boards/RepBoardGrid";
+import Link from "next/link";
+import { Heart } from "lucide-react";
 import { getJewelryItems, getLiveShows, getRepBoardListings, getReps } from "@/lib/sparkle-finder/service";
 
 export default function RepBoardsPage() {
@@ -15,6 +17,15 @@ export default function RepBoardsPage() {
           Preview board data is shown here. Live item-level availability appears from the jewelry detail page when
           Sparkle Suite API matches exist.
         </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)] hover:border-[var(--sparkle-coral)]"
+            href="/favorites"
+          >
+            <Heart aria-hidden="true" className="size-4" />
+            Favorite reps
+          </Link>
+        </div>
       </div>
       <RepBoardGrid
         jewelryItems={getJewelryItems()}

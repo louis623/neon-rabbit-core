@@ -10,11 +10,12 @@ import {
 } from "../../lib/sparkle-finder/showcase-service";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
+import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 
 describe("Sparkle Showcase public routes", () => {
   it("renders a public Sparkle Showcase with rarest reveals and showcase collections", () => {
     const showcase = getPublicSparkleShowcaseByHandle("sparkle-mama")!;
-    const markup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, getLocalDevAuthState("free")));
+    const markup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, showcaseRouteAccountState("free")));
 
     expect(markup).toContain("Sparkle Mama");
     expect(markup).toContain("Sparkle Showcase");
@@ -23,6 +24,10 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).toContain("Reveal Spotlight");
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Follow");
+    expect(markup).toContain("Report");
+    expect(markup).toContain("Block");
+    expect(markup).toContain("Safety controls ready.");
+    expect(markup).toContain("Confirm block");
     expect(markup).toContain("Report spam or bad behavior");
     expect(markup).not.toContain("Private note");
     expect(markup).not.toContain("My Collection");
@@ -30,6 +35,16 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("customer-to-customer");
     expect(markup).not.toContain("marketplace");
     expect(findSparkleFinderCopyViolations(markup)).toEqual([]);
+  });
+
+  it("does not render a self-follow button on the owner Showcase view", () => {
+    const showcase = getPublicSparkleShowcaseByHandle("sparkle-mama")!;
+    const markup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, showcaseRouteAccountState("silver")));
+
+    expect(markup).toContain("Your Showcase");
+    expect(markup).not.toContain(">Follow<");
+    expect(markup).not.toContain("Friend request");
+    expect(markup).not.toContain("DM");
   });
 
   it("renders a shareable Reveal Spotlight with rep leads and comments", () => {
@@ -60,3 +75,25 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("Curated Collections");
   });
 });
+
+function showcaseRouteAccountState(mode: "free" | "silver"): CurrentSparkleFinderAccountState & { status: "authenticated" } {
+  const accountState = getLocalDevAuthState(mode);
+
+  if (accountState.status !== "authenticated") {
+    throw new Error("Expected authenticated local preview account");
+  }
+
+  return {
+    ...accountState,
+    communicationConsent: {
+      accountEmailRequired: true,
+      accountSmsAllowed: false,
+      accountSmsConsentedAt: null,
+      promotionalEmailOptIn: false,
+      promotionalEmailConsentedAt: null,
+      promotionalSmsOptIn: false,
+      promotionalSmsConsentedAt: null,
+      privacyAcknowledgedAt: "2026-06-01T12:00:00.000Z",
+    },
+  };
+}
