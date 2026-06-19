@@ -120,6 +120,7 @@ export async function saveSilverCollectionItemAction(
     state,
     note: String(formData.get("note") ?? ""),
     isHighlighted: formData.get("isHighlighted") === "yes",
+    showcaseCollectionTitle: String(formData.get("showcaseCollectionTitle") ?? ""),
   });
 
   if (!result.ok) {
@@ -134,7 +135,7 @@ export async function saveSilverCollectionItemAction(
 
   return {
     status: "saved",
-    message: state === "wishlist" ? "Watchlist saved." : "Collection saved.",
+    message: state === "wishlist" ? "Wishlist saved." : "Collection saved.",
   };
 }
 

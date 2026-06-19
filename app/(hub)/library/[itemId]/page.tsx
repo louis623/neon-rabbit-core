@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Heart, Sparkles } from "lucide-react";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
+import { CustomerShowTime } from "@/components/live/CustomerShowTime";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
   getCatalogJewelryItemById,
@@ -100,7 +101,7 @@ export function renderItemDetailPageContent(
             Save this piece
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Add it to your owned pieces or watchlist from Sparkle Showcase, then Nic-Nac can keep the hunt organized.
+            Add it to your owned pieces or Wishlist from Sparkle Showcase, then Nic-Nac can keep the hunt organized.
           </p>
           <div className="mt-4 grid gap-2">
             <Link
@@ -137,7 +138,13 @@ export function renderItemDetailPageContent(
                     {formatMatchType(match.matchType)}
                   </p>
                   <p className="mt-2 text-sm text-[var(--sparkle-ink-muted)]">
-                    {match.showStatus === "live" ? "Live now" : `Next show: ${formatShowTime(match.showTime)}`}
+                    {match.showStatus === "live" ? (
+                      "Live now"
+                    ) : (
+                      <>
+                        Next show: <CustomerShowTime value={match.showTime} />
+                      </>
+                    )}
                   </p>
                   <a
                     className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
@@ -191,12 +198,4 @@ function formatMatchType(value: string) {
   const label = value.replaceAll("_", " ");
 
   return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function formatShowTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/New_York",
-  }).format(new Date(value));
 }

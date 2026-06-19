@@ -141,7 +141,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(freeMarkup).not.toContain("Sierra Sparkle Studio");
   });
 
-  it("renders bounded Silver match results with rep, board, rep site, and next-show context", () => {
+  it("does not render stale fixture matches as active 48-hour leads", () => {
     const markup = renderToStaticMarkup(
       createElement(FindThisForMe, {
         accountState: getLocalDevAuthState("silver"),
@@ -151,10 +151,10 @@ describe("Nic-Nac find-this-for-me flow", () => {
 
     expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
-    expect(markup).toContain("Sierra Sparkle Studio");
-    expect(markup).toContain("Open rep board path");
-    expect(markup).toContain("Open rep profile");
-    expect(markup).toContain("Next show");
+    expect(markup).toContain("0 preview leads");
+    expect(markup).toContain("No shows in the next 48 hours currently list this piece for trade.");
+    expect(markup).not.toContain("Sierra Sparkle Studio");
+    expect(markup).not.toContain("View Trade Board");
     expect(markup).toContain("Check saved pieces");
   });
 
@@ -173,14 +173,16 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).toContain("1 Sparkle Suite lead");
     expect(markup).toContain("Demo Glow Show");
     expect(markup).toContain("Rep: Demo");
-    expect(markup).toContain("Visit Rep Site");
+    expect(markup).toContain("Nic-Nac found a fresh lead");
+    expect(markup).toContain("View Trade Board");
+    expect(markup).toContain("View Show");
     expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
     expect(markup).not.toContain("Open rep board path");
     expect(markup).not.toContain("fixture lead");
     expect(markup).not.toContain("fixture-backed");
   });
 
-  it("renders fixture-backed Nic-Nac results as preview leads with local rep board paths", () => {
+  it("keeps stale fixture-backed Nic-Nac results out of rendered lead cards", () => {
     const markup = renderToStaticMarkup(
       createElement(FindThisForMe, {
         accountState: getLocalDevAuthState("silver"),
@@ -188,8 +190,9 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("2 preview leads");
-    expect(markup).toContain("/rep-boards?listing=rainbow-crown");
+    expect(markup).toContain("0 preview leads");
+    expect(markup).toContain("No shows in the next 48 hours currently list this piece for trade.");
+    expect(markup).not.toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("Sparkle Suite lead");
   });
 
@@ -232,6 +235,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
 });
 
 function apiAvailability(): FinderAvailabilityResult {
+  const soonShowAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
   const requestedItem: JewelryItem = {
     id: "design-api",
     name: "Garden Gala Bracelet",
@@ -261,7 +265,7 @@ function apiAvailability(): FinderAvailabilityResult {
           showId: "show-demo",
           showName: "Demo Live",
           repFirstName: "Demo",
-          startsAt: "2026-06-06T20:00:00.000Z",
+          startsAt: soonShowAt,
           status: "scheduled",
           customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
         },
@@ -284,7 +288,7 @@ function apiAvailability(): FinderAvailabilityResult {
           showId: "show-demo",
           showName: "Demo Live",
           repFirstName: "Demo",
-          startsAt: "2026-06-06T20:00:00.000Z",
+          startsAt: soonShowAt,
           status: "scheduled",
           customerSiteUrl: "https://www.yoursparklesuite.com/demo-show?c=rep-demo",
         },

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heart, Radio } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
+import { CustomerShowTime } from "@/components/live/CustomerShowTime";
 import {
   getFinderLiveShows,
   shouldUseCatalogFixtureFallback,
@@ -43,7 +44,9 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold text-[var(--sparkle-coral)]">{formatShowTime(show.startsAt)}</p>
+                  <p className="text-sm font-bold text-[var(--sparkle-coral)]">
+                    <CustomerShowTime value={show.startsAt} />
+                  </p>
                   <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
                     {show.showName}
                   </h2>
@@ -84,12 +87,4 @@ function getLiveShowRepId(show: FinderLiveShow): string {
   const repSlug = sitePath.split("/").filter(Boolean).at(-1);
 
   return repSlug ? `rep-${repSlug}` : `rep-${show.repFirstName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-}
-
-function formatShowTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/New_York",
-  }).format(new Date(value));
 }

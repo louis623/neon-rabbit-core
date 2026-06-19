@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { NicNacMark } from "@/components/nic-nac/NicNacMark";
@@ -24,6 +24,7 @@ export type FinderNicNacLead = {
   collectionName: string;
   matchTypeLabel: string;
   nextShowLabel: string;
+  showStartsAt?: string;
   primaryHref: string;
   primaryLabel: string;
   secondaryHref?: string;
@@ -132,6 +133,12 @@ export function FinderNicNacChatbot({
             ))}
           </div>
         ) : null}
+        {status === "ready" && leads.length === 0 && emptyState ? (
+          <div className="finder-nic-nac-chatbot__message-row finder-nic-nac-chatbot__message-row--assistant">
+            <NicNacMark size={22} />
+            <p className="finder-nic-nac-chatbot__message finder-nic-nac-chatbot__message--assistant">{emptyState}</p>
+          </div>
+        ) : null}
       </div>
 
       <form className="finder-nic-nac-chatbot__form" onSubmit={handleSubmit}>
@@ -164,9 +171,19 @@ function NicNacLeadCard({ lead }: { lead: FinderNicNacLead }) {
         </p>
       </div>
       <span>{lead.matchTypeLabel}</span>
+      <p className="finder-nic-nac-chatbot__lead-copy">
+        Nic-Nac found a fresh lead. You may be able to find this piece with {lead.businessName}
+        {lead.showStartsAt ? (
+          <>
+            {" "}
+            on <CustomerLocalShowTime value={lead.showStartsAt} />
+          </>
+        ) : null}
+        . The trade board and show links are now with this Wishlist lead.
+      </p>
       <p className="finder-nic-nac-chatbot__show">
         <CalendarClock aria-hidden="true" />
-        <strong>Next show:</strong> {lead.nextShowLabel}
+        <strong>Lead expires:</strong> after 48 hours or when the show ends.
       </p>
       <div className="finder-nic-nac-chatbot__lead-actions">
         <Link href={lead.primaryHref}>{lead.primaryLabel}</Link>
@@ -186,6 +203,32 @@ function buildTypedResponse(status: FinderNicNacChatbotProps["status"], leadCoun
   }
 
   return leadCount > 0
-    ? `I found ${leadCount} bounded lead${leadCount === 1 ? "" : "s"} for this Finder piece. Start with exact matches, then check same collection and type.`
-    : "I do not have a strong lead yet. Add the piece to your wishlist and I will keep the search scoped to known rep board paths.";
+    ? `I found ${leadCount} fresh lead${leadCount === 1 ? "" : "s"} inside the next 48 hours. Use the Wishlist lead buttons for the trade board and show.`
+    : "No shows in the next 48 hours currently list this piece for trade. Add it to your Wishlist or search again later.";
+}
+
+function CustomerLocalShowTime({ value }: { value: string }) {
+  const [label, setLabel] = useState("");
+
+  useEffect(() => {
+    const date = new Date(value);
+
+    if (!Number.isFinite(date.getTime())) {
+      setLabel("");
+      return;
+    }
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setLabel(
+      new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone,
+        timeZoneName: "short",
+      }).format(date),
+    );
+  }, [value]);
+
+  return <span suppressHydrationWarning>{label || "the next scheduled show"}</span>;
 }

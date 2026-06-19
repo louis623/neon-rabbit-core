@@ -4,12 +4,11 @@ import { Crown, Gem, Sparkles } from "lucide-react";
 import { FavoriteRepsPanel } from "@/components/favorites/FavoriteRepsPanel";
 import { FinderNicNacWorkspace } from "@/components/nic-nac/FinderNicNacWorkspace";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
-import { ProfileEditor } from "@/components/silver/ProfileEditor";
-import { ShowcaseManager } from "@/components/showcase/ShowcaseManager";
+import { ProfileSummaryPanel } from "@/components/silver/ProfileSummaryPanel";
+import { SimpleSilverShowcase } from "@/components/silver/SimpleSilverShowcase";
 import {
-  saveShowcasePieceAction,
+  saveSilverCollectionItemAction,
   saveSilverProfileAction,
-  submitShowcaseStudioRequestAction,
 } from "@/app/(hub)/silver/actions";
 import { getCatalogJewelryItems, shouldUseCatalogFixtureFallback } from "@/lib/sparkle-finder/catalog-service";
 import {
@@ -122,39 +121,33 @@ export function renderSilverPageContent(
         </div>
       </div>
 
-      <FinderNicNacWorkspace
-        collectionItems={collectionItems}
-        displayName={customer.displayName}
-        libraryItems={libraryItems}
-        profile={profile}
-      />
+      <div className="grid gap-4 lg:grid-cols-[minmax(18rem,0.45fr)_minmax(0,1fr)] lg:items-start">
+        <ProfileSummaryPanel
+          accountState={accountState}
+          canSaveSilverActions={entitlements.canUseSilverProfileActions}
+          customer={customer}
+          isLocalPreview={isLocalPreview}
+          profile={profile}
+          saveAction={isLocalPreview ? undefined : saveSilverProfileAction}
+        />
+        <FinderNicNacWorkspace
+          collectionItems={collectionItems}
+          displayName={customer.displayName}
+          libraryItems={libraryItems}
+          profile={profile}
+        />
+      </div>
 
       <FavoriteRepsPanel cards={favoriteRepCards} isSilver={entitlements.canUseNicNacFindRequests} />
 
-      <details className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] shadow-[var(--sparkle-shadow-sm)]">
-        <summary className="cursor-pointer px-5 py-4 text-sm font-bold text-[var(--sparkle-plum-deep)]">
-          Advanced profile and Showcase controls
-        </summary>
-        <div className="grid gap-6 border-t border-[var(--sparkle-border)] p-5 xl:grid-cols-[24rem_minmax(0,1fr)] xl:items-start">
-          <ProfileEditor
-            accountState={accountState}
-            canSaveSilverActions={entitlements.canUseSilverProfileActions}
-            customer={customer}
-            isLocalPreview={isLocalPreview}
-            profile={profile}
-            saveAction={isLocalPreview ? undefined : saveSilverProfileAction}
-          />
-          <ShowcaseManager
-            accountState={accountState}
-            canSaveSilverActions={entitlements.canUseSilverCollectionActions}
-            collectionItems={collectionItems}
-            isLocalPreview={isLocalPreview}
-            libraryItems={libraryItems}
-            saveAction={isLocalPreview ? undefined : saveShowcasePieceAction}
-            studioAction={isLocalPreview ? undefined : submitShowcaseStudioRequestAction}
-          />
-        </div>
-      </details>
+      <SimpleSilverShowcase
+        accountState={accountState}
+        canSaveSilverActions={entitlements.canUseSilverCollectionActions}
+        collectionItems={collectionItems}
+        isLocalPreview={isLocalPreview}
+        libraryItems={libraryItems}
+        saveAction={isLocalPreview ? undefined : saveSilverCollectionItemAction}
+      />
     </section>
   );
 }

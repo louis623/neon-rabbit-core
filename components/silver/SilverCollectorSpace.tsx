@@ -83,7 +83,7 @@ export function SilverCollectorSpace({ customer, profile, collectionItems, accou
 
           <div className="grid grid-cols-2 gap-3">
             <ProfileMetric icon={Gem} label="Owned pieces" value={ownedCount} />
-            <ProfileMetric icon={Heart} label="Wishlist / watchlist" value={wishlistCount} />
+            <ProfileMetric icon={Heart} label="Wishlist" value={wishlistCount} />
             <ProfileMetric icon={ShieldCheck} label="Highlighted" value={highlightedCount} />
             <ProfileMetric icon={CheckCircle2} label={isProfileReady ? "Profile ready" : "Profile details"} value={isProfileReady ? "Ready" : "Add"} />
           </div>

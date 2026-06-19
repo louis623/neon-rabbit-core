@@ -25,7 +25,9 @@ export type SilverProfileUpdateResult =
 export type CollectionItemUpsertInput = Pick<
   CollectionItem,
   "isHighlighted" | "jewelryItemId" | "note" | "state"
->;
+> & {
+  showcaseCollectionTitle?: string;
+};
 
 export type ShowcasePieceUpdateInput = {
   isRarestReveal: boolean;
@@ -201,7 +203,20 @@ export async function persistCollectionItemForAccount(
     onConflict: "user_id,jewelry_item_id",
   });
 
-  return result.error ? { ok: false, reason: "save_failed" } : { ok: true };
+  if (result.error) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  const showcaseCollectionTitle = cleanText(input.showcaseCollectionTitle, 80);
+
+  if (input.state !== "owned" || !showcaseCollectionTitle) {
+    return { ok: true };
+  }
+
+  return assignOwnedItemToShowcaseCollection(supabase, accountState, {
+    jewelryItemId: input.jewelryItemId,
+    title: showcaseCollectionTitle,
+  });
 }
 
 export async function persistShowcasePieceForAccount(
@@ -287,6 +302,130 @@ function mapShowcaseStatusToLegacyCollectionState(status: SparkleShowcaseItemSta
   }
 
   return status === "owned" ? "owned" : "wishlist";
+}
+
+async function assignOwnedItemToShowcaseCollection(
+  supabase: SupabaseCustomerStateClient,
+  accountState: CurrentSparkleFinderAccountState & { status: "authenticated" },
+  input: { jewelryItemId: string; title: string },
+): Promise<PersistedCustomerStateResult> {
+  const collectionItem = await safeMaybeSingle(
+    supabase
+      .from("sparkle_finder_collection_items")
+      .select("id")
+      .eq("user_id", accountState.customer.id)
+      .eq("jewelry_item_id", input.jewelryItemId),
+  );
+
+  if (collectionItem.error) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  const collectionItemId = readStringField(collectionItem.data, "id");
+
+  if (!collectionItemId) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  const slug = createShowcaseCollectionSlug(input.title);
+  const showcaseCollectionId = await findOrCreateShowcaseCollectionId(supabase, accountState.customer.id, {
+    slug,
+    title: input.title,
+  });
+
+  if (!showcaseCollectionId) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  const existingJoin = await safeMaybeSingle(
+    supabase
+      .from("sparkle_finder_showcase_collection_items")
+      .select("showcase_collection_id")
+      .eq("showcase_collection_id", showcaseCollectionId)
+      .eq("collection_item_id", collectionItemId),
+  );
+
+  if (existingJoin.error) {
+    return { ok: false, reason: "save_failed" };
+  }
+
+  if (existingJoin.data) {
+    return { ok: true };
+  }
+
+  const joinResult = await supabase.from("sparkle_finder_showcase_collection_items").insert({
+    showcase_collection_id: showcaseCollectionId,
+    collection_item_id: collectionItemId,
+  });
+
+  return joinResult.error ? { ok: false, reason: "save_failed" } : { ok: true };
+}
+
+async function findOrCreateShowcaseCollectionId(
+  supabase: SupabaseCustomerStateClient,
+  userId: string,
+  input: { slug: string; title: string },
+): Promise<string | null> {
+  const existing = await selectShowcaseCollectionId(supabase, userId, input.slug);
+
+  if (existing) {
+    return existing;
+  }
+
+  const insertResult = await supabase.from("sparkle_finder_showcase_collections").insert({
+    user_id: userId,
+    title: input.title,
+    slug: input.slug,
+    description: "",
+    visibility: "private",
+  });
+
+  if (insertResult.error) {
+    const recovered = await selectShowcaseCollectionId(supabase, userId, input.slug);
+
+    return recovered;
+  }
+
+  return selectShowcaseCollectionId(supabase, userId, input.slug);
+}
+
+async function selectShowcaseCollectionId(
+  supabase: SupabaseCustomerStateClient,
+  userId: string,
+  slug: string,
+): Promise<string | null> {
+  const result = await safeMaybeSingle(
+    supabase
+      .from("sparkle_finder_showcase_collections")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("slug", slug),
+  );
+
+  if (result.error) {
+    return null;
+  }
+
+  return readStringField(result.data, "id");
+}
+
+function createShowcaseCollectionSlug(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || "my-collection";
+}
+
+function readStringField(data: unknown, field: string): string {
+  if (!data || typeof data !== "object") {
+    return "";
+  }
+
+  const value = (data as Record<string, unknown>)[field];
+
+  return typeof value === "string" ? value : "";
 }
 
 async function safeMaybeSingle(builder: SupabasePersistenceFilterBuilder): Promise<{ data: unknown; error: unknown }> {

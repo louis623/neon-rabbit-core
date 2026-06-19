@@ -55,7 +55,7 @@ export function CollectionManager({
     }
 
     setItems(result.collectionItems.map((collectionItem) => ({ ...collectionItem, jewelryItem: findJewelryItem(collectionItem.jewelryItemId, libraryItems) })));
-    setLocalStatusMessage(state === "wishlist" ? "Watchlist preview updated." : "Collection preview updated.");
+    setLocalStatusMessage(state === "wishlist" ? "Wishlist preview updated." : "Collection preview updated.");
   }
 
   return (
@@ -125,7 +125,7 @@ export function CollectionManager({
                     isLocalPreview={isLocalPreview}
                     isPending={isPending}
                     item={item}
-                    label="Add to watchlist"
+                    label="Add to Wishlist"
                     onPreviewAdd={previewAdd}
                     state="wishlist"
                   />
@@ -264,7 +264,7 @@ function StateBadge({ state }: { state: CollectionItem["state"] }) {
   const labels: Record<CollectionItem["state"], string> = {
     owned: "Owned",
     private_note_only: "Private note",
-    wishlist: "Watchlist",
+    wishlist: "Wishlist",
   };
 
   return (

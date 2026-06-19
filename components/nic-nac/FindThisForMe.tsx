@@ -29,29 +29,35 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
   if (!result.ok) {
     return <NicNacEmptyPrompt compact={compact} />;
   }
+  const activeMatches = result.results.filter(isFreshLead);
+  const emptyState =
+    activeMatches.length === 0
+      ? "No shows in the next 48 hours currently list this piece for trade. Add it to your Wishlist or search again later."
+      : result.emptyState;
 
   return (
     <FinderNicNacChatbot
       compact={compact}
-      leadCountLabel={formatLeadCount(result.results.length, result.dataSource)}
-      leads={result.results.map((match) => buildLead(match, result.dataSource))}
+      leadCountLabel={formatLeadCount(activeMatches.length, result.dataSource)}
+      leads={activeMatches.map((match) => buildLead(match, result.dataSource))}
       quickBubbles={[
         {
           label: "Check saved pieces",
           response:
-            result.results.length > 0
-              ? `I found ${result.results.length} bounded lead${result.results.length === 1 ? "" : "s"} for this saved Finder piece.`
-              : result.emptyState,
+            activeMatches.length > 0
+              ? `I found ${activeMatches.length} fresh lead${activeMatches.length === 1 ? "" : "s"} inside the next 48 hours. I added the trade board and show links to this Wishlist lead.`
+              : emptyState,
         },
         {
           label: "Match rep leads",
-          response: "Exact item leads show first, then I widen to same collection and jewelry type from known rep-hosted paths.",
+          response: "Exact item leads show first, then I widen to same collection and jewelry type from known rep-hosted paths. I only call it a lead when the show is inside the next 48 hours.",
         },
         {
           label: "Next show context",
-          response: "I include the next known show when a matched rep has one, so you know where to look first.",
+          response: "I include the next known show in your time zone. Once the show passes, the lead expires and you can search again.",
         },
       ]}
+      emptyState={emptyState}
       status="ready"
     />
   );
@@ -82,7 +88,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
 
 function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
   const emptyState =
-    "Add an existing library record to your collection or watchlist, then Nic-Nac can check saved rep board paths and next shows.";
+    "Add an existing library record to your collection or Wishlist, then Nic-Nac can check saved rep board paths and next shows.";
 
   return (
     <FinderNicNacChatbot
@@ -131,10 +137,28 @@ function buildLead(match: NicNacFindMatch, dataSource: NicNacDataSource) {
     matchTypeLabel: formatMatchType(match.matchType),
     matchedItemName: match.matchedItem.name,
     nextShowLabel: match.nextLiveShow?.title ?? "No upcoming show listed",
+    showStartsAt: match.nextLiveShow?.startsAt,
     primaryHref: isApi ? match.rep.siteUrl : getLocalRepBoardHref(match.listing.boardUrl),
-    primaryLabel: isApi ? "Visit Rep Site" : "Open rep board path",
+    primaryLabel: "View Trade Board",
     repName: isApi ? match.rep.displayName : undefined,
-    secondaryHref: isApi ? undefined : getLocalRepHref(match.rep.siteUrl),
-    secondaryLabel: isApi ? undefined : "Open rep profile",
+    secondaryHref: isApi ? match.nextLiveShow?.showUrl ?? match.rep.siteUrl : getLocalRepHref(match.nextLiveShow?.showUrl ?? match.rep.siteUrl),
+    secondaryLabel: "View Show",
   };
+}
+
+function isFreshLead(match: NicNacFindMatch) {
+  if (!match.nextLiveShow) {
+    return false;
+  }
+
+  const startsAt = new Date(match.nextLiveShow.startsAt).getTime();
+
+  if (!Number.isFinite(startsAt)) {
+    return false;
+  }
+
+  const now = Date.now();
+  const fortyEightHoursFromNow = now + 48 * 60 * 60 * 1000;
+
+  return startsAt >= now && startsAt <= fortyEightHoursFromNow;
 }

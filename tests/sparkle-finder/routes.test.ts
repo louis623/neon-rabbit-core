@@ -975,36 +975,24 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Upload a missing piece");
     expect(markup).toContain("Favorite reps");
     expect(markup).toContain("Nic-Nac remembers");
-    expect(markup).toContain("Collector Profile");
+    expect(markup).toContain('data-smoke="profile-summary-card"');
+    expect(markup).toContain("Your Showcase");
+    expect(markup).toContain("Edit Profile");
     expect(markup).toContain("Sparkle Mama");
-    expect(markup).toContain("Sparkle Showcase");
-    expect(markup).toContain("The Rarest of Reveals");
-    expect(markup).toContain("Showcase Collection");
+    expect(markup).toContain('data-smoke="simple-silver-showcase"');
+    expect(markup).toContain("Wishlist &amp; Collection");
     expect(markup).toContain("Rainbow Crown Ring");
-    expect(markup).toContain("Display name");
-    expect(markup).toContain('name="displayName"');
-    expect(markup).toContain("Profile photo");
-    expect(markup).toContain('name="profilePhoto"');
-    expect(markup).toContain('type="file"');
-    expect(markup).toContain('data-smoke="profile-editor-card"');
-    expect(markup).toContain("Save profile");
-    expect(markup).toContain("Make your changes, then save your profile.");
-    expect(markup).toContain("Need a missing piece?");
-    expect(markup).toContain("Showcase Studio");
-    expect(markup).toContain('data-smoke="showcase-studio-intake"');
-    expect(markup).toContain("Original Bomb Party label required");
-    expect(markup).toContain("light-box photo");
-    expect(markup).toContain("Nic-Nac checks every image");
-    expect(markup).toContain("Original label photo");
-    expect(markup).toContain("Light-box jewelry photo");
-    expect(markup).toContain('name="originalLabelPhoto"');
-    expect(markup).toContain('name="jewelryFrontPhoto"');
-    expect(markup).toContain('name="itemNumber"');
-    expect(markup).toContain("Submit to Nic-Nac review");
-    expect(markup).toContain('href="/photo-setup"');
+    expect(markup).toContain("Add to Wishlist");
+    expect(markup).toContain("I Own This");
+    expect(markup).toContain("Help Me Find It");
     expect(markup).not.toContain('id="add-to-sparkle-showcase"');
     expect(markup).not.toContain(">Library actions<");
     expect(markup).not.toContain(">Add to Sparkle Showcase<");
+    expect(markup).not.toContain("Advanced profile and Showcase controls");
+    expect(markup).not.toContain("Owner tools");
+    expect(markup).not.toContain('data-smoke="profile-editor-card"');
+    expect(markup).not.toContain("Save profile");
+    expect(markup).not.toContain("Showcase Studio ready");
     expect(markup).not.toContain("Profile photo URL");
     expect(markup).not.toContain('placeholder="https://..."');
     expect(markup).not.toContain("Silver Space");
@@ -1051,11 +1039,12 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(
       "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
     );
-    expect(markup).toContain("Save profile");
-    expect(markup).toContain("Make your changes, then save your profile.");
+    expect(markup).toContain("Edit Profile");
+    expect(markup).toContain('data-smoke="profile-summary-card"');
     expect(markup).not.toContain("sparkle-global-save-indicator");
     expect(markup).not.toContain("Changes auto-save.");
     expect(markup).not.toContain("Auto-save profile");
+    expect(markup).not.toContain("Save profile");
     expect(markup).not.toContain("Save Sparkle Showcase piece");
     expect(markup).not.toContain("Manage your Sparkle Finder profile, collection, and watchlist details from your signed-in account.");
     expect(markup).not.toContain("fixture-backed preview");
@@ -1076,9 +1065,10 @@ describe("Sparkle Finder hub routes", () => {
       renderSilverPageContent({ ...getLocalDevAuthState("free"), isLocalPreview: true }),
     );
 
-    expect(markup).toContain("Collector Profile");
-    expect(markup).toContain("Silver preview is required to save profile updates.");
-    expect(markup).toContain("aria-busy=\"false\"");
+    expect(markup).toContain("Edit Profile");
+    expect(markup).toContain('data-smoke="profile-summary-card"');
+    expect(markup).toContain("Add to Wishlist");
+    expect(markup).toContain("I Own This");
     expect(markup).toContain("disabled");
     expect(markup).not.toContain("Silver preview needed");
   });

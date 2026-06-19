@@ -391,6 +391,54 @@ describe("Sparkle Finder entitlements", () => {
     expect(client.operations).not.toContainEqual(expect.objectContaining({ type: "update" }));
   });
 
+  it("links owned saves to the selected Showcase collection", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({});
+
+    const result = await persistCollectionItemForAccount(client, accountState, {
+      jewelryItemId: "jewel-rainbow-crown-ring",
+      state: "owned",
+      note: "Confirmed in my collection.",
+      isHighlighted: true,
+      showcaseCollectionTitle: "Rarest Reveals",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_collection_items",
+      type: "upsert",
+      values: {
+        user_id: "user-123",
+        jewelry_item_id: "jewel-rainbow-crown-ring",
+        state: "owned",
+        note: "Confirmed in my collection.",
+        is_highlighted: true,
+      },
+      options: {
+        onConflict: "user_id,jewelry_item_id",
+      },
+    });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_showcase_collections",
+      type: "insert",
+      values: {
+        user_id: "user-123",
+        title: "Rarest Reveals",
+        slug: "rarest-reveals",
+        description: "",
+        visibility: "private",
+      },
+    });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_showcase_collection_items",
+      type: "insert",
+      values: {
+        showcase_collection_id: "showcase-collection-created",
+        collection_item_id: "collection-upserted",
+      },
+    });
+  });
+
   it("keeps collection persistence duplicate-safe when a previous duplicate row would make selection ambiguous", async () => {
     const accountState = currentAccountState("silver_paid");
     const client = createFakePersistenceClient({
@@ -783,12 +831,16 @@ function createFakePersistenceClient({
   profileInsertError = null,
   collectionItem = null,
   collectionSelectError = null,
+  showcaseCollection = null,
+  showcaseCollectionJoin = null,
 }: {
   profile?: { user_id: string } | null;
   profileWriteResult?: { user_id: string } | null;
   profileInsertError?: Error | null;
   collectionItem?: { id: string; user_id: string } | null;
   collectionSelectError?: Error | null;
+  showcaseCollection?: { id: string; user_id: string; slug: string } | null;
+  showcaseCollectionJoin?: { showcase_collection_id: string; collection_item_id: string } | null;
 }) {
   const operations: Array<{
     table: string;
@@ -798,6 +850,9 @@ function createFakePersistenceClient({
     options?: Record<string, unknown>;
   }> = [];
   let profileRecord: Record<string, unknown> | null = profile;
+  let collectionItemRecord: Record<string, unknown> | null = collectionItem;
+  let showcaseCollectionRecord: Record<string, unknown> | null = showcaseCollection;
+  let showcaseCollectionJoinRecord: Record<string, unknown> | null = showcaseCollectionJoin;
 
   return {
     operations,
@@ -823,10 +878,25 @@ function createFakePersistenceClient({
           if (table === "sparkle_finder_profiles") {
             profileRecord = profileWriteResult === undefined ? values : profileWriteResult;
           }
+          if (table === "sparkle_finder_showcase_collections") {
+            showcaseCollectionRecord = {
+              id: "showcase-collection-created",
+              ...values,
+            };
+          }
+          if (table === "sparkle_finder_showcase_collection_items") {
+            showcaseCollectionJoinRecord = values;
+          }
           return { data: null, error: null };
         },
         upsert: async (values: Record<string, unknown>, options: Record<string, unknown>) => {
           operations.push({ table, type: "upsert", values, options });
+          if (table === "sparkle_finder_collection_items") {
+            collectionItemRecord = {
+              id: collectionItemRecord?.id ?? "collection-upserted",
+              ...values,
+            };
+          }
           return { data: null, error: null };
         },
       };
@@ -836,7 +906,9 @@ function createFakePersistenceClient({
   function selectResultForTable(table: string): Promise<{ data: unknown; error: unknown }> {
     const selectRows: Record<string, unknown> = {
       sparkle_finder_profiles: profileRecord,
-      sparkle_finder_collection_items: collectionItem,
+      sparkle_finder_collection_items: collectionItemRecord,
+      sparkle_finder_showcase_collections: showcaseCollectionRecord,
+      sparkle_finder_showcase_collection_items: showcaseCollectionJoinRecord,
     };
 
     if (table === "sparkle_finder_collection_items" && collectionSelectError) {

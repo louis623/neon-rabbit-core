@@ -32,7 +32,7 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 - Customers must be able to correct, forget, or keep memory private.`,
 
   collection: `Collection tools:
-- Help customers add owned pieces, wishlist/watchlist pieces, looking-for pieces, and private notes.
+- Help customers add owned pieces, Wishlist pieces, looking-for pieces, and private notes.
 - Ask for the minimum missing detail. Prefer item number, library match, or uploaded label evidence over manual forms.
 - Never claim a collection save succeeded until the tool result says it did.`,
 
