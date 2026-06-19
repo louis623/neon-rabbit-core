@@ -73,6 +73,7 @@ const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
+const isBlingKitchenHybrid = CONTENT.publicSiteVariant === "bling_kitchen_hybrid";
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -859,6 +860,8 @@ function App() {
       document.title = "Join the Mile High Fizz Team - Colorado Bomb Party Business Opportunity";
     } else if (isBrittWithBlingHybrid) {
       document.title = "Join The Virtuous Fizzers | Britt with Bling";
+    } else if (isBlingKitchenHybrid) {
+      document.title = "Join Opal Sparkling Gems | BlingKitchen";
     }
     meta.setAttribute("content", description);
     applyTargetedMetadata(document.title, description);
@@ -869,6 +872,7 @@ function App() {
     body.className = "joinpage";
     if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz-join");
     if (isBrittWithBlingHybrid) body.classList.add("britt-with-bling-join");
+    if (isBlingKitchenHybrid) body.classList.add("bling-kitchen-join");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -937,7 +941,7 @@ function App() {
     <>
       <SparkleFx level={t.sparkleLevel} />
 
-      <div className={isMileHighFizzHybrid ? "mhf-join-page" : isBrittWithBlingHybrid ? "bwb-join-page" : ""}>
+      <div className={isMileHighFizzHybrid ? "mhf-join-page" : isBrittWithBlingHybrid ? "bwb-join-page" : isBlingKitchenHybrid ? "bk-join-page" : ""}>
         <div className="hp-sticky-stack">
           <Header businessName={t.businessName} />
 
@@ -946,8 +950,8 @@ function App() {
           <LiveQueueStrip onOpen={() => setQueueOpen(true)} />
         </div>
 
-        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-join-shell" : isBrittWithBlingHybrid ? "hp-saturate bwb-join-shell" : "hp-saturate"}>
-          <div className={isMileHighFizzHybrid ? "mhf-join-content" : isBrittWithBlingHybrid ? "bwb-join-content" : ""}>
+        <div className={isMileHighFizzHybrid ? "hp-saturate mhf-join-shell" : isBrittWithBlingHybrid ? "hp-saturate bwb-join-shell" : isBlingKitchenHybrid ? "hp-saturate bk-join-shell" : "hp-saturate"}>
+          <div className={isMileHighFizzHybrid ? "mhf-join-content" : isBrittWithBlingHybrid ? "bwb-join-content" : isBlingKitchenHybrid ? "bk-join-content" : ""}>
             {t.showHero ? (
               <Hero
                 teamName={t.teamName}

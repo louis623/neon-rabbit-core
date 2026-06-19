@@ -60,6 +60,7 @@ const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
+const isBlingKitchenHybrid = CONTENT.publicSiteVariant === "bling_kitchen_hybrid";
 
 function publicRepName(value, fallback = "your rep") {
   const cleaned = String(value || "").trim().replace(/\s+/g, " ");
@@ -1595,6 +1596,95 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
   );
 }
 
+function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
+  const pantryHref = CONTENT.pantryPageUrl || "#";
+  const announcementText = CONTENT.announcementText || "Sterling Club & 12k Gold Vermeil collections are here.";
+  const announcementHref = CONTENT.announcementHref || getShopHref();
+  const announcementLabel = CONTENT.announcementLinkLabel || "Shop Now";
+  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
+  const heroImageUrl = CONTENT.heroImageUrl || "";
+  const tickerItems = [promoTickerText, promoTickerText, promoTickerText];
+  const menuLinks = [
+    { label: "Home", href: "#top" },
+    { label: "In the Pantry", href: pantryHref },
+    { label: "Trade Board", href: getTradeBoardHref() },
+    { label: "Join Team", href: joinTeamHref },
+    { label: "Shop", href: getShopHref() },
+    { label: "Watch on TikTok", href: getWatchHref(liveShow) },
+    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
+  ].filter((link) => link.href && link.href !== "#");
+
+  return (
+    <div className="bk-home-page" id="top">
+      <div className="bk-home-announcement">
+        <span>NEW:</span>
+        <p>{announcementText}</p>
+        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
+      </div>
+      <a {...linkProps(getShopHref())} className="bk-home-ticker" aria-label="BlingKitchen updates">
+        <div>
+          {tickerItems.map((item, index) => <span key={index}>{item}</span>)}
+        </div>
+      </a>
+      <header className="bk-home-header">
+        <div className="bk-home-header-inner">
+          <div className="bk-home-menu-wrap">
+            <button type="button" className="bk-home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
+              Menu
+            </button>
+            {menuOpen && (
+              <nav className="bk-home-menu-panel" aria-label="BlingKitchen navigation">
+                {menuLinks.map((link) => (
+                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            )}
+          </div>
+          <a href="#top" className="bk-home-logo" aria-label="BlingKitchen home">BlingKitchen</a>
+          <a {...linkProps(getShopHref())} className="bk-home-shop">{CONTENT.shopCtaLabel || "Shop"}</a>
+        </div>
+      </header>
+
+      <section className="bk-home-hero" aria-labelledby="bk-home-hero-title">
+        {heroImageUrl && <img className="bk-home-hero-image" src={heroImageUrl} alt="" />}
+        <div className="bk-home-hero-content">
+          <p>{CONTENT.heroEyebrow || "With Heather"}</p>
+          <h1 id="bk-home-hero-title">{businessName}</h1>
+          <span>{CONTENT.heroSub || t.heroSub}</span>
+          <div className="bk-home-hero-ctas">
+            <a {...linkProps(getShopHref())}>Shop Bomb Party</a>
+            <a {...linkProps(pantryHref)}>In the Pantry</a>
+            <a {...linkProps(getWatchHref(liveShow))} className={isLive ? "is-live" : ""}>Watch on TikTok</a>
+          </div>
+        </div>
+      </section>
+
+      <div className="bk-home-below-shell">
+        <section className="bk-home-pantry-callout">
+          <div>
+            <p>Recipes with Heather</p>
+            <h2>In the Pantry</h2>
+            <span>Family recipes, kitchen notes, and favorite treats preserved from Heather's original BlingKitchen site.</span>
+          </div>
+          <a {...linkProps(pantryHref)}>Open Recipes</a>
+        </section>
+        <div className="bk-home-automation-panel">
+          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
+          {t.showEvents && <Events count={t.eventCount} />}
+          {t.showWibp && <WIBP repName={repName} />}
+          {t.showAbout && <AboutSection repName={repName} />}
+          {t.showSignup && <Signup repName={repName} businessName={businessName} />}
+          {t.showFooter && <Footer businessName={businessName} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // Main App
 // ============================================================
@@ -1638,6 +1728,7 @@ function App() {
     body.className = "homepage";
     if (isMileHighFizzHybrid) body.classList.add("mile-high-fizz");
     if (isBrittWithBlingHybrid) body.classList.add("britt-with-bling");
+    if (isBlingKitchenHybrid) body.classList.add("bling-kitchen");
     if (t.showSlots) body.classList.add("slots-on");
     if (t.bgTreatment === "mesh") body.classList.add("bg-mesh");
     if (t.bgTreatment === "confetti") body.classList.add("fx-confetti");
@@ -1715,6 +1806,16 @@ function App() {
     <>
       {isBrittWithBlingHybrid ? (
         <BrittWithBlingHomepage
+          t={t}
+          repName={repName}
+          businessName={t.businessName}
+          isLive={scheduleIsLive}
+          liveShow={activeLiveShow}
+          queueState={effectiveLrqState}
+          onOpenQueue={() => setQueueOpen(true)}
+        />
+      ) : isBlingKitchenHybrid ? (
+        <BlingKitchenHomepage
           t={t}
           repName={repName}
           businessName={t.businessName}

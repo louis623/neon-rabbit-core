@@ -24,6 +24,7 @@ vi.mock('@/lib/amethyst/preview-template-data', async (importOriginal) => {
 
 import { GET } from '@/app/[publicSiteSlug]/route'
 import { GET as GET_JOIN } from '@/app/[publicSiteSlug]/join/route'
+import { GET as GET_PANTRY } from '@/app/[publicSiteSlug]/in-the-pantry/route'
 import { GET as GET_TRADE } from '@/app/[publicSiteSlug]/trade/route'
 import { DEFAULT_AMETHYST_APPEARANCE_PRESET } from '@/lib/amethyst/appearance-presets'
 import { defaultAmethystHomepageTemplateData } from '@/lib/amethyst/homepage-template-data'
@@ -119,8 +120,10 @@ describe('public site slug route', () => {
     const routeFiles = [
       'app/[publicSiteSlug]/route.ts',
       'app/[publicSiteSlug]/join/route.ts',
+      'app/[publicSiteSlug]/in-the-pantry/route.ts',
       'app/[publicSiteSlug]/trade/route.ts',
       'app/api/amethyst/homepage-template/route.ts',
+      'app/api/amethyst/pantry-template/route.ts',
       'app/api/amethyst/trade-template/route.ts',
     ]
 
@@ -198,5 +201,40 @@ describe('public site slug route', () => {
       '/api/amethyst/join-template?c=rep-mile-high-fizz&amp;publicSiteSlug=milehighfizz',
     )
     expect(html).not.toContain('?c=milehighfizz')
+  })
+
+  it('renders the Pantry page with slug canonicals and rep-targeted template data', async () => {
+    const admin = { marker: 'admin' }
+    createAdminClientMock.mockReturnValue(admin)
+    resolveAmethystPreviewRepMock.mockResolvedValue({
+      id: 'rep-bling-kitchen',
+      email: 'blingkitchen19@gmail.com',
+    })
+
+    const response = await GET_PANTRY(
+      new Request('https://www.yoursparklesuite.com/BlingKitchen/in-the-pantry'),
+      { params: Promise.resolve({ publicSiteSlug: 'BlingKitchen' }) },
+    )
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(loadAmethystPreviewTemplateDataMock).toHaveBeenCalledWith({
+      repId: 'rep-bling-kitchen',
+      publicSiteSlug: 'blingkitchen',
+    })
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.yoursparklesuite.com/blingkitchen/in-the-pantry" />',
+    )
+    expect(html).toContain(
+      '<meta property="og:url" content="https://www.yoursparklesuite.com/blingkitchen/in-the-pantry" />',
+    )
+    expect(html).toContain(
+      '"@id":"https://www.yoursparklesuite.com/blingkitchen/in-the-pantry#webpage"',
+    )
+    expect(html).toContain(
+      '/api/amethyst/pantry-template?c=rep-bling-kitchen&amp;publicSiteSlug=blingkitchen',
+    )
+    expect(html).not.toContain('?c=blingkitchen')
   })
 })

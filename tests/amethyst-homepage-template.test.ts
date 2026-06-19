@@ -318,7 +318,7 @@ describe('Amethyst homepage template data wiring', () => {
       for (const label of footerLabels) {
         expect(source).toContain(`>${label}</a>`)
       }
-      expect(source).not.toContain('Shop Now')
+      expect(source).not.toContain('>Shop Now</a>')
       expect(source).not.toContain('Bomb Party Catalog')
       expect(source).not.toContain('Pre-orders</a>')
       expect(source).not.toContain('Past shows</a>')

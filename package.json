@@ -17,6 +17,8 @@
     "stripe:ensure-live-webhook": "tsx scripts/ensure-stripe-live-webhook-endpoint.ts",
     "seed:demo-rep": "tsx scripts/seed-demo-rep.ts",
     "seed:demo-launch-flow": "tsx scripts/seed-demo-launch-flow.ts",
+    "seed:bling-kitchen-recipes": "tsx scripts/seed-bling-kitchen-recipes.ts",
+    "attach:bling-kitchen": "tsx scripts/bling-kitchen/attach-tenant.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",
     "smoke:calendar": "tsx scripts/smoke-demo-readiness.ts --category local_product --json",

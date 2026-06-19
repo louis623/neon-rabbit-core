@@ -11,6 +11,7 @@ import {
   HelpResourcesCard,
   JewelryLibraryCard,
   ReferralProgramCard,
+  RecipesCard,
   TradeBoardWorkspaceCard,
   CustomerRosterCard,
   SiteSettingsCard,
@@ -48,6 +49,10 @@ import {
   calculateBusinessCalculator,
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
+  buildSiteRecipesFetchUrl,
+  getRecipeDraft,
+  getRecipeDraftSavePayload,
+  getRecipeSaveStatusText,
   getJewelryLibrarySearchErrorMessage,
   type DashboardPlaceholderProps,
   formatHeaderRepName,
@@ -294,6 +299,60 @@ const SITE_SETTINGS_READY_STATE = {
       facebook: 'sparklebysasha',
     },
   },
+}
+
+const RECIPES_READY_STATE = {
+  status: 'ready' as const,
+  recipes: [
+    {
+      id: 'recipe-1',
+      repId: 'rep-1',
+      title: 'Bling Kitchen Chicken Dip',
+      slug: 'bling-kitchen-chicken-dip',
+      description: 'Creamy party dip for live night.',
+      category: 'Appetizer',
+      prepTime: '30 min',
+      servings: 8,
+      imageUrl: 'https://cdn.example.com/chicken-dip.jpg',
+      imageAlt: 'Chicken dip in a baking dish',
+      imagePosition: 'center',
+      modalImageUrl: 'https://cdn.example.com/chicken-dip-large.jpg',
+      modalImagePosition: 'center',
+      tiktokUrl: 'https://www.tiktok.com/@blingkitchen/video/123',
+      ingredients: ['Chicken', 'Cream cheese', 'Ranch'],
+      steps: ['Mix everything', 'Bake until bubbly'],
+      note: 'Serve warm.',
+      sortOrder: 0,
+      isVisible: true,
+      sourceRecipeId: 'source-1',
+      createdAt: '2026-06-19T12:00:00.000Z',
+      updatedAt: '2026-06-19T12:00:00.000Z',
+    },
+    {
+      id: 'recipe-2',
+      repId: 'rep-1',
+      title: 'Hidden Draft Dessert',
+      slug: 'hidden-draft-dessert',
+      description: 'Draft recipe copy.',
+      category: 'Dessert',
+      prepTime: '15 min',
+      servings: null,
+      imageUrl: '',
+      imageAlt: '',
+      imagePosition: 'center',
+      modalImageUrl: '',
+      modalImagePosition: 'center',
+      tiktokUrl: '',
+      ingredients: ['Chocolate'],
+      steps: ['Chill'],
+      note: '',
+      sortOrder: 1,
+      isVisible: false,
+      sourceRecipeId: 'source-2',
+      createdAt: '2026-06-19T12:00:00.000Z',
+      updatedAt: '2026-06-19T12:00:00.000Z',
+    },
+  ],
 }
 
 const ACCOUNT_BILLING_READY_STATE = {
@@ -590,6 +649,7 @@ describe('DashboardPlaceholder', () => {
   it('deep-links workspace sections without self-serve-started first-run routing', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
+    expect(getInitialWorkspaceSection('?section=recipes')).toBe('recipes')
     expect(getInitialWorkspaceSection('?section=business-calculator')).toBe(
       'trade-board',
     )
@@ -628,6 +688,7 @@ describe('DashboardPlaceholder', () => {
       'team-management',
       'messages',
       'site-settings',
+      'recipes',
       'help-resources',
       'account',
     ])
@@ -637,6 +698,7 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
+    expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
     expect(resolveWorkspaceSectionForAccess('business-calculator', true)).toBe(
       'trade-board',
     )
@@ -650,6 +712,7 @@ describe('DashboardPlaceholder', () => {
     expect(shouldShowWorkspaceAccessNotice('trade-board', false)).toBe(true)
     expect(shouldShowWorkspaceAccessNotice('trade-board', false, true)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('show-calendar', false)).toBe(true)
+    expect(shouldShowWorkspaceAccessNotice('recipes', false)).toBe(true)
     expect(shouldShowWorkspaceAccessNotice('help-resources', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('account', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('trade-board', true)).toBe(false)
@@ -696,6 +759,23 @@ describe('DashboardPlaceholder', () => {
     expect(loadEffectStart).toBeGreaterThan(-1)
     expect(loadEffectSource).not.toContain("accountBillingState.status !== 'ready'")
     expect(loadEffectSource).not.toContain('hasPaidWorkspaceSubscription(accountBillingState.summary)')
+  })
+
+  it('lazy-loads Pantry recipes only when the Recipes workspace opens', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const paidLoaderStart = source.indexOf('async function loadPaidWorkspaceData')
+    const paidLoaderSource = source.slice(
+      paidLoaderStart,
+      source.indexOf('  useEffect(() => {', paidLoaderStart),
+    )
+
+    expect(buildSiteRecipesFetchUrl()).toBe('/api/nic-nac/site-recipes')
+    expect(source).toContain("activeSection !== 'recipes'")
+    expect(source).toContain('void loadSiteRecipes(controller.signal)')
+    expect(paidLoaderSource).not.toContain('loadSiteRecipes')
   })
 
   it('renders the locked team management add-on skeleton', () => {
@@ -1454,6 +1534,69 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Approved SMS sends cost $0.009')
     expect(html).toContain('Minimum wallet load is $25.00')
     expect(html).toContain('Reload history')
+  })
+
+  it('maps recipe drafts to line-based save payloads for Nic-Nac recipe editing', () => {
+    const draft = getRecipeDraft(RECIPES_READY_STATE.recipes[0])
+
+    expect(draft.ingredientsText).toBe('Chicken\nCream cheese\nRanch')
+    expect(draft.stepsText).toBe('Mix everything\nBake until bubbly')
+    expect(getRecipeDraftSavePayload({
+      ...draft,
+      servings: '8',
+      ingredientsText: 'Chicken\n\n Cream cheese ',
+      stepsText: 'Mix\n Bake ',
+    })).toMatchObject({
+      id: 'recipe-1',
+      title: 'Bling Kitchen Chicken Dip',
+      slug: 'bling-kitchen-chicken-dip',
+      servings: 8,
+      ingredients: ['Chicken', 'Cream cheese'],
+      steps: ['Mix', 'Bake'],
+      isVisible: true,
+    })
+    expect(
+      getRecipeSaveStatusText({
+        pendingKey: 'save',
+        error: null,
+        helperMessage: null,
+      }),
+    ).toBe('Saving recipe changes...')
+  })
+
+  it('renders the Recipes manager with order, visibility, copy, image, and save controls', () => {
+    const html = renderToStaticMarkup(
+      createElement(RecipesCard, {
+        state: RECIPES_READY_STATE,
+        draft: getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
+        selectedRecipeId: 'recipe-1',
+        actionState: {
+          pendingKey: null,
+          error: null,
+          helperMessage: 'Recipe saved.',
+        },
+        statusMessage: 'Recipe saved.',
+      }),
+    )
+
+    expect(html).toContain('Recipes')
+    expect(html).toContain('Pantry order')
+    expect(html).toContain('Add recipe')
+    expect(html).toContain('Bling Kitchen Chicken Dip')
+    expect(html).toContain('Hidden Draft Dessert')
+    expect(html).toContain('Appetizer / Visible')
+    expect(html).toContain('Dessert / Hidden')
+    expect(html).toContain('Recipe details')
+    expect(html).toContain('Visible in Pantry')
+    expect(html).toContain('One ingredient per line')
+    expect(html).toContain('Chicken')
+    expect(html).toContain('Bake until bubbly')
+    expect(html).toContain('https://cdn.example.com/chicken-dip.jpg')
+    expect(html).toContain('Upload image')
+    expect(html).toContain('TikTok URL')
+    expect(html).toContain('Save recipe')
+    expect(html).toContain('Remove recipe')
+    expect(html).toContain('data-testid="recipes-save-status"')
   })
 
   it('renders the site settings card with profile, copy, and social controls', () => {

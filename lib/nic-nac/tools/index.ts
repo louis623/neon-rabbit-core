@@ -37,6 +37,10 @@ import {
   listJoinTeamRosterTool,
   manageJoinTeamRosterTool,
 } from './join-team-roster'
+import {
+  listSiteRecipesTool,
+  manageSiteRecipesTool,
+} from './site-recipes'
 import { writeRepNoteTool } from './write-rep-note'
 import { readRecentRepNotesTool } from './read-recent-rep-notes'
 import { startShowSessionTool } from './start-show-session'
@@ -83,6 +87,8 @@ const REGISTRY: ToolDefinition[] = [
   updateSiteSettingTool,
   listJoinTeamRosterTool,
   manageJoinTeamRosterTool,
+  listSiteRecipesTool,
+  manageSiteRecipesTool,
   writeRepNoteTool,
   readRecentRepNotesTool,
   startShowSessionTool,
@@ -149,6 +155,8 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'update_site_setting',
     'list_join_team_roster',
     'manage_join_team_roster',
+    'list_site_recipes',
+    'manage_site_recipes',
   ],
   notification: [
     'send_sms_notification',
@@ -312,6 +320,12 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\bjoin team\b/,
       /\bteam member\b/,
       /\broster\b/,
+      /\brecipe\b/,
+      /\brecipes\b/,
+      /\bpantry\b/,
+      /\bin the pantry\b/,
+      /\bingredient\b/,
+      /\bingredients\b/,
       /\bvip group\b/,
       /\bsocial\b/,
     ])

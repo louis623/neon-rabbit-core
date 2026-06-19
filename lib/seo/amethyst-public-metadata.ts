@@ -3,7 +3,7 @@ import {
   normalizeSparkleOrigin,
 } from './sparkle-crawl'
 
-export type AmethystPublicPage = 'homepage' | 'trade' | 'join'
+export type AmethystPublicPage = 'homepage' | 'trade' | 'join' | 'pantry'
 
 export interface AmethystPublicPageDefinition {
   path: string
@@ -80,6 +80,12 @@ export const AMETHYST_PUBLIC_PAGES: Record<
     title: "Jane's Sparkle Party - Join the Team",
     description:
       "Learn how to join Jane's Sparkle Party and build a Bomb Party business with practical support from an active team.",
+  },
+  pantry: {
+    path: '/amethyst/Pantry.html',
+    title: "Jane's Sparkle Party - In the Pantry",
+    description:
+      "Browse recipe notes, kitchen favorites, and community updates from Jane's Sparkle Party.",
   },
 }
 

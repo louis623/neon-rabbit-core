@@ -18,6 +18,7 @@ import type {
   FulfillmentQueueItem,
   HelpResource,
   JewelryDatabaseResult,
+  PublicSiteRecipe,
   RepMessagesDashboardResult,
   SiteSettingsDashboardResult,
   SiteAnalyticsDashboardResult,
@@ -64,6 +65,7 @@ const WORKSPACE_SECTIONS = [
   { key: 'team-management', label: 'Team Management', subtitle: 'Team onboarding and shared customer workflows', comingSoon: true },
   { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools', comingSoon: true },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
+  { key: 'recipes', label: 'Recipes', subtitle: 'Pantry recipe cards and images' },
   { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
   { key: 'account', label: 'Account', subtitle: 'Billing, wallet, and site analytics' },
 ] as const
@@ -81,6 +83,10 @@ export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
     params.set('offset', String(options.offset))
   }
   return `/api/nic-nac/trade-board?${params.toString()}`
+}
+
+export function buildSiteRecipesFetchUrl() {
+  return '/api/nic-nac/site-recipes'
 }
 
 export function getJewelryLibrarySearchErrorMessage(_status?: number) {
@@ -272,6 +278,17 @@ type SiteSettingsActionState = {
   helperMessage: string | null
 }
 
+type RecipesState = {
+  status: 'idle' | 'loading' | 'ready' | 'error'
+  recipes: PublicSiteRecipe[]
+}
+
+type RecipeActionState = {
+  pendingKey: string | null
+  error: string | null
+  helperMessage: string | null
+}
+
 type AccountBillingState = {
   status: 'loading' | 'ready' | 'error'
   summary?: AccountBillingDashboardResult
@@ -359,6 +376,27 @@ export type WalletAutoRechargeDraft = {
 
 export type SiteSettingsDraft = SiteSettingsDashboardResult
 
+export type RecipeDraft = {
+  id?: string
+  title: string
+  slug: string
+  description: string
+  category: string
+  prepTime: string
+  servings: string
+  imageUrl: string
+  imageAlt: string
+  imagePosition: string
+  modalImageUrl: string
+  modalImagePosition: string
+  tiktokUrl: string
+  ingredientsText: string
+  stepsText: string
+  note: string
+  isVisible: boolean
+  sourceRecipeId: string
+}
+
 type AudienceResponsePayload = {
   summary: CustomerAudienceSummary
   customers: CustomerAudienceMember[]
@@ -381,6 +419,11 @@ type MeResponsePayload = {
 
 type WalletResponsePayload = WalletDashboardResult
 type SiteSettingsResponsePayload = SiteSettingsDashboardResult
+type SiteRecipesResponsePayload = {
+  recipes?: PublicSiteRecipe[]
+  recipe?: PublicSiteRecipe
+  error?: string
+}
 type AccountBillingResponsePayload = AccountBillingDashboardResult
 type TradeBoardResponsePayload = BoardResult
 type TradeRequestsResponsePayload = TradeRequestWithListing[]
@@ -928,6 +971,96 @@ export function getAutoRechargeThresholdOptions(summary: WalletDashboardResult) 
     amountCents,
     label: `Recharge below $${amountCents / 100}`,
   }))
+}
+
+function joinRecipeLines(items?: string[]) {
+  return (items ?? []).join('\n')
+}
+
+function splitRecipeLines(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+export function getRecipeDraft(recipe?: PublicSiteRecipe | null): RecipeDraft {
+  return {
+    id: recipe?.id,
+    title: recipe?.title ?? '',
+    slug: recipe?.slug ?? '',
+    description: recipe?.description ?? '',
+    category: recipe?.category ?? '',
+    prepTime: recipe?.prepTime ?? '',
+    servings:
+      typeof recipe?.servings === 'number' && Number.isFinite(recipe.servings)
+        ? String(recipe.servings)
+        : '',
+    imageUrl: recipe?.imageUrl ?? '',
+    imageAlt: recipe?.imageAlt ?? '',
+    imagePosition: recipe?.imagePosition ?? 'center',
+    modalImageUrl: recipe?.modalImageUrl ?? '',
+    modalImagePosition: recipe?.modalImagePosition ?? 'center',
+    tiktokUrl: recipe?.tiktokUrl ?? '',
+    ingredientsText: joinRecipeLines(recipe?.ingredients),
+    stepsText: joinRecipeLines(recipe?.steps),
+    note: recipe?.note ?? '',
+    isVisible: recipe?.isVisible ?? true,
+    sourceRecipeId: recipe?.sourceRecipeId ?? '',
+  }
+}
+
+export function getRecipeDraftSavePayload(
+  draft: RecipeDraft,
+  options: { sortOrder?: number } = {},
+) {
+  const servings = draft.servings.trim()
+  const parsedServings = servings ? Number.parseInt(servings, 10) : null
+
+  return {
+    id: draft.id,
+    title: draft.title.trim(),
+    slug: draft.slug.trim() || undefined,
+    description: draft.description.trim(),
+    category: draft.category.trim(),
+    prepTime: draft.prepTime.trim(),
+    servings: Number.isFinite(parsedServings) ? parsedServings : null,
+    imageUrl: draft.imageUrl.trim(),
+    imageAlt: draft.imageAlt.trim(),
+    imagePosition: draft.imagePosition.trim() || 'center',
+    modalImageUrl: draft.modalImageUrl.trim(),
+    modalImagePosition: draft.modalImagePosition.trim() || 'center',
+    tiktokUrl: draft.tiktokUrl.trim(),
+    ingredients: splitRecipeLines(draft.ingredientsText),
+    steps: splitRecipeLines(draft.stepsText),
+    note: draft.note.trim(),
+    sortOrder: options.sortOrder,
+    isVisible: draft.isVisible,
+    sourceRecipeId: draft.sourceRecipeId.trim(),
+  }
+}
+
+export function getRecipeSaveStatusText(actionState?: RecipeActionState) {
+  if (actionState?.pendingKey) return 'Saving recipe changes...'
+  if (actionState?.error) return 'Recipe changes need attention.'
+  return actionState?.helperMessage ?? 'Select a recipe or add a new one.'
+}
+
+function sortRecipesByOrder(recipes: PublicSiteRecipe[]) {
+  return [...recipes].sort((a, b) => {
+    const orderDelta = a.sortOrder - b.sortOrder
+    if (orderDelta !== 0) return orderDelta
+    return a.title.localeCompare(b.title)
+  })
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(String(reader.result ?? '')))
+    reader.addEventListener('error', () => reject(reader.error ?? new Error('Unable to read image file.')))
+    reader.readAsDataURL(file)
+  })
 }
 
 export function getSiteSettingsDraft(
@@ -1553,6 +1686,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+  const [recipesState, setRecipesState] = useState<RecipesState>({
+    status: 'idle',
+    recipes: [],
+  })
+  const [recipeActionState, setRecipeActionState] =
+    useState<RecipeActionState>({
+      pendingKey: null,
+      error: null,
+      helperMessage: null,
+    })
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
+  const [recipeDraft, setRecipeDraft] = useState<RecipeDraft>(() =>
+    getRecipeDraft(),
+  )
   const [accountBillingActionState, setAccountBillingActionState] =
     useState<AccountBillingActionState>({
       pendingAction: null,
@@ -1773,6 +1920,44 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       status: 'ready',
       settings: payload,
     })
+  }
+
+  async function loadSiteRecipes(
+    signal?: AbortSignal,
+    options: { preferredRecipeId?: string | null } = {},
+  ) {
+    setRecipesState((current) => ({
+      status: 'loading',
+      recipes: current.recipes,
+    }))
+
+    const response = await fetch(buildSiteRecipesFetchUrl(), {
+      credentials: 'include',
+      signal,
+    })
+    const payload = (await response.json().catch(() => null)) as
+      | SiteRecipesResponsePayload
+      | null
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Unable to load site recipes right now.')
+    }
+
+    const recipes = sortRecipesByOrder(payload?.recipes ?? [])
+    setRecipesState({
+      status: 'ready',
+      recipes,
+    })
+    const preferredRecipeId =
+      options.preferredRecipeId === undefined
+        ? selectedRecipeId
+        : options.preferredRecipeId
+    const selectedRecipe = preferredRecipeId
+      ? recipes.find((recipe) => recipe.id === preferredRecipeId)
+      : undefined
+    const nextSelectedRecipe = selectedRecipe ?? recipes[0]
+    setSelectedRecipeId(nextSelectedRecipe?.id ?? null)
+    setRecipeDraft(getRecipeDraft(nextSelectedRecipe ?? null))
+    return recipes
   }
 
   async function loadAccountBilling(signal?: AbortSignal) {
@@ -2538,6 +2723,251 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     void saveSiteSettingsDraft(getNormalizedSiteSettingsDraft(siteSettingsDraft))
   }
 
+  function handleRecipeDraftChange(patch: Partial<RecipeDraft>) {
+    setRecipeActionState((current) => ({
+      pendingKey: current.pendingKey,
+      error: null,
+      helperMessage: null,
+    }))
+    setRecipeDraft((current) => ({ ...current, ...patch }))
+  }
+
+  function handleSelectRecipe(recipeId: string) {
+    const recipe = recipesState.recipes.find((item) => item.id === recipeId)
+    if (!recipe) return
+    setSelectedRecipeId(recipe.id)
+    setRecipeDraft(getRecipeDraft(recipe))
+    setRecipeActionState({
+      pendingKey: null,
+      error: null,
+      helperMessage: null,
+    })
+  }
+
+  function handleNewRecipe() {
+    setSelectedRecipeId(null)
+    setRecipeDraft(getRecipeDraft())
+    setRecipeActionState({
+      pendingKey: null,
+      error: null,
+      helperMessage: 'New recipe draft ready.',
+    })
+  }
+
+  async function handleSaveRecipe() {
+    if (!recipeDraft.title.trim()) {
+      setRecipeActionState({
+        pendingKey: null,
+        error: 'Recipe title is required.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    const existingRecipe = recipeDraft.id
+      ? recipesState.recipes.find((recipe) => recipe.id === recipeDraft.id)
+      : undefined
+    const sortOrder = existingRecipe?.sortOrder ?? recipesState.recipes.length
+    setRecipeActionState({
+      pendingKey: 'save',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch(buildSiteRecipesFetchUrl(), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upsert',
+          recipe: getRecipeDraftSavePayload(recipeDraft, { sortOrder }),
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | SiteRecipesResponsePayload
+        | null
+
+      if (!response.ok || !payload?.recipe) {
+        throw new Error(payload?.error || 'Unable to save this recipe right now.')
+      }
+
+      setSelectedRecipeId(payload.recipe.id)
+      setRecipeDraft(getRecipeDraft(payload.recipe))
+      await loadSiteRecipes(undefined, { preferredRecipeId: payload.recipe.id })
+      setRecipeActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: `${payload.recipe.title} saved for the Pantry.`,
+      })
+      refreshLiveSitePreviewAfterSiteSettingsSave()
+    } catch (error) {
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to save this recipe right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleRemoveRecipe(recipeId: string) {
+    const recipe = recipesState.recipes.find((item) => item.id === recipeId)
+    setRecipeActionState({
+      pendingKey: `remove:${recipeId}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch(buildSiteRecipesFetchUrl(), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove',
+          recipeId,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to remove this recipe right now.')
+      }
+
+      setSelectedRecipeId(null)
+      setRecipeDraft(getRecipeDraft())
+      await loadSiteRecipes(undefined, { preferredRecipeId: null })
+      setRecipeActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: `${recipe?.title ?? 'Recipe'} removed from the Pantry.`,
+      })
+      refreshLiveSitePreviewAfterSiteSettingsSave()
+    } catch (error) {
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to remove this recipe right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleReorderRecipe(recipeId: string, direction: -1 | 1) {
+    const currentIndex = recipesState.recipes.findIndex(
+      (recipe) => recipe.id === recipeId,
+    )
+    const targetIndex = currentIndex + direction
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= recipesState.recipes.length) {
+      return
+    }
+
+    const nextRecipes = [...recipesState.recipes]
+    const [movedRecipe] = nextRecipes.splice(currentIndex, 1)
+    nextRecipes.splice(targetIndex, 0, movedRecipe)
+    setRecipesState({
+      status: 'ready',
+      recipes: nextRecipes.map((recipe, index) => ({
+        ...recipe,
+        sortOrder: index,
+      })),
+    })
+    setRecipeActionState({
+      pendingKey: `reorder:${recipeId}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch(buildSiteRecipesFetchUrl(), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          recipeIds: nextRecipes.map((recipe) => recipe.id),
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to reorder recipes right now.')
+      }
+
+      await loadSiteRecipes()
+      setRecipeActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Pantry order saved.',
+      })
+      refreshLiveSitePreviewAfterSiteSettingsSave()
+    } catch (error) {
+      await loadSiteRecipes().catch(() => undefined)
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to reorder recipes right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleRecipeImageUpload(
+    field: 'imageUrl' | 'modalImageUrl',
+    file: File | null,
+  ) {
+    if (!file) return
+    setRecipeActionState({
+      pendingKey: `upload:${field}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const base64Data = await readFileAsDataUrl(file)
+      const response = await fetch('/api/nic-nac/site-recipes/image', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          base64Data,
+          filename: file.name,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; imageUrl?: string }
+        | null
+      if (!response.ok || !payload?.imageUrl) {
+        throw new Error(payload?.error || 'Unable to upload this recipe image.')
+      }
+
+      setRecipeDraft((current) => ({ ...current, [field]: payload.imageUrl ?? '' }))
+      setRecipeActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Recipe image uploaded. Save the recipe to publish it.',
+      })
+    } catch (error) {
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to upload this recipe image.',
+        helperMessage: null,
+      })
+    }
+  }
+
   async function handleAccountBillingAction(action: 'subscribe' | 'manage') {
     setAccountBillingActionState({
       pendingAction: action,
@@ -2726,6 +3156,27 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       }))
     })
   }, [activeSection, jewelryLibraryState.status])
+
+  useEffect(() => {
+    if (activeSection !== 'recipes') return
+    if (recipesState.status !== 'idle') return
+
+    const controller = new AbortController()
+    void loadSiteRecipes(controller.signal).catch((error) => {
+      if ((error as { name?: string }).name === 'AbortError') return
+      setRecipesState({ status: 'error', recipes: [] })
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to load site recipes right now.',
+        helperMessage: null,
+      })
+    })
+
+    return () => controller.abort()
+  }, [activeSection, recipesState.status])
 
   useEffect(() => {
     const refreshAfterNicNacMutation = (event: Event) => {
@@ -3545,6 +3996,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onDraftChange={handleSiteSettingsDraftChange}
                 onSocialHandleChange={handleSocialHandleChange}
                 onSave={handleSaveSiteSettings}
+              />
+            </div>
+          ) : null}
+
+          {canRenderWorkspaceSections && activeSection === 'recipes' ? (
+            <div className={styles.workspaceSectionStack}>
+              <RecipesCard
+                state={recipesState}
+                draft={recipeDraft}
+                selectedRecipeId={selectedRecipeId}
+                actionState={recipeActionState}
+                statusMessage={getRecipeSaveStatusText(recipeActionState)}
+                onSelectRecipe={handleSelectRecipe}
+                onNewRecipe={handleNewRecipe}
+                onDraftChange={handleRecipeDraftChange}
+                onSave={handleSaveRecipe}
+                onRemove={handleRemoveRecipe}
+                onReorder={handleReorderRecipe}
+                onUploadImage={handleRecipeImageUpload}
               />
             </div>
           ) : null}
@@ -5591,6 +6061,442 @@ export function SiteSettingsCard({
       {actionState?.error ? (
         <div className={styles.actionError}>{actionState.error}</div>
       ) : null}
+    </div>
+  )
+}
+
+export function RecipesCard({
+  state,
+  draft,
+  selectedRecipeId,
+  actionState,
+  statusMessage,
+  onSelectRecipe,
+  onNewRecipe,
+  onDraftChange,
+  onSave,
+  onRemove,
+  onReorder,
+  onUploadImage,
+}: {
+  state: RecipesState
+  draft: RecipeDraft
+  selectedRecipeId: string | null
+  actionState?: RecipeActionState
+  statusMessage?: string | null
+  onSelectRecipe?: (recipeId: string) => void
+  onNewRecipe?: () => void
+  onDraftChange?: (patch: Partial<RecipeDraft>) => void
+  onSave?: () => void
+  onRemove?: (recipeId: string) => void
+  onReorder?: (recipeId: string, direction: -1 | 1) => void
+  onUploadImage?: (
+    field: 'imageUrl' | 'modalImageUrl',
+    file: File | null,
+  ) => Promise<void> | void
+}) {
+  if (state.status === 'error') {
+    return (
+      <div className={styles.rosterFallback}>
+        Recipes will appear here once the Pantry editor can load.
+      </div>
+    )
+  }
+
+  if (state.status === 'idle' || state.status === 'loading') {
+    return (
+      <div className={styles.cardFill}>
+        <div className={styles.loadingLine} />
+        <div className={styles.loadingLineShort} />
+      </div>
+    )
+  }
+
+  const pendingKey = actionState?.pendingKey
+  const selectedIndex = state.recipes.findIndex(
+    (recipe) => recipe.id === selectedRecipeId,
+  )
+  const selectedRecipe = state.recipes[selectedIndex]
+  const canRemove = Boolean(selectedRecipe?.id)
+
+  return (
+    <div className={styles.siteSettingsCard}>
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.cardTitle}>Recipes</div>
+          <div className={styles.cardSubtitle}>
+            Add, update, reorder, and hide the recipe cards on Heather's Pantry page.
+          </div>
+        </div>
+        <div className={styles.siteSettingsSaveActions}>
+          <span
+            className={styles.siteSettingsSaveStatus}
+            data-testid="recipes-save-status"
+            role="status"
+            aria-live="polite"
+          >
+            {statusMessage ?? getRecipeSaveStatusText(actionState)}
+          </span>
+          <button
+            type="button"
+            className={styles.siteSettingsSaveButton}
+            onClick={onSave}
+            disabled={Boolean(pendingKey)}
+          >
+            {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
+          </button>
+        </div>
+      </div>
+
+      {actionState?.helperMessage ? (
+        <div className={styles.helperMessage}>{actionState.helperMessage}</div>
+      ) : null}
+      {actionState?.error ? (
+        <div className={styles.actionError}>{actionState.error}</div>
+      ) : null}
+
+      <div className={styles.recipeEditorLayout}>
+        <div className={styles.siteSettingsSection}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.walletSettingsTitle}>Pantry order</div>
+            <button
+              type="button"
+              className={styles.helperButton}
+              onClick={onNewRecipe}
+              disabled={Boolean(pendingKey)}
+            >
+              Add recipe
+            </button>
+          </div>
+          {state.recipes.length === 0 ? (
+            <div className={styles.emptyState}>
+              No recipes are saved yet. Add Heather's first recipe, then save it
+              to publish it to the Pantry.
+            </div>
+          ) : (
+            <div className={styles.recipeList} aria-label="Pantry recipes">
+              {state.recipes.map((recipe, index) => (
+                <div
+                  key={recipe.id}
+                  className={`${styles.recipeListItem} ${
+                    recipe.id === selectedRecipeId
+                      ? styles.recipeListItemActive
+                      : ''
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className={styles.recipeSelectButton}
+                    onClick={() => onSelectRecipe?.(recipe.id)}
+                  >
+                    {recipe.imageUrl ? (
+                      <img
+                        className={styles.recipeListImage}
+                        src={recipe.imageUrl}
+                        alt={recipe.imageAlt || recipe.title}
+                      />
+                    ) : (
+                      <span className={styles.recipeListImageFallback}>
+                        {recipe.title.slice(0, 1).toUpperCase()}
+                      </span>
+                    )}
+                    <span className={styles.recipeListBody}>
+                      <span className={styles.recipeListTitle}>
+                        {recipe.title}
+                      </span>
+                      <span className={styles.recipeListMeta}>
+                        {recipe.category || 'Recipe'} /{' '}
+                        {recipe.isVisible ? 'Visible' : 'Hidden'}
+                      </span>
+                    </span>
+                  </button>
+                  <div className={styles.recipeOrderControls}>
+                    <button
+                      type="button"
+                      className={styles.secondaryActionButton}
+                      onClick={() => onReorder?.(recipe.id, -1)}
+                      disabled={Boolean(pendingKey) || index === 0}
+                    >
+                      Up
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.secondaryActionButton}
+                      onClick={() => onReorder?.(recipe.id, 1)}
+                      disabled={
+                        Boolean(pendingKey) || index === state.recipes.length - 1
+                      }
+                    >
+                      Down
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.siteSettingsSection}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.walletSettingsTitle}>
+              {draft.id ? 'Recipe details' : 'New recipe'}
+            </div>
+            <span className={styles.rosterTag}>
+              {draft.isVisible ? 'Visible in Pantry' : 'Hidden draft'}
+            </span>
+          </div>
+
+          <div className={styles.siteSettingsGrid}>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Title</span>
+              <input
+                className={styles.searchInput}
+                value={draft.title}
+                onChange={(event) =>
+                  onDraftChange?.({ title: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Slug</span>
+              <input
+                className={styles.searchInput}
+                value={draft.slug}
+                placeholder="Auto-created from title"
+                onChange={(event) =>
+                  onDraftChange?.({ slug: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Category</span>
+              <input
+                className={styles.searchInput}
+                value={draft.category}
+                onChange={(event) =>
+                  onDraftChange?.({ category: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Prep time</span>
+              <input
+                className={styles.searchInput}
+                value={draft.prepTime}
+                onChange={(event) =>
+                  onDraftChange?.({ prepTime: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Servings</span>
+              <input
+                className={styles.searchInput}
+                inputMode="numeric"
+                value={draft.servings}
+                onChange={(event) =>
+                  onDraftChange?.({ servings: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.walletToggleRow}>
+              <span className={styles.searchLabel}>Visible in Pantry</span>
+              <input
+                type="checkbox"
+                checked={draft.isVisible}
+                onChange={(event) =>
+                  onDraftChange?.({ isVisible: event.target.checked })
+                }
+              />
+            </label>
+            <label className={styles.sortFieldWide}>
+              <span className={styles.searchLabel}>Description</span>
+              <textarea
+                className={styles.siteSettingsTextarea}
+                value={draft.description}
+                onChange={(event) =>
+                  onDraftChange?.({ description: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className={styles.siteSettingsGrid}>
+            <label className={styles.sortFieldWide}>
+              <span className={styles.searchLabel}>Ingredients</span>
+              <textarea
+                className={styles.siteSettingsTextarea}
+                value={draft.ingredientsText}
+                placeholder="One ingredient per line"
+                onChange={(event) =>
+                  onDraftChange?.({ ingredientsText: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.sortFieldWide}>
+              <span className={styles.searchLabel}>Steps</span>
+              <textarea
+                className={styles.siteSettingsTextarea}
+                value={draft.stepsText}
+                placeholder="One step per line"
+                onChange={(event) =>
+                  onDraftChange?.({ stepsText: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.sortFieldWide}>
+              <span className={styles.searchLabel}>Note</span>
+              <textarea
+                className={styles.siteSettingsTextarea}
+                value={draft.note}
+                onChange={(event) =>
+                  onDraftChange?.({ note: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className={styles.siteSettingsGrid}>
+            <RecipeImageField
+              label="Recipe card image"
+              field="imageUrl"
+              imageUrl={draft.imageUrl}
+              imageAlt={draft.imageAlt || draft.title}
+              pendingKey={pendingKey}
+              onDraftChange={onDraftChange}
+              onUploadImage={onUploadImage}
+            />
+            <RecipeImageField
+              label="Modal image"
+              field="modalImageUrl"
+              imageUrl={draft.modalImageUrl}
+              imageAlt={draft.imageAlt || draft.title}
+              pendingKey={pendingKey}
+              onDraftChange={onDraftChange}
+              onUploadImage={onUploadImage}
+            />
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Image alt text</span>
+              <input
+                className={styles.searchInput}
+                value={draft.imageAlt}
+                onChange={(event) =>
+                  onDraftChange?.({ imageAlt: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Card crop position</span>
+              <input
+                className={styles.searchInput}
+                value={draft.imagePosition}
+                onChange={(event) =>
+                  onDraftChange?.({ imagePosition: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Modal crop position</span>
+              <input
+                className={styles.searchInput}
+                value={draft.modalImagePosition}
+                onChange={(event) =>
+                  onDraftChange?.({ modalImagePosition: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>TikTok URL</span>
+              <input
+                className={styles.searchInput}
+                value={draft.tiktokUrl}
+                onChange={(event) =>
+                  onDraftChange?.({ tiktokUrl: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button
+              type="button"
+              className={styles.actionButton}
+              onClick={onSave}
+              disabled={Boolean(pendingKey)}
+            >
+              {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryActionButton}
+              onClick={() => draft.id && onRemove?.(draft.id)}
+              disabled={Boolean(pendingKey) || !canRemove}
+            >
+              Remove recipe
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RecipeImageField({
+  label,
+  field,
+  imageUrl,
+  imageAlt,
+  pendingKey,
+  onDraftChange,
+  onUploadImage,
+}: {
+  label: string
+  field: 'imageUrl' | 'modalImageUrl'
+  imageUrl: string
+  imageAlt: string
+  pendingKey?: string | null
+  onDraftChange?: (patch: Partial<RecipeDraft>) => void
+  onUploadImage?: (
+    field: 'imageUrl' | 'modalImageUrl',
+    file: File | null,
+  ) => Promise<void> | void
+}) {
+  const isUploading = pendingKey === `upload:${field}`
+
+  return (
+    <div className={styles.recipeImageField}>
+      <label className={styles.searchField}>
+        <span className={styles.searchLabel}>{label}</span>
+        <input
+          className={styles.searchInput}
+          value={imageUrl}
+          onChange={(event) =>
+            onDraftChange?.({ [field]: event.target.value } as Partial<RecipeDraft>)
+          }
+        />
+      </label>
+      {imageUrl ? (
+        <img
+          className={styles.recipeEditorImage}
+          src={imageUrl}
+          alt={imageAlt || label}
+        />
+      ) : (
+        <div className={styles.recipeEditorImageEmpty}>No image selected.</div>
+      )}
+      <label className={styles.recipeUploadButton}>
+        {isUploading ? 'Uploading...' : 'Upload image'}
+        <input
+          type="file"
+          accept="image/*"
+          disabled={Boolean(pendingKey)}
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0] ?? null
+            void onUploadImage?.(field, file)
+            event.currentTarget.value = ''
+          }}
+        />
+      </label>
     </div>
   )
 }

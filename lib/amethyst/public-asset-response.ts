@@ -41,6 +41,9 @@ const AMETHYST_ASSETS = new Set([
   'join.css',
   'Join.html',
   'join.jsx',
+  'pantry.css',
+  'Pantry.html',
+  'pantry.jsx',
   'README.md',
   'tokens.css',
   'trade.css',
@@ -56,6 +59,7 @@ const AMETHYST_PUBLIC_HTML_PAGES: Record<string, AmethystPublicPage> = {
   'Homepage.html': 'homepage',
   'Trade.html': 'trade',
   'Join.html': 'join',
+  'Pantry.html': 'pantry',
 }
 
 const AMETHYST_TEMPLATE_SCRIPT_PAGES: Record<string, AmethystPublicPage> = {
@@ -126,6 +130,13 @@ function buildTargetedPageText(
     return {
       title: `Join ${teamName}`,
       description: `Learn how to join ${teamName} with ${repName}.`,
+    }
+  }
+
+  if (page === 'pantry') {
+    return {
+      title: `In the Pantry - ${businessName}`,
+      description: `Browse Heather's BlingKitchen recipes, kitchen notes, and live-show community favorites.`,
     }
   }
 
@@ -282,7 +293,9 @@ function rewriteTemplateScriptTarget(
       ? '/api/amethyst/homepage-template'
       : page === 'trade'
         ? '/api/amethyst/trade-template'
-        : '/api/amethyst/join-template'
+        : page === 'join'
+          ? '/api/amethyst/join-template'
+          : '/api/amethyst/pantry-template'
   const query = new URLSearchParams({ c: target })
   if (publicSiteSlug) query.set('publicSiteSlug', publicSiteSlug)
 

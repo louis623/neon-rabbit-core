@@ -2056,3 +2056,40 @@ body.mile-high-fizz-trade .hp-footer-col a:hover {
     padding: 0 16px;
   }
 }
+
+body.bling-kitchen-trade {
+  --bk-ink: #20172b;
+  --bk-plum: #6f2da8;
+  --bk-violet: #9b5de5;
+  background: linear-gradient(180deg, #fff9f1 0%, #f8eef8 52%, #fff 100%);
+}
+
+.bk-trade-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 64px;
+}
+
+body.bling-kitchen-trade .hp-sticky-stack,
+body.bling-kitchen-trade .tp-hero,
+body.bling-kitchen-trade .tp-filters,
+body.bling-kitchen-trade .tp-card,
+body.bling-kitchen-trade .tp-sheet,
+body.bling-kitchen-trade .hp-footer {
+  border-radius: 8px;
+  border-color: rgba(32, 23, 43, 0.13);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(58, 29, 82, 0.13);
+}
+
+body.bling-kitchen-trade .tp-hero-title,
+body.bling-kitchen-trade .hp-footer-brand {
+  font-family: "Playfair Display", Georgia, serif;
+  color: var(--bk-ink);
+}
+
+body.bling-kitchen-trade .tp-hero-eyebrow,
+body.bling-kitchen-trade .tp-meta-pill,
+body.bling-kitchen-trade .tp-card-collection {
+  color: var(--bk-plum);
+}

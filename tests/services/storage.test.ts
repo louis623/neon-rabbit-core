@@ -12,6 +12,7 @@ import {
   removeTradeRequestRevealScreenshots,
   uploadTradeRequestRevealScreenshot,
   uploadJewelryPhoto,
+  uploadPublicSiteMedia,
   uploadStagedOriginalPhoto,
 } from '@/lib/services/storage'
 
@@ -153,6 +154,51 @@ describe('storage service', () => {
       },
     )
     expect(result).toBe('https://cdn.example.com/rep-photo.jpg')
+  })
+
+  it('uploads public site media to rep-scoped recipe folders', async () => {
+    const publicSiteBucket = makeStorageBucket()
+    publicSiteBucket.upload.mockResolvedValue({ error: null })
+    publicSiteBucket.getPublicUrl.mockReturnValue({
+      data: { publicUrl: 'https://cdn.example.com/recipe.jpg' },
+    })
+
+    createAdminClientMock.mockReturnValue({
+      storage: {
+        from: vi.fn((bucket: string) => {
+          if (bucket === 'public-site-media') {
+            return publicSiteBucket
+          }
+          throw new Error(`Unexpected bucket ${bucket}`)
+        }),
+      },
+    })
+
+    const result = await uploadPublicSiteMedia(
+      'rep-7',
+      'data:image/webp;base64,cmVjaXBl',
+      {
+        filename: 'Creamer hero.webp',
+        folder: 'recipes',
+      },
+    )
+
+    expect(publicSiteBucket.upload).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^rep-7\/recipes\/[0-9a-f-]+-Creamer_hero\.webp$/,
+      ),
+      Buffer.from('recipe'),
+      {
+        contentType: 'image/webp',
+        upsert: false,
+      },
+    )
+    expect(publicSiteBucket.getPublicUrl).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^rep-7\/recipes\/[0-9a-f-]+-Creamer_hero\.webp$/,
+      ),
+    )
+    expect(result).toBe('https://cdn.example.com/recipe.jpg')
   })
 
   it('uploads a trade request reveal screenshot to the private temporary bucket', async () => {

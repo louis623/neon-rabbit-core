@@ -3281,6 +3281,163 @@
   border-color: var(--nic-nac-border-input-focus);
 }
 
+.recipeEditorLayout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.recipeList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 680px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.recipeListItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  border-radius: 14px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.64);
+  padding: 8px;
+}
+
+.recipeListItemActive {
+  border-color: rgba(238, 44, 155, 0.42);
+  background: rgba(255, 246, 250, 0.92);
+}
+
+.recipeSelectButton {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.recipeListImage,
+.recipeListImageFallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-dashboard-placeholder);
+}
+
+.recipeListImage {
+  display: block;
+  object-fit: cover;
+}
+
+.recipeListImageFallback {
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.recipeListBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recipeListTitle {
+  overflow-wrap: anywhere;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.recipeListMeta {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.recipeOrderControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(58px, 1fr));
+  gap: 6px;
+}
+
+.recipeImageField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.recipeEditorImage,
+.recipeEditorImageEmpty {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-dashboard-placeholder);
+}
+
+.recipeEditorImage {
+  display: block;
+  object-fit: cover;
+}
+
+.recipeEditorImageEmpty {
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 12px;
+  text-align: center;
+}
+
+.recipeUploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  border: 1px solid rgba(238, 44, 155, 0.2);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.8));
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.recipeUploadButton input {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0 0 0 0);
+}
+
 .walletToggleRow {
   display: flex;
   align-items: center;
@@ -3651,6 +3808,8 @@
 .main[data-workspace-skin='black_diamond'] .referralLinkValue,
 .main[data-workspace-skin='black_diamond'] .referralStats span,
 .main[data-workspace-skin='black_diamond'] .statusBadge,
+.main[data-workspace-skin='black_diamond'] .recipeListItem,
+.main[data-workspace-skin='black_diamond'] .recipeEditorImageEmpty,
 .main[data-workspace-skin='black_diamond'] .emptyState,
 .main[data-workspace-skin='black_diamond'] .statusBadgeNeutral {
   background: #211c18;
@@ -3798,6 +3957,10 @@
   }
 
   .workspaceSectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .recipeEditorLayout {
     grid-template-columns: 1fr;
   }
 
@@ -4002,6 +4165,14 @@
 
   .siteSettingsSaveButton {
     width: 100%;
+  }
+
+  .recipeListItem {
+    grid-template-columns: 1fr;
+  }
+
+  .recipeOrderControls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .calendarPanels {

@@ -47,6 +47,12 @@ import {
   applyBrittWithBlingTrade,
   isBrittWithBlingSettings,
 } from '@/lib/britt-with-bling/profile'
+import {
+  applyBlingKitchenHomepage,
+  applyBlingKitchenJoin,
+  applyBlingKitchenTrade,
+  isBlingKitchenSettings,
+} from '@/lib/bling-kitchen/profile'
 
 interface PreviewTemplateDataDependencies {
   createAdminClient?: typeof createAdminClient
@@ -351,7 +357,10 @@ function applyCustomerTarget(
     data.homepage.publicSiteVariant === 'mile_high_fizz_hybrid'
   const isBrittWithBlingHybrid =
     data.homepage.publicSiteVariant === 'britt_with_bling_hybrid'
-  const isBespokeHybrid = isMileHighFizzHybrid || isBrittWithBlingHybrid
+  const isBlingKitchenHybrid =
+    data.homepage.publicSiteVariant === 'bling_kitchen_hybrid'
+  const isBespokeHybrid =
+    isMileHighFizzHybrid || isBrittWithBlingHybrid || isBlingKitchenHybrid
   const hasDatabaseRoster = data.join.teamMembers.some(
     (member) => typeof member.id === 'string' && member.id.trim().length > 0,
   )
@@ -361,6 +370,7 @@ function applyCustomerTarget(
           home: `/${publicSiteSlug.trim().toLowerCase()}`,
           tradeBoard: `/${publicSiteSlug.trim().toLowerCase()}/trade`,
           joinTeam: `/${publicSiteSlug.trim().toLowerCase()}/join`,
+          pantry: `/${publicSiteSlug.trim().toLowerCase()}/in-the-pantry`,
         }
       : null
   const scrubGenericJoin =
@@ -380,6 +390,10 @@ function applyCustomerTarget(
         ? bespokeSlugLinks?.joinTeam ??
           withCustomerTarget(data.homepage.joinTeamUrl, repId)
         : '',
+      pantryPageUrl: data.homepage.pantryPageUrl
+        ? bespokeSlugLinks?.pantry ??
+          withCustomerTarget(data.homepage.pantryPageUrl, repId)
+        : data.homepage.pantryPageUrl,
       footerLinks: {
         ...data.homepage.footerLinks,
         home:
@@ -499,7 +513,9 @@ export function mapPreviewSettingsToHomepageTemplateData(
     ? applyMileHighFizzHomepage(homepage)
     : isBrittWithBlingSettings(settings)
       ? applyBrittWithBlingHomepage(homepage)
-      : homepage
+      : isBlingKitchenSettings(settings)
+        ? applyBlingKitchenHomepage(homepage)
+        : homepage
 }
 
 export function mapPreviewSettingsToTradeTemplateData(
@@ -538,6 +554,7 @@ export function mapPreviewSettingsToTradeTemplateData(
 
   if (isMileHighFizzSettings(settings)) return applyMileHighFizzTrade(trade)
   if (isBrittWithBlingSettings(settings)) return applyBrittWithBlingTrade(trade)
+  if (isBlingKitchenSettings(settings)) return applyBlingKitchenTrade(trade)
   return trade
 }
 
@@ -586,6 +603,7 @@ export function mapPreviewSettingsToJoinTemplateData(
   if (isBrittWithBlingSettings(settings)) {
     return applyBrittWithBlingJoin(join, teamMembers ?? [])
   }
+  if (isBlingKitchenSettings(settings)) return applyBlingKitchenJoin(join)
   return join
 }
 

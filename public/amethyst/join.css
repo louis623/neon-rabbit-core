@@ -1384,3 +1384,40 @@ body.britt-with-bling-join .hp-footer-brand {
   background-clip: text;
   color: transparent;
 }
+
+body.bling-kitchen-join {
+  --bk-ink: #20172b;
+  --bk-plum: #6f2da8;
+  --bk-violet: #9b5de5;
+  background: linear-gradient(180deg, #fff9f1 0%, #f8eef8 52%, #fff 100%);
+}
+
+.bk-join-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 64px;
+}
+
+body.bling-kitchen-join .hp-sticky-stack,
+body.bling-kitchen-join .jp-hero,
+body.bling-kitchen-join .jp-section,
+body.bling-kitchen-join .jp-final-card,
+body.bling-kitchen-join .hp-footer {
+  border-radius: 8px;
+  border-color: rgba(32, 23, 43, 0.13);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(58, 29, 82, 0.13);
+}
+
+body.bling-kitchen-join .jp-hero-title,
+body.bling-kitchen-join .jp-section-title,
+body.bling-kitchen-join .hp-footer-brand {
+  font-family: "Playfair Display", Georgia, serif;
+  color: var(--bk-ink);
+}
+
+body.bling-kitchen-join .jp-hero-eyebrow,
+body.bling-kitchen-join .jp-card-kicker,
+body.bling-kitchen-join .jp-faq-item button {
+  color: var(--bk-plum);
+}

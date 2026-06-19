@@ -59,7 +59,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystHomepageTemplateData {
-  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid'
+  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
   businessName: string
   teamName: string
@@ -74,6 +74,7 @@ export interface AmethystHomepageTemplateData {
   announcementHref?: string
   promoTickerText?: string
   shopCtaLabel?: string
+  pantryPageUrl?: string
   featuredReveal?: AmethystHomepageFeaturedReveal
   revealExplainer?: AmethystHomepageRevealExplainer
   heroMotion: string

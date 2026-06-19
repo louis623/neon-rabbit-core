@@ -13,6 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { randomUUID } from 'crypto'
 
 const PUBLIC_BUCKET = 'jewelry-photos'
+const PUBLIC_SITE_MEDIA_BUCKET = 'public-site-media'
 const STAGING_BUCKET = 'jewelry-photo-staging'
 const TRADE_REQUEST_SCREENSHOT_BUCKET = 'trade-request-screenshots'
 const STAGING_URL_TTL_SECONDS = 60 * 60
@@ -142,6 +143,35 @@ export async function getStagedOriginalPhotoSignedUrl(
   const signed = await bucket.createSignedUrl(objectPath, ttlSeconds)
   if (signed.error) throw signed.error
   return signed.data.signedUrl
+}
+
+export async function uploadPublicSiteMedia(
+  repId: string,
+  base64Data: string,
+  options: {
+    filename?: string
+    folder?: 'recipes'
+  } = {},
+): Promise<string> {
+  const admin = createAdminClient()
+  const { mime, base64 } = parseDataUrl(base64Data)
+  const ext = MIME_EXT[mime.toLowerCase()] ?? 'jpg'
+  const folder = options.folder ?? 'recipes'
+  const safeName = options.filename
+    ? sanitizeFilename(stripKnownExtension(options.filename))
+    : 'public-site-media'
+  const key = `${repId}/${folder}/${randomUUID()}-${safeName}.${ext}`
+  const buffer = Buffer.from(base64, 'base64')
+
+  const bucket = admin.storage.from(PUBLIC_SITE_MEDIA_BUCKET)
+  const { error } = await bucket.upload(key, buffer, {
+    contentType: mime,
+    upsert: false,
+  })
+  if (error) throw error
+
+  const { data } = bucket.getPublicUrl(key)
+  return data.publicUrl
 }
 
 export async function uploadTradeRequestRevealScreenshot(

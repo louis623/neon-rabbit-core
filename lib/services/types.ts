@@ -630,6 +630,57 @@ export interface ReorderJoinTeamRosterInput {
   memberIds: string[]
 }
 
+export interface PublicSiteRecipe {
+  id: string
+  repId: string
+  title: string
+  slug: string
+  description: string
+  category: string
+  prepTime: string
+  servings: number | null
+  imageUrl: string
+  imageAlt: string
+  imagePosition: string
+  modalImageUrl: string
+  modalImagePosition: string
+  tiktokUrl: string
+  ingredients: string[]
+  steps: string[]
+  note: string
+  sortOrder: number
+  isVisible: boolean
+  sourceRecipeId: string
+  createdAt: string | null
+  updatedAt: string | null
+}
+
+export interface UpsertPublicSiteRecipeInput {
+  id?: string
+  title: string
+  slug?: string
+  description?: string
+  category?: string
+  prepTime?: string
+  servings?: number | null
+  imageUrl?: string
+  imageAlt?: string
+  imagePosition?: string
+  modalImageUrl?: string
+  modalImagePosition?: string
+  tiktokUrl?: string
+  ingredients?: string[]
+  steps?: string[]
+  note?: string
+  sortOrder?: number
+  isVisible?: boolean
+  sourceRecipeId?: string
+}
+
+export interface ReorderPublicSiteRecipesInput {
+  recipeIds: string[]
+}
+
 export interface LiveQueueSnapshot {
   syncCode: string
   queue: string[]

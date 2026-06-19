@@ -303,7 +303,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('Buy Now')
     expect(jsx).not.toContain('Next to reveal')
     expect(jsx).not.toContain('Rare finds')
-    expect(css).not.toContain('.tp-hero-eyebrow')
+    expect(css).not.toMatch(/(^|\n)\.tp-hero-eyebrow\s*\{/)
     expect(css).not.toContain('.tp-hero .tp-card-rep')
     expect(css).not.toContain('.tp-rules-strip')
     expect(css).toMatch(/\.tp-filters\s*\{[\s\S]*?border-radius:\s*var\(--hp-radius-card\);/)

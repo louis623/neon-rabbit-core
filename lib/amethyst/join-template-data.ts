@@ -42,7 +42,7 @@ export interface AmethystRuntimeContext {
 }
 
 export interface AmethystJoinTemplateData {
-  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid'
+  publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
   repCity: string
   repState: string
@@ -162,7 +162,7 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   bpIncomeDisclosureUrl:
     'https://bombpartyassets.blob.core.windows.net/exigoresourcelibraryassets/Rep%20Use%20Documents/Bomb%20Party_Income%20Disclosure%20Statement_2025%20%281%29.pdf',
   tickerTopText:
-    'Live tonight · 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday',
+    'Live tonight Â· 8pm CST | Use code AMETHYST15 | Pre-orders close Friday | New Unicorn drops Tuesday',
   shopUrl: 'https://bombparty.com/?ref=sparklebysasha',
   bombPartyFaqUrl: 'https://bombparty.com',
   footerTagline:
