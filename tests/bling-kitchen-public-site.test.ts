@@ -205,6 +205,10 @@ describe('BlingKitchen hybrid public site contract', () => {
       resolve(process.cwd(), 'public/amethyst/Pantry.html'),
       'utf8',
     )
+    const homepageCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
 
     expect(homepageJsx).toContain('function BlingKitchenHomepage')
     expect(homepageJsx).toContain('isBlingKitchenHybrid')
@@ -220,5 +224,7 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('recipe.tiktokUrl')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
+    expect(homepageCss).toContain('color: var(--bk-ink) !important;')
+    expect(homepageCss).toContain('text-shadow: none;')
   })
 })

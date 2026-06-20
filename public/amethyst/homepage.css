@@ -238,8 +238,9 @@ body.bling-kitchen {
 
 .bk-home-hero-ctas a:nth-child(2),
 .bk-home-hero-ctas a:nth-child(3) {
-  color: var(--bk-ink);
+  color: var(--bk-ink) !important;
   background: #fff;
+  text-shadow: none;
 }
 
 .bk-home-hero-ctas a.is-live {
