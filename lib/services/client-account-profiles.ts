@@ -25,6 +25,10 @@ export interface OperatorCustomerProfile {
   primaryContactName: string | null
   email: string
   phone: string | null
+  referral: {
+    code: string | null
+    usageCount: number
+  }
   accountStatus: string | null
   subscriptionStatus: string | null
   supportTier: string | null
@@ -55,6 +59,7 @@ interface RepProfileSource {
   email: string | null
   phone: string | null
   status: string | null
+  referral_code: string | null
   public_site_slug: string | null
   custom_domain: string | null
 }
@@ -65,6 +70,11 @@ interface OperatorRepRow extends RepProfileSource {
   social_handles: unknown
   created_at: string | null
   updated_at: string | null
+}
+
+interface OperatorReferralRow {
+  referrer_rep_id: string
+  referral_code_used: string | null
 }
 
 interface ClientAccountProfileRow {
@@ -171,7 +181,7 @@ export async function ensureClientAccountProfile(
   const { data: rep, error: repError } = await supabase
     .from('reps')
     .select(
-      'id, display_name, business_name, email, phone, status, public_site_slug, custom_domain',
+      'id, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain',
     )
     .eq('id', normalizedRepId)
     .single()
@@ -272,7 +282,7 @@ export async function listOperatorCustomerProfiles(
       supabase
         .from('reps')
         .select(
-          'id, display_name, business_name, email, phone, status, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+          'id, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
         )
         .order('business_name', { ascending: true })
         .limit(limit),
@@ -304,6 +314,19 @@ export async function listOperatorCustomerProfiles(
   if (profilesResult.error) throw profilesResult.error
   if (setupSessionsResult.error) throw setupSessionsResult.error
 
+  const repRows = (repsResult.data ?? []) as OperatorRepRow[]
+  const repIds = repRows.map((rep) => rep.id)
+  const referralRowsResult =
+    repIds.length > 0
+      ? await supabase
+          .from('rep_referrals')
+          .select('referrer_rep_id, referral_code_used')
+          .in('referrer_rep_id', repIds)
+          .limit(limit * 10)
+      : { data: [], error: null }
+
+  if (referralRowsResult.error) throw referralRowsResult.error
+
   const subscriptionsByRep = new Map<string, OperatorSubscriptionRow>()
   for (const row of (subscriptionsResult.data ?? []) as OperatorSubscriptionRow[]) {
     if (!subscriptionsByRep.has(row.rep_id)) subscriptionsByRep.set(row.rep_id, row)
@@ -319,7 +342,13 @@ export async function listOperatorCustomerProfiles(
     if (!setupByRep.has(row.rep_id)) setupByRep.set(row.rep_id, row)
   }
 
-  return ((repsResult.data ?? []) as OperatorRepRow[]).map((rep) => {
+  const referralUsageByRep = new Map<string, number>()
+  for (const row of (referralRowsResult.data ?? []) as OperatorReferralRow[]) {
+    const current = referralUsageByRep.get(row.referrer_rep_id) ?? 0
+    referralUsageByRep.set(row.referrer_rep_id, current + 1)
+  }
+
+  return repRows.map((rep) => {
     const profile = profilesByRep.get(rep.id)
     const subscription = subscriptionsByRep.get(rep.id)
     const setup = setupByRep.get(rep.id)
@@ -344,6 +373,10 @@ export async function listOperatorCustomerProfiles(
         textOrNull(rep.display_name),
       email: textOrNull(profile?.email) ?? fallbackEmail,
       phone: textOrNull(profile?.phone) ?? textOrNull(rep.phone),
+      referral: {
+        code: textOrNull(rep.referral_code),
+        usageCount: referralUsageByRep.get(rep.id) ?? 0,
+      },
       accountStatus: textOrNull(profile?.account_status) ?? textOrNull(rep.status),
       subscriptionStatus:
         textOrNull(profile?.subscription_status) ??

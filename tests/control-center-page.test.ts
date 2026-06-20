@@ -62,6 +62,10 @@ function customerProfile(overrides: Record<string, unknown> = {}) {
     primaryContactName: 'Default Rep',
     email: 'default@example.com',
     phone: '555-000-0000',
+    referral: {
+      code: null,
+      usageCount: 0,
+    },
     accountStatus: 'active',
     subscriptionStatus: 'active',
     supportTier: 'founder',
@@ -126,6 +130,10 @@ describe('SparkleSuiteControlCenterPage', () => {
         primaryContactName: 'Jane Roberts',
         email: 'jane@example.com',
         phone: '555-123-4567',
+        referral: {
+          code: 'SS-JANE12',
+          usageCount: 3,
+        },
         accountStatus: 'active',
         subscriptionStatus: 'active',
         supportTier: 'founder',
@@ -175,6 +183,12 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('Jane Roberts')
     expect(html).toContain("Jane&#x27;s Sparkle Party")
     expect(html).toContain('Founder')
+    expect(html).toContain('Phone')
+    expect(html).toContain('555-123-4567')
+    expect(html).toContain('Promo code')
+    expect(html).toContain('SS-JANE12')
+    expect(html).toContain('Promo uses')
+    expect(html).toContain('3')
     expect(html).toContain('jane.example')
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')

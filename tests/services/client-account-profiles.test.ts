@@ -4,7 +4,12 @@ import {
   listOperatorCustomerProfiles,
 } from '@/lib/services/client-account-profiles'
 
-type TableName = 'reps' | 'self_serve_setup_sessions' | 'subscriptions' | 'client_account_profiles'
+type TableName =
+  | 'reps'
+  | 'self_serve_setup_sessions'
+  | 'subscriptions'
+  | 'client_account_profiles'
+  | 'rep_referrals'
 
 function makeSingleResult(data: unknown, error: unknown = null) {
   const query = {
@@ -30,6 +35,7 @@ function makeUpsertResult(data: unknown, error: unknown = null) {
 function makeListResult(data: unknown[], error: unknown = null) {
   const query = {
     select: vi.fn(() => query),
+    in: vi.fn(() => query),
     order: vi.fn(() => query),
     limit: vi.fn(async () => ({ data, error })),
   }
@@ -79,12 +85,14 @@ function makeListClient(options: {
   subscriptions: Record<string, unknown>[]
   profiles: Record<string, unknown>[]
   setupSessions: Record<string, unknown>[]
+  repReferrals?: Record<string, unknown>[]
 }) {
   const queries = {
     reps: makeListResult(options.reps),
     subscriptions: makeListResult(options.subscriptions),
     client_account_profiles: makeListResult(options.profiles),
     self_serve_setup_sessions: makeListResult(options.setupSessions),
+    rep_referrals: makeListResult(options.repReferrals ?? []),
   } satisfies Record<TableName, unknown>
 
   return {
@@ -245,6 +253,7 @@ describe('listOperatorCustomerProfiles', () => {
           email: 'jane@example.com',
           phone: '555-123-4567',
           status: 'active',
+          referral_code: 'SS-JANE12',
           public_site_slug: 'janesparkleparty',
           custom_domain: 'jane.example',
           shop_link: 'https://shop.example/jane',
@@ -292,6 +301,16 @@ describe('listOperatorCustomerProfiles', () => {
           updated_at: '2026-06-12T12:00:00.000Z',
         },
       ],
+      repReferrals: [
+        {
+          referrer_rep_id: 'rep-1',
+          referral_code_used: 'SS-JANE12',
+        },
+        {
+          referrer_rep_id: 'rep-1',
+          referral_code_used: 'SS-JANE12',
+        },
+      ],
     })
 
     const customers = await listOperatorCustomerProfiles(client as never, {
@@ -303,8 +322,15 @@ describe('listOperatorCustomerProfiles', () => {
     expect(client.from).toHaveBeenCalledWith('client_account_profiles')
     expect(client.from).toHaveBeenCalledWith('self_serve_setup_sessions')
     expect(queries.reps.select).toHaveBeenCalledWith(
-      'id, display_name, business_name, email, phone, status, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+      'id, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
     )
+    expect(client.from).toHaveBeenCalledWith('rep_referrals')
+    expect(queries.rep_referrals.select).toHaveBeenCalledWith(
+      'referrer_rep_id, referral_code_used',
+    )
+    expect(queries.rep_referrals.in).toHaveBeenCalledWith('referrer_rep_id', [
+      'rep-1',
+    ])
     expect(customers).toEqual([
       {
         repId: 'rep-1',
@@ -313,6 +339,10 @@ describe('listOperatorCustomerProfiles', () => {
         primaryContactName: 'Jane Roberts',
         email: 'billing@example.com',
         phone: '555-555-5555',
+        referral: {
+          code: 'SS-JANE12',
+          usageCount: 2,
+        },
         accountStatus: 'active',
         subscriptionStatus: 'active',
         supportTier: 'founder',

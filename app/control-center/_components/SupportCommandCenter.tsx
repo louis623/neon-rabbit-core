@@ -26,6 +26,10 @@ export type OperatorCustomerRecord = {
   primaryContactName: string | null
   email: string
   phone: string | null
+  referral: {
+    code: string | null
+    usageCount: number
+  }
   accountStatus: string | null
   subscriptionStatus: string | null
   supportTier: string | null
@@ -123,6 +127,12 @@ function formatMoney(value: number | null | undefined) {
     maximumFractionDigits: 0,
     style: 'currency',
   }).format(value)
+}
+
+function formatCount(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? String(value)
+    : '0'
 }
 
 function statusClass(value: string | null | undefined) {
@@ -238,6 +248,14 @@ function CustomerProfile({
               value={customer.phone ?? 'Not provided'}
             />
             <InfoBlock term="Show title" value={customer.showName} />
+            <InfoBlock
+              term="Promo code"
+              value={customer.referral.code ?? 'Not provided'}
+            />
+            <InfoBlock
+              term="Promo uses"
+              value={formatCount(customer.referral.usageCount)}
+            />
             <InfoBlock
               className="sm:col-span-2"
               term="Email"
