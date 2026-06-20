@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260620-blingkitchen-repair')
+        expect(script, file).toContain('v=20260620-workspace-features')
       }
     }
   })
