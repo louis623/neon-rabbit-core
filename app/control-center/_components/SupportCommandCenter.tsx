@@ -633,13 +633,22 @@ export function SupportCommandCenter({
               </div>
             </section>
 
-            <section
-              className="scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
+            <details
+              className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
               id="customer-database"
             >
-              <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 md:flex-row md:items-end md:justify-between">
+              <summary
+                aria-label="Expand Customer Database"
+                className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
+              >
                 <div>
-                  <h2 className="text-lg font-semibold">Customer Database</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">Customer Database</h2>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-4 w-4 text-slate-400 transition group-open/database:rotate-180"
+                    />
+                  </div>
                   <p className="mt-1 text-sm text-slate-600">
                     Active customer accounts only: Mile High Fizz, Britt With
                     Bling, and BlingKitchen.
@@ -648,28 +657,37 @@ export function SupportCommandCenter({
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   {countLabel(customerAccounts.length, 'customer account')}
                 </p>
-              </div>
+              </summary>
 
               {customerAccounts.length === 0 ? (
-                <p className="px-4 py-8 text-sm text-slate-500">
+                <p className="border-t border-slate-200 px-4 py-8 text-sm text-slate-500">
                   No customer profiles are available yet.
                 </p>
               ) : (
-                <div>
+                <div className="border-t border-slate-200">
                   {customerAccounts.map((customer) => (
                     <CustomerProfile customer={customer} key={customer.repId} />
                   ))}
                 </div>
               )}
-            </section>
+            </details>
 
-            <section
-              className="scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
+            <details
+              className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
               id="demo-database"
             >
-              <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 md:flex-row md:items-end md:justify-between">
+              <summary
+                aria-label="Expand Demo Database"
+                className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
+              >
                 <div>
-                  <h2 className="text-lg font-semibold">Demo Database</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">Demo Database</h2>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-4 w-4 text-slate-400 transition group-open/database:rotate-180"
+                    />
+                  </div>
                   <p className="mt-1 text-sm text-slate-600">
                     Demo, reviewer, smoke, and sample accounts are kept separate
                     from active customers.
@@ -678,14 +696,14 @@ export function SupportCommandCenter({
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   {countLabel(demoAccounts.length, 'demo account')}
                 </p>
-              </div>
+              </summary>
 
               {demoAccounts.length === 0 ? (
-                <p className="px-4 py-8 text-sm text-slate-500">
+                <p className="border-t border-slate-200 px-4 py-8 text-sm text-slate-500">
                   No demo profiles are available yet.
                 </p>
               ) : (
-                <div>
+                <div className="border-t border-slate-200">
                   {demoAccounts.map((customer) => (
                     <CustomerProfile
                       customer={customer}
@@ -695,7 +713,7 @@ export function SupportCommandCenter({
                   ))}
                 </div>
               )}
-            </section>
+            </details>
           </div>
         </div>
       </div>
