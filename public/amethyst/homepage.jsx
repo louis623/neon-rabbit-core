@@ -343,6 +343,29 @@ function getContentLiveQueueState() {
   return ["live", "offline", "loading", "empty"].includes(state) ? state : null;
 }
 
+function buildHybridTickerItems(primaryText, featureText, repeatCount = 3) {
+  const primary = runtimeText(primaryText) || runtimeText(featureText);
+  const featureParts = runtimeText(featureText)
+    .split("|")
+    .map((part) => part.trim())
+    .filter((part) => /trade board|live queue/i.test(part));
+  const seen = new Set();
+  const items = [primary, ...featureParts]
+    .filter(Boolean)
+    .filter((item) => {
+      const key = item.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+  if (items.length === 0) return [];
+
+  return Array.from({ length: Math.max(repeatCount, items.length) }, (_, index) => (
+    items[index % items.length]
+  ));
+}
+
 // ============================================================
 // Preset combos
 // ============================================================
@@ -1399,7 +1422,7 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
   const announcementHref = CONTENT.announcementHref || "#about";
   const announcementLabel = CONTENT.announcementLinkLabel || "Learn More";
   const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
-  const tickerItems = [promoTickerText, promoTickerText];
+  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 4);
   const heroVideoUrl = CONTENT.heroVideoUrl || "/mile-high-fizz/hero.mp4";
 
   const menuLinks = [
@@ -1577,7 +1600,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
   const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
   const shopCtaLabel = CONTENT.shopCtaLabel || "Shop";
   const heroImageUrl = CONTENT.heroImageUrl || "https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/76f968c944f6b1dd16c30e418f371af6.jpeg";
-  const tickerItems = [promoTickerText, promoTickerText, promoTickerText];
+  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 6);
 
   const menuLinks = [
     { label: "Home", href: "#top" },
@@ -1675,7 +1698,7 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
   const announcementLabel = CONTENT.announcementLinkLabel || "Shop Now";
   const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
   const heroImageUrl = CONTENT.heroImageUrl || "";
-  const tickerItems = [promoTickerText, promoTickerText, promoTickerText];
+  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 6);
   const menuLinks = [
     { label: "Home", href: "#top" },
     { label: "In the Pantry", href: pantryHref },
