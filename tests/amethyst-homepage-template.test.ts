@@ -269,8 +269,8 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('data-slot="about media 1"')
     expect(jsx).toContain('data-slot="about media 2"')
-    expect(jsx).toContain('Ask Nic-Nac to place it in About media 1')
-    expect(jsx).toContain('Ask Nic-Nac to place it in About media 2')
+    expect(jsx).toContain('Heather Daugherty - BlingKitchen, Ohio')
+    expect(jsx).toContain('Family recipes, kitchen tips, and Heather-style notes.')
     expect(jsx).not.toContain('data-slot="about media 3"')
     expect(jsx).not.toContain('hp-about-media-card-tall')
     expect(css).toMatch(/\.hp-about-media-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/)

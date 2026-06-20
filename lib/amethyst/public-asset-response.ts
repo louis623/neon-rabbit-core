@@ -118,6 +118,41 @@ function buildTargetedPageText(
   const businessName = templateData.homepage.businessName
   const repName = getPublicRepName(templateData.homepage.repName)
   const teamName = templateData.join.teamName
+  const isBlingKitchen =
+    templateData.homepage.publicSiteVariant === 'bling_kitchen_hybrid'
+
+  if (isBlingKitchen) {
+    if (page === 'trade') {
+      return {
+        title: 'BlingKitchen Trade Board - Heather Daugherty',
+        description:
+          "Browse Heather's BlingKitchen trade board for live-show jewelry swaps.",
+      }
+    }
+
+    if (page === 'join') {
+      return {
+        title: "Join Heather's BlingKitchen Team - Opal Sparkling Gems",
+        description:
+          "Join Heather Daugherty's Opal Sparkling Gems team and build a Bomb Party business with warm, practical mentorship.",
+      }
+    }
+
+    if (page === 'pantry') {
+      return {
+        title: "In the Pantry - Heather's BlingKitchen Recipes",
+        description:
+          "Browse Heather's BlingKitchen recipes, kitchen notes, TikTok favorites, and live-show community treats.",
+      }
+    }
+
+    return {
+      title:
+        'BlingKitchen - Heather Daugherty | Ohio Bomb Party Host | Serving Sparkle from the Heart of the Home',
+      description:
+        "Shop Bomb Party reveals with Heather Daugherty at BlingKitchen, join the live show, browse Heather's Pantry recipes, and connect with the Ohio BlingKitchen community.",
+    }
+  }
 
   if (page === 'trade') {
     return {
@@ -145,6 +180,8 @@ function buildTargetedPageText(
     description: `Shop live jewelry reveals and updates with ${businessName}.`,
   }
 }
+
+export const buildTargetedAmethystPublicPageTextForTest = buildTargetedPageText
 
 function buildMetadataTagsFromPublicMetadata(
   metadata: ReturnType<typeof buildAmethystPublicMetadata>,

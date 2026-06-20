@@ -2093,3 +2093,54 @@ body.bling-kitchen-trade .tp-meta-pill,
 body.bling-kitchen-trade .tp-card-collection {
   color: var(--bk-plum);
 }
+
+body.bling-kitchen-trade {
+  --bk-muted: #6d5f73;
+  --bk-sage: #5f7461;
+  --bk-gold: #b5843f;
+  background:
+    linear-gradient(180deg, #fff8ee 0%, #f7eef5 48%, #fdfaf4 100%);
+}
+
+body.bling-kitchen-trade .tp-hero,
+body.bling-kitchen-trade .tp-filters,
+body.bling-kitchen-trade .tp-card,
+body.bling-kitchen-trade .tp-sheet {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(95, 42, 131, 0.14);
+}
+
+body.bling-kitchen-trade .tp-hero-title {
+  color: var(--bk-ink);
+}
+
+body.bling-kitchen-trade .tp-hero-copy,
+body.bling-kitchen-trade .tp-card-meta,
+body.bling-kitchen-trade .tp-card-description,
+body.bling-kitchen-trade .tp-sheet p {
+  color: var(--bk-muted);
+}
+
+body.bling-kitchen-trade .tp-card-expand-cta,
+body.bling-kitchen-trade .tp-request-submit {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5f7461, #5f2a83);
+  color: #fff8ee;
+}
+
+body.bling-kitchen-trade .hp-footer {
+  background: #2b1a33;
+  color: rgba(255, 248, 238, 0.78);
+  box-shadow: none;
+}
+
+body.bling-kitchen-trade .hp-footer-brand,
+body.bling-kitchen-trade .hp-footer a {
+  color: #fff8ee;
+}
+
+body.bling-kitchen-trade .hp-footer-tag,
+body.bling-kitchen-trade .hp-footer-bottom,
+body.bling-kitchen-trade .hp-footer-bottom p {
+  color: rgba(255, 248, 238, 0.78);
+}

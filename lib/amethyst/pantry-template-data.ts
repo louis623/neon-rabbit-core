@@ -68,7 +68,7 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
   subtitle:
     'Heather shares family recipes, kitchen notes, and favorite treats alongside the BlingKitchen live reveal community.',
   introText:
-    `Browse ${BLING_KITCHEN_RECIPE_COUNT} source recipes from Heather's Ready.ai site, preserved as structured content so future updates can flow through Nic-Nac or a recipe upload workflow.`,
+    `Browse ${BLING_KITCHEN_RECIPE_COUNT} recipes from Heather's BlingKitchen pantry, including family favorites, kitchen notes, and live-show community treats.`,
   heroImageUrl: BLING_KITCHEN_PROFILE.pantryHeroImageUrl,
   sourceSite: BLING_KITCHEN_PROFILE.sourceSite,
   recipeCount: BLING_KITCHEN_RECIPE_COUNT,

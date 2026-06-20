@@ -8,6 +8,7 @@ import {
   mapPreviewSettingsToJoinTemplateData,
   mapPreviewSettingsToTradeTemplateData,
 } from '@/lib/amethyst/preview-template-data'
+import { buildTargetedAmethystPublicPageTextForTest } from '@/lib/amethyst/public-asset-response'
 import { buildAmethystHomepageBootstrapScript } from '@/lib/amethyst/homepage-template-data'
 import {
   buildAmethystPantryBootstrapScript,
@@ -211,10 +212,11 @@ describe('BlingKitchen hybrid public site contract', () => {
     )
 
     expect(homepageJsx).toContain('function BlingKitchenHomepage')
+    expect(homepageJsx).toContain('function BlingKitchenRevealGuide')
     expect(homepageJsx).toContain('isBlingKitchenHybrid')
     expect(homepageJsx).toContain('bk-home-pantry-callout')
     expect(homepageJsx).toContain('bk-home-cta-label')
-    expect(homepageJsx).toContain('<Wibp repName={repName} />')
+    expect(homepageJsx).toContain('<BlingKitchenRevealGuide repName={repName} />')
     expect(homepageJsx).not.toContain('<WIBP repName={repName} />')
     expect(tradeJsx).toContain('isBlingKitchenHybrid')
     expect(tradeJsx).toContain('bk-trade-board-panel')
@@ -228,5 +230,40 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(homepageCss).toContain('color: var(--bk-ink) !important;')
     expect(homepageCss).toContain('text-shadow: none;')
     expect(homepageCss).toContain('.bk-home-hero-ctas .bk-home-cta-label')
+    expect(homepageCss).toContain('.bk-home-guide')
+  })
+
+  it('uses BlingKitchen-specific public SEO text', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      blingKitchenSettings,
+      blingKitchenExtras,
+    )
+    const trade = mapPreviewSettingsToTradeTemplateData(
+      blingKitchenSettings,
+      blingKitchenExtras,
+    )
+    const join = mapPreviewSettingsToJoinTemplateData(
+      blingKitchenSettings,
+      blingKitchenExtras,
+    )
+    const templateData = {
+      appearancePreset: 'amethyst',
+      homepage,
+      trade,
+      join,
+    }
+
+    expect(
+      buildTargetedAmethystPublicPageTextForTest('homepage', templateData).title,
+    ).toBe(
+      'BlingKitchen - Heather Daugherty | Ohio Bomb Party Host | Serving Sparkle from the Heart of the Home',
+    )
+    expect(
+      buildTargetedAmethystPublicPageTextForTest('pantry', templateData).title,
+    ).toBe("In the Pantry - Heather's BlingKitchen Recipes")
+    expect(
+      buildTargetedAmethystPublicPageTextForTest('homepage', templateData)
+        .description,
+    ).toContain('Heather Daugherty')
   })
 })

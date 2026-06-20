@@ -123,6 +123,7 @@ describe('Amethyst public metadata helpers', () => {
       'homepage',
       'trade',
       'join',
+      'pantry',
     ])
     expect(buildAmethystPublicMetadata('join').canonicalUrl).toBe(
       'https://www.yoursparklesuite.com/amethyst/Join.html',

@@ -1421,3 +1421,55 @@ body.bling-kitchen-join .jp-card-kicker,
 body.bling-kitchen-join .jp-faq-item button {
   color: var(--bk-plum);
 }
+
+body.bling-kitchen-join {
+  --bk-muted: #6d5f73;
+  --bk-sage: #5f7461;
+  --bk-gold: #b5843f;
+  background:
+    linear-gradient(180deg, #fff8ee 0%, #f7eef5 48%, #fdfaf4 100%);
+}
+
+body.bling-kitchen-join .jp-hero,
+body.bling-kitchen-join .jp-section,
+body.bling-kitchen-join .jp-final-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(95, 42, 131, 0.14);
+}
+
+body.bling-kitchen-join .jp-hero-title,
+body.bling-kitchen-join .jp-section-title {
+  color: var(--bk-ink);
+}
+
+body.bling-kitchen-join .jp-hero-sub,
+body.bling-kitchen-join .jp-section-copy,
+body.bling-kitchen-join .jp-benefit-card p,
+body.bling-kitchen-join .jp-team-card p,
+body.bling-kitchen-join .jp-faq-item p {
+  color: var(--bk-muted);
+}
+
+body.bling-kitchen-join .jp-spot-btn,
+body.bling-kitchen-join .jp-final-card a {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5f7461, #5f2a83);
+  color: #fff8ee;
+}
+
+body.bling-kitchen-join .hp-footer {
+  background: #2b1a33;
+  color: rgba(255, 248, 238, 0.78);
+  box-shadow: none;
+}
+
+body.bling-kitchen-join .hp-footer-brand,
+body.bling-kitchen-join .hp-footer a {
+  color: #fff8ee;
+}
+
+body.bling-kitchen-join .hp-footer-tag,
+body.bling-kitchen-join .hp-footer-bottom,
+body.bling-kitchen-join .hp-footer-bottom p {
+  color: rgba(255, 248, 238, 0.78);
+}

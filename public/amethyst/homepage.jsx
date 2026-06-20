@@ -1023,6 +1023,41 @@ function Wibp({ repName }) {
   );
 }
 
+function BlingKitchenRevealGuide({ repName }) {
+  const watchHref = CONTENT.streamLinks?.tiktok || CONTENT.streamLinks?.watch || getWatchHref();
+  const shopHref = getShopHref();
+  const vipHref = CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB");
+
+  return (
+    <section className="bk-home-guide" id="wibp">
+      <div className="bk-home-guide-copy">
+        <p className="bk-home-section-kicker">How BlingKitchen works</p>
+        <h2>Order, pull up a seat, and reveal with Heather.</h2>
+        <span>
+          BlingKitchen blends live jewelry reveals with Heather's kitchen-table warmth. Place your Bomb Party order, come back to the live, and watch your surprise piece open with the community.
+        </span>
+      </div>
+      <div className="bk-home-guide-steps">
+        <a {...linkProps(shopHref)} className="bk-home-guide-step">
+          <strong>1</strong>
+          <b>Order before the show</b>
+          <span>Shop active parties and choose the collection you want Heather to reveal.</span>
+        </a>
+        <a {...linkProps(watchHref)} className="bk-home-guide-step">
+          <strong>2</strong>
+          <b>Watch with Heather</b>
+          <span>Join TikTok live for the reveal, kitchen conversation, and community fun.</span>
+        </a>
+        <a {...linkProps(vipHref)} className="bk-home-guide-step">
+          <strong>3</strong>
+          <b>Stay at the table</b>
+          <span>Follow show updates, recipes, and VIP community posts between live nights.</span>
+        </a>
+      </div>
+    </section>
+  );
+}
+
 // ============================================================
 // About
 // ============================================================
@@ -1059,14 +1094,14 @@ function AboutSection({ repName }) {
 
           <div className="hp-about-media-grid">
             <div className="hp-about-media-card slot" data-slot="about media 1">
-              <div className="hp-about-media-type">About media 1</div>
+              <div className="hp-about-media-type">Meet Heather</div>
               <div className="hp-about-media-play">â–¶</div>
-              <div className="hp-about-media-caption">Photo or short social video. Ask Nic-Nac to place it in About media 1.</div>
+              <div className="hp-about-media-caption">Heather Daugherty - BlingKitchen, Ohio</div>
             </div>
             <div className="hp-about-media-card slot" data-slot="about media 2">
-              <div className="hp-about-media-type">About media 2</div>
+              <div className="hp-about-media-type">In the Pantry</div>
               <div className="hp-about-media-play">▶</div>
-              <div className="hp-about-media-caption">Optional second photo or short social video. Ask Nic-Nac to place it in About media 2.</div>
+              <div className="hp-about-media-caption">Family recipes, kitchen tips, and Heather-style notes.</div>
             </div>
           </div>
         </div>
@@ -1089,6 +1124,8 @@ function Signup({ repName, businessName }) {
     marketingConsent: false,
   });
   const [submitState, setSubmitState] = useState({ status: "idle", message: "" });
+  const signupTitle = CONTENT.signupTitle || "Never miss a show.";
+  const signupSub = CONTENT.signupSub || `Get a heads-up when ${repName} goes live, plus first dibs on new drops.`;
 
   function updateField(key, value) {
     setForm((current) => ({
@@ -1154,28 +1191,28 @@ function Signup({ repName, businessName }) {
         <div className="hp-signup-card">
           <div className="hp-signup-card-body">
             <div className="hp-signup-eyebrow">Stay in the loop</div>
-            <h2 className="hp-signup-title">Never miss a show.</h2>
-            <p className="hp-signup-sub">Get a heads-up when <span className="slot" data-slot="rep name">{repName}</span> goes live, plus first dibs on new drops.</p>
+            <h2 className="hp-signup-title">{signupTitle}</h2>
+            <p className="hp-signup-sub">{signupSub}</p>
           </div>
           <form className="hp-signup-form" onSubmit={handleSubmit}>
             <div className="hp-signup-row">
               <div className="hp-signup-field">
                 <label className="hp-signup-label" htmlFor="hp-first-name">First name</label>
-                <input id="hp-first-name" className="hp-signup-input" type="text" placeholder="Jamie" value={form.firstName} onChange={(e) => updateField("firstName", e.target.value)} required />
+                <input id="hp-first-name" className="hp-signup-input" type="text" placeholder="First name" value={form.firstName} onChange={(e) => updateField("firstName", e.target.value)} required />
               </div>
               <div className="hp-signup-field">
                 <label className="hp-signup-label" htmlFor="hp-last-name">Last name</label>
-                <input id="hp-last-name" className="hp-signup-input" type="text" placeholder="Lane" value={form.lastName} onChange={(e) => updateField("lastName", e.target.value)} required />
+                <input id="hp-last-name" className="hp-signup-input" type="text" placeholder="Last name" value={form.lastName} onChange={(e) => updateField("lastName", e.target.value)} required />
               </div>
             </div>
             <div className="hp-signup-row">
               <div className="hp-signup-field">
                 <label className="hp-signup-label" htmlFor="hp-email">Email</label>
-                <input id="hp-email" className="hp-signup-input" type="email" placeholder="you@example.com" value={form.email} onChange={(e) => updateField("email", e.target.value)} />
+                <input id="hp-email" className="hp-signup-input" type="email" placeholder="Email address" value={form.email} onChange={(e) => updateField("email", e.target.value)} />
               </div>
               <div className="hp-signup-field">
                 <label className="hp-signup-label" htmlFor="hp-phone">Phone <span className="hp-signup-label-aux">(optional, for SMS)</span></label>
-                <input id="hp-phone" className="hp-signup-input" type="tel" placeholder="(555) 555-5555" value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
+                <input id="hp-phone" className="hp-signup-input" type="tel" placeholder="Mobile number" value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
               </div>
             </div>
             <div className="hp-signup-consent-box">
@@ -1677,7 +1714,7 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
         <div className="bk-home-automation-panel">
           {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
           {t.showEvents && <Events count={t.eventCount} />}
-          {t.showWibp && <Wibp repName={repName} />}
+          {t.showWibp && <BlingKitchenRevealGuide repName={repName} />}
           {t.showAbout && <AboutSection repName={repName} />}
           {t.showSignup && <Signup repName={repName} businessName={businessName} />}
           {t.showFooter && <Footer businessName={businessName} />}
@@ -1700,6 +1737,14 @@ function App() {
   const effectiveLrqState = scheduleIsLive ? t.lrqState : "offline";
 
   useEffect(() => {
+    if (isBlingKitchenHybrid) {
+      applyTargetedMetadata(
+        "BlingKitchen - Heather Daugherty | Ohio Bomb Party Host | Serving Sparkle from the Heart of the Home",
+        "Shop Bomb Party reveals with Heather Daugherty at BlingKitchen, join the live show, browse Heather's Pantry recipes, and connect with the Ohio BlingKitchen community.",
+      );
+      return;
+    }
+
     applyTargetedMetadata(
       `${t.businessName} - Live jewelry reveals`,
       `Shop live jewelry reveals and updates with ${t.businessName}.`,
