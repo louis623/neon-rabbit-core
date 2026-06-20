@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const getAuthenticatedOperatorMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const listOperatorSupportReportsMock = vi.fn()
+const listOperatorCustomerProfilesMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
 })
@@ -34,6 +35,11 @@ vi.mock('@/lib/services/support-reports', () => ({
     listOperatorSupportReportsMock(...args),
 }))
 
+vi.mock('@/lib/services/client-account-profiles', () => ({
+  listOperatorCustomerProfiles: (...args: unknown[]) =>
+    listOperatorCustomerProfilesMock(...args),
+}))
+
 vi.mock(
   '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle',
   () => ({
@@ -48,6 +54,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     getAuthenticatedOperatorMock.mockReset()
     createAdminClientMock.mockReset()
     listOperatorSupportReportsMock.mockReset()
+    listOperatorCustomerProfilesMock.mockReset()
     redirectMock.mockClear()
     getAuthenticatedOperatorMock.mockResolvedValue({
       repId: 'operator-1',
@@ -74,9 +81,38 @@ describe('SparkleSuiteControlCenterPage', () => {
         created_at: '2026-06-12T17:00:00.000Z',
       },
     ])
+    listOperatorCustomerProfilesMock.mockResolvedValue([
+      {
+        repId: 'rep-1',
+        clientName: 'Jane Roberts',
+        showName: "Jane's Sparkle Party",
+        primaryContactName: 'Jane Roberts',
+        email: 'jane@example.com',
+        phone: '555-123-4567',
+        accountStatus: 'active',
+        subscriptionStatus: 'active',
+        supportTier: 'founder',
+        publicSiteSlug: 'janesparkleparty',
+        customDomain: 'jane.example',
+        shopLink: 'https://shop.example/jane',
+        streamingLinks: { tiktok: 'https://www.tiktok.com/@janesparkle' },
+        socialHandles: { instagram: '@janesparkle' },
+        internalNotes: 'Prefers text for urgent billing questions.',
+        setupStatus: 'dashboard_unlocked',
+        setupCurrentStep: 'final_preview_approval',
+        billing: {
+          status: 'active',
+          planTier: 'monthly',
+          pricingTier: 'founder',
+          monthlyAmount: 49,
+          currentPeriodEnd: '2026-07-12T17:00:00.000Z',
+          stripeCustomerId: 'cus_123',
+        },
+      },
+    ])
   })
 
-  it('renders the Support Command Center instead of redirecting to intake', async () => {
+  it('renders the Sparkle Suite Control Center with support and customer database sections', async () => {
     const page = await SparkleSuiteControlCenterPage()
     const html = renderToStaticMarkup(page)
 
@@ -86,14 +122,25 @@ describe('SparkleSuiteControlCenterPage', () => {
       { from: expect.any(Function) },
       { limit: 50 },
     )
-    expect(html).toContain('Support Command Center')
+    expect(listOperatorCustomerProfilesMock).toHaveBeenCalledWith(
+      { from: expect.any(Function) },
+      { limit: 200 },
+    )
+    expect(html).toContain('Sparkle Suite Control Center')
+    expect(html).not.toContain('Support Command Center')
+    expect(html).toContain('Control Center Options')
     expect(html).toContain('Support Inbox')
+    expect(html).toContain('Customer Database')
     expect(html).toContain('Report Detail')
-    expect(html).toContain('Client Profile')
+    expect(html).toContain('Rep Profile')
     expect(html).toContain('Resolution')
     expect(html).toContain('Trade Board item vanished')
     expect(html).toContain('Jane Roberts')
     expect(html).toContain("Jane&#x27;s Sparkle Party")
+    expect(html).toContain('Founder')
+    expect(html).toContain('jane.example')
+    expect(html).toContain('Prefers text for urgent billing questions.')
+    expect(html).toContain('aria-label="Expand Jane Roberts profile"')
   })
 
   it('redirects unauthenticated operators to login', async () => {
@@ -106,6 +153,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     )
 
     expect(listOperatorSupportReportsMock).not.toHaveBeenCalled()
+    expect(listOperatorCustomerProfilesMock).not.toHaveBeenCalled()
   })
 
   it('renders an operator access required message for non-operators', async () => {
@@ -118,5 +166,6 @@ describe('SparkleSuiteControlCenterPage', () => {
 
     expect(html).toContain('Operator access required')
     expect(listOperatorSupportReportsMock).not.toHaveBeenCalled()
+    expect(listOperatorCustomerProfilesMock).not.toHaveBeenCalled()
   })
 })

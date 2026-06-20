@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 20, 2026
+
+**Sparkle Suite task closeout should commit, push, deploy, and promote the stable demo by default**
+Louis reiterated that finished Sparkle Suite tasks should be committed, pushed, deployed, and made available for review automatically unless he explicitly says not to. For demo/review work, the closeout target remains the stable alias `https://sparkle-suite-demo.vercel.app`, not only a raw Vercel preview URL.
+
+**Control Center is becoming the internal operating workspace**
+The `/control-center` surface should use the plain title `Sparkle Suite Control Center` and grow beyond support tickets into operator/customer management. Customer records should be clean, expandable rep profiles with contact, billing, website/social, status, and notes instead of a spreadsheet-style dump.
+
+---
+
 ## June 19, 2026
 
 **Sparkle Suite binder now lives inside the repo**

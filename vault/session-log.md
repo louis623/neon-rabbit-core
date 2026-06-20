@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 20, 2026 - Control Center Title and Customer Database v1
+
+**Work completed:**
+- Renamed the main `/control-center` title from `Support Command Center` to `Sparkle Suite Control Center`.
+- Added a left-hand `Control Center Options` column with Trouble Tickets and Customer Database navigation.
+- Added a Customer Database section that lists reps/customers as expandable rows rather than a spreadsheet.
+- Each rep row now shows contact details, billing/subscription signals, public site/domain/shop links, social/streaming links, setup status/current step, and internal notes when present.
+- Added `listOperatorCustomerProfiles` so the Control Center starts from all reps and merges profile, subscription, setup, website, social, and notes data.
+
+**Verification:**
+- Focused tests passed: `tests/control-center-page.test.ts` and `tests/services/client-account-profiles.test.ts`.
+- Local `npm run build` passed.
+- Local in-app browser QA passed on `http://127.0.0.1:3001/control-center`: title, left nav, Customer Database, 25 expandable rep rows, BlingKitchen profile expansion, and console health.
+
+**Follow-up:**
+- Customer Database v1 is read-only. Inline editing for internal notes/status, filtering/search, and richer billing history remain future Control Center polish.
+
+---
+
 ## June 19, 2026 - Binder Folded Back Into Repo
 
 **Problem fixed:**

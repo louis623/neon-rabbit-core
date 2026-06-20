@@ -6,6 +6,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Immediate Sparkle Suite Follow-Up
 
+- [ ] **Control Center customer database polish** - v1 was added June 20 as a read-only expandable rep/customer database with contact, billing, website/social, setup status, and internal notes. Next polish should add search/filtering, inline internal notes/status editing, and richer billing history/detail actions.
 - [x] **Close out BlingKitchen migration** - completed June 19 in `ccd4456 feat: migrate BlingKitchen public site`. Recipes were seeded, Supabase reported remote DB up to date, focused BlingKitchen/Nic-Nac recipe tests passed, `qa:amethyst` passed, build passed locally and on Vercel, branch was pushed, and stable demo now points to `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`.
 - [x] **Smoke Heather's account after BlingKitchen deploy** - account provisioning/login verified for `blingkitchen19@gmail.com`, rep id `9a971c05-3631-443e-bcb8-4e9a26e15885`, live queue sync code `BLI-3767`, and `readyForDomainCutover: true`. Do not store the temporary password in long-term docs; rotate it after handoff if needed.
 - [ ] **Finish Britt With Bling acceptance pass** - pushed checkpoint `2617b8c feat: migrate Britt With Bling public site` carries the custom public site. Confirm Louis/Brittany acceptance, then verify Join Team cards preserve photos, names, links, copy, and ordering. Diamonds/unicorns/FAQ pages were intentionally dropped per Louis.

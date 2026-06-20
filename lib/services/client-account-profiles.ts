@@ -18,6 +18,36 @@ export interface ClientAccountSnapshot {
   sourceSnapshot: JsonObject
 }
 
+export interface OperatorCustomerProfile {
+  repId: string
+  clientName: string
+  showName: string
+  primaryContactName: string | null
+  email: string
+  phone: string | null
+  accountStatus: string | null
+  subscriptionStatus: string | null
+  supportTier: string | null
+  publicSiteSlug: string | null
+  customDomain: string | null
+  shopLink: string | null
+  streamingLinks: JsonObject
+  socialHandles: JsonObject
+  internalNotes: string | null
+  setupStatus: string | null
+  setupCurrentStep: string | null
+  billing: {
+    status: string | null
+    planTier: string | null
+    pricingTier: string | null
+    monthlyAmount: number | null
+    currentPeriodEnd: string | null
+    stripeCustomerId: string | null
+  }
+  createdAt: string | null
+  updatedAt: string | null
+}
+
 interface RepProfileSource {
   id: string
   display_name: string | null
@@ -27,6 +57,14 @@ interface RepProfileSource {
   status: string | null
   public_site_slug: string | null
   custom_domain: string | null
+}
+
+interface OperatorRepRow extends RepProfileSource {
+  shop_link: string | null
+  streaming_links: unknown
+  social_handles: unknown
+  created_at: string | null
+  updated_at: string | null
 }
 
 interface ClientAccountProfileRow {
@@ -44,6 +82,30 @@ interface ClientAccountProfileRow {
   custom_domain: string | null
 }
 
+interface OperatorClientAccountProfileRow extends ClientAccountProfileRow {
+  internal_notes: string | null
+  updated_at: string | null
+}
+
+interface OperatorSubscriptionRow {
+  rep_id: string
+  status: string | null
+  plan_tier: string | null
+  pricing_tier: string | null
+  monthly_amount: unknown
+  current_period_end: string | null
+  stripe_customer_id: string | null
+  updated_at: string | null
+}
+
+interface OperatorSetupSessionRow {
+  rep_id: string
+  status: string | null
+  current_step: string | null
+  dashboard_unlocked_at: string | null
+  updated_at: string | null
+}
+
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -54,6 +116,25 @@ function objectOrEmpty(value: unknown): JsonObject {
 
 function textOrNull(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function numberOrNull(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
+}
+
+function latestTimestamp(...values: Array<string | null | undefined>) {
+  const valid = values.filter((value): value is string => Boolean(value))
+  if (valid.length === 0) return null
+  return valid.sort((left, right) => {
+    const leftTime = new Date(left).getTime()
+    const rightTime = new Date(right).getTime()
+    return rightTime - leftTime
+  })[0]
 }
 
 function accountBasicsFromSetup(setup: unknown) {
@@ -178,4 +259,125 @@ export async function ensureClientAccountProfile(
   }
 
   return normalizeProfile(profile as ClientAccountProfileRow, sourceSnapshot)
+}
+
+export async function listOperatorCustomerProfiles(
+  supabase: SupabaseClient,
+  options: { limit?: number } = {},
+): Promise<OperatorCustomerProfile[]> {
+  const limit = Math.min(Math.max(options.limit ?? 200, 1), 500)
+
+  const [repsResult, subscriptionsResult, profilesResult, setupSessionsResult] =
+    await Promise.all([
+      supabase
+        .from('reps')
+        .select(
+          'id, display_name, business_name, email, phone, status, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+        )
+        .order('business_name', { ascending: true })
+        .limit(limit),
+      supabase
+        .from('subscriptions')
+        .select(
+          'rep_id, status, plan_tier, pricing_tier, monthly_amount, current_period_end, stripe_customer_id, updated_at',
+        )
+        .order('updated_at', { ascending: false })
+        .limit(limit * 2),
+      supabase
+        .from('client_account_profiles')
+        .select(
+          'id, rep_id, client_name, show_name, primary_contact_name, email, phone, account_status, subscription_status, support_tier, public_site_slug, custom_domain, internal_notes, updated_at',
+        )
+        .order('updated_at', { ascending: false })
+        .limit(limit * 2),
+      supabase
+        .from('self_serve_setup_sessions')
+        .select(
+          'rep_id, status, current_step, dashboard_unlocked_at, updated_at',
+        )
+        .order('updated_at', { ascending: false })
+        .limit(limit * 2),
+    ])
+
+  if (repsResult.error) throw repsResult.error
+  if (subscriptionsResult.error) throw subscriptionsResult.error
+  if (profilesResult.error) throw profilesResult.error
+  if (setupSessionsResult.error) throw setupSessionsResult.error
+
+  const subscriptionsByRep = new Map<string, OperatorSubscriptionRow>()
+  for (const row of (subscriptionsResult.data ?? []) as OperatorSubscriptionRow[]) {
+    if (!subscriptionsByRep.has(row.rep_id)) subscriptionsByRep.set(row.rep_id, row)
+  }
+
+  const profilesByRep = new Map<string, OperatorClientAccountProfileRow>()
+  for (const row of (profilesResult.data ?? []) as OperatorClientAccountProfileRow[]) {
+    if (!profilesByRep.has(row.rep_id)) profilesByRep.set(row.rep_id, row)
+  }
+
+  const setupByRep = new Map<string, OperatorSetupSessionRow>()
+  for (const row of (setupSessionsResult.data ?? []) as OperatorSetupSessionRow[]) {
+    if (!setupByRep.has(row.rep_id)) setupByRep.set(row.rep_id, row)
+  }
+
+  return ((repsResult.data ?? []) as OperatorRepRow[]).map((rep) => {
+    const profile = profilesByRep.get(rep.id)
+    const subscription = subscriptionsByRep.get(rep.id)
+    const setup = setupByRep.get(rep.id)
+    const fallbackName =
+      textOrNull(rep.business_name) ??
+      textOrNull(rep.display_name) ??
+      textOrNull(rep.email) ??
+      rep.id
+    const fallbackEmail =
+      textOrNull(rep.email) ?? `${rep.id}@missing-email.local`
+
+    return {
+      repId: rep.id,
+      clientName:
+        textOrNull(profile?.client_name) ??
+        fallbackName,
+      showName:
+        textOrNull(profile?.show_name) ??
+        fallbackName,
+      primaryContactName:
+        textOrNull(profile?.primary_contact_name) ??
+        textOrNull(rep.display_name),
+      email: textOrNull(profile?.email) ?? fallbackEmail,
+      phone: textOrNull(profile?.phone) ?? textOrNull(rep.phone),
+      accountStatus: textOrNull(profile?.account_status) ?? textOrNull(rep.status),
+      subscriptionStatus:
+        textOrNull(profile?.subscription_status) ??
+        textOrNull(subscription?.status),
+      supportTier:
+        textOrNull(profile?.support_tier) ??
+        textOrNull(subscription?.pricing_tier) ??
+        textOrNull(subscription?.plan_tier),
+      publicSiteSlug:
+        textOrNull(profile?.public_site_slug) ??
+        textOrNull(rep.public_site_slug),
+      customDomain:
+        textOrNull(profile?.custom_domain) ?? textOrNull(rep.custom_domain),
+      shopLink: textOrNull(rep.shop_link),
+      streamingLinks: objectOrEmpty(rep.streaming_links),
+      socialHandles: objectOrEmpty(rep.social_handles),
+      internalNotes: textOrNull(profile?.internal_notes),
+      setupStatus: textOrNull(setup?.status),
+      setupCurrentStep: textOrNull(setup?.current_step),
+      billing: {
+        status: textOrNull(subscription?.status),
+        planTier: textOrNull(subscription?.plan_tier),
+        pricingTier: textOrNull(subscription?.pricing_tier),
+        monthlyAmount: numberOrNull(subscription?.monthly_amount),
+        currentPeriodEnd: textOrNull(subscription?.current_period_end),
+        stripeCustomerId: textOrNull(subscription?.stripe_customer_id),
+      },
+      createdAt: textOrNull(rep.created_at),
+      updatedAt: latestTimestamp(
+        profile?.updated_at,
+        subscription?.updated_at,
+        setup?.updated_at,
+        rep.updated_at,
+      ),
+    }
+  })
 }

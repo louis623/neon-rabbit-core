@@ -2,8 +2,10 @@ import { redirect } from 'next/navigation'
 
 import {
   SupportCommandCenter,
+  type OperatorCustomerRecord,
   type SupportReportRecord,
 } from '@/app/control-center/_components/SupportCommandCenter'
+import { listOperatorCustomerProfiles } from '@/lib/services/client-account-profiles'
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -42,11 +44,20 @@ export default async function SparkleSuiteControlCenterPage() {
     throw error
   }
 
-  const reports = await listOperatorSupportReports(createAdminClient(), {
-    limit: 50,
-  })
+  const admin = createAdminClient()
+  const [reports, customers] = await Promise.all([
+    listOperatorSupportReports(admin, {
+      limit: 50,
+    }),
+    listOperatorCustomerProfiles(admin, {
+      limit: 200,
+    }),
+  ])
 
   return (
-    <SupportCommandCenter reports={reports as unknown as SupportReportRecord[]} />
+    <SupportCommandCenter
+      customers={customers as unknown as OperatorCustomerRecord[]}
+      reports={reports as unknown as SupportReportRecord[]}
+    />
   )
 }

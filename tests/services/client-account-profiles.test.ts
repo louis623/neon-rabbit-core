@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ensureClientAccountProfile } from '@/lib/services/client-account-profiles'
+import {
+  ensureClientAccountProfile,
+  listOperatorCustomerProfiles,
+} from '@/lib/services/client-account-profiles'
 
 type TableName = 'reps' | 'self_serve_setup_sessions' | 'subscriptions' | 'client_account_profiles'
 
@@ -20,6 +23,15 @@ function makeUpsertResult(data: unknown, error: unknown = null) {
     upsert: vi.fn(() => query),
     select: vi.fn(() => query),
     single: vi.fn(async () => ({ data, error })),
+  }
+  return query
+}
+
+function makeListResult(data: unknown[], error: unknown = null) {
+  const query = {
+    select: vi.fn(() => query),
+    order: vi.fn(() => query),
+    limit: vi.fn(async () => ({ data, error })),
   }
   return query
 }
@@ -52,6 +64,27 @@ function makeClient(options: {
         source_snapshot: {},
       },
     ),
+  } satisfies Record<TableName, unknown>
+
+  return {
+    client: {
+      from: vi.fn((table: TableName) => queries[table]),
+    },
+    queries,
+  }
+}
+
+function makeListClient(options: {
+  reps: Record<string, unknown>[]
+  subscriptions: Record<string, unknown>[]
+  profiles: Record<string, unknown>[]
+  setupSessions: Record<string, unknown>[]
+}) {
+  const queries = {
+    reps: makeListResult(options.reps),
+    subscriptions: makeListResult(options.subscriptions),
+    client_account_profiles: makeListResult(options.profiles),
+    self_serve_setup_sessions: makeListResult(options.setupSessions),
   } satisfies Record<TableName, unknown>
 
   return {
@@ -198,5 +231,110 @@ describe('ensureClientAccountProfile', () => {
     )
     expect(profile.showName).toBe('Sparkle by Sasha')
     expect(profile.email).toBe('sasha@example.com')
+  })
+})
+
+describe('listOperatorCustomerProfiles', () => {
+  it('lists reps with merged contact, billing, website, social, and notes data', async () => {
+    const { client, queries } = makeListClient({
+      reps: [
+        {
+          id: 'rep-1',
+          display_name: 'Jane Roberts',
+          business_name: "Jane's Sparkle Party",
+          email: 'jane@example.com',
+          phone: '555-123-4567',
+          status: 'active',
+          public_site_slug: 'janesparkleparty',
+          custom_domain: 'jane.example',
+          shop_link: 'https://shop.example/jane',
+          streaming_links: { tiktok: 'https://www.tiktok.com/@janesparkle' },
+          social_handles: { instagram: '@janesparkle' },
+          created_at: '2026-06-01T12:00:00.000Z',
+          updated_at: '2026-06-12T12:00:00.000Z',
+        },
+      ],
+      subscriptions: [
+        {
+          rep_id: 'rep-1',
+          status: 'active',
+          plan_tier: 'monthly',
+          pricing_tier: 'founder',
+          monthly_amount: 49,
+          current_period_end: '2026-07-12T12:00:00.000Z',
+          stripe_customer_id: 'cus_123',
+          updated_at: '2026-06-12T12:00:00.000Z',
+        },
+      ],
+      profiles: [
+        {
+          rep_id: 'rep-1',
+          client_name: 'Jane Roberts',
+          show_name: "Jane's Sparkle Party Live",
+          primary_contact_name: 'Jane Roberts',
+          email: 'billing@example.com',
+          phone: '555-555-5555',
+          account_status: 'active',
+          subscription_status: 'active',
+          support_tier: 'founder',
+          public_site_slug: 'janesparkleparty',
+          custom_domain: 'jane.example',
+          internal_notes: 'Prefers text for urgent billing questions.',
+          updated_at: '2026-06-13T12:00:00.000Z',
+        },
+      ],
+      setupSessions: [
+        {
+          rep_id: 'rep-1',
+          status: 'dashboard_unlocked',
+          current_step: 'final_preview_approval',
+          dashboard_unlocked_at: '2026-06-12T12:00:00.000Z',
+          updated_at: '2026-06-12T12:00:00.000Z',
+        },
+      ],
+    })
+
+    const customers = await listOperatorCustomerProfiles(client as never, {
+      limit: 200,
+    })
+
+    expect(client.from).toHaveBeenCalledWith('reps')
+    expect(client.from).toHaveBeenCalledWith('subscriptions')
+    expect(client.from).toHaveBeenCalledWith('client_account_profiles')
+    expect(client.from).toHaveBeenCalledWith('self_serve_setup_sessions')
+    expect(queries.reps.select).toHaveBeenCalledWith(
+      'id, display_name, business_name, email, phone, status, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+    )
+    expect(customers).toEqual([
+      {
+        repId: 'rep-1',
+        clientName: 'Jane Roberts',
+        showName: "Jane's Sparkle Party Live",
+        primaryContactName: 'Jane Roberts',
+        email: 'billing@example.com',
+        phone: '555-555-5555',
+        accountStatus: 'active',
+        subscriptionStatus: 'active',
+        supportTier: 'founder',
+        publicSiteSlug: 'janesparkleparty',
+        customDomain: 'jane.example',
+        shopLink: 'https://shop.example/jane',
+        streamingLinks: { tiktok: 'https://www.tiktok.com/@janesparkle' },
+        socialHandles: { instagram: '@janesparkle' },
+        internalNotes: 'Prefers text for urgent billing questions.',
+        setupStatus: 'dashboard_unlocked',
+        setupCurrentStep: 'final_preview_approval',
+        billing: {
+          status: 'active',
+          planTier: 'monthly',
+          pricingTier: 'founder',
+          monthlyAmount: 49,
+          currentPeriodEnd: '2026-07-12T12:00:00.000Z',
+          stripeCustomerId: 'cus_123',
+        },
+        createdAt: '2026-06-01T12:00:00.000Z',
+        updatedAt: '2026-06-13T12:00:00.000Z',
+      },
+    ])
   })
 })
