@@ -4,6 +4,224 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 19, 2026 - Binder Folded Back Into Repo
+
+**Problem fixed:**
+- Sparkle Suite had drifted into a split workspace: `C:\Users\louis\sparkle-suite` held binder/Open Brain instructions while `C:\Users\louis\sparkle-suite-repo` held the implementation repo.
+- Codex Desktop sessions opened from the binder kept hitting sandbox prompts when implementation work touched the repo.
+
+**Change completed:**
+- Copied durable binder memory/docs/plans/skills into `C:\Users\louis\sparkle-suite-repo`.
+- Updated repo `AGENTS.md` so future agents read repo-local memory from `vault\project-state.md`, `vault\session-log.md`, `vault\decisions.md`, and `vault\open-items.md`.
+- Added the missing project skills into repo `.agents\skills`, including `sparkle-suite-existing-site-migration`, `sparkle-suite-demo-smoke`, and `sparkle-nic-nac-agent-architecture`.
+- Preserved top-level binder Markdown files under `docs\binder-archive\legacy-root`.
+- Updated the old binder `AGENTS.md` to act as a redirect/archive notice, not active workspace instructions.
+
+**Operating rule now:**
+- Open future Sparkle Suite Codex sessions from `C:\Users\louis\sparkle-suite-repo`.
+- Use workspace-write settings for that repo so code, docs, memory, plans, handoffs, and skills all fall under the same sandbox boundary.
+- Leave `C:\Users\louis\sparkle-suite` on disk for now as a redirect/archive; do not delete it.
+
+---
+
+## June 19, 2026 - Britt With Bling, BlingKitchen, Recipes, and Workspace Bridge
+
+**Migration work completed or staged:**
+- Britt With Bling was migrated using the Mile High Fizz hybrid strategy from the Ready.ai/Readdy source export at `C:\Users\louis\Downloads\BWB Code\`.
+- The Britt With Bling route shape intentionally follows Mile High Fizz rather than preserving every original page. The old diamonds, unicorns, and FAQ pages were dropped; Home, Trade, and Join remain the important public-site surfaces.
+- The Britt With Bling Join Team page is a special preservation target because Brittany has many team-member cards. Team names, images, links, and copy need to stay in the right spots and remain editable through Nic-Nac/site data rather than becoming static one-off markup.
+- BlingKitchen was migrated from the Ready.ai/Readdy source export at `C:\Users\louis\Downloads\BK Code\` as Heather's custom Sparkle Suite hybrid site.
+- BlingKitchen keeps the same Lindsey/Britt migration pattern, with one extra retained route: `/blingkitchen/in-the-pantry` for recipes.
+
+**Nic-Nac recipe editability:**
+- Louis confirmed the recipe cards should be led by Nic-Nac and Heather, not maintained as hardcoded source forever.
+- A Nic-Nac recipe editing plan was saved at `C:\Users\louis\sparkle-suite\docs\superpowers\plans\2026-06-19-bling-kitchen-nic-nac-recipes.md`.
+- Implementation work is staged locally in `C:\Users\louis\sparkle-suite-repo`: DB-backed public-site recipes, media upload support, Nic-Nac tools, dashboard Recipes workspace UI, public Pantry DB-first loader with BlingKitchen fallback recipes, seed script, and BlingKitchen tenant attach helper.
+
+**Repo and operations status:**
+- Active branch: `codex/sparkle-cross-phase-hardening`.
+- Latest pushed checkpoint after closeout: `ccd4456 feat: migrate BlingKitchen public site`.
+- The Sparkle Suite implementation repo was clean and synced with origin after the BlingKitchen closeout.
+- Supabase migration `20260619140000_ss_public_site_recipes.sql` was pushed and `supabase db push` reported the remote database up to date.
+- Heather/BlingKitchen account provisioning and login were verified for `blingkitchen19@gmail.com`; the temporary password should be rotated after handoff.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`.
+- Deployed route smoke passed for `/blingkitchen`, `/blingkitchen/trade`, `/blingkitchen/join`, `/blingkitchen/in-the-pantry`, and the Pantry template endpoint. The deployed Pantry template carried the `bling_kitchen_hybrid` variant and 26 recipe entries.
+
+**Workflow lesson:**
+- The repeated approval prompts came from the Codex Desktop workspace being opened with write access to the binder instead of the implementation repo, not from Louis changing the intended workflow.
+- Durable fix: future Sparkle Suite implementation sessions should start with `C:\Users\louis\sparkle-suite-repo` as the writable workspace, while repo `AGENTS.md` tells the agent to read `C:\Users\louis\sparkle-suite` first for binder/Open Brain instructions.
+- The same binder-bridge pattern should be applied to Sparkle Finder so agents can read binder context first without losing write access to the actual repo.
+
+---
+
+## June 16, 2026 - Nic-Nac Smoke Closeout and Sparkle Finder Alignment Note
+
+**Closeout status:**
+- Nic-Nac Trade Board ER13229 hardening is now committed, pushed, deployed, and stable-demo verified through active repo commit `bbb66a4 fix: promote boxed photo after collection confirmation`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` points to `https://sparkle-suite-6c0807k4k-louis-2849s-projects.vercel.app`.
+- Verification passed: focused required-setup test, full Nic-Nac suite, local build, Vercel build, and three consecutive deployed ER13229 replay smokes using the synthetic reviewer account and real uploaded image parts.
+
+**Caveat to carry forward:**
+- One successful smoke still took the confirmation branch and used awkward/internal-sounding wording around photo indexes/workflow state. The tool path was correct and completed the listing, but the next Nic-Nac wording pass should make that branch sound like a natural rep conversation while preserving workflow truth.
+
+**Sparkle Finder alignment note:**
+- Louis flagged that Sparkle Finder Silver should eventually use the same Nic-Nac jewelry intake architecture for adding missing jewelry to the library/catalog. The intake rules should match Sparkle Suite: label/details photos are facts only, boxed customer-facing jewelry photos can be valid, typed collection names are accepted, and smoke/eval gates should use real uploaded image parts. The main difference is target mutation: Sparkle Finder adds/updates the jewelry library/catalog rather than adding a Trade Board listing.
+- Follow-up clarification from Louis: this should be the exact same shared Nic-Nac core, not a copied Sparkle Finder assistant. Sparkle Suite and Sparkle Finder should route into the same model/agent/toolbox plumbing, with product context deciding permissions and destination. This is a forefront architecture success condition for the whole Sparkle ecosystem.
+
+---
+
+## June 14, 2026 - Theme Readability Fix and Stable Demo Deploy Target Correction
+
+**Issue found:**
+- Louis reported that Black Diamond workspace readability was still broken after the first theme-readability fix.
+- The first deploy was pushed only to a raw Vercel preview URL, which did not update the Sparkle Suite demo URL Louis actually refreshes.
+
+**Fix completed:**
+- Hardened Black Diamond workspace theme overrides across Trade Board, Site Settings, Account, Help & Resources, Calendar, and Jewelry Library surfaces.
+- Fixed public light-accent badge/filter readability for homepage step numbers and trade active filter pills.
+- Added regression coverage for late Black Diamond workspace overrides and public light-accent controls.
+- Clarified memory: Sparkle Suite demo deploy/review target is `https://sparkle-suite-demo.vercel.app/`, not a raw Vercel preview URL.
+
+**Current checkpoint and deploy:**
+- Commit pushed: `b441fc7 fix: harden theme readability across workspace`.
+- Vercel preview deployment: `https://sparkle-suite-1wz21xae9-louis-2849s-projects.vercel.app`.
+- Stable demo alias updated: `https://sparkle-suite-demo.vercel.app/` now points to `https://sparkle-suite-1wz21xae9-louis-2849s-projects.vercel.app`.
+
+**Verification:**
+- Focused tests passed: 2 files, 77 tests.
+- `npm run build` passed locally.
+- Vercel preview build passed.
+- Stable demo HTTP smoke passed for `/amethyst/Homepage.html` and `/amethyst/Trade.html`.
+
+**Operational correction:**
+- Future Sparkle Suite demo deploy reports must confirm the stable alias before telling Louis the work is deployed.
+- Raw Vercel preview URLs can be mentioned as build artifacts, but they are not the default review link.
+
+---
+
+## June 12, 2026 - Nic-Nac Durable Preference Memory Fix
+
+**Issue found:**
+- Live UI memory audit proved current-show memory already works across conversations through `nic_nac_show_sessions` and `nic_nac_show_session_events`.
+- General durable rep preference memory did not work from the UI: when asked to "remember this preference for future chats" and the prompt mentioned live shows, Nic-Nac routed only to current-show memory and refused to store a lasting preference.
+
+**Fix completed:**
+- Added explicit durable-memory routing for safe future preference/process requests such as "remember this for future chats", "from now on", "going forward", or "I prefer".
+- Kept current-show-only language, such as "remember that for this show", routed to show memory only.
+- Updated Nic-Nac's routed prompt so safe operational preferences are supported and saved with `memoryType:'preference'` and `memorySource:'explicit'` instead of being refused.
+- Hardened `write_rep_note` so the server owns `conversation_date`; model-supplied stale dates can no longer bury a new memory outside recent-note retrieval.
+
+**Current checkpoints:**
+- `1d18458 fix: route explicit Nic-Nac memory preferences`
+- `ce70136 fix: timestamp Nic-Nac memory writes server-side`
+- Branch `codex/sparkle-cross-phase-hardening` is clean and synced with origin.
+
+**Deployment and verification:**
+- Production deployment: `dpl_3vFJ3ZTYmb6soijYM8ByEEzBZTLr` / `https://sparkle-suite-4t8jjh33k-louis-2849s-projects.vercel.app`.
+- Stable demo alias updated to the final deployment: `https://sparkle-suite-demo.vercel.app`.
+- Focused Nic-Nac memory/show tests passed: 7 files, 62 tests.
+- `npm run build` passed locally and Vercel production build passed.
+- Chrome stable-demo smoke passed: Nic-Nac saved the explicit future preference and replied with the requested marker instead of refusing.
+- Supabase verification showed the run routed to both `memory` and `show_memory`, included `write_rep_note`, and saved an explicit preference note with a current server timestamp.
+- Synthetic smoke note, tool execution, run, and conversation rows were cleaned up.
+
+**Caveats noted:**
+- A broad unrelated Nic-Nac/support test sweep still has stale failures in branding/shared-knowledge expectations.
+- Vercel log scan during the final window showed two unrelated public Sparkle Finder 500s; the Nic-Nac memory path was clean.
+
+---
+
+## June 10, 2026 - Ring Size Migration Applied and Stable Demo Promoted
+
+**Topics covered:**
+- Continued the fulfillment/ring-size blocker after Louis opened Supabase in Chrome and signed in.
+- Confirmed Supabase CLI remained unauthorized/unlinked for remote project work, so the migration was applied through the signed-in Supabase Dashboard SQL editor for project `bqhzfkgkjyuhlsozpylf` / `neon-rabbit-core` on `main` production.
+- Hardened local migration `supabase/migrations/20260610131500_trade_listing_ring_size.sql` before manual apply: schema-qualified `public.trade_listings`, duplicate-safe constraint guard, and `NOTIFY pgrst, 'reload schema'`.
+- Added `tests/trade-listing-ring-size-migration.test.ts` to lock the migration idempotence and PostgREST schema-cache reload behavior.
+
+**Commits pushed:**
+- `23f8a04 fix: harden trade listing ring size migration`
+
+**Verification:**
+- Supabase SQL verification returned `ring_size_column_present = true` and `ring_size_constraint_present = true`.
+- `npm exec vitest run tests/trade-listing-ring-size-migration.test.ts tests/services/trade-board-add-listing.test.ts` passed: 10 tests.
+- `npm run build` passed.
+- Vercel preview deployed: `https://sparkle-suite-kkz9729yp-louis-2849s-projects.vercel.app`.
+- Chrome reviewer-smoke on the preview passed:
+  - `/start` reviewer controls showed `Open workspace preview`.
+  - Workspace seeded `Jamie Smoke` / `RG-SMOKE-001`.
+  - Board Inventory and Trade history loaded without the previous `ring_size` 500.
+  - Fulfillment moved approved -> shipped -> completed.
+  - Queue showed `0 active swaps`, Trade history showed `1 completed` and `$38.00`, and the received-piece prompt stayed visible.
+  - Chrome console showed no warnings/errors during the checked path.
+- Stable alias moved: `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-kkz9729yp-louis-2849s-projects.vercel.app`.
+- Chrome reviewer-smoke on the stable alias confirmed workspace preview loads with Board Inventory, Fulfillment queue, and Trade history without console warnings/errors.
+
+**Remaining notes:**
+- Supabase CLI auth/linking is still not fixed; the blocker was cleared manually through the dashboard, and the local migration is now safe for future CLI sync.
+- Pre-launch live-mode Stripe smoke remains the major launch gate.
+
+---
+
+## June 10, 2026 - Ring Size Intake for Trade Board Listings
+
+**Topics covered:**
+- Louis learned from live jewelry handling that Bomb Party ring size numbers are usually on the box somewhere, not on the label.
+- Updated Sparkle Suite implementation from `C:\Users\louis\sparkle-suite-repo` only; binder remains notes/memory only.
+- Added a rep-side trade listing `ring_size` field so ring size is stored on the physical Trade Board listing, not the shared jewelry design.
+- Updated Nic-Nac's add-listing workflow and tool schema so RG/ring entries capture `ringSize`; if the size is not visible from a box/details photo, Nic-Nac should ask for the ring size before `add_listing`.
+- Surfaced `ringSize` through the board listing tool and API path so downstream board views/tool results can retain it.
+
+**Verification:**
+- `npm exec vitest run tests/services/trade-board-add-listing.test.ts tests/nic-nac/add-listing-batch.test.ts tests/nic-nac/system-prompt-add-listing.test.ts` passed.
+- `npm exec vitest run tests/nic-nac-trade-board-route.test.ts tests/nic-nac-board-inventory-view.test.ts tests/nic-nac/trade-board-tools.test.ts` passed.
+- `npm run build` passed after rerunning with a longer timeout.
+- `npx tsc --noEmit --pretty false --incremental false` still reports existing repo-wide test type issues unrelated to this change.
+
+**Open items carried forward:**
+- Commit `6d48151 feat: capture ring size on trade listings` was pushed to GitHub branch `codex/sparkle-cross-phase-hardening`.
+- Vercel preview deployed: `https://sparkle-suite-3bhbscrs5-louis-2849s-projects.vercel.app`.
+- Supabase migration application is blocked in this session: `supabase db push` reported the checkout was not linked; `supabase link` returned `Unauthorized`; a read-only REST schema check showed `trade_listings.ring_size` is missing.
+- Stable demo alias was intentionally not moved to the new preview because the deployed Trade Board code selects `ring_size` and would likely break without the migration.
+- Chrome reviewer-smoke confirmed the existing stable demo setup preview still loads, and the new preview `/start` plus setup preview load. Full Trade Board smoke remains blocked until migration `20260610131500_trade_listing_ring_size.sql` is applied.
+
+---
+
+## June 10, 2026 - Referrals, Workspace Layout, and Chrome Reviewer Smoke
+
+**Topics covered:**
+- Continued Sparkle Suite work from the binder rules: implementation happened in `C:\Users\louis\sparkle-suite-repo`; this binder remains notes/memory only.
+- Fixed the public Sparkle Suite header so the logo stays anchored left and logout/header actions stay anchored right across browser zoom levels.
+- Researched and implemented the Sparkle Suite referral program: reps get a referral code/link, referred paid subscription months are tracked, and the referring account earns one credited month after a referred rep has three paid subscription months.
+- Louis confirmed there should be no hard referral cap at launch. Abuse review can stay manual unless real usage shows a need for limits.
+- Applied and verified the Supabase migration for `rep_referral_paid_months` with RLS, indexes, and policies.
+- Read-only checked Stripe test webhook coverage for `checkout.session.completed` and `invoice.payment_succeeded`; no live Stripe dashboard changes were made.
+- Added the pre-launch Stripe live smoke and webhook gate as a high-priority launch item.
+- Audited the Account/Billing screenshot at 100% zoom: the workspace left column had a hard internal width cap that created empty space beside Nic-Nac, and account cards used typography that felt too large compared with the rest of the workspace.
+- Fixed the Account/Billing layout so the workspace fills the available left column beside the fixed Nic-Nac panel, clips accidental horizontal overflow, and uses more compact operational dashboard typography.
+- Louis noted that Chrome reviewer-smoke should have been used for the deployed UI review; after the Chrome connector was activated, the stable demo was verified in Chrome with reviewer-smoke.
+
+**Implementation checkpoints:**
+- `82e93a5 fix: anchor Sparkle Suite public header actions`
+- `4ab9fbd feat: add Sparkle Suite referral automation`
+- `cda1325 fix: tighten workspace account layout scale`
+
+**Deployment and verification:**
+- Stable demo alias: `https://sparkle-suite-demo.vercel.app`
+- Current stable target after the layout fix: `https://sparkle-suite-2wz1eso65-louis-2849s-projects.vercel.app`
+- Sparkle Suite repo branch: `codex/sparkle-cross-phase-hardening`, currently ahead of origin by 3 local commits.
+- Local tests passed for referral and layout work, including `tests/nic-nac-font-scale.test.ts` and `tests/reviewer-smoke-ui.test.ts`.
+- `npm run build` passed locally and Vercel preview build passed.
+- Chrome reviewer-smoke loaded the stable demo `/start`, opened setup preview, signed out, and reviewed `/nic-nac?conversationId=chrome-layout-qa-account&section=account`.
+- Chrome smoke confirmed Account, Referral program, SMS Wallet, and Nic-Nac rendered with no framework overlay, no console errors/warnings, no horizontal overflow, a `1166px` account content width, `380px` Nic-Nac panel, `20px` card titles, `21px` referral code text, and `18px` metric values.
+- Chrome screenshot saved to `C:\Users\louis\AppData\Local\Temp\sparkle-suite-account-layout-chrome-crop.png`.
+
+**Open items carried forward:**
+- Before launch, live-mode Stripe must be smoke-tested end to end with the production webhook, Vercel secret, required events, checkout flow, and referral credit behavior.
+- Push the three local Sparkle Suite commits to GitHub when Louis is ready for the branch backup/deploy-source checkpoint.
+
+---
+
 ## June 2, 2026 - Required Nic-Nac Setup Planning
 
 **Topics covered:**
@@ -36,6 +254,140 @@ Use `/goal` or a fresh Codex session to execute the implementation plan, prefera
 
 ---
 
+## June 2, 2026
+
+**Topics covered:**
+- Recovered the active Sparkle Suite local workbench at `C:\Users\louis\sparkle-suite-repo` from GitHub and confirmed the binder at `C:\Users\louis\sparkle-suite` remains notes/memory only.
+- Shifted near-term Sparkle Suite work back to local-first because Codespaces/GitHub OAuth tooling blocked progress for multiple days. GitHub remains the saved source of truth; Codespaces are paused unless Louis explicitly reselects them.
+- Continued post-launch landing/signup review on branch `codex/sparkle-cross-phase-hardening` with local preview at `http://localhost:3000/`.
+- Removed the landing header nav links for `Customer site`, `Workspace`, and `Pricing`.
+- Updated `/start` so the form card uses the Sparkle Suite espresso panel treatment and added a compact `Ask Nic-Nac` button under the form.
+- Fixed the first compact Nic-Nac integration bug where the signup page inherited a full-page landing background/min-height.
+- Turned both public Ask Nic-Nac buttons pink to match Sparkle Suite primary buttons.
+- Expanded public Nic-Nac so it can answer signup-page questions about the form, requested fields, no-card-first step, no charge/customer messaging/provider changes on submit, and next steps after account creation.
+
+**Verification:**
+- `npm exec vitest run tests/sparkle-suite-public-nic-nac-contract.test.ts tests/sparkle-suite-public-landing.test.ts tests/start-page.test.ts` passed with 89 tests.
+- `npm run build` passed.
+- GitHub push completed for `louis623/sparkle-suite`, branch `codex/sparkle-cross-phase-hardening`, commit `8ca775d feat: polish public signup Nic-Nac flow`.
+
+**Next expected flow:**
+Start a fresh Sparkle Suite workspace session from `C:\Users\louis\sparkle-suite-repo`, confirm branch `codex/sparkle-cross-phase-hardening`, open `http://localhost:3000/`, navigate to `/start` if needed, and stand by for Louis's visual review instructions.
+
+---
+
+## June 10, 2026 - fulfillment queue audit
+
+**Topics covered:**
+- Audited the Trade Board fulfillment queue process after Louis asked to verify the backend/code wiring and smoke-test it.
+- Confirmed the active implementation repo `C:\Users\louis\sparkle-suite-repo` is clean on `codex/sparkle-cross-phase-hardening` and tracking origin.
+- Verified the backend path: approving a trade validates rep ownership, calls `rpc_approve_trade`, creates one `trade_fulfillment` row, and the fulfillment queue/status routes use the authenticated paid Nic-Nac context.
+- Verified schema/RLS intent in `supabase/migrations/006_sparkle_suite_schema.sql`: `trade_fulfillment` is keyed by request, indexed by request/status, and scoped through request -> listing -> rep.
+- Verified Nic-Nac tools and prompt wiring for `get_fulfillment_queue` and `update_fulfillment_status`.
+- Verified the dashboard Trade Board panel fetches `/api/nic-nac/fulfillment-queue`, shows the active swap count, and renders the empty state.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac/trade-fulfillment.test.ts tests/nic-nac-fulfillment-queue-route.test.ts tests/nic-nac/trade-requests.test.ts tests/nic-nac-trade-requests-route.test.ts tests/live-show-smoke.test.ts` passed: 37 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 59 tests.
+- `npm run build` passed.
+- Chrome reviewer-smoke used the stable demo `https://sparkle-suite-demo.vercel.app` with the synthetic reviewer workspace tab. The Trade Board fulfillment queue was visible with `0 active swaps` and "No open fulfillment work right now."; no console warnings/errors were present.
+
+**Notes and follow-up:**
+- No code changes were made during the audit.
+- Direct Chrome navigation to `/api/nic-nac/fulfillment-queue` was blocked by the Chrome extension with `ERR_BLOCKED_BY_CLIENT`; route behavior is covered by local route tests.
+- A full mutation smoke was not possible from current stable demo data because the synthetic reviewer workspace had no pending requests or active fulfillment rows.
+- Improvement candidate: same-status fulfillment updates currently reset `status_updated_at`; consider making same-status updates a no-op or explicit validation error so aging/nudges cannot be reset accidentally.
+
+---
+
+## June 10, 2026 - fulfillment reviewer-smoke implementation
+
+## June 11, 2026
+
+**Topics covered:**
+- Implemented the first-20 founder pricing correction in `C:\Users\louis\sparkle-suite-repo` on `codex/sparkle-cross-phase-hardening`.
+- Hardened checkout pricing so reps 1-20 receive founder monthly pricing and rep 21 starts standard monthly pricing.
+- Added Supabase founder pricing guards:
+  - unique founder sequence indexes for reps/subscriptions
+  - atomic checkout pricing assignment RPC
+  - unpaid/failed checkout reservation release RPC
+  - lowest-available founder slot reuse after abandoned checkout release
+- Added `checkout.session.expired` webhook handling so unpaid founder checkout reservations can be released.
+- Updated live/test Stripe webhook setup scripts to include `checkout.session.expired`.
+- Kept standard pricing from being permanently written to `reps` before payment succeeds.
+
+**Commit pushed:**
+- `4aea52b fix: harden founder pricing checkout`
+
+**Preview:**
+- Vercel preview deployed: `https://sparkle-suite-m0hk7hofl-louis-2849s-projects.vercel.app`
+
+**Verification:**
+- `npm exec vitest run tests/stripe-sparkle-suite-pricing.test.ts tests/stripe-create-checkout-route.test.ts tests/stripe-webhook-route.test.ts tests/stripe-sync-route.test.ts tests/stripe-create-portal-session-route.test.ts tests/nic-nac-account-billing-route.test.ts tests/services/account-billing.test.ts tests/sparkle-suite-referrals.test.ts tests/sparkle-suite-pricing-referrals-migration.test.ts tests/sparkle-suite-referral-paid-months-migration.test.ts tests/prepare-stripe-demo-price.test.ts tests/prepare-stripe-live-prices.test.ts tests/ensure-stripe-test-webhook-endpoint.test.ts tests/ensure-stripe-live-webhook-endpoint.test.ts tests/smoke-demo-readiness.test.ts` passed: 142 tests.
+- `npm run build` passed locally.
+- Vercel preview build passed.
+- Chrome reviewer-smoke on the preview used the synthetic reviewer workspace, not Louis's personal account. `/start` showed reviewer controls, workspace opened with seeded `Jamie Smoke` / `RG-SMOKE-001 - Reviewer Smoke Ring`, Account/Billing loaded, referral status was visible, and console had no warnings/errors.
+
+**Still open before real paid launch:**
+- Apply Supabase migration `20260611133605_ss_founder_pricing_uniqueness.sql` remotely.
+- Confirm production domain for live Stripe webhook target.
+- Create/verify live Stripe prices for build fee, founder monthly, and standard monthly.
+- Create/update live Stripe webhook with `checkout.session.completed`, `checkout.session.expired`, subscription update/delete, and invoice payment events.
+- Set matching Vercel production env vars and run live preflight/controlled live checkout smoke with Louis's action-time approval.
+
+---
+
+**Topics covered:**
+- Implemented the fulfillment queue audit improvements in `C:\Users\louis\sparkle-suite-repo` on `codex/sparkle-cross-phase-hardening`.
+- Added a first-class `/start` reviewer button: `Open workspace preview`.
+- Added deterministic dashboard-unlocked reviewer seed data: `Jamie Smoke` requesting `RG-SMOKE-001 - Reviewer Smoke Ring`, with one active fulfillment row reset to `approved` on each reviewer workspace reset.
+- Changed same-status fulfillment updates into no-ops that do not rewrite `status_updated_at`, preserving aging/nudge logic.
+- Dashboard completion now sends `addToBoard` for completed fulfillment and shows the received-piece next-step prompt.
+- Fulfillment status updates now preserve success feedback even if another workspace panel fails to refresh.
+
+**Commits pushed:**
+- `8988e7c feat: seed reviewer fulfillment smoke path`
+- `e42c251 fix: preserve fulfillment completion feedback`
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac/trade-fulfillment.test.ts tests/nic-nac-fulfillment-queue-route.test.ts tests/nic-nac/trade-requests.test.ts tests/nic-nac-trade-requests-route.test.ts tests/live-show-smoke.test.ts tests/nic-nac-dashboard-placeholder.test.ts tests/reviewer-smoke-ui.test.ts tests/reviewer-smoke-session.test.ts tests/services/trade-fulfillment-service.test.ts` passed: 117 tests.
+- `npm run build` passed.
+- Vercel preview deployed: `https://sparkle-suite-duhkm8fzq-louis-2849s-projects.vercel.app`.
+- Chrome reviewer-smoke on the preview passed the fulfillment mutation path:
+  - `/start` showed `Open workspace preview`.
+  - Workspace opened with seeded `Jamie Smoke` / `RG-SMOKE-001` fulfillment item.
+  - `Mark shipped` moved status to `shipped`.
+  - `Mark completed` moved queue to `0 active swaps`, trade history to `1 completed`, and showed `Fulfillment marked completed. Add the received piece to your board when you are ready.`
+
+**Known blocker:**
+- Stable alias was not moved. Supabase CLI `supabase db push --dry-run` still fails with `Cannot find project ref. Have you run supabase link?`; the pending ring-size migration remains unapplied, so preview workspace refresh shows the expected Trade Board refresh warning/console 500 until `trade_listings.ring_size` exists in the remote DB.
+
+---
+
+## June 1, 2026
+
+**Topics covered:**
+- Moved Sparkle work toward a cloud-first workflow: GitHub is the main saved source, GitHub Codespaces is the workbench, and the older Windows laptop is primarily the control/review surface.
+- Confirmed and smoke-tested Sparkle Suite and Sparkle Finder Codespaces. Both are reachable through Chrome VS Code tabs, can run terminals in `/workspaces/...`, and report 4 CPU cores.
+- Hit GitHub's current running Codespaces limit: only two Codespaces can run at once. Standing workflow is Sparkle Suite usually stays running, while Sparkle Finder and Sparkle Rep Onboarding rotate in the second slot.
+- Added local guardrails so old local project folders act as Codex chat binders instead of workbenches.
+- Converted `C:\Users\louis\sparkle-suite-customer` into a lightweight Sparkle Finder binder. The full old repo was moved intact to `C:\Users\louis\Sparkle-Suite-Local-Archive\2026-06-01\sparkle-suite-customer`.
+- Converted `C:\Users\louis\britt-with-bling-start-strong` into a lightweight Sparkle Rep Onboarding binder. The full old repo was preserved intact at `C:\Users\louis\Sparkle-Suite-Local-Archive\2026-06-01\britt-with-bling-start-strong`.
+- Created a full Sparkle Suite archive copy at `C:\Users\louis\Sparkle-Suite-Local-Archive\2026-06-01\neon-rabbit-core`.
+- Prepared a staged Sparkle Suite binder at `C:\Users\louis\Sparkle-Suite-Binder-Staging\neon-rabbit-core`, but did not swap it into `C:\Users\louis\neon-rabbit-core` because this active Codex session is running from that folder.
+- Preserved Sparkle Suite Live Queue Chrome extension safety context. Reps use the Chrome Web Store extension, but local `chrome-extension/`, `dist/`, and `.agents/skills/sparkle-live-queue/SKILL.md` remain protected source/package history.
+
+**Key decisions:**
+- Local Codex project folders should be lightweight binders for organization, instructions, and selected markdown memory.
+- Actual implementation, builds, tests, commits, and pushes should happen in the matching GitHub Codespace unless Louis explicitly asks for local laptop work.
+- Do not delete local archives until Louis has an external backup drive and confirms the archive has been copied there.
+- Sparkle Suite local folder swap must happen from a neutral/new Codex chat, not from this active `neon-rabbit-core` session.
+
+**Next expected flow:**
+Start a neutral Codex chat and complete the Sparkle Suite binder swap using staged binder `C:\Users\louis\Sparkle-Suite-Binder-Staging\neon-rabbit-core`, original folder `C:\Users\louis\neon-rabbit-core`, and archive `C:\Users\louis\Sparkle-Suite-Local-Archive\2026-06-01\neon-rabbit-core`.
+
+---
+
 ## May 31, 2026
 
 **Topics covered:**
@@ -64,3 +416,778 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Cost analysis completed — full Phase 2 stack runs $164–204/mo, already covered by current clients
 - Multitask by default established as standing operating principle
 - Master doc update to v1.8 pending
+## June 11, 2026 - Live Stripe Preflight Blocker
+
+**Topics covered:**
+- Verified the founder pricing implementation in `C:\Users\louis\sparkle-suite-repo` still matches Louis's correction: first 20 paid reps receive founder monthly pricing, and rep 21 starts standard monthly pricing.
+- Pulled Vercel Production env to ignored local file `C:\Users\louis\sparkle-suite-repo\.local\vercel-production.env` after Louis approved the pull.
+- Ran the Stripe live preflight path; it blocked safely before any live checkout/payment action.
+- Reviewed the repo's live Stripe helper scripts. Live price setup and live webhook setup both have explicit approval gates and are designed for idempotent provider setup once live credentials are present.
+
+**Verification:**
+- `npm exec vitest run tests/stripe-sparkle-suite-pricing.test.ts tests/stripe-create-checkout-route.test.ts tests/stripe-webhook-route.test.ts tests/sparkle-suite-pricing-referrals-migration.test.ts tests/sparkle-suite-referrals.test.ts tests/smoke-demo-readiness.test.ts` passed: 103 tests.
+
+**Current blocker:**
+- Vercel Production env is not live-billing ready: `STRIPE_SECRET_KEY` is still test-mode; `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_BUILD_FEE`, `STRIPE_PRICE_FOUNDER_MONTHLY`, `STRIPE_PRICE_STANDARD_MONTHLY`, and `NEXT_PUBLIC_APP_URL` are empty; live approval marker envs are missing.
+- `STRIPE_LIVE_SMOKE_CONFIRMED` is correctly unset until Louis explicitly approves a final controlled live checkout smoke.
+
+---
+
+## June 11, 2026 - Production Self-Serve Signup and Live Checkout Smoke
+
+**Topics covered:**
+- Completed the live Stripe setup path for Sparkle Suite production self-serve signup.
+- Created/verified live Stripe prices:
+  - Build fee: `price_1ThAmIQYwdFOcEdvyAlTox0V` at `$49.99` one-time.
+  - Founder monthly: `price_1ThAmIQYwdFOcEdvWmNm96yG` at `$49.99/mo`.
+  - Standard monthly: `price_1ThAmJQYwdFOcEdv3HQwDV0V` at `$74.99/mo`.
+- Created the live Stripe webhook endpoint for `https://www.yoursparklesuite.com/api/stripe/webhook`.
+- Set Vercel Production billing env and enabled `SPARKLE_SELF_SERVE_ENABLED=true`.
+- Manually applied and verified Supabase migration `20260611133605_ss_founder_pricing_uniqueness.sql`.
+- During live smoke, found production checkout was failing because the route detached Supabase `rpc` from the client object.
+- Fixed and pushed `a60ceff fix: preserve Supabase RPC binding in checkout`.
+- Deployed production `dpl_58RLxmtyi14FzMx7CM29g3fvn53X` / `https://sparkle-suite-jib4a2a9h-louis-2849s-projects.vercel.app`.
+- Live `/start` smoke created synthetic rep `louis+sparkle-live-smoke-1781197885226@neonrabbit.net` and opened live Stripe Checkout without submitting payment.
+- Checkout showed expected founder pricing: `$99.98` today, then `$49.99/month`, with line items `Sparkle Suite build fee` and `Sparkle Suite Founding Rep Monthly`.
+- Expired the live Checkout Session instead of paying.
+- The first expiration webhook attempts failed because production Supabase was missing `20260602150000_ss_stripe_event_processing_status.sql`.
+- Manually applied and verified that migration through Supabase SQL editor, sent `NOTIFY pgrst, 'reload schema'`, and replayed the failed live Stripe event.
+- Webhook replay returned `200 {"received":true}`; Vercel logs showed `checkout_expired` with `reservation_released:true`.
+- Database verification showed the smoke rep has `pricing_tier = null`, `founder_sequence = null`, and Stripe event `evt_1ThC9eQYwdFOcEdvGyukOOiK` is `processed` with no error.
+
+**Verification:**
+- `npm exec vitest run tests/stripe-create-checkout-route.test.ts tests/stripe-webhook-route.test.ts tests/stripe-sparkle-suite-pricing.test.ts` passed: 38 tests.
+- `npm run build` passed.
+- Production live checkout open-only smoke passed through Stripe Checkout page.
+- Live expired-checkout webhook cleanup path passed after applying missing Stripe event-processing RPC migration.
+
+**Remaining caveat:**
+- No real live card/payment was submitted. The live Checkout page is open-ready for payments, and the expiration webhook path is verified live. The paid completion/invoice/referral paths remain code/test verified but should be watched closely on the first real paid signup.
+
+---
+
+## June 12, 2026 - Live Trade Swap Workflow and Pressure Test
+
+**Topics covered:**
+- Completed a full audit of the Trade Board/trade process, then rebuilt the plan around Louis's clarified live-show flow:
+  - Customer buys jewelry to be revealed live.
+  - Rep reveals it on the show.
+  - Customer dislikes the surprise item and swaps for an existing Trade Board piece.
+  - Customer never has the just-revealed item, has no photos, and does not ship anything.
+  - Both pieces are physically in the rep's possession.
+  - Rep removes/ships the selected Trade Board piece and adds the just-revealed item back to the board.
+- Confirmed the correct rep-facing prompt wording: `Which item number was just revealed for the customer?`
+- Dropped the idea of matching against Live Queue/current show context for this workflow. Live Queue only scrapes the ordered Bomb Party customer queue and reveal checked-off state; it does not know revealed item numbers or cue IDs.
+- Tabled stronger rep notification/alert escalation until Louis can smoke test real timing and research whether immediate live-show trades need more alerting.
+- Implemented and pushed the live trade swap workflow:
+  - `8cc4916 docs: plan live trade swap workflow`.
+  - `a7e283a feat: capture live trade swap replacements`.
+  - `f0e573a chore: add trade swap smoke script`.
+- Added Supabase migration `20260611190000_trade_swap_revealed_item_capture.sql` for `public.trade_swaps`, including RLS, owner/admin policies, indexes, replacement status tracking, and PostgREST schema reload.
+- Applied and verified the migration manually through Supabase Dashboard project `bqhzfkgkjyuhlsozpylf` because CLI linking/auth remains unresolved.
+- Added the trade swap service, Nic-Nac tools, prompt/HITL copy, dashboard approval modal, cleanup queue, public/customer wording updates, and Amethyst trade board ring-size mapping.
+- Deployed production:
+  - Deployment: `dpl_6W9CwLuwJEsJcytPV2eWnuJrfEXE`.
+  - Deployment URL: `https://sparkle-suite-auzh791m0-louis-2849s-projects.vercel.app`.
+  - Public app verified at `https://www.yoursparklesuite.com`.
+- Verified the protected production cleanup route returns the expected unauthenticated response at `https://www.yoursparklesuite.com/api/nic-nac/trade-swap-cleanup`.
+
+**Verification:**
+- Focused trade-swap suite passed: 16 test files, 233 tests.
+- Public-language/customer board tests passed: 2 files, 87 tests.
+- Standard Nic-Nac suite passed: 14 files, 157 tests.
+- Tight smoke suite passed: 7 test files, 101 tests.
+- `npm run build` passed locally after implementation and after the smoke script commit.
+- Vercel production build passed.
+- DB-backed smoke script passed:
+  - Known non-ring item auto-added back to the board.
+  - Known ring without size went to cleanup.
+  - Unknown item number went to cleanup.
+  - Cleanup queue returned the unresolved swaps.
+  - Smoke data cleanup left zero residual rows.
+- Production browser UI smoke passed with a synthetic account:
+  - Trade Board loaded.
+  - Pending request appeared.
+  - Approval modal opened with the exact item-number prompt.
+  - Unknown item number approval succeeded.
+  - Request left the pending list.
+  - Swap cleanup showed the after-show action.
+  - Fulfillment/history updated.
+  - Synthetic data cleanup left zero residual rows.
+- Pressure test passed:
+  - Parallel approval race allowed exactly one success and cleanly rejected the rest.
+  - Repeat approval rejected.
+  - Duplicate pending customer request blocked.
+  - Lowercase/padded item number normalized.
+  - Known ring without size went to cleanup.
+  - Known ring with size auto-added with the captured size.
+  - Unknown item number captured for cleanup.
+  - Cross-rep approval blocked.
+  - Blank item number rejected before approval and left request pending.
+  - Production UI blank submit was disabled.
+  - Rapid double-click submit did not duplicate swaps or fulfillment.
+  - Public customer request API returned expected duplicate and validation errors.
+  - Backend/UI pressure cleanup left zero residual rows.
+
+**Current state:**
+- Active repo is clean and synced with `origin/codex/sparkle-cross-phase-hardening`.
+- Current pushed checkpoint is `f0e573a chore: add trade swap smoke script`.
+- Production is trade-swap workflow ready for the tested paths.
+- Stable demo alias was not changed this session; production was updated.
+
+**Remaining caveats:**
+- Real live-show extension timing and multi-device human behavior were not tested directly. Backend concurrency and production UI pressure covered the core duplicate approval risk.
+- Stronger rep notification/alert escalation remains tabled pending Louis's real-flow smoke testing and timing research.
+- Supabase CLI auth/linking still needs restoration so future migrations do not require Dashboard SQL editor.
+- First real paid beta signup still needs monitoring because no real live payment was submitted during billing smoke.
+- Fulfillment received-piece link-back remains open.
+
+---
+
+## June 12, 2026 - Support Report Intake and Google Chat Plan
+
+**Topics covered:**
+- Planned and implemented support-report intake for Help & Resources and Nic-Nac so beta reps can report site issues, bugs, suggested upgrades, and workflow ideas.
+- Kept Help & Resources as the independent fallback path when Nic-Nac itself is confusing, broken, or unavailable.
+- Chose Google Chat incoming webhooks as the first alert channel instead of Telegram. The webhook URL is treated as a secret and must be stored in Vercel env as `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL`.
+- Added future-dashboard-ready records through `public.support_reports` and an operator API for status filtering/updates.
+
+**Implementation checkpoints:**
+- `69d04af feat: add support report intake`.
+- `502a0c0 chore: add support report smoke script`.
+- Branch `codex/sparkle-cross-phase-hardening` is pushed and synced.
+- Latest preview after the smoke-script checkpoint is Ready:
+  - `dpl_HwrSVNcY9N5ZfbNQTwY2gEXjvP5u`
+  - `https://sparkle-suite-mo2hast69-louis-2849s-projects.vercel.app`
+
+**Verification so far:**
+- Focused support-report suite passed: 8 files, 35 tests.
+- `npm run build` passed locally after the smoke-script addition.
+- Vercel preview build passed.
+- `npm run smoke:support-report` correctly blocked before data writes because local `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL` is not configured.
+
+**Remaining before completion:**
+- Louis needs to create a Google Chat incoming webhook and store it in Vercel as `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL` for Production and preferably Preview.
+- Supabase migration `20260612100000_support_reports.sql` still needs to be applied to project `bqhzfkgkjyuhlsozpylf`; CLI remains unlinked, so Dashboard SQL editor is still the expected path unless CLI auth/linking is repaired first.
+- After those two external setup steps, run `npm run smoke:support-report`, verify Google Chat receives the synthetic report alert, deploy/promote to production, and run final smoke against production.
+
+---
+
+## June 12, 2026 - Support Report Intake Completed
+
+**Production completion:**
+- Created Google Chat space `Sparkle Suite Support Reports` and configured the `Sparkle Suite Reports` incoming webhook.
+- Rotated the first webhook after it appeared in an automation DOM read; the fresh webhook was stored in Vercel and the clipboard was cleared after use.
+- Added Vercel env `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL`:
+  - Production.
+  - Preview scoped to `codex/sparkle-cross-phase-hardening`.
+- Applied and verified Supabase migration `20260612100000_support_reports.sql` in project `bqhzfkgkjyuhlsozpylf`.
+- Production deployment:
+  - `dpl_Gj9u8FvFs83j4tBDww4qCmKsSnHm`.
+  - `https://sparkle-suite-6es8y9mh5-louis-2849s-projects.vercel.app`.
+  - Aliases include `https://www.yoursparklesuite.com`, `https://yoursparklesuite.com`, `https://sparkle-suite.vercel.app`, and project aliases.
+
+**Verification:**
+- Supabase verification returned `table=true | rls=true | columns=20 | policies=support_reports_admin_full_access,support_reports_own_select | no_rep_insert=true | indexes=idx_support_reports_rep_created,idx_support_reports_status_urgency_rank_created,support_reports_pkey`.
+- Vercel env list shows `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL` as encrypted for Production and Preview branch `codex/sparkle-cross-phase-hardening`.
+- `npm run smoke:support-report` passed with `notification=delivered`, `google_chat_configured=true`, and `cleanup=true`.
+- Synthetic smoke report `51d793a5-0a20-4f97-99ef-2929bd6d9144` was verified removed: `support_smoke_residual_count=0`.
+- Vercel production build passed.
+- Production API route checks:
+  - `POST https://www.yoursparklesuite.com/api/nic-nac/support-reports` returns `401` unauthenticated.
+  - `GET https://www.yoursparklesuite.com/api/control-center/support-reports` returns `401` unauthenticated.
+
+**Current state:**
+- Active repo `C:\Users\louis\sparkle-suite-repo` is clean and synced with `origin/codex/sparkle-cross-phase-hardening`.
+- Current pushed checkpoint: `502a0c0 chore: add support report smoke script`.
+- Support report intake is production-ready for Help & Resources form, Nic-Nac tool submissions, dashboard-ready storage, and Google Chat delivery.
+
+---
+
+## June 12, 2026 - Support Report Form Entry UX Fix
+
+**Issue:**
+- Louis refreshed the demo account and saw the Support Path section with button-like quick-action chips, but no obvious clickable way to pull up the report form.
+- Root cause: the quick-action chips in Support Path were static text, while the actual form was lower in the section.
+
+**Fix:**
+- Replaced the misleading static quick-action row with a clear `Send a report to support` callout.
+- Added a real `Start report` button that scrolls/focuses the support report form title field.
+- Kept the full report form in Help & Resources and preserved the Nic-Nac-independent fallback path.
+
+**Verification and deployment:**
+- Focused Help & Resources regression passed: 1 file, 4 tests.
+- Focused support/dashboard suite passed: 6 files, 85 tests.
+- `npm run build` passed locally.
+- Deployed production:
+  - `dpl_AGEtbyJXSckPU6AJHZC8JycVGesf`.
+  - `https://sparkle-suite-kvlid78g9-louis-2849s-projects.vercel.app`.
+  - Public app aliases include `https://www.yoursparklesuite.com`.
+- Current pushed checkpoint: `0d871e7 fix: clarify support report form entry`.
+
+---
+
+## June 12, 2026 - Support Report End-to-End Demo Check
+
+**What changed during verification:**
+- Found the stable demo alias `https://sparkle-suite-demo.vercel.app` was still pointing at the June 10 preview `dpl_BBUswPb5yksSADfMEr41ZRtq8wig`, which predated support-report intake and the UX fix.
+- Repointed the stable demo alias to today's preview `dpl_4oTDBVaXzu9CdoGZZC7J6WvNncFW` / `https://sparkle-suite-dpvm5rn6z-louis-2849s-projects.vercel.app`.
+- Confirmed production still points at `dpl_AGEtbyJXSckPU6AJHZC8JycVGesf` / `https://sparkle-suite-kvlid78g9-louis-2849s-projects.vercel.app`.
+
+**End-to-end verification:**
+- Stable demo reviewer workspace opened through Chrome reviewer-smoke; no personal Louis account was used.
+- Help & Resources loads with collapsed workflow sections and clear `Open section` indicators.
+- Support Path expands and shows the new `Send a report to support` callout plus real `Start report` button.
+- `Start report` scrolls/focuses the `Short title` input.
+- Synthetic Help form submission succeeded in the live demo UI with `Report saved. Support has the details.`
+- Supabase verified the synthetic Help form row with `source=help_form`, `report_type=bug`, `status=open`, `notification_status=delivered`, `notification_error=null`, and `contact_ok=false`; the row was cleaned up.
+- Operator support-report service verified the row appeared in the open queue, could be moved to `reviewing`, and was cleaned up.
+- Production unauthenticated route protection still returns `401` for both `/api/nic-nac/support-reports` and `/api/control-center/support-reports`.
+- Nic-Nac live tool path was tested through the deployed reviewer workspace. It created a `source=nic_nac` support report, delivered Google Chat, persisted the assistant completion, and the synthetic row was cleaned up.
+
+**Caveat found:**
+- During the live Nic-Nac browser submission, the server completed and persisted the assistant reply (`Report saved... Louis notified.`), but the active chat panel did not render that final assistant message until the page was reloaded. After reload, the response was visible and the input was enabled. Track this as a Nic-Nac streaming/hydration polish item; the report delivery path itself worked.
+
+---
+
+## June 12, 2026 - Nic-Nac Tool Report Stream Recovery Polish
+
+**Fix:**
+- Added client-side recovery for Nic-Nac conversations that remain in `submitted` or `streaming` after a server-side tool run has already completed.
+- The chat panel now polls conversation state after a short timeout, detects a completed assistant message after the latest local user message, merges the saved server message into the active chat, stops the stale stream, hides the thinking indicator, and refocuses the input.
+- Added regression coverage for completed-assistant-after-latest-user detection and component wiring.
+
+**Deployment:**
+- Current pushed checkpoint: `4ef57bb fix: recover completed Nic-Nac streams`.
+- Production deployment: `dpl_2ZYXiBykKP4a3wLWMuoe2SXD4CkT` / `https://sparkle-suite-cwrfjue9o-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points at preview deployment `dpl_Lh1fTTsAfXQF4ShXEdrbEaKLaPEo` / `https://sparkle-suite-o3hqf93no-louis-2849s-projects.vercel.app`.
+
+**Verification:**
+- Focused Nic-Nac/support report suite passed: 7 files, 66 tests.
+- `npm run build` passed locally.
+- Production and preview Vercel builds passed, and stable demo alias was inspected after update.
+- Live stable-demo Nic-Nac smoke created synthetic report `1ee07cdb-42f1-4fed-80cb-c605ef30aaed` with `source=nic_nac`, `notification_status=delivered`, and `notification_error=null`.
+- Matching conversation `90124e70-bac8-4aa3-8bb6-f211bf1c7ab6` persisted a completed assistant response containing `Report filed... notification delivered to Louis... this response is now live in chat.`
+- The synthetic support report row was cleaned up and verified removed.
+
+**Remaining note:**
+- Chrome automation could claim the active demo tab and confirm the correct URL, but DOM/screenshot capture timed out on that long-lived conversation tab after the smoke. Server-side completion and cleanup were verified directly; future visual checks can reload the demo conversation if Chrome capture stalls.
+
+---
+
+## June 12, 2026 - Support Command Center and Support Auditor
+
+**What changed:**
+- Built the v1 Support Command Center and made `/control-center` the internal support landing page instead of redirecting to old intake.
+- Added canonical `client_account_profiles`, `support_audits`, and `support_lessons` tables.
+- Extended `support_reports` with client snapshots, audit status/timestamps/errors, and resolution snapshots.
+- Added `Support Auditor`, which runs directly after each support report, gathers report/profile/history/lesson facts, stores an audit row, and sends one enriched Google Chat alert after audit completion or fallback.
+- Enriched Google Chat alerts now include client name, show name, phone, email, issue summary, Support Auditor status, findings, and recommended first action.
+- Added reusable support lessons on resolution closeout for the future dashboard workflow.
+- Hardened the support smoke to verify profile creation, report snapshot, audit completion, Google Chat delivery, reusable lesson creation, and cleanup.
+
+**Operational fixes during verification:**
+- Supabase migration `20260612172908_support_command_center_auditor.sql` was applied manually through Supabase Dashboard SQL editor because CLI linking remains unresolved.
+- Remote verification passed in project `bqhzfkgkjyuhlsozpylf`: new tables exist, RLS is enabled, seven new support report columns exist, and expected policies/indexes are present.
+- Found Vercel Production had `GOOGLE_CHAT_SUPPORT_WEBHOOK_URL` present but empty; replaced it with the Google Chat webhook value and redeployed so production alerts work.
+- Fixed `client-account-profiles` to use real production subscription fields `plan_tier` / `pricing_tier` instead of nonexistent `subscriptions.tier`.
+
+**Verification and deployment:**
+- Focused support suite passed: 12 files, 50 tests.
+- `npm run build` passed locally after the production-field fix.
+- DB-backed support smoke passed: `notification=delivered`, `profile=true`, `audit=completed`, `lesson=true`, `cleanup=true`.
+- Stable demo Help & Resources UI smoke passed through Chrome: Support Path expands, report form appears, and synthetic UI submission showed `Report saved. Support has the details.`
+- Supabase verified the UI-submitted synthetic report with `notification_status=delivered`, `audit_status=completed`, completed audit row, client snapshot present, and cleanup complete.
+- Branch pushed to `origin/codex/sparkle-cross-phase-hardening`.
+- Production deployment: `dpl_HqowEV7A7hKgytjz32aDNSgbqQxX` / `https://sparkle-suite-sjcx33xt3-louis-2849s-projects.vercel.app`.
+- Public aliases on the deployment include `https://www.yoursparklesuite.com`, `https://yoursparklesuite.com`, and `https://sparkle-suite.vercel.app`.
+- Stable demo alias updated to the same deployment: `https://sparkle-suite-demo.vercel.app`.
+- Current pushed checkpoint: `597e5c4 fix: align support smoke with production env`.
+
+**Remaining caveats:**
+- Supabase CLI auth/linking still needs restoration so migrations can move through CLI instead of Dashboard SQL editor.
+- First real paid beta signup still needs monitoring.
+- The Support Command Center resolution panel is intentionally display-only for v1; editable operator workflows can come with the fuller dashboard rebuild.
+
+---
+
+## June 12, 2026 - Support System Pressure Test
+
+**Pressure test added and run:**
+- Added `npm run pressure:support-system`.
+- The pressure script creates 3 synthetic reps and 14 synthetic support reports, runs them through the real Supabase-backed support services, uses a local capture webhook to avoid spamming Google Chat, verifies 14 completed audits, verifies 14 captured alert payloads, forces 1 webhook failure, creates 1 reusable support lesson, exercises operator list/status/resolution paths, and cleans all synthetic rows.
+- Pressure run passed twice with: `reps=3 reports=14 alerts=14 audits=14 notification_failures=1 lessons=1 cleanup_residuals=0`.
+
+**Failure found and fixed:**
+- Stable demo browser check found Support Path could still show as a collapsed generic disclosure row without exposing the support form, recreating Louis's original "nothing's clickable" concern in some live states.
+- Fixed by making the Support Path `<details>` open by default so `Send a report to support`, `Start report`, fields, and `Send report` are visible without depending on the disclosure click.
+- Added regression coverage asserting Support Path is default-open.
+
+**Verification and deployment:**
+- Expanded focused support regression suite passed: 15 files, 117 tests.
+- `npm run build` passed locally.
+- Production deployment: `dpl_B4WwrW71eXUN6E1nq2SL5uXUuTE4` / `https://sparkle-suite-my21lhpsy-louis-2849s-projects.vercel.app`.
+- Public aliases include `https://www.yoursparklesuite.com`, `https://yoursparklesuite.com`, and `https://sparkle-suite.vercel.app`.
+- Stable demo alias now points to this deployment.
+- Final stable demo Chrome check passed: Help & Resources shows Support Path with `Send a report to support`, `Start report`, `Short title`, `Details`, and `Send report` visible immediately.
+- Current pushed checkpoint: `2f7e0c8 chore: pressure test support system`.
+
+---
+
+## June 12, 2026 - Support Workflow Gate Copy
+
+**What changed:**
+- Clarified Help & Resources Support Path copy after Louis said the prior instructions felt vague/fake and should not assume reps know professional support workflow.
+- Support Path now tells reps to start at the top of Help & Resources, open the relevant workflow guide, follow the applicable steps, and ask Nic-Nac if still blocked before submitting.
+- Support form heading is `Submit a support report`.
+- Added a required workflow-first checkbox confirming the rep started at the top of Help & Resources, used the relevant workflow guide, followed applicable steps, and still needs support.
+- Removed casual gendered language concerns from the support workflow wording.
+
+**Verification and deployment:**
+- Focused support copy/regression tests passed.
+- `npm run build` passed locally.
+- Current pushed checkpoint: `d2cd203 fix: clarify support report workflow gate`.
+- Production deployment: `dpl_3qYAoEcftAKq9VFBWGXWZsWzVzVd` / `https://sparkle-suite-3jlon2lad-louis-2849s-projects.vercel.app`.
+- Stable demo alias was updated to the same deployment before the later dashboard-link deployment superseded it.
+
+---
+
+## June 12, 2026 - Permanent Dashboard Link
+
+**What changed:**
+- Added a friendly permanent dashboard route at `/dashboard`.
+- `/dashboard` redirects to `/control-center`, keeping the Support Command Center as the single source of truth while giving Louis a memorable link.
+- Follow-up fix after Louis reported the permanent link opened Neon Rabbit HQ:
+  - Root cause was Supabase Auth URL Configuration, not the Next.js route: Supabase `SITE_URL` was still `https://neon-rabbit-hq.vercel.app`.
+  - Updated Supabase Auth `SITE_URL` to `https://www.yoursparklesuite.com`.
+  - Added Sparkle Suite redirect URL wildcards:
+    - `https://www.yoursparklesuite.com/**`
+    - `https://yoursparklesuite.com/**`
+    - `https://sparkle-suite.vercel.app/**`
+    - `https://sparkle-suite-demo.vercel.app/**`
+  - Left the old HQ redirect wildcard in place for now to avoid breaking any legacy flow tied to the shared Supabase project; the default Site URL no longer points to HQ.
+  - Added app-side login redirect preservation so `/control-center` sends unauthenticated users to `/login?redirect=%2Fcontrol-center`.
+
+**Verification and deployment:**
+- Focused redirect test passed: `tests/dashboard-page.test.ts`.
+- `npm run build` passed locally and Vercel production build passed.
+- Current pushed checkpoint: `e8d8632 feat: add permanent dashboard link`.
+- Production deployment: `dpl_9vyzrTUdukkihrq3bbDnFbn5bZg7` / `https://sparkle-suite-i0wjd7bhh-louis-2849s-projects.vercel.app`.
+- Stable demo alias updated: `https://sparkle-suite-demo.vercel.app`.
+- HTTP checks confirmed both `https://sparkle-suite-demo.vercel.app/dashboard` and `https://www.yoursparklesuite.com/dashboard` return `307` to `/control-center`.
+- Follow-up checkpoint: `acb2866 fix: preserve control center login redirect`.
+- Follow-up production deployment: `dpl_1263MMazGNtj5asngnGfazcVnXGi` / `https://sparkle-suite-kf9ahff5v-louis-2849s-projects.vercel.app`.
+- Stable demo alias updated to the follow-up deployment.
+- Post-fix HTTP check confirmed `https://www.yoursparklesuite.com/dashboard` routes to `/control-center`, then `/login?redirect=%2Fcontrol-center`.
+- Chrome check confirmed the public dashboard link lands on Sparkle Suite login with no HQ content.
+
+---
+
+## June 12, 2026 - Workspace Blank Panel Incident
+
+**Issue found:**
+- Louis reported the Sparkle Suite demo workspace was broken: clicking Trade Board, Calendar, and other dashboard sections left the center panel blank.
+- Chrome inspection confirmed the center workspace section existed but rendered no content.
+- Root cause had two parts:
+  - The dashboard gated section content on `hasPaidWorkspace`; if account billing failed or had not resolved, paid sections rendered nothing.
+  - `/api/nic-nac/account-billing` was returning `500` for the demo account, even though Trade Board and related workspace data endpoints were returning `200`.
+
+**Fix completed:**
+- Added a visible workspace access fallback so locked/loading sections show clear account guidance instead of a blank panel.
+- Hardened account billing so optional Stripe billing-detail or referral-summary lookup failures no longer block subscription/access status.
+- Current pushed checkpoints:
+  - `4240396 fix: prevent blank locked workspace sections`
+  - `84ebca7 fix: keep workspace access when billing details degrade`
+
+**Verification and deployment:**
+- Focused tests passed: `tests/services/account-billing.test.ts` and `tests/nic-nac-dashboard-placeholder.test.ts` with 70 tests.
+- `npm run build` passed locally and Vercel production build passed.
+- Final production deployment: `dpl_5Qwqc4EL6fUkWpRQzRcWkC2Ei7mt` / `https://sparkle-suite-5md5qf0f5-louis-2849s-projects.vercel.app`.
+- Stable demo alias updated to the fixed deployment: `https://sparkle-suite-demo.vercel.app`.
+- Chrome smoke on Louis's demo tab verified Trade Board, Jewelry Library, Calendar, Site Settings, Help & Resources, and Account all render visible center content with no console errors.
+- Vercel logs confirmed `/api/nic-nac/account-billing` now returns `200`; the new warning is expected when optional details degrade and no longer blocks workspace access.
+
+---
+
+## June 13, 2026 - Mile High Fizz Sparkle Suite Shell
+
+**What changed:**
+- Built the Mile High Fizz tenant attachment path in the active Sparkle Suite repo without moving DNS or changing the live Ready.ai site.
+- Added Lindsey / Mile High Fizz production tenant wiring:
+  - Rep id: `f82734fd-6964-42c7-b67d-c2445528c3b4`
+  - Email: `lindseychapman1188@gmail.com`
+  - Public slug: `milehighfizz`
+  - Custom domain reserved in Sparkle Suite: `milehighfizz.com`
+  - Live Queue sync code: `MHF-9446`
+- Added friendly customer routes for the Sparkle Suite shell:
+  - `/milehighfizz`
+  - `/milehighfizz/trade`
+- Confirmed this uses the standard shared Sparkle Suite Trade Board; there is no custom one-off board.
+- Hid the Join Team customer surface for phase one when `show_join_page=false`, including header/footer links.
+- Added friendly slug link rewriting so customer Home/Trade Board links stay on `/milehighfizz` and `/milehighfizz/trade`.
+
+**Verification:**
+- Production Supabase read-back confirmed rep, site settings, active workspace gate, onboarding status, and live queue.
+- Follow-up audit corrected the production rep row so `custom_domain=null`; the active customer link is the Sparkle Suite slug until cutover.
+- Workspace customer site and Trade Board preview links were tightened to prefer `/milehighfizz` and `/milehighfizz/trade` when a public slug exists.
+- Lindsey temporary login was verified through Supabase Auth; the password is not stored in binder notes.
+- Focused tests passed after audit tightening: 7 files, 114 tests.
+- `npm run build` passed locally.
+- Local Playwright screenshots verified the homepage and Trade Board render with Mile High Fizz identity, standard empty Trade Board shell, and no visible Join Team nav.
+
+**Caveats:**
+- Code is implemented locally on `codex/sparkle-cross-phase-hardening` but not yet pushed or deployed from this checkpoint.
+- DNS/domain cutover has not happened; `https://milehighfizz.com/` should stay on Ready.ai until Louis explicitly says to move it.
+- Ready.ai assets and transferred email/SMS signups are still future migration work.
+
+---
+
+## June 15, 2026 - Customer-Site Skin Precedence Incident
+
+**What happened:**
+- Louis repeatedly reported that changing the customer-facing site skin in the Sparkle Suite workspace did not change the deployed live preview or customer-facing site.
+- Earlier verification was too shallow and created a frustrating loop: the workspace save path looked healthy, but the stable demo customer route still rendered Amethyst.
+
+**Root cause:**
+- `loadAmethystPreviewTemplateData` was applying stale required-setup draft answers over saved `site_settings` even after the setup session was `dashboard_unlocked`.
+- Louis's Fizz Fest had saved `site_settings.appearance_preset='amber'`, while stale setup answers still had `site_skin.selectedLook='AM-01'`.
+- The public template emitted `preset:"amethyst"` from the stale setup answer, so the customer site ignored the saved workspace skin.
+
+**Fix and deployment:**
+- Fixed the precedence rule so required-setup draft answers only influence public template data while setup is active, not after dashboard unlock.
+- Related checkpoint: `0b1563c fix: honor saved customer site skin after setup`.
+- Deployment: `dpl_7Hg2Wk43ow7hCJoWPHucUq8Z33AF` / `https://sparkle-suite-jwth5hebr-louis-2849s-projects.vercel.app`.
+- Stable demo alias: `https://sparkle-suite-demo.vercel.app`.
+
+**Verification that passed:**
+- Focused tests passed across public template and Site Settings routes: 7 files, 104 tests.
+- `npm run build` passed.
+- Stable demo template endpoint changed from `preset:"amethyst"` before the fix to the saved preset after the fix.
+- Synthetic reviewer save path saved `black_diamond`; public template returned `black_diamond` instead of Amethyst.
+- Stable slug HTML used the rep-scoped `data-template-src`.
+- Rendered screenshot was captured at `C:\Users\louis\AppData\Local\Temp\sparkle-louisfizzfest-afterfix.png`.
+
+**Lesson logged:**
+- Customer-facing settings fixes must be verified on the exact stable-demo route Louis uses, not just local, API, or raw preview checks.
+- For theme/skin bugs, always compare saved Site Settings against required-setup/session state so stale onboarding answers cannot silently win.
+- Dedicated lesson file: `docs\sparkle-suite\lessons\2026-06-15-customer-site-skin-precedence.md`.
+
+---
+
+## June 15, 2026 - Sparkle Suite Polish Closeout and Stable Demo Handoff
+
+**What changed this session:**
+- Cleaned seeded/demo jewelry records out of the Sparkle Suite Finder catalog source so Sparkle Finder no longer receives the leaked demo items through `/api/public/finder/catalog`.
+- Fixed the customer-facing site skin persistence bug where saved workspace Site Settings were overridden by stale required-setup answers after `dashboard_unlocked`.
+- Preserved the product decision that Sparkle Suite workspace styling stays on the standard Sparkle Suite workspace look, while the customer-facing site skin remains editable from Site Settings.
+- Removed the floating bottom-right Site Settings save dock after Louis reviewed it and decided it felt clunky.
+- Moved `Save site settings` into the Site Settings card header with the save status beside it.
+
+**Key decisions:**
+- Louis reviews Sparkle Suite demo work at `https://sparkle-suite-demo.vercel.app/`; raw Vercel preview URLs are supporting evidence only.
+- Future customer-facing theme/skin fixes must prove the exact deployed live preview/customer route after save, not only local state or API payloads.
+- Site Settings uses explicit manual save, not auto-save, for public/customer-facing changes.
+- The save control belongs on the Site Settings screen where the edits happen, not floating globally over the workspace.
+
+**Current repo/deploy state:**
+- Active repo: `C:\Users\louis\sparkle-suite-repo`.
+- Branch: `codex/sparkle-cross-phase-hardening`.
+- Current pushed checkpoint: `a440944 fix: move site settings save into settings header`.
+- Stable demo alias: `https://sparkle-suite-demo.vercel.app/`.
+- Current stable demo target: `https://sparkle-suite-ni9tlg2a6-louis-2849s-projects.vercel.app`.
+- Deployment id: `dpl_DuW2PuoQfYFiZjrAqRpYbhbia7nN`.
+- Active repo was clean and synced with origin after the closeout.
+
+**Verification completed:**
+- Finder catalog cleanup verified that seeded/demo records were removed and legitimate uploaded jewelry such as `ER76003 / The Elodie Luxe` remained.
+- Customer-site skin fix verified that saved Site Settings win over stale setup answers after dashboard unlock.
+- Focused Site Settings/dashboard regression passed: 1 file, 68 tests.
+- Local `npm run build` passed.
+- Vercel preview build passed.
+- Stable demo reviewer-smoke verified the Site Settings header save action:
+  - `No unsaved changes.` appears beside the header button initially.
+  - Editing a setting changes status to `Unsaved changes.` and enables `Save site settings`.
+  - Saving changes status to `Site settings saved.` and disables the button again.
+  - No floating save dock remained.
+  - No console warnings/errors were seen during the tested flow.
+
+**Continuation guidance:**
+- New sessions should start from binder/Open Brain bridge at `C:\Users\louis\sparkle-suite`, then use `C:\Users\louis\sparkle-suite-repo` for implementation only after Louis gives a concrete task.
+- Use reviewer-smoke/synthetic sessions for logged-in stable-demo workspace checks, not Louis's personal account.
+- Continue polishing/editing Sparkle Suite only when Louis gives the next specific item.
+
+---
+
+## June 15, 2026 - Nic-Nac Trade Board Intake Regression and Smoke-Test Gap
+
+**What happened:**
+- Louis repeatedly hit the same failure while trying to add `ER13229 / The Florence Earrings` to the Trade Board and jewelry database through Nic-Nac.
+- Nic-Nac confused a label/details photo with a customer-facing jewelry photo and criticized it as though it were the boxed display jewelry shot.
+- After Louis corrected Nic-Nac with language like "I didn't give you any photos. I only gave you a photo with a label in it," Nic-Nac dropped the add-listing workflow and incorrectly claimed he could not add listings from chat.
+
+**Root cause found during debugging:**
+- The active tool router did not treat that correction sentence as a Trade Board continuation.
+- The turn fell back to `memory` intent, which removed `add_listing` from the active tool list.
+- Once `add_listing` was unavailable, the model produced the bad manual-workaround answer.
+- A conflicting prompt section also still let a label/details photo be described as a boxed display photo if jewelry was visible somewhere in the frame.
+
+**Work in progress in the active repo:**
+- Active repo: `C:\Users\louis\sparkle-suite-repo`.
+- Branch: `codex/sparkle-cross-phase-hardening`.
+- Current working tree has uncommitted changes in:
+  - `lib/nic-nac/tools/index.ts`
+  - `lib/nic-nac/prompt-builder.ts`
+  - `lib/nic-nac/system-prompt.ts`
+  - `tests/nic-nac/tool-routing.test.ts`
+  - `tests/nic-nac/prompt-routing.test.ts`
+  - `tests/nic-nac/system-prompt-add-listing.test.ts`
+- Added deterministic regression coverage for the exact correction path; before the fix it returned `['memory']` instead of keeping Trade Board tools active.
+- Latest verification before pausing:
+  - Targeted regression files passed: 3 files, 52 tests.
+  - Full Nic-Nac suite passed: 77 files, 579 tests, 1 skipped.
+  - `npm run build` passed.
+
+**Smoke-test issue:**
+- Prior verification was too shallow. It checked prompt strings, tests, build, stable alias, and health, but did not replay the actual logged-in Nic-Nac add-listing conversation end-to-end.
+- A true smoke must use a synthetic/reviewer rep session, the real chat route/UI or real `/api/nic-nac`, real uploaded image parts, and the actual model/tool loop.
+- Local Next server startup from Codex hit Windows/session barriers (`spawn EPERM` for `next dev`, and PowerShell background-job permission issues), so stable-demo/reviewer-smoke browser automation is the preferred path.
+
+**New QA direction:**
+- Create a local fixture folder, recommended path: `C:\Users\louis\sparkle-suite-smoke-assets`.
+- Store test images such as:
+  - `ER13229-label.jpg`
+  - `ER13229-jewelry-boxed-front.jpg`
+  - bad/edge-case examples for coached retakes.
+- Store `cases.txt` with item details and expected behavior.
+- Codex should use browser/Chrome automation and reviewer-smoke/synthetic accounts to act like a rep, upload those files, and rerun the same flows until Nic-Nac behaves correctly.
+- Capped real model calls are needed for final confidence because the failure is in the live LLM/tool loop, not only deterministic code.
+
+---
+
+## June 16, 2026 - Nic-Nac ER13229 Workflow Truth Hardening
+
+**What changed:**
+- Implemented the Trade Board workflow truth fix for the latest `ER13229 / The Florence Earrings` failure.
+- Added regression coverage for the exact live failure shape:
+  - `search_jewelry_database` found `ER13229`, but workflow state did not learn the catalog truth.
+  - The confirmation sentence `That is correct. This is the July Birthday collection, 2026.` previously parsed as `collectionName: "ection"`.
+  - `add_listing` previously let stale workflow readiness veto a valid current tool call with `itemNumber`, collection, and confirmed jewelry-front photo.
+- Created `lib/nic-nac/workflows/trade-board-known-fields.ts` so known-field extraction and catalog tool-output ingestion live outside the route context.
+- Added `computeTradeBoardAddAttemptReadiness` so `add_listing` still enforces photo-role safety but lets current tool input complete stale workflow facts before service-level validation.
+- Added an `ER13229` live-sequence fixture for the required rep-like turn order and hard-fail phrases.
+
+**Implementation checkpoints in active repo:**
+- `eb2816d fix: sync trade board workflow with catalog truth`
+- `23effe6 fix: allow valid add listing attempts from current input`
+- `867e240 test: capture ER13229 live intake sequence`
+- `6f7c93b fix: type catalog tool part extraction`
+
+**Verification completed locally:**
+- Focused tests passed: `tests/nic-nac/trade-board-intake-route-context.test.ts`, `tests/nic-nac/trade-board-intake-controller.test.ts`, `tests/nic-nac/add-listing-recovery.test.ts`, `tests/nic-nac/trade-board-intake-live-sequence.test.ts` — 4 files, 53 tests.
+- Full Nic-Nac suite passed: 86 files passed, 1 skipped; 629 tests passed, 1 skipped. Vitest printed worker-termination timeout warnings after the passing run.
+- `npm run build` passed after a TypeScript cast cleanup in catalog tool-part extraction.
+
+**Still not proven fixed:**
+- `C:\Users\louis\sparkle-suite-smoke-assets` does not currently contain `ER13229-label.jpg` or `ER13229-jewelry-boxed-front.jpg`.
+- `scripts/smoke-nic-nac-trade-board-intake.ts` is still a parser/stub and reports `not_implemented_for_live_calls`.
+- No model-in-loop replay, browser reviewer-smoke, deployed stable-demo smoke, or database assertion has been completed for this new fix yet.
+
+**Next required steps before saying fixed:**
+- Push and deploy the new commits to the stable Sparkle Suite demo target.
+- Add or locate the ER13229 smoke fixture photos.
+- Implement or finish the real `smoke:nic-nac:trade-board-intake` replay so it uploads real image parts and checks tool calls, final text, workflow completion, listing database state, and hard-fail phrases.
+- Run the replay three consecutive times and run one stable-demo reviewer-smoke pass against `https://sparkle-suite-demo.vercel.app/`.
+
+**Later update in same session:**
+- Added active repo checkpoint `057bc64 chore: add Nic-Nac trade board smoke replay`.
+- `scripts/smoke-nic-nac-trade-board-intake.ts` is no longer a parser/stub. It signs in the demo rep, posts real `/api/nic-nac` turns with image data parts, checks assistant hard-fail phrases, observes `search_jewelry_database` and `add_listing`, verifies workflow/listing DB state, and soft-removes smoke listings by default.
+- Re-verified after the replay harness: focused Nic-Nac + smoke-script tests passed (5 files, 57 tests), full Nic-Nac suite with the smoke-script test passed (86 files passed, 1 skipped; 631 tests passed, 1 skipped), and `npm run build` passed.
+- `npm run smoke:nic-nac:trade-board-intake` now reaches the real harness and fails safely with `status: "missing_assets"` because `C:\Users\louis\sparkle-suite-smoke-assets` still lacks `ER13229-label.jpg` and `ER13229-jewelry-boxed-front.jpg`.
+- Remaining proof gap: no model-in-loop replay, browser reviewer-smoke, deployed stable-demo smoke, or database assertion has completed yet because the fixture photos are missing.
+
+**Final update in same session:**
+- Found the real ER13229 label/details photo beside Louis's boxed jewelry photo and created the canonical fixture folder `C:\Users\louis\sparkle-suite-smoke-assets` with:
+  - `ER13229-label.jpg`
+  - `ER13229-jewelry-boxed-front.jpg`
+  - `cases.txt`
+- Added and pushed additional smoke-harness checkpoints:
+  - `7362be7 chore: default Nic-Nac smoke to reviewer account`
+  - `22e4a98 chore: target stable demo in Nic-Nac smoke`
+  - `d67a342 chore: use uuid conversations in Nic-Nac smoke`
+  - `60152d2 chore: clean ER13229 smoke listings before replay`
+- Stable demo alias now points to the final verified app deployment: `https://sparkle-suite-demo.vercel.app` -> `https://sparkle-suite-cqjhr6sif-louis-2849s-projects.vercel.app`.
+- Stable-demo ER13229 replay smoke passed three consecutive model/tool/API runs, then passed once more after the final alias update, and once more after clean-state harness hardening. Each pass used reviewer-smoke workspace `sparkle-reviewer+preview@neonrabbit.net`, real `/api/nic-nac`, real image data parts, `search_jewelry_database`, `add_listing`, workflow/listing DB verification, hard-fail phrase gates, and smoke listing cleanup.
+- Active repo `C:\Users\louis\sparkle-suite-repo` is clean and synced with origin on `codex/sparkle-cross-phase-hardening` through `60152d2`.
+
+---
+
+## June 16, 2026 - Public Site Context Routing Hardening
+
+**What happened:**
+- After the Nic-Nac ER13229 flow finally added `The Florence Earrings` to the workspace Trade Board, Louis found the customer-facing public site still showed stale/default inventory instead of the newly added listing.
+- Screenshot comparison showed the workspace board had `ER13229 / The Florence Earrings` with the boxed earrings photo, while the public Trade Board page showed a seeded/default item such as `Birthday Bloom Ring`.
+
+**Root cause:**
+- The customer route could render with the correct initial slug/rep context, but client-side public API refreshes could call `/api/amethyst/trade-board` without the same target identity.
+- When target identity was lost, the public page could fall back to demo/default data instead of failing closed for the intended rep.
+
+**What changed:**
+- Added a shared public-site request target contract in `lib/amethyst/request-rep-target.ts`.
+- Public routes now resolve `c`/`repId`, `publicSiteSlug`, slug path/referrer context, and real custom domains through the same helper.
+- Template runtime context now preserves both `repId` and `publicSiteSlug`.
+- Public browser code now merges that runtime context into Trade Board refreshes, trade requests, signup/audience actions, and unsubscribe requests.
+- Targeted loaders now fail closed rather than silently showing default/demo data when rep context cannot be resolved.
+- Public trade request submission can verify the listing belongs to the expected rep before the RPC submit path.
+- Canonical platform hosts such as `yoursparklesuite.com` and `www.yoursparklesuite.com` are excluded from rep custom-domain matching.
+
+**Implementation checkpoint:**
+- `68fc332 fix: harden public site context routing`
+- Branch: `codex/sparkle-cross-phase-hardening`
+- Active repo: `C:\Users\louis\sparkle-suite-repo`
+
+**Verification and deploy:**
+- Focused public-site/trade-request regression suite passed: 24 files, 175 tests.
+- `npm run build` passed.
+- Vercel preview build passed.
+- Stable demo alias now points to `https://sparkle-suite-1k5a4e5xv-louis-2849s-projects.vercel.app`.
+- Deployment id: `dpl_EopEe8p6QKN6ZTqGdUoFnFH3DaWM`.
+- Stable demo root returned Sparkle Suite HTML after alias promotion.
+- Louis ran a light manual smoke on `https://sparkle-suite-demo.vercel.app` and reported that everything seemed to be working.
+
+**Lessons carried forward:**
+- Public-site/workspace plumbing is not a place for one-off patches. Rep/site identity must be a contract shared by templates, browser JS, APIs, loaders, and mutation services.
+- For future customer-site bugs, compare workspace state against the actual public route after hydration/API refresh, not just the initial HTML or one route payload.
+- Do not let targeted public pages silently fall back to seeded/demo inventory.
+
+---
+
+## June 18, 2026 - Trade Board Polish and Mile High Fizz Hybrid Migration
+
+**Active repo state:**
+- Active implementation repo: `C:\Users\louis\sparkle-suite-repo`
+- Branch: `codex/sparkle-cross-phase-hardening`
+- Latest pushed checkpoint: `899db82 fix: restyle mile high fizz join page`
+- Stable demo alias: `https://sparkle-suite-demo.vercel.app`
+- Current stable demo target: `https://sparkle-suite-ovf2bqfy6-louis-2849s-projects.vercel.app`
+- Deployment id: `dpl_E1wE9yon1Ai82nBusv4VXwYbxjcF`
+- Repo was clean and synced after the closeout.
+
+**Trade Board and Nic-Nac polish completed after the June 16 context-routing work:**
+- `fd4ea3e fix: silence accepted photo warnings in Nic-Nac`
+  - Nic-Nac should not push back on an accepted Trade Board jewelry photo.
+  - If the photo is acceptable, he should add the listing and avoid quality commentary like "background is busy" or "a bit small."
+  - Only genuinely unacceptable photos should trigger coaching/retake requests.
+- `486d68e fix: require years in birthday collection names`
+  - Birthday collections must include the year in database/catalog/trade-board naming, e.g. `April Birthday 2026`, `May Birthday 2026`, `July Birthday 2026`.
+  - Nic-Nac/tools should collect the year going forward so future `2027` sets stay distinct while still allowing trades across years.
+- `c1bcfbf fix: stack trade board workspace cards`
+  - Trade Board workspace layout was tightened so the cards flow down the page rather than leaving a large blank middle/right gap beside Nic-Nac.
+- `fa67db5 feat: add reveal screenshots to trade requests`
+  - Customer trade request flow now supports a short-lived revealed-piece screenshot to help reps identify the piece being swapped.
+  - The customer-facing request copy asks for a brief description including collection and type instead of leaning on an item number.
+  - Rep-side trade inbox/detail surfaces can show the screenshot with the trade request.
+- `55a2ae9 docs: update trade request help flow`
+  - Help & Resources was updated so reps understand how the trade process works, including customer descriptions and optional reveal screenshots.
+- `99a7597 fix: tune customer ticker speed` and `2baf30c fix: speed up customer tickers`
+  - Customer-facing Trade Board ticker and announcement ticker were sped up from the too-slow/NASDAQ crawl behavior while remaining readable/clickable.
+
+**Mile High Fizz migration turning point:**
+- Initial attempts treated Mile High Fizz too much like a generic Amethyst/Black Diamond skin and did not preserve the original site closely enough.
+- Louis clarified the true target: the same MileHighFizz.com site, with Sparkle Suite automations built in and styled to match. Not "recognizable"; the same site as close as possible.
+- Screenshots and the live URL were useful for discussion, but the migration did not become faithful until Louis provided the Ready.ai/Readdy project source at `C:\Users\louis\Downloads\project-8286539 (1)\`.
+- Important source assets included the original React/Vite code, page components, copy, styles, and hero video.
+
+**Mile High Fizz implementation checkpoints:**
+- `28c3fb9 fix: unlock Mile High Fizz migration workspace`
+- `23cbad0 feat: add Mile High Fizz hybrid public site`
+- `90a2ecb fix: migrate mile high fizz homepage shell`
+- `7356a90 fix: restyle mile high fizz homepage sections`
+- `2191355 fix: restyle mile high fizz trade board`
+- `899db82 fix: restyle mile high fizz join page`
+
+**Mile High Fizz migration outcome as of this closeout:**
+- Public slug remains `milehighfizz`.
+- Homepage now carries the Mile High Fizz hero feel, video/visual direction, copy, colors, and brand language while keeping Sparkle Suite header/ticker/live-queue standards where Louis requested them.
+- Trade Board has its own page/route and keeps normal Sparkle Suite Trade Board behavior, but is dressed in Mile High Fizz branding.
+- Join page now restores the missing/miscarried `Diamond Peak Society` language, launch-pack/diamond copy, and Mile High Fizz styling instead of leaking Black Diamond/default Amethyst styling.
+- Lindsey's workspace remains standard Sparkle Suite; the public website is the custom hybrid surface.
+- Nic-Nac/site settings should still be able to update migrated branding/copy like a normal rep unless a future section is explicitly locked.
+
+**Verification and deploy for the final Join pass:**
+- Focused Mile High Fizz public-site suite passed: 1 file, 11 tests.
+- `npm run qa:amethyst` passed: 3 files, 64 tests, plus local Amethyst link checks.
+- `npm run build` passed locally.
+- Vercel preview build passed.
+- Stable demo alias was promoted to `https://sparkle-suite-ovf2bqfy6-louis-2849s-projects.vercel.app`.
+- Stable desktop and mobile screenshots were captured for `https://sparkle-suite-demo.vercel.app/milehighfizz/join`.
+
+**New reusable skill created in Open Brain:**
+- Created `C:\Users\louis\sparkle-suite\.agents\skills\sparkle-suite-existing-site-migration\SKILL.md`.
+- Added `agents/openai.yaml` for the skill.
+- The skill encodes the main lesson: for exact rep-site migrations, source code/project export is the intake gate. Screenshots and live URLs are references, not enough for a faithful migration unless Louis explicitly accepts a close recreation.
+- The skill instructs future agents to ask one question at a time, beginning with the current site source code/export/repo, and to avoid dumping long questionnaires.
+
+**Key lessons:**
+- For existing-site migrations, "same site with Sparkle Suite automations inserted" is the correct mental model.
+- Do not overbuild a reusable skin when the ask is a bespoke rep migration.
+- The public automations should keep their normal Sparkle Suite behavior; only the surrounding presentation should become rep-branded.
+- Source code/project exports beat screenshots for preserving copy, layout, media, and section hierarchy.
+- Hero media can carry a large portion of the brand identity and should be migrated when available.
+
+---
+
+## June 18, 2026 - Trade Request Confirmation Fix and Pressure Smoke
+
+**What happened:**
+- Louis tested the upgraded customer Trade Board request flow on a demo/preview account for Louis' Fizz Fest.
+- He filled out the trade request form, uploaded a reveal screenshot, submitted it, and the sheet flashed away without a visible success confirmation.
+- No request appeared in the expected Trade Board inbox/Nic-Nac path from that manual attempt.
+
+**Root cause:**
+- The customer Trade Board component submitted successfully or hit an error, then refreshed the board and updated submitted/available listings.
+- A demo-sheet synchronization effect depended on `availableSamples`, so the board refresh retriggered that effect with `demoSheet === "closed"`.
+- That cleared `requesting`, `success`, and `requestError`, making the customer sheet disappear immediately after submit.
+- The backend request/screenshot path was not the root failure. Multipart screenshot submit, request insert, listing `pending_trade` transition, screenshot persistence, and rep-scoped inbox visibility all worked when tested directly.
+
+**What changed:**
+- `public/amethyst/trade.jsx`
+  - Added a ref for the latest available samples.
+  - Limited the demo-sheet effect dependency to `t.demoSheet`.
+  - Kept the tuning-panel demo behavior intact while preventing real board refreshes from clearing the customer success/error sheet.
+- `tests/amethyst-trade-template.test.ts`
+  - Added a regression test proving success and error sheets stay visible after board refreshes.
+
+**Implementation checkpoint:**
+- `1635ce1 fix: keep trade request confirmation visible`
+- Branch: `codex/sparkle-cross-phase-hardening`
+- Active repo: `C:\Users\louis\sparkle-suite-repo`
+
+**Verification and deploy:**
+- TDD red/green was run against `tests/amethyst-trade-template.test.ts`.
+- Focused Trade Board/request/storage/Nic-Nac regression suite passed: 7 files, 59 tests.
+- `npm run qa:amethyst` passed after starting local `localhost:3001`: 3 files, 65 tests, plus local Amethyst homepage/Trade Board link checks.
+- `npm run build` passed locally.
+- Local synthetic multipart smoke passed:
+  - created a temporary paid rep and public slug,
+  - submitted a trade request with `ER13229-jewelry-boxed-front.jpg` as a reveal screenshot,
+  - verified request status `pending`, listing status `pending_trade`, screenshot metadata, and rep-scoped inbox visibility.
+- Local pressure smoke passed:
+  - 6 synthetic submissions,
+  - 3 with screenshots and 3 without,
+  - all requests landed as rep-scoped pending requests and all listings moved to `pending_trade`.
+- Vercel preview build passed.
+- Stable demo alias now points to `https://sparkle-suite-pyfv4xpp7-louis-2849s-projects.vercel.app`.
+- Stable demo `https://sparkle-suite-demo.vercel.app/amethyst/Trade.html` returned `200 OK`.
+- Deployed stable smoke passed:
+  - screenshot-backed API submit persisted screenshot metadata,
+  - rendered customer-page submit showed `Request sent.` and kept it visible after refresh,
+  - no console errors,
+  - rep-scoped data path saw both smoke requests.
+- All synthetic local and deployed smoke rows, auth users, reps, listings, designs, collections, subscriptions, and uploaded screenshot objects were cleaned up.
+
+**Lessons carried forward:**
+- Customer success/error UI must not depend on mutable listing collections that can change during the same submit cycle.
+- Optional screenshot upload should be smoke tested separately from the visual customer confirmation. The screenshot can be valid even when the UI confirmation is broken.
+- Public-site smoke slugs must obey Sparkle Suite slug validation: lowercase letters and digits only, no hyphens.
+- Browser plugin may block local/stable URLs with `ERR_BLOCKED_BY_CLIENT`; if that happens after trying it first, cached/headless Playwright is an acceptable rendered-verification fallback.
+- Preview/static Trade Board URLs can appear to work while showing fallback sample inventory if target context is invalid or missing. Always verify the public board endpoint returns the intended synthetic listing before testing form behavior.

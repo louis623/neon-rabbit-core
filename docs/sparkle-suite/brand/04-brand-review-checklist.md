@@ -37,13 +37,6 @@ Read this with `01-master-brand-spec.md`, `02-messaging-pillars.md`, and `03-nic
 - For the newsletter, does it work under one newsletter brand that serves both lead nurture and rep education?
 - If this is email or SMS, are channel-specific compliance rules being respected?
 
-## Visual UI check
-
-- If this is a public page or product-flow page, did you compare it against `/prelaunch` and the current landing page?
-- Is pink reserved for primary CTAs, small accents, simple rules, and thin borders instead of decorative card glows?
-- Are dark cards solid warm dark panels with restrained borders instead of pink-glow or gradient-showcase panels?
-- Are cards, titles, and small labels using the production design kit instead of a new campaign look?
-
 ## Drift scan
 
 - Does this drift into generic SaaS, agency tone, hype, or AI slop?

@@ -4,28 +4,49 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Sparkle Suite Binder Bridge
+# Sparkle Suite Workspace
 
-This repo is the active Sparkle Suite implementation workbench. For future
-Codex desktop sessions, start with this repo as the writable workspace so code
-edits, tests, commits, pushes, deploys, and Supabase/Vercel operations do not
-trigger binder-only permission prompts.
+This repo is the active Sparkle Suite workspace and now contains both the code
+and the former Codex binder/Open Brain files. Start future Codex desktop
+sessions from this repo as the writable workspace:
 
-Before doing Sparkle Suite work, read the binder instructions and current
-project memory from:
+`C:\Users\louis\sparkle-suite-repo`
 
-- `C:\Users\louis\sparkle-suite\AGENTS.md`
-- `C:\Users\louis\sparkle-suite\vault\project-state.md`
-- `C:\Users\louis\sparkle-suite\vault\session-log.md`
-- `C:\Users\louis\sparkle-suite\vault\decisions.md`
-- `C:\Users\louis\sparkle-suite\vault\open-items.md`
+Before doing Sparkle Suite work, read the current project memory from this repo:
 
-Use the binder only for notes, memory, plans, handoffs, and skills. Use this
-repo for implementation, builds, tests, commits, pushes, deploys, Supabase
-migrations, and smoke tests.
+- `vault\project-state.md`
+- `vault\session-log.md`
+- `vault\decisions.md`
+- `vault\open-items.md`
+
+Project skills live in this repo at `.agents\skills`. Use them when their
+trigger rules apply, especially:
+
+- `sparkle-suite-existing-site-migration`
+- `sparkle-suite-demo-smoke`
+- `sparkle-nic-nac-agent-architecture`
+- `sparkle-live-queue`
+
+Use this repo for implementation, builds, tests, commits, pushes, deploys,
+Supabase migrations, smoke tests, notes, memory, plans, handoffs, and skills.
+The old `C:\Users\louis\sparkle-suite` folder is retained only as a redirect
+and historical archive; do not depend on it for active instructions.
 
 Do not touch Chrome Web Store settings or local Sparkle Suite Chrome extension
-code. Treat live queue extension files as protected live-show material.
+code. Treat live queue extension files as protected live-show material. Read
+`LIVE_EXTENSION_SAFETY.md` before any live extension discussion or handoff.
+
+For Sparkle Suite demo verification, Vercel alias checks, logged-in workspace
+smoke tests, required setup checks, Help & Resources checks, or Nic-Nac UI
+checks, use `sparkle-suite-demo-smoke` when available. Prefer the stable demo
+URL `https://sparkle-suite-demo.vercel.app` and Chrome reviewer-smoke sessions
+instead of Louis's personal account.
+
+For Sparkle Suite demo deploys, the expected review/deploy target is the stable
+alias `https://sparkle-suite-demo.vercel.app/`. A raw Vercel preview URL is not
+enough for Louis to review unless he explicitly asks for a one-off preview.
+After creating a Vercel preview, move/confirm the stable demo alias points to
+the intended deployment before telling Louis the work is deployed.
 
 ## Customer-Facing Flow Definition of Done
 

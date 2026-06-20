@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sparkle Nic-Nac Agent Architecture"
+  short_description: "Use /Nic-Nac for the shared Sparkle ecosystem agent architecture, photo roles, evals, and smoke-test work."
+  default_prompt: "/Nic-Nac: Use the Sparkle Nic-Nac agent architecture skill to plan or review this change with the shared-core rule, workflow state, explicit photo roles, eval gates, and reviewer-smoke verification."

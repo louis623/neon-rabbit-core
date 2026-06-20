@@ -1,0 +1,7 @@
+interface:
+  display_name: "Sparkle Suite Site Migration"
+  short_description: "Migrate rep sites into Sparkle Suite."
+  default_prompt: "Use $sparkle-suite-existing-site-migration when a rep already has a website and Louis wants it brought into Sparkle Suite without losing the original brand."
+
+policy:
+  allow_implicit_invocation: true
