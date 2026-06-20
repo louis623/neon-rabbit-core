@@ -76,6 +76,17 @@ describe('Amethyst homepage template data wiring', () => {
     }
   })
 
+  it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
+    const tweaksPanel = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/tweaks-panel.jsx'),
+      'utf8',
+    )
+
+    expect(tweaksPanel).toContain('(function initAmethystTweaksPanel() {')
+    expect(tweaksPanel).toContain('Object.assign(window, {')
+    expect(tweaksPanel.trim()).toMatch(/\}\)\(\);$/)
+  })
+
   it('marks animated ticker tracks as decorative and provides concise screen-reader summaries', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
