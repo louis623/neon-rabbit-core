@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gem } from "lucide-react";
+import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { BombPartyLabelBadge, PieceStatusBadge, RarestRevealBadge } from "./ShowcaseBadges";
 import type { SparkleShowcasePiece } from "@/lib/sparkle-finder/showcase-types";
 
@@ -57,18 +57,15 @@ export function RarestReveals({ handle, pieces }: RarestRevealsProps) {
 }
 
 export function PieceImage({ piece }: { piece: SparkleShowcasePiece }) {
+  const imageUrl = piece.personalPhotoUrl?.trim() || piece.jewelryItem.imageUrl;
+
   return (
-    <div className="grid aspect-[4/3] place-items-center overflow-hidden border-b border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)] text-[var(--sparkle-plum)]">
-      {piece.jewelryItem.imageUrl ? (
-        <div
-          aria-label={piece.jewelryItem.name}
-          className="size-full bg-cover bg-center"
-          role="img"
-          style={{ backgroundImage: `url("${piece.personalPhotoUrl ?? piece.jewelryItem.imageUrl}")` }}
-        />
-      ) : (
-        <Gem aria-hidden="true" className="size-14" strokeWidth={1.4} />
-      )}
+    <div className="grid aspect-[4/3] place-items-center overflow-hidden border-b border-[var(--sparkle-border)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)]">
+      <JewelryImageFrame
+        imageUrl={imageUrl}
+        jewelryType={piece.jewelryItem.jewelryType}
+        name={piece.jewelryItem.name}
+      />
     </div>
   );
 }

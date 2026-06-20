@@ -90,11 +90,12 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByText("Nic-Nac remembers")).toBeVisible();
     await expect(page.locator('[data-smoke="finder-nic-nac-curator"]')).toContainText("Favorite reps");
 
-    await page.getByText("Advanced profile and Showcase controls").click();
-    await expect(page.locator('[data-smoke="showcase-add-pieces"]')).toBeVisible();
-    await expect(page.locator('[data-smoke="showcase-manager"]')).toBeVisible();
-    await expect(page.getByText("Owner tools")).toBeVisible();
+    await expect(page.locator('[data-smoke="profile-summary-card"]')).toBeVisible();
+    await expect(page.locator('[data-smoke="simple-silver-showcase"]')).toBeVisible();
+    await page.getByRole("button", { name: "Edit Profile" }).click();
     const profileCard = page.locator('[data-smoke="profile-editor-card"]');
+
+    await expect(profileCard).toBeVisible();
     const profileCardBox = await profileCard.boundingBox();
 
     expect(profileCardBox).not.toBeNull();
@@ -129,20 +130,16 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.locator('input[name="profilePhotoDataUrl"]')).toHaveValue(/^data:image\/jpeg;base64,/);
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Profile saved.")).toBeVisible();
-    await expect(page.getByText("Feature in The Rarest of Reveals").first()).toBeVisible();
-    await expect(page.getByText("Need a missing piece?")).toBeVisible();
-    await expect(page.locator('[data-smoke="showcase-studio-intake"]')).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Showcase Studio" })).toBeVisible();
-    await expect(page.getByText("Original Bomb Party label required")).toBeVisible();
-    await expect(page.getByText("Nic-Nac checks every image")).toBeVisible();
-    await expect(page.getByLabel("Original label photo")).toBeVisible();
-    await expect(page.getByLabel("Light-box jewelry photo")).toBeVisible();
-    await expect(page.getByLabel("Item number")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Submit to Nic-Nac review" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Light-box setup guide" })).toHaveAttribute(
-      "href",
-      "/photo-setup",
-    );
+    await page.getByRole("button", { name: "Close profile editor" }).click();
+    await expect(page.getByRole("heading", { name: "Wishlist & Collection" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pick a piece" })).toBeVisible();
+    await page.getByRole("button", { name: "Add to Wishlist" }).first().click();
+    await expect(page.getByText("Added to Wishlist.").first()).toBeVisible();
+    await page.getByRole("button", { name: "I Own This" }).first().click();
+    await expect(page.getByLabel("Note").first()).toBeVisible();
+    await expect(page.getByLabel("Showcase collection").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save to Collection" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Help Me Find It" }).first()).toBeVisible();
     await expectNoGuardrailCopy(page);
   });
 });

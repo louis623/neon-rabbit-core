@@ -17,6 +17,7 @@ import PhotoSetupPage, { renderPhotoSetupPageContent } from "../../app/photo-set
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { FavoriteRepsPanel } from "../../components/favorites/FavoriteRepsPanel";
+import { PieceImage } from "../../components/showcase/RarestReveals";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { JewelryCard } from "../../components/library/JewelryCard";
@@ -759,7 +760,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("No current listings");
   });
 
-  it("renders library photos with containment framing instead of cover cropping", () => {
+  it("renders library card photos with a locked smart crop that favors the jewelry", () => {
     const markup = renderToStaticMarkup(
       createElement(JewelryCard, {
         item: {
@@ -781,8 +782,55 @@ describe("Sparkle Finder hub routes", () => {
       }),
     );
 
-    expect(markup).toContain("object-contain");
-    expect(markup).toContain("object-position:center 58%");
+    expect(markup).toContain('data-photo-fit="smart-crop"');
+    expect(markup).toContain("absolute inset-0 h-full w-full object-cover");
+    expect(markup).toContain("object-position:center 78%");
+    expect(markup).toContain("min-h-0");
+    expect(markup).toContain("min-w-0");
+    expect(markup).toContain("overflow-hidden");
+    expect(markup).not.toContain("object-contain");
+    expect(markup).not.toContain("bg-cover");
+  });
+
+  it("renders showcase piece photos through the same smart jewelry frame", () => {
+    const markup = renderToStaticMarkup(
+      createElement(PieceImage, {
+        piece: {
+          id: "owned-piper",
+          customerId: "customer-1",
+          jewelryItemId: "bp-necklace-piper",
+          state: "owned",
+          note: "",
+          isHighlighted: true,
+          visibility: "public",
+          showcaseStatus: "owned",
+          revealStory: "Found it at last.",
+          personalPhotoUrl: "https://cdn.example.test/personal-piper.jpg",
+          isRarestReveal: true,
+          jewelryItem: {
+            id: "bp-necklace-piper",
+            name: "The Piper Necklace",
+            collectionName: "July Birthday",
+            collectionYear: 2026,
+            jewelryType: "necklace",
+            material: "Rhodium Plating",
+            mainStone: "Lab-Created Ruby",
+            bpMsrp: 39.95,
+            imageUrl: "https://cdn.example.test/piper-necklace.jpg",
+            bpLabel: "standard",
+            itemNumber: "NK1234",
+            searchTags: ["necklace", "ruby"],
+            availableListingCount: 0,
+            knownRepListingIds: [],
+          },
+        },
+      }),
+    );
+
+    expect(markup).toContain('src="https://cdn.example.test/personal-piper.jpg"');
+    expect(markup).toContain('data-photo-fit="smart-crop"');
+    expect(markup).toContain("absolute inset-0 h-full w-full object-cover");
+    expect(markup).toContain("object-position:center 78%");
     expect(markup).not.toContain("bg-cover");
   });
 
@@ -875,6 +923,7 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("object-contain");
     expect(markup).toContain("object-position:center 58%");
+    expect(markup).toContain('data-photo-fit="full-photo"');
     expect(markup).not.toContain("bg-cover");
   });
 
