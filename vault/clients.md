@@ -6,11 +6,15 @@
 
 ### Mile High Fizz
 - **URL:** milehighfizz.com
+- **Client:** Lindsey Chapman
+- **Phone:** 720-448-4254
 - **Pattern:** Old startTime pattern
 - **Rate:** Grandfathered rate
 - **Status:** Live — migrate when platform launches
 
 ### Britt with Bling
+- **Client:** Brittany Osborne
+- **Phone:** 813-730-0345
 - **Pattern:** Old pattern — capital C `Components` folder
 - **Rate:** Grandfathered rate
 - **Status:** Live — migrate when platform launches
@@ -31,6 +35,8 @@
 - **Notes:** Final Readdy build
 
 ### Bling Kitchen
+- **Client:** Heather Daugherty
+- **Phone:** (614) 571-2561
 - **Status:** Calendar automation next — pending build
 - **Notes:** Final Readdy build. Has a cooking recipe section (out of norm — documented as a learning experience)
 
