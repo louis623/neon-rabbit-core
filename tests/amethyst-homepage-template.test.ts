@@ -67,11 +67,14 @@ describe('Amethyst homepage template data wiring', () => {
 
     for (const file of htmlFiles) {
       const html = readFileSync(resolve(process.cwd(), file), 'utf8')
-      const jsxScripts = html.match(/<script type="text\/babel"[^>]+\.jsx"><\/script>/g) ?? []
+      const jsxScripts = html.match(
+        /<script type="text\/babel"[^>]+\.jsx(?:\?[^"]*)?"><\/script>/g,
+      ) ?? []
 
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
+        expect(script, file).toContain('v=20260620-preview-fix')
       }
     }
   })

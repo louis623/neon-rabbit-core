@@ -308,10 +308,10 @@ function rewriteTemplateScriptTarget(
 
 function rewriteAmethystStaticAssetUrls(html: string) {
   return html.replace(
-    /\b(href|src)="(?!https?:\/\/|\/|#)([^"]+\.(?:css|jsx?))"/g,
-    (_match, attribute: string, assetPath: string) => {
+    /\b(href|src)="(?!https?:\/\/|\/|#)([^"?]+\.(?:css|jsx?))(\?[^"]*)?"/g,
+    (_match, attribute: string, assetPath: string, query = '') => {
       if (!AMETHYST_ASSETS.has(assetPath)) return `${attribute}="${assetPath}"`
-      return `${attribute}="/amethyst/${assetPath}"`
+      return `${attribute}="/amethyst/${assetPath}${query}"`
     },
   )
 }
