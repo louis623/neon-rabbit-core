@@ -103,11 +103,11 @@ describe('public site slug route', () => {
     expect(html).toContain(
       '"@id":"https://www.yoursparklesuite.com/graciesparkleparty#webpage"',
     )
-    expect(html).toContain('href="/amethyst/tokens.css?v=20260620-shared-header"')
-    expect(html).toContain('href="/amethyst/components.css?v=20260620-shared-header"')
-    expect(html).toContain('href="/amethyst/homepage.css?v=20260620-shared-header"')
-    expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260620-shared-header"')
-    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260620-shared-header"')
+    expect(html).toContain('href="/amethyst/tokens.css?v=20260620-header-tune"')
+    expect(html).toContain('href="/amethyst/components.css?v=20260620-header-tune"')
+    expect(html).toContain('href="/amethyst/homepage.css?v=20260620-header-tune"')
+    expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260620-header-tune"')
+    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260620-header-tune"')
     expect(html).toContain(
       '/api/amethyst/homepage-template?c=rep-gracie&amp;publicSiteSlug=graciesparkleparty',
     )

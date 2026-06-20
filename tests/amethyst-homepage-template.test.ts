@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260620-shared-header')
+        expect(script, file).toContain('v=20260620-header-tune')
       }
     }
   })
@@ -144,9 +144,9 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(css).toContain('animation: hp-ticker-scroll 40s linear infinite;')
-    expect(css).toContain('animation-duration: calc(40s / var(--ticker-speed, 1));')
-    expect(css).toContain('animation-duration: calc(45s / var(--ticker-speed, 1));')
+    expect(css).toContain('animation: hp-ticker-scroll 68s linear infinite;')
+    expect(css).toContain('animation-duration: calc(68s / var(--ticker-speed, 1));')
+    expect(css).toContain('animation-duration: calc(26s / var(--ticker-speed, 1));')
     expect(componentsCss).toContain('animation: tickerScroll 16s linear infinite;')
     expect(componentsCss).toContain('animation-duration: 18s;')
     expect(shell).toContain('amethyst-scroll 16s linear infinite')
@@ -655,6 +655,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(html).toContain('Playfair+Display')
     expect(css).toContain('body.bg-black-velvet .hp-ticker')
     expect(css).toContain('body.bg-black-velvet .hp-ticker-row')
+    expect(css).toContain('body.bg-black-velvet .hp-brand-name')
+    expect(css).toContain('body.bg-black-velvet .hp-header-link')
     expect(css).toContain('body.bg-black-velvet .hp-trade-preview')
     expect(css).toContain('body.bg-black-velvet .hp-trade-preview-pill')
     expect(css).toContain('body.bg-black-velvet.tex-sparkle::before')

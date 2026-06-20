@@ -14,7 +14,7 @@ describe('Amethyst static asset route', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/html')
     await expect(response.text()).resolves.toContain(
-      'homepage.jsx?v=20260620-shared-header',
+      'homepage.jsx?v=20260620-header-tune',
     )
   })
 
@@ -94,7 +94,7 @@ describe('Amethyst static asset route', () => {
       const html = await response.text()
 
       expect(html).toContain('src="/amethyst/template-loader.js"')
-      expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260620-shared-header"')
+      expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260620-header-tune"')
       expect(html).toContain(
         `data-template-src="/api/amethyst/${endpoint}?c=rep-clean"`,
       )

@@ -938,12 +938,12 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 36px;
   white-space: nowrap;
   padding-left: 170px;
-  animation: hp-ticker-scroll 40s linear infinite;
-  animation-duration: calc(40s / var(--ticker-speed, 1));
+  animation: hp-ticker-scroll 68s linear infinite;
+  animation-duration: calc(68s / var(--ticker-speed, 1));
 }
 .hp-ticker-row.reverse .hp-ticker-track {
   animation-direction: reverse;
-  animation-duration: calc(45s / var(--ticker-speed, 1));
+  animation-duration: calc(26s / var(--ticker-speed, 1));
 }
 @keyframes hp-ticker-scroll {
   from { transform: translateX(0); }
@@ -3231,6 +3231,33 @@ body.bg-black-velvet.tex-sparkle::before {
 body.bg-black-velvet .hp-header {
   background: rgba(8, 8, 8, 0.96);
   border-bottom-color: rgba(0, 217, 255, 0.2);
+  color: #f9f3ec;
+}
+
+body.bg-black-velvet .hp-brand-name {
+  color: #fff8ee;
+  text-shadow: 0 1px 14px rgba(244, 194, 194, 0.22);
+}
+
+body.bg-black-velvet .hp-brand-sub {
+  color: #d4af37;
+}
+
+body.bg-black-velvet .hp-header-link {
+  color: rgba(249, 243, 236, 0.82);
+}
+
+body.bg-black-velvet .hp-header-link:hover,
+body.bg-black-velvet .hp-header-link[aria-current="page"] {
+  color: #f4c2c2;
+}
+
+body.bg-black-velvet .hp-header-link-disabled {
+  color: rgba(249, 243, 236, 0.62);
+}
+
+body.bg-black-velvet .hp-coming-soon-badge {
+  color: #d4af37;
 }
 
 body.bg-black-velvet .hp-ticker {
