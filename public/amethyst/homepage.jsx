@@ -307,7 +307,7 @@ const LIVE_QUEUE_NAMES = [
   "Amber L.", "Sadie P.", "Lauren E.", "Robin A.", "Faith D.", "Nicole V.",
 ];
 
-const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map((name, index) => ({
+const FALLBACK_LIVE_QUEUE_ENTRIES = LIVE_QUEUE_NAMES.map((name, index) => ({
   position: index + 1,
   label:
     index === 0
@@ -320,6 +320,28 @@ const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? [] : LIVE_QUEUE_NAMES.map(
   name,
   highlight: index === 0,
 }));
+const CONTENT_LIVE_QUEUE_ENTRIES = Array.isArray(CONTENT.liveQueueEntries)
+  ? CONTENT.liveQueueEntries
+      .map((entry, index) => ({
+        position: Number(entry.position) || index + 1,
+        label: runtimeText(entry.label) || (index === 0 ? "Currently Unboxing" : index === 1 ? "On Deck" : "In Queue"),
+        name: runtimeText(entry.name),
+        highlight: Boolean(entry.highlight),
+      }))
+      .filter((entry) => entry.name)
+  : [];
+const LIVE_QUEUE_ENTRIES = CONTENT_LIVE_QUEUE_ENTRIES.length > 0 || RUNTIME_CONTEXT.targeted
+  ? CONTENT_LIVE_QUEUE_ENTRIES
+  : FALLBACK_LIVE_QUEUE_ENTRIES;
+
+function getLiveQueueSummary(fallback) {
+  return runtimeText(CONTENT.liveQueueSummary) || fallback;
+}
+
+function getContentLiveQueueState() {
+  const state = runtimeText(CONTENT.liveQueueState);
+  return ["live", "offline", "loading", "empty"].includes(state) ? state : null;
+}
 
 // ============================================================
 // Preset combos
@@ -556,17 +578,28 @@ function Hero({ t, isLive, liveShow }) {
 // ============================================================
 function Ticker({ topText }) {
   const items = topText.split("|").map(s => s.trim()).filter(Boolean);
-  const trades = RUNTIME_CONTEXT.targeted ? [] : [
+  const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
+    ? CONTENT.tradeBoardTickerItems
+        .map((item) => ({
+          name: runtimeText(item.name),
+          price: runtimeText(item.price) || "Trade ready",
+          tier: runtimeText(item.tier).toLowerCase(),
+        }))
+        .filter((item) => item.name)
+    : [];
+  const fallbackTrades = [
     { name: "Citrine Sun Pendant", price: "$148", tier: "unicorn" },
     { name: "Rose Quartz Band", price: "$98", tier: "diamond" },
     { name: "Amethyst Halo Ring", price: "$118", tier: "" },
     { name: "Pearl Drop Studs", price: "$48", tier: "" },
     { name: "Estate Sapphire Cluster", price: "$220", tier: "unicorn" },
   ];
+  const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted ? contentTrades : fallbackTrades;
   return (
     <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
       <div className="hp-ticker-sr">
         <p>Announcements: {items.join("; ")}</p>
+        <p>{getLiveQueueSummary("Live Queue opens when the show starts.")}</p>
         <a {...linkProps(getTradeBoardHref())}>Browse current trade board highlights</a>
       </div>
       <div className="hp-ticker-row">
@@ -603,7 +636,7 @@ function LiveQueueStrip({ state, onOpen }) {
             <span>Reveal Queue</span>
           </div>
           <div className="hp-trade-preview-items" style={{ color: "var(--fg-muted)" }}>
-            Queue opens when the next scheduled show starts.
+            {getLiveQueueSummary("Queue opens when the next scheduled show starts.")}
           </div>
           <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View queue ↗</button>
         </div>
@@ -637,7 +670,7 @@ function LiveQueueStrip({ state, onOpen }) {
             <span>Live Reveal Queue</span>
           </div>
           <div className="hp-trade-preview-items">
-            Live Queue is ready. Customer names appear here when a live show is connected.
+            {getLiveQueueSummary("Live Queue is ready. Customer names appear here when a live show is connected.")}
           </div>
           <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue ↗</button>
         </div>
@@ -688,11 +721,11 @@ function LiveQueueModal({ open, onClose, state }) {
         </div>
 
         {state === "offline" ? (
-          <div className="hp-queue-modal-empty">No show is running right now. Check the calendar for the next scheduled reveal.</div>
+          <div className="hp-queue-modal-empty">{getLiveQueueSummary("No show is running right now. Check the calendar for the next scheduled reveal.")}</div>
         ) : state === "loading" ? (
           <div className="hp-queue-modal-empty">Loading queue…</div>
         ) : state === "empty" || LIVE_QUEUE_ENTRIES.length === 0 ? (
-          <div className="hp-queue-modal-empty">Live Queue is ready. Customer names appear here when a live show is connected.</div>
+          <div className="hp-queue-modal-empty">{getLiveQueueSummary("Live Queue is ready. Customer names appear here when a live show is connected.")}</div>
         ) : (
           <div className="hp-queue-modal-list">
             {LIVE_QUEUE_ENTRIES.map((entry) => (
@@ -1734,7 +1767,8 @@ function App() {
   const [now, setNow] = useState(() => Date.now());
   const activeLiveShow = useMemo(() => getActiveLiveShow(now), [now]);
   const scheduleIsLive = Boolean(activeLiveShow);
-  const effectiveLrqState = scheduleIsLive ? t.lrqState : "offline";
+  const contentLiveQueueState = getContentLiveQueueState();
+  const effectiveLrqState = contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline");
 
   useEffect(() => {
     if (isBlingKitchenHybrid) {

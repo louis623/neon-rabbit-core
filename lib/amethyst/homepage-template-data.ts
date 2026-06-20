@@ -7,6 +7,8 @@ import {
   type AmethystAppearancePresetId,
 } from './appearance-presets'
 import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
+import type { AmethystTradeBoardListing } from './trade-board-listings'
+import type { LiveQueueSnapshot } from '@/lib/services/types'
 
 export interface AmethystHomepageMediaSlot {
   typeLabel: string
@@ -58,6 +60,25 @@ export interface AmethystRuntimeContext {
   publicSiteSlug?: string | null
 }
 
+export type AmethystHomepageLiveQueueState =
+  | 'live'
+  | 'offline'
+  | 'loading'
+  | 'empty'
+
+export interface AmethystHomepageLiveQueueEntry {
+  position: number
+  label: string
+  name: string
+  highlight: boolean
+}
+
+export interface AmethystHomepageTradeBoardTickerItem {
+  name: string
+  price: string
+  tier: string
+}
+
 export interface AmethystHomepageTemplateData {
   publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
@@ -75,6 +96,11 @@ export interface AmethystHomepageTemplateData {
   promoTickerText?: string
   shopCtaLabel?: string
   pantryPageUrl?: string
+  liveQueueState?: AmethystHomepageLiveQueueState
+  liveQueueSummary?: string
+  liveQueueEntries?: AmethystHomepageLiveQueueEntry[]
+  tradeBoardSummary?: string
+  tradeBoardTickerItems?: AmethystHomepageTradeBoardTickerItem[]
   featuredReveal?: AmethystHomepageFeaturedReveal
   revealExplainer?: AmethystHomepageRevealExplainer
   heroMotion: string
@@ -239,6 +265,100 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     terms: '#',
     accessibility: '#',
   },
+}
+
+function normalizeTickerPart(value: string | null | undefined) {
+  return String(value ?? '').trim().replace(/\s+/g, ' ')
+}
+
+function tickerAlreadyMentions(base: string, label: string) {
+  return base.toLowerCase().includes(label.toLowerCase())
+}
+
+function formatTradeBoardTickerItem(
+  listing: AmethystTradeBoardListing,
+): AmethystHomepageTradeBoardTickerItem {
+  return {
+    name: listing.name,
+    price: listing.msrp ? `$${listing.msrp}` : 'Trade ready',
+    tier: listing.tier === 'everyday' ? '' : listing.tier,
+  }
+}
+
+function mapLiveQueueEntries(
+  snapshot: LiveQueueSnapshot | null | undefined,
+): AmethystHomepageLiveQueueEntry[] {
+  if (!snapshot?.isFresh) return []
+
+  return snapshot.queue.map((name, index) => ({
+    position: index + 1,
+    label:
+      index === 0
+        ? 'Currently Unboxing'
+        : index === 1
+          ? 'On Deck'
+          : index === 2
+            ? 'Up Next'
+            : 'In Queue',
+    name,
+    highlight: index === 0,
+  }))
+}
+
+function liveQueueStateFromSnapshot(
+  snapshot: LiveQueueSnapshot | null | undefined,
+): AmethystHomepageLiveQueueState {
+  if (!snapshot) return 'offline'
+  if (!snapshot.isFresh) return 'offline'
+  return snapshot.queueLength > 0 ? 'live' : 'empty'
+}
+
+function liveQueueSummaryFromSnapshot(
+  snapshot: LiveQueueSnapshot | null | undefined,
+) {
+  if (!snapshot) return 'Live Queue opens when the show starts'
+  if (!snapshot.isFresh) return 'Live Queue last sync is stale'
+  if (snapshot.currentCustomer) {
+    return `Live Queue: ${snapshot.currentCustomer} is currently unboxing`
+  }
+  return 'Live Queue connected and ready'
+}
+
+function tradeBoardSummaryFromListings(listings: AmethystTradeBoardListing[]) {
+  if (listings.length === 0) return 'Trade Board ready for new listings'
+  return `Trade Board: ${listings.length} available ${listings.length === 1 ? 'piece' : 'pieces'}`
+}
+
+export function enrichAmethystHomepageFeatureData(
+  homepage: AmethystHomepageTemplateData,
+  options: {
+    liveQueueSnapshot?: LiveQueueSnapshot | null
+    tradeBoardListings?: AmethystTradeBoardListing[]
+  } = {},
+): AmethystHomepageTemplateData {
+  const tradeBoardListings = options.tradeBoardListings ?? []
+  const tradeBoardSummary = tradeBoardSummaryFromListings(tradeBoardListings)
+  const liveQueueSummary = liveQueueSummaryFromSnapshot(options.liveQueueSnapshot)
+  const tickerParts = [homepage.tickerTopText, tradeBoardSummary, liveQueueSummary]
+    .map(normalizeTickerPart)
+    .filter(Boolean)
+    .filter((part, index, parts) => {
+      if (index === 1 && tickerAlreadyMentions(parts[0] ?? '', 'Trade Board')) return false
+      if (index === 2 && tickerAlreadyMentions(parts[0] ?? '', 'Live Queue')) return false
+      return true
+    })
+
+  return {
+    ...homepage,
+    tickerTopText: tickerParts.join(' | '),
+    tradeBoardSummary,
+    tradeBoardTickerItems: tradeBoardListings
+      .slice(0, 8)
+      .map(formatTradeBoardTickerItem),
+    liveQueueState: liveQueueStateFromSnapshot(options.liveQueueSnapshot),
+    liveQueueSummary,
+    liveQueueEntries: mapLiveQueueEntries(options.liveQueueSnapshot),
+  }
 }
 
 const lockedTweakDefaults: Omit<

@@ -6,6 +6,7 @@ import {
   buildAmethystHomepageBootstrapScript,
   buildAmethystHomepageTweakDefaults,
   defaultAmethystHomepageTemplateData,
+  enrichAmethystHomepageFeatureData,
 } from '@/lib/amethyst/homepage-template-data'
 import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
@@ -412,6 +413,85 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).not.toContain('top: 144px;')
   })
 
+  it('enriches targeted homepage data with workspace Trade Board and Live Queue state', () => {
+    const data = enrichAmethystHomepageFeatureData(
+      {
+        ...defaultAmethystHomepageTemplateData,
+        tickerTopText: 'Welcome to the live party',
+      },
+      {
+        liveQueueSnapshot: {
+          syncCode: 'MHF-7342',
+          queue: ['Jamie', 'Priya'],
+          queueLength: 2,
+          currentCustomer: 'Jamie',
+          onDeckCustomer: 'Priya',
+          lastUpdated: '2026-06-20T18:00:00Z',
+          ageSeconds: 20,
+          staleAfterSeconds: 180,
+          isFresh: true,
+        },
+        tradeBoardListings: [
+          {
+            id: 'listing-1',
+            name: 'Opal Glow Ring',
+            collection: 'OG',
+            type: 'Ring',
+            material: 'Sterling silver',
+            stone: 'Opal',
+            msrp: 88,
+            size: '7',
+            note: 'Item-for-item only',
+            glyph: 'O',
+            tier: 'diamond',
+            photoUrl: null,
+            photoSource: 'missing',
+          },
+        ],
+      },
+    )
+
+    expect(data.tickerTopText).toContain('Trade Board: 1 available piece')
+    expect(data.tickerTopText).toContain('Live Queue: Jamie is currently unboxing')
+    expect(data.liveQueueState).toBe('live')
+    expect(data.liveQueueEntries).toEqual([
+      {
+        position: 1,
+        label: 'Currently Unboxing',
+        name: 'Jamie',
+        highlight: true,
+      },
+      {
+        position: 2,
+        label: 'On Deck',
+        name: 'Priya',
+        highlight: false,
+      },
+    ])
+    expect(data.tradeBoardTickerItems).toEqual([
+      {
+        name: 'Opal Glow Ring',
+        price: '$88',
+        tier: 'diamond',
+      },
+    ])
+  })
+
+  it('uses workspace-backed ticker and queue payloads in the public homepage export', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('CONTENT.liveQueueEntries')
+    expect(jsx).toContain('CONTENT.liveQueueState')
+    expect(jsx).toContain('CONTENT.liveQueueSummary')
+    expect(jsx).toContain('CONTENT.tradeBoardTickerItems')
+    expect(jsx).toContain('contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline")')
+    expect(jsx).not.toContain('const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? []')
+    expect(jsx).not.toContain('const trades = RUNTIME_CONTEXT.targeted ? []')
+  })
+
   it('derives live indicators from scheduled show windows instead of permanent live chrome', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
@@ -421,7 +501,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('function isScheduledShowLive')
     expect(jsx).toContain('function getActiveLiveShow')
     expect(jsx).toContain('const scheduleIsLive = Boolean(activeLiveShow)')
-    expect(jsx).toContain('const effectiveLrqState = scheduleIsLive ? t.lrqState : "offline"')
+    expect(jsx).toContain('const contentLiveQueueState = getContentLiveQueueState()')
+    expect(jsx).toContain('const effectiveLrqState = contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline")')
     expect(jsx).toContain('{scheduleIsLive && <span className="hp-live-dot"')
     expect(jsx).toContain('{scheduleIsLive ? "Live now" : "Jewelry reveals"}')
     expect(jsx).toContain('getWatchCtaLabel(isLive)')
