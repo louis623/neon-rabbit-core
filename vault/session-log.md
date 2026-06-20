@@ -1228,3 +1228,17 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Follow-up note:**
 - The current split is derived from known active customer site identifiers. If Louis wants this editable from Nic-Nac/dashboard later, add durable account classification metadata so customer/demo status is not code-defined.
+
+---
+
+## June 20, 2026 - Stable Demo Review Target Correction
+
+**What happened:**
+- During BlingKitchen follow-up verification, the assistant described production and demo as separate surfaces and initially verified the wrong public target before checking Louis's actual Chrome tab.
+- Louis clarified that `https://sparkle-suite-demo.vercel.app/` is the Sparkle Suite review/deploy target he uses, and he should not have to chase other Vercel links.
+
+**Rule going forward:**
+- Treat `https://sparkle-suite-demo.vercel.app/` as the canonical Louis review target for ordinary Sparkle Suite work.
+- Raw Vercel deployment URLs are internal implementation details unless Louis explicitly asks for them.
+- Before reporting a fix as live, promote/confirm the stable demo alias and verify the exact route at that URL.
+- If Louis says a fix is not visible, use the Chrome connector to inspect the exact tab/URL and loaded assets before making another deployment claim.

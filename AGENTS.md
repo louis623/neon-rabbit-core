@@ -48,6 +48,13 @@ enough for Louis to review unless he explicitly asks for a one-off preview.
 After creating a Vercel preview, move/confirm the stable demo alias points to
 the intended deployment before telling Louis the work is deployed.
 
+Treat `https://sparkle-suite-demo.vercel.app/` as Louis's canonical Sparkle
+Suite review target. Do not split explanations between "production" and "demo"
+when reporting ordinary Sparkle Suite work unless Louis explicitly asks about a
+custom-domain cutover or separate environment. If Louis says something is still
+wrong, verify the exact URL he has open, preferably through the Chrome connector,
+before claiming the fix is live.
+
 ## Customer-Facing Flow Definition of Done
 
 Any customer-facing Sparkle Suite workflow is not ready for Louis review until

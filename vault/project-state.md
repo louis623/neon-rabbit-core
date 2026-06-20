@@ -20,9 +20,9 @@
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
 - **Latest pushed checkpoint:** `ccd4456 feat: migrate BlingKitchen public site`
 - **Latest local checkpoints:** none; `codex/sparkle-cross-phase-hardening` is clean and synced with origin after the BlingKitchen migration closeout.
-- **Stable demo URL:** `https://sparkle-suite-demo.vercel.app`
+- **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
 - **Current stable demo target:** `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`
-- **Demo deploy rule:** Louis reviews Sparkle Suite demo work at `https://sparkle-suite-demo.vercel.app/`; raw Vercel preview URLs are not sufficient unless explicitly requested.
+- **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
 

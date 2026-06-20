@@ -368,3 +368,6 @@ Use lowercase alphanumeric slugs only, such as `codex45e01bea`. Do not use hyphe
 
 **Control Center keeps demo accounts separate from active customer accounts**
 The Control Center customer view should not mix smoke/reviewer/sample/demo reps with real customer accounts. Until durable account classification exists, treat Mile High Fizz, Britt With Bling, and BlingKitchen as the active customer database and render all other operator-visible profiles in a separate Demo Database with a visible Demo Account label.
+
+**Sparkle Suite review target is the stable demo URL**
+For Louis, ordinary Sparkle Suite review and deploy work should land at `https://sparkle-suite-demo.vercel.app/`. Do not make him chase raw Vercel preview URLs or explain routine work as if demo and production are separate review surfaces. After any deploy intended for Louis, promote/confirm the stable demo alias and verify the exact route there before saying it is fixed. If Louis reports that he still sees the bug, inspect the exact Chrome tab/URL he is using and check the loaded assets before making another claim.
