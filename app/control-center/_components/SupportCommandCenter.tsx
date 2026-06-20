@@ -54,6 +54,8 @@ interface SupportCommandCenterProps {
   customers: OperatorCustomerRecord[]
 }
 
+const CUSTOMER_DATABASE_KEYS = ['milehighfizz', 'brittwithbling', 'blingkitchen']
+
 function label(value: string | null | undefined) {
   return value
     ? value
@@ -61,6 +63,31 @@ function label(value: string | null | undefined) {
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ')
     : 'Not provided'
+}
+
+function countLabel(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
+function normalizeAccountKey(value: string | null | undefined) {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+function isCustomerDatabaseAccount(customer: OperatorCustomerRecord) {
+  const candidates = [
+    customer.publicSiteSlug,
+    customer.customDomain,
+    customer.clientName,
+    customer.showName,
+    customer.email,
+  ].map(normalizeAccountKey)
+
+  return candidates.some((candidate) =>
+    CUSTOMER_DATABASE_KEYS.some(
+      (knownCustomer) =>
+        candidate === knownCustomer || candidate.includes(knownCustomer),
+    ),
+  )
 }
 
 function snapshotText(
@@ -118,6 +145,9 @@ function statusClass(value: string | null | undefined) {
   ) {
     return 'border-emerald-200 bg-emerald-50 text-emerald-700'
   }
+  if (value === 'demo_account') {
+    return 'border-sky-200 bg-sky-50 text-sky-700'
+  }
   return 'border-slate-200 bg-slate-100 text-slate-700'
 }
 
@@ -154,7 +184,13 @@ function InfoBlock({
   )
 }
 
-function CustomerProfile({ customer }: { customer: OperatorCustomerRecord }) {
+function CustomerProfile({
+  customer,
+  profileType = 'customer',
+}: {
+  customer: OperatorCustomerRecord
+  profileType?: 'customer' | 'demo'
+}) {
   const socialLinks = objectEntries(customer.socialHandles)
   const streamingLinks = objectEntries(customer.streamingLinks)
 
@@ -179,6 +215,7 @@ function CustomerProfile({ customer }: { customer: OperatorCustomerRecord }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {profileType === 'demo' ? <Pill value="demo_account" /> : null}
           <Pill value={customer.accountStatus} />
           <Pill value={customer.subscriptionStatus} />
           <Pill value={customer.supportTier} />
@@ -324,8 +361,9 @@ export function SupportCommandCenter({
       ? activeAudit.recommended_first_action
       : 'Review the submitted details and account profile, then move the report into reviewing.'
   const openReports = reports.filter((report) => report.status !== 'closed')
-  const activeCustomers = customers.filter(
-    (customer) => customer.accountStatus === 'active',
+  const customerAccounts = customers.filter(isCustomerDatabaseAccount)
+  const demoAccounts = customers.filter(
+    (customer) => !isCustomerDatabaseAccount(customer),
   )
 
   return (
@@ -368,7 +406,16 @@ export function SupportCommandCenter({
               >
                 Customer Database
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                  {customers.length}
+                  {customerAccounts.length}
+                </span>
+              </a>
+              <a
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                href="#demo-database"
+              >
+                Demo Database
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  {demoAccounts.length}
                 </span>
               </a>
             </nav>
@@ -398,18 +445,18 @@ export function SupportCommandCenter({
               </div>
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Active reps
+                  Active accounts
                 </p>
                 <p className="mt-2 text-3xl font-semibold">
-                  {activeCustomers.length}
+                  {customerAccounts.length}
                 </p>
               </div>
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Total customers
+                  Demo accounts
                 </p>
                 <p className="mt-2 text-3xl font-semibold">
-                  {customers.length}
+                  {demoAccounts.length}
                 </p>
               </div>
             </section>
@@ -576,23 +623,57 @@ export function SupportCommandCenter({
                 <div>
                   <h2 className="text-lg font-semibold">Customer Database</h2>
                   <p className="mt-1 text-sm text-slate-600">
-                    Expand a rep to review contact, billing, website, social,
-                    setup status, and internal notes.
+                    Active customer accounts only: Mile High Fizz, Britt With
+                    Bling, and BlingKitchen.
                   </p>
                 </div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  {customers.length} reps
+                  {countLabel(customerAccounts.length, 'customer account')}
                 </p>
               </div>
 
-              {customers.length === 0 ? (
+              {customerAccounts.length === 0 ? (
                 <p className="px-4 py-8 text-sm text-slate-500">
                   No customer profiles are available yet.
                 </p>
               ) : (
                 <div>
-                  {customers.map((customer) => (
+                  {customerAccounts.map((customer) => (
                     <CustomerProfile customer={customer} key={customer.repId} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section
+              className="scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
+              id="demo-database"
+            >
+              <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Demo Database</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Demo, reviewer, smoke, and sample accounts are kept separate
+                    from active customers.
+                  </p>
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {countLabel(demoAccounts.length, 'demo account')}
+                </p>
+              </div>
+
+              {demoAccounts.length === 0 ? (
+                <p className="px-4 py-8 text-sm text-slate-500">
+                  No demo profiles are available yet.
+                </p>
+              ) : (
+                <div>
+                  {demoAccounts.map((customer) => (
+                    <CustomerProfile
+                      customer={customer}
+                      key={customer.repId}
+                      profileType="demo"
+                    />
                   ))}
                 </div>
               )}

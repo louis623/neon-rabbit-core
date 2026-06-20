@@ -365,3 +365,6 @@ For reveal screenshot work, smoke both the backend evidence path and the visible
 
 **Synthetic public-site smoke slugs must be valid public slugs**
 Use lowercase alphanumeric slugs only, such as `codex45e01bea`. Do not use hyphenated smoke slugs for public-site route or targeted board smoke, because Sparkle Suite public-site slugs reject hyphens and invalid slugs can silently exercise fallback/demo inventory instead of the intended rep board.
+
+**Control Center keeps demo accounts separate from active customer accounts**
+The Control Center customer view should not mix smoke/reviewer/sample/demo reps with real customer accounts. Until durable account classification exists, treat Mile High Fizz, Britt With Bling, and BlingKitchen as the active customer database and render all other operator-visible profiles in a separate Demo Database with a visible Demo Account label.

@@ -1210,3 +1210,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Public-site smoke slugs must obey Sparkle Suite slug validation: lowercase letters and digits only, no hyphens.
 - Browser plugin may block local/stable URLs with `ERR_BLOCKED_BY_CLIENT`; if that happens after trying it first, cached/headless Playwright is an acceptable rendered-verification fallback.
 - Preview/static Trade Board URLs can appear to work while showing fallback sample inventory if target context is invalid or missing. Always verify the public board endpoint returns the intended synthetic listing before testing form behavior.
+
+---
+
+## June 20, 2026 - Control Center Customer and Demo Database Split
+
+**What changed:**
+- `/control-center` now separates the left-nav account views into `Customer Database` and `Demo Database`.
+- The Customer Database is limited to the three active customer public sites Louis named: Mile High Fizz, Britt With Bling, and BlingKitchen.
+- All other operator-visible account profiles render in the Demo Database and are labeled `Demo Account` in the expandable row.
+- Control Center summary cards now show `Active accounts` and `Demo accounts` instead of mixing all profiles into a single active/customer count.
+
+**Verification:**
+- Added a focused page test proving the three named active customer accounts stay in Customer Database while an extra account moves to Demo Database.
+- Focused Control Center page and customer-profile service tests passed.
+- Local production build passed.
+
+**Follow-up note:**
+- The current split is derived from known active customer site identifiers. If Louis wants this editable from Nic-Nac/dashboard later, add durable account classification metadata so customer/demo status is not code-defined.

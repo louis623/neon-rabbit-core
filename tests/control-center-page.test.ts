@@ -49,6 +49,43 @@ vi.mock(
 
 import SparkleSuiteControlCenterPage from '@/app/control-center/page'
 
+function customerProfile(overrides: Record<string, unknown> = {}) {
+  const billing =
+    typeof overrides.billing === 'object' && overrides.billing !== null
+      ? (overrides.billing as Record<string, unknown>)
+      : {}
+
+  return {
+    repId: 'rep-default',
+    clientName: 'Default Rep',
+    showName: 'Default Show',
+    primaryContactName: 'Default Rep',
+    email: 'default@example.com',
+    phone: '555-000-0000',
+    accountStatus: 'active',
+    subscriptionStatus: 'active',
+    supportTier: 'founder',
+    publicSiteSlug: 'defaultshow',
+    customDomain: null,
+    shopLink: null,
+    streamingLinks: {},
+    socialHandles: {},
+    internalNotes: null,
+    setupStatus: 'dashboard_unlocked',
+    setupCurrentStep: 'final_preview_approval',
+    billing: {
+      status: 'active',
+      planTier: 'monthly',
+      pricingTier: 'founder',
+      monthlyAmount: 49,
+      currentPeriodEnd: null,
+      stripeCustomerId: null,
+      ...billing,
+    },
+    ...overrides,
+  }
+}
+
 describe('SparkleSuiteControlCenterPage', () => {
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
@@ -141,6 +178,51 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('jane.example')
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')
+  })
+
+  it('separates active customer accounts from demo accounts', async () => {
+    listOperatorCustomerProfilesMock.mockResolvedValueOnce([
+      customerProfile({
+        repId: 'rep-mile-high-fizz',
+        clientName: 'Lindsey',
+        showName: 'Mile High Fizz',
+        publicSiteSlug: 'milehighfizz',
+      }),
+      customerProfile({
+        repId: 'rep-britt-with-bling',
+        clientName: 'Brittany',
+        showName: 'Britt With Bling',
+        publicSiteSlug: 'brittwithbling',
+      }),
+      customerProfile({
+        repId: 'rep-blingkitchen',
+        clientName: 'Heather',
+        showName: 'BlingKitchen',
+        publicSiteSlug: 'blingkitchen',
+      }),
+      customerProfile({
+        repId: 'rep-demo',
+        clientName: 'Demo Sparkle Rep',
+        showName: 'Demo Sparkle Show',
+        publicSiteSlug: 'demo-sparkle-show',
+      }),
+    ])
+
+    const page = await SparkleSuiteControlCenterPage()
+    const html = renderToStaticMarkup(page)
+
+    expect(html).toContain('href="#customer-database"')
+    expect(html).toContain('href="#demo-database"')
+    expect(html).toContain('Customer Database')
+    expect(html).toContain('Demo Database')
+    expect(html).toContain('3 customer accounts')
+    expect(html).toContain('1 demo account')
+    expect(html).toContain('Mile High Fizz')
+    expect(html).toContain('Britt With Bling')
+    expect(html).toContain('BlingKitchen')
+    expect(html).toContain('Demo Sparkle Rep')
+    expect(html).toContain('Demo Sparkle Show')
+    expect(html).toContain('Demo Account')
   })
 
   it('redirects unauthenticated operators to login', async () => {

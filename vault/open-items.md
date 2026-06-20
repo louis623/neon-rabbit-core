@@ -96,6 +96,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] **Command center: billing details** — add billing details per client card
 - [ ] **Command center: System tab** — add System tab
 - [ ] **Command center: Construction Map tab** — add Construction Map tab
+- [ ] **Control Center account classification metadata** - if customer/demo status needs to be editable, add durable account classification fields and Nic-Nac/dashboard controls instead of relying on the current known-customer identifier split.
 
 ---
 
