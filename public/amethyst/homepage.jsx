@@ -1675,7 +1675,7 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
         <div className="bk-home-automation-panel">
           {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
           {t.showEvents && <Events count={t.eventCount} />}
-          {t.showWibp && <WIBP repName={repName} />}
+          {t.showWibp && <Wibp repName={repName} />}
           {t.showAbout && <AboutSection repName={repName} />}
           {t.showSignup && <Signup repName={repName} businessName={businessName} />}
           {t.showFooter && <Footer businessName={businessName} />}

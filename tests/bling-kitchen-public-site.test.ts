@@ -209,6 +209,8 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(homepageJsx).toContain('function BlingKitchenHomepage')
     expect(homepageJsx).toContain('isBlingKitchenHybrid')
     expect(homepageJsx).toContain('bk-home-pantry-callout')
+    expect(homepageJsx).toContain('<Wibp repName={repName} />')
+    expect(homepageJsx).not.toContain('<WIBP repName={repName} />')
     expect(tradeJsx).toContain('isBlingKitchenHybrid')
     expect(tradeJsx).toContain('bk-trade-board-panel')
     expect(joinJsx).toContain('isBlingKitchenHybrid')
