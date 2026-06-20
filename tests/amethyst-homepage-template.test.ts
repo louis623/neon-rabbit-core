@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260620-workspace-features')
+        expect(script, file).toContain('v=20260620-shared-header')
       }
     }
   })
@@ -487,11 +487,13 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('CONTENT.liveQueueState')
     expect(jsx).toContain('CONTENT.liveQueueSummary')
     expect(jsx).toContain('CONTENT.tradeBoardTickerItems')
-    expect(jsx).toContain('function buildHybridTickerItems')
-    expect(jsx).toContain('const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 6)')
+    expect(jsx).toContain('function SparkleSuiteHeaderStack')
+    expect(jsx).toContain('<Ticker topText={t.tickerTopText} />')
+    expect(jsx).toContain('<LiveQueueStrip state={effectiveLrqState} onOpen={onOpenQueue} />')
     expect(jsx).toContain('contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline")')
     expect(jsx).not.toContain('const LIVE_QUEUE_ENTRIES = RUNTIME_CONTEXT.targeted ? []')
     expect(jsx).not.toContain('const trades = RUNTIME_CONTEXT.targeted ? []')
+    expect(jsx).not.toContain('function buildHybridTickerItems')
     expect(jsx).not.toContain('const tickerItems = [promoTickerText, promoTickerText, promoTickerText]')
   })
 

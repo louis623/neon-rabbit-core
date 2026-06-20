@@ -343,29 +343,6 @@ function getContentLiveQueueState() {
   return ["live", "offline", "loading", "empty"].includes(state) ? state : null;
 }
 
-function buildHybridTickerItems(primaryText, featureText, repeatCount = 3) {
-  const primary = runtimeText(primaryText) || runtimeText(featureText);
-  const featureParts = runtimeText(featureText)
-    .split("|")
-    .map((part) => part.trim())
-    .filter((part) => /trade board|live queue/i.test(part));
-  const seen = new Set();
-  const items = [primary, ...featureParts]
-    .filter(Boolean)
-    .filter((item) => {
-      const key = item.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-  if (items.length === 0) return [];
-
-  return Array.from({ length: Math.max(repeatCount, items.length) }, (_, index) => (
-    items[index % items.length]
-  ));
-}
-
 // ============================================================
 // Preset combos
 // ============================================================
@@ -1415,69 +1392,47 @@ function SparkleFx({ level, motion }) {
   );
 }
 
-function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
-  const announcementText = CONTENT.announcementText || "Introducing the Sterling Club & 12k Gold Vermeil Collection - our most luxurious reveals ever.";
-  const announcementHref = CONTENT.announcementHref || "#about";
-  const announcementLabel = CONTENT.announcementLinkLabel || "Learn More";
-  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
-  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 4);
-  const heroVideoUrl = CONTENT.heroVideoUrl || "/mile-high-fizz/hero.mp4";
+function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQueue }) {
+  return (
+    <div className="hp-sticky-stack">
+      {/* Header */}
+      <header className="hp-header">
+        <div className="hp-header-inner">
+          <div className="hp-brand">
+            <div className="hp-brand-name slot" data-slot="business name">{t.businessName}</div>
+            <div className="hp-brand-sub">
+              {scheduleIsLive && <span className="hp-live-dot" aria-hidden="true"></span>}
+              {scheduleIsLive ? "Live now" : "Jewelry reveals"}
+            </div>
+          </div>
+          <nav className="hp-header-nav" aria-label="Primary">
+            <a href="#top" className="hp-header-link" aria-current="page">Home</a>
+            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
+            {isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam ? (
+              <a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>
+            ) : (
+              CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />
+            )}
+          </nav>
+          <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
+        </div>
+      </header>
 
-  const menuLinks = [
-    { label: "Home", href: "#top" },
-    { label: "Trade Board", href: getTradeBoardHref() },
-    { label: "Join My Team", href: joinTeamHref },
-    { label: "Shop Bomb Party", href: getShopHref() },
-    { label: "Watch Live Reveal", href: getWatchHref(liveShow) },
-    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
-  ].filter((link) => link.href && link.href !== "#");
+      {/* Ticker */}
+      {t.showTicker && <Ticker topText={t.tickerTopText} />}
+
+      {t.showLrq && <LiveQueueStrip state={effectiveLrqState} onOpen={onOpenQueue} />}
+    </div>
+  );
+}
+
+function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
+  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
+  const heroVideoUrl = CONTENT.heroVideoUrl || "/mile-high-fizz/hero.mp4";
 
   return (
     <div className="mhf-page" id="top">
-      <div className="mhf-announcement-banner">
-        <span className="mhf-announcement-star" aria-hidden="true">+</span>
-        <span className="mhf-announcement-new">NEW:</span>
-        <span>{announcementText}</span>
-        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
-        <span className="mhf-announcement-star" aria-hidden="true">+</span>
-      </div>
-      <div className="mhf-promo-ticker" aria-label="Mile High Fizz promotion">
-        <div className="mhf-promo-track">
-          {tickerItems.map((item, index) => (
-            <span key={index}>{item}</span>
-          ))}
-        </div>
-      </div>
-      <header className="mhf-header">
-        <div className="mhf-header-inner">
-          <div className="mhf-menu-wrap">
-            <button
-              type="button"
-              className="mhf-header-menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((value) => !value)}
-            >
-              Menu
-              <span aria-hidden="true">⌄</span>
-            </button>
-            {menuOpen && (
-              <nav className="mhf-menu-panel" aria-label="Mile High Fizz navigation">
-                {menuLinks.map((link) => (
-                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
-                    {link.label}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-          <a href="#top" className="mhf-header-logo mhf-logo-gradient" aria-label="Mile High Fizz home">
-            Mile High Fizz
-          </a>
-          <a {...linkProps(getShopHref())} className="mhf-header-shop">Buy Now</a>
-        </div>
-      </header>
+      <SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />
 
       <section className="mhf-hero" aria-labelledby="mhf-hero-title">
         <video className="mhf-hero-video" autoPlay muted loop playsInline poster="">
@@ -1503,7 +1458,6 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
 
       <div className="mhf-below-hero-shell">
         <div className="mhf-automation-panel">
-          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
           {t.showEvents && <Events count={t.eventCount} />}
           {t.showWibp && <Wibp repName={repName} />}
           {t.showAbout && <AboutSection repName={repName} />}
@@ -1592,67 +1546,13 @@ function BrittWithBlingRevealExplainer() {
 }
 
 function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
-  const announcementText = CONTENT.announcementText || "Sterling Club & 12k Gold Vermeil collections are here - genuine precious metals, elevated designs.";
-  const announcementHref = CONTENT.announcementHref || "#wibp";
-  const announcementLabel = CONTENT.announcementLinkLabel || "Learn More";
-  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
   const shopCtaLabel = CONTENT.shopCtaLabel || "Shop";
   const heroImageUrl = CONTENT.heroImageUrl || "https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/76f968c944f6b1dd16c30e418f371af6.jpeg";
-  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 6);
-
-  const menuLinks = [
-    { label: "Home", href: "#top" },
-    { label: "Trade Board", href: getTradeBoardHref() },
-    { label: "Join The Team", href: joinTeamHref },
-    { label: shopCtaLabel, href: getShopHref() },
-    { label: "Watch on TikTok", href: getWatchHref(liveShow) },
-    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
-  ].filter((link) => link.href && link.href !== "#");
 
   return (
     <div className="bwb-page" id="top">
-      <div className="bwb-announcement-banner">
-        <span className="bwb-announcement-new">NEW:</span>
-        <span>{announcementText}</span>
-        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
-      </div>
-      <a {...linkProps(joinTeamHref)} className="bwb-promo-ticker" aria-label="Britt with Bling promotion">
-        <div className="bwb-promo-track">
-          {tickerItems.map((item, index) => (
-            <span key={index}>{item}</span>
-          ))}
-        </div>
-      </a>
-      <header className="bwb-header">
-        <div className="bwb-header-inner">
-          <div className="bwb-menu-wrap">
-            <button
-              type="button"
-              className="bwb-header-menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((value) => !value)}
-            >
-              Menu
-              <span aria-hidden="true">⌄</span>
-            </button>
-            {menuOpen && (
-              <nav className="bwb-menu-panel" aria-label="Britt with Bling navigation">
-                {menuLinks.map((link) => (
-                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
-                    {link.label}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-          <a href="#top" className="bwb-header-logo" aria-label="Britt with Bling home">
-            Britt with Bling
-          </a>
-          <a {...linkProps(getShopHref())} className="bwb-header-shop">{shopCtaLabel}</a>
-        </div>
-      </header>
+      <SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />
 
       <section className="bwb-hero" aria-labelledby="bwb-hero-title">
         <img className="bwb-hero-image" src={heroImageUrl} alt="" />
@@ -1677,7 +1577,6 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
       <div className="bwb-below-hero-shell">
         <BrittWithBlingFeaturedReveal />
         <div className="bwb-automation-panel">
-          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
           {t.showEvents && <Events count={t.eventCount} />}
           {t.showWibp && <BrittWithBlingRevealExplainer />}
           {t.showAbout && <AboutSection repName={repName} />}
@@ -1690,57 +1589,12 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
 }
 
 function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
   const pantryHref = CONTENT.pantryPageUrl || "#";
-  const announcementText = CONTENT.announcementText || "Sterling Club & 12k Gold Vermeil collections are here.";
-  const announcementHref = CONTENT.announcementHref || getShopHref();
-  const announcementLabel = CONTENT.announcementLinkLabel || "Shop Now";
-  const promoTickerText = CONTENT.promoTickerText || t.tickerTopText;
   const heroImageUrl = CONTENT.heroImageUrl || "";
-  const tickerItems = buildHybridTickerItems(promoTickerText, t.tickerTopText, 6);
-  const menuLinks = [
-    { label: "Home", href: "#top" },
-    { label: "In the Pantry", href: pantryHref },
-    { label: "Trade Board", href: getTradeBoardHref() },
-    { label: "Join Team", href: joinTeamHref },
-    { label: "Shop", href: getShopHref() },
-    { label: "Watch on TikTok", href: getWatchHref(liveShow) },
-    { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },
-  ].filter((link) => link.href && link.href !== "#");
 
   return (
     <div className="bk-home-page" id="top">
-      <div className="bk-home-announcement">
-        <span>NEW:</span>
-        <p>{announcementText}</p>
-        <a {...linkProps(announcementHref)}>{announcementLabel}</a>
-      </div>
-      <a {...linkProps(getShopHref())} className="bk-home-ticker" aria-label="BlingKitchen updates">
-        <div>
-          {tickerItems.map((item, index) => <span key={index}>{item}</span>)}
-        </div>
-      </a>
-      <header className="bk-home-header">
-        <div className="bk-home-header-inner">
-          <div className="bk-home-menu-wrap">
-            <button type="button" className="bk-home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
-              Menu
-            </button>
-            {menuOpen && (
-              <nav className="bk-home-menu-panel" aria-label="BlingKitchen navigation">
-                {menuLinks.map((link) => (
-                  <a key={link.label} {...linkProps(link.href)} onClick={() => setMenuOpen(false)}>
-                    {link.label}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-          <a href="#top" className="bk-home-logo" aria-label="BlingKitchen home">BlingKitchen</a>
-          <a {...linkProps(getShopHref())} className="bk-home-shop">{CONTENT.shopCtaLabel || "Shop"}</a>
-        </div>
-      </header>
+      <SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />
 
       <section className="bk-home-hero" aria-labelledby="bk-home-hero-title">
         {heroImageUrl && <img className="bk-home-hero-image" src={heroImageUrl} alt="" />}
@@ -1768,7 +1622,6 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
           <a {...linkProps(pantryHref)}>Open Recipes</a>
         </section>
         <div className="bk-home-automation-panel">
-          {t.showLrq && <LiveQueueStrip state={queueState} onOpen={onOpenQueue} />}
           {t.showEvents && <Events count={t.eventCount} />}
           {t.showWibp && <BlingKitchenRevealGuide repName={repName} />}
           {t.showAbout && <AboutSection repName={repName} />}
@@ -1940,35 +1793,12 @@ function App() {
         />
       ) : (
         <>
-      <div className="hp-sticky-stack">
-        {/* Header */}
-        <header className="hp-header">
-          <div className="hp-header-inner">
-            <div className="hp-brand">
-              <div className="hp-brand-name slot" data-slot="business name">{t.businessName}</div>
-              <div className="hp-brand-sub">
-                {scheduleIsLive && <span className="hp-live-dot" aria-hidden="true"></span>}
-                {scheduleIsLive ? "Live now" : "Jewelry reveals"}
-              </div>
-            </div>
-            <nav className="hp-header-nav" aria-label="Primary">
-              <a href="#top" className="hp-header-link" aria-current="page">Home</a>
-              <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
-              {isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam ? (
-                <a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>
-              ) : (
-                CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />
-              )}
-            </nav>
-            <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
-          </div>
-        </header>
-
-        {/* Ticker */}
-        {t.showTicker && <Ticker topText={t.tickerTopText} />}
-
-        {t.showLrq && <LiveQueueStrip state={effectiveLrqState} onOpen={() => setQueueOpen(true)} />}
-      </div>
+      <SparkleSuiteHeaderStack
+        t={t}
+        scheduleIsLive={scheduleIsLive}
+        effectiveLrqState={effectiveLrqState}
+        onOpenQueue={() => setQueueOpen(true)}
+      />
 
       <div className="hp-saturate" id="top">
       {/* Hero */}

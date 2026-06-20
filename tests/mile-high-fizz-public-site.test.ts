@@ -115,9 +115,9 @@ describe('Mile High Fizz hybrid public site contract', () => {
     )
 
     expect(jsx).toContain('function MileHighFizzHomepage')
-    expect(jsx).toContain('mhf-announcement-banner')
-    expect(jsx).toContain('mhf-promo-ticker')
-    expect(jsx).toContain('mhf-header-menu')
+    expect(jsx).toContain('function SparkleSuiteHeaderStack')
+    expect(jsx).toContain('<SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />')
+    expect(jsx).not.toContain('mhf-header-menu')
     expect(jsx).toContain('<video')
     expect(jsx).toContain('CONTENT.heroVideoUrl')
     expect(jsx).toContain('Shop Bomb Party')

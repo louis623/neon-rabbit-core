@@ -212,6 +212,9 @@ describe('BlingKitchen hybrid public site contract', () => {
     )
 
     expect(homepageJsx).toContain('function BlingKitchenHomepage')
+    expect(homepageJsx).toContain('function SparkleSuiteHeaderStack')
+    expect(homepageJsx).toContain('<SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />')
+    expect(homepageJsx).not.toContain('bk-home-header')
     expect(homepageJsx).toContain('function BlingKitchenRevealGuide')
     expect(homepageJsx).toContain('isBlingKitchenHybrid')
     expect(homepageJsx).toContain('bk-home-pantry-callout')
