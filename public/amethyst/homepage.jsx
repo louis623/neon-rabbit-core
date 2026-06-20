@@ -1656,9 +1656,11 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
           <h1 id="bk-home-hero-title">{businessName}</h1>
           <span>{CONTENT.heroSub || t.heroSub}</span>
           <div className="bk-home-hero-ctas">
-            <a {...linkProps(getShopHref())}>Shop Bomb Party</a>
-            <a {...linkProps(pantryHref)}>In the Pantry</a>
-            <a {...linkProps(getWatchHref(liveShow))} className={isLive ? "is-live" : ""}>Watch on TikTok</a>
+            <a {...linkProps(getShopHref())}><span className="bk-home-cta-label">Shop Bomb Party</span></a>
+            <a {...linkProps(pantryHref)}><span className="bk-home-cta-label">In the Pantry</span></a>
+            <a {...linkProps(getWatchHref(liveShow))} className={isLive ? "is-live" : ""}>
+              <span className="bk-home-cta-label">Watch on TikTok</span>
+            </a>
           </div>
         </div>
       </section>

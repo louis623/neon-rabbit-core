@@ -243,6 +243,17 @@ body.bling-kitchen {
   text-shadow: none;
 }
 
+.bk-home-hero-ctas .bk-home-cta-label {
+  display: inline;
+  max-width: none;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .bk-home-hero-ctas a.is-live {
   color: #fff;
   background: #da1e70;
