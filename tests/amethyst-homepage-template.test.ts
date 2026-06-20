@@ -56,6 +56,26 @@ describe('Amethyst homepage template data wiring', () => {
     expect(serialized).not.toContain("Jane's Sparkle Party")
   })
 
+  it('loads public JSX exports with the React Babel preset', () => {
+    const htmlFiles = [
+      'public/amethyst/Homepage.html',
+      'public/amethyst/Trade.html',
+      'public/amethyst/Join.html',
+      'public/amethyst/Pantry.html',
+      'public/amethyst/Unsubscribe.html',
+    ]
+
+    for (const file of htmlFiles) {
+      const html = readFileSync(resolve(process.cwd(), file), 'utf8')
+      const jsxScripts = html.match(/<script type="text\/babel"[^>]+\.jsx"><\/script>/g) ?? []
+
+      expect(jsxScripts.length, file).toBeGreaterThan(0)
+      for (const script of jsxScripts) {
+        expect(script, file).toContain('data-presets="react"')
+      }
+    }
+  })
+
   it('marks animated ticker tracks as decorative and provides concise screen-reader summaries', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
