@@ -24,6 +24,21 @@ describe('vercel cron config', () => {
     )
   })
 
+  it('schedules the bounded Sparkle Lab weekly loop for Sunday overnight', () => {
+    const config = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
+      crons?: Array<{ path?: string; schedule?: string }>
+    }
+
+    expect(config.crons ?? []).toEqual(
+      expect.arrayContaining([
+        {
+          path: '/api/internal/sparkle-lab/weekly',
+          schedule: '0 6 * * 0',
+        },
+      ]),
+    )
+  })
+
   it('schedules pre-show reminders through GitHub Actions', () => {
     const workflowPath = '.github/workflows/sparkle-pre-show-reminders.yml'
 

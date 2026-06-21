@@ -46,10 +46,10 @@ describe('Sparkle Lab budget caps', () => {
     })
   })
 
-  it('stops gracefully once any hard cap is reached', () => {
+  it('stops gracefully once any hard cap is exceeded', () => {
     const stop = shouldStopSparkleLabRun(
       {
-        estimatedCostCents: 500,
+        estimatedCostCents: 501,
         monthlyScheduledCostCents: 1_200,
         modelCallCount: 6,
         premiumCallCount: 1,

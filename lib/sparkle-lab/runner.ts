@@ -52,12 +52,68 @@ export interface SparkleLabScanResult {
   findings: SparkleLabDraftFinding[]
 }
 
+type SparkleLabRunStatus = 'completed' | 'stopped_by_limit'
+
 export async function runSparkleLabManualScan(input: {
   supabase: Pick<SupabaseClient, 'from'>
   runType?: Extract<SparkleLabRunType, 'manual' | 'urgent'>
 }): Promise<SparkleLabScanResult> {
-  const runType = input.runType ?? 'manual'
+  return runSparkleLabScan({
+    supabase: input.supabase,
+    runType: input.runType ?? 'manual',
+  })
+}
+
+export async function runSparkleLabWeeklyScan(input: {
+  supabase: Pick<SupabaseClient, 'from'>
+  now?: Date
+}): Promise<SparkleLabScanResult> {
+  return runSparkleLabScan({
+    supabase: input.supabase,
+    runType: 'weekly',
+    now: input.now,
+  })
+}
+
+async function runSparkleLabScan(input: {
+  supabase: Pick<SupabaseClient, 'from'>
+  runType: SparkleLabRunType
+  now?: Date
+}): Promise<SparkleLabScanResult> {
+  const runType = input.runType
+  const now = input.now ?? new Date()
   const caps = getSparkleLabCaps(runType)
+  const monthlyScheduledCostCents =
+    runType === 'weekly'
+      ? await readSparkleLabMonthlyScheduledCostCents({
+          supabase: input.supabase,
+          now,
+        })
+      : undefined
+
+  if (
+    caps.monthlyScheduledCapCents !== undefined &&
+    (monthlyScheduledCostCents ?? 0) >= caps.monthlyScheduledCapCents
+  ) {
+    const usage = buildEmptySparkleLabUsage(monthlyScheduledCostCents)
+    const runId = await persistSparkleLabRun({
+      supabase: input.supabase,
+      caps,
+      usage,
+      limitsHit: ['monthly_scheduled_cap'],
+      status: 'stopped_by_limit',
+      now,
+    })
+
+    return {
+      runId,
+      runType,
+      usage,
+      limitsHit: ['monthly_scheduled_cap'],
+      findings: [],
+    }
+  }
+
   const sources = await collectSparkleLabSources({
     supabase: input.supabase,
     caps,
@@ -66,8 +122,9 @@ export async function runSparkleLabManualScan(input: {
     ...sources,
     caps,
   })
+  const estimatedCostCents = 0
   const usage: SparkleLabUsage = {
-    estimatedCostCents: 0,
+    estimatedCostCents,
     modelCallCount: 0,
     premiumCallCount: 0,
     runtimeSeconds: 0,
@@ -77,43 +134,21 @@ export async function runSparkleLabManualScan(input: {
     headlineFindingCount: Math.min(findings.length, caps.headlineFindingCap),
     activePriorityCount: findings.filter((finding) => finding.priorityRank !== null)
       .length,
+    monthlyScheduledCostCents:
+      monthlyScheduledCostCents === undefined
+        ? undefined
+        : monthlyScheduledCostCents + estimatedCostCents,
   }
   const stop = shouldStopSparkleLabRun(usage, caps)
   const status = stop.shouldStop ? 'stopped_by_limit' : 'completed'
-
-  const { data: runRow, error: runError } = await input.supabase
-    .from('sparkle_lab_runs')
-    .insert({
-      run_type: runType,
-      status,
-      started_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-      cost_cap_cents: caps.costCapCents,
-      monthly_scheduled_cap_cents: caps.monthlyScheduledCapCents ?? null,
-      estimated_cost_cents: usage.estimatedCostCents,
-      model_call_cap: caps.modelCallCap,
-      model_call_count: usage.modelCallCount,
-      premium_call_cap: caps.premiumCallCap,
-      premium_call_count: usage.premiumCallCount,
-      runtime_cap_seconds: caps.runtimeCapSeconds,
-      candidate_record_cap: caps.candidateRecordCap,
-      candidate_record_count: usage.candidateRecordCount,
-      deep_item_cap: caps.deepItemCap,
-      deep_item_count: usage.deepItemCount,
-      headline_finding_cap: caps.headlineFindingCap,
-      headline_finding_count: usage.headlineFindingCount,
-      active_priority_cap: caps.activePriorityCap,
-      active_priority_count: usage.activePriorityCount,
-      limits_hit: stop.limitsHit,
-    })
-    .select('id')
-    .single()
-
-  if (runError || !runRow) {
-    throw runError ?? new Error('sparkle_lab_runs insert returned no row')
-  }
-
-  const runId = (runRow as { id: string }).id
+  const runId = await persistSparkleLabRun({
+    supabase: input.supabase,
+    caps,
+    usage,
+    limitsHit: stop.limitsHit,
+    status,
+    now,
+  })
   if (findings.length) {
     const { error: findingError } = await input.supabase
       .from('sparkle_lab_findings')
@@ -143,6 +178,90 @@ export async function runSparkleLabManualScan(input: {
     limitsHit: stop.limitsHit,
     findings,
   }
+}
+
+function buildEmptySparkleLabUsage(
+  monthlyScheduledCostCents?: number,
+): SparkleLabUsage {
+  return {
+    estimatedCostCents: 0,
+    monthlyScheduledCostCents,
+    modelCallCount: 0,
+    premiumCallCount: 0,
+    runtimeSeconds: 0,
+    candidateRecordCount: 0,
+    deepItemCount: 0,
+    headlineFindingCount: 0,
+    activePriorityCount: 0,
+  }
+}
+
+async function persistSparkleLabRun(input: {
+  supabase: Pick<SupabaseClient, 'from'>
+  caps: SparkleLabCaps
+  usage: SparkleLabUsage
+  limitsHit: string[]
+  status: SparkleLabRunStatus
+  now: Date
+}) {
+  const nowIso = input.now.toISOString()
+  const { data: runRow, error: runError } = await input.supabase
+    .from('sparkle_lab_runs')
+    .insert({
+      run_type: input.caps.runType,
+      status: input.status,
+      started_at: nowIso,
+      completed_at: nowIso,
+      cost_cap_cents: input.caps.costCapCents,
+      monthly_scheduled_cap_cents:
+        input.caps.monthlyScheduledCapCents ?? null,
+      estimated_cost_cents: input.usage.estimatedCostCents,
+      model_call_cap: input.caps.modelCallCap,
+      model_call_count: input.usage.modelCallCount,
+      premium_call_cap: input.caps.premiumCallCap,
+      premium_call_count: input.usage.premiumCallCount,
+      runtime_cap_seconds: input.caps.runtimeCapSeconds,
+      candidate_record_cap: input.caps.candidateRecordCap,
+      candidate_record_count: input.usage.candidateRecordCount,
+      deep_item_cap: input.caps.deepItemCap,
+      deep_item_count: input.usage.deepItemCount,
+      headline_finding_cap: input.caps.headlineFindingCap,
+      headline_finding_count: input.usage.headlineFindingCount,
+      active_priority_cap: input.caps.activePriorityCap,
+      active_priority_count: input.usage.activePriorityCount,
+      limits_hit: input.limitsHit,
+    })
+    .select('id')
+    .single()
+
+  if (runError || !runRow) {
+    throw runError ?? new Error('sparkle_lab_runs insert returned no row')
+  }
+
+  return (runRow as { id: string }).id
+}
+
+async function readSparkleLabMonthlyScheduledCostCents(input: {
+  supabase: Pick<SupabaseClient, 'from'>
+  now: Date
+}) {
+  const monthStart = new Date(
+    Date.UTC(input.now.getUTCFullYear(), input.now.getUTCMonth(), 1),
+  ).toISOString()
+  const { data, error } = await input.supabase
+    .from('sparkle_lab_runs')
+    .select('estimated_cost_cents,status')
+    .eq('run_type', 'weekly')
+    .gte('created_at', monthStart)
+
+  if (error) throw error
+
+  return ((data ?? []) as Array<{
+    estimated_cost_cents?: number | null
+    status?: string | null
+  }>)
+    .filter((run) => ['completed', 'stopped_by_limit'].includes(run.status ?? ''))
+    .reduce((total, run) => total + (run.estimated_cost_cents ?? 0), 0)
 }
 
 export async function collectSparkleLabSources(input: {

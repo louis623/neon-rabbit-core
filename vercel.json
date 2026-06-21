@@ -4,6 +4,10 @@
     {
       "path": "/api/internal/photo-enhancement/queue",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/internal/sparkle-lab/weekly",
+      "schedule": "0 6 * * 0"
     }
   ]
 }

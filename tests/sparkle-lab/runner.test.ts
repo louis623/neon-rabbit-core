@@ -3,6 +3,7 @@ import { getSparkleLabCaps } from '@/lib/nic-nac/core/lab/budget'
 import {
   buildSparkleLabFindingsFromSources,
   runSparkleLabManualScan,
+  runSparkleLabWeeklyScan,
 } from '@/lib/sparkle-lab/runner'
 
 function makeSelectQuery(data: unknown, error: unknown = null) {
@@ -22,6 +23,13 @@ function makeInsertRunQuery() {
 function makeInsertFindingsQuery() {
   const insert = vi.fn().mockResolvedValue({ error: null })
   return { insert }
+}
+
+function makeMonthlyUsageQuery(data: unknown, error: unknown = null) {
+  const gte = vi.fn().mockResolvedValue({ data, error })
+  const eq = vi.fn(() => ({ gte }))
+  const select = vi.fn(() => ({ eq }))
+  return { select, eq, gte }
 }
 
 beforeEach(() => {
@@ -119,7 +127,7 @@ describe('Sparkle Lab deterministic runner', () => {
     expect(insertRunQuery.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         run_type: 'manual',
-        status: 'stopped_by_limit',
+        status: 'completed',
         started_at: '2026-06-21T06:00:00.000Z',
         completed_at: '2026-06-21T06:00:00.000Z',
         cost_cap_cents: 200,
@@ -141,6 +149,105 @@ describe('Sparkle Lab deterministic runner', () => {
           priority_rank: 2,
         }),
       ]),
+    )
+  })
+
+  it('persists a weekly run with the scheduled monthly cap tracked', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-21T06:00:00.000Z'))
+    const supportQuery = makeSelectQuery([])
+    const runTelemetryQuery = makeSelectQuery([])
+    const monthlyUsageQuery = makeMonthlyUsageQuery([
+      {
+        estimated_cost_cents: 125,
+        status: 'completed',
+      },
+    ])
+    const insertRunQuery = makeInsertRunQuery()
+    const sparkleLabRunsQuery = {
+      ...monthlyUsageQuery,
+      insert: insertRunQuery.insert,
+    }
+    const from = vi.fn((table: string) => {
+      if (table === 'support_reports') return supportQuery
+      if (table === 'nic_nac_runs') return runTelemetryQuery
+      if (table === 'sparkle_lab_runs') return sparkleLabRunsQuery
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await runSparkleLabWeeklyScan({
+      supabase: { from } as never,
+    })
+
+    expect(monthlyUsageQuery.eq).toHaveBeenCalledWith('run_type', 'weekly')
+    expect(monthlyUsageQuery.gte).toHaveBeenCalledWith(
+      'created_at',
+      '2026-06-01T00:00:00.000Z',
+    )
+    expect(result).toMatchObject({
+      runId: 'run-1',
+      runType: 'weekly',
+      usage: {
+        estimatedCostCents: 0,
+        monthlyScheduledCostCents: 125,
+        modelCallCount: 0,
+        premiumCallCount: 0,
+      },
+      limitsHit: [],
+      findings: [],
+    })
+    expect(insertRunQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        run_type: 'weekly',
+        status: 'completed',
+        cost_cap_cents: 500,
+        monthly_scheduled_cap_cents: 2000,
+        limits_hit: [],
+      }),
+    )
+  })
+
+  it('stops a weekly run before sampling when the monthly scheduled cap is already reached', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-21T06:00:00.000Z'))
+    const monthlyUsageQuery = makeMonthlyUsageQuery([
+      {
+        estimated_cost_cents: 2000,
+        status: 'completed',
+      },
+    ])
+    const insertRunQuery = makeInsertRunQuery()
+    const sparkleLabRunsQuery = {
+      ...monthlyUsageQuery,
+      insert: insertRunQuery.insert,
+    }
+    const from = vi.fn((table: string) => {
+      if (table === 'sparkle_lab_runs') return sparkleLabRunsQuery
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await runSparkleLabWeeklyScan({
+      supabase: { from } as never,
+    })
+
+    expect(result).toMatchObject({
+      runId: 'run-1',
+      runType: 'weekly',
+      usage: {
+        estimatedCostCents: 0,
+        monthlyScheduledCostCents: 2000,
+        candidateRecordCount: 0,
+      },
+      limitsHit: ['monthly_scheduled_cap'],
+      findings: [],
+    })
+    expect(insertRunQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        run_type: 'weekly',
+        status: 'stopped_by_limit',
+        candidate_record_count: 0,
+        limits_hit: ['monthly_scheduled_cap'],
+      }),
     )
   })
 })

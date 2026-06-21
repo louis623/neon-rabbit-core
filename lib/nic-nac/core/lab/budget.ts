@@ -93,9 +93,10 @@ export function shouldStopSparkleLabRun(
   caps: SparkleLabCaps,
 ): { shouldStop: boolean; limitsHit: SparkleLabLimitHit[] } {
   const limitsHit = getSparkleLabLimitsHit(usage, caps)
+  const limitsExceeded = getSparkleLabLimitsExceeded(usage, caps)
 
   return {
-    shouldStop: limitsHit.length > 0,
+    shouldStop: limitsExceeded.length > 0,
     limitsHit,
   }
 }
@@ -104,6 +105,21 @@ export function getSparkleLabLimitsHit(
   usage: SparkleLabUsage,
   caps: SparkleLabCaps,
 ): SparkleLabLimitHit[] {
+  return collectSparkleLabLimits(usage, caps, (value, cap) => value >= cap)
+}
+
+export function getSparkleLabLimitsExceeded(
+  usage: SparkleLabUsage,
+  caps: SparkleLabCaps,
+): SparkleLabLimitHit[] {
+  return collectSparkleLabLimits(usage, caps, (value, cap) => value > cap)
+}
+
+function collectSparkleLabLimits(
+  usage: SparkleLabUsage,
+  caps: SparkleLabCaps,
+  isLimitReached: (usage: number, cap: number) => boolean,
+): SparkleLabLimitHit[] {
   const limitsHit: SparkleLabLimitHit[] = []
 
   addLimitHit(
@@ -111,6 +127,7 @@ export function getSparkleLabLimitsHit(
     usage.estimatedCostCents,
     caps.costCapCents,
     'cost_cap',
+    isLimitReached,
   )
   if (caps.monthlyScheduledCapCents !== undefined) {
     addLimitHit(
@@ -118,6 +135,7 @@ export function getSparkleLabLimitsHit(
       usage.monthlyScheduledCostCents ?? 0,
       caps.monthlyScheduledCapCents,
       'monthly_scheduled_cap',
+      isLimitReached,
     )
   }
   addLimitHit(
@@ -125,42 +143,49 @@ export function getSparkleLabLimitsHit(
     usage.modelCallCount,
     caps.modelCallCap,
     'model_call_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.premiumCallCount,
     caps.premiumCallCap,
     'premium_call_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.runtimeSeconds,
     caps.runtimeCapSeconds,
     'runtime_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.candidateRecordCount,
     caps.candidateRecordCap,
     'candidate_record_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.deepItemCount,
     caps.deepItemCap,
     'deep_item_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.headlineFindingCount,
     caps.headlineFindingCap,
     'headline_finding_cap',
+    isLimitReached,
   )
   addLimitHit(
     limitsHit,
     usage.activePriorityCount,
     caps.activePriorityCap,
     'active_priority_cap',
+    isLimitReached,
   )
 
   return limitsHit
@@ -171,6 +196,7 @@ function addLimitHit(
   usage: number,
   cap: number,
   limit: SparkleLabLimitHit,
+  isLimitReached: (usage: number, cap: number) => boolean,
 ) {
-  if (usage >= cap) limitsHit.push(limit)
+  if (isLimitReached(usage, cap)) limitsHit.push(limit)
 }

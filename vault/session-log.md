@@ -14,9 +14,10 @@ Running log of significant work sessions. Most recent first.
 - Added bounded context assembly plus automatic safe memory cards from existing `rep_notes`. The Suite route now feeds safe, scoped, capped memory into the prompt without relying on the model to call `read_recent_rep_notes` first. Unsafe/prompt-injection memory is blocked before prompt assembly.
 - Added memory-context telemetry fields for card count, blocked-card count, memory scopes, and truncation.
 - Added internal Sparkle Lab budget cap helpers for weekly, manual, and urgent runs.
-- Added Sparkle Lab schema migration for bounded runs, findings, and artifacts with service-role-only RLS. No migration has been applied to Supabase yet.
+- Added Sparkle Lab schema migration for bounded runs, findings, and artifacts with service-role-only RLS. The migration has since been applied and remote RLS/policies were verified service-role-only.
 - Added read-only internal Sparkle Lab Control Center page at `/control-center/lab`, linked from `/control-center`, with Nic-Nac Lab, Sparkle Suite Lab, Sparkle Finder Lab, Ops Lab, Research Desk, latest run, usage caps, findings, priorities, and artifacts.
 - Added feature-flagged manual Sparkle Lab runner endpoint at `/api/control-center/sparkle-lab/run`. It is disabled unless `SPARKLE_LAB_MANUAL_RUNS_ENABLED=true`, is deterministic-only for now, and makes no model calls or provider-credit spend.
+- Added authenticated weekly Sparkle Lab cron route at `/api/internal/sparkle-lab/weekly`, wired to Vercel cron for Sunday overnight, disabled by default unless `SPARKLE_LAB_WEEKLY_RUNS_ENABLED=true`, with monthly scheduled cap checks before sampling and no model calls in the deterministic runner.
 - Hardened duplicate Trade Board item-number behavior so an existing board item prompts for another physical piece instead of refusing as a duplicate.
 - Added a server-only Suite internal API at `/api/internal/finder/rep-claim` for Sparkle Finder to validate a Secret Rep ID Number with a server token. It reads `live_queue.sync_code`, then `reps`, and returns only safe rep-link/Silver badge entitlement data. It does not change live queue sync behavior and does not update Finder yet.
 
@@ -34,7 +35,7 @@ Running log of significant work sessions. Most recent first.
 **Still open:**
 - Finder repo changes have not been made.
 - Secret Rep ID user-facing copy/UI has not been changed because that touches rep-facing setup/account surfaces and requires a stop-and-notify checkpoint first. Finder claim UI/storage is also not implemented yet.
-- Sparkle Lab cron, applied remote migration, model-powered synthesis, and real Lab smoke are not implemented yet. Manual runner is feature-flagged off by default.
+- Sparkle Lab model-powered synthesis and real deployed Lab smoke are not implemented yet. Manual and weekly runners are feature-flagged off by default; the current deterministic runner makes no model calls.
 - No deployed stable-demo smoke was run for this local implementation slice yet.
 
 ---
