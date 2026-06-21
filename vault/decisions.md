@@ -4,6 +4,25 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 21, 2026
+
+**Migrated public sites use the exact shared Sparkle Suite header code**
+When a migrated public site needs the Sparkle Suite header, do not create a similar bespoke header. Mile High Fizz, Britt With Bling, BlingKitchen, and the default Amethyst homepage should reuse the same shared header/ticker/Live Queue code path so Trade Board and Live Queue behavior stays consistent.
+
+**Public-site ticker speed is one global casual setting**
+Ticker speed should be the same everywhere in Sparkle Suite public/customer-facing surfaces. The current shared rule is `tickerSpeed: 1` with `72s` animation durations. Announcement and Trade Board rows should not run at different speeds unless Louis explicitly asks for a one-off experiment.
+
+**Static public-site asset cache busting is part of the fix**
+For Amethyst/static public-site changes, update the asset version in the HTML shells and tests before deployment. Otherwise Louis can refresh the stable route and still load the previous JS/CSS bundle.
+
+**Control Center customer/demo classification must become durable**
+The current active-customer vs demo split is code-derived from known active customer identifiers. If Louis wants to manage this operationally, add durable account classification metadata and Nic-Nac/dashboard controls rather than continuing to rely on a hardcoded known-customer list.
+
+**Louis-facing responses should stay bottom-line-first**
+For Sparkle Suite implementation closeouts, keep responses short: what changed, where to review, verification, commit. Avoid long raw deployment explanations or multiple preview URLs unless they are truly necessary or Louis asks for them.
+
+---
+
 ## June 20, 2026
 
 **Sparkle Suite task closeout should commit, push, deploy, and promote the stable demo by default**

@@ -4,6 +4,65 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Control Center and Customer-Site Header/Ticker Hardening
+
+**Control Center work completed:**
+- Renamed `/control-center` to `Sparkle Suite Control Center`.
+- Added a left-hand Control Center options column with Trouble Tickets, Customer Database, and Demo Database.
+- Built expandable customer/demo account rows instead of a spreadsheet-style table.
+- Customer rows include contact, billing/subscription signals, website/domain/shop/social links, setup status, internal notes, phone field, promo code, and promo-code usage fields.
+- Split active customers from demo accounts. Active customers are Mile High Fizz/Lindsey, Britt With Bling/Brittany, and BlingKitchen/Heather. Everything else is in Demo Database.
+- Made Customer Database and Demo Database collapsible so future Control Center sections can sit below them cleanly.
+- Searched repo-local Open Brain/HQ memory for paying-client phone numbers; no reliable client phone numbers were found in accessible project memory, so phone fields remain present but blank/pending.
+
+**BlingKitchen/public-site work completed:**
+- Fixed the BlingKitchen purple-screen/live-preview issue by repairing deployed public assets and cache busting the Amethyst static bundle.
+- Audited and repaired BlingKitchen visual issues that Louis flagged, including missing CTA labels/contrast and public route rendering.
+- Wired public homepage ticker payloads to real workspace-backed Trade Board and Live Queue state.
+- Replaced the bespoke Mile High Fizz/Britt With Bling/BlingKitchen public-site headers with one shared `SparkleSuiteHeaderStack` using the existing Sparkle Suite template header/ticker/Live Queue code path.
+- Improved black-velvet/shared-header readability after Louis showed the header text was unreadable above the ticker.
+- Standardized ticker speed everywhere to the same medium/casual setting:
+  - `tickerSpeed: 1` in homepage/join/trade defaults and all Amethyst appearance presets.
+  - `72s` ticker duration in shared homepage CSS, design-system component CSS, and React site shell.
+  - Announcement and Trade Board ticker rows now use the same duration.
+
+**Stable demo deploys and checkpoints:**
+- `eace754 docs: clarify Sparkle Suite review target`
+- `d8d284a fix: wire homepage ticker to live workspace features`
+- `b717419 fix: include workspace features in bespoke tickers`
+- `623c86b fix: bust Amethyst workspace feature assets`
+- `11f545a fix: reuse Sparkle Suite header on hybrid sites`
+- `6a4ba4e fix: tune shared site header readability`
+- `411c580 fix: standardize ticker speed`
+- Final stable demo alias: `https://sparkle-suite-demo.vercel.app`
+- Final stable demo target: `https://sparkle-suite-7hwm9e9bs-louis-2849s-projects.vercel.app`
+- Verified stable BlingKitchen route: `https://sparkle-suite-demo.vercel.app/blingkitchen`
+
+**Verification completed:**
+- Focused Control Center/customer-profile tests passed during Control Center work.
+- Focused Amethyst/public-site tests passed across the header/ticker work.
+- `npm run qa:amethyst` passed after relevant public-site changes.
+- `npm run build` passed after relevant public-site changes; one local Next build left a stale generated `.next\lock` after timeout and was cleared before rerunning successfully.
+- Vercel production builds passed and the stable demo alias was promoted after each Louis-reviewable change.
+- Playwright screenshots visually verified the stable BlingKitchen header/readability/ticker placement after deploys.
+- Final stable CSS verification showed the new `20260620-ticker-casual` asset, two matching `calc(72s / var(--ticker-speed, 1))` durations, and no old `26s`/`68s` ticker durations.
+
+**Lessons learned:**
+- For migrated public sites, do not create a lookalike header pattern when Louis asks for the Sparkle Suite template header. Reuse the same code path.
+- Shared public-site elements such as header, ticker, Trade Board, and Live Queue must be centralized so fixes land across Mile High Fizz, Britt With Bling, BlingKitchen, and default Amethyst together.
+- Cache busting static Amethyst assets is required for visible public-site fixes; otherwise Louis may refresh and still see the old bundle.
+- Do not claim a public-site fix is live until `https://sparkle-suite-demo.vercel.app` is promoted and the exact route/assets are verified.
+- Ticker speed should be a single global casual/medium setting, not two row-specific speeds.
+- Keep Louis-facing closeouts bottom-line-first: what changed, where to review, verification, commit. Avoid cluttering responses with raw preview URLs unless he asks.
+
+**Follow-up:**
+- Louis/Brittany still need to accept Britt With Bling.
+- Louis/Heather still need to accept BlingKitchen before any domain cutover.
+- Control Center needs search/filtering, editable notes/status, richer billing details, and durable customer/demo classification metadata.
+- Paying-client phone numbers still need an authorized source or manual entry.
+
+---
+
 ## June 20, 2026 - Control Center Title and Customer Database v1
 
 **Work completed:**

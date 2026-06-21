@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** June 19, 2026
+**Last updated:** June 21, 2026
 
 ---
 
@@ -18,10 +18,10 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed checkpoint:** `ccd4456 feat: migrate BlingKitchen public site`
-- **Latest local checkpoints:** none; `codex/sparkle-cross-phase-hardening` is clean and synced with origin after the BlingKitchen migration closeout.
+- **Latest pushed checkpoint:** `411c580 fix: standardize ticker speed`
+- **Latest local checkpoints:** none; `codex/sparkle-cross-phase-hardening` is clean and synced with origin after the June 21 ticker-speed closeout.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`
+- **Current stable demo target:** `https://sparkle-suite-7hwm9e9bs-louis-2849s-projects.vercel.app`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
@@ -67,11 +67,12 @@ Sparkle Suite remains the priority product for launch. Sparkle Finder can wait, 
 
 ## Current Priority
 
-As of June 19, the immediate migration priorities are:
+As of June 21, the immediate migration/control-center priorities are:
 
-1. Finish/accept Britt With Bling as a Mile High Fizz-style hybrid migration, with extra attention on editable Join Team cards.
-2. Review BlingKitchen on stable demo and decide any final visual/copy polish before custom domain cutover.
-3. Continue Phase 1 closeout and Phase 2 prep after these migrated public sites are accepted.
+1. Louis/Brittany still need to review/accept Britt With Bling, with extra attention on editable Join Team cards.
+2. Louis/Heather still need to review BlingKitchen on the stable demo before any custom-domain cutover.
+3. Control Center is now growing into the internal operating workspace; customer/demo account database polish, editable account status/notes, and richer billing details remain next-step work.
+4. Continue Phase 1 closeout and Phase 2 prep after these migrated public sites and Control Center v1 workflows are accepted.
 
 Older priority notes below are retained as historical context until fully cleaned up.
 
@@ -88,6 +89,19 @@ Older priority notes below are retained as historical context until fully cleane
 - **BlingKitchen:** Pushed/deployed checkpoint `ccd4456 feat: migrate BlingKitchen public site` uses Heather's Ready.ai/Readdy export and keeps a special Pantry/recipe page at `/blingkitchen/in-the-pantry`. Recipes are DB-backed and editable through Nic-Nac plus the dashboard Recipes section.
 - **Recipe content model:** Public-site recipes include title, slug, category, prep time, servings, description, ingredients, steps, note, TikTok URL, card/modal images, image alt/crop, order, and visibility. Public loader should be DB-first with BlingKitchen fallback recipes only when needed.
 - **Tenant/account:** Heather's BlingKitchen username is `blingkitchen19@gmail.com`. A temporary password was set during the session; keep it out of long-term docs and rotate after handoff.
+
+### June 21, 2026 Control Center + Public-Site Header/Ticker Hardening
+
+- Control Center now has the plain title `Sparkle Suite Control Center`, a left-hand options column, Trouble Tickets, Customer Database, and Demo Database sections.
+- Customer Database shows only the active customer accounts Louis named: Mile High Fizz/Lindsey, Britt With Bling/Brittany, and BlingKitchen/Heather. Other operator-visible reps belong in Demo Database until durable account classification exists.
+- Customer/Demo databases are collapsible so future Control Center sections can sit below them without forcing long scrolling.
+- Customer rows track phone, promo code, and promo-code usage fields; known paying-client phone numbers were not found in repo-local Open Brain/HQ memory and remain open fields until supplied or discovered from an authorized source.
+- BlingKitchen purple-screen/live-preview issue was repaired with public asset cache busting and stable-demo verification.
+- BlingKitchen public-site audit/repair fixed missing CTA labels, hero contrast, asset cache issues, and route rendering.
+- Customer-site header hardening is now based on a single shared `SparkleSuiteHeaderStack` in `public/amethyst/homepage.jsx`. Mile High Fizz, Britt With Bling, BlingKitchen, and the default Amethyst homepage all call this same header/ticker/Live Queue code path instead of maintaining bespoke header copies.
+- Trade Board and Live Queue are wired into the public homepage payload and header stack from workspace-backed data, not merely static placeholder text.
+- Public ticker behavior now uses one casual/medium speed everywhere: default/preset `tickerSpeed: 1`, shared homepage/join/trade CSS uses `72s`, and both announcement and Trade Board rows use the same duration. The static design-system ticker examples and React site shell were aligned to the same `72s` setting.
+- Latest stable demo closeout: `https://sparkle-suite-demo.vercel.app/blingkitchen` served the new `20260620-ticker-casual` assets; stable CSS had two `calc(72s / var(--ticker-speed, 1))` durations and no old `26s`/`68s` ticker durations.
 
 ---
 
