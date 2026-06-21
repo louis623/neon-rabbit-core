@@ -645,7 +645,7 @@ export function countListingsByDesignForQualifiedReps(
   return counts
 }
 
-async function loadPublicFinderEligibleRepIds(supabase: SupabaseClient) {
+export async function loadPublicFinderEligibleRepIds(supabase: SupabaseClient) {
   const paidRepIds = new Set<string>()
   const { data: subscriptions, error: subscriptionErr } = await supabase
     .from('subscriptions')

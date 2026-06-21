@@ -100,6 +100,70 @@ describe('Sparkle Finder internal rep claim', () => {
     expect(deps.rep.eqRep).not.toHaveBeenCalled()
   })
 
+  it('rejects valid Secret Rep ID Numbers for active reps that are not Finder-eligible yet', async () => {
+    const deps = makeDeps({
+      liveQueueRow: { rep_id: 'suite-rep-1' },
+      repRow: {
+        id: 'suite-rep-1',
+        business_name: 'The Bling Kitchen',
+        display_name: 'Heather',
+        public_site_slug: 'blingkitchen',
+        status: 'active',
+      },
+      subscriptionRows: [],
+      launchBuildRows: [],
+    })
+
+    await expect(
+      validateSparkleFinderRepClaim(
+        {
+          sourceProduct: 'sparkle_finder',
+          finderUserId: 'finder-user-1',
+          secretRepIdNumber: 'BLI-3767',
+        },
+        deps,
+      ),
+    ).resolves.toEqual({
+      ok: false,
+      status: 'not_found',
+      message: 'That Secret Rep ID Number did not match an active Sparkle Suite rep.',
+    })
+  })
+
+  it('allows valid Secret Rep ID Numbers for ready launch-build reps before paid subscription starts', async () => {
+    const deps = makeDeps({
+      liveQueueRow: { rep_id: 'suite-rep-1' },
+      repRow: {
+        id: 'suite-rep-1',
+        business_name: 'The Bling Kitchen',
+        display_name: 'Heather',
+        public_site_slug: 'blingkitchen',
+        status: 'active',
+      },
+      subscriptionRows: [],
+      launchBuildRows: [{ rep_id: 'suite-rep-1' }],
+    })
+
+    await expect(
+      validateSparkleFinderRepClaim(
+        {
+          sourceProduct: 'sparkle_finder',
+          finderUserId: 'finder-user-1',
+          secretRepIdNumber: 'BLI-3767',
+        },
+        deps,
+      ),
+    ).resolves.toMatchObject({
+      ok: true,
+      suiteRepId: 'suite-rep-1',
+      finderEntitlement: {
+        isRep: true,
+        silverRepIncluded: true,
+        badge: 'bp_rep',
+      },
+    })
+  })
+
   it('rejects non-Finder sources and missing Finder user ids', async () => {
     const deps = makeDeps({ liveQueueRow: null })
 
@@ -212,6 +276,8 @@ describe('Sparkle Finder internal rep claim', () => {
 function makeDeps(options: {
   liveQueueRow: Record<string, unknown> | null
   repRow?: Record<string, unknown> | null
+  subscriptionRows?: Array<Record<string, unknown>>
+  launchBuildRows?: Array<Record<string, unknown>>
 }) {
   const liveQueueMaybeSingle = vi.fn().mockResolvedValue({
     data: options.liveQueueRow,
@@ -227,6 +293,20 @@ function makeDeps(options: {
   const eqRep = vi.fn(() => ({ maybeSingle: repMaybeSingle }))
   const repSelect = vi.fn(() => ({ eq: eqRep }))
 
+  const subscriptionIn = vi.fn().mockResolvedValue({
+    data: options.subscriptionRows ?? [{ rep_id: 'suite-rep-1' }],
+    error: null,
+  })
+  const subscriptionSelect = vi.fn(() => ({ in: subscriptionIn }))
+
+  const launchBuildNot = vi.fn().mockResolvedValue({
+    data: options.launchBuildRows ?? [],
+    error: null,
+  })
+  const launchBuildStatusEq = vi.fn(() => ({ not: launchBuildNot }))
+  const launchBuildStageEq = vi.fn(() => ({ eq: launchBuildStatusEq }))
+  const launchBuildSelect = vi.fn(() => ({ eq: launchBuildStageEq }))
+
   const supabase = {
     from: vi.fn((table: string) => {
       if (table === 'live_queue') {
@@ -234,6 +314,12 @@ function makeDeps(options: {
       }
       if (table === 'reps') {
         return { select: repSelect }
+      }
+      if (table === 'subscriptions') {
+        return { select: subscriptionSelect }
+      }
+      if (table === 'sparkle_suite_launch_builds') {
+        return { select: launchBuildSelect }
       }
       throw new Error(`Unexpected table: ${table}`)
     }),

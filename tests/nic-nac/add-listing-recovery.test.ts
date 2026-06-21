@@ -36,6 +36,7 @@ const processRepListingPhotoUrlMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 const updateTradeBoardIntakeSessionMock = vi.fn()
+const createAdminClientMock = vi.fn()
 const fetchMock = vi.fn()
 
 function makeCleanAnalysis(overrides: Partial<Record<string, unknown>> = {}) {
@@ -101,7 +102,7 @@ vi.mock('@/lib/photoroom/config', () => ({
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: () => ({}),
+  createAdminClient: () => createAdminClientMock(),
 }))
 
 vi.mock('@/lib/nic-nac/audit', () => ({
@@ -205,6 +206,26 @@ function makeConversationLookupMock(rows: Array<{ parts: unknown }>) {
   }
 }
 
+function makeAdminClientMock(existingListings: Array<Record<string, unknown>> = []) {
+  const duplicateLimit = vi.fn().mockResolvedValue({
+    data: existingListings,
+    error: null,
+  })
+  const duplicateNeq = vi.fn(() => ({ limit: duplicateLimit }))
+  const duplicateDesignEq = vi.fn(() => ({ neq: duplicateNeq }))
+  const duplicateRepEq = vi.fn(() => ({ eq: duplicateDesignEq }))
+  const duplicateSelect = vi.fn(() => ({ eq: duplicateRepEq }))
+
+  return {
+    from: vi.fn((table: string) => {
+      if (table !== 'trade_listings') {
+        throw new Error(`unexpected table ${table}`)
+      }
+      return { select: duplicateSelect }
+    }),
+  }
+}
+
 beforeEach(() => {
   addListingMock.mockReset()
   addListingBatchMock.mockReset()
@@ -224,6 +245,8 @@ beforeEach(() => {
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
   updateTradeBoardIntakeSessionMock.mockReset()
+  createAdminClientMock.mockReset()
+  createAdminClientMock.mockReturnValue(makeAdminClientMock())
   fetchMock.mockReset()
   vi.stubGlobal('fetch', fetchMock)
   analyzeServerImageQualityMock.mockResolvedValue(makeCleanAnalysis())
@@ -481,7 +504,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       filenameStem: 'ER13229-listing-photo',
     }, { confirmedJewelryFront: true })
     expect(addListingMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'rep-1',
       expect.objectContaining({
         itemNumber: 'ER13229',
@@ -1581,7 +1604,7 @@ describe('add_listing — vision-first photo extraction (Task 1.5B closure)', ()
 
     expect(publishApprovedPhotoMock).toHaveBeenCalledTimes(1)
     expect(updateCanonicalPhotoMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'design-1',
       'https://example.supabase.co/storage/v1/object/public/jewelry-photos/approved/design-1/enhanced.png',
     )
@@ -1781,7 +1804,7 @@ describe('add_listing - direct listing without ownership clickwrap', () => {
       itemNumber: 'DR-1',
     })
     expect(addListingMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'rep-1',
       expect.not.objectContaining({ clickwrapAccepted: expect.anything() }),
     )
@@ -1849,7 +1872,7 @@ describe('add_listing - active workflow readiness guard', () => {
       listingId: 'listing-1',
     })
     expect(updateTradeBoardIntakeSessionMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       {
         sessionId: 'workflow-1',
         patch: expect.objectContaining({
@@ -2144,7 +2167,7 @@ describe('add_listing - active workflow readiness guard', () => {
 
     expect(executePhotoEnhancementMock).not.toHaveBeenCalled()
     expect(updatePhotoPipelineStateMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'design-1',
       expect.objectContaining({
         provider: 'photoroom',
@@ -2229,7 +2252,7 @@ describe('add_listing - active workflow readiness guard', () => {
     })
 
     expect(addListingMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'rep-1',
       expect.objectContaining({
         itemNumber: 'ER13229',
@@ -2410,7 +2433,7 @@ describe('add_listing - active workflow readiness guard', () => {
       { confirmedJewelryFront: true },
     )
     expect(addListingMock).toHaveBeenCalledWith(
-      {},
+      expect.anything(),
       'rep-1',
       expect.objectContaining({
         listingPhotoUrl:

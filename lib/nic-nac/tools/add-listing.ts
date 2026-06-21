@@ -272,6 +272,141 @@ async function latestUserMessageHasExplicitQuantity(ctx: {
   return textHasExplicitQuantity(text)
 }
 
+function textConfirmsAdditionalPhysicalPiece(text: string) {
+  return (
+    textHasExplicitQuantity(text) ||
+    /\b(another|additional|extra|second|third|fourth|fifth|copy|duplicate|same\s+one|again)\b/i.test(
+      text,
+    )
+  )
+}
+
+function textIsAffirmative(text: string) {
+  return /\b(yes|yep|yeah|yup|correct|right|exactly|please|do\s+it|go\s+ahead)\b/i.test(
+    text,
+  )
+}
+
+function textAsksDuplicatePhysicalPieceQuestion(text: string) {
+  return (
+    text.includes('already on your Trade Board') &&
+    text.includes('another physical piece')
+  )
+}
+
+function readTextFromParts(parts: unknown) {
+  if (!Array.isArray(parts)) return ''
+  return parts
+    .filter(
+      (part): part is { type?: string; text?: string } =>
+        part &&
+        typeof part === 'object' &&
+        (part as { type?: unknown }).type === 'text' &&
+        typeof (part as { text?: unknown }).text === 'string',
+    )
+    .map((part) => part.text)
+    .join('\n')
+}
+
+async function latestConversationConfirmsAdditionalPhysicalPiece(ctx: {
+  supabase: SupabaseClient
+  conversationId: string
+}): Promise<boolean | null> {
+  let data:
+    | Array<{ role?: unknown; parts?: unknown }>
+    | null
+    | undefined
+  let error: unknown
+  try {
+    ;({ data, error } = await ctx.supabase
+      .from('nic_nac_conversations')
+      .select('role,parts')
+      .eq('conversation_id', ctx.conversationId)
+      .eq('status', 'complete')
+      .in('role', ['user', 'assistant'])
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(4))
+  } catch (err) {
+    if (err instanceof TypeError) return null
+    throw err
+  }
+  if (error) throw error
+
+  const messages = (data ?? []).map((row) => ({
+    role: typeof row.role === 'string' ? row.role : '',
+    text: readTextFromParts(row.parts),
+  }))
+  const latestUserIndex = messages.findIndex((message) => message.role === 'user')
+  const latestUser = messages[latestUserIndex]
+  if (!latestUser) return false
+  if (textConfirmsAdditionalPhysicalPiece(latestUser.text)) return true
+
+  const priorAssistant = messages
+    .slice(latestUserIndex + 1)
+    .find((message) => message.role === 'assistant')
+
+  return Boolean(
+    priorAssistant &&
+      textIsAffirmative(latestUser.text) &&
+      textAsksDuplicatePhysicalPieceQuestion(priorAssistant.text),
+  )
+}
+
+async function repAlreadyHasActiveListingForItem(input: {
+  admin: SupabaseClient
+  repId: string
+  itemNumber: string
+  designId?: string
+}) {
+  let designId = input.designId
+  if (!designId) {
+    const resolved = await resolveItemNumber(input.admin, input.itemNumber)
+    if (!resolved?.found) return false
+    designId = resolved.design.id
+  }
+
+  const { data, error } = await input.admin
+    .from('trade_listings')
+    .select('id')
+    .eq('rep_id', input.repId)
+    .eq('design_id', designId)
+    .neq('status', 'removed')
+    .limit(1)
+
+  if (error) throw error
+  return (data ?? []).length > 0
+}
+
+async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
+  admin: SupabaseClient
+  supabase: SupabaseClient
+  repId: string
+  conversationId: string
+  itemNumber: string
+  designId?: string
+}) {
+  const alreadyListed = await repAlreadyHasActiveListingForItem({
+    admin: input.admin,
+    repId: input.repId,
+    itemNumber: input.itemNumber,
+    designId: input.designId,
+  })
+  if (!alreadyListed) return
+
+  const confirmed = await latestConversationConfirmsAdditionalPhysicalPiece({
+    supabase: input.supabase,
+    conversationId: input.conversationId,
+  })
+  if (confirmed) return
+
+  throw new NicNacToolError({
+    code: 'DUPLICATE_PHYSICAL_CONFIRMATION_REQUIRED',
+    userMessage:
+      'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+  })
+}
+
 function getConfirmedJewelryFrontPhotos(
   workflow: ToolContext['activeTradeBoardWorkflow'] | undefined,
 ) {
@@ -567,6 +702,14 @@ async function runSingle(
     try {
       const existingDesign = await resolveItemNumber(admin, itemNumber)
       if (existingDesign.found) {
+        await requireDuplicatePhysicalPieceConfirmationIfNeeded({
+          admin,
+          supabase: ctx.supabase,
+          repId: ctx.repId,
+          conversationId: ctx.conversationId,
+          itemNumber,
+          designId: existingDesign.design.id,
+        })
         const existingListingPhotoUrl = await processListingPhotoForAdd({
           listingPhotoUrl: input.listingPhotoUrl,
           listingPhotoIndex: input.listingPhotoIndex,
@@ -928,6 +1071,16 @@ async function runSingle(
       },
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+    })
+  }
+
+  if (!designName) {
+    await requireDuplicatePhysicalPieceConfirmationIfNeeded({
+      admin,
+      supabase: ctx.supabase,
+      repId: ctx.repId,
+      conversationId: ctx.conversationId,
+      itemNumber,
     })
   }
 

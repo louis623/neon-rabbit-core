@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const addListingMock = vi.fn()
 const addListingBatchMock = vi.fn()
+const resolveItemNumberMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
+const createAdminClientMock = vi.fn(() => ({}))
 
 vi.mock('@/lib/services/trade-board', () => ({
   addListing: (...args: unknown[]) => addListingMock(...args),
@@ -12,6 +14,9 @@ vi.mock('@/lib/services/trade-board', () => ({
 
 vi.mock('@/lib/services/jewelry-database', () => ({
   createDesign: vi.fn(),
+  resolveItemNumber: (...args: unknown[]) => resolveItemNumberMock(...args),
+  updateCanonicalPhoto: vi.fn(),
+  updatePhotoPipelineState: vi.fn(),
 }))
 
 vi.mock('@/lib/services/storage', () => ({
@@ -19,7 +24,7 @@ vi.mock('@/lib/services/storage', () => ({
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: () => ({}),
+  createAdminClient: () => createAdminClientMock(),
 }))
 
 vi.mock('@/lib/nic-nac/audit', () => ({
@@ -37,35 +42,73 @@ interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(): ToolDef {
-  const supabase = {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            eq: () => ({
-              order: () => ({
-                order: () => ({
-                  limit: () => ({
-                    maybeSingle: async () => ({
-                      data: {
-                        parts: [{ type: 'text', text: 'Add ER76003 to my board' }],
-                      },
-                      error: null,
-                    }),
-                  }),
-                }),
-              }),
-            }),
-          }),
-        }),
-      }),
+function makeConversationSupabase(messages = [
+  {
+    role: 'user',
+    parts: [{ type: 'text', text: 'Add ER76003 to my board' }],
+  },
+]) {
+  const latestUser = messages.find((message) => message.role === 'user')
+
+  const maybeSingle = vi.fn().mockResolvedValue({
+    data: latestUser ? { parts: latestUser.parts } : null,
+    error: null,
+  })
+  const userLimit = vi.fn(() => ({ maybeSingle }))
+  const userOrderById = vi.fn(() => ({ limit: userLimit }))
+  const userOrderByCreatedAt = vi.fn(() => ({ order: userOrderById }))
+  const userStatusEq = vi.fn(() => ({ order: userOrderByCreatedAt }))
+  const userRoleEq = vi.fn(() => ({ eq: userStatusEq }))
+  const userConversationEq = vi.fn(() => ({ eq: userRoleEq }))
+
+  const recentLimit = vi.fn().mockResolvedValue({ data: messages, error: null })
+  const recentOrderById = vi.fn(() => ({ limit: recentLimit }))
+  const recentOrderByCreatedAt = vi.fn(() => ({ order: recentOrderById }))
+  const recentRoleIn = vi.fn(() => ({ order: recentOrderByCreatedAt }))
+  const recentStatusEq = vi.fn(() => ({ in: recentRoleIn }))
+  const recentConversationEq = vi.fn(() => ({ eq: recentStatusEq }))
+
+  const select = vi.fn((columns: string) => {
+    if (columns === 'role,parts') {
+      return { eq: recentConversationEq }
+    }
+    return { eq: userConversationEq }
+  })
+
+  return {
+    from: vi.fn((table: string) => {
+      if (table !== 'nic_nac_conversations') {
+        throw new Error(`unexpected table ${table}`)
+      }
+      return { select }
     }),
   }
+}
 
+function makeAdminWithExistingListing(existingListing: boolean) {
+  const duplicateLimit = vi.fn().mockResolvedValue({
+    data: existingListing ? [{ id: 'listing-existing' }] : [],
+    error: null,
+  })
+  const duplicateNeq = vi.fn(() => ({ limit: duplicateLimit }))
+  const duplicateDesignEq = vi.fn(() => ({ neq: duplicateNeq }))
+  const duplicateRepEq = vi.fn(() => ({ eq: duplicateDesignEq }))
+  const duplicateSelect = vi.fn(() => ({ eq: duplicateRepEq }))
+
+  return {
+    from: vi.fn((table: string) => {
+      if (table !== 'trade_listings') {
+        throw new Error(`unexpected table ${table}`)
+      }
+      return { select: duplicateSelect }
+    }),
+  }
+}
+
+function makeTool(messages?: Parameters<typeof makeConversationSupabase>[0]): ToolDef {
   return makeAddListingTool({
     repId: 'rep-1',
-    supabase: supabase as never,
+    supabase: makeConversationSupabase(messages) as never,
     conversationId: 'conv-1',
     runId: 'run-1',
   }) as unknown as ToolDef
@@ -74,6 +117,9 @@ function makeTool(): ToolDef {
 beforeEach(() => {
   addListingMock.mockReset()
   addListingBatchMock.mockReset()
+  resolveItemNumberMock.mockReset()
+  createAdminClientMock.mockReset()
+  createAdminClientMock.mockReturnValue({})
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
 })
@@ -172,6 +218,7 @@ describe('add_listing — batch mode', () => {
   })
 
   it('forwards ring size to the trade listing service for ring entries', async () => {
+    resolveItemNumberMock.mockResolvedValueOnce({ found: false, itemNumber: 'RG31452' })
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-1',
       designId: 'design-1',
@@ -243,6 +290,94 @@ describe('add_listing — batch mode', () => {
       actionType: 'add_listing',
       repId: 'rep-1',
       targetListingId: 'listing-2',
+    })
+  })
+
+  it('asks for another-physical-piece confirmation before adding an item already on the board', async () => {
+    createAdminClientMock.mockReturnValueOnce(
+      makeAdminWithExistingListing(true),
+    )
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      design: {
+        id: 'design-1',
+        itemNumber: 'ER76003',
+        designName: 'The Elodie Luxe',
+      },
+      hasCollection: true,
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-1',
+      itemNumber: 'ER76003',
+      designName: 'The Elodie Luxe',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool()
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER76003',
+      }),
+    ).rejects.toMatchObject({
+      code: 'DUPLICATE_PHYSICAL_CONFIRMATION_REQUIRED',
+      userMessage:
+        'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+    })
+    expect(addListingMock).not.toHaveBeenCalled()
+  })
+
+  it('adds another copy after the rep confirms the already-listed item is another physical piece', async () => {
+    createAdminClientMock.mockReturnValueOnce(
+      makeAdminWithExistingListing(true),
+    )
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      design: {
+        id: 'design-1',
+        itemNumber: 'ER76003',
+        designName: 'The Elodie Luxe',
+      },
+      hasCollection: true,
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-1',
+      itemNumber: 'ER76003',
+      designName: 'The Elodie Luxe',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool([
+      {
+        role: 'user',
+        parts: [{ type: 'text', text: 'Yes.' }],
+      },
+      {
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+          },
+        ],
+      },
+    ])
+
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER76003',
+    })
+
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-2',
+      itemNumber: 'ER76003',
     })
   })
 

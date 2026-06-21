@@ -202,7 +202,7 @@ describe('Sparkle Finder internal jewelry intake', () => {
       status: 'photo_rejected',
       message: 'Nic-Nac needs a clean, approved light-box photo before this can publish.',
       photoFeedback: [
-        'Use the light box with a plain background.',
+        'Use a clear, centered jewelry photo approved by Nic-Nac photo QA.',
         'Make sure the approved jewelry photo has completed Nic-Nac photo QA.',
       ],
     })
