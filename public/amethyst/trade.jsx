@@ -44,7 +44,7 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
   ctaEmphasis: "standard",
   tradeFlair: "holo-unicorn",
   cursorEffect: "sparkle",
-  tickerSpeed: 2.5,
+  tickerSpeed: 1,
   showSlots: false,
 };
 

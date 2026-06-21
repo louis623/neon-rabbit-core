@@ -317,7 +317,7 @@ const lockedTweakDefaults: Omit<
   ctaEmphasis: 'pulse',
   tradeFlair: 'tier-glow',
   cursorEffect: 'default',
-  tickerSpeed: 2.5,
+  tickerSpeed: 1,
   showSlots: false,
 }
 

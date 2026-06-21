@@ -53,7 +53,7 @@ const DEFAULTS = window.HOMEPAGE_TWEAK_DEFAULTS || {
   ctaEmphasis: "standard",
   tradeFlair: "holo-unicorn",
   cursorEffect: "sparkle",
-  tickerSpeed: 2.5,
+  tickerSpeed: 1,
   showSlots: false,
 };
 const CONTENT = window.AMETHYST_HOMEPAGE_TEMPLATE_DATA || {};

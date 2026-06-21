@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260620-header-tune')
+        expect(script, file).toContain('v=20260620-ticker-casual')
       }
     }
   })
@@ -118,7 +118,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
   })
 
-  it('keeps customer-facing tickers at a faster readable ticker speed', () => {
+  it('keeps customer-facing tickers at one casual shared speed', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
       'utf8',
@@ -144,19 +144,18 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(css).toContain('animation: hp-ticker-scroll 68s linear infinite;')
-    expect(css).toContain('animation-duration: calc(68s / var(--ticker-speed, 1));')
-    expect(css).toContain('animation-duration: calc(26s / var(--ticker-speed, 1));')
-    expect(componentsCss).toContain('animation: tickerScroll 16s linear infinite;')
-    expect(componentsCss).toContain('animation-duration: 18s;')
-    expect(shell).toContain('amethyst-scroll 16s linear infinite')
-    expect(shell).toContain('amethyst-scroll 18s linear infinite reverse')
+    expect(css).toContain('animation: hp-ticker-scroll 72s linear infinite;')
+    expect(css).toContain('animation-duration: calc(72s / var(--ticker-speed, 1));')
+    expect(componentsCss).toContain('animation: tickerScroll 72s linear infinite;')
+    expect(componentsCss).toContain('animation-duration: 72s;')
+    expect(shell).toContain('amethyst-scroll 72s linear infinite')
+    expect(shell).toContain('amethyst-scroll 72s linear infinite reverse')
 
     for (const jsx of [homepage, trade, join]) {
-      expect(jsx).toContain('tickerSpeed: 2.5')
+      expect(jsx).toContain('tickerSpeed: 1')
     }
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
-      expect(preset.values.tickerSpeed).toBe(2.5)
+      expect(preset.values.tickerSpeed).toBe(1)
     }
   })
 
