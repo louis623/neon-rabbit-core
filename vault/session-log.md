@@ -4,6 +4,31 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Content-Independent Ticker Speed Rule
+
+**What changed:**
+- Louis clarified the product rule: ticker speed must be dynamic and visually consistent regardless of whether a customer Trade Board has 2 pieces or 40 pieces.
+- The static public Amethyst homepage, Trade Board, and Join templates now render duplicate ticker loop segments and measure the actual distance between segment starts in the browser.
+- Animation duration is computed from rendered distance:
+  - Announcements target `46px/s`.
+  - Trade Board target `55.2px/s`, roughly 20% faster.
+- The shared React `AmethystSiteShell` now uses the same browser-measured ticker rule for future shell-rendered customer sites.
+- Static Amethyst public assets were cache-busted to `20260621-ticker-pps`.
+
+**Verification:**
+- Regression updated so hardcoded duration-only ticker behavior cannot silently return.
+- Local focused tests passed: Amethyst homepage/static asset/public slug/join/trade template suites.
+- `npm run qa:amethyst` passed against local `localhost:3001`.
+- `npm run build` passed locally and in Vercel.
+- Stable demo alias now points to `https://sparkle-suite-o3oczruc9-louis-2849s-projects.vercel.app`.
+- Stable live measurement on `https://sparkle-suite-demo.vercel.app`:
+  - BlingKitchen: announcements `46px/s`, Trade Board `55.2px/s`.
+  - Britt With Bling and Mile High Fizz: announcements `46px/s`; their Trade Board ticker rows currently render the empty-listing message, so there is no scrolling Trade Board content to measure.
+  - Synthetic 2-piece Trade Board: `55.2px/s`.
+  - Synthetic 40-piece Trade Board: `55.2px/s`.
+
+---
+
 ## June 21, 2026 - Trade Board Ticker Rendered-Speed Fix
 
 **What happened:**

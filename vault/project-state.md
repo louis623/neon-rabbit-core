@@ -18,10 +18,10 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed checkpoint:** `b066329 fix: stabilize trade board ticker speed`
-- **Latest local checkpoints:** docs state update only after the June 21 rendered ticker-speed deployment; code is pushed through `b066329`.
+- **Latest pushed checkpoint:** `eb19681 fix: make ticker speed content independent`
+- **Latest local checkpoints:** docs state update only after the June 21 content-independent ticker deployment; code is pushed through `eb19681`.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-3p0hczqvy-louis-2849s-projects.vercel.app`
+- **Current stable demo target:** `https://sparkle-suite-o3oczruc9-louis-2849s-projects.vercel.app`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
