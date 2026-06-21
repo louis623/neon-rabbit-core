@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Sparkle Lab Model Synthesis Harness
+
+**What changed:**
+- Added a model synthesis harness to the Sparkle Lab runner, gated behind `SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED=true`.
+- Synthesis uses the existing `lab_synthesis` Nic-Nac model policy only when explicitly enabled and only after model-call, premium-call, and cost caps allow it.
+- When enabled, the Lab can create a `report` artifact in `sparkle_lab_artifacts`, record model/premium call counts, and estimate model cost from returned usage.
+- If synthesis is disabled, the current manual and weekly Lab runners remain deterministic and make no model calls.
+- Added the synthesis flag to `.env.example`.
+
+**Verification:**
+- Focused Lab tests passed: 6 files, 21 tests.
+- Broad Nic-Nac/Lab/Finder-claim sweep passed: 114 files passed, 1 skipped; 760 tests passed, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview deployment for commit `0089964` completed after the local CLI deploy timed out; latest ready preview was `https://sparkle-suite-ozj1u1i2d-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points to `https://sparkle-suite-ozj1u1i2d-louis-2849s-projects.vercel.app` / deployment `dpl_Hq9gc8iG99ZrX9iL2zdUH68fvG4H`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/api/internal/sparkle-lab/weekly` returned `401` without auth and with wrong auth, and `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`.
+
+**Still open:**
+- `SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED` is not enabled in Vercel, so no model-powered Lab spend is active.
+- Finder integration, Finder claim UI/storage, and Suite rep-facing Secret Rep ID copy/UI remain untouched pending Louis approval.
+
 ## June 21, 2026 - Sparkle Lab Weekly Guardrail Loop
 
 **What changed:**
