@@ -8,9 +8,39 @@ export const SUITE_WORK_REQUIRED_MESSAGE =
 export const LAB_PRODUCTION_MUTATION_BLOCKED_MESSAGE =
   'Sparkle Lab can study, replay, and recommend, but it cannot change production Sparkle Suite data.'
 
+export const SHARED_MEMORY_UNAVAILABLE_MESSAGE =
+  'I can only use shared Nic-Nac memory after you are logged in with a linked Sparkle account.'
+
 export type NicNacToolBlockReason =
   | 'suite_workspace_required'
+  | 'shared_memory_unavailable'
   | 'lab_cannot_mutate_production'
+
+export type NicNacToolIntentCapabilityRequirement =
+  | 'shared_memory'
+  | 'suite_workspace'
+
+export interface NicNacToolIntentCapability {
+  requirement: NicNacToolIntentCapabilityRequirement
+}
+
+export const NIC_NAC_TOOL_INTENT_CAPABILITIES: Record<
+  NicNacToolIntent,
+  NicNacToolIntentCapability
+> = {
+  memory: { requirement: 'shared_memory' },
+  show_memory: { requirement: 'suite_workspace' },
+  trade_board: { requirement: 'suite_workspace' },
+  trade_requests: { requirement: 'suite_workspace' },
+  fulfillment: { requirement: 'suite_workspace' },
+  catalog: { requirement: 'suite_workspace' },
+  calendar: { requirement: 'suite_workspace' },
+  site: { requirement: 'suite_workspace' },
+  notification: { requirement: 'suite_workspace' },
+  audience: { requirement: 'suite_workspace' },
+  resources: { requirement: 'suite_workspace' },
+  required_setup: { requirement: 'suite_workspace' },
+}
 
 export interface NicNacBlockedToolIntent {
   intent: NicNacToolIntent
@@ -57,12 +87,28 @@ export function filterNicNacToolIntentsForContext(
 
 function getBlockForIntent(
   context: NicNacProductContext,
-  _intent: NicNacToolIntent,
+  intent: NicNacToolIntent,
 ): { reason: NicNacToolBlockReason; message: string } | null {
+  const capability = NIC_NAC_TOOL_INTENT_CAPABILITIES[intent]
+
   if (context.product === 'sparkle_lab') {
     return {
       reason: 'lab_cannot_mutate_production',
       message: LAB_PRODUCTION_MUTATION_BLOCKED_MESSAGE,
+    }
+  }
+
+  if (capability.requirement === 'shared_memory') {
+    if (
+      context.permissions.canReadSharedMemory ||
+      context.permissions.canWriteSharedMemory
+    ) {
+      return null
+    }
+
+    return {
+      reason: 'shared_memory_unavailable',
+      message: SHARED_MEMORY_UNAVAILABLE_MESSAGE,
     }
   }
 

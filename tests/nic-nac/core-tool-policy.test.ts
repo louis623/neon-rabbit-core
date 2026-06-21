@@ -6,11 +6,38 @@ import {
   createSuiteRepWorkspaceProductContext,
 } from '@/lib/nic-nac/core/product-context'
 import {
+  NIC_NAC_TOOL_INTENT_CAPABILITIES,
   SUITE_WORK_REQUIRED_MESSAGE,
   filterNicNacToolIntentsForContext,
 } from '@/lib/nic-nac/core/tool-policy'
 
 describe('Nic-Nac core tool policy', () => {
+  it('assigns every routed tool intent to an explicit capability requirement', () => {
+    expect(Object.keys(NIC_NAC_TOOL_INTENT_CAPABILITIES).sort()).toEqual([
+      'audience',
+      'calendar',
+      'catalog',
+      'fulfillment',
+      'memory',
+      'notification',
+      'required_setup',
+      'resources',
+      'show_memory',
+      'site',
+      'trade_board',
+      'trade_requests',
+    ])
+    expect(NIC_NAC_TOOL_INTENT_CAPABILITIES.memory.requirement).toBe(
+      'shared_memory',
+    )
+    expect(NIC_NAC_TOOL_INTENT_CAPABILITIES.trade_board.requirement).toBe(
+      'suite_workspace',
+    )
+    expect(NIC_NAC_TOOL_INTENT_CAPABILITIES.resources.requirement).toBe(
+      'suite_workspace',
+    )
+  })
+
   it('allows Sparkle Suite workspace reps to use Suite workspace tool intents', () => {
     const result = filterNicNacToolIntentsForContext(
       createSuiteRepWorkspaceProductContext({ repId: 'suite-rep-1' }),
@@ -50,6 +77,26 @@ describe('Nic-Nac core tool policy', () => {
     ])
     expect(result.blockedToolNames).toContain('add_listing')
     expect(result.blockedToolNames).toContain('add_show')
+  })
+
+  it('keeps linked Finder memory available while blocking Suite workspace mutations', () => {
+    const result = filterNicNacToolIntentsForContext(
+      createSparkleFinderProductContext({
+        finderUserId: 'finder-user-1',
+        linkedSuiteRepId: 'suite-rep-1',
+        accountTier: 'silver',
+      }),
+      ['memory', 'trade_board'],
+    )
+
+    expect(result.allowedIntents).toEqual(['memory'])
+    expect(result.blockedIntents).toEqual([
+      {
+        intent: 'trade_board',
+        reason: 'suite_workspace_required',
+        message: SUITE_WORK_REQUIRED_MESSAGE,
+      },
+    ])
   })
 
   it('blocks rep workspace mutations from customer-site conversations', () => {
