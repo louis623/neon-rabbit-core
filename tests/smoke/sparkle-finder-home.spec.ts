@@ -80,6 +80,44 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(photoSetupCard.getByRole("link")).toHaveCount(0);
   });
 
+  for (const viewport of viewports) {
+    test(`${viewport.name} authenticated homepage renders unified Nic-Nac Home and Bling Vault`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.context().clearCookies();
+      await page.context().addCookies([
+        {
+          name: "sparkle_finder_auth_mode",
+          value: "silver",
+          url: baseUrl,
+        },
+      ]);
+
+      await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+
+      await expect(page.locator('[data-smoke="hero"]')).toBeVisible();
+      await expect(page.locator('[data-smoke="finder-command-center"]')).toBeVisible();
+      await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
+      await expect(page.getByText("Ask Nic-Nac or tap a simple action.")).toBeVisible();
+      await expect(page.getByText("Hero Piece")).toBeVisible();
+      await expect(page.getByText("Bling Vault Mosaic")).toBeVisible();
+      await expect(page.getByText("My Collection Preview")).toHaveCount(0);
+
+      const vaultTiles = page.locator('[data-smoke="bling-vault-tile"]');
+      await expect(vaultTiles.first()).toBeVisible();
+      expect(await vaultTiles.count()).toBeLessThanOrEqual(8);
+
+      const vault = page.locator('[data-smoke="homepage-bling-vault"]');
+      await expect(vault.locator('[data-smoke="library-image-frame"]').first()).toBeVisible();
+      expect(await vault.locator('[data-smoke="library-image-frame"]').count()).toBeGreaterThan(1);
+
+      await expectNoOverlap(page.locator('[data-smoke="hero"]'), page.locator('[data-smoke="finder-command-center"]'), "hero", "command center");
+      await expectNoOverlap(page.locator('[data-smoke="finder-command-center"]'), page.locator('[data-smoke="homepage-bling-vault"]'), "command center", "Bling Vault");
+
+      await page.locator(".sparkle-finder-site-footer").scrollIntoViewIfNeeded();
+      await expect(page.locator(".sparkle-finder-site-footer")).toBeVisible();
+    });
+  }
+
   test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
     await page.goto(`${baseUrl}/auth/sign-up`, { waitUntil: "domcontentloaded" });
 
@@ -102,7 +140,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
-    await expect(page.getByText("Your Collection")).toBeVisible();
+    await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
 
     await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Sparkle Finder account", exact: true })).toBeVisible();
@@ -155,7 +193,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Your Collection")).toBeVisible();
+    await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();
 
@@ -178,14 +216,14 @@ test.describe("Sparkle Finder homepage smoke", () => {
     ]);
     await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Your Collection")).toBeVisible();
+    await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
 
     await page.goto(`${baseUrl}/library`, { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-smoke="library-image-frame"] img').first()).toBeVisible();
+    await expect(page.locator('[data-smoke="library-image-frame"]').first()).toBeVisible();
 
     await page.goto(`${baseUrl}/library/jewel-rainbow-crown-ring`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Rainbow Crown Ring").first()).toBeVisible();
-    await expect(page.locator('[data-smoke="library-image-frame"] img').first()).toBeVisible();
+    await expect(page.locator('[data-smoke="library-image-frame"]').first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     await expect(page.getByText("Exact item", { exact: true }).first()).toBeVisible();

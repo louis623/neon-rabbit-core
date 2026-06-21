@@ -1,21 +1,33 @@
+"use client";
+
+import { useState } from "react";
 import { Gem } from "lucide-react";
 import type { JewelryType } from "@/lib/sparkle-finder/types";
 
 type JewelryImageFrameProps = {
+  fetchPriority?: "auto" | "high" | "low";
   imageUrl: string;
+  loading?: "eager" | "lazy";
   name: string;
   jewelryType: JewelryType;
+  sizes?: string;
   variant?: "card" | "detail";
 };
 
 export function JewelryImageFrame({
+  fetchPriority,
   imageUrl,
+  loading,
   name,
   jewelryType,
+  sizes,
   variant = "card",
 }: JewelryImageFrameProps) {
   const iconSize = variant === "detail" ? "size-20" : "size-12";
   const isFullPhoto = variant === "detail";
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasKnownMissingFixtureImage = imageUrl.startsWith("/fixtures/jewelry/");
+  const shouldRenderImage = Boolean(imageUrl && !imageFailed && !hasKnownMissingFixtureImage);
 
   return (
     <div
@@ -23,11 +35,15 @@ export function JewelryImageFrame({
       data-photo-fit={isFullPhoto ? "full-photo" : "smart-crop"}
       data-smoke="library-image-frame"
     >
-      {imageUrl ? (
+      {shouldRenderImage ? (
         <img
           alt={name}
           className={`absolute inset-0 h-full w-full ${isFullPhoto ? "object-contain" : "object-cover"}`}
-          loading={variant === "card" ? "lazy" : "eager"}
+          decoding="async"
+          fetchPriority={fetchPriority}
+          loading={loading ?? (variant === "card" ? "lazy" : "eager")}
+          onError={() => setImageFailed(true)}
+          sizes={sizes}
           src={imageUrl}
           style={{
             objectPosition: isFullPhoto

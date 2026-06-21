@@ -1,5 +1,6 @@
 import { HeroAndAgenda } from "@/components/home/HeroAndAgenda";
-import { SilverCollectorSpace, type SilverCollectionPreviewItem } from "@/components/silver/SilverCollectorSpace";
+import { FinderCommandCenter } from "@/components/home/FinderCommandCenter";
+import { HomepageBlingVault } from "@/components/home/HomepageBlingVault";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
@@ -10,6 +11,7 @@ import {
   getSilverProfileByCustomerId,
 } from "@/lib/sparkle-finder/service";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
+import { buildHomepageBlingVaultModel, type HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
 import type { SilverProfile } from "@/lib/sparkle-finder/types";
 
 type AuthenticatedHomePageProps = {
@@ -20,23 +22,26 @@ type AuthenticatedHomePageProps = {
 
 export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePageProps) {
   const customer = accountState.customer;
-  const collectionItems = getCollectionItemsByCustomerId(customer.id).flatMap((item): SilverCollectionPreviewItem[] => {
+  const collectionItems = getCollectionItemsByCustomerId(customer.id).flatMap((item): HomepageBlingVaultItem[] => {
     const jewelryItem = getJewelryItemById(item.jewelryItemId);
 
     return jewelryItem ? [{ ...item, jewelryItem }] : [];
   });
+  const profile = accountState.silverProfile ?? getSilverProfileByCustomerId(customer.id);
+  const blingVaultModel = buildHomepageBlingVaultModel(collectionItems);
 
   return (
     <>
       <SparkleFinderNav accountState={accountState} />
       <main className="overflow-hidden bg-[var(--sparkle-warm-bg)]" data-smoke="authenticated-home">
         <HeroAndAgenda liveShows={getLiveShows()} reps={getReps()} />
-        <SilverCollectorSpace
+        <FinderCommandCenter
           accountState={accountState}
-          collectionItems={collectionItems}
           customer={customer}
-          profile={accountState.silverProfile ?? getSilverProfileByCustomerId(customer.id)}
+          model={blingVaultModel}
+          profile={profile}
         />
+        <HomepageBlingVault model={blingVaultModel} />
       </main>
       <SparkleFinderFooter />
     </>

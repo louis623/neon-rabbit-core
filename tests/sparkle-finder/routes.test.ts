@@ -17,6 +17,7 @@ import PhotoSetupPage, { renderPhotoSetupPageContent } from "../../app/photo-set
 import { renderSignInPageContent } from "../../app/auth/sign-in/page";
 import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { FavoriteRepsPanel } from "../../components/favorites/FavoriteRepsPanel";
+import { JewelryImageFrame } from "../../components/library/JewelryImageFrame";
 import { PieceImage } from "../../components/showcase/RarestReveals";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
@@ -301,25 +302,37 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain('href="/account"');
     expect(markup).toContain(">Silver<");
     expect(markup).toContain("Today across Sparkle Suite");
-    expect(markup).toContain("Your Collection");
+    expect(markup).toContain('data-smoke="finder-command-center"');
+    expect(markup).toContain('data-smoke="homepage-bling-vault"');
+    expect(markup).toContain("Ask Nic-Nac or tap a simple action.");
+    expect(markup).toContain("Bling Vault");
+    expect(markup).toContain("Hero Piece");
+    expect(markup).toContain("Wishlist");
+    const vaultMarkup = markup.slice(markup.indexOf('data-smoke="homepage-bling-vault"'));
+    expect(vaultMarkup.indexOf("Hero Piece")).toBeLessThan(vaultMarkup.indexOf("Wishlist"));
+    expect(vaultMarkup.indexOf("Wishlist")).toBeLessThan(vaultMarkup.indexOf("Bling Vault Mosaic"));
+    expect((markup.match(/data-smoke="bling-vault-tile"/g) ?? []).length).toBeLessThanOrEqual(8);
     expect(markup).toContain("Photo Setup Guide");
+    expect(markup).not.toContain("My Collection Preview");
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
     expect(markup).not.toContain(">Sign in<");
   });
 
-  it("renders authenticated home as a filled collector profile panel without a dead-space shell", () => {
+  it("renders authenticated home as a unified Nic-Nac command center and Bling Vault", () => {
     const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
 
-    expect(markup).toContain('data-smoke="collector-profile-panel"');
+    expect(markup).toContain('data-smoke="finder-command-center"');
+    expect(markup).toContain('data-smoke="homepage-bling-vault"');
     expect(markup).toContain("Collector profile");
     expect(markup).toContain("Your Finder Space");
     expect(markup).not.toContain("Trial access");
     expect(markup).toContain("Profile ready");
-    expect(markup).toContain("Collection next steps");
+    expect(markup).not.toContain("Collection next steps");
     expect(markup).toContain("Open Showcase Studio");
     expect(markup).toContain("Find a library piece");
-    expect(markup).not.toContain("Silver command center");
+    expect(markup).toContain("View Bling Vault");
+    expect(markup).toContain("Bling Vault Mosaic");
     expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
   });
 
@@ -350,6 +363,29 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain(">https://www.tiktok.com/@louis_sparkle<");
     expect(markup).toContain("data:image/jpeg;base64,abc123");
     expect(markup).not.toContain("Sparkle Mama");
+  });
+
+  it("lets jewelry image frames opt into hero eager loading while keeping cards lazy", () => {
+    const heroMarkup = renderToStaticMarkup(
+      createElement(JewelryImageFrame, {
+        fetchPriority: "high",
+        imageUrl: "https://cdn.example.test/hero-ring.jpg",
+        jewelryType: "ring",
+        loading: "eager",
+        name: "Hero Ring",
+      }),
+    );
+    const cardMarkup = renderToStaticMarkup(
+      createElement(JewelryImageFrame, {
+        imageUrl: "https://cdn.example.test/card-ring.jpg",
+        jewelryType: "ring",
+        name: "Card Ring",
+      }),
+    );
+
+    expect(heroMarkup).toContain('loading="eager"');
+    expect(heroMarkup).toContain('fetchPriority="high"');
+    expect(cardMarkup).toContain('loading="lazy"');
   });
 
   it("renders public landing independence and avoids live/demo jewelry data", () => {
