@@ -97,21 +97,24 @@ drop policy if exists "sparkle_lab_runs_service_role_only" on public.sparkle_lab
 create policy "sparkle_lab_runs_service_role_only"
   on public.sparkle_lab_runs
   for all
-  using (auth.role() = 'service_role')
-  with check (auth.role() = 'service_role');
+  to service_role
+  using (true)
+  with check (true);
 
 drop policy if exists "sparkle_lab_findings_service_role_only" on public.sparkle_lab_findings;
 create policy "sparkle_lab_findings_service_role_only"
   on public.sparkle_lab_findings
   for all
-  using (auth.role() = 'service_role')
-  with check (auth.role() = 'service_role');
+  to service_role
+  using (true)
+  with check (true);
 
 drop policy if exists "sparkle_lab_artifacts_service_role_only" on public.sparkle_lab_artifacts;
 create policy "sparkle_lab_artifacts_service_role_only"
   on public.sparkle_lab_artifacts
   for all
-  using (auth.role() = 'service_role')
-  with check (auth.role() = 'service_role');
+  to service_role
+  using (true)
+  with check (true);
 
 notify pgrst, 'reload schema';

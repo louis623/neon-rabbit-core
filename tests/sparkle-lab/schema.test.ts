@@ -59,6 +59,7 @@ describe('Sparkle Lab schema migration', () => {
     expect(sql).toContain('alter table public.sparkle_lab_runs enable row level security')
     expect(sql).toContain('alter table public.sparkle_lab_findings enable row level security')
     expect(sql).toContain('alter table public.sparkle_lab_artifacts enable row level security')
-    expect(sql).toContain("auth.role() = 'service_role'")
+    expect(sql).toContain('to service_role')
+    expect(sql).not.toContain('auth.role()')
   })
 })
