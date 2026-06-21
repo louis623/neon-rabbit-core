@@ -1,10 +1,64 @@
+'use client'
+
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 
 import type { AmethystSiteContent, AmethystTier } from '@/lib/amethyst/site-content'
 
-function repeatItems<T>(items: T[], copies = 3): T[] {
-  return Array.from({ length: copies }, () => items).flat()
+const ANNOUNCEMENT_TICKER_SPEED_PPS = 46
+const TRADE_TICKER_SPEED_PPS = 55.2
+
+function buildTickerLoopItems<T>(items: T[], minimumSegmentItems: number): T[] {
+  if (!Array.isArray(items) || items.length === 0) return []
+  const copies = Math.max(1, Math.ceil(minimumSegmentItems / items.length))
+  const segmentItems = Array.from({ length: copies }, () => items).flat()
+  return [...segmentItems, ...segmentItems]
+}
+
+function syncTickerTrackSpeed() {
+  document.querySelectorAll<HTMLElement>('[data-ticker-pps]').forEach((track) => {
+    const first = track.querySelector<HTMLElement>("[data-ticker-segment-start='true']")
+    const repeat = track.querySelector<HTMLElement>("[data-ticker-segment-repeat-start='true']")
+    const pixelsPerSecond = Number(track.dataset.tickerPps) || ANNOUNCEMENT_TICKER_SPEED_PPS
+
+    if (!first || !repeat || pixelsPerSecond <= 0) return
+
+    const distance = repeat.offsetLeft - first.offsetLeft
+    if (!Number.isFinite(distance) || distance <= 0) return
+
+    track.style.setProperty('--amethyst-ticker-scroll-offset', `${distance * -1}px`)
+    track.style.setProperty(
+      '--amethyst-ticker-dynamic-duration',
+      `${Math.max(12, distance / pixelsPerSecond)}s`,
+    )
+  })
+}
+
+function useDynamicTickerMotion() {
+  useEffect(() => {
+    let frame = 0
+    const scheduleSync = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(syncTickerTrackSpeed)
+    }
+
+    scheduleSync()
+    window.addEventListener('resize', scheduleSync)
+    document.fonts?.ready?.then(scheduleSync).catch(() => {})
+
+    const observer = 'ResizeObserver' in window ? new ResizeObserver(scheduleSync) : null
+    document.querySelectorAll<HTMLElement>('[data-ticker-pps]').forEach((track) => {
+      observer?.observe(track)
+      Array.from(track.children).forEach((child) => observer?.observe(child))
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', scheduleSync)
+      observer?.disconnect()
+    }
+  }, [])
 }
 
 function tierChipClass(tier: AmethystTier) {
@@ -103,10 +157,11 @@ function HeaderRow({ content }: { content: AmethystSiteContent }) {
 }
 
 function AmethystTicker({ content }: { content: AmethystSiteContent }) {
-  const announcementItems = repeatItems(content.announcementItems)
-  const tradeItems = repeatItems(content.tradeBoardListings)
-  const announcementTickerAnimation = 'amethyst-scroll 72s linear infinite'
-  const tradeTickerAnimation = 'amethyst-scroll 60s linear infinite reverse'
+  useDynamicTickerMotion()
+  const announcementItems = buildTickerLoopItems(content.announcementItems, 6)
+  const announcementSegmentLength = announcementItems.length / 2
+  const tradeItems = buildTickerLoopItems(content.tradeBoardListings, 15)
+  const tradeSegmentLength = tradeItems.length / 2
 
   return (
     <div className="border-b border-[var(--amethyst-border)] bg-white">
@@ -116,12 +171,20 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
         </div>
         <div
           className="amethyst-ticker-track pl-[170px]"
-          style={{ animation: announcementTickerAnimation }}
+          data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS}
+          style={{
+            animation:
+              'amethyst-scroll var(--amethyst-ticker-dynamic-duration, 72s) linear infinite',
+          }}
         >
           {announcementItems.map((item, index) => (
             <span
               key={`${item}-${index}`}
               className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)]"
+              data-ticker-segment-repeat-start={
+                index === announcementSegmentLength ? 'true' : undefined
+              }
+              data-ticker-segment-start={index === 0 ? 'true' : undefined}
             >
               <span className="h-[5px] w-[5px] rounded-full bg-[var(--amethyst-primary)]" />
               {item}
@@ -136,11 +199,17 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
         </div>
         <div
           className="amethyst-ticker-track pl-[170px]"
-          style={{ animation: tradeTickerAnimation }}
+          data-ticker-pps={TRADE_TICKER_SPEED_PPS}
+          style={{
+            animation:
+              'amethyst-scroll var(--amethyst-ticker-dynamic-duration, 60s) linear infinite reverse',
+          }}
         >
           {tradeItems.map((listing, index) => (
             <a
               className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"
+              data-ticker-segment-repeat-start={index === tradeSegmentLength ? 'true' : undefined}
+              data-ticker-segment-start={index === 0 ? 'true' : undefined}
               href={listing.href ?? '#events'}
               key={`${listing.id}-${index}`}
             >

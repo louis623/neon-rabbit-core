@@ -5292,6 +5292,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   display: flex;
   width: max-content;
   gap: 1.25rem;
+  animation-duration: calc(var(--amethyst-ticker-dynamic-duration, 72s) / var(--ticker-speed, 1));
 }
 
 .amethyst-hero-media {
@@ -5326,7 +5327,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   }
 
   100% {
-    transform: translateX(-50%);
+    transform: translateX(var(--amethyst-ticker-scroll-offset, -50%));
   }
 }
 

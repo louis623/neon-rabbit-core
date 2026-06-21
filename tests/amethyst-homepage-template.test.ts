@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260621-trade-ticker-distance')
+        expect(script, file).toContain('v=20260621-ticker-pps')
       }
     }
   })
@@ -118,7 +118,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
   })
 
-  it('keeps customer-facing Trade Board tickers about twenty percent faster than announcements', () => {
+  it('keeps customer-facing ticker speeds content-length independent', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
       'utf8',
@@ -144,19 +144,20 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(css).toContain('--hp-ticker-duration: 72s;')
-    expect(css).toContain('--hp-trade-ticker-duration: 60s;')
-    expect(css).toContain('animation: hp-ticker-scroll var(--hp-ticker-duration, 72s) linear infinite;')
-    expect(css).toContain('animation-duration: calc(var(--hp-ticker-duration, 72s) / var(--ticker-speed, 1));')
-    expect(css).toContain('animation-duration: calc(var(--hp-trade-ticker-duration, 60s) / var(--ticker-speed, 1));')
-    expect(componentsCss).toContain('animation: tickerScroll 72s linear infinite;')
-    expect(componentsCss).toContain('--ticker-duration: 72s;')
-    expect(componentsCss).toContain('--trade-ticker-duration: 60s;')
-    expect(componentsCss).toContain('animation-duration: var(--ticker-duration, 72s);')
-    expect(componentsCss).toContain('animation-duration: var(--trade-ticker-duration, 60s);')
-    expect(shell).toContain('amethyst-scroll 72s linear infinite')
-    expect(shell).toContain('amethyst-scroll 60s linear infinite reverse')
-    expect(shell).not.toContain('amethyst-scroll 72s linear infinite reverse')
+    expect(css).toContain('--hp-ticker-speed-pps: 46;')
+    expect(css).toContain('--hp-trade-ticker-speed-pps: 55.2;')
+    expect(css).toContain('animation: hp-ticker-scroll var(--hp-ticker-dynamic-duration, var(--hp-ticker-duration, 72s)) linear infinite;')
+    expect(css).toContain('animation-duration: calc(var(--hp-ticker-dynamic-duration, var(--hp-ticker-duration, 72s)) / var(--ticker-speed, 1));')
+    expect(css).toContain('animation-duration: calc(var(--hp-ticker-dynamic-duration, var(--hp-trade-ticker-duration, 60s)) / var(--ticker-speed, 1));')
+    expect(css).toContain('transform: translateX(var(--hp-ticker-scroll-offset, -50%));')
+    expect(componentsCss).toContain('--ticker-speed-pps: 46;')
+    expect(componentsCss).toContain('--trade-ticker-speed-pps: 55.2;')
+    expect(shell).toContain("'use client'")
+    expect(shell).toContain('data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS}')
+    expect(shell).toContain('data-ticker-pps={TRADE_TICKER_SPEED_PPS}')
+    expect(shell).toContain('useDynamicTickerMotion()')
+    expect(shell).not.toContain('amethyst-scroll 72s linear infinite')
+    expect(shell).not.toContain('amethyst-scroll 60s linear infinite reverse')
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('tickerSpeed: 1')
@@ -166,7 +167,7 @@ describe('Amethyst homepage template data wiring', () => {
     }
   })
 
-  it('pads short Trade Board ticker rows so customer sites do not crawl visually', () => {
+  it('builds duplicate ticker loops for measured pixel-speed animation', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -180,12 +181,18 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(homepage).toContain('repeatTickerItems(trades, 30)')
-    expect(trade).toContain('repeatTickerItems(trades, 30)')
-    expect(join).toContain('repeatTickerItems(TICKER_TRADES, 30)')
+    expect(homepage).toContain('buildTickerLoopItems(trades, 15)')
+    expect(trade).toContain('buildTickerLoopItems(trades, 15)')
+    expect(join).toContain('buildTickerLoopItems(TICKER_TRADES, 15)')
 
     for (const jsx of [homepage, trade, join]) {
-      expect(jsx).toContain('function repeatTickerItems(items, minimumItems = 30)')
+      expect(jsx).toContain('const ANNOUNCEMENT_TICKER_SPEED_PPS = 46')
+      expect(jsx).toContain('const TRADE_TICKER_SPEED_PPS = 55.2')
+      expect(jsx).toContain('function buildTickerLoopItems(items, minimumSegmentItems)')
+      expect(jsx).toContain('function useDynamicTickerMotion()')
+      expect(jsx).toContain('data-ticker-segment-start')
+      expect(jsx).toContain('data-ticker-segment-repeat-start')
+      expect(jsx).toContain('data-ticker-pps={TRADE_TICKER_SPEED_PPS}')
       expect(jsx).not.toContain('[...trades, ...trades, ...trades]')
       expect(jsx).not.toContain('[...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES]')
     }

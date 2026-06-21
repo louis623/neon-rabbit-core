@@ -302,6 +302,8 @@
 .ticker {
   --ticker-duration: 72s;
   --trade-ticker-duration: 60s;
+  --ticker-speed-pps: 46;
+  --trade-ticker-speed-pps: 55.2;
   background: var(--fg);
   color: var(--bg);
   padding: 14px 0;
@@ -356,8 +358,8 @@
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .ticker-row:last-child { border-bottom: 0; }
-.ticker-row .ticker-track { animation-duration: var(--ticker-duration, 72s); }
-.ticker-row.reverse .ticker-track { animation-direction: reverse; animation-duration: var(--trade-ticker-duration, 60s); }
+.ticker-row .ticker-track { animation-duration: var(--ticker-dynamic-duration, var(--ticker-duration, 72s)); }
+.ticker-row.reverse .ticker-track { animation-direction: reverse; animation-duration: var(--ticker-dynamic-duration, var(--trade-ticker-duration, 60s)); }
 
 /* T4: vertical rotator */
 .ticker-rotator {

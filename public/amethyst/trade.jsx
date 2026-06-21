@@ -680,13 +680,59 @@ function Header({ businessName }) {
   );
 }
 
-function repeatTickerItems(items, minimumItems = 30) {
+const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
+const TRADE_TICKER_SPEED_PPS = 55.2;
+
+function buildTickerLoopItems(items, minimumSegmentItems) {
   if (!Array.isArray(items) || items.length === 0) return [];
-  const copies = Math.max(3, Math.ceil(minimumItems / items.length));
-  return Array.from({ length: copies }, () => items).flat();
+  const copies = Math.max(1, Math.ceil(minimumSegmentItems / items.length));
+  const segmentItems = Array.from({ length: copies }, () => items).flat();
+  return [...segmentItems, ...segmentItems];
+}
+
+function syncDynamicTickerTracks() {
+  document.querySelectorAll("[data-ticker-pps]").forEach((track) => {
+    const first = track.querySelector("[data-ticker-segment-start='true']");
+    const repeat = track.querySelector("[data-ticker-segment-repeat-start='true']");
+    const pixelsPerSecond = Number(track.getAttribute("data-ticker-pps")) || ANNOUNCEMENT_TICKER_SPEED_PPS;
+    if (!first || !repeat || pixelsPerSecond <= 0) return;
+
+    const distance = repeat.offsetLeft - first.offsetLeft;
+    if (!Number.isFinite(distance) || distance <= 0) return;
+
+    track.style.setProperty("--hp-ticker-scroll-offset", `${distance * -1}px`);
+    track.style.setProperty("--hp-ticker-dynamic-duration", `${Math.max(12, distance / pixelsPerSecond)}s`);
+  });
+}
+
+function useDynamicTickerMotion() {
+  useEffect(() => {
+    let frame = 0;
+    const scheduleSync = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(syncDynamicTickerTracks);
+    };
+
+    scheduleSync();
+    window.addEventListener("resize", scheduleSync);
+    document.fonts?.ready?.then(scheduleSync).catch(() => {});
+
+    const observer = "ResizeObserver" in window ? new ResizeObserver(scheduleSync) : null;
+    document.querySelectorAll("[data-ticker-pps]").forEach((track) => {
+      observer?.observe(track);
+      Array.from(track.children).forEach((child) => observer?.observe(child));
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", scheduleSync);
+      observer?.disconnect();
+    };
+  }, []);
 }
 
 function Ticker({ topText }) {
+  useDynamicTickerMotion();
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
   const trades = RUNTIME_CONTEXT.targeted ? [] : [
     { name: "OG Halo Bloom Ring", meta: "Ring / OG", tier: "" },
@@ -694,7 +740,10 @@ function Ticker({ topText }) {
     { name: "North Star Pendant", meta: "Pendant / Spring Luxe", tier: "unicorn" },
     { name: "Aurora Stack", meta: "Stack / Stacks", tier: "diamond" },
   ];
-  const tickerTrades = repeatTickerItems(trades, 30);
+  const announcementTickerItems = buildTickerLoopItems(items, 6);
+  const announcementSegmentLength = announcementTickerItems.length / 2;
+  const tickerTrades = buildTickerLoopItems(trades, 15);
+  const tradeSegmentLength = tickerTrades.length / 2;
 
   return (
     <div className="hp-ticker" aria-label="Customer site updates">
@@ -704,17 +753,28 @@ function Ticker({ topText }) {
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
-        <div className="hp-ticker-track" aria-hidden="true">
-          {[...items, ...items, ...items].map((item, index) => (
-            <span key={index} className="hp-ticker-item"><span className="dot" />{item}</span>
+        <div className="hp-ticker-track" data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS} aria-hidden="true">
+          {announcementTickerItems.map((item, index) => (
+            <span
+              key={index}
+              className="hp-ticker-item"
+              data-ticker-segment-start={index === 0 ? "true" : undefined}
+              data-ticker-segment-repeat-start={index === announcementSegmentLength ? "true" : undefined}
+            ><span className="dot" />{item}</span>
           ))}
         </div>
       </div>
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
-        <div className="hp-ticker-track" aria-hidden="true">
+        <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
           {tickerTrades.length > 0 ? tickerTrades.map((trade, index) => (
-            <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
+            <a
+              key={index}
+              {...linkProps(TRADE_BOARD_HREF)}
+              className="hp-ticker-trade"
+              data-ticker-segment-start={index === 0 ? "true" : undefined}
+              data-ticker-segment-repeat-start={index === tradeSegmentLength ? "true" : undefined}
+            >
               <span className={`pip ${trade.tier}`} />
               {trade.name} - {trade.meta}
             </a>
