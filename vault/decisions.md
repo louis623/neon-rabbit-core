@@ -6,11 +6,14 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 21, 2026
 
+**Customer-site ticker contract is row-specific**
+The customer-facing announcement ticker should keep the approved casual `72s` pace. The Trade Board ticker row beneath it should move about 20% faster, currently `60s`. This must live in the shared customer-site template and React shell so current migrated sites and all future Sparkle Suite customer sites inherit the same behavior.
+
 **Migrated public sites use the exact shared Sparkle Suite header code**
 When a migrated public site needs the Sparkle Suite header, do not create a similar bespoke header. Mile High Fizz, Britt With Bling, BlingKitchen, and the default Amethyst homepage should reuse the same shared header/ticker/Live Queue code path so Trade Board and Live Queue behavior stays consistent.
 
-**Public-site ticker speed is one global casual setting**
-Ticker speed should be the same everywhere in Sparkle Suite public/customer-facing surfaces. The current shared rule is `tickerSpeed: 1` with `72s` animation durations. Announcement and Trade Board rows should not run at different speeds unless Louis explicitly asks for a one-off experiment.
+**Public-site ticker speed uses one shared relationship, not one identical duration**
+Ticker controls should stay template-wide and avoid one-off page tuning, but the two rows do not use identical durations. The current shared rule is `tickerSpeed: 1`, announcement duration `72s`, and Trade Board duration `60s`.
 
 **Static public-site asset cache busting is part of the fix**
 For Amethyst/static public-site changes, update the asset version in the HTML shells and tests before deployment. Otherwise Louis can refresh the stable route and still load the previous JS/CSS bundle.

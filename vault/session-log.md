@@ -4,6 +4,34 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Customer-Site Trade Board Ticker Pace Hardening
+
+**Issue fixed:**
+- Louis reported the customer-facing announcement ticker finally felt right, but the Trade Board ticker row beneath it was still too slow.
+- This had recurred across several sessions because the previous shared rule made announcement and Trade Board ticker rows use the same `72s` duration.
+
+**Template rule now:**
+- Customer-site announcement ticker remains at the approved casual speed: `72s`.
+- Customer-site Trade Board ticker is about 20% faster: `60s`.
+- The timing is encoded as shared template variables, not one-off page styling:
+  - `--hp-ticker-duration: 72s`
+  - `--hp-trade-ticker-duration: 60s`
+  - design-system dual ticker mirrors the same `72s` / `60s` split.
+- The React Amethyst site shell also uses `60s` for the Trade Board reverse row so future shell-rendered sites do not drift from the static customer-site template.
+- Static Amethyst public assets were cache-busted to `20260621-trade-ticker-pace`.
+
+**Verification completed locally before deploy:**
+- Regression was written red first, then green.
+- Focused ticker/template suite passed.
+- Static asset route and public slug route tests passed.
+- `npm run qa:amethyst` passed after starting the local Amethyst dev server.
+- `npm run build` passed after clearing a stale generated `.next\dev` type file left by the local dev server.
+
+**Lesson carried forward:**
+- Do not describe ticker pacing as "one shared speed" anymore. The correct shared template contract is one shared relationship: announcements at the approved casual pace and Trade Board roughly 20% faster on every current and future Sparkle Suite customer site.
+
+---
+
 ## June 21, 2026 - Control Center and Customer-Site Header/Ticker Hardening
 
 **Control Center work completed:**

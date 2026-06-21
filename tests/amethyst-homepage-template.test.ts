@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260620-ticker-casual')
+        expect(script, file).toContain('v=20260621-trade-ticker-pace')
       }
     }
   })
@@ -118,7 +118,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)
   })
 
-  it('keeps customer-facing tickers at one casual shared speed', () => {
+  it('keeps customer-facing Trade Board tickers about twenty percent faster than announcements', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
       'utf8',
@@ -144,12 +144,19 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(css).toContain('animation: hp-ticker-scroll 72s linear infinite;')
-    expect(css).toContain('animation-duration: calc(72s / var(--ticker-speed, 1));')
+    expect(css).toContain('--hp-ticker-duration: 72s;')
+    expect(css).toContain('--hp-trade-ticker-duration: 60s;')
+    expect(css).toContain('animation: hp-ticker-scroll var(--hp-ticker-duration, 72s) linear infinite;')
+    expect(css).toContain('animation-duration: calc(var(--hp-ticker-duration, 72s) / var(--ticker-speed, 1));')
+    expect(css).toContain('animation-duration: calc(var(--hp-trade-ticker-duration, 60s) / var(--ticker-speed, 1));')
     expect(componentsCss).toContain('animation: tickerScroll 72s linear infinite;')
-    expect(componentsCss).toContain('animation-duration: 72s;')
+    expect(componentsCss).toContain('--ticker-duration: 72s;')
+    expect(componentsCss).toContain('--trade-ticker-duration: 60s;')
+    expect(componentsCss).toContain('animation-duration: var(--ticker-duration, 72s);')
+    expect(componentsCss).toContain('animation-duration: var(--trade-ticker-duration, 60s);')
     expect(shell).toContain('amethyst-scroll 72s linear infinite')
-    expect(shell).toContain('amethyst-scroll 72s linear infinite reverse')
+    expect(shell).toContain('amethyst-scroll 60s linear infinite reverse')
+    expect(shell).not.toContain('amethyst-scroll 72s linear infinite reverse')
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('tickerSpeed: 1')

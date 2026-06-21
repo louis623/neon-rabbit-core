@@ -21,6 +21,8 @@
   --hp-mobile-sticky-trade-top: 76px;
   --hp-mobile-sticky-drawer-top: 154px;
   --hp-mobile-sticky-filters-top: 198px;
+  --hp-ticker-duration: 72s;
+  --hp-trade-ticker-duration: 60s;
   --hp-form-panel-bg: rgba(255, 255, 255, 0.72);
   --hp-form-panel-fg: var(--fg);
   --hp-field-bg: var(--hp-bg);
@@ -938,12 +940,12 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 36px;
   white-space: nowrap;
   padding-left: 170px;
-  animation: hp-ticker-scroll 72s linear infinite;
-  animation-duration: calc(72s / var(--ticker-speed, 1));
+  animation: hp-ticker-scroll var(--hp-ticker-duration, 72s) linear infinite;
+  animation-duration: calc(var(--hp-ticker-duration, 72s) / var(--ticker-speed, 1));
 }
 .hp-ticker-row.reverse .hp-ticker-track {
   animation-direction: reverse;
-  animation-duration: calc(72s / var(--ticker-speed, 1));
+  animation-duration: calc(var(--hp-trade-ticker-duration, 60s) / var(--ticker-speed, 1));
 }
 @keyframes hp-ticker-scroll {
   from { transform: translateX(0); }

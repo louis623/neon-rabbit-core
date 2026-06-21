@@ -103,11 +103,11 @@ describe('public site slug route', () => {
     expect(html).toContain(
       '"@id":"https://www.yoursparklesuite.com/graciesparkleparty#webpage"',
     )
-    expect(html).toContain('href="/amethyst/tokens.css?v=20260620-ticker-casual"')
-    expect(html).toContain('href="/amethyst/components.css?v=20260620-ticker-casual"')
-    expect(html).toContain('href="/amethyst/homepage.css?v=20260620-ticker-casual"')
-    expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260620-ticker-casual"')
-    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260620-ticker-casual"')
+    expect(html).toContain('href="/amethyst/tokens.css?v=20260621-trade-ticker-pace"')
+    expect(html).toContain('href="/amethyst/components.css?v=20260621-trade-ticker-pace"')
+    expect(html).toContain('href="/amethyst/homepage.css?v=20260621-trade-ticker-pace"')
+    expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260621-trade-ticker-pace"')
+    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260621-trade-ticker-pace"')
     expect(html).toContain(
       '/api/amethyst/homepage-template?c=rep-gracie&amp;publicSiteSlug=graciesparkleparty',
     )
