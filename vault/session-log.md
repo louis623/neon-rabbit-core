@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Nic-Nac Duplicate Listing And Finder Claim Hardening
+
+**What changed:**
+- Hardened the `add_listing` tool so an item number/design already active on the rep's Trade Board no longer gets treated as a flat duplicate refusal. Nic-Nac now requires the follow-up: `That item number is already on your Trade Board. Are we adding another physical piece of the same design?`
+- Allowed the duplicate add to proceed only when the latest rep context clearly confirms another/additional/second physical piece, an explicit quantity, or a yes after Nic-Nac asked the duplicate-physical-piece question.
+- Tightened Suite's internal Sparkle Finder rep-claim validator so a Secret Rep ID Number must map to an active rep that is also public-Finder eligible through a paid workspace or ready launch-build path.
+- Removed the stale `plain background` instruction from the internal Finder jewelry intake rejection copy and replaced it with clear/centered Nic-Nac photo-QA language.
+- Added the missing `SPARKLE_FINDER_TO_SUITE_INTAKE_TOKEN` placeholder to `.env.example` and aligned the cross-ecosystem plan with the implemented `SPARKLE_LAB_WEEKLY_RUNS_ENABLED` flag.
+
+**Verification:**
+- Focused internal regression passed: 11 files, 158 tests.
+- Broad internal Nic-Nac/Lab/Finder sweep passed: 115 files passed, 1 skipped; 774 tests passed, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview deployment passed and built successfully: `https://sparkle-suite-ks5ypptkz-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points to `https://sparkle-suite-ks5ypptkz-louis-2849s-projects.vercel.app` / deployment `dpl_BdNddYtiBUp2eWnCQPLowkwLsGPq`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`, and `/api/internal/sparkle-lab/weekly` returned `401` without cron auth.
+
+**Still open:**
+- `SPARKLE_FINDER_TO_SUITE_REP_CLAIM_TOKEN` and preview `SPARKLE_FINDER_TO_SUITE_INTAKE_TOKEN` are not configured, so Suite internal Finder routes correctly return `503` closed/not configured on stable demo.
+- Sparkle Finder repo claim UI/storage, Finder Nic-Nac adapter work, rep-facing Secret Rep ID copy/UI, and legal/privacy/onboarding disclosure remain untouched pending Louis approval.
+
 ## June 21, 2026 - Sparkle Lab Model Synthesis Harness
 
 **What changed:**

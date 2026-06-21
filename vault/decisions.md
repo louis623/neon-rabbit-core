@@ -18,6 +18,9 @@ When a rep links Sparkle Finder to their Sparkle Suite `rep_id`, Nic-Nac should 
 **Sparkle Finder rep claiming grants Silver and a rep badge only**
 A Sparkle Suite rep who claims a Finder account with the Secret Rep ID Number receives Sparkle Finder Silver tier and a visible BP Rep / verified rep badge. The claim does not grant extra Finder powers beyond the normal Silver account. Public Sparkle Suite trade/show data can still appear in Sparkle Finder whether or not the rep has claimed a Finder account.
 
+**Secret Rep ID claims require Finder-eligible Suite reps**
+The Suite internal rep-claim validator should not accept every active rep record. A Secret Rep ID Number claim should resolve only for an active Sparkle Suite rep that is eligible for public Sparkle Finder presence through a paid workspace or a ready launch-build path. Invalid, inactive, or not-yet-eligible claims should return the same not-found shape so the private code does not leak account status.
+
 **Production Nic-Nac and Lab Nic-Nac cannot self-mutate production**
 Production Nic-Nac cannot change its own production behavior, tools, workflow rules, permissions, prompts, code, product behavior, pricing, or global memory lessons. Lab Nic-Nac can study, experiment, and recommend improvements but cannot deploy or promote recommendations into production without approval.
 
