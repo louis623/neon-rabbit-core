@@ -85,7 +85,9 @@ describe('workspace Nic-Nac shared knowledge', () => {
     expect(routedPrompt).toContain(
       'Do not promise Louis will review routine jewelry catalog issues',
     )
-    expect(routedPrompt).toContain('Collection year is stored on the collection')
+    expect(routedPrompt).toContain('Collection year is practical organization')
+    expect(routedPrompt).toContain('collectionName as "April Birthday 2026"')
+    expect(routedPrompt).toContain('collectionYear as 2026')
     expect(routedPrompt).toContain('Tags are practical discovery helpers')
     expect(routedPrompt).toContain('Do not use rarity or hype tags')
     expect(routedPrompt).toContain('If unsure, skip the tag')

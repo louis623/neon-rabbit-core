@@ -6,6 +6,45 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 21, 2026
 
+**Nic-Nac is one production assistant across Sparkle Suite and Sparkle Finder**
+There should be one production Nic-Nac core, not copied assistants per product. A linked rep should feel like the same Nic-Nac knows them in Sparkle Suite and Sparkle Finder. Product context controls available tools and mutation destinations; it does not create a separate Nic-Nac identity.
+
+**The private Live Queue code is now the Secret Rep ID Number**
+The private code visible only inside the rep's Sparkle Suite account should be labeled as the Secret Rep ID Number / do not share publicly. It keeps its Live Queue connection/sync use and also becomes the Sparkle Finder rep-claim code. Sparkle Finder resolves it to the durable Sparkle Suite `rep_id`; Nic-Nac follows the linked identity, not the visible code.
+
+**Linked reps use shared memory with surface-gated actions**
+When a rep links Sparkle Finder to their Sparkle Suite `rep_id`, Nic-Nac should share memory across both surfaces for that human. Tool execution remains gated by the current product and authentication surface: Sparkle Suite mutations require the rep to be in Sparkle Suite, while Finder work can happen in Finder with the appropriate Finder permissions.
+
+**Sparkle Finder rep claiming grants Silver and a rep badge only**
+A Sparkle Suite rep who claims a Finder account with the Secret Rep ID Number receives Sparkle Finder Silver tier and a visible BP Rep / verified rep badge. The claim does not grant extra Finder powers beyond the normal Silver account. Public Sparkle Suite trade/show data can still appear in Sparkle Finder whether or not the rep has claimed a Finder account.
+
+**Production Nic-Nac and Lab Nic-Nac cannot self-mutate production**
+Production Nic-Nac cannot change its own production behavior, tools, workflow rules, permissions, prompts, code, product behavior, pricing, or global memory lessons. Lab Nic-Nac can study, experiment, and recommend improvements but cannot deploy or promote recommendations into production without approval.
+
+**Sparkle Lab is the proactive improvement surface**
+The Control Center should gain a Sparkle Lab page/section for Nic-Nac Lab, Sparkle Suite Lab, Sparkle Finder Lab, Ops Lab, and Research Desk. Sparkle Lab can automatically create internal findings, replay/eval cases, trouble-ticket analyses, trend notes, business-health reports, research briefs, product opportunity notes, workflow/tool improvement proposals, and lab self-improvement notes. It cannot automatically change production behavior.
+
+**No forced Nic-Nac wow moment**
+Do not design around a staged "holy shit" moment. The wow factor should compound from reliability, memory, fewer repeated mistakes, better rep outcomes, better collector experience, lead/sales lift, and the lab loop steadily reducing hiccups.
+
+**Nic-Nac memory is a marketed product feature, not a beta tuning panel**
+Nic-Nac's memory and learning should be disclosed clearly in privacy policy, terms, onboarding, and marketing. Broad self-serve memory controls are not part of the beta direction. Internal/operator correction or deletion tools may still be required for legal, privacy, abuse, data-quality, or operational reasons.
+
+**Sparkle Lab runs on a bounded cadence, not continuously**
+Sparkle Lab should not run all the time or burn model credits without limits. Default direction is a weekly scheduled lab run, initially Sunday at 2:00 AM America/New_York so fresh results are available Monday morning, with adjustable cadence after real usage. Every lab run should have max cost, max model calls, max runtime, max records/items reviewed, graceful stop behavior, and a report of usage/limits hit. On-demand or urgent runs must be narrow and explicitly bounded.
+
+**Sparkle Lab starts with small hard usage caps and narrow priorities**
+Initial Sparkle Lab defaults are intentionally conservative: weekly scheduled run hard cap $5, monthly scheduled hard cap $20, manual/on-demand run hard cap $2, urgent issue-specific run hard cap $3 unless Louis/operator raises it, 20 model calls per weekly run with no more than 4 premium/deep calls, 20 minutes weekly runtime, 250 candidate records, and 25 deep-analyzed items. Weekly reports should elevate at most 3 headline findings and recommend at most 2 active work priorities, ranked by business impact, rep/customer impact, revenue/lead impact, severity, confidence, and effort.
+
+**Nic-Nac's personality foundation is September Virgo**
+Nic-Nac's behavior should consistently read as organized, detail-minded, service-oriented, practical, warm, sweet, professional, and lightly quirky/funny when appropriate. He may say he is a Virgo if asked directly or during light/playful conversation, but that reference should be rare and low-key. Nic-Nac should not volunteer astrology in normal work sessions. He should stay focused on Sparkle Suite, Sparkle Finder, Bomb Party, live shows, social selling, business goals, collectors, jewelry, streaming/hardware guidance, and system help; unrelated therapist/general-chatbot/grocery-list use should be politely redirected.
+
+**Nic-Nac model routing is centralized and OpenAI-first**
+Production route files should not hardcode raw provider/model strings. Use Nic-Nac model policy keys such as `human_default`, `human_escalated`, `utility_fast`, and `lab_synthesis`, with OpenAI as the default provider and environment overrides for exact model IDs.
+
+**Nic-Nac tool access is product-context gated**
+The shared Nic-Nac core should decide tool availability from product, surface, actor, account tier, linked identity, and permissions. Finder-linked reps may share memory identity with Suite, but Suite workspace mutation intents stay blocked unless the current authenticated surface is Sparkle Suite rep workspace.
+
 **Customer-site ticker contract is row-specific**
 The customer-facing announcement ticker should keep the approved casual `72s` pace. The Trade Board ticker row beneath it should move about 20% faster, currently `60s`. This must live in the shared customer-site template and React shell so current migrated sites and all future Sparkle Suite customer sites inherit the same behavior.
 

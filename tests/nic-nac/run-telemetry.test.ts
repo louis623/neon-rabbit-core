@@ -12,6 +12,7 @@ import {
   logNicNacRun,
   normalizeRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
+import { createSuiteRepWorkspaceProductContext } from '@/lib/nic-nac/core/product-context'
 
 beforeEach(() => {
   fromMock.mockClear()
@@ -45,7 +46,14 @@ describe('Nic-Nac run telemetry', () => {
       runId: 'run-1',
       repId: 'rep-1',
       conversationId: 'conv-1',
-      model: 'claude-haiku-4-5-20251001',
+      model: 'gpt-5.4',
+      modelPolicy: 'human_default',
+      modelProvider: 'openai',
+      reasoningLevel: 'medium',
+      productContext: createSuiteRepWorkspaceProductContext({
+        repId: 'rep-1',
+        userId: 'auth-user-1',
+      }),
       status: 'complete',
       latencyMs: 1234,
       intents: ['show_memory'],
@@ -57,12 +65,20 @@ describe('Nic-Nac run telemetry', () => {
         estimatedTokens: 5_500,
         wasCompacted: true,
       },
+      contextAssembly: {
+        memoryCardCount: 2,
+        blockedMemoryCardCount: 1,
+        memoryScopes: ['shared_linked_human'],
+        linkedHumanId: 'suite_rep:rep-1',
+        truncated: true,
+      },
       usage: {
         inputTokens: 6_100,
         outputTokens: 216,
         totalTokens: 6_316,
         cacheReadTokens: 1_000,
         cacheWriteTokens: 2_000,
+        estimatedCostCents: 2,
       },
     })
 
@@ -71,7 +87,26 @@ describe('Nic-Nac run telemetry', () => {
       run_id: 'run-1',
       rep_id: 'rep-1',
       conversation_id: 'conv-1',
-      model: 'claude-haiku-4-5-20251001',
+      model: 'gpt-5.4',
+      model_policy: 'human_default',
+      model_provider: 'openai',
+      reasoning_level: 'medium',
+      product: 'sparkle_suite',
+      surface: 'rep_workspace',
+      actor_type: 'rep',
+      account_tier: 'suite_rep',
+      linked_human_id: 'suite_rep:rep-1',
+      product_context: {
+        product: 'sparkle_suite',
+        surface: 'rep_workspace',
+        actorType: 'rep',
+        accountTier: 'suite_rep',
+        linkedSuiteRepId: 'rep-1',
+      },
+      memory_card_count: 2,
+      blocked_memory_card_count: 1,
+      memory_scopes: ['shared_linked_human'],
+      memory_context_truncated: true,
       status: 'complete',
       latency_ms: 1234,
       input_tokens: 6_100,
@@ -79,6 +114,7 @@ describe('Nic-Nac run telemetry', () => {
       total_tokens: 6_316,
       cache_read_tokens: 1_000,
       cache_write_tokens: 2_000,
+      estimated_cost_cents: 2,
       routed_intents: ['show_memory'],
       tool_names: ['get_show_session_context', 'record_show_session_event'],
       tool_count: 2,

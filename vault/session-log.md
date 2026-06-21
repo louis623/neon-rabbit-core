@@ -4,6 +4,66 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Nic-Nac Shared Core Implementation Started
+
+**What changed locally:**
+- Added OpenAI-first Nic-Nac model policy/provider routing in Sparkle Suite, replacing hardcoded route-level Haiku model usage with configurable policy keys.
+- Added model/run/tool telemetry fields for policy, provider, reasoning, estimated cost, product, surface, actor type, account tier, linked human id, and tool run id.
+- Added shared product context and surface-gated Suite tool intent policy. The authenticated Suite route now builds `sparkle_suite` / `rep_workspace` context and filters requested tool intents through that policy before building tools.
+- Added reusable core persona/surface prompts for Nic-Nac, including Virgo behavior, mission focus, off-scope redirect, Sparkle Finder/Suite boundary messages, and Lab researcher/recommender boundaries.
+- Added bounded context assembly plus automatic safe memory cards from existing `rep_notes`. The Suite route now feeds safe, scoped, capped memory into the prompt without relying on the model to call `read_recent_rep_notes` first. Unsafe/prompt-injection memory is blocked before prompt assembly.
+- Added memory-context telemetry fields for card count, blocked-card count, memory scopes, and truncation.
+- Added internal Sparkle Lab budget cap helpers for weekly, manual, and urgent runs.
+- Added Sparkle Lab schema migration for bounded runs, findings, and artifacts with service-role-only RLS. No migration has been applied to Supabase yet.
+- Added read-only internal Sparkle Lab Control Center page at `/control-center/lab`, linked from `/control-center`, with Nic-Nac Lab, Sparkle Suite Lab, Sparkle Finder Lab, Ops Lab, Research Desk, latest run, usage caps, findings, priorities, and artifacts.
+- Added feature-flagged manual Sparkle Lab runner endpoint at `/api/control-center/sparkle-lab/run`. It is disabled unless `SPARKLE_LAB_MANUAL_RUNS_ENABLED=true`, is deterministic-only for now, and makes no model calls or provider-credit spend.
+- Hardened duplicate Trade Board item-number behavior so an existing board item prompts for another physical piece instead of refusing as a duplicate.
+- Added a server-only Suite internal API at `/api/internal/finder/rep-claim` for Sparkle Finder to validate a Secret Rep ID Number with a server token. It reads `live_queue.sync_code`, then `reps`, and returns only safe rep-link/Silver badge entitlement data. It does not change live queue sync behavior and does not update Finder yet.
+
+**Finder audit:**
+- A read-only sub-agent confirmed `C:\Users\louis\sparkle-finder-repo` exists, is clean on `codex-sparkle-finder-v1`, and already has `sparkle_suite_rep_id`, `silver_rep_included`, a Rep badge, Finder Nic-Nac route/prompt/tools/tests, and Suite public Finder API consumers.
+- Finder still has hardcoded Anthropic Haiku in its Nic-Nac route, fixture-backed rep entitlement, no Secret Rep ID claim route, and thinner conversation persistence than Suite.
+
+**Verification:**
+- Focused Nic-Nac/Public Nic-Nac suite passed: 14 files, 137 tests.
+- Full Nic-Nac suite passed: 100 files passed, 1 skipped; 695 tests passed, 1 skipped.
+- Latest broad internal sweep passed: `npm exec vitest run tests/nic-nac tests/sparkle-lab tests/control-center-page.test.ts tests/control-center-sparkle-lab-page.test.ts tests/control-center-sparkle-lab-run-route.test.ts tests/sparkle-finder-rep-claim.test.ts tests/sparkle-finder-internal-intake.test.ts` returned 111 passed files, 1 skipped, 748 passed tests, 1 skipped.
+- `npm run build` passed and includes `/control-center/lab`, `/api/control-center/sparkle-lab/run`, and `/api/internal/finder/rep-claim`.
+- `git diff --check` passed with only normal CRLF warnings.
+
+**Still open:**
+- Finder repo changes have not been made.
+- Secret Rep ID user-facing copy/UI has not been changed because that touches rep-facing setup/account surfaces and requires a stop-and-notify checkpoint first. Finder claim UI/storage is also not implemented yet.
+- Sparkle Lab cron, applied remote migration, model-powered synthesis, and real Lab smoke are not implemented yet. Manual runner is feature-flagged off by default.
+- No deployed stable-demo smoke was run for this local implementation slice yet.
+
+---
+
+## June 21, 2026 - Nic-Nac And Sparkle Lab Scalable Memory Architecture Locked
+
+**What happened:**
+- Louis clarified the long-term Nic-Nac product expectation: one production Nic-Nac should flow across Sparkle Suite and Sparkle Finder like the same assistant, with shared memory for linked humans and tool execution gated only by the current product/security surface.
+- Louis also clarified that the proactive loop should be more than passive logs. Sparkle Lab should study failures, trouble tickets, business health, Sparkle Suite, Sparkle Finder, internal operations, and research opportunities, then recommend improvements without mutating production.
+
+**Locked decisions:**
+- The private code formerly described as the Live Queue code is now the Secret Rep ID Number. It remains private to the rep, keeps its Live Queue sync use, and becomes the Sparkle Finder rep-claim code.
+- A linked Sparkle Finder rep account maps to the durable Sparkle Suite `rep_id`; Nic-Nac follows that durable link rather than the visible code.
+- Linked reps get shared Nic-Nac memory across Sparkle Suite and Sparkle Finder, but Sparkle Suite mutations must happen from Sparkle Suite and Finder mutations from Finder.
+- A claimed Sparkle Finder rep receives Silver tier and a BP Rep / verified rep badge, but no extra Finder powers beyond Silver.
+- Production Nic-Nac cannot self-mutate. Lab Nic-Nac can study, test, draft, and recommend only.
+- Sparkle Lab should live inside Control Center with Nic-Nac Lab, Sparkle Suite Lab, Sparkle Finder Lab, Ops Lab, and Research Desk sections.
+- Sparkle Lab can automatically create internal findings, replay/eval cases, analyses, reports, research briefs, and proposals, but cannot change production behavior.
+- Sparkle Lab should not run continuously. Default direction is a weekly scheduled run, initially Sunday at 2:00 AM America/New_York for Monday morning results, with adjustable cadence and explicit max cost/model-call/runtime/reviewed-record limits.
+- Initial lab caps are intentionally small: $5 weekly run, $20 monthly scheduled cap, $2 manual/on-demand run, $3 urgent issue run unless raised, 20 weekly model calls max with 4 premium/deep calls max, 20 minutes weekly runtime, 250 candidate records, 25 deep-analyzed items, at most 3 headline findings, and at most 2 active work priorities.
+- Nic-Nac memory is a marketed product feature and should be clear in privacy policy, terms, onboarding, and marketing. Broad user memory controls are not planned for beta.
+- Nic-Nac's personality foundation is September Virgo: organized, detail-minded, service-oriented, practical, warm, sweet, professional, and lightly quirky/funny. He may mention being a Virgo only if asked directly or during light/playful conversation, while staying mission-focused and redirecting unrelated chatbot/therapy/grocery-list use.
+
+**Artifact created:**
+- `docs/superpowers/specs/2026-06-21-nic-nac-sparkle-lab-scalable-memory-loop.md`
+
+**Implementation posture:**
+- This is architecture/spec work only. Implementation should not start until the current Sparkle Finder account/schema model, the existing Live Queue code storage, account-linking shape, OpenAI model choice, legal/privacy copy requirements, and Control Center route convention are inspected or clarified.
+
 ## June 21, 2026 - Content-Independent Ticker Speed Rule
 
 **What changed:**

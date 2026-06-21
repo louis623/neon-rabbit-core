@@ -1,6 +1,14 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { evaluateNicNacRunThresholds } from '@/lib/nic-nac/run-thresholds'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
+import type {
+  NicNacModelPolicyKey,
+  NicNacModelProvider,
+  NicNacReasoningLevel,
+} from '@/lib/nic-nac/core/model-policy'
+import type { NicNacProductContext } from '@/lib/nic-nac/core/product-context'
+import type { NicNacAssembledContext } from '@/lib/nic-nac/core/context-assembler'
+import { getNicNacLinkedHumanId } from '@/lib/nic-nac/core/context-assembler'
 
 export type NicNacRunStatus = 'complete' | 'aborted' | 'error'
 
@@ -10,6 +18,7 @@ export type NicNacRunUsage = {
   totalTokens?: number | null
   cacheReadTokens?: number | null
   cacheWriteTokens?: number | null
+  estimatedCostCents?: number | null
 }
 
 export type NicNacRunModelContext = {
@@ -58,11 +67,16 @@ export async function logNicNacRun(args: {
   repId: string
   conversationId: string
   model: string
+  modelPolicy?: NicNacModelPolicyKey
+  modelProvider?: NicNacModelProvider
+  reasoningLevel?: NicNacReasoningLevel
+  productContext?: NicNacProductContext
   status: NicNacRunStatus
   latencyMs: number
   intents: NicNacToolIntent[]
   toolNames: string[]
   modelContext: NicNacRunModelContext
+  contextAssembly?: NicNacAssembledContext['telemetry']
   usage?: NicNacRunUsage
   errorMessage?: string
   workflow?: {
@@ -79,6 +93,7 @@ export async function logNicNacRun(args: {
   }
 }): Promise<void> {
   try {
+    const productTelemetry = summarizeProductContext(args.productContext)
     const thresholds = evaluateNicNacRunThresholds({
       latencyMs: args.latencyMs,
       inputTokens: args.usage?.inputTokens,
@@ -93,6 +108,20 @@ export async function logNicNacRun(args: {
       rep_id: args.repId,
       conversation_id: args.conversationId,
       model: args.model,
+      model_policy: args.modelPolicy ?? null,
+      model_provider: args.modelProvider ?? null,
+      reasoning_level: args.reasoningLevel ?? null,
+      product: productTelemetry?.product ?? null,
+      surface: productTelemetry?.surface ?? null,
+      actor_type: productTelemetry?.actorType ?? null,
+      account_tier: productTelemetry?.accountTier ?? null,
+      linked_human_id: productTelemetry?.linkedHumanId ?? null,
+      product_context: productTelemetry?.productContext ?? {},
+      memory_card_count: args.contextAssembly?.memoryCardCount ?? 0,
+      blocked_memory_card_count:
+        args.contextAssembly?.blockedMemoryCardCount ?? 0,
+      memory_scopes: args.contextAssembly?.memoryScopes ?? [],
+      memory_context_truncated: args.contextAssembly?.truncated ?? false,
       status: args.status,
       latency_ms: args.latencyMs,
       input_tokens: args.usage?.inputTokens ?? null,
@@ -100,6 +129,7 @@ export async function logNicNacRun(args: {
       total_tokens: args.usage?.totalTokens ?? null,
       cache_read_tokens: args.usage?.cacheReadTokens ?? null,
       cache_write_tokens: args.usage?.cacheWriteTokens ?? null,
+      estimated_cost_cents: args.usage?.estimatedCostCents ?? null,
       routed_intents: args.intents,
       tool_names: args.toolNames,
       tool_count: args.toolNames.length,
@@ -127,6 +157,29 @@ export async function logNicNacRun(args: {
     }
   } catch (err) {
     console.error('[nic-nac] logNicNacRun exception:', err)
+  }
+}
+
+function summarizeProductContext(context: NicNacProductContext | undefined) {
+  if (!context) return null
+
+  const linkedSuiteRepId =
+    context.actor.linkedSuiteRepId ?? context.actor.suiteRepId ?? null
+  const linkedHumanId = getNicNacLinkedHumanId(context) ?? null
+
+  return {
+    product: context.product,
+    surface: context.surface,
+    actorType: context.actor.type,
+    accountTier: context.actor.accountTier,
+    linkedHumanId,
+    productContext: {
+      product: context.product,
+      surface: context.surface,
+      actorType: context.actor.type,
+      accountTier: context.actor.accountTier,
+      linkedSuiteRepId,
+    },
   }
 }
 

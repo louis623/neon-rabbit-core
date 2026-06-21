@@ -35,6 +35,7 @@ export async function logToolExecution(args: {
   toolName: string
   repId: string
   conversationId: string
+  runId?: string
   success: boolean
   durationMs: number
   errorMessage?: string
@@ -46,6 +47,7 @@ export async function logToolExecution(args: {
       tool_name: args.toolName,
       rep_id: args.repId,
       conversation_id: args.conversationId,
+      run_id: args.runId ?? null,
       success: args.success,
       duration_ms: args.durationMs,
       error_message: args.errorMessage ?? null,

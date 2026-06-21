@@ -10,22 +10,14 @@ import {
   type RepMemorySource,
   type RepMemoryType,
 } from '@/lib/nic-nac/memory'
+import {
+  isUnsafeNicNacMemoryText,
+  REDACTED_UNSAFE_MEMORY_SUMMARY,
+} from '@/lib/nic-nac/core/memory/safety'
 import type { ToolDefinition } from './types'
 
 const DEFAULT_LIMIT = 5
 const MAX_LIMIT = 20
-const REDACTED_UNSAFE_MEMORY_SUMMARY =
-  '[Redacted unsafe memory note: possible prompt-injection instructions.]'
-const UNSAFE_MEMORY_PATTERNS = [
-  /\bignore\s+(?:all\s+)?(?:prior|previous)\s+instructions?\b/i,
-  /\byou\s+are\s+now\b/i,
-  /\badmin\s+mode\b/i,
-  /\bcall\s+[a-z_]+/i,
-  /\bdo\s+not\s+ask\s+for\s+confirmation\b/i,
-  /\bprint\s+the\s+contents?\b/i,
-  /\blist\s+the\s+trade\s+board\s+for\s+rep\b/i,
-]
-
 const inputSchema = z.object({
   limit: z.number().int().positive().max(MAX_LIMIT).optional(),
 })
@@ -36,10 +28,6 @@ type RepNoteRow = {
   conversation_date: string
   memory_type?: RepMemoryType | null
   memory_source?: RepMemorySource | null
-}
-
-function isUnsafeMemorySummary(summary: string): boolean {
-  return UNSAFE_MEMORY_PATTERNS.some((pattern) => pattern.test(summary))
 }
 
 function normalizeLimit(limit: number | undefined): number {
@@ -74,7 +62,7 @@ export function makeReadRecentRepNotesTool(ctx: {
         }
 
         const notes = (data as RepNoteRow[]).map((note) => {
-          const redacted = isUnsafeMemorySummary(note.summary)
+          const redacted = isUnsafeNicNacMemoryText(note.summary)
 
           return {
             noteId: note.id,

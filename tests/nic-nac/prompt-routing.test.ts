@@ -14,6 +14,9 @@ describe('Nic-Nac routed system prompt', () => {
     })
 
     expect(prompt).toContain('You are Nic-Nac')
+    expect(prompt).toContain("Nic-Nac's personality foundation is September Virgo")
+    expect(prompt).toContain('Mention Virgo only if asked or in light/playful chat')
+    expect(prompt).toContain('Stay mission-focused: Sparkle Suite/Finder')
     expect(prompt).toContain('get_show_session_context')
     expect(prompt).toContain('end_show')
     expect(prompt).toContain('record_show_session_event')
@@ -67,6 +70,10 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('If add_listing is active and the rep provides a missing field')
     expect(prompt).toContain('do not say add_listing is unavailable')
     expect(prompt).toContain('A rep can own multiple physical pieces with the same item number')
+    expect(prompt).toContain('If search_jewelry_database says isOnMyBoard:true during an add flow')
+    expect(prompt).toContain(
+      'Are we adding another physical piece of the same design?',
+    )
     expect(prompt).toContain('Quantity comes from the latest rep message')
     expect(prompt).toContain('For current board questions, answer only from the latest list_my_trade_board result')
     expect(prompt).toContain("mode:'batch'")
@@ -147,7 +154,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('Never claim a piece is added until add_listing returns success')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')
-    expect(prompt.length).toBeLessThan(9_000)
+    expect(prompt.length).toBeLessThan(9_800)
   })
 
   it('includes active workflow prompt state before Trade Board instructions', () => {

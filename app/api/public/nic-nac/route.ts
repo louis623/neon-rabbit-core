@@ -1,4 +1,3 @@
-import { createAnthropic } from '@ai-sdk/anthropic'
 import { generateText } from 'ai'
 import { NextResponse } from 'next/server'
 
@@ -13,12 +12,15 @@ import {
   sanitizePublicNicNacAnswer,
 } from '@/lib/sparkle-suite/public-nic-nac-guardrails'
 import { buildPublicNicNacPrompt } from '@/lib/sparkle-suite/public-nic-nac-prompt'
+import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
+import {
+  getNicNacLanguageModel,
+  getNicNacProviderOptions,
+} from '@/lib/nic-nac/core/model-provider'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
-
-const anthropic = createAnthropic({ baseURL: 'https://api.anthropic.com/v1' })
 
 function json(body: PublicNicNacResponse, status = 200) {
   return NextResponse.json(body, { status })
@@ -52,12 +54,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    const modelPolicy = getNicNacModelPolicy('human_default')
     const result = await generateText({
-      model: anthropic('claude-haiku-4-5-20251001'),
+      model: getNicNacLanguageModel(modelPolicy),
       system: buildPublicNicNacPrompt(),
       prompt: body.question,
       temperature: 0.4,
       maxOutputTokens: 220,
+      providerOptions: getNicNacProviderOptions(modelPolicy),
     })
     const sanitized = sanitizePublicNicNacAnswer(result.text)
 

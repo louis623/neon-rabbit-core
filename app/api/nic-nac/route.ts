@@ -14,11 +14,6 @@ import {
   createUIMessageStreamResponse,
   type UIMessage,
 } from 'ai'
-import { createAnthropic } from '@ai-sdk/anthropic'
-
-// Pin baseURL explicitly to avoid an inherited ANTHROPIC_BASE_URL env var
-// (sometimes set without /v1) from steering the SDK to the wrong endpoint.
-const anthropic = createAnthropic({ baseURL: 'https://api.anthropic.com/v1' })
 import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
@@ -46,6 +41,16 @@ import {
   normalizeRunUsage,
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
+import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
+import {
+  getNicNacLanguageModel,
+  getNicNacProviderOptions,
+} from '@/lib/nic-nac/core/model-provider'
+import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
+import { createSuiteRepWorkspaceProductContext } from '@/lib/nic-nac/core/product-context'
+import { filterNicNacToolIntentsForContext } from '@/lib/nic-nac/core/tool-policy'
+import { assembleNicNacContext } from '@/lib/nic-nac/core/context-assembler'
+import { loadSuiteRepMemoryCards } from '@/lib/nic-nac/core/memory/rep-memory-cards'
 import { chooseNicNacToolChoiceForStep } from '@/lib/nic-nac/tool-choice-policy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
@@ -97,6 +102,7 @@ export async function POST(request: Request) {
   const runId = randomUUID()
   const runStartedAt = Date.now()
   const responseHeaders = { 'x-nic-nac-run-id': runId }
+  const modelPolicy = getNicNacModelPolicy('human_default')
 
   let ctx
   try {
@@ -122,6 +128,10 @@ export async function POST(request: Request) {
     throw err
   }
   const { repId, rep, supabase } = ctx
+  const productContext = createSuiteRepWorkspaceProductContext({
+    repId,
+    userId: rep.auth_user_id,
+  })
 
   let body: PostBody
   try {
@@ -185,6 +195,24 @@ export async function POST(request: Request) {
       { status: 403, headers: responseHeaders }
     )
   }
+
+  const repMemoryCards = await loadSuiteRepMemoryCards({
+    repId,
+    supabase,
+    onError: async (err) => {
+      await logIncident({
+        errorType: 'rep_memory_context_failed',
+        repId,
+        conversationId,
+        severity: 'warn',
+        details: { runId, message: err.message },
+      })
+    },
+  })
+  const assembledContext = assembleNicNacContext({
+    productContext,
+    memoryCards: repMemoryCards,
+  })
 
   // Approval replay protection. UNIQUE(approval_id) is the durable backstop.
   const approvals = extractApprovalResponses(messages)
@@ -255,10 +283,15 @@ export async function POST(request: Request) {
       ? ['required_setup']
       : getToolIntentsForMessages(messages)
   const workflowToolIntents = tradeBoardWorkflowContext.workflowIntents
-  const toolIntents: NicNacToolIntent[] =
+  const requestedToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? latestToolIntents
       : mergeWorkflowToolIntents(latestToolIntents, workflowToolIntents)
+  const toolPolicy = filterNicNacToolIntentsForContext(
+    productContext,
+    requestedToolIntents,
+  )
+  const toolIntents = toolPolicy.allowedIntents
   const toolPolicySource =
     mode === 'required_setup'
       ? 'mode_required_setup'
@@ -284,7 +317,11 @@ export async function POST(request: Request) {
   console.info('[nic-nac] tool routing', {
     runId,
     conversationId,
+    product: productContext.product,
+    surface: productContext.surface,
+    requestedIntents: requestedToolIntents,
     intents: toolIntents,
+    blockedIntents: toolPolicy.blockedIntents,
     toolCount: activeToolNames.length,
     tools: activeToolNames,
     requireToolCall,
@@ -307,6 +344,9 @@ export async function POST(request: Request) {
     activeToolNames,
     mode,
     workflowPromptState: tradeBoardWorkflowContext.workflowPromptState,
+    productContext,
+    blockedToolIntents: toolPolicy.blockedIntents,
+    memoryContextPrompt: assembledContext.promptText,
   })
   let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined
@@ -349,7 +389,7 @@ export async function POST(request: Request) {
       currentlyVisible = true
 
       const result = streamText({
-        model: anthropic('claude-haiku-4-5-20251001'),
+        model: getNicNacLanguageModel(modelPolicy),
         system: systemPrompt,
         messages: modelMessages,
         tools,
@@ -362,11 +402,9 @@ export async function POST(request: Request) {
           }),
         }),
         stopWhen: stepCountIs(5),
-        providerOptions: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
+        providerOptions: getNicNacProviderOptions(modelPolicy, {
+          anthropicCacheControl: true,
+        }),
         abortSignal: request.signal,
         experimental_onToolCallStart: () => {
           activeToolCalls += 1
@@ -400,6 +438,10 @@ export async function POST(request: Request) {
         },
         onFinish: (event) => {
           runUsage = normalizeRunUsage(event.totalUsage)
+          runUsage.estimatedCostCents = estimateNicNacRunCostCents(
+            modelPolicy,
+            runUsage,
+          )
           console.log('[nic-nac] streamText finish', {
             runId,
             rep: rep.email,
@@ -468,7 +510,11 @@ export async function POST(request: Request) {
           runId,
           repId,
           conversationId,
-          model: 'claude-haiku-4-5-20251001',
+          model: modelPolicy.modelId,
+          modelPolicy: modelPolicy.key,
+          modelProvider: modelPolicy.provider,
+          reasoningLevel: modelPolicy.reasoning,
+          productContext,
           status: streamErrorMessage ? 'error' : isAborted ? 'aborted' : 'complete',
           latencyMs: Date.now() - runStartedAt,
           intents: toolIntents,
@@ -480,6 +526,7 @@ export async function POST(request: Request) {
             estimatedTokens: modelContext.estimatedTokens,
             wasCompacted: modelContext.wasCompacted,
           },
+          contextAssembly: assembledContext.telemetry,
           usage: runUsage,
           errorMessage: streamErrorMessage,
           workflow: activeTradeBoardWorkflow

@@ -49,6 +49,7 @@ export function withTelemetry(toolName: string, ctx: ToolContext, tool: Tool): T
         toolName,
         repId: ctx.repId,
         conversationId: ctx.conversationId,
+        runId: ctx.runId,
         success,
         durationMs,
         errorMessage,

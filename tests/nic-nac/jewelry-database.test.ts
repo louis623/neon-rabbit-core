@@ -100,6 +100,9 @@ describe('search_jewelry_database — flattened structured output', () => {
       isOnMyBoard: true,
       activeListingsCount: 3,
     })
+    expect(results[0].addListingGuidance).toContain(
+      'Are we adding another physical piece of the same design?',
+    )
     expect(results[1]).toMatchObject({
       designId: 'd-2',
       itemNumber: 'NK66139',
@@ -108,6 +111,7 @@ describe('search_jewelry_database — flattened structured output', () => {
       isOnMyBoard: false,
       activeListingsCount: 0,
     })
+    expect(results[1].addListingGuidance).toBeUndefined()
   })
 
   it('passes repId to the service even though admin client is used (so isOnMyBoard works)', async () => {

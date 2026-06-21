@@ -105,5 +105,11 @@ describe('Nic-Nac system prompt — add listing flow', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'create one listing per physical piece',
     )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'If search_jewelry_database says isOnMyBoard:true during an add flow',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Are we adding another physical piece of the same design?',
+    )
   })
 })

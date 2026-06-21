@@ -227,6 +227,8 @@ describe('SparkleSuiteControlCenterPage', () => {
 
     expect(html).toContain('href="#customer-database"')
     expect(html).toContain('href="#demo-database"')
+    expect(html).toContain('href="/control-center/lab"')
+    expect(html).toContain('Sparkle Lab')
     expect(html).toContain('Customer Database')
     expect(html).toContain('Demo Database')
     expect(html).toContain('aria-label="Expand Customer Database"')

@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 
 import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle'
 
@@ -436,6 +437,15 @@ export function SupportCommandCenter({
                   {demoAccounts.length}
                 </span>
               </a>
+              <Link
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                href="/control-center/lab"
+              >
+                Sparkle Lab
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  New
+                </span>
+              </Link>
             </nav>
           </aside>
 
