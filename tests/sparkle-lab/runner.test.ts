@@ -25,6 +25,11 @@ function makeInsertFindingsQuery() {
   return { insert }
 }
 
+function makeInsertArtifactsQuery() {
+  const insert = vi.fn().mockResolvedValue({ error: null })
+  return { insert }
+}
+
 function makeMonthlyUsageQuery(data: unknown, error: unknown = null) {
   const gte = vi.fn().mockResolvedValue({ data, error })
   const eq = vi.fn(() => ({ gte }))
@@ -123,6 +128,7 @@ describe('Sparkle Lab deterministic runner', () => {
         premiumCallCount: 0,
         candidateRecordCount: 2,
       },
+      artifacts: [],
     })
     expect(insertRunQuery.insert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -150,6 +156,93 @@ describe('Sparkle Lab deterministic runner', () => {
         }),
       ]),
     )
+  })
+
+  it('creates a model synthesis report artifact only when synthesis is enabled', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-21T06:00:00.000Z'))
+    const supportQuery = makeSelectQuery([
+      {
+        id: 'support-1',
+        title: 'Showtime workflow broke',
+        details: 'The rep could not complete a live-show workflow.',
+        urgency: 'showtime_urgent',
+      },
+    ])
+    const runQuery = makeSelectQuery([
+      {
+        run_id: 'run-hard-fail',
+        status: 'complete',
+        hard_fail_phrase_count: 1,
+      },
+    ])
+    const insertRunQuery = makeInsertRunQuery()
+    const insertFindingsQuery = makeInsertFindingsQuery()
+    const insertArtifactsQuery = makeInsertArtifactsQuery()
+    const generateTextMock = vi.fn().mockResolvedValue({
+      text: '# Summary\n\nNic-Nac needs a replay case.\n\n# Priority Work\n\nAdd the replay first.',
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 2000,
+        totalTokens: 3000,
+      },
+    })
+    const from = vi.fn((table: string) => {
+      if (table === 'support_reports') return supportQuery
+      if (table === 'nic_nac_runs') return runQuery
+      if (table === 'sparkle_lab_runs') return insertRunQuery
+      if (table === 'sparkle_lab_findings') return insertFindingsQuery
+      if (table === 'sparkle_lab_artifacts') return insertArtifactsQuery
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await runSparkleLabManualScan({
+      supabase: { from } as never,
+      modelSynthesis: 'enabled',
+      generateTextImpl: generateTextMock as never,
+    })
+
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
+    expect(JSON.stringify(generateTextMock.mock.calls[0]?.[0])).toContain(
+      'Sparkle Lab',
+    )
+    expect(result).toMatchObject({
+      runId: 'run-1',
+      runType: 'manual',
+      usage: {
+        estimatedCostCents: 7,
+        modelCallCount: 1,
+        premiumCallCount: 1,
+      },
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'report',
+          title: 'Sparkle Lab synthesis report',
+        },
+      ],
+    })
+    expect(insertRunQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        run_type: 'manual',
+        model_call_count: 1,
+        premium_call_count: 1,
+        estimated_cost_cents: 7,
+      }),
+    )
+    expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        run_id: 'run-1',
+        section: 'ops_lab',
+        artifact_type: 'report',
+        title: 'Sparkle Lab synthesis report',
+        body_markdown: expect.stringContaining('Nic-Nac needs a replay case'),
+        source_refs: expect.arrayContaining([
+          { type: 'support_report', id: 'support-1' },
+          { type: 'nic_nac_run', id: 'run-hard-fail' },
+        ]),
+      }),
+    ])
   })
 
   it('persists a weekly run with the scheduled monthly cap tracked', async () => {

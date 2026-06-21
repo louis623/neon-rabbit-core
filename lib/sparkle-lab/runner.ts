@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { generateText } from 'ai'
 import {
   getSparkleLabCaps,
   shouldStopSparkleLabRun,
@@ -6,6 +7,13 @@ import {
   type SparkleLabRunType,
   type SparkleLabUsage,
 } from '@/lib/nic-nac/core/lab/budget'
+import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
+import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
+import {
+  getNicNacLanguageModel,
+  getNicNacProviderOptions,
+} from '@/lib/nic-nac/core/model-provider'
+import { normalizeRunUsage } from '@/lib/nic-nac/run-telemetry'
 import type { SparkleLabSection } from '@/lib/sparkle-lab/read-model'
 
 export interface SparkleLabSupportSource {
@@ -44,34 +52,60 @@ export interface SparkleLabDraftFinding {
   sourceRefs: Array<{ type: string; id: string }>
 }
 
+export interface SparkleLabDraftArtifact {
+  section: SparkleLabSection
+  artifactType: 'report' | 'replay_case' | 'research_brief' | 'recommendation' | 'lab_note'
+  title: string
+  bodyMarkdown: string
+  sourceRefs: Array<{ type: string; id: string }>
+}
+
 export interface SparkleLabScanResult {
   runId: string
   runType: SparkleLabRunType
   usage: SparkleLabUsage
   limitsHit: string[]
   findings: SparkleLabDraftFinding[]
+  artifacts: SparkleLabDraftArtifact[]
 }
 
 type SparkleLabRunStatus = 'completed' | 'stopped_by_limit'
+type SparkleLabModelSynthesisMode = 'auto' | 'enabled' | 'disabled'
+
+async function defaultSparkleLabGenerateText(
+  options: Parameters<typeof generateText>[0],
+) {
+  return generateText(options)
+}
+
+type SparkleLabGenerateText = typeof defaultSparkleLabGenerateText
 
 export async function runSparkleLabManualScan(input: {
   supabase: Pick<SupabaseClient, 'from'>
   runType?: Extract<SparkleLabRunType, 'manual' | 'urgent'>
+  modelSynthesis?: SparkleLabModelSynthesisMode
+  generateTextImpl?: SparkleLabGenerateText
 }): Promise<SparkleLabScanResult> {
   return runSparkleLabScan({
     supabase: input.supabase,
     runType: input.runType ?? 'manual',
+    modelSynthesis: input.modelSynthesis,
+    generateTextImpl: input.generateTextImpl,
   })
 }
 
 export async function runSparkleLabWeeklyScan(input: {
   supabase: Pick<SupabaseClient, 'from'>
   now?: Date
+  modelSynthesis?: SparkleLabModelSynthesisMode
+  generateTextImpl?: SparkleLabGenerateText
 }): Promise<SparkleLabScanResult> {
   return runSparkleLabScan({
     supabase: input.supabase,
     runType: 'weekly',
     now: input.now,
+    modelSynthesis: input.modelSynthesis,
+    generateTextImpl: input.generateTextImpl,
   })
 }
 
@@ -79,6 +113,8 @@ async function runSparkleLabScan(input: {
   supabase: Pick<SupabaseClient, 'from'>
   runType: SparkleLabRunType
   now?: Date
+  modelSynthesis?: SparkleLabModelSynthesisMode
+  generateTextImpl?: SparkleLabGenerateText
 }): Promise<SparkleLabScanResult> {
   const runType = input.runType
   const now = input.now ?? new Date()
@@ -111,6 +147,7 @@ async function runSparkleLabScan(input: {
       usage,
       limitsHit: ['monthly_scheduled_cap'],
       findings: [],
+      artifacts: [],
     }
   }
 
@@ -139,6 +176,24 @@ async function runSparkleLabScan(input: {
         ? undefined
         : monthlyScheduledCostCents + estimatedCostCents,
   }
+  const artifacts: SparkleLabDraftArtifact[] = []
+
+  if (shouldRunSparkleLabModelSynthesis(input.modelSynthesis)) {
+    const synthesis = await maybeBuildSparkleLabSynthesisArtifact({
+      findings,
+      usage,
+      caps,
+      generateTextImpl: input.generateTextImpl ?? defaultSparkleLabGenerateText,
+    })
+    if (synthesis.artifact) artifacts.push(synthesis.artifact)
+    usage.modelCallCount += synthesis.modelCallCount
+    usage.premiumCallCount += synthesis.premiumCallCount
+    usage.estimatedCostCents += synthesis.estimatedCostCents
+    if (usage.monthlyScheduledCostCents !== undefined) {
+      usage.monthlyScheduledCostCents += synthesis.estimatedCostCents
+    }
+  }
+
   const stop = shouldStopSparkleLabRun(usage, caps)
   const status = stop.shouldStop ? 'stopped_by_limit' : 'completed'
   const runId = await persistSparkleLabRun({
@@ -170,6 +225,22 @@ async function runSparkleLabScan(input: {
 
     if (findingError) throw findingError
   }
+  if (artifacts.length) {
+    const { error: artifactError } = await input.supabase
+      .from('sparkle_lab_artifacts')
+      .insert(
+        artifacts.map((artifact) => ({
+          run_id: runId,
+          section: artifact.section,
+          artifact_type: artifact.artifactType,
+          title: artifact.title,
+          body_markdown: artifact.bodyMarkdown,
+          source_refs: artifact.sourceRefs,
+        })),
+      )
+
+    if (artifactError) throw artifactError
+  }
 
   return {
     runId,
@@ -177,7 +248,136 @@ async function runSparkleLabScan(input: {
     usage,
     limitsHit: stop.limitsHit,
     findings,
+    artifacts,
   }
+}
+
+function shouldRunSparkleLabModelSynthesis(
+  mode: SparkleLabModelSynthesisMode = 'auto',
+) {
+  if (mode === 'enabled') return true
+  if (mode === 'disabled') return false
+  return process.env.SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED === 'true'
+}
+
+async function maybeBuildSparkleLabSynthesisArtifact(input: {
+  findings: SparkleLabDraftFinding[]
+  usage: SparkleLabUsage
+  caps: SparkleLabCaps
+  generateTextImpl: SparkleLabGenerateText
+}): Promise<{
+  artifact: SparkleLabDraftArtifact | null
+  modelCallCount: number
+  premiumCallCount: number
+  estimatedCostCents: number
+}> {
+  if (!input.findings.length) return emptySynthesisUsage()
+  if (input.usage.modelCallCount + 1 > input.caps.modelCallCap) {
+    return emptySynthesisUsage()
+  }
+  if (input.usage.premiumCallCount + 1 > input.caps.premiumCallCap) {
+    return emptySynthesisUsage()
+  }
+  if (input.usage.estimatedCostCents >= input.caps.costCapCents) {
+    return emptySynthesisUsage()
+  }
+
+  const policy = getNicNacModelPolicy('lab_synthesis')
+  try {
+    const result = await input.generateTextImpl({
+      model: getNicNacLanguageModel(policy),
+      system: buildSparkleLabSynthesisSystemPrompt(),
+      prompt: buildSparkleLabSynthesisPrompt(input.findings, input.caps),
+      temperature: 0.2,
+      maxOutputTokens: 700,
+      providerOptions: getNicNacProviderOptions(policy),
+    })
+    const usage = normalizeRunUsage(result.usage)
+    const estimatedCostCents = estimateNicNacRunCostCents(policy, usage) ?? 0
+
+    return {
+      artifact: {
+        section: chooseSparkleLabReportSection(input.findings),
+        artifactType: 'report',
+        title: 'Sparkle Lab synthesis report',
+        bodyMarkdown: sanitizeSparkleLabArtifactBody(result.text),
+        sourceRefs: input.findings.flatMap((finding) => finding.sourceRefs),
+      },
+      modelCallCount: 1,
+      premiumCallCount: 1,
+      estimatedCostCents,
+    }
+  } catch (err) {
+    return {
+      artifact: {
+        section: 'ops_lab',
+        artifactType: 'lab_note',
+        title: 'Sparkle Lab synthesis unavailable',
+        bodyMarkdown: `Model synthesis was enabled, but the synthesis call did not complete. The deterministic findings were still recorded. Error: ${
+          (err as Error)?.message || 'unknown synthesis error'
+        }`,
+        sourceRefs: input.findings.flatMap((finding) => finding.sourceRefs),
+      },
+      modelCallCount: 0,
+      premiumCallCount: 0,
+      estimatedCostCents: 0,
+    }
+  }
+}
+
+function emptySynthesisUsage() {
+  return {
+    artifact: null,
+    modelCallCount: 0,
+    premiumCallCount: 0,
+    estimatedCostCents: 0,
+  }
+}
+
+function buildSparkleLabSynthesisSystemPrompt() {
+  return [
+    'You are Sparkle Lab, an internal analysis assistant for Sparkle Suite, Sparkle Finder, and Nic-Nac.',
+    'You may recommend, triage, and explain. You may not claim production has changed, mutate behavior, or ask for unbounded research.',
+    'Write a concise internal markdown report for Louis. Prioritize one or two next actions, explain why, and include usage/guardrail awareness.',
+  ].join('\n')
+}
+
+function buildSparkleLabSynthesisPrompt(
+  findings: SparkleLabDraftFinding[],
+  caps: SparkleLabCaps,
+) {
+  const findingLines = findings.map((finding, index) =>
+    [
+      `Finding ${index + 1}: ${finding.title}`,
+      `section=${finding.section}`,
+      `severity=${finding.severity}`,
+      `confidence=${finding.confidence}`,
+      `priority=${finding.priorityRank ?? 'none'}`,
+      `summary=${finding.summary}`,
+      `recommended_action=${finding.recommendedAction}`,
+      `source_refs=${JSON.stringify(finding.sourceRefs)}`,
+    ].join('\n'),
+  )
+
+  return [
+    `Run type: ${caps.runType}`,
+    `Caps: cost ${caps.costCapCents} cents, model calls ${caps.modelCallCap}, premium calls ${caps.premiumCallCap}, headline findings ${caps.headlineFindingCap}, active priorities ${caps.activePriorityCap}.`,
+    'Findings:',
+    findingLines.join('\n\n'),
+    'Return markdown only with headings: Summary, Priority Work, Guardrails, Follow-Up Evidence.',
+  ].join('\n\n')
+}
+
+function chooseSparkleLabReportSection(
+  findings: SparkleLabDraftFinding[],
+): SparkleLabSection {
+  return findings.find((finding) => finding.priorityRank === 1)?.section ?? 'ops_lab'
+}
+
+function sanitizeSparkleLabArtifactBody(text: string) {
+  const trimmed = text.trim()
+  if (!trimmed) return 'Sparkle Lab synthesis returned an empty report.'
+  return trimmed.slice(0, 6_000)
 }
 
 function buildEmptySparkleLabUsage(
