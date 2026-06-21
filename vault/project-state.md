@@ -18,10 +18,10 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed checkpoint:** `ebdecbe fix: use service role policy for Sparkle Lab tables`
-- **Latest local checkpoints:** Sparkle Lab weekly cron/guardrail hardening is in progress locally and not yet committed.
+- **Latest pushed checkpoint:** `1865996 feat: add bounded Sparkle Lab weekly loop`
+- **Latest local checkpoints:** Sparkle Lab weekly cron/guardrail hardening is pushed and deployed to the stable demo alias; repo-local vault notes are being updated after the deploy.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-o3oczruc9-louis-2849s-projects.vercel.app`
+- **Current stable demo target:** `https://sparkle-suite-pi79zhpzq-louis-2849s-projects.vercel.app`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`

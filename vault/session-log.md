@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Sparkle Lab Weekly Guardrail Loop
+
+**What changed:**
+- Added authenticated internal weekly Sparkle Lab route at `/api/internal/sparkle-lab/weekly`.
+- Wired the weekly route into `vercel.json` at `0 6 * * 0` for the current Sunday overnight beta window.
+- Kept weekly runs disabled by default unless `SPARKLE_LAB_WEEKLY_RUNS_ENABLED=true`.
+- Hardened Lab budget behavior so reaching an allowed reporting cap is recorded, while only exceeding a hard cap marks the run stopped.
+- Added monthly scheduled spend pre-checks so weekly runs stop before sampling when the $20 monthly scheduled cap is already reached.
+- Updated `.env.example` with OpenAI-first model policy keys, Lab flags, cron secret, and Finder-to-Suite rep-claim token placeholders.
+
+**Verification:**
+- Focused Lab/cron/page tests passed: 8 files, 26 tests.
+- Broad Nic-Nac/Lab/Finder-claim sweep passed: 114 files passed, 1 skipped; 759 tests passed, 1 skipped.
+- `npm run build` passed locally and Vercel preview build passed.
+- Stable demo alias now points to `https://sparkle-suite-pi79zhpzq-louis-2849s-projects.vercel.app`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/api/internal/sparkle-lab/weekly` returned `401` without auth and with wrong auth, and `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`.
+
+**Still open:**
+- Weekly and manual Lab runners remain feature-flagged off and deterministic/no-model-call.
+- Model-powered Lab synthesis, enabling flags, and authenticated operator/manual run smoke remain future work.
+- Finder repo integration and rep-facing Secret Rep ID copy/UI were not changed in this checkpoint.
+
 ## June 21, 2026 - Nic-Nac Shared Core Implementation Started
 
 **What changed locally:**
