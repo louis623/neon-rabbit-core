@@ -680,6 +680,12 @@ function Header({ businessName }) {
   );
 }
 
+function repeatTickerItems(items, minimumItems = 30) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  const copies = Math.max(3, Math.ceil(minimumItems / items.length));
+  return Array.from({ length: copies }, () => items).flat();
+}
+
 function Ticker({ topText }) {
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
   const trades = RUNTIME_CONTEXT.targeted ? [] : [
@@ -688,6 +694,7 @@ function Ticker({ topText }) {
     { name: "North Star Pendant", meta: "Pendant / Spring Luxe", tier: "unicorn" },
     { name: "Aurora Stack", meta: "Stack / Stacks", tier: "diamond" },
   ];
+  const tickerTrades = repeatTickerItems(trades, 30);
 
   return (
     <div className="hp-ticker" aria-label="Customer site updates">
@@ -706,7 +713,7 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {trades.length > 0 ? [...trades, ...trades, ...trades].map((trade, index) => (
+          {tickerTrades.length > 0 ? tickerTrades.map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
               {trade.name} - {trade.meta}

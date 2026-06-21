@@ -576,6 +576,12 @@ function Hero({ t, isLive, liveShow }) {
 // ============================================================
 // Ticker (T3 dual)
 // ============================================================
+function repeatTickerItems(items, minimumItems = 30) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  const copies = Math.max(3, Math.ceil(minimumItems / items.length));
+  return Array.from({ length: copies }, () => items).flat();
+}
+
 function Ticker({ topText }) {
   const items = topText.split("|").map(s => s.trim()).filter(Boolean);
   const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
@@ -595,6 +601,7 @@ function Ticker({ topText }) {
     { name: "Estate Sapphire Cluster", price: "$220", tier: "unicorn" },
   ];
   const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted ? contentTrades : fallbackTrades;
+  const tickerTrades = repeatTickerItems(trades, 30);
   return (
     <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
       <div className="hp-ticker-sr">
@@ -613,7 +620,7 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {trades.length > 0 ? [...trades, ...trades, ...trades].map((tr, i) => (
+          {tickerTrades.length > 0 ? tickerTrades.map((tr, i) => (
             <a key={i} {...linkProps(getTradeBoardHref())} className="hp-ticker-trade">
               <span className={`pip ${tr.tier}`} />
               {tr.name} · {tr.price}

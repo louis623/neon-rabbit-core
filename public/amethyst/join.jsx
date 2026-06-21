@@ -365,8 +365,15 @@ function Header({ businessName }) {
   );
 }
 
+function repeatTickerItems(items, minimumItems = 30) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  const copies = Math.max(3, Math.ceil(minimumItems / items.length));
+  return Array.from({ length: copies }, () => items).flat();
+}
+
 function Ticker({ topText }) {
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
+  const tickerTrades = repeatTickerItems(TICKER_TRADES, 30);
   return (
     <div className="hp-ticker" aria-label="Customer site updates">
       <div className="hp-ticker-sr">
@@ -384,7 +391,7 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" aria-hidden="true">
-          {TICKER_TRADES.length > 0 ? [...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES].map((trade, index) => (
+          {tickerTrades.length > 0 ? tickerTrades.map((trade, index) => (
             <a key={index} {...linkProps(TRADE_BOARD_HREF)} className="hp-ticker-trade">
               <span className={`pip ${trade.tier}`} />
               {trade.name} · {trade.price}

@@ -1329,3 +1329,27 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Raw Vercel deployment URLs are internal implementation details unless Louis explicitly asks for them.
 - Before reporting a fix as live, promote/confirm the stable demo alias and verify the exact route at that URL.
 - If Louis says a fix is not visible, use the Chrome connector to inspect the exact tab/URL and loaded assets before making another deployment claim.
+
+---
+
+## June 21, 2026 - Trade Board Ticker Rendered-Speed Fix
+
+**What happened:**
+- Louis reported the BlingKitchen live-site preview Trade Board ticker still looked slow after the earlier `60s` duration change.
+- Rendered screenshot comparison confirmed he was right: the announcement row moved about `50px/s`, while the short BlingKitchen Trade Board row moved only about `7.5px/s`.
+- Root cause was not the CSS duration by itself. The Trade Board loop only repeated the available trade items three times, so customer sites with one or two ticker items had a very short track and a tiny actual pixel distance to animate.
+
+**Fix:**
+- The public Amethyst homepage, Trade Board, and Join templates now pad Trade Board ticker content to a minimum of 30 rendered items before animation.
+- The approved timing remains `72s` for announcements and `60s` for the Trade Board row, but short customer data now has enough rendered track width to move at the intended visual pace.
+- Static Amethyst HTML asset versions were cache-busted to `20260621-trade-ticker-distance`.
+
+**Verification:**
+- TDD regression added to block reintroducing three-copy Trade Board loops.
+- Local BlingKitchen DOM transform measurement after tuning:
+  - Announcements: 12 items, `72s`, about `45.9px/s`.
+  - Trade Board: 30 items, `60s`, about `56.7px/s`.
+  - Trade Board is therefore roughly 23% faster than announcements instead of crawling.
+- Focused route/cache tests passed.
+- `npm run qa:amethyst` passed against local `localhost:3001`.
+- `npm run build` passed locally.

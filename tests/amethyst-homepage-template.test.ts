@@ -75,7 +75,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260621-trade-ticker-pace')
+        expect(script, file).toContain('v=20260621-trade-ticker-distance')
       }
     }
   })
@@ -163,6 +163,31 @@ describe('Amethyst homepage template data wiring', () => {
     }
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
       expect(preset.values.tickerSpeed).toBe(1)
+    }
+  })
+
+  it('pads short Trade Board ticker rows so customer sites do not crawl visually', () => {
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const trade = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+
+    expect(homepage).toContain('repeatTickerItems(trades, 30)')
+    expect(trade).toContain('repeatTickerItems(trades, 30)')
+    expect(join).toContain('repeatTickerItems(TICKER_TRADES, 30)')
+
+    for (const jsx of [homepage, trade, join]) {
+      expect(jsx).toContain('function repeatTickerItems(items, minimumItems = 30)')
+      expect(jsx).not.toContain('[...trades, ...trades, ...trades]')
+      expect(jsx).not.toContain('[...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES]')
     }
   })
 
