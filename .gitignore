@@ -20,6 +20,7 @@ pnpm-debug.log*
 test-results
 playwright-report
 verification/sparkle-finder/*.png
+.superpowers/
 
 # env
 .env
