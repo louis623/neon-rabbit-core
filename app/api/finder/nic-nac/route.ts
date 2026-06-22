@@ -38,6 +38,12 @@ import { summarizeFinderNicNacMemoryHints } from "@/lib/sparkle-finder/nic-nac/c
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import type { FinderNicNacAccountContext } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import {
+  completeFinderNicNacRun,
+  failFinderNicNacRun,
+  recordFinderNicNacStaticRedirect,
+  startFinderNicNacRun,
+} from "@/lib/sparkle-finder/nic-nac/persistence";
+import {
   createFinderNicNacProductContext,
   filterFinderNicNacToolIntentsForContext,
 } from "@/lib/sparkle-finder/nic-nac/tool-policy";
@@ -53,6 +59,7 @@ type FinderNicNacPostBody = {
 };
 
 export async function POST(request: Request) {
+  const routeStartedAt = Date.now();
   const localPreviewAuthMode = getLocalPreviewAuthMode(request);
   const accountState = await getCurrentSparkleFinderAccount(
     localPreviewAuthMode ? { localPreviewAuthMode } : undefined,
@@ -82,9 +89,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "missing_messages" }, { status: 400 });
   }
 
+  const accountContext = createFinderNicNacAccountContext(accountState);
   const missionScope = classifyNicNacMissionScopeForMessages(messages);
 
   if (missionScope.action === "redirect") {
+    await recordFinderNicNacStaticRedirect({
+      userId: accountState.customer.id,
+      messages,
+      accountContext,
+      redirectMessage: missionScope.message,
+      latencyMs: Date.now() - routeStartedAt,
+    });
+
     return createNicNacStaticTextStreamResponse({
       message: missionScope.message,
       messageId: randomUUID(),
@@ -102,7 +118,6 @@ export async function POST(request: Request) {
   const finderMemorySummaries = summarizeFinderNicNacMemoryHints(
     await getSafeCustomerMemoryForPrompt(memoryStore, accountState.customer.id),
   );
-  const accountContext = createFinderNicNacAccountContext(accountState);
   const productContext = createFinderNicNacProductContext({
     actorType: accountContext.actorType,
     accountTier: accountContext.accountTier,
@@ -110,6 +125,7 @@ export async function POST(request: Request) {
   });
   const toolPolicy = filterFinderNicNacToolIntentsForContext(productContext, requestedIntents);
   const intents = toolPolicy.allowedIntents;
+  const blockedIntentLabels = toolPolicy.blockedIntents.map((blocked) => `${blocked.intent}:${blocked.reason}`);
   const activeToolNames = toolPolicy.allowedToolNames.length > 0
     ? toolPolicy.allowedToolNames
     : listFinderNicNacToolNamesForIntents(intents);
@@ -127,6 +143,19 @@ export async function POST(request: Request) {
   const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
   const modelMessages = await convertToModelMessages(messages);
   const modelPolicy = getNicNacModelPolicy("human_default");
+  const telemetryRun = await startFinderNicNacRun({
+    userId: accountState.customer.id,
+    messages,
+    accountContext,
+    requestedIntents,
+    allowedIntents: intents,
+    blockedIntents: blockedIntentLabels,
+    activeToolNames,
+    modelPolicy,
+    finderMemorySummaryCount: finderMemorySummaries.length,
+    suiteMemorySummaryCount: suiteMemorySummaries.length,
+    latencyStartedAt: routeStartedAt,
+  });
   const result = streamText({
     model: getNicNacLanguageModel(modelPolicy),
     system: buildFinderNicNacSystemPrompt({
@@ -140,6 +169,26 @@ export async function POST(request: Request) {
     tools,
     stopWhen: stepCountIs(5),
     providerOptions: getNicNacProviderOptions(modelPolicy),
+    onError: async ({ error }) => {
+      await failFinderNicNacRun({
+        run: telemetryRun,
+        error,
+        latencyMs: Date.now() - routeStartedAt,
+      });
+    },
+    onFinish: async (event) => {
+      await completeFinderNicNacRun({
+        run: telemetryRun,
+        assistantText: event.text,
+        usage: {
+          inputTokens: event.totalUsage.inputTokens,
+          outputTokens: event.totalUsage.outputTokens,
+          totalTokens: event.totalUsage.totalTokens,
+        },
+        finishReason: event.finishReason,
+        latencyMs: Date.now() - routeStartedAt,
+      });
+    },
   });
 
   return result.toUIMessageStreamResponse({

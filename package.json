@@ -9,7 +9,8 @@
     "test": "vitest run --passWithNoTests",
     "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts",
     "smoke:finder-nic-nac": "tsx scripts/smoke-finder-nic-nac.ts",
-    "smoke:finder-nic-nac:guard": "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model"
+    "smoke:finder-nic-nac:guard": "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model",
+    "smoke:finder-linked-runtime": "tsx scripts/smoke-finder-linked-runtime.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.73",

@@ -2,6 +2,13 @@
 
 ## 2026-06-22
 
+- Added Finder Nic-Nac durable conversation/run telemetry in code:
+  - Added migration `20260622173000_finder_nic_nac_conversation_telemetry.sql` for `sparkle_finder_nic_nac_conversations`, `sparkle_finder_nic_nac_messages`, and `sparkle_finder_nic_nac_runs`, with owner-readable RLS and service-role writes.
+  - Added fail-open route persistence for `/api/finder/nic-nac`: mission redirects write zero-token `redirected` rows, model-backed streams write `started` rows and complete/fail rows with model policy, tool intents, memory counts, token usage, latency, and optional env-based cost estimates.
+  - Added `scripts/smoke-finder-linked-runtime.ts` plus `npm run smoke:finder-linked-runtime` to create a temporary confirmed Finder user, sign in through the deployed site with Playwright, claim a Secret Rep ID, verify Finder DB rows, call linked Nic-Nac, verify telemetry, and clean up.
+  - Verification passed locally: full Finder Vitest suite (`36` files, `470` tests) and production `next build`.
+  - Remote migration/deployed smoke not yet run from this terminal because the Finder repo has no `supabase/config.toml`, `SUPABASE_ACCESS_TOKEN` is missing, and no DB URL env is available.
+
 - Deployed and smoked Secret Rep ID claiming plus linked Finder Nic-Nac runtime:
   - Applied Finder migration `20260622144600_finder_rep_claim_profile_metadata.sql` to the remote Sparkle Finder Supabase project and verified the claim metadata columns/comments.
   - Configured shared sensitive `SPARKLE_FINDER_TO_SUITE_REP_CLAIM_TOKEN` in Suite and Finder Vercel production/preview.

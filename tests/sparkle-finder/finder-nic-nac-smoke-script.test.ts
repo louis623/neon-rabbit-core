@@ -6,12 +6,19 @@ import {
   extractCookieHeader,
   parseFinderNicNacSmokeConfig,
 } from "../../scripts/smoke-finder-nic-nac";
+import {
+  getMissingFinderLinkedRuntimeSmokeConfig,
+  parseFinderLinkedRuntimeSmokeConfig,
+} from "../../scripts/smoke-finder-linked-runtime";
 
 describe("Finder Nic-Nac smoke script helpers", () => {
   it("exposes an npm smoke command for the Finder Nic-Nac route", () => {
     expect(packageJson.scripts["smoke:finder-nic-nac"]).toBe("tsx scripts/smoke-finder-nic-nac.ts");
     expect(packageJson.scripts["smoke:finder-nic-nac:guard"]).toBe(
       "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model",
+    );
+    expect(packageJson.scripts["smoke:finder-linked-runtime"]).toBe(
+      "tsx scripts/smoke-finder-linked-runtime.ts",
     );
   });
 
@@ -111,5 +118,37 @@ describe("Finder Nic-Nac smoke script helpers", () => {
     headers.append("set-cookie", "other=value; Path=/");
 
     expect(extractCookieHeader(headers)).toBe("sparkle_finder_auth_mode=silver; other=value");
+  });
+
+  it("parses deployed linked-runtime smoke config with an explicit Secret Rep ID", () => {
+    const config = parseFinderLinkedRuntimeSmokeConfig({
+      SPARKLE_FINDER_LINKED_SMOKE_BASE_URL: "https://finder.example/",
+      SPARKLE_FINDER_LINKED_SMOKE_SECRET_REP_ID_NUMBER: " secret-rep-id ",
+      SPARKLE_FINDER_SERVICE_ROLE_KEY: "finder-service-role",
+      SPARKLE_FINDER_SUPABASE_URL: "https://finder.supabase.co",
+    });
+
+    expect(config).toMatchObject({
+      baseUrl: "https://finder.example",
+      finderServiceRoleKey: "finder-service-role",
+      finderSupabaseUrl: "https://finder.supabase.co",
+      headless: true,
+      runNicNac: true,
+      secretRepIdNumber: "secret-rep-id",
+    });
+    expect(getMissingFinderLinkedRuntimeSmokeConfig(config)).toEqual([]);
+  });
+
+  it("reports Suite lookup settings as missing when no explicit Secret Rep ID is provided", () => {
+    const config = parseFinderLinkedRuntimeSmokeConfig({
+      NEXT_PUBLIC_SUPABASE_URL: "https://finder.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "finder-service-role",
+    });
+
+    expect(getMissingFinderLinkedRuntimeSmokeConfig(config)).toEqual([
+      "SPARKLE_SUITE_SUPABASE_URL or SPARKLE_FINDER_LINKED_SMOKE_SECRET_REP_ID_NUMBER",
+      "SPARKLE_SUITE_SERVICE_ROLE_KEY or SPARKLE_FINDER_LINKED_SMOKE_SECRET_REP_ID_NUMBER",
+      "SPARKLE_FINDER_TO_SUITE_REP_CLAIM_TOKEN or SPARKLE_FINDER_LINKED_SMOKE_SECRET_REP_ID_NUMBER",
+    ]);
   });
 });

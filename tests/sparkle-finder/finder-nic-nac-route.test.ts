@@ -2,39 +2,63 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, createClientMock, memoryRecords, suiteMemoryRuntime } = vi.hoisted(() => ({
-  nicNacRouteRuntime: {
-    accountState: {
-      status: "anonymous",
-      tier: "anonymous",
-      displayName: "Guest",
-      email: null,
-      customer: null,
-    } as unknown,
-    accountServiceCalls: [] as unknown[],
-  },
-  streamTextMock: vi.fn(),
-  createOpenAIMock: vi.fn((_options?: unknown) => (model: string) => ({
-    provider: "openai",
-    model,
-  })),
-  createClientMock: vi.fn(async () => ({})),
-  memoryRecords: [] as Array<{
-    id: string;
-    userId: string;
-    memoryType: "style_preference" | "guarded_note";
-    summary: string;
-    source: "explicit";
-    confidence: "high";
-    createdAt: string;
-    updatedAt: string;
-    expiresAt?: string | null;
-  }>,
-  suiteMemoryRuntime: {
-    summaries: [] as string[],
-    calls: [] as unknown[],
-  },
-}));
+const {
+  nicNacRouteRuntime,
+  streamTextMock,
+  createOpenAIMock,
+  createClientMock,
+  memoryRecords,
+  persistenceRuntime,
+  suiteMemoryRuntime,
+} = vi.hoisted(() => {
+  const runHandle = {
+    conversationId: "finder-conversation-1",
+    modelId: "gpt-5.4-test",
+    runId: "finder-run-1",
+    userId: "customer-silver-brittany",
+  };
+
+  return {
+    nicNacRouteRuntime: {
+      accountState: {
+        status: "anonymous",
+        tier: "anonymous",
+        displayName: "Guest",
+        email: null,
+        customer: null,
+      } as unknown,
+      accountServiceCalls: [] as unknown[],
+    },
+    streamTextMock: vi.fn(),
+    createOpenAIMock: vi.fn((_options?: unknown) => (model: string) => ({
+      provider: "openai",
+      model,
+    })),
+    createClientMock: vi.fn(async () => ({})),
+    memoryRecords: [] as Array<{
+      id: string;
+      userId: string;
+      memoryType: "style_preference" | "guarded_note";
+      summary: string;
+      source: "explicit";
+      confidence: "high";
+      createdAt: string;
+      updatedAt: string;
+      expiresAt?: string | null;
+    }>,
+    persistenceRuntime: {
+      completeFinderNicNacRun: vi.fn(async () => true),
+      failFinderNicNacRun: vi.fn(async () => true),
+      recordFinderNicNacStaticRedirect: vi.fn(async () => runHandle),
+      runHandle,
+      startFinderNicNacRun: vi.fn(async () => runHandle),
+    },
+    suiteMemoryRuntime: {
+      summaries: [] as string[],
+      calls: [] as unknown[],
+    },
+  };
+});
 
 vi.mock("ai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("ai")>();
@@ -80,6 +104,13 @@ vi.mock("@/lib/sparkle-finder/suite-linked-rep-memory", () => ({
   },
 }));
 
+vi.mock("@/lib/sparkle-finder/nic-nac/persistence", () => ({
+  completeFinderNicNacRun: (input: unknown) => persistenceRuntime.completeFinderNicNacRun(input),
+  failFinderNicNacRun: (input: unknown) => persistenceRuntime.failFinderNicNacRun(input),
+  recordFinderNicNacStaticRedirect: (input: unknown) => persistenceRuntime.recordFinderNicNacStaticRedirect(input),
+  startFinderNicNacRun: (input: unknown) => persistenceRuntime.startFinderNicNacRun(input),
+}));
+
 import { POST } from "../../app/api/finder/nic-nac/route";
 import { NIC_NAC_MISSION_REDIRECT_MESSAGE } from "../../lib/nic-nac/core/mission-guard";
 
@@ -92,6 +123,10 @@ describe("Finder Nic-Nac API route", () => {
       toUIMessageStreamResponse: () => new Response("streamed Nic-Nac"),
     });
     memoryRecords.length = 0;
+    persistenceRuntime.completeFinderNicNacRun.mockClear();
+    persistenceRuntime.failFinderNicNacRun.mockClear();
+    persistenceRuntime.recordFinderNicNacStaticRedirect.mockClear();
+    persistenceRuntime.startFinderNicNacRun.mockClear();
     suiteMemoryRuntime.summaries = [];
     suiteMemoryRuntime.calls = [];
     nicNacRouteRuntime.accountState = {
@@ -192,6 +227,17 @@ describe("Finder Nic-Nac API route", () => {
     expect(streamBody).not.toContain("finder-nic-nac-mission-redirect");
     expect(streamTextMock).not.toHaveBeenCalled();
     expect(createClientMock).not.toHaveBeenCalled();
+    expect(persistenceRuntime.recordFinderNicNacStaticRedirect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accountContext: {
+          accountTier: "silver",
+          actorType: "collector",
+        },
+        redirectMessage: NIC_NAC_MISSION_REDIRECT_MESSAGE,
+        userId: "customer-silver-sparkle-mama",
+      }),
+    );
+    expect(persistenceRuntime.startFinderNicNacRun).not.toHaveBeenCalled();
   });
 
   it("passes local preview auth mode into the account resolver for route smoke", async () => {
@@ -261,6 +307,90 @@ describe("Finder Nic-Nac API route", () => {
         },
       },
     });
+    expect(persistenceRuntime.startFinderNicNacRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accountContext: {
+          accountTier: "silver",
+          actorType: "collector",
+        },
+        activeToolNames: expect.any(Array),
+        allowedIntents: expect.any(Array),
+        blockedIntents: expect.any(Array),
+        finderMemorySummaryCount: 0,
+        modelPolicy: expect.objectContaining({
+          key: "human_default",
+          modelId: "gpt-5.4-test",
+          provider: "openai",
+          reasoning: "medium",
+        }),
+        suiteMemorySummaryCount: 0,
+        userId: "customer-silver-brittany",
+      }),
+    );
+  });
+
+  it("records Finder Nic-Nac completion and stream failures without changing the response surface", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Brittany",
+      email: "brittany@example.test",
+      customer: {
+        id: "customer-silver-brittany",
+        displayName: "Brittany",
+        email: "brittany@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+
+    await POST(createNicNacRequest("What shows are coming up?"));
+
+    const routeCall = streamTextMock.mock.calls[0][0] as {
+      onError: (event: { error: unknown }) => Promise<void>;
+      onFinish: (event: {
+        text: string;
+        totalUsage: {
+          inputTokens?: number;
+          outputTokens?: number;
+          totalTokens?: number;
+        };
+        finishReason: string;
+      }) => Promise<void>;
+    };
+
+    await routeCall.onFinish({
+      text: "Brittany, here are the next shows I found.",
+      totalUsage: {
+        inputTokens: 111,
+        outputTokens: 22,
+        totalTokens: 133,
+      },
+      finishReason: "stop",
+    });
+    await routeCall.onError({ error: new Error("stream exploded after telemetry test") });
+
+    expect(persistenceRuntime.completeFinderNicNacRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assistantText: "Brittany, here are the next shows I found.",
+        finishReason: "stop",
+        run: persistenceRuntime.runHandle,
+        usage: {
+          inputTokens: 111,
+          outputTokens: 22,
+          totalTokens: 133,
+        },
+      }),
+    );
+    expect(persistenceRuntime.failFinderNicNacRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.any(Error),
+        run: persistenceRuntime.runHandle,
+      }),
+    );
   });
 
   it("passes linked Sparkle Suite rep context into the Finder Nic-Nac system prompt", async () => {
