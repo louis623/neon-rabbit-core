@@ -10,21 +10,6 @@ vi.mock('@/lib/services/server-image-quality', () => ({
 import { addListing, addListingBatch } from '@/lib/services/trade-board'
 import { resolveItemNumber } from '@/lib/services/jewelry-database'
 
-const LABEL_CARD_ANALYSIS = {
-  contentType: 'image/jpeg',
-  width: 768,
-  height: 1024,
-  blurRisk: 0.059,
-  lightingRisk: 0.235,
-  detailRisk: 0,
-  backgroundDistractionRisk: 0.801,
-  subjectCoverage: 0.042,
-  subjectCentered: false,
-  detailConfidence: 1,
-  backgroundUniformity: 0.231,
-  backgroundCleanliness: 0.178,
-}
-
 function makeResolveSupabase(row: Record<string, unknown> | null) {
   const maybeSingle = vi.fn().mockResolvedValue({ data: row, error: null })
   const eq = vi.fn().mockReturnValue({ maybeSingle })
@@ -334,26 +319,19 @@ describe('addListingBatch', () => {
     expect(result.added).toHaveLength(1)
   })
 
-  it('blocks batch canonical fallback when an existing design photo looks like packaging', async () => {
+  it('trusts batch canonical fallback without reclassifying the catalog photo', async () => {
     const { client, spies } = makeBatchSupabase({
       canonicalPhotoUrl: 'https://cdn.example.com/card-back.jpg',
     })
-    analyzeServerImageQualityMock.mockResolvedValueOnce(LABEL_CARD_ANALYSIS)
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(Buffer.from([1, 2, 3]), { status: 200 }),
-    )
 
-    await expect(
-      addListingBatch(client, 'rep-1', {
-        clickwrapAccepted: true,
-        items: [{ itemNumber: 'RG31452' }],
-      }),
-    ).rejects.toMatchObject({
-      code: 'CANONICAL_PHOTO_NOT_JEWELRY',
-      userMessage: expect.stringContaining('actual jewelry photo'),
+    const result = await addListingBatch(client, 'rep-1', {
+      clickwrapAccepted: true,
+      items: [{ itemNumber: 'RG31452' }],
     })
-    expect(spies.insert).not.toHaveBeenCalled()
-    fetchSpy.mockRestore()
+
+    expect(analyzeServerImageQualityMock).not.toHaveBeenCalled()
+    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(result.added).toHaveLength(1)
   })
 })
 
@@ -447,26 +425,22 @@ describe('addListing', () => {
     expect(result.listingId).toBe('listing-1')
   })
 
-  it('blocks canonical fallback when an existing design photo looks like packaging', async () => {
+  it('trusts canonical fallback without reclassifying the catalog photo', async () => {
     const { client, spies } = makeAddListingWithCollectionSupabase({
       canonicalPhotoUrl: 'https://cdn.example.com/card-back.jpg',
     })
-    analyzeServerImageQualityMock.mockResolvedValueOnce(LABEL_CARD_ANALYSIS)
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(Buffer.from([1, 2, 3]), { status: 200 }),
-    )
 
-    await expect(
-      addListing(client, 'rep-1', {
-        itemNumber: 'RG31452',
-        clickwrapAccepted: true,
-        collectionName: 'Lustre',
-      }),
-    ).rejects.toMatchObject({
-      code: 'CANONICAL_PHOTO_NOT_JEWELRY',
-      userMessage: expect.stringContaining('actual jewelry photo'),
+    const result = await addListing(client, 'rep-1', {
+      itemNumber: 'RG31452',
+      clickwrapAccepted: true,
+      collectionName: 'Lustre',
     })
-    expect(spies.insert).not.toHaveBeenCalled()
-    fetchSpy.mockRestore()
+
+    expect(analyzeServerImageQualityMock).not.toHaveBeenCalled()
+    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(result).toMatchObject({
+      listingId: 'listing-1',
+      usesCanonicalPhoto: true,
+    })
   })
 })

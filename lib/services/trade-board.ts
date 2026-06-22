@@ -46,8 +46,6 @@ import {
   resolveItemNumber,
   updateDesignCollection,
 } from './jewelry-database'
-import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
-import { analyzeServerImageQuality } from '@/lib/services/server-image-quality'
 
 // Re-export for the existing 4 callers that import from
 // '@/lib/services/trade-board'. Do not remove these without updating callers.
@@ -198,31 +196,6 @@ function isManagedRepListingPhotoUrl(repId: string, photoUrl: string): boolean {
     return url.pathname.includes(`/jewelry-photos/${repId}/`)
   } catch {
     return false
-  }
-}
-
-async function assertCanonicalPhotoCanBeUsedForListing(args: {
-  photoUrl: string | null | undefined
-  itemNumber: string
-  designName: string
-}) {
-  if (!args.photoUrl) return
-
-  try {
-    const response = await fetch(args.photoUrl)
-    if (!response.ok) return
-    const bytes = new Uint8Array(await response.arrayBuffer())
-    const analysis = await analyzeServerImageQuality(bytes)
-    const semantic = classifyJewelryPhotoSemantics(analysis)
-    if (semantic.role !== 'label_or_packaging') return
-
-    throw new TradeBoardError(
-      'CANONICAL_PHOTO_NOT_JEWELRY',
-      `canonical photo for ${args.itemNumber} appears to be packaging or a label: ${semantic.reasons.join('; ')}`,
-      `I need the actual jewelry photo before I can list ${args.designName}. The saved catalog photo looks more like packaging, a label, or the back of the card.`,
-    )
-  } catch (error) {
-    if (error instanceof TradeBoardError) throw error
   }
 }
 
@@ -564,13 +537,6 @@ export async function addListing(
   }
 
   const usesCanonicalPhoto = !input.listingPhotoUrl
-  if (usesCanonicalPhoto) {
-    await assertCanonicalPhotoCanBeUsedForListing({
-      photoUrl: resolved.design.canonicalPhotoUrl,
-      itemNumber: resolved.design.itemNumber,
-      designName: resolved.design.designName,
-    })
-  }
   const { data: inserted, error: insErr } = await supabase
     .from('trade_listings')
     .insert({
@@ -698,20 +664,6 @@ export async function addListingBatch(
 
   if (ready.length === 0) {
     return { added: [], pending: { needCollection, needFullInfo } }
-  }
-
-  const checkedCanonicalUrls = new Set<string>()
-  for (const { item } of ready) {
-    if (item.listingPhotoUrl) continue
-    const design = designByItem.get(item.itemNumber)
-    if (!design?.canonical_photo_url) continue
-    if (checkedCanonicalUrls.has(design.canonical_photo_url)) continue
-    checkedCanonicalUrls.add(design.canonical_photo_url)
-    await assertCanonicalPhotoCanBeUsedForListing({
-      photoUrl: design.canonical_photo_url,
-      itemNumber: item.itemNumber,
-      designName: design.design_name,
-    })
   }
 
   const toInsert = ready
