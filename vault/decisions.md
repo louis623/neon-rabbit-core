@@ -48,6 +48,9 @@ Production route files should not hardcode raw provider/model strings. Use Nic-N
 **Nic-Nac runtime provider is OpenAI-only for the current product policy**
 Do not keep an Anthropic fallback inside the shared Nic-Nac model provider while the product direction is to avoid juggling multiple AI vendors. Future provider expansion can be reconsidered intentionally, but current production Nic-Nac should route through the centralized OpenAI policy only.
 
+**Sparkle Finder Nic-Nac should not remain a separate Anthropic/Haiku route**
+Sparkle Finder's live Nic-Nac route should follow the same OpenAI-only product policy direction as Sparkle Suite. Route files should use model policy helpers rather than raw provider/model strings, and Finder should not carry an unused Anthropic provider dependency for Nic-Nac.
+
 **Nic-Nac tool access is product-context gated**
 The shared Nic-Nac core should decide tool availability from product, surface, actor, account tier, linked identity, and permissions. Finder-linked reps may share memory identity with Suite, but Suite workspace mutation intents stay blocked unless the current authenticated surface is Sparkle Suite rep workspace.
 

@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Finder Nic-Nac OpenAI Adapter
+
+**What changed:**
+- In `C:\Users\louis\sparkle-finder-repo`, moved Finder `/api/finder/nic-nac` from hardcoded Anthropic Haiku to an OpenAI-only Nic-Nac model policy adapter.
+- Added Finder-local Nic-Nac model policy/provider helpers matching the Suite policy shape.
+- Replaced Finder's unused `@ai-sdk/anthropic` dependency with `@ai-sdk/openai`.
+- Added `.env.example` placeholders for `OPENAI_API_KEY` and Nic-Nac model override vars.
+
+**Verification:**
+- TDD red/green completed for route-level OpenAI policy routing, no Anthropic/Haiku hardcoding, and env placeholder coverage.
+- Focused Finder route test passed: 1 file, 4 tests.
+- Related Finder account/entitlement tests passed: 3 files, 43 tests.
+- Full Finder Vitest suite passed: 28 files, 413 tests.
+- Finder production `npm run build` passed and included `/api/finder/nic-nac`.
+
+**Still open:**
+- Vercel project `sparkle-finder-dev` is missing `OPENAI_API_KEY`, so deployed authenticated Silver Finder Nic-Nac model streaming cannot be called runtime-ready until Louis configures/provides that secret.
+- Finder still needs shared linked-human memory, product-context tool policy, Secret Rep ID claim UI/storage, and authenticated deployed smoke after env setup.
+
 ## June 21, 2026 - Nic-Nac OpenAI-Only Provider
 
 **What changed:**
