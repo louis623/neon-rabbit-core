@@ -22,7 +22,7 @@ Running log of significant work sessions. Most recent first.
 - Independent reviewer agent found two policy gaps; both were reproduced with failing tests and fixed before this checkpoint.
 
 **Still open:**
-- Deployed Finder Nic-Nac smoke still needs Finder Vercel `OPENAI_API_KEY` plus the shared `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` configured in both Finder and Suite.
+- Deployed Finder Nic-Nac smoke still needs Finder Vercel `OPENAI_API_KEY`; `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` is configured for production and preview in both Suite and Finder, but new deployments/smoke are still needed before calling the deployed bridge ready.
 - Finder Secret Rep ID claim UI/storage, rep-facing Suite Secret Rep ID copy, legal/privacy/onboarding disclosures, and authenticated deployed smoke remain future slices.
 
 ## June 22, 2026 - Finder Linked Rep Suite Memory Bridge
@@ -45,7 +45,7 @@ Running log of significant work sessions. Most recent first.
 - Finder `npm run build` passed and includes `/api/finder/nic-nac`.
 
 **Still open:**
-- Vercel must be configured with `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` in both Suite and Finder projects before the deployed memory bridge can work.
+- `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` is now configured in Suite and Finder Vercel production/preview; the deployed bridge still needs a fresh deployment and smoke before it is called live-ready.
 - Finder Vercel project still needs `OPENAI_API_KEY` before authenticated Silver Finder Nic-Nac model streaming can be smoked live.
 - Suite cannot independently prove Finder's user-to-rep link; the bridge relies on Finder server-side authenticated account state plus the internal bearer token. Future claim/storage work should make the link durable and auditable in Finder.
 
