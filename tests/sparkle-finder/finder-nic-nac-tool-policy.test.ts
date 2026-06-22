@@ -108,4 +108,24 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
     ]);
     expect(result.blockedIntents).toEqual([]);
   });
+
+  it("keeps Finder collection, Showcase, Studio, and profile tools available for linked reps", () => {
+    const result = filterFinderNicNacToolIntentsForContext(
+      createFinderNicNacProductContext({
+        actorType: "linked_rep",
+        accountTier: "silver",
+        linkedSuiteRepId: "suite-rep-1",
+      }),
+      ["collection", "showcase", "studio", "profile"],
+    );
+
+    expect(result.allowedIntents).toEqual(["collection", "showcase", "studio", "profile"]);
+    expect(result.allowedToolNames).toEqual([
+      "list_customer_collection",
+      "summarize_my_showcase",
+      "get_showcase_studio_requirements",
+      "read_my_profile_status",
+    ]);
+    expect(result.blockedIntents).toEqual([]);
+  });
 });

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildFinderNicNacTools } from "../../lib/sparkle-finder/nic-nac/tools";
 import {
+  getCatalogJewelryItemById,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
 } from "../../lib/sparkle-finder/catalog-service";
@@ -10,16 +11,19 @@ vi.mock("../../lib/sparkle-finder/catalog-service", async (importOriginal) => {
 
   return {
     ...actual,
+    getCatalogJewelryItemById: vi.fn(),
     getFinderAvailabilityForJewelryItem: vi.fn(),
     getFinderLiveShows: vi.fn(),
   };
 });
 
+const getCatalogJewelryItemByIdMock = vi.mocked(getCatalogJewelryItemById);
 const getFinderAvailabilityForJewelryItemMock = vi.mocked(getFinderAvailabilityForJewelryItem);
 const getFinderLiveShowsMock = vi.mocked(getFinderLiveShows);
 
 describe("Sparkle Finder Nic-Nac tools", () => {
   beforeEach(() => {
+    getCatalogJewelryItemByIdMock.mockReset();
     getFinderAvailabilityForJewelryItemMock.mockReset();
     getFinderLiveShowsMock.mockReset();
   });
@@ -211,6 +215,252 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     });
   });
 
+  it("lists a customer's bounded collection with catalog context and private-note safety", async () => {
+    getCatalogJewelryItemByIdMock.mockImplementation(async (itemId: string) => {
+      const items = {
+        "design-owned": {
+          id: "design-owned",
+          itemNumber: "RG1234",
+          name: "Rose Garden Ring",
+          collectionName: "Garden Glow",
+          jewelryType: "ring",
+          imageUrl: "",
+          bpLabel: "standard",
+          knownRepListingIds: [],
+        },
+        "design-wishlist": {
+          id: "design-wishlist",
+          itemNumber: "ER4321",
+          name: "Aurora Drop Earrings",
+          collectionName: "Aurora Lane",
+          jewelryType: "earrings",
+          imageUrl: "",
+          bpLabel: "unicorn",
+          knownRepListingIds: [],
+        },
+      } as const;
+
+      return items[itemId as keyof typeof items];
+    });
+    const supabase = createFinderStateSupabase({
+      collectionRows: [
+        {
+          id: "collection-owned",
+          user_id: "customer-silver-celeste",
+          jewelry_item_id: "design-owned",
+          state: "owned",
+          note: "Favorite centerpiece ring for lives.",
+          is_highlighted: true,
+          visibility: "public",
+          showcase_status: "owned",
+          reveal_story: "The fizz reveal was perfect.",
+          is_rarest_reveal: true,
+        },
+        {
+          id: "collection-wishlist",
+          user_id: "customer-silver-celeste",
+          jewelry_item_id: "design-wishlist",
+          state: "wishlist",
+          note: "Looking for a pink pair.",
+          is_highlighted: false,
+          visibility: "private",
+          showcase_status: "iso",
+          reveal_story: "",
+          is_rarest_reveal: false,
+        },
+      ],
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["collection"],
+    );
+
+    const result = await executeTool(tools.list_customer_collection, { limit: 2 });
+
+    expect(supabase.from).toHaveBeenCalledWith("sparkle_finder_collection_items");
+    expect(getCatalogJewelryItemByIdMock).toHaveBeenCalledWith("design-owned", { useFixtureFallback: true });
+    expect(result).toEqual({
+      status: "connected",
+      dataSource: "persisted",
+      count: 2,
+      stateCounts: {
+        owned: 1,
+        wishlist: 1,
+        privateNoteOnly: 0,
+      },
+      items: [
+        {
+          collectionItemId: "collection-owned",
+          itemId: "design-owned",
+          itemNumber: "RG1234",
+          itemName: "Rose Garden Ring",
+          collectionName: "Garden Glow",
+          jewelryType: "ring",
+          state: "owned",
+          visibility: "public",
+          showcaseStatus: "owned",
+          isHighlighted: true,
+          isRarestReveal: true,
+          hasNote: true,
+          noteSnippet: "Favorite centerpiece ring for lives.",
+          hasRevealStory: true,
+        },
+        {
+          collectionItemId: "collection-wishlist",
+          itemId: "design-wishlist",
+          itemNumber: "ER4321",
+          itemName: "Aurora Drop Earrings",
+          collectionName: "Aurora Lane",
+          jewelryType: "earrings",
+          state: "wishlist",
+          visibility: "private",
+          showcaseStatus: "iso",
+          isHighlighted: false,
+          isRarestReveal: false,
+          hasNote: true,
+          noteSnippet: "Looking for a pink pair.",
+          hasRevealStory: false,
+        },
+      ],
+      guidance:
+        "Use collection rows as owner-scoped context only. Do not claim saves, edits, deletes, or public visibility changes unless a save tool result says so.",
+    });
+  });
+
+  it("summarizes a customer's Showcase readiness from bounded owner rows", async () => {
+    const supabase = createFinderStateSupabase({
+      collectionRows: [
+        {
+          id: "collection-public",
+          user_id: "customer-silver-celeste",
+          jewelry_item_id: "design-owned",
+          state: "owned",
+          visibility: "public",
+          showcase_status: "owned",
+          is_rarest_reveal: true,
+          reveal_story: "A favorite reveal.",
+        },
+        {
+          id: "collection-private",
+          user_id: "customer-silver-celeste",
+          jewelry_item_id: "design-private",
+          state: "private_note_only",
+          visibility: "private",
+          showcase_status: "private_note_only",
+          is_rarest_reveal: false,
+          reveal_story: "",
+        },
+      ],
+      showcaseCollectionRows: [
+        {
+          id: "showcase-pink-dreams",
+          user_id: "customer-silver-celeste",
+          title: "Pink Dreams",
+          slug: "pink-dreams",
+          description: "Soft pinks.",
+          visibility: "public",
+        },
+      ],
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["showcase"],
+    );
+
+    const result = await executeTool(tools.summarize_my_showcase, {});
+
+    expect(result).toEqual({
+      status: "connected",
+      dataSource: "persisted",
+      publicPieceCount: 1,
+      privatePieceCount: 1,
+      rarestRevealCount: 1,
+      piecesWithRevealStoryCount: 1,
+      showcaseCollections: [
+        {
+          id: "showcase-pink-dreams",
+          title: "Pink Dreams",
+          slug: "pink-dreams",
+          visibility: "public",
+        },
+      ],
+      guidance:
+        "Use Showcase summary for visibility and sharing-readiness coaching only. Do not claim Showcase changes unless a save tool result says so.",
+    });
+  });
+
+  it("reports profile status from the current Finder account context", async () => {
+    const tools = buildFinderNicNacTools(
+      {
+        accountState: createAuthenticatedAccountState(),
+        userId: "customer-silver-celeste",
+      },
+      ["profile"],
+    );
+
+    const result = await executeTool(tools.read_my_profile_status, {});
+
+    expect(result).toEqual({
+      status: "connected",
+      profile: {
+        userId: "customer-silver-celeste",
+        displayName: "Celeste",
+        tier: "silver",
+        membershipState: "silver_paid",
+        visibility: "sparkle_finder",
+        hasBio: true,
+        bioSnippet: "Stacks cool-toned rings.",
+        hasTikTokHandle: true,
+        tiktokHandle: "@celeste_stacks",
+        hasProfilePhoto: true,
+        isLinkedSuiteRep: true,
+        linkedSuiteRepId: "rep-celeste",
+        linkedSuiteBusinessName: "Celeste Sparkles",
+      },
+      guidance:
+        "Use profile status for Sparkle Finder profile coaching only. Do not claim profile saves unless a save tool result says so.",
+    });
+  });
+
+  it("describes Showcase Studio requirements without submitting missing-piece intake from chat", async () => {
+    vi.stubEnv("SPARKLE_SUITE_FINDER_INTAKE_API_URL", "https://suite.example/api/internal/finder/jewelry-intake");
+    vi.stubEnv("SPARKLE_FINDER_TO_SUITE_INTAKE_TOKEN", "finder-to-suite-token");
+    const tools = buildFinderNicNacTools(
+      {
+        userId: "customer-silver-celeste",
+      },
+      ["studio"],
+    );
+
+    const result = await executeTool(tools.get_showcase_studio_requirements, {});
+
+    expect(result).toEqual({
+      status: "connected",
+      suiteIntakeConnected: true,
+      requiredInputs: [
+        "original Bomb Party label/details photo",
+        "clear customer-facing jewelry photo",
+        "item number when available",
+        "short customer note or collection context when helpful",
+      ],
+      photoRules: [
+        "Label/details photos are details evidence only.",
+        "A separate jewelry-front photo is required before customer-facing publishing.",
+        "Clear boxed display jewelry photos are acceptable when centered, close, and attractive.",
+      ],
+      maxPhotoMegabytes: 10,
+      guidance:
+        "Do not submit Studio intake from chat without uploaded files. Ask the customer to use the Studio upload flow when photos are required.",
+    });
+    vi.unstubAllEnvs();
+  });
+
   it("lists persisted favorite reps with bounded show and board context", async () => {
     const supabase = createFavoriteRepSupabase();
     const tools = buildFinderNicNacTools(
@@ -392,5 +642,67 @@ function createCollectorSupabase(data: Array<Record<string, unknown>>) {
   return {
     from: vi.fn(),
     rpc: vi.fn(async () => ({ data, error: null })),
+  };
+}
+
+function createFinderStateSupabase({
+  collectionRows = [],
+  showcaseCollectionRows = [],
+}: {
+  collectionRows?: Array<Record<string, unknown>>;
+  showcaseCollectionRows?: Array<Record<string, unknown>>;
+}) {
+  const rowsByTable: Record<string, Array<Record<string, unknown>>> = {
+    sparkle_finder_collection_items: collectionRows,
+    sparkle_finder_showcase_collections: showcaseCollectionRows,
+  };
+
+  return {
+    from: vi.fn((table: string) => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(async () => ({
+          data: rowsByTable[table] ?? [],
+          error: null,
+        })),
+      })),
+    })),
+    rpc: vi.fn(),
+  };
+}
+
+function createAuthenticatedAccountState() {
+  return {
+    status: "authenticated",
+    tier: "silver",
+    displayName: "Celeste",
+    email: "celeste@example.test",
+    customer: {
+      id: "customer-silver-celeste",
+      displayName: "Celeste",
+      email: "celeste@example.test",
+      state: "WA",
+      tier: "silver",
+      repIdentity: {
+        sparkleSuiteRepId: "rep-celeste",
+        businessName: "Celeste Sparkles",
+        publicDiscoveryEnabled: true,
+      },
+    },
+    membership: {
+      effectiveState: "silver_paid",
+      hasSilverAccess: true,
+    },
+    silverProfile: {
+      customerId: "customer-silver-celeste",
+      photoUrl: "https://cdn.example.test/celeste.jpg",
+      tiktokHandle: "@celeste_stacks",
+      bio: "Stacks cool-toned rings.",
+      visibility: "sparkle_finder",
+    },
+    repIdentity: {
+      sparkleSuiteRepId: "rep-celeste",
+      businessName: "Celeste Sparkles",
+      publicDiscoveryEnabled: true,
+    },
   };
 }

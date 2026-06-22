@@ -56,6 +56,15 @@ describe("Sparkle Finder Nic-Nac curator", () => {
     ]);
   });
 
+  it("lists bounded collection, Showcase, Studio, and profile tool names", () => {
+    expect(listFinderNicNacToolNamesForIntents(["collection", "showcase", "studio", "profile"])).toEqual([
+      "list_customer_collection",
+      "summarize_my_showcase",
+      "get_showcase_studio_requirements",
+      "read_my_profile_status",
+    ]);
+  });
+
   it("stores safe customer-scoped curator memory without leaking between customers", async () => {
     const store = createInMemoryCustomerMemoryStore();
 

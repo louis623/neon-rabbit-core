@@ -2,6 +2,15 @@
 
 ## 2026-06-22
 
+- Added Finder Nic-Nac collection/Showcase/Studio/profile read-status parity:
+  - Added `list_customer_collection`, a bounded owner-scoped collection read tool that reads persisted `sparkle_finder_collection_items`, enriches rows with catalog context, and returns state counts, note presence, visibility, Showcase status, rarest-reveal flags, and reveal-story presence.
+  - Added `summarize_my_showcase`, a bounded owner-scoped Showcase readiness tool that reads public/private piece counts, rarest reveal count, reveal-story count, and Showcase collection summaries.
+  - Added `get_showcase_studio_requirements`, a non-mutating Studio readiness tool that reports required photo roles, max photo size, and whether the Suite intake endpoint appears configured without submitting missing-piece intake from chat.
+  - Added `read_my_profile_status`, a current-account profile status tool that reports tier, membership state, visibility, bio/TikTok/photo presence, and linked Suite rep identity when present.
+  - Wired these tool names through Finder intent policy, `/api/finder/nic-nac` active tool exposure, current account context, and route telemetry.
+  - Verification passed: focused Finder Nic-Nac tools/policy/curator/route tests (`39` tests), full Finder Vitest suite (`37` files, `483` tests), and production `next build`.
+  - `npm run lint` still fails on pre-existing unrelated React hook lint errors in `components/live/CustomerShowTime.tsx` and `components/nic-nac/FinderNicNacChatbot.tsx`, plus warnings.
+
 - Added Finder Nic-Nac availability/live-show tool parity:
   - Added `find_rep_board_availability`, a bounded read-only tool backed by the existing Sparkle Suite public Finder availability API service. It returns requested item context, exact leads first, same collection/type fallback leads second, public customer-site links, listing photo context, and next-show timing without mutating Sparkle Suite Trade Boards.
   - Added `list_upcoming_live_shows`, a bounded read-only tool backed by the existing Sparkle Suite public Finder live-shows API service. It returns public show id, show name, rep first name, start time, status, and customer-site link for timing/discovery only.

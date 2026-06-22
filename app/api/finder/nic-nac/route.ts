@@ -140,7 +140,15 @@ export async function POST(request: Request) {
     ...finderMemorySummaries,
     ...suiteMemorySummaries,
   ].slice(0, 8);
-  const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
+  const tools = buildFinderNicNacTools(
+    {
+      accountState,
+      memoryStore,
+      supabase: socialReadClient,
+      userId: accountState.customer.id,
+    },
+    intents,
+  );
   const modelMessages = await convertToModelMessages(messages);
   const modelPolicy = getNicNacModelPolicy("human_default");
   const telemetryRun = await startFinderNicNacRun({

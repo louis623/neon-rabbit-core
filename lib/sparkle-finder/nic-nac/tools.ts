@@ -1,10 +1,12 @@
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import {
+  getCatalogJewelryItemById,
   getCatalogJewelryItems,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
 } from "../catalog-service";
+import type { CurrentSparkleFinderAccountState } from "../account-service";
 import { searchPersistedPublicCollectorProfiles, type SupabaseCollectorSocialReadClient } from "../collector-social-service";
 import {
   type CustomerMemoryStore,
@@ -13,22 +15,34 @@ import {
   writeCustomerMemory,
 } from "../customer-memory";
 import { getPersistedFavoriteRepCardsForUser, type SupabaseFavoriteRepsReadClient } from "../favorite-reps-service";
+import { getShowcaseStudioConfig } from "../showcase-studio";
 import { getFinderNicNacToolIntentsForText, type FinderNicNacToolIntent } from "./curator";
 
 type FinderNicNacToolContext = {
+  accountState?: CurrentSparkleFinderAccountState;
   memoryStore?: CustomerMemoryStore;
-  supabase?: SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
+  supabase?: SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient & SupabaseFinderStateReadClient;
   userId: string;
+};
+
+type SupabaseReadResult = PromiseLike<{ data: unknown; error: unknown }>;
+
+type SupabaseFinderStateReadClient = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => SupabaseReadResult;
+    };
+  };
 };
 
 const toolPacks: Record<FinderNicNacToolIntent, string[]> = {
   memory: ["read_customer_memory", "write_customer_memory"],
-  collection: [],
-  showcase: [],
+  collection: ["list_customer_collection"],
+  showcase: ["summarize_my_showcase"],
   catalog: ["search_catalog"],
-  studio: [],
+  studio: ["get_showcase_studio_requirements"],
   availability: ["find_rep_board_availability", "list_upcoming_live_shows"],
-  profile: [],
+  profile: ["read_my_profile_status"],
   rep_discovery: ["list_favorite_reps", "save_favorite_rep"],
   social: ["find_public_showcases", "list_followed_collectors"],
   suite_workspace: [],
@@ -243,6 +257,202 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
     });
   }
 
+  if (activeNames.includes("list_customer_collection")) {
+    tools.list_customer_collection = tool({
+      description:
+        "List the current customer's bounded Sparkle Finder collection rows with catalog context.",
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(20).optional(),
+      }),
+      execute: async ({ limit }) => {
+        if (!ctx.supabase) {
+          return {
+            status: "not_connected",
+            dataSource: "unavailable",
+            count: 0,
+            items: [],
+            guidance: "Collection rows are unavailable in this Nic-Nac context.",
+          };
+        }
+
+        const result = await readFinderRows(
+          ctx.supabase,
+          "sparkle_finder_collection_items",
+          "id,user_id,jewelry_item_id,state,note,is_highlighted,visibility,showcase_status,reveal_story,is_rarest_reveal",
+          ctx.userId,
+        );
+
+        if (!result) {
+          return {
+            status: "unavailable",
+            dataSource: "persisted",
+            count: 0,
+            items: [],
+            guidance: "Collection rows could not be read right now. Offer to retry.",
+          };
+        }
+
+        const boundedRows = result.slice(0, limit ?? 12);
+        const items = await Promise.all(boundedRows.map(mapCollectionToolItem));
+
+        return {
+          status: "connected",
+          dataSource: "persisted",
+          count: result.length,
+          stateCounts: countCollectionStates(result),
+          items,
+          guidance:
+            "Use collection rows as owner-scoped context only. Do not claim saves, edits, deletes, or public visibility changes unless a save tool result says so.",
+        };
+      },
+    });
+  }
+
+  if (activeNames.includes("summarize_my_showcase")) {
+    tools.summarize_my_showcase = tool({
+      description:
+        "Summarize the current customer's Sparkle Showcase visibility and sharing readiness.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        if (!ctx.supabase) {
+          return {
+            status: "not_connected",
+            dataSource: "unavailable",
+            publicPieceCount: 0,
+            privatePieceCount: 0,
+            rarestRevealCount: 0,
+            piecesWithRevealStoryCount: 0,
+            showcaseCollections: [],
+            guidance: "Showcase rows are unavailable in this Nic-Nac context.",
+          };
+        }
+
+        const [collectionRows, showcaseCollections] = await Promise.all([
+          readFinderRows(
+            ctx.supabase,
+            "sparkle_finder_collection_items",
+            "id,user_id,jewelry_item_id,state,visibility,showcase_status,reveal_story,is_rarest_reveal",
+            ctx.userId,
+          ),
+          readFinderRows(
+            ctx.supabase,
+            "sparkle_finder_showcase_collections",
+            "id,user_id,title,slug,description,visibility",
+            ctx.userId,
+          ),
+        ]);
+
+        if (!collectionRows || !showcaseCollections) {
+          return {
+            status: "unavailable",
+            dataSource: "persisted",
+            publicPieceCount: 0,
+            privatePieceCount: 0,
+            rarestRevealCount: 0,
+            piecesWithRevealStoryCount: 0,
+            showcaseCollections: [],
+            guidance: "Showcase rows could not be read right now. Offer to retry.",
+          };
+        }
+
+        return {
+          status: "connected",
+          dataSource: "persisted",
+          publicPieceCount: collectionRows.filter((row) => readString(row.visibility) === "public").length,
+          privatePieceCount: collectionRows.filter((row) => readString(row.visibility) !== "public").length,
+          rarestRevealCount: collectionRows.filter((row) => row.is_rarest_reveal === true).length,
+          piecesWithRevealStoryCount: collectionRows.filter((row) => Boolean(readString(row.reveal_story))).length,
+          showcaseCollections: showcaseCollections.map((collection) => ({
+            id: readString(collection.id),
+            title: readString(collection.title),
+            slug: readString(collection.slug),
+            visibility: readString(collection.visibility) || "private",
+          })),
+          guidance:
+            "Use Showcase summary for visibility and sharing-readiness coaching only. Do not claim Showcase changes unless a save tool result says so.",
+        };
+      },
+    });
+  }
+
+  if (activeNames.includes("get_showcase_studio_requirements")) {
+    tools.get_showcase_studio_requirements = tool({
+      description:
+        "Describe the current Showcase Studio missing-piece intake requirements without submitting files from chat.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const config = getShowcaseStudioConfig();
+
+        return {
+          status: "connected",
+          suiteIntakeConnected: Boolean(config.apiUrl && config.bearerToken),
+          requiredInputs: [
+            "original Bomb Party label/details photo",
+            "clear customer-facing jewelry photo",
+            "item number when available",
+            "short customer note or collection context when helpful",
+          ],
+          photoRules: [
+            "Label/details photos are details evidence only.",
+            "A separate jewelry-front photo is required before customer-facing publishing.",
+            "Clear boxed display jewelry photos are acceptable when centered, close, and attractive.",
+          ],
+          maxPhotoMegabytes: 10,
+          guidance:
+            "Do not submit Studio intake from chat without uploaded files. Ask the customer to use the Studio upload flow when photos are required.",
+        };
+      },
+    });
+  }
+
+  if (activeNames.includes("read_my_profile_status")) {
+    tools.read_my_profile_status = tool({
+      description: "Read the current customer's Sparkle Finder profile status and linked-rep identity.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const accountState = ctx.accountState;
+
+        if (!accountState || accountState.status !== "authenticated") {
+          return {
+            status: "not_connected",
+            profile: null,
+            guidance: "Profile status is unavailable in this Nic-Nac context.",
+          };
+        }
+
+        const profile = accountState.silverProfile;
+        const repIdentity = accountState.repIdentity ?? accountState.customer.repIdentity;
+        const repEntitlement = accountState.repEntitlement;
+        const linkedSuiteRepId = repIdentity?.sparkleSuiteRepId ?? repEntitlement?.sparkleSuiteRepId ?? null;
+        const linkedSuiteBusinessName = repIdentity?.businessName ?? repEntitlement?.businessName ?? null;
+        const bio = profile?.bio?.trim() ?? "";
+        const tiktokHandle = profile?.tiktokHandle?.trim() ?? "";
+        const photoUrl = profile?.photoUrl?.trim() ?? "";
+
+        return {
+          status: "connected",
+          profile: {
+            userId: accountState.customer.id,
+            displayName: accountState.customer.displayName,
+            tier: accountState.tier,
+            membershipState: accountState.membership?.effectiveState ?? accountState.tier,
+            visibility: profile?.visibility ?? "private",
+            hasBio: Boolean(bio),
+            bioSnippet: cleanSnippet(bio, 160),
+            hasTikTokHandle: Boolean(tiktokHandle),
+            tiktokHandle: tiktokHandle || null,
+            hasProfilePhoto: Boolean(photoUrl),
+            isLinkedSuiteRep: Boolean(linkedSuiteRepId),
+            linkedSuiteRepId,
+            linkedSuiteBusinessName,
+          },
+          guidance:
+            "Use profile status for Sparkle Finder profile coaching only. Do not claim profile saves unless a save tool result says so.",
+        };
+      },
+    });
+  }
+
   if (activeNames.includes("save_favorite_rep")) {
     tools.save_favorite_rep = tool({
       description: "Remember a customer's favorite Sparkle Suite/Finder rep.",
@@ -431,4 +641,104 @@ function mapAvailabilityLead(match: FinderAvailabilityLeadInput) {
     nextShowStatus: match.nextShow.status,
     customerSiteUrl: match.customerSiteUrl,
   };
+}
+
+async function readFinderRows(
+  supabase: SupabaseFinderStateReadClient,
+  table: string,
+  columns: string,
+  userId: string,
+): Promise<Array<Record<string, unknown>> | null> {
+  try {
+    const result = await supabase.from(table).select(columns).eq("user_id", userId);
+
+    if (result.error || !Array.isArray(result.data)) {
+      return null;
+    }
+
+    return result.data.flatMap((row) => {
+      const record = asRecord(row);
+
+      return record ? [record] : [];
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function mapCollectionToolItem(row: Record<string, unknown>) {
+  const itemId = readString(row.jewelry_item_id);
+  const catalogItem = itemId
+    ? await getCatalogJewelryItemById(itemId, { useFixtureFallback: true })
+    : undefined;
+  const note = readString(row.note);
+  const revealStory = readString(row.reveal_story);
+
+  return {
+    collectionItemId: readString(row.id),
+    itemId,
+    itemNumber: catalogItem?.itemNumber ?? null,
+    itemName: catalogItem?.name ?? null,
+    collectionName: catalogItem?.collectionName ?? null,
+    jewelryType: catalogItem?.jewelryType ?? null,
+    state: normalizeCollectionState(row.state),
+    visibility: normalizeVisibility(row.visibility),
+    showcaseStatus: readString(row.showcase_status) || normalizeCollectionState(row.state),
+    isHighlighted: row.is_highlighted === true,
+    isRarestReveal: row.is_rarest_reveal === true,
+    hasNote: Boolean(note),
+    noteSnippet: cleanSnippet(note, 160),
+    hasRevealStory: Boolean(revealStory),
+  };
+}
+
+function countCollectionStates(rows: Array<Record<string, unknown>>): {
+  owned: number;
+  wishlist: number;
+  privateNoteOnly: number;
+} {
+  return rows.reduce<{ owned: number; wishlist: number; privateNoteOnly: number }>(
+    (counts, row) => {
+      const state = normalizeCollectionState(row.state);
+
+      if (state === "owned") {
+        counts.owned += 1;
+      } else if (state === "wishlist") {
+        counts.wishlist += 1;
+      } else {
+        counts.privateNoteOnly += 1;
+      }
+
+      return counts;
+    },
+    {
+      owned: 0,
+      wishlist: 0,
+      privateNoteOnly: 0,
+    } satisfies { owned: number; wishlist: number; privateNoteOnly: number },
+  );
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function readString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeCollectionState(value: unknown): "owned" | "wishlist" | "private_note_only" {
+  return value === "owned" || value === "wishlist" || value === "private_note_only"
+    ? value
+    : "private_note_only";
+}
+
+function normalizeVisibility(value: unknown): "public" | "private" {
+  return value === "public" ? "public" : "private";
+}
+
+function cleanSnippet(value: string, maxLength: number): string {
+  return value.trim().slice(0, maxLength);
 }

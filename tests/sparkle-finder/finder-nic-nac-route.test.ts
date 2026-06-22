@@ -571,6 +571,64 @@ describe("Finder Nic-Nac API route", () => {
     );
   });
 
+  it("exposes Finder collection, Showcase, Studio, and profile tools for owner-context turns", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Brittany",
+      email: "brittany@example.test",
+      customer: {
+        id: "customer-silver-brittany",
+        displayName: "Brittany",
+        email: "brittany@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        effectiveState: "silver_paid",
+        hasSilverAccess: true,
+      },
+      silverProfile: {
+        customerId: "customer-silver-brittany",
+        photoUrl: "https://cdn.example.test/brittany.jpg",
+        tiktokHandle: "@brittany_sparkles",
+        bio: "Rose gold collector.",
+        visibility: "sparkle_finder",
+      },
+    };
+
+    await POST(createNicNacRequest("Show my collection, Showcase, Studio readiness, and profile status."));
+
+    const routeCall = streamTextMock.mock.calls[0][0] as {
+      system?: unknown;
+      tools?: Record<string, unknown>;
+    };
+    const systemPrompt = String(routeCall.system);
+
+    expect(Object.keys(routeCall.tools ?? {})).toEqual(expect.arrayContaining([
+      "list_customer_collection",
+      "summarize_my_showcase",
+      "get_showcase_studio_requirements",
+      "read_my_profile_status",
+    ]));
+    expect(systemPrompt).toContain("list_customer_collection");
+    expect(systemPrompt).toContain("summarize_my_showcase");
+    expect(systemPrompt).toContain("get_showcase_studio_requirements");
+    expect(systemPrompt).toContain("read_my_profile_status");
+    expect(persistenceRuntime.startFinderNicNacRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeToolNames: expect.arrayContaining([
+          "list_customer_collection",
+          "summarize_my_showcase",
+          "get_showcase_studio_requirements",
+          "read_my_profile_status",
+        ]),
+        allowedIntents: ["studio", "collection", "showcase", "profile"],
+        blockedIntents: [],
+      }),
+    );
+  });
+
   it("preloads safe Finder memory into the model prompt and filters unsafe memory", async () => {
     nicNacRouteRuntime.accountState = {
       status: "authenticated",
