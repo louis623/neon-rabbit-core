@@ -51,6 +51,9 @@ The shared Nic-Nac core should decide tool availability from product, surface, a
 **Nic-Nac tool intents require explicit capability classification**
 Every routed Nic-Nac tool intent should declare what capability it requires. Shared memory can remain available for linked Finder reps, but Suite workspace mutations must stay gated to Suite. Mixed packs such as catalog/resources remain conservative until product-specific Finder/public tool registries split safe read actions from mutation/reporting actions.
 
+**Sparkle Lab paid model calls require approved pricing**
+Sparkle Lab must not treat unknown model pricing as free or reuse base-model pricing for suffix families such as pro/nano variants. Lab model synthesis should skip the model call and record a lab note unless the configured `lab_synthesis` model has an explicit approved Nic-Nac pricing entry. New model families can be allowed later only by adding pricing and tests first.
+
 **Customer-site ticker contract is row-specific**
 The customer-facing announcement ticker should keep the approved casual `72s` pace. The Trade Board ticker row beneath it should move about 20% faster, currently `60s`. This must live in the shared customer-site template and React shell so current migrated sites and all future Sparkle Suite customer sites inherit the same behavior.
 

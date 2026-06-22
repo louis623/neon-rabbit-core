@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Nic-Nac Model Cost Guardrail
+
+**What changed:**
+- Tightened Nic-Nac OpenAI model-cost matching so approved base models and dated snapshots are priced, but unapproved suffix families such as `gpt-5.5-pro`, `gpt-5.4-pro`, and `gpt-5.4-nano` cannot accidentally reuse base `gpt-5.5` / `gpt-5.4` pricing.
+- Added a Sparkle Lab preflight guard: if `lab_synthesis` is configured to a model without an approved Nic-Nac pricing entry, Lab records a `lab_note` and skips the model call instead of spending credits and treating the run as free.
+- Confirmed the current OpenAI docs still list GPT-5.5 as latest and the local Standard short-context pricing table matches the documented GPT-5.5, GPT-5.4, and GPT-5.4-mini prices.
+
+**Verification:**
+- TDD red/green completed for strict model-family pricing and Lab synthesis skip behavior.
+- Focused model/Lab tests passed: 2 files, 11 tests.
+- Adjacent model/Lab route tests passed: 9 files, 39 tests.
+- Broad internal Nic-Nac/Lab/Finder/public sweep passed: 117 files passed, 1 skipped; 885 tests passed, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview deployment passed and built successfully: `https://sparkle-suite-24186fjqa-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points to `https://sparkle-suite-24186fjqa-louis-2849s-projects.vercel.app` / deployment `dpl_9kq8Ugc2bJZ1dXXm1zk7FaeW3Yqn`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`, `/api/internal/sparkle-lab/weekly` returned `401` without cron auth, and `/api/internal/finder/rep-claim` returned `503` closed/not configured because the rep-claim token is not configured.
+
+**Still open:**
+- Lab model synthesis remains feature-flagged off in Vercel.
+- Pro/nano model families are intentionally not approved for Lab spend until an explicit pricing/policy decision adds them.
+
 ## June 21, 2026 - Nic-Nac Surface Tool Policy Refinement
 
 **What changed:**
