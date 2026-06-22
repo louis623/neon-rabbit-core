@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { generateTextMock, createAnthropicMock } = vi.hoisted(() => ({
+const { generateTextMock, createOpenAIMock } = vi.hoisted(() => ({
   generateTextMock: vi.fn(),
-  createAnthropicMock: vi.fn((_options?: unknown) => (model: string) => ({
-    provider: 'anthropic',
+  createOpenAIMock: vi.fn((_options?: unknown) => (model: string) => ({
+    provider: 'openai',
     model,
   })),
 }))
@@ -12,15 +12,15 @@ vi.mock('ai', () => ({
   generateText: (options: unknown) => generateTextMock(options),
 }))
 
-vi.mock('@ai-sdk/anthropic', () => ({
-  createAnthropic: (options: unknown) => createAnthropicMock(options),
+vi.mock('@ai-sdk/openai', () => ({
+  createOpenAI: (options: unknown) => createOpenAIMock(options),
 }))
 
 import { POST } from '@/app/api/public/nic-nac/route'
 
 beforeEach(() => {
   generateTextMock.mockReset()
-  createAnthropicMock.mockClear()
+  createOpenAIMock.mockClear()
 })
 
 function publicNicNacRequest(question: string) {

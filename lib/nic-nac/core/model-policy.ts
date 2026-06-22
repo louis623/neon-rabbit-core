@@ -4,7 +4,7 @@ export type NicNacModelPolicyKey =
   | 'utility_fast'
   | 'lab_synthesis'
 
-export type NicNacModelProvider = 'openai' | 'anthropic'
+export type NicNacModelProvider = 'openai'
 export type NicNacReasoningLevel = 'none' | 'low' | 'medium' | 'high'
 
 export interface NicNacModelPolicy {

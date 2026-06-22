@@ -402,9 +402,7 @@ export async function POST(request: Request) {
           }),
         }),
         stopWhen: stepCountIs(5),
-        providerOptions: getNicNacProviderOptions(modelPolicy, {
-          anthropicCacheControl: true,
-        }),
+        providerOptions: getNicNacProviderOptions(modelPolicy),
         abortSignal: request.signal,
         experimental_onToolCallStart: () => {
           activeToolCalls += 1

@@ -31,6 +31,17 @@ describe('Suite Nic-Nac model routing', () => {
     expect(publicRoute).toContain('getNicNacProviderOptions')
   })
 
+  it('keeps the Nic-Nac model provider OpenAI-only for the current product policy', () => {
+    const modelProvider = readFileSync(
+      join(process.cwd(), 'lib/nic-nac/core/model-provider.ts'),
+      'utf8',
+    )
+
+    expect(modelProvider).not.toContain('@ai-sdk/anthropic')
+    expect(modelProvider).not.toContain('createAnthropic')
+    expect(modelProvider).not.toContain('anthropicCacheControl')
+  })
+
   it('routes workspace tools through product context and surface policy', () => {
     const workspaceRoute = readFileSync(
       join(process.cwd(), 'app/api/nic-nac/route.ts'),

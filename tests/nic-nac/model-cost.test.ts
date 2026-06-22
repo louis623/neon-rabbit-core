@@ -91,15 +91,15 @@ describe('Nic-Nac model cost estimates', () => {
     ).toBe(2)
   })
 
-  it('does not invent costs for unsupported provider/model combinations', () => {
+  it('does not invent costs for unsupported OpenAI model families', () => {
     expect(
       estimateNicNacRunCostCents(
         {
           key: 'human_default',
-          provider: 'anthropic',
-          modelId: 'claude-haiku-4-5-20251001',
+          provider: 'openai',
+          modelId: 'gpt-future-unpriced',
           reasoning: 'none',
-          purpose: 'fallback',
+          purpose: 'unpriced future model',
         },
         {
           inputTokens: 10_000,
