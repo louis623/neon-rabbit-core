@@ -41,6 +41,9 @@ type SparkleFinderProfileRow = {
   profile_visibility?: SilverProfile["visibility"] | null;
   is_rep?: boolean | null;
   sparkle_suite_rep_id?: string | null;
+  sparkle_suite_rep_business_name?: string | null;
+  sparkle_suite_rep_public_site_slug?: string | null;
+  sparkle_suite_rep_claimed_at?: string | null;
 };
 
 type SparkleFinderMembershipRow = {
@@ -180,7 +183,7 @@ export function mapSparkleFinderAccountRows({
     silverEndsAt: membership?.silver_ends_at,
     now,
   });
-  const repEntitlement = getSparkleSuiteRepEntitlement(profile?.sparkle_suite_rep_id);
+  const repEntitlement = getRepEntitlementForProfile(profile, membership);
   const repIdentity = getRepIdentity(repEntitlement);
   const shouldUseRepIncludedSilver =
     hasRepIncludedSilver(repEntitlement) && baseSilverAccess.effectiveState !== "silver_paid";
@@ -322,6 +325,33 @@ function createLocalPreviewMembership(mode: Exclude<SparkleFinderAuthMode, "anon
     hasSilverAccess: silverAccess.hasSilverAccess,
     isTrialActive: silverAccess.isTrialActive,
     isTrialExpired: silverAccess.isTrialExpired,
+  };
+}
+
+function getRepEntitlementForProfile(
+  profile: SparkleFinderProfileRow | null,
+  membership: SparkleFinderMembershipRow | null,
+): SparkleSuiteRepEntitlement | null {
+  const fixtureEntitlement = getSparkleSuiteRepEntitlement(profile?.sparkle_suite_rep_id);
+
+  if (fixtureEntitlement) {
+    return fixtureEntitlement;
+  }
+
+  const linkedSuiteRepId = firstPresent(profile?.sparkle_suite_rep_id);
+  const hasPersistedRepSilver =
+    membership?.access_state === "silver_rep_included"
+    || membership?.silver_source === "sparkle_suite_rep";
+
+  if (!profile?.is_rep || !linkedSuiteRepId || !hasPersistedRepSilver) {
+    return null;
+  }
+
+  return {
+    sparkleSuiteRepId: linkedSuiteRepId,
+    businessName: firstPresent(profile.sparkle_suite_rep_business_name, "Sparkle Suite workspace"),
+    subscriptionStatus: "active",
+    publicDiscoveryEnabled: Boolean(profile.sparkle_suite_rep_public_site_slug?.trim()),
   };
 }
 

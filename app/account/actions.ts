@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { claimSparkleSuiteRepForFinderUser } from "@/lib/sparkle-finder/rep-claim";
+import type { SparkleFinderRepClaimClient } from "@/lib/sparkle-finder/rep-claim";
+import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeUsStateValue } from "@/lib/us-states";
 
@@ -81,6 +84,31 @@ export async function updateAccountProfile(formData: FormData) {
   redirect("/account?message=profile_saved");
 }
 
+export async function claimSparkleSuiteRepAccount(formData: FormData) {
+  const supabase = await getVerifiedAccountClient();
+  const secretRepIdNumber = cleanText(formData.get("secretRepIdNumber"), 80).toUpperCase();
+
+  if (!secretRepIdNumber) {
+    redirect("/account?error=missing_secret_rep_id");
+  }
+
+  const serviceRoleClient = createSupabaseServiceRoleClient() as SparkleFinderRepClaimClient | null;
+  const result = await claimSparkleSuiteRepForFinderUser({
+    finderUserId: supabase.user.id,
+    finderEmail: supabase.user.email,
+    displayName: firstPresent(supabase.user.email?.split("@")[0], "Sparkle Finder Rep"),
+    secretRepIdNumber,
+    serviceRoleClient,
+  });
+
+  if (!result.ok) {
+    redirect(`/account?error=${getRepClaimErrorParam(result.status)}`);
+  }
+
+  revalidatePath("/account");
+  redirect("/account?message=rep_claimed");
+}
+
 async function getVerifiedAccountClient() {
   let client: SparkleFinderServerClient;
 
@@ -106,4 +134,24 @@ function cleanText(value: FormDataEntryValue | string | null | undefined, maxLen
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function getRepClaimErrorParam(status: string): string {
+  if (status === "missing_secret_rep_id") {
+    return "missing_secret_rep_id";
+  }
+
+  if (status === "not_configured") {
+    return "rep_claim_not_configured";
+  }
+
+  if (status === "not_found") {
+    return "rep_claim_not_found";
+  }
+
+  return "rep_claim_failed";
+}
+
+function firstPresent(...values: Array<string | null | undefined>): string {
+  return values.find((value) => value?.trim())?.trim() ?? "";
 }

@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-06-22 - Sparkle Suite Rep Linking Uses Secret Rep ID Number
+
+Decision: Sparkle Finder rep linking uses the private Sparkle Suite `Secret Rep ID Number`. The claim must be verified server-side against Sparkle Suite before Finder writes `is_rep`, the Suite rep id, and Rep Silver membership. Normal authenticated users must not be able to self-write rep identity columns directly.
+
+Reason: Louis wants a durable cross-product identity for the same Nic-Nac experience without relying on email matching or public referral codes, and without weakening Sparkle Finder's separate auth boundary.
+
 ## 2026-06-20 - Active Workspace
 
 Decision: Sparkle Finder's active Codex workspace is `C:\Users\louis\sparkle-finder-repo`.

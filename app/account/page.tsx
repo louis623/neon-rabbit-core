@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { LogIn } from "lucide-react";
 import { AccountPreferences } from "@/components/account/AccountPreferences";
 import { RepBadge } from "@/components/account/RepBadge";
+import { RepClaimPanel } from "@/components/account/RepClaimPanel";
 import { SilverStatusPanel } from "@/components/account/SilverStatusPanel";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { getAccountCompletionState } from "@/lib/sparkle-finder/account-completion";
@@ -92,6 +93,7 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
 
         {notice ? <AccountNoticePanel notice={notice} /> : null}
         {!completion.isComplete ? <AccountCompletionPanel /> : null}
+        <RepClaimPanel accountState={accountState} />
         <SilverStatusPanel accountState={accountState} now={now} />
         <AccountPreferences accountState={accountState} />
       </div>
@@ -133,6 +135,14 @@ function getAccountNotice(searchParams: AccountSearchParams | undefined): Accoun
     };
   }
 
+  if (message === "rep_claimed") {
+    return {
+      tone: "success",
+      title: "Rep badge linked",
+      body: "Your Sparkle Finder account is now linked to Sparkle Suite for Rep Silver and Nic-Nac context.",
+    };
+  }
+
   if (message === "silver_trial_ended") {
     return {
       tone: "success",
@@ -170,6 +180,38 @@ function getAccountNotice(searchParams: AccountSearchParams | undefined): Accoun
       tone: "error",
       title: "Display name needed",
       body: "Add a display name before saving your profile basics.",
+    };
+  }
+
+  if (error === "missing_secret_rep_id") {
+    return {
+      tone: "error",
+      title: "Secret Rep ID Number needed",
+      body: "Enter the private rep number shown in Sparkle Suite before claiming your BP Rep badge.",
+    };
+  }
+
+  if (error === "rep_claim_not_found") {
+    return {
+      tone: "error",
+      title: "Rep number was not found",
+      body: "That Secret Rep ID Number did not match an active Sparkle Suite rep.",
+    };
+  }
+
+  if (error === "rep_claim_not_configured") {
+    return {
+      tone: "error",
+      title: "Rep claiming is not configured",
+      body: "Sparkle Finder cannot verify Secret Rep ID Numbers in this environment yet.",
+    };
+  }
+
+  if (error === "rep_claim_failed") {
+    return {
+      tone: "error",
+      title: "Rep badge was not linked",
+      body: "Sparkle Finder could not save that verified rep link. Please try again.",
     };
   }
 

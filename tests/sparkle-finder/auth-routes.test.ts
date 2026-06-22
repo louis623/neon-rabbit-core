@@ -418,6 +418,8 @@ describe("Sparkle Finder signup server actions", () => {
     vi.resetModules();
     vi.doUnmock("next/navigation");
     vi.doUnmock("../../lib/supabase/server");
+    vi.doUnmock("../../lib/supabase/service-role");
+    vi.doUnmock("../../lib/sparkle-finder/rep-claim");
   });
 
   it("sends password signup confirmations through the Sparkle Finder confirm route", async () => {
@@ -852,6 +854,36 @@ describe("Sparkle Finder account route", () => {
     expect(errorMarkup).toContain("Profile was not saved");
   });
 
+  it("renders Secret Rep ID claim controls for authenticated non-rep accounts", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const markup = renderToStaticMarkup(renderAccountPageContent(activeTrialAccountState()));
+
+    expect(markup).toContain("Claim your BP Rep badge");
+    expect(markup).toContain("Secret Rep ID Number");
+    expect(markup).toContain("Do not share this number publicly.");
+    expect(markup).toContain('name="secretRepIdNumber"');
+    expect(markup).toContain("Claim BP Rep badge");
+  });
+
+  it("replaces Secret Rep ID claim controls with linked rep status after claim", async () => {
+    const { renderAccountPageContent } = await import("../../app/account/page");
+    const accountState: CurrentSparkleFinderAccountState = {
+      ...repIncludedSilverAccountState(),
+      repEntitlement: {
+        sparkleSuiteRepId: "rep-bling-kitchen",
+        businessName: "BlingKitchen",
+        subscriptionStatus: "active",
+        publicDiscoveryEnabled: false,
+      },
+    };
+
+    const markup = renderToStaticMarkup(renderAccountPageContent(accountState));
+
+    expect(markup).toContain("Rep badge linked");
+    expect(markup).toContain("BlingKitchen");
+    expect(markup).not.toContain('name="secretRepIdNumber"');
+  });
+
   it("renders a self-facing Sparkle Suite rep marker on rep account surfaces", async () => {
     const { renderAccountPageContent } = await import("../../app/account/page");
     const accountState: CurrentSparkleFinderAccountState = {
@@ -1004,6 +1036,55 @@ describe("Sparkle Finder account route", () => {
       account_sms_allowed: false,
       privacy_acknowledged: false,
     });
+    expect(revalidatePath).toHaveBeenCalledWith("/account");
+  });
+
+  it("claims a Sparkle Suite rep identity through the verified service-role path", async () => {
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-123", email: "casey@example.com" } },
+      error: null,
+    });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+    const revalidatePath = vi.fn();
+    const serviceRoleClient = { from: vi.fn() };
+    const claimSparkleSuiteRepForFinderUser = vi.fn().mockResolvedValue({
+      ok: true,
+      status: "claimed",
+      suiteRepId: "rep-bling-kitchen",
+      businessName: "BlingKitchen",
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("next/cache", () => ({ revalidatePath }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: { getUser },
+      }),
+    }));
+    vi.doMock("../../lib/supabase/service-role", () => ({
+      createSupabaseServiceRoleClient: () => serviceRoleClient,
+    }));
+    vi.doMock("../../lib/sparkle-finder/rep-claim", () => ({
+      claimSparkleSuiteRepForFinderUser,
+    }));
+
+    const formData = new FormData();
+    formData.set("secretRepIdNumber", " BLI-3767 ");
+
+    const { claimSparkleSuiteRepAccount } = await import("../../app/account/actions");
+
+    await expect(claimSparkleSuiteRepAccount(formData)).rejects.toThrow("redirect:/account?message=rep_claimed");
+    expect(claimSparkleSuiteRepForFinderUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        finderUserId: "user-123",
+        finderEmail: "casey@example.com",
+        displayName: "casey",
+        secretRepIdNumber: "BLI-3767",
+        serviceRoleClient,
+      }),
+    );
     expect(revalidatePath).toHaveBeenCalledWith("/account");
   });
 

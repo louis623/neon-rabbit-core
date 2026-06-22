@@ -184,6 +184,10 @@ function createFinderNicNacAccountContext(accountState: Awaited<ReturnType<typeo
     accountState.status === "authenticated"
       ? accountState.repIdentity ?? accountState.customer.repIdentity
       : undefined;
+  const repEntitlement =
+    accountState.status === "authenticated"
+      ? accountState.repEntitlement
+      : undefined;
 
   if (repIdentity) {
     return {
@@ -191,6 +195,15 @@ function createFinderNicNacAccountContext(accountState: Awaited<ReturnType<typeo
       accountTier,
       linkedSuiteBusinessName: repIdentity.businessName,
       linkedSuiteRepId: repIdentity.sparkleSuiteRepId,
+    };
+  }
+
+  if (repEntitlement) {
+    return {
+      actorType: "linked_rep",
+      accountTier,
+      linkedSuiteBusinessName: repEntitlement.businessName,
+      linkedSuiteRepId: repEntitlement.sparkleSuiteRepId,
     };
   }
 

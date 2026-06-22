@@ -137,6 +137,42 @@ describe("Sparkle Finder account service", () => {
     expect(getSparkleFinderNavStatusLabel(account)).toBe("Rep Silver");
   });
 
+  it("maps a persisted live Suite rep claim to Rep Silver and linked rep context without fixture data", () => {
+    const claimedProfile = {
+      ...profileRow({ is_rep: true, sparkle_suite_rep_id: "rep-bling-kitchen" }),
+      sparkle_suite_rep_business_name: "BlingKitchen",
+      sparkle_suite_rep_public_site_slug: "blingkitchen",
+      sparkle_suite_rep_claimed_at: "2026-06-22T09:00:00.000Z",
+    };
+    const account = mapSparkleFinderAccountRows({
+      user,
+      profile: claimedProfile,
+      membership: membershipRow({
+        access_state: "silver_rep_included",
+        silver_source: "sparkle_suite_rep",
+      }),
+      consent: consentRow(),
+      now: "2026-06-22T10:00:00.000Z",
+    });
+
+    expect(account.status).toBe("authenticated");
+    expect(account.tier).toBe("silver");
+    expect(account.membership?.effectiveState).toBe("silver_rep_included");
+    expect(account.repEntitlement).toMatchObject({
+      sparkleSuiteRepId: "rep-bling-kitchen",
+      businessName: "BlingKitchen",
+      subscriptionStatus: "active",
+      publicDiscoveryEnabled: true,
+    });
+    expect(account.repIdentity).toEqual({
+      sparkleSuiteRepId: "rep-bling-kitchen",
+      businessName: "BlingKitchen",
+      publicDiscoveryEnabled: true,
+    });
+    expect(account.customer?.repIdentity).toEqual(account.repIdentity);
+    expect(getSparkleFinderNavStatusLabel(account)).toBe("Rep Silver");
+  });
+
   it("falls back to membership date rules when a fixture-backed rep entitlement is inactive", () => {
     const activeTrialAccount = mapSparkleFinderAccountRows({
       user,

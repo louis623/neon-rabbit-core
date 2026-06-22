@@ -303,6 +303,50 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).toContain("Open Sparkle Suite and I can pick it up there");
   });
 
+  it("treats private rep entitlements as linked Suite context for memory and boundaries", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Heather",
+      email: "heather@example.test",
+      customer: {
+        id: "customer-silver-heather",
+        displayName: "Heather",
+        email: "heather@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+        effectiveState: "silver_rep_included",
+      },
+      repEntitlement: {
+        sparkleSuiteRepId: "rep-bling-kitchen",
+        businessName: "BlingKitchen",
+        subscriptionStatus: "active",
+        publicDiscoveryEnabled: false,
+      },
+    };
+    suiteMemoryRuntime.summaries = [
+      "Sparkle Suite memory - explicit preference: Ask before adding duplicate Trade Board items.",
+    ];
+
+    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+
+    const systemPrompt = String(streamTextMock.mock.calls[0][0].system);
+
+    expect(suiteMemoryRuntime.calls).toEqual([
+      {
+        finderUserId: "customer-silver-heather",
+        suiteRepId: "rep-bling-kitchen",
+      },
+    ]);
+    expect(systemPrompt).toContain("linked Sparkle Suite rep");
+    expect(systemPrompt).toContain("BlingKitchen");
+    expect(systemPrompt).toContain("Ask before adding duplicate Trade Board items.");
+    expect(systemPrompt).toContain("I need you logged into Sparkle Suite");
+  });
+
   it("does not expose Finder tools for linked-rep Suite workspace mutation requests", async () => {
     nicNacRouteRuntime.accountState = {
       status: "authenticated",
