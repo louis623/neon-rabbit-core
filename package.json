@@ -10,6 +10,7 @@
     "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts",
     "smoke:finder-nic-nac": "tsx scripts/smoke-finder-nic-nac.ts",
     "smoke:finder-nic-nac:guard": "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model",
+    "smoke:finder-telemetry-runtime": "tsx scripts/smoke-finder-telemetry-runtime.ts",
     "smoke:finder-linked-runtime": "tsx scripts/smoke-finder-linked-runtime.ts"
   },
   "dependencies": {
