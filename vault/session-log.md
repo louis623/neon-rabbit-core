@@ -2,6 +2,12 @@
 
 ## 2026-06-22
 
+- Added baseline Nic-Nac AI and memory disclosures:
+  - Updated Finder privacy policy and terms to disclose Nic-Nac AI assistance, memory, telemetry/tool context, linked-rep context, possible bounded Suite/Finder memory sharing for linked reps, operator/Lab review for support and quality, model/service-provider processing, sensitive-info caution, surface-gated tool access, output review responsibility, and off-mission/excessive-use limits.
+  - Updated Finder signup and account privacy acknowledgment copy so Silver users see that Nic-Nac AI assistance and memory may use account, collection, Showcase, Wishlist, request, linked-rep, conversation, and saved memory details to provide Finder/Silver support.
+  - Verification passed: focused Finder route/legal tests, full Finder Vitest suite (`37` files, `472` tests), and production `next build`.
+  - Remaining launch-readiness caveat: this is a product disclosure baseline, not attorney-approved legal advice. Attorney/final policy review and broader marketing/onboarding positioning remain.
+
 - Added the secured Finder Nic-Nac telemetry runtime smoke:
   - Added token-gated internal route `/api/internal/finder/nic-nac-telemetry-smoke` and script `npm run smoke:finder-telemetry-runtime`.
   - The smoke uses Vercel production server-side secrets, creates a temporary confirmed Finder auth user, exercises the actual telemetry persistence helpers for a mission redirect and completed run, verifies conversations/messages/runs, and cleans up telemetry rows plus the auth user.

@@ -28,7 +28,7 @@ export const sparkleFinderLegalFooterLinks = [
 
 const developer = "Neon Rabbit Digital Services, Jacksonville, FL";
 const contact = "louis@neonrabbit.net";
-const lastUpdated = "June 17, 2026";
+const lastUpdated = "June 22, 2026";
 
 export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
   pageTitle: "Privacy Policy",
@@ -52,6 +52,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "Sparkle Finder public pages and customer account pages",
         "Sparkle Finder signup, sign-in, account, and Silver trial flows",
         "Favorite Reps, Public Showcases, Showcase Collections, Reveal Spotlight, one-way follow, block, report, watchlist, and Nic-Nac request features",
+        "Nic-Nac assistant, memory, linked-rep context, and AI-assisted collector support features",
         "Sparkle Suite-powered library, live show, rep board, and availability data shown in Sparkle Finder",
         "optional Sparkle Finder email or SMS update choices",
       ],
@@ -68,6 +69,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "state",
         "TikTok handle or other social handle if you choose to provide it",
         "Favorite Reps, Sparkle Showcase profile details, saved jewelry items, Showcase Collections, watchlist items, reveal stories, notes, and profile visibility choices",
+        "Nic-Nac conversation messages, request details, saved memory notes, tool results, and linked Sparkle Suite representative context when you use AI-assisted features",
         "followed collectors, one-way follows, follower counts, following counts, block details, reports, moderation details, Public Showcases, and public sharing links",
         "privacy acknowledgment status and consent timestamps",
         "optional promotional email or SMS opt-in status",
@@ -88,6 +90,20 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "send account, security, trial, billing, or service notices",
         "send optional promotional messages only when you choose to opt in",
         "protect against misuse, spam, fraud, unauthorized access, and policy violations",
+      ],
+    },
+    {
+      title: "Nic-Nac, Memory, And AI-Assisted Features",
+      paragraphs: [
+        "Sparkle Finder includes Nic-Nac, an AI-assisted collector, Silver, Showcase, discovery, and support helper. When you use Nic-Nac or related AI-assisted features, Sparkle Finder may process conversation messages, request details, collection details, Showcase details, Wishlist and Favorite Rep details, library searches, linked-rep details, tool results, support context, and saved memory notes.",
+        "Nic-Nac memory is a product feature. Sparkle Finder may save bounded notes, preferences, summaries, conversation telemetry, tool activity, and troubleshooting context so Nic-Nac can provide more consistent help, avoid repeated mistakes, improve support, and operate safely across Sparkle Finder and linked Sparkle Suite experiences.",
+      ],
+      bullets: [
+        "Nic-Nac may use saved memory to personalize future Sparkle Finder help for the same account.",
+        "If a Sparkle Suite representative links Sparkle Finder through the Secret Rep ID Number, bounded safe representative memory may be shared between Sparkle Suite and Sparkle Finder so the same Nic-Nac experience can follow that linked identity.",
+        "Nic-Nac conversations, memory, telemetry, and tool results may be reviewed by Neon Rabbit Digital Services for support, troubleshooting, abuse prevention, product quality, safety, and approved Sparkle Lab analysis.",
+        "AI model providers and service providers may process prompts, responses, and related context only as needed to provide the service to us.",
+        "Do not send Nic-Nac sensitive personal, financial, medical, legal, or third-party confidential information unless it is necessary for the Sparkle Finder service you are requesting.",
       ],
     },
     {
@@ -214,6 +230,15 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       paragraphs: [
         "Silver and account tools may let customers save Favorite Reps, Sparkle Showcase profile details, saved jewelry items, Public Showcases, Showcase Collections, watchlist items, notes, reveal stories, preferences, profile visibility choices, public sharing links, and related information.",
         "You are responsible for information you choose to save or make visible. Sparkle Finder may change, pause, or limit these tools as the product develops.",
+      ],
+    },
+    {
+      title: "Nic-Nac And AI-Assisted Features",
+      paragraphs: [
+        "Sparkle Finder includes Nic-Nac and related AI-assisted tools that can help with jewelry discovery, library search, Silver collection organization, Showcase support, Wishlist support, Favorite Rep context, linked-rep context, and product support within Sparkle Finder.",
+        "Nic-Nac may use saved memory and account context to provide more consistent help over time. Nic-Nac is not a human employee, lawyer, accountant, financial advisor, medical provider, therapist, official Bomb Party representative, transaction broker, payment intermediary, or fulfillment provider.",
+        "AI-assisted output may be incomplete, inaccurate, or require review. You are responsible for reviewing your own profile details, public Showcase choices, saved collection details, Wishlist details, rep links, show details, external purchase decisions, and communications outside Sparkle Finder.",
+        "Nic-Nac tool access is permission-based and product-surface gated. Sparkle Suite workspace actions must be performed from the appropriate Sparkle Suite account surface. Neon Rabbit Digital Services may limit, refuse, suspend, or redirect Nic-Nac use that is off-mission, abusive, unsafe, excessive, or outside the intended Sparkle Finder and Sparkle Suite scope.",
       ],
     },
     {

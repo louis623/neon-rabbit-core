@@ -195,7 +195,8 @@ export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
             <a className="font-bold text-[var(--sparkle-rose)] underline-offset-4 hover:underline" href="/privacy-policy">
               Sparkle Finder privacy terms
             </a>{" "}
-            and agree that my account details are used to provide the 45-day Silver trial and account support.
+            and understand Nic-Nac AI assistance and memory may use my account, collection, Showcase, Wishlist,
+            request, linked-rep, conversation, and saved memory details to provide Finder and Silver support.
           </span>
         </label>
         <label className="flex items-start gap-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">

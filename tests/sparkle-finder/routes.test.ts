@@ -160,10 +160,12 @@ describe("Sparkle Finder hub routes", () => {
     expect(sparkleFinderPrivacyPolicyDocument.pageTitle).toBe("Privacy Policy");
     expect(sparkleFinderPrivacyPolicyDocument.seoTitle).toContain("Sparkle Finder Privacy Policy");
     expect(sparkleFinderPrivacyPolicyDocument.description).toContain("Sparkle Finder customer accounts");
+    expect(sparkleFinderPrivacyPolicyDocument.lastUpdated).toBe("June 22, 2026");
     expect(sparkleFinderPrivacyPolicyDocument.sections.map((section) => section.title)).toEqual([
       "What This Policy Covers",
       "Information Sparkle Finder Collects",
       "How Sparkle Finder Uses Information",
+      "Nic-Nac, Memory, And AI-Assisted Features",
       "Sparkle Suite Data And Rep Links",
       "Sparkle Showcase Sharing And Moderation",
       "SMS And Email Choices",
@@ -179,12 +181,14 @@ describe("Sparkle Finder hub routes", () => {
     expect(sparkleFinderTermsAndConditionsDocument.pageTitle).toBe("Terms and Conditions");
     expect(sparkleFinderTermsAndConditionsDocument.seoTitle).toContain("Sparkle Finder Terms");
     expect(sparkleFinderTermsAndConditionsDocument.description).toContain("Sparkle Finder customer discovery hub");
+    expect(sparkleFinderTermsAndConditionsDocument.lastUpdated).toBe("June 22, 2026");
     expect(sparkleFinderTermsAndConditionsDocument.sections.map((section) => section.title)).toEqual([
       "Agreement To These Terms",
       "About Sparkle Finder",
       "Customer Accounts And Silver Access",
       "Library, Live Shows, Rep Boards, And Availability",
       "Sparkle Showcase, Profile, And Watchlist Tools",
+      "Nic-Nac And AI-Assisted Features",
       "Follows, Blocking, Reports, And Moderation",
       "Third-Party Product Resources",
       "Acceptable Use",
@@ -210,6 +214,11 @@ describe("Sparkle Finder hub routes", () => {
     expect(privacyMarkup).toContain("Sparkle Finder customer accounts");
     expect(privacyMarkup).toContain("Favorite Reps");
     expect(privacyMarkup).toContain("Public Showcases");
+    expect(privacyMarkup).toContain("Nic-Nac, Memory, And AI-Assisted Features");
+    expect(privacyMarkup).toContain("Nic-Nac memory is a product feature.");
+    expect(privacyMarkup).toContain(
+      "bounded safe representative memory may be shared between Sparkle Suite and Sparkle Finder",
+    );
     expect(privacyMarkup).toContain("one-way follows");
     expect(privacyMarkup).toContain("follower counts");
     expect(privacyMarkup).toContain("public sharing links");
@@ -225,6 +234,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(termsMarkup).toContain("Third-Party Product Resources");
     expect(termsMarkup).toContain("Favorite Reps");
     expect(termsMarkup).toContain("Public Showcases");
+    expect(termsMarkup).toContain("Nic-Nac And AI-Assisted Features");
+    expect(termsMarkup).toContain("Nic-Nac tool access is permission-based and product-surface gated.");
     expect(termsMarkup).toContain("one-way follows");
     expect(termsMarkup).toContain("blocking, reporting, and moderation review");
     expect(termsMarkup).toContain(
@@ -1245,6 +1256,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("privacy");
     expect(markup).toContain('href="/privacy-policy"');
     expect(markup).toContain("Sparkle Finder privacy terms");
+    expect(markup).toContain("Nic-Nac AI assistance and memory");
+    expect(markup).toContain("linked-rep");
   });
 
   it("renders anonymous account prompts and 45-day Silver trial account copy", () => {
@@ -1267,6 +1280,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Phone is used for account identification, recovery, trial protection, and security notices.");
     expect(markup).toContain("We do not sell your phone number.");
     expect(markup).toContain("Marketing texts are optional and separate from account/security notices.");
+    expect(markup).toContain("Nic-Nac AI assistance and memory");
     expect(markup).toContain('name="promotionalSms"');
     expect(markup).not.toContain('name="promotionalSms" checked');
   });
