@@ -48,6 +48,9 @@ Production route files should not hardcode raw provider/model strings. Use Nic-N
 **Nic-Nac tool access is product-context gated**
 The shared Nic-Nac core should decide tool availability from product, surface, actor, account tier, linked identity, and permissions. Finder-linked reps may share memory identity with Suite, but Suite workspace mutation intents stay blocked unless the current authenticated surface is Sparkle Suite rep workspace.
 
+**Nic-Nac tool intents require explicit capability classification**
+Every routed Nic-Nac tool intent should declare what capability it requires. Shared memory can remain available for linked Finder reps, but Suite workspace mutations must stay gated to Suite. Mixed packs such as catalog/resources remain conservative until product-specific Finder/public tool registries split safe read actions from mutation/reporting actions.
+
 **Customer-site ticker contract is row-specific**
 The customer-facing announcement ticker should keep the approved casual `72s` pace. The Trade Board ticker row beneath it should move about 20% faster, currently `60s`. This must live in the shared customer-site template and React shell so current migrated sites and all future Sparkle Suite customer sites inherit the same behavior.
 

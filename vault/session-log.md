@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Nic-Nac Surface Tool Policy Refinement
+
+**What changed:**
+- Added explicit capability metadata for every Nic-Nac routed tool intent so future product adapters cannot accidentally treat mixed Suite tool packs as safe in Finder or public surfaces.
+- Split shared memory from Suite workspace mutation requirements in the core tool policy.
+- Linked Sparkle Finder reps can now keep the `memory` intent available at the core-policy level while Suite workspace mutation intents such as Trade Board and Calendar remain blocked with the Sparkle Suite login boundary message.
+- Kept mixed packs such as `resources` and `catalog` conservative as Suite-workspace requirements until product-specific Finder/public tool registries split read-only actions from mutation/reporting actions.
+
+**Verification:**
+- TDD red/green completed for linked Finder memory plus explicit intent-capability coverage.
+- Focused core/prompt/model/telemetry suite passed: 6 files, 29 tests.
+- Broader core/prompt/routing suite passed: 6 files, 69 tests.
+- Adjacent Trade Board workflow suite passed: 4 files, 62 tests.
+- Adjacent internal Finder/public Nic-Nac suite passed: 4 files, 128 tests.
+- Broad internal Nic-Nac/Lab/Finder/public sweep passed: 117 files passed, 1 skipped; 882 tests passed, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview deployment passed and built successfully: `https://sparkle-suite-6d18n6auo-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points to `https://sparkle-suite-6d18n6auo-louis-2849s-projects.vercel.app` / deployment `dpl_AArXn4oSUHG4BujyZQ7H5dGSJSNc`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`, `/api/internal/sparkle-lab/weekly` returned `401` without cron auth, and `/api/internal/finder/rep-claim` returned `503` closed/not configured because the rep-claim token is not configured.
+
+**Still open:**
+- No Sparkle Finder repo, Finder UI, rep-facing Secret Rep ID UI/copy, customer-facing site, or legal/privacy/onboarding copy was changed.
+- Future Finder adapter work still needs product-specific tool packs so Finder-safe catalog/resources actions can be allowed without exposing Suite mutation tools.
+
 ## June 21, 2026 - Nic-Nac Duplicate Listing And Finder Claim Hardening
 
 **What changed:**
