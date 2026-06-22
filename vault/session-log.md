@@ -20,6 +20,23 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Nic-Nac OpenAI Runtime Env Alignment
+
+**What changed:**
+- Confirmed Suite Vercel already had `OPENAI_API_KEY` for production, preview, and development.
+- Added explicit Suite Vercel model env vars across production, preview, and development:
+  - `NIC_NAC_HUMAN_DEFAULT_MODEL=gpt-5.4`
+  - `NIC_NAC_HUMAN_ESCALATED_MODEL=gpt-5.5`
+  - `NIC_NAC_UTILITY_MODEL=gpt-5.4-mini`
+  - `NIC_NAC_LAB_SYNTHESIS_MODEL=gpt-5.5`
+- Added Finder Vercel `OPENAI_API_KEY` for production and preview, then deployed Finder production so the env is live.
+- Direct OpenAI API verification passed for `gpt-5.4` and `gpt-5.4-mini`.
+
+**Caveat:**
+- Finder deployed route smoke still requires a real authenticated Silver session. Production preview auth remains disabled, which is correct for safety.
+
+---
+
 ## June 22, 2026 - Nic-Nac Mission Guardrails
 
 **What changed:**
