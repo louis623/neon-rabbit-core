@@ -1,8 +1,10 @@
 import type { FinderNicNacToolIntent } from "./curator";
+import type { FinderNicNacBlockedToolIntent } from "./tool-policy";
 
 type BuildFinderNicNacPromptInput = {
   activeToolNames: string[];
   intents: FinderNicNacToolIntent[];
+  blockedToolIntents?: FinderNicNacBlockedToolIntent[];
   memorySummaries?: string[];
   accountContext?: FinderNicNacAccountContext;
 };
@@ -72,11 +74,16 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 - Help customers find public collectors, Public Showcases, followed collectors, and one-way follows.
 - Keep collector discovery about profile visibility, public sharing links, follower counts, blocking and reporting, and moderation review.
 - ${socialCommerceProhibition}.`,
+
+  suite_workspace: `Sparkle Suite workspace boundary:
+- Sparkle Suite workspace changes must happen from Sparkle Suite, not Sparkle Finder.
+- Do not use Finder tools as a workaround for Trade Board, Live Queue, calendar, customer-site, recipe, fulfillment, billing, or account-setting mutations.`,
 };
 
 export function buildFinderNicNacSystemPrompt({
   activeToolNames,
   intents,
+  blockedToolIntents = [],
   memorySummaries = [],
   accountContext,
 }: BuildFinderNicNacPromptInput): string {
@@ -92,6 +99,7 @@ ${memorySummaries.map((memory) => `- ${memory}`).join("\n")}`
     corePrompt,
     buildSurfaceContextPrompt(accountContext),
     memorySection,
+    buildBlockedActionPrompt(blockedToolIntents),
     `Active tools for this turn:
 ${tools}
 
@@ -100,6 +108,20 @@ Only call tools in the active list. If the customer needs something outside the 
   ]
     .filter(Boolean)
     .join("\n\n");
+}
+
+function buildBlockedActionPrompt(blockedToolIntents: FinderNicNacBlockedToolIntent[]): string {
+  if (blockedToolIntents.length === 0) {
+    return "";
+  }
+
+  const uniqueMessages = blockedToolIntents
+    .map((blocked) => blocked.message)
+    .filter((message, index, messages) => messages.indexOf(message) === index);
+
+  return `Blocked action boundary for this turn:
+${uniqueMessages.map((message) => `- ${message}`).join("\n")}
+Do not call Finder tools to work around a blocked Sparkle Suite workspace action.`;
 }
 
 function buildSurfaceContextPrompt(accountContext: FinderNicNacAccountContext | undefined): string {

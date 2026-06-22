@@ -208,6 +208,49 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).toContain("Open Sparkle Suite and I can pick it up there");
   });
 
+  it("does not expose Finder tools for linked-rep Suite workspace mutation requests", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Heather",
+      email: "heather@example.test",
+      customer: {
+        id: "customer-silver-heather",
+        displayName: "Heather",
+        email: "heather@example.test",
+        state: "NC",
+        tier: "silver",
+        repIdentity: {
+          sparkleSuiteRepId: "rep-bling-kitchen",
+          businessName: "BlingKitchen",
+          publicDiscoveryEnabled: true,
+        },
+      },
+      membership: {
+        hasSilverAccess: true,
+        effectiveState: "silver_rep_included",
+      },
+      repIdentity: {
+        sparkleSuiteRepId: "rep-bling-kitchen",
+        businessName: "BlingKitchen",
+        publicDiscoveryEnabled: true,
+      },
+    };
+
+    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+
+    const routeCall = streamTextMock.mock.calls[0][0] as {
+      system?: unknown;
+      tools?: Record<string, unknown>;
+    };
+    const systemPrompt = String(routeCall.system);
+
+    expect(Object.keys(routeCall.tools ?? {})).toEqual([]);
+    expect(systemPrompt).toContain("Blocked action boundary for this turn:");
+    expect(systemPrompt).toContain("I need you logged into Sparkle Suite");
+    expect(systemPrompt).not.toContain("search_catalog");
+  });
+
   it("preloads safe Finder memory into the model prompt and filters unsafe memory", async () => {
     nicNacRouteRuntime.accountState = {
       status: "authenticated",

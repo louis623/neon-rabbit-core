@@ -9,7 +9,8 @@ export type FinderNicNacToolIntent =
   | "availability"
   | "profile"
   | "rep_discovery"
-  | "social";
+  | "social"
+  | "suite_workspace";
 
 export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToolIntent[] {
   const normalized = text.toLowerCase();
@@ -20,6 +21,10 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
     }
   };
   const hasAny = (patterns: RegExp[]) => patterns.some((pattern) => pattern.test(normalized));
+
+  if (isSuiteWorkspaceMutationRequest(normalized)) {
+    add("suite_workspace");
+  }
 
   if (
     hasAny([
@@ -94,7 +99,37 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
     add("profile");
   }
 
+  if (intents.includes("suite_workspace")) {
+    return intents.filter((intent) => intent === "memory" || intent === "suite_workspace");
+  }
+
   return intents.length ? intents : ["memory"];
+}
+
+function isSuiteWorkspaceMutationRequest(normalized: string): boolean {
+  const suiteSurface =
+    /\b(trade board|tradeboard|live queue|livequeue|customer site|workspace|calendar|site settings|account settings|billing|fulfillment|recipes?|board|homepage|hero|trade)\b/;
+  const mutationVerb =
+    /\b(add|post|put|create|update|change|edit|remove|delete|schedule|cancel|mark|approve|ship|shipped|complete|publish|hide|upload|take)\b/;
+  const listAsMutation =
+    /\blist\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(trade board|tradeboard)\b/;
+  const boardMutation =
+    /\b(add|post|put|list|create)\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(board|trade board|tradeboard)\b/;
+  const boardRemoval =
+    /\b(take|remove|delete)\b.{0,80}\b(off|from)\s+(my|our|the)?\s*(board|trade board|tradeboard)\b/;
+  const tradeStatusMutation = /\bmark\b.{0,80}\btrade\b.{0,80}\b(shipped|complete|completed|approved|cancelled|canceled)\b/;
+  const siteContentMutation = /\b(change|edit|update|publish|hide|upload)\b.{0,80}\b(homepage|hero|customer site|site settings|recipe|recipes?)\b/;
+  const liveShowMutation = /\b(schedule|add|create|cancel|update|change|edit)\b.{0,80}\b(live show|next live|show time|showtime)\b/;
+
+  return (
+    (suiteSurface.test(normalized) && mutationVerb.test(normalized)) ||
+    listAsMutation.test(normalized) ||
+    boardMutation.test(normalized) ||
+    boardRemoval.test(normalized) ||
+    tradeStatusMutation.test(normalized) ||
+    siteContentMutation.test(normalized) ||
+    liveShowMutation.test(normalized)
+  );
 }
 
 export function summarizeFinderNicNacMemoryHints(

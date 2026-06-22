@@ -24,6 +24,10 @@ import {
 import { summarizeFinderNicNacMemoryHints } from "@/lib/sparkle-finder/nic-nac/curator";
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import type { FinderNicNacAccountContext } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
+import {
+  createFinderNicNacProductContext,
+  filterFinderNicNacToolIntentsForContext,
+} from "@/lib/sparkle-finder/nic-nac/tool-policy";
 import { getSuiteLinkedRepMemorySummariesForFinder } from "@/lib/sparkle-finder/suite-linked-rep-memory";
 import { createClient } from "@/lib/supabase/server";
 
@@ -62,8 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "missing_messages" }, { status: 400 });
   }
 
-  const intents = getFinderNicNacToolIntentsForMessages(messages);
-  const activeToolNames = listFinderNicNacToolNamesForIntents(intents);
+  const requestedIntents = getFinderNicNacToolIntentsForMessages(messages);
   const supabase = await createClient();
   const memoryStore = createSupabaseCustomerMemoryStore(supabase as unknown as SupabaseCustomerMemoryClient);
   const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
@@ -71,6 +74,16 @@ export async function POST(request: Request) {
     await getSafeCustomerMemoryForPrompt(memoryStore, accountState.customer.id),
   );
   const accountContext = createFinderNicNacAccountContext(accountState);
+  const productContext = createFinderNicNacProductContext({
+    actorType: accountContext.actorType,
+    accountTier: accountContext.accountTier,
+    linkedSuiteRepId: accountContext.linkedSuiteRepId,
+  });
+  const toolPolicy = filterFinderNicNacToolIntentsForContext(productContext, requestedIntents);
+  const intents = toolPolicy.allowedIntents;
+  const activeToolNames = toolPolicy.allowedToolNames.length > 0
+    ? toolPolicy.allowedToolNames
+    : listFinderNicNacToolNamesForIntents(intents);
   const suiteMemorySummaries =
     accountContext.actorType === "linked_rep" && accountContext.linkedSuiteRepId
       ? await getSuiteLinkedRepMemorySummariesForFinder({
@@ -90,6 +103,7 @@ export async function POST(request: Request) {
     system: buildFinderNicNacSystemPrompt({
       activeToolNames,
       intents,
+      blockedToolIntents: toolPolicy.blockedIntents,
       accountContext,
       memorySummaries,
     }),

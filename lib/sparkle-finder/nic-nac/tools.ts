@@ -27,6 +27,7 @@ const toolPacks: Record<FinderNicNacToolIntent, string[]> = {
   profile: [],
   rep_discovery: ["list_favorite_reps", "save_favorite_rep"],
   social: ["find_public_showcases", "list_followed_collectors"],
+  suite_workspace: [],
 };
 
 export function listFinderNicNacToolNamesForIntents(intents: FinderNicNacToolIntent[]): string[] {
