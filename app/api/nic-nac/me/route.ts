@@ -17,6 +17,7 @@ export async function GET() {
         public_site_slug: rep.public_site_slug,
         time_zone: rep.time_zone,
         live_queue_sync_code: liveQueueSyncCode,
+        secret_rep_id_number: liveQueueSyncCode,
       },
     })
   } catch (err) {

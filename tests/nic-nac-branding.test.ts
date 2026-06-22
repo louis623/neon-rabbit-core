@@ -118,14 +118,14 @@ describe('Nic-Nac branding copy', () => {
     )
 
     expect(html).toContain('Set up Live Queue')
-    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('Secret Rep ID Number')
     expect(html).toContain('MHF-7342')
-    expect(html).toContain('Use this when the extension asks for your code')
+    expect(html).toContain('Keep this private. Use this when the extension asks for your code')
     expect(html).toContain('Open Sparkle Suite Live Queue in the Chrome Extension Store')
     expect(html).toContain(
       'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',
     )
-    expect(html).toContain('Enter this sync code')
+    expect(html).toContain('Enter this Secret Rep ID Number')
     expect(html).toContain('Confirm the Party Filter')
     expect(html).toContain('Confirm Live Queue status is connected')
     expect(html).toContain('I need help with Live Queue setup')

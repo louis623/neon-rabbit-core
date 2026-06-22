@@ -26,15 +26,15 @@ export function RequiredSetupLiveQueuePanel({
         </p>
       </div>
       <div className={styles.codeBox}>
-        <span>Live Queue sync code</span>
+        <span>Secret Rep ID Number</span>
         <strong>{hasSyncCode ? syncCode : 'Not assigned yet'}</strong>
         {hasSyncCode ? (
-          <small>Use this when the extension asks for your code.</small>
+          <small>Keep this private. Use this when the extension asks for your code.</small>
         ) : null}
       </div>
       {!hasSyncCode ? (
         <p className={styles.blockedNote}>
-          Nic-Nac needs support to assign your Live Queue sync code before this
+          Nic-Nac needs support to assign your Secret Rep ID Number before this
           step can be completed.
         </p>
       ) : null}
@@ -50,7 +50,7 @@ export function RequiredSetupLiveQueuePanel({
           </a>
           .
         </li>
-        <li>Enter this sync code in the extension.</li>
+        <li>Enter this Secret Rep ID Number in the extension.</li>
         <li>Open your Bomb Party Party Orders page.</li>
         <li>Confirm the Party Filter for the show you want synced.</li>
         <li>Confirm Live Queue status is connected before moving on.</li>

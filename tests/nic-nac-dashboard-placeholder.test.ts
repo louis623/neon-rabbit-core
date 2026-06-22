@@ -486,7 +486,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('>Rep<')
     expect(html).toContain('>Show<')
     expect(html).not.toContain('Rep / show')
-    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('Secret Rep ID Number')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).not.toContain('Open account')
@@ -816,7 +816,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('formatExtensionRepId(')
   })
 
-  it('renders the saved Live Queue sync code in the workspace topbar', () => {
+  it('renders the saved Secret Rep ID Number in the workspace topbar', () => {
     const html = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
         liveQueueSyncCodeOverride: 'MHF-7342',
@@ -827,13 +827,14 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(html).toContain('Live Queue sync code')
+    expect(html).toContain('Secret Rep ID Number')
     expect(html).toContain('MHF-7342')
     expect(html).toContain('>Rep<')
     expect(html).toContain('>Show<')
     expect(html).not.toContain('Rep / show')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Extension code')
+    expect(html).not.toContain('Live Queue sync code')
     expect(css).toContain('align-items: center;')
     expect(css).toContain('min-height: 52px;')
     expect(css).toContain('font-size: 14px;')

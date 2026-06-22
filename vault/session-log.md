@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Secret Rep ID Number Bridge Copy
+
+**What changed:**
+- `/api/nic-nac/me` now returns `secret_rep_id_number` as a compatibility alias for the saved Live Queue sync code.
+- The Sparkle Suite workspace topbar now labels the private rep number as `Secret Rep ID Number`.
+- Required Live Queue setup now tells reps to keep that number private and use it when the extension asks for their code.
+- Required setup prompt guidance now tells Nic-Nac to say `Secret Rep ID Number` in rep-facing setup language while still using the internal `liveQueueSyncCode` field/tool results.
+
+**Verification:**
+- Focused Suite regression passed: 20 files, 311 tests.
+- Suite curated `npm test` passed: 14 files, 179 tests.
+- Suite `npm run build` passed.
+- Full Suite Vitest sweep still has unrelated pre-existing failures in start/prelaunch server-page render tests and master brand doc expectations; the touched Suite tests passed.
+
+---
+
 ## June 22, 2026 - Nic-Nac Mission Guardrails
 
 **What changed:**

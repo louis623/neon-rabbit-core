@@ -124,12 +124,12 @@ describe('required Nic-Nac setup prompt', () => {
     expect(prompt).toContain('Live Queue setup')
     expect(prompt).toContain('Live Queue is not optional')
     expect(prompt).toContain('If Live Queue setup is blocked')
-    expect(prompt).toContain('Live Queue sync code')
+    expect(prompt).toContain('Secret Rep ID Number')
     expect(prompt).toContain(
-      'Only provide a Live Queue sync code that came from get_required_setup_state.liveQueueSyncCode or a successful ensure_live_queue_sync_code result',
+      'Only provide a Secret Rep ID Number that came from get_required_setup_state.liveQueueSyncCode or a successful ensure_live_queue_sync_code result',
     )
     expect(prompt).toContain(
-      'Never invent, infer, shorten, lengthen, or make a Fizz-style Live Queue sync code',
+      'Never invent, infer, shorten, lengthen, or make a Fizz-style Secret Rep ID Number',
     )
     expect(prompt).toContain(
       'Expected assigned-code examples look like MHF-7342 or BWB-5819',
@@ -147,17 +147,18 @@ describe('required Nic-Nac setup prompt', () => {
       'Do not mark Live Queue setup complete from vague replies like yes, okay, install now, or set it up now',
     )
     expect(prompt).toContain(
-      'Only complete Live Queue setup after the rep confirms the extension is installed, the saved sync code was entered, Bomb Party Party Orders is open, Party Filter is set, and Live Queue status is connected',
+      'Only complete Live Queue setup after the rep confirms the extension is installed, the saved Secret Rep ID Number was entered, Bomb Party Party Orders is open, Party Filter is set, and Live Queue status is connected',
     )
     expect(prompt).toContain(
-      'Give the rep their saved Live Queue sync code in the same reply as the Chrome Extension Store link',
+      'Give the rep their saved Secret Rep ID Number in the same reply as the Chrome Extension Store link',
     )
     expect(prompt).toContain(
-      'If the extension asks for a code, provide the saved Live Queue sync code directly',
+      'If the extension asks for a code, provide the saved Secret Rep ID Number directly',
     )
     expect(prompt).toContain(
-      'Do not say the extension generates or displays the sync code',
+      'Do not say the extension generates or displays the code',
     )
+    expect(prompt).toContain('Say this number is private and should not be shared publicly')
     expect(prompt).toContain('Do not ask for the rep email to look up the code')
     expect(prompt).toContain(
       'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',

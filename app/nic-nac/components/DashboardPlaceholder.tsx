@@ -414,6 +414,7 @@ type MeResponsePayload = {
     public_site_slug?: string | null
     time_zone?: string | null
     live_queue_sync_code?: string | null
+    secret_rep_id_number?: string | null
   }
 }
 
@@ -3747,7 +3748,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             <span className={styles.topbarInfoValue}>{headerShowName}</span>
           </div>
           <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Live Queue sync code</span>
+            <span className={styles.topbarInfoLabel}>Secret Rep ID Number</span>
             <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
               {headerLiveQueueSyncCode}
             </span>

@@ -22,7 +22,7 @@ describe('/api/nic-nac/me', () => {
     getLiveQueueSyncCodeForRepMock.mockReset()
   })
 
-  it('returns the authenticated rep profile with the saved Live Queue sync code', async () => {
+  it('returns the authenticated rep profile with the saved Secret Rep ID Number alias', async () => {
     getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: {
@@ -51,6 +51,7 @@ describe('/api/nic-nac/me', () => {
         public_site_slug: 'milehighfizz',
         time_zone: 'America/Denver',
         live_queue_sync_code: 'MHF-7342',
+        secret_rep_id_number: 'MHF-7342',
       },
     })
   })

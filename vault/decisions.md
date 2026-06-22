@@ -18,7 +18,7 @@ Sparkle Finder may preload safe Suite rep memory for a linked rep only through a
 There should be one production Nic-Nac core, not copied assistants per product. A linked rep should feel like the same Nic-Nac knows them in Sparkle Suite and Sparkle Finder. Product context controls available tools and mutation destinations; it does not create a separate Nic-Nac identity.
 
 **The private Live Queue code is now the Secret Rep ID Number**
-The private code visible only inside the rep's Sparkle Suite account should be labeled as the Secret Rep ID Number / do not share publicly. It keeps its Live Queue connection/sync use and also becomes the Sparkle Finder rep-claim code. Sparkle Finder resolves it to the durable Sparkle Suite `rep_id`; Nic-Nac follows the linked identity, not the visible code.
+The private code visible only inside the rep's Sparkle Suite account should be labeled as the Secret Rep ID Number / do not share publicly. It keeps its Live Queue connection/sync use and also becomes the Sparkle Finder rep-claim code. Sparkle Finder resolves it to the durable Sparkle Suite `rep_id`; Nic-Nac follows the linked identity, not the visible code. Keep internal `liveQueueSyncCode`/`live_queue_sync_code` compatibility for the extension and existing tools, but prefer `Secret Rep ID Number` in rep-facing copy.
 
 **Linked reps use shared memory with surface-gated actions**
 When a rep links Sparkle Finder to their Sparkle Suite `rep_id`, Nic-Nac should share memory across both surfaces for that human. Tool execution remains gated by the current product and authentication surface: Sparkle Suite mutations require the rep to be in Sparkle Suite, while Finder work can happen in Finder with the appropriate Finder permissions.
