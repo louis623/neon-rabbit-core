@@ -12,6 +12,12 @@ import {
 } from "@/lib/nic-nac/core/model-provider";
 import { getNicNacModelPolicy } from "@/lib/nic-nac/core/model-policy";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
+import {
+  isLocalPreviewAuthEnabled,
+  parseSparkleFinderAuthMode,
+  sparkleFinderAuthCookieName,
+  type SparkleFinderAuthMode,
+} from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import {
   createSupabaseCustomerMemoryStore,
@@ -44,7 +50,10 @@ type FinderNicNacPostBody = {
 };
 
 export async function POST(request: Request) {
-  const accountState = await getCurrentSparkleFinderAccount();
+  const localPreviewAuthMode = getLocalPreviewAuthMode(request);
+  const accountState = await getCurrentSparkleFinderAccount(
+    localPreviewAuthMode ? { localPreviewAuthMode } : undefined,
+  );
 
   if (accountState.status !== "authenticated") {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
@@ -124,6 +133,36 @@ export async function POST(request: Request) {
   return result.toUIMessageStreamResponse({
     onError: () => "Nic-Nac could not answer that just now. Try again in a sec, and if this keeps happening, let Louis know.",
   });
+}
+
+function getLocalPreviewAuthMode(request: Request): SparkleFinderAuthMode | undefined {
+  if (!isLocalPreviewAuthEnabled()) {
+    return undefined;
+  }
+
+  const cookieHeader = request.headers.get("cookie");
+
+  if (!cookieHeader) {
+    return undefined;
+  }
+
+  const rawValue = cookieHeader
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(`${sparkleFinderAuthCookieName}=`))
+    ?.slice(sparkleFinderAuthCookieName.length + 1);
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  try {
+    const authMode = parseSparkleFinderAuthMode(decodeURIComponent(rawValue));
+
+    return authMode === "anonymous" ? undefined : authMode;
+  } catch {
+    return undefined;
+  }
 }
 
 function createFinderNicNacAccountContext(accountState: Awaited<ReturnType<typeof getCurrentSparkleFinderAccount>>): FinderNicNacAccountContext {

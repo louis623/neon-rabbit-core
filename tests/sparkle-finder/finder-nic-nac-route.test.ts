@@ -11,6 +11,7 @@ const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords, sui
       email: null,
       customer: null,
     } as unknown,
+    accountServiceCalls: [] as unknown[],
   },
   streamTextMock: vi.fn(),
   createOpenAIMock: vi.fn((_options?: unknown) => (model: string) => ({
@@ -48,7 +49,10 @@ vi.mock("@ai-sdk/openai", () => ({
 }));
 
 vi.mock("@/lib/sparkle-finder/account-service", () => ({
-  getCurrentSparkleFinderAccount: async () => nicNacRouteRuntime.accountState,
+  getCurrentSparkleFinderAccount: async (options: unknown) => {
+    nicNacRouteRuntime.accountServiceCalls.push(options);
+    return nicNacRouteRuntime.accountState;
+  },
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -94,6 +98,7 @@ describe("Finder Nic-Nac API route", () => {
       email: null,
       customer: null,
     };
+    nicNacRouteRuntime.accountServiceCalls = [];
   });
 
   afterEach(() => {
@@ -154,6 +159,37 @@ describe("Finder Nic-Nac API route", () => {
 
     await expect(response.json()).resolves.toEqual({ error: "model_not_configured" });
     expect(response.status).toBe(503);
+    expect(streamTextMock).not.toHaveBeenCalled();
+  });
+
+  it("passes local preview auth mode into the account resolver for route smoke", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Sparkle Mama",
+      email: "sparkle-mama@example.test",
+      customer: {
+        id: "customer-silver-sparkle-mama",
+        displayName: "Sparkle Mama",
+        email: "sparkle-mama@example.test",
+        state: "TX",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+    vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "true");
+    vi.stubEnv("OPENAI_API_KEY", "");
+
+    const response = await POST(createNicNacRequest("Show my favorite reps.", "sparkle_finder_auth_mode=silver"));
+
+    expect(response.status).toBe(503);
+    expect(nicNacRouteRuntime.accountServiceCalls).toEqual([
+      {
+        localPreviewAuthMode: "silver",
+      },
+    ]);
     expect(streamTextMock).not.toHaveBeenCalled();
   });
 
@@ -426,9 +462,10 @@ describe("Finder Nic-Nac API route", () => {
   });
 });
 
-function createNicNacRequest(text = "Show my favorite reps."): Request {
+function createNicNacRequest(text = "Show my favorite reps.", cookie?: string): Request {
   return new Request("https://sparkle-finder.example/api/finder/nic-nac", {
     method: "POST",
+    headers: cookie ? { cookie } : undefined,
     body: JSON.stringify({
       messages: [
         {
