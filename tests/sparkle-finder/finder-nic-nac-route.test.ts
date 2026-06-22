@@ -30,7 +30,7 @@ const {
       accountServiceCalls: [] as unknown[],
     },
     streamTextMock: vi.fn(),
-    createOpenAIMock: vi.fn((_options?: unknown) => (model: string) => ({
+    createOpenAIMock: vi.fn(() => (model: string) => ({
       provider: "openai",
       model,
     })),

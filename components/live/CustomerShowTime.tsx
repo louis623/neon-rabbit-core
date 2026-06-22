@@ -1,32 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useClientFormattedTime } from "./useClientFormattedTime";
 
 type CustomerShowTimeProps = {
   value: string;
 };
 
+const customerShowTimeFormatOptions = {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZoneName: "short",
+} satisfies Intl.DateTimeFormatOptions;
+
 export function CustomerShowTime({ value }: CustomerShowTimeProps) {
-  const [label, setLabel] = useState("");
-
-  useEffect(() => {
-    const date = new Date(value);
-
-    if (!Number.isFinite(date.getTime())) {
-      setLabel("");
-      return;
-    }
-
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setLabel(
-      new Intl.DateTimeFormat("en-US", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone,
-        timeZoneName: "short",
-      }).format(date),
-    );
-  }, [value]);
+  const label = useClientFormattedTime(value, customerShowTimeFormatOptions);
 
   return <span suppressHydrationWarning>{label || "Time loading..."}</span>;
 }

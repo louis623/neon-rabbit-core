@@ -59,7 +59,8 @@ function redactSmokeBody(body: Record<string, unknown> | null) {
     return null;
   }
 
-  const { smokeId: _smokeId, ...rest } = body;
+  const rest = { ...body };
+  delete rest.smokeId;
 
   return rest;
 }

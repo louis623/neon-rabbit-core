@@ -1,8 +1,9 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
+import { useClientFormattedTime } from "@/components/live/useClientFormattedTime";
 import { NicNacMark } from "@/components/nic-nac/NicNacMark";
 
 type ChatMessage = {
@@ -39,6 +40,13 @@ type FinderNicNacChatbotProps = {
   emptyState?: string;
   compact?: boolean;
 };
+
+const localShowTimeFormatOptions = {
+  weekday: "long",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZoneName: "short",
+} satisfies Intl.DateTimeFormatOptions;
 
 export function FinderNicNacChatbot({
   status,
@@ -208,27 +216,7 @@ function buildTypedResponse(status: FinderNicNacChatbotProps["status"], leadCoun
 }
 
 function CustomerLocalShowTime({ value }: { value: string }) {
-  const [label, setLabel] = useState("");
-
-  useEffect(() => {
-    const date = new Date(value);
-
-    if (!Number.isFinite(date.getTime())) {
-      setLabel("");
-      return;
-    }
-
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setLabel(
-      new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        hour: "numeric",
-        minute: "2-digit",
-        timeZone,
-        timeZoneName: "short",
-      }).format(date),
-    );
-  }, [value]);
+  const label = useClientFormattedTime(value, localShowTimeFormatOptions);
 
   return <span suppressHydrationWarning>{label || "the next scheduled show"}</span>;
 }

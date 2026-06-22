@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { Camera, CheckCircle2, Eye, EyeOff, LoaderCircle, Search, Sparkles, Star } from "lucide-react";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
@@ -38,7 +38,6 @@ const initialStudioState: SilverSaveActionState = {
 };
 
 export function ShowcaseManager({
-  accountState,
   canSaveSilverActions,
   collectionItems,
   isLocalPreview,
@@ -46,28 +45,8 @@ export function ShowcaseManager({
   saveAction,
   studioAction,
 }: ShowcaseManagerProps) {
-  const [records, setRecords] = useState(() => createLocalRecords(collectionItems, libraryItems));
-  const [localStatus, setLocalStatus] = useState(
-    canSaveSilverActions ? "Sparkle Showcase preview ready." : "Silver preview is required to save Sparkle Showcase updates.",
-  );
-  const [actionState, formAction, isPending] = useActionState(saveAction ?? disabledShowcaseAction, initialState);
-  const statusMessage = isLocalPreview ? localStatus : actionState.message;
-
-  function previewUpdate(item: JewelryItem, nextStatus: SparkleShowcaseItemStatus) {
-    if (!canSaveSilverActions || accountState.status !== "authenticated") {
-      setLocalStatus("Silver preview is required to save Sparkle Showcase updates.");
-      return;
-    }
-
-    setRecords((current) => upsertLocalRecord(current, item, nextStatus));
-    setLocalStatus(
-      nextStatus === "iso"
-        ? "Looking-for piece added to your Sparkle Showcase preview."
-        : nextStatus === "wishlist"
-          ? "Wishlist piece added to your Sparkle Showcase preview."
-          : "Sparkle Showcase preview updated.",
-    );
-  }
+  const records = createLocalRecords(collectionItems, libraryItems);
+  const [, formAction, isPending] = useActionState(saveAction ?? disabledShowcaseAction, initialState);
 
   return (
     <section className="grid gap-5" data-smoke="showcase-manager">
@@ -362,19 +341,6 @@ function createLocalRecords(collectionItems: ManagedCollectionItem[], libraryIte
   }));
 
   return existingRecords.length > 0 ? existingRecords : libraryItems.slice(0, 3).map((item) => createRecord(item, "wishlist"));
-}
-
-function upsertLocalRecord(
-  records: LocalShowcaseRecord[],
-  item: JewelryItem,
-  status: SparkleShowcaseItemStatus,
-): LocalShowcaseRecord[] {
-  const nextRecord = createRecord(item, status);
-  const existing = records.find((record) => record.item.id === item.id);
-
-  return existing
-    ? records.map((record) => (record.item.id === item.id ? { ...record, ...nextRecord } : record))
-    : [nextRecord, ...records];
 }
 
 function createRecord(item: JewelryItem, status: SparkleShowcaseItemStatus): LocalShowcaseRecord {

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- Catalog images can come from fixture, uploaded, or API URLs and need direct fallback/error handling here. */
+
 import { useState } from "react";
 import { Gem } from "lucide-react";
 import type { JewelryType } from "@/lib/sparkle-finder/types";

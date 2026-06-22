@@ -21,7 +21,7 @@ describe("Sparkle Finder Sparkle Suite rep claim", () => {
   it("claims a Secret Rep ID Number through Suite and persists the linked Rep Silver account", async () => {
     const nowIso = "2026-06-22T09:00:00.000Z";
     const serviceRoleClient = createFakeRepClaimClient({ profileExists: true });
-    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+    const fetcher = vi.fn(async () =>
       new Response(
         JSON.stringify({
           ok: true,

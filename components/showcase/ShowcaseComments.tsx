@@ -28,6 +28,7 @@ const initialReportState: ReportActionState = {
   ok: true,
   message: "Reports ready.",
 };
+const commentReportTargetType: ShowcaseReportTargetType = "comment";
 
 export function ShowcaseComments({
   comments,
@@ -195,7 +196,7 @@ function CommentCard({
             <input name="reason" type="hidden" value="spam" />
             <input name="showcaseUserId" type="hidden" value={showcaseUserId} />
             <input name="targetId" type="hidden" value={comment.id} />
-            <input name="targetType" type="hidden" value={"comment" satisfies ShowcaseReportTargetType} />
+            <input name="targetType" type="hidden" value={commentReportTargetType} />
             <button className="inline-flex min-h-9 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)]" type="submit">
               <Flag aria-hidden="true" className="size-3.5" />
               Report spam or bad behavior
