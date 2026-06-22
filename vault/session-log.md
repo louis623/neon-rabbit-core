@@ -2,6 +2,13 @@
 
 ## 2026-06-22
 
+- Cleaned Finder lint health:
+  - Replaced the local-time `setState`-inside-effect patterns in `components/live/CustomerShowTime.tsx` and `components/nic-nac/FinderNicNacChatbot.tsx` with a shared hydration-safe `useClientFormattedTime` hook based on `useSyncExternalStore`.
+  - Cleared the remaining lint warnings by documenting the intentional direct catalog `<img>` fallback, removing dead Showcase preview state, avoiding a JSX `satisfies` expression that upset the JSX lint utility, and removing unused test/script parameters.
+  - Verification passed: `npm run lint` is quiet, `npx eslint . --max-warnings=0` is quiet, full Finder Vitest suite passes (`37` files, `488` tests), and production `next build` passes locally and in Vercel.
+  - Deployed Finder production `dpl_2ysBkLzjEXBUSzas94nmbMpA3i5s`, aliased at `https://sparkle-finder-dev.vercel.app`, and confirmed Vercel inspect shows `READY` with the stable alias attached.
+  - Live public checks passed for `/`, `/library`, and `/auth/sign-in`; the secured internal telemetry smoke route returned `401` without a bearer token as expected.
+
 - Added Finder Nic-Nac owner save/mutation tools:
   - Added `save_my_collection_item`, an explicit owner-scoped collection/Wishlist save tool backed by existing Sparkle Finder persistence. It trims and verifies the catalog item with fixture fallback disabled before saving, writes using the signed-in customer id, supports owned/wishlist/private-note states, highlight flags, notes, and optional Showcase Collection assignment, and returns a `saved` result only after persistence succeeds.
   - Added `save_my_showcase_piece`, an explicit owner-scoped Showcase piece save tool backed by existing Showcase persistence. It verifies the catalog item before saving and supports Showcase status, public/private piece visibility, reveal story, note, and rarest-reveal flag.
