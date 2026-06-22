@@ -11,6 +11,7 @@ Running log of significant work sessions. Most recent first.
 - Added a token-gated Finder internal reviewer-smoke session route at `/api/internal/finder/reviewer-smoke-session`.
 - Finder smoke now creates a temporary confirmed Silver smoke user, captures real Supabase auth cookies, calls deployed `/api/finder/nic-nac`, and cleans the smoke user afterward.
 - Rotated Finder production `SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN` and deployed Finder production `dpl_FYgnoBbT1VW6iwwmSkP5Jn16x9L7`, aliased at `https://sparkle-finder-dev.vercel.app`.
+- Deployed Suite preview `dpl_5RVUZD6xmWKwFMa41VwPthiLEaBq` / `https://sparkle-suite-ku7hgxqm6-louis-2849s-projects.vercel.app` and moved `https://sparkle-suite-demo.vercel.app` to that deployment.
 
 **Verification:**
 - Suite `npm run lint` now passes with warnings only.
@@ -21,6 +22,7 @@ Running log of significant work sessions. Most recent first.
 - Finder `npm run build` passed.
 - Finder full Sparkle Finder suite passed after rerun: 38 files, 496 tests. The first run had one unrelated timeout in `auth-routes.test.ts`; rerunning that file and then the full suite passed.
 - Deployed Finder Nic-Nac smoke passed against `https://sparkle-finder-dev.vercel.app` with `stream_ok` and no hard-fail phrases.
+- Live URL checks returned `200` for both `https://sparkle-suite-demo.vercel.app/` and `https://sparkle-finder-dev.vercel.app/`.
 
 **Result:**
 - The two prior caveats are closed: Suite repo-wide lint no longer fails, and Finder has a non-personal deployed Nic-Nac smoke path while preview auth stays disabled in production.
