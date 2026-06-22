@@ -18,6 +18,7 @@ Running log of significant work sessions. Most recent first.
 - Adjacent Finder Nic-Nac suite passed: 6 files, 31 tests.
 - Full Finder Vitest suite passed: 30 files, 428 tests.
 - Finder `npm run build` passed and includes `/api/finder/nic-nac`.
+- Finder local smoke passed: 17 Playwright tests passed, 2 skipped, with local preview auth at `http://127.0.0.1:4310`.
 - Suite focused core policy/prompt/linked-memory sweep passed: 4 files, 22 tests.
 - Independent reviewer agent found two policy gaps; both were reproduced with failing tests and fixed before this checkpoint.
 
