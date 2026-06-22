@@ -5,7 +5,11 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { getNicNacLanguageModel, getNicNacProviderOptions } from "@/lib/nic-nac/core/model-provider";
+import {
+  getNicNacLanguageModel,
+  getNicNacProviderOptions,
+  isNicNacOpenAIConfigured,
+} from "@/lib/nic-nac/core/model-provider";
 import { getNicNacModelPolicy } from "@/lib/nic-nac/core/model-policy";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
@@ -64,6 +68,10 @@ export async function POST(request: Request) {
 
   if (messages.length === 0) {
     return NextResponse.json({ error: "missing_messages" }, { status: 400 });
+  }
+
+  if (!isNicNacOpenAIConfigured()) {
+    return NextResponse.json({ error: "model_not_configured" }, { status: 503 });
   }
 
   const requestedIntents = getFinderNicNacToolIntentsForMessages(messages);

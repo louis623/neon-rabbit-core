@@ -3,6 +3,10 @@ import type { NicNacModelPolicy, NicNacReasoningLevel } from "./model-policy";
 
 const openai = createOpenAI({ baseURL: "https://api.openai.com/v1" });
 
+export function isNicNacOpenAIConfigured(openAIKey = process.env.OPENAI_API_KEY): boolean {
+  return Boolean(openAIKey?.trim());
+}
+
 export function getNicNacLanguageModel(policy: NicNacModelPolicy) {
   return openai(policy.modelId);
 }

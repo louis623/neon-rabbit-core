@@ -79,6 +79,7 @@ import { POST } from "../../app/api/finder/nic-nac/route";
 
 describe("Finder Nic-Nac API route", () => {
   beforeEach(() => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
     streamTextMock.mockReset();
     streamTextMock.mockReturnValue({
       toUIMessageStreamResponse: () => new Response("streamed Nic-Nac"),
@@ -128,6 +129,32 @@ describe("Finder Nic-Nac API route", () => {
 
     await expect(response.json()).resolves.toEqual({ error: "silver_required" });
     expect(response.status).toBe(403);
+  });
+
+  it("fails closed before streaming when OpenAI is not configured", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Brittany",
+      email: "brittany@example.test",
+      customer: {
+        id: "customer-silver-brittany",
+        displayName: "Brittany",
+        email: "brittany@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+    vi.stubEnv("OPENAI_API_KEY", "");
+
+    const response = await POST(createNicNacRequest());
+
+    await expect(response.json()).resolves.toEqual({ error: "model_not_configured" });
+    expect(response.status).toBe(503);
+    expect(streamTextMock).not.toHaveBeenCalled();
   });
 
   it("streams Silver Finder Nic-Nac through the shared OpenAI model policy", async () => {
