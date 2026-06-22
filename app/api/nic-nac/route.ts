@@ -51,6 +51,8 @@ import { createSuiteRepWorkspaceProductContext } from '@/lib/nic-nac/core/produc
 import { filterNicNacToolIntentsForContext } from '@/lib/nic-nac/core/tool-policy'
 import { assembleNicNacContext } from '@/lib/nic-nac/core/context-assembler'
 import { loadSuiteRepMemoryCards } from '@/lib/nic-nac/core/memory/rep-memory-cards'
+import { classifyNicNacMissionScopeForMessages } from '@/lib/nic-nac/core/mission-guard'
+import { createNicNacStaticTextStreamResponse } from '@/lib/nic-nac/core/static-stream'
 import { chooseNicNacToolChoiceForStep } from '@/lib/nic-nac/tool-choice-policy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
@@ -194,6 +196,65 @@ export async function POST(request: Request) {
       { error: 'forbidden' },
       { status: 403, headers: responseHeaders }
     )
+  }
+
+  const missionScope = classifyNicNacMissionScopeForMessages(messages)
+
+  if (missionScope.action === 'redirect') {
+    const existingIds = new Set(existingHistory.map((m) => m.id))
+    for (const m of messages) {
+      if (m.role !== 'user') continue
+      if (existingIds.has(m.id)) continue
+      await insertUserMessage(supabase, {
+        conversationId,
+        repId,
+        messageId: m.id,
+        parts: m.parts,
+      })
+    }
+
+    const assistantMessageId = randomUUID()
+    await reserveAssistantMessage(supabase, {
+      conversationId,
+      repId,
+      messageId: assistantMessageId,
+    })
+    await completeAssistant(supabase, {
+      conversationId,
+      messageId: assistantMessageId,
+      parts: [{ type: 'text', text: missionScope.message }],
+    })
+    await logNicNacRun({
+      runId,
+      repId,
+      conversationId,
+      model: 'mission_redirect',
+      status: 'complete',
+      latencyMs: Date.now() - runStartedAt,
+      intents: [],
+      toolNames: [],
+      productContext,
+      modelContext: {
+        originalMessageCount: messages.length,
+        modelMessageCount: 0,
+        droppedMessageCount: 0,
+        estimatedTokens: 0,
+        wasCompacted: false,
+      },
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        estimatedCostCents: 0,
+      },
+      errorMessage: `mission_redirect:${missionScope.reason}`,
+    })
+
+    return createNicNacStaticTextStreamResponse({
+      message: missionScope.message,
+      messageId: assistantMessageId,
+      headers: responseHeaders,
+    })
   }
 
   const repMemoryCards = await loadSuiteRepMemoryCards({

@@ -4,6 +4,31 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Nic-Nac Mission Guardrails
+
+**What changed:**
+- Added a conservative Nic-Nac mission-scope classifier in Suite and Finder.
+- Suite `/api/nic-nac` now redirects clear off-mission requests before memory-card loading, workflow setup, tool building, and model streaming. The redirect persists the user/assistant messages, logs a zero-token/zero-cost `mission_redirect` run, and streams a normal UI-message response.
+- Finder `/api/finder/nic-nac` now redirects clear off-mission Silver requests before OpenAI configuration checks, Supabase memory setup, tool setup, or model streaming. Redirect streams use generated assistant ids, not a fixed id.
+- Explicit off-mission categories include therapy, grocery lists, homework/content drafting, travel planning, medical advice, legal/financial advice, and general-chatbot use. The guard checks explicit redirect patterns before broad Sparkle/BP mission keywords so mixed prompts like "therapist for rep burnout" or "grocery list for live show snacks" are still redirected.
+
+**Verification:**
+- Independent review agent found the mission-keyword false-negative risk and a weak Suite route-order test; both were fixed before closeout.
+- Suite focused mission-guard suite passed: 3 files, 19 tests.
+- Finder focused mission-guard/route suite passed: 3 files, 24 tests.
+- Broad Suite Nic-Nac sweep passed: 106 files passed, 1 skipped; 735 tests passed, 1 skipped.
+- Finder full Vitest suite passed: 34 files, 455 tests.
+- Suite `npm run build` passed.
+- Finder `npm run build` passed.
+- Finder Nic-Nac missing-key guard smoke passed against a local `next start` server with `blocked_missing_model`.
+- Finder Nic-Nac off-mission route smoke passed with `stream_ok` for prompt `Make my grocery list for live show snacks.` while `OPENAI_API_KEY` was empty.
+- Broader Finder local smoke passed: 17 Playwright tests passed, 2 skipped.
+
+**Still open:**
+- Finder deployed authenticated model-stream smoke still needs Finder Vercel `OPENAI_API_KEY`.
+- Suite does not yet have a dedicated authenticated browser/API smoke for the static mission redirect path; current proof is route-order tests, focused tests, broad Suite Nic-Nac tests, and production build.
+- Secret Rep ID rep-facing copy/UI, Finder claim UI/storage, and legal/privacy/onboarding disclosure remain future slices and were not changed in this Nic-Nac-only closeout.
+
 ## June 22, 2026 - Finder Nic-Nac Route Smoke Harness
 
 **What changed:**
