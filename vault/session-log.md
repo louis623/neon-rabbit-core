@@ -9,7 +9,10 @@
   - Added `read_my_profile_status`, a current-account profile status tool that reports tier, membership state, visibility, bio/TikTok/photo presence, and linked Suite rep identity when present.
   - Wired these tool names through Finder intent policy, `/api/finder/nic-nac` active tool exposure, current account context, and route telemetry.
   - Verification passed: focused Finder Nic-Nac tools/policy/curator/route tests (`39` tests), full Finder Vitest suite (`37` files, `483` tests), and production `next build`.
+  - Deployed Finder production `dpl_9rdCEsULSz7DUEFFw59aJBbKARfM`, aliased at `https://sparkle-finder-dev.vercel.app`, and confirmed Vercel inspect shows `READY` with the stable alias attached.
+  - Live public checks passed for `/`, `/library`, and `/auth/sign-in`; the secured internal telemetry smoke route returned `401` without a bearer token as expected.
   - `npm run lint` still fails on pre-existing unrelated React hook lint errors in `components/live/CustomerShowTime.tsx` and `components/nic-nac/FinderNicNacChatbot.tsx`, plus warnings.
+  - Deployed authenticated Nic-Nac chat smoke still needs a local/available authenticated smoke credential path; the stable alias and unauthenticated protection checks are verified.
 
 - Added Finder Nic-Nac availability/live-show tool parity:
   - Added `find_rep_board_availability`, a bounded read-only tool backed by the existing Sparkle Suite public Finder availability API service. It returns requested item context, exact leads first, same collection/type fallback leads second, public customer-site links, listing photo context, and next-show timing without mutating Sparkle Suite Trade Boards.
