@@ -17,3 +17,9 @@ Each customer-facing product should keep its own auth boundary by default. Spark
 Decision: Sparkle Finder Nic-Nac should use the same OpenAI-only model policy direction as Sparkle Suite Nic-Nac. Do not hardcode Anthropic/Haiku model IDs in Finder route files, and do not keep an unused Anthropic provider dependency for Finder Nic-Nac.
 
 Reason: Louis wants fewer AI vendor accounts to troubleshoot and bill, and Nic-Nac should feel like one shared Sparkle ecosystem assistant rather than separate provider-specific assistants per product.
+
+## 2026-06-22 - Linked Reps In Finder Keep Identity But Not Suite Mutation Access
+
+Decision: When Finder knows an account is linked to a Sparkle Suite rep, Finder Nic-Nac should treat that as the same assistant relationship but keep current-surface tools limited to Sparkle Finder. Sparkle Suite workspace mutations requested from Finder should be redirected to Sparkle Suite login/opening, with context preserved in the conversation tone.
+
+Reason: This matches Louis's expectation that reps feel like they are talking to the same Nic-Nac on both products while keeping security and troubleshooting boundaries clear.

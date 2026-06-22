@@ -4,6 +4,14 @@ type BuildFinderNicNacPromptInput = {
   activeToolNames: string[];
   intents: FinderNicNacToolIntent[];
   memorySummaries?: string[];
+  accountContext?: FinderNicNacAccountContext;
+};
+
+export type FinderNicNacAccountContext = {
+  actorType: "collector" | "linked_rep";
+  accountTier: "free" | "silver";
+  linkedSuiteBusinessName?: string;
+  linkedSuiteRepId?: string;
 };
 
 const socialCommerceProhibition =
@@ -70,6 +78,7 @@ export function buildFinderNicNacSystemPrompt({
   activeToolNames,
   intents,
   memorySummaries = [],
+  accountContext,
 }: BuildFinderNicNacPromptInput): string {
   const uniqueIntents = intents.filter((intent, index) => intents.indexOf(intent) === index);
   const tools = activeToolNames.length > 0 ? activeToolNames.join(", ") : "none";
@@ -81,6 +90,7 @@ ${memorySummaries.map((memory) => `- ${memory}`).join("\n")}`
 
   return [
     corePrompt,
+    buildSurfaceContextPrompt(accountContext),
     memorySection,
     `Active tools for this turn:
 ${tools}
@@ -90,4 +100,22 @@ Only call tools in the active list. If the customer needs something outside the 
   ]
     .filter(Boolean)
     .join("\n\n");
+}
+
+function buildSurfaceContextPrompt(accountContext: FinderNicNacAccountContext | undefined): string {
+  if (accountContext?.actorType === "linked_rep") {
+    const businessName = accountContext.linkedSuiteBusinessName?.trim() || "their Sparkle Suite workspace";
+
+    return `Current surface: Sparkle Finder.
+Current actor: linked Sparkle Suite rep for ${businessName}.
+Identity rule: treat this as the same Nic-Nac the rep works with in Sparkle Suite when safe memory context is available.
+Tool boundary:
+- Use Finder tools only from this surface.
+- Do not change Sparkle Suite workspace, Trade Board, Live Queue, customer site, calendar, recipes, fulfillment, billing, or account settings from Finder.
+- If the rep asks for Sparkle Suite work from Finder, say: "I know what you want to do, but I need you logged into Sparkle Suite before I can change your Sparkle Suite workspace. Open Sparkle Suite and I can pick it up there."`;
+  }
+
+  return `Current surface: Sparkle Finder.
+Current actor: Sparkle Finder ${accountContext?.accountTier ?? "silver"} collector.
+Tool boundary: use Finder tools only from this surface.`;
 }

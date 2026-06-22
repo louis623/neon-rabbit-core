@@ -130,6 +130,46 @@ describe("Finder Nic-Nac API route", () => {
     });
   });
 
+  it("passes linked Sparkle Suite rep context into the Finder Nic-Nac system prompt", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Heather",
+      email: "heather@example.test",
+      customer: {
+        id: "customer-silver-heather",
+        displayName: "Heather",
+        email: "heather@example.test",
+        state: "NC",
+        tier: "silver",
+        repIdentity: {
+          sparkleSuiteRepId: "rep-bling-kitchen",
+          businessName: "BlingKitchen",
+          publicDiscoveryEnabled: true,
+        },
+      },
+      membership: {
+        hasSilverAccess: true,
+        effectiveState: "silver_rep_included",
+      },
+      repIdentity: {
+        sparkleSuiteRepId: "rep-bling-kitchen",
+        businessName: "BlingKitchen",
+        publicDiscoveryEnabled: true,
+      },
+    };
+
+    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+
+    const systemPrompt = String(streamTextMock.mock.calls[0][0].system);
+
+    expect(systemPrompt).toContain("Current surface: Sparkle Finder");
+    expect(systemPrompt).toContain("linked Sparkle Suite rep");
+    expect(systemPrompt).toContain("BlingKitchen");
+    expect(systemPrompt).toContain("I need you logged into Sparkle Suite");
+    expect(systemPrompt).toContain("Open Sparkle Suite and I can pick it up there");
+  });
+
   it("keeps Finder Nic-Nac model routing out of route-level Anthropic/Haiku hardcoding", () => {
     const routeSource = readFileSync(
       join(process.cwd(), "app/api/finder/nic-nac/route.ts"),
@@ -150,7 +190,7 @@ describe("Finder Nic-Nac API route", () => {
   });
 });
 
-function createNicNacRequest(): Request {
+function createNicNacRequest(text = "Show my favorite reps."): Request {
   return new Request("https://sparkle-finder.example/api/finder/nic-nac", {
     method: "POST",
     body: JSON.stringify({
@@ -158,7 +198,7 @@ function createNicNacRequest(): Request {
         {
           id: "message-1",
           role: "user",
-          parts: [{ type: "text", text: "Show my favorite reps." }],
+          parts: [{ type: "text", text }],
         },
       ],
     }),

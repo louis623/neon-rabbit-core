@@ -21,6 +21,7 @@ import {
   listFinderNicNacToolNamesForIntents,
 } from "@/lib/sparkle-finder/nic-nac/tools";
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
+import type { FinderNicNacAccountContext } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
     system: buildFinderNicNacSystemPrompt({
       activeToolNames,
       intents,
+      accountContext: createFinderNicNacAccountContext(accountState),
     }),
     messages: modelMessages,
     tools,
@@ -81,4 +83,27 @@ export async function POST(request: Request) {
   return result.toUIMessageStreamResponse({
     onError: () => "Nic-Nac could not answer that just now. Try again in a sec, and if this keeps happening, let Louis know.",
   });
+}
+
+function createFinderNicNacAccountContext(accountState: Awaited<ReturnType<typeof getCurrentSparkleFinderAccount>>): FinderNicNacAccountContext {
+  const accountTier: FinderNicNacAccountContext["accountTier"] =
+    accountState.status === "authenticated" ? accountState.tier : "free";
+  const repIdentity =
+    accountState.status === "authenticated"
+      ? accountState.repIdentity ?? accountState.customer.repIdentity
+      : undefined;
+
+  if (repIdentity) {
+    return {
+      actorType: "linked_rep",
+      accountTier,
+      linkedSuiteBusinessName: repIdentity.businessName,
+      linkedSuiteRepId: repIdentity.sparkleSuiteRepId,
+    };
+  }
+
+  return {
+    actorType: "collector",
+    accountTier,
+  };
 }

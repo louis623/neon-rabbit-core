@@ -44,4 +44,25 @@ describe("Sparkle Finder Nic-Nac prompt builder", () => {
     expect(prompt).toContain("blocking and reporting");
     expect(prompt).toContain(bannedSocialCommercePrompt);
   });
+
+  it("tells linked Sparkle Suite reps that Suite mutations require the Suite surface", () => {
+    const prompt = buildFinderNicNacSystemPrompt({
+      activeToolNames: ["read_customer_memory"],
+      intents: ["memory"],
+      accountContext: {
+        actorType: "linked_rep",
+        accountTier: "silver",
+        linkedSuiteBusinessName: "BlingKitchen",
+        linkedSuiteRepId: "rep-bling-kitchen",
+      },
+    });
+
+    expect(prompt).toContain("Current surface: Sparkle Finder");
+    expect(prompt).toContain("linked Sparkle Suite rep");
+    expect(prompt).toContain("BlingKitchen");
+    expect(prompt).toContain("same Nic-Nac");
+    expect(prompt).toContain("Finder tools only");
+    expect(prompt).toContain("I need you logged into Sparkle Suite");
+    expect(prompt).toContain("Open Sparkle Suite and I can pick it up there");
+  });
 });
