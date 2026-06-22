@@ -14,10 +14,9 @@ function applyControlCenterTheme(theme: ControlCenterTheme) {
   document.documentElement.dataset.controlCenterTheme = theme
 }
 
-export function ControlCenterThemeToggle() {
-  const [theme, setTheme] = useState<ControlCenterTheme>('light')
+function readStoredControlCenterTheme(): ControlCenterTheme {
+  if (typeof window === 'undefined') return 'light'
 
-  useEffect(() => {
     let storedTheme: string | null = null
 
     try {
@@ -26,15 +25,18 @@ export function ControlCenterThemeToggle() {
       storedTheme = null
     }
 
-    const nextTheme = isControlCenterTheme(storedTheme) ? storedTheme : 'light'
+  return isControlCenterTheme(storedTheme) ? storedTheme : 'light'
+}
 
-    setTheme(nextTheme)
-    applyControlCenterTheme(nextTheme)
-  }, [])
+export function ControlCenterThemeToggle() {
+  const [theme, setTheme] = useState<ControlCenterTheme>(readStoredControlCenterTheme)
+
+  useEffect(() => {
+    applyControlCenterTheme(theme)
+  }, [theme])
 
   function selectTheme(nextTheme: ControlCenterTheme) {
     setTheme(nextTheme)
-    applyControlCenterTheme(nextTheme)
 
     try {
       window.localStorage.setItem(STORAGE_KEY, nextTheme)

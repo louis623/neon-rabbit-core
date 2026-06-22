@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function NotFound() {
   return (
     <main className="prelaunch-page">
@@ -14,22 +16,22 @@ export default function NotFound() {
               Sparkle Suite is still in prelaunch, so the public site is keeping
               the path simple for now.
             </p>
-            <a className="prelaunch-button mt-8" href="/prelaunch">
+            <Link className="prelaunch-button mt-8" href="/prelaunch">
               Back to Sparkle Suite
-            </a>
+            </Link>
             <nav
               className="mt-6 flex flex-wrap gap-4 text-sm text-[var(--prelaunch-muted)]"
               aria-label="Public pages"
             >
-              <a className="prelaunch-link" href="/privacy-policy">
+              <Link className="prelaunch-link" href="/privacy-policy">
                 Privacy Policy
-              </a>
-              <a className="prelaunch-link" href="/terms-and-conditions">
+              </Link>
+              <Link className="prelaunch-link" href="/terms-and-conditions">
                 Terms and Conditions
-              </a>
-              <a className="prelaunch-link" href="/prelaunch#waitlist">
+              </Link>
+              <Link className="prelaunch-link" href="/prelaunch#waitlist">
                 Contact
-              </a>
+              </Link>
             </nav>
           </div>
         </div>

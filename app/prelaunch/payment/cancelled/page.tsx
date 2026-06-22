@@ -1,11 +1,13 @@
+import Link from 'next/link'
+
 export default function PrelaunchPaymentCancelledPage() {
   return (
     <main className="prelaunch-page">
       <section className="prelaunch-section">
         <div className="prelaunch-shell">
-          <a className="prelaunch-link text-sm font-semibold" href="/prelaunch">
+          <Link className="prelaunch-link text-sm font-semibold" href="/prelaunch">
             Sparkle Suite
-          </a>
+          </Link>
           <div className="mt-8 max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--prelaunch-muted)]">
               Checkout cancelled

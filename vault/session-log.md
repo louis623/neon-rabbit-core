@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Nic-Nac Caveat Cleanup: Suite Lint And Finder Deployed Smoke
+
+**What changed:**
+- Cleaned the remaining full-suite ESLint errors that were blocking `npm run lint`, without changing Nic-Nac workflow behavior.
+- Added a token-gated Finder internal reviewer-smoke session route at `/api/internal/finder/reviewer-smoke-session`.
+- Finder smoke now creates a temporary confirmed Silver smoke user, captures real Supabase auth cookies, calls deployed `/api/finder/nic-nac`, and cleans the smoke user afterward.
+- Rotated Finder production `SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN` and deployed Finder production `dpl_FYgnoBbT1VW6iwwmSkP5Jn16x9L7`, aliased at `https://sparkle-finder-dev.vercel.app`.
+
+**Verification:**
+- Suite `npm run lint` now passes with warnings only.
+- Suite `npm test` passed: 14 files, 179 tests.
+- Suite `npm run build` passed.
+- Finder focused reviewer-smoke/session tests passed.
+- Finder `npm run lint` passed.
+- Finder `npm run build` passed.
+- Finder full Sparkle Finder suite passed after rerun: 38 files, 496 tests. The first run had one unrelated timeout in `auth-routes.test.ts`; rerunning that file and then the full suite passed.
+- Deployed Finder Nic-Nac smoke passed against `https://sparkle-finder-dev.vercel.app` with `stream_ok` and no hard-fail phrases.
+
+**Result:**
+- The two prior caveats are closed: Suite repo-wide lint no longer fails, and Finder has a non-personal deployed Nic-Nac smoke path while preview auth stays disabled in production.
+
+---
+
 ## June 22, 2026 - Finder Nic-Nac Telemetry Migration Applied
 
 **What changed:**

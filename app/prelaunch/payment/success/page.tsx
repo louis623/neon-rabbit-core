@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { syncPrelaunchPaymentGateFromCheckoutSession } from '@/lib/prelaunch/payment-gate-sync'
 
 export const runtime = 'nodejs'
@@ -31,9 +32,9 @@ export default async function PrelaunchPaymentSuccessPage({
     <main className="prelaunch-page">
       <section className="prelaunch-section">
         <div className="prelaunch-shell">
-          <a className="prelaunch-link text-sm font-semibold" href="/prelaunch">
+          <Link className="prelaunch-link text-sm font-semibold" href="/prelaunch">
             Sparkle Suite
-          </a>
+          </Link>
           <div className="mt-8 max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--prelaunch-muted)]">
               Payment received

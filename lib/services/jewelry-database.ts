@@ -73,6 +73,12 @@ function hasJewelryBrowseFilters(input: SearchJewelryInput): boolean {
   )
 }
 
+type JewelryBrowseFilterRequest<TRequest> = {
+  eq(column: string, value: string | number): TRequest
+  ilike(column: string, pattern: string): TRequest
+  in(column: string, values: string[]): TRequest
+}
+
 function deriveCatalogLabel(row: {
   search_tags: string[] | null
 }): 'diamond' | 'unicorn' | 'standard' {
@@ -107,11 +113,11 @@ async function loadJewelryCollectionFilterIds(
   return ((data ?? []) as Array<{ id: string }>).map((row) => row.id)
 }
 
-function applyJewelryBrowseFilters(
-  request: any,
+function applyJewelryBrowseFilters<TRequest extends JewelryBrowseFilterRequest<TRequest>>(
+  request: TRequest,
   input: SearchJewelryInput,
   collectionIds: string[] | null,
-) {
+): TRequest {
   if (input.jewelryType) {
     request = request.eq('type_prefix', input.jewelryType)
   }

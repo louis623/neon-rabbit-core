@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error'
@@ -261,13 +262,13 @@ export function PrelaunchIntakeForm() {
             HELP for help. Wireless carriers are not liable for delayed or
             undelivered messages. SMS opt-in data is not sold, rented, traded,
             or shared for third-party marketing. See our{' '}
-            <a className="prelaunch-link" href="/privacy-policy">
+            <Link className="prelaunch-link" href="/privacy-policy">
               Privacy Policy
-            </a>{' '}
+            </Link>{' '}
             and{' '}
-            <a className="prelaunch-link" href="/terms-and-conditions">
+            <Link className="prelaunch-link" href="/terms-and-conditions">
               Terms and Conditions
-            </a>
+            </Link>
             .
           </p>
           <label className="flex gap-3 text-sm leading-6 text-[var(--prelaunch-muted)]">

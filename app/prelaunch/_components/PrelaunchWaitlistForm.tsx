@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { type ChangeEvent, type FormEvent, useState } from 'react'
 
 import { prelaunchContent } from '@/lib/prelaunch/content'
@@ -197,8 +198,8 @@ export function PrelaunchWaitlistForm() {
                     Reply HELP for help or STOP to opt out. SMS opt-in data is
                     not sold, rented, traded, or shared for third-party
                     marketing. See our{' '}
-                    <a href="/privacy-policy">Privacy Policy</a> and{' '}
-                    <a href="/terms-and-conditions">Terms and Conditions</a>.
+                    <Link href="/privacy-policy">Privacy Policy</Link> and{' '}
+                    <Link href="/terms-and-conditions">Terms and Conditions</Link>.
                   </p>
                   <CheckboxField
                     checked={values.emailConsent}

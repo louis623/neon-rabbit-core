@@ -24,7 +24,18 @@ export function normalizeSparkleSuiteReferralCode(input: string): string | null 
 }
 
 type ReferralCodeLookupClient = {
-  from(table: string): any
+  from(table: string): unknown
+}
+
+type ReferralCodeLookupQuery = {
+  select(columns: string): {
+    eq(column: string, value: string): {
+      maybeSingle(): Promise<{
+        data: { id: string } | null
+        error: unknown
+      }>
+    }
+  }
 }
 
 export async function generateUniqueSparkleSuiteReferralCode(
@@ -33,8 +44,7 @@ export async function generateUniqueSparkleSuiteReferralCode(
 ): Promise<string> {
   for (let attempt = 0; attempt < REFERRAL_CODE_RETRY_LIMIT; attempt += 1) {
     const candidate = generateSparkleSuiteReferralCode(random)
-    const { data, error } = await supabase
-      .from('reps')
+    const { data, error } = await (supabase.from('reps') as ReferralCodeLookupQuery)
       .select('id')
       .eq('referral_code', candidate)
       .maybeSingle()

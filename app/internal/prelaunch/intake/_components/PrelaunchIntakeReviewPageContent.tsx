@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   buildPrelaunchScoutInput,
   type PrelaunchIntakeReviewSubmission,
@@ -791,12 +792,12 @@ export function PrelaunchIntakeReviewPageContent({
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               {isControlCenter ? <ControlCenterThemeToggle /> : null}
-              <a
+              <Link
                 className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"
                 href="/prelaunch"
               >
                 View public page
-              </a>
+              </Link>
             </div>
           </div>
         </header>
@@ -1579,12 +1580,12 @@ export function PrelaunchIntakeReviewPageContent({
                   Live account links
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                  <a
+                  <Link
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
                     href="/nic-nac"
                   >
                     Nic-Nac
-                  </a>
+                  </Link>
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"
                     href={`/amethyst/Homepage.html?c=${encodeURIComponent(

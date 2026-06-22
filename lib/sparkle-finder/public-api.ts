@@ -489,11 +489,11 @@ async function loadCatalogFallbackRows(
   return []
 }
 
-function applyCatalogBrowseFilters(
-  request: any,
+function applyCatalogBrowseFilters<TRequest extends FinderCatalogBrowseFilterRequest<TRequest>>(
+  request: TRequest,
   options: SparkleFinderCatalogListOptions,
   collectionIds: string[] | null,
-) {
+): TRequest {
   if (options.jewelryType) {
     request = request.eq('type_prefix', TYPE_PREFIX_MAP[options.jewelryType])
   }
@@ -561,6 +561,12 @@ function filterCatalogRowsByLabel(
 
 function escapeIlikePattern(value: string) {
   return value.trim().replace(/[%_]/g, (match) => `\\${match}`)
+}
+
+type FinderCatalogBrowseFilterRequest<TRequest> = {
+  eq(column: string, value: string): TRequest
+  ilike(column: string, pattern: string): TRequest
+  in(column: string, values: string[]): TRequest
 }
 
 function deriveSparkleFinderCatalogLabel(row: FinderDesignRow): FinderCatalogLabel {

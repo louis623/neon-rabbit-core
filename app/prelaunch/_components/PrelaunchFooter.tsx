@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { prelaunchContent } from '@/lib/prelaunch/content'
 import { SparkleSeal } from './PrelaunchVisuals'
 
@@ -25,8 +26,8 @@ export function PrelaunchFooter() {
             <span>{prelaunchContent.brand}</span>
           </div>
           <nav aria-label="Legal pages" className="ss-foot__links">
-            <a href="/privacy-policy">Privacy Policy</a>
-            <a href="/terms-and-conditions">Terms and Conditions</a>
+            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link href="/terms-and-conditions">Terms and Conditions</Link>
           </nav>
           <div className="ss-foot__copy">
             <div>Copyright 2026 Sparkle Suite</div>

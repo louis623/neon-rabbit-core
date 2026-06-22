@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { type FormEvent, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './start.module.css'
@@ -298,7 +299,7 @@ export function StartSparkleSuiteForm({
 
       <section className={styles.form} aria-label="Start Sparkle Suite account creation">
         <div className={styles.formHead}>
-          <span>Let's get started</span>
+          <span>Let&apos;s get started</span>
           <h2>Account creation</h2>
         </div>
 
@@ -323,9 +324,9 @@ export function StartSparkleSuiteForm({
           >
             Create account with a different email
           </button>
-          <a className={styles.signInLink} href="/login">
+          <Link className={styles.signInLink} href="/login">
             Sign in instead
-          </a>
+          </Link>
         </div>
 
         <label className={styles.termsCheck}>

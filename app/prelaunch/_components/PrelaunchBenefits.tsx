@@ -24,7 +24,7 @@ export function PrelaunchBenefits() {
               </p>
               <p>
                 That means a better experience up front, smoother flow while
-                you're live, and fewer details to keep chasing by hand.
+                you&apos;re live, and fewer details to keep chasing by hand.
               </p>
             </div>
             <div className="ss-summary__cards">

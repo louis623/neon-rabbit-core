@@ -6,6 +6,9 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 22, 2026
 
+**Deployed Finder Nic-Nac smoke uses token-gated temporary auth, not preview auth**
+Production Sparkle Finder preview auth should stay disabled. Deployed Nic-Nac smoke should create a temporary confirmed Silver smoke user through a bearer-token-protected internal route, use real Supabase session cookies against `/api/finder/nic-nac`, and clean the user afterward. Do not use Louis's personal browser session or enable deployed preview auth to prove Finder Nic-Nac.
+
 **Finder Nic-Nac filters tools before prompt/model execution**
 Sparkle Finder Nic-Nac route must apply product-context tool policy before building active tool names, tool objects, or the system prompt. Linked reps can share identity and memory across Sparkle Suite/Finder, but Sparkle Suite workspace mutations requested from Finder are blocked for that turn with the Suite-login boundary and no Finder tools exposed as a workaround. Ordinary Finder memory, rep discovery, availability, catalog, social, and account tools remain available for Finder-scoped asks.
 

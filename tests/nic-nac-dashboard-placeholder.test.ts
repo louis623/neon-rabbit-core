@@ -516,7 +516,7 @@ describe('DashboardPlaceholder', () => {
 
   it('renders Finder-matching jewelry library search controls and board actions', () => {
     const html = renderToStaticMarkup(
-      createElement(JewelryLibraryCard as any, {
+      createElement(JewelryLibraryCard, {
         state: {
           status: 'ready',
           results: [

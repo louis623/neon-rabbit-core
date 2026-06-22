@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import type { FormEvent } from 'react'
 import {
   useCallback,
@@ -6126,7 +6127,7 @@ export function RecipesCard({
         <div>
           <div className={styles.cardTitle}>Recipes</div>
           <div className={styles.cardSubtitle}>
-            Add, update, reorder, and hide the recipe cards on Heather's Pantry page.
+            Add, update, reorder, and hide the recipe cards on Heather&apos;s Pantry page.
           </div>
         </div>
         <div className={styles.siteSettingsSaveActions}>
@@ -6171,7 +6172,7 @@ export function RecipesCard({
           </div>
           {state.recipes.length === 0 ? (
             <div className={styles.emptyState}>
-              No recipes are saved yet. Add Heather's first recipe, then save it
+              No recipes are saved yet. Add Heather&apos;s first recipe, then save it
               to publish it to the Pantry.
             </div>
           ) : (
@@ -6764,9 +6765,9 @@ export function TeamManagementCard() {
 
       <div className={styles.teamUpgradeNotice}>
         <span>Upgrade to manage your team on this platform.</span>
-        <a className={styles.helperLink} href="/prelaunch">
+        <Link className={styles.helperLink} href="/prelaunch">
           View upgrade options
-        </a>
+        </Link>
       </div>
 
       <div className={styles.teamManagementGrid}>
@@ -7083,12 +7084,12 @@ export function AccountBillingCard({
 
           <div className={styles.termsReadRow}>
             <span>Read the Sparkle Suite terms before checkout.</span>
-            <a
+            <Link
               className={styles.termsLink}
               href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"
             >
               Read Terms and Conditions
-            </a>
+            </Link>
           </div>
           <label className={styles.siteSettingsToggle}>
             <input
