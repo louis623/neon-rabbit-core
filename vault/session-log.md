@@ -4,6 +4,20 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Finder Nic-Nac Telemetry Migration Applied
+
+**What changed:**
+- Applied Sparkle Finder migration `20260622173000_finder_nic_nac_conversation_telemetry.sql` through the Supabase Dashboard SQL editor for Finder project `sparkle-finder-auth` / `pzksocboqauqjdtsgpdp`.
+- Deployed Finder commit `c7eaf2c feat: persist Finder Nic-Nac telemetry` to production deployment `dpl_1Q9mZ7WG4eNFWnzhbG7Loco3PbDU`, aliased at `https://sparkle-finder-dev.vercel.app`.
+
+**Verification:**
+- Supabase verification query passed with all checks `true`: telemetry tables exist, RLS is enabled, authenticated users have select-only access, service-role has select/insert/update/delete, read-own policies exist, expected updated-at triggers exist, expected indexes exist, and no required columns are missing.
+
+**Still open:**
+- `npm run smoke:finder-linked-runtime` still needs a local environment with usable Finder `SUPABASE_SERVICE_ROLE_KEY` or a secured server-side smoke runner. Vercel production env pull exposes the key names but returns sensitive values as empty strings, so the terminal could not create/clean a temporary confirmed Finder user for the deployed telemetry smoke.
+
+---
+
 ## June 22, 2026 - Secret Rep ID Claim Deployment And Finder Smoke
 
 **What changed:**
