@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Finder Nic-Nac Surface Tool Policy
+
+**What changed:**
+- Added a Finder-local Nic-Nac product/tool policy that classifies every Finder routed intent by required capability.
+- Finder `/api/finder/nic-nac` now filters requested intents through product context before active tools and prompt text are built.
+- Linked Sparkle Suite reps asking for Sparkle Suite workspace mutations from Sparkle Finder now get the Suite-login boundary with no Finder tools exposed for that turn.
+- Mixed turns such as "add this to my Trade Board and remember..." suppress Finder memory tools for the same blocked Suite mutation turn instead of using Finder memory as a workaround.
+- Common Suite mutation shorthand is covered, including `my board`, trade status, homepage/hero edits, and live-show scheduling, while read/discovery wording such as "show me my Trade Board" stays out of the mutation block.
+
+**Verification:**
+- TDD red/green completed for the Finder product-context policy, route-level no-tools boundary, shorthand mutation wording, mixed mutation+memory suppression, and board discovery vs mutation wording.
+- Adjacent Finder Nic-Nac suite passed: 6 files, 31 tests.
+- Full Finder Vitest suite passed: 30 files, 428 tests.
+- Finder `npm run build` passed and includes `/api/finder/nic-nac`.
+- Suite focused core policy/prompt/linked-memory sweep passed: 4 files, 22 tests.
+- Independent reviewer agent found two policy gaps; both were reproduced with failing tests and fixed before this checkpoint.
+
+**Still open:**
+- Deployed Finder Nic-Nac smoke still needs Finder Vercel `OPENAI_API_KEY` plus the shared `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` configured in both Finder and Suite.
+- Finder Secret Rep ID claim UI/storage, rep-facing Suite Secret Rep ID copy, legal/privacy/onboarding disclosures, and authenticated deployed smoke remain future slices.
+
 ## June 22, 2026 - Finder Linked Rep Suite Memory Bridge
 
 **What changed:**

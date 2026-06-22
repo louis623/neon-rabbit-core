@@ -4,6 +4,11 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 22, 2026
+
+**Finder Nic-Nac filters tools before prompt/model execution**
+Sparkle Finder Nic-Nac route must apply product-context tool policy before building active tool names, tool objects, or the system prompt. Linked reps can share identity and memory across Sparkle Suite/Finder, but Sparkle Suite workspace mutations requested from Finder are blocked for that turn with the Suite-login boundary and no Finder tools exposed as a workaround. Ordinary Finder memory, rep discovery, availability, catalog, social, and account tools remain available for Finder-scoped asks.
+
 ## June 21, 2026
 
 **Linked rep memory crosses products through a bounded server bridge**
