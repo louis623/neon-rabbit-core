@@ -1841,3 +1841,36 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Deeper Finder tool parity.
 - A deployed Finder Nic-Nac smoke path that does not depend on personal browser auth when preview auth is disabled.
 - Broader Suite repo lint cleanup remains separate from this Nic-Nac/Lab batch.
+
+---
+
+## June 22, 2026 - Nic-Nac Stable Baseline Closeout Plan and Memory Writeback
+
+**What changed:**
+- Added and pushed `docs/superpowers/plans/2026-06-22-nic-nac-stable-baseline-closure.md` in commit `d81f938 docs: add Nic-Nac stable baseline closure plan`.
+- The plan freezes the shippable Nic-Nac beta baseline and separates it from continuing enhancement work.
+- Baseline gates cover Suite local/deployed tests, Finder local/deployed tests, linked-rep memory, Lab guardrails, model policy/cost telemetry, browser smoke, release notes, and vault closeout.
+- HQ now has Phase 11 task `task_11_10_nic_nac_stable_baseline` for executing that matrix.
+- Open Brain was updated with standalone memories for shared architecture, OpenAI model policy, implementation summary, verification summary, lessons learned, and risk watchlist.
+- Headquarters was updated to correct stale Nic-Nac model/cost assumptions and preserve the new shared-agent/surface-gated action decision.
+
+**Key locked decisions:**
+- Nic-Nac remains one shared Sparkle ecosystem agent across Sparkle Suite and Sparkle Finder.
+- Secret Rep ID Number is the private rep-linking credential and is not the public referral code.
+- Sparkle Suite workspace actions stay gated to Sparkle Suite login; Finder Nic-Nac can share identity/memory but must redirect Suite mutations back to Suite.
+- Nic-Nac model policy is OpenAI-only for the current baseline: `human_default` => `gpt-5.4`, `human_escalated` => `gpt-5.5`, `utility_fast` => `gpt-5.4-mini`, `lab_synthesis` => `gpt-5.5`.
+- Sparkle Lab is a bounded recommendation loop, not a self-mutating production agent.
+
+**Lessons carried forward:**
+- Prompt-only fixes are not enough for Nic-Nac reliability. App-owned workflow state, tool availability, validation, database assertions, and real replay smoke need to own the hard behavior.
+- Do not call a Nic-Nac customer-facing fix done until the exact deployed/reviewer surface has been smoked.
+- Non-personal reviewer smoke paths are mandatory for Suite and Finder so Louis does not become the test harness.
+- Stale HQ/vault model assumptions can mislead future sessions; model/provider decisions need explicit memory updates when they change.
+
+**Risk watchlist:**
+- Execute the stable baseline closure matrix before calling the upgraded Nic-Nac stable.
+- Deeper Finder tool parity and broader shared-core consolidation remain backlog after baseline closure.
+- Keep Lab model synthesis disabled until Louis approves a guarded live synthesis smoke with spend limits.
+- Attorney review and final marketing/onboarding positioning remain needed for Nic-Nac memory disclosure.
+- Full Suite Vitest still has unrelated start/prelaunch/master-brand failures; do not confuse those with focused Nic-Nac baseline gates.
+- Investigate unrelated public Finder API 500s separately if Finder public discovery/catalog reliability comes into scope.

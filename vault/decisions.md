@@ -458,3 +458,25 @@ The Control Center customer view should not mix smoke/reviewer/sample/demo reps 
 
 **Sparkle Suite review target is the stable demo URL**
 For Louis, ordinary Sparkle Suite review and deploy work should land at `https://sparkle-suite-demo.vercel.app/`. Do not make him chase raw Vercel preview URLs or explain routine work as if demo and production are separate review surfaces. After any deploy intended for Louis, promote/confirm the stable demo alias and verify the exact route there before saying it is fixed. If Louis reports that he still sees the bug, inspect the exact Chrome tab/URL he is using and check the loaded assets before making another claim.
+
+---
+
+## June 22, 2026
+
+**Nic-Nac is one shared Sparkle ecosystem agent**
+Nic-Nac should remain one shared agent across Sparkle Suite and Sparkle Finder, not copied product assistants. Shared pieces include persona, model/provider adapter, memory context, workflow state, jewelry intake rules, photo-role rules, catalog truth, tool contracts, evals, smoke harnesses, and observability. Product context decides allowed tools and final mutation destination.
+
+**Secret Rep ID Number is the private cross-product rep link**
+Use the private Live Queue sync code as the rep's Secret Rep ID Number for Sparkle Finder claiming. Label it private / do not share. Do not use the public referral code for identity linking.
+
+**Sparkle Finder can share Nic-Nac memory but not Suite mutation authority**
+A linked rep should feel like they are talking to the same Nic-Nac in Finder and Suite. Finder can preload Finder-safe memory and bounded Suite linked-rep memory, but Suite workspace mutations must be performed from Sparkle Suite after the rep logs in there.
+
+**Nic-Nac model policy is OpenAI-only for the current baseline**
+Current model policy: `human_default` uses `gpt-5.4` with medium reasoning, `human_escalated` uses `gpt-5.5`, `utility_fast` uses `gpt-5.4-mini`, and `lab_synthesis` uses `gpt-5.5` with bounded high reasoning. Do not reintroduce route-level Anthropic/Haiku/Sonnet hardcoding for Nic-Nac. Reassess models later through the same eval/smoke bank, not by vibes.
+
+**Sparkle Lab recommends; it does not mutate production**
+Sparkle Lab is a bounded improvement/research loop in Control Center. It may create findings, artifacts, replay cases, and recommendations, but it cannot change prompts, tools, model policy, schema, deployment settings, or production behavior without explicit approval.
+
+**Stable baseline means gates pass, not improvement stops**
+The upgraded Nic-Nac baseline is done when the stable baseline closure matrix passes across Suite, Finder, linked-rep memory, Lab, model policy/cost telemetry, browser smoke, and release/vault closeout. Deeper Finder tool parity, shared-core extraction, larger eval banks, richer Lab synthesis, and marketing polish are backlog unless a baseline gate fails.
