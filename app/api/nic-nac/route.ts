@@ -72,6 +72,19 @@ interface PostBody {
   mode?: 'workspace' | 'required_setup'
 }
 
+function readTextFromMessage(message: UIMessage | undefined): string {
+  return (
+    message?.parts
+      ?.filter(
+        (part): part is { type: 'text'; text: string } =>
+          part.type === 'text' &&
+          typeof (part as { text?: unknown }).text === 'string',
+      )
+      .map((part) => part.text)
+      .join('\n') ?? ''
+  )
+}
+
 // Scan messages for HITL approval-responded parts. AI SDK v6 mutates the
 // assistant message parts in place when the user clicks approve/reject.
 function extractApprovalResponses(
@@ -328,6 +341,12 @@ export async function POST(request: Request) {
   const latestUserMessage = [...messages]
     .reverse()
     .find((message) => message.role === 'user')
+  const previousAssistantMessage = [...messages]
+    .slice(0, -1)
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  const latestUserText = readTextFromMessage(latestUserMessage)
+  const previousAssistantText = readTextFromMessage(previousAssistantMessage)
   const tradeBoardWorkflowContext = await getOrCreateTradeBoardIntakeContext({
     supabase,
     workflowSupabase: createAdminClient(),
@@ -460,6 +479,8 @@ export async function POST(request: Request) {
             stepsLength: steps.length,
             activeToolNames,
             activeTradeBoardWorkflow,
+            latestUserText,
+            previousAssistantText,
           }),
         }),
         stopWhen: stepCountIs(5),

@@ -38,6 +38,34 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'prepare_trade_board_work' })
   })
 
+  it('forces add_listing after the rep confirms a second physical piece', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: [
+          'prepare_trade_board_work',
+          'add_listing',
+          'search_jewelry_database',
+        ],
+        activeTradeBoardWorkflow: {
+          status: 'active',
+          phase: 'photo_capture',
+          missing: ['jewelryFrontPhoto'],
+          blockers: [],
+          known: {
+            itemNumber: 'ER13229',
+            designName: 'The Florence Earrings',
+            collectionName: 'July Birthday 2026',
+          },
+        },
+        latestUserText: 'Yes',
+        previousAssistantText:
+          'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+      }),
+    ).toEqual({ type: 'tool', toolName: 'add_listing' })
+  })
+
   it('does not force a tool after the first model step', () => {
     expect(
       chooseNicNacToolChoiceForStep({
