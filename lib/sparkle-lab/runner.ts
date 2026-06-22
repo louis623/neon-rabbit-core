@@ -7,7 +7,10 @@ import {
   type SparkleLabRunType,
   type SparkleLabUsage,
 } from '@/lib/nic-nac/core/lab/budget'
-import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
+import {
+  estimateNicNacRunCostCents,
+  hasNicNacModelCostPricing,
+} from '@/lib/nic-nac/core/model-cost'
 import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
 import {
   getNicNacLanguageModel,
@@ -283,6 +286,20 @@ async function maybeBuildSparkleLabSynthesisArtifact(input: {
   }
 
   const policy = getNicNacModelPolicy('lab_synthesis')
+  if (!hasNicNacModelCostPricing(policy)) {
+    return {
+      artifact: {
+        section: 'ops_lab',
+        artifactType: 'lab_note',
+        title: 'Sparkle Lab synthesis skipped',
+        bodyMarkdown: `Model synthesis was enabled, but Sparkle Lab skipped the model call because ${policy.modelId} does not have an approved Nic-Nac pricing entry. Add pricing before enabling this model so Lab budget caps cannot undercount spend.`,
+        sourceRefs: input.findings.flatMap((finding) => finding.sourceRefs),
+      },
+      modelCallCount: 0,
+      premiumCallCount: 0,
+      estimatedCostCents: 0,
+    }
+  }
   try {
     const result = await input.generateTextImpl({
       model: getNicNacLanguageModel(policy),

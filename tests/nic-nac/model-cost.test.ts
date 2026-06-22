@@ -27,6 +27,70 @@ describe('Nic-Nac model cost estimates', () => {
     ).toBe(2)
   })
 
+  it('keeps model family matching strict so premium pro/nano overrides do not reuse base pricing', () => {
+    const usage = {
+      inputTokens: 1_000,
+      outputTokens: 1_000,
+      totalTokens: 2_000,
+    }
+
+    expect(
+      estimateNicNacRunCostCents(
+        {
+          key: 'human_escalated',
+          provider: 'openai',
+          modelId: 'gpt-5.5-pro',
+          reasoning: 'high',
+          purpose: 'unapproved premium override',
+        },
+        usage,
+      ),
+    ).toBeNull()
+    expect(
+      estimateNicNacRunCostCents(
+        {
+          key: 'human_escalated',
+          provider: 'openai',
+          modelId: 'gpt-5.4-pro',
+          reasoning: 'high',
+          purpose: 'unapproved premium override',
+        },
+        usage,
+      ),
+    ).toBeNull()
+    expect(
+      estimateNicNacRunCostCents(
+        {
+          key: 'utility_fast',
+          provider: 'openai',
+          modelId: 'gpt-5.4-nano',
+          reasoning: 'low',
+          purpose: 'unapproved utility override',
+        },
+        usage,
+      ),
+    ).toBeNull()
+  })
+
+  it('still estimates dated model snapshots for approved model families', () => {
+    expect(
+      estimateNicNacRunCostCents(
+        {
+          key: 'human_default',
+          provider: 'openai',
+          modelId: 'gpt-5.4-2026-03-05',
+          reasoning: 'medium',
+          purpose: 'dated snapshot',
+        },
+        {
+          inputTokens: 1_000,
+          outputTokens: 1_000,
+          totalTokens: 2_000,
+        },
+      ),
+    ).toBe(2)
+  })
+
   it('does not invent costs for unsupported provider/model combinations', () => {
     expect(
       estimateNicNacRunCostCents(

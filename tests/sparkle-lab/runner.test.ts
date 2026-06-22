@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getSparkleLabCaps } from '@/lib/nic-nac/core/lab/budget'
 import {
   buildSparkleLabFindingsFromSources,
@@ -39,6 +39,10 @@ function makeMonthlyUsageQuery(data: unknown, error: unknown = null) {
 
 beforeEach(() => {
   vi.useRealTimers()
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
 })
 
 describe('Sparkle Lab deterministic runner', () => {
@@ -241,6 +245,69 @@ describe('Sparkle Lab deterministic runner', () => {
           { type: 'support_report', id: 'support-1' },
           { type: 'nic_nac_run', id: 'run-hard-fail' },
         ]),
+      }),
+    ])
+  })
+
+  it('skips model synthesis when the configured model pricing is unknown', async () => {
+    vi.stubEnv('NIC_NAC_LAB_SYNTHESIS_MODEL', 'gpt-5.5-pro')
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-21T06:00:00.000Z'))
+    const supportQuery = makeSelectQuery([
+      {
+        id: 'support-1',
+        title: 'Showtime workflow broke',
+        details: 'The rep could not complete a live-show workflow.',
+        urgency: 'showtime_urgent',
+      },
+    ])
+    const runQuery = makeSelectQuery([])
+    const insertRunQuery = makeInsertRunQuery()
+    const insertFindingsQuery = makeInsertFindingsQuery()
+    const insertArtifactsQuery = makeInsertArtifactsQuery()
+    const generateTextMock = vi.fn()
+    const from = vi.fn((table: string) => {
+      if (table === 'support_reports') return supportQuery
+      if (table === 'nic_nac_runs') return runQuery
+      if (table === 'sparkle_lab_runs') return insertRunQuery
+      if (table === 'sparkle_lab_findings') return insertFindingsQuery
+      if (table === 'sparkle_lab_artifacts') return insertArtifactsQuery
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await runSparkleLabManualScan({
+      supabase: { from } as never,
+      modelSynthesis: 'enabled',
+      generateTextImpl: generateTextMock as never,
+    })
+
+    expect(generateTextMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      usage: {
+        estimatedCostCents: 0,
+        modelCallCount: 0,
+        premiumCallCount: 0,
+      },
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab synthesis skipped',
+        },
+      ],
+    })
+    expect(insertRunQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model_call_count: 0,
+        premium_call_count: 0,
+        estimated_cost_cents: 0,
+      }),
+    )
+    expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        artifact_type: 'lab_note',
+        title: 'Sparkle Lab synthesis skipped',
+        body_markdown: expect.stringContaining('gpt-5.5-pro'),
       }),
     ])
   })

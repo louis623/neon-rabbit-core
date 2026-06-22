@@ -32,8 +32,24 @@ const OPENAI_STANDARD_SHORT_CONTEXT_PRICING: NicNacModelPricing[] = [
 
 function getOpenAIStandardShortContextPricing(modelId: string) {
   return OPENAI_STANDARD_SHORT_CONTEXT_PRICING.find((pricing) =>
-    modelId.startsWith(pricing.modelPrefix),
+    isApprovedModelFamily(modelId, pricing.modelPrefix),
   )
+}
+
+function isApprovedModelFamily(modelId: string, modelPrefix: string) {
+  if (modelId === modelPrefix) return true
+  return new RegExp(`^${escapeRegExp(modelPrefix)}-\\d{4}-\\d{2}-\\d{2}$`).test(
+    modelId,
+  )
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export function hasNicNacModelCostPricing(policy: NicNacModelPolicy): boolean {
+  if (policy.provider !== 'openai') return false
+  return Boolean(getOpenAIStandardShortContextPricing(policy.modelId))
 }
 
 export function estimateNicNacRunCostCents(
