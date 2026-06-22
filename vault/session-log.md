@@ -12,12 +12,13 @@ Running log of significant work sessions. Most recent first.
 - Replaced Finder's unused `@ai-sdk/anthropic` dependency with `@ai-sdk/openai`.
 - Added `.env.example` placeholders for `OPENAI_API_KEY` and Nic-Nac model override vars.
 - Added Finder linked-rep prompt context so Nic-Nac knows the current surface is Sparkle Finder, treats linked reps as the same assistant identity when safe memory context exists, and tells reps to open/log into Sparkle Suite before Sparkle Suite workspace mutations.
+- Added automatic safe Finder-memory prompt preload so Finder Nic-Nac receives bounded safe customer memory before the model answers, while unsafe memory is filtered before prompt assembly.
 
 **Verification:**
 - TDD red/green completed for route-level OpenAI policy routing, no Anthropic/Haiku hardcoding, and env placeholder coverage.
 - Focused Finder route test passed: 1 file, 4 tests.
 - Related Finder account/entitlement tests passed: 3 files, 43 tests.
-- Full Finder Vitest suite passed: 28 files, 415 tests after the linked-rep prompt boundary.
+- Full Finder Vitest suite passed: 28 files, 416 tests after the linked-rep prompt boundary and Finder memory preload.
 - Finder production `npm run build` passed and included `/api/finder/nic-nac`.
 
 **Still open:**
