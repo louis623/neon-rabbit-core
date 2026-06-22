@@ -36,6 +36,8 @@ Running log of significant work sessions. Most recent first.
 - Finder focused route/legal tests passed.
 - Finder full `npm run test` passed.
 - Finder `npm run build` passed.
+- Suite deployment `dpl_6ukmGgSaWQWdF8WGzFNjNDec4YdA` is aliased at `https://sparkle-suite-demo.vercel.app`; live checks confirmed updated `/start`, `/privacy-policy`, and `/terms-and-conditions` disclosure text.
+- Finder deployment `dpl_7Ao34Wu45BvhCmyCeXDWjn6T4NTE` is aliased at `https://sparkle-finder-dev.vercel.app`; live checks confirmed updated `/auth/sign-up`, `/privacy-policy`, and `/terms-and-conditions` disclosure text.
 
 **Still open:**
 - This is a product disclosure baseline, not attorney-approved legal advice. Before broad rollout, complete attorney/final policy review and polish public marketing/onboarding copy around Nic-Nac memory.
