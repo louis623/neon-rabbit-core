@@ -135,22 +135,39 @@ async function runSparkleLabScan(input: {
     (monthlyScheduledCostCents ?? 0) >= caps.monthlyScheduledCapCents
   ) {
     const usage = buildEmptySparkleLabUsage(monthlyScheduledCostCents)
+    const limitsHit = ['monthly_scheduled_cap']
     const runId = await persistSparkleLabRun({
       supabase: input.supabase,
       caps,
       usage,
-      limitsHit: ['monthly_scheduled_cap'],
+      limitsHit,
       status: 'stopped_by_limit',
       now,
+    })
+    const artifacts = [
+      buildSparkleLabRunGuardrailArtifact({
+        caps,
+        usage,
+        limitsHit,
+        modelSynthesisStatus: describeSparkleLabModelSynthesisStatus({
+          requested: shouldRunSparkleLabModelSynthesis(input.modelSynthesis),
+        }),
+        sourceRefs: [],
+      }),
+    ]
+    await persistSparkleLabArtifacts({
+      supabase: input.supabase,
+      runId,
+      artifacts,
     })
 
     return {
       runId,
       runType,
       usage,
-      limitsHit: ['monthly_scheduled_cap'],
+      limitsHit,
       findings: [],
-      artifacts: [],
+      artifacts,
     }
   }
 
@@ -179,7 +196,10 @@ async function runSparkleLabScan(input: {
         ? undefined
         : monthlyScheduledCostCents + estimatedCostCents,
   }
-  const artifacts: SparkleLabDraftArtifact[] = []
+  const synthesisArtifacts: SparkleLabDraftArtifact[] = []
+  let modelSynthesisStatus = describeSparkleLabModelSynthesisStatus({
+    requested: shouldRunSparkleLabModelSynthesis(input.modelSynthesis),
+  })
 
   if (shouldRunSparkleLabModelSynthesis(input.modelSynthesis)) {
     const synthesis = await maybeBuildSparkleLabSynthesisArtifact({
@@ -188,7 +208,13 @@ async function runSparkleLabScan(input: {
       caps,
       generateTextImpl: input.generateTextImpl ?? defaultSparkleLabGenerateText,
     })
-    if (synthesis.artifact) artifacts.push(synthesis.artifact)
+    if (synthesis.artifact) {
+      synthesisArtifacts.push(synthesis.artifact)
+      modelSynthesisStatus = describeSparkleLabModelSynthesisStatus({
+        requested: true,
+        artifactTitle: synthesis.artifact.title,
+      })
+    }
     usage.modelCallCount += synthesis.modelCallCount
     usage.premiumCallCount += synthesis.premiumCallCount
     usage.estimatedCostCents += synthesis.estimatedCostCents
@@ -199,6 +225,16 @@ async function runSparkleLabScan(input: {
 
   const stop = shouldStopSparkleLabRun(usage, caps)
   const status = stop.shouldStop ? 'stopped_by_limit' : 'completed'
+  const artifacts: SparkleLabDraftArtifact[] = [
+    buildSparkleLabRunGuardrailArtifact({
+      caps,
+      usage,
+      limitsHit: stop.limitsHit,
+      modelSynthesisStatus,
+      sourceRefs: collectSparkleLabFindingSourceRefs(findings),
+    }),
+    ...synthesisArtifacts,
+  ]
   const runId = await persistSparkleLabRun({
     supabase: input.supabase,
     caps,
@@ -228,22 +264,11 @@ async function runSparkleLabScan(input: {
 
     if (findingError) throw findingError
   }
-  if (artifacts.length) {
-    const { error: artifactError } = await input.supabase
-      .from('sparkle_lab_artifacts')
-      .insert(
-        artifacts.map((artifact) => ({
-          run_id: runId,
-          section: artifact.section,
-          artifact_type: artifact.artifactType,
-          title: artifact.title,
-          body_markdown: artifact.bodyMarkdown,
-          source_refs: artifact.sourceRefs,
-        })),
-      )
-
-    if (artifactError) throw artifactError
-  }
+  await persistSparkleLabArtifacts({
+    supabase: input.supabase,
+    runId,
+    artifacts,
+  })
 
   return {
     runId,
@@ -261,6 +286,86 @@ function shouldRunSparkleLabModelSynthesis(
   if (mode === 'enabled') return true
   if (mode === 'disabled') return false
   return process.env.SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED === 'true'
+}
+
+function describeSparkleLabModelSynthesisStatus(input: {
+  requested: boolean
+  artifactTitle?: string
+}) {
+  if (!input.requested) {
+    return 'disabled'
+  }
+  if (input.artifactTitle === 'Sparkle Lab synthesis skipped') {
+    return 'enabled, skipped unless approved pricing is present'
+  }
+  if (input.artifactTitle === 'Sparkle Lab synthesis unavailable') {
+    return 'enabled, unavailable'
+  }
+  return 'enabled'
+}
+
+function collectSparkleLabFindingSourceRefs(
+  findings: SparkleLabDraftFinding[],
+) {
+  const seen = new Set<string>()
+  const refs: Array<{ type: string; id: string }> = []
+  for (const finding of findings) {
+    for (const ref of finding.sourceRefs) {
+      const key = `${ref.type}:${ref.id}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      refs.push(ref)
+    }
+  }
+  return refs
+}
+
+function buildSparkleLabRunGuardrailArtifact(input: {
+  caps: SparkleLabCaps
+  usage: SparkleLabUsage
+  limitsHit: string[]
+  modelSynthesisStatus: string
+  sourceRefs: Array<{ type: string; id: string }>
+}): SparkleLabDraftArtifact {
+  const monthlyLine =
+    input.caps.monthlyScheduledCapCents === undefined
+      ? null
+      : `- Monthly scheduled spend: ${formatSparkleLabCents(
+          input.usage.monthlyScheduledCostCents ?? 0,
+        )} / ${formatSparkleLabCents(input.caps.monthlyScheduledCapCents)}`
+
+  return {
+    section: 'ops_lab',
+    artifactType: 'lab_note',
+    title: 'Sparkle Lab deterministic run guardrails',
+    bodyMarkdown: [
+      '## Guardrails',
+      `- Run type: ${input.caps.runType}`,
+      '- Mutation mode: recommendations only. No production behavior, prompts, tools, pricing, or customer data were changed.',
+      `- Model synthesis: ${input.modelSynthesisStatus}`,
+      `- Estimated cost: ${formatSparkleLabCents(
+        input.usage.estimatedCostCents,
+      )} / ${formatSparkleLabCents(input.caps.costCapCents)}`,
+      monthlyLine,
+      `- Model calls: ${input.usage.modelCallCount} / ${input.caps.modelCallCap}`,
+      `- Premium calls: ${input.usage.premiumCallCount} / ${input.caps.premiumCallCap}`,
+      `- Runtime seconds: ${input.usage.runtimeSeconds} / ${input.caps.runtimeCapSeconds}`,
+      `- Candidate records: ${input.usage.candidateRecordCount} / ${input.caps.candidateRecordCap}`,
+      `- Deep items: ${input.usage.deepItemCount} / ${input.caps.deepItemCap}`,
+      `- Headline findings: ${input.usage.headlineFindingCount} / ${input.caps.headlineFindingCap}`,
+      `- Active priorities: ${input.usage.activePriorityCount} / ${input.caps.activePriorityCap}`,
+      `- Limits hit: ${
+        input.limitsHit.length ? input.limitsHit.join(', ') : 'None'
+      }`,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    sourceRefs: input.sourceRefs,
+  }
+}
+
+function formatSparkleLabCents(cents: number) {
+  return `$${(cents / 100).toFixed(2)}`
 }
 
 async function maybeBuildSparkleLabSynthesisArtifact(input: {
@@ -456,6 +561,29 @@ async function persistSparkleLabRun(input: {
   }
 
   return (runRow as { id: string }).id
+}
+
+async function persistSparkleLabArtifacts(input: {
+  supabase: Pick<SupabaseClient, 'from'>
+  runId: string
+  artifacts: SparkleLabDraftArtifact[]
+}) {
+  if (!input.artifacts.length) return
+
+  const { error: artifactError } = await input.supabase
+    .from('sparkle_lab_artifacts')
+    .insert(
+      input.artifacts.map((artifact) => ({
+        run_id: input.runId,
+        section: artifact.section,
+        artifact_type: artifact.artifactType,
+        title: artifact.title,
+        body_markdown: artifact.bodyMarkdown,
+        source_refs: artifact.sourceRefs,
+      })),
+    )
+
+  if (artifactError) throw artifactError
 }
 
 async function readSparkleLabMonthlyScheduledCostCents(input: {

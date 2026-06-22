@@ -69,7 +69,7 @@ export function makeSearchJewelryDatabaseTool(ctx: { repId: string }) {
           isOnMyBoard: r.isOnMyBoard,
           activeListingsCount: r.activeListingsCount,
           addListingGuidance: r.isOnMyBoard
-            ? 'This rep already has at least one active listing for this design. Do not refuse as a duplicate. If they are adding this item to the Trade Board and did not already say this is another physical piece or give a quantity, ask: "That item number is already on your Trade Board. Are we adding another physical piece of the same design?" If they say yes or give quantity, call add_listing for the additional physical listing.'
+            ? 'This rep already has at least one active listing for this design. Do not refuse as a duplicate. If they are adding this item to the Trade Board and did not already say this is a second physical piece or give a quantity, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?" If they say yes or give quantity, call add_listing for the additional physical listing.'
             : undefined,
         })),
       }

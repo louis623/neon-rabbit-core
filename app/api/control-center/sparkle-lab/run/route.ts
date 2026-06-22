@@ -58,6 +58,10 @@ export async function POST(request: Request) {
     usage: result.usage,
     limitsHit: result.limitsHit,
     findingCount: result.findings.length,
+    artifactCount: result.artifacts.length,
+    mutationMode: 'recommendations_only',
+    modelSynthesisEnabled:
+      process.env.SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED === 'true',
     findings: result.findings.map((finding) => ({
       section: finding.section,
       severity: finding.severity,
@@ -65,6 +69,11 @@ export async function POST(request: Request) {
       title: finding.title,
       recommendedAction: finding.recommendedAction,
       priorityRank: finding.priorityRank,
+    })),
+    artifacts: result.artifacts.map((artifact) => ({
+      section: artifact.section,
+      artifactType: artifact.artifactType,
+      title: artifact.title,
     })),
   })
 }

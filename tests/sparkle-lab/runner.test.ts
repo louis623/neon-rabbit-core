@@ -111,11 +111,13 @@ describe('Sparkle Lab deterministic runner', () => {
     ])
     const insertRunQuery = makeInsertRunQuery()
     const insertFindingsQuery = makeInsertFindingsQuery()
+    const insertArtifactsQuery = makeInsertArtifactsQuery()
     const from = vi.fn((table: string) => {
       if (table === 'support_reports') return supportQuery
       if (table === 'nic_nac_runs') return runQuery
       if (table === 'sparkle_lab_runs') return insertRunQuery
       if (table === 'sparkle_lab_findings') return insertFindingsQuery
+      if (table === 'sparkle_lab_artifacts') return insertArtifactsQuery
       throw new Error(`unexpected table ${table}`)
     })
 
@@ -132,7 +134,13 @@ describe('Sparkle Lab deterministic runner', () => {
         premiumCallCount: 0,
         candidateRecordCount: 2,
       },
-      artifacts: [],
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+      ],
     })
     expect(insertRunQuery.insert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -159,6 +167,27 @@ describe('Sparkle Lab deterministic runner', () => {
           priority_rank: 2,
         }),
       ]),
+    )
+    expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        run_id: 'run-1',
+        section: 'ops_lab',
+        artifact_type: 'lab_note',
+        title: 'Sparkle Lab deterministic run guardrails',
+        body_markdown: expect.stringContaining(
+          'No production behavior, prompts, tools, pricing, or customer data were changed.',
+        ),
+        source_refs: expect.arrayContaining([
+          { type: 'support_report', id: 'support-1' },
+          { type: 'nic_nac_run', id: 'nic-run-1' },
+        ]),
+      }),
+    ])
+    expect(insertArtifactsQuery.insert.mock.calls[0]?.[0]?.[0].body_markdown).toContain(
+      'Active priorities: 2 / 2',
+    )
+    expect(insertArtifactsQuery.insert.mock.calls[0]?.[0]?.[0].body_markdown).toContain(
+      'Limits hit: active_priority_cap',
     )
   })
 
@@ -221,6 +250,11 @@ describe('Sparkle Lab deterministic runner', () => {
       artifacts: [
         {
           section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+        {
+          section: 'ops_lab',
           artifactType: 'report',
           title: 'Sparkle Lab synthesis report',
         },
@@ -235,6 +269,13 @@ describe('Sparkle Lab deterministic runner', () => {
       }),
     )
     expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        run_id: 'run-1',
+        section: 'ops_lab',
+        artifact_type: 'lab_note',
+        title: 'Sparkle Lab deterministic run guardrails',
+        body_markdown: expect.stringContaining('Model synthesis: enabled'),
+      }),
       expect.objectContaining({
         run_id: 'run-1',
         section: 'ops_lab',
@@ -292,6 +333,11 @@ describe('Sparkle Lab deterministic runner', () => {
         {
           section: 'ops_lab',
           artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
           title: 'Sparkle Lab synthesis skipped',
         },
       ],
@@ -304,6 +350,13 @@ describe('Sparkle Lab deterministic runner', () => {
       }),
     )
     expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        artifact_type: 'lab_note',
+        title: 'Sparkle Lab deterministic run guardrails',
+        body_markdown: expect.stringContaining(
+          'Model synthesis: enabled, skipped unless approved pricing is present',
+        ),
+      }),
       expect.objectContaining({
         artifact_type: 'lab_note',
         title: 'Sparkle Lab synthesis skipped',
@@ -324,6 +377,7 @@ describe('Sparkle Lab deterministic runner', () => {
       },
     ])
     const insertRunQuery = makeInsertRunQuery()
+    const insertArtifactsQuery = makeInsertArtifactsQuery()
     const sparkleLabRunsQuery = {
       ...monthlyUsageQuery,
       insert: insertRunQuery.insert,
@@ -332,6 +386,7 @@ describe('Sparkle Lab deterministic runner', () => {
       if (table === 'support_reports') return supportQuery
       if (table === 'nic_nac_runs') return runTelemetryQuery
       if (table === 'sparkle_lab_runs') return sparkleLabRunsQuery
+      if (table === 'sparkle_lab_artifacts') return insertArtifactsQuery
       throw new Error(`unexpected table ${table}`)
     })
 
@@ -355,6 +410,11 @@ describe('Sparkle Lab deterministic runner', () => {
       },
       limitsHit: [],
       findings: [],
+      artifacts: [
+        {
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+      ],
     })
     expect(insertRunQuery.insert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -365,9 +425,18 @@ describe('Sparkle Lab deterministic runner', () => {
         limits_hit: [],
       }),
     )
+    expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        run_id: 'run-1',
+        title: 'Sparkle Lab deterministic run guardrails',
+        body_markdown: expect.stringContaining(
+          'Monthly scheduled spend: $1.25 / $20.00',
+        ),
+      }),
+    ])
   })
 
-  it('stops a weekly run before sampling when the monthly scheduled cap is already reached', async () => {
+  it('stops a weekly run before sampling and records a guardrail artifact when the monthly scheduled cap is already reached', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-06-21T06:00:00.000Z'))
     const monthlyUsageQuery = makeMonthlyUsageQuery([
@@ -377,12 +446,14 @@ describe('Sparkle Lab deterministic runner', () => {
       },
     ])
     const insertRunQuery = makeInsertRunQuery()
+    const insertArtifactsQuery = makeInsertArtifactsQuery()
     const sparkleLabRunsQuery = {
       ...monthlyUsageQuery,
       insert: insertRunQuery.insert,
     }
     const from = vi.fn((table: string) => {
       if (table === 'sparkle_lab_runs') return sparkleLabRunsQuery
+      if (table === 'sparkle_lab_artifacts') return insertArtifactsQuery
       throw new Error(`unexpected table ${table}`)
     })
 
@@ -400,6 +471,11 @@ describe('Sparkle Lab deterministic runner', () => {
       },
       limitsHit: ['monthly_scheduled_cap'],
       findings: [],
+      artifacts: [
+        {
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+      ],
     })
     expect(insertRunQuery.insert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -409,5 +485,13 @@ describe('Sparkle Lab deterministic runner', () => {
         limits_hit: ['monthly_scheduled_cap'],
       }),
     )
+    expect(insertArtifactsQuery.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        run_id: 'run-1',
+        artifact_type: 'lab_note',
+        title: 'Sparkle Lab deterministic run guardrails',
+        body_markdown: expect.stringContaining('Limits hit: monthly_scheduled_cap'),
+      }),
+    ])
   })
 })

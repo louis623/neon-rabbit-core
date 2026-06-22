@@ -86,6 +86,13 @@ describe('GET /api/internal/sparkle-lab/weekly', () => {
       },
       limitsHit: [],
       findings: [{ title: 'Finding one' }],
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+      ],
     })
 
     const response = await GET(
@@ -108,6 +115,9 @@ describe('GET /api/internal/sparkle-lab/weekly', () => {
       },
       limitsHit: [],
       findingCount: 1,
+      artifactCount: 1,
+      mutationMode: 'recommendations_only',
+      modelSynthesisEnabled: false,
     })
   })
 })

@@ -115,7 +115,22 @@ const model: SparkleLabControlCenterModel = {
       createdAt: '2026-06-21T06:03:00.000Z',
     },
   ],
-  activePriorities: [],
+  activePriorities: [
+    {
+      id: 'finding-1',
+      runId: 'run-1',
+      section: 'nic_nac_lab',
+      severity: 'high',
+      confidence: 'high',
+      title: 'Duplicate item replay',
+      summary: 'Duplicate item handling needs a replay case.',
+      recommendedAction: 'Add the replay before model comparison.',
+      impactScore: 9,
+      effortScore: 2,
+      priorityRank: 1,
+      createdAt: '2026-06-21T06:03:00.000Z',
+    },
+  ],
   recentArtifacts: [
     {
       id: 'artifact-1',
@@ -195,7 +210,18 @@ describe('SparkleLabControlCenterPage', () => {
     expect(html).toContain('Ops Lab')
     expect(html).toContain('Research Desk')
     expect(html).toContain('Weekly cap')
+    expect(html).toContain('Monthly scheduled cap')
+    expect(html).toContain('$20.00')
     expect(html).toContain('$5.00')
+    expect(html).toContain('Usage &amp; Limits')
+    expect(html).toContain('Recommendations only')
+    expect(html).toContain('No production self-mutation')
+    expect(html).toContain('Candidate records')
+    expect(html).toContain('80 / 250')
+    expect(html).toContain('Headline findings')
+    expect(html).toContain('1 / 3')
+    expect(html).toContain('Active priorities')
+    expect(html).toContain('1 / 2')
     expect(html).toContain('Duplicate item replay')
     expect(html).toContain('Recent Artifacts')
   })

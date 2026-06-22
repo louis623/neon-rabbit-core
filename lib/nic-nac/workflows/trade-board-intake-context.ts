@@ -313,10 +313,13 @@ function inferRoleFromText(text: string): TradeBoardPhotoDeclaredRole {
       text,
     )
   const asksForLabelPhoto =
-    /\b(?:need|needs|send|upload|snap|take|provide|use|show|get|got)\b[\s\S]{0,120}\b(?:label|details|tag|back.of.card|item-info|item info)\b/i.test(
+    /\b(?:need|needs|send|upload|snap|take|provide|use|show|get|got)\b[\s\S]{0,120}\b(?:label(?:\/details)?|details\s+(?:photo|shot|image|source)|tag|back.of.card|item-info|item info)\b/i.test(
       text,
     ) ||
-    /\b(?:label|details|tag|back.of.card|item-info|item info)\b[\s\S]{0,80}\b(?:photo|shot|image|source)\b/i.test(
+    /\b(?:label(?:\/details)?|tag|back.of.card|item-info|item info)\b[\s\S]{0,80}\b(?:photo|shot|image|source)\b/i.test(
+      text,
+    ) ||
+    /\bdetails\s+(?:photo|shot|image|source)\b/i.test(
       text,
     )
   const rejectsLabelAsListingPhoto =

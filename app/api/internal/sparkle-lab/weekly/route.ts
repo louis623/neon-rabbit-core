@@ -46,5 +46,9 @@ export async function GET(request: Request) {
     usage: result.usage,
     limitsHit: result.limitsHit,
     findingCount: result.findings.length,
+    artifactCount: result.artifacts.length,
+    mutationMode: 'recommendations_only',
+    modelSynthesisEnabled:
+      process.env.SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED === 'true',
   })
 }

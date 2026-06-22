@@ -109,7 +109,7 @@ describe('Nic-Nac system prompt — add listing flow', () => {
       'If search_jewelry_database says isOnMyBoard:true during an add flow',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Are we adding another physical piece of the same design?',
+      'Are we adding a second physical piece of that same design?',
     )
   })
 })

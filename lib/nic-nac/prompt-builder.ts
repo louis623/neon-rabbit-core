@@ -61,7 +61,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask one missing field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number.
-- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding another physical piece of the same design?" If yes/quantity, call add_listing.
+- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?" If yes/quantity, call add_listing.
 - Quantity comes from the latest rep message.
 - mode:'batch'
 - NEEDS_FULL_INFO/create_design. Birthday: collectionName:"March Birthday 2026", collectionYear:2026.

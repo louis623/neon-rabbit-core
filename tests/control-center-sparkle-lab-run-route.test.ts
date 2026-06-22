@@ -69,6 +69,13 @@ describe('POST /api/control-center/sparkle-lab/run', () => {
           priorityRank: 1,
         },
       ],
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
+        },
+      ],
     })
   })
 
@@ -98,12 +105,22 @@ describe('POST /api/control-center/sparkle-lab/run', () => {
       runId: 'run-1',
       runType: 'urgent',
       findingCount: 1,
+      artifactCount: 1,
+      mutationMode: 'recommendations_only',
+      modelSynthesisEnabled: false,
       findings: [
         {
           section: 'nic_nac_lab',
           severity: 'high',
           title: 'Hard fail',
           priorityRank: 1,
+        },
+      ],
+      artifacts: [
+        {
+          section: 'ops_lab',
+          artifactType: 'lab_note',
+          title: 'Sparkle Lab deterministic run guardrails',
         },
       ],
     })

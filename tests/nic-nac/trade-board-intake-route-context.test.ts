@@ -117,6 +117,37 @@ describe('Trade Board intake route context', () => {
     )
   })
 
+  it('does not confuse extracted item details with a request for a details photo', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'assistant-1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Perfect - I got the details for ER13229, The Florence Earrings.\n\nI still need the separate customer-facing jewelry photo to post it to Trade Board. A clear boxed display photo is totally fine.',
+          },
+        ],
+      } as UIMessage,
+      {
+        id: 'user-1',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
+          },
+        ],
+      } as UIMessage,
+    ]
+
+    expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe(
+      'jewelry_front',
+    )
+  })
+
   it('treats an upload as jewelry_front when Nic-Nac contrasts the old label photo with the requested jewelry shot', () => {
     const messages: UIMessage[] = [
       {

@@ -293,7 +293,7 @@ describe('add_listing — batch mode', () => {
     })
   })
 
-  it('asks for another-physical-piece confirmation before adding an item already on the board', async () => {
+  it('asks for second-physical-piece confirmation before adding an item already on the board', async () => {
     createAdminClientMock.mockReturnValueOnce(
       makeAdminWithExistingListing(true),
     )
@@ -325,7 +325,7 @@ describe('add_listing — batch mode', () => {
     ).rejects.toMatchObject({
       code: 'DUPLICATE_PHYSICAL_CONFIRMATION_REQUIRED',
       userMessage:
-        'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+        'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
     })
     expect(addListingMock).not.toHaveBeenCalled()
   })
@@ -363,6 +363,57 @@ describe('add_listing — batch mode', () => {
           {
             type: 'text',
             text: 'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+          },
+        ],
+      },
+    ])
+
+    const result = await tool.execute({
+      mode: 'single',
+      itemNumber: 'ER76003',
+    })
+
+    expect(addListingMock).toHaveBeenCalledTimes(1)
+    expect(result).toMatchObject({
+      mode: 'single',
+      listingId: 'listing-2',
+      itemNumber: 'ER76003',
+    })
+  })
+
+  it('accepts a plain yes after the natural second-physical-piece confirmation', async () => {
+    createAdminClientMock.mockReturnValueOnce(
+      makeAdminWithExistingListing(true),
+    )
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      design: {
+        id: 'design-1',
+        itemNumber: 'ER76003',
+        designName: 'The Elodie Luxe',
+      },
+      hasCollection: true,
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-1',
+      itemNumber: 'ER76003',
+      designName: 'The Elodie Luxe',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+
+    const tool = makeTool([
+      {
+        role: 'user',
+        parts: [{ type: 'text', text: 'Yes.' }],
+      },
+      {
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
           },
         ],
       },

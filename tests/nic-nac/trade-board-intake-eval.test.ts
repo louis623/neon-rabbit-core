@@ -39,6 +39,16 @@ describe('Trade Board intake hard-fail detection', () => {
     ])
   })
 
+  it('detects duplicate physical listing refusal language', () => {
+    const result = detectTradeBoardIntakeHardFails(
+      "That item number is already on your board, so I can't add it again as a duplicate listing.",
+    )
+
+    expect(result.matches.map((m) => m.id)).toEqual([
+      'duplicate_physical_listing_refusal',
+    ])
+  })
+
   it('detects manual backend workaround and box/card retake language from the ER13229 regression', () => {
     const result = detectTradeBoardIntakeHardFails(
       "The system's flagging the image resolution on its end. If you want to move forward, I can escalate this to Louis and have him add it manually on the backend, or you can try one more shot without the box or card on a plain surface.",

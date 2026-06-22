@@ -101,7 +101,7 @@ describe('search_jewelry_database — flattened structured output', () => {
       activeListingsCount: 3,
     })
     expect(results[0].addListingGuidance).toContain(
-      'Are we adding another physical piece of the same design?',
+      'Are we adding a second physical piece of that same design?',
     )
     expect(results[1]).toMatchObject({
       designId: 'd-2',

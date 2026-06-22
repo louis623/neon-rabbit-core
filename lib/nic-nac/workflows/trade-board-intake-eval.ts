@@ -39,6 +39,12 @@ export const TRADE_BOARD_INTAKE_HARD_FAIL_PATTERNS: Array<{
     pattern: /\bpackaging\s+is\s+too\s+prominent\b/i,
   },
   {
+    id: 'duplicate_physical_listing_refusal',
+    phrase: 'Duplicate physical listing refusal',
+    pattern:
+      /\b(?:already\s+on\s+(?:your\s+)?(?:trade\s+)?board|duplicate\s+listing|duplicate\s+listings)\b[\s\S]{0,140}\b(?:can(?:no|')?t|cannot|won(?:'|')t|not\s+able\s+to|refus(?:e|ing)|shouldn(?:'|')t)\b[\s\S]{0,140}\b(?:add|create|list|duplicate)\b|\b(?:can(?:no|')?t|cannot|won(?:'|')t|not\s+able\s+to|refus(?:e|ing)|shouldn(?:'|')t)\b[\s\S]{0,140}\b(?:add|create|list)\b[\s\S]{0,140}\b(?:duplicate\s+listing|again\s+as\s+a\s+duplicate|already\s+on\s+(?:your\s+)?(?:trade\s+)?board)\b/i,
+  },
+  {
     id: 'manual_backend_add',
     phrase: 'Have Louis add it manually on the backend',
     pattern:

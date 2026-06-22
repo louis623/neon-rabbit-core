@@ -96,11 +96,17 @@ function RunSummary({ run }: { run: SparkleLabRunSummary }) {
       <p className="mt-3 text-sm font-semibold text-slate-950">
         Created {formatDate(run.createdAt)}
       </p>
+      <h3 className="mt-4 text-sm font-semibold text-slate-950">
+        Usage & Limits
+      </h3>
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
         <Metric label="Cost" value={`${formatMoney(run.estimatedCostCents)} / ${formatMoney(run.costCapCents)}`} />
         <Metric label="Model calls" value={`${run.modelCallCount} / ${run.modelCallCap}`} />
         <Metric label="Premium calls" value={`${run.premiumCallCount} / ${run.premiumCallCap}`} />
+        <Metric label="Candidate records" value={`${run.candidateRecordCount} / ${run.candidateRecordCap}`} />
         <Metric label="Deep items" value={`${run.deepItemCount} / ${run.deepItemCap}`} />
+        <Metric label="Headline findings" value={`${run.headlineFindingCount} / ${run.headlineFindingCap}`} />
+        <Metric label="Active priorities" value={`${run.activePriorityCount} / ${run.activePriorityCap}`} />
       </dl>
       <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
         Limits hit: {run.limitsHit.length ? run.limitsHit.map(label).join(', ') : 'None'}
@@ -187,7 +193,21 @@ export function SparkleLabPage({ model }: SparkleLabPageProps) {
           </section>
         ) : null}
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+              Recommendations only
+            </span>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+              No production self-mutation
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Sparkle Lab can record findings, artifacts, usage, and limits for operator review. It does not change production prompts, tools, pricing, code, customer data, or account behavior.
+          </p>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-4">
           <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
               Weekly cap
@@ -197,6 +217,17 @@ export function SparkleLabPage({ model }: SparkleLabPageProps) {
             </p>
             <p className="mt-2 text-sm text-slate-600">
               {model.caps.weekly.modelCallCap} calls, {model.caps.weekly.premiumCallCap} premium.
+            </p>
+          </article>
+          <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Monthly scheduled cap
+            </p>
+            <p className="mt-2 text-3xl font-semibold">
+              {formatMoney(model.caps.weekly.monthlyScheduledCapCents ?? 0)}
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Applies to weekly scheduled Lab runs.
             </p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
