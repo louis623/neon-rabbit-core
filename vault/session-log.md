@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Finder Nic-Nac Route Smoke Harness
+
+**What changed:**
+- Added `npm run smoke:finder-nic-nac` and `npm run smoke:finder-nic-nac:guard` in `C:\Users\louis\sparkle-finder-repo`.
+- The smoke script builds Finder, starts a local production server on `127.0.0.1:4310`, obtains a local Silver preview-auth cookie, posts a UI-message request to `/api/finder/nic-nac`, and checks the response.
+- `smoke:finder-nic-nac` is the configured-model smoke and should fail if Finder returns `model_not_configured`. `smoke:finder-nic-nac:guard` is the explicit missing-key guard smoke and treats `503 { error: "model_not_configured" }` as the expected safe blocked state.
+- Successful streams are checked for Nic-Nac hard-fail phrases, including phrases split across framed AI SDK text deltas.
+- Fixed Finder `/api/finder/nic-nac` to pass the local preview-auth cookie into `getCurrentSparkleFinderAccount`, guarded by the existing local preview-auth flag, so route smoke reaches the Nic-Nac model guard instead of failing at `401 unauthenticated`.
+
+**Verification:**
+- TDD red/green completed for local preview-auth pass-through on the Finder Nic-Nac route.
+- TDD red/green completed for the configured-model default, explicit guard command, and framed-stream hard-fail phrase detection.
+- Focused Finder Nic-Nac route/smoke-script tests passed: 2 files, 19 tests.
+- `npm run smoke:finder-nic-nac:guard` passed with `blocked_missing_model` at `http://127.0.0.1:4310`.
+- Full Finder Vitest suite passed: 32 files, 441 tests.
+- Finder `npm run build` passed and includes `/api/finder/nic-nac`.
+- Broader Finder local smoke passed: 17 Playwright tests passed, 2 skipped, with local preview auth at `http://127.0.0.1:4310`.
+- Independent review agent found the initial smoke naming/stream-text risks; both were fixed and reverified.
+
+**Still open:**
+- Deployed Finder Nic-Nac model-stream smoke still needs Finder Vercel `OPENAI_API_KEY`. After that secret is configured and deployed, rerun `smoke:finder-nic-nac` in configured mode against the deployed Finder URL.
+
 ## June 22, 2026 - Finder Nic-Nac Surface Tool Policy
 
 **What changed:**
