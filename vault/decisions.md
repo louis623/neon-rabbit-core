@@ -45,6 +45,9 @@ Nic-Nac's behavior should consistently read as organized, detail-minded, service
 **Nic-Nac model routing is centralized and OpenAI-first**
 Production route files should not hardcode raw provider/model strings. Use Nic-Nac model policy keys such as `human_default`, `human_escalated`, `utility_fast`, and `lab_synthesis`, with OpenAI as the default provider and environment overrides for exact model IDs.
 
+**Nic-Nac runtime provider is OpenAI-only for the current product policy**
+Do not keep an Anthropic fallback inside the shared Nic-Nac model provider while the product direction is to avoid juggling multiple AI vendors. Future provider expansion can be reconsidered intentionally, but current production Nic-Nac should route through the centralized OpenAI policy only.
+
 **Nic-Nac tool access is product-context gated**
 The shared Nic-Nac core should decide tool availability from product, surface, actor, account tier, linked identity, and permissions. Finder-linked reps may share memory identity with Suite, but Suite workspace mutation intents stay blocked unless the current authenticated surface is Sparkle Suite rep workspace.
 

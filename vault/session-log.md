@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 21, 2026 - Nic-Nac OpenAI-Only Provider
+
+**What changed:**
+- Removed the Anthropic fallback from Nic-Nac's shared model provider.
+- Nic-Nac model policy now exposes OpenAI as the only current provider.
+- Removed the stale Anthropic cache-control option from the authenticated workspace Nic-Nac route.
+- Updated public Nic-Nac route tests and telemetry fixtures so active Nic-Nac tests no longer mock or fixture old Haiku routing.
+
+**Verification:**
+- TDD red/green completed for the OpenAI-only Nic-Nac provider guard.
+- Focused provider/model/public-route/telemetry tests passed: 5 files, 62 tests.
+- Broad internal Nic-Nac/Lab/Finder/public sweep passed: 117 files passed, 1 skipped; 886 tests passed, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview deployment passed and built successfully: `https://sparkle-suite-4rpgzoala-louis-2849s-projects.vercel.app`.
+- Stable demo alias now points to `https://sparkle-suite-4rpgzoala-louis-2849s-projects.vercel.app` / deployment `dpl_EHfC3sakh8jM5yhn8TqSdk6fGrxE`.
+- Stable deployed smoke passed with Node fetch: root `/` returned `200`, `/control-center/lab` redirected unauthenticated users to `/login?redirect=%2Fcontrol-center%2Flab`, `/api/internal/sparkle-lab/weekly` returned `401` without cron auth, and `/api/internal/finder/rep-claim` returned `503` closed/not configured because the rep-claim token is not configured.
+
+**Still open:**
+- `lib/prelaunch/scout.ts` still uses Anthropic/Haiku, but it is outside Nic-Nac runtime and was left untouched under Louis's boundary.
+- Sparkle Finder's separate repo still needs its own Nic-Nac model adapter migration later.
+
 ## June 21, 2026 - Nic-Nac Model Cost Guardrail
 
 **What changed:**
