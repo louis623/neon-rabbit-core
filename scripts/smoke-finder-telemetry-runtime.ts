@@ -31,7 +31,7 @@ async function main() {
   });
   const body = await safeJson(response);
 
-  if (!response.ok || body?.ok !== true) {
+  if (!response.ok || body?.ok !== true || !hasSuccessfulCleanup(body)) {
     throw new Error(`Finder telemetry smoke failed: ${JSON.stringify(redactSmokeBody(body))}`);
   }
 
@@ -62,6 +62,18 @@ function redactSmokeBody(body: Record<string, unknown> | null) {
   const { smokeId: _smokeId, ...rest } = body;
 
   return rest;
+}
+
+function hasSuccessfulCleanup(body: Record<string, unknown> | null): boolean {
+  const cleanup = body?.cleanup;
+
+  return Boolean(
+    cleanup
+    && typeof cleanup === "object"
+    && !Array.isArray(cleanup)
+    && "ok" in cleanup
+    && cleanup.ok === true,
+  );
 }
 
 function cleanUrl(value: string) {

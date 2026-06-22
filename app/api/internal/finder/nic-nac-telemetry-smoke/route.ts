@@ -257,9 +257,6 @@ async function cleanupSmokeUser(admin: SmokeAdminClient, userId: string) {
     messageTable,
     runTable,
     conversationTable,
-    "sparkle_finder_memberships",
-    "sparkle_finder_communication_consents",
-    "sparkle_finder_profiles",
   ]) {
     try {
       const { error } = await admin.from(table).delete().eq("user_id", userId);
