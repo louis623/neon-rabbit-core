@@ -7,7 +7,10 @@
   - Added fail-open route persistence for `/api/finder/nic-nac`: mission redirects write zero-token `redirected` rows, model-backed streams write `started` rows and complete/fail rows with model policy, tool intents, memory counts, token usage, latency, and optional env-based cost estimates.
   - Added `scripts/smoke-finder-linked-runtime.ts` plus `npm run smoke:finder-linked-runtime` to create a temporary confirmed Finder user, sign in through the deployed site with Playwright, claim a Secret Rep ID, verify Finder DB rows, call linked Nic-Nac, verify telemetry, and clean up.
   - Verification passed locally: full Finder Vitest suite (`36` files, `470` tests) and production `next build`.
-  - Remote migration/deployed smoke not yet run from this terminal because the Finder repo has no `supabase/config.toml`, `SUPABASE_ACCESS_TOKEN` is missing, and no DB URL env is available.
+  - Remote migration was applied manually through the Supabase Dashboard SQL editor in project `sparkle-finder-auth` (`pzksocboqauqjdtsgpdp`) after CLI auth/linking stayed blocked.
+  - Supabase verification passed with all checks `true`: telemetry tables exist, RLS is enabled, authenticated users have select-only access, service-role has select/insert/update/delete, read-own policies exist, expected updated-at triggers exist, expected indexes exist, and no required columns are missing.
+  - Deployed Finder production from commit `c7eaf2c` to `dpl_1Q9mZ7WG4eNFWnzhbG7Loco3PbDU` / `https://sparkle-finder-nx2hyh8l8-louis-2849s-projects.vercel.app`, aliased at `https://sparkle-finder-dev.vercel.app`.
+  - Deployed linked-runtime smoke is still pending. `vercel env pull --environment=production` confirms the keys exist, but sensitive values such as `SUPABASE_SERVICE_ROLE_KEY`, `SPARKLE_FINDER_TO_SUITE_REP_CLAIM_TOKEN`, and `OPENAI_API_KEY` are pulled locally as empty strings, so `npm run smoke:finder-linked-runtime` cannot create/clean the temporary confirmed Finder user from this terminal.
 
 - Deployed and smoked Secret Rep ID claiming plus linked Finder Nic-Nac runtime:
   - Applied Finder migration `20260622144600_finder_rep_claim_profile_metadata.sql` to the remote Sparkle Finder Supabase project and verified the claim metadata columns/comments.
