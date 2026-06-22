@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   convertToModelMessages,
@@ -10,7 +11,9 @@ import {
   getNicNacProviderOptions,
   isNicNacOpenAIConfigured,
 } from "@/lib/nic-nac/core/model-provider";
+import { classifyNicNacMissionScopeForMessages } from "@/lib/nic-nac/core/mission-guard";
 import { getNicNacModelPolicy } from "@/lib/nic-nac/core/model-policy";
+import { createNicNacStaticTextStreamResponse } from "@/lib/nic-nac/core/static-stream";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import {
   isLocalPreviewAuthEnabled,
@@ -77,6 +80,15 @@ export async function POST(request: Request) {
 
   if (messages.length === 0) {
     return NextResponse.json({ error: "missing_messages" }, { status: 400 });
+  }
+
+  const missionScope = classifyNicNacMissionScopeForMessages(messages);
+
+  if (missionScope.action === "redirect") {
+    return createNicNacStaticTextStreamResponse({
+      message: missionScope.message,
+      messageId: randomUUID(),
+    });
   }
 
   if (!isNicNacOpenAIConfigured()) {

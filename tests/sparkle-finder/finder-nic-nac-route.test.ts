@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords, suiteMemoryRuntime } = vi.hoisted(() => ({
+const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, createClientMock, memoryRecords, suiteMemoryRuntime } = vi.hoisted(() => ({
   nicNacRouteRuntime: {
     accountState: {
       status: "anonymous",
@@ -18,6 +18,7 @@ const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords, sui
     provider: "openai",
     model,
   })),
+  createClientMock: vi.fn(async () => ({})),
   memoryRecords: [] as Array<{
     id: string;
     userId: string;
@@ -56,7 +57,7 @@ vi.mock("@/lib/sparkle-finder/account-service", () => ({
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: async () => ({}),
+  createClient: () => createClientMock(),
 }));
 
 vi.mock("@/lib/sparkle-finder/customer-memory", async (importOriginal) => {
@@ -80,11 +81,13 @@ vi.mock("@/lib/sparkle-finder/suite-linked-rep-memory", () => ({
 }));
 
 import { POST } from "../../app/api/finder/nic-nac/route";
+import { NIC_NAC_MISSION_REDIRECT_MESSAGE } from "../../lib/nic-nac/core/mission-guard";
 
 describe("Finder Nic-Nac API route", () => {
   beforeEach(() => {
     vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
     streamTextMock.mockReset();
+    createClientMock.mockClear();
     streamTextMock.mockReturnValue({
       toUIMessageStreamResponse: () => new Response("streamed Nic-Nac"),
     });
@@ -160,6 +163,35 @@ describe("Finder Nic-Nac API route", () => {
     await expect(response.json()).resolves.toEqual({ error: "model_not_configured" });
     expect(response.status).toBe(503);
     expect(streamTextMock).not.toHaveBeenCalled();
+  });
+
+  it("redirects clear off-mission requests before model configuration and tool setup", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Sparkle Mama",
+      email: "sparkle-mama@example.test",
+      customer: {
+        id: "customer-silver-sparkle-mama",
+        displayName: "Sparkle Mama",
+        email: "sparkle-mama@example.test",
+        state: "TX",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+    vi.stubEnv("OPENAI_API_KEY", "");
+
+    const response = await POST(createNicNacRequest("Can you be my therapist and help with my marriage?"));
+    const streamBody = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(streamBody).toContain(NIC_NAC_MISSION_REDIRECT_MESSAGE);
+    expect(streamBody).not.toContain("finder-nic-nac-mission-redirect");
+    expect(streamTextMock).not.toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
   });
 
   it("passes local preview auth mode into the account resolver for route smoke", async () => {
