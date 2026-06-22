@@ -16,6 +16,13 @@ Running log of significant work sessions. Most recent first.
 - Touched-file lint passed.
 - Suite standard `npm test` passed.
 - `npm run build` passed.
+- Stable demo alias points to Vercel deployment `dpl_5kqjagcaoChLQCmVM9XMecdp2zfQ`.
+- Deployed reviewer-smoke `/api/nic-nac` question smoke passed: Nic-Nac answered that Louis named him after one of his pet rabbits.
+
+**Memory/HQ closeout:**
+- Open Brain captured the status update, identity decision, prompt-budget lesson, deployed-smoke lesson, and Louis's broader tool/workflow reliability expectation.
+- HQ task `task_11_10_nic_nac_stable_baseline` was updated to `in_progress` with this session's verification notes.
+- HQ open item `61be6866-a661-4b4c-9ef8-2f4bb5bae99d` was created for durable Nic-Nac Trade Board and jewelry database tool knowledge.
 
 ---
 
