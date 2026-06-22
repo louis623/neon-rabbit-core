@@ -5,7 +5,8 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { getNicNacLanguageModel, getNicNacProviderOptions } from "@/lib/nic-nac/core/model-provider";
+import { getNicNacModelPolicy } from "@/lib/nic-nac/core/model-policy";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import {
@@ -21,9 +22,6 @@ import {
 } from "@/lib/sparkle-finder/nic-nac/tools";
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import { createClient } from "@/lib/supabase/server";
-
-const anthropic = createAnthropic({ baseURL: "https://api.anthropic.com/v1" });
-const finderNicNacModel = "claude-haiku-4-5-20251001";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,8 +65,9 @@ export async function POST(request: Request) {
   const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
   const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
   const modelMessages = await convertToModelMessages(messages);
+  const modelPolicy = getNicNacModelPolicy("human_default");
   const result = streamText({
-    model: anthropic(finderNicNacModel),
+    model: getNicNacLanguageModel(modelPolicy),
     system: buildFinderNicNacSystemPrompt({
       activeToolNames,
       intents,
@@ -76,6 +75,7 @@ export async function POST(request: Request) {
     messages: modelMessages,
     tools,
     stopWhen: stepCountIs(5),
+    providerOptions: getNicNacProviderOptions(modelPolicy),
   });
 
   return result.toUIMessageStreamResponse({

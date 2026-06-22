@@ -10,7 +10,7 @@
     "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.84",
+    "@ai-sdk/openai": "^3.0.73",
     "@ai-sdk/react": "^3.0.207",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.100.1",
