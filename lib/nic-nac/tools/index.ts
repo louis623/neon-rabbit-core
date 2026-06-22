@@ -14,6 +14,7 @@ import { listMyTradeBoardTool } from './list-my-trade-board'
 import { removeListingTool } from './remove-listing'
 import { restoreListingTool } from './restore-listing'
 import { addListingTool } from './add-listing'
+import { prepareTradeBoardWorkTool } from './prepare-trade-board-work'
 import { getTradeRequestsTool } from './get-trade-requests'
 import { approveTradeTool } from './approve-trade'
 import { approveTradeSwapTool } from './approve-trade-swap'
@@ -63,6 +64,7 @@ import type { ToolContext, ToolDefinition } from './types'
 
 const REGISTRY: ToolDefinition[] = [
   listMyTradeBoardTool,
+  prepareTradeBoardWorkTool,
   removeListingTool,
   restoreListingTool,
   addListingTool,
@@ -130,6 +132,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'record_show_session_event',
   ],
   trade_board: [
+    'prepare_trade_board_work',
     'list_my_trade_board',
     'remove_listing',
     'restore_listing',

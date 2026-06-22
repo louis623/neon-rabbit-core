@@ -23,7 +23,11 @@ describe('Nic-Nac tool choice policy', () => {
       chooseNicNacToolChoiceForStep({
         requireToolCall: true,
         stepsLength: 0,
-        activeToolNames: ['add_listing', 'search_jewelry_database'],
+        activeToolNames: [
+          'prepare_trade_board_work',
+          'add_listing',
+          'search_jewelry_database',
+        ],
         activeTradeBoardWorkflow: {
           status: 'active',
           phase: 'photo_capture',
@@ -31,7 +35,7 @@ describe('Nic-Nac tool choice policy', () => {
           blockers: [],
         },
       }),
-    ).toBe('required')
+    ).toEqual({ type: 'tool', toolName: 'prepare_trade_board_work' })
   })
 
   it('does not force a tool after the first model step', () => {

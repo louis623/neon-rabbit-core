@@ -321,6 +321,7 @@ describe('send_email_notification', () => {
       'list_site_recipes',
       'manage_join_team_roster',
       'manage_site_recipes',
+      'prepare_trade_board_work',
       'read_recent_rep_notes',
       'record_show_session_event',
       'reject_trade',

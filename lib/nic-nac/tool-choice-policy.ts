@@ -8,7 +8,7 @@ type TradeBoardWorkflowForToolChoice = {
 export type NicNacStepToolChoice =
   | 'auto'
   | 'required'
-  | { type: 'tool'; toolName: 'add_listing' }
+  | { type: 'tool'; toolName: 'add_listing' | 'prepare_trade_board_work' }
 
 export function chooseNicNacToolChoiceForStep(args: {
   requireToolCall: boolean
@@ -23,6 +23,9 @@ export function chooseNicNacToolChoiceForStep(args: {
     tradeBoardWorkflowIsReadyToAdd(args.activeTradeBoardWorkflow)
   ) {
     return { type: 'tool', toolName: 'add_listing' }
+  }
+  if (args.activeToolNames.includes('prepare_trade_board_work')) {
+    return { type: 'tool', toolName: 'prepare_trade_board_work' }
   }
 
   return 'required'

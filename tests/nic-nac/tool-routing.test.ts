@@ -56,6 +56,8 @@ describe('Nic-Nac tool routing', () => {
     const intents = getToolIntentsForText('Add a piece to Trade Board')
 
     expect(intents).toContain('trade_board')
+    expect(listToolNamesForIntents(intents)[0]).toBe('prepare_trade_board_work')
+    expect(listToolNamesForIntents(intents)).toContain('prepare_trade_board_work')
     expect(listToolNamesForIntents(intents)).toContain('search_jewelry_database')
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
   })
