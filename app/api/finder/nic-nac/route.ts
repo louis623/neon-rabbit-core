@@ -11,6 +11,7 @@ import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-ser
 import { getSparkleFinderAccountEntitlements } from "@/lib/sparkle-finder/entitlements";
 import {
   createSupabaseCustomerMemoryStore,
+  getSafeCustomerMemoryForPrompt,
   type SupabaseCustomerMemoryClient,
 } from "@/lib/sparkle-finder/customer-memory";
 import type { SupabaseCollectorSocialReadClient } from "@/lib/sparkle-finder/collector-social-service";
@@ -20,6 +21,7 @@ import {
   getFinderNicNacToolIntentsForMessages,
   listFinderNicNacToolNamesForIntents,
 } from "@/lib/sparkle-finder/nic-nac/tools";
+import { summarizeFinderNicNacMemoryHints } from "@/lib/sparkle-finder/nic-nac/curator";
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import type { FinderNicNacAccountContext } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import { createClient } from "@/lib/supabase/server";
@@ -64,6 +66,9 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const memoryStore = createSupabaseCustomerMemoryStore(supabase as unknown as SupabaseCustomerMemoryClient);
   const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
+  const memorySummaries = summarizeFinderNicNacMemoryHints(
+    await getSafeCustomerMemoryForPrompt(memoryStore, accountState.customer.id),
+  );
   const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
   const modelMessages = await convertToModelMessages(messages);
   const modelPolicy = getNicNacModelPolicy("human_default");
@@ -73,6 +78,7 @@ export async function POST(request: Request) {
       activeToolNames,
       intents,
       accountContext: createFinderNicNacAccountContext(accountState),
+      memorySummaries,
     }),
     messages: modelMessages,
     tools,
