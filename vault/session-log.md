@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Secret Rep ID Claim Deployment And Finder Smoke
+
+**What changed:**
+- Configured `SPARKLE_FINDER_TO_SUITE_REP_CLAIM_TOKEN` as a shared sensitive Vercel env var for Suite and Finder production/preview.
+- Deployed Suite production to `dpl_6LUJB79BHeYsfMWLSUtEsRqWUMbY` / `https://sparkle-suite-kkh37c6w7-louis-2849s-projects.vercel.app`.
+- Moved `https://sparkle-suite-demo.vercel.app` to the same Suite deployment.
+- Deployed Finder production to `dpl_6FAPcdx2SgZoxGhmdw4UuYx2Eyfc` / `https://sparkle-finder-oimbu0wl1-louis-2849s-projects.vercel.app`, aliased at `https://sparkle-finder-dev.vercel.app`.
+- Refreshed Finder Vercel production/preview Supabase runtime envs from the dedicated Finder Supabase project.
+
+**Verification:**
+- Suite internal claim endpoint now returns `401 unauthorized` instead of `503 not configured` on `www.yoursparklesuite.com` and `sparkle-suite-demo.vercel.app` when called without the bearer token.
+- Finder deployed browser smoke created a temporary confirmed Finder auth user, signed in through `https://sparkle-finder-dev.vercel.app`, submitted the Secret Rep ID claim form, verified the profile rep link and `silver_rep_included` membership in Supabase, then deleted the temporary user and rows.
+- Finder deployed linked-rep Nic-Nac smoke returned HTTP `200` from `/api/finder/nic-nac`, streamed through OpenAI, and found zero hard-fail phrases; the temporary user and rows were cleaned up.
+
+**Issue found and fixed:**
+- The deployed claim smoke exposed missing `service_role` grants on Finder `sparkle_finder_profiles` and `sparkle_finder_memberships`. Finder migration `20260622155712_finder_rep_claim_service_role_grants.sql` now grants the server-side claim writer the needed table privileges.
+
+---
+
 ## June 22, 2026 - Secret Rep ID Number Bridge Copy
 
 **What changed:**
