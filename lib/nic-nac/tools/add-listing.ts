@@ -645,6 +645,9 @@ async function runSingle(
   }
 
   const activeWorkflow = ctx.activeTradeBoardWorkflow
+  let resolvedCatalogDesign: Awaited<ReturnType<typeof resolveItemNumber>> | null =
+    null
+  let useCatalogCanonicalFallback = false
   if (activeWorkflow?.status === 'active') {
     const readiness = computeTradeBoardAddAttemptReadiness(activeWorkflow, {
       itemNumber,
@@ -654,13 +657,36 @@ async function runSingle(
     })
     if (!readiness.ready) {
       const needsJewelryPhoto = readiness.missing.includes('jewelryFrontPhoto')
-      const missing = readiness.missing.join(', ')
-      throw new NicNacToolError({
-        code: 'WORKFLOW_NOT_READY',
-        userMessage: needsJewelryPhoto
-          ? 'I still need the customer-facing jewelry photo before I can save this listing.'
-          : `I still need these details before I can save this listing: ${missing}.`,
-      })
+      if (
+        needsJewelryPhoto &&
+        readiness.blockers.length === 0 &&
+        readiness.missing.every((field) => field === 'jewelryFrontPhoto')
+      ) {
+        try {
+          resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber)
+        } catch (err) {
+          explainServiceError(err)
+        }
+        if (
+          resolvedCatalogDesign.found &&
+          resolvedCatalogDesign.design.canonicalPhotoUrl &&
+          (resolvedCatalogDesign.hasCollection || input.collectionName?.trim())
+        ) {
+          useCatalogCanonicalFallback = true
+        }
+      }
+      if (useCatalogCanonicalFallback) {
+        // The label/details photo identified the catalog piece; the service
+        // will validate and use the shared canonical jewelry photo.
+      } else {
+        const missing = readiness.missing.join(', ')
+        throw new NicNacToolError({
+          code: 'WORKFLOW_NOT_READY',
+          userMessage: needsJewelryPhoto
+            ? 'I still need the customer-facing jewelry photo before I can save this listing.'
+            : `I still need these details before I can save this listing: ${missing}.`,
+        })
+      }
     }
   }
 
@@ -701,7 +727,8 @@ async function runSingle(
     // another attempt. Use a read-only catalog lookup before creating so stale
     // retries do not duplicate catalog designs.
     try {
-      const existingDesign = await resolveItemNumber(admin, itemNumber)
+      const existingDesign =
+        resolvedCatalogDesign ?? (await resolveItemNumber(admin, itemNumber))
       if (existingDesign.found) {
         await requireDuplicatePhysicalPieceConfirmationIfNeeded({
           admin,
@@ -1098,7 +1125,8 @@ async function runSingle(
         supabase: ctx.supabase,
         conversationId: ctx.conversationId,
         photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
-        allowImplicitConversationPhoto: !designName,
+        allowImplicitConversationPhoto:
+          !designName && !useCatalogCanonicalFallback,
       })) ?? processedListingPhotoUrl
   }
   try {
