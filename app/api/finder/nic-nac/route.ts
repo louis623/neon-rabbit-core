@@ -24,6 +24,7 @@ import {
 import { summarizeFinderNicNacMemoryHints } from "@/lib/sparkle-finder/nic-nac/curator";
 import { buildFinderNicNacSystemPrompt } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
 import type { FinderNicNacAccountContext } from "@/lib/sparkle-finder/nic-nac/prompt-builder";
+import { getSuiteLinkedRepMemorySummariesForFinder } from "@/lib/sparkle-finder/suite-linked-rep-memory";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -66,9 +67,21 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const memoryStore = createSupabaseCustomerMemoryStore(supabase as unknown as SupabaseCustomerMemoryClient);
   const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
-  const memorySummaries = summarizeFinderNicNacMemoryHints(
+  const finderMemorySummaries = summarizeFinderNicNacMemoryHints(
     await getSafeCustomerMemoryForPrompt(memoryStore, accountState.customer.id),
   );
+  const accountContext = createFinderNicNacAccountContext(accountState);
+  const suiteMemorySummaries =
+    accountContext.actorType === "linked_rep" && accountContext.linkedSuiteRepId
+      ? await getSuiteLinkedRepMemorySummariesForFinder({
+          finderUserId: accountState.customer.id,
+          suiteRepId: accountContext.linkedSuiteRepId,
+        })
+      : [];
+  const memorySummaries = [
+    ...finderMemorySummaries,
+    ...suiteMemorySummaries,
+  ].slice(0, 8);
   const tools = buildFinderNicNacTools({ memoryStore, supabase: socialReadClient, userId: accountState.customer.id }, intents);
   const modelMessages = await convertToModelMessages(messages);
   const modelPolicy = getNicNacModelPolicy("human_default");
@@ -77,7 +90,7 @@ export async function POST(request: Request) {
     system: buildFinderNicNacSystemPrompt({
       activeToolNames,
       intents,
-      accountContext: createFinderNicNacAccountContext(accountState),
+      accountContext,
       memorySummaries,
     }),
     messages: modelMessages,

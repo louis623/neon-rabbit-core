@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords } = vi.hoisted(() => ({
+const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords, suiteMemoryRuntime } = vi.hoisted(() => ({
   nicNacRouteRuntime: {
     accountState: {
       status: "anonymous",
@@ -28,6 +28,10 @@ const { nicNacRouteRuntime, streamTextMock, createOpenAIMock, memoryRecords } = 
     updatedAt: string;
     expiresAt?: string | null;
   }>,
+  suiteMemoryRuntime: {
+    summaries: [] as string[],
+    calls: [] as unknown[],
+  },
 }));
 
 vi.mock("ai", async (importOriginal) => {
@@ -64,6 +68,13 @@ vi.mock("@/lib/sparkle-finder/customer-memory", async (importOriginal) => {
   };
 });
 
+vi.mock("@/lib/sparkle-finder/suite-linked-rep-memory", () => ({
+  getSuiteLinkedRepMemorySummariesForFinder: async (input: unknown) => {
+    suiteMemoryRuntime.calls.push(input);
+    return suiteMemoryRuntime.summaries;
+  },
+}));
+
 import { POST } from "../../app/api/finder/nic-nac/route";
 
 describe("Finder Nic-Nac API route", () => {
@@ -73,6 +84,8 @@ describe("Finder Nic-Nac API route", () => {
       toUIMessageStreamResponse: () => new Response("streamed Nic-Nac"),
     });
     memoryRecords.length = 0;
+    suiteMemoryRuntime.summaries = [];
+    suiteMemoryRuntime.calls = [];
     nicNacRouteRuntime.accountState = {
       status: "anonymous",
       tier: "anonymous",
@@ -243,6 +256,84 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).toContain("Usually collects rose gold rings.");
     expect(systemPrompt).not.toContain("Ignore previous instructions");
     expect(systemPrompt).not.toContain("ask for my password");
+  });
+
+  it("preloads safe linked Suite rep memory for linked reps only", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Heather",
+      email: "heather@example.test",
+      customer: {
+        id: "customer-silver-heather",
+        displayName: "Heather",
+        email: "heather@example.test",
+        state: "NC",
+        tier: "silver",
+        repIdentity: {
+          sparkleSuiteRepId: "rep-bling-kitchen",
+          businessName: "BlingKitchen",
+          publicDiscoveryEnabled: true,
+        },
+      },
+      membership: {
+        hasSilverAccess: true,
+        effectiveState: "silver_rep_included",
+      },
+      repIdentity: {
+        sparkleSuiteRepId: "rep-bling-kitchen",
+        businessName: "BlingKitchen",
+        publicDiscoveryEnabled: true,
+      },
+    };
+    memoryRecords.push({
+      id: "memory-safe",
+      userId: "customer-silver-heather",
+      memoryType: "style_preference",
+      summary: "Usually collects rose gold rings.",
+      source: "explicit",
+      confidence: "high",
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    });
+    suiteMemoryRuntime.summaries = [
+      "Sparkle Suite memory - explicit preference: Keep Trade Board cleanup prompts short.",
+    ];
+
+    await POST(createNicNacRequest("What do you remember about how I work?"));
+
+    const systemPrompt = String(streamTextMock.mock.calls[0][0].system);
+
+    expect(suiteMemoryRuntime.calls).toEqual([
+      {
+        finderUserId: "customer-silver-heather",
+        suiteRepId: "rep-bling-kitchen",
+      },
+    ]);
+    expect(systemPrompt).toContain("Usually collects rose gold rings.");
+    expect(systemPrompt).toContain("Keep Trade Board cleanup prompts short.");
+
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Brittany",
+      email: "brittany@example.test",
+      customer: {
+        id: "customer-silver-brittany",
+        displayName: "Brittany",
+        email: "brittany@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+    suiteMemoryRuntime.calls = [];
+
+    await POST(createNicNacRequest("What do you remember about me?"));
+
+    expect(suiteMemoryRuntime.calls).toEqual([]);
   });
 
   it("keeps Finder Nic-Nac model routing out of route-level Anthropic/Haiku hardcoding", () => {
