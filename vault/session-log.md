@@ -13,8 +13,11 @@ Running log of significant work sessions. Most recent first.
 **Verification:**
 - Supabase verification query passed with all checks `true`: telemetry tables exist, RLS is enabled, authenticated users have select-only access, service-role has select/insert/update/delete, read-own policies exist, expected updated-at triggers exist, expected indexes exist, and no required columns are missing.
 
-**Still open:**
-- `npm run smoke:finder-linked-runtime` still needs a local environment with usable Finder `SUPABASE_SERVICE_ROLE_KEY` or a secured server-side smoke runner. Vercel production env pull exposes the key names but returns sensitive values as empty strings, so the terminal could not create/clean a temporary confirmed Finder user for the deployed telemetry smoke.
+**Follow-up completed:**
+- Added a secured Finder internal smoke route and `npm run smoke:finder-telemetry-runtime`, rotated the Vercel Production `SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN`, and deployed Finder production `dpl_8tjDSHhUZ2cfvrJtQM61yAXAtNZa`.
+- `https://sparkle-finder-dev.vercel.app` now points at that deployment.
+- Deployed telemetry runtime smoke passed with row counts `{"conversations":2,"messages":4,"runs":2}`, all telemetry checks true, cleanup `ok:true`, and residual telemetry rows at zero.
+- The internal smoke route returns `401` without the bearer token.
 
 ---
 
