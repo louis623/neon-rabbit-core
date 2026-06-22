@@ -738,16 +738,22 @@ async function runSingle(
           itemNumber,
           designId: existingDesign.design.id,
         })
-        const existingListingPhotoUrl = await processListingPhotoForAdd({
-          listingPhotoUrl: input.listingPhotoUrl,
-          listingPhotoIndex: input.listingPhotoIndex,
-          itemNumber,
-          activeTradeBoardWorkflow: activeWorkflow,
-          repId: ctx.repId,
-          supabase: ctx.supabase,
-          conversationId: ctx.conversationId,
-          photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
-        })
+        const useExistingCatalogCanonicalPhoto =
+          !input.listingPhotoUrl &&
+          existingDesign.hasCollection &&
+          Boolean(existingDesign.design.canonicalPhotoUrl)
+        const existingListingPhotoUrl = useExistingCatalogCanonicalPhoto
+          ? undefined
+          : await processListingPhotoForAdd({
+              listingPhotoUrl: input.listingPhotoUrl,
+              listingPhotoIndex: input.listingPhotoIndex,
+              itemNumber,
+              activeTradeBoardWorkflow: activeWorkflow,
+              repId: ctx.repId,
+              supabase: ctx.supabase,
+              conversationId: ctx.conversationId,
+              photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
+            })
         const existingResult = await addListing(admin, ctx.repId, {
           itemNumber,
           collectionName,

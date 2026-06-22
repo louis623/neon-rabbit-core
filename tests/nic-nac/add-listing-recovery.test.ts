@@ -2000,6 +2000,60 @@ describe('add_listing - active workflow readiness guard', () => {
     )
   })
 
+  it('ignores a bogus photo index for an existing catalog design retry with design fields', async () => {
+    resolveItemNumberMock.mockResolvedValue({
+      found: true,
+      hasCollection: true,
+      design: {
+        id: 'design-er13229',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        canonicalPhotoUrl: 'https://cdn.example.com/catalog/er13229.png',
+      },
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-3',
+      designId: 'design-er13229',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    createAdminClientMock.mockReturnValue(makeAdminClientMock([]))
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'details_capture',
+        known: { itemNumber: 'ER13229' },
+        missing: ['designName', 'collectionName', 'jewelryFrontPhoto'],
+        photos: [],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        collectionName: 'July Birthday 2026',
+        listingPhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-3',
+      usesCanonicalPhoto: true,
+    })
+
+    expect(processRepListingPhotoUrlMock).not.toHaveBeenCalled()
+    expect(addListingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        itemNumber: 'ER13229',
+        listingPhotoUrl: undefined,
+      }),
+    )
+  })
+
   it('allows add_listing when active workflow readiness is satisfied', async () => {
     addListingMock.mockResolvedValueOnce({
       listingId: 'listing-1',
