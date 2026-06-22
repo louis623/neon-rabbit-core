@@ -9,6 +9,12 @@ import {
 import type { CurrentSparkleFinderAccountState } from "../account-service";
 import { searchPersistedPublicCollectorProfiles, type SupabaseCollectorSocialReadClient } from "../collector-social-service";
 import {
+  persistCollectionItemForAccount,
+  persistShowcasePieceForAccount,
+  persistSilverProfileForAccount,
+  type SupabaseCustomerStateClient,
+} from "../customer-state";
+import {
   type CustomerMemoryStore,
   createInMemoryCustomerMemoryStore,
   getSafeCustomerMemoryForPrompt,
@@ -21,7 +27,10 @@ import { getFinderNicNacToolIntentsForText, type FinderNicNacToolIntent } from "
 type FinderNicNacToolContext = {
   accountState?: CurrentSparkleFinderAccountState;
   memoryStore?: CustomerMemoryStore;
-  supabase?: SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient & SupabaseFinderStateReadClient;
+  supabase?: SupabaseFavoriteRepsReadClient &
+    SupabaseCollectorSocialReadClient &
+    SupabaseFinderStateReadClient &
+    SupabaseCustomerStateClient;
   userId: string;
 };
 
@@ -37,12 +46,12 @@ type SupabaseFinderStateReadClient = {
 
 const toolPacks: Record<FinderNicNacToolIntent, string[]> = {
   memory: ["read_customer_memory", "write_customer_memory"],
-  collection: ["list_customer_collection"],
-  showcase: ["summarize_my_showcase"],
+  collection: ["list_customer_collection", "save_my_collection_item"],
+  showcase: ["summarize_my_showcase", "save_my_showcase_piece"],
   catalog: ["search_catalog"],
   studio: ["get_showcase_studio_requirements"],
   availability: ["find_rep_board_availability", "list_upcoming_live_shows"],
-  profile: ["read_my_profile_status"],
+  profile: ["read_my_profile_status", "update_my_profile"],
   rep_discovery: ["list_favorite_reps", "save_favorite_rep"],
   social: ["find_public_showcases", "list_followed_collectors"],
   suite_workspace: [],
@@ -308,6 +317,51 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
     });
   }
 
+  if (activeNames.includes("save_my_collection_item")) {
+    tools.save_my_collection_item = tool({
+      description:
+        "Save an explicit owner-scoped Sparkle Finder collection or Wishlist item for the current customer.",
+      inputSchema: z.object({
+        jewelryItemId: z.string(),
+        state: z.enum(["owned", "wishlist", "private_note_only"]),
+        note: z.string().optional(),
+        isHighlighted: z.boolean().optional(),
+        showcaseCollectionTitle: z.string().optional(),
+      }),
+      execute: async ({ jewelryItemId, state, note, isHighlighted, showcaseCollectionTitle }) => {
+        const saveContext = getSaveContext(ctx);
+
+        if (!saveContext.ok) {
+          return saveContext.result;
+        }
+
+        const trimmedItemId = jewelryItemId.trim();
+        const catalogCheck = await verifyCatalogItemForSave(trimmedItemId);
+
+        if (!catalogCheck.ok) {
+          return catalogCheck.result;
+        }
+
+        const result = await persistCollectionItemForAccount(saveContext.supabase, saveContext.accountState, {
+          jewelryItemId: trimmedItemId,
+          state,
+          note: note ?? "",
+          isHighlighted: isHighlighted ?? false,
+          showcaseCollectionTitle: showcaseCollectionTitle ?? "",
+        });
+
+        return result.ok
+          ? {
+              status: "saved",
+              saved: true,
+              message: "Collection item saved.",
+              guidance: "Nic-Nac may now say the collection save succeeded because the save tool returned saved.",
+            }
+          : mapSaveFailure("collection", result.reason);
+      },
+    });
+  }
+
   if (activeNames.includes("summarize_my_showcase")) {
     tools.summarize_my_showcase = tool({
       description:
@@ -375,6 +429,53 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
     });
   }
 
+  if (activeNames.includes("save_my_showcase_piece")) {
+    tools.save_my_showcase_piece = tool({
+      description:
+        "Save explicit owner-scoped Sparkle Showcase piece fields for the current customer.",
+      inputSchema: z.object({
+        jewelryItemId: z.string(),
+        showcaseStatus: z.enum(["owned", "wishlist", "iso", "private_note_only"]),
+        visibility: z.enum(["public", "private"]),
+        revealStory: z.string().optional(),
+        note: z.string().optional(),
+        isRarestReveal: z.boolean().optional(),
+      }),
+      execute: async ({ jewelryItemId, showcaseStatus, visibility, revealStory, note, isRarestReveal }) => {
+        const saveContext = getSaveContext(ctx);
+
+        if (!saveContext.ok) {
+          return saveContext.result;
+        }
+
+        const trimmedItemId = jewelryItemId.trim();
+        const catalogCheck = await verifyCatalogItemForSave(trimmedItemId);
+
+        if (!catalogCheck.ok) {
+          return catalogCheck.result;
+        }
+
+        const result = await persistShowcasePieceForAccount(saveContext.supabase, saveContext.accountState, {
+          jewelryItemId: trimmedItemId,
+          showcaseStatus,
+          visibility,
+          revealStory: revealStory ?? "",
+          note: note ?? "",
+          isRarestReveal: isRarestReveal ?? false,
+        });
+
+        return result.ok
+          ? {
+              status: "saved",
+              saved: true,
+              message: "Sparkle Showcase piece saved.",
+              guidance: "Nic-Nac may now say the Showcase piece save succeeded because the save tool returned saved.",
+            }
+          : mapSaveFailure("showcase", result.reason);
+      },
+    });
+  }
+
   if (activeNames.includes("get_showcase_studio_requirements")) {
     tools.get_showcase_studio_requirements = tool({
       description:
@@ -401,6 +502,44 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           guidance:
             "Do not submit Studio intake from chat without uploaded files. Ask the customer to use the Studio upload flow when photos are required.",
         };
+      },
+    });
+  }
+
+  if (activeNames.includes("update_my_profile")) {
+    tools.update_my_profile = tool({
+      description:
+        "Save explicit Sparkle Finder profile text and visibility changes for the current customer. Profile photo uploads stay in the account UI.",
+      inputSchema: z.object({
+        displayName: z.string().optional(),
+        bio: z.string().optional(),
+        tiktokHandle: z.string().optional(),
+        visibility: z.enum(["private", "sparkle_finder"]).optional(),
+      }),
+      execute: async ({ displayName, bio, tiktokHandle, visibility }) => {
+        const saveContext = getSaveContext(ctx);
+
+        if (!saveContext.ok) {
+          return saveContext.result;
+        }
+
+        const profile = saveContext.accountState.silverProfile;
+        const result = await persistSilverProfileForAccount(saveContext.supabase, saveContext.accountState, {
+          displayName: displayName ?? saveContext.accountState.customer.displayName,
+          bio: bio ?? profile?.bio ?? "",
+          tiktokHandle: tiktokHandle ?? profile?.tiktokHandle ?? "",
+          visibility: visibility ?? profile?.visibility ?? "private",
+        });
+
+        return result.ok
+          ? {
+              status: "saved",
+              saved: true,
+              message: "Profile saved.",
+              guidance:
+                "Nic-Nac may now say the profile save succeeded because the save tool returned saved. Profile photo changes still use the account upload flow.",
+            }
+          : mapSaveFailure("profile", result.reason);
       },
     });
   }
@@ -741,4 +880,100 @@ function normalizeVisibility(value: unknown): "public" | "private" {
 
 function cleanSnippet(value: string, maxLength: number): string {
   return value.trim().slice(0, maxLength);
+}
+
+function getSaveContext(ctx: FinderNicNacToolContext):
+  | {
+      ok: true;
+      accountState: CurrentSparkleFinderAccountState & { status: "authenticated" };
+      supabase: SupabaseCustomerStateClient;
+    }
+  | {
+      ok: false;
+      result: {
+        status: "not_connected";
+        saved: false;
+        reason: "account_context_unavailable";
+        guidance: string;
+      };
+    } {
+  if (!ctx.supabase || !ctx.accountState || ctx.accountState.status !== "authenticated") {
+    return {
+      ok: false,
+      result: {
+        status: "not_connected",
+        saved: false,
+        reason: "account_context_unavailable",
+        guidance: "Do not claim a save. Ask the customer to sign in and try again.",
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    accountState: ctx.accountState,
+    supabase: ctx.supabase,
+  };
+}
+
+async function verifyCatalogItemForSave(itemId: string): Promise<
+  | { ok: true }
+  | {
+      ok: false;
+      result: {
+        status: "denied";
+        saved: false;
+        reason: "missing_jewelry_item_id" | "catalog_item_not_found";
+        guidance: string;
+      };
+    }
+> {
+  if (!itemId) {
+    return {
+      ok: false,
+      result: {
+        status: "denied",
+        saved: false,
+        reason: "missing_jewelry_item_id",
+        guidance: "Do not claim a save. Ask which library item the customer wants to update.",
+      },
+    };
+  }
+
+  const item = await getCatalogJewelryItemById(itemId, { useFixtureFallback: false });
+
+  if (item) {
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    result: {
+      status: "denied",
+      saved: false,
+      reason: "catalog_item_not_found",
+      guidance: "Do not claim a collection save. Ask the customer to search the library or use Showcase Studio.",
+    },
+  };
+}
+
+function mapSaveFailure(
+  target: "collection" | "profile" | "showcase",
+  reason: "silver_required" | "account_mismatch" | "save_failed",
+) {
+  if (reason === "silver_required") {
+    return {
+      status: "denied",
+      saved: false,
+      reason,
+      guidance: "Do not claim a save. Sparkle Finder Silver is required for this owner tool.",
+    };
+  }
+
+  return {
+    status: "failed",
+    saved: false,
+    reason,
+    guidance: `Do not claim a ${target} save. Tell the customer the save did not complete and offer to retry.`,
+  };
 }

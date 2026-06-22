@@ -27,8 +27,6 @@ import {
   getSafeCustomerMemoryForPrompt,
   type SupabaseCustomerMemoryClient,
 } from "@/lib/sparkle-finder/customer-memory";
-import type { SupabaseCollectorSocialReadClient } from "@/lib/sparkle-finder/collector-social-service";
-import type { SupabaseFavoriteRepsReadClient } from "@/lib/sparkle-finder/favorite-reps-service";
 import {
   buildFinderNicNacTools,
   getFinderNicNacToolIntentsForMessages,
@@ -114,7 +112,9 @@ export async function POST(request: Request) {
   const requestedIntents = getFinderNicNacToolIntentsForMessages(messages);
   const supabase = await createClient();
   const memoryStore = createSupabaseCustomerMemoryStore(supabase as unknown as SupabaseCustomerMemoryClient);
-  const socialReadClient = supabase as unknown as SupabaseFavoriteRepsReadClient & SupabaseCollectorSocialReadClient;
+  const finderToolClient = supabase as unknown as NonNullable<
+    Parameters<typeof buildFinderNicNacTools>[0]["supabase"]
+  >;
   const finderMemorySummaries = summarizeFinderNicNacMemoryHints(
     await getSafeCustomerMemoryForPrompt(memoryStore, accountState.customer.id),
   );
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     {
       accountState,
       memoryStore,
-      supabase: socialReadClient,
+      supabase: finderToolClient,
       userId: accountState.customer.id,
     },
     intents,

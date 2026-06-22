@@ -428,6 +428,182 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     });
   });
 
+  it("saves a customer collection item through the owner-scoped persistence helper", async () => {
+    getCatalogJewelryItemByIdMock.mockResolvedValue({
+      id: "design-owned",
+      itemNumber: "RG1234",
+      name: "Rose Garden Ring",
+      collectionName: "Garden Glow",
+      jewelryType: "ring",
+      imageUrl: "",
+      bpLabel: "standard",
+      knownRepListingIds: [],
+    });
+    const supabase = createFinderMutationSupabase();
+    const tools = buildFinderNicNacTools(
+      {
+        accountState: createAuthenticatedAccountState(),
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["collection"],
+    );
+
+    const result = await executeTool(tools.save_my_collection_item, {
+      jewelryItemId: " design-owned ",
+      state: "owned",
+      note: "My favorite reveal.",
+      isHighlighted: true,
+      showcaseCollectionTitle: "Rarest Reveals",
+    });
+
+    expect(getCatalogJewelryItemByIdMock).toHaveBeenCalledWith("design-owned", { useFixtureFallback: false });
+    expect(result).toEqual({
+      status: "saved",
+      saved: true,
+      message: "Collection item saved.",
+      guidance: "Nic-Nac may now say the collection save succeeded because the save tool returned saved.",
+    });
+    expect(supabase.operations).toContainEqual({
+      table: "sparkle_finder_collection_items",
+      type: "upsert",
+      values: {
+        user_id: "customer-silver-celeste",
+        jewelry_item_id: "design-owned",
+        state: "owned",
+        note: "My favorite reveal.",
+        is_highlighted: true,
+      },
+      options: {
+        onConflict: "user_id,jewelry_item_id",
+      },
+    });
+  });
+
+  it("refuses a collection save when the catalog item cannot be verified", async () => {
+    getCatalogJewelryItemByIdMock.mockResolvedValue(undefined);
+    const supabase = createFinderMutationSupabase();
+    const tools = buildFinderNicNacTools(
+      {
+        accountState: createAuthenticatedAccountState(),
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["collection"],
+    );
+
+    const result = await executeTool(tools.save_my_collection_item, {
+      jewelryItemId: "missing-design",
+      state: "wishlist",
+    });
+
+    expect(result).toEqual({
+      status: "denied",
+      saved: false,
+      reason: "catalog_item_not_found",
+      guidance: "Do not claim a collection save. Ask the customer to search the library or use Showcase Studio.",
+    });
+    expect(supabase.operations).toEqual([]);
+  });
+
+  it("saves Showcase piece fields through the owner-scoped persistence helper", async () => {
+    getCatalogJewelryItemByIdMock.mockResolvedValue({
+      id: "design-wishlist",
+      itemNumber: "ER4321",
+      name: "Aurora Drop Earrings",
+      collectionName: "Aurora Lane",
+      jewelryType: "earrings",
+      imageUrl: "",
+      bpLabel: "unicorn",
+      knownRepListingIds: [],
+    });
+    const supabase = createFinderMutationSupabase();
+    const tools = buildFinderNicNacTools(
+      {
+        accountState: createAuthenticatedAccountState(),
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["showcase"],
+    );
+
+    const result = await executeTool(tools.save_my_showcase_piece, {
+      jewelryItemId: "design-wishlist",
+      showcaseStatus: "iso",
+      visibility: "public",
+      revealStory: "Looking for the pink Aurora drops.",
+      note: "Private note for me.",
+      isRarestReveal: true,
+    });
+
+    expect(result).toEqual({
+      status: "saved",
+      saved: true,
+      message: "Sparkle Showcase piece saved.",
+      guidance: "Nic-Nac may now say the Showcase piece save succeeded because the save tool returned saved.",
+    });
+    expect(supabase.operations).toContainEqual({
+      table: "sparkle_finder_collection_items",
+      type: "upsert",
+      values: {
+        user_id: "customer-silver-celeste",
+        jewelry_item_id: "design-wishlist",
+        state: "wishlist",
+        note: "Private note for me.",
+        is_highlighted: true,
+        visibility: "public",
+        showcase_status: "iso",
+        reveal_story: "Looking for the pink Aurora drops.",
+        is_rarest_reveal: true,
+      },
+      options: {
+        onConflict: "user_id,jewelry_item_id",
+      },
+    });
+  });
+
+  it("updates profile text fields while preserving unspecified profile details", async () => {
+    const supabase = createFinderMutationSupabase({
+      profileRow: {
+        user_id: "customer-silver-celeste",
+        display_name: "Celeste",
+        tiktok_handle: "@celeste_stacks",
+        bio: "New bio for cool-toned stacks.",
+        profile_visibility: "sparkle_finder",
+      },
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        accountState: createAuthenticatedAccountState(),
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["profile"],
+    );
+
+    const result = await executeTool(tools.update_my_profile, {
+      bio: "New bio for cool-toned stacks.",
+    });
+
+    expect(result).toEqual({
+      status: "saved",
+      saved: true,
+      message: "Profile saved.",
+      guidance: "Nic-Nac may now say the profile save succeeded because the save tool returned saved. Profile photo changes still use the account upload flow.",
+    });
+    expect(supabase.operations).toContainEqual({
+      table: "sparkle_finder_profiles",
+      type: "update",
+      values: {
+        display_name: "Celeste",
+        tiktok_handle: "@celeste_stacks",
+        bio: "New bio for cool-toned stacks.",
+        profile_visibility: "sparkle_finder",
+      },
+      filters: [["user_id", "customer-silver-celeste"]],
+    });
+  });
+
   it("describes Showcase Studio requirements without submitting missing-piece intake from chat", async () => {
     vi.stubEnv("SPARKLE_SUITE_FINDER_INTAKE_API_URL", "https://suite.example/api/internal/finder/jewelry-intake");
     vi.stubEnv("SPARKLE_FINDER_TO_SUITE_INTAKE_TOKEN", "finder-to-suite-token");
@@ -665,6 +841,76 @@ function createFinderStateSupabase({
           error: null,
         })),
       })),
+    })),
+    rpc: vi.fn(),
+  };
+}
+
+function createFinderMutationSupabase({
+  profileRow = { user_id: "customer-silver-celeste" },
+}: {
+  profileRow?: Record<string, unknown> | null;
+} = {}) {
+  const operations: Array<Record<string, unknown>> = [];
+  const collectionItemId = "collection-upserted";
+  const showcaseCollectionId = "showcase-collection-created";
+
+  return {
+    operations,
+    from: vi.fn((table: string) => ({
+      select: vi.fn(() => {
+        const filters: Array<[string, string]> = [];
+        const builder = {
+          eq: vi.fn((column: string, value: string) => {
+            filters.push([column, value]);
+
+            return builder;
+          }),
+          maybeSingle: vi.fn(async () => {
+            if (table === "sparkle_finder_profiles") {
+              return { data: profileRow, error: null };
+            }
+
+            if (table === "sparkle_finder_collection_items") {
+              return { data: { id: collectionItemId }, error: null };
+            }
+
+            if (table === "sparkle_finder_showcase_collections") {
+              return { data: { id: showcaseCollectionId }, error: null };
+            }
+
+            return { data: null, error: null };
+          }),
+          then: (resolve: (value: { data: unknown; error: unknown }) => void) => {
+            resolve({ data: [], error: null });
+          },
+        };
+
+        return builder;
+      }),
+      update: vi.fn((values: Record<string, unknown>) => {
+        const filters: Array<[string, string]> = [];
+        const builder = {
+          eq: vi.fn((column: string, value: string) => {
+            filters.push([column, value]);
+            operations.push({ table, type: "update", values, filters: [...filters] });
+
+            return Promise.resolve({ data: null, error: null });
+          }),
+        };
+
+        return builder;
+      }),
+      insert: vi.fn(async (values: Record<string, unknown>) => {
+        operations.push({ table, type: "insert", values });
+
+        return { data: null, error: null };
+      }),
+      upsert: vi.fn(async (values: Record<string, unknown>, options: Record<string, unknown>) => {
+        operations.push({ table, type: "upsert", values, options });
+
+        return { data: { id: collectionItemId }, error: null };
+      }),
     })),
     rpc: vi.fn(),
   };

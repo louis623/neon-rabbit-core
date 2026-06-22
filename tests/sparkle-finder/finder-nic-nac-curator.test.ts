@@ -59,10 +59,25 @@ describe("Sparkle Finder Nic-Nac curator", () => {
   it("lists bounded collection, Showcase, Studio, and profile tool names", () => {
     expect(listFinderNicNacToolNamesForIntents(["collection", "showcase", "studio", "profile"])).toEqual([
       "list_customer_collection",
+      "save_my_collection_item",
       "summarize_my_showcase",
+      "save_my_showcase_piece",
       "get_showcase_studio_requirements",
       "read_my_profile_status",
+      "update_my_profile",
     ]);
+  });
+
+  it("routes explicit Finder save wording to mutation-capable owner tools", () => {
+    expect(getFinderNicNacToolIntentsForText("Add RG1234 to my wishlist.")).toEqual([
+      "collection",
+      "catalog",
+    ]);
+    expect(getFinderNicNacToolIntentsForText("Make ER4321 public in my Showcase with a reveal story.")).toEqual([
+      "showcase",
+      "catalog",
+    ]);
+    expect(getFinderNicNacToolIntentsForText("Update my profile bio.")).toEqual(["profile"]);
   });
 
   it("stores safe customer-scoped curator memory without leaking between customers", async () => {

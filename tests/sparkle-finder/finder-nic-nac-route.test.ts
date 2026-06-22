@@ -607,21 +607,30 @@ describe("Finder Nic-Nac API route", () => {
 
     expect(Object.keys(routeCall.tools ?? {})).toEqual(expect.arrayContaining([
       "list_customer_collection",
+      "save_my_collection_item",
       "summarize_my_showcase",
+      "save_my_showcase_piece",
       "get_showcase_studio_requirements",
       "read_my_profile_status",
+      "update_my_profile",
     ]));
     expect(systemPrompt).toContain("list_customer_collection");
+    expect(systemPrompt).toContain("save_my_collection_item");
     expect(systemPrompt).toContain("summarize_my_showcase");
+    expect(systemPrompt).toContain("save_my_showcase_piece");
     expect(systemPrompt).toContain("get_showcase_studio_requirements");
     expect(systemPrompt).toContain("read_my_profile_status");
+    expect(systemPrompt).toContain("update_my_profile");
     expect(persistenceRuntime.startFinderNicNacRun).toHaveBeenCalledWith(
       expect.objectContaining({
         activeToolNames: expect.arrayContaining([
           "list_customer_collection",
+          "save_my_collection_item",
           "summarize_my_showcase",
+          "save_my_showcase_piece",
           "get_showcase_studio_requirements",
           "read_my_profile_status",
+          "update_my_profile",
         ]),
         allowedIntents: ["studio", "collection", "showcase", "profile"],
         blockedIntents: [],

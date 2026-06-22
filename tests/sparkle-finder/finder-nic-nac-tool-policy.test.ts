@@ -122,9 +122,12 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
     expect(result.allowedIntents).toEqual(["collection", "showcase", "studio", "profile"]);
     expect(result.allowedToolNames).toEqual([
       "list_customer_collection",
+      "save_my_collection_item",
       "summarize_my_showcase",
+      "save_my_showcase_piece",
       "get_showcase_studio_requirements",
       "read_my_profile_status",
+      "update_my_profile",
     ]);
     expect(result.blockedIntents).toEqual([]);
   });
