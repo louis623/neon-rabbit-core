@@ -520,6 +520,57 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).not.toContain("search_catalog");
   });
 
+  it("exposes Finder availability tools for public rep board discovery turns", async () => {
+    nicNacRouteRuntime.accountState = {
+      status: "authenticated",
+      tier: "silver",
+      displayName: "Brittany",
+      email: "brittany@example.test",
+      customer: {
+        id: "customer-silver-brittany",
+        displayName: "Brittany",
+        email: "brittany@example.test",
+        state: "NC",
+        tier: "silver",
+      },
+      membership: {
+        hasSilverAccess: true,
+      },
+    };
+
+    await POST(createNicNacRequest("Who has ER13229 and when is the next show?"));
+
+    const routeCall = streamTextMock.mock.calls[0][0] as {
+      system?: unknown;
+      tools?: Record<string, unknown>;
+    };
+    const systemPrompt = String(routeCall.system);
+
+    expect(Object.keys(routeCall.tools ?? {})).toEqual(expect.arrayContaining([
+      "search_catalog",
+      "list_favorite_reps",
+      "save_favorite_rep",
+      "find_rep_board_availability",
+      "list_upcoming_live_shows",
+    ]));
+    expect(Object.keys(routeCall.tools ?? {})).toHaveLength(5);
+    expect(systemPrompt).toContain("find_rep_board_availability");
+    expect(systemPrompt).toContain("list_upcoming_live_shows");
+    expect(persistenceRuntime.startFinderNicNacRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeToolNames: [
+          "list_favorite_reps",
+          "save_favorite_rep",
+          "search_catalog",
+          "find_rep_board_availability",
+          "list_upcoming_live_shows",
+        ],
+        allowedIntents: ["rep_discovery", "catalog", "availability"],
+        blockedIntents: [],
+      }),
+    );
+  });
+
   it("preloads safe Finder memory into the model prompt and filters unsafe memory", async () => {
     nicNacRouteRuntime.accountState = {
       status: "authenticated",

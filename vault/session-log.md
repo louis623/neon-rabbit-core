@@ -2,6 +2,12 @@
 
 ## 2026-06-22
 
+- Added Finder Nic-Nac availability/live-show tool parity:
+  - Added `find_rep_board_availability`, a bounded read-only tool backed by the existing Sparkle Suite public Finder availability API service. It returns requested item context, exact leads first, same collection/type fallback leads second, public customer-site links, listing photo context, and next-show timing without mutating Sparkle Suite Trade Boards.
+  - Added `list_upcoming_live_shows`, a bounded read-only tool backed by the existing Sparkle Suite public Finder live-shows API service. It returns public show id, show name, rep first name, start time, status, and customer-site link for timing/discovery only.
+  - Wired the `availability` intent through tool policy, active tool names, route prompt exposure, and telemetry so “who has this / next show” Finder turns can use real discovery tools while Suite workspace mutation requests remain blocked on the Finder surface.
+  - Verification passed: focused Finder Nic-Nac tools/policy/curator/route tests, full Finder Vitest suite (`37` files, `476` tests), and production `next build`.
+
 - Added baseline Nic-Nac AI and memory disclosures:
   - Updated Finder privacy policy and terms to disclose Nic-Nac AI assistance, memory, telemetry/tool context, linked-rep context, possible bounded Suite/Finder memory sharing for linked reps, operator/Lab review for support and quality, model/service-provider processing, sensitive-info caution, surface-gated tool access, output review responsibility, and off-mission/excessive-use limits.
   - Updated Finder signup and account privacy acknowledgment copy so Silver users see that Nic-Nac AI assistance and memory may use account, collection, Showcase, Wishlist, request, linked-rep, conversation, and saved memory details to provide Finder/Silver support.

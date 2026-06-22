@@ -103,6 +103,8 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
       "write_customer_memory",
       "list_favorite_reps",
       "save_favorite_rep",
+      "find_rep_board_availability",
+      "list_upcoming_live_shows",
     ]);
     expect(result.blockedIntents).toEqual([]);
   });

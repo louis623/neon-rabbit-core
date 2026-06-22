@@ -1,6 +1,10 @@
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
-import { getCatalogJewelryItems } from "../catalog-service";
+import {
+  getCatalogJewelryItems,
+  getFinderAvailabilityForJewelryItem,
+  getFinderLiveShows,
+} from "../catalog-service";
 import { searchPersistedPublicCollectorProfiles, type SupabaseCollectorSocialReadClient } from "../collector-social-service";
 import {
   type CustomerMemoryStore,
@@ -23,7 +27,7 @@ const toolPacks: Record<FinderNicNacToolIntent, string[]> = {
   showcase: [],
   catalog: ["search_catalog"],
   studio: [],
-  availability: [],
+  availability: ["find_rep_board_availability", "list_upcoming_live_shows"],
   profile: [],
   rep_discovery: ["list_favorite_reps", "save_favorite_rep"],
   social: ["find_public_showcases", "list_followed_collectors"],
@@ -131,6 +135,109 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             photoUrl: item.imageUrl,
             availableListingCount: item.availableListingCount ?? 0,
           })),
+        };
+      },
+    });
+  }
+
+  if (activeNames.includes("find_rep_board_availability")) {
+    tools.find_rep_board_availability = tool({
+      description:
+        "Find bounded public Sparkle Suite rep board availability and next-show leads for a Sparkle Finder catalog item.",
+      inputSchema: z.object({
+        itemId: z.string(),
+        limit: z.number().int().min(1).max(12).optional(),
+      }),
+      execute: async ({ itemId, limit }) => {
+        const trimmedItemId = itemId.trim();
+
+        if (!trimmedItemId) {
+          return {
+            status: "missing_item_id",
+            leads: [],
+            guidance: "Ask for the item number or catalog item before checking rep board availability.",
+          };
+        }
+
+        const availability = await getFinderAvailabilityForJewelryItem(trimmedItemId, {
+          limit: limit ?? 8,
+          useFixtureFallback: false,
+        });
+
+        if (!availability) {
+          return {
+            status: "unavailable",
+            itemId: trimmedItemId,
+            leads: [],
+            guidance: "Sparkle Suite availability could not be read right now. Offer to retry.",
+          };
+        }
+
+        if (!availability.requestedItem) {
+          return {
+            status: "item_not_found",
+            itemId: trimmedItemId,
+            leads: [],
+            guidance: "No shared catalog item matched that id. Guide the customer to search the catalog or Studio.",
+          };
+        }
+
+        const leads = [
+          ...availability.exactMatches.map((match) => ({
+            matchType: "exact_item" as const,
+            ...mapAvailabilityLead(match),
+          })),
+          ...availability.similarMatches.map((match) => ({
+            matchType: "same_collection_type" as const,
+            ...mapAvailabilityLead(match),
+          })),
+        ];
+
+        return {
+          status: "connected",
+          item: {
+            id: availability.requestedItem.id,
+            itemNumber: availability.requestedItem.itemNumber,
+            name: availability.requestedItem.name,
+            collectionName: availability.requestedItem.collectionName,
+            jewelryType: availability.requestedItem.jewelryType,
+            availableListingCount: availability.requestedItem.availableListingCount ?? 0,
+          },
+          count: leads.length,
+          leads: leads.slice(0, limit ?? 8),
+          guidance:
+            "Use availability leads for rep board and next-show discovery only. Do not mutate Sparkle Suite Trade Boards from Finder.",
+        };
+      },
+    });
+  }
+
+  if (activeNames.includes("list_upcoming_live_shows")) {
+    tools.list_upcoming_live_shows = tool({
+      description:
+        "List bounded public Sparkle Suite live shows for Finder discovery and timing context.",
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(12).optional(),
+      }),
+      execute: async ({ limit }) => {
+        const shows = await getFinderLiveShows({
+          limit: limit ?? 8,
+          useFixtureFallback: false,
+        });
+
+        return {
+          status: "connected",
+          count: shows.length,
+          shows: shows.slice(0, limit ?? 8).map((show) => ({
+            showId: show.showId,
+            showName: show.showName,
+            repFirstName: show.repFirstName,
+            startsAt: show.startsAt,
+            status: show.status,
+            customerSiteUrl: show.customerSiteUrl,
+          })),
+          guidance:
+            "Use live shows for public rep discovery and timing context only. Do not schedule or edit Sparkle Suite shows from Finder.",
         };
       },
     });
@@ -302,4 +409,26 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
   }
 
   return tools;
+}
+
+type FinderAvailabilityLeadInput = NonNullable<
+  Awaited<ReturnType<typeof getFinderAvailabilityForJewelryItem>>
+>["exactMatches"][number];
+
+function mapAvailabilityLead(match: FinderAvailabilityLeadInput) {
+  return {
+    listingId: match.listingId,
+    listedAt: match.listedAt,
+    itemId: match.item.id,
+    itemNumber: match.item.itemNumber,
+    itemName: match.item.name,
+    collectionName: match.item.collectionName,
+    jewelryType: match.item.jewelryType,
+    photoUrl: match.photoUrl,
+    repFirstName: match.repFirstName,
+    showName: match.showName,
+    nextShowAt: match.nextShow.startsAt,
+    nextShowStatus: match.nextShow.status,
+    customerSiteUrl: match.customerSiteUrl,
+  };
 }

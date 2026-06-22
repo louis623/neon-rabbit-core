@@ -49,6 +49,13 @@ describe("Sparkle Finder Nic-Nac curator", () => {
     ]);
   });
 
+  it("lists bounded availability tool names for rep board and live-show prompts", () => {
+    expect(listFinderNicNacToolNamesForIntents(["availability"])).toEqual([
+      "find_rep_board_availability",
+      "list_upcoming_live_shows",
+    ]);
+  });
+
   it("stores safe customer-scoped curator memory without leaking between customers", async () => {
     const store = createInMemoryCustomerMemoryStore();
 

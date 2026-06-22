@@ -1,7 +1,216 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildFinderNicNacTools } from "../../lib/sparkle-finder/nic-nac/tools";
+import {
+  getFinderAvailabilityForJewelryItem,
+  getFinderLiveShows,
+} from "../../lib/sparkle-finder/catalog-service";
+
+vi.mock("../../lib/sparkle-finder/catalog-service", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/sparkle-finder/catalog-service")>();
+
+  return {
+    ...actual,
+    getFinderAvailabilityForJewelryItem: vi.fn(),
+    getFinderLiveShows: vi.fn(),
+  };
+});
+
+const getFinderAvailabilityForJewelryItemMock = vi.mocked(getFinderAvailabilityForJewelryItem);
+const getFinderLiveShowsMock = vi.mocked(getFinderLiveShows);
 
 describe("Sparkle Finder Nic-Nac tools", () => {
+  beforeEach(() => {
+    getFinderAvailabilityForJewelryItemMock.mockReset();
+    getFinderLiveShowsMock.mockReset();
+  });
+
+  it("finds bounded Sparkle Suite availability leads for a jewelry item", async () => {
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValue({
+      requestedItem: {
+        id: "design-er13229",
+        name: "The Florence Earrings",
+        collectionName: "Sterling Club",
+        collectionYear: 2026,
+        jewelryType: "earrings",
+        material: "Silver",
+        mainStone: "Cubic zirconia",
+        bpMsrp: 19.95,
+        imageUrl: "https://cdn.example.test/er13229.jpg",
+        bpLabel: "standard",
+        itemNumber: "ER13229",
+        searchTags: ["florence"],
+        availableListingCount: 2,
+        knownRepListingIds: [],
+      },
+      exactMatches: [
+        {
+          listingId: "listing-er13229-bling",
+          listedAt: "2026-06-21T20:00:00.000Z",
+          photoUrl: "https://cdn.example.test/listing-er13229.jpg",
+          item: {
+            id: "design-er13229",
+            name: "The Florence Earrings",
+            collectionName: "Sterling Club",
+            collectionYear: 2026,
+            jewelryType: "earrings",
+            material: "Silver",
+            mainStone: "Cubic zirconia",
+            bpMsrp: 19.95,
+            imageUrl: "https://cdn.example.test/er13229.jpg",
+            bpLabel: "standard",
+            itemNumber: "ER13229",
+            searchTags: ["florence"],
+            availableListingCount: 2,
+            knownRepListingIds: [],
+          },
+          showName: "BlingKitchen Glow Night",
+          repFirstName: "Brittany",
+          customerSiteUrl: "https://bling.example.test",
+          nextShow: {
+            showId: "show-bling-tonight",
+            showName: "BlingKitchen Glow Night",
+            repFirstName: "Brittany",
+            startsAt: "2026-06-22T23:00:00.000Z",
+            status: "scheduled",
+            customerSiteUrl: "https://bling.example.test",
+          },
+        },
+      ],
+      similarMatches: [
+        {
+          listingId: "listing-er13230-bling",
+          listedAt: "2026-06-21T20:05:00.000Z",
+          photoUrl: "https://cdn.example.test/listing-er13230.jpg",
+          item: {
+            id: "design-er13230",
+            name: "The Florence Sister Earrings",
+            collectionName: "Sterling Club",
+            collectionYear: 2026,
+            jewelryType: "earrings",
+            material: "Silver",
+            mainStone: "Cubic zirconia",
+            bpMsrp: 19.95,
+            imageUrl: "https://cdn.example.test/er13230.jpg",
+            bpLabel: "standard",
+            itemNumber: "ER13230",
+            searchTags: ["florence"],
+            availableListingCount: 1,
+            knownRepListingIds: [],
+          },
+          showName: "BlingKitchen Glow Night",
+          repFirstName: "Brittany",
+          customerSiteUrl: "https://bling.example.test",
+          nextShow: {
+            showId: "show-bling-tonight",
+            showName: "BlingKitchen Glow Night",
+            repFirstName: "Brittany",
+            startsAt: "2026-06-22T23:00:00.000Z",
+            status: "scheduled",
+            customerSiteUrl: "https://bling.example.test",
+          },
+        },
+      ],
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        userId: "customer-silver-celeste",
+      },
+      ["availability"],
+    );
+
+    const result = await executeTool(tools.find_rep_board_availability, {
+      itemId: " design-er13229 ",
+      limit: 1,
+    });
+
+    expect(getFinderAvailabilityForJewelryItemMock).toHaveBeenCalledWith("design-er13229", {
+      limit: 1,
+      useFixtureFallback: false,
+    });
+    expect(result).toEqual({
+      status: "connected",
+      item: {
+        id: "design-er13229",
+        itemNumber: "ER13229",
+        name: "The Florence Earrings",
+        collectionName: "Sterling Club",
+        jewelryType: "earrings",
+        availableListingCount: 2,
+      },
+      count: 2,
+      leads: [
+        {
+          matchType: "exact_item",
+          listingId: "listing-er13229-bling",
+          listedAt: "2026-06-21T20:00:00.000Z",
+          itemId: "design-er13229",
+          itemNumber: "ER13229",
+          itemName: "The Florence Earrings",
+          collectionName: "Sterling Club",
+          jewelryType: "earrings",
+          photoUrl: "https://cdn.example.test/listing-er13229.jpg",
+          repFirstName: "Brittany",
+          showName: "BlingKitchen Glow Night",
+          nextShowAt: "2026-06-22T23:00:00.000Z",
+          nextShowStatus: "scheduled",
+          customerSiteUrl: "https://bling.example.test",
+        },
+      ],
+      guidance:
+        "Use availability leads for rep board and next-show discovery only. Do not mutate Sparkle Suite Trade Boards from Finder.",
+    });
+  });
+
+  it("lists upcoming Sparkle Suite live shows through Finder-safe discovery", async () => {
+    getFinderLiveShowsMock.mockResolvedValue([
+      {
+        showId: "show-bling-tonight",
+        showName: "BlingKitchen Glow Night",
+        repFirstName: "Brittany",
+        startsAt: "2026-06-22T23:00:00.000Z",
+        status: "scheduled",
+        customerSiteUrl: "https://bling.example.test",
+      },
+      {
+        showId: "show-sparkle-brunch",
+        showName: "Sparkle Brunch",
+        repFirstName: "Kelli",
+        startsAt: "2026-06-23T15:00:00.000Z",
+        status: "live",
+        customerSiteUrl: "https://kelli.example.test",
+      },
+    ]);
+    const tools = buildFinderNicNacTools(
+      {
+        userId: "customer-silver-celeste",
+      },
+      ["availability"],
+    );
+
+    const result = await executeTool(tools.list_upcoming_live_shows, { limit: 1 });
+
+    expect(getFinderLiveShowsMock).toHaveBeenCalledWith({
+      limit: 1,
+      useFixtureFallback: false,
+    });
+    expect(result).toEqual({
+      status: "connected",
+      count: 2,
+      shows: [
+        {
+          showId: "show-bling-tonight",
+          showName: "BlingKitchen Glow Night",
+          repFirstName: "Brittany",
+          startsAt: "2026-06-22T23:00:00.000Z",
+          status: "scheduled",
+          customerSiteUrl: "https://bling.example.test",
+        },
+      ],
+      guidance:
+        "Use live shows for public rep discovery and timing context only. Do not schedule or edit Sparkle Suite shows from Finder.",
+    });
+  });
+
   it("lists persisted favorite reps with bounded show and board context", async () => {
     const supabase = createFavoriteRepSupabase();
     const tools = buildFinderNicNacTools(
