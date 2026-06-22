@@ -13,6 +13,7 @@ export type FinderNicNacSmokeConfig = {
   authMode: SmokeAuthMode;
   prompt: string;
   cookieHeader?: string;
+  internalSmokeToken?: string;
 };
 
 export type FinderNicNacSmokeResult = {
@@ -56,6 +57,9 @@ export function parseFinderNicNacSmokeConfig(
     prompt: env.SPARKLE_FINDER_NIC_NAC_SMOKE_PROMPT?.trim() || "Show my favorite reps.",
     ...(env.SPARKLE_FINDER_NIC_NAC_COOKIE?.trim()
       ? { cookieHeader: env.SPARKLE_FINDER_NIC_NAC_COOKIE.trim() }
+      : {}),
+    ...(env.SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN?.trim()
+      ? { internalSmokeToken: env.SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN.trim() }
       : {}),
   };
 }
@@ -135,6 +139,7 @@ async function main() {
   const config = parseFinderNicNacSmokeConfig(process.env);
   const serverEnv = createServerEnv(config);
   let server: ChildProcess | null = null;
+  let reviewerSession: ReviewerSmokeSession | null = null;
 
   if (config.startServer) {
     runCommand(npmCommand, ["run", "build"], serverEnv);
@@ -145,12 +150,13 @@ async function main() {
   }
 
   try {
-    const cookieHeader = config.cookieHeader ?? await getPreviewAuthCookie(config);
+    const authCookie = await getSmokeAuthCookie(config);
+    reviewerSession = authCookie.reviewerSession;
     const response = await fetch(`${config.baseUrl}/api/finder/nic-nac`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        cookie: cookieHeader,
+        cookie: authCookie.cookieHeader,
       },
       body: JSON.stringify(buildFinderNicNacSmokeBody(config.prompt)),
       cache: "no-store",
@@ -165,6 +171,9 @@ async function main() {
     console.log(`BASE_URL=${config.baseUrl}`);
     console.log(`PROMPT=${config.prompt}`);
   } finally {
+    if (reviewerSession) {
+      await cleanupReviewerSmokeSession(config, reviewerSession);
+    }
     if (server) {
       stopServer(server);
     }
@@ -319,6 +328,100 @@ async function getPreviewAuthCookie(config: FinderNicNacSmokeConfig): Promise<st
   }
 
   return cookieHeader;
+}
+
+type SmokeAuthCookieResult = {
+  cookieHeader: string;
+  reviewerSession: ReviewerSmokeSession | null;
+};
+
+type ReviewerSmokeSession = {
+  smokeId: string;
+  userId: string;
+};
+
+async function getSmokeAuthCookie(config: FinderNicNacSmokeConfig): Promise<SmokeAuthCookieResult> {
+  if (config.cookieHeader) {
+    return { cookieHeader: config.cookieHeader, reviewerSession: null };
+  }
+
+  if (!config.startServer && config.internalSmokeToken) {
+    const reviewerSession = await createReviewerSmokeSession(config);
+
+    return {
+      cookieHeader: reviewerSession.cookieHeader,
+      reviewerSession,
+    };
+  }
+
+  return {
+    cookieHeader: await getPreviewAuthCookie(config),
+    reviewerSession: null,
+  };
+}
+
+async function createReviewerSmokeSession(
+  config: FinderNicNacSmokeConfig,
+): Promise<ReviewerSmokeSession & { cookieHeader: string }> {
+  const response = await fetch(`${config.baseUrl}/api/internal/finder/reviewer-smoke-session`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${config.internalSmokeToken}`,
+    },
+    cache: "no-store",
+  });
+  const cookieHeader = extractCookieHeader(response.headers);
+  const bodyText = await response.text();
+  const body = safeJson(bodyText);
+
+  if (!response.ok || !isRecord(body) || body.ok !== true) {
+    throw new Error(
+      `Could not create Finder reviewer smoke session: HTTP ${response.status}: ${bodyText.slice(0, 240)}`,
+    );
+  }
+
+  if (typeof body.userId !== "string" || typeof body.smokeId !== "string") {
+    throw new Error("Finder reviewer smoke session did not return cleanup identifiers.");
+  }
+
+  if (!cookieHeader) {
+    throw new Error("Finder reviewer smoke session did not return Supabase auth cookies.");
+  }
+
+  return {
+    cookieHeader,
+    smokeId: body.smokeId,
+    userId: body.userId,
+  };
+}
+
+async function cleanupReviewerSmokeSession(
+  config: FinderNicNacSmokeConfig,
+  session: ReviewerSmokeSession,
+) {
+  if (!config.internalSmokeToken) {
+    return;
+  }
+
+  const response = await fetch(`${config.baseUrl}/api/internal/finder/reviewer-smoke-session`, {
+    method: "DELETE",
+    headers: {
+      authorization: `Bearer ${config.internalSmokeToken}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      smokeId: session.smokeId,
+      userId: session.userId,
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const bodyText = await response.text();
+    console.warn(
+      `Finder reviewer smoke cleanup returned HTTP ${response.status}: ${bodyText.slice(0, 240)}`,
+    );
+  }
 }
 
 function stopServer(server: ChildProcess) {

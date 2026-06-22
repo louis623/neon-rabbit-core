@@ -41,6 +41,20 @@ describe("Finder Nic-Nac smoke script helpers", () => {
     });
   });
 
+  it("captures the internal smoke token for deployed reviewer sessions", () => {
+    const config = parseFinderNicNacSmokeConfig({
+      SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN: " smoke-token ",
+      SPARKLE_FINDER_NIC_NAC_SMOKE_BASE_URL: "https://sparkle-finder-dev.vercel.app/",
+      SPARKLE_FINDER_NIC_NAC_SMOKE_START_SERVER: "false",
+    });
+
+    expect(config).toMatchObject({
+      baseUrl: "https://sparkle-finder-dev.vercel.app",
+      internalSmokeToken: "smoke-token",
+      startServer: false,
+    });
+  });
+
   it("builds a UI-message request body for the smoke prompt", () => {
     expect(buildFinderNicNacSmokeBody("Add ER13229 to my Trade Board.")).toEqual({
       messages: [
