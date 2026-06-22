@@ -1103,6 +1103,13 @@ async function runSingle(
   }
 
   if (!designName) {
+    if (!resolvedCatalogDesign) {
+      try {
+        resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber)
+      } catch (err) {
+        explainServiceError(err)
+      }
+    }
     await requireDuplicatePhysicalPieceConfirmationIfNeeded({
       admin,
       supabase: ctx.supabase,
@@ -1114,7 +1121,13 @@ async function runSingle(
 
   let result: Awaited<ReturnType<typeof addListing>>
   let processedListingPhotoUrl: string | undefined = newDesignListingPhotoUrl
-  if (input.listingPhotoUrl || !designName) {
+  const shouldUseCatalogCanonicalPhoto =
+    !input.listingPhotoUrl &&
+    !designName &&
+    resolvedCatalogDesign?.found &&
+    Boolean(resolvedCatalogDesign.design.canonicalPhotoUrl) &&
+    resolvedCatalogDesign.hasCollection
+  if (input.listingPhotoUrl || (!designName && !shouldUseCatalogCanonicalPhoto)) {
     processedListingPhotoUrl =
       (await processListingPhotoForAdd({
         listingPhotoUrl: input.listingPhotoUrl,
