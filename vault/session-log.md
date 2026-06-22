@@ -7,6 +7,9 @@
   - Added `list_upcoming_live_shows`, a bounded read-only tool backed by the existing Sparkle Suite public Finder live-shows API service. It returns public show id, show name, rep first name, start time, status, and customer-site link for timing/discovery only.
   - Wired the `availability` intent through tool policy, active tool names, route prompt exposure, and telemetry so “who has this / next show” Finder turns can use real discovery tools while Suite workspace mutation requests remain blocked on the Finder surface.
   - Verification passed: focused Finder Nic-Nac tools/policy/curator/route tests, full Finder Vitest suite (`37` files, `476` tests), and production `next build`.
+  - Deployed Finder production `dpl_Bj2YRSp9evCtTEzmR2iD7hmybUHu`, aliased at `https://sparkle-finder-dev.vercel.app`, and confirmed Vercel inspect shows `READY` with the stable alias attached.
+  - Live public checks passed for `/`, `/library`, and `/auth/sign-in`; the secured internal telemetry smoke route returned `401` without a bearer token as expected.
+  - Deployed authenticated Nic-Nac chat smoke was blocked because production preview auth did not issue a cookie and `SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN` is not available in this terminal. A real authenticated smoke or secured telemetry smoke still needs Louis-provided/local smoke credentials.
 
 - Added baseline Nic-Nac AI and memory disclosures:
   - Updated Finder privacy policy and terms to disclose Nic-Nac AI assistance, memory, telemetry/tool context, linked-rep context, possible bounded Suite/Finder memory sharing for linked reps, operator/Lab review for support and quality, model/service-provider processing, sensitive-info caution, surface-gated tool access, output review responsibility, and off-mission/excessive-use limits.
