@@ -12,11 +12,13 @@ Running log of significant work sessions. Most recent first.
 - Linked Sparkle Suite reps asking for Sparkle Suite workspace mutations from Sparkle Finder now get the Suite-login boundary with no Finder tools exposed for that turn.
 - Mixed turns such as "add this to my Trade Board and remember..." suppress Finder memory tools for the same blocked Suite mutation turn instead of using Finder memory as a workaround.
 - Common Suite mutation shorthand is covered, including `my board`, trade status, homepage/hero edits, and live-show scheduling, while read/discovery wording such as "show me my Trade Board" stays out of the mutation block.
+- Added a Finder Nic-Nac model configuration guard: authenticated Silver route calls now fail fast with `503 { error: "model_not_configured" }` when `OPENAI_API_KEY` is missing instead of starting a broken model stream.
 
 **Verification:**
 - TDD red/green completed for the Finder product-context policy, route-level no-tools boundary, shorthand mutation wording, mixed mutation+memory suppression, and board discovery vs mutation wording.
-- Adjacent Finder Nic-Nac suite passed: 6 files, 31 tests.
-- Full Finder Vitest suite passed: 30 files, 428 tests.
+- TDD red/green completed for the missing-OpenAI-key route guard.
+- Adjacent Finder Nic-Nac suite passed: 7 files, 34 tests.
+- Full Finder Vitest suite passed: 31 files, 431 tests.
 - Finder `npm run build` passed and includes `/api/finder/nic-nac`.
 - Finder local smoke passed: 17 Playwright tests passed, 2 skipped, with local preview auth at `http://127.0.0.1:4310`.
 - Suite focused core policy/prompt/linked-memory sweep passed: 4 files, 22 tests.
