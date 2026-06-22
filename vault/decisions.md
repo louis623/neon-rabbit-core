@@ -6,6 +6,9 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 21, 2026
 
+**Linked rep memory crosses products through a bounded server bridge**
+Sparkle Finder may preload safe Suite rep memory for a linked rep only through a server-to-server internal Suite endpoint with a dedicated bearer token. The endpoint must return bounded safe summaries assembled through the same Nic-Nac memory-card/context-assembler path used by Suite, not raw `rep_notes`. Finder must call it only from authenticated linked-rep account state, verify the returned `suiteRepId`, filter defensively again, and fail closed if env, network, auth, payload, or rep matching fails.
+
 **Nic-Nac is one production assistant across Sparkle Suite and Sparkle Finder**
 There should be one production Nic-Nac core, not copied assistants per product. A linked rep should feel like the same Nic-Nac knows them in Sparkle Suite and Sparkle Finder. Product context controls available tools and mutation destinations; it does not create a separate Nic-Nac identity.
 

@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Finder Linked Rep Suite Memory Bridge
+
+**What changed:**
+- Added Suite server-only `/api/internal/finder/rep-memory`, protected by `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN`, for Sparkle Finder to load bounded safe Suite rep memory for an already linked rep.
+- The Suite bridge reuses existing `rep_notes` memory-card mapping and the Nic-Nac context assembler, so unsafe/prompt-injection notes are blocked and only linked-human summaries are returned.
+- Added Finder `suite-linked-rep-memory` client that calls the Suite internal memory endpoint only for linked reps, verifies the response `suiteRepId`, filters unsafe returned text again, caps summaries, and fails closed on missing env, network errors, non-OK responses, malformed payloads, or rep mismatch.
+- Finder `/api/finder/nic-nac` now merges safe Finder customer memory with safe linked Suite rep memory before building the system prompt. Unlinked collectors do not call the Suite memory bridge.
+- Added `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` placeholders to both repos' `.env.example` files.
+
+**Verification:**
+- Suite focused linked-memory bridge test passed: 7 tests.
+- Finder focused route/client tests passed: 2 files, 11 tests.
+- Related Suite memory/internal sweep passed: 5 files, 27 tests.
+- Related Finder account/tool/prompt/route sweep passed: 6 files, 56 tests.
+- Broad Suite Nic-Nac/internal-Finder sweep passed: 106 files passed, 1 skipped; 745 tests passed, 1 skipped.
+- Finder full test suite passed: 29 files, 421 tests.
+- Suite `npm run build` passed and includes `/api/internal/finder/rep-memory`.
+- Finder `npm run build` passed and includes `/api/finder/nic-nac`.
+
+**Still open:**
+- Vercel must be configured with `SPARKLE_FINDER_TO_SUITE_REP_MEMORY_TOKEN` in both Suite and Finder projects before the deployed memory bridge can work.
+- Finder Vercel project still needs `OPENAI_API_KEY` before authenticated Silver Finder Nic-Nac model streaming can be smoked live.
+- Suite cannot independently prove Finder's user-to-rep link; the bridge relies on Finder server-side authenticated account state plus the internal bearer token. Future claim/storage work should make the link durable and auditable in Finder.
+
 ## June 22, 2026 - Finder Nic-Nac OpenAI Adapter
 
 **What changed:**
