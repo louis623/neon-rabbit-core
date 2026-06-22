@@ -2,6 +2,14 @@
 
 ## 2026-06-22
 
+- Added the secured Finder Nic-Nac telemetry runtime smoke:
+  - Added token-gated internal route `/api/internal/finder/nic-nac-telemetry-smoke` and script `npm run smoke:finder-telemetry-runtime`.
+  - The smoke uses Vercel production server-side secrets, creates a temporary confirmed Finder auth user, exercises the actual telemetry persistence helpers for a mission redirect and completed run, verifies conversations/messages/runs, and cleans up telemetry rows plus the auth user.
+  - Rotated `SPARKLE_FINDER_INTERNAL_SMOKE_TOKEN` in Vercel Production as a sensitive env var, deployed Finder production `dpl_8tjDSHhUZ2cfvrJtQM61yAXAtNZa`, and confirmed `https://sparkle-finder-dev.vercel.app` points at that deployment.
+  - Deployed runtime smoke passed with row counts `{"conversations":2,"messages":4,"runs":2}`, checks `completedRun`, `conversations`, `messages`, and `redirectedRun` all true, cleanup `ok:true`, and residual counts at zero.
+  - Protection check passed: the internal smoke route returns `401` without the bearer token.
+  - Verification passed after cleanup hardening: focused smoke route/script tests, full Finder Vitest suite (`37` files, `472` tests), and production `next build`.
+
 - Added Finder Nic-Nac durable conversation/run telemetry in code:
   - Added migration `20260622173000_finder_nic_nac_conversation_telemetry.sql` for `sparkle_finder_nic_nac_conversations`, `sparkle_finder_nic_nac_messages`, and `sparkle_finder_nic_nac_runs`, with owner-readable RLS and service-role writes.
   - Added fail-open route persistence for `/api/finder/nic-nac`: mission redirects write zero-token `redirected` rows, model-backed streams write `started` rows and complete/fail rows with model policy, tool intents, memory counts, token usage, latency, and optional env-based cost estimates.
