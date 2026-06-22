@@ -62,6 +62,7 @@ describe("Sparkle Finder Nic-Nac curator", () => {
       "save_my_collection_item",
       "summarize_my_showcase",
       "save_my_showcase_piece",
+      "read_my_studio_intake_status",
       "get_showcase_studio_requirements",
       "read_my_profile_status",
       "update_my_profile",

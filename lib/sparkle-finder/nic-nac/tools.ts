@@ -22,6 +22,10 @@ import {
 } from "../customer-memory";
 import { getPersistedFavoriteRepCardsForUser, type SupabaseFavoriteRepsReadClient } from "../favorite-reps-service";
 import { getShowcaseStudioConfig } from "../showcase-studio";
+import {
+  readShowcaseStudioIntakeStatusForUser,
+  type SupabaseShowcaseStudioReadClient,
+} from "../showcase-studio-state";
 import { getFinderNicNacToolIntentsForText, type FinderNicNacToolIntent } from "./curator";
 
 type FinderNicNacToolContext = {
@@ -30,6 +34,7 @@ type FinderNicNacToolContext = {
   supabase?: SupabaseFavoriteRepsReadClient &
     SupabaseCollectorSocialReadClient &
     SupabaseFinderStateReadClient &
+    SupabaseShowcaseStudioReadClient &
     SupabaseCustomerStateClient;
   userId: string;
 };
@@ -49,7 +54,7 @@ const toolPacks: Record<FinderNicNacToolIntent, string[]> = {
   collection: ["list_customer_collection", "save_my_collection_item"],
   showcase: ["summarize_my_showcase", "save_my_showcase_piece"],
   catalog: ["search_catalog"],
-  studio: ["get_showcase_studio_requirements"],
+  studio: ["read_my_studio_intake_status", "get_showcase_studio_requirements"],
   availability: ["find_rep_board_availability", "list_upcoming_live_shows"],
   profile: ["read_my_profile_status", "update_my_profile"],
   rep_discovery: ["list_favorite_reps", "save_favorite_rep"],
@@ -502,6 +507,48 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           guidance:
             "Do not submit Studio intake from chat without uploaded files. Ask the customer to use the Studio upload flow when photos are required.",
         };
+      },
+    });
+  }
+
+  if (activeNames.includes("read_my_studio_intake_status")) {
+    tools.read_my_studio_intake_status = tool({
+      description:
+        "Read the current customer's app-owned Showcase Studio missing-piece intake status and uploaded file-role state.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        if (!ctx.supabase) {
+          return {
+            status: "not_connected",
+            dataSource: "unavailable",
+            hasSubmittedIntake: false,
+            requiredUploadRoles: [
+              {
+                role: "original_label",
+                label: "original Bomb Party label/details photo",
+                present: false,
+                qualityStatus: null,
+                feedback: [],
+              },
+              {
+                role: "jewelry_front",
+                label: "clear customer-facing jewelry photo",
+                present: false,
+                qualityStatus: null,
+                feedback: [],
+              },
+            ],
+            missingUploadRoles: ["original_label", "jewelry_front"],
+            studioUploadHref: "/silver#showcase-studio",
+            canContinueFromChat: false,
+            nextAction: "open_studio_upload_flow",
+            latestSubmission: null,
+            guidance:
+              "Studio intake rows are unavailable in this Nic-Nac context. Do not claim uploads or submission status.",
+          };
+        }
+
+        return readShowcaseStudioIntakeStatusForUser(ctx.supabase, ctx.userId);
       },
     });
   }

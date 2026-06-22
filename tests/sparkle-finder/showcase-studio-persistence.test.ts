@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   persistShowcaseStudioSubmissionForAccount,
+  readShowcaseStudioIntakeStatusForUser,
   type ShowcaseStudioSubmissionInput,
 } from "../../lib/sparkle-finder/showcase-studio-state";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
@@ -186,6 +187,166 @@ describe("Showcase Studio submission persistence", () => {
     expect(storagePaths.every((path) => !path.includes("../"))).toBe(true);
     expect(storagePaths.every((path) => path.includes("user-with-spaces/studio/submission-123"))).toBe(true);
   });
+
+  it("reads the latest owner Studio intake status with exact missing upload roles", async () => {
+    const client = createFakeStudioReadClient({
+      submissions: [
+        {
+          id: "older-submission",
+          user_id: "user-123",
+          status: "submitted",
+          item_number: "OLD123",
+          customer_note: "Older row.",
+          submitted_at: "2026-06-12T16:00:00.000Z",
+          updated_at: "2026-06-12T16:00:00.000Z",
+          created_at: "2026-06-12T16:00:00.000Z",
+        },
+        {
+          id: "latest-submission",
+          user_id: "user-123",
+          status: "submitted",
+          item_number: "RG1234",
+          design_name: "Starlight Ring",
+          collection_year: null,
+          existing_catalog_design_id: "internal-catalog-id",
+          suite_catalog_design_id: "suite-design-id",
+          suite_publish_request_id: "suite-publish-request-id",
+          last_error: "internal suite publish error",
+          customer_note: "This came from a 2024 reveal.",
+          submitted_at: "2026-06-13T16:00:00.000Z",
+          updated_at: "2026-06-13T16:05:00.000Z",
+          created_at: "2026-06-13T15:55:00.000Z",
+        },
+      ],
+      assets: [
+        {
+          id: "asset-label",
+          submission_id: "latest-submission",
+          user_id: "user-123",
+          asset_kind: "original_label",
+          content_type: "image/jpeg",
+          byte_size: 11,
+          nic_nac_quality_status: "pending",
+          nic_nac_quality_feedback: [],
+          created_at: "2026-06-13T16:01:00.000Z",
+        },
+      ],
+    });
+
+    const result = await readShowcaseStudioIntakeStatusForUser(client, "user-123");
+
+    expect(client.reads).toEqual([
+      {
+        table: "sparkle_finder_nic_nac_intake_submissions",
+        columns:
+          "id,user_id,status,item_number,design_name,jewelry_type,collection_name,collection_year,main_stone,material,bp_label,customer_note,photo_feedback,submitted_at,accepted_at,published_at,created_at,updated_at",
+        filters: [["user_id", "user-123"]],
+      },
+      {
+        table: "sparkle_finder_nic_nac_intake_assets",
+        columns:
+          "id,submission_id,user_id,asset_kind,content_type,byte_size,nic_nac_quality_status,nic_nac_quality_feedback,created_at",
+        filters: [["user_id", "user-123"]],
+      },
+    ]);
+    expect(result).toEqual({
+      status: "connected",
+      dataSource: "persisted",
+      hasSubmittedIntake: true,
+      requiredUploadRoles: [
+        {
+          role: "original_label",
+          label: "original Bomb Party label/details photo",
+          present: true,
+          qualityStatus: "pending",
+          feedback: [],
+        },
+        {
+          role: "jewelry_front",
+          label: "clear customer-facing jewelry photo",
+          present: false,
+          qualityStatus: null,
+          feedback: [],
+        },
+      ],
+      missingUploadRoles: ["jewelry_front"],
+      studioUploadHref: "/silver#showcase-studio",
+      canContinueFromChat: false,
+      nextAction: "open_studio_upload_flow",
+      latestSubmission: {
+        status: "submitted",
+        itemNumber: "RG1234",
+        designName: "Starlight Ring",
+        jewelryType: null,
+        collectionName: null,
+        collectionYear: null,
+        mainStone: null,
+        material: null,
+        bpLabel: null,
+        customerNoteSnippet: "This came from a 2024 reveal.",
+        photoFeedback: [],
+        submittedAt: "2026-06-13T16:00:00.000Z",
+        acceptedAt: null,
+        publishedAt: null,
+        updatedAt: "2026-06-13T16:05:00.000Z",
+      },
+      guidance:
+        "A Studio intake exists, but Nic-Nac cannot receive missing files from chat in this UI. Send the customer to the Studio upload flow for: jewelry_front.",
+    });
+    expect(JSON.stringify(result)).not.toContain("internal-catalog-id");
+    expect(JSON.stringify(result)).not.toContain("suite-design-id");
+    expect(JSON.stringify(result)).not.toContain("suite-publish-request-id");
+    expect(JSON.stringify(result)).not.toContain("internal suite publish error");
+  });
+
+  it("directs photo-rejected Studio intake back to Studio without inventing missing file roles", async () => {
+    const client = createFakeStudioReadClient({
+      submissions: [
+        {
+          id: "photo-rejected-submission",
+          user_id: "user-123",
+          status: "photo_rejected",
+          photo_feedback: ["Retake closer so the stones are sharp."],
+          submitted_at: "2026-06-13T16:00:00.000Z",
+          updated_at: "2026-06-13T16:05:00.000Z",
+          created_at: "2026-06-13T15:55:00.000Z",
+        },
+      ],
+      assets: [
+        {
+          id: "asset-label",
+          submission_id: "photo-rejected-submission",
+          user_id: "user-123",
+          asset_kind: "original_label",
+          nic_nac_quality_status: "accepted",
+          nic_nac_quality_feedback: [],
+        },
+        {
+          id: "asset-jewelry",
+          submission_id: "photo-rejected-submission",
+          user_id: "user-123",
+          asset_kind: "jewelry_front",
+          nic_nac_quality_status: "rejected",
+          nic_nac_quality_feedback: ["Retake closer so the stones are sharp."],
+        },
+      ],
+    });
+
+    const result = await readShowcaseStudioIntakeStatusForUser(client, "user-123");
+
+    expect(result).toMatchObject({
+      status: "connected",
+      missingUploadRoles: [],
+      nextAction: "open_studio_upload_flow",
+      latestSubmission: {
+        status: "photo_rejected",
+        photoFeedback: ["Retake closer so the stones are sharp."],
+      },
+    });
+    expect(result.guidance).toBe(
+      "A Studio intake exists, but the current review status needs a Studio upload-flow follow-up. Do not accept replacement files from chat.",
+    );
+  });
 });
 
 function studioInput(): ShowcaseStudioSubmissionInput {
@@ -262,6 +423,48 @@ function createFakeStudioClient() {
           },
         };
       },
+    },
+  };
+}
+
+function createFakeStudioReadClient({
+  submissions,
+  assets,
+}: {
+  submissions: Array<Record<string, unknown>>;
+  assets: Array<Record<string, unknown>>;
+}) {
+  const reads: Array<{
+    table: string;
+    columns: string;
+    filters: Array<[string, string]>;
+  }> = [];
+  const rowsByTable: Record<string, Array<Record<string, unknown>>> = {
+    sparkle_finder_nic_nac_intake_submissions: submissions,
+    sparkle_finder_nic_nac_intake_assets: assets,
+  };
+
+  return {
+    reads,
+    from(table: string) {
+      return {
+        select(columns: string) {
+          const filters: Array<[string, string]> = [];
+          const builder = {
+            eq(column: string, value: string) {
+              filters.push([column, value]);
+              reads.push({ table, columns, filters: [...filters] });
+
+              return Promise.resolve({
+                data: rowsByTable[table] ?? [],
+                error: null,
+              });
+            },
+          };
+
+          return builder;
+        },
+      };
     },
   };
 }

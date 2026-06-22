@@ -637,6 +637,137 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     vi.unstubAllEnvs();
   });
 
+  it("reads current Studio intake status from app-owned uploaded file state", async () => {
+    const supabase = createFinderStateSupabase({
+      studioSubmissionRows: [
+        {
+          id: "studio-submission-123",
+          user_id: "customer-silver-celeste",
+          status: "submitted",
+          item_number: "RG1234",
+          design_name: "Starlight Ring",
+          jewelry_type: "ring",
+          collection_name: "Birthday 2024",
+          collection_year: 2024,
+          customer_note: "This came from a 2024 reveal.",
+          photo_feedback: [],
+          last_error: "",
+          submitted_at: "2026-06-13T16:00:00.000Z",
+          accepted_at: null,
+          published_at: null,
+          updated_at: "2026-06-13T16:05:00.000Z",
+          created_at: "2026-06-13T15:55:00.000Z",
+        },
+      ],
+      studioAssetRows: [
+        {
+          id: "studio-label-asset",
+          submission_id: "studio-submission-123",
+          user_id: "customer-silver-celeste",
+          asset_kind: "original_label",
+          content_type: "image/jpeg",
+          byte_size: 11,
+          nic_nac_quality_status: "pending",
+          nic_nac_quality_feedback: [],
+          created_at: "2026-06-13T16:01:00.000Z",
+        },
+        {
+          id: "studio-jewelry-asset",
+          submission_id: "studio-submission-123",
+          user_id: "customer-silver-celeste",
+          asset_kind: "jewelry_front",
+          content_type: "image/jpeg",
+          byte_size: 13,
+          nic_nac_quality_status: "pending",
+          nic_nac_quality_feedback: [],
+          created_at: "2026-06-13T16:02:00.000Z",
+        },
+      ],
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["studio"],
+    );
+
+    const result = await executeTool(tools.read_my_studio_intake_status, {});
+
+    expect(result).toEqual({
+      status: "connected",
+      dataSource: "persisted",
+      hasSubmittedIntake: true,
+      requiredUploadRoles: [
+        {
+          role: "original_label",
+          label: "original Bomb Party label/details photo",
+          present: true,
+          qualityStatus: "pending",
+          feedback: [],
+        },
+        {
+          role: "jewelry_front",
+          label: "clear customer-facing jewelry photo",
+          present: true,
+          qualityStatus: "pending",
+          feedback: [],
+        },
+      ],
+      missingUploadRoles: [],
+      studioUploadHref: "/silver#showcase-studio",
+      canContinueFromChat: false,
+      nextAction: "report_existing_status",
+      latestSubmission: {
+        status: "submitted",
+        itemNumber: "RG1234",
+        designName: "Starlight Ring",
+        jewelryType: "ring",
+        collectionName: "Birthday 2024",
+        collectionYear: 2024,
+        mainStone: null,
+        material: null,
+        bpLabel: null,
+        customerNoteSnippet: "This came from a 2024 reveal.",
+        photoFeedback: [],
+        submittedAt: "2026-06-13T16:00:00.000Z",
+        acceptedAt: null,
+        publishedAt: null,
+        updatedAt: "2026-06-13T16:05:00.000Z",
+      },
+      guidance:
+        "Use app-owned Studio state only. Report this existing Studio intake status; do not claim a new upload or submission from chat.",
+    });
+  });
+
+  it("directs Studio chat handoff to upload flow with exact missing file roles", async () => {
+    const supabase = createFinderStateSupabase({
+      studioSubmissionRows: [],
+      studioAssetRows: [],
+    });
+    const tools = buildFinderNicNacTools(
+      {
+        supabase,
+        userId: "customer-silver-celeste",
+      },
+      ["studio"],
+    );
+
+    const result = await executeTool(tools.read_my_studio_intake_status, {});
+
+    expect(result).toMatchObject({
+      status: "connected",
+      dataSource: "persisted",
+      hasSubmittedIntake: false,
+      missingUploadRoles: ["original_label", "jewelry_front"],
+      studioUploadHref: "/silver#showcase-studio",
+      canContinueFromChat: false,
+      nextAction: "open_studio_upload_flow",
+      latestSubmission: null,
+    });
+    expect(String((result as { guidance?: unknown }).guidance)).toContain("original_label, jewelry_front");
+  });
+
   it("lists persisted favorite reps with bounded show and board context", async () => {
     const supabase = createFavoriteRepSupabase();
     const tools = buildFinderNicNacTools(
@@ -824,13 +955,19 @@ function createCollectorSupabase(data: Array<Record<string, unknown>>) {
 function createFinderStateSupabase({
   collectionRows = [],
   showcaseCollectionRows = [],
+  studioSubmissionRows = [],
+  studioAssetRows = [],
 }: {
   collectionRows?: Array<Record<string, unknown>>;
   showcaseCollectionRows?: Array<Record<string, unknown>>;
+  studioSubmissionRows?: Array<Record<string, unknown>>;
+  studioAssetRows?: Array<Record<string, unknown>>;
 }) {
   const rowsByTable: Record<string, Array<Record<string, unknown>>> = {
     sparkle_finder_collection_items: collectionRows,
     sparkle_finder_showcase_collections: showcaseCollectionRows,
+    sparkle_finder_nic_nac_intake_submissions: studioSubmissionRows,
+    sparkle_finder_nic_nac_intake_assets: studioAssetRows,
   };
 
   return {

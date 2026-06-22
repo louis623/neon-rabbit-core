@@ -610,6 +610,7 @@ describe("Finder Nic-Nac API route", () => {
       "save_my_collection_item",
       "summarize_my_showcase",
       "save_my_showcase_piece",
+      "read_my_studio_intake_status",
       "get_showcase_studio_requirements",
       "read_my_profile_status",
       "update_my_profile",
@@ -618,6 +619,7 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).toContain("save_my_collection_item");
     expect(systemPrompt).toContain("summarize_my_showcase");
     expect(systemPrompt).toContain("save_my_showcase_piece");
+    expect(systemPrompt).toContain("read_my_studio_intake_status");
     expect(systemPrompt).toContain("get_showcase_studio_requirements");
     expect(systemPrompt).toContain("read_my_profile_status");
     expect(systemPrompt).toContain("update_my_profile");
@@ -628,6 +630,7 @@ describe("Finder Nic-Nac API route", () => {
           "save_my_collection_item",
           "summarize_my_showcase",
           "save_my_showcase_piece",
+          "read_my_studio_intake_status",
           "get_showcase_studio_requirements",
           "read_my_profile_status",
           "update_my_profile",

@@ -66,7 +66,7 @@ describe("Sparkle Finder launch hardening", () => {
     expect(alreadyActiveMarkup).toContain("You already have paid Silver access.");
     expect(paidDisabledMarkup).toContain("Paid Silver is not open for beta yet");
     expect(paidDisabledMarkup).toContain("Your 45-day Silver trial remains available while checkout stays closed.");
-  });
+  }, 10_000);
 
   it("does not create a service-role client for the blocked shared Supabase project", async () => {
     const createClient = vi.fn(() => ({

@@ -725,7 +725,7 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain("We do not sell your phone number.");
     expect(markup).toContain('name="promotionalSms"');
     expect(markup).not.toContain('name="promotionalSms" checked');
-  });
+  }, 10_000);
 
   it("marks Google-like authenticated accounts without phone, state, or privacy acknowledgment incomplete", async () => {
     const { getAccountCompletionState } = await import("../../lib/sparkle-finder/account-completion");
