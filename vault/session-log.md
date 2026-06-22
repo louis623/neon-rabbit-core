@@ -4,6 +4,21 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Nic-Nac Name Origin Identity Context
+
+**What changed:**
+- Added Nic-Nac's name origin to the shared core persona prompt and legacy static prompt: Louis named Nic-Nac after one of his pet rabbits.
+- Added prompt tests so routed Nic-Nac prompts keep that identity fact.
+- Updated vault memory so future sessions preserve the origin.
+
+**Verification:**
+- Focused prompt tests passed.
+- Touched-file lint passed.
+- Suite standard `npm test` passed.
+- `npm run build` passed.
+
+---
+
 ## June 22, 2026 - Nic-Nac Caveat Cleanup: Suite Lint And Finder Deployed Smoke
 
 **What changed:**

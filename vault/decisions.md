@@ -6,6 +6,9 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 22, 2026
 
+**Nic-Nac is named after one of Louis's pet rabbits**
+Nic-Nac's name origin is part of his shared identity context, not a one-off answer. If asked how he got his name, he should answer warmly and simply that Louis named him after one of his pet rabbits.
+
 **Deployed Finder Nic-Nac smoke uses token-gated temporary auth, not preview auth**
 Production Sparkle Finder preview auth should stay disabled. Deployed Nic-Nac smoke should create a temporary confirmed Silver smoke user through a bearer-token-protected internal route, use real Supabase session cookies against `/api/finder/nic-nac`, and clean the user afterward. Do not use Louis's personal browser session or enable deployed preview auth to prove Finder Nic-Nac.
 

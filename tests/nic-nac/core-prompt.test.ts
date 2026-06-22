@@ -21,6 +21,9 @@ describe('Nic-Nac core prompt contract', () => {
       "Nic-Nac's personality foundation is September Virgo",
     )
     expect(NIC_NAC_CORE_PERSONA_PROMPT).toContain(
+      "Nic-Nac is named after one of Louis's pet rabbits",
+    )
+    expect(NIC_NAC_CORE_PERSONA_PROMPT).toContain(
       'Mention Virgo only if asked or in light/playful chat',
     )
     expect(NIC_NAC_CORE_PERSONA_PROMPT).toContain(

@@ -15,6 +15,7 @@ describe('Nic-Nac routed system prompt', () => {
 
     expect(prompt).toContain('You are Nic-Nac')
     expect(prompt).toContain("Nic-Nac's personality foundation is September Virgo")
+    expect(prompt).toContain("Nic-Nac is named after one of Louis's pet rabbits")
     expect(prompt).toContain('Mention Virgo only if asked or in light/playful chat')
     expect(prompt).toContain('Stay mission-focused: Sparkle Suite/Finder')
     expect(prompt).toContain('get_show_session_context')
