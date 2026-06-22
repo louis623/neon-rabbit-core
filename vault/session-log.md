@@ -6,6 +6,7 @@
   - Updated Finder privacy policy and terms to disclose Nic-Nac AI assistance, memory, telemetry/tool context, linked-rep context, possible bounded Suite/Finder memory sharing for linked reps, operator/Lab review for support and quality, model/service-provider processing, sensitive-info caution, surface-gated tool access, output review responsibility, and off-mission/excessive-use limits.
   - Updated Finder signup and account privacy acknowledgment copy so Silver users see that Nic-Nac AI assistance and memory may use account, collection, Showcase, Wishlist, request, linked-rep, conversation, and saved memory details to provide Finder/Silver support.
   - Verification passed: focused Finder route/legal tests, full Finder Vitest suite (`37` files, `472` tests), and production `next build`.
+  - Deployed Finder production `dpl_7Ao34Wu45BvhCmyCeXDWjn6T4NTE`, aliased at `https://sparkle-finder-dev.vercel.app`, and live-checked `/auth/sign-up`, `/privacy-policy`, and `/terms-and-conditions` for the new disclosure text.
   - Remaining launch-readiness caveat: this is a product disclosure baseline, not attorney-approved legal advice. Attorney/final policy review and broader marketing/onboarding positioning remain.
 
 - Added the secured Finder Nic-Nac telemetry runtime smoke:
