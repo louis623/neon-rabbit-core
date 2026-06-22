@@ -2,6 +2,17 @@
 
 ## 2026-06-22
 
+- Added Finder Nic-Nac owner save/mutation tools:
+  - Added `save_my_collection_item`, an explicit owner-scoped collection/Wishlist save tool backed by existing Sparkle Finder persistence. It trims and verifies the catalog item with fixture fallback disabled before saving, writes using the signed-in customer id, supports owned/wishlist/private-note states, highlight flags, notes, and optional Showcase Collection assignment, and returns a `saved` result only after persistence succeeds.
+  - Added `save_my_showcase_piece`, an explicit owner-scoped Showcase piece save tool backed by existing Showcase persistence. It verifies the catalog item before saving and supports Showcase status, public/private piece visibility, reveal story, note, and rarest-reveal flag.
+  - Added `update_my_profile`, an explicit profile text/visibility save tool backed by existing profile persistence. It preserves unspecified display name, bio, TikTok handle, and visibility from current account context and keeps profile photo changes in the account upload flow.
+  - Wired the new save tools through Finder intent policy, route active tool exposure, route telemetry, and prompt-visible active tool names.
+  - Verification passed: failing tests were added first, focused Finder Nic-Nac tools/policy/curator/route tests now pass (`44` tests), full Finder Vitest suite passes (`37` files, `488` tests), and production `next build` passes locally and in Vercel.
+  - Deployed Finder production `dpl_2ykVW81bq6FhEzoNAyad8nQDDhHP`, aliased at `https://sparkle-finder-dev.vercel.app`, and confirmed Vercel inspect shows `READY` with the stable alias attached.
+  - Live public checks passed for `/`, `/library`, and `/auth/sign-in`; the secured internal telemetry smoke route returned `401` without a bearer token as expected.
+  - `npm run lint` still fails on pre-existing unrelated React hook lint errors in `components/live/CustomerShowTime.tsx` and `components/nic-nac/FinderNicNacChatbot.tsx`, plus warnings.
+  - Remaining follow-up: full Studio file-intake workflow exposure through app-owned uploaded file state, attorney/final policy review, broader marketing/onboarding positioning, and eventually an authenticated deployed Nic-Nac save smoke when local smoke credentials are available.
+
 - Added Finder Nic-Nac collection/Showcase/Studio/profile read-status parity:
   - Added `list_customer_collection`, a bounded owner-scoped collection read tool that reads persisted `sparkle_finder_collection_items`, enriches rows with catalog context, and returns state counts, note presence, visibility, Showcase status, rarest-reveal flags, and reveal-story presence.
   - Added `summarize_my_showcase`, a bounded owner-scoped Showcase readiness tool that reads public/private piece counts, rarest reveal count, reveal-story count, and Showcase collection summaries.
