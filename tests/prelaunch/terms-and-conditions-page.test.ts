@@ -22,7 +22,7 @@ describe('Sparkle Suite terms and conditions page', () => {
       'Operated and developed by Neon Rabbit Digital Services, Jacksonville, FL.',
     )
     expect(html).toContain('Last Updated:')
-    expect(html).toContain('May 9, 2026')
+    expect(html).toContain('June 22, 2026')
     expect(html).toContain('Developer:')
     expect(html).toContain('Neon Rabbit Digital Services, Jacksonville, FL')
     expect(html).toContain('Program name: Sparkle Suite / Neon Rabbit Digital Services.')
@@ -39,6 +39,8 @@ describe('Sparkle Suite terms and conditions page', () => {
     expect(html).toContain(
       'The final amount shown in Stripe checkout controls before payment is submitted.',
     )
+    expect(html).toContain('Nic-Nac And AI-Assisted Features')
+    expect(html).toContain('Nic-Nac tool access is permission-based and product-surface gated.')
     expect(html).toContain('href="/privacy-policy"')
     expect(html).toContain('href="/prelaunch"')
   })
@@ -85,6 +87,7 @@ describe('Sparkle Suite terms and conditions page', () => {
     expect(html).toContain(
       'Sparkle Suite uses the information needed to run representative websites, Live Queue display, forms, messages, and support.',
     )
+    expect(html).toContain('Nic-Nac, Memory, And AI-Assisted Features')
     expect(html).toContain(
       'Operated and developed by Neon Rabbit Digital Services, Jacksonville, FL.',
     )

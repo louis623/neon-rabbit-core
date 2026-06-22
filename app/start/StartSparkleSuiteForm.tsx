@@ -341,7 +341,12 @@ export function StartSparkleSuiteForm({
             <a href="/terms-and-conditions" target="_blank" rel="noreferrer">
               Sparkle Suite Terms
             </a>
-            .
+            {' '}and{' '}
+            <a href="/privacy-policy" target="_blank" rel="noreferrer">
+              Privacy Policy
+            </a>
+            , including Nic-Nac AI assistance and memory used for account, setup, workspace, conversation, uploaded image,
+            and support context.
           </span>
         </label>
 

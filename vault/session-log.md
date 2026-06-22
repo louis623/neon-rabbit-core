@@ -21,6 +21,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 22, 2026 - Nic-Nac AI And Memory Disclosure Baseline
+
+**What changed:**
+- Updated Sparkle Suite privacy policy and terms to disclose Nic-Nac AI assistance, memory, telemetry/tool context, possible bounded Suite/Finder memory sharing for linked reps, operator/Lab review for support and quality, model/service-provider processing, sensitive-info caution, surface-gated tool access, output review responsibility, and off-mission/excessive-use limits.
+- Updated Sparkle Suite `/start` agreement copy so new reps acknowledge Terms, Privacy Policy, and Nic-Nac AI assistance/memory before starting account creation.
+- Updated Sparkle Finder privacy policy and terms with matching Finder-specific disclosure for Silver, Showcase, Wishlist, Favorite Reps, linked-rep context, and shared Nic-Nac memory.
+- Updated Finder signup/account privacy acknowledgment copy to clearly mention Nic-Nac AI assistance and memory.
+
+**Verification:**
+- Suite focused legal/start tests passed.
+- Suite curated `npm test` passed.
+- Suite `npm run build` passed.
+- Finder focused route/legal tests passed.
+- Finder full `npm run test` passed.
+- Finder `npm run build` passed.
+
+**Still open:**
+- This is a product disclosure baseline, not attorney-approved legal advice. Before broad rollout, complete attorney/final policy review and polish public marketing/onboarding copy around Nic-Nac memory.
+
+---
+
 ## June 22, 2026 - Secret Rep ID Claim Deployment And Finder Smoke
 
 **What changed:**

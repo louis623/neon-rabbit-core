@@ -1,18 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import PrivacyPolicyPage, { metadata } from '@/app/privacy-policy/page'
 
 describe('Sparkle Suite privacy policy page', () => {
-  it('renders the public privacy policy with required SMS compliance language', () => {
-    const html = renderToStaticMarkup(createElement(PrivacyPolicyPage))
+  it('renders the public privacy policy with required SMS compliance language', async () => {
+    const page = await PrivacyPolicyPage({})
+    const html = renderToStaticMarkup(page)
 
     expect(html).toContain('Privacy Policy')
     expect(html).toContain('Last Updated:')
-    expect(html).toContain('May 9, 2026')
+    expect(html).toContain('June 22, 2026')
     expect(html).toContain('Neon Rabbit Digital Services')
     expect(html).toContain('Sparkle Suite Live Queue Chrome Extension')
+    expect(html).toContain('Nic-Nac, Memory, And AI-Assisted Features')
+    expect(html).toContain('Nic-Nac memory is a product feature.')
+    expect(html).toContain(
+      'bounded safe representative memory may be shared between Sparkle Suite and Sparkle Finder',
+    )
     expect(html).toContain('Message frequency may vary.')
     expect(html).toContain('Message and data rates may apply.')
     expect(html).toContain('Consent is not a condition of purchase.')

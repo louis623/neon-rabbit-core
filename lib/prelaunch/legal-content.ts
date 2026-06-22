@@ -37,7 +37,7 @@ export const privacyPolicyDocument: LegalDocument = {
   seoDescription:
     "Privacy Policy for Sparkle Suite, the Live Queue Chrome Extension, Sparkle Suite websites, and Sparkle Suite SMS and email updates.",
   description: "Sparkle Suite Live Queue Chrome Extension, Sparkle Suite Websites, and SMS Updates",
-  lastUpdated: "May 9, 2026",
+  lastUpdated: "June 22, 2026",
   developer: "Neon Rabbit Digital Services, Jacksonville, FL",
   contact: "louis@neonrabbit.net",
   sections: [
@@ -50,6 +50,7 @@ export const privacyPolicyDocument: LegalDocument = {
         "the Sparkle Suite Live Queue Chrome Extension",
         "Sparkle Suite representative websites",
         "Sparkle Suite waitlist, signup, intake, and contact forms",
+        "Sparkle Suite Nic-Nac assistant, memory, and AI-assisted support features",
         "SMS and email update programs connected to Sparkle Suite",
         "related Neon Rabbit Digital Services websites and services",
       ],
@@ -107,6 +108,7 @@ export const privacyPolicyDocument: LegalDocument = {
         "TikTok handle or social media handle",
         "team representative name",
         "business or website setup information",
+        "Nic-Nac conversation messages, workflow state, tool results, uploaded images, support context, and saved memory notes when you use AI-assisted Sparkle Suite features",
         "message preferences",
         "SMS opt-in status",
         "email opt-in status",
@@ -150,6 +152,20 @@ export const privacyPolicyDocument: LegalDocument = {
         "improve Sparkle Suite services",
         "protect against misuse, spam, fraud, or unauthorized access",
         "comply with legal, carrier, platform, or regulatory requirements",
+      ],
+    },
+    {
+      title: "Nic-Nac, Memory, And AI-Assisted Features",
+      paragraphs: [
+        "Sparkle Suite includes Nic-Nac, an AI-assisted workflow, website, live show, Trade Board, support, and business helper. When you use Nic-Nac or related AI-assisted features, Sparkle Suite may process conversation messages, uploaded images, workflow state, tool results, representative account details, website setup details, show details, Trade Board details, customer-audience details, support context, and saved memory notes.",
+        "Nic-Nac memory is a product feature. Sparkle Suite may save bounded notes, preferences, summaries, conversation telemetry, tool activity, and troubleshooting context so Nic-Nac can provide more consistent help, avoid repeated mistakes, improve support, and operate safely across Sparkle Suite and linked Sparkle Finder experiences.",
+      ],
+      bullets: [
+        "Nic-Nac may use saved memory to personalize future Sparkle Suite help for the same representative or linked account.",
+        "If a Sparkle Suite representative links Sparkle Finder through the Secret Rep ID Number, bounded safe representative memory may be shared between Sparkle Suite and Sparkle Finder so the same Nic-Nac experience can follow that linked identity.",
+        "Nic-Nac conversations, memory, telemetry, and tool results may be reviewed by Neon Rabbit Digital Services for support, troubleshooting, abuse prevention, product quality, safety, and approved Sparkle Lab analysis.",
+        "AI model providers and service providers may process prompts, responses, and related context only as needed to provide the service to us.",
+        "Do not send Nic-Nac sensitive personal, financial, medical, legal, or third-party confidential information unless it is necessary for the Sparkle Suite service you are requesting.",
       ],
     },
     {
@@ -234,7 +250,7 @@ export const termsAndConditionsDocument: LegalDocument = {
   seoDescription:
     "Terms and Conditions for Sparkle Suite, the Live Queue Chrome Extension, Sparkle Suite websites, and Sparkle Suite SMS and email updates.",
   description: "Sparkle Suite, Sparkle Suite Live Queue Chrome Extension, and SMS Updates",
-  lastUpdated: "May 9, 2026",
+  lastUpdated: "June 22, 2026",
   developer: "Neon Rabbit Digital Services, Jacksonville, FL",
   contact: "louis@neonrabbit.net",
   sections: [
@@ -268,6 +284,15 @@ export const termsAndConditionsDocument: LegalDocument = {
         "Sparkle Suite representative websites may include show information, live queue information, trade board details, representative updates, links, signup forms, and related content.",
         "Representatives are responsible for reviewing their own website content, business information, show details, trade details, and customer-facing information.",
         "Neon Rabbit Digital Services may provide tools, templates, automation, or support, but representatives remain responsible for final business decisions, customer interactions, and compliance with any applicable Bomb Party policies or legal requirements.",
+      ],
+    },
+    {
+      title: "Nic-Nac And AI-Assisted Features",
+      paragraphs: [
+        "Sparkle Suite includes Nic-Nac and related AI-assisted tools that can help with setup, website content, Trade Board workflows, live show planning, customer-audience workflows, support, and business organization within Sparkle Suite.",
+        "Nic-Nac may use saved memory and workspace context to provide more consistent help over time. Nic-Nac is not a human employee, lawyer, accountant, financial advisor, medical provider, therapist, or official Bomb Party representative.",
+        "AI-assisted output may be incomplete, inaccurate, or require review. Representatives remain responsible for reviewing their own website content, show details, Trade Board listings, customer communications, business decisions, and compliance with applicable platform, carrier, legal, and Bomb Party requirements.",
+        "Nic-Nac tool access is permission-based and product-surface gated. Sparkle Suite workspace actions must be performed from the appropriate Sparkle Suite account surface. Neon Rabbit Digital Services may limit, refuse, suspend, or redirect Nic-Nac use that is off-mission, abusive, unsafe, excessive, or outside the intended Sparkle Suite and Sparkle Finder scope.",
       ],
     },
     {

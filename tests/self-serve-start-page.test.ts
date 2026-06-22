@@ -1,4 +1,3 @@
-import { createElement } from 'react'
 import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
@@ -14,8 +13,9 @@ vi.mock('next/navigation', () => ({
 import StartPage, { metadata } from '@/app/start/page'
 
 describe('Sparkle Suite self-serve start page', () => {
-  it('renders a polished account-start step without backend-facing reassurance copy', () => {
-    const html = renderToStaticMarkup(createElement(StartPage))
+  it('renders a polished account-start step without backend-facing reassurance copy', async () => {
+    const page = await StartPage({})
+    const html = renderToStaticMarkup(page)
 
     expect(metadata.title).toEqual({ absolute: 'Start Sparkle Suite' })
     expect(html).toContain('Start your Sparkle Suite')
@@ -41,8 +41,9 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).not.toContain('private workspace')
   })
 
-  it('carries the landing-page header and footer onto the start page', () => {
-    const html = renderToStaticMarkup(createElement(StartPage))
+  it('carries the landing-page header and footer onto the start page', async () => {
+    const page = await StartPage({})
+    const html = renderToStaticMarkup(page)
 
     expect(html).toContain('class="sl2-header"')
     expect(html).toContain('class="sl2-header__inner"')
@@ -54,8 +55,9 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).toContain('Terms and Conditions')
   })
 
-  it('keeps Google primary while moving email signup into a secondary panel', () => {
-    const html = renderToStaticMarkup(createElement(StartPage))
+  it('keeps Google primary while moving email signup into a secondary panel', async () => {
+    const page = await StartPage({})
+    const html = renderToStaticMarkup(page)
 
     expect(html).toContain('name="agreementAccepted"')
     expect(html).toContain('Let&#x27;s get started')
@@ -63,8 +65,10 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).toContain('Continue with Google')
     expect(html).toContain('Create account with a different email')
     expect(html).toContain('href="/terms-and-conditions"')
+    expect(html).toContain('href="/privacy-policy"')
     expect(html).toContain('I agree to the')
     expect(html).toContain('Sparkle Suite Terms')
+    expect(html).toContain('including Nic-Nac AI assistance and memory')
     expect(html.indexOf('Continue with Google')).toBeLessThan(
       html.indexOf('I agree to the'),
     )
