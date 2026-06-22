@@ -15,6 +15,7 @@ Running log of significant work sessions. Most recent first.
 **Verification:**
 - Independent review agent found the mission-keyword false-negative risk and a weak Suite route-order test; both were fixed before closeout.
 - Suite focused mission-guard suite passed: 3 files, 19 tests.
+- Suite route-runtime mission redirect regression now calls `/api/nic-nac` with mocked paid auth and proves the static redirect persists/logs a zero-cost response before Suite memory, workflow, tool, model setup, or model streaming.
 - Finder focused mission-guard/route suite passed: 3 files, 24 tests.
 - Broad Suite Nic-Nac sweep passed: 106 files passed, 1 skipped; 735 tests passed, 1 skipped.
 - Finder full Vitest suite passed: 34 files, 455 tests.
@@ -26,7 +27,7 @@ Running log of significant work sessions. Most recent first.
 
 **Still open:**
 - Finder deployed authenticated model-stream smoke still needs Finder Vercel `OPENAI_API_KEY`.
-- Suite does not yet have a dedicated authenticated browser/API smoke for the static mission redirect path; current proof is route-order tests, focused tests, broad Suite Nic-Nac tests, and production build.
+- Suite now has deterministic route-order and route-runtime proof for the static mission redirect path. A true deployed authenticated browser/API smoke for that exact path remains optional future proof if the risk level warrants it.
 - Secret Rep ID rep-facing copy/UI, Finder claim UI/storage, and legal/privacy/onboarding disclosure remain future slices and were not changed in this Nic-Nac-only closeout.
 
 ## June 22, 2026 - Finder Nic-Nac Route Smoke Harness
