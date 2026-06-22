@@ -1780,3 +1780,39 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Raw Vercel deployment URLs are internal implementation details unless Louis explicitly asks for them.
 - Before reporting a fix as live, promote/confirm the stable demo alias and verify the exact route at that URL.
 - If Louis says a fix is not visible, use the Chrome connector to inspect the exact tab/URL and loaded assets before making another deployment claim.
+
+---
+
+## June 22, 2026 - Nic-Nac Batch Hardening and Sparkle Lab Guardrails
+
+**What changed:**
+- Suite commit `8ed7d7d fix: harden Nic-Nac intake and Lab guardrails`.
+- Finder commit `28e0890 feat: add Finder Studio intake status tool`.
+- Suite `add_listing` now treats an existing item number on a rep's Trade Board as physical inventory, asks whether the rep is adding a second physical piece of that same design, and hard-fails duplicate-listing refusal language in evals.
+- Suite Trade Board intake role inference now distinguishes extracted item details from an actual label/details photo request. Root cause of the ER13229 smoke failure was the phrase "got the details for ER13229 ... need the customer-facing jewelry photo" being misclassified as both details-photo and jewelry-photo context, which stored the boxed jewelry upload as `unknown`.
+- Sparkle Lab manual/weekly routes now return deterministic recommendation artifacts, artifact counts/summaries, mutation mode, model-synthesis status, and visible usage/limits reporting while preserving the no-production-self-mutation boundary.
+- Finder Nic-Nac Studio pack now includes `read_my_studio_intake_status`, reading app-owned Showcase Studio upload/submission state and directing missing/replacement files to `/silver#showcase-studio` instead of pretending chat can accept Studio files.
+
+**Deployments:**
+- Suite preview deployment `dpl_4yTnu2v4T3gyPvHe1B52ZGRLMct1` / `https://sparkle-suite-p7kwbf9om-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that Suite deployment.
+- Finder production deployment `dpl_Fp6ZPoRVKhzsJkGXZMwFMZPKjo8p` / `https://sparkle-finder-5jpiavcgk-louis-2849s-projects.vercel.app`, aliased to `https://sparkle-finder-dev.vercel.app`.
+
+**Verification:**
+- Suite focused Nic-Nac/Lab suite passed: 13 files, 152 tests.
+- Suite standard `npm test` passed: 14 files, 179 tests.
+- Suite touched-file lint passed.
+- Suite `npm run build` passed locally, and Vercel build passed.
+- Suite local ER13229 smoke failed before the classifier fix, then passed after rebuild.
+- Suite stable demo ER13229 smoke passed three consecutive deployed replays against `https://sparkle-suite-demo.vercel.app`, each through real `/api/nic-nac`, real image data parts, tool observation, workflow/listing DB verification, and smoke listing cleanup.
+- Suite `npm run lint` still fails on pre-existing unrelated repo-wide lint debt: 27 errors and 39 warnings, mainly old Link/no-unescaped-entities/no-explicit-any/set-state-in-effect issues outside this batch.
+- Finder Sparkle Finder suite passed: 37 files, 492 tests.
+- Finder `npm run lint` passed.
+- Finder `npm run build` passed locally, and Vercel production build passed.
+- Finder `smoke:finder-nic-nac:guard` passed locally with the expected `model_not_configured` guard.
+- Finder deployed `smoke:finder-nic-nac` was blocked because deployed preview auth is disabled and no non-personal cookie/test auth path was available in the environment.
+
+**Remaining:**
+- Deeper Finder tool parity.
+- A deployed Finder Nic-Nac smoke path that does not depend on personal browser auth when preview auth is disabled.
+- Broader Suite repo lint cleanup remains separate from this Nic-Nac/Lab batch.
