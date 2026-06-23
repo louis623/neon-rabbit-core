@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   HARD_FAIL_PHRASES,
+  REQUIRED_OBSERVED_TOOLS,
   findHardFailPhrases,
   parseTradeBoardIntakeSmokeCases,
   requireTradeBoardSmokeAssets,
@@ -28,6 +29,14 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
     expect(HARD_FAIL_PHRASES).toContain('escalate this to the team')
     expect(HARD_FAIL_PHRASES).toContain('flag this for Louis')
     expect(HARD_FAIL_PHRASES).toContain('preflight stage')
+  })
+
+  it('expects the current Trade Board resolver and write tools in deployed replays', () => {
+    expect(REQUIRED_OBSERVED_TOOLS).toEqual([
+      'prepare_trade_board_work',
+      'add_listing',
+    ])
+    expect(REQUIRED_OBSERVED_TOOLS).not.toContain('search_jewelry_database')
   })
 
   it('parses smoke cases from cases.txt-style content', () => {

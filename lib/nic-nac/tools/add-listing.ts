@@ -1122,6 +1122,9 @@ async function runSingle(
       repId: ctx.repId,
       conversationId: ctx.conversationId,
       itemNumber,
+      designId: resolvedCatalogDesign?.found
+        ? resolvedCatalogDesign.design.id
+        : undefined,
     })
   }
 

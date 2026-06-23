@@ -369,6 +369,80 @@ describe('Trade Board intake route context', () => {
     })
   })
 
+  it('does not start a blank add-listing workflow for a post-completion follow-up photo', async () => {
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: null, error: null })),
+    }
+    const createBuilder = {
+      insert: vi.fn(() => {
+        throw new Error('should not create a new workflow')
+      }),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        if (table !== 'trade_board_intake_sessions') {
+          throw new Error(`Unexpected table ${table}`)
+        }
+        const sessionCallCount = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === 'trade_board_intake_sessions',
+        ).length
+        return sessionCallCount === 1 ? activeBuilder : createBuilder
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'user-1',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Here is the label/details photo.' }],
+        } as UIMessage,
+        {
+          id: 'assistant-1',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'text',
+              text:
+                'Done - ER13229, The Florence Earrings, is now on your Trade Board as available. It is using the catalog photo right now. If you want, I can also add trade preferences or a custom listing photo.',
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-2',
+          role: 'user',
+          parts: [
+            {
+              type: 'file',
+              mediaType: 'image/jpeg',
+              url: 'data:image/jpeg;base64,SkVXRUxSWQ==',
+            },
+          ],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-2',
+      mode: 'workspace',
+      nowIso: '2026-06-15T00:00:00.000Z',
+    } as never)
+
+    expect(context).toMatchObject({
+      sessionAfter: null,
+      workflowIntents: [],
+      toolPolicySource: 'latest_turn_intent',
+      workflowPromptState: '',
+    })
+    expect(createBuilder.insert).not.toHaveBeenCalled()
+  })
+
   it('extracts rep-typed ER13229 product truth before asking for more intake details', async () => {
     const sessionRow = {
       id: 'workflow-1',

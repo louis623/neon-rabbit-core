@@ -132,14 +132,36 @@ export function hasTradeBoardIntakeSignal(messages: UIMessage[]): boolean {
     .reverse()
     .find((message) => message.role === 'assistant')
   const assistantText = getMessageText(previousAssistant)
+  const hasImage = hasImagePart(latestUser)
+  if (
+    hasImage &&
+    !hasExplicitTradeBoardAddSignal(text) &&
+    assistantIsPostCompletionFollowUp(assistantText)
+  ) {
+    return false
+  }
 
   return (
-    /\badd\b[\s\S]{0,80}\b(trade board|board|listing|piece|item)\b/i.test(text) ||
+    hasExplicitTradeBoardAddSignal(text) ||
     /\b[A-Z]{1,4}\d{3,}\b/.test(text) ||
-    (hasImagePart(latestUser) &&
+    (hasImage &&
       /\b(label|details|tag|jewelry|customer-facing|trade board|add a piece)\b/i.test(
         assistantText,
       ))
+  )
+}
+
+function hasExplicitTradeBoardAddSignal(text: string): boolean {
+  return /\badd\b[\s\S]{0,80}\b(trade board|board|listing|piece|item)\b/i.test(
+    text,
+  )
+}
+
+function assistantIsPostCompletionFollowUp(text: string): boolean {
+  return (
+    /\bnow on your Trade Board as available\b/i.test(text) ||
+    /\busing the catalog photo right now\b/i.test(text) ||
+    /\bI can also add trade preferences or a custom listing photo\b/i.test(text)
   )
 }
 

@@ -49,6 +49,11 @@ export const REQUIRED_SMOKE_ASSETS = [
   'ER13229-jewelry-boxed-front.jpg',
 ] as const
 
+export const REQUIRED_OBSERVED_TOOLS = [
+  'prepare_trade_board_work',
+  'add_listing',
+] as const
+
 type RequiredSmokeAsset = (typeof REQUIRED_SMOKE_ASSETS)[number]
 type FsExists = Pick<typeof fs, 'existsSync'>
 type Env = Record<string, string | undefined>
@@ -334,7 +339,7 @@ export async function runTradeBoardIntakeSmoke(
         parts: [
           {
             type: 'text',
-            text: 'Confirmed.',
+            text: 'Add a second physical pair of ER13229 to my Trade Board.',
           },
         ],
         expectedAssistantCount: 4,
@@ -363,10 +368,7 @@ export async function runTradeBoardIntakeSmoke(
     }
 
     const observedTools = getObservedToolNames(messages)
-    for (const requiredTool of [
-      'search_jewelry_database',
-      'add_listing',
-    ] as const) {
+    for (const requiredTool of REQUIRED_OBSERVED_TOOLS) {
       if (!observedTools.has(requiredTool)) {
         return {
           ok: false,
