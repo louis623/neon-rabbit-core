@@ -6609,26 +6609,9 @@ const SINGLE_SHOW_CALCULATOR_FIELDS: Array<{
 
 type BusinessCalculatorTab = 'monthly' | 'single-show'
 
-const BUSINESS_TOOL_CARDS = [
-  {
-    title: 'Business Calculator',
-    status: 'Available now',
-    body:
-      'Estimate show take-home, monthly take-home, sales pace, expenses, and goal gaps with plain rep-friendly numbers.',
-  },
-  {
-    title: 'Wispr Flow',
-    status: 'Affiliate setup planned',
-    body:
-      'A future guide and affiliate link can help reps decide whether voice dictation is worth using with Nic-Nac during shows.',
-  },
-  {
-    title: 'Business Cards',
-    status: 'Add-on workflow planned',
-    body:
-      'A future paid order flow can collect card details, let Nic-Nac draft a proof, route approval to a human contractor, then send cards to print.',
-  },
-] as const
+const WISPR_FLOW_INVITE_URL = 'https://wisprflow.ai/r?LOUIS20696'
+
+const BUSINESS_TOOL_PLACEHOLDERS = ['Business Calculator', 'Business Cards'] as const
 
 export function BusinessToolsCard() {
   return (
@@ -6638,39 +6621,70 @@ export function BusinessToolsCard() {
           <div>
             <div className={styles.cardTitle}>Business Tools</div>
             <div className={styles.cardSubtitle}>
-              Practical number planning and optional business upgrades for reps.
-              Future business tools can drop into this page without adding another
-              workspace tab.
+              Practical add-ons for reps, gathered in one workspace tab as each
+              tool becomes ready.
             </div>
           </div>
           <span className={styles.rosterTag}>Tool hub</span>
         </div>
       </div>
 
+      <section className={styles.wisprFlowPanel}>
+        <div className={styles.workspaceSectionHeader}>
+          <div>
+            <div className={styles.walletSettingsTitle}>Wispr Flow</div>
+            <p className={styles.businessToolBody}>
+              Talk to Nic-Nac without typing during a live show. Wispr Flow turns
+              spoken thoughts into polished text across apps, so reps can keep
+              moving while they draft prompts, show notes, customer follow-ups,
+              and support details.
+            </p>
+          </div>
+          <span className={styles.rosterTag}>Optional</span>
+        </div>
+
+        <div className={styles.wisprFlowUseGrid}>
+          <div className={styles.wisprFlowUseCard}>
+            <div className={styles.wisprFlowUseLabel}>During a show</div>
+            <p className={styles.businessToolBody}>
+              Speak a Nic-Nac request, capture a customer note, or draft a quick
+              follow-up without stopping to type.
+            </p>
+          </div>
+          <div className={styles.wisprFlowUseCard}>
+            <div className={styles.wisprFlowUseLabel}>Why it helps</div>
+            <p className={styles.businessToolBody}>
+              Flow is built for faster voice dictation, automatic cleanup, and
+              ready-to-send formatting in everyday text boxes.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.wisprFlowInviteRow}>
+          <a
+            className={styles.helperLink}
+            href={WISPR_FLOW_INVITE_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open Louis&apos;s Wispr Flow invite
+          </a>
+          <span className={styles.wisprFlowInviteUrl}>{WISPR_FLOW_INVITE_URL}</span>
+        </div>
+      </section>
+
       <div className={styles.businessToolsGrid}>
-        {BUSINESS_TOOL_CARDS.map((tool) => (
-          <section key={tool.title} className={styles.businessToolCard}>
+        {BUSINESS_TOOL_PLACEHOLDERS.map((toolTitle) => (
+          <section key={toolTitle} className={styles.businessToolCard}>
             <div className={styles.workspaceSectionHeader}>
               <div>
-                <div className={styles.walletSettingsTitle}>{tool.title}</div>
-                <p className={styles.businessToolBody}>{tool.body}</p>
+                <div className={styles.walletSettingsTitle}>{toolTitle}</div>
+                <p className={styles.businessToolBody}>Coming Soon</p>
               </div>
-              <span className={styles.rosterTag}>{tool.status}</span>
             </div>
           </section>
         ))}
       </div>
-
-      <div className={styles.workspacePanel}>
-        <div className={styles.walletSettingsTitle}>BP dashboard number import</div>
-        <p className={styles.businessToolBody}>
-          Research track: keep the calculator useful manually first, then explore
-          whether the protected Live Queue extension can safely read Bomb Party
-          dashboard business numbers without changing live-show behavior.
-        </p>
-      </div>
-
-      <BusinessCalculatorCard />
     </div>
   )
 }

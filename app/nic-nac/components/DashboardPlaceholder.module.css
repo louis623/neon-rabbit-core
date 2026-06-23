@@ -1827,6 +1827,65 @@
   padding: 14px;
 }
 
+.wisprFlowPanel {
+  min-width: 0;
+  border: 1px solid rgba(238, 44, 155, 0.18);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 250, 0.94), rgba(255, 255, 255, 0.9)),
+    radial-gradient(circle at 96% 18%, rgba(238, 44, 155, 0.1), transparent 16rem);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.86),
+    0 18px 42px rgba(54, 34, 29, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.wisprFlowUseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 12px;
+}
+
+.wisprFlowUseCard {
+  min-width: 0;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 14px;
+}
+
+.wisprFlowUseLabel {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.wisprFlowInviteRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.wisprFlowInviteUrl {
+  min-width: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  padding: 9px 12px;
+}
+
 .businessToolBody {
   margin: 6px 0 0;
   color: var(--nic-nac-text-secondary);
@@ -3746,6 +3805,7 @@
 .main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
 .main[data-workspace-skin='black_diamond'] .workspacePanel,
 .main[data-workspace-skin='black_diamond'] .businessToolCard,
+.main[data-workspace-skin='black_diamond'] .wisprFlowPanel,
 .main[data-workspace-skin='black_diamond'] .walletCard,
 .main[data-workspace-skin='black_diamond'] .calendarCard,
 .main[data-workspace-skin='black_diamond'] .siteSettingsCard,
@@ -3809,6 +3869,8 @@
 .main[data-workspace-skin='black_diamond'] .walletToggleRow,
 .main[data-workspace-skin='black_diamond'] .teamManagementPanel,
 .main[data-workspace-skin='black_diamond'] .teamMessagePreview,
+.main[data-workspace-skin='black_diamond'] .wisprFlowUseCard,
+.main[data-workspace-skin='black_diamond'] .wisprFlowInviteUrl,
 .main[data-workspace-skin='black_diamond'] .metricBlock,
 .main[data-workspace-skin='black_diamond'] .tradeControls,
 .main[data-workspace-skin='black_diamond'] .tradePieceCard,
@@ -3852,6 +3914,10 @@
 
 .main[data-workspace-skin='black_diamond'] .businessToolBody {
   color: rgba(216, 203, 189, 0.82);
+}
+
+.main[data-workspace-skin='black_diamond'] .wisprFlowUseLabel {
+  color: #f8efe4;
 }
 
 .main[data-workspace-skin='black_diamond'] .searchInput,

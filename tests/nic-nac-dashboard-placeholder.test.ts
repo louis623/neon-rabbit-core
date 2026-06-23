@@ -2080,15 +2080,20 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Sales needed per show')
   })
 
-  it('renders business tools as an expandable workspace area', () => {
+  it('renders business tools with Wispr Flow guidance and coming-soon placeholders', () => {
     const html = renderToStaticMarkup(createElement(BusinessToolsCard))
 
     expect(html).toContain('Business Tools')
     expect(html).toContain('Business Calculator')
     expect(html).toContain('Wispr Flow')
     expect(html).toContain('Business Cards')
-    expect(html).toContain('BP dashboard number import')
-    expect(html).toContain('Future business tools can drop into this page')
+    expect(html.match(/Coming Soon/g) ?? []).toHaveLength(2)
+    expect(html).toContain('https://wisprflow.ai/r?LOUIS20696')
+    expect(html).toContain('Talk to Nic-Nac without typing during a live show')
+    expect(html).toContain('Open Louis&#x27;s Wispr Flow invite')
+    expect(html).not.toContain('Monthly Planner')
+    expect(html).not.toContain('Average show sales')
+    expect(html).not.toContain('BP dashboard number import')
   })
 
   it('formats wallet amounts and estimated texts for display', () => {
