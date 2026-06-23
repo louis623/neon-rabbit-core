@@ -16,7 +16,7 @@ Running log of significant work sessions. Most recent first.
 **Schema and deploy:**
 - Applied Supabase migration `20260623120000_show_reminder_preferences.sql` remotely with `show_reminder_preferences`, `show_reminder_overrides`, `show_reminder_runs`, and `show_reminder_run_items`.
 - Added a composite ownership constraint tying reminder overrides to the rep-owned calendar event.
-- Deployed Vercel preview `dpl_Ee8EhWiAkB8ALitYhY7JGdL9LHVh` / `https://sparkle-suite-9cofwsbj3-louis-2849s-projects.vercel.app`.
+- Deployed clean Vercel preview `dpl_3iz33huJwPMqkSGSNReFVxYsTCoM` / `https://sparkle-suite-5v9qyopkd-louis-2849s-projects.vercel.app`.
 - Stable demo alias `https://sparkle-suite-demo.vercel.app` now resolves to that deployment.
 
 **Verification:**
