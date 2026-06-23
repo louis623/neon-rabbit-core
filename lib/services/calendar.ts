@@ -10,6 +10,8 @@ import {
   type UpdateShowInput,
   type UpdateShowResult,
   type CancelShowResult,
+  type CancelShowSeriesResult,
+  type PauseShowSeriesResult,
   type ShowStatusTransitionResult,
   type DiscountCode,
   type RecurringShowInput,
@@ -568,6 +570,7 @@ export async function cancelShow(
   eventId: string,
   _reason?: string,
 ): Promise<CancelShowResult> {
+  void _reason
   if (!repId) throw errors.UNAUTHORIZED('repId required')
   if (!eventId) throw errors.EVENT_NOT_FOUND()
 
@@ -589,6 +592,85 @@ export async function cancelShow(
   if (error) throw error
 
   return { event: mapEvent(data as CalendarEventRow) }
+}
+
+export async function cancelShowSeriesFuture(
+  supabase: SupabaseClient,
+  repId: string,
+  eventId: string,
+  _reason?: string,
+): Promise<CancelShowSeriesResult> {
+  void _reason
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (!eventId) throw errors.EVENT_NOT_FOUND()
+
+  const current = await getOwnedEvent(supabase, repId, eventId)
+  if (!current.recurrence_group_id) throw errors.NOT_A_SERIES()
+  if (current.status !== 'scheduled') throw errors.EVENT_NOT_CANCELLABLE()
+
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .update({
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('rep_id', repId)
+    .eq('recurrence_group_id', current.recurrence_group_id)
+    .gte('event_time', current.event_time)
+    .eq('status', 'scheduled')
+    .select(EVENT_SELECT)
+  if (error) throw error
+
+  const events = ((data ?? []) as CalendarEventRow[]).map(mapEvent)
+  return { events, cancelledCount: events.length }
+}
+
+export async function pauseShowSeriesUntil(
+  supabase: SupabaseClient,
+  repId: string,
+  eventId: string,
+  pauseUntil: string,
+  _reason?: string,
+): Promise<PauseShowSeriesResult> {
+  void _reason
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (!eventId) throw errors.EVENT_NOT_FOUND()
+
+  const pauseUntilDate = new Date(pauseUntil)
+  if (Number.isNaN(pauseUntilDate.getTime())) {
+    throw errors.INVALID_INPUT(
+      'pauseUntil must be a valid ISO timestamp',
+      'I need the date/time when that pause should end.',
+    )
+  }
+
+  const current = await getOwnedEvent(supabase, repId, eventId)
+  if (!current.recurrence_group_id) throw errors.NOT_A_SERIES()
+  if (current.status !== 'scheduled') throw errors.EVENT_NOT_CANCELLABLE()
+  if (pauseUntilDate.getTime() < Date.parse(current.event_time)) {
+    throw errors.INVALID_INPUT(
+      'pauseUntil must be after the selected event time',
+      'The pause end needs to be after the first show you want to skip.',
+    )
+  }
+
+  const normalizedPauseUntil = pauseUntilDate.toISOString()
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .update({
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('rep_id', repId)
+    .eq('recurrence_group_id', current.recurrence_group_id)
+    .gte('event_time', current.event_time)
+    .lte('event_time', normalizedPauseUntil)
+    .eq('status', 'scheduled')
+    .select(EVENT_SELECT)
+  if (error) throw error
+
+  const events = ((data ?? []) as CalendarEventRow[]).map(mapEvent)
+  return { events, pausedCount: events.length, pauseUntil: normalizedPauseUntil }
 }
 
 async function transitionShowStatus(

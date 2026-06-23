@@ -35,6 +35,13 @@ const REVIEWER_SMOKE_FULFILLMENT = {
   fulfillmentId: '00000000-0000-4000-8000-000000000104',
 }
 
+export const REVIEWER_SMOKE_CALENDAR = {
+  recurrenceGroupId: '00000000-0000-4000-8000-000000000201',
+  tonightEventId: '00000000-0000-4000-8000-000000000202',
+  futureEventId: '00000000-0000-4000-8000-000000000203',
+  audienceId: '00000000-0000-4000-8000-000000000204',
+}
+
 function completedStepsForState(state: ReviewerSmokeState): RequiredSetupStepId[] {
   if (state !== 'dashboard_unlocked') return []
   return REQUIRED_SETUP_STEPS.map((step) => step.id)
@@ -232,6 +239,122 @@ async function clearReviewerFulfillmentSmokeData(
   if (designError) throw designError
 }
 
+function nextUpcomingUtcDateAt(hourUtc: number, minuteUtc: number) {
+  const now = new Date()
+  const date = new Date(now)
+  date.setUTCHours(hourUtc, minuteUtc, 0, 0)
+  if (date.getTime() <= now.getTime() + 10 * 60 * 1000) {
+    date.setUTCDate(date.getUTCDate() + 1)
+  }
+  return date
+}
+
+async function clearReviewerCalendarSmokeData(admin: AdminClient, repId?: string) {
+  const { error: overrideError } = await admin
+    .from('show_reminder_overrides')
+    .delete()
+    .in('event_id', [
+      REVIEWER_SMOKE_CALENDAR.tonightEventId,
+      REVIEWER_SMOKE_CALENDAR.futureEventId,
+    ])
+  if (overrideError) throw overrideError
+
+  if (repId) {
+    const { error: preferenceError } = await admin
+      .from('show_reminder_preferences')
+      .delete()
+      .eq('rep_id', repId)
+    if (preferenceError) throw preferenceError
+  }
+
+  const { error: audienceError } = await admin
+    .from('customer_audience')
+    .delete()
+    .eq('id', REVIEWER_SMOKE_CALENDAR.audienceId)
+  if (audienceError) throw audienceError
+
+  const { error: eventError } = await admin
+    .from('calendar_events')
+    .delete()
+    .in('id', [
+      REVIEWER_SMOKE_CALENDAR.tonightEventId,
+      REVIEWER_SMOKE_CALENDAR.futureEventId,
+    ])
+  if (eventError) throw eventError
+}
+
+async function seedReviewerCalendarSmokeData(admin: AdminClient, repId: string) {
+  await clearReviewerCalendarSmokeData(admin, repId)
+
+  const now = new Date().toISOString()
+  const firstEventDate = nextUpcomingUtcDateAt(23, 30)
+  const secondEventDate = new Date(firstEventDate)
+  secondEventDate.setUTCDate(secondEventDate.getUTCDate() + 7)
+  const firstEventTime = firstEventDate.toISOString()
+  const secondEventTime = secondEventDate.toISOString()
+
+  const { error: eventError } = await admin.from('calendar_events').upsert(
+    [
+      {
+        id: REVIEWER_SMOKE_CALENDAR.tonightEventId,
+        rep_id: repId,
+        platform: 'TikTok',
+        event_time: firstEventTime,
+        time_zone: 'America/New_York',
+        duration_minutes: 60,
+        title: 'Reviewer Smoke Friday Sparkles',
+        description: 'Synthetic reviewer smoke live show.',
+        discount_codes: [{ code: 'SMOKE10', description: 'Smoke test code' }],
+        featured_collections: ['Reviewer Smoke Collection'],
+        is_recurring: true,
+        recurrence_group_id: REVIEWER_SMOKE_CALENDAR.recurrenceGroupId,
+        recurrence_rule: 'weekly',
+        status: 'scheduled',
+        updated_at: now,
+      },
+      {
+        id: REVIEWER_SMOKE_CALENDAR.futureEventId,
+        rep_id: repId,
+        platform: 'TikTok',
+        event_time: secondEventTime,
+        time_zone: 'America/New_York',
+        duration_minutes: 60,
+        title: 'Reviewer Smoke Friday Sparkles',
+        description: 'Synthetic reviewer smoke future live show.',
+        discount_codes: [{ code: 'SMOKE10', description: 'Smoke test code' }],
+        featured_collections: ['Reviewer Smoke Collection'],
+        is_recurring: true,
+        recurrence_group_id: REVIEWER_SMOKE_CALENDAR.recurrenceGroupId,
+        recurrence_rule: 'weekly',
+        status: 'scheduled',
+        updated_at: now,
+      },
+    ],
+    { onConflict: 'id' },
+  )
+  if (eventError) throw eventError
+
+  const { error: audienceError } = await admin.from('customer_audience').upsert(
+    {
+      id: REVIEWER_SMOKE_CALENDAR.audienceId,
+      rep_id: repId,
+      name: 'Jamie Reviewer',
+      phone: '+15555550101',
+      email: 'jamie.reviewer@example.com',
+      sms_consent: true,
+      email_consent: true,
+      marketing_consent: true,
+      consent_date: now,
+      sms_opted_out_at: null,
+      email_opted_out_at: null,
+      stop_keyword_received_at: null,
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  )
+  if (audienceError) throw audienceError
+}
+
 export async function resetReviewerSmokeSession(
   requestedState: unknown,
   admin: AdminClient = createAdminClient(),
@@ -259,6 +382,7 @@ export async function resetReviewerSmokeSession(
   )
   await clearReviewerNicNacHistory(admin, repId)
   await clearReviewerFulfillmentSmokeData(admin)
+  await clearReviewerCalendarSmokeData(admin, repId)
   const now = new Date().toISOString()
   const status = state
   const completedSteps = completedStepsForState(state)
@@ -309,6 +433,7 @@ export async function resetReviewerSmokeSession(
   }
   if (state === 'dashboard_unlocked') {
     await ensureReviewerSubscription(admin, repId)
+    await seedReviewerCalendarSmokeData(admin, repId)
   }
 
   return {

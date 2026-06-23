@@ -27,9 +27,13 @@ import { getTradeHistoryTool } from './get-trade-history'
 import { getFulfillmentQueueTool } from './get-fulfillment-queue'
 import { updateFulfillmentStatusTool } from './update-fulfillment-status'
 import { addShowTool } from './add-show'
+import { prepareCalendarWorkTool } from './prepare-calendar-work'
 import { listMyShowsTool } from './list-my-shows'
 import { updateShowTool } from './update-show'
 import { cancelShowTool } from './cancel-show'
+import { skipShowOccurrenceTool } from './skip-show-occurrence'
+import { cancelShowSeriesTool } from './cancel-show-series'
+import { pauseShowSeriesTool } from './pause-show-series'
 import { endShowTool } from './end-show'
 import { updateBannerTextTool } from './update-banner-text'
 import { updateStreamingLinksTool } from './update-streaming-links'
@@ -50,6 +54,8 @@ import { getShowSessionContextTool } from './get-show-session-context'
 import { sendSmsNotificationTool } from './send-sms-notification'
 import { sendEmailNotificationTool } from './send-email-notification'
 import { getNotificationPreferencesTool } from './get-notification-preferences'
+import { setNotificationPreferencesTool } from './set-notification-preferences'
+import { setShowReminderOverrideTool } from './set-show-reminder-override'
 import { customerAudienceTool } from './get-customer-audience'
 import { getHelpResourcesTool } from './get-help-resources'
 import { submitSupportReportTool } from './submit-support-report'
@@ -80,9 +86,13 @@ const REGISTRY: ToolDefinition[] = [
   getFulfillmentQueueTool,
   updateFulfillmentStatusTool,
   addShowTool,
+  prepareCalendarWorkTool,
   listMyShowsTool,
   updateShowTool,
   cancelShowTool,
+  skipShowOccurrenceTool,
+  cancelShowSeriesTool,
+  pauseShowSeriesTool,
   endShowTool,
   updateBannerTextTool,
   updateStreamingLinksTool,
@@ -99,6 +109,8 @@ const REGISTRY: ToolDefinition[] = [
   sendSmsNotificationTool,
   sendEmailNotificationTool,
   getNotificationPreferencesTool,
+  setNotificationPreferencesTool,
+  setShowReminderOverrideTool,
   customerAudienceTool,
   getHelpResourcesTool,
   submitSupportReportTool,
@@ -151,7 +163,17 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   ],
   fulfillment: ['get_fulfillment_queue', 'update_fulfillment_status'],
   catalog: ['search_jewelry_database', 'report_jewelry_catalog_issue'],
-  calendar: ['add_show', 'list_my_shows', 'update_show', 'cancel_show', 'end_show'],
+  calendar: [
+    'prepare_calendar_work',
+    'add_show',
+    'list_my_shows',
+    'update_show',
+    'cancel_show',
+    'skip_show_occurrence',
+    'cancel_show_series',
+    'pause_show_series',
+    'end_show',
+  ],
   site: [
     'update_banner_text',
     'update_streaming_links',
@@ -162,12 +184,21 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'manage_site_recipes',
   ],
   notification: [
+    'prepare_calendar_work',
     'send_sms_notification',
     'send_email_notification',
     'get_notification_preferences',
+    'set_notification_preferences',
+    'set_show_reminder_override',
     'get_customer_audience',
   ],
-  audience: ['get_customer_audience', 'get_notification_preferences'],
+  audience: [
+    'prepare_calendar_work',
+    'get_customer_audience',
+    'get_notification_preferences',
+    'set_notification_preferences',
+    'set_show_reminder_override',
+  ],
   resources: ['get_help_resources', 'submit_support_report'],
   required_setup: [
     'get_required_setup_state',
@@ -218,7 +249,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   if (
     hasAny([
       /\blive\b/,
-      /\bshow\b/,
+      /\bshows?\b/,
       /post[- ]?show/,
       /after the live/,
       /current[- ]?show/,
@@ -229,7 +260,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
     ])
   ) {
     add(
-      hasAny([/\blive\b/, /\bshow\b/, /after the live/, /current[- ]?show/])
+      hasAny([/\blive\b/, /\bshows?\b/, /after the live/, /current[- ]?show/])
         ? 'show_memory'
         : 'memory',
     )
@@ -305,6 +336,13 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\bupcoming\b/,
       /\bmove\b.*\bshow\b/,
       /\bcancel\b.*\bshow\b/,
+      /\btonight\b.*\b(reminder|reminders|sms|text|email)\b/,
+      /\b(skip|pause|suspend)\b.*\b(show|live|tonight|today)\b/,
+      /\b(skip|pause|suspend)\b.*\b(mon(day)?s?|tue(s|sday)?s?|wed(nesday)?s?|thu(r|rsday)?s?|fri(day)?s?|sat(urday)?s?|sun(day)?s?)\b/,
+      /\b(sick|ill|emergency)\b.*\b(show|live|tonight|today)\b/,
+      /\b(stop|cancel|pause|suspend)\b.*\b(series|recurring|future shows?|future lives?)\b/,
+      /\b(pause|suspend)\b[\s\S]{0,80}\b(two weeks?|week|weeks?|month|months?|until|through)\b/,
+      /\b(code|discount)\b.*\b(all|every|future|mon(day)?s?|tue(s|sday)?s?|wed(nesday)?s?|thu(r|rsday)?s?|fri(day)?s?|sat(urday)?s?|sun(day)?s?|lives?)\b/,
       /\brecurring\b/,
     ])
   ) {
@@ -336,7 +374,16 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
     add('site')
   }
 
-  if (hasAny([/\bsms\b/, /\btext\b/, /\bemail\b/, /\bnotify\b/])) {
+  if (
+    hasAny([
+      /\bsms\b/,
+      /\btext\b/,
+      /\bemail\b/,
+      /\bnotify\b/,
+      /\b(reminder|reminders)\b[\s\S]{0,80}\b(sms|text|email|show)\b/,
+      /\b(customer|people|subscriber|audience|sms|text|email|show)\b[\s\S]{0,80}\b(reminder|reminders)\b/,
+    ])
+  ) {
     add('notification')
   }
 

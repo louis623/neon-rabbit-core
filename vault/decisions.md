@@ -4,6 +4,22 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 23, 2026
+
+**Live calendar changes require app-owned preflight and approval gates**
+Nic-Nac live calendar writes should not be prompt-only. Before mutating a show or reminder setting, the app should resolve candidate shows/defaults, identify ambiguity, choose the correct approval-gated tool, and let that tool emit the confirmation dialog. Skipping one occurrence, canceling a future series, pausing a series, and changing reminders are approval-gated mutations.
+
+**Reminder preferences are durable workflow state, not ordinary memory notes**
+Default show reminder settings and per-show reminder exceptions belong in dedicated tables with rep/event ownership checks. They should not be stored only as free-form `rep_notes`, because reminder planning and outbound delivery need structured lead time, channels, discount-code inclusion, collection inclusion, and override state.
+
+**Outbound show reminders stay flag-gated until launch readiness**
+The calendar/reminder internals may prepare SMS and email reminder plans now, but live delivery must remain gated by channel-specific enablement, provider/compliance readiness, audience consent rules, and test-mode proof. Beta can ship the inner wiring before turning on customer-facing sends.
+
+**Reviewer-smoke calendar data must be repeatable**
+Nic-Nac calendar smokes need deterministic reviewer data: a known reviewer rep, a same-day upcoming show, a future recurring occurrence, and a seeded audience member. Smokes should assert the database after messy rep language, not only inspect assistant text.
+
+---
+
 ## June 22, 2026
 
 **Nic-Nac is named after one of Louis's pet rabbits**

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
-import { processDuePreShowReminders } from '@/lib/services/pre-show-reminders'
+import {
+  processDuePreShowReminders,
+  recordPreShowReminderNoop,
+} from '@/lib/services/pre-show-reminders'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
@@ -24,6 +27,10 @@ function readMode(url: URL, forcedMode?: 'dry-run' | 'live') {
 
 function arePreShowSmsSendsEnabled() {
   return process.env.SPARKLE_PRE_SHOW_SMS_ENABLED === 'true'
+}
+
+function arePreShowEmailSendsEnabled() {
+  return process.env.SPARKLE_PRE_SHOW_EMAIL_ENABLED === 'true'
 }
 
 function isAuthorized(request: Request) {
@@ -66,19 +73,34 @@ export async function handlePreShowReminderRequest(
   }
 
   const liveSendsEnabled = arePreShowSmsSendsEnabled()
-  if (!mode.dryRun && !liveSendsEnabled && options.noopWhenLiveDisabled) {
+  const liveEmailSendsEnabled = arePreShowEmailSendsEnabled()
+  if (
+    !mode.dryRun &&
+    !liveSendsEnabled &&
+    !liveEmailSendsEnabled &&
+    options.noopWhenLiveDisabled
+  ) {
+    const disabledReason = 'pre-show reminder sends are disabled'
+    const reminderRunId = await recordPreShowReminderNoop(createAdminClient(), {
+      limit: limit ?? 25,
+      liveSmsSendsEnabled: liveSendsEnabled,
+      liveEmailSendsEnabled,
+      disabledReason,
+    })
     return NextResponse.json({
       ok: true,
       result: {
         dryRun: false,
+        reminderRunId,
         liveSendsEnabled: false,
+        liveEmailSendsEnabled: false,
         plannedCount: 0,
         sentCount: 0,
         skippedCount: 0,
         plans: [],
         sends: [],
         skipped: [],
-        disabledReason: 'pre-show SMS sends are disabled',
+        disabledReason,
       },
     })
   }
@@ -87,6 +109,7 @@ export async function handlePreShowReminderRequest(
     limit: limit ?? 25,
     dryRun: mode.dryRun,
     liveSendsEnabled,
+    liveEmailSendsEnabled,
   })
 
   return NextResponse.json({

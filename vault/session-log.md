@@ -4,6 +4,37 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 23, 2026 - Nic-Nac Live Calendar and Reminder Hardening
+
+**What changed:**
+- Hardened Nic-Nac's live calendar workflow beyond prompt wording: added app-owned calendar preflight, approval-gated skip-one-show, cancel-series, and pause-series tools, and clearer approval detail copy.
+- Added durable show reminder preferences and per-show reminder overrides so reps can ask for recurring defaults like "text my people 45 before every show" and one-night exceptions like "turn off SMS tonight but keep email."
+- Extended pre-show reminder planning to support SMS and email channels, default preferences, event overrides, dry-run/live gating, and durable run/item observability.
+- Seeded reviewer-smoke calendar/audience data for repeatable Nic-Nac calendar tests, including a same-day upcoming show and a future recurring occurrence.
+- Added `npm run smoke:nic-nac:calendar-reminders`, which drives messy rep wording through real `/api/nic-nac`, approval flow, and database assertions.
+
+**Schema and deploy:**
+- Applied Supabase migration `20260623120000_show_reminder_preferences.sql` remotely with `show_reminder_preferences`, `show_reminder_overrides`, `show_reminder_runs`, and `show_reminder_run_items`.
+- Added a composite ownership constraint tying reminder overrides to the rep-owned calendar event.
+- Deployed Vercel preview `dpl_Ee8EhWiAkB8ALitYhY7JGdL9LHVh` / `https://sparkle-suite-9cofwsbj3-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now resolves to that deployment.
+
+**Verification:**
+- Focused calendar/reminder/Nic-Nac suite passed: 14 files, 147 tests.
+- Standard `npm test` passed: 14 files, 191 tests.
+- `npm run lint` passed with the existing warning set only.
+- `npm run build` passed locally and during Vercel deploy.
+- `git diff --check` passed with line-ending warnings only.
+- Local real API/model smoke passed after prompt/preflight/seed hardening.
+- Stable-demo smoke passed against `https://sparkle-suite-demo.vercel.app` with reviewer rep `sparkle-reviewer+preview@neonrabbit.net`, conversation `57bef99e-56c1-4991-87f7-e894fe57ae50`, approval flow, tool observation, and database assertions.
+
+**Lessons carried forward:**
+- Calendar automation needs the same Nic-Nac reliability standard as Trade Board: app-owned preflight, durable workflow state, approval-gated mutations, DB assertions, and deployed smoke.
+- Approval-gated tools should emit the confirmation dialog directly after preflight; Nic-Nac should not ask a separate natural-language confirmation first when the app already knows the proposed mutation.
+- Future outbound SMS/email reminder launch should be enabled by channel flags and provider/compliance readiness, not by changing the core calendar intent routing again.
+
+---
+
 ## June 22, 2026 - Nic-Nac Name Origin Identity Context
 
 **What changed:**

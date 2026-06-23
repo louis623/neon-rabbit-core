@@ -11,9 +11,10 @@ import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 
 function makeDeleteBuilder() {
   const eq = vi.fn().mockResolvedValue({ error: null })
+  const inMock = vi.fn().mockResolvedValue({ error: null })
   const or = vi.fn().mockResolvedValue({ error: null })
-  const deleteMock = vi.fn(() => ({ eq, or }))
-  return { delete: deleteMock, eq, or }
+  const deleteMock = vi.fn(() => ({ eq, in: inMock, or }))
+  return { delete: deleteMock, eq, in: inMock, or }
 }
 
 function makeReviewerAdmin() {
@@ -39,6 +40,12 @@ function makeReviewerAdmin() {
   const conversationDelete = makeDeleteBuilder()
   const approvalDelete = makeDeleteBuilder()
   const runDelete = makeDeleteBuilder()
+  const reminderPreferenceDelete = makeDeleteBuilder()
+  const reminderOverrideDelete = makeDeleteBuilder()
+  const audienceDelete = makeDeleteBuilder()
+  const eventDelete = makeDeleteBuilder()
+  const audienceUpsert = vi.fn().mockResolvedValue({ error: null })
+  const eventUpsert = vi.fn().mockResolvedValue({ error: null })
   const updateUserById = vi.fn().mockResolvedValue({ error: null })
 
   const admin = {
@@ -68,6 +75,14 @@ function makeReviewerAdmin() {
       if (table === 'nic_nac_conversations') return conversationDelete
       if (table === 'approval_events') return approvalDelete
       if (table === 'nic_nac_runs') return runDelete
+      if (table === 'show_reminder_preferences') return reminderPreferenceDelete
+      if (table === 'show_reminder_overrides') return reminderOverrideDelete
+      if (table === 'customer_audience') {
+        return { ...audienceDelete, upsert: audienceUpsert }
+      }
+      if (table === 'calendar_events') {
+        return { ...eventDelete, upsert: eventUpsert }
+      }
       throw new Error(`Unexpected table ${table}`)
     }),
   }
@@ -85,6 +100,12 @@ function makeReviewerAdmin() {
       requestDelete,
       fulfillmentDelete,
       swapDelete,
+      reminderPreferenceDelete,
+      reminderOverrideDelete,
+      audienceDelete,
+      eventDelete,
+      audienceUpsert,
+      eventUpsert,
     },
   }
 }
@@ -190,6 +211,50 @@ describe('reviewer smoke session reset', () => {
     expect(spies.designDelete.eq).toHaveBeenCalledWith(
       'id',
       '00000000-0000-4000-8000-000000000101',
+    )
+  })
+
+  it('seeds deterministic calendar and audience rows for dashboard Nic-Nac smoke', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.reminderOverrideDelete.in).toHaveBeenCalledWith('event_id', [
+      '00000000-0000-4000-8000-000000000202',
+      '00000000-0000-4000-8000-000000000203',
+    ])
+    expect(spies.reminderPreferenceDelete.eq).toHaveBeenCalledWith(
+      'rep_id',
+      'rep-reviewer',
+    )
+    expect(spies.eventUpsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          id: '00000000-0000-4000-8000-000000000202',
+          rep_id: 'rep-reviewer',
+          platform: 'TikTok',
+          is_recurring: true,
+          recurrence_group_id: '00000000-0000-4000-8000-000000000201',
+          status: 'scheduled',
+        }),
+        expect.objectContaining({
+          id: '00000000-0000-4000-8000-000000000203',
+          rep_id: 'rep-reviewer',
+          is_recurring: true,
+          recurrence_group_id: '00000000-0000-4000-8000-000000000201',
+          status: 'scheduled',
+        }),
+      ],
+      { onConflict: 'id' },
+    )
+    expect(spies.audienceUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: '00000000-0000-4000-8000-000000000204',
+        rep_id: 'rep-reviewer',
+        sms_consent: true,
+        email_consent: true,
+      }),
+      { onConflict: 'id' },
     )
   })
 })

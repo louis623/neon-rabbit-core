@@ -16,6 +16,15 @@
   color: var(--nic-nac-text-primary);
 }
 
+.detail {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--nic-nac-text-secondary);
+  overflow-wrap: anywhere;
+}
+
 .btnRow {
   display: flex;
   gap: 8px;

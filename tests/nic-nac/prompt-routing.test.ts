@@ -193,8 +193,12 @@ describe('Nic-Nac routed system prompt', () => {
     )
       expect(prompt).toContain('bulk SMS/email campaigns and subscriber blasts are not live')
       expect(prompt).toContain(
-        'Automated pre-show SMS reminders are handled by the scheduled reminder job',
+        'Automated pre-show reminders are handled by the scheduled reminder job',
       )
+      expect(prompt).toContain('set_notification_preferences saves defaults')
+    expect(prompt).toContain(
+      'Do not replace the approval dialog with a natural-language "Want me to save it?" question',
+    )
     expect(prompt).toContain('No payment collection')
   })
 })

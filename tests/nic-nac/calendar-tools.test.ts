@@ -5,6 +5,8 @@ const addShowMock = vi.fn()
 const listMyShowsMock = vi.fn()
 const updateShowMock = vi.fn()
 const cancelShowMock = vi.fn()
+const cancelShowSeriesFutureMock = vi.fn()
+const pauseShowSeriesUntilMock = vi.fn()
 const endShowMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
@@ -14,6 +16,8 @@ vi.mock('@/lib/services/calendar', () => ({
   listMyShows: (...args: unknown[]) => listMyShowsMock(...args),
   updateShow: (...args: unknown[]) => updateShowMock(...args),
   cancelShow: (...args: unknown[]) => cancelShowMock(...args),
+  cancelShowSeriesFuture: (...args: unknown[]) => cancelShowSeriesFutureMock(...args),
+  pauseShowSeriesUntil: (...args: unknown[]) => pauseShowSeriesUntilMock(...args),
   endShow: (...args: unknown[]) => endShowMock(...args),
 }))
 
@@ -31,6 +35,9 @@ import { makeAddShowTool } from '@/lib/nic-nac/tools/add-show'
 import { makeListMyShowsTool } from '@/lib/nic-nac/tools/list-my-shows'
 import { makeUpdateShowTool } from '@/lib/nic-nac/tools/update-show'
 import { makeCancelShowTool } from '@/lib/nic-nac/tools/cancel-show'
+import { makeSkipShowOccurrenceTool } from '@/lib/nic-nac/tools/skip-show-occurrence'
+import { makeCancelShowSeriesTool } from '@/lib/nic-nac/tools/cancel-show-series'
+import { makePauseShowSeriesTool } from '@/lib/nic-nac/tools/pause-show-series'
 import { makeEndShowTool } from '@/lib/nic-nac/tools/end-show'
 import { buildAllTools } from '@/lib/nic-nac/tools'
 import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
@@ -79,6 +86,8 @@ beforeEach(() => {
   listMyShowsMock.mockReset()
   updateShowMock.mockReset()
   cancelShowMock.mockReset()
+  cancelShowSeriesFutureMock.mockReset()
+  pauseShowSeriesUntilMock.mockReset()
   endShowMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
@@ -136,6 +145,7 @@ describe('calendar tools', () => {
       eventId: VALID_EVENT_ID,
       title: 'Friday Sparkles',
       platform: 'TikTok',
+      timeZone: 'America/New_York',
       discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
     })
   })
@@ -252,6 +262,110 @@ describe('calendar tools', () => {
     })
   })
 
+  it('skip_show_occurrence cancels one selected show while preserving the recurring series', async () => {
+    cancelShowMock.mockResolvedValueOnce({
+      event: calendarEvent({
+        status: 'cancelled',
+        isRecurring: true,
+        recurrenceGroupId: 'group-1',
+      }),
+    })
+    const tool = makeSkipShowOccurrenceTool(makeCtx()) as unknown as ToolDef
+
+    const result = await tool.execute({
+      eventId: VALID_EVENT_ID,
+      reason: 'rep is sick tonight',
+    })
+
+    expect(tool.needsApproval).toBe(true)
+    expect(cancelShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      'rep is sick tonight',
+    )
+    expect(cancelShowSeriesFutureMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      event: { status: 'cancelled', isRecurring: true },
+      occurrenceOnly: true,
+      seriesPreserved: true,
+    })
+  })
+
+  it('cancel_show_series cancels the selected and future recurring shows', async () => {
+    cancelShowSeriesFutureMock.mockResolvedValueOnce({
+      events: [
+        calendarEvent({
+          id: VALID_EVENT_ID,
+          status: 'cancelled',
+          isRecurring: true,
+          recurrenceGroupId: 'group-1',
+        }),
+        calendarEvent({
+          id: '22222222-2222-4222-8222-222222222222',
+          status: 'cancelled',
+          isRecurring: true,
+          recurrenceGroupId: 'group-1',
+        }),
+      ],
+      cancelledCount: 2,
+    })
+    const tool = makeCancelShowSeriesTool(makeCtx()) as unknown as ToolDef
+
+    const result = await tool.execute({
+      eventId: VALID_EVENT_ID,
+      reason: 'rep wants to stop the Friday series',
+    })
+
+    expect(tool.needsApproval).toBe(true)
+    expect(cancelShowSeriesFutureMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      'rep wants to stop the Friday series',
+    )
+    expect(result).toMatchObject({
+      cancelledCount: 2,
+      futureSeriesCancelled: true,
+    })
+  })
+
+  it('pause_show_series pauses only the bounded recurring occurrences', async () => {
+    pauseShowSeriesUntilMock.mockResolvedValueOnce({
+      events: [
+        calendarEvent({
+          id: VALID_EVENT_ID,
+          status: 'cancelled',
+          isRecurring: true,
+          recurrenceGroupId: 'group-1',
+        }),
+      ],
+      pausedCount: 1,
+      pauseUntil: '2099-05-22T00:00:00.000Z',
+    })
+    const tool = makePauseShowSeriesTool(makeCtx()) as unknown as ToolDef
+
+    const result = await tool.execute({
+      eventId: VALID_EVENT_ID,
+      pauseUntil: '2099-05-22T00:00:00.000Z',
+      reason: 'rep needs two weeks off',
+    })
+
+    expect(tool.needsApproval).toBe(true)
+    expect(pauseShowSeriesUntilMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      '2099-05-22T00:00:00.000Z',
+      'rep needs two weeks off',
+    )
+    expect(result).toMatchObject({
+      pausedCount: 1,
+      boundedPause: true,
+      pauseUntil: '2099-05-22T00:00:00.000Z',
+    })
+  })
+
   it('end_show completes a live show, writes audit, and returns the completed event', async () => {
     endShowMock.mockResolvedValueOnce({
       event: calendarEvent({ status: 'completed' }),
@@ -295,7 +409,7 @@ describe('calendar tools', () => {
 })
 
 describe('calendar registry and prompt wiring', () => {
-  it('buildAllTools exposes the five calendar tools without duplicate registry names', () => {
+  it('buildAllTools exposes the calendar tools without duplicate registry names', () => {
     const tools = buildAllTools(makeCtx())
     const names = Object.keys(tools).sort()
 
@@ -305,6 +419,9 @@ describe('calendar registry and prompt wiring', () => {
       'list_my_shows',
       'update_show',
       'cancel_show',
+      'skip_show_occurrence',
+      'cancel_show_series',
+      'pause_show_series',
       'end_show',
     ]))
   })
@@ -330,7 +447,7 @@ describe('calendar registry and prompt wiring', () => {
       'Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof.',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Automated pre-show SMS reminders are handled by the scheduled reminder job',
+      'automated pre-show reminders are handled by the scheduled reminder job',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Do not promise a reminder was sent unless the reminder job result or message_log confirms it.',

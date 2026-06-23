@@ -106,6 +106,31 @@ describe('Nic-Nac tool routing', () => {
   })
 
   it.each([
+    'I am sick tonight, skip my show',
+    'Pause Tuesdays for two weeks',
+    'Change the code for all Friday lives to PARTY10',
+  ])('routes chaotic calendar wording "%s" to calendar tools', (text) => {
+    const intents = getToolIntentsForText(text)
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toContain('calendar')
+    expect(toolNames).toContain('prepare_calendar_work')
+    expect(toolNames).toContain('list_my_shows')
+    expect(toolNames).toContain('skip_show_occurrence')
+    expect(toolNames).toContain('cancel_show_series')
+  })
+
+  it('routes customer reminder preference wording to notification tools', () => {
+    const intents = getToolIntentsForText('Text my people 45 before every show')
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toContain('notification')
+    expect(toolNames).toContain('prepare_calendar_work')
+    expect(toolNames).toContain('get_notification_preferences')
+    expect(toolNames).toContain('set_notification_preferences')
+  })
+
+  it.each([
     'Where is the Live Queue walkthrough video?',
     'Show me the how-to for editing my public site links.',
     'Walk me through adding jewelry to my trade board.',

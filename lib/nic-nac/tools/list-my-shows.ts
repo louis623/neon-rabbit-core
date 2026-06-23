@@ -43,6 +43,7 @@ export function makeListMyShowsTool(ctx: { repId: string; supabase: SupabaseClie
           eventId: event.id,
           platform: event.platform,
           eventTime: event.eventTime,
+          timeZone: event.timeZone,
           durationMinutes: event.durationMinutes,
           title: event.title,
           description: event.description,

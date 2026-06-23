@@ -4,6 +4,8 @@ import {
   listMyShows,
   updateShow,
   cancelShow,
+  cancelShowSeriesFuture,
+  pauseShowSeriesUntil,
   startShow,
   endShow,
 } from '@/lib/services/calendar'
@@ -100,6 +102,8 @@ function makeUpdateManyChain(result: { data: unknown[]; error: unknown | null })
   const state = {
     eq: [] as Array<[string, unknown]>,
     gt: [] as Array<[string, unknown]>,
+    gte: [] as Array<[string, unknown]>,
+    lte: [] as Array<[string, unknown]>,
   }
   const select = vi.fn(() => Promise.resolve(result))
   const chain: Chain = {
@@ -109,6 +113,14 @@ function makeUpdateManyChain(result: { data: unknown[]; error: unknown | null })
     }),
     gt: vi.fn((column: string, value: unknown) => {
       state.gt.push([column, value])
+      return chain
+    }),
+    gte: vi.fn((column: string, value: unknown) => {
+      state.gte.push([column, value])
+      return chain
+    }),
+    lte: vi.fn((column: string, value: unknown) => {
+      state.lte.push([column, value])
       return chain
     }),
     select,
@@ -509,6 +521,159 @@ describe('calendar service', () => {
     expect(updateCall.status).toBe('cancelled')
     expect(typeof updateCall.updated_at).toBe('string')
     expect(result.event.status).toBe('cancelled')
+  })
+
+  it('cancelShowSeriesFuture cancels the selected occurrence and future scheduled events in its series', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({
+        id: 'event-2',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+        event_time: '2099-05-08T20:00:00.000Z',
+      }),
+      error: null,
+    })
+    const updatedRows = [
+      baseRow({
+        id: 'event-2',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        status: 'cancelled',
+        event_time: '2099-05-08T20:00:00.000Z',
+      }),
+      baseRow({
+        id: 'event-3',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        status: 'cancelled',
+        event_time: '2099-05-15T20:00:00.000Z',
+      }),
+    ]
+    const updated = makeUpdateManyChain({ data: updatedRows, error: null })
+
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
+      .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+
+    const supabase = { from } as never
+
+    const result = await cancelShowSeriesFuture(
+      supabase,
+      'rep-1',
+      'event-2',
+      'rep wants to stop Friday shows',
+    )
+
+    const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateCall.status).toBe('cancelled')
+    expect(typeof updateCall.updated_at).toBe('string')
+    expect(updated.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['recurrence_group_id', 'group-1'],
+      ['status', 'scheduled'],
+    ])
+    expect(updated.state.gte).toEqual([['event_time', '2099-05-08T20:00:00.000Z']])
+    expect(result.cancelledCount).toBe(2)
+    expect(result.events.map((event) => event.id)).toEqual(['event-2', 'event-3'])
+  })
+
+  it('cancelShowSeriesFuture rejects a non-recurring show', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({ recurrence_group_id: null, is_recurring: false }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(
+      cancelShowSeriesFuture(supabase, 'rep-1', 'event-1'),
+    ).rejects.toMatchObject({ code: 'NOT_A_SERIES' })
+  })
+
+  it('pauseShowSeriesUntil cancels only scheduled occurrences through the pause end time', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({
+        id: 'event-2',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        recurrence_rule: 'weekly',
+        event_time: '2099-05-08T20:00:00.000Z',
+      }),
+      error: null,
+    })
+    const pausedRows = [
+      baseRow({
+        id: 'event-2',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        status: 'cancelled',
+        event_time: '2099-05-08T20:00:00.000Z',
+      }),
+      baseRow({
+        id: 'event-3',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        status: 'cancelled',
+        event_time: '2099-05-15T20:00:00.000Z',
+      }),
+    ]
+    const updated = makeUpdateManyChain({ data: pausedRows, error: null })
+    const pauseUntil = '2099-05-22T00:00:00.000Z'
+
+    const from = vi
+      .fn()
+      .mockReturnValueOnce({ select: vi.fn(() => current.chain) })
+      .mockReturnValueOnce({ update: vi.fn(() => updated.chain) })
+
+    const supabase = { from } as never
+
+    const result = await pauseShowSeriesUntil(
+      supabase,
+      'rep-1',
+      'event-2',
+      pauseUntil,
+      'family travel',
+    )
+
+    const updateCall = (from.mock.results[1].value.update as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateCall.status).toBe('cancelled')
+    expect(updated.state.eq).toEqual([
+      ['rep_id', 'rep-1'],
+      ['recurrence_group_id', 'group-1'],
+      ['status', 'scheduled'],
+    ])
+    expect(updated.state.gte).toEqual([['event_time', '2099-05-08T20:00:00.000Z']])
+    expect(updated.state.lte).toEqual([['event_time', pauseUntil]])
+    expect(result.pausedCount).toBe(2)
+    expect(result.pauseUntil).toBe(pauseUntil)
+    expect(result.events.map((event) => event.id)).toEqual(['event-2', 'event-3'])
+  })
+
+  it('pauseShowSeriesUntil rejects a pause end before the selected occurrence', async () => {
+    const current = makeSelectSingleChain({
+      data: baseRow({
+        id: 'event-2',
+        recurrence_group_id: 'group-1',
+        is_recurring: true,
+        event_time: '2099-05-08T20:00:00.000Z',
+      }),
+      error: null,
+    })
+    const supabase = {
+      from: vi.fn(() => ({ select: vi.fn(() => current.chain) })),
+    } as never
+
+    await expect(
+      pauseShowSeriesUntil(
+        supabase,
+        'rep-1',
+        'event-2',
+        '2099-05-01T20:00:00.000Z',
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
   })
 
   it('startShow moves a scheduled event to live and returns the live event', async () => {

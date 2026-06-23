@@ -240,9 +240,57 @@ export interface CancelShowResult {
   event: CalendarEvent
 }
 
+export interface CancelShowSeriesResult {
+  events: CalendarEvent[]
+  cancelledCount: number
+}
+
+export interface PauseShowSeriesResult {
+  events: CalendarEvent[]
+  pausedCount: number
+  pauseUntil: string
+}
+
 export interface ShowStatusTransitionResult {
   event: CalendarEvent
 }
+
+export type ShowReminderChannel = 'sms' | 'email'
+
+export interface ShowReminderPreferences {
+  repId: string
+  enabled: boolean
+  channels: ShowReminderChannel[]
+  leadMinutes: number
+  includeDiscountCodes: boolean
+  includeFeaturedCollections: boolean
+  source: 'default' | 'saved'
+  createdAt?: string | null
+  updatedAt?: string | null
+}
+
+export interface SetShowReminderPreferencesInput {
+  enabled?: boolean
+  channels?: ShowReminderChannel[]
+  leadMinutes?: number
+  includeDiscountCodes?: boolean
+  includeFeaturedCollections?: boolean
+}
+
+export interface ShowReminderOverride {
+  eventId: string
+  repId: string
+  enabled: boolean
+  channels: ShowReminderChannel[]
+  leadMinutes: number
+  includeDiscountCodes: boolean
+  includeFeaturedCollections: boolean
+  source: 'event_override'
+  createdAt?: string | null
+  updatedAt?: string | null
+}
+
+export type SetShowReminderOverrideInput = SetShowReminderPreferencesInput
 
 // ============================================================================
 // trade-requests domain

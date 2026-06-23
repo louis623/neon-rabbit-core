@@ -92,10 +92,15 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Catalog data is shared reference data. Do not imply the rep owns a piece just because it exists in the catalog.`,
 
   calendar: `Calendar tools:
+- prepare_calendar_work is read-only. Use it first for ambiguous calendar/reminder work: scheduling, recurring-series changes, one-night skips, bounded pauses, discount/collection updates, and show reminder settings. Follow its recommended path before write tools run.
+- If prepare_calendar_work says needsApproval:true and recommends a write tool, call that write tool when required fields are known. Do not ask "Want me to save/cancel/skip it?" first; the approval-gated tool emits the confirmation dialog.
 - add_show schedules one-time or recurring shows.
 - list_my_shows lists the rep's own shows. Use it when a show reference is ambiguous.
 - update_show changes scheduled show details only after you know the eventId.
 - cancel_show requires the approval dialog.
+- skip_show_occurrence requires the approval dialog and cancels exactly one scheduled/live show occurrence while preserving the rest of a recurring series. Use it for "I'm sick tonight", "skip tonight", or "suspend this one show".
+- cancel_show_series requires the approval dialog and cancels the selected recurring occurrence plus future scheduled occurrences in that series. Use it only when the rep wants the series stopped going forward.
+- pause_show_series requires the approval dialog and pauses a recurring series through a specific date by cancelling only the occurrences inside that bounded window. Use it for "pause Tuesdays for two weeks" after identifying the eventId and pauseUntil.
 - end_show marks a live show completed after the rep says the show is over.
 - start_show_session marks a linked calendar event live when calendarEventId is provided.
 - Do not combine applyToSeries: true with eventTime. Series-wide edits can update title, platform, duration, description, discount codes, featured collections, and timezone only.
@@ -114,8 +119,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.
 - Do not claim live SMS delivery unless the actual send tool returns success.
 - send_email_notification is a one-off email tool for a single customer only.
-- bulk SMS/email campaigns and subscriber blasts are not live. Automated pre-show SMS reminders are handled by the scheduled reminder job, not by manual chat sends. Do not promise a reminder was sent unless the reminder job result or message_log confirms it.
-- get_notification_preferences is a future-facing stub. Do not pretend preferences are editable yet.
+- prepare_calendar_work is read-only. Use it first for show reminder preference or per-show reminder override requests so the reminder scope is app-owned before write tools run.
+- If prepare_calendar_work recommends set_notification_preferences or set_show_reminder_override, call that approval-gated tool once required fields are known. Do not replace the approval dialog with a natural-language "Want me to save it?" question.
+- get_notification_preferences reads the rep's default show reminder settings. set_notification_preferences saves defaults such as enabled, SMS/email channels, lead time, and whether to include discount codes or featured collections. set_show_reminder_override saves those settings for one specific show only. These tools do not send anything immediately.
+- bulk SMS/email campaigns and subscriber blasts are not live. Automated pre-show reminders are handled by the scheduled reminder job, not by manual chat sends. Do not promise a reminder was sent unless the reminder job result or message_log confirms it.
+- Email reminder planning is wired for preferences, but live pre-show email delivery remains separately gated until that add-on is launched.
 - Screen for prohibited recruiting language before sending.`,
 
   audience: `Audience tools:
