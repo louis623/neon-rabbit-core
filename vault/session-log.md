@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 23, 2026 - Recipes Workspace Gate
+
+**What changed:**
+- Fixed the rep workspace sidebar so `Recipes` only appears for Heather's BlingKitchen workspace.
+- Added a BlingKitchen recipe-workspace access gate based on Heather's known rep id and BlingKitchen public site slug.
+- Direct `?section=recipes` access now resolves back to Trade Board for non-BlingKitchen reps instead of showing the recipe editor.
+
+**Verification and deploy:**
+- TDD regression passed: `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts`.
+- `npm run build` passed.
+- `npm run lint` passed with existing warnings only.
+- Local reviewer-smoke render with the synthetic reviewer rep confirmed Recipes was absent from the sidebar and direct `?section=recipes` showed Trade Board content.
+- Implementation checkpoint: `5784701 fix: limit Recipes workspace to BlingKitchen`.
+- Vercel deployment `dpl_2YYgaK7VpsUBxWzJ9AkVWEk2cfb8` / `https://sparkle-suite-1dvfw3tit-louis-2849s-projects.vercel.app` is READY.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` was moved to that deployment and the login route returned `200`.
+
 ## June 23, 2026 - Business Tools Workspace Hub
 
 **What changed:**
