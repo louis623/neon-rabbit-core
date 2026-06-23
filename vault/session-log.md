@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 23, 2026 - Business Tools Workspace Hub
+
+**What changed:**
+- Replaced the disabled `Business Calculator` workspace nav item with an unlocked `Business Tools` hub.
+- Kept the existing calculator inside the hub and preserved old `?section=business-calculator` deep links by routing them to `?section=business-tools`.
+- Added first-pass tool cards for Business Calculator, Wispr Flow, and Business Cards, plus a research note for future BP dashboard number import.
+- Left Live Queue/Bomb Party dashboard scraping as research only; no extension or Chrome Web Store files were touched.
+
+**Verification and deploy:**
+- Focused dashboard test passed: `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts`.
+- Local `npm run build` passed.
+- `npm run lint` passed with existing warnings only.
+- Local reviewer-smoke render passed on a token-enabled local server with synthetic reviewer rep, including Business Tools route load and calculator Single Show tab interaction.
+- Implementation checkpoint: `ffedb31 feat: add Business Tools workspace hub`.
+- Vercel deployment `dpl_APXSZbTNkQvnq7AE37yvsdiGDVh4` / `https://sparkle-suite-dx805vff7-louis-2849s-projects.vercel.app` is READY.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` was moved to that deployment and the login route returned `200`.
+
+**Still open:**
+- Make the calculator more robust and rep-friendly for actual show/month planning.
+- Decide whether BP dashboard number import is feasible without violating Live Queue safety rules or changing live-show behavior.
+- Add Wispr Flow affiliate link/content after Louis has the partner details.
+- Design the paid business-card proof/order/contractor workflow before taking orders.
+
 ## June 23, 2026 - Nic-Nac Live Calendar and Reminder Hardening
 
 **What changed:**
