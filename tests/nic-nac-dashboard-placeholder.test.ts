@@ -27,6 +27,7 @@ import {
   getAutoRechargeThresholdOptions,
   getInitialWorkspaceSection,
   getVisibleWorkspaceSections,
+  hasBlingKitchenRecipeWorkspaceAccess,
   hasPaidWorkspaceSubscription,
   isComingSoonWorkspaceSection,
   resolveWorkspaceSectionForAccess,
@@ -684,7 +685,7 @@ describe('DashboardPlaceholder', () => {
         },
       }),
     ).toBe(true)
-    expect(getVisibleWorkspaceSections(false).map((section) => section.key)).toEqual([
+    expect(getVisibleWorkspaceSections(false, false).map((section) => section.key)).toEqual([
       'trade-board',
       'jewelry-library',
       'show-calendar',
@@ -692,10 +693,12 @@ describe('DashboardPlaceholder', () => {
       'team-management',
       'messages',
       'site-settings',
-      'recipes',
       'help-resources',
       'account',
     ])
+    expect(getVisibleWorkspaceSections(false, true).map((section) => section.key)).toContain(
+      'recipes',
+    )
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
@@ -703,6 +706,12 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
+    expect(resolveWorkspaceSectionForAccess('recipes', true, false)).toBe(
+      'trade-board',
+    )
+    expect(resolveWorkspaceSectionForAccess('recipes', true, true)).toBe(
+      'recipes',
+    )
     expect(resolveWorkspaceSectionForAccess('business-tools', true)).toBe(
       'business-tools',
     )
@@ -710,6 +719,45 @@ describe('DashboardPlaceholder', () => {
       'trade-board',
     )
     expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('trade-board')
+  })
+
+  it('only shows Recipes for Heather BlingKitchen workspaces', () => {
+    expect(
+      hasBlingKitchenRecipeWorkspaceAccess({
+        repId: 'rep-1',
+        publicSiteSlug: 'sparklebysasha',
+      }),
+    ).toBe(false)
+    expect(
+      hasBlingKitchenRecipeWorkspaceAccess({
+        repId: '9a971c05-3631-443e-bcb8-4e9a26e15885',
+        publicSiteSlug: null,
+      }),
+    ).toBe(true)
+    expect(
+      hasBlingKitchenRecipeWorkspaceAccess({
+        repId: 'rep-1',
+        publicSiteSlug: 'blingkitchen',
+      }),
+    ).toBe(true)
+
+    const genericHtml = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        repIdOverride: 'rep-1',
+        publicSiteSlugOverride: 'sparklebysasha',
+      }),
+    )
+    const blingKitchenHtml = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        repIdOverride: '9a971c05-3631-443e-bcb8-4e9a26e15885',
+        publicSiteSlugOverride: 'blingkitchen',
+      }),
+    )
+
+    expect(genericHtml).not.toContain('Pantry recipe cards and images')
+    expect(blingKitchenHtml).toContain('Pantry recipe cards and images')
   })
 
   it('shows account access guidance instead of a blank panel for locked workspace sections', () => {

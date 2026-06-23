@@ -155,6 +155,11 @@ const WORKSPACE_SECTION_KEYS = new Set<string>(
   WORKSPACE_SECTIONS.map((section) => section.key),
 )
 
+const BLING_KITCHEN_RECIPE_REP_IDS = new Set([
+  '9a971c05-3631-443e-bcb8-4e9a26e15885',
+])
+const BLING_KITCHEN_RECIPE_SLUGS = new Set(['blingkitchen', 'bling-kitchen'])
+
 const COMING_SOON_WORKSPACE_SECTIONS = new Set<WorkspaceSectionKey>(
   WORKSPACE_SECTIONS.filter((section) => 'comingSoon' in section && section.comingSoon)
     .map((section) => section.key),
@@ -182,15 +187,35 @@ export function hasPaidWorkspaceSubscription(
   return status === 'active' || status === 'trialing' || status === 'past_due'
 }
 
-export function getVisibleWorkspaceSections(_hasPaidWorkspace: boolean) {
-  return WORKSPACE_SECTIONS
+export function hasBlingKitchenRecipeWorkspaceAccess(input: {
+  repId?: string | null
+  publicSiteSlug?: string | null
+}) {
+  const repId = input.repId?.trim().toLowerCase() ?? ''
+  const slug = input.publicSiteSlug?.trim().toLowerCase() ?? ''
+
+  return (
+    BLING_KITCHEN_RECIPE_REP_IDS.has(repId) ||
+    BLING_KITCHEN_RECIPE_SLUGS.has(slug)
+  )
+}
+
+export function getVisibleWorkspaceSections(
+  _hasPaidWorkspace: boolean,
+  hasRecipeWorkspaceAccess = false,
+) {
+  return WORKSPACE_SECTIONS.filter(
+    (section) => section.key !== 'recipes' || hasRecipeWorkspaceAccess,
+  )
 }
 
 export function resolveWorkspaceSectionForAccess(
   section: WorkspaceSectionKey,
   _hasPaidWorkspace: boolean,
+  hasRecipeWorkspaceAccess = true,
 ): WorkspaceSectionKey {
   if (isComingSoonWorkspaceSection(section)) return 'trade-board'
+  if (section === 'recipes' && !hasRecipeWorkspaceAccess) return 'trade-board'
   return section
 }
 
@@ -3222,14 +3247,40 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   useEffect(() => {
     if (accountBillingState.status !== 'ready') return
     const hasPaidWorkspace = hasPaidWorkspaceSubscription(accountBillingState.summary)
+    const isRecipeWorkspaceAccessKnown =
+      Boolean(repIdOverride || publicSiteSlugOverride) ||
+      repProfileState.status === 'ready' ||
+      reviewWorkspaceMode
+    const hasRecipeWorkspaceAccess = hasBlingKitchenRecipeWorkspaceAccess({
+      repId: repIdOverride ?? repProfileState.repId,
+      publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
+    })
+    if (
+      activeSection === 'recipes' &&
+      !hasRecipeWorkspaceAccess &&
+      !isRecipeWorkspaceAccessKnown
+    ) {
+      return
+    }
     const allowedSection = resolveWorkspaceSectionForAccess(
       activeSection,
       hasPaidWorkspace,
+      hasRecipeWorkspaceAccess,
     )
     if (allowedSection !== activeSection) {
       setActiveSection(allowedSection)
     }
-  }, [accountBillingState.status, accountBillingState.summary, activeSection])
+  }, [
+    accountBillingState.status,
+    accountBillingState.summary,
+    activeSection,
+    publicSiteSlugOverride,
+    repIdOverride,
+    repProfileState.status,
+    repProfileState.publicSiteSlug,
+    repProfileState.repId,
+    reviewWorkspaceMode,
+  ])
 
   async function handleQuickAddListing() {
     if (!quickAddItemNumber.trim()) {
@@ -3697,9 +3748,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const hasPaidWorkspace = hasPaidWorkspaceSubscription(
     accountBillingState.summary,
   )
+  const hasRecipeWorkspaceAccess = hasBlingKitchenRecipeWorkspaceAccess({
+    repId: repIdOverride ?? repProfileState.repId,
+    publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
+  })
   const isWorkspaceAccessLoading = accountBillingState.status !== 'ready'
   const canRenderWorkspaceSections = isWorkspaceAccessLoading || hasPaidWorkspace
-  const visibleWorkspaceSections = getVisibleWorkspaceSections(hasPaidWorkspace)
+  const visibleWorkspaceSections = getVisibleWorkspaceSections(
+    hasPaidWorkspace,
+    hasRecipeWorkspaceAccess,
+  )
   const showWorkspaceAccessNotice = shouldShowWorkspaceAccessNotice(
     activeSection,
     hasPaidWorkspace,
@@ -3843,6 +3901,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                       resolveWorkspaceSectionForAccess(
                         section.key,
                         hasPaidWorkspace,
+                        hasRecipeWorkspaceAccess,
                       ),
                     )
                   }
@@ -4001,7 +4060,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
 
-          {canRenderWorkspaceSections && activeSection === 'recipes' ? (
+          {canRenderWorkspaceSections &&
+          activeSection === 'recipes' &&
+          hasRecipeWorkspaceAccess ? (
             <div className={styles.workspaceSectionStack}>
               <RecipesCard
                 state={recipesState}
