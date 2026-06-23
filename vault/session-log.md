@@ -4,6 +4,35 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 23, 2026 - Wispr Flow Business Tool
+
+**What changed:**
+- Simplified the `Business Tools` workspace section so `Business Calculator` and `Business Cards` now render as plain `Coming Soon` placeholders only.
+- Removed the in-page calculator UI and BP dashboard number-import research note from the current Business Tools surface.
+- Added the usable Wispr Flow section with Louis's invite link: `https://wisprflow.ai/r?LOUIS20696`.
+- Grounded the Wispr Flow copy in the official Wispr Flow site positioning: voice-to-text across apps, faster dictation, AI cleanup/auto-edits, and ready-to-send formatting.
+- No Chrome Web Store settings, local extension code, or protected live-show extension files were touched.
+
+**Verification and deploy:**
+- TDD regression failed first, then passed for the new Business Tools behavior.
+- Focused dashboard/Nic-Nac suite passed: 15 files, 265 tests.
+- `npm run build` passed locally.
+- `npm run lint` passed with existing warnings only.
+- `git diff --check` passed with line-ending warnings only.
+- Local reviewer-smoke production server passed with synthetic reviewer rep: Business Tools loaded, Wispr Flow copy/link was visible, exactly two `Coming Soon` placeholders rendered, and calculator fields were absent.
+- Local mobile smoke passed with no horizontal overflow.
+- Stable demo reviewer-smoke passed against `https://sparkle-suite-demo.vercel.app/nic-nac?section=business-tools` with synthetic reviewer rep.
+- Implementation checkpoint: `9181e64 feat: add Wispr Flow business tool`.
+- Vercel deployment `dpl_2UdN5CDapP577wJysYaRJ8stmktz` / `https://sparkle-suite-puc81mud5-louis-2849s-projects.vercel.app` is READY.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+
+**Still open:**
+- Business Calculator remains a future Business Tools upgrade and should stay a simple `Coming Soon` placeholder until Louis asks to build it out.
+- Business Cards remains a future paid proof/order/contractor workflow and should stay a simple `Coming Soon` placeholder until that workflow is designed.
+- Any Bomb Party dashboard number import research remains separate and must respect the protected Live Queue extension rules.
+
+---
+
 ## June 23, 2026 - Recipes Workspace Gate
 
 **What changed:**
