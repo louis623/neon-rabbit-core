@@ -1812,6 +1812,30 @@
   align-items: start;
 }
 
+.businessToolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.businessToolCard {
+  min-width: 0;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 26px rgba(64, 41, 36, 0.08);
+  padding: 14px;
+}
+
+.businessToolBody {
+  margin: 6px 0 0;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .calculatorTabs {
   display: inline-flex;
   flex-wrap: wrap;
@@ -3721,6 +3745,7 @@
 .main[data-workspace-skin='black_diamond'] .workspaceSidebar,
 .main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
 .main[data-workspace-skin='black_diamond'] .workspacePanel,
+.main[data-workspace-skin='black_diamond'] .businessToolCard,
 .main[data-workspace-skin='black_diamond'] .walletCard,
 .main[data-workspace-skin='black_diamond'] .calendarCard,
 .main[data-workspace-skin='black_diamond'] .siteSettingsCard,
@@ -3823,6 +3848,10 @@
     linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03)),
     #120f0d;
   border-color: rgba(244, 207, 98, 0.3);
+}
+
+.main[data-workspace-skin='black_diamond'] .businessToolBody {
+  color: rgba(216, 203, 189, 0.82);
 }
 
 .main[data-workspace-skin='black_diamond'] .searchInput,

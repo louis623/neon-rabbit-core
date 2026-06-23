@@ -7,6 +7,7 @@ import { resolve } from 'node:path'
 import {
   AccountBillingCard,
   BusinessCalculatorCard,
+  BusinessToolsCard,
   DashboardPlaceholder,
   HelpResourcesCard,
   JewelryLibraryCard,
@@ -502,10 +503,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Trade Board</span>')
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar</span>')
-    expect(html).toContain('Business Calculator')
+    expect(html).toContain('Business Tools')
     expect(html).toContain('Team Management')
     expect(html).toContain('Messages</span>')
-    expect((html.match(/Coming soon/g) ?? []).length).toBe(3)
+    expect((html.match(/Coming soon/g) ?? []).length).toBe(2)
     expect(html).not.toContain('Locked</span>')
     expect(html).toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
@@ -650,8 +651,11 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?section=recipes')).toBe('recipes')
+    expect(getInitialWorkspaceSection('?section=business-tools')).toBe(
+      'business-tools',
+    )
     expect(getInitialWorkspaceSection('?section=business-calculator')).toBe(
-      'trade-board',
+      'business-tools',
     )
     expect(getInitialWorkspaceSection('?section=team-management')).toBe(
       'trade-board',
@@ -684,7 +688,7 @@ describe('DashboardPlaceholder', () => {
       'trade-board',
       'jewelry-library',
       'show-calendar',
-      'business-calculator',
+      'business-tools',
       'team-management',
       'messages',
       'site-settings',
@@ -694,13 +698,13 @@ describe('DashboardPlaceholder', () => {
     ])
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
-    expect(isComingSoonWorkspaceSection('business-calculator')).toBe(true)
+    expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
     expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
-    expect(resolveWorkspaceSectionForAccess('business-calculator', true)).toBe(
-      'trade-board',
+    expect(resolveWorkspaceSectionForAccess('business-tools', true)).toBe(
+      'business-tools',
     )
     expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe(
       'trade-board',
@@ -2026,6 +2030,17 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Shows per month')
     expect(html).toContain('Estimated monthly take-home')
     expect(html).toContain('Sales needed per show')
+  })
+
+  it('renders business tools as an expandable workspace area', () => {
+    const html = renderToStaticMarkup(createElement(BusinessToolsCard))
+
+    expect(html).toContain('Business Tools')
+    expect(html).toContain('Business Calculator')
+    expect(html).toContain('Wispr Flow')
+    expect(html).toContain('Business Cards')
+    expect(html).toContain('BP dashboard number import')
+    expect(html).toContain('Future business tools can drop into this page')
   })
 
   it('formats wallet amounts and estimated texts for display', () => {

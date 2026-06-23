@@ -62,7 +62,7 @@ const WORKSPACE_SECTIONS = [
   { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
-  { key: 'business-calculator', label: 'Business Calculator', subtitle: 'Estimate show and monthly take-home', comingSoon: true },
+  { key: 'business-tools', label: 'Business Tools', subtitle: 'Calculator, voice workflow, and growth tools' },
   { key: 'team-management', label: 'Team Management', subtitle: 'Team onboarding and shared customer workflows', comingSoon: true },
   { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools', comingSoon: true },
   { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
@@ -167,6 +167,7 @@ export function isComingSoonWorkspaceSection(section: WorkspaceSectionKey) {
 export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
   const requested = params.get('section')?.trim() ?? ''
+  if (requested === 'business-calculator') return 'business-tools'
   if (WORKSPACE_SECTION_KEYS.has(requested)) {
     const section = requested as WorkspaceSectionKey
     return isComingSoonWorkspaceSection(section) ? 'trade-board' : section
@@ -3934,10 +3935,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             </div>
           ) : null}
 
-          {canRenderWorkspaceSections && activeSection === 'business-calculator' ? (
-            <div className={styles.workspaceSectionStack}>
-              <BusinessCalculatorCard />
-            </div>
+          {canRenderWorkspaceSections && activeSection === 'business-tools' ? (
+            <BusinessToolsCard />
           ) : null}
 
           {canRenderWorkspaceSections && activeSection === 'team-management' ? (
@@ -6548,6 +6547,72 @@ const SINGLE_SHOW_CALCULATOR_FIELDS: Array<{
 ]
 
 type BusinessCalculatorTab = 'monthly' | 'single-show'
+
+const BUSINESS_TOOL_CARDS = [
+  {
+    title: 'Business Calculator',
+    status: 'Available now',
+    body:
+      'Estimate show take-home, monthly take-home, sales pace, expenses, and goal gaps with plain rep-friendly numbers.',
+  },
+  {
+    title: 'Wispr Flow',
+    status: 'Affiliate setup planned',
+    body:
+      'A future guide and affiliate link can help reps decide whether voice dictation is worth using with Nic-Nac during shows.',
+  },
+  {
+    title: 'Business Cards',
+    status: 'Add-on workflow planned',
+    body:
+      'A future paid order flow can collect card details, let Nic-Nac draft a proof, route approval to a human contractor, then send cards to print.',
+  },
+] as const
+
+export function BusinessToolsCard() {
+  return (
+    <div className={styles.workspaceSectionStack}>
+      <div className={styles.workspaceIntroCard}>
+        <div className={styles.workspaceSectionHeader}>
+          <div>
+            <div className={styles.cardTitle}>Business Tools</div>
+            <div className={styles.cardSubtitle}>
+              Practical number planning and optional business upgrades for reps.
+              Future business tools can drop into this page without adding another
+              workspace tab.
+            </div>
+          </div>
+          <span className={styles.rosterTag}>Tool hub</span>
+        </div>
+      </div>
+
+      <div className={styles.businessToolsGrid}>
+        {BUSINESS_TOOL_CARDS.map((tool) => (
+          <section key={tool.title} className={styles.businessToolCard}>
+            <div className={styles.workspaceSectionHeader}>
+              <div>
+                <div className={styles.walletSettingsTitle}>{tool.title}</div>
+                <p className={styles.businessToolBody}>{tool.body}</p>
+              </div>
+              <span className={styles.rosterTag}>{tool.status}</span>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div className={styles.workspacePanel}>
+        <div className={styles.walletSettingsTitle}>BP dashboard number import</div>
+        <p className={styles.businessToolBody}>
+          Research track: keep the calculator useful manually first, then explore
+          whether the protected Live Queue extension can safely read Bomb Party
+          dashboard business numbers without changing live-show behavior.
+        </p>
+      </div>
+
+      <BusinessCalculatorCard />
+    </div>
+  )
+}
 
 export function BusinessCalculatorCard() {
   const [input, setInput] = useState<BusinessCalculatorInput>(
