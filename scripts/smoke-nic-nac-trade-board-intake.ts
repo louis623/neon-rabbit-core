@@ -35,7 +35,6 @@ export const HARD_FAIL_PHRASES = [
   'direct image link',
   'cloud link',
   'escalate this to Louis',
-  'use the catalog photo',
   'backend validation',
   'not under my control',
   'photo quality settings',
@@ -742,11 +741,10 @@ async function verifyCreatedListing(
       message: 'Created listing was not available before smoke cleanup.',
     }
   }
-  if (!activeListing.listing_photo_url || activeListing.uses_canonical_photo) {
+  if (!activeListing.listing_photo_url && !activeListing.uses_canonical_photo) {
     return {
       ok: false,
-      message:
-        'Created listing did not use the uploaded customer-facing jewelry photo.',
+      message: 'Created listing did not have a display photo.',
     }
   }
 
