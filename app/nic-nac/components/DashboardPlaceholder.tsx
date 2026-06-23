@@ -710,46 +710,49 @@ type HelpSupportReportType =
 type HelpSupportReportUrgency = 'normal' | 'blocking' | 'showtime_urgent'
 
 type HelpSupportReportForm = {
-  reportType: HelpSupportReportType
-  urgency: HelpSupportReportUrgency
-  workflowChecked: boolean
-  pageOrWorkflow: string
-  title: string
   details: string
-  expectedResult: string
-  actualResult: string
-  contactOk: boolean
 }
 
-const SUPPORT_REPORT_TYPE_OPTIONS: Array<{
-  value: HelpSupportReportType
-  label: string
-}> = [
-  { value: 'site_issue', label: 'Site issue' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'suggested_upgrade', label: 'Suggested upgrade' },
-  { value: 'workflow_idea', label: 'Workflow idea' },
-]
-
-const SUPPORT_REPORT_URGENCY_OPTIONS: Array<{
-  value: HelpSupportReportUrgency
-  label: string
-}> = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'blocking', label: 'Blocking me' },
-  { value: 'showtime_urgent', label: 'Show-time urgent' },
-]
-
 const DEFAULT_SUPPORT_REPORT_FORM: HelpSupportReportForm = {
-  reportType: 'site_issue',
-  urgency: 'normal',
-  workflowChecked: false,
-  pageOrWorkflow: '',
-  title: '',
   details: '',
-  expectedResult: '',
-  actualResult: '',
-  contactOk: true,
+}
+
+function inferSupportReportType(details: string): HelpSupportReportType {
+  if (/\b(idea|suggest|suggestion|upgrade|feature|improve|improvement)\b/i.test(details)) {
+    return 'suggested_upgrade'
+  }
+  if (/\b(workflow|process|steps|guide|how do i|how to)\b/i.test(details)) {
+    return 'workflow_idea'
+  }
+  if (/\b(site|website|page|link|customer-facing|public)\b/i.test(details)) {
+    return 'site_issue'
+  }
+  return 'bug'
+}
+
+function inferSupportReportUrgency(details: string): HelpSupportReportUrgency {
+  if (/\b(live|show|showtime|right now|urgent|blocked|blocking|can't|cannot|stuck)\b/i.test(details)) {
+    return 'blocking'
+  }
+  return 'normal'
+}
+
+function buildSupportReportTitle(details: string): string {
+  const compact = details.replace(/\s+/g, ' ').trim()
+  const firstSentence = compact.split(/[.!?]\s/)[0]?.trim() || compact
+  const title = firstSentence.replace(/[.!?]+$/, '').slice(0, 120).trim()
+  return title.length >= 3 ? title : 'Quick support report'
+}
+
+function buildSupportReportPayload(details: string) {
+  const normalizedDetails = details.trim()
+  return {
+    reportType: inferSupportReportType(normalizedDetails),
+    urgency: inferSupportReportUrgency(normalizedDetails),
+    title: buildSupportReportTitle(normalizedDetails),
+    details: normalizedDetails,
+    contactOk: true,
+  }
 }
 
 const SOCIAL_HANDLE_FIELDS = [
@@ -5396,7 +5399,7 @@ export function HelpResourcesCard({
     error: string | null
     message: string | null
   }>({ pending: false, error: null, message: null })
-  const supportReportTitleRef = useRef<HTMLInputElement | null>(null)
+  const supportReportDetailsRef = useRef<HTMLTextAreaElement | null>(null)
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
@@ -5408,16 +5411,7 @@ export function HelpResourcesCard({
       const response = await fetch('/api/nic-nac/support-reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reportType: reportForm.reportType,
-          urgency: reportForm.urgency,
-          pageOrWorkflow: reportForm.pageOrWorkflow.trim() || undefined,
-          title: reportForm.title.trim(),
-          details: reportForm.details.trim(),
-          expectedResult: reportForm.expectedResult.trim() || undefined,
-          actualResult: reportForm.actualResult.trim() || undefined,
-          contactOk: reportForm.contactOk,
-        }),
+        body: JSON.stringify(buildSupportReportPayload(reportForm.details)),
       })
       const result = await response.json().catch(() => ({})) as {
         notificationStatus?: 'delivered' | 'not_configured' | 'failed'
@@ -5449,11 +5443,11 @@ export function HelpResourcesCard({
   }
 
   function focusSupportReportForm() {
-    supportReportTitleRef.current?.scrollIntoView({
+    supportReportDetailsRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
     })
-    supportReportTitleRef.current?.focus()
+    supportReportDetailsRef.current?.focus()
   }
 
   function updateReportForm<Field extends keyof HelpSupportReportForm>(
@@ -5470,104 +5464,17 @@ export function HelpResourcesCard({
     >
       <div>
         <div className={styles.walletSettingsTitle}>
-          Submit a support report
+          Send a quick report
         </div>
         <div className={styles.helperNote}>
-          Use this after you have started with the workflow guide, followed the
-          steps that apply, and asked Nic-Nac if you are still blocked.
+          Type what happened, what is confusing, or what would make Sparkle
+          Suite better. Support will sort out the category and follow-up.
         </div>
-      </div>
-      <label className={styles.supportReportAcknowledgement}>
-        <input
-          type="checkbox"
-          required
-          checked={reportForm.workflowChecked}
-          onChange={(event) =>
-            updateReportForm('workflowChecked', event.target.checked)
-          }
-        />
-        <span>
-          I started at the top of Help & Resources, used the relevant workflow
-          guide, followed the steps that applied, and still need support.
-        </span>
-      </label>
-      <fieldset className={styles.supportReportFieldset}>
-        <legend className={styles.searchLabel}>Report type</legend>
-        <div className={styles.supportReportChoiceGrid}>
-          {SUPPORT_REPORT_TYPE_OPTIONS.map((option) => (
-            <label
-              key={option.value}
-              className={styles.supportReportChoice}
-            >
-              <input
-                type="radio"
-                name="support-report-type"
-                value={option.value}
-                checked={reportForm.reportType === option.value}
-                onChange={() =>
-                  updateReportForm('reportType', option.value)
-                }
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset className={styles.supportReportFieldset}>
-        <legend className={styles.searchLabel}>Urgency</legend>
-        <div className={styles.supportReportChoiceGrid}>
-          {SUPPORT_REPORT_URGENCY_OPTIONS.map((option) => (
-            <label
-              key={option.value}
-              className={styles.supportReportChoice}
-            >
-              <input
-                type="radio"
-                name="support-report-urgency"
-                value={option.value}
-                checked={reportForm.urgency === option.value}
-                onChange={() =>
-                  updateReportForm('urgency', option.value)
-                }
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <div className={styles.supportReportFieldGrid}>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Page or workflow</span>
-          <input
-            type="text"
-            className={styles.searchInput}
-            value={reportForm.pageOrWorkflow}
-            onChange={(event) =>
-              updateReportForm('pageOrWorkflow', event.target.value)
-            }
-            placeholder="Trade Board, Site Settings, Live Queue"
-          />
-        </label>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Short title</span>
-          <input
-            ref={supportReportTitleRef}
-            type="text"
-            className={styles.searchInput}
-            value={reportForm.title}
-            required
-            minLength={3}
-            maxLength={160}
-            onChange={(event) =>
-              updateReportForm('title', event.target.value)
-            }
-            placeholder="What should support call this?"
-          />
-        </label>
       </div>
       <label className={styles.searchField}>
-        <span className={styles.searchLabel}>Details</span>
+        <span className={styles.searchLabel}>Tell us what happened</span>
         <textarea
+          ref={supportReportDetailsRef}
           className={styles.supportReportTextarea}
           value={reportForm.details}
           required
@@ -5576,44 +5483,8 @@ export function HelpResourcesCard({
           onChange={(event) =>
             updateReportForm('details', event.target.value)
           }
-          placeholder="What happened? Include steps, links, or timing if it helps."
+          placeholder="Example: Trade Board froze when I tried to add ER13229, or I have an idea for show reminders."
         />
-      </label>
-      <div className={styles.supportReportFieldGrid}>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Expected result</span>
-          <textarea
-            className={styles.supportReportTextarea}
-            value={reportForm.expectedResult}
-            maxLength={1200}
-            onChange={(event) =>
-              updateReportForm('expectedResult', event.target.value)
-            }
-            placeholder="What did you expect to happen?"
-          />
-        </label>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Actual result</span>
-          <textarea
-            className={styles.supportReportTextarea}
-            value={reportForm.actualResult}
-            maxLength={1200}
-            onChange={(event) =>
-              updateReportForm('actualResult', event.target.value)
-            }
-            placeholder="What happened instead?"
-          />
-        </label>
-      </div>
-      <label className={styles.supportReportContactToggle}>
-        <input
-          type="checkbox"
-          checked={reportForm.contactOk}
-          onChange={(event) =>
-            updateReportForm('contactOk', event.target.checked)
-          }
-        />
-        <span>Okay to contact me about this report</span>
       </label>
       {reportSubmitState.error ? (
         <div className={styles.actionError}>
@@ -5766,9 +5637,9 @@ export function HelpResourcesCard({
                   <div>
                     <div className={styles.walletSettingsTitle}>Support Path</div>
                     <div className={styles.helperNote}>
-                      Start at the top of Help & Resources. Open the guide for
-                      the workflow you were trying to complete, follow the
-                      steps, then ask Nic-Nac if you are still blocked.
+                      Use the guides when you want a walkthrough. If something
+                      feels broken, confusing, or worth improving, send a quick
+                      report.
                     </div>
                   </div>
                   <span className={styles.rosterTag}>Open section</span>
@@ -5776,12 +5647,11 @@ export function HelpResourcesCard({
                 <div className={styles.supportReportCallout}>
                   <div>
                     <div className={styles.walletSettingsTitle}>
-                      Send a report after the workflow steps
+                      Send a quick report
                     </div>
                     <div className={styles.helperNote}>
-                      If the guide and Nic-Nac do not solve it, send the page,
-                      expected result, and actual result so support has the full
-                      trail.
+                      A short description is enough. Sparkle Suite will attach
+                      your account context for support.
                     </div>
                   </div>
                   <button

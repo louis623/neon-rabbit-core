@@ -85,6 +85,36 @@ describe('support reports route', () => {
     })
   })
 
+  it('accepts a one-field quick report and normalizes it for support automation', async () => {
+    const response = await POST(new Request(
+      'http://localhost/api/nic-nac/support-reports',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          details:
+            'Trade Board froze during my live show when I tried to add ER13229.',
+        }),
+      },
+    ))
+
+    expect(response.status).toBe(201)
+    expect(createSupportReportMock).toHaveBeenCalledWith(
+      { from: expect.any(Function) },
+      expect.objectContaining({
+        repId: 'rep-1',
+        repEmail: 'jamie@example.com',
+        source: 'help_form',
+        reportType: 'bug',
+        urgency: 'blocking',
+        title:
+          'Trade Board froze during my live show when I tried to add ER13229',
+        details:
+          'Trade Board froze during my live show when I tried to add ER13229.',
+        contactOk: true,
+      }),
+    )
+  })
+
   it('returns 401 when the rep is not authenticated', async () => {
     getAuthenticatedRepMock.mockRejectedValueOnce(new AuthError('Not authenticated'))
 

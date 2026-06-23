@@ -5,32 +5,64 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
 
 const requestSchema = z.object({
-  reportType: z.enum(['site_issue', 'bug', 'suggested_upgrade', 'workflow_idea']),
+  reportType: z.enum(['site_issue', 'bug', 'suggested_upgrade', 'workflow_idea']).optional(),
   urgency: z.enum(['normal', 'blocking', 'showtime_urgent']).optional(),
   pageOrWorkflow: z.string().trim().max(180).optional(),
-  title: z.string().trim().min(3).max(160),
+  title: z.string().trim().min(3).max(160).optional(),
   details: z.string().trim().min(10).max(3000),
   expectedResult: z.string().trim().max(1200).optional(),
   actualResult: z.string().trim().max(1200).optional(),
   contactOk: z.boolean().optional(),
 })
 
+type SupportReportBody = z.infer<typeof requestSchema>
+
+function inferSupportReportType(details: string): NonNullable<SupportReportBody['reportType']> {
+  if (/\b(idea|suggest|suggestion|upgrade|feature|improve|improvement)\b/i.test(details)) {
+    return 'suggested_upgrade'
+  }
+  if (/\b(workflow|process|steps|guide|how do i|how to)\b/i.test(details)) {
+    return 'workflow_idea'
+  }
+  if (/\b(site|website|page|link|customer-facing|public)\b/i.test(details)) {
+    return 'site_issue'
+  }
+  return 'bug'
+}
+
+function inferSupportReportUrgency(details: string): NonNullable<SupportReportBody['urgency']> {
+  if (/\b(live|show|showtime|right now|urgent|blocked|blocking|can't|cannot|stuck)\b/i.test(details)) {
+    return 'blocking'
+  }
+  return 'normal'
+}
+
+function buildSupportReportTitle(details: string): string {
+  const compact = details.replace(/\s+/g, ' ').trim()
+  const firstSentence = compact.split(/[.!?]\s/)[0]?.trim() || compact
+  const title = firstSentence.replace(/[.!?]+$/, '').slice(0, 120).trim()
+  return title.length >= 3 ? title : 'Quick support report'
+}
+
 export async function POST(request: Request) {
   try {
     const auth = await getAuthenticatedRep()
     const body = requestSchema.parse(await request.json())
+    const reportType = body.reportType ?? inferSupportReportType(body.details)
+    const urgency = body.urgency ?? inferSupportReportUrgency(body.details)
+    const title = body.title ?? buildSupportReportTitle(body.details)
     const result = await createSupportReport(createAdminClient(), {
       repId: auth.repId,
       repEmail: auth.rep.email,
       source: 'help_form',
-      reportType: body.reportType,
-      urgency: body.urgency,
+      reportType,
+      urgency,
       pageOrWorkflow: body.pageOrWorkflow,
-      title: body.title,
+      title,
       details: body.details,
       expectedResult: body.expectedResult,
       actualResult: body.actualResult,
-      contactOk: body.contactOk,
+      contactOk: body.contactOk ?? true,
     })
 
     return NextResponse.json(result, { status: 201 })

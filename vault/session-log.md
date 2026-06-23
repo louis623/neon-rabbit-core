@@ -1995,3 +1995,22 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Attorney review and final marketing/onboarding positioning remain needed for Nic-Nac memory disclosure.
 - Full Suite Vitest still has unrelated start/prelaunch/master-brand failures; do not confuse those with focused Nic-Nac baseline gates.
 - Investigate unrelated public Finder API 500s separately if Finder public discovery/catalog reliability comes into scope.
+
+---
+
+## June 23, 2026 - Help & Resources Quick Support Report Simplification
+
+**What changed:**
+- Replaced the Help & Resources support report monster form with a one-field quick report: reps now only type what happened, what is confusing, or what they want improved.
+- The UI still posts structured support data by inferring report type, urgency, and title from the description, with contact follow-up enabled by default.
+- `/api/nic-nac/support-reports` now also accepts details-only submissions and normalizes them before calling the existing support report service, preserving Control Center, Support Auditor, Google Chat, and Sparkle Lab downstream automation wiring.
+
+**Verification:**
+- Focused support/automation suite passed: 6 files, 32 tests.
+- Standard `npm test` passed: 14 files, 191 tests.
+- `npm run lint` passed with existing warnings only.
+- `npm run build` passed locally and in Vercel.
+- Vercel preview: `https://sparkle-suite-minjgq4dj-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
+- Stable demo `/start` returned 200, `/api/nic-nac/health` returned API/DB reachable, and unauthenticated one-field support report POST returned the expected 401 auth guard.
+- Full Google Chat support smoke was intentionally not run in this pass because it sends a real synthetic support alert; the service/auditor/Google Chat wiring is covered by tests.
