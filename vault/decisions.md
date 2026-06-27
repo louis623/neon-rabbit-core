@@ -6,6 +6,12 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## June 23, 2026
 
+**Beta support intake should be one-field first**
+Help & Resources support reporting should minimize rep friction. The beta-facing form should let reps describe the problem, bug, confusion, or idea in one place. Sparkle Suite should infer report type, urgency, title, and context behind the scenes, then preserve Control Center, Support Auditor, Google Chat, and Sparkle Lab automation. Do not push classification, urgency triage, expected/actual fields, or workflow checklists onto reps unless later evidence shows they are necessary.
+
+**Stale smoke failures are not blockers until freshly reverified**
+When a previously reported Sparkle Suite/Nic-Nac smoke failure conflicts with Louis's current manual smoke result, re-check the exact stable demo URL, deployment, test harness, and product path before naming it a live blocker. Treat harness drift and stale expectations as separate from product defects. A beta-readiness issue is real only after fresh verification against the intended review surface or a focused local reproduction.
+
 **Live calendar changes require app-owned preflight and approval gates**
 Nic-Nac live calendar writes should not be prompt-only. Before mutating a show or reminder setting, the app should resolve candidate shows/defaults, identify ambiguity, choose the correct approval-gated tool, and let that tool emit the confirmation dialog. Skipping one occurrence, canceling a future series, pausing a series, and changing reminders are approval-gated mutations.
 

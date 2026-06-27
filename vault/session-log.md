@@ -2014,3 +2014,26 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
 - Stable demo `/start` returned 200, `/api/nic-nac/health` returned API/DB reachable, and unauthenticated one-field support report POST returned the expected 401 auth guard.
 - Full Google Chat support smoke was intentionally not run in this pass because it sends a real synthetic support alert; the service/auditor/Google Chat wiring is covered by tests.
+
+---
+
+## June 27, 2026 - Open Brain and HQ Handoff for Beta-Readiness Session
+
+**What was captured:**
+- Open Brain now has standalone memories for the June beta-readiness session: Nic-Nac duplicate physical listing smoke/root-cause work, the Help & Resources quick support report simplification, and the verification lesson about stale smoke failures.
+- HQ activity log now has note `120fd02d-13af-4e01-b9ed-e4144854be35` summarizing the session, key decisions, and lessons learned.
+
+**Session work summarized:**
+- Audited beta readiness for Sparkle Suite/Nic-Nac with Louis, including how close the system is to a 2-3 rep beta.
+- Re-investigated the duplicate physical listing concern after Louis reported he had already smoke-tested the path successfully.
+- Found that the remaining problem was a mix of smoke/harness drift and a direct-tool edge, not the core product path being broadly broken.
+- Shipped `1c8bf7f fix: stabilize Nic-Nac duplicate listing smoke` and `200b220 fix: align Nic-Nac trade smoke with canonical photos`.
+- Simplified Help & Resources support intake from a high-friction multi-field form to a one-field quick report while preserving structured downstream support automation.
+- Shipped `ced7467 fix: simplify Help Resources support reports` and promoted it to `https://sparkle-suite-demo.vercel.app`.
+
+**Key decisions and lessons:**
+- Treat `https://sparkle-suite-demo.vercel.app` as the ordinary Louis review target and verify the stable alias before calling work live.
+- Beta support intake should be low-friction for reps; enrichment/classification belongs behind the scenes in Sparkle Suite, not in a long rep-facing form.
+- Preserve Control Center, Support Auditor, Google Chat, and Sparkle Lab automation while reducing the form to a simple report surface.
+- Do not treat old smoke failures as current product blockers without rechecking the exact deployed build, URL, harness, and product behavior.
+- Separate true product bugs from smoke harness drift, and use non-personal reviewer/synthetic data for beta verification.
