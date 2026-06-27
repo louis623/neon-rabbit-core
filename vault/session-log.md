@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 27, 2026 - Nic-Nac Confirmed Listing Photo Retry Fix
+
+**What changed:**
+- Fixed the Trade Board add-listing flow where Nic-Nac could accept a good boxed display jewelry photo, then fail to reuse it when saving the listing.
+- The exact rep-facing confirmation phrase Nic-Nac suggested, `use this photo`, now promotes the latest identified image to a confirmed jewelry-front workflow photo.
+- When multiple prior jewelry photo attempts exist, `add_listing` now defaults to the latest confirmed workflow jewelry-front photo if the model retries without an explicit photo index.
+- Boxed/display jewelry photo rules remain unchanged: clear, centered, close boxed display shots are valid customer-facing listing photos.
+
+**Verification and deploy:**
+- TDD regressions failed first, then passed for `use this photo` confirmation and no-index latest confirmed photo reuse.
+- Focused photo/tool tests passed: 2 files, 56 tests.
+- Broader Nic-Nac photo/tool guard passed: 4 files, 70 tests.
+- Full Nic-Nac suite passed: 112 files passed, 1 skipped; 789 tests passed, 1 skipped.
+- Local `npm run build` passed.
+- Implementation checkpoint: `b6c9b92 fix: reuse confirmed Nic-Nac listing photos`.
+- Vercel deployment `dpl_3g5XE1YxDqDRa4SUL5wVpRYyGhQx` / `https://sparkle-suite-g3nyffkqu-louis-2849s-projects.vercel.app` is READY.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Deployed stable-demo Nic-Nac Trade Board intake smoke passed through the real `/api/nic-nac` route with reviewer-smoke rep `sparkle-reviewer+preview@neonrabbit.net`; workflow completed, listing was verified, and smoke listing cleanup succeeded.
+
+**Lesson carried forward:**
+- If Nic-Nac tells a rep to type a confirmation phrase, that exact phrase must be recognized by workflow state. Do not rely on the model to pass a perfect photo index when app-owned workflow state already knows the latest accepted jewelry photo.
+
 ## June 23, 2026 - Wispr Flow Business Tool
 
 **What changed:**
