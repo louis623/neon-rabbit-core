@@ -4,6 +4,13 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 27, 2026
+
+**Jewelry catalog design identity includes plating/material variants**
+Bomb Party item number alone is not a unique design identity in Sparkle Suite. The same item number can appear with multiple plating/material variants, such as Rhodium Plating and Hematite Plating. When plating/material is known, Nic-Nac and service code should resolve by item number plus normalized material. A different plating on a tag is not automatically a wrong-material correction to an existing catalog row; it may be a new catalog variant that should be created and listed separately.
+
+---
+
 ## June 23, 2026
 
 **Beta support intake should be one-field first**

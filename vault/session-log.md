@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 27, 2026 - Nic-Nac Item-Number Plating Variants
+
+**What changed:**
+- Fixed the catalog identity assumption Louis found during Nic-Nac testing: one item number can have multiple plating/material variants.
+- Supabase migration `20260627134500_jewelry_design_item_number_material_variants.sql` replaced the old item-number-only uniqueness with item number plus normalized material/plating uniqueness.
+- `resolveItemNumber`, Trade Board add-listing, duplicate physical listing checks, and `prepare_trade_board_work` now pass/use material when known.
+- If the same item number has multiple variants and plating is missing, Nic-Nac asks which plating/material. If a provided plating is new for a known item number, Nic-Nac treats it as a new catalog variant, not a wrong-material correction to the existing variant.
+- Prompt guardrails now teach Nic-Nac to pass visible plating as `material` and avoid framing different plating as a catalog mistake.
+
+**Verification and deploy:**
+- TDD regressions failed first for resolver, prepare-tool, and add-listing variant behavior, then passed.
+- Focused variant suite passed: 4 files, 59 tests.
+- Nearby prompt/catalog suite passed: 7 files, 42 tests.
+- Full Nic-Nac suite passed: 112 files passed, 1 skipped; 792 tests passed, 1 skipped.
+- Local `npm run build` passed.
+- Supabase migration applied remotely with `supabase db push`.
+- Implementation checkpoint: `f1e225a fix: support Nic-Nac plating variants`.
+- Vercel deployment `https://sparkle-suite-4ypdz0zr4-louis-2849s-projects.vercel.app` is READY.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo health check passed with API and DB reachable, recent error rate 0.
+- Deployed stable-demo Nic-Nac Trade Board intake smoke passed through the real `/api/nic-nac` route with reviewer-smoke rep `sparkle-reviewer+preview@neonrabbit.net`; workflow completed, listing was verified, and smoke listing cleanup succeeded.
+
+**Lesson carried forward:**
+- Bomb Party item number is not always the full catalog identity. When plating/material is visible, use it as the variant discriminator before deciding whether a design is duplicate, new, or incorrect.
+
+---
+
 ## June 27, 2026 - Nic-Nac Confirmed Listing Photo Retry Fix
 
 **What changed:**
