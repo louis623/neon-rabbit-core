@@ -2086,3 +2086,28 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Preserve Control Center, Support Auditor, Google Chat, and Sparkle Lab automation while reducing the form to a simple report surface.
 - Do not treat old smoke failures as current product blockers without rechecking the exact deployed build, URL, harness, and product behavior.
 - Separate true product bugs from smoke harness drift, and use non-personal reviewer/synthetic data for beta verification.
+
+---
+
+## June 27, 2026 - Nic-Nac Front Photo Handoff Confirmation Recovery
+
+**What changed:**
+- Louis found a remaining Nic-Nac add-listing save edge after several successful pieces: the uploaded jewelry photo was visually accepted in chat, but the save step still treated the front photo handoff as missing.
+- Root cause was workflow-state confirmation language, not photo quality. The image URL could already be stored as an unknown workflow photo, but phrases like `Push it through, please. It's a good photo.` after Nic-Nac's `I've got the front photo visually...` message did not promote that stored photo into the confirmed customer-facing jewelry photo slot.
+- Shipped `bfd443b fix: recover Nic-Nac front photo handoff confirmations`.
+- The intake context now treats push-through/good-photo confirmations as positive only in the guarded context where Nic-Nac had already asked to confirm or identified the front jewelry photo/save-handoff state.
+- Added a regression test for the exact ER18012-style path so the saved image URL is promoted, `jewelryFrontPhoto` clears from missing fields, and the workflow becomes ready to add.
+
+**Verification:**
+- First ran the new regression test red against the old behavior.
+- `npm exec vitest run tests/nic-nac/trade-board-intake-route-context.test.ts` passed: 18 tests.
+- `npm exec vitest run tests/nic-nac/trade-board-intake-route-context.test.ts tests/nic-nac/add-listing-recovery.test.ts` passed: 58 tests.
+- `npm exec vitest run tests/nic-nac` passed: 793 tests, 1 skipped.
+- `npm run build` passed locally.
+- Vercel preview build passed at `https://sparkle-suite-ld0rnr0nn-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
+- Stable demo root returned 200; `/api/nic-nac/health` returned API/DB reachable with recent error rate 0.
+- Deployed reviewer-smoke Trade Board intake replay passed against stable demo with synthetic reviewer account `sparkle-reviewer+preview@neonrabbit.net`, verified listing creation, and cleaned up listing `9b30355e-26c8-4c3d-9d08-a6104fa25ca5`.
+
+**Lesson:**
+- When Nic-Nac says it can see a photo but the save handoff is stuck, first check whether workflow photo role promotion failed before asking the rep for another photo. The app-owned workflow state should preserve and confirm already-uploaded image URLs whenever the rep clearly approves the photo.

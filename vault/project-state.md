@@ -559,3 +559,16 @@ Verification passed:
   - Deployed screenshot-backed API smoke.
   - Deployed rendered customer-page smoke showing `Request sent.` remained visible after refresh with no console errors.
 - Synthetic smoke data and uploaded screenshot objects were cleaned up locally and after deployed stable smoke.
+
+### June 27, 2026 Nic-Nac Front Photo Handoff Confirmation Fix
+
+- Latest code checkpoint: `bfd443b fix: recover Nic-Nac front photo handoff confirmations`.
+- Stable demo URL: `https://sparkle-suite-demo.vercel.app`.
+- Current stable demo target: `https://sparkle-suite-ld0rnr0nn-louis-2849s-projects.vercel.app`.
+- Deployment id: `dpl_D91GuAWK1RQ3bjhJ5aZij23TKy7F`.
+- Branch: `codex/sparkle-cross-phase-hardening`.
+- Louis reported a remaining add-listing edge where several pieces saved successfully, then a perfect front jewelry photo was visually accepted by Nic-Nac but the save step claimed the photo handoff was still stuck.
+- Root cause: workflow photo role promotion did not recognize the rep repair phrase `Push it through, please. It's a good photo.` after Nic-Nac's `I've got the front photo visually...` save-handoff warning, leaving the stored image URL as an unknown photo instead of a confirmed `jewelry_front` photo.
+- Fix: expanded the guarded workflow confirmation recognizers for push-through/good-photo language and save-handoff/front-photo visual acknowledgment language. This only promotes stored photos when Nic-Nac already asked to confirm or identified the front jewelry photo context.
+- Verification passed: red/green regression for the exact path, focused route-context suite, add-listing recovery suite, full Nic-Nac suite, local production build, Vercel preview build, stable alias check, stable health check, and deployed reviewer-smoke Trade Board intake replay with synthetic account cleanup.
+- Practical lesson: if the model can see the image but the save tool cannot, inspect workflow photo state (`declared_role`, `role_confirmed`, `image_url`) before treating the photo itself as bad.
