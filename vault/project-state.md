@@ -572,3 +572,14 @@ Verification passed:
 - Fix: expanded the guarded workflow confirmation recognizers for push-through/good-photo language and save-handoff/front-photo visual acknowledgment language. This only promotes stored photos when Nic-Nac already asked to confirm or identified the front jewelry photo context.
 - Verification passed: red/green regression for the exact path, focused route-context suite, add-listing recovery suite, full Nic-Nac suite, local production build, Vercel preview build, stable alias check, stable health check, and deployed reviewer-smoke Trade Board intake replay with synthetic account cleanup.
 - Practical lesson: if the model can see the image but the save tool cannot, inspect workflow photo state (`declared_role`, `role_confirmed`, `image_url`) before treating the photo itself as bad.
+
+### June 27, 2026 Trade Board Ticker Detail Simplification
+
+- Latest code checkpoint: `3becf3d fix: simplify trade board ticker details`.
+- Stable demo URL: `https://sparkle-suite-demo.vercel.app`.
+- Current stable demo target: `https://sparkle-suite-a7zpv3cez-louis-2849s-projects.vercel.app`.
+- Deployment id: `dpl_57EfLWMfoKCyTNEvJaznK3vLKhEC`.
+- Branch: `codex/sparkle-cross-phase-hardening`.
+- Customer-facing Trade Board ticker now shows item name, item type, and collection instead of MSRP/price.
+- Verification passed: homepage ticker regression, Amethyst homepage/join/trade unit phase, broader Amethyst static/template tests, Vercel preview build, stable alias update, stable root 200, and deployed homepage asset inspection confirming the new ticker line with no old price fallback.
+- Caveat: local `npm run build` hung in the Codex shell without compiler output; Vercel's production build completed successfully.

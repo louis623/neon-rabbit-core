@@ -2111,3 +2111,24 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - When Nic-Nac says it can see a photo but the save handoff is stuck, first check whether workflow photo role promotion failed before asking the rep for another photo. The app-owned workflow state should preserve and confirm already-uploaded image URLs whenever the rep clearly approves the photo.
+
+---
+
+## June 27, 2026 - Trade Board Ticker Detail Simplification
+
+**What changed:**
+- Louis asked for the customer-facing Trade Board ticker to stop showing MSRP and instead show the item's name, item type, and collection.
+- Shipped `3becf3d fix: simplify trade board ticker details`.
+- `tradeBoardTickerItems` now carries `name`, `type`, and `collection` instead of `name`, `price`, and `tier`.
+- The public homepage ticker now renders entries as `Item Name - Type - Collection`; fallback ticker entries were updated to remove MSRP values.
+
+**Verification:**
+- Added/updated homepage regression coverage for the new ticker payload.
+- `npm exec vitest run tests/amethyst-homepage-template.test.ts` passed: 32 tests.
+- `npm run qa:amethyst` unit phase passed: 70 tests. The local link verifier portion failed only because no local server was running at `http://localhost:3001`.
+- `npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-static-assets-route.test.ts tests/amethyst-preview-template-data.test.ts tests/amethyst-targeted-site-data-scrub.test.ts` passed: 69 tests.
+- Local `npm run build` hung in the shell environment without actionable compiler output; stale Node build workers were stopped.
+- Vercel preview build passed at `https://sparkle-suite-a7zpv3cez-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
+- Stable demo root returned 200.
+- Deployed `/amethyst/homepage.jsx` contains the new ticker line and no old ticker price/MSRP fallback.
