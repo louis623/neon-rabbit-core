@@ -424,7 +424,7 @@ function maybeConfirmLatestJewelryFrontPhoto(args: {
 }
 
 function isPositiveConfirmation(text: string): boolean {
-  return /\b(?:confirmed|confirm|yes|yep|yeah|correct|that'?s right|that is right|that is correct|exactly|use it|use that|good enough)\b/i.test(
+  return /\b(?:confirmed|confirm|yes|yep|yeah|correct|that'?s right|that is right|that is correct|exactly|use it|use that|use this(?:\s+(?:photo|shot|image|one))?|good enough)\b/i.test(
     text,
   )
 }

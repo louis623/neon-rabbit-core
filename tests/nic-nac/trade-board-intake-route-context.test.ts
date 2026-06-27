@@ -898,7 +898,7 @@ describe('Trade Board intake route context', () => {
         {
           id: 'user-confirm',
           role: 'user',
-          parts: [{ type: 'text', text: 'Confirmed.' }],
+          parts: [{ type: 'text', text: 'Use this photo.' }],
         } as UIMessage,
       ],
       latestUserMessageId: 'user-confirm',

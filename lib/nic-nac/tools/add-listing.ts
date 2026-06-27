@@ -442,7 +442,7 @@ function workflowConfirmsJewelryFrontPhoto(
 ): boolean {
   const confirmedPhotos = getConfirmedJewelryFrontPhotos(workflow)
   if (confirmedPhotos.length === 0) return false
-  if (photoIndex === undefined) return confirmedPhotos.length === 1
+  if (photoIndex === undefined) return true
   if (getWorkflowPhotoByModelIndex(workflow, photoIndex)) return true
   return (
     confirmedPhotos.some((photo) => photo.attachmentIndex === photoIndex) ||
@@ -467,8 +467,8 @@ function getWorkflowConfirmedJewelryFrontImageUrl(
     if (matchingPhoto?.imageUrl) return matchingPhoto.imageUrl
   }
 
-  if (confirmedPhotos.length === 1) {
-    return confirmedPhotos[0]?.imageUrl ?? null
+  if (photoIndex === undefined) {
+    return confirmedPhotos[confirmedPhotos.length - 1]?.imageUrl ?? null
   }
 
   return null

@@ -2577,6 +2577,94 @@ describe('add_listing - active workflow readiness guard', () => {
     expect(result).not.toHaveProperty('photoPreflight')
   })
 
+  it('uses the latest confirmed workflow jewelry photo when the model retries without a photo index', async () => {
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK75454',
+      designName: 'The Piper Necklace',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'NK75454',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday 2026',
+      typePrefix: 'NK',
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/piper-latest.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/piper-latest.jpg',
+      signedUrl: 'https://signed.example.com/piper-latest',
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        known: {
+          itemNumber: 'NK75454',
+          designName: 'The Piper Necklace',
+          collectionName: 'July Birthday 2026',
+          material: 'Rhodium Plating',
+          mainStone: 'Lab-Created Ruby',
+          bpMsrp: 138,
+        },
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,T0xEX0ZBUg==',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,TEFURVNUX0NMT1NF',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'NK75454',
+        designName: 'The Piper Necklace',
+        collectionName: 'July Birthday 2026',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 138,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-1',
+      itemNumber: 'NK75454',
+      createdNewDesign: true,
+    })
+
+    expect(uploadJewelryPhotoMock.mock.calls[0][1]).toBe(
+      'data:image/png;base64,TEFURVNUX0NMT1NF',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      itemNumber: 'NK75454',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/piper-latest.jpg',
+    })
+  })
+
   it('treats piecePhotoIndex as the model-facing workflow photo number when several jewelry photos are confirmed', async () => {
     processRepListingPhotoUrlMock.mockResolvedValueOnce({
       photoUrl:
