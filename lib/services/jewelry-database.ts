@@ -58,6 +58,11 @@ export function normalizeItemNumber(itemNumber: string): string {
   return itemNumber.trim().toUpperCase()
 }
 
+export function normalizeJewelryMaterialKey(material: string | null | undefined): string | null {
+  const normalized = material?.trim().replace(/\s+/g, ' ').toLowerCase()
+  return normalized || null
+}
+
 function escapeIlikePattern(value: string): string {
   return value.replace(/[%_\\]/g, (match) => `\\${match}`)
 }
@@ -299,9 +304,66 @@ function buildPhotoPipelineUpdate(
   return update
 }
 
+type ResolveDesignRow = {
+  id: string
+  item_number: string
+  design_name: string
+  material: string | null
+  main_stone: string | null
+  bp_msrp: number | null
+  canonical_photo_url: string | null
+  type_prefix: JewelryType
+  collection_id: string | null
+  search_tags: string[] | null
+  collection:
+    | { name: string; collection_year: number | null }
+    | { name: string; collection_year: number | null }[]
+    | null
+}
+
+function resolveRowCollection(row: ResolveDesignRow) {
+  return Array.isArray(row.collection) ? row.collection[0] : row.collection
+}
+
+function mapResolveVariantCandidate(row: ResolveDesignRow) {
+  const collection = resolveRowCollection(row)
+  return {
+    designId: row.id,
+    itemNumber: row.item_number,
+    designName: row.design_name,
+    material: row.material ?? null,
+    mainStone: row.main_stone ?? null,
+    collectionName: collection?.name ?? null,
+    collectionYear: collection?.collection_year ?? null,
+  }
+}
+
+function mapResolvedDesign(row: ResolveDesignRow): Extract<ResolveItemNumberResult, { found: true }> {
+  const collection = resolveRowCollection(row)
+  return {
+    found: true,
+    design: {
+      id: row.id,
+      itemNumber: row.item_number,
+      designName: row.design_name,
+      material: row.material ?? null,
+      mainStone: row.main_stone ?? null,
+      bpMsrp: row.bp_msrp ?? null,
+      canonicalPhotoUrl: row.canonical_photo_url ?? null,
+      typePrefix: row.type_prefix,
+      collectionId: row.collection_id ?? null,
+      collectionName: collection?.name ?? null,
+      collectionYear: collection?.collection_year ?? null,
+      searchTags: Array.isArray(row.search_tags) ? row.search_tags : [],
+    },
+    hasCollection: !!row.collection_id,
+  }
+}
+
 export async function resolveItemNumber(
   supabase: SupabaseClient,
-  itemNumber: string
+  itemNumber: string,
+  options: { material?: string | null } = {},
 ): Promise<ResolveItemNumberResult> {
   const normalizedItemNumber = normalizeItemNumber(itemNumber)
   if (!normalizedItemNumber) throw errors.MISSING_ITEM_INPUT()
@@ -312,37 +374,33 @@ export async function resolveItemNumber(
       'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection_id, search_tags, collection:collections(name, collection_year)'
     )
     .eq('item_number', normalizedItemNumber)
-    .maybeSingle()
+    .limit(20)
   if (error) throw error
-  if (!data) return { found: false, itemNumber: normalizedItemNumber }
+  const rows = (data ?? []) as unknown as ResolveDesignRow[]
+  if (rows.length === 0) return { found: false, itemNumber: normalizedItemNumber }
 
-  const collectionRel = (
-    data as {
-      collection:
-        | { name: string; collection_year: number | null }
-        | { name: string; collection_year: number | null }[]
-        | null
+  const requestedMaterialKey = normalizeJewelryMaterialKey(options.material)
+  if (requestedMaterialKey) {
+    const materialMatch = rows.find(
+      (row) => normalizeJewelryMaterialKey(row.material) === requestedMaterialKey,
+    )
+    if (materialMatch) return mapResolvedDesign(materialMatch)
+
+    return {
+      found: false,
+      itemNumber: normalizedItemNumber,
+      requestedMaterial: options.material?.trim() || null,
+      variantCandidates: rows.map(mapResolveVariantCandidate),
     }
-  ).collection
-  const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+  }
+
+  if (rows.length === 1) return mapResolvedDesign(rows[0])
 
   return {
-    found: true,
-    design: {
-      id: data.id as string,
-      itemNumber: data.item_number as string,
-      designName: data.design_name as string,
-      material: (data.material as string | null) ?? null,
-      mainStone: (data.main_stone as string | null) ?? null,
-      bpMsrp: (data.bp_msrp as number | null) ?? null,
-      canonicalPhotoUrl: (data.canonical_photo_url as string | null) ?? null,
-      typePrefix: data.type_prefix as JewelryType,
-      collectionId: (data.collection_id as string | null) ?? null,
-      collectionName: collection?.name ?? null,
-      collectionYear: collection?.collection_year ?? null,
-      searchTags: Array.isArray(data.search_tags) ? (data.search_tags as string[]) : [],
-    },
-    hasCollection: !!data.collection_id,
+    found: false,
+    itemNumber: normalizedItemNumber,
+    ambiguous: true,
+    variantCandidates: rows.map(mapResolveVariantCandidate),
   }
 }
 

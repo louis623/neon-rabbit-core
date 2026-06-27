@@ -10,15 +10,16 @@ vi.mock('@/lib/services/server-image-quality', () => ({
 import { addListing, addListingBatch } from '@/lib/services/trade-board'
 import { resolveItemNumber } from '@/lib/services/jewelry-database'
 
-function makeResolveSupabase(row: Record<string, unknown> | null) {
-  const maybeSingle = vi.fn().mockResolvedValue({ data: row, error: null })
-  const eq = vi.fn().mockReturnValue({ maybeSingle })
+function makeResolveSupabase(rows: Array<Record<string, unknown>> | Record<string, unknown> | null) {
+  const data = Array.isArray(rows) ? rows : rows ? [rows] : []
+  const limit = vi.fn().mockResolvedValue({ data, error: null })
+  const eq = vi.fn().mockReturnValue({ limit })
   const select = vi.fn().mockReturnValue({ eq })
   const from = vi.fn().mockReturnValue({ select })
 
   return {
     client: { from } as never,
-    spies: { from, select, eq, maybeSingle },
+    spies: { from, select, eq, limit },
   }
 }
 
@@ -124,8 +125,9 @@ function makeAddListingWithCollectionSupabase(
     collection?: { id: string; name: string; collection_year: number | null }
   } = {},
 ) {
-  const resolveMaybeSingle = vi.fn().mockResolvedValue({
-    data: {
+  const resolveLimit = vi.fn().mockResolvedValue({
+    data: [
+      {
       id: 'design-1',
       item_number: 'RG31452',
       design_name: 'Celeste Ring',
@@ -136,10 +138,11 @@ function makeAddListingWithCollectionSupabase(
       type_prefix: 'RG',
       collection_id: null,
       collection: null,
-    },
+      },
+    ],
     error: null,
   })
-  const resolveEq = vi.fn().mockReturnValue({ maybeSingle: resolveMaybeSingle })
+  const resolveEq = vi.fn().mockReturnValue({ limit: resolveLimit })
 
   const collectionMaybeSingle = vi.fn().mockResolvedValue({
     data: options.collection ?? {
@@ -266,6 +269,93 @@ describe('resolveItemNumber', () => {
         designName: 'Celeste Ring',
       },
       hasCollection: true,
+    })
+  })
+
+  it('uses material as the variant key when one item number has multiple platings', async () => {
+    const { client } = makeResolveSupabase([
+      {
+        id: 'design-rhodium',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Rhodium Plating',
+        main_stone: 'Ruby',
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+      {
+        id: 'design-hematite',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Hematite Plating',
+        main_stone: 'Ruby',
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+    ])
+
+    const result = await resolveItemNumber(client, 'NK12032', {
+      material: 'hematite plating',
+    })
+
+    expect(result).toMatchObject({
+      found: true,
+      design: {
+        id: 'design-hematite',
+        itemNumber: 'NK12032',
+        material: 'Hematite Plating',
+      },
+    })
+  })
+
+  it('returns an ambiguous variant result when plating is missing for a multi-plating item number', async () => {
+    const { client } = makeResolveSupabase([
+      {
+        id: 'design-rhodium',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Rhodium Plating',
+        main_stone: 'Ruby',
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+      {
+        id: 'design-hematite',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Hematite Plating',
+        main_stone: 'Ruby',
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+    ])
+
+    const result = await resolveItemNumber(client, 'NK12032')
+
+    expect(result).toMatchObject({
+      found: false,
+      itemNumber: 'NK12032',
+      ambiguous: true,
+      variantCandidates: [
+        { designId: 'design-rhodium', material: 'Rhodium Plating' },
+        { designId: 'design-hematite', material: 'Hematite Plating' },
+      ],
     })
   })
 })

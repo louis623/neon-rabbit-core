@@ -358,11 +358,14 @@ async function repAlreadyHasActiveListingForItem(input: {
   admin: SupabaseClient
   repId: string
   itemNumber: string
+  material?: string
   designId?: string
 }) {
   let designId = input.designId
   if (!designId) {
-    const resolved = await resolveItemNumber(input.admin, input.itemNumber)
+    const resolved = await resolveItemNumber(input.admin, input.itemNumber, {
+      material: input.material,
+    })
     if (!resolved?.found) return false
     designId = resolved.design.id
   }
@@ -385,12 +388,14 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
   repId: string
   conversationId: string
   itemNumber: string
+  material?: string
   designId?: string
 }) {
   const alreadyListed = await repAlreadyHasActiveListingForItem({
     admin: input.admin,
     repId: input.repId,
     itemNumber: input.itemNumber,
+    material: input.material,
     designId: input.designId,
   })
   if (!alreadyListed) return
@@ -663,7 +668,9 @@ async function runSingle(
         readiness.missing.every((field) => field === 'jewelryFrontPhoto')
       ) {
         try {
-          resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber)
+          resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber, {
+            material: input.material,
+          })
         } catch (err) {
           explainServiceError(err)
         }
@@ -728,7 +735,10 @@ async function runSingle(
     // retries do not duplicate catalog designs.
     try {
       const existingDesign =
-        resolvedCatalogDesign ?? (await resolveItemNumber(admin, itemNumber))
+        resolvedCatalogDesign ??
+        (await resolveItemNumber(admin, itemNumber, {
+          material: input.material,
+        }))
       if (existingDesign.found) {
         await requireDuplicatePhysicalPieceConfirmationIfNeeded({
           admin,
@@ -736,6 +746,7 @@ async function runSingle(
           repId: ctx.repId,
           conversationId: ctx.conversationId,
           itemNumber,
+          material: input.material,
           designId: existingDesign.design.id,
         })
         const useExistingCatalogCanonicalPhoto =
@@ -756,6 +767,7 @@ async function runSingle(
             })
         const existingResult = await addListing(admin, ctx.repId, {
           itemNumber,
+          material: input.material,
           collectionName,
           ringSize: input.ringSize,
           repNotes: input.repNotes,
@@ -1111,7 +1123,9 @@ async function runSingle(
   if (!designName) {
     if (!resolvedCatalogDesign) {
       try {
-        resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber)
+        resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber, {
+          material: input.material,
+        })
       } catch (err) {
         explainServiceError(err)
       }
@@ -1122,6 +1136,7 @@ async function runSingle(
       repId: ctx.repId,
       conversationId: ctx.conversationId,
       itemNumber,
+      material: input.material,
       designId: resolvedCatalogDesign?.found
         ? resolvedCatalogDesign.design.id
         : undefined,
@@ -1154,6 +1169,7 @@ async function runSingle(
   try {
     result = await addListing(admin, ctx.repId, {
       itemNumber,
+      material: input.material,
       collectionName: input.collectionName,
       ringSize: input.ringSize,
       repNotes: input.repNotes,

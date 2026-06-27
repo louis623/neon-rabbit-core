@@ -163,6 +163,12 @@ export const errors = {
       message: `no design found for item ${itemNumber}`,
       userMessage: `I don't have ${itemNumber} on file yet - I'll need the design name and a photo.`,
     }),
+  NEEDS_MATERIAL_VARIANT: (itemNumber: string) =>
+    new ServiceError({
+      code: 'NEEDS_MATERIAL_VARIANT',
+      message: `multiple material variants found for item ${itemNumber}`,
+      userMessage: `I found more than one plating/material for ${itemNumber}. Which plating is this one?`,
+    }),
   EVENT_NOT_FOUND: () =>
     new ServiceError({
       code: 'EVENT_NOT_FOUND',

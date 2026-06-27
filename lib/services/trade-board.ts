@@ -514,8 +514,13 @@ export async function addListing(
   if (!repId) throw errors.UNAUTHORIZED('repId required')
   if (!input.itemNumber) throw errors.MISSING_ITEM_INPUT()
 
-  const resolved = await resolveItemNumber(supabase, input.itemNumber)
-  if (!resolved.found) throw errors.NEEDS_FULL_INFO(input.itemNumber)
+  const resolved = await resolveItemNumber(supabase, input.itemNumber, {
+    material: input.material,
+  })
+  if (!resolved.found) {
+    if (resolved.ambiguous) throw errors.NEEDS_MATERIAL_VARIANT(resolved.itemNumber)
+    throw errors.NEEDS_FULL_INFO(input.itemNumber)
+  }
   if (!resolved.hasCollection) {
     if (!input.collectionName?.trim()) {
       throw errors.NEEDS_COLLECTION(resolved.design.id, resolved.design.designName)

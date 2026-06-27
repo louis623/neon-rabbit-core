@@ -5,6 +5,8 @@ const getMyBoardMock = vi.fn()
 const createAdminClientMock = vi.fn()
 
 vi.mock('@/lib/services/jewelry-database', () => ({
+  normalizeJewelryMaterialKey: (value: string | null | undefined) =>
+    value?.trim().replace(/\s+/g, ' ').toLowerCase() || null,
   searchJewelryDatabase: (...args: unknown[]) => searchJewelryDatabaseMock(...args),
 }))
 
@@ -104,6 +106,112 @@ describe('prepare_trade_board_work', () => {
       requiredBeforeAction: ['ringSize'],
       nextQuestion: 'What ring size is this physical piece?',
     })
+  })
+
+  it('asks for plating when an item number resolves to multiple catalog variants', async () => {
+    searchJewelryDatabaseMock.mockResolvedValueOnce([
+      {
+        designId: 'design-rhodium',
+        itemNumber: 'NK12032',
+        designName: 'Reveal Necklace',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        typePrefix: 'NK',
+        collectionName: 'July Birthday 2026',
+        collectionYear: 2026,
+        canonicalPhotoUrl: 'https://cdn.example.com/nk12032-rhodium.png',
+        isOnMyBoard: true,
+        activeListingsCount: 1,
+      },
+      {
+        designId: 'design-hematite',
+        itemNumber: 'NK12032',
+        designName: 'Reveal Necklace',
+        material: 'Hematite Plating',
+        mainStone: 'Lab-Created Ruby',
+        typePrefix: 'NK',
+        collectionName: 'July Birthday 2026',
+        collectionYear: 2026,
+        canonicalPhotoUrl: 'https://cdn.example.com/nk12032-hematite.png',
+        isOnMyBoard: false,
+        activeListingsCount: 0,
+      },
+    ])
+
+    const result = await makeTool().execute({
+      action: 'add_piece',
+      itemNumber: 'NK12032',
+    })
+
+    expect(result).toMatchObject({
+      catalogStatus: 'variant_ambiguous',
+      allowedPath: 'ask_for_variant_material',
+      nextQuestion: 'Which plating or material is this one?',
+      candidates: [
+        {
+          designId: 'design-rhodium',
+          itemNumber: 'NK12032',
+          material: 'Rhodium Plating',
+          isOnMyBoard: true,
+        },
+        {
+          designId: 'design-hematite',
+          itemNumber: 'NK12032',
+          material: 'Hematite Plating',
+          isOnMyBoard: false,
+        },
+      ],
+    })
+  })
+
+  it('treats a new plating for a known item number as a new catalog variant', async () => {
+    searchJewelryDatabaseMock.mockResolvedValueOnce([
+      {
+        designId: 'design-rhodium',
+        itemNumber: 'NK12032',
+        designName: 'Reveal Necklace',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        typePrefix: 'NK',
+        collectionName: 'July Birthday 2026',
+        collectionYear: 2026,
+        canonicalPhotoUrl: 'https://cdn.example.com/nk12032-rhodium.png',
+        isOnMyBoard: true,
+        activeListingsCount: 1,
+      },
+    ])
+
+    const result = await makeTool().execute({
+      action: 'add_piece',
+      itemNumber: 'NK12032',
+      material: 'Hematite Plating',
+    })
+
+    expect(searchJewelryDatabaseMock).toHaveBeenCalledWith(
+      { marker: 'admin-client' },
+      'rep-1',
+      { query: 'NK12032', limit: 5 },
+    )
+    expect(result).toMatchObject({
+      catalogStatus: 'variant_not_found',
+      allowedPath: 'create_catalog_variant_then_add_listing',
+      existingVariants: [
+        {
+          designId: 'design-rhodium',
+          itemNumber: 'NK12032',
+          material: 'Rhodium Plating',
+        },
+      ],
+      requiredBeforeAction: [
+        'itemNumber',
+        'designName',
+        'collectionName',
+        'jewelryFrontPhoto',
+      ],
+      nextTool: 'add_listing',
+    })
+    expect(result.guidance).toContain('different plating is a new catalog variant')
+    expect(result.guidance).not.toContain('catalog correction')
   })
 
   it('routes unknown catalog adds into new-design intake with photo and details requirements', async () => {

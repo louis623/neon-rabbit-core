@@ -102,6 +102,7 @@ export interface AddListingInput {
   clickwrapAccepted?: boolean
   collectionName?: string
   collectionYear?: number
+  material?: string
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
@@ -119,6 +120,7 @@ export interface AddListingResult {
 
 export interface BatchListingItem {
   itemNumber: string
+  material?: string
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
@@ -1051,7 +1053,21 @@ export interface JewelryDatabaseResult {
 }
 
 export type ResolveItemNumberResult =
-  | { found: false; itemNumber: string }
+  | {
+      found: false
+      itemNumber: string
+      ambiguous?: boolean
+      requestedMaterial?: string | null
+      variantCandidates?: Array<{
+        designId: string
+        itemNumber: string
+        designName: string
+        material: string | null
+        mainStone: string | null
+        collectionName: string | null
+        collectionYear: number | null
+      }>
+    }
   | {
       found: true
       design: {

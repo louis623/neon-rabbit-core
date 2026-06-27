@@ -519,6 +519,127 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     )
   })
 
+  it('creates a new catalog variant when the same item number has a different plating', async () => {
+    resolveItemNumberMock.mockImplementation(
+      (_admin: unknown, itemNumber: string, options?: { material?: string }) => {
+        if (options?.material === 'Hematite Plating') {
+          return Promise.resolve({
+            found: false,
+            itemNumber,
+            variantCandidates: [
+              {
+                designId: 'design-rhodium',
+                itemNumber,
+                designName: 'The Piper Necklace',
+                material: 'Rhodium Plating',
+              },
+            ],
+          })
+        }
+
+        return Promise.resolve({
+          found: true,
+          hasCollection: true,
+          design: {
+            id: 'design-rhodium',
+            itemNumber,
+            designName: 'The Piper Necklace',
+            material: 'Rhodium Plating',
+            canonicalPhotoUrl: 'https://cdn.example.com/nk12032-rhodium.png',
+          },
+        })
+      },
+    )
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/piper-hematite.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/originals/piper-hematite.jpg',
+      signedUrl: 'https://signed.example.com/piper-hematite',
+    })
+    createDesignMock.mockResolvedValueOnce({
+      designId: 'design-hematite',
+      itemNumber: 'NK12032',
+      collectionId: 'coll-1',
+      collectionName: 'July Birthday 2026',
+      typePrefix: 'NK',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-hematite',
+      designId: 'design-hematite',
+      itemNumber: 'NK12032',
+      designName: 'The Piper Necklace',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        known: {
+          itemNumber: 'NK12032',
+          designName: 'The Piper Necklace',
+          collectionName: 'July Birthday 2026',
+          material: 'Hematite Plating',
+          mainStone: 'Lab-Created Ruby',
+          bpMsrp: 138,
+        },
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,SEVNQVRJVEU=',
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: ['declared as customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'NK12032',
+        designName: 'The Piper Necklace',
+        collectionName: 'July Birthday 2026',
+        material: 'Hematite Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 138,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-hematite',
+      designId: 'design-hematite',
+      createdNewDesign: true,
+    })
+
+    expect(resolveItemNumberMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'NK12032',
+      { material: 'Hematite Plating' },
+    )
+    expect(createDesignMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        itemNumber: 'NK12032',
+        designName: 'The Piper Necklace',
+        material: 'Hematite Plating',
+      }),
+    )
+    expect(addListingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        itemNumber: 'NK12032',
+        material: 'Hematite Plating',
+      }),
+    )
+  })
+
   it('processes a rep-level custom listing photo before creating the board listing', async () => {
     fetchMock.mockResolvedValueOnce(makeImageResponse(new Uint8Array([4, 5, 6])))
     createDesignMock.mockResolvedValueOnce({

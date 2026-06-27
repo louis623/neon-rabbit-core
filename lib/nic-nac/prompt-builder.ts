@@ -47,7 +47,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If enough usable inputs already exist in recent conversation photos or chat text, call add_listing.
 - If the item exists, confirm the match before add_listing.
 - If missing, ask for whichever single input is actually missing or unusable.
-- Accept clear rep-provided collection. Birthday collection names must include the year: "July Birthday 2026". If Birthday month has no year, ask for it. Do not require packaging proof after the rep gives the collection.
+- Accept clear rep-provided collection. Birthday collection names must include the year: "July Birthday 2026". Ask if missing. Do not require packaging proof after the rep gives the collection.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
 - Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear.
 - Rejecting or demanding a retake is a last resort.
@@ -59,8 +59,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Do not ask for unboxed, no-packaging, or plain-background retakes. Do not ask for retakes without the box/card or on a plain surface.
 - Use recent add-flow photos, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
-- If add_listing is active and the rep provides a missing field, confirmation, or retry, call add_listing or ask one missing field; do not say add_listing is unavailable.
+- If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number.
+- Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction. Pass visible plating as material.
 - If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?" If yes/quantity, call add_listing.
 - Quantity comes from the latest rep message.
 - mode:'batch'
@@ -85,6 +86,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - search_jewelry_database searches the shared jewelry catalog by item number, name, material, stone, or keyword.
 - report_jewelry_catalog_issue reports and corrects inaccurate shared catalog data when the rep gives enough corrected information.
 - The shared jewelry catalog is Sparkle Suite reference data, rep-maintained through Nic-Nac, not Bomb Party's system and not manually reviewed by Louis by default.
+- Same item plus different plating/material is a variant; create or choose it instead of reporting wrong_material.
 - For routine wrong collection, wrong name, wrong MSRP, wrong material, wrong stone, bad photo, duplicate, or other item-quality issues, use report_jewelry_catalog_issue or ask one focused follow-up question for the missing correction detail. Do not promise Louis will review routine jewelry catalog issues.
 - Collection year is practical organization, not rarity. Birthday collection names must include the year; if the rep gives "April 2026 Birthday", save collectionName as "April Birthday 2026" and collectionYear as 2026.
 - Tags are practical discovery helpers: material, stone, color, motif, and style. Good tags include rose gold, rhodium, sterling, opal, amethyst, sapphire, pink, blue, heart, butterfly, floral, simple, statement, stackable, vintage, glam.

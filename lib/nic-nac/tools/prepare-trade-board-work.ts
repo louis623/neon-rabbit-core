@@ -4,7 +4,10 @@
 import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { searchJewelryDatabase } from '@/lib/services/jewelry-database'
+import {
+  normalizeJewelryMaterialKey,
+  searchJewelryDatabase,
+} from '@/lib/services/jewelry-database'
 import { getMyBoard } from '@/lib/services/trade-board'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
@@ -20,6 +23,7 @@ const inputSchema = z.object({
   ]),
   query: z.string().optional(),
   itemNumber: z.string().optional(),
+  material: z.string().optional(),
   ringSize: z.string().optional(),
 })
 
@@ -29,18 +33,58 @@ function searchQuery(input: ToolInput) {
   return input.itemNumber?.trim() || input.query?.trim() || ''
 }
 
-function exactOrSingleMatch(
+function variantCandidate(result: Awaited<ReturnType<typeof searchJewelryDatabase>>[number]) {
+  return {
+    designId: result.designId,
+    itemNumber: result.itemNumber,
+    designName: result.designName,
+    material: result.material,
+    mainStone: result.mainStone,
+    collectionName: result.collectionName,
+    collectionYear: result.collectionYear,
+    isOnMyBoard: result.isOnMyBoard,
+    activeListingsCount: result.activeListingsCount,
+  }
+}
+
+function resolveCatalogMatch(
   results: Awaited<ReturnType<typeof searchJewelryDatabase>>,
   input: ToolInput,
 ) {
   const normalizedItem = input.itemNumber?.trim().toUpperCase()
+  const materialKey = normalizeJewelryMaterialKey(input.material)
   if (normalizedItem) {
-    const exact = results.find(
+    const exactMatches = results.filter(
       (result) => result.itemNumber.toUpperCase() === normalizedItem,
     )
-    if (exact) return exact
+    if (materialKey && exactMatches.length > 0) {
+      const materialMatch = exactMatches.find(
+        (result) => normalizeJewelryMaterialKey(result.material) === materialKey,
+      )
+      if (materialMatch) return { kind: 'match' as const, match: materialMatch }
+      return {
+        kind: 'variant_not_found' as const,
+        candidates: exactMatches.map(variantCandidate),
+      }
+    }
+    if (exactMatches.length === 1) {
+      return { kind: 'match' as const, match: exactMatches[0] }
+    }
+    if (exactMatches.length > 1) {
+      return {
+        kind: 'variant_ambiguous' as const,
+        candidates: exactMatches.map(variantCandidate),
+      }
+    }
   }
-  return results.length === 1 ? results[0] : null
+  if (results.length === 1) return { kind: 'match' as const, match: results[0] }
+  if (results.length > 1) {
+    return {
+      kind: 'ambiguous' as const,
+      candidates: results.map(variantCandidate),
+    }
+  }
+  return { kind: 'not_found' as const }
 }
 
 export function makePrepareTradeBoardWorkTool(ctx: {
@@ -124,26 +168,52 @@ export function makePrepareTradeBoardWorkTool(ctx: {
         query,
         limit: 5,
       })
-      const match = exactOrSingleMatch(results, input)
+      const catalogMatch = resolveCatalogMatch(results, input)
 
-      if (!match && results.length > 1) {
+      if (catalogMatch.kind === 'variant_ambiguous') {
+        return {
+          action: input.action,
+          catalogStatus: 'variant_ambiguous',
+          allowedPath: 'ask_for_variant_material',
+          candidates: catalogMatch.candidates,
+          nextQuestion: 'Which plating or material is this one?',
+          catalogDeletionAllowed: false,
+          guidance:
+            'This item number has multiple catalog variants. Ask for the plating/material and then use the matching variant; do not treat a different plating as a catalog correction.',
+        }
+      }
+
+      if (catalogMatch.kind === 'variant_not_found') {
+        return {
+          action: input.action,
+          catalogStatus: 'variant_not_found',
+          allowedPath: 'create_catalog_variant_then_add_listing',
+          existingVariants: catalogMatch.candidates,
+          requiredBeforeAction: [
+            'itemNumber',
+            'designName',
+            'collectionName',
+            'jewelryFrontPhoto',
+          ],
+          nextTool: 'add_listing',
+          catalogDeletionAllowed: false,
+          guidance:
+            'This item number exists, but the provided plating/material is not one of the current catalog variants. A different plating is a new catalog variant, not a correction to the existing variant. Collect the new variant facts and customer-facing jewelry photo, then call add_listing with the material.',
+        }
+      }
+
+      if (catalogMatch.kind === 'ambiguous') {
         return {
           action: input.action,
           catalogStatus: 'ambiguous',
           allowedPath: 'ask_for_catalog_match',
-          candidates: results.map((result) => ({
-            designId: result.designId,
-            itemNumber: result.itemNumber,
-            designName: result.designName,
-            collectionName: result.collectionName,
-            collectionYear: result.collectionYear,
-          })),
+          candidates: catalogMatch.candidates,
           nextQuestion: 'Which matching piece should I use?',
           catalogDeletionAllowed: false,
         }
       }
 
-      if (!match) {
+      if (catalogMatch.kind === 'not_found') {
         return {
           action: input.action,
           catalogStatus: 'not_found',
@@ -161,6 +231,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
         }
       }
 
+      const match = catalogMatch.match
       const requiredBeforeAction =
         match.typePrefix === 'RG' && !input.ringSize ? ['ringSize'] : []
 
@@ -172,6 +243,8 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           designId: match.designId,
           itemNumber: match.itemNumber,
           designName: match.designName,
+          material: match.material,
+          mainStone: match.mainStone,
           type: match.typePrefix,
           collectionName: match.collectionName,
           collectionYear: match.collectionYear,
