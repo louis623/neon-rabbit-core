@@ -509,8 +509,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(data.tradeBoardTickerItems).toEqual([
       {
         name: 'Opal Glow Ring',
-        price: '$88',
-        tier: 'diamond',
+        type: 'Ring',
+        collection: 'OG',
       },
     ])
   })

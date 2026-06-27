@@ -634,17 +634,17 @@ function Ticker({ topText }) {
     ? CONTENT.tradeBoardTickerItems
         .map((item) => ({
           name: runtimeText(item.name),
-          price: runtimeText(item.price) || "Trade ready",
-          tier: runtimeText(item.tier).toLowerCase(),
+          type: runtimeText(item.type),
+          collection: runtimeText(item.collection),
         }))
         .filter((item) => item.name)
     : [];
   const fallbackTrades = [
-    { name: "Citrine Sun Pendant", price: "$148", tier: "unicorn" },
-    { name: "Rose Quartz Band", price: "$98", tier: "diamond" },
-    { name: "Amethyst Halo Ring", price: "$118", tier: "" },
-    { name: "Pearl Drop Studs", price: "$48", tier: "" },
-    { name: "Estate Sapphire Cluster", price: "$220", tier: "unicorn" },
+    { name: "Citrine Sun Pendant", type: "Necklace", collection: "Birthday" },
+    { name: "Rose Quartz Band", type: "Ring", collection: "OG" },
+    { name: "Amethyst Halo Ring", type: "Ring", collection: "Birthday" },
+    { name: "Pearl Drop Studs", type: "Earrings", collection: "OG" },
+    { name: "Estate Sapphire Cluster", type: "Ring", collection: "Sterling Club" },
   ];
   const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted ? contentTrades : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
@@ -682,8 +682,7 @@ function Ticker({ topText }) {
               data-ticker-segment-start={i === 0 ? "true" : undefined}
               data-ticker-segment-repeat-start={i === tradeSegmentLength ? "true" : undefined}
             >
-              <span className={`pip ${tr.tier}`} />
-              {tr.name} · {tr.price}
+              {tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}
             </a>
           )) : (
             <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>

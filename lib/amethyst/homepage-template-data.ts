@@ -75,8 +75,8 @@ export interface AmethystHomepageLiveQueueEntry {
 
 export interface AmethystHomepageTradeBoardTickerItem {
   name: string
-  price: string
-  tier: string
+  type: string
+  collection: string
 }
 
 export interface AmethystHomepageTemplateData {
@@ -280,8 +280,8 @@ function formatTradeBoardTickerItem(
 ): AmethystHomepageTradeBoardTickerItem {
   return {
     name: listing.name,
-    price: listing.msrp ? `$${listing.msrp}` : 'Trade ready',
-    tier: listing.tier === 'everyday' ? '' : listing.tier,
+    type: listing.type,
+    collection: listing.collection,
   }
 }
 
