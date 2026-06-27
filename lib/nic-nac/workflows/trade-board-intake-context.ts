@@ -424,8 +424,19 @@ function maybeConfirmLatestJewelryFrontPhoto(args: {
 }
 
 function isPositiveConfirmation(text: string): boolean {
-  return /\b(?:confirmed|confirm|yes|yep|yeah|correct|that'?s right|that is right|that is correct|exactly|use it|use that|use this(?:\s+(?:photo|shot|image|one))?|good enough)\b/i.test(
-    text,
+  return (
+    /\b(?:confirmed|confirm|yes|yep|yeah|correct|that'?s right|that is right|that is correct|exactly|use it|use that|use this(?:\s+(?:photo|shot|image|one))?|good enough)\b/i.test(
+      text,
+    ) ||
+    /\bpush\s+(?:it|that|this|the\s+photo|the\s+shot|the\s+image)\s+through\b/i.test(
+      text,
+    ) ||
+    /\b(?:it'?s|it is|that'?s|that is|this is|photo is|shot is|image is)\s+a?\s*(?:good|great|perfect|usable|clear)\s+(?:photo|shot|image)\b/i.test(
+      text,
+    ) ||
+    /\b(?:good|great|perfect|usable|clear)\s+(?:photo|shot|image)\b/i.test(
+      text,
+    )
   )
 }
 
@@ -449,6 +460,15 @@ function assistantIdentifiedJewelryFront(text: string): boolean {
       text,
     ) ||
     /\b(?:earrings|jewelry)\b[\s\S]{0,120}\b(?:clearly|clear|usable|customer-facing)\b[\s\S]{0,120}\bboxed\s+display\b/i.test(
+      text,
+    ) ||
+    /\b(?:got|have|see|received|caught)\b[\s\S]{0,80}\bfront\s+(?:jewelry\s+)?(?:photo|shot|image)\b[\s\S]{0,80}\bvisually\b/i.test(
+      text,
+    ) ||
+    /\bfront\s+(?:jewelry\s+)?(?:photo|shot|image)\b[\s\S]{0,160}\b(?:save\s+step|photo\s+handoff|picking\s+it\s+up|receiving|comes?\s+through)\b/i.test(
+      text,
+    ) ||
+    /\b(?:not\s+rejecting\s+the\s+quality|quality\s+isn'?t\s+the\s+issue|quality\s+is\s+not\s+the\s+issue)\b[\s\S]{0,160}\bfront\s+(?:jewelry\s+)?(?:photo|shot|image)\b/i.test(
       text,
     )
   )

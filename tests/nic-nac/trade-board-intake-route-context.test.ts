@@ -1041,4 +1041,124 @@ describe('Trade Board intake route context', () => {
     expect(context.sessionAfter?.missing).toEqual([])
     expect(context.sessionAfter?.phase).toBe('ready_to_add')
   })
+
+  it('promotes the latest unknown photo when the rep asks Nic-Nac to push through a visually accepted front photo', async () => {
+    const sessionRow = {
+      id: 'workflow-1',
+      rep_id: 'rep-1',
+      conversation_id: 'conv-1',
+      workflow_type: 'trade_board_add_listing',
+      status: 'active',
+      current_phase: 'photo_capture',
+      item_number: 'ER18012',
+      design_name: 'Quiet Luxury',
+      collection_name: 'July Birthday',
+      collection_year: 2026,
+      missing_fields: ['jewelryFrontPhoto'],
+      hard_blockers: [],
+      soft_warnings: [],
+    }
+    const activeBuilder = {
+      select: vi.fn(() => activeBuilder),
+      eq: vi.fn(() => activeBuilder),
+      gt: vi.fn(() => activeBuilder),
+      order: vi.fn(() => activeBuilder),
+      limit: vi.fn(() => activeBuilder),
+      maybeSingle: vi.fn(() => ({ data: sessionRow, error: null })),
+    }
+    const selectPhotosBuilder = {
+      select: vi.fn(() => selectPhotosBuilder),
+      eq: vi.fn(() => selectPhotosBuilder),
+      order: vi.fn(() => ({
+        data: [
+          {
+            conversation_message_id: 'earrings-msg-1',
+            attachment_index: 1,
+            declared_role: 'unknown',
+            visual_role: 'uncertain',
+            role_confirmed: false,
+            image_url: 'data:image/jpeg;base64,RVIxODAxMl9GUk9OVA==',
+            quality: 'unknown',
+            quality_issues: [],
+            notes: [],
+          },
+        ],
+        error: null,
+      })),
+    }
+    const upsertPhotoBuilder = {
+      upsert: vi.fn(() => ({ error: null })),
+    }
+    const updateBuilder = {
+      update: vi.fn(() => updateBuilder),
+      eq: vi.fn(() => ({ error: null })),
+    }
+    const workflowSupabase = {
+      from: vi.fn((table: string) => {
+        const callsForTable = workflowSupabase.from.mock.calls.filter(
+          ([name]) => name === table,
+        ).length
+        if (table === 'trade_board_intake_sessions') {
+          return callsForTable === 1 ? activeBuilder : updateBuilder
+        }
+        if (table === 'trade_board_intake_photos') {
+          return callsForTable === 1 ? selectPhotosBuilder : upsertPhotoBuilder
+        }
+        throw new Error(`Unexpected table ${table}`)
+      }),
+    }
+
+    const context = await getOrCreateTradeBoardIntakeContext({
+      supabase: workflowSupabase as never,
+      workflowSupabase: workflowSupabase as never,
+      repId: 'rep-1',
+      conversationId: 'conv-1',
+      messages: [
+        {
+          id: 'assistant-photo-handoff-stuck',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'text',
+              text:
+                "I've got the front photo visually, but the save step still isn't picking it up on my side.",
+            },
+          ],
+        } as UIMessage,
+        {
+          id: 'user-confirm',
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text: "Push it through, please. It's a good photo.",
+            },
+          ],
+        } as UIMessage,
+      ],
+      latestUserMessageId: 'user-confirm',
+      mode: 'workspace',
+      nowIso: '2026-06-27T00:00:00.000Z',
+    } as never)
+
+    expect(context.sessionAfter?.photos[0]).toMatchObject({
+      declaredRole: 'jewelry_front',
+      visualRole: 'jewelry',
+      roleConfirmed: true,
+      imageUrl: 'data:image/jpeg;base64,RVIxODAxMl9GUk9OVA==',
+    })
+    expect(context.sessionAfter?.missing).toEqual([])
+    expect(context.sessionAfter?.phase).toBe('ready_to_add')
+    expect(upsertPhotoBuilder.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        conversation_message_id: 'earrings-msg-1',
+        attachment_index: 1,
+        declared_role: 'jewelry_front',
+        visual_role: 'jewelry',
+        role_confirmed: true,
+        image_url: 'data:image/jpeg;base64,RVIxODAxMl9GUk9OVA==',
+      }),
+      { onConflict: 'session_id,conversation_message_id,attachment_index' },
+    )
+  })
 })
