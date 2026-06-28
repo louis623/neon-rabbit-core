@@ -30,7 +30,7 @@ function syncTickerTrackSpeed() {
     track.style.setProperty('--amethyst-ticker-scroll-offset', `${distance * -1}px`)
     track.style.setProperty(
       '--amethyst-ticker-dynamic-duration',
-      `${Math.max(12, distance / pixelsPerSecond)}s`,
+      `${distance / pixelsPerSecond}s`,
     )
   })
 }
@@ -38,13 +38,27 @@ function syncTickerTrackSpeed() {
 function useDynamicTickerMotion() {
   useEffect(() => {
     let frame = 0
+    const timers: number[] = []
     const scheduleSync = () => {
       window.cancelAnimationFrame(frame)
       frame = window.requestAnimationFrame(syncTickerTrackSpeed)
     }
+    const scheduleDelayedSync = (delayMs: number) => {
+      const timer = window.setTimeout(scheduleSync, delayMs)
+      timers.push(timer)
+    }
+    const syncWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        scheduleSync()
+      }
+    }
 
     scheduleSync()
+    ;[60, 250, 1000].forEach(scheduleDelayedSync)
     window.addEventListener('resize', scheduleSync)
+    window.addEventListener('orientationchange', scheduleSync)
+    window.addEventListener('pageshow', scheduleSync)
+    document.addEventListener('visibilitychange', syncWhenVisible)
     document.fonts?.ready?.then(scheduleSync).catch(() => {})
 
     const observer = 'ResizeObserver' in window ? new ResizeObserver(scheduleSync) : null
@@ -55,7 +69,11 @@ function useDynamicTickerMotion() {
 
     return () => {
       window.cancelAnimationFrame(frame)
+      timers.forEach((timer) => window.clearTimeout(timer))
       window.removeEventListener('resize', scheduleSync)
+      window.removeEventListener('orientationchange', scheduleSync)
+      window.removeEventListener('pageshow', scheduleSync)
+      document.removeEventListener('visibilitychange', syncWhenVisible)
       observer?.disconnect()
     }
   }, [])

@@ -11,7 +11,7 @@ import {
 import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
-  const tickerAssetVersion = '20260628-universal-ticker'
+  const tickerAssetVersion = '20260628-constant-pixel-ticker'
 
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
     const homepage = readFileSync(
@@ -158,6 +158,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(shell).toContain('data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS}')
     expect(shell).toContain('data-ticker-pps={TRADE_TICKER_SPEED_PPS}')
     expect(shell).toContain('useDynamicTickerMotion()')
+    expect(shell).toContain('`${distance / pixelsPerSecond}s`')
+    expect(shell).not.toContain('Math.max(12, distance / pixelsPerSecond)')
     expect(shell).toContain('{listing.title} - {listing.type || \'Jewelry\'} - {listing.collection || \'Collection pending\'}')
     expect(shell).not.toContain('{listing.title} · {listing.msrpLabel}')
     expect(shell).not.toContain('amethyst-scroll 72s linear infinite')
@@ -165,6 +167,8 @@ describe('Amethyst homepage template data wiring', () => {
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('tickerSpeed: 1')
+      expect(jsx).toContain('`${distance / pixelsPerSecond}s`')
+      expect(jsx).not.toContain('Math.max(12, distance / pixelsPerSecond)')
     }
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
       expect(preset.values.tickerSpeed).toBe(1)

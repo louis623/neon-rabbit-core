@@ -597,20 +597,32 @@ function syncDynamicTickerTracks() {
     if (!Number.isFinite(distance) || distance <= 0) return;
 
     track.style.setProperty("--hp-ticker-scroll-offset", `${distance * -1}px`);
-    track.style.setProperty("--hp-ticker-dynamic-duration", `${Math.max(12, distance / pixelsPerSecond)}s`);
+    track.style.setProperty("--hp-ticker-dynamic-duration", `${distance / pixelsPerSecond}s`);
   });
 }
 
 function useDynamicTickerMotion() {
   useEffect(() => {
     let frame = 0;
+    const timers = [];
     const scheduleSync = () => {
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(syncDynamicTickerTracks);
     };
+    const scheduleDelayedSync = (delayMs) => {
+      const timer = window.setTimeout(scheduleSync, delayMs);
+      timers.push(timer);
+    };
+    const syncWhenVisible = () => {
+      if (document.visibilityState === "visible") scheduleSync();
+    };
 
     scheduleSync();
+    [60, 250, 1000].forEach(scheduleDelayedSync);
     window.addEventListener("resize", scheduleSync);
+    window.addEventListener("orientationchange", scheduleSync);
+    window.addEventListener("pageshow", scheduleSync);
+    document.addEventListener("visibilitychange", syncWhenVisible);
     document.fonts?.ready?.then(scheduleSync).catch(() => {});
 
     const observer = "ResizeObserver" in window ? new ResizeObserver(scheduleSync) : null;
@@ -621,7 +633,11 @@ function useDynamicTickerMotion() {
 
     return () => {
       window.cancelAnimationFrame(frame);
+      timers.forEach((timer) => window.clearTimeout(timer));
       window.removeEventListener("resize", scheduleSync);
+      window.removeEventListener("orientationchange", scheduleSync);
+      window.removeEventListener("pageshow", scheduleSync);
+      document.removeEventListener("visibilitychange", syncWhenVisible);
       observer?.disconnect();
     };
   }, []);
