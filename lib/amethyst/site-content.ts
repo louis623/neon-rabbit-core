@@ -19,6 +19,7 @@ export interface AmethystSocialLink {
 export interface AmethystTradeListing {
   id: string
   title: string
+  type: string
   collection: string
   description: string
   tier: AmethystTier
@@ -152,6 +153,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     {
       id: 'citrine-sun-pendant',
       title: 'Citrine Sun Pendant',
+      type: 'Necklace',
       collection: 'Velvet Hour',
       description: 'Warm gold tones with a bright center stone and a one-for-one trade request option.',
       tier: 'unicorn',
@@ -161,6 +163,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     {
       id: 'rose-quartz-band',
       title: 'Rose Quartz Band',
+      type: 'Ring',
       collection: 'Estate Halo',
       description: 'Soft pink sparkle with a stackable silhouette customers ask for again and again.',
       tier: 'diamond',
@@ -170,6 +173,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     {
       id: 'amethyst-halo-ring',
       title: 'Amethyst Halo Ring',
+      type: 'Ring',
       collection: 'Moonlit Drop',
       description: 'A classic halo profile with a richer purple center stone and crisp silver finish.',
       tier: 'everyday',
@@ -179,6 +183,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     {
       id: 'pearl-drop-studs',
       title: 'Pearl Drop Studs',
+      type: 'Earrings',
       collection: 'Holiday Gift Guide',
       description: 'An easy everyday pair with a polished finish that works for gifting and stacking.',
       tier: 'everyday',

@@ -22,6 +22,12 @@ export interface AmethystRuntimeContext {
   publicSiteSlug?: string | null
 }
 
+export interface AmethystTradeBoardTickerItem {
+  name: string
+  type: string
+  collection: string
+}
+
 export interface AmethystTradeTemplateData {
   publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
@@ -29,6 +35,7 @@ export interface AmethystTradeTemplateData {
   tradeHeroTitle: string
   tradeHeroSub: string
   tickerTopText: string
+  tradeBoardTickerItems?: AmethystTradeBoardTickerItem[]
   shopUrl: string
   footerTagline: string
   legalDisclaimer: string
@@ -244,6 +251,16 @@ function buildPublicRuntimeContext(runtimeContext: AmethystRuntimeContext) {
   }
 }
 
+function formatTradeBoardTickerItems(
+  listings: AmethystTradeBoardListing[],
+): AmethystTradeBoardTickerItem[] {
+  return listings.slice(0, 8).map((listing) => ({
+    name: listing.name,
+    type: listing.type,
+    collection: listing.collection,
+  }))
+}
+
 export function buildAmethystTradeBootstrapScript(
   data: AmethystTradeTemplateData = defaultAmethystTradeTemplateData,
   listings: AmethystTradeBoardListing[] = [],
@@ -256,6 +273,9 @@ export function buildAmethystTradeBootstrapScript(
     ...data,
     repName: getPublicRepName(data.repName),
     tradeHeroSub: redactPublicRepFullName(data.tradeHeroSub, data.repName),
+    tradeBoardTickerItems: listings.length > 0
+      ? formatTradeBoardTickerItems(listings)
+      : (data.tradeBoardTickerItems ?? []),
   }
   const defaults = {
     ...buildAmethystTradeTweakDefaults(publicData, appearancePreset),

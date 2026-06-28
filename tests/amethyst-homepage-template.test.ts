@@ -11,6 +11,8 @@ import {
 import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
+  const tickerAssetVersion = '20260628-universal-ticker'
+
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
@@ -75,7 +77,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain('v=20260621-ticker-pps')
+        expect(script, file).toContain(`v=${tickerAssetVersion}`)
       }
     }
   })
@@ -156,6 +158,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(shell).toContain('data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS}')
     expect(shell).toContain('data-ticker-pps={TRADE_TICKER_SPEED_PPS}')
     expect(shell).toContain('useDynamicTickerMotion()')
+    expect(shell).toContain('{listing.title} - {listing.type || \'Jewelry\'} - {listing.collection || \'Collection pending\'}')
+    expect(shell).not.toContain('{listing.title} · {listing.msrpLabel}')
     expect(shell).not.toContain('amethyst-scroll 72s linear infinite')
     expect(shell).not.toContain('amethyst-scroll 60s linear infinite reverse')
 
@@ -183,18 +187,22 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(homepage).toContain('buildTickerLoopItems(trades, 15)')
     expect(trade).toContain('buildTickerLoopItems(trades, 15)')
-    expect(join).toContain('buildTickerLoopItems(TICKER_TRADES, 15)')
+    expect(join).toContain('buildTickerLoopItems(trades, 15)')
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('const ANNOUNCEMENT_TICKER_SPEED_PPS = 46')
       expect(jsx).toContain('const TRADE_TICKER_SPEED_PPS = 55.2')
       expect(jsx).toContain('function buildTickerLoopItems(items, minimumSegmentItems)')
       expect(jsx).toContain('function useDynamicTickerMotion()')
+      expect(jsx).toContain('CONTENT.tradeBoardTickerItems')
+      expect(jsx).toContain('{tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}')
       expect(jsx).toContain('data-ticker-segment-start')
       expect(jsx).toContain('data-ticker-segment-repeat-start')
       expect(jsx).toContain('data-ticker-pps={TRADE_TICKER_SPEED_PPS}')
       expect(jsx).not.toContain('[...trades, ...trades, ...trades]')
       expect(jsx).not.toContain('[...TICKER_TRADES, ...TICKER_TRADES, ...TICKER_TRADES]')
+      expect(jsx).not.toContain('trade.name} - {trade.meta')
+      expect(jsx).not.toContain('trade.name} Â· {trade.price')
     }
   })
 

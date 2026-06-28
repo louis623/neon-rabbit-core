@@ -69,6 +69,10 @@ function redactPublicRepText(text, repName) {
   return value.replace(new RegExp(escapeRegExp(cleaned), "g"), publicRepName(cleaned));
 }
 
+function runtimeText(value) {
+  return String(value || "").trim();
+}
+
 const CONTENT = window.AMETHYST_JOIN_TEMPLATE_DATA || {};
 const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
@@ -288,12 +292,12 @@ function getLocationLabel(city, state) {
   return normalizedCity || normalizedState || "";
 }
 
-const TICKER_TRADES = RUNTIME_CONTEXT.targeted ? [] : [
-  { name: "Citrine Sun Pendant", price: "$148", tier: "unicorn" },
-  { name: "Rose Quartz Band", price: "$98", tier: "diamond" },
-  { name: "Amethyst Halo Ring", price: "$118", tier: "" },
-  { name: "Pearl Drop Studs", price: "$48", tier: "" },
-  { name: "Estate Sapphire Cluster", price: "$220", tier: "unicorn" },
+const FALLBACK_TICKER_TRADES = [
+  { name: "Citrine Sun Pendant", type: "Necklace", collection: "Birthday" },
+  { name: "Rose Quartz Band", type: "Ring", collection: "OG" },
+  { name: "Amethyst Halo Ring", type: "Ring", collection: "Birthday" },
+  { name: "Pearl Drop Studs", type: "Earrings", collection: "OG" },
+  { name: "Estate Sapphire Cluster", type: "Ring", collection: "Sterling Club" },
 ];
 
 const LIVE_QUEUE_NAMES = [
@@ -419,9 +423,21 @@ function useDynamicTickerMotion() {
 function Ticker({ topText }) {
   useDynamicTickerMotion();
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
+  const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
+    ? CONTENT.tradeBoardTickerItems
+        .map((item) => ({
+          name: runtimeText(item.name),
+          type: runtimeText(item.type),
+          collection: runtimeText(item.collection),
+        }))
+        .filter((item) => item.name)
+    : [];
+  const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted
+    ? contentTrades
+    : FALLBACK_TICKER_TRADES;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
-  const tickerTrades = buildTickerLoopItems(TICKER_TRADES, 15);
+  const tickerTrades = buildTickerLoopItems(trades, 15);
   const tradeSegmentLength = tickerTrades.length / 2;
   return (
     <div className="hp-ticker" aria-label="Customer site updates">
@@ -445,7 +461,7 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
-          {tickerTrades.length > 0 ? tickerTrades.map((trade, index) => (
+          {tickerTrades.length > 0 ? tickerTrades.map((tr, index) => (
             <a
               key={index}
               {...linkProps(TRADE_BOARD_HREF)}
@@ -453,8 +469,7 @@ function Ticker({ topText }) {
               data-ticker-segment-start={index === 0 ? "true" : undefined}
               data-ticker-segment-repeat-start={index === tradeSegmentLength ? "true" : undefined}
             >
-              <span className={`pip ${trade.tier}`} />
-              {trade.name} · {trade.price}
+              {tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}
             </a>
           )) : (
             <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>

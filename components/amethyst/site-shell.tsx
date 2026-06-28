@@ -215,7 +215,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
             >
               <span className={`h-2 w-2 rotate-45 rounded-[2px] ${tierChipClass(listing.tier)}`} />
               <span>
-                {listing.title} · {listing.msrpLabel}
+                {listing.title} - {listing.type || 'Jewelry'} - {listing.collection || 'Collection pending'}
               </span>
             </a>
           ))}

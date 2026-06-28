@@ -734,12 +734,33 @@ function useDynamicTickerMotion() {
 function Ticker({ topText }) {
   useDynamicTickerMotion();
   const items = topText.split("|").map((item) => item.trim()).filter(Boolean);
-  const trades = RUNTIME_CONTEXT.targeted ? [] : [
-    { name: "OG Halo Bloom Ring", meta: "Ring / OG", tier: "" },
-    { name: "Birthday Spark Necklace", meta: "Necklace / Birthday", tier: "" },
-    { name: "North Star Pendant", meta: "Pendant / Spring Luxe", tier: "unicorn" },
-    { name: "Aurora Stack", meta: "Stack / Stacks", tier: "diamond" },
+  const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
+    ? CONTENT.tradeBoardTickerItems
+        .map((item) => ({
+          name: runtimeText(item.name),
+          type: runtimeText(item.type),
+          collection: runtimeText(item.collection),
+        }))
+        .filter((item) => item.name)
+    : [];
+  const bootstrapTrades = BOOTSTRAP_LISTINGS
+    .map((listing) => ({
+      name: runtimeText(listing.name),
+      type: runtimeText(listing.type),
+      collection: runtimeText(listing.collection),
+    }))
+    .filter((item) => item.name);
+  const fallbackTrades = [
+    { name: "OG Halo Bloom Ring", type: "Ring", collection: "OG" },
+    { name: "Birthday Spark Necklace", type: "Necklace", collection: "Birthday" },
+    { name: "North Star Pendant", type: "Pendant", collection: "Spring Luxe" },
+    { name: "Aurora Stack", type: "Stack", collection: "Stacks" },
   ];
+  const trades = contentTrades.length > 0
+    ? contentTrades
+    : bootstrapTrades.length > 0
+      ? bootstrapTrades
+      : RUNTIME_CONTEXT.targeted ? [] : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
   const tickerTrades = buildTickerLoopItems(trades, 15);
@@ -767,7 +788,7 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
-          {tickerTrades.length > 0 ? tickerTrades.map((trade, index) => (
+          {tickerTrades.length > 0 ? tickerTrades.map((tr, index) => (
             <a
               key={index}
               {...linkProps(TRADE_BOARD_HREF)}
@@ -775,8 +796,7 @@ function Ticker({ topText }) {
               data-ticker-segment-start={index === 0 ? "true" : undefined}
               data-ticker-segment-repeat-start={index === tradeSegmentLength ? "true" : undefined}
             >
-              <span className={`pip ${trade.tier}`} />
-              {trade.name} - {trade.meta}
+              {tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}
             </a>
           )) : (
             <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>

@@ -371,7 +371,8 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toMatch(/[�ï¿½]/)
     expect(jsx).not.toContain('Shop ?')
     expect(jsx).toContain('Shop live')
-    expect(jsx).toContain('Ring / OG')
+    expect(jsx).toContain('OG Halo Bloom Ring')
+    expect(jsx).toContain('{tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}')
     expect(jsx).toContain('Listings will appear after this rep adds trade pieces.')
   })
 

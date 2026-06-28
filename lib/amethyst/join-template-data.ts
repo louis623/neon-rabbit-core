@@ -3,6 +3,7 @@ import {
   type AmethystAppearancePresetId,
 } from './appearance-presets'
 import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
+import type { AmethystTradeBoardListing } from './trade-board-listings'
 
 export interface AmethystJoinSocialLink {
   label: string
@@ -41,6 +42,12 @@ export interface AmethystRuntimeContext {
   publicSiteSlug?: string | null
 }
 
+export interface AmethystTradeBoardTickerItem {
+  name: string
+  type: string
+  collection: string
+}
+
 export interface AmethystJoinTemplateData {
   publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
@@ -56,6 +63,7 @@ export interface AmethystJoinTemplateData {
   bpReferralUrl: string
   bpIncomeDisclosureUrl: string
   tickerTopText: string
+  tradeBoardTickerItems?: AmethystTradeBoardTickerItem[]
   shopUrl: string
   bombPartyFaqUrl: string
   footerTagline: string
@@ -358,16 +366,30 @@ function buildPublicRuntimeContext(runtimeContext: AmethystRuntimeContext) {
   }
 }
 
+function formatTradeBoardTickerItems(
+  listings: AmethystTradeBoardListing[],
+): AmethystTradeBoardTickerItem[] {
+  return listings.slice(0, 8).map((listing) => ({
+    name: listing.name,
+    type: listing.type,
+    collection: listing.collection,
+  }))
+}
+
 export function buildAmethystJoinBootstrapScript(
   data: AmethystJoinTemplateData = defaultAmethystJoinTemplateData,
   appearancePreset?: AmethystAppearancePresetId | string | null,
   runtimeContext: AmethystRuntimeContext = { targeted: false },
+  tradeBoardListings: AmethystTradeBoardListing[] = [],
 ) {
   const publicRuntimeContext = buildPublicRuntimeContext(runtimeContext)
   const targeted = publicRuntimeContext.targeted
   const publicData: AmethystJoinTemplateData = {
     ...data,
     repName: getPublicRepName(data.repName),
+    tradeBoardTickerItems: tradeBoardListings.length > 0
+      ? formatTradeBoardTickerItems(tradeBoardListings)
+      : (data.tradeBoardTickerItems ?? []),
     heroPitch: redactPublicRepFullName(data.heroPitch, data.repName),
     finalPitch: redactPublicRepFullName(data.finalPitch, data.repName),
     faqAnswers: {
