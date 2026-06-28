@@ -456,7 +456,24 @@ export function getToolIntentsForMessages(
 
   const latestIntents = getToolIntentsForText(text ?? '')
   if (!latestIntents.includes('memory')) return latestIntents
-  if (!isTradeBoardContinuation(messages, text ?? '')) return latestIntents
+  const continuationIntents = getContinuationIntents(messages, text ?? '')
+  if (continuationIntents.length === 0) return latestIntents
+
+  return continuationIntents.length ? continuationIntents : latestIntents
+}
+
+function getContinuationIntents(
+  messages: RoutableMessage[],
+  latestText: string,
+): NicNacToolIntent[] {
+  const intents: NicNacToolIntent[] = []
+  if (isTradeBoardContinuation(messages, latestText)) {
+    intents.push('trade_board')
+  }
+  if (isSiteContinuation(messages, latestText)) {
+    intents.push('site')
+  }
+  if (intents.length === 0) return []
 
   const recentText = messages
     .slice(-6, -1)
@@ -469,7 +486,7 @@ export function getToolIntentsForMessages(
   const recentIntents = getToolIntentsForText(recentText)
     .filter((intent) => intent !== 'memory')
 
-  return recentIntents.length ? recentIntents : latestIntents
+  return recentIntents.filter((intent) => intents.includes(intent))
 }
 
 function isContextualFollowUp(text: string, previousAssistantText = ''): boolean {
@@ -489,6 +506,10 @@ function isContextualFollowUp(text: string, previousAssistantText = ''): boolean
     /^(try again|retry|again|try it again|try once more)\b/,
     /\bdo that\b/,
     /\bgo ahead\b/,
+    /\blet'?s\s+go\s+with\b/,
+    /\bgo\s+with\s+(?:your|that|this|the)\b/,
+    /\buse\s+(?:your|that|this|the)\s+(?:pick|one|version|copy|line)\b/,
+    /\b(?:your|that|this|the)\s+(?:pick|one|version|copy|line)\b/,
     /\bcanonical\b/,
     /\bcustom photo\b/,
     /\bdata\s*base\b/,
@@ -523,6 +544,9 @@ export function shouldRequireToolCallForMessages(
     intents.includes('memory') &&
     isExplicitDurableMemoryRequest(latestText.toLowerCase())
   ) {
+    return true
+  }
+  if (intents.includes('site') && isSiteContinuation(messages, latestText)) {
     return true
   }
   if (!intents.includes('trade_board')) return false
@@ -567,6 +591,39 @@ function isTradeBoardContinuation(
     .join('\n')
 
   return getToolIntentsForText(recentText).includes('trade_board')
+}
+
+function isSiteContinuation(
+  messages: RoutableMessage[],
+  latestText: string,
+): boolean {
+  const priorMessages = messages.slice(0, -1)
+  const previousAssistant = [...priorMessages]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  const previousAssistantText = getMessageText(previousAssistant)
+  if (!isContextualFollowUp(latestText, previousAssistantText)) return false
+  if (!assistantIsDiscussingSiteEdit(previousAssistantText)) return false
+
+  const recentText = priorMessages
+    .slice(-6)
+    .flatMap((message) =>
+      message.parts
+        ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text) ?? [],
+    )
+    .join('\n')
+
+  return getToolIntentsForText(recentText).includes('site')
+}
+
+function assistantIsDiscussingSiteEdit(text: string): boolean {
+  return (
+    /\b(?:ticker|announcement|banner|site|tagline|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link)\b/i.test(
+      text,
+    ) &&
+    /\b(?:swap|change|update|save|use|set|turn|make|edit)\b/i.test(text)
+  )
 }
 
 function wordCount(text: string): number {

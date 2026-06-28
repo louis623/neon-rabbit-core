@@ -307,6 +307,42 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps site tools available when the rep accepts Nic-Nac announcement ticker copy', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Can you help me tighten my announcement ticker for buy 3+ save 20%?',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'My pick for a ticker: Buy 3+, save 20% on your whole cart. If you want, I can swap your ticker to one of these.',
+          },
+        ],
+      },
+      {
+        id: 'confirm',
+        role: 'user',
+        parts: [{ type: 'text', text: 'lets go with your pick' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['site'])
+    expect(listToolNamesForIntents(intents)).toContain('update_site_setting')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('routes physical inventory add language to trade-board tools', () => {
     const intents = getToolIntentsForText('I have 4 of this item to add')
 
