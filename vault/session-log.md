@@ -2132,3 +2132,41 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
 - Stable demo root returned 200.
 - Deployed `/amethyst/homepage.jsx` contains the new ticker line and no old ticker price/MSRP fallback.
+
+---
+
+## June 28, 2026 - Universal Customer Ticker Audit and Stable Demo Fix
+
+**What changed:**
+- Louis reported the Trade Board ticker was still extremely slow on the Louis's Fizz Fest / Mile High Fizz Trade Board page even after the earlier ticker-speed work.
+- Audited every active customer-facing ticker path: static Home, static Trade, static Join, and the shared React customer shell.
+- Found the previous fix did not fully apply everywhere:
+  - Home used workspace-backed `tradeBoardTickerItems`, but Trade and Join still had older fallback-only ticker payloads.
+  - The shared React shell still rendered ticker entries as item title plus MSRP.
+  - Static Amethyst HTML still used the older `20260621-ticker-pps` asset query, so browser/CDN cache could keep serving stale ticker code after fixes.
+- Shipped `1ed4137 fix: unify customer ticker trade details`.
+- Shipped the earlier verified Nic-Nac site-edit continuation fix as `1450d22 fix: route Nic-Nac site edit continuations`.
+- Home, Trade, Join, and the shared shell now use the same trade ticker display contract: item name, item type, and collection. MSRP is not rendered in the moving Trade Board ticker.
+- Join now receives workspace trade-board listings in its bootstrap payload, so subpages can use the same ticker items as Home/Trade.
+- Static asset cache key was bumped to `20260628-universal-ticker` across Home, Trade, Join, Pantry, and Unsubscribe exports.
+
+**Verification:**
+- Regression test was first observed failing on the old drift: shared shell still had MSRP and Join still used `TICKER_TRADES`.
+- `npm exec vitest run tests/amethyst-homepage-template.test.ts` passed: 32 tests.
+- `npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-trade-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-static-assets-route.test.ts tests/public-site-slug-route.test.ts` passed: 88 tests.
+- `npm exec vitest run tests/nic-nac/tool-routing.test.ts tests/nic-nac/site-customization-tools.test.ts tests/nic-nac/core-tool-policy.test.ts` passed: 69 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Full `npx tsc --noEmit --pretty false` still fails on pre-existing test fixture typing issues unrelated to this patch; production app type-check passed during `next build`.
+- Pushed branch `codex/sparkle-cross-phase-hardening` through `1450d22`.
+- Vercel preview `https://sparkle-suite-kt9pijhz0-louis-2849s-projects.vercel.app` / deployment `dpl_DyfmwNFVGXiGpa5WUkoWm8pJgAxv` is Ready.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo checks:
+  - `/milehighfizz/trade` returned 200 and loaded `20260628-universal-ticker`.
+  - Deployed `/amethyst/trade.jsx?v=20260628-universal-ticker` contains `TRADE_TICKER_SPEED_PPS = 55.2`, uses `CONTENT.tradeBoardTickerItems`, renders `name - type - collection`, and no longer contains the old `trade.meta` path.
+  - `/api/amethyst/trade-template?publicSiteSlug=milehighfizz` returned 200 and contains `tradeBoardTickerItems`.
+  - `/milehighfizz` and `/milehighfizz/join` returned 200 and load `20260628-universal-ticker`.
+  - Deployed `/amethyst/join.jsx?v=20260628-universal-ticker` uses `CONTENT.tradeBoardTickerItems`, renders `name - type - collection`, and no longer contains the old `trade.price` path.
+  - `/api/amethyst/join-template?publicSiteSlug=milehighfizz` returned 200 and contains `tradeBoardTickerItems`.
+
+**Lesson:**
+- A ticker-speed fix is not complete if only one page's ticker payload is updated. The active contract must cover Home, Trade, Join, shared shell, and cache-busted static assets, and the exact stable demo route Louis used must be checked before calling it fixed.
