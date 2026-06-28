@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 28, 2026 - Constant Pixel-Speed Customer Tickers
+
+**What changed:**
+- Audited the active customer-facing ticker paths for Home, Trade Board, Join, public slug routes, and the shared Amethyst React shell.
+- Removed the hidden `12s` minimum-duration floor from the measured ticker math so short/sparse Trade Boards do not slow down below the universal pixel speed.
+- Added delayed, resize, orientation, page-show, font-ready, and visibility resync hooks so iframe/live-preview layouts are less likely to stay on fallback timing.
+- Bumped the Amethyst asset version to `20260628-constant-pixel-ticker` across Home, Trade, Join, Pantry, and Unsubscribe exports so existing and future customer accounts load the corrected bundle.
+
+**Verification and deploy:**
+- TDD regression failed first for the old asset version and `Math.max(12, distance / pixelsPerSecond)` floor, then passed after the fix.
+- Focused route/template tests passed: 3 files, 50 tests.
+- Amethyst template suite passed: 3 files, 70 tests.
+- Local Amethyst link verifier passed against a temporary `localhost:3001` dev server.
+- Local `npm run build` passed.
+- Implementation checkpoint: `4196985 fix: keep customer tickers at constant pixel speed`.
+- Vercel preview deployment passed: `https://sparkle-suite-fonzls0c1-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable deployed checks confirmed `milehighfizz/trade`, `louisfizzfest/trade`, and `/amethyst/Trade.html` serve the new `20260628-constant-pixel-ticker` assets, and deployed `homepage.jsx`, `trade.jsx`, and `join.jsx` contain direct `${distance / pixelsPerSecond}s` timing plus resync hooks.
+
+**Lesson carried forward:**
+- A measured ticker can still be content-length dependent if it clamps to a fixed minimum duration. For Louis's customer-facing tickers, preserve the pixel-speed formula itself: duration equals measured segment distance divided by the row's pixels-per-second constant.
+
+---
+
 ## June 27, 2026 - Nic-Nac Item-Number Plating Variants
 
 **What changed:**
