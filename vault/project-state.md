@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** June 28, 2026
+**Last updated:** June 29, 2026
 
 ---
 
@@ -18,11 +18,11 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed implementation checkpoint:** `4196985 fix: keep customer tickers at constant pixel speed`
-- **Latest pushed docs/memory checkpoint:** `c666414 docs: record Nic-Nac plating variant fix`
-- **Latest local/deployed checkpoints:** Customer-facing Amethyst tickers now keep constant pixel speed with no fixed minimum-duration floor and stable demo serves `20260628-constant-pixel-ticker` assets; Nic-Nac duplicate physical listing confirmation, Suite internal Finder rep-claim eligibility hardening, internal Finder intake wording cleanup, env/plan drift cleanup, core surface tool-policy refinement, strict Lab/model-cost guardrails, OpenAI-only Nic-Nac model provider, Finder Nic-Nac OpenAI/memory/tool/smoke plumbing, Nic-Nac mission guardrails, Suite mission-redirect route-runtime proof, Finder Studio intake status tool, ER13229 Trade Board boxed-photo workflow-state fix, stable-baseline closure plan, Nic-Nac name-origin identity context, Nic-Nac live calendar/reminder hardening, the Business Tools workspace hub, the BlingKitchen-only Recipes workspace gate, and the Wispr Flow Business Tools section are verified. Suite stable demo smoke passed three consecutive ER13229 real `/api/nic-nac` replays after deploy, the name-origin fix passed a deployed reviewer-smoke `/api/nic-nac` question replay, the calendar/reminder hardening passed a deployed stable-demo chaotic rep smoke with approval flow and database assertions, Business Tools passed local reviewer-smoke render/interaction proof before stable alias promotion, the Recipes gate passed local reviewer-smoke proof for a non-BlingKitchen account before stable alias promotion, and the Wispr Flow section passed local plus stable-demo reviewer-smoke proof with the calculator removed from the current Business Tools page.
+- **Latest pushed implementation checkpoint:** `0d4e9fa feat: support non-item-number trade listings`
+- **Latest pushed docs/memory checkpoint:** `aaafef7 docs: record constant ticker speed deployment` before this closeout memory update
+- **Latest local/deployed checkpoints:** Nic-Nac can now add Trade Board listings when the rep does not have an item number, without creating/updating `jewelry_designs`. The V1 path is Nic-Nac-only, one piece at a time, with controlled jewelry type, broad/exact collection, size when applicable, and an individual customer-facing photo. Customers see these as ordinary Trade Board items; internal rep-facing surfaces may clarify `(non-item number piece)`. Sparkle Finder excludes these V1 listings. Customer-facing Amethyst tickers still keep constant pixel speed with no fixed minimum-duration floor and stable demo serves `20260628-constant-pixel-ticker` assets.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-fonzls0c1-louis-2849s-projects.vercel.app`
+- **Current stable demo target:** `https://sparkle-suite-jdkqdsl61-louis-2849s-projects.vercel.app`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
@@ -50,7 +50,7 @@ The old `C:\Users\louis\sparkle-suite` folder remains on disk only as a redirect
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Platform (Vercel + Next.js) | Live | Connected to GitHub repo |
-| Supabase | Active for Sparkle Suite referrals and Trade Board | `rep_referral_paid_months` is applied/verified; `trade_listings.ring_size` was applied through the Supabase Dashboard and verified on June 10, 2026 |
+| Supabase | Active for Sparkle Suite referrals and Trade Board | Non-item-number Trade Board migrations `20260629150000` and `20260629151000` were applied with Supabase CLI on June 29, 2026; `trade_listings.design_id` is nullable only for `listing_source = 'non_item_number'`; `rep_referral_paid_months` and `trade_listings.ring_size` are applied/verified |
 | GitHub vault | Active | Being set up this session — bridge memory system |
 | Open Brain | Planned | Phase 2 — Supabase + pgvector + Discord capture bot |
 | Chrome extension | Live (sideload) | Live Reveal Queue exists as sideload band-aid — rebuild as Web Store extension is Phase 2 parallel track |

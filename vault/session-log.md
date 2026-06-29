@@ -4,6 +4,42 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## June 29, 2026 - Nic-Nac Non-Item-Number Trade Board Listings
+
+**What changed:**
+- Louis and Codex finalized the V1 design for reps who have current/recent trade pieces but no item number/tag details: call them **non-item-number pieces** internally, do not label them differently to customers, and route creation only through Nic-Nac for now.
+- Shipped `0d4e9fa feat: support non-item-number trade listings`.
+- Added Supabase migrations:
+  - `20260629150000_non_item_number_trade_listings.sql`
+  - `20260629151000_trade_board_intake_non_item_number_mode.sql`
+- `trade_listings.design_id` is now nullable only for `listing_source = 'non_item_number'`; catalog rows still require a design.
+- Non-item-number listings store listing-local controlled fields: jewelry type, broad collection, exact collection when known, size when applicable, and managed photo URL.
+- `rpc_approve_trade` now increments `jewelry_designs.times_traded` only when a listing has a design.
+- Nic-Nac add-listing workflow now supports `catalogMode: item_number | non_item_number`, asks for `Collection Type and Size`, and writes through the dedicated non-item-number listing service without catalog design creation.
+- Rep-facing surfaces can show `(non-item number piece)` for clarity; customer-facing Trade Board cards, request flow, tickers, and public APIs do not expose source labels.
+- Sparkle Finder availability/count queries explicitly exclude non-item-number listings in V1.
+- Added dedicated smoke/pressure harnesses:
+  - `npm run smoke:nic-nac:trade-board-non-item-number`
+  - `npm run pressure:non-item-number-trade-listings`
+
+**Verification:**
+- Focused regression matrix passed: 27 files, 369 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Full `npx tsc --noEmit --pretty false` still fails on pre-existing unrelated test fixture typing issues; no feature-owned source/script errors remained after fixing the pressure-script `rejectTrade` call.
+- Supabase changelog was checked; CLI `2.84.2` was available; `supabase db push --dry-run` showed only the two intended migrations.
+- `supabase db push --yes` applied both migrations, and `supabase migration list` confirmed them on remote.
+- DB-backed pressure test passed and cleaned up: `listings=2 board=2 requests=1 rejected=1 remove_restore=true designs_before=13 designs_after=13 public_leaks=0 cleanup_residuals=0`.
+- Vercel preview build passed: `https://sparkle-suite-jdkqdsl61-louis-2849s-projects.vercel.app` / deployment `dpl_9kqJkDx7cr2ap82yjzMHqcf1bn8s`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable `/api/nic-nac/health` returned API/DB reachable with recent error rate 0.
+- Stable live Nic-Nac smoke passed using synthetic reviewer rep `sparkle-reviewer+preview@neonrabbit.net`, conversation `2b7d11e6-25e8-4326-b1f4-b4288f2c81fe`, workflow `1aa05d7b-8abe-4939-a3e6-e48c15b7555f`, temporary listing `e5918d9b-9eed-42c4-bc4f-6b1afb7b05ec`, `design_id = null`, `listing_source = non_item_number`, public payload presence, no forbidden public source wording, and cleanup.
+- Stable route sweep returned 200 for `/milehighfizz/trade`, `/louisfizzfest/trade`, `/amethyst/Trade.html`, and reviewer Trade Board API after cleanup.
+
+**Lesson carried forward:**
+- Non-item-number Trade Board support should stay listing-local and workflow-local. Do not create fake item numbers, do not write these rows into `jewelry_designs`, and do not introduce customer-facing labels that make the listing feel different. Public smoke must prove both no source-language leak and actual public payload presence, not just absence of bad words.
+
+---
+
 ## June 28, 2026 - Constant Pixel-Speed Customer Tickers
 
 **What changed:**

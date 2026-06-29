@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## June 29, 2026
+
+**No-item-number trade pieces stay out of the shared jewelry database**
+Trade Board pieces without item numbers should be represented as `listing_source = 'non_item_number'` rows on `trade_listings`, not as fake catalog rows and not as `jewelry_designs` entries. Required controlled fields for V1 are jewelry type, broad collection, exact collection when known, size when applicable, and an individual customer-facing photo. Customers should not see source labels or different naming; public Trade Board/search/filter/request behavior should treat these as ordinary listings.
+
+**V1 non-item-number entry is Nic-Nac-only and one piece at a time**
+Do not add a dashboard manual form, batch board photo cropper, bulk importer, or conversion path yet. Reps enter this path by telling Nic-Nac they do not have an item number, or by providing a photo/details flow where Nic-Nac confirms the no-item-number route. The form title should stay `Collection Type and Size`, with `(non-item number piece)` only as rep-facing clarification where useful.
+
+---
+
 ## June 27, 2026
 
 **Jewelry catalog design identity includes plating/material variants**
