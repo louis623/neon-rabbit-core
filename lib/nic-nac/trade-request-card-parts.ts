@@ -8,11 +8,12 @@ export type TradeRequestCardData = {
   status?: TradeRequestStatus
   customerName: string
   requestedItem: {
-    itemNumber: string
+    itemNumber: string | null
     designName: string
     typePrefix: string
     collectionName: string | null
     bpMsrp: number | null
+    repFacingNote?: string | null
   }
   offeredText: string
   revealScreenshot?: {
@@ -50,6 +51,9 @@ export function buildTradeRequestCardPart(
         typePrefix: summary.listing.typePrefix,
         collectionName: summary.listing.collectionName,
         bpMsrp: summary.listing.bpMsrp,
+        ...(summary.listing.listingSource === 'non_item_number'
+          ? { repFacingNote: '(non-item number piece)' }
+          : {}),
       },
       offeredText: summary.customerDescription,
       revealScreenshot: summary.revealScreenshot
@@ -91,13 +95,17 @@ export function isTradeRequestCardPart(
     typeof data.customerName === 'string' &&
     !!requestedItem &&
     typeof requestedItem === 'object' &&
-    typeof requestedItem.itemNumber === 'string' &&
+    (typeof requestedItem.itemNumber === 'string' ||
+      requestedItem.itemNumber === null) &&
     typeof requestedItem.designName === 'string' &&
     typeof requestedItem.typePrefix === 'string' &&
     (typeof requestedItem.collectionName === 'string' ||
       requestedItem.collectionName === null) &&
     (typeof requestedItem.bpMsrp === 'number' ||
       requestedItem.bpMsrp === null) &&
+    (requestedItem.repFacingNote === undefined ||
+      typeof requestedItem.repFacingNote === 'string' ||
+      requestedItem.repFacingNote === null) &&
     typeof data.offeredText === 'string' &&
     (data.revealScreenshot === undefined ||
       data.revealScreenshot === null ||

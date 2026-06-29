@@ -13,6 +13,7 @@ export type ListingStatus = 'available' | 'pending_trade' | 'traded' | 'removed'
 export type TradeRequestStatus = 'pending' | 'approved' | 'denied' | 'cancelled'
 export type FulfillmentStatus = 'approved' | 'shipped' | 'completed'
 export type JewelryType = 'RG' | 'NK' | 'ER' | 'ST' | 'BR'
+export type ListingSource = 'catalog' | 'non_item_number'
 export type RemovalReason = 'sold' | 'keeping' | 'mistake' | 'other'
 export type RejectionReason = 'msrp_mismatch' | 'not_interested' | 'changed_mind' | 'other'
 
@@ -20,31 +21,39 @@ export type RejectionReason = 'msrp_mismatch' | 'not_interested' | 'changed_mind
 // trade-board domain — existing types (preserved shape)
 // ============================================================================
 
+export interface TradeListingDesign {
+  id: string
+  item_number: string
+  design_name: string
+  material: string | null
+  main_stone: string | null
+  bp_msrp: number | null
+  canonical_photo_url: string | null
+  type_prefix: JewelryType
+  collection: { id: string; name: string } | null
+}
+
 export interface TradeListingWithDesign {
   id: string
   rep_id: string
+  listing_source?: ListingSource
   status: ListingStatus
   rep_notes: string | null
   trade_preferences: string | null
   ring_size?: string | null
   listing_photo_url: string | null
   uses_canonical_photo: boolean
+  manual_type_prefix?: JewelryType | null
+  manual_collection_family?: string | null
+  manual_collection_name?: string | null
+  manual_size?: string | null
+  manual_photo_url?: string | null
   listed_at: string | null
   removal_reason: RemovalReason | null
   deleted_at: string | null
   created_at: string
   updated_at: string
-  design: {
-    id: string
-    item_number: string
-    design_name: string
-    material: string | null
-    main_stone: string | null
-    bp_msrp: number | null
-    canonical_photo_url: string | null
-    type_prefix: JewelryType
-    collection: { id: string; name: string } | null
-  }
+  design: TradeListingDesign | null
 }
 
 export interface BoardResult {
@@ -125,6 +134,23 @@ export interface BatchListingItem {
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string
+}
+
+export interface AddNonItemNumberListingInput {
+  jewelryType: JewelryType
+  collectionFamily: string
+  collectionName?: string | null
+  size?: string | null
+  photoUrl: string
+  repNotes?: string | null
+  tradePreferences?: string | null
+}
+
+export interface AddNonItemNumberListingResult {
+  listingId: string
+  listingSource: 'non_item_number'
+  displayName: string
+  status: ListingStatus
 }
 
 export interface AddListingBatchInput {
@@ -867,11 +893,13 @@ export interface TradeRequestWithListing {
   listing: {
     id: string
     repId: string
+    listingSource?: ListingSource
     listingPhotoUrl: string | null
     usesCanonicalPhoto: boolean
+    repFacingNote?: string | null
     design: {
-      id: string
-      itemNumber: string
+      id: string | null
+      itemNumber: string | null
       designName: string
       collectionName: string | null
       material: string | null
@@ -891,7 +919,8 @@ export interface TradeRequestNotificationSummary {
   revealScreenshot?: TradeRequestRevealScreenshot | null
   listing: {
     id: string
-    itemNumber: string
+    listingSource?: ListingSource
+    itemNumber: string | null
     designName: string
     collectionName: string | null
     typePrefix: JewelryType
@@ -926,7 +955,7 @@ export interface TradeHistoryItem {
   completedAt: string | null
   fulfillmentDays: number | null
   design: {
-    itemNumber: string
+    itemNumber: string | null
     designName: string
     bpMsrp: number | null
     typePrefix: JewelryType
@@ -1016,7 +1045,7 @@ export interface FulfillmentQueueItem {
   status: FulfillmentStatus
   customerName: string
   designName: string
-  itemNumber: string
+  itemNumber: string | null
   statusUpdatedAt: string
   daysSinceLastUpdate: number
 }

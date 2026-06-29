@@ -1,4 +1,5 @@
 import type { TradeListingWithDesign } from '@/lib/services/types'
+import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 
 export type BoardInventoryFilters = {
   search: string
@@ -27,8 +28,9 @@ export function getBoardInventoryOptions(
 
   for (const listing of listings) {
     if (listing.status !== 'available') continue
-    jewelryTypes.add(listing.design.type_prefix)
-    const collectionName = listing.design.collection?.name?.trim()
+    const display = getTradeListingDisplayFields(listing)
+    jewelryTypes.add(display.typePrefix)
+    const collectionName = display.collectionName?.trim()
     if (collectionName) {
       collections.add(collectionName)
     }
@@ -53,8 +55,9 @@ export function getBoardInventoryResults(
   return listings
     .filter((listing) => listing.status === 'available')
     .filter((listing) => {
-      if (jewelryType && listing.design.type_prefix !== jewelryType) return false
-      if (collection && listing.design.collection?.name !== collection) return false
+      const display = getTradeListingDisplayFields(listing)
+      if (jewelryType && display.typePrefix !== jewelryType) return false
+      if (collection && display.collectionName !== collection) return false
       if (!search) return true
 
       return getSearchableListingText(listing).includes(search)
@@ -91,11 +94,14 @@ function normalizeInventorySearch(value: string) {
 }
 
 function getSearchableListingText(listing: TradeListingWithDesign) {
+  const display = getTradeListingDisplayFields(listing)
   return [
-    listing.design.item_number,
-    listing.design.design_name,
-    listing.design.type_prefix,
-    listing.design.collection?.name ?? '',
+    display.itemNumber ?? '',
+    display.designName,
+    display.typePrefix,
+    display.typeLabel,
+    display.collectionName ?? '',
+    display.size ?? '',
   ]
     .join(' ')
     .toLowerCase()
@@ -107,7 +113,9 @@ function sortNewestListingsFirst(
 ) {
   const listedComparison = getListingTime(b) - getListingTime(a)
   if (listedComparison !== 0) return listedComparison
-  return a.design.item_number.localeCompare(b.design.item_number)
+  return getTradeListingDisplayFields(a).designName.localeCompare(
+    getTradeListingDisplayFields(b).designName,
+  )
 }
 
 function getListingTime(listing: TradeListingWithDesign) {

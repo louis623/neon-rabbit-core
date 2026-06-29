@@ -31,6 +31,7 @@ import type {
   WalletDashboardResult,
   WalletTransactionSummary,
 } from '@/lib/services/types'
+import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
@@ -1183,12 +1184,13 @@ export function getAccountBillingBannerMessage(search: string) {
 }
 
 export function getTradeListingPhotoUrl(listing: TradeListingWithDesign) {
-  return listing.listing_photo_url ?? listing.design.canonical_photo_url
+  return getTradeListingDisplayFields(listing).photoUrl
 }
 
 export function getTradeListingPhotoSourceLabel(listing: TradeListingWithDesign) {
-  if (listing.listing_photo_url) return 'custom listing photo'
-  if (listing.design.canonical_photo_url && listing.uses_canonical_photo) {
+  const display = getTradeListingDisplayFields(listing)
+  if (display.listingPhotoUrl) return 'custom listing photo'
+  if (display.canonicalPhotoUrl && listing.uses_canonical_photo) {
     return 'catalog photo'
   }
   return 'no photo yet'
@@ -4440,13 +4442,20 @@ export function TradeBoardWorkspaceCard({
                   const ruleCheckTarget = request.listing.design.collectionName
                     ? `${request.listing.design.typePrefix} / ${request.listing.design.collectionName}`
                     : request.listing.design.typePrefix
+                  const requestedItemLabel = request.listing.design.itemNumber
+                    ? `${request.listing.design.itemNumber} - ${request.listing.design.designName}`
+                    : `${request.listing.design.designName}${
+                        request.listing.repFacingNote
+                          ? ` ${request.listing.repFacingNote}`
+                          : ''
+                      }`
 
                   return (
                     <div key={request.id} className={styles.tradeRow}>
                       <div className={styles.tradeIdentity}>
                         <div className={styles.customerName}>{request.customerName}</div>
                         <div className={styles.customerDate}>
-                          Wants {request.listing.design.itemNumber} - {request.listing.design.designName}
+                          Wants {requestedItemLabel}
                         </div>
                         <div className={styles.helperNote}>{request.customerDescription}</div>
                         {request.revealScreenshot ? (
@@ -4656,12 +4665,13 @@ export function TradeBoardWorkspaceCard({
                     <div className={styles.boardInventoryCarouselGrid}>
                       {carousel.visibleItems.map((listing) => {
                         const photoUrl = getTradeListingPhotoUrl(listing)
+                        const display = getTradeListingDisplayFields(listing)
                         return (
                           <div key={listing.id} className={styles.boardInventoryPieceCard}>
                             <button
                               type="button"
                               className={styles.boardInventoryMediaButton}
-                              aria-label={`Open image preview for ${listing.design.design_name}`}
+                              aria-label={`Open image preview for ${display.designName}`}
                               onClick={() => setPreviewListing(listing)}
                             >
                               <span className={styles.boardInventoryMedia}>
@@ -4669,31 +4679,31 @@ export function TradeBoardWorkspaceCard({
                                   <img
                                     className={styles.tradePieceImage}
                                     src={photoUrl}
-                                    alt={listing.design.design_name}
+                                    alt={display.designName}
                                     loading="lazy"
                                   />
                                 ) : (
                                   <span className={styles.tradePieceFallback}>
-                                    {listing.design.type_prefix}
+                                    {display.typePrefix}
                                   </span>
                                 )}
                               </span>
                             </button>
                             <div className={styles.boardInventoryPieceBody}>
                               <div className={styles.customerName}>
-                                {listing.design.design_name}
+                                {display.designName}
                               </div>
                               <div className={styles.tradePieceMetaLine}>
-                                {listing.design.item_number}
+                                {display.itemNumber ?? display.repFacingNote}
                               </div>
                               <div className={styles.tradePieceMetaLine}>
-                                {listing.design.type_prefix}
-                                {listing.design.collection?.name
-                                  ? ` - ${listing.design.collection.name}`
+                                {display.typePrefix}
+                                {display.collectionName
+                                  ? ` - ${display.collectionName}`
                                   : ''}
                               </div>
                               <div className={styles.timelineItem}>
-                                {formatTradeMoney(listing.design.bp_msrp)}
+                                {formatTradeMoney(display.bpMsrp)}
                               </div>
                             </div>
                             <button
@@ -4723,48 +4733,52 @@ export function TradeBoardWorkspaceCard({
                   Use search or filters to browse pieces currently on your board.
                 </div>
               )}
-              {previewListing ? (
-                <div
-                  className={styles.imagePreviewMask}
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label={`${previewListing.design.design_name} image preview`}
-                  onClick={() => setPreviewListing(null)}
-                >
+              {previewListing ? (() => {
+                const previewDisplay = getTradeListingDisplayFields(previewListing)
+                const previewPhotoUrl = getTradeListingPhotoUrl(previewListing)
+                return (
                   <div
-                    className={styles.imagePreviewDialog}
-                    onClick={(event) => event.stopPropagation()}
+                    className={styles.imagePreviewMask}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`${previewDisplay.designName} image preview`}
+                    onClick={() => setPreviewListing(null)}
                   >
-                    <button
-                      type="button"
-                      className={styles.imagePreviewClose}
-                      aria-label="Close image preview"
-                      onClick={() => setPreviewListing(null)}
+                    <div
+                      className={styles.imagePreviewDialog}
+                      onClick={(event) => event.stopPropagation()}
                     >
-                      x
-                    </button>
-                    <div className={styles.imagePreviewFrame}>
-                      {getTradeListingPhotoUrl(previewListing) ? (
-                        <img
-                          src={getTradeListingPhotoUrl(previewListing) ?? undefined}
-                          alt={previewListing.design.design_name}
-                          className={styles.imagePreviewImage}
-                        />
-                      ) : (
-                        <div className={styles.tradePieceFallback}>
-                          {previewListing.design.type_prefix}
-                        </div>
-                      )}
-                    </div>
-                    <div className={styles.walletSettingsTitle}>
-                      {previewListing.design.design_name}
-                    </div>
-                    <div className={styles.helperNote}>
-                      Image source: {getTradeListingPhotoSourceLabel(previewListing)}
+                      <button
+                        type="button"
+                        className={styles.imagePreviewClose}
+                        aria-label="Close image preview"
+                        onClick={() => setPreviewListing(null)}
+                      >
+                        x
+                      </button>
+                      <div className={styles.imagePreviewFrame}>
+                        {previewPhotoUrl ? (
+                          <img
+                            src={previewPhotoUrl}
+                            alt={previewDisplay.designName}
+                            className={styles.imagePreviewImage}
+                          />
+                        ) : (
+                          <div className={styles.tradePieceFallback}>
+                            {previewDisplay.typePrefix}
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.walletSettingsTitle}>
+                        {previewDisplay.designName}
+                      </div>
+                      <div className={styles.helperNote}>
+                        Image source: {getTradeListingPhotoSourceLabel(previewListing)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
+                )
+              })() : null}
             </>
           ) : (
             <div className={styles.cardFill}>
@@ -4834,7 +4848,9 @@ export function TradeBoardWorkspaceCard({
                       <div className={styles.tradeIdentity}>
                         <div className={styles.customerName}>{item.customerName}</div>
                         <div className={styles.customerDate}>
-                          {item.itemNumber} - {item.designName}
+                          {item.itemNumber
+                            ? `${item.itemNumber} - ${item.designName}`
+                            : item.designName}
                         </div>
                         <div className={styles.helperNote}>
                           {item.daysSinceLastUpdate} day(s) since last update
@@ -4914,7 +4930,9 @@ export function TradeBoardWorkspaceCard({
                       <div className={styles.tradeIdentity}>
                         <div className={styles.customerName}>{item.customerName}</div>
                         <div className={styles.customerDate}>
-                          {item.design.itemNumber} - {item.design.designName}
+                          {item.design.itemNumber
+                            ? `${item.design.itemNumber} - ${item.design.designName}`
+                            : item.design.designName}
                         </div>
                       </div>
                       <div className={styles.tradeMeta}>

@@ -8,6 +8,13 @@ import { buildTradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-part
 export function buildTradeRequestNotificationText(
   summary: TradeRequestNotificationSummary,
 ) {
+  const requestedItem = summary.listing.itemNumber
+    ? `${summary.listing.designName} (${summary.listing.itemNumber})`
+    : `${summary.listing.designName}${
+        summary.listing.listingSource === 'non_item_number'
+          ? ' (non-item number piece)'
+          : ''
+      }`
   const collectionLine = summary.listing.collectionName
     ? `${summary.listing.collectionName} / ${summary.listing.typePrefix}`
     : summary.listing.typePrefix
@@ -18,7 +25,7 @@ export function buildTradeRequestNotificationText(
       : 'MSRP is reference only here.'
 
   return [
-    `New trade request from ${summary.customerName} for ${summary.listing.designName} (${summary.listing.itemNumber}).`,
+    `New trade request from ${summary.customerName} for ${requestedItem}.`,
     `They offered: ${summary.customerDescription}`,
     summary.revealScreenshot
       ? 'They included a reveal screenshot in the Trade Board request inbox.'

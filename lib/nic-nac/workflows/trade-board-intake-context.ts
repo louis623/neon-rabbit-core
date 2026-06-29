@@ -165,6 +165,30 @@ function assistantIsPostCompletionFollowUp(text: string): boolean {
   )
 }
 
+function inferCatalogModeFromTurn(args: {
+  currentMode: TradeBoardIntakeSessionState['catalogMode']
+  latestUserText: string
+  previousAssistantText: string
+  hasItemNumber: boolean
+}): TradeBoardIntakeSessionState['catalogMode'] {
+  if (args.hasItemNumber) return 'item_number'
+  if (args.currentMode === 'non_item_number') return 'non_item_number'
+  if (/\b(?:do not|don't|dont|no|missing|without)\b[\s\S]{0,40}\bitem\s*(?:number|#)\b/i.test(args.latestUserText)) {
+    return 'non_item_number'
+  }
+  if (
+    /\b(?:yes|yep|yeah|correct|that'?s right|that is right|please|go ahead|do that|add it)\b/i.test(
+      args.latestUserText,
+    ) &&
+    /\b(?:non-item number|without an item number|missing item number|do not see an item number)\b/i.test(
+      args.previousAssistantText,
+    )
+  ) {
+    return 'non_item_number'
+  }
+  return 'item_number'
+}
+
 export async function ingestLatestTradeBoardIntakeTurn(
   supabase: SupabaseClient,
   args: {
@@ -177,6 +201,12 @@ export async function ingestLatestTradeBoardIntakeTurn(
   if (latestUserIndex === -1) return args.session
   const latestUser = args.messages[latestUserIndex]
   const latestUserText = getMessageText(latestUser)
+  const previousAssistantText = getMessageText(
+    args.messages
+      .slice(0, latestUserIndex)
+      .reverse()
+      .find((message) => message.role === 'assistant'),
+  )
   const known = mergeTradeBoardKnownFields(
     mergeTradeBoardKnownFields(
       args.session.known,
@@ -184,6 +214,12 @@ export async function ingestLatestTradeBoardIntakeTurn(
     ),
     extractKnownFieldsFromText(latestUserText),
   )
+  const catalogMode = inferCatalogModeFromTurn({
+    currentMode: args.session.catalogMode,
+    latestUserText,
+    previousAssistantText,
+    hasItemNumber: Boolean(known.itemNumber),
+  })
   const photos = [...args.session.photos]
   const fileParts = (latestUser.parts ?? []).filter(
     (part) =>
@@ -261,6 +297,7 @@ export async function ingestLatestTradeBoardIntakeTurn(
 
   const updated: TradeBoardIntakeSessionState = {
     ...args.session,
+    catalogMode,
     known,
     photos,
     lastUserMessageId: args.latestUserMessageId ?? latestUser.id,
@@ -280,8 +317,11 @@ export async function ingestLatestTradeBoardIntakeTurn(
     sessionId: args.session.id,
     patch: {
       item_number: known.itemNumber ?? null,
+      catalog_mode: normalized.catalogMode,
+      jewelry_type: known.jewelryType ?? null,
       quantity: known.quantity ?? null,
       design_name: known.designName ?? null,
+      collection_family: known.collectionFamily ?? null,
       collection_name: known.collectionName ?? null,
       collection_year: known.collectionYear ?? null,
       material: known.material ?? null,

@@ -11,19 +11,28 @@ describe('Nic-Nac system prompt — add listing flow', () => {
   it('describes the three add-a-piece entry paths and batch sorting behavior', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('item number')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('label photo')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('No item number')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Batch mode')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('ready')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('needCollection')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('needFullInfo')
   })
 
-  it('starts guided trade-board intake with item number lookup before photos', () => {
+  it('starts guided trade-board intake with item number, label, or non-item-number paths', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'When the rep starts "Add a piece to Trade Board", offer two ways to start',
+      'When the rep starts "Add a piece to Trade Board", offer three ways to start',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('type the item number')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'upload a clear item-info tag or label photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'say they do not have an item number',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Collection Type and Size')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain("catalogMode:'non_item_number'")
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not invent an item number or create/update jewelry_designs',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Order does not matter')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

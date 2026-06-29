@@ -5,7 +5,10 @@ import {
   buildAssistantMessageRenderables,
   getTradeRequestCardState,
 } from '@/app/nic-nac/components/NicNacChatBody'
-import type { TradeRequestCardPart } from '@/lib/nic-nac/trade-request-card-parts'
+import {
+  isTradeRequestCardPart,
+  type TradeRequestCardPart,
+} from '@/lib/nic-nac/trade-request-card-parts'
 
 const tradeRequestPart: TradeRequestCardPart = {
   type: 'data-trade-request-card',
@@ -72,12 +75,53 @@ describe('Nic-Nac live trade request card UI wiring', () => {
     expect(source).toContain('customerName')
     expect(source).toContain('itemNumber')
     expect(source).toContain('designName')
+    expect(source).toContain('request.requestedItem.itemNumber')
+    expect(source).toContain('request.requestedItem.repFacingNote')
     expect(source).toContain('offeredText')
     expect(source).toContain('ruleCheck.label')
     expect(source).toContain('Approve')
     expect(source).toContain('Deny')
     expect(source).toContain("onDecision('approve', request.requestId)")
     expect(source).toContain("onDecision('reject', request.requestId)")
+  })
+
+  it('accepts non-item-number request card data without rendering a null item label', () => {
+    const manualPart: TradeRequestCardPart = {
+      type: 'data-trade-request-card',
+      data: {
+        requestId: 'trade_request_manual_123',
+        customerName: 'Maya Stone',
+        requestedItem: {
+          itemNumber: null,
+          designName: 'July Birthday 2026 Ring - Size 7',
+          typePrefix: 'RG',
+          collectionName: 'July Birthday 2026',
+          bpMsrp: null,
+          repFacingNote: '(non-item number piece)',
+        },
+        offeredText: 'Offering a July Birthday necklace.',
+        ruleCheck: {
+          status: 'needs_review',
+          label: 'Compare against RG / July Birthday 2026',
+          description: 'Confirm the offered piece before approving.',
+        },
+      },
+    }
+
+    expect(isTradeRequestCardPart(manualPart)).toBe(true)
+    const renderables = buildAssistantMessageRenderables([manualPart])
+    expect(renderables).toEqual([
+      {
+        type: 'data-trade-request-card',
+        key: 'trade-request-trade_request_manual_123-0',
+        request: manualPart.data,
+      },
+    ])
+
+    const source = readFileSync(cardPath, 'utf8')
+    expect(source).toContain('request.requestedItem.itemNumber')
+    expect(source).toContain('request.requestedItem.repFacingNote')
+    expect(source).toContain(': `${request.requestedItem.designName}${')
   })
 
   it('renders trade request card parts inside assistant messages without replacing text or HITL rendering', () => {

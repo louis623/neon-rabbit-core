@@ -11,8 +11,10 @@ import {
   type UpdateFulfillmentInput,
   type UpdateFulfillmentResult,
   type FulfillmentQueueItem,
+  type TradeListingWithDesign,
 } from './types'
 import { errors } from './errors'
+import { getTradeListingDisplayFields } from './trade-listing-display'
 
 const FORWARD: Record<FulfillmentStatus, FulfillmentStatus | null> = {
   approved: 'shipped',
@@ -126,8 +128,14 @@ const QUEUE_SELECT = `
   request:trade_requests!inner(
     id, customer_name,
     listing:trade_listings!inner(
-      rep_id,
-      design:jewelry_designs(item_number, design_name)
+      rep_id, listing_source, listing_photo_url, uses_canonical_photo,
+      manual_type_prefix, manual_collection_family, manual_collection_name,
+      manual_size, manual_photo_url,
+      design:jewelry_designs(
+        id, item_number, design_name, material, main_stone, bp_msrp,
+        canonical_photo_url, type_prefix,
+        collection:collections(name)
+      )
     )
   )
 `
@@ -145,8 +153,29 @@ export async function getFulfillmentQueue(
     .order('status_updated_at', { ascending: true })
   if (error) throw error
 
-  type RawDesign = { item_number: string; design_name: string }
-  type RawListing = { rep_id: string; design: RawDesign | RawDesign[] | null }
+  type RawDesign = {
+    id: string
+    item_number: string
+    design_name: string
+    material: string | null
+    main_stone: string | null
+    bp_msrp: number | null
+    canonical_photo_url: string | null
+    type_prefix: TradeListingWithDesign['manual_type_prefix']
+    collection: { name: string } | { name: string }[] | null
+  }
+  type RawListing = {
+    rep_id: string
+    listing_source?: TradeListingWithDesign['listing_source'] | null
+    listing_photo_url?: string | null
+    uses_canonical_photo?: boolean
+    manual_type_prefix?: TradeListingWithDesign['manual_type_prefix']
+    manual_collection_family?: string | null
+    manual_collection_name?: string | null
+    manual_size?: string | null
+    manual_photo_url?: string | null
+    design: RawDesign | RawDesign[] | null
+  }
   type RawRequest = {
     id: string
     customer_name: string
@@ -167,15 +196,50 @@ export async function getFulfillmentQueue(
     const lst = Array.isArray(req.listing) ? req.listing[0] : req.listing
     if (!lst || lst.rep_id !== repId) continue
     const design = Array.isArray(lst.design) ? lst.design[0] : lst.design
-    if (!design) continue
+    const collectionRel = design?.collection
+    const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+    const display = getTradeListingDisplayFields({
+      id: '',
+      rep_id: lst.rep_id,
+      listing_source: lst.listing_source ?? undefined,
+      status: 'available',
+      rep_notes: null,
+      trade_preferences: null,
+      ring_size: null,
+      listing_photo_url: lst.listing_photo_url ?? null,
+      uses_canonical_photo: lst.uses_canonical_photo ?? true,
+      manual_type_prefix: lst.manual_type_prefix,
+      manual_collection_family: lst.manual_collection_family,
+      manual_collection_name: lst.manual_collection_name,
+      manual_size: lst.manual_size,
+      manual_photo_url: lst.manual_photo_url,
+      listed_at: null,
+      removal_reason: null,
+      deleted_at: null,
+      created_at: row.status_updated_at,
+      updated_at: row.status_updated_at,
+      design: design
+        ? {
+            id: design.id,
+            item_number: design.item_number,
+            design_name: design.design_name,
+            material: design.material,
+            main_stone: design.main_stone,
+            bp_msrp: design.bp_msrp,
+            canonical_photo_url: design.canonical_photo_url,
+            type_prefix: design.type_prefix ?? 'RG',
+            collection: collection ? { id: '', name: collection.name } : null,
+          }
+        : null,
+    } as TradeListingWithDesign)
     const updatedAt = new Date(row.status_updated_at).getTime()
     items.push({
       fulfillmentId: row.id,
       requestId: req.id,
       status: row.fulfillment_status,
       customerName: req.customer_name,
-      designName: design.design_name,
-      itemNumber: design.item_number,
+      designName: display.designName,
+      itemNumber: display.itemNumber,
       statusUpdatedAt: row.status_updated_at,
       daysSinceLastUpdate: Math.max(0, Math.floor((now - updatedAt) / 86_400_000)),
     })

@@ -40,6 +40,8 @@ export type TradeBoardIntakeNextAction =
   | 'ask_for_label_details_photo'
   | 'ask_for_jewelry_front_photo'
   | 'ask_for_collection'
+  | 'ask_for_collection_type_and_size'
+  | 'confirm_non_item_number_piece'
   | 'confirm_extracted_details'
   | 'call_search_jewelry_database'
   | 'call_add_listing'
@@ -53,10 +55,16 @@ export type TradeBoardIntakeToolPolicySource =
   | 'fallback_memory'
   | 'fallback_resources'
 
+export type TradeBoardIntakeCatalogMode = 'item_number' | 'non_item_number'
+
+export type TradeBoardIntakeJewelryType = 'RG' | 'NK' | 'ER' | 'ST' | 'BR'
+
 export interface TradeBoardIntakeKnownFields {
   itemNumber?: string
+  jewelryType?: TradeBoardIntakeJewelryType
   quantity?: number
   designName?: string
+  collectionFamily?: string
   collectionName?: string
   collectionYear?: number
   material?: string
@@ -86,6 +94,7 @@ export interface TradeBoardIntakeSessionState {
   repId: string
   conversationId: string
   workflowType: TradeBoardIntakeWorkflowType
+  catalogMode: TradeBoardIntakeCatalogMode
   status: TradeBoardIntakeStatus
   phase: TradeBoardIntakePhase
   known: TradeBoardIntakeKnownFields
@@ -105,6 +114,7 @@ export interface TradeBoardIntakePromptState {
   workflow: {
     id: string
     type: TradeBoardIntakeWorkflowType
+    catalogMode: TradeBoardIntakeCatalogMode
     status: TradeBoardIntakeStatus
     phase: TradeBoardIntakePhase
   }

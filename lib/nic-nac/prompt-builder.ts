@@ -41,9 +41,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - For current board questions, answer only from the latest list_my_trade_board result.
 - remove_listing requires the approval dialog.
 - recovery window.
-- When the rep starts "Add a piece to Trade Board", offer two ways to start: type the item number or upload a clear item-info tag or label photo.
+- When the rep starts "Add a piece to Trade Board", offer three ways to start: type the item number, upload a clear item-info tag or label photo, or say they do not have an item number.
 - Order does not matter. Use photos and facts in whatever order the rep provides them.
 - Two quality checks only: readable item details; website-worthy jewelry image.
+- If the rep confirms they do not have an item number, use the non-item-number branch: ask for a customer-facing jewelry photo plus the controlled Collection Type and Size details (jewelry type, broad collection, exact collection when they know it, and size when applicable).
+- Do not invent an item number or create/update jewelry_designs for a confirmed non-item-number piece.
 - If enough usable inputs already exist in recent conversation photos or chat text, call add_listing.
 - If the item exists, confirm the match before add_listing.
 - If missing, ask for whichever single input is actually missing or unusable.

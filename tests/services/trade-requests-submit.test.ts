@@ -2,9 +2,37 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   attachTradeRequestRevealScreenshot,
+  getTradeRequests,
   getTradeRequestRevealScreenshotForRep,
   submitTradeRequest,
 } from '@/lib/services/trade-requests'
+
+class ThenableQuery {
+  filters: Array<[string, unknown]> = []
+
+  constructor(private readonly result: Record<string, unknown>) {}
+
+  select() {
+    return this
+  }
+
+  eq(column: string, value: unknown) {
+    this.filters.push([column, value])
+    return this
+  }
+
+  order() {
+    return this
+  }
+
+  limit() {
+    return this
+  }
+
+  then(resolve: (value: Record<string, unknown>) => unknown) {
+    return Promise.resolve(this.result).then(resolve)
+  }
+}
 
 describe('submitTradeRequest', () => {
   const rpc = vi.fn()
@@ -78,7 +106,7 @@ describe('submitTradeRequest', () => {
   it('attaches reveal screenshot metadata to an existing trade request', async () => {
     const updateEq = vi.fn().mockResolvedValueOnce({ error: null })
     const update = vi.fn(() => ({ eq: updateEq }))
-    from.mockReturnValueOnce({ update })
+    from.mockReturnValueOnce({ update } as never)
 
     await attachTradeRequestRevealScreenshot(supabaseWithListingLookup as never, 'request-1', {
       objectPath: 'rep-1/request-1/reveal.png',
@@ -151,5 +179,57 @@ describe('submitTradeRequest', () => {
         'request-1',
       ),
     ).resolves.toBeNull()
+  })
+
+  it('keeps non-item-number listings visible in the rep request inbox', async () => {
+    const requestQuery = new ThenableQuery({
+      data: [
+        {
+          id: 'request-1',
+          status: 'pending',
+          customer_name: 'Jamie',
+          customer_description: 'July Birthday ring, size 7',
+          reveal_screenshot_path: null,
+          reveal_screenshot_content_type: null,
+          reveal_screenshot_size_bytes: null,
+          reveal_screenshot_uploaded_at: null,
+          reveal_screenshot_expires_at: null,
+          rejection_reason: null,
+          rep_notes: null,
+          created_at: '2026-06-29T12:00:00.000Z',
+          updated_at: '2026-06-29T12:00:00.000Z',
+          listing: {
+            id: 'manual-listing-1',
+            rep_id: 'rep-1',
+            listing_source: 'non_item_number',
+            listing_photo_url: 'https://cdn.example.com/manual-ring.jpg',
+            uses_canonical_photo: false,
+            manual_type_prefix: 'RG',
+            manual_collection_family: 'Birthday',
+            manual_collection_name: 'July Birthday 2026',
+            manual_size: '7',
+            manual_photo_url: 'https://cdn.example.com/manual-ring.jpg',
+            design: null,
+          },
+        },
+      ],
+      error: null,
+    })
+    const localFrom = vi.fn((table: string) => {
+      if (table === 'trade_requests') return { select: vi.fn(() => requestQuery) }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const requests = await getTradeRequests({ from: localFrom } as never, 'rep-1')
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0].listing.design).toMatchObject({
+      itemNumber: null,
+      designName: 'July Birthday 2026 Ring - Size 7',
+      collectionName: 'July Birthday 2026',
+      typePrefix: 'RG',
+    })
+    expect(requests[0].listing.listingSource).toBe('non_item_number')
+    expect(requests[0].listing.repFacingNote).toBe('(non-item number piece)')
   })
 })

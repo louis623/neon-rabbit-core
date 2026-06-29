@@ -16,7 +16,13 @@ export function TradeRequestLiveCard({
   errorMessage?: string | null
   onDecision: (decision: 'approve' | 'reject', requestId: string) => void
 }) {
-  const requestedItem = `${request.requestedItem.itemNumber} - ${request.requestedItem.designName}`
+  const requestedItem = request.requestedItem.itemNumber
+    ? `${request.requestedItem.itemNumber} - ${request.requestedItem.designName}`
+    : `${request.requestedItem.designName}${
+        request.requestedItem.repFacingNote
+          ? ` ${request.requestedItem.repFacingNote}`
+          : ''
+      }`
   const buttonsDisabled = actionsDisabled || pendingAction !== null || terminalNote !== null
 
   return (

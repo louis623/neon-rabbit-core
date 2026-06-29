@@ -1,5 +1,9 @@
 import type { TradeListingWithDesign } from '@/lib/services/types'
 import { getMyBoard } from '@/lib/services/trade-board'
+import {
+  getTradeListingDisplayFields,
+  TRADE_LISTING_TYPE_LABELS,
+} from '@/lib/services/trade-listing-display'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -21,13 +25,7 @@ export interface AmethystTradeBoardListing {
   photoSource: 'listing' | 'canonical' | 'missing'
 }
 
-const TYPE_LABELS = {
-  RG: 'Ring',
-  NK: 'Necklace',
-  ER: 'Earrings',
-  ST: 'Stack',
-  BR: 'Bracelet',
-} as const
+const TYPE_LABELS = TRADE_LISTING_TYPE_LABELS
 
 const DEFAULT_TRADE_NOTE =
   'Item-for-item only. Requests must stay within the same collection and the same jewelry type.'
@@ -96,12 +94,11 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
 ]
 
 export function getTradeBoardPhotoSource(
-  listing: Pick<TradeListingWithDesign, 'listing_photo_url' | 'uses_canonical_photo'> & {
-    design: Pick<TradeListingWithDesign['design'], 'canonical_photo_url'>
-  },
+  listing: TradeListingWithDesign,
 ): AmethystTradeBoardListing['photoSource'] {
-  if (listing.listing_photo_url) return 'listing'
-  if (listing.design.canonical_photo_url && listing.uses_canonical_photo) {
+  const display = getTradeListingDisplayFields(listing)
+  if (display.listingPhotoUrl) return 'listing'
+  if (display.canonicalPhotoUrl && listing.uses_canonical_photo) {
     return 'canonical'
   }
   return 'missing'
@@ -110,10 +107,11 @@ export function getTradeBoardPhotoSource(
 function inferTradeBoardTier(listing: TradeListingWithDesign): AmethystTradeBoardTier {
   // Until rarity becomes an explicit field, keep inference conservative and
   // only tag listings when the source text explicitly says so.
+  const display = getTradeListingDisplayFields(listing)
   const haystack = [
-    listing.design.design_name,
-    listing.design.collection?.name,
-    listing.design.main_stone,
+    display.designName,
+    display.collectionName,
+    display.mainStone,
     listing.rep_notes,
     listing.trade_preferences,
   ]
@@ -129,14 +127,15 @@ function inferTradeBoardTier(listing: TradeListingWithDesign): AmethystTradeBoar
 export function mapTradeListingToAmethystTradeBoardListing(
   listing: TradeListingWithDesign,
 ): AmethystTradeBoardListing {
-  const displayName = listing.design.design_name.trim()
-  const material = listing.design.material?.trim() || 'Material pending'
-  const stone = listing.design.main_stone?.trim() || 'Stone pending'
-  const collection = listing.design.collection?.name?.trim() || 'Collection pending'
-  const type = TYPE_LABELS[listing.design.type_prefix]
+  const display = getTradeListingDisplayFields(listing)
+  const displayName = display.designName.trim()
+  const material = display.material?.trim() || 'Shown in photo'
+  const stone = display.mainStone?.trim() || 'Shown in photo'
+  const collection = display.collectionName?.trim() || 'Collection'
+  const type = TYPE_LABELS[display.typePrefix]
   const note =
     listing.trade_preferences?.trim() ||
-    listing.rep_notes?.trim() ||
+    (display.listingSource === 'catalog' ? listing.rep_notes?.trim() : null) ||
     DEFAULT_TRADE_NOTE
 
   return {
@@ -146,12 +145,12 @@ export function mapTradeListingToAmethystTradeBoardListing(
     type,
     material,
     stone,
-    msrp: listing.design.bp_msrp,
-    size: listing.ring_size?.trim() || null,
+    msrp: display.bpMsrp,
+    size: display.size,
     note,
     glyph: displayName.charAt(0).toUpperCase() || '?',
     tier: inferTradeBoardTier(listing),
-    photoUrl: listing.listing_photo_url || listing.design.canonical_photo_url,
+    photoUrl: display.photoUrl,
     photoSource: getTradeBoardPhotoSource(listing),
   }
 }

@@ -21,6 +21,7 @@ export function renderTradeBoardIntakePromptState(
   return [
     'Active workflow: trade_board_add_listing',
     `Workflow id: ${state.workflow.id}`,
+    `Catalog mode: ${state.workflow.catalogMode}`,
     `Workflow status: ${state.workflow.status}`,
     `Workflow phase: ${state.workflow.phase}`,
     known ? `Known details:\n${known}` : 'Known details: none yet',

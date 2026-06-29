@@ -959,7 +959,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'Two ways to start: type the item number or upload a photo of the item-info tag/label.',
+            text: 'Three ways to start: type the item number, upload a photo of the item-info tag/label, or tell me you do not have an item number.',
           },
         ],
       },

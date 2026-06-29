@@ -29,12 +29,16 @@ export function extractKnownFieldsFromText(
   const itemNumber = normalizedText.match(/\b[A-Z]{1,4}\d{3,}\b/i)?.[0]
   if (itemNumber) known.itemNumber = itemNumber.toUpperCase()
 
+  const jewelryType = extractJewelryType(normalizedText)
+  if (jewelryType) known.jewelryType = jewelryType
+
   const designName = itemNumber
     ? extractDesignNameNearItemNumber(normalizedText, itemNumber)
     : null
   if (designName) known.designName = designName
 
   const collection = extractCollectionFields(normalizedText)
+  if (collection.collectionFamily) known.collectionFamily = collection.collectionFamily
   if (collection.collectionName) known.collectionName = collection.collectionName
   if (collection.collectionYear) known.collectionYear = collection.collectionYear
 
@@ -55,6 +59,11 @@ export function extractKnownFieldsFromText(
     /\b(?:qty|quantity|count)\s*(?:is|:|-)?\s*(\d+)\b/i,
   )
   if (quantity?.[1]) known.quantity = Number(quantity[1])
+
+  const ringSize = normalizedText.match(
+    /\b(?:ring\s*)?size\s*(?:is|:|-)?\s*([0-9](?:\.[0-9])?)\b/i,
+  )
+  if (ringSize?.[1]) known.ringSize = ringSize[1]
 
   return known
 }
@@ -117,15 +126,19 @@ export function normalizeCollectionName(raw: string): string {
 }
 
 function extractCollectionFields(text: string): {
+  collectionFamily?: string
   collectionName?: string
   collectionYear?: number
 } {
+  const family = extractCollectionFamily(text)
   const prefix = text.match(
     /\b(?:collection|coll)\b\s*(?:is|:|-)\s*([A-Za-z][A-Za-z\s]*?)(?:\s+Collection)?(?:[,\s]+(20\d{2}))?(?=\.|,|$)/i,
   )
   if (prefix?.[1]) {
+    const collectionName = normalizeCollectionName(prefix[1])
     return {
-      collectionName: normalizeCollectionName(prefix[1]),
+      collectionFamily: family ?? collectionFamilyFromName(collectionName),
+      collectionName,
       collectionYear: prefix[2] ? Number(prefix[2]) : undefined,
     }
   }
@@ -134,8 +147,10 @@ function extractCollectionFields(text: string): {
     /\b([A-Za-z]+(?:\s+(?:Birthday|Originals|Luxe|Stacks?))?)\s+collection\b(?:,?\s*(20\d{2}))?/i,
   )
   if (suffix?.[1]) {
+    const collectionName = normalizeCollectionName(suffix[1])
     return {
-      collectionName: normalizeCollectionName(suffix[1]),
+      collectionFamily: family ?? collectionFamilyFromName(collectionName),
+      collectionName,
       collectionYear: suffix[2] ? Number(suffix[2]) : undefined,
     }
   }
@@ -144,17 +159,42 @@ function extractCollectionFields(text: string): {
     /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+Birthday)(?:\s+Collection)?\s*,?\s*(20\d{2})\b/i,
   )
   if (standaloneBirthday?.[1]) {
+    const collectionName = normalizeCapitalizedPhrase(
+      normalizeCollectionName(standaloneBirthday[1]),
+    )
     return {
-      collectionName: normalizeCapitalizedPhrase(
-        normalizeCollectionName(standaloneBirthday[1]),
-      ),
+      collectionFamily: 'Birthday',
+      collectionName,
       collectionYear: standaloneBirthday[2]
         ? Number(standaloneBirthday[2])
         : undefined,
     }
   }
 
-  return {}
+  return family ? { collectionFamily: family } : {}
+}
+
+function extractJewelryType(text: string): TradeBoardIntakeKnownFields['jewelryType'] | undefined {
+  if (/\b(ring|rings)\b/i.test(text)) return 'RG'
+  if (/\b(necklace|necklaces|pendant|pendants)\b/i.test(text)) return 'NK'
+  if (/\b(earring|earrings|stud|studs|hoop|hoops)\b/i.test(text)) return 'ER'
+  if (/\b(stack|stacks)\b/i.test(text)) return 'ST'
+  if (/\b(bracelet|bracelets)\b/i.test(text)) return 'BR'
+  return undefined
+}
+
+function extractCollectionFamily(text: string): string | undefined {
+  if (/\bbirthday\b/i.test(text)) return 'Birthday'
+  if (/\b(?:og|originals?)\b/i.test(text)) return 'OG'
+  if (/\bsterling\b/i.test(text)) return 'Sterling'
+  if (/\bstacks?\b/i.test(text)) return 'Stacks'
+  if (/\bsimply\s+studs?\b/i.test(text)) return 'Simply Studs'
+  if (/\bluxe\b/i.test(text)) return 'Luxe'
+  return undefined
+}
+
+function collectionFamilyFromName(name: string): string | undefined {
+  return extractCollectionFamily(name)
 }
 
 function extractDesignNameNearItemNumber(

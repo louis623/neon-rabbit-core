@@ -12,6 +12,7 @@ import {
   type JewelryType,
   type ListingStatus,
 } from '@/lib/services/trade-board'
+import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import type { ToolDefinition } from './types'
 
@@ -51,21 +52,26 @@ export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: Supabas
           totalMsrp: board.summary.totalMsrp,
           typeBreakdown: board.summary.typeBreakdown as Record<JewelryType, number>,
           pendingRequestCount: board.summary.pendingRequestCount,
-          listings: board.listings.map((l) => ({
-            listingId: l.id,
-            itemNumber: l.design.item_number,
-            designName: l.design.design_name,
-            type: l.design.type_prefix,
-            material: l.design.material,
-            mainStone: l.design.main_stone,
-            msrp: l.design.bp_msrp,
-            collection: l.design.collection?.name ?? null,
-            ringSize: l.ring_size,
-            status: l.status,
-            tradePreferences: l.trade_preferences,
-            repNotes: l.rep_notes,
-            listedAt: l.listed_at,
-          })),
+          listings: board.listings.map((l) => {
+            const display = getTradeListingDisplayFields(l)
+            return {
+              listingId: l.id,
+              listingSource: display.listingSource,
+              itemNumber: display.itemNumber,
+              designName: display.designName,
+              type: display.typePrefix,
+              material: display.material,
+              mainStone: display.mainStone,
+              msrp: display.bpMsrp,
+              collection: display.collectionName,
+              ringSize: display.size,
+              status: l.status,
+              tradePreferences: l.trade_preferences,
+              repNotes: l.rep_notes,
+              repFacingNote: display.repFacingNote,
+              listedAt: l.listed_at,
+            }
+          }),
         }
       } catch (err) {
         explainTradeBoardError(err)

@@ -9,6 +9,7 @@ import {
   searchJewelryDatabase,
 } from '@/lib/services/jewelry-database'
 import { getMyBoard } from '@/lib/services/trade-board'
+import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
 
@@ -22,7 +23,10 @@ const inputSchema = z.object({
     'unknown',
   ]),
   query: z.string().optional(),
+  catalogMode: z.enum(['item_number', 'non_item_number']).optional(),
   itemNumber: z.string().optional(),
+  jewelryType: z.enum(['RG', 'NK', 'ER', 'ST', 'BR']).optional(),
+  collectionFamily: z.string().optional(),
   material: z.string().optional(),
   ringSize: z.string().optional(),
 })
@@ -103,8 +107,9 @@ export function makePrepareTradeBoardWorkTool(ctx: {
         })
         const needle = searchQuery(input).toUpperCase()
         const matches = board.listings.filter((listing) => {
-          const itemNumber = listing.design.item_number.toUpperCase()
-          const designName = listing.design.design_name.toUpperCase()
+          const display = getTradeListingDisplayFields(listing)
+          const itemNumber = display.itemNumber?.toUpperCase() ?? ''
+          const designName = display.designName.toUpperCase()
           return needle
             ? itemNumber.includes(needle) || designName.includes(needle)
             : true
@@ -117,8 +122,8 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           catalogDeletionAllowed: false,
           boardMatches: matches.map((listing) => ({
             listingId: listing.id,
-            itemNumber: listing.design.item_number,
-            designName: listing.design.design_name,
+            itemNumber: getTradeListingDisplayFields(listing).itemNumber,
+            designName: getTradeListingDisplayFields(listing).designName,
             status: listing.status,
           })),
           guidance:
@@ -147,6 +152,29 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           catalogDeletionAllowed: false,
           guidance:
             'Use catalog correction tools for bad shared data or photos. Destructive jewelry database deletion is not available to Nic-Nac.',
+        }
+      }
+
+      if (input.catalogMode === 'non_item_number') {
+        const requiredBeforeAction = [
+          ...(input.jewelryType ? [] : ['jewelryType']),
+          ...(input.collectionFamily ? [] : ['collectionFamily']),
+          'jewelryFrontPhoto',
+          ...(input.jewelryType === 'RG' && !input.ringSize ? ['ringSize'] : []),
+        ]
+        return {
+          action: input.action,
+          catalogStatus: 'not_applicable',
+          allowedPath: 'add_non_item_number_trade_listing',
+          requiredBeforeAction,
+          nextTool: 'add_listing',
+          catalogDeletionAllowed: false,
+          nextQuestion:
+            requiredBeforeAction.length > 0
+              ? 'Collection Type and Size'
+              : null,
+          guidance:
+            'The rep confirmed this is a non-item-number piece. Collect controlled jewelry type, collection, size when applicable, and a clear customer-facing jewelry photo, then call add_listing in non_item_number mode. Do not create or update jewelry_designs and do not invent an item number.',
         }
       }
 

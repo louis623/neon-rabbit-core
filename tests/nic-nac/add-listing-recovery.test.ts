@@ -21,6 +21,7 @@ import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade
 
 const addListingMock = vi.fn()
 const addListingBatchMock = vi.fn()
+const addNonItemNumberListingMock = vi.fn()
 const createDesignMock = vi.fn()
 const resolveItemNumberMock = vi.fn()
 const updateCanonicalPhotoMock = vi.fn()
@@ -60,6 +61,8 @@ function makeCleanAnalysis(overrides: Partial<Record<string, unknown>> = {}) {
 vi.mock('@/lib/services/trade-board', () => ({
   addListing: (...args: unknown[]) => addListingMock(...args),
   addListingBatch: (...args: unknown[]) => addListingBatchMock(...args),
+  addNonItemNumberListing: (...args: unknown[]) =>
+    addNonItemNumberListingMock(...args),
 }))
 
 vi.mock('@/lib/services/jewelry-database', () => ({
@@ -146,6 +149,7 @@ function activeWorkflow(
     repId: 'rep-1',
     conversationId: 'conv-1',
     workflowType: 'trade_board_add_listing',
+    catalogMode: 'item_number',
     status: 'active',
     phase: 'photo_capture',
     known: {
@@ -233,6 +237,7 @@ function makeAdminClientMock(existingListings: Array<Record<string, unknown>> = 
 beforeEach(() => {
   addListingMock.mockReset()
   addListingBatchMock.mockReset()
+  addNonItemNumberListingMock.mockReset()
   createDesignMock.mockReset()
   resolveItemNumberMock.mockReset()
   resolveItemNumberMock.mockResolvedValue({ found: false })
@@ -2601,6 +2606,104 @@ describe('add_listing - active workflow readiness guard', () => {
         listingPhotoUrl:
           'https://cdn.example.com/listings/rep-1/florence-boxed-display.png',
       }),
+    )
+  })
+
+  it('adds a confirmed non-item-number piece without creating or resolving catalog designs', async () => {
+    processRepListingPhotoUrlMock.mockResolvedValueOnce({
+      photoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/non-item-ring.jpg',
+    })
+    addNonItemNumberListingMock.mockResolvedValueOnce({
+      listingId: 'listing-non-item-1',
+      listingSource: 'non_item_number',
+      displayName: 'July Birthday 2026 Ring - Size 7',
+      status: 'available',
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        catalogMode: 'non_item_number',
+        phase: 'ready_to_add',
+        known: {
+          jewelryType: 'RG',
+          collectionFamily: 'Birthday',
+          collectionName: 'July Birthday 2026',
+          ringSize: '7',
+        },
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,Tk9OSVRFTV9SSU5H',
+            quality: 'usable',
+            qualityIssues: [],
+            notes: ['customer-facing jewelry photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        catalogMode: 'non_item_number',
+        jewelryType: 'RG',
+        collectionFamily: 'Birthday',
+        collectionName: 'July Birthday 2026',
+        ringSize: '7',
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-non-item-1',
+      listingSource: 'non_item_number',
+      displayName: 'July Birthday 2026 Ring - Size 7',
+      itemNumber: null,
+      designId: null,
+      createdNewDesign: false,
+    })
+
+    expect(resolveItemNumberMock).not.toHaveBeenCalled()
+    expect(createDesignMock).not.toHaveBeenCalled()
+    expect(addListingMock).not.toHaveBeenCalled()
+    expect(processRepListingPhotoUrlMock).toHaveBeenCalledWith(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'data:image/jpeg;base64,Tk9OSVRFTV9SSU5H',
+        filenameStem: 'non-item-number-piece-listing-photo',
+      },
+      { confirmedJewelryFront: true },
+    )
+    expect(addNonItemNumberListingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      {
+        jewelryType: 'RG',
+        collectionFamily: 'Birthday',
+        collectionName: 'July Birthday 2026',
+        size: '7',
+        photoUrl:
+          'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/non-item-ring.jpg',
+        repNotes: undefined,
+        tradePreferences: undefined,
+      },
+    )
+    expect(updateTradeBoardIntakeSessionMock).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        sessionId: 'workflow-1',
+        patch: expect.objectContaining({
+          status: 'completed',
+          current_phase: 'completed',
+          created_listing_ids: ['listing-non-item-1'],
+          created_design_id: null,
+          missing_fields: [],
+          hard_blockers: [],
+        }),
+      },
     )
   })
 

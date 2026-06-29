@@ -34,6 +34,8 @@ import {
   type GetMyBoardFilters,
   type AddListingInput,
   type AddListingResult,
+  type AddNonItemNumberListingInput,
+  type AddNonItemNumberListingResult,
   type BatchListingItem,
   type AddListingBatchInput,
   type AddListingBatchResult,
@@ -41,6 +43,10 @@ import {
   type UpdateListingResult,
 } from './types'
 import { TradeBoardError, errors } from './errors'
+import {
+  buildNonItemNumberTradeListingName,
+  getTradeListingDisplayFields,
+} from './trade-listing-display'
 import {
   normalizeItemNumber,
   resolveItemNumber,
@@ -64,6 +70,8 @@ export type {
   GetMyBoardFilters,
   AddListingInput,
   AddListingResult,
+  AddNonItemNumberListingInput,
+  AddNonItemNumberListingResult,
   BatchListingItem,
   AddListingBatchInput,
   AddListingBatchResult,
@@ -76,7 +84,9 @@ const DESIGN_SELECT =
 
 const LISTING_SELECT = `
   id, rep_id, status, rep_notes, trade_preferences, ring_size, listing_photo_url,
-  uses_canonical_photo, listed_at, removal_reason, deleted_at, created_at, updated_at,
+  uses_canonical_photo, listing_source, manual_type_prefix, manual_collection_family,
+  manual_collection_name, manual_size, manual_photo_url,
+  listed_at, removal_reason, deleted_at, created_at, updated_at,
   design:jewelry_designs(${DESIGN_SELECT})
 `
 
@@ -161,23 +171,25 @@ function sortBoardListings(
   const direction = sortOrder === 'asc' ? 1 : -1
   return [...listings].sort((a, b) => {
     let comparison = 0
+    const aDisplay = getTradeListingDisplayFields(a)
+    const bDisplay = getTradeListingDisplayFields(b)
 
     if (sortBy === 'created_at' || sortBy === 'listed_at') {
       comparison =
         getListingTimestamp(a, sortBy) - getListingTimestamp(b, sortBy)
     } else if (sortBy === 'msrp') {
-      comparison = Number(a.design.bp_msrp ?? 0) - Number(b.design.bp_msrp ?? 0)
+      comparison = Number(aDisplay.bpMsrp ?? 0) - Number(bDisplay.bpMsrp ?? 0)
     } else if (sortBy === 'design_name') {
-      comparison = compareNullableText(a.design.design_name, b.design.design_name)
+      comparison = compareNullableText(aDisplay.designName, bDisplay.designName)
     } else if (sortBy === 'collection') {
       comparison = compareNullableText(
-        a.design.collection?.name,
-        b.design.collection?.name,
+        aDisplay.collectionName,
+        bDisplay.collectionName,
       )
     }
 
     if (comparison !== 0) return comparison * direction
-    return a.design.item_number.localeCompare(b.design.item_number)
+    return compareNullableText(aDisplay.itemNumber, bDisplay.itemNumber)
   })
 }
 
@@ -231,10 +243,8 @@ export async function getMyBoard(
   const listings: TradeListingWithDesign[] = rawListings
     .map((row) => {
       const design = Array.isArray(row.design) ? row.design[0] : row.design
-      if (!design) return null
       return { ...row, design } as TradeListingWithDesign
     })
-    .filter((l): l is TradeListingWithDesign => l !== null)
     .filter((l) =>
       shouldIncludeListingInBoardRead(
         l,
@@ -244,22 +254,29 @@ export async function getMyBoard(
     )
 
   const filteredByCollection = filters.collectionFilter
-    ? listings.filter((l) => l.design.collection?.name === filters.collectionFilter)
+    ? listings.filter(
+        (l) =>
+          getTradeListingDisplayFields(l).collectionName ===
+          filters.collectionFilter,
+      )
     : listings
   const filteredByType = filters.typeFilter
-    ? filteredByCollection.filter((l) => l.design.type_prefix === filters.typeFilter)
+    ? filteredByCollection.filter(
+        (l) => getTradeListingDisplayFields(l).typePrefix === filters.typeFilter,
+      )
     : filteredByCollection
   const sortedListings = sortBoardListings(filteredByType, sortBy, sortOrder)
   const pagedListings = pageBoardListings(sortedListings, filters)
 
   const totalPieces = pagedListings.length
   const totalMsrp = pagedListings.reduce(
-    (sum, l) => sum + Number(l.design.bp_msrp ?? 0),
+    (sum, l) => sum + Number(getTradeListingDisplayFields(l).bpMsrp ?? 0),
     0
   )
   const typeBreakdown: Record<JewelryType, number> = { RG: 0, NK: 0, ER: 0, ST: 0, BR: 0 }
   for (const l of pagedListings) {
-    typeBreakdown[l.design.type_prefix] = (typeBreakdown[l.design.type_prefix] ?? 0) + 1
+    const typePrefix = getTradeListingDisplayFields(l).typePrefix
+    typeBreakdown[typePrefix] = (typeBreakdown[typePrefix] ?? 0) + 1
   }
 
   // TODO(SS-spec-alignment): SS Service Spec wants this count across ALL of
@@ -289,6 +306,17 @@ function normalizeOptionalListingText(value: string | null | undefined) {
   if (value === null) return null
   const trimmed = value.trim()
   return trimmed ? trimmed : null
+}
+
+function requireListingText(
+  value: string | null | undefined,
+  fieldName: string,
+): string {
+  const normalized = normalizeOptionalListingText(value)
+  if (!normalized) {
+    throw errors.INVALID_INPUT(`${fieldName} required`)
+  }
+  return normalized
 }
 
 export async function removeListing(
@@ -333,7 +361,9 @@ export async function removeListing(
 
   const { data: currentRow, error: fetchErr } = await supabase
     .from('trade_listings')
-    .select(`id, status, rep_id, design:jewelry_designs(design_name)`)
+    .select(
+      `id, status, rep_id, listing_source, manual_type_prefix, manual_collection_family, manual_collection_name, manual_size, design:jewelry_designs(design_name)`,
+    )
     .eq('id', listingId!)
     .maybeSingle()
   if (fetchErr) throw fetchErr
@@ -346,7 +376,16 @@ export async function removeListing(
 
   const previousStatus = currentRow.status as ListingStatus
   const designRel = currentRow.design as { design_name: string } | { design_name: string }[] | null
-  const designName = Array.isArray(designRel) ? designRel[0]?.design_name ?? '' : designRel?.design_name ?? ''
+  const designName = Array.isArray(designRel)
+    ? designRel[0]?.design_name ?? ''
+    : designRel?.design_name ??
+      buildNonItemNumberTradeListingName({
+        jewelryType: (currentRow.manual_type_prefix as JewelryType | null) ?? 'RG',
+        collectionFamily:
+          (currentRow.manual_collection_family as string | null) ?? 'Jewelry',
+        collectionName: currentRow.manual_collection_name as string | null,
+        size: currentRow.manual_size as string | null,
+      })
 
   const nowIso = new Date().toISOString()
   const { error: updErr } = await supabase
@@ -429,7 +468,9 @@ export async function restoreListing(
 
   const { data: currentRow, error: fetchErr } = await supabase
     .from('trade_listings')
-    .select(`id, status, rep_id, deleted_at, design:jewelry_designs(design_name)`)
+    .select(
+      `id, status, rep_id, deleted_at, listing_source, manual_type_prefix, manual_collection_family, manual_collection_name, manual_size, design:jewelry_designs(design_name)`,
+    )
     .eq('id', listingId!)
     .maybeSingle()
   if (fetchErr) throw fetchErr
@@ -467,7 +508,14 @@ export async function restoreListing(
     | null
   const designName = Array.isArray(designRel)
     ? designRel[0]?.design_name ?? ''
-    : designRel?.design_name ?? ''
+    : designRel?.design_name ??
+      buildNonItemNumberTradeListingName({
+        jewelryType: (currentRow.manual_type_prefix as JewelryType | null) ?? 'RG',
+        collectionFamily:
+          (currentRow.manual_collection_family as string | null) ?? 'Jewelry',
+        collectionName: currentRow.manual_collection_name as string | null,
+        size: currentRow.manual_size as string | null,
+      })
 
   return {
     listingId: listingId!,
@@ -505,6 +553,74 @@ export async function purgeExpiredRemovedListings(
 // ============================================================================
 // New functions — service client required (validates repId in body).
 // ============================================================================
+
+export async function addNonItemNumberListing(
+  supabase: SupabaseClient,
+  repId: string,
+  input: AddNonItemNumberListingInput,
+): Promise<AddNonItemNumberListingResult> {
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+
+  const collectionFamily = requireListingText(
+    input.collectionFamily,
+    'collectionFamily',
+  )
+  const collectionName = normalizeOptionalListingText(input.collectionName) ?? null
+  const photoUrl = requireListingText(input.photoUrl, 'photoUrl')
+  const size = normalizeOptionalListingText(input.size) ?? null
+  const jewelryType = input.jewelryType
+
+  if (!['RG', 'NK', 'ER', 'ST', 'BR'].includes(jewelryType)) {
+    throw errors.INVALID_INPUT('jewelryType must be one of RG, NK, ER, ST, BR')
+  }
+  if (jewelryType === 'RG' && !size) {
+    throw errors.INVALID_INPUT('size required for non-item-number rings')
+  }
+  if (!isManagedRepListingPhotoUrl(repId, photoUrl)) {
+    throw errors.INVALID_INPUT(
+      'photoUrl must be a processed Sparkle Suite listing photo',
+      'I need to process that listing photo through the image pipeline before I can save it.',
+    )
+  }
+
+  const displayName = buildNonItemNumberTradeListingName({
+    jewelryType,
+    collectionFamily,
+    collectionName,
+    size,
+  })
+  const nowIso = new Date().toISOString()
+  const { data: inserted, error: insErr } = await supabase
+    .from('trade_listings')
+    .insert({
+      rep_id: repId,
+      design_id: null,
+      listing_source: 'non_item_number',
+      status: 'available',
+      rep_notes: normalizeOptionalListingText(input.repNotes) ?? null,
+      trade_preferences:
+        normalizeOptionalListingText(input.tradePreferences) ?? null,
+      ring_size: size,
+      listing_photo_url: photoUrl,
+      uses_canonical_photo: false,
+      manual_type_prefix: jewelryType,
+      manual_collection_family: collectionFamily,
+      manual_collection_name: collectionName,
+      manual_size: size,
+      manual_photo_url: photoUrl,
+      listed_at: nowIso,
+    })
+    .select('id, status')
+    .single()
+  if (insErr) throw insErr
+
+  return {
+    listingId: inserted.id as string,
+    listingSource: 'non_item_number',
+    displayName,
+    status: inserted.status as ListingStatus,
+  }
+}
 
 export async function addListing(
   supabase: SupabaseClient,
@@ -547,6 +663,7 @@ export async function addListing(
     .insert({
       rep_id: repId,
       design_id: resolved.design.id,
+      listing_source: 'catalog',
       status: 'available',
       rep_notes: input.repNotes ?? null,
       trade_preferences: input.tradePreferences ?? null,
@@ -677,6 +794,7 @@ export async function addListingBatch(
   const insertRows = toInsert.map((r) => ({
     rep_id: repId,
     design_id: r.designId,
+    listing_source: 'catalog' as const,
     status: 'available' as const,
     rep_notes: r.item.repNotes ?? null,
     trade_preferences: r.item.tradePreferences ?? null,

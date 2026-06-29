@@ -7,9 +7,12 @@ import type {
 export type TradeBoardIntakeSessionPatch = {
   status?: string
   current_phase?: string
+  catalog_mode?: string | null
   item_number?: string | null
+  jewelry_type?: string | null
   quantity?: number | null
   design_name?: string | null
+  collection_family?: string | null
   collection_name?: string | null
   collection_year?: number | null
   material?: string | null
@@ -41,12 +44,27 @@ export function mapTradeBoardIntakeSessionRow(
     repId: row.rep_id as string,
     conversationId: row.conversation_id as string,
     workflowType: 'trade_board_add_listing',
+    catalogMode:
+      row.catalog_mode === 'non_item_number'
+        ? 'non_item_number'
+        : 'item_number',
     status: row.status as TradeBoardIntakeSessionState['status'],
     phase: row.current_phase as TradeBoardIntakeSessionState['phase'],
     known: {
       ...(row.item_number ? { itemNumber: row.item_number as string } : {}),
+      ...(row.jewelry_type
+        ? {
+            jewelryType:
+              row.jewelry_type as NonNullable<
+                TradeBoardIntakeSessionState['known']['jewelryType']
+              >,
+          }
+        : {}),
       ...(row.quantity ? { quantity: row.quantity as number } : {}),
       ...(row.design_name ? { designName: row.design_name as string } : {}),
+      ...(row.collection_family
+        ? { collectionFamily: row.collection_family as string }
+        : {}),
       ...(row.collection_name
         ? { collectionName: row.collection_name as string }
         : {}),
@@ -148,6 +166,7 @@ export async function createTradeBoardIntakeSession(
       rep_id: args.repId,
       conversation_id: args.conversationId,
       workflow_type: 'trade_board_add_listing',
+      catalog_mode: 'item_number',
       status: 'active',
       current_phase: 'started',
       last_user_message_id: args.lastUserMessageId ?? null,

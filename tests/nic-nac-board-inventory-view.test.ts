@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TradeListingWithDesign } from '@/lib/services/types'
+import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 
 import {
   getBoardInventoryOptions,
@@ -13,7 +14,7 @@ function listing(
   overrides: {
     itemNumber: string
     designName: string
-    typePrefix: TradeListingWithDesign['design']['type_prefix']
+    typePrefix: NonNullable<TradeListingWithDesign['design']>['type_prefix']
     collectionName: string | null
     listedAt: string | null
     status?: TradeListingWithDesign['status']
@@ -49,6 +50,41 @@ function listing(
   }
 }
 
+function nonItemNumberListing(
+  id: string,
+  overrides: {
+    jewelryType: NonNullable<TradeListingWithDesign['manual_type_prefix']>
+    collectionFamily: string
+    collectionName: string | null
+    size?: string | null
+    listedAt: string | null
+    status?: TradeListingWithDesign['status']
+  },
+): TradeListingWithDesign {
+  return {
+    id,
+    rep_id: 'rep-1',
+    listing_source: 'non_item_number',
+    status: overrides.status ?? 'available',
+    rep_notes: null,
+    trade_preferences: null,
+    ring_size: overrides.size ?? null,
+    listing_photo_url: 'https://cdn.example.com/jewelry-photos/rep-1/manual.jpg',
+    uses_canonical_photo: false,
+    manual_type_prefix: overrides.jewelryType,
+    manual_collection_family: overrides.collectionFamily,
+    manual_collection_name: overrides.collectionName,
+    manual_size: overrides.size ?? null,
+    manual_photo_url: 'https://cdn.example.com/jewelry-photos/rep-1/manual.jpg',
+    listed_at: overrides.listedAt,
+    removal_reason: null,
+    deleted_at: null,
+    created_at: overrides.listedAt ?? '2026-06-01T00:00:00.000Z',
+    updated_at: overrides.listedAt ?? '2026-06-01T00:00:00.000Z',
+    design: null,
+  }
+}
+
 const boardListings = [
   listing('old-ring', {
     itemNumber: 'RG100',
@@ -79,6 +115,13 @@ const boardListings = [
     listedAt: '2026-06-04T12:00:00.000Z',
     status: 'removed',
   }),
+  nonItemNumberListing('manual-ring', {
+    jewelryType: 'RG',
+    collectionFamily: 'Birthday',
+    collectionName: 'July Birthday 2026',
+    size: '7',
+    listedAt: '2026-06-05T12:00:00.000Z',
+  }),
 ]
 
 describe('board inventory browsing helpers', () => {
@@ -103,7 +146,7 @@ describe('board inventory browsing helpers', () => {
   it('builds dropdown options from available active board pieces only', () => {
     expect(getBoardInventoryOptions(boardListings)).toEqual({
       jewelryTypes: ['NK', 'RG'],
-      collections: ['Birthday', 'Celestial'],
+      collections: ['Birthday', 'Celestial', 'July Birthday 2026'],
     })
   })
 
@@ -114,7 +157,9 @@ describe('board inventory browsing helpers', () => {
       collection: 'Birthday',
     })
 
-    expect(results.map((item) => item.design.item_number)).toEqual(['RG100'])
+    expect(
+      results.map((item) => getTradeListingDisplayFields(item).itemNumber),
+    ).toEqual(['RG100'])
   })
 
   it('searches item number, design name, jewelry type, and collection', () => {
@@ -123,16 +168,37 @@ describe('board inventory browsing helpers', () => {
         search: 'birthday',
         jewelryType: '',
         collection: '',
-      }).map((item) => item.design.item_number),
-    ).toEqual(['NK300', 'RG100'])
+      }).map((item) => getTradeListingDisplayFields(item).designName),
+    ).toEqual([
+      'July Birthday 2026 Ring - Size 7',
+      'Birthday Pendant',
+      'Rose Glow Ring',
+    ])
 
     expect(
       getBoardInventoryResults(boardListings, {
         search: 'rg',
         jewelryType: '',
         collection: '',
-      }).map((item) => item.design.item_number),
-    ).toEqual(['RG200', 'RG100'])
+      }).map((item) => getTradeListingDisplayFields(item).designName),
+    ).toEqual([
+      'July Birthday 2026 Ring - Size 7',
+      'Celestial Ring',
+      'Rose Glow Ring',
+    ])
+  })
+
+  it('searches and filters non-item-number pieces by controlled display fields', () => {
+    const results = getBoardInventoryResults(boardListings, {
+      search: 'size 7',
+      jewelryType: 'RG',
+      collection: 'July Birthday 2026',
+    })
+
+    expect(results).toHaveLength(1)
+    expect(getTradeListingDisplayFields(results[0]).designName).toBe(
+      'July Birthday 2026 Ring - Size 7',
+    )
   })
 
   it('returns an empty result set when active filters do not match board pieces', () => {

@@ -17,6 +17,7 @@ function baseState(
     repId: 'rep-1',
     conversationId: 'conv-1',
     workflowType: 'trade_board_add_listing',
+    catalogMode: 'item_number',
     status: 'active',
     phase: 'started',
     known: {},
@@ -40,6 +41,67 @@ describe('Trade Board intake controller', () => {
     expect(state.phase).toBe('started')
     expect(state.workflowType).toBe('trade_board_add_listing')
     expect(state.missing).toContain('itemNumber')
+  })
+
+  it('treats a confirmed non-item-number ring as ready without item number or design name', () => {
+    const state = baseState({
+      catalogMode: 'non_item_number',
+      known: {
+        jewelryType: 'RG',
+        collectionFamily: 'Birthday',
+        collectionName: 'July Birthday 2026',
+        ringSize: '7',
+      },
+      photos: [
+        {
+          attachmentIndex: 1,
+          declaredRole: 'jewelry_front',
+          visualRole: 'jewelry',
+          roleConfirmed: true,
+          quality: 'usable',
+          qualityIssues: [],
+          notes: ['customer-facing jewelry photo'],
+        },
+      ],
+    })
+
+    const readiness = computeTradeBoardIntakeReadiness(state)
+
+    expect(readiness.ready).toBe(true)
+    expect(readiness.missing).toEqual([])
+    expect(readiness.nextAction).toBe('call_add_listing')
+    expect(buildTradeBoardIntakePromptState(state).workflow.phase).toBe(
+      'ready_to_add',
+    )
+  })
+
+  it('requires ring size and broad collection in non-item-number mode', () => {
+    const state = baseState({
+      catalogMode: 'non_item_number',
+      known: {
+        jewelryType: 'RG',
+      },
+      photos: [
+        {
+          attachmentIndex: 1,
+          declaredRole: 'jewelry_front',
+          visualRole: 'jewelry',
+          roleConfirmed: true,
+          quality: 'usable',
+          qualityIssues: [],
+          notes: [],
+        },
+      ],
+    })
+
+    const readiness = computeTradeBoardIntakeReadiness(state)
+
+    expect(readiness.ready).toBe(false)
+    expect(readiness.missing).toEqual(
+      expect.arrayContaining(['collectionFamily', 'ringSize']),
+    )
+    expect(readiness.missing).not.toContain('itemNumber')
+    expect(readiness.missing).not.toContain('designName')
   })
 
   it('never lets label/details photos satisfy jewelry-front readiness', () => {

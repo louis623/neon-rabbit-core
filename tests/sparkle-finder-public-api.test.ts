@@ -211,6 +211,7 @@ describe('Sparkle Finder public API contract helpers', () => {
         { design_id: 'design-1', rep_id: 'rep-with-show' },
         { design_id: 'design-1', rep_id: 'rep-without-show' },
         { design_id: 'design-2', rep_id: 'rep-with-show' },
+        { design_id: null, rep_id: 'rep-with-show' },
       ],
       new Set(['rep-with-show']),
     )
@@ -218,6 +219,7 @@ describe('Sparkle Finder public API contract helpers', () => {
     expect(counts.get('design-1')).toBe(1)
     expect(counts.get('design-2')).toBe(1)
     expect(counts.has('design-3')).toBe(false)
+    expect(counts.has('')).toBe(false)
   })
 
   it('does not count listings from reps without a resolvable public site slug', () => {

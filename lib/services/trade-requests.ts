@@ -30,8 +30,10 @@ import {
   type GetTradeHistoryOptions,
   type TradeHistoryItem,
   type TradeHistoryResult,
+  type TradeListingWithDesign,
 } from './types'
 import { ServiceError, errors } from './errors'
+import { getTradeListingDisplayFields } from './trade-listing-display'
 
 function mapRevealScreenshot(row: {
   reveal_screenshot_path?: string | null
@@ -154,7 +156,9 @@ const REQUEST_LISTING_SELECT = `
   rejection_reason,
   rep_notes, created_at, updated_at,
   listing:trade_listings(
-    id, rep_id, listing_photo_url, uses_canonical_photo,
+    id, rep_id, listing_source, listing_photo_url, uses_canonical_photo,
+    manual_type_prefix, manual_collection_family, manual_collection_name,
+    manual_size, manual_photo_url,
     design:jewelry_designs(
       id, item_number, design_name, material, main_stone, bp_msrp,
       canonical_photo_url, type_prefix,
@@ -181,11 +185,17 @@ export async function getTradeRequests(
   const { data, error } = await query
   if (error) throw error
 
-  type RawListing = {
+type RawListing = {
     id: string
     rep_id: string
+    listing_source?: TradeListingWithDesign['listing_source'] | null
     listing_photo_url: string | null
     uses_canonical_photo: boolean
+    manual_type_prefix?: TradeListingWithDesign['manual_type_prefix']
+    manual_collection_family?: string | null
+    manual_collection_name?: string | null
+    manual_size?: string | null
+    manual_photo_url?: string | null
     design:
       | {
           id: string
@@ -233,11 +243,46 @@ export async function getTradeRequests(
       const lst = Array.isArray(row.listing) ? row.listing[0] : row.listing
       if (!lst) return null
       const design = Array.isArray(lst.design) ? lst.design[0] : lst.design
-      if (!design) return null
-      const collectionRel = design.collection
-      const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
       // Auth client RLS already filters to this rep's listings, but double-check.
       if (lst.rep_id !== repId) return null
+      const collectionRel = design?.collection
+      const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+      const display = getTradeListingDisplayFields({
+        id: lst.id,
+        rep_id: lst.rep_id,
+        listing_source: lst.listing_source ?? undefined,
+        status: 'available',
+        rep_notes: null,
+        trade_preferences: null,
+        ring_size: null,
+        listing_photo_url: lst.listing_photo_url,
+        uses_canonical_photo: lst.uses_canonical_photo,
+        manual_type_prefix: lst.manual_type_prefix,
+        manual_collection_family: lst.manual_collection_family,
+        manual_collection_name: lst.manual_collection_name,
+        manual_size: lst.manual_size,
+        manual_photo_url: lst.manual_photo_url,
+        listed_at: null,
+        removal_reason: null,
+        deleted_at: null,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        design: design
+          ? {
+              id: design.id,
+              item_number: design.item_number,
+              design_name: design.design_name,
+              collection: collection
+                ? { id: '', name: collection.name }
+                : null,
+              material: design.material,
+              main_stone: design.main_stone,
+              bp_msrp: design.bp_msrp,
+              canonical_photo_url: design.canonical_photo_url,
+              type_prefix: design.type_prefix,
+            }
+          : null,
+      } as TradeListingWithDesign)
       return {
         id: row.id,
         status: row.status,
@@ -251,18 +296,20 @@ export async function getTradeRequests(
         listing: {
           id: lst.id,
           repId: lst.rep_id,
-          listingPhotoUrl: lst.listing_photo_url,
+          listingSource: display.listingSource,
+          listingPhotoUrl: display.listingPhotoUrl,
           usesCanonicalPhoto: lst.uses_canonical_photo,
+          repFacingNote: display.repFacingNote,
           design: {
-            id: design.id,
-            itemNumber: design.item_number,
-            designName: design.design_name,
-            collectionName: collection?.name ?? null,
-            material: design.material,
-            mainStone: design.main_stone,
-            bpMsrp: design.bp_msrp,
-            canonicalPhotoUrl: design.canonical_photo_url,
-            typePrefix: design.type_prefix,
+            id: design?.id ?? null,
+            itemNumber: display.itemNumber,
+            designName: display.designName,
+            collectionName: display.collectionName,
+            material: display.material,
+            mainStone: display.mainStone,
+            bpMsrp: display.bpMsrp,
+            canonicalPhotoUrl: display.canonicalPhotoUrl,
+            typePrefix: display.typePrefix,
           },
         },
       }
@@ -277,9 +324,11 @@ const REQUEST_NOTIFICATION_SELECT = `
   reveal_screenshot_path, reveal_screenshot_content_type,
   reveal_screenshot_size_bytes, reveal_screenshot_uploaded_at,
   reveal_screenshot_expires_at,
-  listing:trade_listings!inner(
-    id, rep_id,
-    design:jewelry_designs!inner(
+  listing:trade_listings(
+    id, rep_id, listing_source, listing_photo_url, uses_canonical_photo,
+    manual_type_prefix, manual_collection_family, manual_collection_name,
+    manual_size, manual_photo_url,
+    design:jewelry_designs(
       item_number, design_name, bp_msrp, type_prefix,
       collection:collections(name)
     )
@@ -301,8 +350,12 @@ export async function getTradeRequestNotificationSummary(
   if (!data) return null
 
   type RawDesign = {
+    id?: string | null
     item_number: string
     design_name: string
+    material?: string | null
+    main_stone?: string | null
+    canonical_photo_url?: string | null
     bp_msrp: number | null
     type_prefix: TradeRequestNotificationSummary['listing']['typePrefix']
     collection: { name: string } | { name: string }[] | null
@@ -310,6 +363,14 @@ export async function getTradeRequestNotificationSummary(
   type RawListing = {
     id: string
     rep_id: string
+    listing_source?: TradeListingWithDesign['listing_source'] | null
+    listing_photo_url?: string | null
+    uses_canonical_photo?: boolean
+    manual_type_prefix?: TradeListingWithDesign['manual_type_prefix']
+    manual_collection_family?: string | null
+    manual_collection_name?: string | null
+    manual_size?: string | null
+    manual_photo_url?: string | null
     design: RawDesign | RawDesign[] | null
   }
   type RawRow = {
@@ -328,9 +389,42 @@ export async function getTradeRequestNotificationSummary(
   const listing = Array.isArray(row.listing) ? row.listing[0] : row.listing
   if (!listing) return null
   const design = Array.isArray(listing.design) ? listing.design[0] : listing.design
-  if (!design) return null
-  const collectionRel = design.collection
+  const collectionRel = design?.collection
   const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
+  const display = getTradeListingDisplayFields({
+    id: listing.id,
+    rep_id: listing.rep_id,
+    listing_source: listing.listing_source ?? undefined,
+    status: 'available',
+    rep_notes: null,
+    trade_preferences: null,
+    ring_size: null,
+    listing_photo_url: listing.listing_photo_url ?? null,
+    uses_canonical_photo: listing.uses_canonical_photo ?? true,
+    manual_type_prefix: listing.manual_type_prefix,
+    manual_collection_family: listing.manual_collection_family,
+    manual_collection_name: listing.manual_collection_name,
+    manual_size: listing.manual_size,
+    manual_photo_url: listing.manual_photo_url,
+    listed_at: null,
+    removal_reason: null,
+    deleted_at: null,
+    created_at: '',
+    updated_at: '',
+    design: design
+      ? {
+          id: design.id ?? '',
+          item_number: design.item_number,
+          design_name: design.design_name,
+          collection: collection ? { id: '', name: collection.name } : null,
+          material: design.material ?? null,
+          main_stone: design.main_stone ?? null,
+          bp_msrp: design.bp_msrp,
+          canonical_photo_url: design.canonical_photo_url ?? null,
+          type_prefix: design.type_prefix,
+        }
+      : null,
+  } as TradeListingWithDesign)
 
   return {
     requestId: row.id,
@@ -340,11 +434,12 @@ export async function getTradeRequestNotificationSummary(
     revealScreenshot: mapRevealScreenshot(row),
     listing: {
       id: listing.id,
-      itemNumber: design.item_number,
-      designName: design.design_name,
-      collectionName: collection?.name ?? null,
-      typePrefix: design.type_prefix,
-      bpMsrp: design.bp_msrp,
+      listingSource: display.listingSource,
+      itemNumber: display.itemNumber,
+      designName: display.designName,
+      collectionName: display.collectionName,
+      typePrefix: display.typePrefix,
+      bpMsrp: display.bpMsrp,
     },
   }
 }
@@ -521,7 +616,9 @@ const HISTORY_SELECT = `
     id, fulfillment_status, completed_at, status_updated_at
   ),
   listing:trade_listings!inner(
-    id, rep_id,
+    id, rep_id, listing_source, listing_photo_url, uses_canonical_photo,
+    manual_type_prefix, manual_collection_family, manual_collection_name,
+    manual_size, manual_photo_url,
     design:jewelry_designs(
       item_number, design_name, bp_msrp, type_prefix,
       collection:collections(name)
@@ -547,8 +644,12 @@ export async function getTradeHistory(
   if (error) throw error
 
   type RawDesign = {
+    id?: string | null
     item_number: string
     design_name: string
+    material?: string | null
+    main_stone?: string | null
+    canonical_photo_url?: string | null
     bp_msrp: number | null
     type_prefix: TradeHistoryItem['design']['typePrefix']
     collection: { name: string } | { name: string }[] | null
@@ -556,6 +657,14 @@ export async function getTradeHistory(
   type RawListing = {
     id: string
     rep_id: string
+    listing_source?: TradeListingWithDesign['listing_source'] | null
+    listing_photo_url?: string | null
+    uses_canonical_photo?: boolean
+    manual_type_prefix?: TradeListingWithDesign['manual_type_prefix']
+    manual_collection_family?: string | null
+    manual_collection_name?: string | null
+    manual_size?: string | null
+    manual_photo_url?: string | null
     design: RawDesign | RawDesign[] | null
   }
   type RawFulfillment = {
@@ -578,10 +687,43 @@ export async function getTradeHistory(
     const lst = Array.isArray(row.listing) ? row.listing[0] : row.listing
     if (!lst || lst.rep_id !== repId) continue
     const design = Array.isArray(lst.design) ? lst.design[0] : lst.design
-    if (!design) continue
-    const collectionRel = design.collection
+    const collectionRel = design?.collection
     const collection = Array.isArray(collectionRel) ? collectionRel[0] : collectionRel
     const ful = Array.isArray(row.fulfillment) ? row.fulfillment[0] : row.fulfillment
+    const display = getTradeListingDisplayFields({
+      id: lst.id,
+      rep_id: lst.rep_id,
+      listing_source: lst.listing_source ?? undefined,
+      status: 'available',
+      rep_notes: null,
+      trade_preferences: null,
+      ring_size: null,
+      listing_photo_url: lst.listing_photo_url ?? null,
+      uses_canonical_photo: lst.uses_canonical_photo ?? true,
+      manual_type_prefix: lst.manual_type_prefix,
+      manual_collection_family: lst.manual_collection_family,
+      manual_collection_name: lst.manual_collection_name,
+      manual_size: lst.manual_size,
+      manual_photo_url: lst.manual_photo_url,
+      listed_at: null,
+      removal_reason: null,
+      deleted_at: null,
+      created_at: row.created_at,
+      updated_at: row.created_at,
+      design: design
+        ? {
+            id: design.id ?? '',
+            item_number: design.item_number,
+            design_name: design.design_name,
+            collection: collection ? { id: '', name: collection.name } : null,
+            material: design.material ?? null,
+            main_stone: design.main_stone ?? null,
+            bp_msrp: design.bp_msrp,
+            canonical_photo_url: design.canonical_photo_url ?? null,
+            type_prefix: design.type_prefix,
+          }
+        : null,
+    } as TradeListingWithDesign)
 
     let fulfillmentDays: number | null = null
     if (ful?.completed_at) {
@@ -600,11 +742,11 @@ export async function getTradeHistory(
       completedAt: ful?.completed_at ?? null,
       fulfillmentDays,
       design: {
-        itemNumber: design.item_number,
-        designName: design.design_name,
-        bpMsrp: design.bp_msrp,
-        typePrefix: design.type_prefix,
-        collectionName: collection?.name ?? null,
+        itemNumber: display.itemNumber,
+        designName: display.designName,
+        bpMsrp: display.bpMsrp,
+        typePrefix: display.typePrefix,
+        collectionName: display.collectionName,
       },
     })
   }

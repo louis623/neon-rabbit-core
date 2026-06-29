@@ -201,6 +201,42 @@ describe('Amethyst trade page template wiring', () => {
     expect(mapped.size).toBe('8')
   })
 
+  it('maps non-item-number trade listings as ordinary customer-facing cards', () => {
+    const mapped = mapTradeListingToAmethystTradeBoardListing({
+      ...makeTradeListing(),
+      id: 'manual-listing-1',
+      listing_source: 'non_item_number',
+      design: null,
+      manual_type_prefix: 'RG',
+      manual_collection_family: 'Birthday',
+      manual_collection_name: 'July Birthday 2026',
+      manual_size: '7',
+      manual_photo_url: 'https://cdn.example.com/manual-ring.jpg',
+      listing_photo_url: 'https://cdn.example.com/manual-ring.jpg',
+      uses_canonical_photo: false,
+      ring_size: null,
+      rep_notes: '(non-item number piece)',
+      trade_preferences: null,
+    } as unknown as TradeListingWithDesign)
+
+    expect(mapped).toMatchObject<Partial<AmethystTradeBoardListing>>({
+      id: 'manual-listing-1',
+      name: 'July Birthday 2026 Ring - Size 7',
+      collection: 'July Birthday 2026',
+      type: 'Ring',
+      msrp: null,
+      size: '7',
+      photoUrl: 'https://cdn.example.com/manual-ring.jpg',
+      photoSource: 'listing',
+    })
+    expect(JSON.stringify(mapped)).not.toMatch(
+      /legacy|miscellaneous|grab bag|unknown|undocumented|Board Pieces|non-item number|piece without item number/i,
+    )
+    expect(mapped.note).toBe(
+      'Item-for-item only. Requests must stay within the same collection and the same jewelry type.',
+    )
+  })
+
   it('marks canonical and missing photo source without exposing internal labels on the customer card', () => {
     expect(
       mapTradeListingToAmethystTradeBoardListing(
@@ -220,7 +256,7 @@ describe('Amethyst trade page template wiring', () => {
           listing_photo_url: null,
           uses_canonical_photo: true,
           design: {
-            ...makeTradeListing().design,
+            ...makeTradeListing().design!,
             canonical_photo_url: null,
           },
         }),

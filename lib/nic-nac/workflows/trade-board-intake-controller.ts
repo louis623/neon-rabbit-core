@@ -17,6 +17,7 @@ export function createEmptyTradeBoardIntakeState(args: {
     repId: args.repId,
     conversationId: args.conversationId,
     workflowType: 'trade_board_add_listing',
+    catalogMode: 'item_number',
     status: 'active',
     phase: 'started',
     known: {},
@@ -44,6 +45,7 @@ export function computeTradeBoardIntakeReadiness(
   const missing: string[] = []
   const blockers: string[] = []
   const known = state.known
+  const catalogMode = state.catalogMode ?? 'item_number'
   const labelDetailsPhoto = state.photos.find(
     (photo) => photo.declaredRole === 'label_details',
   )
@@ -60,10 +62,16 @@ export function computeTradeBoardIntakeReadiness(
       photo.declaredRole === 'jewelry_front' && photo.quality === 'blocked',
   )
 
-  if (!known.itemNumber) missing.push('itemNumber')
-  if (!known.designName) missing.push('designName')
-  if (!known.collectionName) missing.push('collectionName')
-  if (!labelDetailsPhoto && !known.itemNumber) missing.push('labelDetailsPhoto')
+  if (catalogMode === 'non_item_number') {
+    if (!known.jewelryType) missing.push('jewelryType')
+    if (!known.collectionFamily) missing.push('collectionFamily')
+    if (known.jewelryType === 'RG' && !known.ringSize) missing.push('ringSize')
+  } else {
+    if (!known.itemNumber) missing.push('itemNumber')
+    if (!known.designName) missing.push('designName')
+    if (!known.collectionName) missing.push('collectionName')
+    if (!labelDetailsPhoto && !known.itemNumber) missing.push('labelDetailsPhoto')
+  }
   if (!jewelryFrontPhoto) missing.push('jewelryFrontPhoto')
   if (blockedLabel) blockers.push('labelPhotoUnreadable')
   if (blockedJewelry) blockers.push('jewelryPhotoUnusable')
@@ -80,10 +88,14 @@ export function computeTradeBoardIntakeReadiness(
 export function computeTradeBoardAddAttemptReadiness(
   state: TradeBoardIntakeSessionState,
   input: {
+    catalogMode?: TradeBoardIntakeSessionState['catalogMode']
     itemNumber?: string
+    jewelryType?: TradeBoardIntakeSessionState['known']['jewelryType']
     designName?: string
+    collectionFamily?: string
     collectionName?: string
     collectionYear?: number
+    ringSize?: string
   },
 ): {
   ready: boolean
@@ -93,12 +105,16 @@ export function computeTradeBoardAddAttemptReadiness(
 } {
   const known = mergeTradeBoardKnownFields(state.known, {
     itemNumber: normalizeOptionalText(input.itemNumber)?.toUpperCase(),
+    jewelryType: input.jewelryType,
     designName: normalizeOptionalText(input.designName),
+    collectionFamily: normalizeOptionalText(input.collectionFamily),
     collectionName: normalizeOptionalText(input.collectionName),
     collectionYear: input.collectionYear,
+    ringSize: normalizeOptionalText(input.ringSize),
   })
   const missing: string[] = []
   const blockers: string[] = []
+  const catalogMode = input.catalogMode ?? state.catalogMode ?? 'item_number'
 
   const jewelryFrontPhoto = state.photos.find(
     (photo) =>
@@ -113,7 +129,13 @@ export function computeTradeBoardAddAttemptReadiness(
       photo.declaredRole === 'jewelry_front' && photo.quality === 'blocked',
   )
 
-  if (!known.itemNumber) missing.push('itemNumber')
+  if (catalogMode === 'non_item_number') {
+    if (!known.jewelryType) missing.push('jewelryType')
+    if (!known.collectionFamily) missing.push('collectionFamily')
+    if (known.jewelryType === 'RG' && !known.ringSize) missing.push('ringSize')
+  } else if (!known.itemNumber) {
+    missing.push('itemNumber')
+  }
   if (!jewelryFrontPhoto) missing.push('jewelryFrontPhoto')
   if (blockedLabel) blockers.push('labelPhotoUnreadable')
   if (blockedJewelry) blockers.push('jewelryPhotoUnusable')
@@ -194,6 +216,7 @@ export function buildTradeBoardIntakePromptState(
     workflow: {
       id: state.id,
       type: state.workflowType,
+      catalogMode: state.catalogMode ?? 'item_number',
       status: state.status,
       phase: inferPhase(normalized),
     },
@@ -214,6 +237,8 @@ export function buildTradeBoardIntakePromptState(
       'visible jewelry in a label_details photo does not change its declared role',
       'boxed display jewelry photos are acceptable when centered, close, clear, and website-worthy',
       'do not ask for unboxed jewelry, plain background, or no packaging for a usable boxed display photo',
+      'non-item-number pieces must use controlled jewelry type, collection, and size when applicable',
+      'do not create or invent an item number for a non-item-number piece',
     ],
   }
 }
@@ -229,13 +254,18 @@ function inferPhase(state: TradeBoardIntakeSessionState): TradeBoardIntakePhase 
   if (state.blockers.length > 0) return 'photo_capture'
   if (
     state.missing.includes('itemNumber') ||
+    state.missing.includes('jewelryType') ||
+    state.missing.includes('collectionFamily') ||
+    state.missing.includes('ringSize') ||
     state.missing.includes('collectionName') ||
     state.missing.includes('designName')
   ) {
     return 'details_capture'
   }
   if (state.missing.includes('jewelryFrontPhoto')) return 'photo_capture'
-  if (state.known.itemNumber) return 'ready_to_add'
+  if (state.known.itemNumber || state.catalogMode === 'non_item_number') {
+    return 'ready_to_add'
+  }
   return 'started'
 }
 
@@ -257,6 +287,13 @@ function chooseNextAction(args: {
   }
   if (args.ready) return 'call_add_listing'
   if (args.missing.includes('itemNumber')) return 'ask_for_item_number'
+  if (
+    args.missing.includes('jewelryType') ||
+    args.missing.includes('collectionFamily') ||
+    args.missing.includes('ringSize')
+  ) {
+    return 'ask_for_collection_type_and_size'
+  }
   if (args.missing.includes('collectionName')) return 'ask_for_collection'
   if (args.missing.includes('labelDetailsPhoto')) {
     return 'ask_for_label_details_photo'

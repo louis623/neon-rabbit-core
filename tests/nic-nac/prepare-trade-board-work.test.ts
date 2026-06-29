@@ -39,6 +39,25 @@ beforeEach(() => {
 })
 
 describe('prepare_trade_board_work', () => {
+  it('routes confirmed non-item-number adds without searching or creating catalog designs', async () => {
+    const result = await makeTool().execute({
+      action: 'add_piece',
+      catalogMode: 'non_item_number',
+      query: 'July Birthday ring size 7',
+    })
+
+    expect(searchJewelryDatabaseMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      action: 'add_piece',
+      catalogStatus: 'not_applicable',
+      allowedPath: 'add_non_item_number_trade_listing',
+      requiredBeforeAction: ['jewelryType', 'collectionFamily', 'jewelryFrontPhoto'],
+      nextTool: 'add_listing',
+      catalogDeletionAllowed: false,
+    })
+    expect(result.guidance).toContain('Do not create or update jewelry_designs')
+  })
+
   it('routes a known catalog add to the database-backed fast path with no new photo required', async () => {
     searchJewelryDatabaseMock.mockResolvedValueOnce([
       {

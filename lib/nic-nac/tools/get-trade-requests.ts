@@ -73,6 +73,8 @@ export function makeGetTradeRequestsTool(ctx: {
           updatedAt: r.updatedAt,
           listing: {
             listingId: r.listing.id,
+            listingSource: r.listing.listingSource,
+            repFacingNote: r.listing.repFacingNote,
             // Prefer the rep's listing-specific photo; fall back to the
             // canonical design photo when uses_canonical_photo is true.
             photoUrl: r.listing.usesCanonicalPhoto

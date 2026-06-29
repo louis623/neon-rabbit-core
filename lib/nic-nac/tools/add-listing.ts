@@ -12,7 +12,11 @@
 import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { addListing, addListingBatch } from '@/lib/services/trade-board'
+import {
+  addListing,
+  addListingBatch,
+  addNonItemNumberListing,
+} from '@/lib/services/trade-board'
 import {
   createDesign,
   resolveItemNumber,
@@ -69,9 +73,12 @@ const batchItem = z.object({
 
 const inputSchema = z.object({
   mode: z.enum(['single', 'batch']),
+  catalogMode: z.enum(['item_number', 'non_item_number']).optional(),
   // Single-mode top-level fields. itemNumber is optional in the schema so
   // batch-mode calls can omit it; runtime validates presence per mode.
   itemNumber: z.string().optional(),
+  jewelryType: z.enum(['RG', 'NK', 'ER', 'ST', 'BR']).optional(),
+  collectionFamily: z.string().optional(),
   ringSize: z.string().optional(),
   repNotes: z.string().optional(),
   tradePreferences: z.string().optional(),
@@ -568,7 +575,7 @@ async function markActiveTradeBoardWorkflowCompleted(input: {
   workflow?: ToolContext['activeTradeBoardWorkflow']
   admin: SupabaseClient
   listingId: string
-  designId: string
+  designId?: string | null
   repId: string
   conversationId: string
   runId: string
@@ -579,7 +586,7 @@ async function markActiveTradeBoardWorkflowCompleted(input: {
   const completed = transitionTradeBoardIntake(workflow, {
     type: 'mark_completed',
     listingIds: [input.listingId],
-    designId: input.designId,
+    designId: input.designId ?? undefined,
   })
 
   try {
@@ -589,7 +596,7 @@ async function markActiveTradeBoardWorkflowCompleted(input: {
         status: completed.status,
         current_phase: completed.phase,
         created_listing_ids: completed.createdListingIds ?? [input.listingId],
-        created_design_id: completed.createdDesignId ?? input.designId,
+        created_design_id: completed.createdDesignId ?? input.designId ?? null,
         missing_fields: [],
         hard_blockers: [],
         soft_warnings: [],
@@ -629,6 +636,156 @@ async function shouldCollapseRepeatedBatchToSingle(
   return !latestHasQuantity
 }
 
+function normalizeToolText(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim()
+  return normalized ? normalized : undefined
+}
+
+function formatMissingFieldsForRep(missing: string[]) {
+  if (missing.length === 0) return ''
+  return missing.join(', ')
+}
+
+async function runNonItemNumberSingle(
+  input: ToolInput,
+  ctx: {
+    repId: string
+    conversationId: string
+    runId: string
+    supabase: SupabaseClient
+    activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
+  },
+  admin: SupabaseClient,
+) {
+  const activeWorkflow = ctx.activeTradeBoardWorkflow
+  const workflowKnown =
+    activeWorkflow?.status === 'active' ? activeWorkflow.known : {}
+  const jewelryType = input.jewelryType ?? workflowKnown.jewelryType
+  const collectionFamily =
+    normalizeToolText(input.collectionFamily) ??
+    normalizeToolText(workflowKnown.collectionFamily)
+  const collectionName =
+    normalizeToolText(input.collectionName) ??
+    normalizeToolText(workflowKnown.collectionName)
+  const ringSize =
+    normalizeToolText(input.ringSize) ?? normalizeToolText(workflowKnown.ringSize)
+
+  if (activeWorkflow?.status === 'active') {
+    const readiness = computeTradeBoardAddAttemptReadiness(activeWorkflow, {
+      catalogMode: 'non_item_number',
+      jewelryType,
+      collectionFamily,
+      collectionName,
+      ringSize,
+    })
+    if (!readiness.ready) {
+      const missing = formatMissingFieldsForRep(readiness.missing)
+      throw new NicNacToolError({
+        code: 'WORKFLOW_NOT_READY',
+        userMessage: readiness.missing.includes('jewelryFrontPhoto')
+          ? 'I still need the customer-facing jewelry photo before I can save this listing.'
+          : `I still need Collection Type and Size details before I can save this listing: ${missing}.`,
+      })
+    }
+  } else {
+    const missing = [
+      ...(jewelryType ? [] : ['jewelryType']),
+      ...(collectionFamily ? [] : ['collectionFamily']),
+      ...(jewelryType === 'RG' && !ringSize ? ['ringSize'] : []),
+    ]
+    if (missing.length > 0) {
+      throw new NicNacToolError({
+        code: 'MISSING_NON_ITEM_NUMBER_FIELDS',
+        userMessage: `I still need Collection Type and Size details before I can save this listing: ${formatMissingFieldsForRep(missing)}.`,
+      })
+    }
+  }
+
+  if (!jewelryType || !collectionFamily) {
+    throw new NicNacToolError({
+      code: 'MISSING_NON_ITEM_NUMBER_FIELDS',
+      userMessage:
+        'I still need Collection Type and Size details before I can save this listing.',
+    })
+  }
+
+  const processedListingPhotoUrl = await processListingPhotoForAdd({
+    listingPhotoUrl: input.listingPhotoUrl,
+    listingPhotoIndex: input.listingPhotoIndex,
+    itemNumber: 'non-item-number-piece',
+    activeTradeBoardWorkflow: activeWorkflow,
+    repId: ctx.repId,
+    supabase: ctx.supabase,
+    conversationId: ctx.conversationId,
+    photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
+    allowImplicitConversationPhoto: true,
+  })
+  if (!processedListingPhotoUrl) {
+    throw new NicNacToolError({
+      code: 'MISSING_LISTING_PHOTO',
+      userMessage:
+        'I still need the customer-facing jewelry photo before I can save this listing.',
+    })
+  }
+
+  let result: Awaited<ReturnType<typeof addNonItemNumberListing>>
+  try {
+    result = await addNonItemNumberListing(admin, ctx.repId, {
+      jewelryType,
+      collectionFamily,
+      collectionName,
+      size: ringSize,
+      photoUrl: processedListingPhotoUrl,
+      repNotes: input.repNotes,
+      tradePreferences: input.tradePreferences,
+    })
+  } catch (err) {
+    explainServiceError(err)
+  }
+
+  await markActiveTradeBoardWorkflowCompleted({
+    workflow: activeWorkflow,
+    admin,
+    listingId: result.listingId,
+    designId: null,
+    repId: ctx.repId,
+    conversationId: ctx.conversationId,
+    runId: ctx.runId,
+  })
+
+  await writeAuditIsolated({
+    actionType: 'add_listing',
+    repId: ctx.repId,
+    targetListingId: result.listingId,
+    beforeState: {
+      listingSource: 'non_item_number',
+      repId: ctx.repId,
+      status: '',
+    },
+    afterState: {
+      listingId: result.listingId,
+      listingSource: result.listingSource,
+      displayName: result.displayName,
+      repId: ctx.repId,
+      status: result.status,
+    },
+    conversationId: ctx.conversationId,
+    runId: ctx.runId,
+  })
+
+  return {
+    mode: 'single' as const,
+    listingId: result.listingId,
+    designId: null,
+    itemNumber: null,
+    listingSource: result.listingSource,
+    displayName: result.displayName,
+    status: result.status,
+    usesCanonicalPhoto: false,
+    createdNewDesign: false,
+  }
+}
+
 async function runSingle(
   input: ToolInput,
   ctx: {
@@ -641,6 +798,14 @@ async function runSingle(
   admin: SupabaseClient,
 ) {
   const { itemNumber, designName, piecePhotoUrl, collectionName } = input
+  const activeWorkflow = ctx.activeTradeBoardWorkflow
+
+  if (
+    input.catalogMode === 'non_item_number' ||
+    (!itemNumber && activeWorkflow?.catalogMode === 'non_item_number')
+  ) {
+    return runNonItemNumberSingle(input, ctx, admin)
+  }
 
   if (!itemNumber) {
     throw new NicNacToolError({
@@ -649,7 +814,6 @@ async function runSingle(
     })
   }
 
-  const activeWorkflow = ctx.activeTradeBoardWorkflow
   let resolvedCatalogDesign: Awaited<ReturnType<typeof resolveItemNumber>> | null =
     null
   let useCatalogCanonicalFallback = false
@@ -1352,7 +1516,10 @@ async function runBatch(
         recoveredNewDesignAdds.push({
           listingId: firstResult.listingId,
           itemNumber: firstResult.itemNumber ?? recoveryItem.itemNumber,
-          designName: firstResult.designName ?? recoveryItem.designName,
+          designName:
+            'designName' in firstResult
+              ? firstResult.designName
+              : (recoveryItem.designName ?? ''),
           status: firstResult.status ?? 'available',
         })
         recoveredItemNumbers.add(itemNumber)

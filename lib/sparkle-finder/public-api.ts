@@ -41,7 +41,7 @@ type FinderRepRow =
 type FinderListingRow = {
   id: string
   rep_id: string
-  design_id: string
+  design_id: string | null
   listing_photo_url: string | null
   uses_canonical_photo: boolean | null
   listed_at: string | null
@@ -619,23 +619,25 @@ async function countEligibleAvailableListings(
       'design_id, rep_id, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)',
     )
     .eq('status', 'available')
+    .eq('listing_source', 'catalog')
     .in('design_id', designIds)
     .in('rep_id', Array.from(qualifiedRepIds))
   if (error) throw error
 
   return countListingsByDesignForQualifiedReps(
-    (data ?? []) as Array<{ design_id: string; rep_id: string }>,
+    (data ?? []) as Array<{ design_id: string | null; rep_id: string }>,
     qualifiedRepIds,
   )
 }
 
 export function countListingsByDesignForQualifiedReps(
-  rows: Array<{ design_id: string; rep_id: string; rep?: FinderRepRow }>,
+  rows: Array<{ design_id: string | null; rep_id: string; rep?: FinderRepRow }>,
   qualifiedRepIds: Set<string>,
 ) {
   const counts = new Map<string, number>()
   for (const row of rows) {
     if (!qualifiedRepIds.has(row.rep_id)) continue
+    if (!row.design_id) continue
     if (row.rep !== undefined) {
       const rep = readSingle(row.rep)
       if (
@@ -698,6 +700,7 @@ async function loadAvailableListingRows(
     .from('trade_listings')
     .select(FINDER_LISTING_SELECT)
     .eq('status', 'available')
+    .eq('listing_source', 'catalog')
     .in('rep_id', eligibleRepIds)
     .order('listed_at', { ascending: false, nullsFirst: false })
     .limit(options.limit)

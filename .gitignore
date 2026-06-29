@@ -52,6 +52,7 @@ supabase/.temp/
 
 # Local-only secrets / scratch (never committed)
 .local/
+.codex-remote-attachments/
 .codex-logs/
 .chrome-headless/
 .worktrees/

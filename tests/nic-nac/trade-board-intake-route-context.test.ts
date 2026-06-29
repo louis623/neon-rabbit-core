@@ -221,6 +221,7 @@ describe('Trade Board intake route context', () => {
       workflow: {
         id: 'workflow-1',
         type: 'trade_board_add_listing',
+        catalogMode: 'item_number',
         status: 'active',
         phase: 'photo_capture',
       },
