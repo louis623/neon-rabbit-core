@@ -107,6 +107,17 @@ describe('Nic-Nac system prompt — add listing flow', () => {
     )
   })
 
+  it('routes bad shared catalog photos to guarded catalog correction instead of Louis', () => {
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'If a canonical catalog photo is wrong because it shows a label/details photo',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('approved jewelry-front replacement')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('use report_jewelry_catalog_issue')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'Do not say the catalog photo tool is unavailable',
+    )
+  })
+
   it('treats duplicate item numbers as separate physical listings', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'A rep can own multiple physical pieces with the same item number',

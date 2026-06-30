@@ -335,6 +335,39 @@ describe('reportJewelryCatalogIssue', () => {
     })
   })
 
+  it('replaces a bad canonical photo when the corrected URL is an approved design asset', async () => {
+    const { state, supabase } = makeSupabaseMock()
+
+    const result = await reportJewelryCatalogIssue(supabase as never, {
+      itemNumber: 'RG100',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      issueType: 'bad_photo',
+      reason: 'The current catalog image is a label/details photo.',
+      correction: {
+        canonicalPhotoUrl: 'https://example.com/approved/design-1/front.png',
+      },
+    })
+
+    expect(result.corrected).toBe(true)
+    expect(result.changedFields).toEqual(['canonicalPhotoUrl'])
+    expect(state.designUpdates[0]).toMatchObject({
+      canonical_photo_url: 'https://example.com/approved/design-1/front.png',
+      last_corrected_by_rep_id: 'rep-1',
+    })
+    expect(state.catalogLogRows).toHaveLength(2)
+    expect(state.catalogLogRows[1]).toMatchObject({
+      change_type: 'replace_canonical_photo',
+      issue_type: 'bad_photo',
+    })
+    expect(state.catalogLogRows[1].before_state).toMatchObject({
+      canonicalPhotoUrl: 'https://example.com/approved/design-1/old.png',
+    })
+    expect(state.catalogLogRows[1].after_state).toMatchObject({
+      canonicalPhotoUrl: 'https://example.com/approved/design-1/front.png',
+    })
+  })
+
   it('rejects unapproved canonical photo URLs', async () => {
     const { state, supabase } = makeSupabaseMock()
 

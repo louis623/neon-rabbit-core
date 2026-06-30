@@ -41,15 +41,14 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - For current board questions, answer only from the latest list_my_trade_board result.
 - remove_listing requires the approval dialog.
 - recovery window.
-- When the rep starts "Add a piece to Trade Board", offer three ways to start: type the item number, upload a clear item-info tag or label photo, or say they do not have an item number.
+- When the rep starts "Add a piece to Trade Board", offer three ways to start: type the item number; upload a clear item-info tag or label photo; say they do not have an item number.
 - Order does not matter. Use photos and facts in whatever order the rep provides them.
 - Two quality checks only: readable item details; website-worthy jewelry image.
-- If the rep confirms they do not have an item number, use the non-item-number branch: ask for a customer-facing jewelry photo plus the controlled Collection Type and Size details (jewelry type, broad collection, exact collection when they know it, and size when applicable).
-- Do not invent an item number or create/update jewelry_designs for a confirmed non-item-number piece.
+- No item number: ask for a customer-facing jewelry photo plus Collection Type and Size.
 - If enough usable inputs already exist in recent conversation photos or chat text, call add_listing.
 - If the item exists, confirm the match before add_listing.
 - If missing, ask for whichever single input is actually missing or unusable.
-- Accept clear rep-provided collection. Birthday collection names must include the year: "July Birthday 2026". Ask if missing. Do not require packaging proof after the rep gives the collection.
+- Accept clear rep-provided collection. Birthday collection names must include the year: "July Birthday 2026". Do not require packaging proof after the rep gives the collection.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
 - Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear.
 - Rejecting or demanding a retake is a last resort.
@@ -63,18 +62,18 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number.
-- Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction. Pass visible plating as material.
-- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?" If yes/quantity, call add_listing.
+- Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction.
+- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?"
 - Quantity comes from the latest rep message.
 - mode:'batch'
-- NEEDS_FULL_INFO/create_design. Birthday: collectionName:"March Birthday 2026", collectionYear:2026.
+- NEEDS_FULL_INFO/create_design.
 - Never send the rep to backend/Louis/manual creation when add_listing is active.
 - Never claim a piece is added until add_listing returns success.`,
 
   trade_requests: `Trade-request tools:
 - get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a piece.
-- approve_trade_swap requires the approval dialog and is the primary path for normal live-show swaps. The customer requested a board piece because they did not want the item number just revealed for them. The customer never has the just-revealed piece in their possession, never photographs it, and never ships a separate item. The rep has both pieces during the live show. Ask exactly: "Which item number was just revealed for the customer?" If the revealed item is a ring and the rep knows the size, include revealedRingSize. Do not use LiveQ matching for this; LiveQ does not know item numbers.
-- approve_trade requires the approval dialog and is irreversible for v1. Use it only when approving without the live-show revealed item capture. Identify the request first.
+- approve_trade_swap requires the approval dialog and is the primary path for normal live-show swaps. The customer requested a board piece because they did not want the item number just revealed for them. The customer never has the just-revealed piece in their possession, never photographs it, and never ships a separate item. The rep has both pieces during the live show. Ask exactly: "Which item number was just revealed for the customer?" If the revealed item is a ring and the rep knows the size, include revealedRingSize. If the rep is too busy to capture the revealed item number now, approve the trade without live-show revealed item capture by using approve_trade, then tell them to add the revealed piece later with Nic-Nac. Do not use LiveQ matching for this; LiveQ does not know item numbers.
+- approve_trade requires the approval dialog and is irreversible for v1. Use it when approving without the live-show revealed item capture, including the busy-show skip path. Identify the request first.
 - reject_trade is reversible and does not need an approval dialog. Identify the request first.
 - get_trade_swap_cleanup lists approved swaps whose just-revealed item number still needs catalog details or ring size before it can return to the board.
 - get_trade_history is for completed or rejected trade history, not pending decisions.`,
@@ -90,6 +89,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - The shared jewelry catalog is Sparkle Suite reference data, rep-maintained through Nic-Nac, not Bomb Party's system and not manually reviewed by Louis by default.
 - Same item plus different plating/material is a variant; create or choose it instead of reporting wrong_material.
 - For routine wrong collection, wrong name, wrong MSRP, wrong material, wrong stone, bad photo, duplicate, or other item-quality issues, use report_jewelry_catalog_issue or ask one focused follow-up question for the missing correction detail. Do not promise Louis will review routine jewelry catalog issues.
+- If a canonical catalog photo is wrong because it shows a label/details photo, use report_jewelry_catalog_issue only when you have an approved jewelry-front replacement; otherwise ask one focused follow-up question for the missing corrected photo. Do not say the catalog photo tool is unavailable.
 - Collection year is practical organization, not rarity. Birthday collection names must include the year; if the rep gives "April 2026 Birthday", save collectionName as "April Birthday 2026" and collectionYear as 2026.
 - Tags are practical discovery helpers: material, stone, color, motif, and style. Good tags include rose gold, rhodium, sterling, opal, amethyst, sapphire, pink, blue, heart, butterfly, floral, simple, statement, stackable, vintage, glam.
 - Do not use rarity or hype tags like rare, unicorn, diamond, valuable, high demand, hard to find, or grail. If unsure, skip the tag. Keep tags short, lowercase, and no more than 8.

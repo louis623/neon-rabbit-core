@@ -56,7 +56,7 @@ export const reportJewelryCatalogIssueTool: ToolDefinition = {
   build: (ctx: ToolContext) =>
     tool({
       description:
-        'Report and, when the rep provides corrected information, fix inaccurate shared jewelry catalog data. Use for wrong collection, bad photo, wrong MSRP, wrong name, wrong stone/material, duplicates, or other catalog quality issues. Nic-Nac applies the correction; Louis is not the default review queue.',
+        'Report and, when the rep provides corrected information, fix inaccurate shared jewelry catalog data. Use for wrong collection, bad photo, wrong MSRP, wrong name, wrong stone/material, duplicates, or other catalog quality issues. Canonical catalog photo replacement must use an approved jewelry-front image; never replace the canonical catalog photo with a label/details or back-of-card photo. Nic-Nac applies the correction; Louis is not the default review queue.',
       inputSchema,
       execute: async (input) => {
         const admin = createAdminClient()

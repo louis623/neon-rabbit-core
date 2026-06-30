@@ -81,10 +81,12 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')
     expect(prompt).toContain(
-      'When the rep starts "Add a piece to Trade Board", offer two ways to start',
+      'When the rep starts "Add a piece to Trade Board", offer three ways to start',
     )
     expect(prompt).toContain('type the item number')
     expect(prompt).toContain('upload a clear item-info tag or label photo')
+    expect(prompt).toContain('say they do not have an item number')
+    expect(prompt).toContain('Collection Type and Size')
     expect(prompt).toContain('Order does not matter')
     expect(prompt).toContain('Use photos and facts in whatever order the rep provides them')
     expect(prompt).toContain('If the item exists, confirm the match before add_listing')

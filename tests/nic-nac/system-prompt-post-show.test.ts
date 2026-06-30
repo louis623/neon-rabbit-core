@@ -37,6 +37,12 @@ describe('Nic-Nac system prompt — post-show cleanup orchestration', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'The customer never has the just-revealed piece in their possession',
     )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'If the rep is too busy to capture the revealed item number now',
+    )
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain(
+      'approve the trade without live-show revealed item capture',
+    )
     expect(NIC_NAC_SYSTEM_PROMPT).not.toContain(
       'piece they revealed or want to offer',
     )

@@ -3392,6 +3392,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+    const skippedRevealedItemNumber =
+      action === 'approve' && !swap?.revealedItemNumber?.trim()
 
     try {
       const response = await fetch('/api/nic-nac/trade-requests', {
@@ -3431,6 +3433,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             ? 'Trade approved. I saved the item number to this swap; add the ring size after the show to put it on the board.'
             : replacementStatus === 'needs_catalog_details'
               ? 'Trade approved. I saved the item number to this swap; finish the catalog details after the show.'
+              : skippedRevealedItemNumber
+                ? 'Trade approved. Add the revealed piece later with Nic-Nac when you are ready.'
               : 'Trade request approved.'
       setTradeBoardActionState({
         pendingKey: null,
@@ -4368,13 +4372,10 @@ export function TradeBoardWorkspaceCard({
             </button>
             <div className={styles.walletSettingsTitle}>Approve trade</div>
             <p className={styles.helperNote}>
-              {swapApprovalDraft.customerName} gets the board piece. Capture
-              the item number just revealed so the swap can stay tied together.
+              {swapApprovalDraft.customerName} gets the board piece. Add it now if you have it, or approve the trade and add the revealed piece later with Nic-Nac.
             </p>
             <label className={styles.searchField}>
-              <span className={styles.searchLabel}>
-                Which item number was just revealed for the customer?
-              </span>
+              <span className={styles.searchLabel}>Revealed item number (optional)</span>
               <input
                 type="text"
                 className={`${styles.searchInput} ph-no-capture`}
@@ -4407,6 +4408,17 @@ export function TradeBoardWorkspaceCard({
                 disabled={approvingSwap}
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.helperButton}
+                onClick={() => {
+                  onApproveRequest(swapApprovalDraft.requestId)
+                  setSwapApprovalDraft(null)
+                }}
+                disabled={approvingSwap}
+              >
+                Approve without item number
               </button>
               <button
                 type="button"

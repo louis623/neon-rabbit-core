@@ -1275,15 +1275,27 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('Swap cleanup')
     expect(source).toContain('No trade swaps need cleanup right now.')
     expect(source).toContain(
-      'Which item number was just revealed for the customer?',
+      'Revealed item number (optional)',
+    )
+    expect(source).toContain(
+      'Add it now if you have it, or approve the trade and add the revealed piece later with Nic-Nac.',
+    )
+    expect(source).toContain(
+      'Approve without item number',
     )
     expect(source).toContain('revealedItemNumber')
     expect(source).toContain('revealedRingSize')
+    expect(source).toContain(
+      "onApproveRequest(swapApprovalDraft.requestId)",
+    )
     expect(source).toContain(
       'Trade approved. Added the revealed piece back to your board.',
     )
     expect(source).toContain(
       'I saved the item number to this swap; finish the catalog details after the show.',
+    )
+    expect(source).toContain(
+      'Trade approved. Add the revealed piece later with Nic-Nac when you are ready.',
     )
   })
 

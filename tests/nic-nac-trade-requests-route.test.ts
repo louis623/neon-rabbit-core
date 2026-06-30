@@ -123,7 +123,7 @@ describe('trade requests route', () => {
     expect(response.status).toBe(200)
   })
 
-  it('approves a request through the fallback action', async () => {
+  it('approves a request through the fallback action when the revealed item number is skipped', async () => {
     getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
@@ -154,6 +154,7 @@ describe('trade requests route', () => {
       'request-1',
       'Approved from dashboard',
     )
+    expect(approveTradeWithRevealedItemCaptureMock).not.toHaveBeenCalled()
     expect(response.status).toBe(200)
   })
 
