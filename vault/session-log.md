@@ -2246,8 +2246,8 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-trade-requests-route.test.ts tests/nic-nac/report-jewelry-catalog-issue.test.ts tests/nic-nac/system-prompt-add-listing.test.ts tests/nic-nac/system-prompt-post-show.test.ts tests/nic-nac/prompt-routing.test.ts tests/jewelry-catalog-corrections.test.ts tests/nic-nac/add-listing-recovery.test.ts` passed: 8 files, 146 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
 - Pushed `bd935e6` to `origin/codex/sparkle-cross-phase-hardening`.
-- Vercel preview build passed at `https://sparkle-suite-kkodvw22n-louis-2849s-projects.vercel.app`.
-- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview; Vercel inspect confirmed deployment `dpl_L5ac8QUjda7q3JfLnoc26hD721pC` is Ready.
+- Vercel preview build passed at `https://sparkle-suite-oefreyqkl-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview; Vercel inspect confirmed deployment `dpl_9uEjtUMUZsvUMnQwCMoQbbDTbXw9` is Ready.
 - Stable demo health checks passed:
   - `/api/prelaunch/health` returned 200.
   - `/api/nic-nac/health` returned 200 with `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
