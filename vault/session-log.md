@@ -2230,3 +2230,32 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - A ticker-speed fix is not complete if only one page's ticker payload is updated. The active contract must cover Home, Trade, Join, shared shell, and cache-busted static assets, and the exact stable demo route Louis used must be checked before calling it fixed.
+## June 30, 2026 - Optional Revealed Item Capture and Catalog Photo Correction Guard
+
+**What changed:**
+- Louis and a BP smoke tester found that the workspace Trade Board `Approve trade` modal forced reps to enter the just-revealed item number during a busy show.
+- Shipped `bd935e6 fix: let reps approve trades without revealed item numbers`.
+- The modal now labels the field `Revealed item number (optional)` and adds `Approve without item number`.
+- The skip path uses the existing fallback approval API instead of the live-show swap capture path and shows: `Trade approved. Add the revealed piece later with Nic-Nac when you are ready.`
+- Nic-Nac prompt guidance now mirrors the same busy-show branch: prefer captured live-show swap approval, but use plain `approve_trade` when the rep wants to skip item-number capture and add the revealed piece later.
+- Louis also caught a Nic-Nac catalog-photo bug where a label/details image became the canonical shared jewelry photo for ER34579 / The Essential Shine Hoops and Nic-Nac claimed the photo correction tool was unavailable.
+- The existing `report_jewelry_catalog_issue` tool was hardened in description/system guidance so Nic-Nac should use it for routine shared catalog photo corrections instead of deflecting to Louis. Canonical photo replacement remains guarded: use only an approved jewelry-front replacement asset, never a label/details/back-of-card photo.
+
+**Verification:**
+- Red/green tests covered optional approve UI/source wiring, API fallback approval without `revealedItemNumber`, Nic-Nac prompt guidance, catalog correction tool payloads, and approved canonical photo replacement service behavior.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-trade-requests-route.test.ts tests/nic-nac/report-jewelry-catalog-issue.test.ts tests/nic-nac/system-prompt-add-listing.test.ts tests/nic-nac/system-prompt-post-show.test.ts tests/nic-nac/prompt-routing.test.ts tests/jewelry-catalog-corrections.test.ts tests/nic-nac/add-listing-recovery.test.ts` passed: 8 files, 146 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `bd935e6` to `origin/codex/sparkle-cross-phase-hardening`.
+- Vercel preview build passed at `https://sparkle-suite-kkodvw22n-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview; Vercel inspect confirmed deployment `dpl_L5ac8QUjda7q3JfLnoc26hD721pC` is Ready.
+- Stable demo health checks passed:
+  - `/api/prelaunch/health` returned 200.
+  - `/api/nic-nac/health` returned 200 with `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
+- DB-backed `npx tsx scripts/smoke-trade-swap.ts` passed all swap assertions and cleaned up its synthetic rows.
+- Attempted isolated Playwright reviewer workspace smoke against stable demo, but this repo does not have Playwright installed as a local dependency and `npx` module resolution could not load the browser/test package from a temporary spec. No Louis personal browser/session was used.
+
+**Lesson:**
+- Item-number capture during trade approval must remain helpful, not blocking. For busy live-show workflows, reps need a clean approve-now/add-later path.
+- Nic-Nac should not tell reps a shared catalog photo correction is unavailable when `report_jewelry_catalog_issue` is active. The safe correction rule is: report/fix the catalog issue through Nic-Nac, but only replace canonical catalog photos with approved jewelry-front assets.
+
+---

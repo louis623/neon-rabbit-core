@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** June 29, 2026
+**Last updated:** June 30, 2026
 
 ---
 
@@ -18,11 +18,12 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed implementation checkpoint:** `0d4e9fa feat: support non-item-number trade listings`
+- **Latest pushed implementation checkpoint:** `bd935e6 fix: let reps approve trades without revealed item numbers`
 - **Latest pushed docs/memory checkpoint:** `aaafef7 docs: record constant ticker speed deployment` before this closeout memory update
-- **Latest local/deployed checkpoints:** Nic-Nac can now add Trade Board listings when the rep does not have an item number, without creating/updating `jewelry_designs`. The V1 path is Nic-Nac-only, one piece at a time, with controlled jewelry type, broad/exact collection, size when applicable, and an individual customer-facing photo. Customers see these as ordinary Trade Board items; internal rep-facing surfaces may clarify `(non-item number piece)`. Sparkle Finder excludes these V1 listings. Customer-facing Amethyst tickers still keep constant pixel speed with no fixed minimum-duration floor and stable demo serves `20260628-constant-pixel-ticker` assets.
+- **Latest local/deployed checkpoints:** Trade approval from the Sparkle Suite workspace can now skip revealed item-number capture. The modal keeps item-number capture as the normal path, but includes `Approve without item number`; skipped approvals tell reps to add the revealed piece later with Nic-Nac. Nic-Nac prompt/tool guidance now says shared catalog photo corrections are available through `report_jewelry_catalog_issue`, but canonical catalog photo replacement must use an approved jewelry-front asset and never a label/details image. Non-item-number Trade Board listing support remains live: V1 is Nic-Nac-only, one piece at a time, with controlled jewelry type, collection, size when applicable, and an individual customer-facing photo.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-jdkqdsl61-louis-2849s-projects.vercel.app`
+- **Current stable demo target:** `https://sparkle-suite-kkodvw22n-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_L5ac8QUjda7q3JfLnoc26hD721pC`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`

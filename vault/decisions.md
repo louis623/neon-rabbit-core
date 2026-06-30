@@ -522,3 +522,12 @@ Sparkle Lab is a bounded improvement/research loop in Control Center. It may cre
 
 **Stable baseline means gates pass, not improvement stops**
 The upgraded Nic-Nac baseline is done when the stable baseline closure matrix passes across Suite, Finder, linked-rep memory, Lab, model policy/cost telemetry, browser smoke, and release/vault closeout. Deeper Finder tool parity, shared-core extraction, larger eval banks, richer Lab synthesis, and marketing polish are backlog unless a baseline gate fails.
+# June 30, 2026
+
+**Trade approval can skip revealed item-number capture**
+The live-show swap capture flow remains the preferred path when the rep has the just-revealed item number handy, because it can immediately add known pieces back to the board or queue cleanup for missing details. It must not block show-floor approval. Workspace and Nic-Nac flows should allow approving the trade without the revealed item number and direct the rep to add the revealed piece later with Nic-Nac.
+
+**Catalog photo corrections are available but canonical replacements must be approved jewelry-front assets**
+Nic-Nac should use `report_jewelry_catalog_issue` for routine shared jewelry catalog issues, including bad canonical photos, instead of saying the tool is unavailable or sending routine cleanup to Louis. Canonical catalog photo replacement remains guarded: use only an approved jewelry-front replacement URL from the catalog/photo pipeline. Never replace a canonical catalog photo with a label/details, tag, back-of-card, or unapproved raw upload.
+
+---
