@@ -20,8 +20,8 @@ Running log of significant work sessions. Most recent first.
 - `npm run report:launch-readiness -- --dashboard-nic-nac-report .local/launch-readiness-results/nic-nac-recipe-chat.json --json` showed Dashboard / Nic-Nac covered from the passing artifact.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after the harness update.
 
-**Remaining follow-up:**
-- The exact Heather/BlingKitchen account public Pantry smoke was not run because `BLING_KITCHEN_RECIPE_SMOKE_PASSWORD` is not set in the environment. Set that secret at runtime and run `npm run smoke:nic-nac:recipe-chat -- --target=bling-kitchen --expect-model --output .local/launch-readiness-results/bling-kitchen-recipe-chat.json` to verify Heather's public Pantry page specifically.
+**Follow-up completed later July 1:**
+- The exact Heather/BlingKitchen account public Pantry smoke passed after Louis allowed temporary runtime use of Heather's demo password. See `July 1, 2026 - Heather Recipe Nic-Nac Exact Smoke and Pantry Assertion Hardening` below.
 
 ## July 1, 2026 - Quota Artifact Readiness Guard
 

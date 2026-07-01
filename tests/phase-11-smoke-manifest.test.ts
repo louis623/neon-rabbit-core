@@ -79,7 +79,7 @@ describe('Phase 11 smoke manifest', () => {
     expect(JSON.stringify(PHASE_11_SMOKE_MANIFEST)).not.toContain('Nick-Nack')
   })
 
-  it('tracks the post-quota Heather recipe chat replay harness in Dashboard / Nic-Nac evidence', () => {
+  it('tracks the Heather recipe chat replay harness in Dashboard / Nic-Nac evidence', () => {
     const dashboardJourney = PHASE_11_SMOKE_MANIFEST.find(
       (journey) => journey.id === 'dashboard-nic-nac',
     )
@@ -92,10 +92,10 @@ describe('Phase 11 smoke manifest', () => {
       ]),
     )
     expect(dashboardJourney?.nextAction).toContain(
-      'npm run smoke:nic-nac:recipe-builder -- --expect-model',
+      'npm run report:launch-readiness -- --dashboard-nic-nac-report',
     )
     expect(dashboardJourney?.nextAction).toContain(
-      'npm run smoke:nic-nac:recipe-chat -- --expect-model',
+      '.local/launch-readiness-results/bling-kitchen-recipe-chat.json',
     )
   })
 })
