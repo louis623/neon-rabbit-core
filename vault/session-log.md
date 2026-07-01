@@ -2495,3 +2495,28 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Heather's recipe editor should present one clear next action per stage: build with Nic-Nac from the header, then save from the bottom after the draft looks right.
+
+---
+
+## July 1, 2026 - Heather Manual Recipe Editor Mode
+
+**What changed:**
+- Louis asked to remove the bottom `Advanced edit` card because it felt too complicated.
+- Replaced the `New Recipe Builder` heading with a mode dropdown.
+- The default mode is `New Recipe Builder`, preserving the image-first Nic-Nac recipe flow.
+- Added `Manual Edit Recipes` mode with a saved recipe picker, a new manual recipe option, and the compact edit fields needed to update an existing recipe.
+- Removed the old advanced-edit UI and related styling.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 76 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts` passed: 4 files, 94 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `29c506b fix: add manual Heather recipe editor mode` to `origin/codex/sparkle-cross-phase-hardening`.
+- Vercel preview `https://sparkle-suite-jil8hru2z-louis-2849s-projects.vercel.app` / deployment `dpl_CBtM7e5WjtimrbY6M7m4k7k9FAas` is Ready.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo health checks passed:
+  - `/api/prelaunch/health` returned `ok:true`.
+  - `/api/nic-nac/health` returned `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
+
+**Lesson:**
+- Keep Heather's default recipe flow simple and image-led. Put manual correction/editing behind an explicit mode choice with a recipe picker instead of a dense always-visible advanced card.
