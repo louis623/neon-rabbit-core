@@ -18,12 +18,12 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed implementation checkpoint:** `d41788a feat: add Moonstone skin and standard Heather public site`
-- **Latest pushed docs/memory checkpoint:** `12b6bcc docs: update Open Brain closeout memory`
-- **Latest local/deployed checkpoints:** Added reusable Moonstone skin (`moonstone`, `MS-01`) with purple, silver, and charcoal tokens for any Sparkle Suite rep. Heather/BlingKitchen now uses the standard public Home, Trade, and Join templates with Moonstone applied instead of bespoke BlingKitchen hero/content variants, while keeping the `In the Pantry` link visible. The Pantry page now inherits the selected appearance preset, so Heather's recipes can follow Moonstone or any future skin she chooses.
+- **Latest pushed implementation checkpoint:** `c0782bf fix: improve Moonstone Pantry contrast`
+- **Latest pushed docs/memory checkpoint:** July 1 closeout docs update on the current branch head.
+- **Latest local/deployed checkpoints:** Added reusable Moonstone skin (`moonstone`, `MS-01`) with purple, silver, and charcoal tokens for any Sparkle Suite rep. Heather/BlingKitchen now uses the standard public Home, Trade, and Join templates with Moonstone applied instead of bespoke BlingKitchen hero/content variants, while keeping the `In the Pantry` link visible. The Pantry page now inherits the selected appearance preset, so Heather's recipes can follow Moonstone or any future skin she chooses. Follow-up hardening fixed Moonstone light-card readability across Home/Trade/Join, restored the BlingKitchen Live event calendar with a BlingKitchen-only M/W/F 7 PM ET fallback when no DB shows exist, and fixed Moonstone Pantry filter/card/modal contrast.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** Verify the active alias target for `https://sparkle-suite-demo.vercel.app` in Vercel before reporting a fix as live.
-- **Current stable demo deployment id:** Verify the active alias deployment id in Vercel; deployment ids change on each final deploy.
+- **Current stable demo target:** `https://sparkle-suite-9o4ujaf29-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_6q2wCNWQHXEtrDY8Zwk7zvFEocpo`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`

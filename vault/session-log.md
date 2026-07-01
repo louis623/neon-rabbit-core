@@ -2622,3 +2622,19 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Pantry inherits Moonstone's light-on-dark page tokens, so every light recipe surface needs its own dark foreground variables just like Home, Trade, and Join cards.
+
+---
+
+## July 1, 2026 - Open Brain and HQ Closeout
+
+**What changed:**
+- Captured Open Brain memory for the July 1 Sparkle Suite closeout: Moonstone deployment status, Heather/BlingKitchen standard-site decision, Moonstone contrast rules, BlingKitchen calendar fallback, and Heather's image-first recipe workflow.
+- Updated the repo vault with the latest implementation checkpoint, stable demo target, deployment id, decisions, and open follow-up notes.
+- Prepared the HQ handoff so Neon Rabbit HQ has the same work summary, decisions, lessons, and verification pointers without pulling unrelated HQ handoff files into the Sparkle Suite closeout.
+
+**Verification:**
+- Open Brain capture calls succeeded for five standalone memories.
+- Documentation-only Sparkle Suite changes; no app code changed in this closeout step.
+
+**Lesson:**
+- Closeout memory should include the product decision and the verification target together. For Louis review, the stable demo URL plus deployment id matters as much as the commit hash.

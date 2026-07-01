@@ -536,3 +536,12 @@ Nic-Nac should use `report_jewelry_catalog_issue` for routine shared jewelry cat
 
 **Moonstone is a reusable skin, not a Heather-only custom site**
 Heather's purple, silver, and charcoal direction should live as the reusable Moonstone appearance preset (`moonstone`, card code `MS-01`). Heather's customer-facing Home, Trade Board, and Join pages should use the standard Amethyst/Sparkle Suite structure with the selected skin applied. Her special exception is `In the Pantry`: the Pantry link remains available for BlingKitchen, and the Pantry page inherits whichever supported appearance preset Heather chooses.
+
+**Heather's recipe workflow stays image-first**
+Heather's default recipe workflow should be simple: title, category/section, food photos, and recipe-card photos. Nic-Nac should build polished recipe copy from those source images, and manual text editing should live behind the explicit `Manual Edit Recipes` mode with a saved-recipe picker. Accept useful food and recipe-card photos; reject only genuinely bad, unreadable, or non-display-worthy images.
+
+**BlingKitchen calendar fallback is rep-specific and DB-safe**
+Saved calendar rows remain authoritative for Heather's public Live event calendar. If BlingKitchen has no upcoming DB rows, Sparkle Suite may render a BlingKitchen-only fallback from Heather's known public Monday/Wednesday/Friday 7 PM Eastern schedule. Do not show generic demo events on targeted customer sites.
+
+**Moonstone light surfaces need local dark text variables**
+Moonstone's dark page background can keep light page text, but silver-pearl cards, recipe cards, modals, forms, chips, and buttons must set local dark foreground variables. Avoid broad page-level Moonstone selectors that accidentally make standalone dark-background section headings or light-card body copy unreadable.
