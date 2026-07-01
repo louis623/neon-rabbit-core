@@ -4,6 +4,21 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - Open Brain and HQ Closeout for Optional Trade Approval Work
+
+**What was captured:**
+- Open Brain/vault memory now reflects the optional revealed item-number approval update, Nic-Nac busy-show guidance, and guarded shared catalog photo correction behavior.
+- Headquarters was refreshed with a Sparkle Suite closeout handoff and current project-link/snapshot notes for the stable demo target.
+- Project state now points to the final docs/memory checkpoint `8618c8f docs: record final optional approval demo target`.
+
+**Key decisions and lessons carried forward:**
+- Trade approval item-number capture is preferred when available, but must never block a busy live show. Reps can approve now and add the revealed piece later with Nic-Nac.
+- Nic-Nac should use `report_jewelry_catalog_issue` for routine shared jewelry catalog photo problems instead of saying the tool is unavailable.
+- Canonical catalog photo replacement must stay guarded: approved jewelry-front asset only; never label/details, tag, back-of-card, or unapproved raw upload.
+- Stable demo remains the normal Sparkle Suite review target: `https://sparkle-suite-demo.vercel.app`.
+
+---
+
 ## June 29, 2026 - Nic-Nac Non-Item-Number Trade Board Listings
 
 **What changed:**

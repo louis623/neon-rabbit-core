@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** June 30, 2026
+**Last updated:** July 1, 2026
 
 ---
 
@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
 - **Latest pushed implementation checkpoint:** `bd935e6 fix: let reps approve trades without revealed item numbers`
-- **Latest pushed docs/memory checkpoint:** `aaafef7 docs: record constant ticker speed deployment` before this closeout memory update
+- **Latest pushed docs/memory checkpoint:** `8618c8f docs: record final optional approval demo target`
 - **Latest local/deployed checkpoints:** Trade approval from the Sparkle Suite workspace can now skip revealed item-number capture. The modal keeps item-number capture as the normal path, but includes `Approve without item number`; skipped approvals tell reps to add the revealed piece later with Nic-Nac. Nic-Nac prompt/tool guidance now says shared catalog photo corrections are available through `report_jewelry_catalog_issue`, but canonical catalog photo replacement must use an approved jewelry-front asset and never a label/details image. Non-item-number Trade Board listing support remains live: V1 is Nic-Nac-only, one piece at a time, with controlled jewelry type, collection, size when applicable, and an individual customer-facing photo.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
 - **Current stable demo target:** `https://sparkle-suite-oefreyqkl-louis-2849s-projects.vercel.app`
