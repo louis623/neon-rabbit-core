@@ -3341,6 +3341,21 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       if (topic === 'trade' && !reviewWorkspaceMode) {
         void refreshTradeWorkspace()
       }
+      if (topic === 'site' && activeSection === 'recipes') {
+        void loadSiteRecipes(undefined, {
+          preferredRecipeId: selectedRecipeId,
+        }).catch((error) => {
+          setRecipesState({ status: 'error', recipes: [] })
+          setRecipeActionState({
+            pendingKey: null,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Unable to refresh site recipes right now.',
+            helperMessage: null,
+          })
+        })
+      }
       if (
         workspacePreview.mode === 'live_site_preview' &&
         (topic === 'trade' || topic === 'site')
@@ -3359,7 +3374,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         refreshAfterNicNacMutation,
       )
     }
-  }, [reviewWorkspaceMode, workspacePreview.mode])
+  }, [activeSection, reviewWorkspaceMode, selectedRecipeId, workspacePreview.mode])
 
   useEffect(() => {
     if (reviewWorkspaceMode) return

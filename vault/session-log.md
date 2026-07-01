@@ -12,6 +12,8 @@ Running log of significant work sessions. Most recent first.
 - Recipe-card photos are explicitly source material for ingredients/steps, not public recipe images; only unreadable recipe cards or genuinely bad public display photos should block the flow.
 - Site tool routing now keeps recipe tools active for photo-only recipe follow-ups, and successful `manage_site_recipes` saves now trigger workspace/site refresh events.
 - The OpenAI quota/billing blocker still gates final model-in-loop proof. The open item now explicitly includes a chat replay for `build_site_recipe_draft`, `list_site_recipes`, and `manage_site_recipes`.
+- Added a provider-free local smoke command, `npm run smoke:nic-nac:recipe-tool-contract`, and tied the recipe chat-tool contract into the Phase 11 Dashboard / Nic-Nac smoke manifest.
+- Fixed the workspace refresh follow-through: when Nic-Nac saves a Pantry recipe through chat, the open Recipes workspace reloads its recipe list and preserves the selected recipe when possible.
 
 **Verification:**
 - `npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-site-recipes-route.test.ts` passed: 4 files, 73 tests.
@@ -23,6 +25,10 @@ Running log of significant work sessions. Most recent first.
 - Stable demo health checks passed for `/api/prelaunch/health` and `/api/nic-nac/health`.
 - `npm run smoke:nic-nac:recipe-builder` passed against the stable demo with reviewer-smoke auth.
 - `npm run smoke:nic-nac:recipe-builder -- --probe-model` passed against the stable demo by confirming the expected friendly `MODEL_UNAVAILABLE` response while OpenAI quota remains blocked.
+- `npm run smoke:nic-nac:recipe-tool-contract` passed locally: 3 files, 65 tests.
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 2 files, 6 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 4 files, 91 tests.
+- `npm run build` passed after the Recipes workspace refresh follow-through.
 
 ---
 

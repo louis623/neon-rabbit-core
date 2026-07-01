@@ -123,15 +123,18 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
       'tests/nic-nac-dashboard-placeholder.test.ts',
       'tests/nic-nac-legacy-name-guard.test.ts',
       'tests/nic-nac/prompt-routing.test.ts',
+      'tests/nic-nac/site-recipe-draft-tool.test.ts',
       'tests/nic-nac/site-customization-tools.test.ts',
+      'tests/nic-nac/tool-routing.test.ts',
+      'tests/nic-nac-workspace-refresh-events.test.ts',
     ],
     safeSmokeCommand: {
-      command: 'npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-legacy-name-guard.test.ts tests/nic-nac/prompt-routing.test.ts',
-      note: 'Local tests for the rep workspace shell, assistant naming, and prompt routing guardrails.',
+      command: 'npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-legacy-name-guard.test.ts tests/nic-nac/prompt-routing.test.ts tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts',
+      note: 'Local tests for the rep workspace shell, assistant naming, prompt routing, and provider-free Heather recipe chat-tool contract.',
     },
     defaultProviderActions: [],
     nextAction:
-      'Keep this as the dashboard baseline and extend it only after Phase 11 composed journey smokes need shared Nic-Nac assertions.',
+      'Keep this as the dashboard baseline; after OpenAI quota clears, add the real model-in-loop Heather recipe chat replay artifact.',
   },
   {
     id: 'cancellation',
