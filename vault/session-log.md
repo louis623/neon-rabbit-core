@@ -2472,3 +2472,26 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Heather's recipe workflow should stay image-first and simple: title, category/section, photos, recipe-card photos, build/save. Manual pantry ordering is not part of the beta workflow unless Louis asks for it later.
+
+---
+
+## July 1, 2026 - Heather Recipe Header Build Action
+
+**What changed:**
+- Louis caught that Heather's Recipes workspace still had two `Save recipe` buttons after the builder simplification.
+- Changed the top header action to `Build recipe with Nic-Nac` and left the bottom `Save recipe` action as the only save button.
+- Removed the duplicate lower build action so the workspace now has one build button and one save button.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 75 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts` passed: 4 files, 93 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `9bf9729 fix: make Heather recipe header build action` to `origin/codex/sparkle-cross-phase-hardening`.
+- Vercel preview `https://sparkle-suite-ch9tvhk6j-louis-2849s-projects.vercel.app` / deployment `dpl_FfVBoqQwGVcHQ5WH2kGMMkzBYqVQ` is Ready.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo health checks passed:
+  - `/api/prelaunch/health` returned `ok:true`.
+  - `/api/nic-nac/health` returned `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
+
+**Lesson:**
+- Heather's recipe editor should present one clear next action per stage: build with Nic-Nac from the header, then save from the bottom after the draft looks right.
