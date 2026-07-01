@@ -22,6 +22,20 @@ Running log of significant work sessions. Most recent first.
 **Remaining blocker:**
 - Final model-in-loop proof for Heather's image-first recipe flow is still waiting on the OpenAI quota/billing fix. After quota clears, run the `--expect-model` recipe builder and chat smokes, save the chat JSON, and attach it to launch readiness with `--dashboard-nic-nac-report`.
 
+## July 1, 2026 - Recipe Chat Smoke Output Path
+
+**What changed:**
+- Added `--output <path>` / `--output=<path>` support to `scripts/smoke-nic-nac-recipe-chat.ts`.
+- The recipe chat smoke now writes the full JSON result to a requested artifact path, creating parent directories as needed, while preserving the existing JSON stdout behavior.
+- Updated the Phase 11 Dashboard/Nic-Nac next action and Open Items TODO to use `.local/launch-readiness-results/nic-nac-recipe-chat.json` or `.local/launch-readiness-results/bling-kitchen-recipe-chat.json` as direct post-quota replay artifact paths.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts tests/launch-readiness-report-runner.test.ts` passed: 3 files, 18 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+**Remaining blocker:**
+- The final Heather/reviewer model replay still cannot be completed until OpenAI quota/billing is fixed.
+
 
 ## July 1, 2026 - Heather Image-First Recipe Chat Handoff
 

@@ -1,4 +1,7 @@
 import { readFileSync } from 'node:fs'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('Nic-Nac recipe builder smoke script', () => {
@@ -41,6 +44,7 @@ describe('Nic-Nac recipe builder smoke script', () => {
     expect(chatSource).toContain('MODEL_UNAVAILABLE')
     expect(chatSource).toContain('--expect-model')
     expect(chatSource).toContain('--target=bling-kitchen')
+    expect(chatSource).toContain('--output')
     expect(chatSource).toContain('BLING_KITCHEN_RECIPE_SMOKE_PASSWORD')
     expect(chatSource).toContain('/blingkitchen/in-the-pantry')
     expect(chatSource).toContain('getLatestAssistantToolNames')
@@ -94,5 +98,32 @@ describe('Nic-Nac recipe builder smoke script', () => {
       status: 'missing_env',
       missingEnv: ['BLING_KITCHEN_RECIPE_SMOKE_PASSWORD'],
     })
+  })
+
+  it('writes recipe chat smoke JSON artifacts to a requested output path', async () => {
+    const imported = await import('../scripts/smoke-nic-nac-recipe-chat')
+    const smokeModule = (
+      'runRecipeChatSmoke' in imported ? imported : imported.default
+    ) as typeof import('../scripts/smoke-nic-nac-recipe-chat')
+    const outputDir = await mkdtemp(join(tmpdir(), 'recipe-chat-smoke-'))
+
+    try {
+      const outputPath = join(outputDir, 'nested', 'recipe-chat.json')
+      const result = {
+        ok: false,
+        status: 'missing_env',
+        missingEnv: ['OPENAI_API_KEY'],
+        message: 'Nic-Nac recipe chat smoke is missing required environment.',
+      } as const
+
+      await expect(
+        smokeModule.writeRecipeChatSmokeArtifact(result, outputPath),
+      ).resolves.toBe(outputPath)
+      await expect(
+        readFile(outputPath, 'utf8').then((contents) => JSON.parse(contents)),
+      ).resolves.toEqual(result)
+    } finally {
+      await rm(outputDir, { recursive: true, force: true })
+    }
   })
 })

@@ -137,7 +137,7 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     },
     defaultProviderActions: [],
     nextAction:
-      'Keep this as the dashboard baseline; after OpenAI quota clears, run `npm run smoke:nic-nac:recipe-builder -- --expect-model`, capture `npm run smoke:nic-nac:recipe-chat -- --expect-model` output, then attach it with `npm run report:launch-readiness -- --dashboard-nic-nac-report <recipe-chat-artifact.json>`.',
+      'Keep this as the dashboard baseline; after OpenAI quota clears, run `npm run smoke:nic-nac:recipe-builder -- --expect-model`, then `npm run smoke:nic-nac:recipe-chat -- --expect-model --output .local/launch-readiness-results/nic-nac-recipe-chat.json`, then attach it with `npm run report:launch-readiness -- --dashboard-nic-nac-report .local/launch-readiness-results/nic-nac-recipe-chat.json`.',
   },
   {
     id: 'cancellation',

@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto'
 
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
 import sharp from 'sharp'
@@ -107,20 +110,37 @@ export type RecipeChatSmokeResult = {
   message: string
 }
 
-function hasArg(name: string) {
-  return process.argv.includes(name)
+function hasArg(name: string, args = process.argv) {
+  return args.includes(name)
 }
 
-function getArgValue(name: string) {
+function getArgValue(name: string, args = process.argv) {
   const prefix = `${name}=`
-  return process.argv
+  return args
     .find((arg) => arg.startsWith(prefix))
     ?.slice(prefix.length)
     .trim()
 }
 
-function getTargetFromArgs(): SmokeTarget {
-  const target = getArgValue('--target')?.toLowerCase()
+function getCliValue(name: string, args = process.argv): string | null {
+  const inlineValue = getArgValue(name, args)
+  if (inlineValue !== undefined) {
+    if (!inlineValue) throw new Error(`${name} requires a value`)
+    return inlineValue
+  }
+
+  const index = args.indexOf(name)
+  if (index === -1) return null
+
+  const value = args[index + 1]?.trim()
+  if (!value || value.startsWith('--')) {
+    throw new Error(`${name} requires a value`)
+  }
+  return value
+}
+
+function getTargetFromArgs(args = process.argv): SmokeTarget {
+  const target = getCliValue('--target', args)?.toLowerCase()
   return target === 'bling-kitchen' ? 'bling-kitchen' : 'reviewer'
 }
 
@@ -869,13 +889,30 @@ function sleep(ms: number): Promise<void> {
   })
 }
 
+export async function writeRecipeChatSmokeArtifact(
+  result: RecipeChatSmokeResult,
+  outputPath: string,
+): Promise<string> {
+  const outputDir = path.dirname(outputPath)
+  if (outputDir && outputDir !== '.') {
+    await mkdir(outputDir, { recursive: true })
+  }
+  await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8')
+  return outputPath
+}
+
 async function main() {
   const target = getTargetFromArgs()
+  const outputPath = getCliValue('--output')
   const result = await runRecipeChatSmoke(process.env as Env, {
     target,
     expectModel: hasArg('--expect-model'),
     keepRecipe: hasArg('--keep-recipe'),
   })
+  if (outputPath) {
+    await writeRecipeChatSmokeArtifact(result, outputPath)
+    console.error(`[recipe-chat-smoke] wrote ${outputPath}`)
+  }
   console.log(JSON.stringify(result, null, 2))
   if (!result.ok) process.exit(1)
 }
