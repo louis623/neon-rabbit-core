@@ -3209,7 +3209,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
 
     return () => controller.abort()
-  }, [activeSection, recipesState.status])
+  }, [activeSection])
 
   useEffect(() => {
     const refreshAfterNicNacMutation = (event: Event) => {

@@ -830,6 +830,25 @@ describe('DashboardPlaceholder', () => {
     expect(paidLoaderSource).not.toContain('loadSiteRecipes')
   })
 
+  it('keeps the Pantry recipe fetch alive after switching from idle to loading', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const recipesEffectStart = source.indexOf("if (activeSection !== 'recipes') return")
+    const recipesEffectSource = source.slice(
+      source.lastIndexOf('useEffect(() => {', recipesEffectStart),
+      source.indexOf('\n  useEffect(() => {', recipesEffectStart + 1),
+    )
+
+    expect(recipesEffectSource).toContain("if (activeSection !== 'recipes') return")
+    expect(recipesEffectSource).toContain("recipesState.status !== 'idle'")
+    expect(recipesEffectSource).toContain('void loadSiteRecipes(controller.signal)')
+    expect(recipesEffectSource).toContain('return () => controller.abort()')
+    expect(recipesEffectSource).toContain('}, [activeSection])')
+    expect(recipesEffectSource).not.toContain('}, [activeSection, recipesState.status])')
+  })
+
   it('renders the locked team management add-on skeleton', () => {
     const html = renderToStaticMarkup(createElement(TeamManagementCard))
 
