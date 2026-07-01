@@ -4,6 +4,20 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - Heather Recipe Smoke Fix Deployed to Stable Demo
+
+**What changed:**
+- Deployed the latest `codex/sparkle-cross-phase-hardening` branch after Heather recipe smoke hardening and checklist cleanup.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to Vercel deployment `dpl_GFQ3pDozn9J9nE3dmP8MbpvbDara` / preview `https://sparkle-suite-ju9u16g38-louis-2849s-projects.vercel.app`.
+- Latest pushed code checkpoint is `ab3ad0b chore: mark Heather recipe smoke complete`.
+
+**Verification:**
+- Vercel inspect confirmed the stable demo alias resolves to `dpl_GFQ3pDozn9J9nE3dmP8MbpvbDara` with status Ready.
+- Stable demo `/api/prelaunch/health` returned `ok:true`, `service:"sparkle-suite-prelaunch"`, and `status:"ready"`.
+- Stable demo `/api/nic-nac/health` returned `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
+
+---
+
 ## July 1, 2026 - OpenAI Recipe Replay Unblocked
 
 **What changed:**
