@@ -17,6 +17,12 @@ Running log of significant work sessions. Most recent first.
 - `npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-site-recipes-route.test.ts` passed: 4 files, 73 tests.
 - `npm exec vitest run tests/nic-nac/prompt-routing.test.ts tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts` passed: 4 files, 70 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `5892898 feat: add Nic-Nac recipe draft chat tool` to `origin/codex/sparkle-cross-phase-hardening`.
+- Vercel preview build passed at `https://sparkle-suite-n60j59mvf-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
+- Stable demo health checks passed for `/api/prelaunch/health` and `/api/nic-nac/health`.
+- `npm run smoke:nic-nac:recipe-builder` passed against the stable demo with reviewer-smoke auth.
+- `npm run smoke:nic-nac:recipe-builder -- --probe-model` passed against the stable demo by confirming the expected friendly `MODEL_UNAVAILABLE` response while OpenAI quota remains blocked.
 
 ---
 
