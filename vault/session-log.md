@@ -2559,7 +2559,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm exec vitest run tests/amethyst-preview-template-data.test.ts tests/public-site-slug-route.test.ts tests/bling-kitchen-recipes-db-loader.test.ts tests/nic-nac-dashboard-placeholder.test.ts` passed: 4 files, 108 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
 - `supabase db push` applied migration `20260701150000_ss_add_moonstone_appearance_preset.sql` to the remote project.
-- Stable demo alias `https://sparkle-suite-demo.vercel.app` was moved to deployment `dpl_CSVjRVryB8Y3aZtR51pwzq1u9yTS` at preview `https://sparkle-suite-o8owg3wwy-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` was moved to deployment `dpl_YVsvhHE8SJs515ZrmesUer9e158P` at preview `https://sparkle-suite-eig0qya6k-louis-2849s-projects.vercel.app`.
 - Stable health checks passed for `/api/prelaunch/health` and `/api/nic-nac/health`.
 - Stable template checks confirmed BlingKitchen homepage uses `preset:"moonstone"`, standard Sparkle Suite hero copy, and `pantryPageUrl:"/blingkitchen/in-the-pantry"`; Pantry template confirmed `appearancePreset:"moonstone"` and `recipeCount:26`.
 - Raw `npx tsc --noEmit --pretty false` still fails on unrelated repo-wide test typing issues; the one touched-test type issue it surfaced was fixed, and the production build passed TypeScript.
