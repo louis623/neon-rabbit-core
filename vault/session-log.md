@@ -14,6 +14,7 @@ Running log of significant work sessions. Most recent first.
 - Added deterministic `/api/nic-nac` route coverage proving recipe wording and photo-only recipe follow-ups expose `build_site_recipe_draft`, `list_site_recipes`, and `manage_site_recipes` to the model without needing a live OpenAI call.
 - The OpenAI quota/billing blocker still gates final model-in-loop proof. The open item now explicitly calls for a real replay that observes `tool-build_site_recipe_draft` followed by `manage_site_recipes`.
 - Added a provider-free local smoke command, `npm run smoke:nic-nac:recipe-tool-contract`, and tied the recipe chat-tool contract into the Phase 11 Dashboard / Nic-Nac smoke manifest.
+- Added a post-quota full chat replay harness, `npm run smoke:nic-nac:recipe-chat`, that signs into reviewer-smoke or Heather's BlingKitchen account, posts real image parts to `/api/nic-nac`, observes `build_site_recipe_draft` then `manage_site_recipes`, verifies the saved recipe row contains the fixture card facts and public display images, checks Heather's public Pantry page when `--target=bling-kitchen` is used, and cleans up smoke recipes by default.
 - Fixed the workspace refresh follow-through: when Nic-Nac saves a Pantry recipe through chat, the open Recipes workspace reloads its recipe list and preserves the selected recipe when possible.
 
 **Verification:**
@@ -32,6 +33,7 @@ Running log of significant work sessions. Most recent first.
 - `npm exec vitest run tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts` passed after adding the `/api/nic-nac` recipe route cases: 1 file, 6 tests.
 - `npm run smoke:nic-nac:recipe-tool-contract` passed with route coverage included: 4 files, 71 tests.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed: 1 file, 1 test.
+- `npx tsx -e "import('./scripts/smoke-nic-nac-recipe-chat.ts').then((m)=>console.log(Object.keys(m.default ?? {}).join(','), typeof (m.default ?? {}).runRecipeChatSmoke))"` passed after rerunning outside the Windows sandbox; the first sandboxed attempt hit `spawn EPERM` while starting `tsx`/esbuild.
 - `npm run build` passed after the Recipes workspace refresh follow-through.
 - Pushed `a0e3d9f fix: refresh recipes after Nic-Nac site saves`.
 - Vercel preview build passed at `https://sparkle-suite-9j1hje02g-louis-2849s-projects.vercel.app`.
