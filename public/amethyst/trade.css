@@ -44,16 +44,13 @@ body.tradepage h4 {
 }
 
 body.britt-with-bling-trade {
-  --bwb-black: #0a0a0a;
-  --bwb-panel: #1a1a1a;
-  --bwb-gold: #d4af37;
-  --bwb-blush: #f4c2c2;
-  --bwb-cyan: #00d9ff;
-  --hp-primary: var(--bwb-gold);
-  --hp-accent: var(--bwb-cyan);
-  --hp-bg: var(--bwb-black);
-  --hp-bg-elevated: var(--bwb-panel);
-  background: var(--bwb-black);
+  --bwb-black: var(--hp-bg);
+  --bwb-panel: var(--hp-bg-elevated);
+  --bwb-gold: var(--hp-primary);
+  --bwb-blush: color-mix(in srgb, var(--hp-primary) 36%, white 64%);
+  --bwb-cyan: var(--hp-accent);
+  overflow-x: clip;
+  background: var(--hp-bg);
   color: #fff;
 }
 
@@ -63,7 +60,8 @@ body.britt-with-bling-trade::before {
 
 .bwb-trade-page {
   min-height: 100vh;
-  background: var(--bwb-black);
+  overflow-x: clip;
+  background: var(--hp-bg);
 }
 
 .bwb-trade-shell {
@@ -236,6 +234,34 @@ body.britt-with-bling-trade .tp-card-tier.unicorn {
 body.britt-with-bling-trade .hp-footer {
   border-top: 1px solid rgba(212, 175, 55, 0.22);
   background: transparent;
+}
+
+@media (max-width: 720px) {
+  body.britt-with-bling-trade .hp-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(100% - 20px, 1180px);
+    max-width: 100%;
+  }
+
+  body.britt-with-bling-trade .hp-brand {
+    min-width: 0;
+  }
+
+  body.britt-with-bling-trade .hp-brand-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  body.britt-with-bling-trade .hp-header-nav {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body.britt-with-bling-trade .hp-shop-btn {
+    max-width: min(34vw, 132px);
+    padding-inline: 16px;
+  }
 }
 .tp-hero-sub {
   font-size: 17px;

@@ -20,10 +20,8 @@ export const BRITT_WITH_BLING_PROFILE = {
   tiktokUrl: 'https://www.tiktok.com/@brittwithbling',
   tiktokHandle: '@brittwithbling',
   facebookVipUrl: 'https://www.facebook.com/groups/390848873287947',
-  heroImageUrl:
-    'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/76f968c944f6b1dd16c30e418f371af6.jpeg',
-  joinHeroImageUrl:
-    'https://readdy.ai/api/search-image?query=Cinematic%20macro%20photography%20of%20luxury%20jewelry%20reveals%20with%20gold%20sparkles%2C%20pink%20glitter%2C%20cyan%20neon%20accents%2C%20black%20velvet%20background%2C%20premium%20Bomb%20Party%20aesthetic%2C%20dramatic%20lighting%2C%20bokeh%2C%20celebration%20energy&width=1920&height=1080&seq=promo-hero-glitter-001&orientation=landscape',
+  heroImageUrl: '/britt-with-bling/hero.jpeg',
+  joinHeroImageUrl: '/britt-with-bling/join-hero.jpeg',
   announcementText:
     'Sterling Club & 12k Gold Vermeil collections are here - genuine precious metals, elevated designs.',
   promoTickerText:
@@ -35,8 +33,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Brittany',
     business: 'Britt with Bling',
     state: 'Florida',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/9f36b9d17474d9a7eca3dafdf020cb59.png',
+    imageUrl: '/britt-with-bling/team-01-brittany.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@brittwithbling',
       website: 'https://bombparty.com/brittwithbling',
@@ -47,8 +44,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Rayna',
     business: 'Queen of Blingy Thingz',
     state: 'Florida',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/897137d74c3630eab56408dd32ccca21.png',
+    imageUrl: '/britt-with-bling/team-02-rayna.png',
     socialLinks: {
       tiktok:
         'https://www.tiktok.com/@queenofblingythingz?is_from_webapp=1&sender_device=pc',
@@ -59,8 +55,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Britt',
     business: 'Sudds & Sparkles',
     state: 'Alabama',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/31610f19f48576052efe55c0538ab303.png',
+    imageUrl: '/britt-with-bling/team-03-britt.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@brittsudduth32',
     },
@@ -69,8 +64,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Lindsey',
     business: 'Mile High Fizz',
     state: 'Colorado',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/dbb293e6fe52eedfc0fc6c235ca1669a.png',
+    imageUrl: '/britt-with-bling/team-04-lindsey.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@lindze1188',
       website: 'https://milehighfizz.com/',
@@ -81,8 +75,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Trish',
     business: 'Fizzn with Mama T',
     state: 'North Carolina',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/2fc71ebb8f20f6b5f9e92069e5f04d08.png',
+    imageUrl: '/britt-with-bling/team-05-trish.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@trishander',
       facebook: 'https://www.facebook.com/groups/390848873287947',
@@ -92,8 +85,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Veronica',
     business: 'Fizzy Finds with V',
     state: 'Indiana',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/e9fe589658eb02e54e379b7a2b3eb8cd.png',
+    imageUrl: '/britt-with-bling/team-06-veronica.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@fizzyfindswithv',
       facebook: 'https://www.facebook.com/groups/390848873287947',
@@ -103,8 +95,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Kim',
     business: 'Go for the Bling',
     state: 'West Virginia',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/cb21bf9a697fa432623f76f4a7310530.png',
+    imageUrl: '/britt-with-bling/team-07-kim.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@goforthebling',
     },
@@ -113,8 +104,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Brooke',
     business: 'Bdubbfizz',
     state: 'Alabama',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/40e955faf1a34494eaa9994c9f9b9871.png',
+    imageUrl: '/britt-with-bling/team-08-brooke.png',
     socialLinks: {
       facebook: 'https://www.facebook.com/groups/390848873287947',
     },
@@ -123,8 +113,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     name: 'Beverly',
     business: 'Bev with Bling',
     state: 'Tennessee',
-    imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/263ecf11a702a7374f7d21ec5c8e1bb4.png',
+    imageUrl: '/britt-with-bling/team-09-beverly.png',
     imageClassName: 'object-left rotate-left',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@bevwithbling',
@@ -136,7 +125,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Jules Fizzin Jewels',
     state: 'Illinois',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/3172f05d39a497ac64bf162e8bd98851.png',
+      '/britt-with-bling/team-10-julie.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@julesfizzinjewels',
       facebook: 'https://www.facebook.com/natwithbling.vip?mibextid=LQQJ4d',
@@ -147,7 +136,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Nat with Blingg',
     state: 'California',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/89b901685cc96319744852ca82597f78.png',
+      '/britt-with-bling/team-11-natalia.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@natwithblingg',
       facebook: 'https://www.facebook.com/natwithbling.vip?mibextid=LQQJ4d',
@@ -158,7 +147,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'The Opal Cowgirl',
     state: 'Oklahoma',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/88d550e5360e9318430035d51d239bdb.png',
+      '/britt-with-bling/team-12-karen.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@theopalcowgirl',
     },
@@ -168,7 +157,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'The Heirloom Duo',
     state: 'Florida',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/cd05da2a34c50f492c39284db428132b.png',
+      '/britt-with-bling/team-13-angie-kylee.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@the.heirloom.duo',
     },
@@ -178,7 +167,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Curls and Cubes',
     state: 'Florida',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/55282223bbafc472e845bc5c73b18668.png',
+      '/britt-with-bling/team-14-heather.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@curlsandcubes',
       facebook: 'https://www.facebook.com/share/g/1Bs28D8d6p/?mibextid=wwXIfr',
@@ -189,7 +178,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Twenty 2 Lane',
     state: 'Tennessee',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/203ef742f2d137b3850c5f42740f3f9e.png',
+      '/britt-with-bling/team-15-kayse.png',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@kayse.twenty2lane',
     },
@@ -199,7 +188,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Blakes_famof6',
     state: 'Alabama',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/1ddeb994ad22fb991bffdb522d510f12.png',
+      '/britt-with-bling/team-16-blake.png',
     socialLinks: {
       tiktok:
         'https://www.tiktok.com/@blakes_famof6?is_from_webapp=1&sender_device=pc',
@@ -210,7 +199,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'michelledfizzcity',
     state: 'California',
     imageUrl:
-      'https://storage.readdy-site.link/project_files/799b7601-b78c-4873-bc28-e9ba9cd9230e/28655a68-90ea-4192-b863-7d8896c9de06_Michelle-Brit-with-Bling--team-member-.jpg?v=24bfdd7068ae36b228360a72c66c0ef5',
+      '/britt-with-bling/team-17-michelle.jpeg',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@michelledfizzcity',
     },
@@ -220,7 +209,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Fizzchemy',
     state: 'Ohio',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/c571566a18d676c352ec7fe3755b7bf6.jpeg',
+      '/britt-with-bling/team-18-alex-ra.jpeg',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@fizzchemy?is_from_webapp=1&sender_device=pc',
     },
@@ -230,7 +219,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Gypsy Jewels Boutique',
     state: 'Georgia',
     imageUrl:
-      'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/1e2eec3b324459d867603596ca9ea5be.jpeg',
+      '/britt-with-bling/team-19-susan.jpeg',
     imageClassName: 'object-top',
     socialLinks: {
       tiktok:
@@ -242,7 +231,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Fizzinfarm-Housewife',
     state: 'New York',
     imageUrl:
-      'https://storage.readdy-site.link/project_files/799b7601-b78c-4873-bc28-e9ba9cd9230e/cdb9aa3b-fdf6-44af-aea7-55c457293d20_caeeea96ce2e1fedf46b8d857b3c981dtplv-tiktokx-cropcenter_1080_1080.jpeg?v=1c17bec7d41c196158c246d3c64d9d18',
+      '/britt-with-bling/team-20-michelle.jpeg',
     socialLinks: {
       tiktok:
         'https://www.tiktok.com/@fizzinfarm_housewife?is_from_webapp=1&sender_device=pc',
@@ -253,7 +242,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'sparkletherapy',
     state: 'Florida',
     imageUrl:
-      'https://storage.readdy-site.link/project_files/799b7601-b78c-4873-bc28-e9ba9cd9230e/28dba2fc-ed31-428b-b664-5b7216285752_316687ec143fae0fd08e34f98273328ftplv-tiktokx-cropcenter_1080_1080.jpeg?v=83bfc8ce267eb536b8407310240ac097',
+      '/britt-with-bling/team-21-danny.jpeg',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@dannyaa1183?is_from_webapp=1&sender_device=pc',
     },
@@ -263,7 +252,7 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'fizzinghomeruns',
     state: 'Indiana',
     imageUrl:
-      'https://storage.readdy-site.link/project_files/799b7601-b78c-4873-bc28-e9ba9cd9230e/9429d03f-16d8-4b8f-b401-4e16b432f594_43ce13739bc18109d384b5fee22dffcdtplv-tiktokx-cropcenter_1080_1080.jpeg?v=c66645088b4bcf2c8dc9dd97d059d3f6',
+      '/britt-with-bling/team-22-kelly.jpeg',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@kelpoo77?is_from_webapp=1&sender_device=pc',
     },
@@ -273,13 +262,39 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'jennfizz4keeps',
     state: 'California',
     imageUrl:
-      'https://storage.readdy-site.link/project_files/799b7601-b78c-4873-bc28-e9ba9cd9230e/bc8f8d2a-6af3-4cc7-8df3-6b8421965367_88c3268f03a4f1eb30998972bb73f26btplv-tiktokx-cropcenter_1080_1080.jpeg?v=5d16717edaf812d13dad9cfe3d76aeae',
+      '/britt-with-bling/team-23-jenn.jpeg',
     socialLinks: {
       tiktok:
         'https://www.tiktok.com/@jennfizz4keeps?is_from_webapp=1&sender_device=pc',
     },
   },
 ]
+
+function brittWithBlingTeamMemberKey(member: Pick<AmethystJoinTeamMember, 'name' | 'business'>) {
+  return `${member.name.trim().toLowerCase()}::${member.business.trim().toLowerCase()}`
+}
+
+const BRITT_WITH_BLING_TEAM_MEMBER_ASSET_BY_KEY = new Map(
+  BRITT_WITH_BLING_TEAM_MEMBERS.map((member) => [
+    brittWithBlingTeamMemberKey(member),
+    member.imageUrl,
+  ]),
+)
+
+function normalizeBrittWithBlingTeamMemberAssets(
+  teamMembers: AmethystJoinTeamMember[],
+): AmethystJoinTeamMember[] {
+  return teamMembers.map((member) => {
+    const imageUrl = member.imageUrl?.trim()
+    if (!imageUrl || !/readdy|storage\.readdy-site/i.test(imageUrl)) return member
+
+    const migratedImageUrl = BRITT_WITH_BLING_TEAM_MEMBER_ASSET_BY_KEY.get(
+      brittWithBlingTeamMemberKey(member),
+    )
+
+    return migratedImageUrl ? { ...member, imageUrl: migratedImageUrl } : member
+  })
+}
 
 export function isBrittWithBlingSettings(settings: SiteSettingsDashboardResult) {
   const email = settings.email.trim().toLowerCase()
@@ -356,6 +371,24 @@ export function applyBrittWithBlingHomepage(
       'Order your jewelry, return to the live party, and watch the fizz reveal your new favorite sparkle.',
       'When a reveal is not quite your style, the Sparkle Suite Trade Board gives the community a rep-reviewed place to swap.',
     ],
+    aboutMediaSlots: [
+      {
+        typeLabel: 'Live reveal community',
+        caption:
+          'Follow Brittany on TikTok for live reveals, launches, and VIP sparkle moments.',
+        href: BRITT_WITH_BLING_PROFILE.tiktokUrl,
+        mediaUrl: BRITT_WITH_BLING_PROFILE.heroImageUrl,
+      },
+      {
+        typeLabel: 'The Virtuous Fizzers',
+        caption:
+          'Meet the team, shop with Brittany, and come back when new trade pieces are posted.',
+        href: '/amethyst/Join.html',
+        mediaUrl: BRITT_WITH_BLING_PROFILE.joinHeroImageUrl,
+      },
+    ],
+    showcaseVideoCaption: '@brittwithbling live reveal highlights',
+    showcaseVideoUrl: BRITT_WITH_BLING_PROFILE.tiktokUrl,
     signupTitle: 'Never Miss a Show!',
     signupSub:
       'Get email updates now and be first in line when SMS show reminders launch.',
@@ -397,6 +430,9 @@ export function applyBrittWithBlingHomepage(
       pastShows: '#events',
       faq: '#wibp',
       contact: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      privacy: '/privacy-policy',
+      terms: '/terms-and-conditions',
+      accessibility: 'mailto:hello@yoursparklesuite.com?subject=Accessibility%20support',
     },
   }
 }
@@ -411,7 +447,7 @@ export function applyBrittWithBlingTrade(
     businessName: BRITT_WITH_BLING_PROFILE.businessName,
     tradeHeroTitle: 'Britt with Bling Trade Board',
     tradeHeroSub:
-      "Browse Brittany's available trade pieces and request a standard Sparkle Suite item-for-item swap.",
+      'When Brittany adds available pieces, you can request a rep-reviewed item-for-item swap here.',
     footerTagline:
       'Faith, fizz, VIP reveals, and rep-reviewed trades with Britt with Bling.',
     footerLinks: {
@@ -424,6 +460,9 @@ export function applyBrittWithBlingTrade(
       pastShows: '/amethyst/Homepage.html#events',
       faq: '#faq',
       contact: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      privacy: '/privacy-policy',
+      terms: '/terms-and-conditions',
+      accessibility: 'mailto:hello@yoursparklesuite.com?subject=Accessibility%20support',
     },
   }
 }
@@ -479,12 +518,15 @@ export function applyBrittWithBlingJoin(
       pastShows: '/amethyst/Homepage.html#events',
       faq: '#join-faq',
       contact: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      privacy: '/privacy-policy',
+      terms: '/terms-and-conditions',
+      accessibility: 'mailto:hello@yoursparklesuite.com?subject=Accessibility%20support',
     },
     footerColumn: {
       title: '',
       links: [],
     },
-    teamMembers,
+    teamMembers: normalizeBrittWithBlingTeamMemberAssets(teamMembers),
     faqAnswers: {
       whatIsTeam:
         "The Virtuous Fizzers is Brittany's Bomb Party rep team - a supportive community that celebrates wins, shares what works, and helps new reps build with confidence.",

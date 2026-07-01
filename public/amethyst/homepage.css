@@ -4768,14 +4768,15 @@ body.mile-high-fizz .mhf-automation-panel .legal-row {
 }
 
 body.britt-with-bling {
-  --bwb-black: #0a0a0a;
-  --bwb-panel: #1a1a1a;
-  --bwb-gold: #d4af37;
-  --bwb-blush: #f4c2c2;
-  --bwb-cyan: #00d9ff;
-  --bwb-cyan-hot: #00f0ff;
+  --bwb-black: var(--hp-bg);
+  --bwb-panel: var(--hp-bg-elevated);
+  --bwb-gold: var(--hp-primary);
+  --bwb-blush: color-mix(in srgb, var(--hp-primary) 36%, white 64%);
+  --bwb-cyan: var(--hp-accent);
+  --bwb-cyan-hot: color-mix(in srgb, var(--hp-accent) 82%, white 18%);
   margin: 0;
-  background: var(--bwb-black);
+  overflow-x: clip;
+  background: var(--hp-bg);
   color: #fff;
 }
 
@@ -4785,7 +4786,8 @@ body.britt-with-bling::before {
 
 .bwb-page {
   min-height: 100vh;
-  background: var(--bwb-black);
+  overflow-x: clip;
+  background: var(--hp-bg);
   color: #fff;
   font-family: "Inter", "DM Sans", system-ui, sans-serif;
 }
@@ -5164,25 +5166,70 @@ body.britt-with-bling::before {
 
 .bwb-featured-video {
   position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.75rem;
   width: min(100%, 310px);
   aspect-ratio: 9 / 16;
   justify-self: center;
   border-radius: 24px;
   padding: 2px;
-  background: linear-gradient(180deg, var(--bwb-blush), rgba(198, 149, 153, 0.8));
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.78)),
+    linear-gradient(135deg, var(--bwb-blush), var(--bwb-gold) 48%, var(--bwb-cyan));
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
   box-shadow: 0 0 40px rgba(244, 194, 194, 0.28), 0 0 80px rgba(212, 175, 55, 0.12);
 }
 
-.bwb-featured-video iframe,
-.bwb-tiktok-frame iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
+.bwb-featured-video::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.28), transparent 24%),
+    rgba(10, 10, 10, 0.48);
 }
 
-.bwb-featured-video iframe {
-  border-radius: 22px;
-  background: #0a0a0a;
+.bwb-video-play,
+.bwb-video-kicker,
+.bwb-video-title {
+  position: relative;
+  z-index: 1;
+}
+
+.bwb-video-play {
+  display: inline-flex;
+  width: 62px;
+  height: 62px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.bwb-video-kicker {
+  color: var(--bwb-cyan);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bwb-video-title {
+  max-width: 18ch;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.2;
 }
 
 .bwb-source-explainer {
@@ -5271,9 +5318,20 @@ body.britt-with-bling::before {
 }
 
 .bwb-tiktok-frame {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.75rem;
   width: 100%;
   aspect-ratio: 9 / 16;
-  background: #0a0a0a;
+  min-height: 360px;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.78)),
+    linear-gradient(135deg, var(--bwb-gold), var(--bwb-blush) 48%, var(--bwb-cyan));
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
 }
 
 .bwb-tiktok-cta {
@@ -5335,6 +5393,32 @@ body.britt-with-bling .bwb-automation-panel .hp-footer-tag {
 }
 
 @media (max-width: 720px) {
+  body.britt-with-bling .hp-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(100% - 20px, 1180px);
+    max-width: 100%;
+  }
+
+  body.britt-with-bling .hp-brand {
+    min-width: 0;
+  }
+
+  body.britt-with-bling .hp-brand-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  body.britt-with-bling .hp-header-nav {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body.britt-with-bling .hp-shop-btn {
+    max-width: min(34vw, 132px);
+    padding-inline: 16px;
+  }
+
   .bwb-announcement-banner {
     flex-wrap: wrap;
     font-size: 0.75rem;
@@ -5358,8 +5442,19 @@ body.britt-with-bling .bwb-automation-panel .hp-footer-tag {
     min-height: 680px;
   }
 
+  .bwb-hero-content {
+    width: min(100%, calc(100vw - 32px));
+  }
+
   .bwb-hero-title {
-    font-size: clamp(3.5rem, 19vw, 5.2rem);
+    max-width: min(100%, 7.5ch);
+    font-size: clamp(3rem, 16vw, 4.6rem);
+    overflow-wrap: normal;
+  }
+
+  .bwb-hero-line,
+  .bwb-hero-instruction {
+    max-width: 100%;
   }
 
   .bwb-hero-ctas {

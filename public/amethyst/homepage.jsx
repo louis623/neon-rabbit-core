@@ -1507,10 +1507,8 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
             {CONTENT.pantryPageUrl ? (
               <a {...linkProps(CONTENT.pantryPageUrl)} className="hp-header-link">In the Pantry</a>
             ) : null}
-            {isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam ? (
+            {CONTENT.footerLinks?.joinTeam && (
               <a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>
-            ) : (
-              CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />
             )}
           </nav>
           <a {...linkProps(getShopHref())} className="hp-shop-btn">{scheduleIsLive ? "Shop live" : "Shop"}</a>
@@ -1584,14 +1582,11 @@ function BrittWithBlingFeaturedReveal() {
             {reveal.ctaLabel}
           </a>
         </div>
-        <div className="bwb-featured-video" aria-label={reveal.videoTitle}>
-          <iframe
-            src={reveal.videoUrl}
-            title={reveal.videoTitle}
-            allow="encrypted-media"
-            allowFullScreen
-          />
-        </div>
+        <a {...linkProps(reveal.videoUrl || reveal.ctaHref)} className="bwb-featured-video" aria-label={reveal.videoTitle}>
+          <span className="bwb-video-play" aria-hidden="true">▶</span>
+          <span className="bwb-video-kicker">Featured TikTok</span>
+          <span className="bwb-video-title">{reveal.videoTitle}</span>
+        </a>
       </div>
     </section>
   );
@@ -1627,14 +1622,10 @@ function BrittWithBlingRevealExplainer() {
               <p>{explainer.videoHandle}</p>
             </div>
           </div>
-          <div className="bwb-tiktok-frame">
-            <iframe
-              src={explainer.videoUrl}
-              title={explainer.videoTitle}
-              allow="encrypted-media"
-              allowFullScreen
-            />
-          </div>
+          <a {...linkProps(explainer.videoUrl || explainer.ctaHref)} className="bwb-tiktok-frame">
+            <span className="bwb-video-play" aria-hidden="true">▶</span>
+            <span className="bwb-video-title">{explainer.videoTitle}</span>
+          </a>
           <a {...linkProps(explainer.ctaHref)} className="bwb-tiktok-cta">
             {explainer.ctaLabel}
           </a>
@@ -1647,7 +1638,7 @@ function BrittWithBlingRevealExplainer() {
 function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
   const shopCtaLabel = CONTENT.shopCtaLabel || "Shop";
-  const heroImageUrl = CONTENT.heroImageUrl || "https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/76f968c944f6b1dd16c30e418f371af6.jpeg";
+  const heroImageUrl = CONTENT.heroImageUrl || "/britt-with-bling/hero.jpeg";
 
   return (
     <div className="bwb-page" id="top">

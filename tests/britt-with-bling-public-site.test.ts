@@ -8,7 +8,10 @@ import {
   mapPreviewSettingsToJoinTemplateData,
   mapPreviewSettingsToTradeTemplateData,
 } from '@/lib/amethyst/preview-template-data'
-import { buildAmethystHomepageBootstrapScript } from '@/lib/amethyst/homepage-template-data'
+import {
+  buildAmethystHomepageBootstrapScript,
+  enrichAmethystHomepageFeatureData,
+} from '@/lib/amethyst/homepage-template-data'
 import {
   BRITT_WITH_BLING_PROFILE,
   BRITT_WITH_BLING_TEAM_MEMBERS,
@@ -107,16 +110,62 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(homepage.footerLinks.faq).toBe('#wibp')
     expect(homepage.footerLinks).not.toHaveProperty('about')
     expect(homepage.publicSiteVariant).toBe('britt_with_bling_hybrid')
+    expect(homepage.aboutMediaSlots.map((slot) => slot.caption).join(' ')).not.toMatch(
+      /ask nic-nac/i,
+    )
+    expect(homepage.footerLinks.privacy).not.toBe('#')
+    expect(homepage.footerLinks.terms).not.toBe('#')
+    expect(homepage.footerLinks.accessibility).not.toBe('#')
   })
 
-  it('serializes the BWB variant for static runtime branching', () => {
+  it('serializes BWB as theme-switchable Black Diamond data', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       brittWithBlingSettings,
       brittWithBlingExtras,
     )
-    const script = buildAmethystHomepageBootstrapScript(homepage)
+    const blackDiamondScript = buildAmethystHomepageBootstrapScript(
+      homepage,
+      [],
+      'black_diamond',
+    )
+    const moonstoneScript = buildAmethystHomepageBootstrapScript(
+      homepage,
+      [],
+      'moonstone',
+    )
 
-    expect(script).toContain('"publicSiteVariant":"britt_with_bling_hybrid"')
+    expect(blackDiamondScript).toContain('"publicSiteVariant":"britt_with_bling_hybrid"')
+    expect(blackDiamondScript).toContain('"preset":"black_diamond"')
+    expect(blackDiamondScript).toContain('"bgTreatment":"black-velvet"')
+    expect(moonstoneScript).toContain('"preset":"moonstone"')
+    expect(moonstoneScript).toContain('"bgTreatment":"moonstone-charcoal"')
+  })
+
+  it('scrubs stale live queue operational copy for Brittany customers', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      brittWithBlingSettings,
+      brittWithBlingExtras,
+    )
+    const enriched = enrichAmethystHomepageFeatureData(homepage, {
+      liveQueueSnapshot: {
+        syncCode: 'BWB-1234',
+        queue: [],
+        queueLength: 0,
+        currentCustomer: null,
+        onDeckCustomer: null,
+        lastUpdated: '2026-07-01T12:00:00.000Z',
+        ageSeconds: 900,
+        staleAfterSeconds: 180,
+        isFresh: false,
+      },
+      tradeBoardListings: [],
+    })
+
+    expect(enriched.liveQueueState).toBe('empty')
+    expect(enriched.liveQueueSummary).toBe(
+      'Live Queue is ready. Customer names appear here when a live show is connected.',
+    )
+    expect(enriched.tickerTopText).not.toContain('stale')
   })
 
   it('keeps Trade Board mechanics standard while dressing it for BWB', () => {
@@ -128,6 +177,8 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(trade.businessName).toBe('Britt with Bling')
     expect(trade.repName).toBe('Brittany')
     expect(trade.tradeHeroTitle).toBe('Britt with Bling Trade Board')
+    expect(trade.tradeHeroSub).toContain('When Brittany adds available pieces')
+    expect(trade.tradeHeroSub).not.toContain('standard Sparkle Suite')
     expect(trade.tradeRules).toContain('Item-for-item only.')
     expect(trade.footerLinks.home).toBe('/amethyst/Homepage.html')
     expect(trade.footerLinks.tradeBoard).toBe('/amethyst/Trade.html')
@@ -212,6 +263,11 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(data.homepage.footerLinks.home).toBe('/brittwithbling')
     expect(data.homepage.footerLinks.tradeBoard).toBe('/brittwithbling/trade')
     expect(data.homepage.footerLinks.joinTeam).toBe('/brittwithbling/join')
+    expect(data.homepage.showcaseVideoCaption).not.toMatch(/coming soon/i)
+    expect(data.homepage.footerLinks.privacy).not.toBe('#')
+    expect(data.homepage.footerLinks.terms).not.toBe('#')
+    expect(data.homepage.footerLinks.accessibility).not.toBe('#')
+    expect(data.trade.tradeHeroSub).toContain('When Brittany adds available pieces')
     expect(data.join.footerLinks.joinTeam).toBe('/brittwithbling/join')
     expect(data.join.teamMembers).toHaveLength(2)
     expect(data.join.teamMembers[0]).toMatchObject({
@@ -226,6 +282,38 @@ describe('Britt With Bling hybrid public site contract', () => {
       },
     })
     expect(data.join.teamMembers[1].socialLinks).not.toHaveProperty('whatnot')
+  })
+
+  it('normalizes legacy Ready.ai editable roster photo URLs to migrated local assets', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-britt-with-bling',
+      publicSiteSlug: 'brittwithbling',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient: viCreateAdminClient(),
+        resolveAmethystPreviewRep: async () => ({
+          id: 'rep-britt-with-bling',
+          email: 'brittany@example.com',
+          shop_link: BRITT_WITH_BLING_PROFILE.shopUrl,
+          streaming_links: brittWithBlingExtras.streamingLinks,
+        }),
+        getSiteSettingsDashboard: async () => brittWithBlingSettings,
+        getJoinTeamRoster: async () => [
+          rosterRow({
+            photoUrl:
+              'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/9f36b9d17474d9a7eca3dafdf020cb59.png',
+          }),
+        ],
+        getRequiredSetupState: async () => null,
+      },
+    })
+
+    expect(data.join.teamMembers[0].imageUrl).toBe(
+      '/britt-with-bling/team-01-brittany.png',
+    )
   })
 
   it('imports all Ready.ai roster cards as seed material for the BWB tenant', () => {
@@ -250,6 +338,13 @@ describe('Britt With Bling hybrid public site contract', () => {
         JSON.stringify(member.socialLinks).toLowerCase().includes('whatnot'),
       ),
     ).toBe(false)
+    expect(
+      [
+        BRITT_WITH_BLING_PROFILE.heroImageUrl,
+        BRITT_WITH_BLING_PROFILE.joinHeroImageUrl,
+        ...BRITT_WITH_BLING_TEAM_MEMBERS.map((member) => member.imageUrl ?? ''),
+      ].join(' '),
+    ).not.toMatch(/readdy|storage\.readdy-site/i)
   })
 
   it('renders BWB homepage, Trade Board, and Join shells with BWB branding', () => {
@@ -281,15 +376,24 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(homepageJsx).toContain('function BrittWithBlingHomepage')
     expect(homepageJsx).toContain('function BrittWithBlingFeaturedReveal')
     expect(homepageJsx).toContain('function BrittWithBlingRevealExplainer')
+    expect(homepageJsx).not.toContain('<iframe')
     expect(homepageJsx).toContain('function SparkleSuiteHeaderStack')
     expect(homepageJsx).toContain('<SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />')
     expect(homepageJsx).not.toContain('bwb-header-menu')
     expect(homepageJsx).toContain('CONTENT.heroImageUrl')
+    expect(homepageJsx).toContain('CONTENT.footerLinks?.joinTeam && (')
+    expect(homepageJsx).toContain(
+      '<a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>',
+    )
+    expect(homepageJsx).not.toContain(
+      'CONTENT.footerLinks?.joinTeam && <ComingSoonNavItem />',
+    )
     expect(homepageJsx).toContain('bwb-featured-reveal')
     expect(homepageJsx).toContain('bwb-source-explainer')
     expect(homepageCss).toContain('body.britt-with-bling')
-    expect(homepageCss).toContain('#d4af37')
-    expect(homepageCss).toContain('#00d9ff')
+    expect(homepageCss).toContain('--bwb-gold: var(--hp-primary)')
+    expect(homepageCss).toContain('--bwb-cyan: var(--hp-accent)')
+    expect(homepageCss).toContain('overflow-x: clip')
     expect(homepageCss).toContain('.bwb-featured-video')
     expect(homepageCss).toContain('.bwb-tiktok-card')
 
@@ -297,6 +401,9 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(tradeJsx).toContain('bwb-trade-page')
     expect(tradeJsx).toContain('bwb-trade-board-panel')
     expect(tradeCss).toContain('body.britt-with-bling-trade')
+    expect(tradeCss).toContain('--bwb-gold: var(--hp-primary)')
+    expect(tradeCss).toContain('--bwb-cyan: var(--hp-accent)')
+    expect(tradeCss).toContain('overflow-x: clip')
     expect(tradeCss).toContain('body.britt-with-bling-trade .tp-card')
 
     expect(joinJsx).toContain('const isBrittWithBlingHybrid')
@@ -305,6 +412,10 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(joinJsx).toContain('member.socialLinks?.instagram')
     expect(joinJsx).toContain('member.socialLinks?.website')
     expect(joinCss).toContain('body.britt-with-bling-join')
+    expect(joinCss).toContain('--bwb-gold: var(--hp-primary)')
+    expect(joinCss).toContain('--bwb-cyan: var(--hp-accent)')
+    expect(joinCss).toContain('/britt-with-bling/join-hero')
+    expect(joinCss).toContain('overflow-x: clip')
     expect(joinCss).toContain('.jp-team-avatar-img')
   })
 })

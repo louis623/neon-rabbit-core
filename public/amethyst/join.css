@@ -1146,16 +1146,13 @@ body.mile-high-fizz-join .hp-footer-col a:hover {
 }
 
 body.britt-with-bling-join {
-  --bwb-black: #0a0a0a;
-  --bwb-panel: #1a1a1a;
-  --bwb-gold: #d4af37;
-  --bwb-blush: #f4c2c2;
-  --bwb-cyan: #00d9ff;
-  --hp-primary: var(--bwb-gold);
-  --hp-accent: var(--bwb-cyan);
-  --hp-bg: var(--bwb-black);
-  --hp-bg-elevated: var(--bwb-panel);
-  background: var(--bwb-black);
+  --bwb-black: var(--hp-bg);
+  --bwb-panel: var(--hp-bg-elevated);
+  --bwb-gold: var(--hp-primary);
+  --bwb-blush: color-mix(in srgb, var(--hp-primary) 36%, white 64%);
+  --bwb-cyan: var(--hp-accent);
+  overflow-x: clip;
+  background: var(--hp-bg);
   color: #fff;
 }
 
@@ -1165,12 +1162,13 @@ body.britt-with-bling-join::before {
 
 .bwb-join-page {
   min-height: 100vh;
-  background: var(--bwb-black);
+  overflow-x: clip;
+  background: var(--hp-bg);
 }
 
 .bwb-join-shell {
   position: relative;
-  background: var(--bwb-black);
+  background: var(--hp-bg);
 }
 
 .bwb-join-content {
@@ -1246,13 +1244,13 @@ body.britt-with-bling-join .hp-trade-preview {
 
 body.britt-with-bling-join .jp-hero {
   min-height: 720px;
-  background: var(--bwb-black);
+  background: var(--hp-bg);
 }
 
 body.britt-with-bling-join .jp-hero-media {
   background-image:
     linear-gradient(180deg, rgba(10, 10, 10, 0.28), rgba(10, 10, 10, 0.84)),
-    url("https://readdy.ai/api/search-image?query=Cinematic%20macro%20photography%20of%20luxury%20jewelry%20reveals%20with%20gold%20sparkles%2C%20pink%20glitter%2C%20cyan%20neon%20accents%2C%20black%20velvet%20background%2C%20premium%20Bomb%20Party%20aesthetic%2C%20dramatic%20lighting%2C%20bokeh%2C%20celebration%20energy&width=1920&height=1080&seq=promo-hero-glitter-001&orientation=landscape");
+    url("/britt-with-bling/join-hero.jpeg");
   background-position: center;
   background-size: cover;
 }
@@ -1383,6 +1381,34 @@ body.britt-with-bling-join .hp-footer-brand {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+@media (max-width: 720px) {
+  body.britt-with-bling-join .hp-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(100% - 20px, 1180px);
+    max-width: 100%;
+  }
+
+  body.britt-with-bling-join .hp-brand {
+    min-width: 0;
+  }
+
+  body.britt-with-bling-join .hp-brand-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  body.britt-with-bling-join .hp-header-nav {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body.britt-with-bling-join .hp-shop-btn {
+    max-width: min(34vw, 132px);
+    padding-inline: 16px;
+  }
 }
 
 body.bling-kitchen-join {

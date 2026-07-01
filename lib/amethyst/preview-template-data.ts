@@ -392,7 +392,7 @@ function applyCustomerTarget(
         ? targetedHomepageAboutParagraphs(data.homepage)
         : data.homepage.aboutParagraphs,
       showcaseVideoCaption: targeted
-        ? 'Intro video coming soon.'
+        ? data.homepage.showcaseVideoCaption || 'Live reveal highlights'
         : data.homepage.showcaseVideoCaption,
       joinTeamUrl: data.homepage.joinTeamUrl
         ? publicSlugLinks?.joinTeam ??

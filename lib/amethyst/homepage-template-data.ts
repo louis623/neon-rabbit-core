@@ -329,6 +329,9 @@ function tradeBoardSummaryFromListings(listings: AmethystTradeBoardListing[]) {
   return `Trade Board: ${listings.length} available ${listings.length === 1 ? 'piece' : 'pieces'}`
 }
 
+const CUSTOMER_READY_LIVE_QUEUE_SUMMARY =
+  'Live Queue is ready. Customer names appear here when a live show is connected.'
+
 export function enrichAmethystHomepageFeatureData(
   homepage: AmethystHomepageTemplateData,
   options: {
@@ -338,7 +341,14 @@ export function enrichAmethystHomepageFeatureData(
 ): AmethystHomepageTemplateData {
   const tradeBoardListings = options.tradeBoardListings ?? []
   const tradeBoardSummary = tradeBoardSummaryFromListings(tradeBoardListings)
-  const liveQueueSummary = liveQueueSummaryFromSnapshot(options.liveQueueSnapshot)
+  const liveQueueSnapshot = options.liveQueueSnapshot
+  const scrubStaleBrittQueue =
+    homepage.publicSiteVariant === 'britt_with_bling_hybrid' &&
+    liveQueueSnapshot &&
+    !liveQueueSnapshot.isFresh
+  const liveQueueSummary = scrubStaleBrittQueue
+    ? CUSTOMER_READY_LIVE_QUEUE_SUMMARY
+    : liveQueueSummaryFromSnapshot(liveQueueSnapshot)
   const tickerParts = [homepage.tickerTopText, tradeBoardSummary, liveQueueSummary]
     .map(normalizeTickerPart)
     .filter(Boolean)
@@ -355,9 +365,13 @@ export function enrichAmethystHomepageFeatureData(
     tradeBoardTickerItems: tradeBoardListings
       .slice(0, 8)
       .map(formatTradeBoardTickerItem),
-    liveQueueState: liveQueueStateFromSnapshot(options.liveQueueSnapshot),
+    liveQueueState: scrubStaleBrittQueue
+      ? 'empty'
+      : liveQueueStateFromSnapshot(liveQueueSnapshot),
     liveQueueSummary,
-    liveQueueEntries: mapLiveQueueEntries(options.liveQueueSnapshot),
+    liveQueueEntries: scrubStaleBrittQueue
+      ? []
+      : mapLiveQueueEntries(liveQueueSnapshot),
   }
 }
 
