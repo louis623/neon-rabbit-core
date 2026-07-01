@@ -3390,6 +3390,18 @@
   gap: 12px;
 }
 
+.recipeImageHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.recipeImageActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .recipeBuilderActions {
   display: flex;
   flex-wrap: wrap;

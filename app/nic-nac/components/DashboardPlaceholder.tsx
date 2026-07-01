@@ -439,6 +439,18 @@ type SiteRecipeBuilderDraft = {
   warnings?: string[]
 }
 
+const BLING_KITCHEN_RECIPE_CATEGORIES = [
+  'Baking',
+  'Italian Classics',
+  'Weeknight Dinners',
+  'No-Bake Treats',
+  'Drinks & Extras',
+  'Holiday Favorites',
+  'Breakfast',
+  'Dessert',
+  'Appetizer',
+]
+
 type AudienceResponsePayload = {
   summary: CustomerAudienceSummary
   customers: CustomerAudienceMember[]
@@ -6360,6 +6372,49 @@ export function RecipesCard({
               />
             </label>
 
+            <div className={styles.siteSettingsGrid}>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Category</span>
+                <select
+                  className={styles.searchInput}
+                  value={draft.category}
+                  onChange={(event) =>
+                    onDraftChange?.({ category: event.target.value })
+                  }
+                >
+                  <option value="">Let Nic-Nac choose</option>
+                  {BLING_KITCHEN_RECIPE_CATEGORIES.map((category) => (
+                    <option value={category} key={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Prep time</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="20 minutes"
+                  value={draft.prepTime}
+                  onChange={(event) =>
+                    onDraftChange?.({ prepTime: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Servings</span>
+                <input
+                  className={styles.searchInput}
+                  inputMode="numeric"
+                  placeholder="12"
+                  value={draft.servings}
+                  onChange={(event) =>
+                    onDraftChange?.({ servings: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+
             <div className={styles.recipeBuilderImageGrid}>
               <RecipeImageField
                 label="Food photo for Pantry card"
@@ -6469,37 +6524,6 @@ export function RecipesCard({
                   placeholder="Auto-created from title"
                   onChange={(event) =>
                     onDraftChange?.({ slug: event.target.value })
-                  }
-                />
-              </label>
-              <label className={styles.searchField}>
-                <span className={styles.searchLabel}>Category</span>
-                <input
-                  className={styles.searchInput}
-                  value={draft.category}
-                  onChange={(event) =>
-                    onDraftChange?.({ category: event.target.value })
-                  }
-                />
-              </label>
-              <label className={styles.searchField}>
-                <span className={styles.searchLabel}>Prep time</span>
-                <input
-                  className={styles.searchInput}
-                  value={draft.prepTime}
-                  onChange={(event) =>
-                    onDraftChange?.({ prepTime: event.target.value })
-                  }
-                />
-              </label>
-              <label className={styles.searchField}>
-                <span className={styles.searchLabel}>Servings</span>
-                <input
-                  className={styles.searchInput}
-                  inputMode="numeric"
-                  value={draft.servings}
-                  onChange={(event) =>
-                    onDraftChange?.({ servings: event.target.value })
                   }
                 />
               </label>
@@ -6705,16 +6729,12 @@ function RecipeImageField({
 
   return (
     <div className={styles.recipeImageField}>
-      <label className={styles.searchField}>
+      <div className={styles.recipeImageHeader}>
         <span className={styles.searchLabel}>{label}</span>
-        <input
-          className={styles.searchInput}
-          value={imageUrl}
-          onChange={(event) =>
-            onDraftChange?.({ [field]: event.target.value } as Partial<RecipeDraft>)
-          }
-        />
-      </label>
+        <span className={styles.siteSettingsPreviewNote}>
+          {imageUrl ? 'Uploaded to Sparkle storage' : 'Upload a photo'}
+        </span>
+      </div>
       {imageUrl ? (
         <img
           className={styles.recipeEditorImage}
@@ -6724,19 +6744,33 @@ function RecipeImageField({
       ) : (
         <div className={styles.recipeEditorImageEmpty}>No image selected.</div>
       )}
-      <label className={styles.recipeUploadButton}>
-        {isUploading ? 'Uploading...' : 'Upload image'}
-        <input
-          type="file"
-          accept="image/*"
-          disabled={Boolean(pendingKey)}
-          onChange={(event) => {
-            const file = event.currentTarget.files?.[0] ?? null
-            void onUploadImage?.(field, file)
-            event.currentTarget.value = ''
-          }}
-        />
-      </label>
+      <div className={styles.recipeImageActions}>
+        <label className={styles.recipeUploadButton}>
+          {isUploading ? 'Uploading...' : imageUrl ? 'Replace photo' : 'Upload photo'}
+          <input
+            type="file"
+            accept="image/*"
+            disabled={Boolean(pendingKey)}
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0] ?? null
+              void onUploadImage?.(field, file)
+              event.currentTarget.value = ''
+            }}
+          />
+        </label>
+        {imageUrl ? (
+          <button
+            type="button"
+            className={styles.secondaryActionButton}
+            onClick={() =>
+              onDraftChange?.({ [field]: '' } as Partial<RecipeDraft>)
+            }
+            disabled={Boolean(pendingKey)}
+          >
+            Remove photo
+          </button>
+        ) : null}
+      </div>
     </div>
   )
 }

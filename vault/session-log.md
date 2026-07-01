@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - BlingKitchen Recipe Images Moved Off Readdy and Recipe Builder Simplified
+
+**What changed:**
+- Louis clarified Heather's recipe workspace must not depend on Ready/Readdy image URLs because that source will be temporary.
+- Updated the Recipes workspace builder so the main flow is upload-first: title, category, prep time, servings, food photo uploads, recipe-card uploads, Nic-Nac draft, and save.
+- Removed the editable raw image URL field from the main recipe image controls. Stored image URLs remain internal plumbing after upload.
+- Added a visible category dropdown for Heather's Pantry categories instead of burying category in Advanced edit.
+- Added `npm run migrate:bling-kitchen-recipe-images`, a repeatable migration script that finds Readdy/Ready-hosted BlingKitchen recipe images, copies them into Sparkle Supabase `public-site-media`, and updates only Heather's `public_site_recipes` rows.
+- Ran the migration for Heather's live account: 26 recipes scanned, 33 recipe image fields migrated to Sparkle storage, 0 skipped.
+- Replaced Readdy URLs in BlingKitchen static recipe seed/fallback data and copied/replaced 4 BlingKitchen profile/hero images into Sparkle storage.
+
+**Verification:**
+- Dry run before migration found 26 recipes / 33 image fields to migrate.
+- Live migration completed successfully for rep `9a971c05-3631-443e-bcb8-4e9a26e15885`.
+- Dry run after migration found 0 remaining Readdy/Ready recipe image fields in Heather's live `public_site_recipes`.
+- Repo scan found no remaining Readdy/Ready URLs under `lib/bling-kitchen`, `scripts/seed-bling-kitchen-recipes.ts`, or the recipe workspace component.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts tests/bling-kitchen-recipes-db-loader.test.ts tests/bling-kitchen-public-site.test.ts` passed: 6 files, 104 tests.
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after the parallel build/test timeout rerun.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+---
+
 ## July 1, 2026 - Heather Recipe Smoke Fix Deployed to Stable Demo
 
 **What changed:**

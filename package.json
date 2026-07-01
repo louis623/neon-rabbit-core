@@ -18,6 +18,7 @@
     "seed:demo-rep": "tsx scripts/seed-demo-rep.ts",
     "seed:demo-launch-flow": "tsx scripts/seed-demo-launch-flow.ts",
     "seed:bling-kitchen-recipes": "tsx scripts/seed-bling-kitchen-recipes.ts",
+    "migrate:bling-kitchen-recipe-images": "tsx scripts/migrate-bling-kitchen-recipe-images.ts",
     "attach:bling-kitchen": "tsx scripts/bling-kitchen/attach-tenant.ts",
     "smoke:demo": "tsx scripts/smoke-demo-readiness.ts",
     "smoke:launch": "tsx scripts/smoke-demo-readiness.ts --launch",

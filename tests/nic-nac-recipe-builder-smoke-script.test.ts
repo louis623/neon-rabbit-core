@@ -17,12 +17,19 @@ describe('Nic-Nac recipe builder smoke script', () => {
       'scripts/smoke-nic-nac-recipe-chat.ts',
       'utf8',
     )
+    const imageMigrationSource = readFileSync(
+      'scripts/migrate-bling-kitchen-recipe-images.ts',
+      'utf8',
+    )
 
     expect(packageJson.scripts?.['smoke:nic-nac:recipe-builder']).toBe(
       'tsx scripts/smoke-nic-nac-recipe-builder.ts',
     )
     expect(packageJson.scripts?.['smoke:nic-nac:recipe-chat']).toBe(
       'tsx scripts/smoke-nic-nac-recipe-chat.ts',
+    )
+    expect(packageJson.scripts?.['migrate:bling-kitchen-recipe-images']).toBe(
+      'tsx scripts/migrate-bling-kitchen-recipe-images.ts',
     )
     expect(packageJson.scripts?.['smoke:nic-nac:recipe-tool-contract']).toBe(
       'npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac-workspace-refresh-events.test.ts',
@@ -58,6 +65,10 @@ describe('Nic-Nac recipe builder smoke script', () => {
     expect(chatSource).toContain(".eq('title', input.title)")
     expect(chatSource).toContain(".eq('id', input.recipeId)")
     expect(chatSource.match(/cleanupSmokeRecipes\(\{/g)?.length ?? 0).toBeGreaterThanOrEqual(4)
+    expect(imageMigrationSource).toContain('storage.readdy-site.link')
+    expect(imageMigrationSource).toContain('uploadPublicSiteMedia')
+    expect(imageMigrationSource).toContain(".eq('rep_id', rep.id)")
+    expect(imageMigrationSource).toContain('--dry-run')
   })
 
   it('exposes a provider-free missing-env guard for the recipe chat smoke', async () => {

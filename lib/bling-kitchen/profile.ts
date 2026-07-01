@@ -20,13 +20,13 @@ export const BLING_KITCHEN_PROFILE = {
   tiktokHandle: '@blingkitchen',
   facebookVipUrl: 'https://www.facebook.com/groups/1485026002799524',
   heroImageUrl:
-    'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/42eb06326bb2e97576fb98fc2df1bf51.jpeg',
+    'https://bqhzfkgkjyuhlsozpylf.supabase.co/storage/v1/object/public/public-site-media/9a971c05-3631-443e-bcb8-4e9a26e15885/profile/4a5a2fb9-2c72-4536-94d3-771915d80dc6-homepage-hero.jpg',
   aboutImageUrl:
-    'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/3775b2dc1b2b985eb4e0c0b8477c86db.jpeg',
+    'https://bqhzfkgkjyuhlsozpylf.supabase.co/storage/v1/object/public/public-site-media/9a971c05-3631-443e-bcb8-4e9a26e15885/profile/40fa6136-b6d1-45b9-b88d-42bfce0f5207-about.jpg',
   joinHeroImageUrl:
-    'https://public.readdy.ai/ai/img_res/edited_7e410b7c7ab516ec2dc9c3f1857b6353_f140605c.jpg',
+    'https://bqhzfkgkjyuhlsozpylf.supabase.co/storage/v1/object/public/public-site-media/9a971c05-3631-443e-bcb8-4e9a26e15885/profile/a1b7725a-285d-464e-8f2f-8f13a9f4e637-join-hero.jpg',
   pantryHeroImageUrl:
-    'https://static.readdy.ai/image/6521ef01a44cd5c540b1d9b66db907e8/3c1b6a9fe12ad8046cfafac1de340145.jpeg',
+    'https://bqhzfkgkjyuhlsozpylf.supabase.co/storage/v1/object/public/public-site-media/9a971c05-3631-443e-bcb8-4e9a26e15885/profile/4fe1181c-b92e-4d0c-ad43-50b62dd7aa71-pantry-hero.jpg',
   announcementText:
     'Sterling Club & 12k Gold Vermeil collections are here - genuine precious metals, elevated designs.',
   promoTickerText:
