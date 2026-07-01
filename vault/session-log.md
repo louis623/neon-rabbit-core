@@ -23,6 +23,11 @@ Running log of significant work sessions. Most recent first.
 - `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts tests/bling-kitchen-recipes-db-loader.test.ts tests/bling-kitchen-public-site.test.ts` passed: 6 files, 104 tests.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after the parallel build/test timeout rerun.
 - `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `abfbd40 fix: simplify Heather recipe images`.
+- Vercel preview build passed at `https://sparkle-suite-coe8a6uio-louis-2849s-projects.vercel.app` / deployment `dpl_D3td3AsK1BhGLYStBkbZ9Tj4Xajx`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo health checks passed for `/api/prelaunch/health` and `/api/nic-nac/health`.
+- Stable demo BlingKitchen Pantry template check returned `hasReaddy:false` and `supabaseCount:34`.
 
 ---
 
