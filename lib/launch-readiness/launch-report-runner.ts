@@ -12,6 +12,7 @@ import type { LiveShowSmokeReport } from '@/lib/launch-readiness/live-show-smoke
 import type { MultiRepIsolationReport } from '@/lib/launch-readiness/multi-rep-isolation-smoke'
 import type { OnboardingSmokeReport } from '@/lib/launch-readiness/onboarding-smoke'
 import type { LaunchSmokeReport, LaunchSmokeTarget } from '@/scripts/smoke-demo-readiness'
+import type { RecipeChatSmokeResult } from '@/scripts/smoke-nic-nac-recipe-chat'
 
 export type LaunchReadinessProviderProofStatus =
   | 'blocked'
@@ -38,6 +39,7 @@ type ComposedSmokeReport =
   | LiveShowSmokeReport
   | CancellationSmokeReport
   | MultiRepIsolationReport
+  | RecipeChatSmokeResult
 
 interface ComposedSmokeProof {
   artifactPath: string
@@ -130,6 +132,7 @@ export interface LaunchReadinessReportArtifactOptions {
   launchSmokeReportPath?: string | null
   onboardingReportPath?: string | null
   liveShowReportPath?: string | null
+  dashboardNicNacReportPath?: string | null
   cancellationReportPath?: string | null
   multiRepIsolationReportPath?: string | null
   renderedMobileReportPath?: string | null
@@ -143,6 +146,7 @@ export interface ParsedLaunchReadinessReportArgs {
   launchSmokeReportPath: string | null
   onboardingReportPath: string | null
   liveShowReportPath: string | null
+  dashboardNicNacReportPath: string | null
   cancellationReportPath: string | null
   multiRepIsolationReportPath: string | null
   renderedMobileReportPath: string | null
@@ -170,9 +174,16 @@ const PROVIDER_ACTIONS: LaunchReadinessProviderActions = {
 const COMPOSED_JOURNEY_IDS = new Set<Phase11JourneyId>([
   'onboarding',
   'live-show',
+  'dashboard-nic-nac',
   'cancellation',
   'multi-rep-isolation',
 ])
+
+function composedSmokeStepCount(report: ComposedSmokeReport): number {
+  if ('steps' in report && Array.isArray(report.steps)) return report.steps.length
+  if ('turns' in report && Array.isArray(report.turns)) return report.turns.length
+  return 0
+}
 
 function summarizeSmokeProof(
   proof: ComposedSmokeProof | undefined,
@@ -182,7 +193,7 @@ function summarizeSmokeProof(
   return {
     ok: proof.report.ok,
     artifactPath: proof.artifactPath,
-    stepCount: proof.report.steps.length,
+    stepCount: composedSmokeStepCount(proof.report),
   }
 }
 
@@ -196,6 +207,22 @@ function renderedProofSummary(
     artifactPath: proof.artifactPath,
     routeCount: proof.routes.length,
   }
+}
+
+function smokeBlockedSuggestions(
+  proof: ComposedSmokeProof | undefined,
+): string[] {
+  if (!proof) return []
+
+  if ('nextEvidenceSuggestions' in proof.report) {
+    return proof.report.nextEvidenceSuggestions ?? []
+  }
+
+  if (!proof.report.ok && 'message' in proof.report) {
+    return [proof.report.message]
+  }
+
+  return []
 }
 
 function journeyStatus(
@@ -212,7 +239,7 @@ function journeyStatus(
   }
 
   if (COMPOSED_JOURNEY_IDS.has(entry.id) && smokeProof && !smokeProof.ok) {
-    return entry.status === 'missing' ? 'partial' : entry.status
+    return 'partial'
   }
 
   return entry.status
@@ -226,7 +253,7 @@ function blockedItemsForJourney(
 ): string[] {
   if (status === 'covered') return []
 
-  const smokeSuggestions = smokeProof?.report.nextEvidenceSuggestions ?? []
+  const smokeSuggestions = smokeBlockedSuggestions(smokeProof)
   const renderedSuggestion =
     entry.id === 'mobile-final-responsive' && renderedProof && !renderedProof.ok
       ? ['Rendered mobile smoke artifact is attached but did not pass.']
@@ -364,6 +391,7 @@ export function parseLaunchReadinessReportArgs(
     launchSmokeReportPath: null,
     onboardingReportPath: null,
     liveShowReportPath: null,
+    dashboardNicNacReportPath: null,
     cancellationReportPath: null,
     multiRepIsolationReportPath: null,
     renderedMobileReportPath: null,
@@ -392,6 +420,10 @@ export function parseLaunchReadinessReportArgs(
         break
       case '--live-show-report':
         parsed.liveShowReportPath = readRequiredValue(args, index, arg)
+        index += 1
+        break
+      case '--dashboard-nic-nac-report':
+        parsed.dashboardNicNacReportPath = readRequiredValue(args, index, arg)
         index += 1
         break
       case '--cancellation-report':
@@ -457,6 +489,7 @@ export async function runLaunchReadinessReportFromArtifacts(
     launchSmokeReport,
     onboardingSmoke,
     liveShowSmoke,
+    dashboardNicNacSmoke,
     cancellationSmoke,
     multiRepIsolationSmoke,
     renderedMobileSmoke,
@@ -466,6 +499,7 @@ export async function runLaunchReadinessReportFromArtifacts(
       : Promise.resolve(null),
     readComposedSmoke(options.onboardingReportPath),
     readComposedSmoke(options.liveShowReportPath),
+    readComposedSmoke(options.dashboardNicNacReportPath),
     readComposedSmoke(options.cancellationReportPath),
     readComposedSmoke(options.multiRepIsolationReportPath),
     readRenderedMobileSmoke(options.renderedMobileReportPath),
@@ -474,6 +508,9 @@ export async function runLaunchReadinessReportFromArtifacts(
   const composedSmokes: LaunchReadinessComposedSmokes = {}
   if (onboardingSmoke) composedSmokes.onboarding = onboardingSmoke
   if (liveShowSmoke) composedSmokes['live-show'] = liveShowSmoke
+  if (dashboardNicNacSmoke) {
+    composedSmokes['dashboard-nic-nac'] = dashboardNicNacSmoke
+  }
   if (cancellationSmoke) composedSmokes.cancellation = cancellationSmoke
   if (multiRepIsolationSmoke) {
     composedSmokes['multi-rep-isolation'] = multiRepIsolationSmoke

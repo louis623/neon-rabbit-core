@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - Dashboard/Nic-Nac Recipe Chat Readiness Artifact
+
+**What changed:**
+- Added Dashboard/Nic-Nac recipe chat smoke artifact support to the launch-readiness report runner.
+- `npm run report:launch-readiness` now accepts `--dashboard-nic-nac-report <path>` and attaches the `npm run smoke:nic-nac:recipe-chat` JSON replay to the Dashboard / Nic-Nac journey.
+- Recipe chat artifacts count `turns` as proof steps, so the expected draft/save replay reports two steps.
+- Failed attached recipe chat artifacts now downgrade Dashboard / Nic-Nac to `partial` and carry the smoke failure message into `blockedItems`, preventing a false beta-readiness green light.
+- Updated the Phase 11 manifest and open item with the post-quota command path for Heather's image-first recipe builder replay and readiness report attachment.
+
+**Verification:**
+- `npm exec vitest run tests/launch-readiness-report-runner.test.ts` passed: 9 tests.
+- `npm exec vitest run tests/launch-readiness-report-runner.test.ts tests/phase-11-smoke-manifest.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts` passed: 3 files, 17 tests.
+- `npm run smoke:nic-nac:recipe-tool-contract` first hit Windows sandbox `spawn EPERM`; rerun outside the sandbox passed: 4 files, 71 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+**Remaining blocker:**
+- Final model-in-loop proof for Heather's image-first recipe flow is still waiting on the OpenAI quota/billing fix. After quota clears, run the `--expect-model` recipe builder and chat smokes, save the chat JSON, and attach it to launch readiness with `--dashboard-nic-nac-report`.
+
+
 ## July 1, 2026 - Heather Image-First Recipe Chat Handoff
 
 **What changed:**

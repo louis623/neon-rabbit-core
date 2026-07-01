@@ -14,6 +14,7 @@ import type { CancellationSmokeReport } from '@/lib/launch-readiness/cancellatio
 import type { LiveShowSmokeReport } from '@/lib/launch-readiness/live-show-smoke'
 import type { MultiRepIsolationReport } from '@/lib/launch-readiness/multi-rep-isolation-smoke'
 import type { OnboardingSmokeReport } from '@/lib/launch-readiness/onboarding-smoke'
+import type { RecipeChatSmokeResult } from '@/scripts/smoke-nic-nac-recipe-chat'
 
 const generatedAt = new Date('2026-05-26T18:30:00.000Z')
 
@@ -100,6 +101,49 @@ const cancellationCovered: CancellationSmokeReport = {
   nextEvidenceSuggestions: [
     'Attach this report to the cancellation Phase 11 evidence bundle.',
   ],
+}
+
+const dashboardNicNacCovered: RecipeChatSmokeResult = {
+  ok: true,
+  status: 'passed',
+  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  conversationId: 'recipe-chat-conversation',
+  rep: { id: 'rep-1', email: 'sparkle-reviewer@example.com' },
+  turns: [
+    {
+      turn: 'draft_recipe',
+      runId: 'run-draft',
+      assistantText: 'I built the recipe draft.',
+      observedTools: ['build_site_recipe_draft'],
+    },
+    {
+      turn: 'save_recipe',
+      runId: 'run-save',
+      assistantText: 'I saved the Pantry recipe.',
+      observedTools: ['manage_site_recipes'],
+    },
+  ],
+  recipeId: 'recipe-1',
+  cleanup: { skipped: false, removedRecipeIds: ['recipe-1'] },
+  message:
+    'Nic-Nac recipe chat smoke passed through draft, save, and recipe database assertions.',
+}
+
+const dashboardNicNacFailed: RecipeChatSmokeResult = {
+  ok: false,
+  status: 'model_unavailable',
+  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  conversationId: 'recipe-chat-conversation',
+  turns: [
+    {
+      turn: 'draft_recipe',
+      runId: 'run-draft',
+      assistantText: '',
+      observedTools: ['build_site_recipe_draft'],
+    },
+  ],
+  message:
+    'Nic-Nac selected build_site_recipe_draft, but the recipe-card vision builder reported MODEL_UNAVAILABLE.',
 }
 
 const multiRepCovered: MultiRepIsolationReport = {
@@ -310,6 +354,39 @@ describe('launch readiness report runner', () => {
     expect(report.summary.blocked).toBe(2)
   })
 
+  it('downgrades Dashboard / Nic-Nac when an attached recipe chat artifact fails', () => {
+    const report = buildLaunchReadinessReport({
+      generatedAt,
+      composedSmokes: {
+        'dashboard-nic-nac': {
+          artifactPath:
+            '.local/launch-readiness-results/dashboard-nic-nac-failed.json',
+          report: dashboardNicNacFailed,
+        },
+      },
+    })
+
+    expect(report.summary).toMatchObject({
+      covered: 1,
+      partial: 7,
+      missing: 1,
+      blocked: 1,
+      ready: false,
+    })
+    expect(report.journeys.find((journey) => journey.id === 'dashboard-nic-nac')).toMatchObject({
+      status: 'partial',
+      smokeProof: {
+        ok: false,
+        stepCount: 1,
+        artifactPath:
+          '.local/launch-readiness-results/dashboard-nic-nac-failed.json',
+      },
+      blockedItems: [
+        'Nic-Nac selected build_site_recipe_draft, but the recipe-card vision builder reported MODEL_UNAVAILABLE.',
+      ],
+    })
+  })
+
   it('writes a readable artifact under the supplied output directory', async () => {
     const outputDir = await mkdtemp(join(tmpdir(), 'launch-readiness-'))
     try {
@@ -345,6 +422,8 @@ describe('launch readiness report runner', () => {
         '.local/launch-readiness-results/onboarding.json',
         '--live-show-report',
         '.local/launch-readiness-results/live-show.json',
+        '--dashboard-nic-nac-report',
+        '.local/launch-readiness-results/dashboard-nic-nac.json',
         '--rendered-mobile-report',
         '.local/rendered-smoke/mobile.json',
         '--write-report',
@@ -357,6 +436,8 @@ describe('launch readiness report runner', () => {
       launchSmokeReportPath: '.local/launch-smoke-results/launch-preview.json',
       onboardingReportPath: '.local/launch-readiness-results/onboarding.json',
       liveShowReportPath: '.local/launch-readiness-results/live-show.json',
+      dashboardNicNacReportPath:
+        '.local/launch-readiness-results/dashboard-nic-nac.json',
       cancellationReportPath: null,
       multiRepIsolationReportPath: null,
       renderedMobileReportPath: '.local/rendered-smoke/mobile.json',
@@ -369,6 +450,7 @@ describe('launch readiness report runner', () => {
       launchSmokeReportPath: null,
       onboardingReportPath: null,
       liveShowReportPath: null,
+      dashboardNicNacReportPath: null,
       cancellationReportPath: null,
       multiRepIsolationReportPath: null,
       renderedMobileReportPath: null,
@@ -388,6 +470,7 @@ describe('launch readiness report runner', () => {
       const launchSmokePath = join(outputDir, 'launch-smoke.json')
       const onboardingPath = join(outputDir, 'onboarding.json')
       const liveShowPath = join(outputDir, 'live-show.json')
+      const dashboardNicNacPath = join(outputDir, 'dashboard-nic-nac.json')
       const renderedMobilePath = join(outputDir, 'rendered-mobile.json')
 
       await Promise.all([
@@ -417,6 +500,13 @@ describe('launch readiness report runner', () => {
         ),
         import('node:fs/promises').then(({ writeFile }) =>
           writeFile(
+            dashboardNicNacPath,
+            JSON.stringify(dashboardNicNacCovered),
+            'utf8',
+          ),
+        ),
+        import('node:fs/promises').then(({ writeFile }) =>
+          writeFile(
             renderedMobilePath,
             JSON.stringify({
               ok: true,
@@ -432,6 +522,7 @@ describe('launch readiness report runner', () => {
         launchSmokeReportPath: launchSmokePath,
         onboardingReportPath: onboardingPath,
         liveShowReportPath: liveShowPath,
+        dashboardNicNacReportPath: dashboardNicNacPath,
         renderedMobileReportPath: renderedMobilePath,
         writeReport: true,
         outputDir,
@@ -455,6 +546,14 @@ describe('launch readiness report runner', () => {
           ok: true,
         },
         launchSmokeCategories: ['local_static'],
+      })
+      expect(result.report.journeys.find((journey) => journey.id === 'dashboard-nic-nac')).toMatchObject({
+        status: 'covered',
+        smokeProof: {
+          artifactPath: dashboardNicNacPath,
+          ok: true,
+          stepCount: 2,
+        },
       })
       expect(
         result.report.journeys.find(
