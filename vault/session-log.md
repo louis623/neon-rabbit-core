@@ -2567,3 +2567,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Heather's public site should be standard Sparkle Suite with a selectable skin. The only special customer-facing surface is Pantry, and Pantry must inherit the selected skin instead of being manually restyled.
+
+---
+
+## July 1, 2026 - Moonstone Card Readability Audit
+
+**What changed:**
+- Louis reported that Moonstone light cards, especially the signup card, had text that was too pale to read.
+- Fixed Moonstone's shared `silver-pearl` card rules so light Home, Trade, and Join cards carry dark foreground, muted text, form, border, and placeholder variables inside the card.
+- Included the Home About panel and small live-show step tiles after local screenshots showed they were still inheriting the wrong contrast.
+- Kept the change visual-only: no Amethyst template fork, no public-site data/link/behavior changes, and Pantry remains on the selected appearance preset.
+
+**Verification:**
+- `npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-trade-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-appearance-presets.test.ts` passed: 4 files, 84 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Local Playwright screenshots were captured for `/blingkitchen`, `/blingkitchen/trade`, `/blingkitchen/join`, and `/blingkitchen/in-the-pantry`; generated screenshots were removed before commit.
+
+**Lesson:**
+- Moonstone has a dark page background with light pearl cards. Card-level CSS variables must flip text and form controls back to dark values inside those light surfaces; page-level Moonstone text should stay light outside cards.

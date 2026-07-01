@@ -3659,6 +3659,7 @@ body.bg-moonstone-charcoal .jp-hero-media {
 body.surface-silver-pearl .hp-event-card,
 body.surface-silver-pearl .hp-wibp-card,
 body.surface-silver-pearl .hp-trade-card,
+body.surface-silver-pearl .hp-about-copy,
 body.surface-silver-pearl .hp-signup-card,
 body.surface-silver-pearl .tp-lrq-rail,
 body.surface-silver-pearl .tp-filters,
@@ -3668,10 +3669,90 @@ body.surface-silver-pearl .jp-hero-card,
 body.surface-silver-pearl .jp-team-card,
 body.surface-silver-pearl .jp-benefit-card,
 body.surface-silver-pearl .jp-final-card {
+  --fg: #171421;
+  --fg-muted: #4b465d;
+  --border: rgba(124, 58, 237, 0.2);
+  --hp-bg: rgba(255, 255, 255, 0.72);
+  --hp-bg-elevated: #f8fafc;
+  --hp-form-panel-bg: rgba(255, 255, 255, 0.8);
+  --hp-form-panel-fg: #171421;
+  --hp-field-bg: #ffffff;
+  --hp-field-fg: #171421;
   background: rgba(248, 250, 252, 0.9);
   border-color: rgba(124, 58, 237, 0.18);
   color: #171421;
   box-shadow: 0 18px 48px rgba(13, 11, 19, 0.14);
+}
+
+body.surface-silver-pearl .hp-signup-title,
+body.surface-silver-pearl .hp-section-title,
+body.surface-silver-pearl .hp-wibp-title,
+body.surface-silver-pearl .tp-card-name,
+body.surface-silver-pearl .tp-card-expand-name,
+body.surface-silver-pearl .tp-sheet-title,
+body.surface-silver-pearl .tp-empty-title,
+body.surface-silver-pearl .jp-hero-title,
+body.surface-silver-pearl .jp-team-name,
+body.surface-silver-pearl .jp-benefit-title,
+body.surface-silver-pearl .jp-final-title,
+body.surface-silver-pearl .jp-spot-title,
+body.surface-silver-pearl .hp-step-label {
+  color: #171421;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+}
+
+body.surface-silver-pearl .hp-signup-sub,
+body.surface-silver-pearl .hp-signup-label,
+body.surface-silver-pearl .hp-signup-label-aux,
+body.surface-silver-pearl .hp-signup-consent,
+body.surface-silver-pearl .hp-about-body p,
+body.surface-silver-pearl .hp-wibp-body,
+body.surface-silver-pearl .hp-step-desc,
+body.surface-silver-pearl .tp-card-meta,
+body.surface-silver-pearl .tp-card-material,
+body.surface-silver-pearl .tp-card-rep,
+body.surface-silver-pearl .tp-card-expand-desc,
+body.surface-silver-pearl .tp-sheet-helper,
+body.surface-silver-pearl .tp-empty-sub,
+body.surface-silver-pearl .jp-hero-pitch,
+body.surface-silver-pearl .jp-hero-localized,
+body.surface-silver-pearl .jp-hero-compliance,
+body.surface-silver-pearl .jp-team-location,
+body.surface-silver-pearl .jp-benefit-desc,
+body.surface-silver-pearl .jp-final-sub,
+body.surface-silver-pearl .jp-final-note,
+body.surface-silver-pearl .jp-spot-sub {
+  color: #4b465d;
+}
+
+body.surface-silver-pearl .hp-signup-consent-box,
+body.surface-silver-pearl .hp-step,
+body.surface-silver-pearl .tp-filter-panel,
+body.surface-silver-pearl .tp-sheet-success-legal,
+body.surface-silver-pearl .jp-faq-note {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(124, 58, 237, 0.18);
+  color: #171421;
+}
+
+body.surface-silver-pearl .hp-signup-input,
+body.surface-silver-pearl .tp-board-search input,
+body.surface-silver-pearl .tp-board-sort select,
+body.surface-silver-pearl .tp-sheet-field input,
+body.surface-silver-pearl .tp-sheet-field textarea {
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.22);
+  color: #171421;
+}
+
+body.surface-silver-pearl .hp-signup-input::placeholder,
+body.surface-silver-pearl .tp-board-search input::placeholder,
+body.surface-silver-pearl .tp-sheet-field input::placeholder,
+body.surface-silver-pearl .tp-sheet-field textarea::placeholder {
+  color: #6b647c;
+  opacity: 0.82;
 }
 
 body.btn-moonstone-lift .hp-btn-primary:hover,
