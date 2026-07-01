@@ -29,6 +29,12 @@ Running log of significant work sessions. Most recent first.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 2 files, 6 tests.
 - `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 4 files, 91 tests.
 - `npm run build` passed after the Recipes workspace refresh follow-through.
+- Pushed `a0e3d9f fix: refresh recipes after Nic-Nac site saves`.
+- Vercel preview build passed at `https://sparkle-suite-9j1hje02g-louis-2849s-projects.vercel.app`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that preview.
+- Stable demo health checks passed again for `/api/prelaunch/health` and `/api/nic-nac/health`.
+- Stable demo `npm run smoke:nic-nac:recipe-builder` passed again with reviewer-smoke auth.
+- Stable demo `npm run smoke:nic-nac:recipe-builder -- --probe-model` passed again by confirming the friendly `MODEL_UNAVAILABLE` response while OpenAI quota remains blocked.
 
 ---
 
