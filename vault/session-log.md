@@ -2447,3 +2447,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 **Lesson:**
 - For Heather's Pantry, the route HTML is only the shell. Customer-facing recipe visibility must be verified through the Pantry template bootstrap data that hydrates the page.
 - Exact beta-account smokes should clean up their created rows on every post-save failure path, not only on full success.
+
+---
+
+## July 1, 2026 - Heather Recipe Workspace Simplified Builder
+
+**What changed:**
+- Louis flagged the left-side `Pantry order` panel in Heather's Recipes workspace as unnecessary filler.
+- Removed the separate Pantry order/list/reorder UI and its extra `Add recipe` button.
+- The Recipes workspace now presents the recipe builder as the main surface. New recipes keep their insertion order, and Heather can use the category field for section placement.
+- After saving a brand-new recipe, the builder clears back to a fresh recipe draft so Heather can keep adding recipes without managing a separate order panel.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 75 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts` passed: 4 files, 93 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+**Lesson:**
+- Heather's recipe workflow should stay image-first and simple: title, category/section, photos, recipe-card photos, build/save. Manual pantry ordering is not part of the beta workflow unless Louis asks for it later.

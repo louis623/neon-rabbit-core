@@ -1103,7 +1103,7 @@ export function getRecipeDraftSavePayload(
 export function getRecipeSaveStatusText(actionState?: RecipeActionState) {
   if (actionState?.pendingKey) return 'Saving recipe changes...'
   if (actionState?.error) return 'Recipe changes need attention.'
-  return actionState?.helperMessage ?? 'Select a recipe or add a new one.'
+  return actionState?.helperMessage ?? 'Add a recipe when you are ready.'
 }
 
 function sortRecipesByOrder(recipes: PublicSiteRecipe[]) {
@@ -2015,9 +2015,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     const selectedRecipe = preferredRecipeId
       ? recipes.find((recipe) => recipe.id === preferredRecipeId)
       : undefined
-    const nextSelectedRecipe = selectedRecipe ?? recipes[0]
-    setSelectedRecipeId(nextSelectedRecipe?.id ?? null)
-    setRecipeDraft(getRecipeDraft(nextSelectedRecipe ?? null))
+    setSelectedRecipeId(selectedRecipe?.id ?? null)
+    setRecipeDraft(getRecipeDraft(selectedRecipe ?? null))
     return recipes
   }
 
@@ -2793,28 +2792,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setRecipeDraft((current) => ({ ...current, ...patch }))
   }
 
-  function handleSelectRecipe(recipeId: string) {
-    const recipe = recipesState.recipes.find((item) => item.id === recipeId)
-    if (!recipe) return
-    setSelectedRecipeId(recipe.id)
-    setRecipeDraft(getRecipeDraft(recipe))
-    setRecipeActionState({
-      pendingKey: null,
-      error: null,
-      helperMessage: null,
-    })
-  }
-
-  function handleNewRecipe() {
-    setSelectedRecipeId(null)
-    setRecipeDraft(getRecipeDraft())
-    setRecipeActionState({
-      pendingKey: null,
-      error: null,
-      helperMessage: 'New recipe draft ready.',
-    })
-  }
-
   async function handleSaveRecipe() {
     if (!recipeDraft.title.trim()) {
       setRecipeActionState({
@@ -2853,13 +2830,18 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         throw new Error(payload?.error || 'Unable to save this recipe right now.')
       }
 
-      setSelectedRecipeId(payload.recipe.id)
-      setRecipeDraft(getRecipeDraft(payload.recipe))
-      await loadSiteRecipes(undefined, { preferredRecipeId: payload.recipe.id })
+      const wasNewRecipe = !recipeDraft.id
+      setSelectedRecipeId(wasNewRecipe ? null : payload.recipe.id)
+      setRecipeDraft(wasNewRecipe ? getRecipeDraft() : getRecipeDraft(payload.recipe))
+      await loadSiteRecipes(undefined, {
+        preferredRecipeId: wasNewRecipe ? null : payload.recipe.id,
+      })
       setRecipeActionState({
         pendingKey: null,
         error: null,
-        helperMessage: `${payload.recipe.title} saved for the Pantry.`,
+        helperMessage: wasNewRecipe
+          ? `${payload.recipe.title} saved. Add the next recipe when you are ready.`
+          : `${payload.recipe.title} saved for the Pantry.`,
       })
       refreshLiveSitePreviewAfterSiteSettingsSave()
     } catch (error) {
@@ -2915,68 +2897,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           error instanceof Error
             ? error.message
             : 'Unable to remove this recipe right now.',
-        helperMessage: null,
-      })
-    }
-  }
-
-  async function handleReorderRecipe(recipeId: string, direction: -1 | 1) {
-    const currentIndex = recipesState.recipes.findIndex(
-      (recipe) => recipe.id === recipeId,
-    )
-    const targetIndex = currentIndex + direction
-    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= recipesState.recipes.length) {
-      return
-    }
-
-    const nextRecipes = [...recipesState.recipes]
-    const [movedRecipe] = nextRecipes.splice(currentIndex, 1)
-    nextRecipes.splice(targetIndex, 0, movedRecipe)
-    setRecipesState({
-      status: 'ready',
-      recipes: nextRecipes.map((recipe, index) => ({
-        ...recipe,
-        sortOrder: index,
-      })),
-    })
-    setRecipeActionState({
-      pendingKey: `reorder:${recipeId}`,
-      error: null,
-      helperMessage: null,
-    })
-
-    try {
-      const response = await fetch(buildSiteRecipesFetchUrl(), {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          action: 'reorder',
-          recipeIds: nextRecipes.map((recipe) => recipe.id),
-        }),
-      })
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to reorder recipes right now.')
-      }
-
-      await loadSiteRecipes()
-      setRecipeActionState({
-        pendingKey: null,
-        error: null,
-        helperMessage: 'Pantry order saved.',
-      })
-      refreshLiveSitePreviewAfterSiteSettingsSave()
-    } catch (error) {
-      await loadSiteRecipes().catch(() => undefined)
-      setRecipeActionState({
-        pendingKey: null,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Unable to reorder recipes right now.',
         helperMessage: null,
       })
     }
@@ -4224,15 +4144,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               <RecipesCard
                 state={recipesState}
                 draft={recipeDraft}
-                selectedRecipeId={selectedRecipeId}
                 actionState={recipeActionState}
                 statusMessage={getRecipeSaveStatusText(recipeActionState)}
-                onSelectRecipe={handleSelectRecipe}
-                onNewRecipe={handleNewRecipe}
                 onDraftChange={handleRecipeDraftChange}
                 onSave={handleSaveRecipe}
                 onRemove={handleRemoveRecipe}
-                onReorder={handleReorderRecipe}
                 onUploadImage={handleRecipeImageUpload}
                 onBuildDraft={handleBuildRecipeDraft}
               />
@@ -6179,29 +6095,21 @@ export function SiteSettingsCard({
 export function RecipesCard({
   state,
   draft,
-  selectedRecipeId,
   actionState,
   statusMessage,
-  onSelectRecipe,
-  onNewRecipe,
   onDraftChange,
   onSave,
   onRemove,
-  onReorder,
   onUploadImage,
   onBuildDraft,
 }: {
   state: RecipesState
   draft: RecipeDraft
-  selectedRecipeId: string | null
   actionState?: RecipeActionState
   statusMessage?: string | null
-  onSelectRecipe?: (recipeId: string) => void
-  onNewRecipe?: () => void
   onDraftChange?: (patch: Partial<RecipeDraft>) => void
   onSave?: () => void
   onRemove?: (recipeId: string) => void
-  onReorder?: (recipeId: string, direction: -1 | 1) => void
   onUploadImage?: (
     field: 'imageUrl' | 'modalImageUrl' | 'recipeCardImageUrls',
     file: File | null,
@@ -6226,11 +6134,7 @@ export function RecipesCard({
   }
 
   const pendingKey = actionState?.pendingKey
-  const selectedIndex = state.recipes.findIndex(
-    (recipe) => recipe.id === selectedRecipeId,
-  )
-  const selectedRecipe = state.recipes[selectedIndex]
-  const canRemove = Boolean(selectedRecipe?.id)
+  const canRemove = Boolean(draft.id)
 
   return (
     <div className={styles.siteSettingsCard}>
@@ -6269,86 +6173,6 @@ export function RecipesCard({
       ) : null}
 
       <div className={styles.recipeEditorLayout}>
-        <div className={styles.siteSettingsSection}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Pantry order</div>
-            <button
-              type="button"
-              className={styles.helperButton}
-              onClick={onNewRecipe}
-              disabled={Boolean(pendingKey)}
-            >
-              Add recipe
-            </button>
-          </div>
-          {state.recipes.length === 0 ? (
-            <div className={styles.emptyState}>
-              No recipes are saved yet. Add Heather&apos;s first recipe, then save it
-              to publish it to the Pantry.
-            </div>
-          ) : (
-            <div className={styles.recipeList} aria-label="Pantry recipes">
-              {state.recipes.map((recipe, index) => (
-                <div
-                  key={recipe.id}
-                  className={`${styles.recipeListItem} ${
-                    recipe.id === selectedRecipeId
-                      ? styles.recipeListItemActive
-                      : ''
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className={styles.recipeSelectButton}
-                    onClick={() => onSelectRecipe?.(recipe.id)}
-                  >
-                    {recipe.imageUrl ? (
-                      <img
-                        className={styles.recipeListImage}
-                        src={recipe.imageUrl}
-                        alt={recipe.imageAlt || recipe.title}
-                      />
-                    ) : (
-                      <span className={styles.recipeListImageFallback}>
-                        {recipe.title.slice(0, 1).toUpperCase()}
-                      </span>
-                    )}
-                    <span className={styles.recipeListBody}>
-                      <span className={styles.recipeListTitle}>
-                        {recipe.title}
-                      </span>
-                      <span className={styles.recipeListMeta}>
-                        {recipe.category || 'Recipe'} /{' '}
-                        {recipe.isVisible ? 'Visible' : 'Hidden'}
-                      </span>
-                    </span>
-                  </button>
-                  <div className={styles.recipeOrderControls}>
-                    <button
-                      type="button"
-                      className={styles.secondaryActionButton}
-                      onClick={() => onReorder?.(recipe.id, -1)}
-                      disabled={Boolean(pendingKey) || index === 0}
-                    >
-                      Up
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.secondaryActionButton}
-                      onClick={() => onReorder?.(recipe.id, 1)}
-                      disabled={
-                        Boolean(pendingKey) || index === state.recipes.length - 1
-                      }
-                    >
-                      Down
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         <div className={styles.siteSettingsSection}>
           <div className={styles.calendarHeader}>
             <div className={styles.walletSettingsTitle}>

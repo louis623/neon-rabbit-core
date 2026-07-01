@@ -1660,7 +1660,6 @@ describe('DashboardPlaceholder', () => {
           ...getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
           recipeCardImageUrls: ['https://cdn.example.com/chicken-card.jpg'],
         },
-        selectedRecipeId: 'recipe-1',
         actionState: {
           pendingKey: null,
           error: null,
@@ -1671,12 +1670,9 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Recipes')
-    expect(html).toContain('Pantry order')
-    expect(html).toContain('Add recipe')
+    expect(html).not.toContain('Pantry order')
+    expect(html).not.toContain('Add recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
-    expect(html).toContain('Hidden Draft Dessert')
-    expect(html).toContain('Appetizer / Visible')
-    expect(html).toContain('Dessert / Hidden')
     expect(html).toContain('Recipe builder')
     expect(html).toContain('Category')
     expect(html).toContain('Let Nic-Nac choose')
