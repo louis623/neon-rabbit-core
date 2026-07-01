@@ -6157,10 +6157,12 @@ export function RecipesCard({
           <button
             type="button"
             className={styles.siteSettingsSaveButton}
-            onClick={onSave}
+            onClick={onBuildDraft}
             disabled={Boolean(pendingKey)}
           >
-            {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
+            {pendingKey === 'build-draft'
+              ? 'Building recipe...'
+              : 'Build recipe with Nic-Nac'}
           </button>
         </div>
       </div>
@@ -6274,16 +6276,6 @@ export function RecipesCard({
             />
 
             <div className={styles.recipeBuilderActions}>
-              <button
-                type="button"
-                className={styles.actionButton}
-                onClick={onBuildDraft}
-                disabled={Boolean(pendingKey)}
-              >
-                {pendingKey === 'build-draft'
-                  ? 'Building recipe...'
-                  : 'Build recipe with Nic-Nac'}
-              </button>
               <button
                 type="button"
                 className={styles.siteSettingsSaveButton}
