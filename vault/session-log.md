@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - OpenAI Recipe Replay Unblocked
+
+**What changed:**
+- Louis added OpenAI API credits, so the Heather image-first recipe flow could be tested with real OpenAI calls.
+- `npm run smoke:nic-nac:recipe-chat -- --expect-model --output .local/launch-readiness-results/nic-nac-recipe-chat.json` passed against the stable demo reviewer-smoke account.
+- The passing replay observed `build_site_recipe_draft` on the draft turn, waited for save approval, observed `manage_site_recipes` on the save turn, verified the saved recipe row included the fixture recipe-card facts and public display images, then cleaned up the smoke recipe row.
+- `npm run report:launch-readiness -- --dashboard-nic-nac-report .local/launch-readiness-results/nic-nac-recipe-chat.json --json` now marks Dashboard / Nic-Nac as `covered` with `smokeProof.ok:true` and `stepCount:2`. The overall launch report remains not ready because unrelated Phase 11 journeys are still partial/missing.
+- Fixed the direct recipe-builder smoke harness so its model probe uploads generated fixture images through `/api/nic-nac/site-recipes/image` before calling `/api/nic-nac/site-recipes/draft`. The previous data-URL shortcut was unrealistic because the production draft builder normalizes image URLs to normal URL lengths.
+
+**Verification:**
+- Initial `npm run smoke:nic-nac:recipe-builder -- --expect-model` reached stable demo but failed at the model probe because the old smoke harness sent oversized data URLs directly to the draft endpoint.
+- After the harness fix, `npm run smoke:nic-nac:recipe-builder -- --expect-model` passed against the stable demo reviewer-smoke account.
+- `npm run smoke:nic-nac:recipe-chat -- --expect-model --output .local/launch-readiness-results/nic-nac-recipe-chat.json` passed against the stable demo reviewer-smoke account.
+- `npm run report:launch-readiness -- --dashboard-nic-nac-report .local/launch-readiness-results/nic-nac-recipe-chat.json --json` showed Dashboard / Nic-Nac covered from the passing artifact.
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after the harness update.
+
+**Remaining follow-up:**
+- The exact Heather/BlingKitchen account public Pantry smoke was not run because `BLING_KITCHEN_RECIPE_SMOKE_PASSWORD` is not set in the environment. Set that secret at runtime and run `npm run smoke:nic-nac:recipe-chat -- --target=bling-kitchen --expect-model --output .local/launch-readiness-results/bling-kitchen-recipe-chat.json` to verify Heather's public Pantry page specifically.
+
 ## July 1, 2026 - Quota Artifact Readiness Guard
 
 **What changed:**

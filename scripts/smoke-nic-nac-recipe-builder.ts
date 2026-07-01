@@ -39,6 +39,12 @@ type RecipeDraftProbePayload = {
   }
 }
 
+type RecipeImageUploadPayload = {
+  ok?: boolean
+  imageUrl?: string
+  error?: string
+}
+
 const MODEL_PROBE_TITLE = 'Smoke Chocolate-Dipped Strawberries'
 
 const MODEL_PROBE_REQUIRED_FACTS = [
@@ -162,6 +168,40 @@ async function buildDisplayPhotoFixtureDataUrl() {
     </style>
   </svg>`
   return svgToPngDataUrl(svg)
+}
+
+async function uploadRecipeImageFixture(input: {
+  appUrl: string
+  env: Env
+  session: SessionCookie
+  base64Data: string
+  filename: string
+}) {
+  const upload = await fetchJson(
+    input.appUrl,
+    input.env,
+    '/api/nic-nac/site-recipes/image',
+    {
+      method: 'POST',
+      headers: {
+        cookie: input.session.cookie,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        base64Data: input.base64Data,
+        filename: input.filename,
+      }),
+    },
+  )
+  const payload = upload.payload as RecipeImageUploadPayload | null
+  if (!upload.response.ok || !payload?.imageUrl) {
+    throw new Error(
+      `recipe image fixture upload failed ${upload.response.status}: ${JSON.stringify(
+        payload,
+      ).slice(0, 500)}`,
+    )
+  }
+  return payload.imageUrl
 }
 
 function assertModelDraftContainsExpectedFacts(payload: RecipeDraftProbePayload | null) {
@@ -339,8 +379,20 @@ async function main() {
   )
 
   if (probeModel) {
-    const displayPhotoUrl = await buildDisplayPhotoFixtureDataUrl()
-    const recipeCardUrl = await buildRecipeCardFixtureDataUrl()
+    const displayPhotoUrl = await uploadRecipeImageFixture({
+      appUrl,
+      env,
+      session,
+      base64Data: await buildDisplayPhotoFixtureDataUrl(),
+      filename: 'smoke-chocolate-dipped-strawberries-display.png',
+    })
+    const recipeCardUrl = await uploadRecipeImageFixture({
+      appUrl,
+      env,
+      session,
+      base64Data: await buildRecipeCardFixtureDataUrl(),
+      filename: 'smoke-chocolate-dipped-strawberries-card.png',
+    })
     const modelProbe = await fetchJson(appUrl, env, '/api/nic-nac/site-recipes/draft', {
       method: 'POST',
       headers: {

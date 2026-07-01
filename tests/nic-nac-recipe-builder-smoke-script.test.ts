@@ -34,6 +34,7 @@ describe('Nic-Nac recipe builder smoke script', () => {
     expect(builderSource).toContain('buildRecipeCardFixtureDataUrl')
     expect(builderSource).toContain('MODEL_PROBE_REQUIRED_FACTS')
     expect(builderSource).toContain('coconut oil')
+    expect(builderSource).toContain('/api/nic-nac/site-recipes/image')
     expect(builderSource).toContain('/api/nic-nac/site-recipes/draft')
     expect(builderSource).toContain('draft requires a recipe-card source image')
 
