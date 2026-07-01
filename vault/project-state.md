@@ -22,8 +22,8 @@
 - **Latest pushed docs/memory checkpoint:** `12b6bcc docs: update Open Brain closeout memory`
 - **Latest local/deployed checkpoints:** Added reusable Moonstone skin (`moonstone`, `MS-01`) with purple, silver, and charcoal tokens for any Sparkle Suite rep. Heather/BlingKitchen now uses the standard public Home, Trade, and Join templates with Moonstone applied instead of bespoke BlingKitchen hero/content variants, while keeping the `In the Pantry` link visible. The Pantry page now inherits the selected appearance preset, so Heather's recipes can follow Moonstone or any future skin she chooses.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-eig0qya6k-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_YVsvhHE8SJs515ZrmesUer9e158P`
+- **Current stable demo target:** Verify the active alias target for `https://sparkle-suite-demo.vercel.app` in Vercel before reporting a fix as live.
+- **Current stable demo deployment id:** Verify the active alias deployment id in Vercel; deployment ids change on each final deploy.
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
