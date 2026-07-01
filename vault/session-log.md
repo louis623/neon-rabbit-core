@@ -2520,3 +2520,25 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Keep Heather's default recipe flow simple and image-led. Put manual correction/editing behind an explicit mode choice with a recipe picker instead of a dense always-visible advanced card.
+
+---
+
+## July 1, 2026 - Heather Recipe Preview Label
+
+**What changed:**
+- Louis chose `Recipe Preview` as the clearer label for the old `Nic-Nac draft preview` area in Heather's recipe builder.
+- Updated the builder preview card label and matching dashboard test expectations.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 76 tests.
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/nic-nac-site-recipes-route.test.ts tests/services/site-recipes.test.ts` passed: 4 files, 94 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed `8d2cc95 fix: rename Heather recipe preview label` to `origin/codex/sparkle-cross-phase-hardening`.
+- Vercel preview `https://sparkle-suite-o1q9tahqu-louis-2849s-projects.vercel.app` / deployment `dpl_GTfzueZQKHuHyDMXGnsUm8fFDRUB` is Ready.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to that deployment.
+- Stable demo health checks passed:
+  - `/api/prelaunch/health` returned `ok:true`.
+  - `/api/nic-nac/health` returned `api_reachable:true`, `db_reachable:true`, and `recent_error_rate:0`.
+
+**Lesson:**
+- Heather-facing recipe labels should describe the action/result plainly; `Recipe Preview` is clearer than model/tool-oriented wording.
