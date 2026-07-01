@@ -211,6 +211,10 @@ describe('BlingKitchen hybrid public site contract', () => {
       resolve(process.cwd(), 'public/amethyst/Pantry.html'),
       'utf8',
     )
+    const pantryCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/pantry.css'),
+      'utf8',
+    )
 
     expect(homepageJsx).toContain('function SparkleSuiteHeaderStack')
     expect(homepageJsx).toContain('CONTENT.pantryPageUrl')
@@ -223,6 +227,11 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('recipe.tiktokUrl')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
+    expect(pantryCss).toContain(
+      'body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active)',
+    )
+    expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-body > p')
+    expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-meta span')
   })
 
   it('uses standard public SEO text for Home/Trade/Join and Pantry-specific text for Pantry', () => {

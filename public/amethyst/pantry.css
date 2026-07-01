@@ -496,6 +496,13 @@ body.bg-moonstone-charcoal .bk-filter-bar button.is-active {
   border-color: transparent;
 }
 
+body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active) {
+  color: #171421;
+  background: rgba(248, 250, 252, 0.92);
+  border-color: rgba(196, 181, 253, 0.36);
+  box-shadow: 0 10px 22px rgba(13, 11, 19, 0.16);
+}
+
 body.bg-black-velvet .bk-shop,
 body.bg-black-velvet .bk-hero-actions a,
 body.bg-black-velvet .bk-recipe-action,
@@ -507,7 +514,41 @@ body.bg-black-velvet .bk-filter-bar button.is-active {
 
 body.surface-silver-pearl .bk-recipe-card,
 body.surface-silver-pearl .bk-modal {
+  --bk-ink: #171421;
+  --bk-muted: #4b465d;
+  --bk-plum: #6d28d9;
   background: rgba(248, 250, 252, 0.94);
+  border-color: rgba(124, 58, 237, 0.18);
+  color: #171421;
+}
+
+body.surface-silver-pearl .bk-recipe-body h3,
+body.surface-silver-pearl .bk-modal h2,
+body.surface-silver-pearl .bk-recipe-columns h3,
+body.surface-silver-pearl .bk-note h3 {
+  color: #171421;
+}
+
+body.surface-silver-pearl .bk-recipe-body > p,
+body.surface-silver-pearl .bk-modal-description,
+body.surface-silver-pearl .bk-recipe-columns ul,
+body.surface-silver-pearl .bk-recipe-columns ol,
+body.surface-silver-pearl .bk-note p {
+  color: #4b465d;
+}
+
+body.surface-silver-pearl .bk-recipe-category {
+  color: #6d28d9;
+}
+
+body.surface-silver-pearl .bk-recipe-meta span,
+body.surface-silver-pearl .bk-modal-meta span {
+  color: #5b21b6;
+  background: #f1e8ff;
+}
+
+body.surface-silver-pearl .bk-note {
+  background: rgba(255, 255, 255, 0.78);
   border-color: rgba(124, 58, 237, 0.18);
 }
 

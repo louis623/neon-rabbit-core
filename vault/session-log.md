@@ -2604,3 +2604,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Targeted sites should not leak generic demo events, but known public schedules can use rep-specific safe fallbacks so key customer-facing sections do not disappear before the rep adds individual calendar rows.
+
+---
+
+## July 1, 2026 - Moonstone Pantry Contrast Fix
+
+**What changed:**
+- Louis reported hard-to-read text in Heather's Moonstone Pantry filters and recipe cards.
+- Fixed Moonstone Pantry inactive category pills so text uses dark ink on the light pill surface.
+- Added card-local dark text variables for Moonstone's light recipe cards and recipe modal.
+- Tightened recipe card description, category, meta-chip, modal, and note text colors so light cards no longer inherit the dark-page light text.
+
+**Verification:**
+- `npm exec vitest run tests/bling-kitchen-public-site.test.ts tests/bling-kitchen-recipes-db-loader.test.ts tests/amethyst-appearance-presets.test.ts` passed: 3 files, 24 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Local production Playwright screenshots/crops confirmed the Pantry category buttons, recipe descriptions, meta chips, and View Recipe buttons are readable in Moonstone.
+
+**Lesson:**
+- Pantry inherits Moonstone's light-on-dark page tokens, so every light recipe surface needs its own dark foreground variables just like Home, Trade, and Join cards.
