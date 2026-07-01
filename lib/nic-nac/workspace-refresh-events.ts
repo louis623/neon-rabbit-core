@@ -19,6 +19,7 @@ const SITE_WRITE_TOOL_TYPES = new Set([
   'tool-update_banner_text',
   'tool-update_site_setting',
   'tool-update_streaming_links',
+  'tool-manage_site_recipes',
 ])
 
 type ToolPartLike = {

@@ -337,6 +337,55 @@ describe('Nic-Nac tool routing', () => {
     ]
 
     expect(getToolIntentsForMessages(messages)).toContain('site')
+    expect(listToolNamesForIntents(['site'])).toContain('build_site_recipe_draft')
+  })
+
+  it('keeps site recipe tools available for a photo-only recipe-card follow-up', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Help me add a new Pantry recipe.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Send the food/display photo and the recipe-card photo, then I can build the recipe draft.',
+          },
+        ],
+      },
+      {
+        id: 'photos',
+        role: 'user',
+        parts: [
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,RElTUExBWQ==',
+          },
+          {
+            type: 'file',
+            mediaType: 'image/jpeg',
+            url: 'data:image/jpeg;base64,Q0FSRA==',
+          },
+        ],
+      },
+    ]
+
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('site')
+    expect(listToolNamesForIntents(intents)).toContain('build_site_recipe_draft')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
   it('keeps site tools available when the rep accepts Nic-Nac announcement ticker copy', () => {

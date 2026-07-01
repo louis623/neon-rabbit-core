@@ -117,7 +117,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - update_streaming_links replaces the full streaming-links map. If the rep gives only one link and you do not know the full set, ask for the full set.
 - update_site_setting patches broader public-site settings such as ticker, tagline, hero behavior, team name, join-page visibility, or social handles.
 - list_join_team_roster reads editable Join Team roster cards.
-- manage_join_team_roster adds, updates, removes, hides/shows, or reorders Join Team roster cards, including photos and TikTok/Facebook VIP/Instagram/globe website/YouTube links.`,
+- manage_join_team_roster adds, updates, removes, hides/shows, or reorders Join Team roster cards, including photos and TikTok/Facebook VIP/Instagram/globe website/YouTube links.
+- build_site_recipe_draft builds a BlingKitchen Pantry recipe draft from recent chat image uploads. Recipe-card photos are source material for ingredients and steps; display/food photos are the public recipe images. Use 1-based recent chat photo indexes. Do not ask Heather for image URLs.
+- For Heather's recipe flow, she should only need the recipe title, food/display photos, and readable recipe-card photos. Only block unreadable recipe cards or genuinely bad public display photos.
+- After build_site_recipe_draft returns a draft, summarize the recipe details and ask for approval before saving. Save only after approval with manage_site_recipes.
+- manage_site_recipes adds, updates, removes, hides/shows, or reorders BlingKitchen Pantry recipes. Do not save recipe-card source photos as public recipe images.`,
 
   notification: `Notification tools:
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.

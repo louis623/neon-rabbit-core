@@ -46,6 +46,7 @@ import {
   listSiteRecipesTool,
   manageSiteRecipesTool,
 } from './site-recipes'
+import { buildSiteRecipeDraftTool } from './build-site-recipe-draft'
 import { writeRepNoteTool } from './write-rep-note'
 import { readRecentRepNotesTool } from './read-recent-rep-notes'
 import { startShowSessionTool } from './start-show-session'
@@ -99,6 +100,7 @@ const REGISTRY: ToolDefinition[] = [
   updateSiteSettingTool,
   listJoinTeamRosterTool,
   manageJoinTeamRosterTool,
+  buildSiteRecipeDraftTool,
   listSiteRecipesTool,
   manageSiteRecipesTool,
   writeRepNoteTool,
@@ -180,6 +182,7 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'update_site_setting',
     'list_join_team_roster',
     'manage_join_team_roster',
+    'build_site_recipe_draft',
     'list_site_recipes',
     'manage_site_recipes',
   ],
@@ -597,12 +600,21 @@ function isSiteContinuation(
   messages: RoutableMessage[],
   latestText: string,
 ): boolean {
+  const latestUser = [...messages].reverse().find((message) => message.role === 'user')
   const priorMessages = messages.slice(0, -1)
   const previousAssistant = [...priorMessages]
     .reverse()
     .find((message) => message.role === 'assistant')
   const previousAssistantText = getMessageText(previousAssistant)
-  if (!isContextualFollowUp(latestText, previousAssistantText)) return false
+  const latestHasImage = hasImagePart(latestUser)
+  const isPhotoFollowUp =
+    latestHasImage &&
+    /\b(recipe|recipes|pantry|ingredient|ingredients|food|display photo|recipe[- ]?card|card photo|image|photo|picture|upload)\b/i.test(
+      previousAssistantText,
+    )
+  if (!isContextualFollowUp(latestText, previousAssistantText) && !isPhotoFollowUp) {
+    return false
+  }
   if (!assistantIsDiscussingSiteEdit(previousAssistantText)) return false
 
   const recentText = priorMessages

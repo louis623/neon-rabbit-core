@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - Heather Image-First Recipe Chat Handoff
+
+**What changed:**
+- Hardened the BlingKitchen image-first recipe flow so Heather can give Nic-Nac a title, public food/display photos, and recipe-card photos without needing image URLs or a long manual form.
+- Added `build_site_recipe_draft`, a Nic-Nac site tool that reads recent chat image uploads by 1-based photo order, uploads display photos as public recipe media, stages recipe-card photos as short-lived source URLs, and builds a draft without saving it.
+- Recipe-card photos are explicitly source material for ingredients/steps, not public recipe images; only unreadable recipe cards or genuinely bad public display photos should block the flow.
+- Site tool routing now keeps recipe tools active for photo-only recipe follow-ups, and successful `manage_site_recipes` saves now trigger workspace/site refresh events.
+- The OpenAI quota/billing blocker still gates final model-in-loop proof. The open item now explicitly includes a chat replay for `build_site_recipe_draft`, `list_site_recipes`, and `manage_site_recipes`.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-site-recipes-route.test.ts` passed: 4 files, 73 tests.
+- `npm exec vitest run tests/nic-nac/prompt-routing.test.ts tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts` passed: 4 files, 70 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+---
+
 ## July 1, 2026 - Open Brain and HQ Closeout for Optional Trade Approval Work
 
 **What was captured:**

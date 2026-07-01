@@ -119,6 +119,25 @@ describe('Nic-Nac workspace refresh events', () => {
     expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['site'])
   })
 
+  it('requests a site preview refresh after Nic-Nac saves a Pantry recipe', () => {
+    const messages = [
+      assistantWithToolPart({
+        type: 'tool-manage_site_recipes',
+        state: 'output-available',
+        output: {
+          action: 'upsert',
+          recipe: {
+            id: 'recipe-1',
+            title: 'Chocolate-Dipped Strawberries',
+          },
+        },
+      }),
+    ]
+
+    expect(isSiteWorkspaceMutationPart(messages[0].parts[0] as never)).toBe(true)
+    expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['site'])
+  })
+
   it('does not refresh the site preview for failed site-setting tools', () => {
     expect(
       isSiteWorkspaceMutationPart({
