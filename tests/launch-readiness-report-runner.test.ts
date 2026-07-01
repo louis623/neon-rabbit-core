@@ -146,6 +146,21 @@ const dashboardNicNacFailed: RecipeChatSmokeResult = {
     'Nic-Nac selected build_site_recipe_draft, but the recipe-card vision builder reported MODEL_UNAVAILABLE.',
 }
 
+const dashboardNicNacQuotaBlocked: RecipeChatSmokeResult = {
+  ok: true,
+  status: 'model_unavailable',
+  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  conversationId: 'recipe-chat-conversation',
+  rep: {
+    id: 'rep-1',
+    email: 'sparkle-reviewer@example.com',
+    displayName: 'Britt Test Rep',
+  },
+  turns: [],
+  message:
+    'error:insufficient_quota: You exceeded your current quota, please check your plan and billing details.',
+}
+
 const multiRepCovered: MultiRepIsolationReport = {
   ok: true,
   isolationState: 'isolated',
@@ -383,6 +398,39 @@ describe('launch readiness report runner', () => {
       },
       blockedItems: [
         'Nic-Nac selected build_site_recipe_draft, but the recipe-card vision builder reported MODEL_UNAVAILABLE.',
+      ],
+    })
+  })
+
+  it('does not promote Dashboard / Nic-Nac for quota-blocked provider-free recipe chat artifacts', () => {
+    const report = buildLaunchReadinessReport({
+      generatedAt,
+      composedSmokes: {
+        'dashboard-nic-nac': {
+          artifactPath:
+            '.local/launch-readiness-results/nic-nac-recipe-chat-latest.json',
+          report: dashboardNicNacQuotaBlocked,
+        },
+      },
+    })
+
+    expect(report.summary).toMatchObject({
+      covered: 1,
+      partial: 7,
+      missing: 1,
+      blocked: 1,
+      ready: false,
+    })
+    expect(report.journeys.find((journey) => journey.id === 'dashboard-nic-nac')).toMatchObject({
+      status: 'partial',
+      smokeProof: {
+        ok: false,
+        stepCount: 0,
+        artifactPath:
+          '.local/launch-readiness-results/nic-nac-recipe-chat-latest.json',
+      },
+      blockedItems: [
+        'error:insufficient_quota: You exceeded your current quota, please check your plan and billing details.',
       ],
     })
   })

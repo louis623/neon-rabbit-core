@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 1, 2026 - Quota Artifact Readiness Guard
+
+**What changed:**
+- Ran the reviewer-safe stable-demo recipe smokes again while OpenAI billing remains blocked.
+- Hardened launch readiness so `RecipeChatSmokeResult` artifacts only count as successful Dashboard / Nic-Nac proof when `status === 'passed'`.
+- This prevents the provider-free `model_unavailable` recipe chat artifact from accidentally marking Dashboard / Nic-Nac as covered just because the smoke command exits cleanly without `--expect-model`.
+
+**Verification:**
+- `npm run smoke:nic-nac:recipe-builder` passed against `https://sparkle-suite-demo.vercel.app` using reviewer-smoke auth.
+- `npm run smoke:nic-nac:recipe-chat -- --output .local/launch-readiness-results/nic-nac-recipe-chat-latest.json` first hit Windows sandbox `spawn EPERM`; rerun outside the sandbox reached stable demo and wrote the artifact with `status:"model_unavailable"` and the OpenAI `insufficient_quota` message.
+- `npm run report:launch-readiness -- --dashboard-nic-nac-report .local/launch-readiness-results/nic-nac-recipe-chat-latest.json --json` first hit Windows sandbox `spawn EPERM`; rerun outside the sandbox correctly reported Dashboard / Nic-Nac as `partial`, `smokeProof.ok:false`, `stepCount:0`, with the quota message in `blockedItems`.
+- `npm exec vitest run tests/launch-readiness-report-runner.test.ts tests/phase-11-smoke-manifest.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts` passed: 3 files, 19 tests.
+
+**Remaining blocker:**
+- Final launch-ready recipe proof still requires rerunning `npm run smoke:nic-nac:recipe-builder -- --expect-model` and `npm run smoke:nic-nac:recipe-chat -- --expect-model --output .local/launch-readiness-results/nic-nac-recipe-chat.json` after OpenAI quota/billing is fixed.
+
 ## July 1, 2026 - Dashboard/Nic-Nac Recipe Chat Readiness Artifact
 
 **What changed:**

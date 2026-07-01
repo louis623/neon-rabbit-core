@@ -185,13 +185,24 @@ function composedSmokeStepCount(report: ComposedSmokeReport): number {
   return 0
 }
 
+function isRecipeChatSmokeReport(
+  report: ComposedSmokeReport,
+): report is RecipeChatSmokeResult {
+  return 'status' in report && 'message' in report && 'turns' in report
+}
+
+function composedSmokeOk(report: ComposedSmokeReport): boolean {
+  if (isRecipeChatSmokeReport(report)) return report.status === 'passed'
+  return report.ok
+}
+
 function summarizeSmokeProof(
   proof: ComposedSmokeProof | undefined,
 ): LaunchReadinessSmokeProofSummary | null {
   if (!proof) return null
 
   return {
-    ok: proof.report.ok,
+    ok: composedSmokeOk(proof.report),
     artifactPath: proof.artifactPath,
     stepCount: composedSmokeStepCount(proof.report),
   }
@@ -218,7 +229,7 @@ function smokeBlockedSuggestions(
     return proof.report.nextEvidenceSuggestions ?? []
   }
 
-  if (!proof.report.ok && 'message' in proof.report) {
+  if (!composedSmokeOk(proof.report) && 'message' in proof.report) {
     return [proof.report.message]
   }
 
