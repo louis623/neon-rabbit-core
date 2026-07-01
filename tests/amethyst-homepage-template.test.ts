@@ -701,6 +701,8 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('black_diamond')
     expect(jsx).toContain('Black Diamond')
+    expect(jsx).toContain('moonstone')
+    expect(jsx).toContain('Moonstone')
     expect(html).toContain('DM+Sans')
     expect(html).toContain('Playfair+Display')
     expect(css).toContain('body.bg-black-velvet .hp-ticker')
@@ -716,6 +718,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('body.bg-black-velvet .hp-footer')
     expect(css).toContain('--hp-form-panel-bg: rgba(8, 8, 8, 0.66);')
     expect(css).toContain('body.bg-black-velvet .hp-signup-submit')
+    expect(css).toContain('body.bg-moonstone-charcoal')
+    expect(css).toContain('body.surface-silver-pearl .hp-event-card')
     expect(css).toContain('color: #f9f3ec;')
     expect(css).toMatch(/\.hp-queue-modal-row\s*\{[\s\S]*?color:\s*#2b1b1f;/)
     expect(css).toMatch(/\.hp-queue-modal-row \.name\s*\{[\s\S]*?color:\s*#2b1b1f;/)

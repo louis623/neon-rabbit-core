@@ -10,6 +10,7 @@ import {
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
+import { getSiteSettingsDashboard } from '@/lib/services/site-settings'
 import { getPublicSiteRecipes } from '@/lib/services/site-recipes'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
   let repId = rawRepId
   let repEmail: string | null = null
   let baseTemplateData = defaultAmethystPantryTemplateData
+  let appearancePreset = defaultAmethystPantryTemplateData.appearancePreset
 
   try {
     const admin = createAdminClient()
@@ -47,17 +49,28 @@ export async function GET(request: Request) {
     if (rep) {
       repId = rep.id
       repEmail = rep.email
+      try {
+        const settings = await getSiteSettingsDashboard(admin, rep.id)
+        appearancePreset = settings.appearancePreset
+      } catch {
+        appearancePreset = defaultAmethystPantryTemplateData.appearancePreset
+      }
       const recipes = await getPublicSiteRecipes(admin, rep.id, {
         visibleOnly: true,
       })
       if (recipes.length > 0) {
         baseTemplateData = buildBlingKitchenPantryTemplateData(
           recipes.map(mapPublicSiteRecipeToPantryRecipe),
+          { appearancePreset },
         )
       } else if (isBlingKitchenTarget(publicSiteSlug, rep.email)) {
-        baseTemplateData = defaultAmethystPantryTemplateData
+        baseTemplateData = buildBlingKitchenPantryTemplateData(undefined, {
+          appearancePreset,
+        })
       } else {
-        baseTemplateData = buildBlingKitchenPantryTemplateData([])
+        baseTemplateData = buildBlingKitchenPantryTemplateData([], {
+          appearancePreset,
+        })
       }
     } else if (!isBlingKitchenTarget(publicSiteSlug, null)) {
       baseTemplateData = buildBlingKitchenPantryTemplateData([])
@@ -69,7 +82,10 @@ export async function GET(request: Request) {
   }
 
   const templateData = applyPublicSiteSlugToPantryTemplateData(
-    baseTemplateData,
+    {
+      ...baseTemplateData,
+      appearancePreset,
+    },
     publicSiteSlug,
   )
 

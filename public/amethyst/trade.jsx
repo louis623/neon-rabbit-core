@@ -173,6 +173,7 @@ const FOOTER_LINKS = CONTENT.footerLinks || {};
 const FOOTER_SOCIALS = CONTENT.socialLinks || [];
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
+const PANTRY_HREF = CONTENT.pantryPageUrl || "";
 const JOIN_TEAM_HREF = FOOTER_LINKS.joinTeam || "";
 const SHOP_HREF = CONTENT.shopUrl || FOOTER_LINKS.catalog || "#";
 
@@ -221,6 +222,13 @@ const PRESETS = {
     bgTone: "blackDiamond", primaryColor: "#d4af37", accentColor: "#00d9ff",
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
+  moonstone: {
+    sparkleLevel: "subtle", bgTreatment: "moonstone-charcoal", cardSurface: "silver-pearl",
+    textureOverlay: "none", buttonEnergy: "moonstone-lift", ctaEmphasis: "standard",
+    tradeFlair: "silver-violet", cursorEffect: "default", saturation: 108,
+    bgTone: "moonstone", primaryColor: "#7c3aed", accentColor: "#cbd5e1",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+  },
   rose_gold: {
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
     textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
@@ -267,6 +275,7 @@ const TONES = {
   neon: { bg: "#FFE6FA", elevated: "#FFF0FD", deep: "#FFD1F2" },
   suiteBlush: { bg: "#fcf8f6", elevated: "#fffefd", deep: "#f6ede8" },
   blackDiamond: { bg: "#080808", elevated: "#15110f", deep: "#030303" },
+  moonstone: { bg: "#15121d", elevated: "#211b2c", deep: "#0d0b13" },
   roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
   garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
   amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
@@ -666,6 +675,7 @@ function Header({ businessName }) {
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
           <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Trade Board</a>
+          {PANTRY_HREF ? <a {...linkProps(PANTRY_HREF)} className="hp-header-link">In the Pantry</a> : null}
           {JOIN_TEAM_HREF && (
             isBrittWithBlingHybrid || isBlingKitchenHybrid ? (
               <a {...linkProps(JOIN_TEAM_HREF)} className="hp-header-link">Join Team</a>
@@ -1456,6 +1466,7 @@ function Footer({ businessName }) {
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
             <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
+            {PANTRY_HREF && <li><a {...linkProps(PANTRY_HREF)}>In the Pantry</a></li>}
             {JOIN_TEAM_HREF && <li><a {...linkProps(JOIN_TEAM_HREF)}>Join Team</a></li>}
           </ul>
         </div>
@@ -1587,6 +1598,7 @@ function App() {
     if (t.bgTreatment === "aurora") body.classList.add("fx-aurora");
     if (t.bgTreatment === "suite-paper") body.classList.add("bg-suite-paper");
     if (t.bgTreatment === "black-velvet") body.classList.add("bg-black-velvet");
+    if (t.bgTreatment === "moonstone-charcoal") body.classList.add("bg-moonstone-charcoal");
     if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
     if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
     if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
@@ -1596,6 +1608,7 @@ function App() {
     if (t.cardSurface === "holographic") body.classList.add("fx-holographic");
     if (t.cardSurface === "warm-paper") body.classList.add("surface-warm-paper");
     if (t.cardSurface === "dark-metallic") body.classList.add("surface-dark-metallic");
+    if (t.cardSurface === "silver-pearl") body.classList.add("surface-silver-pearl");
     if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
     if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
     if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
@@ -1607,6 +1620,7 @@ function App() {
     if (t.buttonEnergy === "wiggle") body.classList.add("btn-wiggle");
     if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
     if (t.buttonEnergy === "diamond-lift") body.classList.add("btn-diamond-lift");
+    if (t.buttonEnergy === "moonstone-lift") body.classList.add("btn-moonstone-lift");
     if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
     if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
     if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
@@ -1616,6 +1630,7 @@ function App() {
     if (t.tradeFlair === "holo-unicorn") body.classList.add("holo-unicorn");
     if (t.tradeFlair === "soft-pink-lift") body.classList.add("soft-pink-lift");
     if (t.tradeFlair === "cyan-diamond") body.classList.add("cyan-diamond");
+    if (t.tradeFlair === "silver-violet") body.classList.add("silver-violet");
     if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
     if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
@@ -1891,6 +1906,7 @@ function App() {
               { value: "amethyst", label: "Amethyst" },
               { value: "sparkle_suite_morganite", label: "Sparkle Suite/Morganite" },
               { value: "black_diamond", label: "Black Diamond" },
+              { value: "moonstone", label: "Moonstone" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },

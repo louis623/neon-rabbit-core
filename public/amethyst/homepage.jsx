@@ -371,6 +371,14 @@ const PRESETS = {
     bgTone: "blackDiamond", primaryColor: "#d4af37", accentColor: "#00d9ff",
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
+  moonstone: {
+    heroMotion: "soft_glow",
+    sparkleLevel: "subtle", bgTreatment: "moonstone-charcoal", cardSurface: "silver-pearl",
+    textureOverlay: "none", buttonEnergy: "moonstone-lift", ctaEmphasis: "standard",
+    tradeFlair: "silver-violet", cursorEffect: "default", saturation: 108,
+    bgTone: "moonstone", primaryColor: "#7c3aed", accentColor: "#cbd5e1",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+  },
   rose_gold: {
     heroMotion: "sparkle_rise",
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
@@ -425,6 +433,7 @@ const TONES = {
   neon:     { bg: "#FFE6FA", elevated: "#FFF0FD", deep: "#FFD1F2" },
   suiteBlush: { bg: "#fcf8f6", elevated: "#fffefd", deep: "#f6ede8" },
   blackDiamond: { bg: "#080808", elevated: "#15110f", deep: "#030303" },
+  moonstone: { bg: "#15121d", elevated: "#211b2c", deep: "#0d0b13" },
   roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
   garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
   amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
@@ -1407,6 +1416,7 @@ function Footer({ businessName }) {
           <ul>
             <li><a {...linkProps(CONTENT.footerLinks?.home || withCurrentSearch("/amethyst/Homepage.html"))}>Home</a></li>
             <li><a {...linkProps(getTradeBoardHref())}>Trade Board</a></li>
+            {CONTENT.pantryPageUrl && <li><a {...linkProps(CONTENT.pantryPageUrl)}>In the Pantry</a></li>}
             {joinTeamHref && <li><a {...linkProps(joinTeamHref)}>Join Team</a></li>}
           </ul>
         </div>
@@ -1490,6 +1500,9 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
           <nav className="hp-header-nav" aria-label="Primary">
             <a href="#top" className="hp-header-link" aria-current="page">Home</a>
             <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
+            {CONTENT.pantryPageUrl ? (
+              <a {...linkProps(CONTENT.pantryPageUrl)} className="hp-header-link">In the Pantry</a>
+            ) : null}
             {isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam ? (
               <a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>
             ) : (
@@ -1774,6 +1787,7 @@ function App() {
     if (t.bgTreatment === "aurora") body.classList.add("fx-aurora");
     if (t.bgTreatment === "suite-paper") body.classList.add("bg-suite-paper");
     if (t.bgTreatment === "black-velvet") body.classList.add("bg-black-velvet");
+    if (t.bgTreatment === "moonstone-charcoal") body.classList.add("bg-moonstone-charcoal");
     if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
     if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
     if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
@@ -1783,6 +1797,7 @@ function App() {
     if (t.cardSurface === "holographic") body.classList.add("fx-holographic");
     if (t.cardSurface === "warm-paper") body.classList.add("surface-warm-paper");
     if (t.cardSurface === "dark-metallic") body.classList.add("surface-dark-metallic");
+    if (t.cardSurface === "silver-pearl") body.classList.add("surface-silver-pearl");
     if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
     if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
     if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
@@ -1794,6 +1809,7 @@ function App() {
     if (t.buttonEnergy === "wiggle") body.classList.add("btn-wiggle");
     if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
     if (t.buttonEnergy === "diamond-lift") body.classList.add("btn-diamond-lift");
+    if (t.buttonEnergy === "moonstone-lift") body.classList.add("btn-moonstone-lift");
     if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
     if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
     if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
@@ -1803,6 +1819,7 @@ function App() {
     if (t.tradeFlair === "holo-unicorn") body.classList.add("holo-unicorn");
     if (t.tradeFlair === "soft-pink-lift") body.classList.add("soft-pink-lift");
     if (t.tradeFlair === "cyan-diamond") body.classList.add("cyan-diamond");
+    if (t.tradeFlair === "silver-violet") body.classList.add("silver-violet");
     if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
     if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
@@ -1917,6 +1934,7 @@ function App() {
               { value: "amethyst", label: "Amethyst" },
               { value: "sparkle_suite_morganite", label: "Sparkle Suite/Morganite" },
               { value: "black_diamond", label: "Black Diamond" },
+              { value: "moonstone", label: "Moonstone" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },

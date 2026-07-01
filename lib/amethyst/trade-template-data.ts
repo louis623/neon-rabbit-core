@@ -36,6 +36,7 @@ export interface AmethystTradeTemplateData {
   tradeHeroSub: string
   tickerTopText: string
   tradeBoardTickerItems?: AmethystTradeBoardTickerItem[]
+  pantryPageUrl?: string
   shopUrl: string
   footerTagline: string
   legalDisclaimer: string

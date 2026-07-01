@@ -716,7 +716,14 @@ body.bg-black-velvet .tp-filter-pill.active {
   border-color: #d4af37;
 }
 
+body.bg-moonstone-charcoal .tp-filter-pill.active {
+  background: linear-gradient(135deg, #cbd5e1, #a78bfa);
+  color: #0d0b13;
+  border-color: #cbd5e1;
+}
+
 body.bg-suite-paper .tp-filter-pill.active,
+body.bg-moonstone-charcoal .tp-filter-pill.active,
 body.bg-rose-gold-paper .tp-filter-pill.active,
 body.bg-amber-paper .tp-filter-pill.active,
 body.bg-quartz-paper .tp-filter-pill.active {
@@ -725,6 +732,7 @@ body.bg-quartz-paper .tp-filter-pill.active {
 
 body.bg-black-velvet .tp-filter-pill.active .count,
 body.bg-suite-paper .tp-filter-pill.active .count,
+body.bg-moonstone-charcoal .tp-filter-pill.active .count,
 body.bg-rose-gold-paper .tp-filter-pill.active .count,
 body.bg-amber-paper .tp-filter-pill.active .count,
 body.bg-quartz-paper .tp-filter-pill.active .count {

@@ -1,7 +1,77 @@
 /* global React, ReactDOM */
-const { useMemo, useState } = React;
+const { useEffect, useMemo, useState } = React;
 
 const CONTENT = window.AMETHYST_PANTRY_TEMPLATE_DATA || {};
+
+const PRESETS = {
+  amethyst: {
+    bgTreatment: "confetti", cardSurface: "holographic", buttonEnergy: "calm",
+    primaryColor: "#5C0EFF", accentColor: "#FF1AC2", bg: "#E8DFF5",
+    elevated: "#F2EBFA", ink: "#20172b", muted: "#6e6379",
+    headingFont: '"Italiana", "Playfair Display", serif',
+    bodyFont: '"Inter", system-ui, sans-serif',
+  },
+  sparkle_suite_morganite: {
+    bgTreatment: "suite-paper", cardSurface: "warm-paper", buttonEnergy: "suite-lift",
+    primaryColor: "#ee2c9b", accentColor: "#ff4cae", bg: "#fcf8f6",
+    elevated: "#fffefd", ink: "#402924", muted: "#7c6660",
+    headingFont: '"Playfair Display", Georgia, serif',
+    bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
+  },
+  black_diamond: {
+    bgTreatment: "black-velvet", cardSurface: "dark-metallic", buttonEnergy: "diamond-lift",
+    primaryColor: "#d4af37", accentColor: "#00d9ff", bg: "#080808",
+    elevated: "#15110f", ink: "#f9f3ec", muted: "#d7c3b9",
+    headingFont: '"Playfair Display", Georgia, serif',
+    bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
+  },
+  moonstone: {
+    bgTreatment: "moonstone-charcoal", cardSurface: "silver-pearl", buttonEnergy: "moonstone-lift",
+    primaryColor: "#7c3aed", accentColor: "#cbd5e1", bg: "#15121d",
+    elevated: "#211b2c", ink: "#f8fafc", muted: "#cbd5e1",
+    headingFont: '"Playfair Display", Georgia, serif',
+    bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
+  },
+  rose_gold: {
+    bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose", buttonEnergy: "rose-gold-lift",
+    primaryColor: "#e04f73", accentColor: "#f5c66d", bg: "#fff5f6",
+    elevated: "#fffafa", ink: "#2b1717", muted: "#7e5457",
+    headingFont: '"Playfair Display", Georgia, serif',
+    bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
+  },
+  garnet: {
+    bgTreatment: "garnet-shell", cardSurface: "blush-shell", buttonEnergy: "garnet-lift",
+    primaryColor: "#B91C1C", accentColor: "#920000", bg: "#FFE5DD",
+    elevated: "#fff8f5", ink: "#2b1717", muted: "#7e5457",
+    headingFont: '"Boska", "Playfair Display", Georgia, serif',
+    bodyFont: '"Switzer", "DM Sans", "Inter", system-ui, sans-serif',
+  },
+  amber: {
+    bgTreatment: "amber-paper", cardSurface: "sunlit-pearl", buttonEnergy: "amber-pop",
+    primaryColor: "#F97316", accentColor: "#761A00", bg: "#FAFAFA",
+    elevated: "#fffaf5", ink: "#2f1808", muted: "#76543d",
+    headingFont: '"Melodrama", "Playfair Display", Georgia, serif',
+    bodyFont: '"Nunito", "DM Sans", system-ui, sans-serif',
+  },
+  velvet: {
+    bgTreatment: "velvet-orchid", cardSurface: "plush-orchid", buttonEnergy: "velvet-lift",
+    primaryColor: "#9333EA", accentColor: "#6300B9", bg: "#FFE8FF",
+    elevated: "#fff7ff", ink: "#2d143d", muted: "#73517e",
+    headingFont: '"Bitter", Georgia, serif',
+    bodyFont: '"Archivo", "DM Sans", system-ui, sans-serif',
+  },
+  rose_quartz: {
+    bgTreatment: "quartz-paper", cardSurface: "pink-quartz", buttonEnergy: "quartz-pop",
+    primaryColor: "#E879F9", accentColor: "#63146E", bg: "#FAFAFA",
+    elevated: "#fff7ff", ink: "#32143a", muted: "#77537e",
+    headingFont: '"Sharpie", "Quicksand", system-ui, sans-serif',
+    bodyFont: '"Ranade", "Nunito", system-ui, sans-serif',
+  },
+};
+
+function getPreset() {
+  return PRESETS[CONTENT.appearancePreset] || PRESETS.sparkle_suite_morganite;
+}
 
 function isExternalHref(href) {
   return /^https?:\/\//.test(href || "");
@@ -123,8 +193,25 @@ function RecipeGroup({ group, recipes, onOpen }) {
 function PantryPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [activeRecipe, setActiveRecipe] = useState(null);
+  const preset = getPreset();
   const recipes = Array.isArray(CONTENT.recipes) ? CONTENT.recipes : [];
   const links = CONTENT.links || {};
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--bk-ink", preset.ink);
+    root.style.setProperty("--bk-muted", preset.muted);
+    root.style.setProperty("--bk-plum", preset.primaryColor);
+    root.style.setProperty("--bk-violet", preset.accentColor);
+    root.style.setProperty("--bk-cream", preset.bg);
+    root.style.setProperty("--bk-paper", preset.elevated);
+    root.style.setProperty("--bk-heading-font", preset.headingFont);
+    root.style.setProperty("--bk-body-font", preset.bodyFont);
+    const body = document.body;
+    body.className = "bk-pantry-page";
+    body.classList.add(`bg-${preset.bgTreatment}`);
+    body.classList.add(`surface-${preset.cardSurface}`);
+    body.classList.add(`btn-${preset.buttonEnergy}`);
+  }, [preset]);
   const categories = useMemo(() => {
     const source = Array.isArray(CONTENT.categoryOrder) ? CONTENT.categoryOrder : [];
     const fromRecipes = Array.from(new Set(recipes.map((recipe) => recipe.category).filter(Boolean)));

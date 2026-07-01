@@ -3536,6 +3536,163 @@ body.cyan-diamond .hp-trade-card {
   box-shadow: 0 16px 36px rgba(0, 217, 255, 0.12);
 }
 
+body.bg-moonstone-charcoal {
+  --fg: #f8fafc;
+  --fg-muted: #cbd5e1;
+  --border: rgba(203, 213, 225, 0.24);
+  --hp-form-panel-bg: rgba(21, 18, 29, 0.7);
+  --hp-form-panel-fg: #f8fafc;
+  --hp-field-bg: #15121d;
+  --hp-field-fg: #f8fafc;
+  color: var(--fg);
+  background:
+    radial-gradient(circle at 16% 8%, rgba(124, 58, 237, 0.34), transparent 28rem),
+    radial-gradient(circle at 88% 12%, rgba(203, 213, 225, 0.18), transparent 24rem),
+    linear-gradient(135deg, #0d0b13 0%, #211b2c 50%, #15121d 100%);
+}
+
+body.bg-moonstone-charcoal .hp-header {
+  background: rgba(13, 11, 19, 0.94);
+  border-bottom-color: rgba(203, 213, 225, 0.2);
+  color: #f8fafc;
+}
+
+body.bg-moonstone-charcoal .hp-brand-name,
+body.bg-moonstone-charcoal .hp-hero-headline,
+body.bg-moonstone-charcoal .tp-hero-title,
+body.bg-moonstone-charcoal .jp-hero-title {
+  background: linear-gradient(90deg, #f8fafc, #c4b5fd 48%, #cbd5e1);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+body.bg-moonstone-charcoal .hp-brand-sub,
+body.bg-moonstone-charcoal .hp-header-link:hover,
+body.bg-moonstone-charcoal .hp-header-link[aria-current="page"],
+body.bg-moonstone-charcoal .hp-coming-soon-badge {
+  color: #c4b5fd;
+}
+
+body.bg-moonstone-charcoal .hp-header-link {
+  color: rgba(248, 250, 252, 0.82);
+}
+
+body.bg-moonstone-charcoal .hp-header-link-disabled {
+  color: rgba(248, 250, 252, 0.58);
+}
+
+body.bg-moonstone-charcoal .hp-ticker,
+body.bg-moonstone-charcoal .hp-trade-preview {
+  background:
+    linear-gradient(90deg, rgba(124, 58, 237, 0.14), rgba(203, 213, 225, 0.08)),
+    rgba(13, 11, 19, 0.92);
+  border-bottom-color: rgba(203, 213, 225, 0.2);
+  color: #f8fafc;
+}
+
+body.bg-moonstone-charcoal .hp-ticker-row {
+  background: rgba(21, 18, 29, 0.92);
+  border-bottom-color: rgba(203, 213, 225, 0.16);
+}
+
+body.bg-moonstone-charcoal .hp-ticker-row.reverse {
+  background: rgba(13, 11, 19, 0.96);
+}
+
+body.bg-moonstone-charcoal .hp-ticker-label {
+  color: #cbd5e1;
+  background: linear-gradient(90deg, #15121d 0%, #15121d 70%, rgba(21, 18, 29, 0) 100%);
+}
+
+body.bg-moonstone-charcoal .hp-ticker-row.reverse .hp-ticker-label {
+  color: #c4b5fd;
+  background: linear-gradient(90deg, #0d0b13 0%, #0d0b13 70%, rgba(13, 11, 19, 0) 100%);
+}
+
+body.bg-moonstone-charcoal .hp-trade-preview-pill {
+  background: rgba(248, 250, 252, 0.08);
+  border-color: rgba(203, 213, 225, 0.22);
+  color: #f8fafc;
+}
+
+body.bg-moonstone-charcoal .hp-trade-preview-pill .pos {
+  background: linear-gradient(135deg, #cbd5e1, #a78bfa);
+  color: #0d0b13;
+}
+
+body.bg-moonstone-charcoal .hp-trade-preview-pill .label {
+  color: rgba(203, 213, 225, 0.78);
+}
+
+body.bg-moonstone-charcoal .hp-trade-preview-link {
+  color: #c4b5fd;
+}
+
+body.bg-moonstone-charcoal .hp-shop-btn,
+body.bg-moonstone-charcoal .hp-btn-primary,
+body.bg-moonstone-charcoal .hp-signup-submit,
+body.bg-moonstone-charcoal .tp-card-expand-cta,
+body.bg-moonstone-charcoal .jp-spot-btn {
+  background: linear-gradient(135deg, #7c3aed, #c4b5fd, #cbd5e1);
+  color: #0d0b13;
+  border-color: transparent;
+  box-shadow: 0 16px 34px rgba(124, 58, 237, 0.24);
+}
+
+body.bg-moonstone-charcoal .hp-btn-outline,
+body.bg-moonstone-charcoal .hp-btn-watch,
+body.bg-moonstone-charcoal .tp-filter-chip {
+  border-color: rgba(203, 213, 225, 0.5);
+  color: #f8fafc;
+  background: rgba(248, 250, 252, 0.08);
+}
+
+body.bg-moonstone-charcoal .hp-hero-media,
+body.bg-moonstone-charcoal .jp-hero-media {
+  background:
+    linear-gradient(180deg, rgba(13, 11, 19, 0.05) 0%, rgba(13, 11, 19, 0.46) 72%, rgba(13, 11, 19, 0.88) 100%),
+    radial-gradient(circle at 26% 20%, rgba(196, 181, 253, 0.38), transparent 24rem),
+    radial-gradient(circle at 76% 58%, rgba(203, 213, 225, 0.2), transparent 18rem),
+    linear-gradient(135deg, #15121d 0%, #3b2862 50%, #0d0b13 100%);
+}
+
+body.surface-silver-pearl .hp-event-card,
+body.surface-silver-pearl .hp-wibp-card,
+body.surface-silver-pearl .hp-trade-card,
+body.surface-silver-pearl .hp-signup-card,
+body.surface-silver-pearl .tp-lrq-rail,
+body.surface-silver-pearl .tp-filters,
+body.surface-silver-pearl .tp-card,
+body.surface-silver-pearl .tp-card-expand,
+body.surface-silver-pearl .jp-hero-card,
+body.surface-silver-pearl .jp-team-card,
+body.surface-silver-pearl .jp-benefit-card,
+body.surface-silver-pearl .jp-final-card {
+  background: rgba(248, 250, 252, 0.9);
+  border-color: rgba(124, 58, 237, 0.18);
+  color: #171421;
+  box-shadow: 0 18px 48px rgba(13, 11, 19, 0.14);
+}
+
+body.btn-moonstone-lift .hp-btn-primary:hover,
+body.btn-moonstone-lift .hp-btn-outline:hover,
+body.btn-moonstone-lift .hp-shop-btn:hover,
+body.btn-moonstone-lift .tp-card:hover,
+body.btn-moonstone-lift .tp-card-expand-cta:hover,
+body.btn-moonstone-lift .jp-team-card:hover,
+body.btn-moonstone-lift .jp-benefit-card:hover,
+body.btn-moonstone-lift .jp-spot-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(124, 58, 237, 0.22);
+}
+
+body.silver-violet .tp-card.unicorn,
+body.silver-violet .tp-card.diamond,
+body.silver-violet .hp-trade-card {
+  border-color: rgba(196, 181, 253, 0.5);
+  box-shadow: 0 16px 36px rgba(124, 58, 237, 0.12);
+}
+
 body.bg-rose-gold-paper {
   --fg: #2b1717;
   --fg-muted: #7e5457;

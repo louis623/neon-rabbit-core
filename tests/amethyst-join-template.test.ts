@@ -191,6 +191,8 @@ describe('Amethyst join page template data wiring', () => {
 
     expect(jsx).toContain('black_diamond')
     expect(jsx).toContain('Black Diamond')
+    expect(jsx).toContain('moonstone')
+    expect(jsx).toContain('Moonstone')
     expect(html).toContain('DM+Sans')
     expect(html).toContain('Playfair+Display')
   })

@@ -531,3 +531,8 @@ The live-show swap capture flow remains the preferred path when the rep has the 
 Nic-Nac should use `report_jewelry_catalog_issue` for routine shared jewelry catalog issues, including bad canonical photos, instead of saying the tool is unavailable or sending routine cleanup to Louis. Canonical catalog photo replacement remains guarded: use only an approved jewelry-front replacement URL from the catalog/photo pipeline. Never replace a canonical catalog photo with a label/details, tag, back-of-card, or unapproved raw upload.
 
 ---
+
+# July 1, 2026
+
+**Moonstone is a reusable skin, not a Heather-only custom site**
+Heather's purple, silver, and charcoal direction should live as the reusable Moonstone appearance preset (`moonstone`, card code `MS-01`). Heather's customer-facing Home, Trade Board, and Join pages should use the standard Amethyst/Sparkle Suite structure with the selected skin applied. Her special exception is `In the Pantry`: the Pantry link remains available for BlingKitchen, and the Pantry page inherits whichever supported appearance preset Heather chooses.

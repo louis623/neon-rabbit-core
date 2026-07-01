@@ -201,7 +201,7 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
       team_name: BLING_KITCHEN_PROFILE.teamName,
       show_join_page: true,
       hero_animation_type: 'sparkle_rise',
-      appearance_preset: 'black_diamond',
+      appearance_preset: 'moonstone',
       customer_site_template: 'amethyst',
     },
     { onConflict: 'rep_id' },
@@ -247,7 +247,7 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
             publicSiteSlugAlternatives: [],
           },
           site_skin: {
-            preset: 'black_diamond',
+            preset: 'moonstone',
           },
           welcome_copy: {
             tagline: 'Serving Sparkle from the Heart of the Home',

@@ -291,6 +291,7 @@ describe('site customization tools', () => {
   it.each([
     ['GN-01', 'garnet'],
     ['AB-01', 'amber'],
+    ['MS-01', 'moonstone'],
     ['VE-01', 'velvet'],
     ['RQ-01', 'rose_quartz'],
   ])('update_site_setting saves %s as the supported customer-facing skin code', async (code, expectedPreset) => {

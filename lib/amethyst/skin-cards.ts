@@ -71,6 +71,23 @@ export const AMETHYST_SKIN_CARDS: AmethystSkinCard[] = [
     ],
   },
   {
+    id: 'moonstone',
+    code: 'MS-01',
+    label: 'Moonstone',
+    description:
+      'A purple, silver, and dark charcoal look with polished moonlit cards and refined contrast.',
+    headingFont: 'Playfair Display',
+    bodyFont: 'DM Sans',
+    surfaceNote: 'Cool silver-pearl cards over charcoal-violet depth',
+    motionNote: 'Gentle moonstone lift with violet action polish',
+    swatches: [
+      { label: 'Charcoal', value: '#15121d' },
+      { label: 'Purple', value: '#7c3aed' },
+      { label: 'Silver', value: '#cbd5e1' },
+      { label: 'Moonlight', value: '#f8fafc' },
+    ],
+  },
+  {
     id: 'rose_gold',
     code: 'RG-01',
     label: 'Rose Gold',

@@ -452,6 +452,7 @@ export type SiteAppearancePreset =
   | 'amethyst'
   | 'sparkle_suite_morganite'
   | 'black_diamond'
+  | 'moonstone'
   | 'rose_gold'
   | 'garnet'
   | 'amber'

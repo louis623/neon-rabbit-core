@@ -5,6 +5,11 @@ import {
 import { recipes as blingKitchenRecipes } from '@/lib/bling-kitchen/recipes'
 import type { PublicSiteRecipe } from '@/lib/services/types'
 
+import {
+  DEFAULT_AMETHYST_APPEARANCE_PRESET,
+  normalizeAmethystAppearancePreset,
+  type AmethystAppearancePresetId,
+} from './appearance-presets'
 import type { AmethystRuntimeContext } from './homepage-template-data'
 import { getPublicRepName } from './public-rep-name'
 
@@ -27,6 +32,7 @@ export interface AmethystPantryRecipe {
 
 export interface AmethystPantryTemplateData {
   publicSiteVariant?: 'bling_kitchen_hybrid'
+  appearancePreset: AmethystAppearancePresetId
   repName: string
   businessName: string
   teamName: string
@@ -59,6 +65,7 @@ export interface AmethystPantryTemplateData {
 
 export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
   publicSiteVariant: 'bling_kitchen_hybrid',
+  appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
   repName: BLING_KITCHEN_PROFILE.publicName,
   businessName: BLING_KITCHEN_PROFILE.businessName,
   teamName: BLING_KITCHEN_PROFILE.teamName,
@@ -139,9 +146,11 @@ export function mapPublicSiteRecipeToPantryRecipe(
 
 export function buildBlingKitchenPantryTemplateData(
   recipes: AmethystPantryRecipe[] = defaultAmethystPantryTemplateData.recipes,
+  options: { appearancePreset?: AmethystAppearancePresetId | string | null } = {},
 ): AmethystPantryTemplateData {
   return {
     ...defaultAmethystPantryTemplateData,
+    appearancePreset: normalizeAmethystAppearancePreset(options.appearancePreset),
     recipes,
     recipeCount: recipes.length,
     introText:

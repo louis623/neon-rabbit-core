@@ -64,6 +64,7 @@ export interface AmethystJoinTemplateData {
   bpIncomeDisclosureUrl: string
   tickerTopText: string
   tradeBoardTickerItems?: AmethystTradeBoardTickerItem[]
+  pantryPageUrl?: string
   shopUrl: string
   bombPartyFaqUrl: string
   footerTagline: string

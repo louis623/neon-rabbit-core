@@ -8,7 +8,9 @@
   --bk-paper: #ffffff;
   --bk-line: rgba(32, 23, 43, 0.14);
   --bk-shadow: 0 18px 45px rgba(58, 29, 82, 0.16);
-  font-family: "DM Sans", "Vend Sans", system-ui, sans-serif;
+  --bk-heading-font: "Playfair Display", Georgia, serif;
+  --bk-body-font: "DM Sans", "Vend Sans", system-ui, sans-serif;
+  font-family: var(--bk-body-font);
 }
 
 * {
@@ -19,6 +21,7 @@ body.bk-pantry-page {
   margin: 0;
   color: var(--bk-ink);
   background: linear-gradient(180deg, #fff9f1 0%, #f8eef8 42%, #fff 100%);
+  font-family: var(--bk-body-font);
 }
 
 a {
@@ -48,7 +51,7 @@ button {
 }
 
 .bk-brand {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--bk-heading-font);
   font-size: clamp(1.3rem, 2vw, 1.9rem);
   font-weight: 700;
   text-decoration: none;
@@ -134,7 +137,7 @@ button {
 
 .bk-hero-copy h1 {
   margin: 0;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--bk-heading-font);
   font-size: clamp(3rem, 9vw, 7rem);
   line-height: 0.9;
 }
@@ -177,7 +180,7 @@ button {
 .bk-section-heading h2,
 .bk-modal h2 {
   margin: 0;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--bk-heading-font);
   font-size: clamp(2rem, 4vw, 3.8rem);
   line-height: 1;
 }
@@ -427,6 +430,92 @@ button {
   border: 1px solid rgba(111, 45, 168, 0.18);
   border-radius: 8px;
   background: #fff9f1;
+}
+
+body.bg-suite-paper {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(238, 44, 155, 0.12), transparent 26rem),
+    linear-gradient(180deg, #fcf8f6 0%, #fffefd 55%, #f6ede8 100%);
+}
+
+body.bg-black-velvet,
+body.bg-moonstone-charcoal {
+  --bk-line: rgba(203, 213, 225, 0.22);
+  --bk-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+body.bg-black-velvet {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(212, 175, 55, 0.2), transparent 28rem),
+    linear-gradient(180deg, #050505 0%, #15110f 52%, #080808 100%);
+}
+
+body.bg-moonstone-charcoal {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(124, 58, 237, 0.34), transparent 28rem),
+    radial-gradient(circle at 88% 12%, rgba(203, 213, 225, 0.16), transparent 24rem),
+    linear-gradient(180deg, #0d0b13 0%, #211b2c 52%, #15121d 100%);
+}
+
+body.bg-rose-gold-paper {
+  background:
+    radial-gradient(circle at 12% 9%, rgba(249, 168, 212, 0.34), transparent 25rem),
+    linear-gradient(180deg, #fff7f8 0%, #fffefe 52%, #ffecef 100%);
+}
+
+body.bg-garnet-shell,
+body.bg-amber-paper,
+body.bg-velvet-orchid,
+body.bg-quartz-paper {
+  background: linear-gradient(180deg, var(--bk-cream) 0%, var(--bk-paper) 52%, #fff 100%);
+}
+
+body.bg-black-velvet .bk-header,
+body.bg-moonstone-charcoal .bk-header {
+  background: rgba(13, 11, 19, 0.92);
+}
+
+body.bg-black-velvet .bk-footer,
+body.bg-moonstone-charcoal .bk-footer {
+  background: #0d0b13;
+}
+
+body.bg-black-velvet .bk-recipe-card,
+body.bg-black-velvet .bk-modal,
+body.bg-moonstone-charcoal .bk-recipe-card,
+body.bg-moonstone-charcoal .bk-modal {
+  color: #171421;
+}
+
+body.bg-moonstone-charcoal .bk-shop,
+body.bg-moonstone-charcoal .bk-hero-actions a,
+body.bg-moonstone-charcoal .bk-recipe-action,
+body.bg-moonstone-charcoal .bk-filter-bar button.is-active {
+  color: #0d0b13;
+  background: linear-gradient(135deg, #7c3aed, #c4b5fd, #cbd5e1);
+  border-color: transparent;
+}
+
+body.bg-black-velvet .bk-shop,
+body.bg-black-velvet .bk-hero-actions a,
+body.bg-black-velvet .bk-recipe-action,
+body.bg-black-velvet .bk-filter-bar button.is-active {
+  color: #080808;
+  background: linear-gradient(135deg, #d4af37, #f4c2c2);
+  border-color: transparent;
+}
+
+body.surface-silver-pearl .bk-recipe-card,
+body.surface-silver-pearl .bk-modal {
+  background: rgba(248, 250, 252, 0.94);
+  border-color: rgba(124, 58, 237, 0.18);
+}
+
+body.btn-moonstone-lift .bk-recipe-card:hover,
+body.btn-moonstone-lift .bk-shop:hover,
+body.btn-moonstone-lift .bk-recipe-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(124, 58, 237, 0.22);
 }
 
 @media (max-width: 900px) {

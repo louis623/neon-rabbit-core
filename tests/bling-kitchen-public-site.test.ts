@@ -7,6 +7,7 @@ import {
   mapPreviewSettingsToHomepageTemplateData,
   mapPreviewSettingsToJoinTemplateData,
   mapPreviewSettingsToTradeTemplateData,
+  type AmethystPreviewTemplateData,
 } from '@/lib/amethyst/preview-template-data'
 import { buildTargetedAmethystPublicPageTextForTest } from '@/lib/amethyst/public-asset-response'
 import { buildAmethystHomepageBootstrapScript } from '@/lib/amethyst/homepage-template-data'
@@ -59,36 +60,36 @@ function viCreateAdminClient() {
 }
 
 describe('BlingKitchen hybrid public site contract', () => {
-  it('maps Heather to the BlingKitchen homepage with Pantry preserved', () => {
+  it('maps Heather to the standard homepage with Pantry preserved', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       blingKitchenSettings,
       blingKitchenExtras,
     )
 
-    expect(homepage.publicSiteVariant).toBe('bling_kitchen_hybrid')
+    expect(homepage.publicSiteVariant).toBeUndefined()
     expect(homepage.repName).toBe('Heather')
     expect(homepage.businessName).toBe('BlingKitchen')
     expect(homepage.teamName).toBe('Opal Sparkling Gems')
-    expect(homepage.heroHeadline).toBe('BlingKitchen')
-    expect(homepage.heroSub).toContain('heart of her Ohio kitchen')
-    expect(homepage.heroImageUrl).toBe(BLING_KITCHEN_PROFILE.heroImageUrl)
+    expect(homepage.heroHeadline).toBe('Real jewelry. Live reveals. Pure sparkle.')
+    expect(homepage.heroSub).toContain('live reveals')
+    expect(homepage.heroImageUrl).toBeUndefined()
     expect(homepage.pantryPageUrl).toBe('/amethyst/Pantry.html')
     expect(homepage.footerLinks.joinTeam).toBe('/amethyst/Join.html')
     expect(homepage.streamLinks.tiktok).toBe(BLING_KITCHEN_PROFILE.tiktokUrl)
   })
 
-  it('serializes the BlingKitchen homepage variant for runtime branching', () => {
+  it('serializes Heather Pantry access without triggering the BlingKitchen homepage branch', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       blingKitchenSettings,
       blingKitchenExtras,
     )
     const script = buildAmethystHomepageBootstrapScript(homepage)
 
-    expect(script).toContain('"publicSiteVariant":"bling_kitchen_hybrid"')
+    expect(script).not.toContain('"publicSiteVariant":"bling_kitchen_hybrid"')
     expect(script).toContain('"pantryPageUrl":"/amethyst/Pantry.html"')
   })
 
-  it('keeps Trade Board and Join mechanics standard while dressing them for Heather', () => {
+  it('keeps Trade Board and Join mechanics standard while linking Heather Pantry', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       blingKitchenSettings,
       blingKitchenExtras,
@@ -98,13 +99,14 @@ describe('BlingKitchen hybrid public site contract', () => {
       blingKitchenExtras,
     )
 
-    expect(trade.publicSiteVariant).toBe('bling_kitchen_hybrid')
-    expect(trade.tradeHeroTitle).toBe('BlingKitchen Trade Board')
+    expect(trade.publicSiteVariant).toBeUndefined()
+    expect(trade.tradeHeroTitle).toBe('Trade for the piece you wanted to love.')
     expect(trade.tradeRules).toContain('Item-for-item only.')
-    expect(join.publicSiteVariant).toBe('bling_kitchen_hybrid')
+    expect(trade.pantryPageUrl).toBe('/amethyst/Pantry.html')
+    expect(join.publicSiteVariant).toBeUndefined()
     expect(join.teamName).toBe('Opal Sparkling Gems')
-    expect(join.heroTitle).toBe('Join the Team')
-    expect(join.bpReferralUrl).toBe(BLING_KITCHEN_PROFILE.joinPackUrl)
+    expect(join.pantryPageUrl).toBe('/amethyst/Pantry.html')
+    expect(join.bpReferralUrl).toBe(BLING_KITCHEN_PROFILE.shopUrl)
   })
 
   it('preserves source recipes as structured Pantry content', () => {
@@ -140,7 +142,7 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(script).toContain('"publicSiteSlug":"blingkitchen"')
   })
 
-  it('rewrites bespoke public links for the BlingKitchen slug', async () => {
+  it('rewrites standard public links and Pantry for the BlingKitchen slug', async () => {
     const data = await loadAmethystPreviewTemplateData({
       repId: 'rep-bling-kitchen',
       publicSiteSlug: 'blingkitchen',
@@ -181,11 +183,14 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(data.homepage.footerLinks.tradeBoard).toBe('/blingkitchen/trade')
     expect(data.homepage.footerLinks.joinTeam).toBe('/blingkitchen/join')
     expect(data.homepage.pantryPageUrl).toBe('/blingkitchen/in-the-pantry')
+    expect(data.homepage.publicSiteVariant).toBeUndefined()
     expect(data.trade.footerLinks.tradeBoard).toBe('/blingkitchen/trade')
+    expect(data.trade.pantryPageUrl).toBe('/blingkitchen/in-the-pantry')
     expect(data.join.footerLinks.joinTeam).toBe('/blingkitchen/join')
+    expect(data.join.pantryPageUrl).toBe('/blingkitchen/in-the-pantry')
   })
 
-  it('renders BlingKitchen Home, Trade, Join, and Pantry runtime shells', () => {
+  it('renders standard shells with optional Pantry navigation', () => {
     const homepageJsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -206,37 +211,21 @@ describe('BlingKitchen hybrid public site contract', () => {
       resolve(process.cwd(), 'public/amethyst/Pantry.html'),
       'utf8',
     )
-    const homepageCss = readFileSync(
-      resolve(process.cwd(), 'public/amethyst/homepage.css'),
-      'utf8',
-    )
 
-    expect(homepageJsx).toContain('function BlingKitchenHomepage')
     expect(homepageJsx).toContain('function SparkleSuiteHeaderStack')
-    expect(homepageJsx).toContain('<SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />')
-    expect(homepageJsx).not.toContain('bk-home-header')
-    expect(homepageJsx).toContain('function BlingKitchenRevealGuide')
-    expect(homepageJsx).toContain('isBlingKitchenHybrid')
-    expect(homepageJsx).toContain('bk-home-pantry-callout')
-    expect(homepageJsx).toContain('bk-home-cta-label')
-    expect(homepageJsx).toContain('<BlingKitchenRevealGuide repName={repName} />')
-    expect(homepageJsx).not.toContain('<WIBP repName={repName} />')
-    expect(tradeJsx).toContain('isBlingKitchenHybrid')
-    expect(tradeJsx).toContain('bk-trade-board-panel')
-    expect(joinJsx).toContain('isBlingKitchenHybrid')
-    expect(joinJsx).toContain('bk-join-shell')
+    expect(homepageJsx).toContain('CONTENT.pantryPageUrl')
+    expect(homepageJsx).toContain('In the Pantry')
+    expect(tradeJsx).toContain('const PANTRY_HREF = CONTENT.pantryPageUrl || ""')
+    expect(joinJsx).toContain('const PANTRY_HREF = CONTENT.pantryPageUrl || ""')
     expect(pantryJsx).toContain('function PantryPage')
     expect(pantryJsx).toContain('AMETHYST_PANTRY_TEMPLATE_DATA')
+    expect(pantryJsx).toContain('appearancePreset')
     expect(pantryJsx).toContain('recipe.tiktokUrl')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
-    expect(homepageCss).toContain('color: var(--bk-ink) !important;')
-    expect(homepageCss).toContain('text-shadow: none;')
-    expect(homepageCss).toContain('.bk-home-hero-ctas .bk-home-cta-label')
-    expect(homepageCss).toContain('.bk-home-guide')
   })
 
-  it('uses BlingKitchen-specific public SEO text', () => {
+  it('uses standard public SEO text for Home/Trade/Join and Pantry-specific text for Pantry', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       blingKitchenSettings,
       blingKitchenExtras,
@@ -249,7 +238,7 @@ describe('BlingKitchen hybrid public site contract', () => {
       blingKitchenSettings,
       blingKitchenExtras,
     )
-    const templateData = {
+    const templateData: AmethystPreviewTemplateData = {
       appearancePreset: 'amethyst',
       homepage,
       trade,
@@ -258,15 +247,13 @@ describe('BlingKitchen hybrid public site contract', () => {
 
     expect(
       buildTargetedAmethystPublicPageTextForTest('homepage', templateData).title,
-    ).toBe(
-      'BlingKitchen - Heather Daugherty | Ohio Bomb Party Host | Serving Sparkle from the Heart of the Home',
-    )
+    ).toBe('BlingKitchen - Live jewelry reveals')
     expect(
       buildTargetedAmethystPublicPageTextForTest('pantry', templateData).title,
-    ).toBe("In the Pantry - Heather's BlingKitchen Recipes")
+    ).toBe('In the Pantry - BlingKitchen')
     expect(
       buildTargetedAmethystPublicPageTextForTest('homepage', templateData)
         .description,
-    ).toContain('Heather Daugherty')
+    ).toContain('Shop live jewelry reveals')
   })
 })

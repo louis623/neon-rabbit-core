@@ -48,9 +48,6 @@ import {
   isBrittWithBlingSettings,
 } from '@/lib/britt-with-bling/profile'
 import {
-  applyBlingKitchenHomepage,
-  applyBlingKitchenJoin,
-  applyBlingKitchenTrade,
   isBlingKitchenSettings,
 } from '@/lib/bling-kitchen/profile'
 
@@ -312,6 +309,15 @@ function withCustomerTarget(href: string, repId: string | null | undefined) {
   return `${href}${separator}c=${encodeURIComponent(cleanedRepId)}`
 }
 
+function applyBlingKitchenPantryAccess(
+  homepage: AmethystHomepageTemplateData,
+): AmethystHomepageTemplateData {
+  return {
+    ...homepage,
+    pantryPageUrl: '/amethyst/Pantry.html',
+  }
+}
+
 function targetedHomepageAboutParagraphs(
   homepage: AmethystHomepageTemplateData,
 ): [string, string, string] {
@@ -357,21 +363,23 @@ function applyCustomerTarget(
     data.homepage.publicSiteVariant === 'mile_high_fizz_hybrid'
   const isBrittWithBlingHybrid =
     data.homepage.publicSiteVariant === 'britt_with_bling_hybrid'
-  const isBlingKitchenHybrid =
-    data.homepage.publicSiteVariant === 'bling_kitchen_hybrid'
   const isBespokeHybrid =
-    isMileHighFizzHybrid || isBrittWithBlingHybrid || isBlingKitchenHybrid
+    isMileHighFizzHybrid || isBrittWithBlingHybrid
   const hasDatabaseRoster = data.join.teamMembers.some(
     (member) => typeof member.id === 'string' && member.id.trim().length > 0,
   )
-  const bespokeSlugLinks =
-    isBespokeHybrid && publicSiteSlug?.trim()
+  const publicSlugLinks =
+    publicSiteSlug?.trim()
       ? {
           home: `/${publicSiteSlug.trim().toLowerCase()}`,
           tradeBoard: `/${publicSiteSlug.trim().toLowerCase()}/trade`,
           joinTeam: `/${publicSiteSlug.trim().toLowerCase()}/join`,
           pantry: `/${publicSiteSlug.trim().toLowerCase()}/in-the-pantry`,
         }
+      : null
+  const pantrySlugLink =
+    data.homepage.pantryPageUrl && publicSiteSlug?.trim()
+      ? `/${publicSiteSlug.trim().toLowerCase()}/in-the-pantry`
       : null
   const scrubGenericJoin =
     targeted && !isBespokeHybrid && !hasDatabaseRoster
@@ -387,48 +395,57 @@ function applyCustomerTarget(
         ? 'Intro video coming soon.'
         : data.homepage.showcaseVideoCaption,
       joinTeamUrl: data.homepage.joinTeamUrl
-        ? bespokeSlugLinks?.joinTeam ??
+        ? publicSlugLinks?.joinTeam ??
           withCustomerTarget(data.homepage.joinTeamUrl, repId)
         : '',
       pantryPageUrl: data.homepage.pantryPageUrl
-        ? bespokeSlugLinks?.pantry ??
+        ? pantrySlugLink ??
+          publicSlugLinks?.pantry ??
           withCustomerTarget(data.homepage.pantryPageUrl, repId)
         : data.homepage.pantryPageUrl,
       footerLinks: {
         ...data.homepage.footerLinks,
         home:
-          bespokeSlugLinks?.home ??
+          publicSlugLinks?.home ??
           withCustomerTarget(
             data.homepage.footerLinks.home || '/amethyst/Homepage.html',
             repId,
           ),
         tradeBoard:
-          bespokeSlugLinks?.tradeBoard ??
+          publicSlugLinks?.tradeBoard ??
           withCustomerTarget(data.homepage.footerLinks.tradeBoard, repId),
         joinTeam: data.homepage.footerLinks.joinTeam
-          ? bespokeSlugLinks?.joinTeam ??
+          ? publicSlugLinks?.joinTeam ??
             withCustomerTarget(data.homepage.footerLinks.joinTeam, repId)
           : undefined,
       },
     },
     trade: {
       ...data.trade,
+      pantryPageUrl: data.trade.pantryPageUrl
+        ? pantrySlugLink ??
+          withCustomerTarget(data.trade.pantryPageUrl, repId)
+        : data.trade.pantryPageUrl,
       footerLinks: {
         ...data.trade.footerLinks,
         home:
-          bespokeSlugLinks?.home ??
+          publicSlugLinks?.home ??
           withCustomerTarget(data.trade.footerLinks.home, repId),
         tradeBoard:
-          bespokeSlugLinks?.tradeBoard ??
+          publicSlugLinks?.tradeBoard ??
           withCustomerTarget(data.trade.footerLinks.tradeBoard, repId),
         joinTeam: data.trade.footerLinks.joinTeam
-          ? bespokeSlugLinks?.joinTeam ??
+          ? publicSlugLinks?.joinTeam ??
             withCustomerTarget(data.trade.footerLinks.joinTeam, repId)
           : undefined,
       },
     },
     join: {
       ...data.join,
+      pantryPageUrl: data.join.pantryPageUrl
+        ? pantrySlugLink ??
+          withCustomerTarget(data.join.pantryPageUrl, repId)
+        : data.join.pantryPageUrl,
       teamMembers: scrubGenericJoin ? [] : data.join.teamMembers,
       promoText: scrubGenericJoin ? '' : data.join.promoText,
       footerColumn: scrubGenericJoin
@@ -447,13 +464,13 @@ function applyCustomerTarget(
       footerLinks: {
         ...data.join.footerLinks,
         home:
-          bespokeSlugLinks?.home ??
+          publicSlugLinks?.home ??
           withCustomerTarget(data.join.footerLinks.home, repId),
         tradeBoard:
-          bespokeSlugLinks?.tradeBoard ??
+          publicSlugLinks?.tradeBoard ??
           withCustomerTarget(data.join.footerLinks.tradeBoard, repId),
         joinTeam:
-          bespokeSlugLinks?.joinTeam ??
+          publicSlugLinks?.joinTeam ??
           withCustomerTarget(data.join.footerLinks.joinTeam, repId),
       },
     },
@@ -514,7 +531,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     : isBrittWithBlingSettings(settings)
       ? applyBrittWithBlingHomepage(homepage)
       : isBlingKitchenSettings(settings)
-        ? applyBlingKitchenHomepage(homepage)
+        ? applyBlingKitchenPantryAccess(homepage)
         : homepage
 }
 
@@ -554,7 +571,12 @@ export function mapPreviewSettingsToTradeTemplateData(
 
   if (isMileHighFizzSettings(settings)) return applyMileHighFizzTrade(trade)
   if (isBrittWithBlingSettings(settings)) return applyBrittWithBlingTrade(trade)
-  if (isBlingKitchenSettings(settings)) return applyBlingKitchenTrade(trade)
+  if (isBlingKitchenSettings(settings)) {
+    return {
+      ...trade,
+      pantryPageUrl: '/amethyst/Pantry.html',
+    }
+  }
   return trade
 }
 
@@ -603,7 +625,12 @@ export function mapPreviewSettingsToJoinTemplateData(
   if (isBrittWithBlingSettings(settings)) {
     return applyBrittWithBlingJoin(join, teamMembers ?? [])
   }
-  if (isBlingKitchenSettings(settings)) return applyBlingKitchenJoin(join)
+  if (isBlingKitchenSettings(settings)) {
+    return {
+      ...join,
+      pantryPageUrl: '/amethyst/Pantry.html',
+    }
+  }
   return join
 }
 

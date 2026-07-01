@@ -58,6 +58,7 @@ describe('Amethyst appearance presets', () => {
       'amethyst',
       'sparkle_suite_morganite',
       'black_diamond',
+      'moonstone',
       'rose_gold',
       'garnet',
       'amber',
@@ -68,6 +69,7 @@ describe('Amethyst appearance presets', () => {
       'Amethyst',
       'Sparkle Suite/Morganite',
       'Black Diamond',
+      'Moonstone',
       'Rose Gold',
       'Garnet',
       'Amber',
@@ -364,6 +366,52 @@ describe('Amethyst appearance presets', () => {
     )
     expect(normalizeAmethystSkinSelection('RG-01')).toBe('rose_gold')
     expect(normalizeAmethystSkinSelection('Rose Gold')).toBe('rose_gold')
+  })
+
+  it('adds Moonstone as a visual-only Amethyst skin with a browsing card', () => {
+    const preset = getAmethystAppearancePreset('moonstone')
+    const homepage = applyAmethystAppearancePreset(
+      buildAmethystHomepageTweakDefaults(defaultAmethystHomepageTemplateData),
+      preset.id,
+    )
+    const trade = applyAmethystAppearancePreset(
+      buildAmethystTradeTweakDefaults(defaultAmethystTradeTemplateData),
+      preset.id,
+    )
+    const join = applyAmethystAppearancePreset(
+      buildAmethystJoinTweakDefaults(defaultAmethystJoinTemplateData),
+      preset.id,
+    )
+    const card = getAmethystSkinCard('moonstone')
+    const expectedTokens = {
+      preset: 'moonstone',
+      primaryColor: '#7c3aed',
+      accentColor: '#cbd5e1',
+      bgTone: 'moonstone',
+      headingFont: 'playfair',
+      bgTreatment: 'moonstone-charcoal',
+      cardSurface: 'silver-pearl',
+      buttonEnergy: 'moonstone-lift',
+      tradeFlair: 'silver-violet',
+    }
+
+    expect(normalizeAmethystAppearancePreset('moonstone')).toBe('moonstone')
+    expect(preset.label).toBe('Moonstone')
+    expect(homepage).toMatchObject(expectedTokens)
+    expect(trade).toMatchObject(expectedTokens)
+    expect(join).toMatchObject(expectedTokens)
+    expect(card).toMatchObject({
+      id: 'moonstone',
+      code: 'MS-01',
+      label: 'Moonstone',
+      headingFont: 'Playfair Display',
+      bodyFont: 'DM Sans',
+    })
+    expect(card.swatches.map((swatch) => swatch.value)).toEqual(
+      expect.arrayContaining(['#15121d', '#7c3aed', '#cbd5e1']),
+    )
+    expect(normalizeAmethystSkinSelection('MS-01')).toBe('moonstone')
+    expect(normalizeAmethystSkinSelection('Moonstone')).toBe('moonstone')
   })
 
   it.each([

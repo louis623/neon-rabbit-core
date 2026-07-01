@@ -455,6 +455,7 @@ describe('site settings service', () => {
   it.each([
     'garnet',
     'amber',
+    'moonstone',
     'velvet',
     'rose_quartz',
   ] as const)(
