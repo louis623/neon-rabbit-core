@@ -23,6 +23,19 @@ function serviceErrorResponse(error: ServiceError) {
   )
 }
 
+function modelDraftErrorResponse(error: unknown) {
+  console.error('[site-recipes:draft] model draft build failed', error)
+
+  return NextResponse.json(
+    {
+      code: 'MODEL_UNAVAILABLE',
+      error:
+        'Nic-Nac can save the uploaded photos, but the recipe builder needs the OpenAI billing/quota issue cleared before it can read recipe-card images.',
+    },
+    { status: 503 },
+  )
+}
+
 function readImageRole(value: unknown): SiteRecipeDraftImageRole | null {
   return value === 'display_photo' || value === 'recipe_card' ? value : null
 }
@@ -59,7 +72,12 @@ export async function POST(request: Request) {
       )
     }
 
-    const draft = await buildSiteRecipeDraftFromImages({ title, images })
+    let draft
+    try {
+      draft = await buildSiteRecipeDraftFromImages({ title, images })
+    } catch (error) {
+      return modelDraftErrorResponse(error)
+    }
 
     return NextResponse.json({ ok: true, draft })
   } catch (error) {
@@ -73,20 +91,6 @@ export async function POST(request: Request) {
 
     if (error instanceof ServiceError) {
       return serviceErrorResponse(error)
-    }
-
-    const message = error instanceof Error ? error.message : ''
-    if (
-      /\b(quota|insufficient_quota|billing|rate limit|model|api key)\b/i.test(message)
-    ) {
-      return NextResponse.json(
-        {
-          code: 'MODEL_UNAVAILABLE',
-          error:
-            'Nic-Nac can save the uploaded photos, but the recipe builder needs the OpenAI billing/quota issue cleared before it can read recipe-card images.',
-        },
-        { status: 503 },
-      )
     }
 
     throw error

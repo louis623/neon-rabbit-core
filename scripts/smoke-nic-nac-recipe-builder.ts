@@ -1,4 +1,5 @@
 import { config } from 'dotenv'
+import sharp from 'sharp'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getReviewerSmokePersona } from '@/lib/reviewer-smoke/config'
 import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
@@ -22,6 +23,32 @@ type SessionCookie = {
   cookie: string
   email: string
 }
+
+type RecipeDraftProbePayload = {
+  draft?: {
+    title?: string
+    description?: string
+    category?: string
+    prepTime?: string
+    servings?: number | null
+    ingredients?: string[]
+    steps?: string[]
+    note?: string
+    imageAlt?: string
+    warnings?: string[]
+  }
+}
+
+const MODEL_PROBE_TITLE = 'Smoke Chocolate-Dipped Strawberries'
+
+const MODEL_PROBE_REQUIRED_FACTS = [
+  { label: 'strawberries', pattern: /strawberr/i },
+  { label: 'chocolate chips', pattern: /chocolate/i },
+  { label: 'coconut oil', pattern: /coconut/i },
+  { label: 'dry berries guidance', pattern: /\bdry\b|dried/i },
+  { label: 'dip step', pattern: /\bdip|dipped|dipping/i },
+  { label: 'chill step', pattern: /\bchill|refrigerat/i },
+]
 
 function hasArg(name: string) {
   return process.argv.includes(name)
@@ -68,6 +95,86 @@ function assertSmoke(condition: boolean, message: string) {
     return
   }
   throw new Error(`[recipe-builder-smoke][FAIL] ${message}`)
+}
+
+function escapeSvgText(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function renderSvgTextLines(lines: string[], options: { x: number; y: number }) {
+  return lines
+    .map(
+      (line, index) =>
+        `<text x="${options.x}" y="${options.y + index * 40}" class="body">${escapeSvgText(
+          line,
+        )}</text>`,
+    )
+    .join('')
+}
+
+async function svgToPngDataUrl(svg: string) {
+  const buffer = await sharp(Buffer.from(svg)).png().toBuffer()
+  return `data:image/png;base64,${buffer.toString('base64')}`
+}
+
+async function buildRecipeCardFixtureDataUrl() {
+  const lines = [
+    'Ingredients:',
+    '1 lb fresh strawberries, washed and completely dry',
+    '1 cup semi-sweet chocolate chips',
+    '1 tbsp coconut oil',
+    'Steps:',
+    '1. Wash berries and pat them completely dry.',
+    '2. Melt chocolate chips with coconut oil until smooth.',
+    '3. Dip strawberries, set on parchment, and chill 20 minutes.',
+    'Note: Dry berries are the secret to a glossy coating.',
+  ]
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000">
+    <rect width="1400" height="1000" fill="#fffaf5"/>
+    <rect x="70" y="70" width="1260" height="860" rx="36" fill="#ffffff" stroke="#5b342d" stroke-width="8"/>
+    <text x="120" y="150" class="title">Smoke Test Recipe Card</text>
+    <text x="120" y="220" class="subtitle">${MODEL_PROBE_TITLE}</text>
+    ${renderSvgTextLines(lines, { x: 120, y: 310 })}
+    <style>
+      .title { font: 700 54px Georgia, serif; fill: #402924; }
+      .subtitle { font: 700 44px Arial, sans-serif; fill: #d81b87; }
+      .body { font: 600 30px Arial, sans-serif; fill: #402924; }
+    </style>
+  </svg>`
+  return svgToPngDataUrl(svg)
+}
+
+async function buildDisplayPhotoFixtureDataUrl() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+    <rect width="1200" height="900" fill="#fff5f8"/>
+    <ellipse cx="600" cy="560" rx="420" ry="160" fill="#f4e3d8"/>
+    <circle cx="420" cy="430" r="105" fill="#c7194d"/>
+    <circle cx="600" cy="380" r="118" fill="#d7285d"/>
+    <circle cx="780" cy="440" r="105" fill="#bd1746"/>
+    <path d="M330 435 C430 350, 520 500, 620 400 S820 360, 910 450" fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="round"/>
+    <path d="M360 498 C470 420, 560 570, 670 470 S840 430, 930 520" fill="none" stroke="#5a271f" stroke-width="24" stroke-linecap="round"/>
+    <text x="600" y="760" text-anchor="middle" class="label">Chocolate-dipped strawberries</text>
+    <style>
+      .label { font: 700 44px Arial, sans-serif; fill: #402924; }
+    </style>
+  </svg>`
+  return svgToPngDataUrl(svg)
+}
+
+function assertModelDraftContainsExpectedFacts(payload: RecipeDraftProbePayload | null) {
+  const draft = payload?.draft
+  assertSmoke(Boolean(draft?.title), 'model draft probe returned a draft')
+
+  const draftText = JSON.stringify(draft ?? {}).toLowerCase()
+  for (const fact of MODEL_PROBE_REQUIRED_FACTS) {
+    assertSmoke(
+      fact.pattern.test(draftText),
+      `model draft includes ${fact.label} from recipe-card fixture`,
+    )
+  }
 }
 
 async function getSmokeAccount(
@@ -232,6 +339,8 @@ async function main() {
   )
 
   if (probeModel) {
+    const displayPhotoUrl = await buildDisplayPhotoFixtureDataUrl()
+    const recipeCardUrl = await buildRecipeCardFixtureDataUrl()
     const modelProbe = await fetchJson(appUrl, env, '/api/nic-nac/site-recipes/draft', {
       method: 'POST',
       headers: {
@@ -239,15 +348,15 @@ async function main() {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        title: 'Smoke Chocolate-Dipped Strawberries',
+        title: MODEL_PROBE_TITLE,
         images: [
           {
             role: 'display_photo',
-            url: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6',
+            url: displayPhotoUrl,
           },
           {
             role: 'recipe_card',
-            url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136',
+            url: recipeCardUrl,
           },
         ],
       }),
@@ -262,11 +371,12 @@ async function main() {
       }
       assertSmoke(
         modelProbe.response.status === 503,
-        'model draft probe reports OpenAI/model unavailable while quota is blocked',
+        `model draft probe reports OpenAI/model unavailable while quota is blocked (status=${modelProbe.response.status}, body=${snippet})`,
       )
     } else {
-      const payload = modelProbe.payload as { draft?: { title?: string } } | null
-      assertSmoke(Boolean(payload?.draft?.title), 'model draft probe returned a draft')
+      assertModelDraftContainsExpectedFacts(
+        modelProbe.payload as RecipeDraftProbePayload | null,
+      )
     }
   }
 

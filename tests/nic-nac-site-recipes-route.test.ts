@@ -317,6 +317,40 @@ describe('/api/nic-nac/site-recipes', () => {
     expect(buildSiteRecipeDraftFromImagesMock).not.toHaveBeenCalled()
   })
 
+  it('returns a friendly model-unavailable response when draft building fails', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-bling',
+      supabase: { marker: 'supabase' },
+    })
+    buildSiteRecipeDraftFromImagesMock.mockRejectedValueOnce(
+      new Error('provider returned an unexpected OpenAI quota shape'),
+    )
+
+    const response = await POST_DRAFT(
+      new Request('http://localhost/api/nic-nac/site-recipes/draft', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Chocolate-Dipped Strawberries',
+          images: [
+            {
+              role: 'recipe_card',
+              url: 'https://cdn.example.com/strawberry-card.jpg',
+            },
+          ],
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'MODEL_UNAVAILABLE',
+      error:
+        'Nic-Nac can save the uploaded photos, but the recipe builder needs the OpenAI billing/quota issue cleared before it can read recipe-card images.',
+    })
+    expect(upsertPublicSiteRecipeMock).not.toHaveBeenCalled()
+  })
+
   it('returns auth, syntax, validation, and service errors safely', async () => {
     getPaidNicNacContextMock.mockRejectedValueOnce(new AuthError('nope'))
 
