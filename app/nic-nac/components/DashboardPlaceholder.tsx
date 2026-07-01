@@ -451,6 +451,8 @@ const BLING_KITCHEN_RECIPE_CATEGORIES = [
   'Appetizer',
 ]
 
+type RecipeEditorMode = 'builder' | 'manual'
+
 type AudienceResponsePayload = {
   summary: CustomerAudienceSummary
   customers: CustomerAudienceMember[]
@@ -2792,6 +2794,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setRecipeDraft((current) => ({ ...current, ...patch }))
   }
 
+  function handleSelectRecipe(recipeId: string) {
+    const recipe = recipesState.recipes.find((item) => item.id === recipeId)
+    if (!recipe) return
+    setSelectedRecipeId(recipe.id)
+    setRecipeDraft(getRecipeDraft(recipe))
+    setRecipeActionState({
+      pendingKey: null,
+      error: null,
+      helperMessage: null,
+    })
+  }
+
+  function handleNewRecipeDraft() {
+    setSelectedRecipeId(null)
+    setRecipeDraft(getRecipeDraft())
+    setRecipeActionState({
+      pendingKey: null,
+      error: null,
+      helperMessage: null,
+    })
+  }
+
   async function handleSaveRecipe() {
     if (!recipeDraft.title.trim()) {
       setRecipeActionState({
@@ -4147,6 +4171,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 actionState={recipeActionState}
                 statusMessage={getRecipeSaveStatusText(recipeActionState)}
                 onDraftChange={handleRecipeDraftChange}
+                onSelectRecipe={handleSelectRecipe}
+                onNewRecipe={handleNewRecipeDraft}
                 onSave={handleSaveRecipe}
                 onRemove={handleRemoveRecipe}
                 onUploadImage={handleRecipeImageUpload}
@@ -6096,8 +6122,11 @@ export function RecipesCard({
   state,
   draft,
   actionState,
+  initialEditorMode = 'builder',
   statusMessage,
   onDraftChange,
+  onSelectRecipe,
+  onNewRecipe,
   onSave,
   onRemove,
   onUploadImage,
@@ -6106,8 +6135,11 @@ export function RecipesCard({
   state: RecipesState
   draft: RecipeDraft
   actionState?: RecipeActionState
+  initialEditorMode?: RecipeEditorMode
   statusMessage?: string | null
   onDraftChange?: (patch: Partial<RecipeDraft>) => void
+  onSelectRecipe?: (recipeId: string) => void
+  onNewRecipe?: () => void
   onSave?: () => void
   onRemove?: (recipeId: string) => void
   onUploadImage?: (
@@ -6116,6 +6148,9 @@ export function RecipesCard({
   ) => Promise<void> | void
   onBuildDraft?: () => void
 }) {
+  const [editorMode, setEditorMode] =
+    useState<RecipeEditorMode>(initialEditorMode)
+
   if (state.status === 'error') {
     return (
       <div className={styles.rosterFallback}>
@@ -6135,6 +6170,14 @@ export function RecipesCard({
 
   const pendingKey = actionState?.pendingKey
   const canRemove = Boolean(draft.id)
+  const isBuilderMode = editorMode === 'builder'
+
+  function handleEditorModeChange(nextMode: RecipeEditorMode) {
+    setEditorMode(nextMode)
+    if (nextMode === 'builder') {
+      onNewRecipe?.()
+    }
+  }
 
   return (
     <div className={styles.siteSettingsCard}>
@@ -6154,16 +6197,18 @@ export function RecipesCard({
           >
             {statusMessage ?? getRecipeSaveStatusText(actionState)}
           </span>
-          <button
-            type="button"
-            className={styles.siteSettingsSaveButton}
-            onClick={onBuildDraft}
-            disabled={Boolean(pendingKey)}
-          >
-            {pendingKey === 'build-draft'
-              ? 'Building recipe...'
-              : 'Build recipe with Nic-Nac'}
-          </button>
+          {isBuilderMode ? (
+            <button
+              type="button"
+              className={styles.siteSettingsSaveButton}
+              onClick={onBuildDraft}
+              disabled={Boolean(pendingKey)}
+            >
+              {pendingKey === 'build-draft'
+                ? 'Building recipe...'
+                : 'Build recipe with Nic-Nac'}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -6177,14 +6222,24 @@ export function RecipesCard({
       <div className={styles.recipeEditorLayout}>
         <div className={styles.siteSettingsSection}>
           <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>
-              {draft.id ? 'Recipe builder' : 'New recipe builder'}
-            </div>
+            <select
+              className={styles.recipeModeSelect}
+              value={editorMode}
+              aria-label="Recipe editor mode"
+              onChange={(event) =>
+                handleEditorModeChange(event.target.value as RecipeEditorMode)
+              }
+            >
+              <option value="builder">New Recipe Builder</option>
+              <option value="manual">Manual Edit Recipes</option>
+            </select>
             <span className={styles.rosterTag}>
               {draft.isVisible ? 'Visible in Pantry' : 'Hidden draft'}
             </span>
           </div>
 
+          {isBuilderMode ? (
+          <>
           <div className={styles.recipeBuilderPanel}>
             <label className={styles.searchField}>
               <span className={styles.searchLabel}>Title</span>
@@ -6322,14 +6377,84 @@ export function RecipesCard({
             )}
           </div>
 
-          <details className={styles.recipeAdvancedEdit}>
-            <summary className={styles.playbookGuideSummary}>
-              <span>
-                <strong>Advanced edit</strong>
-                <small>Fine-tune fields after Nic-Nac builds the recipe.</small>
-              </span>
-              <span className={styles.disclosureChevron}>›</span>
-            </summary>
+          </>
+          ) : (
+          <div className={styles.recipeManualEditPanel}>
+            <div className={styles.siteSettingsGrid}>
+              <label className={styles.sortFieldWide}>
+                <span className={styles.searchLabel}>Recipe to edit</span>
+                <select
+                  className={styles.searchInput}
+                  value={draft.id ?? ''}
+                  onChange={(event) => {
+                    const recipeId = event.target.value
+                    if (recipeId) {
+                      onSelectRecipe?.(recipeId)
+                    } else {
+                      onNewRecipe?.()
+                    }
+                  }}
+                >
+                  <option value="">New manual recipe</option>
+                  {state.recipes.map((recipe) => (
+                    <option value={recipe.id} key={recipe.id}>
+                      {recipe.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Title</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="Chocolate-Dipped Strawberries"
+                  value={draft.title}
+                  onChange={(event) =>
+                    onDraftChange?.({ title: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Category</span>
+                <select
+                  className={styles.searchInput}
+                  value={draft.category}
+                  onChange={(event) =>
+                    onDraftChange?.({ category: event.target.value })
+                  }
+                >
+                  <option value="">Choose category</option>
+                  {BLING_KITCHEN_RECIPE_CATEGORIES.map((category) => (
+                    <option value={category} key={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Prep time</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="20 minutes"
+                  value={draft.prepTime}
+                  onChange={(event) =>
+                    onDraftChange?.({ prepTime: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Servings</span>
+                <input
+                  className={styles.searchInput}
+                  inputMode="numeric"
+                  placeholder="12"
+                  value={draft.servings}
+                  onChange={(event) =>
+                    onDraftChange?.({ servings: event.target.value })
+                  }
+                />
+              </label>
+            </div>
 
             <div className={styles.siteSettingsGrid}>
               <label className={styles.searchField}>
@@ -6446,6 +6571,14 @@ export function RecipesCard({
             <div className={styles.actionRow}>
               <button
                 type="button"
+                className={styles.siteSettingsSaveButton}
+                onClick={onSave}
+                disabled={Boolean(pendingKey)}
+              >
+                {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
+              </button>
+              <button
+                type="button"
                 className={styles.secondaryActionButton}
                 onClick={() => draft.id && onRemove?.(draft.id)}
                 disabled={Boolean(pendingKey) || !canRemove}
@@ -6453,7 +6586,8 @@ export function RecipesCard({
                 Remove recipe
               </button>
             </div>
-          </details>
+          </div>
+          )}
         </div>
       </div>
     </div>

@@ -3373,7 +3373,7 @@
 
 .recipeBuilderPanel,
 .recipeDraftPreview,
-.recipeAdvancedEdit,
+.recipeManualEditPanel,
 .recipeSourcePanel {
   display: grid;
   gap: 12px;
@@ -3382,6 +3382,19 @@
   border: 1px solid rgba(64, 41, 36, 0.1);
   background: rgba(255, 255, 255, 0.62);
   padding: 12px;
+}
+
+.recipeModeSelect {
+  min-width: min(100%, 220px);
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-serif), 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 9px 34px 9px 11px;
 }
 
 .recipeBuilderImageGrid {
@@ -3431,16 +3444,6 @@
 
 .recipePreviewGrid p {
   margin: 0;
-}
-
-.recipeAdvancedEdit {
-  padding: 0;
-  overflow: hidden;
-}
-
-.recipeAdvancedEdit .siteSettingsGrid,
-.recipeAdvancedEdit .actionRow {
-  padding: 0 12px 12px;
 }
 
 .recipeSourceImageGrid {
