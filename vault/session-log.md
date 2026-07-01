@@ -2542,3 +2542,28 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Heather-facing recipe labels should describe the action/result plainly; `Recipe Preview` is clearer than model/tool-oriented wording.
+
+---
+
+## July 1, 2026 - Moonstone Skin and Heather Standard Public Site
+
+**What changed:**
+- Added reusable Moonstone (`moonstone`, `MS-01`) as a generic purple, silver, and charcoal Sparkle Suite skin any rep can choose.
+- Returned Heather/BlingKitchen's public Home, Trade, and Join pages to the standard Amethyst-style template structure instead of bespoke kitchen-themed variants.
+- Kept Heather's `In the Pantry` link visible on the standard public navigation/footer.
+- Updated the Pantry template so it receives and applies the active appearance preset; Heather's Pantry now follows Moonstone today and should follow any other selected skin later.
+- Added the Supabase constraint migration for the `moonstone` appearance preset and updated Heather's remote demo setting to Moonstone.
+
+**Verification:**
+- `npm exec vitest run tests/amethyst-appearance-presets.test.ts tests/amethyst-homepage-template.test.ts tests/amethyst-trade-template.test.ts tests/amethyst-join-template.test.ts tests/bling-kitchen-public-site.test.ts tests/services/site-settings.test.ts tests/nic-nac/site-customization-tools.test.ts` passed: 7 files, 118 tests.
+- `npm exec vitest run tests/amethyst-preview-template-data.test.ts tests/public-site-slug-route.test.ts tests/bling-kitchen-recipes-db-loader.test.ts tests/nic-nac-dashboard-placeholder.test.ts` passed: 4 files, 108 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- `supabase db push` applied migration `20260701150000_ss_add_moonstone_appearance_preset.sql` to the remote project.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` was moved to deployment `dpl_CSVjRVryB8Y3aZtR51pwzq1u9yTS` at preview `https://sparkle-suite-o8owg3wwy-louis-2849s-projects.vercel.app`.
+- Stable health checks passed for `/api/prelaunch/health` and `/api/nic-nac/health`.
+- Stable template checks confirmed BlingKitchen homepage uses `preset:"moonstone"`, standard Sparkle Suite hero copy, and `pantryPageUrl:"/blingkitchen/in-the-pantry"`; Pantry template confirmed `appearancePreset:"moonstone"` and `recipeCount:26`.
+- Raw `npx tsc --noEmit --pretty false` still fails on unrelated repo-wide test typing issues; the one touched-test type issue it surfaced was fixed, and the production build passed TypeScript.
+- No Chrome reviewer-smoke or Louis personal browser/session was used.
+
+**Lesson:**
+- Heather's public site should be standard Sparkle Suite with a selectable skin. The only special customer-facing surface is Pantry, and Pantry must inherit the selected skin instead of being manually restyled.

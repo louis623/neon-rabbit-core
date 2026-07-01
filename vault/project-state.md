@@ -18,12 +18,12 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed implementation checkpoint:** `bd935e6 fix: let reps approve trades without revealed item numbers`
+- **Latest pushed implementation checkpoint:** `d41788a feat: add Moonstone skin and standard Heather public site`
 - **Latest pushed docs/memory checkpoint:** `12b6bcc docs: update Open Brain closeout memory`
-- **Latest local/deployed checkpoints:** Trade approval from the Sparkle Suite workspace can now skip revealed item-number capture. The modal keeps item-number capture as the normal path, but includes `Approve without item number`; skipped approvals tell reps to add the revealed piece later with Nic-Nac. Nic-Nac prompt/tool guidance now says shared catalog photo corrections are available through `report_jewelry_catalog_issue`, but canonical catalog photo replacement must use an approved jewelry-front asset and never a label/details image. Non-item-number Trade Board listing support remains live: V1 is Nic-Nac-only, one piece at a time, with controlled jewelry type, collection, size when applicable, and an individual customer-facing photo.
+- **Latest local/deployed checkpoints:** Added reusable Moonstone skin (`moonstone`, `MS-01`) with purple, silver, and charcoal tokens for any Sparkle Suite rep. Heather/BlingKitchen now uses the standard public Home, Trade, and Join templates with Moonstone applied instead of bespoke BlingKitchen hero/content variants, while keeping the `In the Pantry` link visible. The Pantry page now inherits the selected appearance preset, so Heather's recipes can follow Moonstone or any future skin she chooses.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-oefreyqkl-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_9uEjtUMUZsvUMnQwCMoQbbDTbXw9`
+- **Current stable demo target:** `https://sparkle-suite-o8owg3wwy-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_CSVjRVryB8Y3aZtR51pwzq1u9yTS`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
