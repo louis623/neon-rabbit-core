@@ -245,4 +245,69 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       logSpy.mockRestore()
     }
   })
+
+  it('marks provider stream errors as aborted and logs the nested provider message', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    streamTextMock.mockImplementation((options: {
+      onError?: (error: unknown) => void
+      onFinish?: (event: { totalUsage: unknown }) => void
+    }) => {
+      options.onError?.({
+        error: {
+          type: 'error',
+          sequence_number: 2,
+          error: {
+            type: 'insufficient_quota',
+            code: 'insufficient_quota',
+            message:
+              'You exceeded your current quota, please check your plan and billing details.',
+            param: null,
+          },
+        },
+      })
+      options.onFinish?.({ totalUsage: {} })
+      return {
+        toUIMessageStream: async function* () {
+          yield {
+            type: 'finish',
+            finishReason: { unified: 'error', raw: undefined },
+          }
+        },
+      }
+    })
+
+    try {
+      const response = await POST(requestFor('Add a piece to Trade Board'))
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(abortAssistantMock).toHaveBeenCalledWith(
+        supabaseMock,
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          parts: expect.any(Array),
+        }),
+      )
+      expect(completeAssistantMock).not.toHaveBeenCalled()
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          status: 'error',
+          errorMessage: expect.stringContaining('insufficient_quota'),
+        }),
+      )
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          errorMessage: expect.stringContaining('exceeded your current quota'),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+      errorSpy.mockRestore()
+    }
+  })
 })

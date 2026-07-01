@@ -85,6 +85,42 @@ function readTextFromMessage(message: UIMessage | undefined): string {
   )
 }
 
+function extractStreamErrorMessage(err: unknown): string {
+  const seen = new Set<unknown>()
+  const messages: string[] = []
+  const codes: string[] = []
+
+  const visit = (value: unknown) => {
+    if (!value || seen.has(value)) return
+    if (typeof value !== 'object') {
+      if (typeof value === 'string' && value.trim()) messages.push(value.trim())
+      return
+    }
+
+    seen.add(value)
+    const record = value as Record<string, unknown>
+    const message = record.message
+    const code = record.code
+    const type = record.type
+    if (typeof message === 'string' && message.trim()) {
+      messages.push(message.trim())
+    }
+    if (typeof code === 'string' && code.trim()) codes.push(code.trim())
+    if (typeof type === 'string' && type.trim()) codes.push(type.trim())
+    visit(record.error)
+    visit(record.cause)
+  }
+
+  visit(err)
+
+  const prefix = Array.from(new Set(codes)).join(':')
+  const message = Array.from(new Set(messages)).join(' | ')
+  if (prefix && message) return `${prefix}: ${message}`
+  if (message) return message
+  if (prefix) return prefix
+  return String(err)
+}
+
 // Scan messages for HITL approval-responded parts. AI SDK v6 mutates the
 // assistant message parts in place when the user clicks approve/reject.
 function extractApprovalResponses(
@@ -505,8 +541,7 @@ export async function POST(request: Request) {
           activeToolCalls = Math.max(0, activeToolCalls - 1)
         },
         onError: async (err) => {
-          streamErrorMessage =
-            (err as { error?: Error })?.error?.message ?? String(err)
+          streamErrorMessage = extractStreamErrorMessage(err)
           console.error('[nic-nac] streamText error:', err)
           await logIncident({
             errorType: 'streamtext_error',
@@ -573,7 +608,7 @@ export async function POST(request: Request) {
             messageId: responseMessage.id,
             parts: normalizedParts,
           })
-        } else if (isAborted) {
+        } else if (isAborted || streamErrorMessage) {
           await abortAssistant(supabase, {
             conversationId,
             messageId: responseMessage.id,
