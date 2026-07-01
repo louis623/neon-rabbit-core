@@ -120,8 +120,11 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     evidenceFiles: [
       'docs/sparkle-suite/brand/03-nic-nac-positioning.md',
       'docs/sparkle-suite/browser-smoke-walkthrough-2026-05-18.md',
+      'scripts/smoke-nic-nac-recipe-chat.ts',
       'tests/nic-nac-dashboard-placeholder.test.ts',
       'tests/nic-nac-legacy-name-guard.test.ts',
+      'tests/nic-nac-recipe-builder-smoke-script.test.ts',
+      'tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts',
       'tests/nic-nac/prompt-routing.test.ts',
       'tests/nic-nac/site-recipe-draft-tool.test.ts',
       'tests/nic-nac/site-customization-tools.test.ts',
@@ -134,7 +137,7 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     },
     defaultProviderActions: [],
     nextAction:
-      'Keep this as the dashboard baseline; after OpenAI quota clears, add the real model-in-loop Heather recipe chat replay artifact.',
+      'Keep this as the dashboard baseline; after OpenAI quota clears, run `npm run smoke:nic-nac:recipe-builder -- --expect-model` and `npm run smoke:nic-nac:recipe-chat -- --expect-model`, then attach the real model-in-loop Heather recipe chat replay artifact.',
   },
   {
     id: 'cancellation',

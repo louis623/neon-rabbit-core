@@ -16,6 +16,7 @@ Running log of significant work sessions. Most recent first.
 - Added a provider-free local smoke command, `npm run smoke:nic-nac:recipe-tool-contract`, and tied the recipe chat-tool contract into the Phase 11 Dashboard / Nic-Nac smoke manifest.
 - Added a post-quota full chat replay harness, `npm run smoke:nic-nac:recipe-chat`, that signs into reviewer-smoke or Heather's BlingKitchen account, posts real image parts to `/api/nic-nac`, observes `build_site_recipe_draft` then `manage_site_recipes`, verifies the saved recipe row contains the fixture card facts and public display images, checks Heather's public Pantry page when `--target=bling-kitchen` is used, and cleans up smoke recipes by default.
 - Hardened the recipe chat replay harness so `manage_site_recipes` must be absent from the draft turn and present only on the save turn, saved recipe lookup requires the exact unique smoke title, cleanup deletes only the exact created recipe id/title, and `--target=bling-kitchen` returns a structured missing-env result when `BLING_KITCHEN_RECIPE_SMOKE_PASSWORD` is not supplied.
+- Added the post-quota recipe chat replay harness to the Phase 11 Dashboard / Nic-Nac smoke manifest evidence and pinned the exact post-quota commands in the manifest next action.
 - Fixed the workspace refresh follow-through: when Nic-Nac saves a Pantry recipe through chat, the open Recipes workspace reloads its recipe list and preserves the selected recipe when possible.
 
 **Verification:**
@@ -37,6 +38,8 @@ Running log of significant work sessions. Most recent first.
 - `npx tsx -e "import('./scripts/smoke-nic-nac-recipe-chat.ts').then((m)=>console.log(Object.keys(m.default ?? {}).join(','), typeof (m.default ?? {}).runRecipeChatSmoke))"` passed after rerunning outside the Windows sandbox; the first sandboxed attempt hit `spawn EPERM` while starting `tsx`/esbuild.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after adding the callable provider-free env guard checks: 1 file, 2 tests.
 - `npm run smoke:nic-nac:recipe-tool-contract` passed after the recipe chat replay harness hardening: 4 files, 71 tests.
+- `npm exec vitest run tests/phase-11-smoke-manifest.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts` passed after wiring the recipe chat replay into the Phase 11 manifest: 2 files, 8 tests.
+- `npm exec vitest run tests/launch-readiness-report-runner.test.ts` passed: 1 file, 8 tests.
 - `npm run build` passed after the Recipes workspace refresh follow-through.
 - Pushed `a0e3d9f fix: refresh recipes after Nic-Nac site saves`.
 - Vercel preview build passed at `https://sparkle-suite-9j1hje02g-louis-2849s-projects.vercel.app`.

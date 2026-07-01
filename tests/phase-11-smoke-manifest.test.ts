@@ -78,4 +78,24 @@ describe('Phase 11 smoke manifest', () => {
     expect(dashboardJourney?.label).toContain('Nic-Nac')
     expect(JSON.stringify(PHASE_11_SMOKE_MANIFEST)).not.toContain('Nick-Nack')
   })
+
+  it('tracks the post-quota Heather recipe chat replay harness in Dashboard / Nic-Nac evidence', () => {
+    const dashboardJourney = PHASE_11_SMOKE_MANIFEST.find(
+      (journey) => journey.id === 'dashboard-nic-nac',
+    )
+
+    expect(dashboardJourney?.evidenceFiles).toEqual(
+      expect.arrayContaining([
+        'scripts/smoke-nic-nac-recipe-chat.ts',
+        'tests/nic-nac-recipe-builder-smoke-script.test.ts',
+        'tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts',
+      ]),
+    )
+    expect(dashboardJourney?.nextAction).toContain(
+      'npm run smoke:nic-nac:recipe-builder -- --expect-model',
+    )
+    expect(dashboardJourney?.nextAction).toContain(
+      'npm run smoke:nic-nac:recipe-chat -- --expect-model',
+    )
+  })
 })
