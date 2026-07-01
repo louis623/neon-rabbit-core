@@ -2585,3 +2585,22 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Moonstone has a dark page background with light pearl cards. Card-level CSS variables must flip text and form controls back to dark values inside those light surfaces; page-level Moonstone text should stay light outside cards.
+
+---
+
+## July 1, 2026 - BlingKitchen Public Calendar Restore
+
+**What changed:**
+- Restored the customer-facing Live event calendar on Heather's BlingKitchen homepage when no saved upcoming DB calendar rows exist yet.
+- Added a BlingKitchen-only safe fallback that generates the next two Monday/Wednesday/Friday 7:00 PM Eastern live reveal cards from Heather's public schedule.
+- Kept saved calendar rows authoritative: if Heather has DB-backed upcoming shows, those render instead of the fallback.
+- Tightened Moonstone calendar heading contrast after local screenshots showed the restored section title inherited the light-card dark text rule.
+- Hid empty Discounts and Featured Collections blocks for simple schedule-only fallback events.
+
+**Verification:**
+- `npm exec vitest run tests/amethyst-homepage-upcoming-shows.test.ts tests/bling-kitchen-public-site.test.ts tests/amethyst-homepage-template.test.ts` passed: 3 files, 46 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Local production Playwright screenshot of `/blingkitchen` confirmed the Upcoming Shows calendar appears with two BlingKitchen live reveal cards and readable Moonstone section text.
+
+**Lesson:**
+- Targeted sites should not leak generic demo events, but known public schedules can use rep-specific safe fallbacks so key customer-facing sections do not disappear before the rep adds individual calendar rows.

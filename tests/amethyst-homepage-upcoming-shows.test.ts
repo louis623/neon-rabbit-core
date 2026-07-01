@@ -42,12 +42,14 @@ function makeEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
 
 const originalSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const originalServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const originalHomepagePreviewEmail = process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL
 
 beforeEach(() => {
   createAdminClientMock.mockReset()
   listMyShowsMock.mockReset()
   process.env.NEXT_PUBLIC_SUPABASE_URL = originalSupabaseUrl
   process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceRoleKey
+  process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL = originalHomepagePreviewEmail
 })
 
 describe('Amethyst homepage upcoming shows', () => {
@@ -181,5 +183,64 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(result).toEqual([])
     expect(createAdminClientMock).not.toHaveBeenCalled()
     expect(listMyShowsMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps the BlingKitchen public calendar visible when no database events exist', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co'
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key'
+    process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL = 'blingkitchen19@gmail.com'
+
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: {
+        id: 'rep-bling-kitchen',
+        email: 'blingkitchen19@gmail.com',
+        streaming_links: {
+          tiktok: 'https://www.tiktok.com/@blingkitchen',
+          facebook: 'https://www.facebook.com/groups/1485026002799524',
+        },
+      },
+      error: null,
+    })
+    const eq = vi.fn(() => ({ maybeSingle }))
+    const select = vi.fn(() => ({ eq }))
+    const admin = {
+      from: vi.fn(() => ({ select })),
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    listMyShowsMock.mockResolvedValue({
+      events: [],
+      totalCount: 0,
+    })
+
+    const result = await loadAmethystHomepageUpcomingShows({
+      targeted: true,
+      limit: 2,
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({
+      title: 'BlingKitchen Live Reveal',
+      timeZone: 'America/New_York',
+      durationMinutes: 90,
+      featured: true,
+      platforms: [
+        {
+          kind: 'tt',
+          label: 'Join me on TikTok',
+          href: 'https://www.tiktok.com/@blingkitchen',
+        },
+        {
+          kind: 'fb',
+          label: 'Watch on Facebook Live',
+          href: 'https://www.facebook.com/groups/1485026002799524',
+        },
+      ],
+    })
+    expect(Date.parse(result[0].eventTime)).toBeGreaterThan(Date.now())
+    expect(listMyShowsMock).toHaveBeenCalledWith(admin, 'rep-bling-kitchen', {
+      upcoming: true,
+      limit: 2,
+    })
   })
 })

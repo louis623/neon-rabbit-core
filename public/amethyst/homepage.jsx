@@ -1050,33 +1050,37 @@ function Events({ count }) {
                   </div>
                 </div>
 
-                <div className="hp-event-section">
-                  <div className="hp-event-section-head">
-                    <span className="hp-event-section-icon discounts" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10-1.5 1-2.5 1-4 0z"/></svg>
-                    </span>
-                    <span className="hp-event-section-title">Discounts</span>
+                {ev.codes.length > 0 && (
+                  <div className="hp-event-section">
+                    <div className="hp-event-section-head">
+                      <span className="hp-event-section-icon discounts" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10-1.5 1-2.5 1-4 0z"/></svg>
+                      </span>
+                      <span className="hp-event-section-title">Discounts</span>
+                    </div>
+                    <div className="hp-event-codes">
+                      {ev.codes.map((c, j) => (
+                        <EventCodeRow key={j} code={c.code} desc={c.desc} />
+                      ))}
+                    </div>
                   </div>
-                  <div className="hp-event-codes">
-                    {ev.codes.map((c, j) => (
-                      <EventCodeRow key={j} code={c.code} desc={c.desc} />
-                    ))}
-                  </div>
-                </div>
+                )}
 
-                <div className="hp-event-section">
-                  <div className="hp-event-section-head">
-                    <span className="hp-event-section-icon featured-collections" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                    </span>
-                    <span className="hp-event-section-title">Featured Collections</span>
+                {event.collections.length > 0 && (
+                  <div className="hp-event-section">
+                    <div className="hp-event-section-head">
+                      <span className="hp-event-section-icon featured-collections" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                      </span>
+                      <span className="hp-event-section-title">Featured Collections</span>
+                    </div>
+                    <div className="hp-event-collections">
+                      {event.collections.map((collection, j) => (
+                        <a key={j} {...linkProps(collection.href)} className="hp-event-collection-pill">{collection.label}</a>
+                      ))}
+                    </div>
                   </div>
-                  <div className="hp-event-collections">
-                    {event.collections.map((collection, j) => (
-                      <a key={j} {...linkProps(collection.href)} className="hp-event-collection-pill">{collection.label}</a>
-                    ))}
-                  </div>
-                </div>
+                )}
 
                 <div className="hp-event-actions">
                   {event.platforms.map((platform) => (

@@ -722,6 +722,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('body.surface-silver-pearl .hp-event-card')
     expect(css).toContain('--hp-form-panel-bg: rgba(255, 255, 255, 0.8);')
     expect(css).toContain('body.surface-silver-pearl .hp-about-copy')
+    expect(css).toContain('body.surface-silver-pearl .hp-about-copy .hp-section-title')
+    expect(css).not.toContain('body.surface-silver-pearl .hp-section-title,')
     expect(css).toContain('body.surface-silver-pearl .hp-step')
     expect(css).toContain('body.surface-silver-pearl .hp-signup-title')
     expect(css).toContain('body.surface-silver-pearl .hp-signup-consent-box')

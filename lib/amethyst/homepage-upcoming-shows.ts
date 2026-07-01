@@ -2,6 +2,7 @@ import { listMyShows } from '@/lib/services/calendar'
 import type { CalendarEvent } from '@/lib/services/types'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
 
 export interface AmethystHomepageEventCode {
   code: string
@@ -101,6 +102,119 @@ export const defaultAmethystHomepageEvents: AmethystHomepageEventCard[] = [
     ],
   },
 ]
+
+const BLING_KITCHEN_SHOW_DAYS = [1, 3, 5] as const
+const BLING_KITCHEN_SHOW_HOUR_ET = 19
+
+function isBlingKitchenTarget(
+  publicSiteSlug: string | null,
+  email?: string | null,
+) {
+  return (
+    publicSiteSlug === BLING_KITCHEN_PROFILE.publicSiteSlug ||
+    email?.trim().toLowerCase() === BLING_KITCHEN_PROFILE.email
+  )
+}
+
+function getEasternParts(date: Date) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(date)
+
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  return {
+    year: Number(byType.year),
+    month: Number(byType.month),
+    day: Number(byType.day),
+    hour: Number(byType.hour),
+    minute: Number(byType.minute),
+    second: Number(byType.second),
+  }
+}
+
+function easternDateToUtcIso(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+) {
+  const initial = new Date(Date.UTC(year, month - 1, day, hour, 0, 0))
+  const eastern = getEasternParts(initial)
+  const offsetMs =
+    Date.UTC(
+      eastern.year,
+      eastern.month - 1,
+      eastern.day,
+      eastern.hour,
+      eastern.minute,
+      eastern.second,
+    ) - initial.getTime()
+
+  return new Date(initial.getTime() - offsetMs).toISOString()
+}
+
+function buildBlingKitchenFallbackEvents(
+  limit: number,
+  now = new Date(),
+): AmethystHomepageEventCard[] {
+  const easternNow = getEasternParts(now)
+  const cursor = new Date(
+    Date.UTC(easternNow.year, easternNow.month - 1, easternNow.day, 12, 0, 0),
+  )
+  const events: AmethystHomepageEventCard[] = []
+
+  for (let offset = 0; offset < 21 && events.length < limit; offset += 1) {
+    const candidate = new Date(cursor)
+    candidate.setUTCDate(cursor.getUTCDate() + offset)
+    const dayOfWeek = candidate.getUTCDay()
+    if (!BLING_KITCHEN_SHOW_DAYS.includes(dayOfWeek as 1 | 3 | 5)) continue
+
+    const year = candidate.getUTCFullYear()
+    const month = candidate.getUTCMonth() + 1
+    const day = candidate.getUTCDate()
+    const eventTime = easternDateToUtcIso(
+      year,
+      month,
+      day,
+      BLING_KITCHEN_SHOW_HOUR_ET,
+    )
+    if (Date.parse(eventTime) <= now.getTime()) continue
+
+    events.push({
+      id: `bling-kitchen-fallback-${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+      title: 'BlingKitchen Live Reveal',
+      description:
+        'Join Heather for BlingKitchen live jewelry reveals from the heart of the home.',
+      eventTime,
+      timeZone: 'America/New_York',
+      durationMinutes: 90,
+      featured: events.length === 0,
+      codes: [],
+      collections: [],
+      platforms: [
+        {
+          kind: 'tt',
+          label: 'Join me on TikTok',
+          href: BLING_KITCHEN_PROFILE.tiktokUrl,
+        },
+        {
+          kind: 'fb',
+          label: 'Watch on Facebook Live',
+          href: BLING_KITCHEN_PROFILE.facebookVipUrl,
+        },
+      ],
+    })
+  }
+
+  return events
+}
 
 function normalizeStreamingLinks(
   streamingLinks: unknown,
@@ -220,6 +334,9 @@ export async function loadAmethystHomepageUpcomingShows(
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.SUPABASE_SERVICE_ROLE_KEY
   ) {
+    if (targeted && isBlingKitchenTarget(publicSiteSlug)) {
+      return buildBlingKitchenFallbackEvents(limit)
+    }
     return targeted ? [] : defaultAmethystHomepageEvents
   }
 
@@ -232,7 +349,10 @@ export async function loadAmethystHomepageUpcomingShows(
       select: 'id, email, streaming_links',
     })
 
+    const isBlingKitchen = isBlingKitchenTarget(publicSiteSlug, rep?.email)
+
     if (!rep?.id) {
+      if (isBlingKitchen) return buildBlingKitchenFallbackEvents(limit)
       return targeted ? [] : defaultAmethystHomepageEvents
     }
 
@@ -242,6 +362,7 @@ export async function loadAmethystHomepageUpcomingShows(
     })
 
     if (!result.events.length) {
+      if (isBlingKitchen) return buildBlingKitchenFallbackEvents(limit)
       return targeted ? [] : defaultAmethystHomepageEvents
     }
 
