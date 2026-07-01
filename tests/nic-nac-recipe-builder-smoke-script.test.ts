@@ -43,5 +43,56 @@ describe('Nic-Nac recipe builder smoke script', () => {
     expect(chatSource).toContain('--target=bling-kitchen')
     expect(chatSource).toContain('BLING_KITCHEN_RECIPE_SMOKE_PASSWORD')
     expect(chatSource).toContain('/blingkitchen/in-the-pantry')
+    expect(chatSource).toContain('getLatestAssistantToolNames')
+    expect(chatSource).toContain("Observed manage_site_recipes during the draft turn")
+    expect(chatSource).toContain(".eq('title', input.title)")
+    expect(chatSource).toContain(".eq('id', input.recipeId)")
+  })
+
+  it('exposes a provider-free missing-env guard for the recipe chat smoke', async () => {
+    const imported = await import('../scripts/smoke-nic-nac-recipe-chat')
+    const smokeModule = (
+      'runRecipeChatSmoke' in imported ? imported : imported.default
+    ) as typeof import('../scripts/smoke-nic-nac-recipe-chat')
+
+    expect(smokeModule.getMissingRecipeChatSmokeEnv({})).toEqual([
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+    ])
+    expect(
+      smokeModule.getMissingRecipeChatSmokeEnv(
+        {
+          NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon',
+          SUPABASE_SERVICE_ROLE_KEY: 'service',
+        },
+        { target: 'bling-kitchen' },
+      ),
+    ).toEqual(['BLING_KITCHEN_RECIPE_SMOKE_PASSWORD'])
+
+    await expect(smokeModule.runRecipeChatSmoke({})).resolves.toMatchObject({
+      ok: false,
+      status: 'missing_env',
+      missingEnv: [
+        'NEXT_PUBLIC_SUPABASE_URL',
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+        'SUPABASE_SERVICE_ROLE_KEY',
+      ],
+    })
+    await expect(
+      smokeModule.runRecipeChatSmoke(
+        {
+          NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon',
+          SUPABASE_SERVICE_ROLE_KEY: 'service',
+        },
+        { target: 'bling-kitchen' },
+      ),
+    ).resolves.toMatchObject({
+      ok: false,
+      status: 'missing_env',
+      missingEnv: ['BLING_KITCHEN_RECIPE_SMOKE_PASSWORD'],
+    })
   })
 })

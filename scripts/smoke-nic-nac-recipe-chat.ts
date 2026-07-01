@@ -82,6 +82,7 @@ type RecipeChatSmokeOptions = {
   target?: SmokeTarget
   expectModel?: boolean
   keepRecipe?: boolean
+  admin?: Supabase
 }
 
 type RecipeChatSmokeStatus =
@@ -123,12 +124,22 @@ function getTargetFromArgs(): SmokeTarget {
   return target === 'bling-kitchen' ? 'bling-kitchen' : 'reviewer'
 }
 
-export function getMissingRecipeChatSmokeEnv(env: Env): string[] {
-  return [
+export function getMissingRecipeChatSmokeEnv(
+  env: Env,
+  options: { target?: SmokeTarget } = {},
+): string[] {
+  const missing = [
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
   ].filter((name) => !env[name]?.trim())
+  if (
+    options.target === 'bling-kitchen' &&
+    !env.BLING_KITCHEN_RECIPE_SMOKE_PASSWORD?.trim()
+  ) {
+    missing.push('BLING_KITCHEN_RECIPE_SMOKE_PASSWORD')
+  }
+  return missing
 }
 
 function getSmokeAppUrl(env: Env): string {
@@ -429,6 +440,13 @@ function getObservedToolNames(messages: UIMessage[]): string[] {
   return [...observed]
 }
 
+function getLatestAssistantToolNames(messages: UIMessage[]): string[] {
+  const latestAssistant = [...messages]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  return latestAssistant ? getObservedToolNames([latestAssistant]) : []
+}
+
 function getToolOutputs(messages: UIMessage[], toolName: string): unknown[] {
   const outputs: unknown[] = []
   for (const message of messages) {
@@ -507,16 +525,12 @@ async function findCreatedSmokeRecipe(input: {
     )
     .eq('rep_id', input.repId)
     .gte('created_at', input.startedAtIso)
-    .ilike('title', `${SMOKE_TITLE_PREFIX}%`)
+    .eq('title', input.title)
     .order('created_at', { ascending: false })
-    .limit(5)
+    .limit(1)
   if (error) throw error
   const rows = (data ?? []) as RecipeRow[]
-  return (
-    rows.find((row) => row.title === input.title) ??
-    rows.find((row) => row.title.startsWith(SMOKE_TITLE_PREFIX)) ??
-    null
-  )
+  return rows[0] ?? null
 }
 
 function findMissingRecipeFacts(recipe: RecipeRow) {
@@ -553,33 +567,19 @@ async function assertPublicPantryContainsRecipe(input: {
 async function cleanupSmokeRecipes(input: {
   supabase: Supabase
   repId: string
-  startedAtIso: string
+  recipeId: string
+  title: string
   keep: boolean
 }) {
   if (input.keep) return { skipped: true, removedRecipeIds: [] }
 
-  const { data, error: lookupError } = await input.supabase
-    .from('public_site_recipes')
-    .select('id')
-    .eq('rep_id', input.repId)
-    .gte('created_at', input.startedAtIso)
-    .ilike('title', `${SMOKE_TITLE_PREFIX}%`)
-  if (lookupError) {
-    return {
-      skipped: false,
-      removedRecipeIds: [],
-      error: lookupError.message,
-    }
-  }
-
-  const ids = ((data ?? []) as Array<{ id: string }>).map((row) => row.id)
-  if (ids.length === 0) return { skipped: false, removedRecipeIds: [] }
-
-  const { error } = await input.supabase
+  const { data, error } = await input.supabase
     .from('public_site_recipes')
     .delete()
     .eq('rep_id', input.repId)
-    .in('id', ids)
+    .eq('id', input.recipeId)
+    .eq('title', input.title)
+    .select('id')
   if (error) {
     return {
       skipped: false,
@@ -588,14 +588,18 @@ async function cleanupSmokeRecipes(input: {
     }
   }
 
-  return { skipped: false, removedRecipeIds: ids }
+  const removedRecipeIds = ((data ?? []) as Array<{ id: string }>).map(
+    (row) => row.id,
+  )
+  return { skipped: false, removedRecipeIds }
 }
 
 export async function runRecipeChatSmoke(
   env: Env = process.env,
   options: RecipeChatSmokeOptions = {},
 ): Promise<RecipeChatSmokeResult> {
-  const missingEnv = getMissingRecipeChatSmokeEnv(env)
+  const target = options.target ?? 'reviewer'
+  const missingEnv = getMissingRecipeChatSmokeEnv(env, { target })
   if (missingEnv.length > 0) {
     return {
       ok: false,
@@ -606,7 +610,6 @@ export async function runRecipeChatSmoke(
   }
 
   const appUrl = getSmokeAppUrl(env)
-  const target = options.target ?? 'reviewer'
   const expectModel = options.expectModel ?? false
   const keepRecipe = options.keepRecipe ?? env.SPARKLE_NIC_NAC_RECIPE_SMOKE_KEEP === 'true'
   const supabase = createClient(
@@ -614,7 +617,7 @@ export async function runRecipeChatSmoke(
     env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } },
   )
-  const admin = createAdminClient()
+  const admin = options.admin ?? (createAdminClient() as unknown as Supabase)
   const account = await getSmokeAccount(target, env, admin as unknown as Supabase)
   const session = await createSessionCookie(env, account)
   const rep = await fetchNicNacMe(appUrl, env, session.cookie)
@@ -675,8 +678,8 @@ export async function runRecipeChatSmoke(
       }
     }
 
-    const observedAfterDraft = getObservedToolNames(firstTurn.messages)
-    if (!observedAfterDraft.includes('build_site_recipe_draft')) {
+    const draftTurnTools = getLatestAssistantToolNames(firstTurn.messages)
+    if (!draftTurnTools.includes('build_site_recipe_draft')) {
       return {
         ok: false,
         status: 'tool_not_observed',
@@ -684,7 +687,19 @@ export async function runRecipeChatSmoke(
         conversationId,
         rep,
         turns,
-        message: `Did not observe build_site_recipe_draft. Observed tools: ${observedAfterDraft.join(', ')}`,
+        message: `Did not observe build_site_recipe_draft in the draft turn. Observed tools: ${draftTurnTools.join(', ')}`,
+      }
+    }
+    if (draftTurnTools.includes('manage_site_recipes')) {
+      return {
+        ok: false,
+        status: 'tool_not_observed',
+        appUrl,
+        conversationId,
+        rep,
+        turns,
+        message:
+          'Observed manage_site_recipes during the draft turn before the rep approved saving.',
       }
     }
 
@@ -721,8 +736,8 @@ export async function runRecipeChatSmoke(
       throw new Error(secondTurn.message)
     }
 
-    const observedAfterSave = getObservedToolNames(secondTurn.messages)
-    if (!observedAfterSave.includes('manage_site_recipes')) {
+    const saveTurnTools = getLatestAssistantToolNames(secondTurn.messages)
+    if (!saveTurnTools.includes('manage_site_recipes')) {
       return {
         ok: false,
         status: 'tool_not_observed',
@@ -730,7 +745,7 @@ export async function runRecipeChatSmoke(
         conversationId,
         rep,
         turns,
-        message: `Did not observe manage_site_recipes. Observed tools: ${observedAfterSave.join(', ')}`,
+        message: `Did not observe manage_site_recipes in the save turn. Observed tools: ${saveTurnTools.join(', ')}`,
       }
     }
 
@@ -798,7 +813,8 @@ export async function runRecipeChatSmoke(
     const cleanup = await cleanupSmokeRecipes({
       supabase,
       repId: rep.id,
-      startedAtIso,
+      recipeId: recipe.id,
+      title: recipe.title,
       keep: keepRecipe,
     })
 
