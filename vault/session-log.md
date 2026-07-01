@@ -2388,3 +2388,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Nic-Nac should not tell reps a shared catalog photo correction is unavailable when `report_jewelry_catalog_issue` is active. The safe correction rule is: report/fix the catalog issue through Nic-Nac, but only replace canonical catalog photos with approved jewelry-front assets.
 
 ---
+
+## July 1, 2026 - Heather Recipe Nic-Nac Exact Smoke and Pantry Assertion Hardening
+
+**What changed:**
+- Louis confirmed Heather's BlingKitchen demo temp password may be used for exact runtime smoke testing while the account is being prepared for beta handoff.
+- Hardened `scripts/smoke-nic-nac-recipe-chat.ts` so the BlingKitchen target verifies the real customer Pantry data handoff through `/api/amethyst/pantry-template?c=<repId>&publicSiteSlug=blingkitchen`, not only the first `/blingkitchen/in-the-pantry` HTML shell.
+- Added a 30-second retry loop for the Pantry template assertion.
+- Added cleanup-on-failure for post-save recipe assertions so smoke recipes are removed even if DB facts, public image fields, or public Pantry visibility checks fail.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts tests/launch-readiness-report-runner.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 3 files, 19 tests.
+- Exact Heather stable-demo smoke passed with `--target=bling-kitchen --expect-model`; the smoke logged in as `blingkitchen19@gmail.com`, observed `build_site_recipe_draft` on the draft turn, observed `manage_site_recipes` on save, verified the saved recipe row and public Pantry template, then cleaned up recipe `d7f916dc-835e-4e9b-b1db-e06f7b705e70`.
+- The smoke artifact was written to `.local/launch-readiness-results/bling-kitchen-recipe-chat.json`.
+- `npm run build` passed locally with Next.js 16.2.1.
+
+**Lesson:**
+- For Heather's Pantry, the route HTML is only the shell. Customer-facing recipe visibility must be verified through the Pantry template bootstrap data that hydrates the page.
+- Exact beta-account smokes should clean up their created rows on every post-save failure path, not only on full success.

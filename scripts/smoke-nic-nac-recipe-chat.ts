@@ -563,25 +563,56 @@ function findMissingRecipeFacts(recipe: RecipeRow) {
 async function assertPublicPantryContainsRecipe(input: {
   appUrl: string
   env: Env
+  repId: string
   title: string
 }) {
-  const response = await fetch(
-    withVercelProtectionBypass(
-      `${input.appUrl}/blingkitchen/in-the-pantry`,
-      input.env,
-    ),
-  )
-  if (!response.ok) {
-    throw new Error(
-      `BlingKitchen Pantry page returned ${response.status}: ${await safeResponseSnippet(
-        response,
-      )}`,
+  const pageUrl = `${input.appUrl}/blingkitchen/in-the-pantry`
+  const templateUrl = new URL('/api/amethyst/pantry-template', input.appUrl)
+  templateUrl.searchParams.set('c', input.repId)
+  templateUrl.searchParams.set('publicSiteSlug', 'blingkitchen')
+
+  let lastMessage = 'BlingKitchen Pantry did not include the saved smoke recipe.'
+  const deadline = Date.now() + 30_000
+
+  while (Date.now() <= deadline) {
+    const pageResponse = await fetch(
+      withVercelProtectionBypass(pageUrl, input.env),
     )
+    if (!pageResponse.ok) {
+      throw new Error(
+        `BlingKitchen Pantry page returned ${pageResponse.status}: ${await safeResponseSnippet(
+          pageResponse,
+        )}`,
+      )
+    }
+    const html = await pageResponse.text()
+    if (!html.includes('/api/amethyst/pantry-template')) {
+      throw new Error(
+        'BlingKitchen Pantry page did not load the Pantry template script.',
+      )
+    }
+
+    const templateResponse = await fetch(
+      withVercelProtectionBypass(templateUrl.toString(), input.env),
+    )
+    if (!templateResponse.ok) {
+      throw new Error(
+        `BlingKitchen Pantry template returned ${templateResponse.status}: ${await safeResponseSnippet(
+          templateResponse,
+        )}`,
+      )
+    }
+    const templateScript = await templateResponse.text()
+    if (templateScript.includes(input.title)) {
+      return
+    }
+
+    lastMessage =
+      'BlingKitchen Pantry template did not include the saved smoke recipe.'
+    await sleep(1_000)
   }
-  const html = await response.text()
-  if (!html.includes(input.title)) {
-    throw new Error('BlingKitchen Pantry page did not include the saved smoke recipe.')
-  }
+
+  throw new Error(lastMessage)
 }
 
 async function cleanupSmokeRecipes(input: {
@@ -789,6 +820,13 @@ export async function runRecipeChatSmoke(
 
     const missingFacts = findMissingRecipeFacts(recipe)
     if (missingFacts.length > 0) {
+      const cleanup = await cleanupSmokeRecipes({
+        supabase,
+        repId: rep.id,
+        recipeId: recipe.id,
+        title: recipe.title,
+        keep: keepRecipe,
+      })
       return {
         ok: false,
         status: 'database_assertion_failed',
@@ -797,10 +835,18 @@ export async function runRecipeChatSmoke(
         rep,
         turns,
         recipeId: recipe.id,
+        cleanup,
         message: `Saved recipe missed expected recipe-card fact(s): ${missingFacts.join(', ')}`,
       }
     }
     if (!recipe.image_url || !recipe.modal_image_url) {
+      const cleanup = await cleanupSmokeRecipes({
+        supabase,
+        repId: rep.id,
+        recipeId: recipe.id,
+        title: recipe.title,
+        keep: keepRecipe,
+      })
       return {
         ok: false,
         status: 'database_assertion_failed',
@@ -809,14 +855,27 @@ export async function runRecipeChatSmoke(
         rep,
         turns,
         recipeId: recipe.id,
+        cleanup,
         message: 'Saved recipe is missing public display images.',
       }
     }
 
     if (target === 'bling-kitchen') {
       try {
-        await assertPublicPantryContainsRecipe({ appUrl, env, title: recipe.title })
+        await assertPublicPantryContainsRecipe({
+          appUrl,
+          env,
+          repId: rep.id,
+          title: recipe.title,
+        })
       } catch (error) {
+        const cleanup = await cleanupSmokeRecipes({
+          supabase,
+          repId: rep.id,
+          recipeId: recipe.id,
+          title: recipe.title,
+          keep: keepRecipe,
+        })
         return {
           ok: false,
           status: 'public_page_assertion_failed',
@@ -825,6 +884,7 @@ export async function runRecipeChatSmoke(
           rep,
           turns,
           recipeId: recipe.id,
+          cleanup,
           message: error instanceof Error ? error.message : String(error),
         }
       }

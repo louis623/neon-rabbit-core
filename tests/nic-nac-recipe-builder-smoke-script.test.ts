@@ -48,10 +48,16 @@ describe('Nic-Nac recipe builder smoke script', () => {
     expect(chatSource).toContain('--output')
     expect(chatSource).toContain('BLING_KITCHEN_RECIPE_SMOKE_PASSWORD')
     expect(chatSource).toContain('/blingkitchen/in-the-pantry')
+    expect(chatSource).toContain('/api/amethyst/pantry-template')
+    expect(chatSource).toContain("templateUrl.searchParams.set('c', input.repId)")
+    expect(chatSource).toContain(
+      'BlingKitchen Pantry template did not include the saved smoke recipe.',
+    )
     expect(chatSource).toContain('getLatestAssistantToolNames')
     expect(chatSource).toContain("Observed manage_site_recipes during the draft turn")
     expect(chatSource).toContain(".eq('title', input.title)")
     expect(chatSource).toContain(".eq('id', input.recipeId)")
+    expect(chatSource.match(/cleanupSmokeRecipes\(\{/g)?.length ?? 0).toBeGreaterThanOrEqual(4)
   })
 
   it('exposes a provider-free missing-env guard for the recipe chat smoke', async () => {
