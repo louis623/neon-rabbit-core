@@ -11,7 +11,8 @@ Running log of significant work sessions. Most recent first.
 - Added `build_site_recipe_draft`, a Nic-Nac site tool that reads recent chat image uploads by 1-based photo order, uploads display photos as public recipe media, stages recipe-card photos as short-lived source URLs, and builds a draft without saving it.
 - Recipe-card photos are explicitly source material for ingredients/steps, not public recipe images; only unreadable recipe cards or genuinely bad public display photos should block the flow.
 - Site tool routing now keeps recipe tools active for photo-only recipe follow-ups, and successful `manage_site_recipes` saves now trigger workspace/site refresh events.
-- The OpenAI quota/billing blocker still gates final model-in-loop proof. The open item now explicitly includes a chat replay for `build_site_recipe_draft`, `list_site_recipes`, and `manage_site_recipes`.
+- Added deterministic `/api/nic-nac` route coverage proving recipe wording and photo-only recipe follow-ups expose `build_site_recipe_draft`, `list_site_recipes`, and `manage_site_recipes` to the model without needing a live OpenAI call.
+- The OpenAI quota/billing blocker still gates final model-in-loop proof. The open item now explicitly calls for a real replay that observes `tool-build_site_recipe_draft` followed by `manage_site_recipes`.
 - Added a provider-free local smoke command, `npm run smoke:nic-nac:recipe-tool-contract`, and tied the recipe chat-tool contract into the Phase 11 Dashboard / Nic-Nac smoke manifest.
 - Fixed the workspace refresh follow-through: when Nic-Nac saves a Pantry recipe through chat, the open Recipes workspace reloads its recipe list and preserves the selected recipe when possible.
 
@@ -28,6 +29,9 @@ Running log of significant work sessions. Most recent first.
 - `npm run smoke:nic-nac:recipe-tool-contract` passed locally: 3 files, 65 tests.
 - `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 2 files, 6 tests.
 - `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-recipe-builder-smoke-script.test.ts tests/phase-11-smoke-manifest.test.ts` passed: 4 files, 91 tests.
+- `npm exec vitest run tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts` passed after adding the `/api/nic-nac` recipe route cases: 1 file, 6 tests.
+- `npm run smoke:nic-nac:recipe-tool-contract` passed with route coverage included: 4 files, 71 tests.
+- `npm exec vitest run tests/nic-nac-recipe-builder-smoke-script.test.ts` passed: 1 file, 1 test.
 - `npm run build` passed after the Recipes workspace refresh follow-through.
 - Pushed `a0e3d9f fix: refresh recipes after Nic-Nac site saves`.
 - Vercel preview build passed at `https://sparkle-suite-9j1hje02g-louis-2849s-projects.vercel.app`.

@@ -41,7 +41,7 @@
     "smoke:nic-nac:trade-board-non-item-number": "tsx scripts/smoke-nic-nac-trade-board-non-item-number.ts",
     "smoke:nic-nac:calendar-reminders": "tsx scripts/smoke-nic-nac-calendar-reminders.ts",
     "smoke:nic-nac:recipe-builder": "tsx scripts/smoke-nic-nac-recipe-builder.ts",
-    "smoke:nic-nac:recipe-tool-contract": "npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts",
+    "smoke:nic-nac:recipe-tool-contract": "npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac-workspace-refresh-events.test.ts",
     "pressure:non-item-number-trade-listings": "tsx scripts/pressure-non-item-number-trade-listings.ts",
     "smoke:preview:vercel-curl": "tsx scripts/smoke-protected-preview-routes.ts",
     "qa:amethyst": "npm exec vitest run tests/amethyst-homepage-template.test.ts tests/amethyst-join-template.test.ts tests/amethyst-trade-template.test.ts && npm run verify:amethyst-links",

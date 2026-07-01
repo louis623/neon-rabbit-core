@@ -104,19 +104,23 @@ vi.mock('@/lib/nic-nac/core/memory/rep-memory-cards', () => ({
 import { POST } from '@/app/api/nic-nac/route'
 
 function requestFor(text: string) {
+  return requestForMessages([
+    {
+      id: 'user-chaos-1',
+      role: 'user',
+      parts: [{ type: 'text', text }],
+    },
+  ])
+}
+
+function requestForMessages(messages: unknown[]) {
   return new Request('http://localhost/api/nic-nac', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       conversationId: 'calendar-chaos-conversation',
       mode: 'workspace',
-      messages: [
-        {
-          id: 'user-chaos-1',
-          role: 'user',
-          parts: [{ type: 'text', text }],
-        },
-      ],
+      messages,
     }),
   })
 }
@@ -238,6 +242,129 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
           conversationId: 'calendar-chaos-conversation',
           intents: expect.arrayContaining(expectedIntents),
           toolNames: expect.arrayContaining(expectedTools),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('exposes the recipe draft and save tools through the real chat route', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(
+        requestFor(
+          'Add a new Pantry recipe called Chocolate-Dipped Strawberries from these food and recipe-card photos.',
+        ),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        system: string
+        tools: Record<string, unknown>
+      }
+      const toolNames = Object.keys(options.tools)
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining([
+          'build_site_recipe_draft',
+          'list_site_recipes',
+          'manage_site_recipes',
+        ]),
+      )
+      expect(options.system).toContain('build_site_recipe_draft')
+      expect(options.system).toContain(
+        'Recipe-card photos are source material',
+      )
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          intents: expect.arrayContaining(['site']),
+          toolNames: expect.arrayContaining([
+            'build_site_recipe_draft',
+            'manage_site_recipes',
+          ]),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('keeps recipe tools available for a photo-only recipe follow-up', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(
+        requestForMessages([
+          {
+            id: 'recipe-request',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: 'Help me add a new Pantry recipe for Chocolate-Dipped Strawberries.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-recipe-photos',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Send the food/display photo and the recipe-card photo, then I can build the recipe draft.',
+              },
+            ],
+          },
+          {
+            id: 'recipe-photos',
+            role: 'user',
+            parts: [
+              {
+                type: 'file',
+                mediaType: 'image/jpeg',
+                url: 'data:image/jpeg;base64,RElTUExBWQ==',
+              },
+              {
+                type: 'file',
+                mediaType: 'image/jpeg',
+                url: 'data:image/jpeg;base64,Q0FSRA==',
+              },
+            ],
+          },
+        ]),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        tools: Record<string, unknown>
+      }
+      const toolNames = Object.keys(options.tools)
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining([
+          'build_site_recipe_draft',
+          'manage_site_recipes',
+        ]),
+      )
+      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('none')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          intents: expect.arrayContaining(['site']),
+          toolNames: expect.arrayContaining(['build_site_recipe_draft']),
         }),
       )
     } finally {

@@ -15,7 +15,7 @@ describe('Nic-Nac recipe builder smoke script', () => {
       'tsx scripts/smoke-nic-nac-recipe-builder.ts',
     )
     expect(packageJson.scripts?.['smoke:nic-nac:recipe-tool-contract']).toBe(
-      'npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac-workspace-refresh-events.test.ts',
+      'npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac-workspace-refresh-events.test.ts',
     )
     expect(source).toContain('--expect-model')
     expect(source).toContain('--probe-model')
