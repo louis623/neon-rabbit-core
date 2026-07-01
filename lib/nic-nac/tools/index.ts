@@ -619,10 +619,10 @@ function isSiteContinuation(
 
 function assistantIsDiscussingSiteEdit(text: string): boolean {
   return (
-    /\b(?:ticker|announcement|banner|site|tagline|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link)\b/i.test(
+    /\b(?:ticker|announcement|banner|site|tagline|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link|recipe|recipes|pantry|ingredient|ingredients)\b/i.test(
       text,
     ) &&
-    /\b(?:swap|change|update|save|use|set|turn|make|edit)\b/i.test(text)
+    /\b(?:swap|change|update|save|use|set|turn|make|edit|add|build|draft)\b/i.test(text)
   )
 }
 

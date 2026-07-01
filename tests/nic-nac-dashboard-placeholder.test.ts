@@ -1648,11 +1648,14 @@ describe('DashboardPlaceholder', () => {
     ).toBe('Saving recipe changes...')
   })
 
-  it('renders the Recipes manager with order, visibility, copy, image, and save controls', () => {
+  it('renders the Recipes manager with an image-first builder and advanced edit fallback', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
         state: RECIPES_READY_STATE,
-        draft: getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
+        draft: {
+          ...getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
+          recipeCardImageUrls: ['https://cdn.example.com/chicken-card.jpg'],
+        },
         selectedRecipeId: 'recipe-1',
         actionState: {
           pendingKey: null,
@@ -1670,12 +1673,20 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Hidden Draft Dessert')
     expect(html).toContain('Appetizer / Visible')
     expect(html).toContain('Dessert / Hidden')
-    expect(html).toContain('Recipe details')
+    expect(html).toContain('Recipe builder')
+    expect(html).toContain('Food photo for Pantry card')
+    expect(html).toContain('Food photo for recipe view')
+    expect(html).toContain('Recipe-card photos')
+    expect(html).toContain('Upload recipe card')
+    expect(html).toContain('Build recipe with Nic-Nac')
+    expect(html).toContain('Nic-Nac draft preview')
+    expect(html).toContain('Advanced edit')
     expect(html).toContain('Visible in Pantry')
     expect(html).toContain('One ingredient per line')
     expect(html).toContain('Chicken')
     expect(html).toContain('Bake until bubbly')
     expect(html).toContain('https://cdn.example.com/chicken-dip.jpg')
+    expect(html).toContain('https://cdn.example.com/chicken-card.jpg')
     expect(html).toContain('Upload image')
     expect(html).toContain('TikTok URL')
     expect(html).toContain('Save recipe')

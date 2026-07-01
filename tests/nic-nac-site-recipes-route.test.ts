@@ -7,6 +7,7 @@ const upsertPublicSiteRecipeMock = vi.fn()
 const removePublicSiteRecipeMock = vi.fn()
 const reorderPublicSiteRecipesMock = vi.fn()
 const uploadPublicSiteMediaMock = vi.fn()
+const buildSiteRecipeDraftFromImagesMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -28,7 +29,13 @@ vi.mock('@/lib/services/storage', () => ({
   uploadPublicSiteMedia: (...args: unknown[]) => uploadPublicSiteMediaMock(...args),
 }))
 
+vi.mock('@/lib/nic-nac/site-recipe-draft-builder', () => ({
+  buildSiteRecipeDraftFromImages: (...args: unknown[]) =>
+    buildSiteRecipeDraftFromImagesMock(...args),
+}))
+
 import { GET, POST } from '@/app/api/nic-nac/site-recipes/route'
+import { POST as POST_DRAFT } from '@/app/api/nic-nac/site-recipes/draft/route'
 import { POST as POST_IMAGE } from '@/app/api/nic-nac/site-recipes/image/route'
 import { AuthError } from '@/lib/nic-nac/auth'
 
@@ -40,6 +47,7 @@ describe('/api/nic-nac/site-recipes', () => {
     removePublicSiteRecipeMock.mockReset()
     reorderPublicSiteRecipesMock.mockReset()
     uploadPublicSiteMediaMock.mockReset()
+    buildSiteRecipeDraftFromImagesMock.mockReset()
   })
 
   it('lists all visible and hidden Pantry recipes for the paid rep context', async () => {
@@ -107,6 +115,8 @@ describe('/api/nic-nac/site-recipes', () => {
       'rep-bling',
       expect.objectContaining({
         title: 'Homemade Coffee Creamer',
+        imageUrl: 'https://cdn.example.com/creamer.jpg',
+        tiktokUrl: 'https://www.tiktok.com/@blingkitchen/video/1',
         ingredients: ['Half & Half', 'Vanilla'],
       }),
     )
@@ -204,6 +214,107 @@ describe('/api/nic-nac/site-recipes', () => {
       ok: true,
       imageUrl: 'https://cdn.example.com/recipe.jpg',
     })
+  })
+
+  it('builds a draft from display and recipe-card images without saving it', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-bling',
+      supabase: { marker: 'supabase' },
+    })
+    buildSiteRecipeDraftFromImagesMock.mockResolvedValueOnce({
+      title: 'Chocolate-Dipped Strawberries',
+      description: 'A polished Heather-style recipe.',
+      category: 'Dessert',
+      prepTime: '20 minutes',
+      servings: 12,
+      ingredients: ['Strawberries', 'Chocolate'],
+      steps: ['Melt chocolate', 'Dip strawberries'],
+      note: 'Dry the berries well first.',
+      imageAlt: 'Chocolate dipped strawberries with white drizzle',
+      warnings: [],
+    })
+
+    const response = await POST_DRAFT(
+      new Request('http://localhost/api/nic-nac/site-recipes/draft', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Chocolate-Dipped Strawberries',
+          images: [
+            {
+              role: 'display_photo',
+              url: 'https://cdn.example.com/strawberries.jpg',
+            },
+            {
+              role: 'recipe_card',
+              url: 'https://cdn.example.com/strawberry-card.jpg',
+            },
+          ],
+        }),
+      }),
+    )
+
+    expect(buildSiteRecipeDraftFromImagesMock).toHaveBeenCalledWith({
+      title: 'Chocolate-Dipped Strawberries',
+      images: [
+        {
+          role: 'display_photo',
+          url: 'https://cdn.example.com/strawberries.jpg',
+        },
+        {
+          role: 'recipe_card',
+          url: 'https://cdn.example.com/strawberry-card.jpg',
+        },
+      ],
+    })
+    expect(upsertPublicSiteRecipeMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      draft: {
+        title: 'Chocolate-Dipped Strawberries',
+        ingredients: ['Strawberries', 'Chocolate'],
+      },
+    })
+  })
+
+  it('requires a title and at least one recipe-card image for draft building', async () => {
+    getPaidNicNacContextMock
+      .mockResolvedValueOnce({
+        repId: 'rep-bling',
+        supabase: { marker: 'supabase' },
+      })
+      .mockResolvedValueOnce({
+        repId: 'rep-bling',
+        supabase: { marker: 'supabase' },
+      })
+
+    const missingTitle = await POST_DRAFT(
+      new Request('http://localhost/api/nic-nac/site-recipes/draft', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: '',
+          images: [{ role: 'recipe_card', url: 'https://cdn.example.com/card.jpg' }],
+        }),
+      }),
+    )
+    const missingCard = await POST_DRAFT(
+      new Request('http://localhost/api/nic-nac/site-recipes/draft', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Brownies',
+          images: [
+            { role: 'display_photo', url: 'https://cdn.example.com/brownies.jpg' },
+          ],
+        }),
+      }),
+    )
+
+    expect(missingTitle.status).toBe(400)
+    expect(missingCard.status).toBe(400)
+    expect(buildSiteRecipeDraftFromImagesMock).not.toHaveBeenCalled()
   })
 
   it('returns auth, syntax, validation, and service errors safely', async () => {

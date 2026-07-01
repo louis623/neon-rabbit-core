@@ -307,6 +307,38 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps site recipe tools available for a short recipe approval follow-up', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Use this recipe card to add brownies to my Pantry recipes.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'I can build that Pantry recipe draft and save it once you approve the recipe details.',
+          },
+        ],
+      },
+      {
+        id: 'latest',
+        role: 'user',
+        parts: [{ type: 'text', text: 'yes, use that' }],
+      },
+    ]
+
+    expect(getToolIntentsForMessages(messages)).toContain('site')
+  })
+
   it('keeps site tools available when the rep accepts Nic-Nac announcement ticker copy', () => {
     const messages = [
       {

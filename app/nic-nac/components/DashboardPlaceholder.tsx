@@ -423,6 +423,20 @@ export type RecipeDraft = {
   note: string
   isVisible: boolean
   sourceRecipeId: string
+  recipeCardImageUrls: string[]
+}
+
+type SiteRecipeBuilderDraft = {
+  title?: string
+  description?: string
+  category?: string
+  prepTime?: string
+  servings?: number | null
+  ingredients?: string[]
+  steps?: string[]
+  note?: string
+  imageAlt?: string
+  warnings?: string[]
 }
 
 type AudienceResponsePayload = {
@@ -451,6 +465,7 @@ type SiteSettingsResponsePayload = SiteSettingsDashboardResult
 type SiteRecipesResponsePayload = {
   recipes?: PublicSiteRecipe[]
   recipe?: PublicSiteRecipe
+  draft?: SiteRecipeBuilderDraft
   error?: string
 }
 type AccountBillingResponsePayload = AccountBillingDashboardResult
@@ -1039,6 +1054,7 @@ export function getRecipeDraft(recipe?: PublicSiteRecipe | null): RecipeDraft {
     note: recipe?.note ?? '',
     isVisible: recipe?.isVisible ?? true,
     sourceRecipeId: recipe?.sourceRecipeId ?? '',
+    recipeCardImageUrls: [],
   }
 }
 
@@ -2955,7 +2971,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function handleRecipeImageUpload(
-    field: 'imageUrl' | 'modalImageUrl',
+    field: 'imageUrl' | 'modalImageUrl' | 'recipeCardImageUrls',
     file: File | null,
   ) {
     if (!file) return
@@ -2983,11 +2999,24 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         throw new Error(payload?.error || 'Unable to upload this recipe image.')
       }
 
-      setRecipeDraft((current) => ({ ...current, [field]: payload.imageUrl ?? '' }))
+      setRecipeDraft((current) =>
+        field === 'recipeCardImageUrls'
+          ? {
+              ...current,
+              recipeCardImageUrls: [
+                ...current.recipeCardImageUrls,
+                payload.imageUrl ?? '',
+              ].filter(Boolean),
+            }
+          : { ...current, [field]: payload.imageUrl ?? '' },
+      )
       setRecipeActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Recipe image uploaded. Save the recipe to publish it.',
+        helperMessage:
+          field === 'recipeCardImageUrls'
+            ? 'Recipe-card photo uploaded. Nic-Nac can use it to build the draft.'
+            : 'Food photo uploaded. Save the recipe to publish it.',
       })
     } catch (error) {
       setRecipeActionState({
@@ -2996,6 +3025,98 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           error instanceof Error
             ? error.message
             : 'Unable to upload this recipe image.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleBuildRecipeDraft() {
+    if (!recipeDraft.title.trim()) {
+      setRecipeActionState({
+        pendingKey: null,
+        error: 'Recipe title is required before Nic-Nac can build the draft.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    if (recipeDraft.recipeCardImageUrls.length === 0) {
+      setRecipeActionState({
+        pendingKey: null,
+        error: 'Upload at least one readable recipe-card photo first.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    setRecipeActionState({
+      pendingKey: 'build-draft',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const images = [
+        recipeDraft.imageUrl.trim()
+          ? { role: 'display_photo', url: recipeDraft.imageUrl.trim() }
+          : null,
+        recipeDraft.modalImageUrl.trim()
+          ? { role: 'display_photo', url: recipeDraft.modalImageUrl.trim() }
+          : null,
+        ...recipeDraft.recipeCardImageUrls.map((url) => ({
+          role: 'recipe_card',
+          url,
+        })),
+      ].filter(Boolean)
+
+      const response = await fetch('/api/nic-nac/site-recipes/draft', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: recipeDraft.title,
+          images,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | SiteRecipesResponsePayload
+        | null
+
+      if (!response.ok || !payload?.draft) {
+        throw new Error(payload?.error || 'Unable to build this recipe draft.')
+      }
+
+      const draft = payload.draft
+      setRecipeDraft((current) => ({
+        ...current,
+        title: draft.title?.trim() || current.title,
+        description: draft.description?.trim() ?? current.description,
+        category: draft.category?.trim() ?? current.category,
+        prepTime: draft.prepTime?.trim() ?? current.prepTime,
+        servings:
+          typeof draft.servings === 'number' && Number.isFinite(draft.servings)
+            ? String(draft.servings)
+            : current.servings,
+        ingredientsText: joinRecipeLines(draft.ingredients),
+        stepsText: joinRecipeLines(draft.steps),
+        note: draft.note?.trim() ?? current.note,
+        imageAlt: draft.imageAlt?.trim() || current.imageAlt,
+      }))
+      setRecipeActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage:
+          draft.warnings && draft.warnings.length > 0
+            ? `Recipe draft built. Check: ${draft.warnings.join(' ')}`
+            : 'Recipe draft built. Review it, then save when it looks right.',
+      })
+    } catch (error) {
+      setRecipeActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to build this recipe draft.',
         helperMessage: null,
       })
     }
@@ -4086,6 +4207,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onRemove={handleRemoveRecipe}
                 onReorder={handleReorderRecipe}
                 onUploadImage={handleRecipeImageUpload}
+                onBuildDraft={handleBuildRecipeDraft}
               />
             </div>
           ) : null}
@@ -6040,6 +6162,7 @@ export function RecipesCard({
   onRemove,
   onReorder,
   onUploadImage,
+  onBuildDraft,
 }: {
   state: RecipesState
   draft: RecipeDraft
@@ -6053,9 +6176,10 @@ export function RecipesCard({
   onRemove?: (recipeId: string) => void
   onReorder?: (recipeId: string, direction: -1 | 1) => void
   onUploadImage?: (
-    field: 'imageUrl' | 'modalImageUrl',
+    field: 'imageUrl' | 'modalImageUrl' | 'recipeCardImageUrls',
     file: File | null,
   ) => Promise<void> | void
+  onBuildDraft?: () => void
 }) {
   if (state.status === 'error') {
     return (
@@ -6087,7 +6211,7 @@ export function RecipesCard({
         <div>
           <div className={styles.cardTitle}>Recipes</div>
           <div className={styles.cardSubtitle}>
-            Add, update, reorder, and hide the recipe cards on Heather&apos;s Pantry page.
+            Add a title, upload food photos and recipe-card photos, then let Nic-Nac draft the Pantry recipe.
           </div>
         </div>
         <div className={styles.siteSettingsSaveActions}>
@@ -6201,66 +6325,169 @@ export function RecipesCard({
         <div className={styles.siteSettingsSection}>
           <div className={styles.calendarHeader}>
             <div className={styles.walletSettingsTitle}>
-              {draft.id ? 'Recipe details' : 'New recipe'}
+              {draft.id ? 'Recipe builder' : 'New recipe builder'}
             </div>
             <span className={styles.rosterTag}>
               {draft.isVisible ? 'Visible in Pantry' : 'Hidden draft'}
             </span>
           </div>
 
-          <div className={styles.siteSettingsGrid}>
+          <div className={styles.recipeBuilderPanel}>
             <label className={styles.searchField}>
               <span className={styles.searchLabel}>Title</span>
               <input
                 className={styles.searchInput}
+                placeholder="Chocolate-Dipped Strawberries"
                 value={draft.title}
                 onChange={(event) =>
                   onDraftChange?.({ title: event.target.value })
                 }
               />
             </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Slug</span>
-              <input
-                className={styles.searchInput}
-                value={draft.slug}
-                placeholder="Auto-created from title"
-                onChange={(event) =>
-                  onDraftChange?.({ slug: event.target.value })
-                }
+
+            <div className={styles.recipeBuilderImageGrid}>
+              <RecipeImageField
+                label="Food photo for Pantry card"
+                field="imageUrl"
+                imageUrl={draft.imageUrl}
+                imageAlt={draft.imageAlt || draft.title}
+                pendingKey={pendingKey}
+                onDraftChange={onDraftChange}
+                onUploadImage={onUploadImage}
               />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Category</span>
-              <input
-                className={styles.searchInput}
-                value={draft.category}
-                onChange={(event) =>
-                  onDraftChange?.({ category: event.target.value })
-                }
+              <RecipeImageField
+                label="Food photo for recipe view"
+                field="modalImageUrl"
+                imageUrl={draft.modalImageUrl}
+                imageAlt={draft.imageAlt || draft.title}
+                pendingKey={pendingKey}
+                onDraftChange={onDraftChange}
+                onUploadImage={onUploadImage}
               />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Prep time</span>
-              <input
-                className={styles.searchInput}
-                value={draft.prepTime}
-                onChange={(event) =>
-                  onDraftChange?.({ prepTime: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Servings</span>
-              <input
-                className={styles.searchInput}
-                inputMode="numeric"
-                value={draft.servings}
-                onChange={(event) =>
-                  onDraftChange?.({ servings: event.target.value })
-                }
-              />
-            </label>
+            </div>
+
+            <RecipeCardSourceUploader
+              imageUrls={draft.recipeCardImageUrls}
+              pendingKey={pendingKey}
+              onRemoveImage={(imageUrl) =>
+                onDraftChange?.({
+                  recipeCardImageUrls: draft.recipeCardImageUrls.filter(
+                    (url) => url !== imageUrl,
+                  ),
+                })
+              }
+              onUploadImage={(file) => onUploadImage?.('recipeCardImageUrls', file)}
+            />
+
+            <div className={styles.recipeBuilderActions}>
+              <button
+                type="button"
+                className={styles.actionButton}
+                onClick={onBuildDraft}
+                disabled={Boolean(pendingKey)}
+              >
+                {pendingKey === 'build-draft'
+                  ? 'Building recipe...'
+                  : 'Build recipe with Nic-Nac'}
+              </button>
+              <button
+                type="button"
+                className={styles.siteSettingsSaveButton}
+                onClick={onSave}
+                disabled={Boolean(pendingKey)}
+              >
+                {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.recipeDraftPreview}>
+            <div className={styles.walletSettingsTitle}>Nic-Nac draft preview</div>
+            {draft.description || draft.ingredientsText || draft.stepsText ? (
+              <div className={styles.recipePreviewGrid}>
+                {draft.description ? <p>{draft.description}</p> : null}
+                {draft.ingredientsText ? (
+                  <div>
+                    <span className={styles.searchLabel}>Ingredients</span>
+                    <ul>
+                      {splitRecipeLines(draft.ingredientsText).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {draft.stepsText ? (
+                  <div>
+                    <span className={styles.searchLabel}>Steps</span>
+                    <ol>
+                      {splitRecipeLines(draft.stepsText).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+                {draft.note ? <p>{draft.note}</p> : null}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                Upload at least one readable recipe-card photo, then Nic-Nac can
+                draft the description, ingredients, steps, and Heather-style note.
+              </div>
+            )}
+          </div>
+
+          <details className={styles.recipeAdvancedEdit}>
+            <summary className={styles.playbookGuideSummary}>
+              <span>
+                <strong>Advanced edit</strong>
+                <small>Fine-tune fields after Nic-Nac builds the recipe.</small>
+              </span>
+              <span className={styles.disclosureChevron}>›</span>
+            </summary>
+
+            <div className={styles.siteSettingsGrid}>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Slug</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.slug}
+                  placeholder="Auto-created from title"
+                  onChange={(event) =>
+                    onDraftChange?.({ slug: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Category</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.category}
+                  onChange={(event) =>
+                    onDraftChange?.({ category: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Prep time</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.prepTime}
+                  onChange={(event) =>
+                    onDraftChange?.({ prepTime: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Servings</span>
+                <input
+                  className={styles.searchInput}
+                  inputMode="numeric"
+                  value={draft.servings}
+                  onChange={(event) =>
+                    onDraftChange?.({ servings: event.target.value })
+                  }
+                />
+              </label>
             <label className={styles.walletToggleRow}>
               <span className={styles.searchLabel}>Visible in Pantry</span>
               <input
@@ -6271,134 +6498,170 @@ export function RecipesCard({
                 }
               />
             </label>
-            <label className={styles.sortFieldWide}>
-              <span className={styles.searchLabel}>Description</span>
-              <textarea
-                className={styles.siteSettingsTextarea}
-                value={draft.description}
-                onChange={(event) =>
-                  onDraftChange?.({ description: event.target.value })
-                }
-              />
-            </label>
-          </div>
+              <label className={styles.sortFieldWide}>
+                <span className={styles.searchLabel}>Description</span>
+                <textarea
+                  className={styles.siteSettingsTextarea}
+                  value={draft.description}
+                  onChange={(event) =>
+                    onDraftChange?.({ description: event.target.value })
+                  }
+                />
+              </label>
+            </div>
 
-          <div className={styles.siteSettingsGrid}>
-            <label className={styles.sortFieldWide}>
-              <span className={styles.searchLabel}>Ingredients</span>
-              <textarea
-                className={styles.siteSettingsTextarea}
-                value={draft.ingredientsText}
-                placeholder="One ingredient per line"
-                onChange={(event) =>
-                  onDraftChange?.({ ingredientsText: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.sortFieldWide}>
-              <span className={styles.searchLabel}>Steps</span>
-              <textarea
-                className={styles.siteSettingsTextarea}
-                value={draft.stepsText}
-                placeholder="One step per line"
-                onChange={(event) =>
-                  onDraftChange?.({ stepsText: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.sortFieldWide}>
-              <span className={styles.searchLabel}>Note</span>
-              <textarea
-                className={styles.siteSettingsTextarea}
-                value={draft.note}
-                onChange={(event) =>
-                  onDraftChange?.({ note: event.target.value })
-                }
-              />
-            </label>
-          </div>
+            <div className={styles.siteSettingsGrid}>
+              <label className={styles.sortFieldWide}>
+                <span className={styles.searchLabel}>Ingredients</span>
+                <textarea
+                  className={styles.siteSettingsTextarea}
+                  value={draft.ingredientsText}
+                  placeholder="One ingredient per line"
+                  onChange={(event) =>
+                    onDraftChange?.({ ingredientsText: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.sortFieldWide}>
+                <span className={styles.searchLabel}>Steps</span>
+                <textarea
+                  className={styles.siteSettingsTextarea}
+                  value={draft.stepsText}
+                  placeholder="One step per line"
+                  onChange={(event) =>
+                    onDraftChange?.({ stepsText: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.sortFieldWide}>
+                <span className={styles.searchLabel}>Note</span>
+                <textarea
+                  className={styles.siteSettingsTextarea}
+                  value={draft.note}
+                  onChange={(event) =>
+                    onDraftChange?.({ note: event.target.value })
+                  }
+                />
+              </label>
+            </div>
 
-          <div className={styles.siteSettingsGrid}>
-            <RecipeImageField
-              label="Recipe card image"
-              field="imageUrl"
-              imageUrl={draft.imageUrl}
-              imageAlt={draft.imageAlt || draft.title}
-              pendingKey={pendingKey}
-              onDraftChange={onDraftChange}
-              onUploadImage={onUploadImage}
-            />
-            <RecipeImageField
-              label="Modal image"
-              field="modalImageUrl"
-              imageUrl={draft.modalImageUrl}
-              imageAlt={draft.imageAlt || draft.title}
-              pendingKey={pendingKey}
-              onDraftChange={onDraftChange}
-              onUploadImage={onUploadImage}
-            />
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Image alt text</span>
-              <input
-                className={styles.searchInput}
-                value={draft.imageAlt}
-                onChange={(event) =>
-                  onDraftChange?.({ imageAlt: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Card crop position</span>
-              <input
-                className={styles.searchInput}
-                value={draft.imagePosition}
-                onChange={(event) =>
-                  onDraftChange?.({ imagePosition: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Modal crop position</span>
-              <input
-                className={styles.searchInput}
-                value={draft.modalImagePosition}
-                onChange={(event) =>
-                  onDraftChange?.({ modalImagePosition: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>TikTok URL</span>
-              <input
-                className={styles.searchInput}
-                value={draft.tiktokUrl}
-                onChange={(event) =>
-                  onDraftChange?.({ tiktokUrl: event.target.value })
-                }
-              />
-            </label>
-          </div>
+            <div className={styles.siteSettingsGrid}>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Image alt text</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.imageAlt}
+                  onChange={(event) =>
+                    onDraftChange?.({ imageAlt: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Card crop position</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.imagePosition}
+                  onChange={(event) =>
+                    onDraftChange?.({ imagePosition: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>Modal crop position</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.modalImagePosition}
+                  onChange={(event) =>
+                    onDraftChange?.({ modalImagePosition: event.target.value })
+                  }
+                />
+              </label>
+              <label className={styles.searchField}>
+                <span className={styles.searchLabel}>TikTok URL</span>
+                <input
+                  className={styles.searchInput}
+                  value={draft.tiktokUrl}
+                  onChange={(event) =>
+                    onDraftChange?.({ tiktokUrl: event.target.value })
+                  }
+                />
+              </label>
+            </div>
 
-          <div className={styles.actionRow}>
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={onSave}
-              disabled={Boolean(pendingKey)}
-            >
-              {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
-            </button>
-            <button
-              type="button"
-              className={styles.secondaryActionButton}
-              onClick={() => draft.id && onRemove?.(draft.id)}
-              disabled={Boolean(pendingKey) || !canRemove}
-            >
-              Remove recipe
-            </button>
-          </div>
+            <div className={styles.actionRow}>
+              <button
+                type="button"
+                className={styles.secondaryActionButton}
+                onClick={() => draft.id && onRemove?.(draft.id)}
+                disabled={Boolean(pendingKey) || !canRemove}
+              >
+                Remove recipe
+              </button>
+            </div>
+          </details>
         </div>
       </div>
+    </div>
+  )
+}
+
+function RecipeCardSourceUploader({
+  imageUrls,
+  pendingKey,
+  onRemoveImage,
+  onUploadImage,
+}: {
+  imageUrls: string[]
+  pendingKey?: string | null
+  onRemoveImage?: (imageUrl: string) => void
+  onUploadImage?: (file: File | null) => Promise<void> | void
+}) {
+  const isUploading = pendingKey === 'upload:recipeCardImageUrls'
+
+  return (
+    <div className={styles.recipeSourcePanel}>
+      <div className={styles.calendarHeader}>
+        <div>
+          <div className={styles.walletSettingsTitle}>Recipe-card photos</div>
+          <div className={styles.siteSettingsPreviewNote}>
+            Upload the card or paper with the ingredients and directions.
+          </div>
+        </div>
+        <label className={styles.recipeUploadButton}>
+          {isUploading ? 'Uploading...' : 'Upload recipe card'}
+          <input
+            type="file"
+            accept="image/*"
+            disabled={Boolean(pendingKey)}
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0] ?? null
+              void onUploadImage?.(file)
+              event.currentTarget.value = ''
+            }}
+          />
+        </label>
+      </div>
+      {imageUrls.length > 0 ? (
+        <div className={styles.recipeSourceImageGrid}>
+          {imageUrls.map((imageUrl) => (
+            <div className={styles.recipeSourceImageCard} key={imageUrl}>
+              <img src={imageUrl} alt="Recipe card source" />
+              <button
+                type="button"
+                className={styles.secondaryActionButton}
+                onClick={() => onRemoveImage?.(imageUrl)}
+                disabled={Boolean(pendingKey)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.recipeEditorImageEmpty}>
+          No recipe-card photos uploaded yet.
+        </div>
+      )}
     </div>
   )
 }

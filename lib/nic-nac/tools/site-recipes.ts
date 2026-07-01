@@ -90,7 +90,7 @@ export function makeManageSiteRecipesTool(ctx: {
 }) {
   return tool({
     description:
-      'Add, update, remove, hide/show, or reorder public site Pantry recipe cards for the authenticated rep. Editable fields include title, description, category, prep time, servings, card image, modal image, TikTok URL, ingredients, steps, notes, and sort order.',
+      'Add, update, remove, hide/show, or reorder public site Pantry recipe cards for the authenticated rep. Editable fields include title, description, category, prep time, servings, card image, modal image, TikTok URL, ingredients, steps, notes, and sort order. Recipe-card photos are source material for ingredients and steps; only reject unreadable recipe cards or genuinely bad public display photos.',
     inputSchema: manageSchema,
     execute: async (input) => {
       try {
