@@ -6343,7 +6343,7 @@ export function RecipesCard({
           </div>
 
           <div className={styles.recipeDraftPreview}>
-            <div className={styles.walletSettingsTitle}>Nic-Nac draft preview</div>
+            <div className={styles.walletSettingsTitle}>Recipe Preview</div>
             {draft.description || draft.ingredientsText || draft.stepsText ? (
               <div className={styles.recipePreviewGrid}>
                 {draft.description ? <p>{draft.description}</p> : null}

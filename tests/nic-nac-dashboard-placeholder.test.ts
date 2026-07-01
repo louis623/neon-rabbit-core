@@ -1687,7 +1687,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Upload recipe card')
     expect(html).toContain('Build recipe with Nic-Nac')
     expect(html.match(/Build recipe with Nic-Nac/g)).toHaveLength(1)
-    expect(html).toContain('Nic-Nac draft preview')
+    expect(html).toContain('Recipe Preview')
     expect(html).not.toContain('Advanced edit')
     expect(html).toContain('Visible in Pantry')
     expect(html).toContain('Chicken')
@@ -1742,7 +1742,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Remove recipe')
     expect(html).not.toContain('Advanced edit')
     expect(html).not.toContain('Recipe-card photos')
-    expect(html).not.toContain('Nic-Nac draft preview')
+    expect(html).not.toContain('Recipe Preview')
     expect(html).not.toContain('Build recipe with Nic-Nac')
   })
 
