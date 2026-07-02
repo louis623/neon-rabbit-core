@@ -40,6 +40,16 @@ describe('Sparkle Suite prelaunch page', () => {
     expect(html).toContain('application/ld+json')
   })
 
+  it('renders the workspace sign-in action in the prelaunch header', () => {
+    const html = renderToStaticMarkup(createElement(PrelaunchPage))
+    const headerHtml = html.slice(0, html.indexOf('class="ss-hero"'))
+
+    expect(headerHtml).toContain('Log in to your Sparkle Suite workspace')
+    expect(headerHtml).toContain('href="/login?redirect=%2Fnic-nac"')
+    expect(headerHtml).not.toContain('Already have Sparkle Suite?')
+    expect(headerHtml).not.toContain('Sign in here.')
+  })
+
   it('renders the official waitlist sections with compliance copy', () => {
     const html = renderToStaticMarkup(createElement(PrelaunchPage))
 

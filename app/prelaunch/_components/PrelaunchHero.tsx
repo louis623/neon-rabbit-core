@@ -1,4 +1,5 @@
 import { prelaunchContent } from '@/lib/prelaunch/content'
+import { SparkleSuitePublicAccountAction } from '@/app/_components/SparkleSuitePublicAccountAction'
 import { FeatureGlyph, SparkleSeal } from './PrelaunchVisuals'
 
 export function PrelaunchHero() {
@@ -10,10 +11,13 @@ export function PrelaunchHero() {
             <SparkleSeal className="ss-brand__seal" />
             <span className="ss-brand__name">{prelaunchContent.brand}</span>
           </a>
-          <span className="ss-nav__pill">
-            <span className="ss-dot" />
-            {prelaunchContent.eyebrow}
-          </span>
+          <div className="ss-nav__actions" aria-label="Sparkle Suite account access">
+            <span className="ss-nav__pill">
+              <span className="ss-dot" />
+              {prelaunchContent.eyebrow}
+            </span>
+            <SparkleSuitePublicAccountAction />
+          </div>
         </div>
       </header>
 

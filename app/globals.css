@@ -415,6 +415,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 }
 
 .prelaunch-shell .ss-nav__inner,
+.prelaunch-shell .ss-nav__actions,
 .prelaunch-shell .ss-brand,
 .prelaunch-shell .ss-nav__pill,
 .prelaunch-shell .ss-hero__kicker,
@@ -431,6 +432,12 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 
 .prelaunch-shell .ss-nav__inner {
   justify-content: space-between;
+}
+
+.prelaunch-shell .ss-nav__actions {
+  gap: 12px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .prelaunch-shell .ss-brand {
@@ -476,6 +483,35 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 .sparkle-legal-shell {
   padding-left: clamp(18px, 4vw, 52px);
   padding-right: clamp(18px, 4vw, 52px);
+}
+
+.prelaunch-shell .sl2-header__account-button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(64, 41, 36, 0.14);
+  border-radius: var(--prelaunch-pill);
+  color: var(--prelaunch-ink);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1.2;
+  min-height: 40px;
+  max-width: min(54vw, 19rem);
+  padding: 9px 16px;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.16s;
+}
+
+.prelaunch-shell .sl2-header__account-button:hover,
+.prelaunch-shell .sl2-header__account-button:focus-visible {
+  border-color: rgba(238, 44, 155, 0.34);
+  box-shadow: 0 12px 28px rgba(238, 44, 155, 0.16);
+  transform: translateY(-1px);
 }
 
 .prelaunch-shell .ss-dot {
