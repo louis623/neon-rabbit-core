@@ -303,6 +303,7 @@ describe('send_email_notification', () => {
       'add_show',
       'approve_trade',
       'approve_trade_swap',
+      'build_site_recipe_draft',
       'cancel_show',
       'cancel_show_series',
       'end_show',
