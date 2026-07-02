@@ -4,6 +4,44 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 2, 2026 - Team Management Beta
+
+**Team Management beta uses private onboarding links**
+Brittany's Team Management beta is wired around private onboarding links, not fake Sparkle Suite rep accounts. A team lead creates an onboarding participant by entering the new rep's name, then copies the link or opens their own email app. Sparkle Suite SMS/email notification tools are not used for team recruiting/outreach.
+
+**Team Management access is entitlement-backed**
+Team Management access is controlled by `team_management_entitlements`. Brittany is enabled through `manual_beta`; future paid add-on access can use the same entitlement table with `active` status after Stripe checkout/webhook handling is added.
+
+**Rep onboarding progress and messages stay tied to the team lead workspace**
+The public onboarding invite token identifies a participant under the team lead's workspace. Progress updates and participant questions/messages sync back to Brittany's Sparkle Suite Team Management workspace while the participant keeps using the tailored onboarding page.
+
+---
+
+## July 2, 2026 - Alpine Opal and Mile High Fizz
+
+**Alpine Opal is a reusable Sparkle Suite skin**
+The Mile High Fizz visual direction is now codified as `alpine_opal` / `AO-01`, named Alpine Opal. It is not a Lindsey-only custom fork. Any rep can select it from the normal Sparkle Suite skin system, and future skin-aware tooling, prompts, templates, and Site Settings type guards should treat it as a first-class supported appearance preset.
+
+**Mile High Fizz uses the normal switchable customer-site model**
+The earlier June 18 note that Mile High Fizz was a bespoke hybrid migration is superseded for current implementation purposes. Mile High Fizz should keep its brand/content direction, but the public Home, Trade, and Join routes should use the standard Amethyst template model with active-skin tokens, like BlingKitchen after Moonstone. The site must be able to switch among all supported skins.
+
+**Mile High Fizz Trade Board starts empty by design**
+An empty Mile High Fizz customer Trade Board is not a missing-data bug. Lindsey should start with no public listings until she adds actual pieces through the workspace/Nic-Nac flow.
+
+**Mile High Fizz team copy is specific**
+Use `Diamond Peak Society` for Lindsey's own team and `The Virtuous Fizzers` for the team Lindsey belongs to. Avoid generic family/team wording when the site is preparing for Lindsey/Brittany-style review.
+
+**Persisted Site Settings must be migrated for customer defaults**
+When changing a default skin for an existing customer site, updating static tenant/profile code is not enough if `site_settings` already contains a saved `appearance_preset`. Apply and verify the persisted setting, then verify the stable public template payload for the customer slug.
+
+**Customer-facing copy must not leak internal model language**
+Do not expose generic implementation phrases such as "standard Sparkle Suite item-for-item swap" on customer-facing rep sites. Public copy should sound like the rep's site and describe the shopper action plainly.
+
+**Check-constraint migrations normalize first**
+When extending constrained enum-like fields such as `site_settings.appearance_preset`, first normalize unsupported or null legacy values to a valid fallback, then replace the check constraint. This prevents remote `db push` from failing on old rows such as retired `amethyst` values.
+
+---
+
 ## June 29, 2026
 
 **No-item-number trade pieces stay out of the shared jewelry database**

@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 1, 2026
+**Last updated:** July 2, 2026
 
 ---
 
@@ -18,12 +18,12 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest pushed implementation checkpoint:** `c0782bf fix: improve Moonstone Pantry contrast`
-- **Latest pushed docs/memory checkpoint:** July 1 closeout docs update on the current branch head.
-- **Latest local/deployed checkpoints:** Added reusable Moonstone skin (`moonstone`, `MS-01`) with purple, silver, and charcoal tokens for any Sparkle Suite rep. Heather/BlingKitchen now uses the standard public Home, Trade, and Join templates with Moonstone applied instead of bespoke BlingKitchen hero/content variants, while keeping the `In the Pantry` link visible. The Pantry page now inherits the selected appearance preset, so Heather's recipes can follow Moonstone or any future skin she chooses. Follow-up hardening fixed Moonstone light-card readability across Home/Trade/Join, restored the BlingKitchen Live event calendar with a BlingKitchen-only M/W/F 7 PM ET fallback when no DB shows exist, and fixed Moonstone Pantry filter/card/modal contrast.
+- **Latest local implementation checkpoint:** `1b36629 feat: add team onboarding management beta`
+- **Latest local docs/memory checkpoint:** July 2 Team Management beta and Alpine Opal / Mile High Fizz closeout docs update on the current branch head.
+- **Latest local/deployed checkpoints:** Added Brittany's Team Management beta with entitlement-backed access, private onboarding links, public invite-token onboarding APIs, participant progress sync, participant/team-lead messaging, archive controls, and the standalone Britt With Bling Start Strong app wired to the stable Sparkle Suite demo API. Brittany is enabled through `manual_beta`; future paid add-on access can use the same entitlement table with Stripe setting status to `active`. The prior July 2 checkpoint added reusable Alpine Opal (`alpine_opal`, `AO-01`) and moved Mile High Fizz onto the standard switchable public-site model with Alpine Opal as its default/persisted skin.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-9o4ujaf29-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_6q2wCNWQHXEtrDY8Zwk7zvFEocpo`
+- **Current stable demo target:** `https://sparkle-suite-bez21x5pg-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_DArFUiSinAgGsP8mp6i8E9KUrhi8`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
@@ -51,7 +51,7 @@ The old `C:\Users\louis\sparkle-suite` folder remains on disk only as a redirect
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Platform (Vercel + Next.js) | Live | Connected to GitHub repo |
-| Supabase | Active for Sparkle Suite referrals and Trade Board | Non-item-number Trade Board migrations `20260629150000` and `20260629151000` were applied with Supabase CLI on June 29, 2026; `trade_listings.design_id` is nullable only for `listing_source = 'non_item_number'`; `rep_referral_paid_months` and `trade_listings.ring_size` are applied/verified |
+| Supabase | Active for Sparkle Suite referrals, Trade Board, and Team Management beta | Non-item-number Trade Board migrations `20260629150000` and `20260629151000` were applied with Supabase CLI on June 29, 2026; Alpine Opal appearance preset migration `20260702005259` was applied July 2, 2026 and Mile High Fizz persisted settings were verified as `alpine_opal`; Team Management onboarding migration `20260702120000` was applied July 2, 2026 with Brittany enabled as `manual_beta`; `trade_listings.design_id` is nullable only for `listing_source = 'non_item_number'`; `rep_referral_paid_months` and `trade_listings.ring_size` are applied/verified |
 | GitHub vault | Active | Being set up this session — bridge memory system |
 | Open Brain | Planned | Phase 2 — Supabase + pgvector + Discord capture bot |
 | Chrome extension | Live (sideload) | Live Reveal Queue exists as sideload band-aid — rebuild as Web Store extension is Phase 2 parallel track |
@@ -79,10 +79,12 @@ Current implementation progress toward that architecture: Suite Nic-Nac now has 
 
 As of June 21, the immediate migration/control-center priorities are:
 
-1. Louis/Brittany still need to review/accept Britt With Bling, with extra attention on editable Join Team cards.
-2. Louis/Heather still need to review BlingKitchen on the stable demo before any custom-domain cutover.
-3. Control Center is now growing into the internal operating workspace; customer/demo account database polish, editable account status/notes, and richer billing details remain next-step work.
-4. Continue Phase 1 closeout and Phase 2 prep after these migrated public sites and Control Center v1 workflows are accepted.
+1. Louis/Brittany need a safe logged-in smoke of Brittany's Team Management beta: create one real/test-by-Louis onboarding participant, open the Start Strong invite, sync progress/messages, and archive when finished. Do not create fake rep accounts.
+2. Louis/Brittany still need to review/accept Britt With Bling, with extra attention on editable Join Team cards.
+3. Louis/Heather still need to review BlingKitchen on the stable demo before any custom-domain cutover.
+4. Louis/Lindsey still need to review Mile High Fizz on Alpine Opal at the stable demo before any domain cutover; the Trade Board should stay empty until Lindsey adds real pieces.
+5. Control Center is now growing into the internal operating workspace; customer/demo account database polish, editable account status/notes, and richer billing details remain next-step work.
+6. Continue Phase 1 closeout and Phase 2 prep after these migrated public sites and Control Center v1 workflows are accepted.
 
 Older priority notes below are retained as historical context until fully cleaned up.
 
@@ -94,11 +96,25 @@ Older priority notes below are retained as historical context until fully cleane
 
 ## Recent Migration State
 
-- **Mile High Fizz:** Accepted migration pattern for outside rep sites: preserve the original public brand as closely as possible, insert Sparkle Suite automations, and style those automations to match.
+- **Brittany Team Management beta:** Local checkpoint `1b36629 feat: add team onboarding management beta` adds entitlement-backed Team Management access, private onboarding participants, public invite-token APIs, progress/message sync, archive controls, and the standalone `apps/rep-onboarding` Start Strong app deployed at `https://britt-with-bling-start-strong.vercel.app`. Brittany is enabled via `manual_beta`; no fake participant rows or rep accounts were created. First real smoke should use Louis or Brittany with a real invite link.
+- **Mile High Fizz:** July 2 supersedes the earlier bespoke-only framing. The Mile High Fizz look is now reusable **Alpine Opal** (`alpine_opal`, `AO-01`) and Mile High Fizz itself uses the standard Amethyst Home/Trade/Join template model with normal skin switching. Its default/persisted demo skin is Alpine Opal, team copy is `Diamond Peak Society` / `The Virtuous Fizzers`, and its public Trade Board is intentionally empty until Lindsey adds pieces.
 - **Britt With Bling:** Pushed checkpoint `2617b8c feat: migrate Britt With Bling public site`. Route shape follows Mile High Fizz; diamonds/unicorns/FAQ are intentionally not carried forward. Join Team remains important and must keep team-member cards/photos/links/copy editable by Nic-Nac/site data.
 - **BlingKitchen:** Pushed/deployed checkpoint `ccd4456 feat: migrate BlingKitchen public site` uses Heather's Ready.ai/Readdy export and keeps a special Pantry/recipe page at `/blingkitchen/in-the-pantry`. Recipes are DB-backed and editable through Nic-Nac plus the dashboard Recipes section.
 - **Recipe content model:** Public-site recipes include title, slug, category, prep time, servings, description, ingredients, steps, note, TikTok URL, card/modal images, image alt/crop, order, and visibility. Public loader should be DB-first with BlingKitchen fallback recipes only when needed.
 - **Tenant/account:** Heather's BlingKitchen username is `blingkitchen19@gmail.com`. A temporary password was set during the session; keep it out of long-term docs and rotate after handoff.
+
+### July 2, 2026 Alpine Opal + Mile High Fizz Standard Site Model
+
+- Alpine Opal (`alpine_opal`, `AO-01`) is a reusable Sparkle Suite skin derived from Mile High Fizz's visual direction. It is available for any rep, not a Lindsey-only fork.
+- Mile High Fizz now follows the same standard switchable public-site model used by BlingKitchen after Moonstone: shared Home, Trade, and Join templates with active skin tokens.
+- Mile High Fizz default/persisted demo state is Alpine Opal. Supabase read-back verified `milehighfizz | alpine_opal | Diamond Peak Society`.
+- Public copy uses Lindsey's actual context: `Diamond Peak Society` is Lindsey's team and `The Virtuous Fizzers` is the team Lindsey belongs to.
+- Mile High Fizz Trade Board should be empty until Lindsey adds pieces; an empty customer board is expected, not a missing-data bug.
+- Alpine Opal implementation checkpoint: `c8f8d92 fix: apply Alpine Opal demo migration`.
+- Stable demo alias: `https://sparkle-suite-demo.vercel.app`.
+- Alpine Opal closeout demo target: `https://sparkle-suite-i8vavj4do-louis-2849s-projects.vercel.app`.
+- Alpine Opal closeout deployment id: `dpl_EJYJE6nHpMLgtrXWcgPbNVGRegSh`.
+- Verification passed: focused Mile High Fizz/skin/site-settings tests, `npm run qa:amethyst`, local `npm run build`, isolated local Playwright smoke for the three Mile High Fizz routes, Supabase migration/read-back, stable route 200 checks, stable template payload checks, and final stable screenshot review for Trade hero readability.
 
 ### June 21, 2026 Control Center + Public-Site Header/Ticker Hardening
 

@@ -4,6 +4,67 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 2, 2026 - Team Management Beta and Britt With Bling Start Strong Integration
+
+**What changed:**
+- Added entitlement-backed Team Management access through `team_management_entitlements`.
+- Enabled Brittany for beta through `manual_beta`; future Stripe add-on access can use the same table with `active` status.
+- Added Nic-Nac Team Management APIs for listing participants, creating private onboarding links, replying to participant messages, and archiving onboarding access.
+- Added public invite-token APIs for the onboarding site to load participant/team state, sync progress, and send questions/messages back to Brittany's workspace.
+- Restored and integrated the standalone Britt With Bling Start Strong app at `apps/rep-onboarding`.
+- Deployed Start Strong to `https://britt-with-bling-start-strong.vercel.app` with `VITE_SPARKLE_SUITE_API_BASE_URL=https://sparkle-suite-demo.vercel.app`.
+- Updated the Nic-Nac workspace UI so Team Management is a simple paid-add-on section with create-link, copy-link, email-with-own-email-app, roster/progress, reply, and archive controls.
+- Kept Sparkle Suite SMS/email notification tools out of team outreach. Reps/team leads use their own phone or email app to send the link.
+
+**Verification:**
+- Focused suite passed: `npm exec vitest run tests/team-onboarding-service.test.ts tests/nic-nac-team-onboarding-route.test.ts tests/team-onboarding-public-route.test.ts tests/nic-nac-dashboard-placeholder.test.ts` with 4 files / 90 tests.
+- Root `npm run build` passed locally with Next.js 16.2.1.
+- `apps/rep-onboarding` `npm run build` passed.
+- `apps/rep-onboarding` `npm run smoke:static` passed.
+- Supabase migration `20260702120000_team_management_onboarding_beta.sql` was applied and verified: Brittany entitlement exists as `manual_beta`, with zero participant/progress/message rows after setup.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-bez21x5pg-louis-2849s-projects.vercel.app` / deployment `dpl_DArFUiSinAgGsP8mp6i8E9KUrhi8`.
+- Stable route smoke returned 200 for `/`, unauthenticated for the protected Team Management route, and safe onboarding-specific copy for an invalid invite token.
+- Live Start Strong bundle smoke confirmed it calls `/api/team-onboarding/access/`, uses the stable Sparkle Suite demo API base, and no longer contains old demo-only `Welcome, Sarah` or `Reset demo` strings.
+
+**Remaining beta smoke:**
+- No fake rep accounts or participant rows were created. The first end-to-end workspace smoke should create one real/test-by-Louis onboarding participant link, open the invite, sync progress/messages, and archive it afterward.
+- Logged-in workspace UI was not visually checked through Louis's personal browser. Use reviewer-smoke/safe login flow when available.
+
+---
+
+## July 2, 2026 - Alpine Opal and Mile High Fizz Standard Site Model
+
+**What changed:**
+- Added reusable **Alpine Opal** (`alpine_opal`, `AO-01`) as a mountain-opal pink, violet, icy-blue, and deep-ink skin any Sparkle Suite rep can choose.
+- Converted Mile High Fizz back onto the standard Amethyst public-site model like BlingKitchen: Home, Trade, and Join share the normal templates and skin-switching behavior instead of a one-off locked custom fork.
+- Set Mile High Fizz's default and persisted demo skin to Alpine Opal while keeping the site able to switch to other supported skins.
+- Corrected Lindsey's public team context: **Diamond Peak Society** is Lindsey's team, and **The Virtuous Fizzers** is the team Lindsey belongs to.
+- Kept the Mile High Fizz Trade Board intentionally empty until Lindsey adds pieces.
+- Added Supabase migration `20260702005259_add_alpine_opal_appearance_preset.sql`, including normalization for legacy unsupported/null appearance presets before extending the check constraint.
+- Removed customer-facing generic/internal phrases such as "standard Sparkle Suite item-for-item swap" from Mile High Fizz Trade copy.
+- Fixed Alpine Opal Trade hero readability by using skin foreground tokens instead of hard-coded white text on the light Alpine background.
+- Removed decorative JSX entity arrows that rendered literally in some customer-facing links.
+
+**Verification:**
+- Final focused suite passed: `npm exec vitest run tests/mile-high-fizz-public-site.test.ts tests/mile-high-fizz-tenant.test.ts tests/amethyst-appearance-presets.test.ts tests/services/site-settings.test.ts` with 4 files / 44 tests.
+- `npm run qa:amethyst` passed with 3 files / 71 tests plus local link checks.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Isolated local Playwright console/runtime smoke passed for `/milehighfizz`, `/milehighfizz/trade`, and `/milehighfizz/join` without using Louis's personal browser/session.
+- Supabase `db push` succeeded after the migration normalized legacy unsupported presets first; DB read-back verified `milehighfizz | alpine_opal | Diamond Peak Society`.
+- At Alpine Opal closeout, stable demo alias `https://sparkle-suite-demo.vercel.app` pointed to deployment `dpl_EJYJE6nHpMLgtrXWcgPbNVGRegSh` / preview `https://sparkle-suite-i8vavj4do-louis-2849s-projects.vercel.app`.
+- Stable route checks returned 200 for `/milehighfizz`, `/milehighfizz/trade`, and `/milehighfizz/join`.
+- Stable template payload checks confirmed `alpine_opal`, empty Trade listings, corrected team copy, no `black_diamond` default, and no generic "standard Sparkle Suite" copy leak.
+- Final stable screenshot review caught and then verified the Trade hero readability fix.
+
+**Lessons carried forward:**
+- Existing customer sites often already have persisted `site_settings`; code defaults alone do not change the live/stable customer site. Migrate or update the persisted row and verify the stable template payload.
+- A rep-inspired visual direction can become a reusable skin, but the customer site should still stay on the standard switchable template model unless Louis explicitly approves a permanent fork.
+- Skin readability must be checked on the actual active skin and stable route, not just local/default screenshots.
+- JSX named entities are risky in static customer templates if they are not verified in the rendered output; use plain ASCII labels for public CTAs unless the rendered entity is proven.
+- Supabase check-constraint migrations should normalize legacy unsupported values before adding a stricter allowed set.
+
+---
+
 ## July 1, 2026 - BlingKitchen Recipe Images Moved Off Readdy and Recipe Builder Simplified
 
 **What changed:**
