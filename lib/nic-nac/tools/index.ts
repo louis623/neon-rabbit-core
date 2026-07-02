@@ -458,11 +458,22 @@ export function getToolIntentsForMessages(
   const text = getMessageText(latestUser)
 
   const latestIntents = getToolIntentsForText(text ?? '')
-  if (!latestIntents.includes('memory')) return latestIntents
+  if (
+    !latestIntents.includes('memory') &&
+    !latestIntents.includes('show_memory')
+  ) {
+    return latestIntents
+  }
   const continuationIntents = getContinuationIntents(messages, text ?? '')
   if (continuationIntents.length === 0) return latestIntents
+  if (latestIntents.includes('memory')) return continuationIntents
 
-  return continuationIntents.length ? continuationIntents : latestIntents
+  const merged = [...latestIntents]
+  for (const intent of continuationIntents) {
+    if (!merged.includes(intent)) merged.push(intent)
+  }
+
+  return merged
 }
 
 function getContinuationIntents(
@@ -475,6 +486,9 @@ function getContinuationIntents(
   }
   if (isSiteContinuation(messages, latestText)) {
     intents.push('site')
+  }
+  if (isCalendarContinuation(messages, latestText)) {
+    intents.push('calendar')
   }
   if (intents.length === 0) return []
 
@@ -550,6 +564,12 @@ export function shouldRequireToolCallForMessages(
     return true
   }
   if (intents.includes('site') && isSiteContinuation(messages, latestText)) {
+    return true
+  }
+  if (
+    intents.includes('calendar') &&
+    isCalendarContinuation(messages, latestText)
+  ) {
     return true
   }
   if (!intents.includes('trade_board')) return false
@@ -629,12 +649,58 @@ function isSiteContinuation(
   return getToolIntentsForText(recentText).includes('site')
 }
 
+function isCalendarContinuation(
+  messages: RoutableMessage[],
+  latestText: string,
+): boolean {
+  const priorMessages = messages.slice(0, -1)
+  const previousAssistant = [...priorMessages]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  const previousAssistantText = getMessageText(previousAssistant)
+  if (!assistantIsDiscussingCalendarWork(previousAssistantText)) return false
+  if (
+    !isContextualFollowUp(latestText, previousAssistantText) &&
+    !textLooksLikeCalendarDetailFollowUp(latestText)
+  ) {
+    return false
+  }
+
+  const recentText = priorMessages
+    .slice(-6)
+    .flatMap((message) =>
+      message.parts
+        ?.filter((part) => part.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text) ?? [],
+    )
+    .join('\n')
+
+  return getToolIntentsForText(recentText).includes('calendar')
+}
+
 function assistantIsDiscussingSiteEdit(text: string): boolean {
   return (
     /\b(?:ticker|announcement|banner|site|tagline|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link|recipe|recipes|pantry|ingredient|ingredients)\b/i.test(
       text,
     ) &&
     /\b(?:swap|change|update|save|use|set|turn|make|edit|add|build|draft)\b/i.test(text)
+  )
+}
+
+function assistantIsDiscussingCalendarWork(text: string): boolean {
+  return (
+    /\b(?:calendar|schedule|show|live|event|platform|timezone|time zone|duration|recurring|code|discount|featured collection)\b/i.test(
+      text,
+    ) &&
+    /\b(?:add|schedule|save|put|create|change|update|move|cancel|skip|pause|need|use|missing|what)\b/i.test(
+      text,
+    )
+  )
+}
+
+function textLooksLikeCalendarDetailFollowUp(text: string): boolean {
+  return /\b(?:tiktok|tik tok|facebook|instagram|youtube|live|eastern|central|mountain|pacific|standard time|daylight time|timezone|time zone|hours?|minutes?|duration|am|pm)\b/i.test(
+    text,
   )
 }
 

@@ -250,6 +250,75 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     }
   })
 
+  it('keeps calendar write tools active when a rep supplies missing show details on a follow-up', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(
+        requestForMessages([
+          {
+            id: 'calendar-request',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Add BlingKitchen Live to my calendar this Friday at 8pm with code Classy123 for 15% off 3+ items and July Birthday Collection featured.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-calendar-details',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'I have the title, date, time, code, and featured collection. What platform, timezone, and duration should I use?',
+              },
+            ],
+          },
+          {
+            id: 'calendar-details',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  "It will be on my TikTok Live, and it's Eastern Standard Time for two and a half hours.",
+              },
+            ],
+          },
+        ]),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        tools: Record<string, unknown>
+      }
+      const toolNames = Object.keys(options.tools)
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining(['prepare_calendar_work', 'add_show']),
+      )
+      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          intents: expect.arrayContaining(['calendar']),
+          toolNames: expect.arrayContaining(['add_show']),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
   it('exposes the recipe draft and save tools through the real chat route', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
