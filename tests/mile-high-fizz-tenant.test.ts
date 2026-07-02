@@ -166,9 +166,10 @@ describe('Mile High Fizz tenant attachment', () => {
     expect(calls.siteSettingsUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         rep_id: 'rep-mile-high-fizz',
-        team_name: MILE_HIGH_FIZZ_PROFILE.businessName,
+        team_name: MILE_HIGH_FIZZ_PROFILE.teamName,
         show_join_page: true,
         customer_site_template: 'amethyst',
+        appearance_preset: 'alpine_opal',
       }),
       { onConflict: 'rep_id' },
     )
@@ -202,6 +203,11 @@ describe('Mile High Fizz tenant attachment', () => {
           migrated_existing_client: expect.objectContaining({
             enabled: true,
             source: 'mile_high_fizz_migration',
+          }),
+        }),
+        answers: expect.objectContaining({
+          site_skin: expect.objectContaining({
+            preset: 'alpine_opal',
           }),
         }),
       }),

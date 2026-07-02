@@ -88,6 +88,23 @@ export const AMETHYST_SKIN_CARDS: AmethystSkinCard[] = [
     ],
   },
   {
+    id: 'alpine_opal',
+    code: 'AO-01',
+    label: 'Alpine Opal',
+    description:
+      'A mountain-bright opal look with reveal-party pink, violet depth, and icy blue highlights.',
+    headingFont: 'Playfair Display',
+    bodyFont: 'DM Sans',
+    surfaceNote: 'Frosted opal cards over soft alpine pink and cool blue light',
+    motionNote: 'Sparkle-rise hero with crisp opal hover pop',
+    swatches: [
+      { label: 'Snow glow', value: '#fdf2f8' },
+      { label: 'Fizz pink', value: '#ec4899' },
+      { label: 'Summit violet', value: '#9333ea' },
+      { label: 'Ice blue', value: '#38bdf8' },
+    ],
+  },
+  {
     id: 'rose_gold',
     code: 'RG-01',
     label: 'Rose Gold',

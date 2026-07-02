@@ -292,6 +292,7 @@ describe('site customization tools', () => {
     ['GN-01', 'garnet'],
     ['AB-01', 'amber'],
     ['MS-01', 'moonstone'],
+    ['AO-01', 'alpine_opal'],
     ['VE-01', 'velvet'],
     ['RQ-01', 'rose_quartz'],
   ])('update_site_setting saves %s as the supported customer-facing skin code', async (code, expectedPreset) => {
@@ -365,6 +366,8 @@ describe('site customization registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('The Sparkle Suite Workspace keeps the standard workspace theme')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('BD-01')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Black Diamond')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('AO-01')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Alpine Opal')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('RG-01')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Rose Gold')
   })

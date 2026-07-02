@@ -227,6 +227,8 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('Garnet')
     expect(jsx).toContain('amber')
     expect(jsx).toContain('Amber')
+    expect(jsx).toContain('alpine_opal')
+    expect(jsx).toContain('Alpine Opal')
     expect(jsx).toContain('velvet')
     expect(jsx).toContain('Velvet')
     expect(jsx).toContain('rose_quartz')

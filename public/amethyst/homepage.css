@@ -3774,6 +3774,64 @@ body.silver-violet .hp-trade-card {
   box-shadow: 0 16px 36px rgba(124, 58, 237, 0.12);
 }
 
+body.bg-alpine-opal {
+  --hp-form-panel-bg: color-mix(in srgb, var(--hp-bg-elevated) 82%, transparent);
+  --hp-form-panel-fg: #1e1b4b;
+  --hp-field-bg: color-mix(in srgb, var(--hp-bg-elevated) 92%, white);
+  --hp-field-fg: #1e1b4b;
+  background:
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--hp-primary) 18%, transparent), transparent 30%),
+    radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--hp-accent) 18%, transparent), transparent 32%),
+    linear-gradient(135deg, var(--hp-bg) 0%, var(--hp-bg-elevated) 48%, var(--bg-deep) 100%);
+}
+
+body.surface-frosted-opal .hp-event-card,
+body.surface-frosted-opal .hp-wibp-card,
+body.surface-frosted-opal .hp-trade-card,
+body.surface-frosted-opal .hp-about-copy,
+body.surface-frosted-opal .hp-signup-card,
+body.surface-frosted-opal .tp-filters,
+body.surface-frosted-opal .tp-card,
+body.surface-frosted-opal .tp-card-expand,
+body.surface-frosted-opal .jp-hero-card,
+body.surface-frosted-opal .jp-team-card,
+body.surface-frosted-opal .jp-benefit-card,
+body.surface-frosted-opal .jp-final-card {
+  background: color-mix(in srgb, var(--hp-bg-elevated) 86%, white);
+  border-color: color-mix(in srgb, var(--hp-primary) 18%, transparent);
+  color: #1e1b4b;
+  box-shadow: 0 22px 56px color-mix(in srgb, var(--hp-accent) 12%, transparent);
+}
+
+body.bg-alpine-opal .hp-shop-btn,
+body.bg-alpine-opal .hp-btn-primary,
+body.bg-alpine-opal .hp-signup-submit,
+body.bg-alpine-opal .tp-card-expand-cta,
+body.bg-alpine-opal .jp-spot-btn {
+  background: linear-gradient(90deg, var(--hp-primary), color-mix(in srgb, var(--hp-primary) 58%, var(--hp-accent)), var(--hp-accent));
+  color: #ffffff;
+  border-color: transparent;
+}
+
+body.btn-alpine-pop .hp-btn-primary:hover,
+body.btn-alpine-pop .hp-btn-outline:hover,
+body.btn-alpine-pop .hp-shop-btn:hover,
+body.btn-alpine-pop .tp-card:hover,
+body.btn-alpine-pop .tp-card-expand-cta:hover,
+body.btn-alpine-pop .jp-team-card:hover,
+body.btn-alpine-pop .jp-benefit-card:hover,
+body.btn-alpine-pop .jp-spot-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 52px color-mix(in srgb, var(--hp-primary) 24%, transparent);
+}
+
+body.opal-summit .tp-card.unicorn,
+body.opal-summit .tp-card.diamond,
+body.opal-summit .hp-trade-card {
+  border-color: color-mix(in srgb, var(--hp-accent) 32%, transparent);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--hp-primary) 14%, transparent);
+}
+
 body.bg-rose-gold-paper {
   --fg: #2b1717;
   --fg-muted: #7e5457;
@@ -4109,12 +4167,21 @@ body.shape-soft { --hp-radius-card: 24px; }
    Mile High Fizz source-site migration shell
    ============================================================ */
 body.mile-high-fizz {
-  --mhf-pink: #ec4899;
-  --mhf-purple: #9333ea;
-  --mhf-blue: #3b82f6;
+  --mhf-primary: var(--hp-primary);
+  --mhf-accent: var(--hp-accent);
+  --mhf-bg: var(--hp-bg);
+  --mhf-bg-elevated: var(--hp-bg-elevated);
+  --mhf-bg-deep: var(--bg-deep);
+  --mhf-ink: var(--fg, #1f2937);
+  --mhf-muted: var(--fg-muted, #6b5d6c);
+  --mhf-pink: var(--mhf-primary);
+  --mhf-purple: color-mix(in srgb, var(--mhf-primary) 58%, var(--mhf-accent));
+  --mhf-blue: var(--mhf-accent);
   --mhf-deep: #030207;
-  --mhf-gold: #ffd46a;
-  background: #05020a;
+  --mhf-gold: color-mix(in srgb, var(--mhf-primary) 38%, #ffd46a);
+  --mhf-gradient: linear-gradient(90deg, var(--mhf-primary), var(--mhf-purple), var(--mhf-accent));
+  --mhf-soft-gradient: linear-gradient(135deg, var(--mhf-bg) 0%, var(--mhf-bg-elevated) 48%, var(--mhf-bg-deep) 100%);
+  background: var(--mhf-deep);
 }
 
 body.mile-high-fizz::before {
@@ -4124,7 +4191,7 @@ body.mile-high-fizz::before {
 body.mile-high-fizz .mhf-page {
   min-height: 100vh;
   color: #ffffff;
-  background: #05020a;
+  background: var(--mhf-deep);
   font-family: var(--hp-body-font);
   overflow-x: hidden;
 }
@@ -4136,7 +4203,7 @@ body.mile-high-fizz .mhf-page {
   justify-content: center;
   gap: 10px;
   padding: 6px 16px;
-  background: #2b0f46;
+  background: color-mix(in srgb, var(--mhf-purple) 32%, #05020a);
   color: #ffffff;
   font-size: 12px;
   font-weight: 800;
@@ -4160,7 +4227,7 @@ body.mile-high-fizz .mhf-page {
   display: flex;
   align-items: center;
   overflow: hidden;
-  background: #4cc4f4;
+  background: var(--mhf-accent);
   color: #ffffff;
   font-size: 12px;
   font-weight: 900;
@@ -4375,25 +4442,25 @@ body.mile-high-fizz .mhf-hero-title {
 }
 
 .mhf-cta-shop {
-  background: linear-gradient(90deg, #a855f7, #2563eb);
+  background: linear-gradient(90deg, var(--mhf-purple), var(--mhf-accent));
 }
 
 .mhf-cta-join {
-  background: linear-gradient(90deg, #ec4899, #f15c97);
+  background: linear-gradient(90deg, var(--mhf-primary), color-mix(in srgb, var(--mhf-primary) 72%, white));
 }
 
 .mhf-cta-watch {
-  background: linear-gradient(90deg, #2563eb, #9333ea);
+  background: linear-gradient(90deg, var(--mhf-accent), var(--mhf-purple));
 }
 
 .mhf-below-hero-shell {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 12% 6%, rgba(236, 72, 153, 0.18), transparent 26rem),
-    radial-gradient(circle at 88% 8%, rgba(59, 130, 246, 0.16), transparent 28rem),
-    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
-  color: #1f2937;
+    radial-gradient(circle at 12% 6%, color-mix(in srgb, var(--mhf-primary) 18%, transparent), transparent 26rem),
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--mhf-accent) 16%, transparent), transparent 28rem),
+    var(--mhf-soft-gradient);
+  color: var(--mhf-ink);
 }
 
 .mhf-below-hero-shell::before {
@@ -4402,8 +4469,8 @@ body.mile-high-fizz .mhf-hero-title {
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle, rgba(236, 72, 153, 0.16) 0 1px, transparent 1px),
-    radial-gradient(circle, rgba(147, 51, 234, 0.12) 0 1px, transparent 1px);
+    radial-gradient(circle, color-mix(in srgb, var(--mhf-primary) 16%, transparent) 0 1px, transparent 1px),
+    radial-gradient(circle, color-mix(in srgb, var(--mhf-purple) 12%, transparent) 0 1px, transparent 1px);
   background-position: 0 0, 34px 28px;
   background-size: 92px 92px, 118px 118px;
   opacity: 0.42;
@@ -4412,17 +4479,13 @@ body.mile-high-fizz .mhf-hero-title {
 .mhf-automation-panel {
   position: relative;
   z-index: 1;
-  --hp-primary: #ec4899;
-  --hp-accent: #9333ea;
-  --hp-bg: #fdf2f8;
-  --hp-bg-elevated: rgba(255, 255, 255, 0.84);
-  --hp-form-panel-bg: rgba(255, 255, 255, 0.72);
-  --hp-form-panel-fg: #374151;
-  --hp-field-bg: rgba(255, 255, 255, 0.92);
-  --hp-field-fg: #1f2937;
-  --fg: #1f2937;
-  --fg-muted: #6b5d6c;
-  --border: rgba(236, 72, 153, 0.18);
+  --hp-form-panel-bg: color-mix(in srgb, var(--mhf-bg-elevated) 82%, transparent);
+  --hp-form-panel-fg: var(--mhf-ink);
+  --hp-field-bg: color-mix(in srgb, var(--mhf-bg-elevated) 92%, white);
+  --hp-field-fg: var(--mhf-ink);
+  --fg: var(--mhf-ink);
+  --fg-muted: var(--mhf-muted);
+  --border: color-mix(in srgb, var(--mhf-primary) 22%, transparent);
   --hp-radius-card: 28px;
 }
 
@@ -4440,31 +4503,31 @@ body.mile-high-fizz .mhf-automation-panel .hp-trade-preview {
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-inner {
   max-width: 1040px;
   min-height: 112px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(236, 72, 153, 0.18);
+  background: color-mix(in srgb, var(--mhf-bg-elevated) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mhf-primary) 18%, transparent);
   border-radius: 30px;
-  box-shadow: 0 28px 80px rgba(147, 51, 234, 0.13);
+  box-shadow: 0 28px 80px color-mix(in srgb, var(--mhf-purple) 13%, transparent);
   backdrop-filter: blur(18px);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-head {
-  color: #1f2937;
+  color: var(--mhf-ink);
   font-size: 18px;
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-head .live-dot {
-  background: #ec4899;
-  box-shadow: 0 0 0 7px rgba(236, 72, 153, 0.13);
+  background: var(--mhf-primary);
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--mhf-primary) 13%, transparent);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill {
-  background: #ffffff;
-  border-color: rgba(236, 72, 153, 0.22);
-  box-shadow: 0 12px 30px rgba(236, 72, 153, 0.1);
+  background: var(--mhf-bg-elevated);
+  border-color: color-mix(in srgb, var(--mhf-primary) 22%, transparent);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--mhf-primary) 10%, transparent);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill .pos {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   color: #ffffff;
 }
 
@@ -4473,7 +4536,7 @@ body.mile-high-fizz .mhf-automation-panel .hp-event-meta-row,
 body.mile-high-fizz .mhf-automation-panel .hp-event-section-icon,
 body.mile-high-fizz .mhf-automation-panel .hp-event-copy,
 body.mile-high-fizz .mhf-automation-panel .hp-event-collection-pill {
-  color: #ec4899;
+  color: var(--mhf-primary);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-pill .name,
@@ -4481,16 +4544,16 @@ body.mile-high-fizz .mhf-automation-panel .hp-event-name,
 body.mile-high-fizz .mhf-automation-panel .hp-wibp-title,
 body.mile-high-fizz .mhf-automation-panel .hp-step-label,
 body.mile-high-fizz .mhf-automation-panel .hp-signup-title {
-  color: #1f2937;
+  color: var(--mhf-ink);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-trade-preview-link,
 body.mile-high-fizz .mhf-automation-panel .hp-event-platform.tt,
 body.mile-high-fizz .mhf-automation-panel .hp-signup-submit {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 16px 38px rgba(236, 72, 153, 0.22);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--mhf-primary) 22%, transparent);
 }
 
 body.mile-high-fizz .mhf-automation-panel .hp-container {
@@ -4503,8 +4566,8 @@ body.mile-high-fizz .mhf-automation-panel .hp-section {
 
 body.mile-high-fizz .mhf-automation-panel #wibp {
   background:
-    radial-gradient(circle at 12% 18%, rgba(236, 72, 153, 0.13), transparent 24rem),
-    radial-gradient(circle at 86% 14%, rgba(59, 130, 246, 0.12), transparent 25rem),
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--mhf-primary) 13%, transparent), transparent 24rem),
+    radial-gradient(circle at 86% 14%, color-mix(in srgb, var(--mhf-accent) 12%, transparent), transparent 25rem),
     transparent !important;
   border-top: 0 !important;
 }

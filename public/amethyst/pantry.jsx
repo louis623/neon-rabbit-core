@@ -32,6 +32,13 @@ const PRESETS = {
     headingFont: '"Playfair Display", Georgia, serif',
     bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
   },
+  alpine_opal: {
+    bgTreatment: "alpine-opal", cardSurface: "frosted-opal", buttonEnergy: "alpine-pop",
+    primaryColor: "#ec4899", accentColor: "#38bdf8", bg: "#fdf2f8",
+    elevated: "#f0f9ff", ink: "#1e1b4b", muted: "#5b5f89",
+    headingFont: '"Playfair Display", Georgia, serif',
+    bodyFont: '"DM Sans", "Inter", system-ui, sans-serif',
+  },
   rose_gold: {
     bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose", buttonEnergy: "rose-gold-lift",
     primaryColor: "#e04f73", accentColor: "#f5c66d", bg: "#fff5f6",

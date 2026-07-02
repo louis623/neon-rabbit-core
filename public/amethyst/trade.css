@@ -748,6 +748,12 @@ body.bg-moonstone-charcoal .tp-filter-pill.active {
   border-color: #cbd5e1;
 }
 
+body.bg-alpine-opal .tp-filter-pill.active {
+  background: linear-gradient(90deg, var(--hp-primary), color-mix(in srgb, var(--hp-primary) 58%, var(--hp-accent)), var(--hp-accent));
+  color: #ffffff;
+  border-color: transparent;
+}
+
 body.bg-suite-paper .tp-filter-pill.active,
 body.bg-moonstone-charcoal .tp-filter-pill.active,
 body.bg-rose-gold-paper .tp-filter-pill.active,
@@ -759,6 +765,7 @@ body.bg-quartz-paper .tp-filter-pill.active {
 body.bg-black-velvet .tp-filter-pill.active .count,
 body.bg-suite-paper .tp-filter-pill.active .count,
 body.bg-moonstone-charcoal .tp-filter-pill.active .count,
+body.bg-alpine-opal .tp-filter-pill.active .count,
 body.bg-rose-gold-paper .tp-filter-pill.active .count,
 body.bg-amber-paper .tp-filter-pill.active .count,
 body.bg-quartz-paper .tp-filter-pill.active .count {
@@ -1647,23 +1654,25 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
 
 /* ---------- Mile High Fizz hybrid trade page ---------- */
 body.mile-high-fizz-trade {
-  --hp-primary: #ec4899;
-  --hp-accent: #9333ea;
-  --hp-bg: #fdf2f8;
-  --hp-bg-elevated: rgba(255, 255, 255, 0.86);
-  --bg-deep: #eff6ff;
-  --fg: #1f2937;
-  --fg-muted: #6b5d6c;
-  --border: rgba(236, 72, 153, 0.18);
+  --mhf-primary: var(--hp-primary);
+  --mhf-accent: var(--hp-accent);
+  --mhf-bg: var(--hp-bg);
+  --mhf-bg-elevated: var(--hp-bg-elevated);
+  --mhf-bg-deep: var(--bg-deep);
+  --mhf-ink: var(--fg, #1f2937);
+  --mhf-muted: var(--fg-muted, #6b5d6c);
+  --mhf-purple: color-mix(in srgb, var(--mhf-primary) 58%, var(--mhf-accent));
+  --mhf-gradient: linear-gradient(90deg, var(--mhf-primary), var(--mhf-purple), var(--mhf-accent));
+  --mhf-soft-gradient: linear-gradient(135deg, var(--mhf-bg) 0%, var(--mhf-bg-elevated) 48%, var(--mhf-bg-deep) 100%);
+  --fg: var(--mhf-ink);
+  --fg-muted: var(--mhf-muted);
+  --border: color-mix(in srgb, var(--mhf-primary) 18%, transparent);
   --hp-radius-card: 26px;
-  --hp-display-font: "Playfair Display", Georgia, serif;
-  --hp-body-font: "DM Sans", "Inter", system-ui, sans-serif;
-  --hp-heading-weight: 700;
   --hp-heading-tracking: 0;
   background:
-    radial-gradient(circle at 12% 8%, rgba(236, 72, 153, 0.18), transparent 30%),
-    radial-gradient(circle at 88% 18%, rgba(59, 130, 246, 0.18), transparent 30%),
-    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--mhf-primary) 18%, transparent), transparent 30%),
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--mhf-accent) 18%, transparent), transparent 30%),
+    var(--mhf-soft-gradient);
   color: var(--fg);
 }
 
@@ -1675,19 +1684,19 @@ body.mile-high-fizz-trade::before {
 .mhf-trade-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 8% 18%, rgba(236, 72, 153, 0.2), transparent 26%),
-    radial-gradient(circle at 92% 10%, rgba(59, 130, 246, 0.18), transparent 28%),
-    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+    radial-gradient(circle at 8% 18%, color-mix(in srgb, var(--mhf-primary) 20%, transparent), transparent 26%),
+    radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--mhf-accent) 18%, transparent), transparent 28%),
+    var(--mhf-soft-gradient);
 }
 
 .mhf-trade-shell {
   min-height: 100vh;
   padding-bottom: 1px;
   background:
-    radial-gradient(circle at 14% 22%, rgba(236, 72, 153, 0.18), transparent 28%),
-    radial-gradient(circle at 86% 4%, rgba(147, 51, 234, 0.16), transparent 30%),
-    radial-gradient(circle at 78% 70%, rgba(59, 130, 246, 0.14), transparent 34%),
-    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 46%, #eff6ff 100%);
+    radial-gradient(circle at 14% 22%, color-mix(in srgb, var(--mhf-primary) 18%, transparent), transparent 28%),
+    radial-gradient(circle at 86% 4%, color-mix(in srgb, var(--mhf-purple) 16%, transparent), transparent 30%),
+    radial-gradient(circle at 78% 70%, color-mix(in srgb, var(--mhf-accent) 14%, transparent), transparent 34%),
+    var(--mhf-soft-gradient);
   position: relative;
   overflow: hidden;
 }
@@ -1725,7 +1734,7 @@ body.mile-high-fizz-trade .hp-header {
 body.mile-high-fizz-trade .hp-header-brand {
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 800;
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1734,7 +1743,7 @@ body.mile-high-fizz-trade .hp-header-brand {
 body.mile-high-fizz-trade .hp-brand-name {
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 800;
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1755,11 +1764,11 @@ body.mile-high-fizz-trade .hp-header-link:hover {
 }
 
 body.mile-high-fizz-trade .hp-header-link::after {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
 }
 
 body.mile-high-fizz-trade .hp-header-shop {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   color: white;
   box-shadow: 0 12px 26px rgba(147, 51, 234, 0.24);
 }
@@ -1838,7 +1847,7 @@ body.mile-high-fizz-trade .tp-hero {
 
 body.mile-high-fizz-trade .tp-hero-title {
   max-width: 14ch;
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1846,10 +1855,11 @@ body.mile-high-fizz-trade .tp-hero-title {
 }
 
 body.mile-high-fizz-trade .tp-hero-sub {
-  color: #4b5563;
+  color: rgba(255, 255, 255, 0.88);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
 }
 
 body.mile-high-fizz-trade .tp-board {
@@ -1913,7 +1923,7 @@ body.mile-high-fizz-trade .tp-load-more,
 body.mile-high-fizz-trade .tp-card-expand-cta,
 body.mile-high-fizz-trade .tp-sheet-submit,
 body.mile-high-fizz-trade .tp-empty-reset {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   border-color: transparent;
   color: white;
   box-shadow: 0 14px 30px rgba(147, 51, 234, 0.24);
@@ -2029,7 +2039,7 @@ body.mile-high-fizz-trade .tp-sheet-field textarea:focus {
 
 body.mile-high-fizz-trade .tp-sheet-success-icon,
 body.mile-high-fizz-trade .tp-empty-glyph {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -2054,7 +2064,7 @@ body.mile-high-fizz-trade .hp-footer {
 }
 
 body.mile-high-fizz-trade .hp-footer-brand {
-  background: linear-gradient(90deg, #ec4899, #9333ea, #3b82f6);
+  background: var(--mhf-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

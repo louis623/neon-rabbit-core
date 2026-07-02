@@ -199,10 +199,10 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
       ticker_text:
         'Live reveals, fizz parties, and customer-first sparkle with Mile High Fizz.',
       ticker_visible: true,
-      team_name: 'Mile High Fizz',
+      team_name: MILE_HIGH_FIZZ_PROFILE.teamName,
       show_join_page: true,
       hero_animation_type: 'sparkle_rise',
-      appearance_preset: 'black_diamond',
+      appearance_preset: 'alpine_opal',
       customer_site_template: 'amethyst',
     },
     { onConflict: 'rep_id' },
@@ -247,7 +247,7 @@ async function upsertWorkspaceDefaults(admin: AdminClient, repId: string) {
             publicSiteSlugAlternatives: [],
           },
           site_skin: {
-            preset: 'black_diamond',
+            preset: 'alpine_opal',
           },
           welcome_copy: {
             tagline: 'Revealing something magical together.',

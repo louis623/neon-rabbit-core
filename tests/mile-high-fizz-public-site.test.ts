@@ -28,7 +28,7 @@ const mileHighFizzSettings: SiteSettingsDashboardResult = {
   teamName: 'Mile High Fizz',
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
-  appearancePreset: 'black_diamond',
+  appearancePreset: 'alpine_opal',
   socialHandles: {
     tiktok: '@lindze1188',
     facebook: 'MileHighFizz',
@@ -93,14 +93,40 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(script).toContain('"publicSiteVariant":"mile_high_fizz_hybrid"')
   })
 
-  it('activates Join navigation only for the Mile High Fizz hybrid variant', () => {
+  it('serializes Mile High Fizz as a theme-switchable Alpine Opal site', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      mileHighFizzSettings,
+      mileHighFizzExtras,
+    )
+    const alpineOpalScript = buildAmethystHomepageBootstrapScript(
+      homepage,
+      [],
+      'alpine_opal',
+    )
+    const moonstoneScript = buildAmethystHomepageBootstrapScript(
+      homepage,
+      [],
+      'moonstone',
+    )
+
+    expect(alpineOpalScript).toContain('"publicSiteVariant":"mile_high_fizz_hybrid"')
+    expect(alpineOpalScript).toContain('"preset":"alpine_opal"')
+    expect(alpineOpalScript).toContain('"bgTreatment":"alpine-opal"')
+    expect(moonstoneScript).toContain('"preset":"moonstone"')
+    expect(moonstoneScript).toContain('"bgTreatment":"moonstone-charcoal"')
+  })
+
+  it('activates Join navigation through the standard footer link model', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
     )
 
     expect(jsx).toContain('const isMileHighFizzHybrid')
-    expect(jsx).toContain('isMileHighFizzHybrid && CONTENT.footerLinks?.joinTeam')
+    expect(jsx).toContain('CONTENT.footerLinks?.joinTeam && (')
+    expect(jsx).toContain(
+      '<a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>',
+    )
     expect(jsx).toContain('Join Team</a>')
   })
 
@@ -156,8 +182,10 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-event-card')
     expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-signup-card')
     expect(css).toContain('body.mile-high-fizz .mhf-automation-panel .hp-footer')
-    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
-    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
+    expect(css).toContain('--mhf-primary: var(--hp-primary)')
+    expect(css).toContain('--mhf-accent: var(--hp-accent)')
+    expect(css).toContain('--mhf-bg: var(--hp-bg)')
+    expect(css).toContain('--mhf-bg-elevated: var(--hp-bg-elevated)')
   })
 
   it('keeps Trade Board standard while dressing it for Mile High Fizz', () => {
@@ -199,8 +227,10 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(css).toContain('body.mile-high-fizz-trade .tp-card')
     expect(css).toContain('body.mile-high-fizz-trade .tp-sheet')
     expect(css).toContain('body.mile-high-fizz-trade .hp-footer')
-    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
-    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
+    expect(css).toContain('--mhf-primary: var(--hp-primary)')
+    expect(css).toContain('--mhf-accent: var(--hp-accent)')
+    expect(css).toContain('--mhf-bg: var(--hp-bg)')
+    expect(css).toContain('--mhf-bg-elevated: var(--hp-bg-elevated)')
   })
 
   it('recreates Lindsey join page content for the internal Sparkle page', () => {
@@ -210,7 +240,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     )
 
     expect(join.businessName).toBe('Mile High Fizz')
-    expect(join.teamName).toBe('Mile High Fizz')
+    expect(join.teamName).toBe('Diamond Peak Society')
     expect((join as { publicSiteVariant?: string }).publicSiteVariant).toBe(
       'mile_high_fizz_hybrid',
     )
@@ -302,7 +332,9 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(css).toContain('body.mile-high-fizz-join .jp-benefit-card')
     expect(css).toContain('body.mile-high-fizz-join .jp-faq-item')
     expect(css).toContain('body.mile-high-fizz-join .jp-final-card')
-    expect(css).toContain('linear-gradient(135deg, #fdf2f8')
-    expect(css).toContain('linear-gradient(90deg, #ec4899, #9333ea, #3b82f6)')
+    expect(css).toContain('--mhf-primary: var(--hp-primary)')
+    expect(css).toContain('--mhf-accent: var(--hp-accent)')
+    expect(css).toContain('--mhf-bg: var(--hp-bg)')
+    expect(css).toContain('--mhf-bg-elevated: var(--hp-bg-elevated)')
   })
 })

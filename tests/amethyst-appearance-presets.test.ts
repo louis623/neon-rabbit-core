@@ -59,6 +59,7 @@ describe('Amethyst appearance presets', () => {
       'sparkle_suite_morganite',
       'black_diamond',
       'moonstone',
+      'alpine_opal',
       'rose_gold',
       'garnet',
       'amber',
@@ -70,6 +71,7 @@ describe('Amethyst appearance presets', () => {
       'Sparkle Suite/Morganite',
       'Black Diamond',
       'Moonstone',
+      'Alpine Opal',
       'Rose Gold',
       'Garnet',
       'Amber',
@@ -412,6 +414,52 @@ describe('Amethyst appearance presets', () => {
     )
     expect(normalizeAmethystSkinSelection('MS-01')).toBe('moonstone')
     expect(normalizeAmethystSkinSelection('Moonstone')).toBe('moonstone')
+  })
+
+  it('adds Alpine Opal as a visual-only Amethyst skin with a browsing card', () => {
+    const preset = getAmethystAppearancePreset('alpine_opal')
+    const homepage = applyAmethystAppearancePreset(
+      buildAmethystHomepageTweakDefaults(defaultAmethystHomepageTemplateData),
+      preset.id,
+    )
+    const trade = applyAmethystAppearancePreset(
+      buildAmethystTradeTweakDefaults(defaultAmethystTradeTemplateData),
+      preset.id,
+    )
+    const join = applyAmethystAppearancePreset(
+      buildAmethystJoinTweakDefaults(defaultAmethystJoinTemplateData),
+      preset.id,
+    )
+    const card = getAmethystSkinCard('alpine_opal')
+    const expectedTokens = {
+      preset: 'alpine_opal',
+      primaryColor: '#ec4899',
+      accentColor: '#38bdf8',
+      bgTone: 'alpineOpal',
+      headingFont: 'playfair',
+      bgTreatment: 'alpine-opal',
+      cardSurface: 'frosted-opal',
+      buttonEnergy: 'alpine-pop',
+      tradeFlair: 'opal-summit',
+    }
+
+    expect(normalizeAmethystAppearancePreset('alpine_opal')).toBe('alpine_opal')
+    expect(preset.label).toBe('Alpine Opal')
+    expect(homepage).toMatchObject(expectedTokens)
+    expect(trade).toMatchObject(expectedTokens)
+    expect(join).toMatchObject(expectedTokens)
+    expect(card).toMatchObject({
+      id: 'alpine_opal',
+      code: 'AO-01',
+      label: 'Alpine Opal',
+      headingFont: 'Playfair Display',
+      bodyFont: 'DM Sans',
+    })
+    expect(card.swatches.map((swatch) => swatch.value)).toEqual(
+      expect.arrayContaining(['#fdf2f8', '#ec4899', '#9333ea', '#38bdf8']),
+    )
+    expect(normalizeAmethystSkinSelection('AO-01')).toBe('alpine_opal')
+    expect(normalizeAmethystSkinSelection('Alpine Opal')).toBe('alpine_opal')
   })
 
   it.each([

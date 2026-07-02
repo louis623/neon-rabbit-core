@@ -8,6 +8,8 @@ export const MILE_HIGH_FIZZ_PROFILE = {
   displayName: 'Lindsey Chapman',
   publicName: 'Lindsey',
   businessName: 'Mile High Fizz',
+  teamName: 'Diamond Peak Society',
+  uplineTeamName: 'The Virtuous Fizzers',
   publicSiteSlug: 'milehighfizz',
   futureCustomDomain: 'milehighfizz.com',
   timeZone: 'America/Denver',
@@ -45,7 +47,7 @@ export function applyMileHighFizzHomepage(
     publicSiteVariant: 'mile_high_fizz_hybrid',
     repName: MILE_HIGH_FIZZ_PROFILE.publicName,
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    teamName: MILE_HIGH_FIZZ_PROFILE.businessName,
+    teamName: MILE_HIGH_FIZZ_PROFILE.teamName,
     tagline: 'Revealing something magical together.',
     heroEyebrow: 'With Lindsey',
     heroHeadline: 'Mile High Fizz',
@@ -72,7 +74,7 @@ export function applyMileHighFizzHomepage(
       'Turn your passion into profit with the support and energy of the Mile High Fizz family.',
     joinTeamUrl: '/amethyst/Join.html',
     footerTagline:
-      'Lindsey is part of The Virtuous Fizzers team. Join her for real-time reveals and sparkling jewelry.',
+      `Lindsey is part of ${MILE_HIGH_FIZZ_PROFILE.uplineTeamName}. Join her Diamond Peak Society team for real-time reveals and sparkling jewelry.`,
     showcaseVideoCaption: '@lindze1188 on TikTok',
     showcaseVideoUrl: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     showJoinPage: true,
@@ -120,7 +122,7 @@ export function applyMileHighFizzTrade(
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
     tradeHeroTitle: 'Mile High Fizz Trade Board',
     tradeHeroSub:
-      "Browse Lindsey's available trade pieces and request a standard Sparkle Suite item-for-item swap.",
+      "Browse Lindsey's available trade pieces and request an item-for-item swap from a live reveal.",
     footerTagline:
       'Real-time reveals, sparkling jewelry, and rep-reviewed trades with Mile High Fizz.',
     footerLinks: {
@@ -147,12 +149,12 @@ export function applyMileHighFizzJoin(
     repCity: 'Littleton',
     repState: 'Colorado',
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    teamName: MILE_HIGH_FIZZ_PROFILE.businessName,
+    teamName: MILE_HIGH_FIZZ_PROFILE.teamName,
     heroTitle: 'Welcome to the Diamond Peak Society',
     promoText:
       '$599 Launch Pack includes a guaranteed Diamond reveal for the 10th Anniversary Special.',
     heroPitch:
-      'Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the Mile High Fizz family. For a limited time, start with a Diamond reveal in your launch pack.',
+      'Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the Diamond Peak Society. For a limited time, start with a Diamond reveal in your launch pack.',
     heroCtaText: 'Join the Team Now',
     finalPitch:
       'Join the Diamond Peak Society today and turn your passion for jewelry into a thriving business.',
@@ -160,7 +162,7 @@ export function applyMileHighFizzJoin(
     tickerTopText:
       'Join the Diamond Peak Society | Supportive community | Flexible income | Training and mentorship | Work from anywhere',
     footerTagline:
-      'Build your own Bomb Party business with the support and energy of the Mile High Fizz family.',
+      'Build your own Bomb Party business with the support and energy of the Diamond Peak Society.',
     repSocialLinks: {
       ...join.repSocialLinks,
       tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
@@ -189,7 +191,7 @@ export function applyMileHighFizzJoin(
     teamMembers: [],
     faqAnswers: {
       whatIsTeam:
-        'The Diamond Peak Society is the community of independent Bomb Party Representatives led by Lindsey under the Mile High Fizz banner. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.',
+        'The Diamond Peak Society is the community of independent Bomb Party Representatives led by Lindsey under the Mile High Fizz banner. Lindsey is part of The Virtuous Fizzers, and Diamond Peak Society is the team she leads. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.',
       cost:
         'Starter pack details and current promotions are handled by Bomb Party. Use the join button to review the current options.',
       experience:

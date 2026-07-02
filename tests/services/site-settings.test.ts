@@ -456,6 +456,7 @@ describe('site settings service', () => {
     'garnet',
     'amber',
     'moonstone',
+    'alpine_opal',
     'velvet',
     'rose_quartz',
   ] as const)(

@@ -185,6 +185,13 @@ const PRESETS = {
     bgTone: "moonstone", primaryColor: "#7c3aed", accentColor: "#cbd5e1",
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
+  alpine_opal: {
+    sparkleLevel: "glittery", bgTreatment: "alpine-opal", cardSurface: "frosted-opal",
+    textureOverlay: "sparkle", buttonEnergy: "alpine-pop", ctaEmphasis: "standard",
+    tradeFlair: "opal-summit", cursorEffect: "default", saturation: 112,
+    bgTone: "alpineOpal", primaryColor: "#ec4899", accentColor: "#38bdf8",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+  },
   rose_gold: {
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
     textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
@@ -232,6 +239,7 @@ const TONES = {
   suiteBlush: { bg: "#fcf8f6", elevated: "#fffefd", deep: "#f6ede8" },
   blackDiamond: { bg: "#080808", elevated: "#15110f", deep: "#030303" },
   moonstone: { bg: "#15121d", elevated: "#211b2c", deep: "#0d0b13" },
+  alpineOpal: { bg: "#fdf2f8", elevated: "#f0f9ff", deep: "#1e1b4b" },
   roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
   garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
   amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
@@ -518,7 +526,7 @@ function LiveQueueStrip({ onOpen }) {
           <div className="hp-trade-preview-items">
             Live Queue is ready. Customer names appear here when a live show is connected.
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue â†—</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
         </div>
       </section>
     );
@@ -542,7 +550,7 @@ function LiveQueueStrip({ onOpen }) {
             </button>
           ))}
         </div>
-        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue ↗</button>
+        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
       </div>
     </section>
   );
@@ -559,7 +567,7 @@ function LiveQueueModal({ open, onClose }) {
             <div className="hp-queue-modal-eyebrow">Live Reveal Queue</div>
             <h2 className="hp-queue-modal-title">Full queue</h2>
           </div>
-          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close live reveal queue">×</button>
+          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close live reveal queue">x</button>
         </div>
         {LIVE_QUEUE_ENTRIES.length > 0 ? (
           <div className="hp-queue-modal-list">
@@ -602,11 +610,11 @@ function Hero({ teamName, title, pitch, ctaText, ctaUrl, showPromo, promoText, r
             Led by <span className="slot" data-slot="rep name">{repName}</span>{locationLabel ? <> in <span className="slot" data-slot="rep city and state">{locationLabel}</span></> : null}.
           </p>
           <div className="jp-hero-ctas">
-            <a {...linkProps(ctaUrl)} className="hp-btn-primary hp-btn-sparkle solid-light slot" data-slot="CTA → BP referral page">
+            <a {...linkProps(ctaUrl)} className="hp-btn-primary hp-btn-sparkle solid-light slot" data-slot="CTA to BP referral page">
               {ctaText}
               <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
             </a>
-            <a href="#why" className="hp-btn-outline" style={{ color: "white", borderColor: "rgba(255,255,255,0.4)" }}>Learn more ↓</a>
+            <a href="#why" className="hp-btn-outline" style={{ color: "white", borderColor: "rgba(255,255,255,0.4)" }}>Learn more</a>
           </div>
           <p className="jp-hero-compliance">
             Income results vary by sales, effort, and time. Review the{" "}
@@ -989,6 +997,7 @@ function App() {
     if (t.bgTreatment === "suite-paper") body.classList.add("bg-suite-paper");
     if (t.bgTreatment === "black-velvet") body.classList.add("bg-black-velvet");
     if (t.bgTreatment === "moonstone-charcoal") body.classList.add("bg-moonstone-charcoal");
+    if (t.bgTreatment === "alpine-opal") body.classList.add("bg-alpine-opal");
     if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
     if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
     if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
@@ -999,6 +1008,7 @@ function App() {
     if (t.cardSurface === "warm-paper") body.classList.add("surface-warm-paper");
     if (t.cardSurface === "dark-metallic") body.classList.add("surface-dark-metallic");
     if (t.cardSurface === "silver-pearl") body.classList.add("surface-silver-pearl");
+    if (t.cardSurface === "frosted-opal") body.classList.add("surface-frosted-opal");
     if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
     if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
     if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
@@ -1011,6 +1021,7 @@ function App() {
     if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
     if (t.buttonEnergy === "diamond-lift") body.classList.add("btn-diamond-lift");
     if (t.buttonEnergy === "moonstone-lift") body.classList.add("btn-moonstone-lift");
+    if (t.buttonEnergy === "alpine-pop") body.classList.add("btn-alpine-pop");
     if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
     if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
     if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
@@ -1021,6 +1032,7 @@ function App() {
     if (t.tradeFlair === "soft-pink-lift") body.classList.add("soft-pink-lift");
     if (t.tradeFlair === "cyan-diamond") body.classList.add("cyan-diamond");
     if (t.tradeFlair === "silver-violet") body.classList.add("silver-violet");
+    if (t.tradeFlair === "opal-summit") body.classList.add("opal-summit");
     if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
     if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
@@ -1143,6 +1155,7 @@ function App() {
               { value: "sparkle_suite_morganite", label: "Sparkle Suite/Morganite" },
               { value: "black_diamond", label: "Black Diamond" },
               { value: "moonstone", label: "Moonstone" },
+              { value: "alpine_opal", label: "Alpine Opal" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },
