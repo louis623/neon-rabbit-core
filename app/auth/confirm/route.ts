@@ -26,8 +26,17 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/auth/sign-in?error=confirmation_failed", requestUrl.origin));
   }
 
+  const nextPath = safeSparkleFinderNextPath(requestUrl.searchParams.get("next"));
+
+  if (type === "recovery") {
+    const resetPasswordUrl = new URL("/auth/reset-password", requestUrl.origin);
+    resetPasswordUrl.searchParams.set("next", nextPath);
+
+    return NextResponse.redirect(resetPasswordUrl);
+  }
+
   const postLoginUrl = new URL("/auth/post-login", requestUrl.origin);
-  postLoginUrl.searchParams.set("next", safeSparkleFinderNextPath(requestUrl.searchParams.get("next")));
+  postLoginUrl.searchParams.set("next", nextPath);
 
   return NextResponse.redirect(postLoginUrl);
 }

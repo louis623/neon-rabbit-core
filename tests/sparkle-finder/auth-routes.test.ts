@@ -204,6 +204,28 @@ describe("Sparkle Finder Supabase proxy", () => {
     );
   });
 
+  it("routes password recovery confirmations to the reset-password form", async () => {
+    const verifyOtp = vi.fn().mockResolvedValue({ error: null });
+
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          verifyOtp,
+        },
+      }),
+    }));
+
+    const { GET } = await import("../../app/auth/confirm/route");
+    const response = await GET(
+      new Request("http://localhost:4310/auth/confirm?token_hash=recover123&type=recovery&next=/silver"),
+    );
+
+    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: "recover123", type: "recovery" });
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:4310/auth/reset-password?next=%2Fsilver",
+    );
+  });
+
   it("redirects failed confirmations to sign-in with a safe error", async () => {
     vi.doMock("../../lib/supabase/server", () => ({
       createClient: async () => ({
@@ -443,6 +465,7 @@ describe("Sparkle Finder signup server actions", () => {
     formData.set("phone", "555-123-4567");
     formData.set("state", "CA");
     formData.set("password", "sparkle-password");
+    formData.set("passwordConfirmation", "sparkle-password");
     formData.set("privacyAcknowledged", "yes");
 
     const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
@@ -488,6 +511,7 @@ describe("Sparkle Finder signup server actions", () => {
     formData.set("phone", "555-123-4567");
     formData.set("state", "CA");
     formData.set("password", "sparkle-password");
+    formData.set("passwordConfirmation", "sparkle-password");
     formData.set("privacyAcknowledged", "yes");
 
     const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
@@ -564,6 +588,7 @@ describe("Sparkle Finder signup server actions", () => {
     formData.set("phone", "555-123-4567");
     formData.set("state", "CA");
     formData.set("password", "sparkle-password");
+    formData.set("passwordConfirmation", "sparkle-password");
     formData.set("privacyAcknowledged", "yes");
     formData.set("next", "/silver");
 
@@ -598,6 +623,7 @@ describe("Sparkle Finder signup server actions", () => {
     formData.set("phone", "555-123-4567");
     formData.set("state", "CA");
     formData.set("password", "sparkle-password");
+    formData.set("passwordConfirmation", "sparkle-password");
     formData.set("privacyAcknowledged", "yes");
     formData.set("next", "/silver");
 
@@ -606,6 +632,39 @@ describe("Sparkle Finder signup server actions", () => {
     await expect(signUpWithPassword(formData)).rejects.toThrow(
       "redirect:/auth/sign-up?next=%2Fsilver&error=signup_failed",
     );
+  });
+
+  it("stops password signup before Supabase when the password confirmation does not match", async () => {
+    const signUp = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          signUp,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("displayName", "Sparkle Mama");
+    formData.set("email", "mama@example.com");
+    formData.set("phone", "555-123-4567");
+    formData.set("state", "CA");
+    formData.set("password", "sparkle-password");
+    formData.set("passwordConfirmation", "sparkle-passwrod");
+    formData.set("privacyAcknowledged", "yes");
+    formData.set("next", "/silver");
+
+    const { signUpWithPassword } = await import("../../app/auth/sign-up/actions");
+
+    await expect(signUpWithPassword(formData)).rejects.toThrow(
+      "redirect:/auth/sign-up?next=%2Fsilver&error=password_mismatch",
+    );
+    expect(signUp).not.toHaveBeenCalled();
   });
 
   it("preserves the requested next path through magic-link signup", async () => {
@@ -642,6 +701,69 @@ describe("Sparkle Finder signup server actions", () => {
   });
 });
 
+describe("Sparkle Finder password recovery server actions", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("next/navigation");
+    vi.doUnmock("../../lib/supabase/server");
+  });
+
+  it("sends password reset emails through the Sparkle Finder confirmation route", async () => {
+    const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          resetPasswordForEmail,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("email", "mama@example.com");
+    formData.set("next", "/silver");
+
+    const { requestPasswordReset } = await import("../../app/auth/forgot-password/actions");
+
+    await expect(requestPasswordReset(formData)).rejects.toThrow(
+      "redirect:/auth/forgot-password?message=check_email&next=%2Fsilver",
+    );
+    expect(resetPasswordForEmail).toHaveBeenCalledWith("mama@example.com", {
+      redirectTo: "http://localhost:3000/auth/confirm?next=%2Fsilver",
+    });
+  });
+
+  it("preserves next when password reset email requests fail", async () => {
+    const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: new Error("mail failed") });
+    const redirect = vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`);
+    });
+
+    vi.doMock("next/navigation", () => ({ redirect }));
+    vi.doMock("../../lib/supabase/server", () => ({
+      createClient: async () => ({
+        auth: {
+          resetPasswordForEmail,
+        },
+      }),
+    }));
+
+    const formData = new FormData();
+    formData.set("email", "mama@example.com");
+    formData.set("next", "/library");
+
+    const { requestPasswordReset } = await import("../../app/auth/forgot-password/actions");
+
+    await expect(requestPasswordReset(formData)).rejects.toThrow(
+      "redirect:/auth/forgot-password?next=%2Flibrary&error=reset_failed",
+    );
+  });
+});
+
 describe("Sparkle Finder signup page", () => {
   it("renders visible sign-up recovery notices and preserves the intended next path", async () => {
     const { renderSignUpPageContent } = await import("../../app/auth/sign-up/page");
@@ -661,8 +783,19 @@ describe("Sparkle Finder signup page", () => {
     const markup = renderToStaticMarkup(renderSignUpPageContent());
 
     expect(markup).toContain("Create a password and confirm your email.");
+    expect(markup).toContain("Confirm password");
+    expect(markup).toContain('name="passwordConfirmation"');
     expect(markup).toContain("Password signup sends a confirmation email.");
     expect(markup).not.toContain("Supabase");
+  });
+
+  it("renders a helpful password mismatch notice", async () => {
+    const { renderSignUpPageContent } = await import("../../app/auth/sign-up/page");
+
+    const markup = renderToStaticMarkup(renderSignUpPageContent({ error: "password_mismatch", next: "/silver" }));
+
+    expect(markup).toContain("Those passwords did not match.");
+    expect(markup).toContain('value="/silver"');
   });
 });
 
@@ -674,6 +807,40 @@ describe("Sparkle Finder sign-in page", () => {
 
     expect(markup).toContain('href="/auth/sign-up?next=%2Fsilver"');
     expect(markup).not.toContain('href="/auth/sign-up">Create account</a>');
+  });
+
+  it("offers a password reset path that preserves the intended next path", async () => {
+    const { renderSignInPageContent } = await import("../../app/auth/sign-in/page");
+
+    const markup = renderToStaticMarkup(renderSignInPageContent({ next: "/silver" }));
+
+    expect(markup).toContain('href="/auth/forgot-password?next=%2Fsilver"');
+    expect(markup).toContain("Forgot password?");
+  });
+});
+
+describe("Sparkle Finder password recovery pages", () => {
+  it("renders password reset request copy without exposing Supabase", async () => {
+    const { renderForgotPasswordPageContent } = await import("../../app/auth/forgot-password/page");
+
+    const markup = renderToStaticMarkup(renderForgotPasswordPageContent({ next: "/silver" }));
+
+    expect(markup).toContain("Reset your Sparkle Finder password");
+    expect(markup).toContain('name="email"');
+    expect(markup).toContain('name="next"');
+    expect(markup).toContain('value="/silver"');
+    expect(markup).not.toContain("Supabase");
+  });
+
+  it("renders reset-password form fields with password confirmation", async () => {
+    const { renderResetPasswordPageContent } = await import("../../app/auth/reset-password/page");
+
+    const markup = renderToStaticMarkup(renderResetPasswordPageContent({ next: "/silver" }));
+
+    expect(markup).toContain("Choose a new password");
+    expect(markup).toContain('name="password"');
+    expect(markup).toContain('name="passwordConfirmation"');
+    expect(markup).toContain('href="/auth/forgot-password?next=%2Fsilver"');
   });
 });
 

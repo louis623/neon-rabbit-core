@@ -21,9 +21,13 @@ type SignupFormProps = {
 
 export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
   const [authMethod, setAuthMethod] = useState<"password" | "magic-link">("password");
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [isGoogleStarting, setIsGoogleStarting] = useState(false);
   const safeNextPath = safeSparkleFinderNextPath(nextPath);
+  const passwordsDoNotMatch =
+    authMethod === "password" && password.length > 0 && passwordConfirmation.length > 0 && password !== passwordConfirmation;
 
   async function handleGoogleSignup() {
     setGoogleError(null);
@@ -181,9 +185,31 @@ export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
           disabled={authMethod === "magic-link"}
           minLength={8}
           name="password"
+          onChange={(event) => setPassword(event.target.value)}
           required={authMethod === "password"}
           type="password"
+          value={password}
         />
+      </label>
+
+      <label className="grid gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
+        Confirm password
+        <input
+          autoComplete="new-password"
+          className={inputClassName}
+          disabled={authMethod === "magic-link"}
+          minLength={8}
+          name="passwordConfirmation"
+          onChange={(event) => setPasswordConfirmation(event.target.value)}
+          required={authMethod === "password"}
+          type="password"
+          value={passwordConfirmation}
+        />
+        {passwordsDoNotMatch ? (
+          <span className="text-xs font-semibold leading-5 text-[var(--sparkle-rose)]">
+            Passwords do not match yet.
+          </span>
+        ) : null}
       </label>
 
       <fieldset className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] p-3">
@@ -209,7 +235,7 @@ export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
         </label>
       </fieldset>
 
-      <SignupSubmitButton authMethod={authMethod} />
+      <SignupSubmitButton authMethod={authMethod} passwordsDoNotMatch={passwordsDoNotMatch} />
 
       <p className="flex items-start gap-2 text-xs font-semibold leading-5 text-[var(--sparkle-ink-muted)]">
         <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--sparkle-coral)]" />
@@ -219,7 +245,13 @@ export function SignupForm({ nextPath = "/", notice = null }: SignupFormProps) {
   );
 }
 
-function SignupSubmitButton({ authMethod }: { authMethod: "password" | "magic-link" }) {
+function SignupSubmitButton({
+  authMethod,
+  passwordsDoNotMatch,
+}: {
+  authMethod: "password" | "magic-link";
+  passwordsDoNotMatch: boolean;
+}) {
   const { pending } = useFormStatus();
 
   if (authMethod === "magic-link") {
@@ -241,7 +273,7 @@ function SignupSubmitButton({ authMethod }: { authMethod: "password" | "magic-li
     <button
       aria-busy={pending}
       className={`${buttonClassName} bg-[var(--sparkle-plum)] text-white`}
-      disabled={pending}
+      disabled={pending || passwordsDoNotMatch}
       type="submit"
     >
       {pending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <KeyRound aria-hidden="true" className="size-4" />}

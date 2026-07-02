@@ -12,6 +12,7 @@ type SignupDetails = {
   phone: string;
   state: string;
   password: string;
+  passwordConfirmation: string;
   privacyAcknowledged: boolean;
   promotionalEmail: boolean;
   promotionalSms: boolean;
@@ -23,6 +24,10 @@ export async function signUpWithPassword(formData: FormData) {
 
   if (!details.displayName || !details.email || !details.phone || !details.state || !details.password || !details.privacyAcknowledged) {
     redirect(getSignUpRedirect("missing_required_fields", details.nextPath));
+  }
+
+  if (details.password !== details.passwordConfirmation) {
+    redirect(getSignUpRedirect("password_mismatch", details.nextPath));
   }
 
   let signupFailed = false;
@@ -92,6 +97,7 @@ function getSignupDetails(formData: FormData, fallbackNextPath: string): SignupD
     phone: String(formData.get("phone") ?? "").trim(),
     state: normalizeUsStateValue(String(formData.get("state") ?? "")),
     password: String(formData.get("password") ?? ""),
+    passwordConfirmation: String(formData.get("passwordConfirmation") ?? ""),
     privacyAcknowledged: formData.get("privacyAcknowledged") === "yes",
     promotionalEmail: formData.get("promotionalEmail") === "yes",
     promotionalSms: formData.get("promotionalSms") === "yes",

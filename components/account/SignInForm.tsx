@@ -21,6 +21,8 @@ export function SignInForm({ nextPath = "/" }: SignInFormProps) {
   const [submitMode, setSubmitMode] = useState<"password" | "google" | null>(null);
   const safeNextPath = safeSparkleFinderNextPath(nextPath);
   const signUpHref = safeNextPath === "/" ? "/auth/sign-up" : `/auth/sign-up?next=${encodeURIComponent(safeNextPath)}`;
+  const forgotPasswordHref =
+    safeNextPath === "/" ? "/auth/forgot-password" : `/auth/forgot-password?next=${encodeURIComponent(safeNextPath)}`;
   const isSubmitting = submitMode !== null;
 
   async function handlePasswordSignIn(event: FormEvent<HTMLFormElement>) {
@@ -103,6 +105,13 @@ export function SignInForm({ nextPath = "/" }: SignInFormProps) {
         Password
         <input autoComplete="current-password" className={inputClassName} name="password" required type="password" />
       </label>
+
+      <Link
+        className="w-fit text-sm font-bold text-[var(--sparkle-plum-deep)] underline-offset-4 hover:underline"
+        href={forgotPasswordHref}
+      >
+        Forgot password?
+      </Link>
 
       {errorMessage ? (
         <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)]">

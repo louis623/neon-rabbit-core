@@ -77,6 +77,10 @@ function getSignUpNotice(error: string | undefined): string | null {
     return "Sparkle Finder could not create that account. Try Google, try an email link, or use a different email address.";
   }
 
+  if (error === "password_mismatch") {
+    return "Those passwords did not match. Please enter the same password twice before creating your account.";
+  }
+
   if (error === "magic_link_failed") {
     return "Sparkle Finder could not send that email sign-in link. Try again or continue with Google.";
   }
