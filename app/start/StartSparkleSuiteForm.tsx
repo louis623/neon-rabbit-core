@@ -163,6 +163,7 @@ export function StartSparkleSuiteForm({
       'next',
       '/nic-nac?onboarding=checkout-required',
     )
+    authCallbackUrl.searchParams.set('signup', 'self-serve')
     if (referralCode) {
       authCallbackUrl.searchParams.set('ref', referralCode)
     }

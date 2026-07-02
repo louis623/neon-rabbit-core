@@ -102,6 +102,7 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(source).toContain('agreementAccepted: true')
     expect(source).toContain('signInWithOAuth')
     expect(source).toContain("provider: 'google'")
+    expect(source).toContain("authCallbackUrl.searchParams.set('signup', 'self-serve')")
     expect(source).toContain("form.get('passwordConfirm')")
     expect(source).toContain('setEmailSignupOpen(true)')
     expect(source).toContain("new URL('/api/auth/callback', window.location.origin)")

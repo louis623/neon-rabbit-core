@@ -10,6 +10,7 @@ describe('login Google OAuth source', () => {
     expect(source).toContain('signInWithOAuth')
     expect(source).toContain("provider: 'google'")
     expect(source).toContain('/api/auth/callback')
+    expect(source).not.toContain("authCallbackUrl.searchParams.set('signup'")
   })
 
   it('uses the shared safe relative redirect helper before replacing routes', () => {

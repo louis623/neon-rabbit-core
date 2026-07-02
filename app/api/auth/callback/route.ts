@@ -63,6 +63,9 @@ export async function GET(request: Request) {
     )
   }
 
+  const selfServeSignupCallback =
+    requestUrl.searchParams.get('signup') === 'self-serve'
+  const selfServeOpen = selfServeSignupEnabled()
   const workspace = await ensureSelfServeWorkspaceForAuthUser(
     {
       authUserId: user.id,
@@ -71,11 +74,14 @@ export async function GET(request: Request) {
       referralCode: requestUrl.searchParams.get('ref'),
     },
     createAdminClient(),
-    { allowCreate: selfServeSignupEnabled() },
+    { allowCreate: selfServeSignupCallback && selfServeOpen },
   )
   if (!workspace.repId) {
+    const errorCode = selfServeSignupCallback
+      ? 'self_serve_not_open'
+      : 'account_not_found'
     return NextResponse.redirect(
-      new URL('/login?error=self_serve_not_open', requestUrl.origin),
+      new URL(`/login?error=${errorCode}`, requestUrl.origin),
     )
   }
 

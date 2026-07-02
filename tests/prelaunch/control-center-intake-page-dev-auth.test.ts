@@ -89,6 +89,7 @@ import SparkleSuiteControlCenterIntakePage from '@/app/control-center/intake/pag
 
 describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
   const originalBypass = process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
+  const originalNodeEnv = process.env.NODE_ENV
 
   beforeEach(() => {
     getAuthenticatedOperatorMock.mockReset()
@@ -112,6 +113,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
   })
 
   afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
     if (originalBypass === undefined) {
       delete process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
     } else {
@@ -120,6 +122,7 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
   })
 
   it('renders the Control Center intake page without auth when dev bypass is enabled', async () => {
+    process.env.NODE_ENV = 'development'
     process.env.CONTROL_CENTER_DEV_AUTH_BYPASS = 'true'
     getAuthenticatedOperatorMock.mockRejectedValueOnce(
       new MockAuthError('missing session'),
@@ -152,7 +155,25 @@ describe('SparkleSuiteControlCenterIntakePage dev auth bypass', () => {
     expect(loadPrelaunchWaitlistReviewLeadsMock).toHaveBeenCalledOnce()
   })
 
+  it('does not honor the Control Center intake dev bypass in production', async () => {
+    process.env.NODE_ENV = 'production'
+    process.env.CONTROL_CENTER_DEV_AUTH_BYPASS = 'true'
+    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+      new MockAuthError('missing session'),
+    )
+
+    await expect(
+      SparkleSuiteControlCenterIntakePage({
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('redirect:/login')
+
+    expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
+    expect(loadPrelaunchIntakeReviewSubmissionsMock).not.toHaveBeenCalled()
+  })
+
   it('still redirects unauthenticated requests when dev bypass is disabled', async () => {
+    process.env.NODE_ENV = 'production'
     delete process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
     getAuthenticatedOperatorMock.mockRejectedValueOnce(
       new MockAuthError('missing session'),

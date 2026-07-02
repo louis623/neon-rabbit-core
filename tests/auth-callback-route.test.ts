@@ -196,13 +196,30 @@ describe('GET /api/auth/callback', () => {
     expect(response.headers.get('location')).toBe('http://localhost/nic-nac')
   })
 
-  it('provisions default workspace rows for a Google user without an existing rep', async () => {
+  it('does not provision a missing rep from the regular login callback', async () => {
+    const admin = createAdminMock(null)
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await GET(
+      new Request('http://localhost/api/auth/callback?code=oauth-code'),
+    )
+
+    expect(admin.repsInsert).not.toHaveBeenCalled()
+    expect(admin.siteSettingsUpsert).not.toHaveBeenCalled()
+    expect(admin.setupSessionUpsert).not.toHaveBeenCalled()
+    expect(admin.smsWalletUpsert).not.toHaveBeenCalled()
+    expect(response.headers.get('location')).toBe(
+      'http://localhost/login?error=account_not_found',
+    )
+  })
+
+  it('provisions default workspace rows for an explicit Google signup without an existing rep', async () => {
     const admin = createAdminMock(null)
     createAdminClientMock.mockReturnValue(admin)
 
     const response = await GET(
       new Request(
-        'http://localhost/api/auth/callback?code=oauth-code&ref=SS-K7M4Q9&next=/nic-nac?onboarding=checkout-required',
+        'http://localhost/api/auth/callback?code=oauth-code&signup=self-serve&ref=SS-K7M4Q9&next=/nic-nac?onboarding=checkout-required',
       ),
     )
 
@@ -294,7 +311,9 @@ describe('GET /api/auth/callback', () => {
     createAdminClientMock.mockReturnValue(admin)
 
     const response = await GET(
-      new Request('http://localhost/api/auth/callback?code=oauth-code'),
+      new Request(
+        'http://localhost/api/auth/callback?code=oauth-code&signup=self-serve',
+      ),
     )
 
     expect(admin.repsInsert).not.toHaveBeenCalled()

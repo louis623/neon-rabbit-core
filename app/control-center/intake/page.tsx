@@ -30,10 +30,7 @@ interface SparkleSuiteControlCenterIntakePageProps {
 }
 
 function isControlCenterDevAuthBypassEnabled() {
-  return (
-    process.env.NODE_ENV === 'development' ||
-    process.env.CONTROL_CENTER_DEV_AUTH_BYPASS === 'true'
-  )
+  return process.env.NODE_ENV === 'development'
 }
 
 export default async function SparkleSuiteControlCenterIntakePage({
