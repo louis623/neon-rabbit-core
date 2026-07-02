@@ -27,6 +27,13 @@ Running log of significant work sessions. Most recent first.
 - Follow-up local `npm run build` passed.
 - Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-fjtiwq4jh-louis-2849s-projects.vercel.app` / deployment `dpl_27LM7EksMdpb2jGogaEMw7yUDc7K`.
 - Isolated stable-demo reviewer-smoke passed with the synthetic reviewer workspace. `/start` showed `Open workspace preview`, signed in the synthetic reviewer, opened `/nic-nac?section=team-management`, and verified `Team Management`, `Create onboarding link`, `Public Team Cards`, the onboarding/public-card separation copy, `Save to Join Team page`, and `Preview Join Team page`. No Louis personal browser/session was used.
+- Linked Supabase verification confirmed Brittany's `brittwithbling` demo/live-transition account is `active` and has `team_management_entitlements.status='manual_beta'` / `source='manual_beta'`. No fake reps or participant rows were created.
+
+**Lessons carried forward:**
+- Reviewer-smoke must seed every entitlement required by the UI under review. A dashboard-unlocked subscription alone is not enough for paid-add-on sections like Team Management.
+- Smoke assertions should match the customer-facing UI labels. The real Public Team Cards submit label is `Save to Join Team page`, not an invented `Add public team card` label.
+- Onboarding participants and public Join Team cards are intentionally separate data concepts; do not auto-publish public team cards from private Start Strong invite creation.
+- For beta/live-transition accounts, verify the actual linked Supabase row after migrations or seeds. Do not assume a migration succeeded just because the code path exists.
 
 ---
 

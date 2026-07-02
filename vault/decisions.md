@@ -15,6 +15,21 @@ Team Management access is controlled by `team_management_entitlements`. Brittany
 **Rep onboarding progress and messages stay tied to the team lead workspace**
 The public onboarding invite token identifies a participant under the team lead's workspace. Progress updates and participant questions/messages sync back to Brittany's Sparkle Suite Team Management workspace while the participant keeps using the tailored onboarding page.
 
+**Public Team Cards are separate from onboarding invites**
+Creating a Start Strong onboarding link does not automatically publish a team member on the customer-facing Join Team page. Public Join Team cards are managed separately through the Team Management Public Team Cards panel backed by `join_team_members` / `/api/nic-nac/join-team-roster`.
+
+**Imported public team cards preserve hidden metadata**
+Dashboard edits to public team cards must preserve migrated fields that are not exposed in the simple UI, including city/state, initials, photo alt/class, bio, and sort order. Simple beta editing should not wipe richer migrated content.
+
+**Public roster links require full safe URLs**
+Public team-card social/website links must be full `http` or `https` URLs before save. Do not persist `javascript:`, relative, or other unsafe link schemes for customer-facing card links.
+
+**Reviewer-smoke dashboard sessions seed paid-add-on access**
+Synthetic dashboard reviewer-smoke must seed the same entitlement required by the UI under review. For Team Management, reviewer-smoke now upserts `team_management_entitlements` with `manual_beta` for the synthetic reviewer rep so the real unlocked dashboard can be verified without Louis's personal account.
+
+**Brittany's demo account is the beta/live-transition account**
+Brittany's `brittwithbling` demo account is treated as the account that can later become her live account. It is currently verified as `active` with Team Management `manual_beta` access. Do not create fake rep accounts for Brittany's beta; use the real/demo account and real/test-by-Louis onboarding participants only when Louis is ready for the first end-to-end smoke.
+
 ---
 
 ## July 2, 2026 - Alpine Opal and Mile High Fizz
