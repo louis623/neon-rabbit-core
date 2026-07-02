@@ -22,8 +22,8 @@
 - **Latest local docs/memory checkpoint:** July 2 Team Management beta and Alpine Opal / Mile High Fizz closeout docs update on the current branch head.
 - **Latest local/deployed checkpoints:** Added Brittany's Team Management beta with entitlement-backed access, private onboarding links, public invite-token onboarding APIs, participant progress sync, participant/team-lead messaging, archive controls, and the standalone Britt With Bling Start Strong app wired to the stable Sparkle Suite demo API. Brittany is enabled through `manual_beta`; future paid add-on access can use the same entitlement table with Stripe setting status to `active`. The prior July 2 checkpoint added reusable Alpine Opal (`alpine_opal`, `AO-01`) and moved Mile High Fizz onto the standard switchable public-site model with Alpine Opal as its default/persisted skin.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-bez21x5pg-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_DArFUiSinAgGsP8mp6i8E9KUrhi8`
+- **Current stable demo target:** `https://sparkle-suite-dn0u60bkf-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_A4Dt34kP2sM97aSDaureNyAmuuGK`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`

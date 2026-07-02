@@ -22,7 +22,7 @@ Running log of significant work sessions. Most recent first.
 - `apps/rep-onboarding` `npm run build` passed.
 - `apps/rep-onboarding` `npm run smoke:static` passed.
 - Supabase migration `20260702120000_team_management_onboarding_beta.sql` was applied and verified: Brittany entitlement exists as `manual_beta`, with zero participant/progress/message rows after setup.
-- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-bez21x5pg-louis-2849s-projects.vercel.app` / deployment `dpl_DArFUiSinAgGsP8mp6i8E9KUrhi8`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-dn0u60bkf-louis-2849s-projects.vercel.app` / deployment `dpl_A4Dt34kP2sM97aSDaureNyAmuuGK`.
 - Stable route smoke returned 200 for `/`, unauthenticated for the protected Team Management route, and safe onboarding-specific copy for an invalid invite token.
 - Live Start Strong bundle smoke confirmed it calls `/api/team-onboarding/access/`, uses the stable Sparkle Suite demo API base, and no longer contains old demo-only `Welcome, Sarah` or `Reset demo` strings.
 
