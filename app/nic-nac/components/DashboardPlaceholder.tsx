@@ -18,6 +18,8 @@ import type {
   CustomerAudienceSummary,
   FulfillmentQueueItem,
   HelpResource,
+  JoinTeamMember,
+  UpsertJoinTeamMemberInput,
   JewelryDatabaseResult,
   PublicSiteRecipe,
   RepMessagesDashboardResult,
@@ -413,21 +415,25 @@ type TeamManagementState =
       status: 'loading'
       access?: TeamManagementAccess
       participants?: TeamOnboardingParticipant[]
+      publicTeamRoster?: JoinTeamMember[]
     }
   | {
       status: 'locked'
       access: TeamManagementAccess
       participants?: TeamOnboardingParticipant[]
+      publicTeamRoster?: JoinTeamMember[]
     }
   | {
       status: 'ready'
       access: TeamManagementAccess
       participants: TeamOnboardingParticipant[]
+      publicTeamRoster?: JoinTeamMember[]
     }
   | {
       status: 'error'
       access?: TeamManagementAccess
       participants?: TeamOnboardingParticipant[]
+      publicTeamRoster?: JoinTeamMember[]
     }
 
 type TeamManagementActionState = {
@@ -439,6 +445,26 @@ type TeamManagementActionState = {
 type TeamManagementCreateDraft = {
   displayName: string
   contactEmail: string
+}
+
+export type JoinTeamRosterDraft = {
+  id?: string
+  displayName: string
+  businessName: string
+  state?: string
+  city?: string
+  initials?: string
+  photoUrl: string
+  photoAlt?: string
+  imageClassName?: string
+  bio?: string
+  sortOrder?: number
+  tiktok: string
+  facebook: string
+  instagram: string
+  website: string
+  youtube: string
+  isVisible: boolean
 }
 
 type ResourcesState = {
@@ -579,6 +605,11 @@ type TeamManagementResponsePayload = {
   accessUrl?: string
   error?: string
 }
+type JoinTeamRosterResponsePayload = {
+  members?: JoinTeamMember[]
+  member?: JoinTeamMember
+  error?: string
+}
 type ResourcesResponsePayload = HelpResource[]
 type AnalyticsResponsePayload = SiteAnalyticsDashboardResult
 
@@ -600,6 +631,109 @@ const EMPTY_JEWELRY_LIBRARY_FILTERS: JewelryLibraryFilters = {
   label: '',
   year: '',
   limit: JEWELRY_LIBRARY_DEFAULT_LIMIT,
+}
+
+const EMPTY_JOIN_TEAM_ROSTER_DRAFT: JoinTeamRosterDraft = {
+  displayName: '',
+  businessName: '',
+  photoUrl: '',
+  tiktok: '',
+  facebook: '',
+  instagram: '',
+  website: '',
+  youtube: '',
+  isVisible: true,
+}
+
+function cleanOptionalText(value?: string | null) {
+  return value?.trim() ?? ''
+}
+
+export function getJoinTeamRosterDraft(
+  member?: JoinTeamMember | null,
+): JoinTeamRosterDraft {
+  if (!member) return { ...EMPTY_JOIN_TEAM_ROSTER_DRAFT }
+
+  return {
+    id: member.id,
+    displayName: member.displayName,
+    businessName: member.businessName,
+    state: member.state,
+    city: member.city,
+    initials: member.initials,
+    photoUrl: member.photoUrl,
+    photoAlt: member.photoAlt,
+    imageClassName: member.imageClassName,
+    bio: member.bio,
+    sortOrder: member.sortOrder,
+    tiktok: member.links.tiktok ?? '',
+    facebook: member.links.facebook ?? '',
+    instagram: member.links.instagram ?? '',
+    website: member.links.website ?? '',
+    youtube: member.links.youtube ?? '',
+    isVisible: member.isVisible,
+  }
+}
+
+export function buildJoinTeamRosterSavePayload(
+  draft: JoinTeamRosterDraft,
+): UpsertJoinTeamMemberInput {
+  const displayName = cleanOptionalText(draft.displayName)
+  const links = {
+    ...(cleanOptionalText(draft.tiktok)
+      ? { tiktok: cleanOptionalText(draft.tiktok) }
+      : {}),
+    ...(cleanOptionalText(draft.facebook)
+      ? { facebook: cleanOptionalText(draft.facebook) }
+      : {}),
+    ...(cleanOptionalText(draft.instagram)
+      ? { instagram: cleanOptionalText(draft.instagram) }
+      : {}),
+    ...(cleanOptionalText(draft.website)
+      ? { website: cleanOptionalText(draft.website) }
+      : {}),
+    ...(cleanOptionalText(draft.youtube)
+      ? { youtube: cleanOptionalText(draft.youtube) }
+      : {}),
+  }
+
+  return {
+    ...(draft.id ? { id: draft.id } : {}),
+    displayName,
+    businessName: cleanOptionalText(draft.businessName),
+    ...('state' in draft ? { state: cleanOptionalText(draft.state) } : {}),
+    ...('city' in draft ? { city: cleanOptionalText(draft.city) } : {}),
+    ...('initials' in draft ? { initials: cleanOptionalText(draft.initials) } : {}),
+    photoUrl: cleanOptionalText(draft.photoUrl),
+    photoAlt:
+      cleanOptionalText(draft.photoAlt) ||
+      (displayName ? `${displayName} team profile photo` : ''),
+    ...('imageClassName' in draft
+      ? { imageClassName: cleanOptionalText(draft.imageClassName) }
+      : {}),
+    ...('bio' in draft ? { bio: cleanOptionalText(draft.bio) } : {}),
+    ...(draft.sortOrder !== undefined ? { sortOrder: draft.sortOrder } : {}),
+    links,
+    isVisible: draft.isVisible,
+  }
+}
+
+export function moveJoinTeamRosterMember<T extends { id: string }>(
+  members: T[],
+  memberId: string,
+  direction: 'up' | 'down',
+) {
+  const ids = members.map((member) => member.id)
+  const index = ids.indexOf(memberId)
+  if (index < 0) return ids
+
+  const nextIndex = direction === 'up' ? index - 1 : index + 1
+  if (nextIndex < 0 || nextIndex >= ids.length) return ids
+
+  const next = [...ids]
+  const [moved] = next.splice(index, 1)
+  next.splice(nextIndex, 0, moved)
+  return next
 }
 
 type JewelryLibraryFilterField =
@@ -1928,6 +2062,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             status: 'locked',
             access: { enabled: false, status: 'not_enabled', source: null },
             participants: [],
+            publicTeamRoster: [],
           }
         : { status: 'loading' },
     )
@@ -1942,6 +2077,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       displayName: '',
       contactEmail: '',
     })
+  const [publicTeamDraft, setPublicTeamDraft] = useState<JoinTeamRosterDraft>(
+    () => getJoinTeamRosterDraft(),
+  )
   const [teamReplyDraft, setTeamReplyDraft] = useState('')
   const [resourcesState, setResourcesState] = useState<ResourcesState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
@@ -2242,6 +2380,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         status: 'locked',
         access: payload.access,
         participants: [],
+        publicTeamRoster: [],
       })
       return
     }
@@ -2250,11 +2389,38 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       throw new Error(payload?.error || `team management request failed: ${response.status}`)
     }
 
+    let publicTeamRoster: JoinTeamMember[] = []
+    try {
+      publicTeamRoster = await loadJoinTeamRoster(signal)
+    } catch (error) {
+      if ((error as { name?: string }).name === 'AbortError') throw error
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Onboarding is loaded. Public team cards could not load yet.',
+      })
+    }
     setTeamManagementState({
       status: 'ready',
       access: payload.access,
       participants: payload.participants ?? [],
+      publicTeamRoster,
     })
+  }
+
+  async function loadJoinTeamRoster(signal?: AbortSignal) {
+    const response = await fetch('/api/nic-nac/join-team-roster', {
+      credentials: 'include',
+      signal,
+    })
+    const payload = (await response.json().catch(() => null)) as
+      | JoinTeamRosterResponsePayload
+      | null
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Unable to load public team cards right now.')
+    }
+
+    return payload?.members ?? []
   }
 
   async function loadResources(signal?: AbortSignal) {
@@ -2374,6 +2540,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           status: 'error',
           access: current.access,
           participants: current.participants,
+          publicTeamRoster: current.publicTeamRoster,
         }))
       }),
       loadAnalytics(signal).catch((error) => {
@@ -3939,6 +4106,246 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setTeamCreateDraft((current) => ({ ...current, ...patch }))
   }
 
+  function handlePublicTeamDraftChange(patch: Partial<JoinTeamRosterDraft>) {
+    setTeamManagementActionState((current) => ({
+      ...current,
+      error: null,
+      helperMessage: null,
+    }))
+    setPublicTeamDraft((current) => ({ ...current, ...patch }))
+  }
+
+  async function handleSavePublicTeamMember() {
+    if (!publicTeamDraft.displayName.trim()) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: 'Enter the first name before saving the public card.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    setTeamManagementActionState({
+      pendingKey: 'public-team:save',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch('/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upsert',
+          member: buildJoinTeamRosterSavePayload(publicTeamDraft),
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | JoinTeamRosterResponsePayload
+        | null
+      if (!response.ok || !payload?.member) {
+        throw new Error(payload?.error || 'Unable to save that public team card right now.')
+      }
+
+      const savedMember = payload.member
+      setTeamManagementState((current) => {
+        const roster = current.publicTeamRoster ?? []
+        const nextRoster = roster.some((member) => member.id === savedMember.id)
+          ? roster.map((member) =>
+              member.id === savedMember.id ? savedMember : member,
+            )
+          : [...roster, savedMember]
+
+        return {
+          ...current,
+          publicTeamRoster: nextRoster.sort((a, b) => a.sortOrder - b.sortOrder),
+        }
+      })
+      setPublicTeamDraft(getJoinTeamRosterDraft())
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Public team card saved to the Join Team page.',
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to save that public team card right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  function handleEditPublicTeamMember(member: JoinTeamMember) {
+    setPublicTeamDraft(getJoinTeamRosterDraft(member))
+    setTeamManagementActionState({
+      pendingKey: null,
+      error: null,
+      helperMessage: `Editing ${member.displayName}'s public card.`,
+    })
+  }
+
+  async function handleTogglePublicTeamMember(member: JoinTeamMember) {
+    setTeamManagementActionState({
+      pendingKey: `public-team:toggle:${member.id}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch('/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upsert',
+          member: {
+            ...buildJoinTeamRosterSavePayload(getJoinTeamRosterDraft(member)),
+            isVisible: !member.isVisible,
+          },
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | JoinTeamRosterResponsePayload
+        | null
+      if (!response.ok || !payload?.member) {
+        throw new Error(payload?.error || 'Unable to update that public card right now.')
+      }
+
+      setTeamManagementState((current) => ({
+        ...current,
+        publicTeamRoster: (current.publicTeamRoster ?? []).map((rosterMember) =>
+          rosterMember.id === payload.member?.id ? payload.member : rosterMember,
+        ),
+      }))
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: payload.member.isVisible
+          ? 'Public team card is visible on the Join Team page.'
+          : 'Public team card is hidden from the Join Team page.',
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to update that public card right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleMovePublicTeamMember(
+    memberId: string,
+    direction: 'up' | 'down',
+  ) {
+    const roster = teamManagementState.publicTeamRoster ?? []
+    const memberIds = moveJoinTeamRosterMember(roster, memberId, direction)
+    if (memberIds.join('|') === roster.map((member) => member.id).join('|')) return
+
+    setTeamManagementActionState({
+      pendingKey: `public-team:move:${memberId}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch('/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          memberIds,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to reorder public team cards right now.')
+      }
+
+      const byId = new Map(roster.map((member) => [member.id, member]))
+      setTeamManagementState((current) => ({
+        ...current,
+        publicTeamRoster: memberIds
+          .map((id, index) => {
+            const member = byId.get(id)
+            return member ? { ...member, sortOrder: index } : null
+          })
+          .filter((member): member is JoinTeamMember => member !== null),
+      }))
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Public team cards reordered.',
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to reorder public team cards right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleRemovePublicTeamMember(memberId: string) {
+    setTeamManagementActionState({
+      pendingKey: `public-team:remove:${memberId}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch('/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove',
+          memberId,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to remove that public team card right now.')
+      }
+
+      setTeamManagementState((current) => ({
+        ...current,
+        publicTeamRoster: (current.publicTeamRoster ?? []).filter(
+          (member) => member.id !== memberId,
+        ),
+      }))
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Public team card removed from the Join Team page.',
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to remove that public team card right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
   async function handleCreateTeamOnboardingParticipant() {
     if (!teamCreateDraft.displayName.trim()) {
       setTeamManagementActionState({
@@ -3982,6 +4389,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           status: 'ready',
           access: currentAccess,
           participants: [participant, ...currentParticipants],
+          publicTeamRoster: current.publicTeamRoster,
         }
       })
       setTeamCreateDraft({ displayName: '', contactEmail: '' })
@@ -4156,6 +4564,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     repId: repIdOverride ?? repProfileState.repId,
     publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
   })
+  const currentPublicSiteSlug =
+    publicSiteSlugOverride ?? repProfileState.publicSiteSlug
+  const currentRepId = repIdOverride ?? repProfileState.repId
+  const customerJoinTeamHref = currentPublicSiteSlug
+    ? `/${encodeURIComponent(currentPublicSiteSlug.trim().toLowerCase())}/join`
+    : currentRepId
+      ? `/amethyst/Join.html?c=${encodeURIComponent(currentRepId)}`
+      : '/amethyst/Join.html'
   const customerTradeBoardHref = buildCustomerTradeBoardHref({
     repId: repIdOverride ?? repProfileState.repId,
     publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
@@ -4450,12 +4866,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 state={teamManagementState}
                 actionState={teamManagementActionState}
                 createDraft={teamCreateDraft}
+                publicTeamDraft={publicTeamDraft}
                 replyDraft={teamReplyDraft}
+                joinTeamPreviewHref={customerJoinTeamHref}
                 onCreateDraftChange={handleTeamCreateDraftChange}
                 onCreateParticipant={handleCreateTeamOnboardingParticipant}
                 onCopyInvite={handleCopyTeamOnboardingInvite}
                 onEmailInvite={handleEmailTeamOnboardingInvite}
                 onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
+                onPublicTeamDraftChange={handlePublicTeamDraftChange}
+                onSavePublicTeamMember={handleSavePublicTeamMember}
+                onEditPublicTeamMember={handleEditPublicTeamMember}
+                onTogglePublicTeamMember={handleTogglePublicTeamMember}
+                onMovePublicTeamMember={handleMovePublicTeamMember}
+                onRemovePublicTeamMember={handleRemovePublicTeamMember}
                 onReplyDraftChange={setTeamReplyDraft}
                 onSendReply={handleSendTeamOnboardingReply}
               />
@@ -7416,28 +7840,45 @@ export function TeamManagementCard({
   },
   actionState,
   createDraft = { displayName: '', contactEmail: '' },
+  publicTeamDraft = getJoinTeamRosterDraft(),
   replyDraft = '',
+  joinTeamPreviewHref = '/amethyst/Join.html',
   onCreateDraftChange,
   onCreateParticipant,
   onCopyInvite,
   onEmailInvite,
   onArchiveParticipant,
+  onPublicTeamDraftChange,
+  onSavePublicTeamMember,
+  onEditPublicTeamMember,
+  onTogglePublicTeamMember,
+  onMovePublicTeamMember,
+  onRemovePublicTeamMember,
   onReplyDraftChange,
   onSendReply,
 }: {
   state?: TeamManagementState
   actionState?: TeamManagementActionState
   createDraft?: TeamManagementCreateDraft
+  publicTeamDraft?: JoinTeamRosterDraft
   replyDraft?: string
+  joinTeamPreviewHref?: string
   onCreateDraftChange?: (patch: Partial<TeamManagementCreateDraft>) => void
   onCreateParticipant?: () => void
   onCopyInvite?: (accessUrl?: string) => void
   onEmailInvite?: (participant: TeamOnboardingParticipant) => void
   onArchiveParticipant?: (participantId: string) => void
+  onPublicTeamDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
+  onSavePublicTeamMember?: () => void
+  onEditPublicTeamMember?: (member: JoinTeamMember) => void
+  onTogglePublicTeamMember?: (member: JoinTeamMember) => void
+  onMovePublicTeamMember?: (memberId: string, direction: 'up' | 'down') => void
+  onRemovePublicTeamMember?: (memberId: string) => void
   onReplyDraftChange?: (value: string) => void
   onSendReply?: (participantId: string) => void
 }) {
   const participants = state.participants ?? []
+  const publicTeamRoster = state.publicTeamRoster ?? []
   const activeParticipants = participants.filter(
     (participant) => participant.status !== 'archived',
   )
@@ -7492,6 +7933,15 @@ export function TeamManagementCard({
             <div className={styles.walletSettingsTitle}>Progress tracking</div>
             <div className={styles.emptyState}>
               New-rep progress appears here after the add-on is active.
+            </div>
+          </section>
+          <section
+            className={`${styles.teamManagementPanel} ${styles.teamPublicCardsPanel}`}
+          >
+            <div className={styles.walletSettingsTitle}>Public Team Cards</div>
+            <div className={styles.emptyState}>
+              Team member cards can be added to the public Join Team page after
+              the add-on is active.
             </div>
           </section>
           <section className={styles.teamManagementPanel}>
@@ -7574,6 +8024,20 @@ export function TeamManagementCard({
             not send team invite texts from this panel.
           </div>
         </section>
+
+        <PublicTeamRosterPanel
+          members={publicTeamRoster}
+          draft={publicTeamDraft}
+          actionState={actionState}
+          joinTeamPreviewHref={joinTeamPreviewHref}
+          isLoading={isLoading}
+          onDraftChange={onPublicTeamDraftChange}
+          onSave={onSavePublicTeamMember}
+          onEdit={onEditPublicTeamMember}
+          onToggle={onTogglePublicTeamMember}
+          onMove={onMovePublicTeamMember}
+          onRemove={onRemovePublicTeamMember}
+        />
 
         <section className={styles.teamManagementPanel}>
           <div className={styles.walletSettingsTitle}>Rep progress</div>
@@ -7679,6 +8143,271 @@ export function TeamManagementCard({
         </section>
       </div>
     </div>
+  )
+}
+
+function PublicTeamRosterPanel({
+  members,
+  draft,
+  actionState,
+  joinTeamPreviewHref,
+  isLoading,
+  onDraftChange,
+  onSave,
+  onEdit,
+  onToggle,
+  onMove,
+  onRemove,
+}: {
+  members: JoinTeamMember[]
+  draft: JoinTeamRosterDraft
+  actionState?: TeamManagementActionState
+  joinTeamPreviewHref: string
+  isLoading: boolean
+  onDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
+  onSave?: () => void
+  onEdit?: (member: JoinTeamMember) => void
+  onToggle?: (member: JoinTeamMember) => void
+  onMove?: (memberId: string, direction: 'up' | 'down') => void
+  onRemove?: (memberId: string) => void
+}) {
+  const saveLabel = draft.id ? 'Save card changes' : 'Save to Join Team page'
+
+  return (
+    <section
+      className={`${styles.teamManagementPanel} ${styles.teamPublicCardsPanel}`}
+    >
+      <div className={styles.workspaceSectionHeader}>
+        <div>
+          <div className={styles.walletSettingsTitle}>Public Team Cards</div>
+          <div className={styles.helperNote}>
+            Onboarding links do not publish public cards automatically.
+          </div>
+        </div>
+        <Link
+          className={styles.helperLink}
+          href={joinTeamPreviewHref}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Preview Join Team page
+        </Link>
+      </div>
+
+      <div className={styles.teamRosterWorkspace}>
+        <div className={styles.teamRosterEditor}>
+          <div className={styles.walletSettingsTitle}>Add team member card</div>
+          <div className={styles.teamInputGrid}>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>First name</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="Lindsey"
+                value={draft.displayName}
+                onChange={(event) =>
+                  onDraftChange?.({ displayName: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Show name</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="Mile High Fizz"
+                value={draft.businessName}
+                onChange={(event) =>
+                  onDraftChange?.({ businessName: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Profile photo</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="/team/lindsey.jpg"
+                value={draft.photoUrl}
+                onChange={(event) =>
+                  onDraftChange?.({ photoUrl: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className={styles.teamSocialGrid}>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>TikTok</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="https://www.tiktok.com/@show"
+                value={draft.tiktok}
+                onChange={(event) => onDraftChange?.({ tiktok: event.target.value })}
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Facebook</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="VIP group or page"
+                value={draft.facebook}
+                onChange={(event) =>
+                  onDraftChange?.({ facebook: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Instagram</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="https://www.instagram.com/show"
+                value={draft.instagram}
+                onChange={(event) =>
+                  onDraftChange?.({ instagram: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Website</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="https://example.com"
+                value={draft.website}
+                onChange={(event) =>
+                  onDraftChange?.({ website: event.target.value })
+                }
+              />
+            </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>YouTube</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="https://www.youtube.com/@show"
+                value={draft.youtube}
+                onChange={(event) =>
+                  onDraftChange?.({ youtube: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <label className={styles.teamVisibilityToggle}>
+            <input
+              type="checkbox"
+              checked={draft.isVisible}
+              onChange={(event) =>
+                onDraftChange?.({ isVisible: event.target.checked })
+              }
+            />
+            <span>Visible on Join Team page</span>
+          </label>
+
+          <button
+            type="button"
+            className={styles.actionButton}
+            disabled={actionState?.pendingKey === 'public-team:save' || isLoading}
+            onClick={onSave}
+          >
+            {actionState?.pendingKey === 'public-team:save'
+              ? 'Saving card...'
+              : saveLabel}
+          </button>
+        </div>
+
+        <div className={styles.teamRosterList} role="list">
+          {members.length === 0 ? (
+            <div className={styles.emptyState}>
+              Public team cards will appear here before they show on the Join
+              Team page.
+            </div>
+          ) : (
+            members.map((member, index) => (
+              <div key={member.id} className={styles.teamRosterCard} role="listitem">
+                <div className={styles.teamRosterAvatar}>
+                  {member.photoUrl ? (
+                    <img src={member.photoUrl} alt={member.photoAlt || member.displayName} />
+                  ) : (
+                    <span>{member.initials || member.displayName.slice(0, 1)}</span>
+                  )}
+                </div>
+                <div className={styles.teamRosterCardBody}>
+                  <div className={styles.workspaceSectionHeader}>
+                    <div>
+                      <strong>{member.businessName || 'Show name missing'}</strong>
+                      <div className={styles.helperNote}>{member.displayName}</div>
+                    </div>
+                    <span className={styles.rosterTag}>
+                      {member.isVisible ? 'Visible' : 'Hidden'}
+                    </span>
+                  </div>
+                  <div className={styles.teamRosterLinks}>
+                    {member.links.tiktok ? <span>TikTok</span> : null}
+                    {member.links.facebook ? <span>Facebook</span> : null}
+                    {member.links.instagram ? <span>Instagram</span> : null}
+                    {member.links.website ? <span>Website</span> : null}
+                    {member.links.youtube ? <span>YouTube</span> : null}
+                    {Object.values(member.links).every((value) => !value) ? (
+                      <span>No links yet</span>
+                    ) : null}
+                  </div>
+                  <div className={styles.workspaceInlineActions}>
+                    <button
+                      type="button"
+                      className={styles.helperButton}
+                      onClick={() => onEdit?.(member)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.helperButton}
+                      disabled={
+                        actionState?.pendingKey ===
+                        `public-team:toggle:${member.id}`
+                      }
+                      onClick={() => onToggle?.(member)}
+                    >
+                      {member.isVisible ? 'Hide' : 'Show'}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.helperButton}
+                      disabled={
+                        index === 0 ||
+                        actionState?.pendingKey === `public-team:move:${member.id}`
+                      }
+                      onClick={() => onMove?.(member.id, 'up')}
+                    >
+                      Move up
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.helperButton}
+                      disabled={
+                        index === members.length - 1 ||
+                        actionState?.pendingKey === `public-team:move:${member.id}`
+                      }
+                      onClick={() => onMove?.(member.id, 'down')}
+                    >
+                      Move down
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.helperButton}
+                      disabled={
+                        actionState?.pendingKey ===
+                        `public-team:remove:${member.id}`
+                      }
+                      onClick={() => onRemove?.(member.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 

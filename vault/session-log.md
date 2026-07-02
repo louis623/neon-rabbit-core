@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 2, 2026 - Team Management Public Team Cards
+
+**What changed:**
+- Added a Public Team Cards manager inside the Team Management workspace.
+- The manager uses the existing `join_team_members` / `/api/nic-nac/join-team-roster` system so Brittany can add, edit, hide/show, reorder, and remove customer-facing Join Team cards.
+- Card fields include first name, show name, profile photo URL, TikTok, Facebook, Instagram, website, YouTube, and a visible-on-Join-page toggle.
+- Kept public team cards separate from Start Strong onboarding links. Creating an onboarding link does not publish a public card automatically.
+- Hardened public roster links so stored social/website links must be full `http` or `https` URLs before they can save.
+- Preserved unshown imported roster fields such as city/state, initials, photo alt/class, bio, and sort order when the dashboard edits or toggles cards.
+- Made public-card roster loading degrade separately so onboarding progress/messages can still load if the public roster request fails.
+
+**Verification:**
+- Red/green dashboard and service regressions were added for the new manager, unsafe social links, unshown-field preservation, and roster-load fallback.
+- Focused feature suite passed: `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts tests/services/join-team-roster.test.ts tests/nic-nac-join-team-roster-route.test.ts tests/nic-nac/join-team-roster-tools.test.ts tests/britt-with-bling-public-site.test.ts` with 5 files / 102 tests.
+- Configured repo `npm test` passed with 14 files / 196 tests.
+- Local `npm run build` passed with Next.js 16.2.1.
+- `git diff --check` passed.
+- Subagent code review found three issues; all were fixed and re-reviewed with no remaining blocking findings.
+
+**Remaining beta smoke:**
+- Deploy and promote the stable demo alias, then use reviewer-smoke/synthetic workspace access to visually verify the logged-in Team Management Public Team Cards panel. Do not use Louis's personal browser/session.
+
+---
+
 ## July 2, 2026 - Team Management Beta and Britt With Bling Start Strong Integration
 
 **What changed:**

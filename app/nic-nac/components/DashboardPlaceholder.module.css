@@ -3151,6 +3151,10 @@
   grid-row: span 2;
 }
 
+.teamPublicCardsPanel {
+  grid-column: 1 / -1;
+}
+
 .teamInputGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3170,6 +3174,116 @@
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.teamRosterWorkspace {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(280px, 1.08fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.teamRosterEditor,
+.teamRosterCard {
+  min-width: 0;
+  border-radius: 14px;
+  background: rgba(255, 246, 250, 0.72);
+  border: 1px dashed rgba(238, 44, 155, 0.2);
+  padding: 14px;
+}
+
+.teamRosterEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teamSocialGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.teamSocialGrid .searchField:last-child {
+  grid-column: 1 / -1;
+}
+
+.teamVisibilityToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--nic-nac-text-primary);
+}
+
+.teamVisibilityToggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--nic-nac-accent);
+}
+
+.teamRosterList {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teamRosterCard {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.teamRosterAvatar {
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-primary);
+  font-weight: 900;
+}
+
+.teamRosterAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.teamRosterCardBody {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.teamRosterLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.teamRosterLinks span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
+  color: var(--nic-nac-text-secondary);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .workspaceInlineActions {
@@ -3972,6 +4086,8 @@
 .main[data-workspace-skin='black_diamond'] .timelineItem,
 .main[data-workspace-skin='black_diamond'] .walletToggleRow,
 .main[data-workspace-skin='black_diamond'] .teamManagementPanel,
+.main[data-workspace-skin='black_diamond'] .teamRosterEditor,
+.main[data-workspace-skin='black_diamond'] .teamRosterCard,
 .main[data-workspace-skin='black_diamond'] .teamMessagePreview,
 .main[data-workspace-skin='black_diamond'] .wisprFlowUseCard,
 .main[data-workspace-skin='black_diamond'] .wisprFlowInviteUrl,
@@ -4113,6 +4229,14 @@
     grid-row: auto;
   }
 
+  .teamPublicCardsPanel {
+    grid-column: auto;
+  }
+
+  .teamRosterWorkspace {
+    grid-template-columns: 1fr;
+  }
+
   .workspaceSectionHeader {
     align-items: stretch;
   }
@@ -4133,6 +4257,14 @@
 
   .teamInputGrid {
     grid-template-columns: 1fr;
+  }
+
+  .teamSocialGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .teamSocialGrid .searchField:last-child {
+    grid-column: auto;
   }
 
   .calculatorResultRow {

@@ -583,3 +583,10 @@ Saved calendar rows remain authoritative for Heather's public Live event calenda
 
 **Moonstone light surfaces need local dark text variables**
 Moonstone's dark page background can keep light page text, but silver-pearl cards, recipe cards, modals, forms, chips, and buttons must set local dark foreground variables. Avoid broad page-level Moonstone selectors that accidentally make standalone dark-background section headings or light-card body copy unreadable.
+
+---
+
+# July 2, 2026
+
+**Onboarding links do not auto-publish public team cards**
+Team Management has two related but separate workflows: Start Strong onboarding access/progress/messages, and public Join Team roster cards. Creating an onboarding link should not automatically publish a rep to the customer-facing Join Team page. The team lead should explicitly save or show a Public Team Card before the rep appears publicly.

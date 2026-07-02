@@ -20,6 +20,9 @@ import {
   TeamManagementCard,
   WalletSummaryCard,
   WorkspaceAccessNotice,
+  buildJoinTeamRosterSavePayload,
+  getJoinTeamRosterDraft,
+  moveJoinTeamRosterMember,
   buildShowCalendarCells,
   buildCustomerSparkleSiteHref,
   getAutoRechargeAmountOptions,
@@ -914,6 +917,228 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Archive')
     expect(html).not.toContain('Send text')
     expect(html).not.toContain('Sparkle Suite SMS')
+  })
+
+  it('renders public team card management separately from onboarding links', () => {
+    const html = renderToStaticMarkup(
+      createElement(TeamManagementCard, {
+        state: {
+          status: 'ready',
+          access: { enabled: true, status: 'manual_beta', source: 'manual_beta' },
+          participants: [],
+          publicTeamRoster: [
+            {
+              id: 'member-lindsey',
+              repId: 'rep-britt',
+              displayName: 'Lindsey',
+              businessName: 'Mile High Fizz',
+              state: 'Colorado',
+              city: 'Denver',
+              initials: 'L',
+              photoUrl: '/britt-with-bling/team/lindsey.jpg',
+              photoAlt: 'Lindsey from Mile High Fizz',
+              imageClassName: '',
+              bio: 'Mountain sparkle energy.',
+              links: {
+                tiktok: 'https://www.tiktok.com/@milehighfizz',
+                facebook: 'https://www.facebook.com/groups/milehighfizz',
+                website: 'https://milehighfizz.example',
+              },
+              sortOrder: 0,
+              isVisible: true,
+              createdAt: '2026-07-02T12:00:00.000Z',
+              updatedAt: '2026-07-02T12:00:00.000Z',
+            },
+          ],
+        },
+        publicTeamDraft: {
+          displayName: 'Rayna',
+          businessName: 'Queen of Blingy Thingz',
+          photoUrl: '/team/rayna.jpg',
+          tiktok: 'https://www.tiktok.com/@queenofblingythingz',
+          facebook: '',
+          instagram: '',
+          website: '',
+          youtube: '',
+          isVisible: true,
+        },
+        onPublicTeamDraftChange: () => {},
+        onSavePublicTeamMember: () => {},
+        onEditPublicTeamMember: () => {},
+        onTogglePublicTeamMember: () => {},
+        onMovePublicTeamMember: () => {},
+        onRemovePublicTeamMember: () => {},
+      }),
+    )
+
+    expect(html).toContain('Public Team Cards')
+    expect(html).toContain('Add team member card')
+    expect(html).toContain('Save to Join Team page')
+    expect(html).toContain('First name')
+    expect(html).toContain('Show name')
+    expect(html).toContain('Profile photo')
+    expect(html).toContain('Mile High Fizz')
+    expect(html).toContain('Lindsey')
+    expect(html).toContain('Visible on Join Team page')
+    expect(html).toContain('Preview Join Team page')
+    expect(html).toContain('Onboarding links do not publish public cards automatically.')
+    expect(html).not.toContain('Send text')
+  })
+
+  it('keeps onboarding usable if public team cards fail to load', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const loaderStart = source.indexOf('async function loadTeamManagement')
+    const loaderSource = source.slice(
+      loaderStart,
+      source.indexOf('  async function loadResources', loaderStart),
+    )
+
+    expect(loaderSource).toContain('let publicTeamRoster: JoinTeamMember[] = []')
+    expect(loaderSource).toContain('try {')
+    expect(loaderSource).toContain('publicTeamRoster = await loadJoinTeamRoster(signal)')
+    expect(loaderSource).toContain('catch')
+    expect(loaderSource).toContain('participants: payload.participants ?? []')
+    expect(loaderSource).toContain('publicTeamRoster')
+    expect(loaderSource).not.toContain('const roster = await loadJoinTeamRoster(signal)')
+  })
+
+  it('builds public team card save payloads with trimmed social links', () => {
+    expect(
+      buildJoinTeamRosterSavePayload({
+        id: 'member-rayna',
+        displayName: ' Rayna ',
+        businessName: ' Queen of Blingy Thingz ',
+        photoUrl: ' /team/rayna.jpg ',
+        tiktok: ' https://www.tiktok.com/@queenofblingythingz ',
+        facebook: '',
+        instagram: '   ',
+        website: ' https://rayna.example ',
+        youtube: '',
+        isVisible: false,
+      }),
+    ).toEqual({
+      id: 'member-rayna',
+      displayName: 'Rayna',
+      businessName: 'Queen of Blingy Thingz',
+      photoUrl: '/team/rayna.jpg',
+      photoAlt: 'Rayna team profile photo',
+      links: {
+        tiktok: 'https://www.tiktok.com/@queenofblingythingz',
+        website: 'https://rayna.example',
+      },
+      isVisible: false,
+    })
+  })
+
+  it('moves public team card ids one slot at a time for reorder saves', () => {
+    const members = [
+      { id: 'member-a' },
+      { id: 'member-b' },
+      { id: 'member-c' },
+    ]
+
+    expect(moveJoinTeamRosterMember(members, 'member-b', 'up')).toEqual([
+      'member-b',
+      'member-a',
+      'member-c',
+    ])
+    expect(moveJoinTeamRosterMember(members, 'member-b', 'down')).toEqual([
+      'member-a',
+      'member-c',
+      'member-b',
+    ])
+    expect(moveJoinTeamRosterMember(members, 'member-a', 'up')).toEqual([
+      'member-a',
+      'member-b',
+      'member-c',
+    ])
+  })
+
+  it('turns an existing public roster card into an editable draft', () => {
+    expect(
+      getJoinTeamRosterDraft({
+        id: 'member-lindsey',
+        repId: 'rep-britt',
+        displayName: 'Lindsey',
+        businessName: 'Mile High Fizz',
+        state: 'Colorado',
+        city: 'Denver',
+        initials: 'L',
+        photoUrl: '/team/lindsey.jpg',
+        photoAlt: 'Lindsey profile',
+        imageClassName: 'object-top',
+        bio: 'Mountain sparkle energy.',
+        links: {
+          tiktok: 'https://www.tiktok.com/@milehighfizz',
+          facebook: 'https://www.facebook.com/groups/milehighfizz',
+        },
+        sortOrder: 0,
+        isVisible: true,
+        createdAt: null,
+        updatedAt: null,
+      }),
+    ).toEqual({
+      id: 'member-lindsey',
+      displayName: 'Lindsey',
+      businessName: 'Mile High Fizz',
+      state: 'Colorado',
+      city: 'Denver',
+      initials: 'L',
+      photoUrl: '/team/lindsey.jpg',
+      photoAlt: 'Lindsey profile',
+      imageClassName: 'object-top',
+      bio: 'Mountain sparkle energy.',
+      sortOrder: 0,
+      tiktok: 'https://www.tiktok.com/@milehighfizz',
+      facebook: 'https://www.facebook.com/groups/milehighfizz',
+      instagram: '',
+      website: '',
+      youtube: '',
+      isVisible: true,
+    })
+  })
+
+  it('preserves unshown public team card fields in edit save payloads', () => {
+    expect(
+      buildJoinTeamRosterSavePayload({
+        id: 'member-lindsey',
+        displayName: 'Lindsey',
+        businessName: 'Mile High Fizz',
+        state: 'Colorado',
+        city: 'Denver',
+        initials: 'L',
+        photoUrl: '/team/lindsey.jpg',
+        photoAlt: 'Lindsey profile',
+        imageClassName: 'object-top',
+        bio: 'Mountain sparkle energy.',
+        sortOrder: 3,
+        tiktok: 'https://www.tiktok.com/@milehighfizz',
+        facebook: '',
+        instagram: '',
+        website: '',
+        youtube: '',
+        isVisible: false,
+      }),
+    ).toEqual({
+      id: 'member-lindsey',
+      displayName: 'Lindsey',
+      businessName: 'Mile High Fizz',
+      state: 'Colorado',
+      city: 'Denver',
+      initials: 'L',
+      photoUrl: '/team/lindsey.jpg',
+      photoAlt: 'Lindsey profile',
+      imageClassName: 'object-top',
+      bio: 'Mountain sparkle energy.',
+      sortOrder: 3,
+      links: {
+        tiktok: 'https://www.tiktok.com/@milehighfizz',
+      },
+      isVisible: false,
+    })
   })
 
   it('formats the workspace header rep/show label without deriving sync codes from rep ids', () => {

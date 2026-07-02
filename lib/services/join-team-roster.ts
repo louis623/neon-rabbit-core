@@ -37,12 +37,34 @@ function normalizeSortOrder(value: number | undefined) {
   return Number.isFinite(value) ? Math.trunc(value as number) : undefined
 }
 
+function normalizePublicLink(value: string) {
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw errors.INVALID_INPUT(
+      'join team member social links must be full URLs',
+      'Use a full http or https link for team member social links.',
+    )
+  }
+
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw errors.INVALID_INPUT(
+      'join team member social links must use http or https',
+      'Use a full http or https link for team member social links.',
+    )
+  }
+
+  return url.toString()
+}
+
 function normalizeLinks(value: JoinTeamMemberLinks | undefined) {
   if (!value) return undefined
 
   const entries = Object.entries(value)
     .map(([key, link]) => [key.trim(), normalizeText(link)] as const)
     .filter(([key, link]) => key.length > 0 && link.length > 0)
+    .map(([key, link]) => [key, normalizePublicLink(link)] as const)
 
   return Object.fromEntries(entries)
 }
