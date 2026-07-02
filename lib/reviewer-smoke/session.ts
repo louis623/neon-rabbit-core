@@ -198,6 +198,28 @@ async function ensureReviewerSubscription(admin: AdminClient, repId: string) {
   if (error) throw error
 }
 
+async function ensureReviewerTeamManagementAccess(
+  admin: AdminClient,
+  repId: string,
+) {
+  const now = new Date().toISOString()
+
+  const { error } = await admin.from('team_management_entitlements').upsert(
+    {
+      rep_id: repId,
+      status: 'manual_beta',
+      source: 'manual_beta',
+      stripe_subscription_id: null,
+      stripe_price_id: null,
+      stripe_customer_id: `cus_reviewer_smoke_${repId}`,
+      updated_at: now,
+    },
+    { onConflict: 'rep_id' },
+  )
+
+  if (error) throw error
+}
+
 async function clearReviewerFulfillmentSmokeData(
   admin: AdminClient,
 ) {
@@ -433,6 +455,7 @@ export async function resetReviewerSmokeSession(
   }
   if (state === 'dashboard_unlocked') {
     await ensureReviewerSubscription(admin, repId)
+    await ensureReviewerTeamManagementAccess(admin, repId)
     await seedReviewerCalendarSmokeData(admin, repId)
   }
 

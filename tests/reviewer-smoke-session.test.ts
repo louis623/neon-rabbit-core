@@ -32,6 +32,7 @@ function makeReviewerAdmin() {
   const repUpdate = vi.fn(() => ({ eq: repUpdateEq }))
   const setupUpsert = vi.fn().mockResolvedValue({ error: null })
   const subscriptionUpsert = vi.fn().mockResolvedValue({ error: null })
+  const teamManagementEntitlementUpsert = vi.fn().mockResolvedValue({ error: null })
   const designDelete = makeDeleteBuilder()
   const listingDelete = makeDeleteBuilder()
   const requestDelete = makeDeleteBuilder()
@@ -67,6 +68,9 @@ function makeReviewerAdmin() {
       if (table === 'subscriptions') {
         return { upsert: subscriptionUpsert }
       }
+      if (table === 'team_management_entitlements') {
+        return { upsert: teamManagementEntitlementUpsert }
+      }
       if (table === 'jewelry_designs') return designDelete
       if (table === 'trade_listings') return listingDelete
       if (table === 'trade_requests') return requestDelete
@@ -95,6 +99,7 @@ function makeReviewerAdmin() {
       runDelete,
       setupUpsert,
       subscriptionUpsert,
+      teamManagementEntitlementUpsert,
       designDelete,
       listingDelete,
       requestDelete,
@@ -182,6 +187,24 @@ describe('reviewer smoke session reset', () => {
         plan_tier: 'monthly',
         pricing_tier: 'smoke',
         stripe_livemode: false,
+      }),
+      { onConflict: 'rep_id' },
+    )
+  })
+
+  it('seeds Team Management beta access for dashboard workspace smoke sessions', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.teamManagementEntitlementUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-reviewer',
+        status: 'manual_beta',
+        source: 'manual_beta',
+        stripe_subscription_id: null,
+        stripe_price_id: null,
+        stripe_customer_id: 'cus_reviewer_smoke_rep-reviewer',
       }),
       { onConflict: 'rep_id' },
     )
