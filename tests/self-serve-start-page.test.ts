@@ -64,11 +64,16 @@ describe('Sparkle Suite self-serve start page', () => {
     expect(html).toContain('Account creation')
     expect(html).toContain('Continue with Google')
     expect(html).toContain('Create account with a different email')
+    expect(html).toContain('name="referralCode"')
+    expect(html).toContain('placeholder="SS-K7M4Q9"')
     expect(html).toContain('href="/terms-and-conditions"')
     expect(html).toContain('href="/privacy-policy"')
     expect(html).toContain('I agree to the')
     expect(html).toContain('Sparkle Suite Terms')
     expect(html).toContain('including Nic-Nac AI assistance and memory')
+    expect(html.indexOf('Referral code')).toBeLessThan(
+      html.indexOf('Continue with Google'),
+    )
     expect(html.indexOf('Continue with Google')).toBeLessThan(
       html.indexOf('I agree to the'),
     )
@@ -93,10 +98,12 @@ describe('Sparkle Suite self-serve start page', () => {
     const source = readFileSync('app/start/StartSparkleSuiteForm.tsx', 'utf8')
 
     expect(source).toContain("new URLSearchParams(window.location.search).get('ref')")
-    expect(source).toContain('const [referralCode]')
+    expect(source).toContain('const [referralCode, setReferralCode]')
     expect(source).toContain('referralCode: submittedReferralCode')
     expect(source).toContain('name="referralCode"')
     expect(source).toContain('Referral code')
+    expect(source).toContain('value={referralCode}')
+    expect(source).toContain('setReferralCode(event.currentTarget.value)')
     expect(source).toContain('/api/stripe/create-checkout')
     expect(source).toContain("planType: 'monthly'")
     expect(source).toContain('agreementAccepted: true')

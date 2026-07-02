@@ -62,7 +62,7 @@ export function StartSparkleSuiteForm({
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('review')?.trim() ?? ''
   })
-  const [referralCode] = useState(() => {
+  const [referralCode, setReferralCode] = useState(() => {
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('ref')?.trim() ?? ''
   })
@@ -305,6 +305,17 @@ export function StartSparkleSuiteForm({
           <h2>Account creation</h2>
         </div>
 
+        <label className={styles.referralCodeInline}>
+          <span>Referral code</span>
+          <input
+            name="referralCode"
+            autoComplete="off"
+            value={referralCode}
+            onChange={(event) => setReferralCode(event.currentTarget.value)}
+            placeholder="SS-K7M4Q9"
+          />
+        </label>
+
         <div className={styles.formActions}>
           <button
             type="button"
@@ -394,7 +405,8 @@ export function StartSparkleSuiteForm({
               <input
                 name="referralCode"
                 autoComplete="off"
-                defaultValue={referralCode}
+                value={referralCode}
+                onChange={(event) => setReferralCode(event.currentTarget.value)}
                 placeholder="SS-K7M4Q9"
               />
               {firstFieldError(fieldErrors, 'referralCode') ? (

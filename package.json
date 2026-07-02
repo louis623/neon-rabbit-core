@@ -30,6 +30,7 @@
     "smoke:customer-flow": "tsx scripts/smoke-customer-flow.ts",
     "smoke:support-report": "tsx scripts/smoke-support-report.ts",
     "pressure:support-system": "tsx scripts/pressure-support-system.ts",
+    "pressure:referral-system": "tsx scripts/pressure-referral-system.ts",
     "smoke:launch:preview-protected": "tsx scripts/smoke-demo-readiness.ts --launch --target preview --categories protected_preview_routes --json --write-report",
     "smoke:launch:preview-temp-demo": "tsx scripts/smoke-preview-with-temporary-demo-password.ts",
     "smoke:stripe:webhook-local-signature": "tsx scripts/smoke-demo-readiness.ts --category stripe_webhook_local_signature --json",

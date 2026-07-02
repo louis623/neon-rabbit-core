@@ -291,6 +291,17 @@
   text-underline-offset: 3px;
 }
 
+.referralCodeInline {
+  background: rgba(246, 231, 218, 0.06);
+  border: 1px solid rgba(246, 231, 218, 0.16);
+  border-radius: 6px;
+  padding: 11px 12px 12px;
+}
+
+.referralCodeInline input {
+  text-transform: uppercase;
+}
+
 .error {
   background: rgba(157, 35, 62, 0.1);
   border: 1px solid rgba(157, 35, 62, 0.22);
