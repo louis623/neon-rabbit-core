@@ -1855,11 +1855,11 @@ body.mile-high-fizz-trade .tp-hero-title {
 }
 
 body.mile-high-fizz-trade .tp-hero-sub {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--mhf-ink);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--mhf-bg-elevated) 72%, transparent);
 }
 
 body.mile-high-fizz-trade .tp-board {

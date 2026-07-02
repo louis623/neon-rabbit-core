@@ -9,7 +9,6 @@ ALTER TABLE public.site_settings
       'sparkle_suite_morganite',
       'black_diamond',
       'moonstone',
-      'alpine_opal',
       'rose_gold',
       'garnet',
       'amber',
