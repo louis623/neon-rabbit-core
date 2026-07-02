@@ -14,6 +14,7 @@ Running log of significant work sessions. Most recent first.
 - Hardened public roster links so stored social/website links must be full `http` or `https` URLs before they can save.
 - Preserved unshown imported roster fields such as city/state, initials, photo alt/class, bio, and sort order when the dashboard edits or toggles cards.
 - Made public-card roster loading degrade separately so onboarding progress/messages can still load if the public roster request fails.
+- Updated the synthetic reviewer-smoke dashboard session to seed Team Management beta access so future logged-in workspace checks can verify the paid-add-on UI without using Louis's personal browser or account.
 
 **Verification:**
 - Red/green dashboard and service regressions were added for the new manager, unsafe social links, unshown-field preservation, and roster-load fallback.
@@ -22,9 +23,10 @@ Running log of significant work sessions. Most recent first.
 - Local `npm run build` passed with Next.js 16.2.1.
 - `git diff --check` passed.
 - Subagent code review found three issues; all were fixed and re-reviewed with no remaining blocking findings.
-
-**Remaining beta smoke:**
-- Deploy and promote the stable demo alias, then use reviewer-smoke/synthetic workspace access to visually verify the logged-in Team Management Public Team Cards panel. Do not use Louis's personal browser/session.
+- Follow-up reviewer-smoke access regression passed: `npm exec vitest run tests/reviewer-smoke-session.test.ts tests/nic-nac-dashboard-placeholder.test.ts tests/team-onboarding-service.test.ts` with 3 files / 95 tests.
+- Follow-up local `npm run build` passed.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` now points to `https://sparkle-suite-fjtiwq4jh-louis-2849s-projects.vercel.app` / deployment `dpl_27LM7EksMdpb2jGogaEMw7yUDc7K`.
+- Isolated stable-demo reviewer-smoke passed with the synthetic reviewer workspace. `/start` showed `Open workspace preview`, signed in the synthetic reviewer, opened `/nic-nac?section=team-management`, and verified `Team Management`, `Create onboarding link`, `Public Team Cards`, the onboarding/public-card separation copy, `Save to Join Team page`, and `Preview Join Team page`. No Louis personal browser/session was used.
 
 ---
 
