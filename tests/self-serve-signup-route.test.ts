@@ -103,6 +103,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'JAMIE@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )
@@ -195,6 +196,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
           referralCode: ' ss-k7m4q9 ',
         }),
       }),
@@ -231,6 +233,7 @@ describe('POST /api/self-serve/signup', () => {
           businessName: 'Legacy Business',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
           phone: '303-555-0199',
           primarySocialUrl: 'https://www.tiktok.com/@legacy',
           shopUrl: 'https://legacy.example/shop',
@@ -300,6 +303,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Preview Buyer',
           email: 'preview@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )
@@ -338,6 +342,53 @@ describe('POST /api/self-serve/signup', () => {
     })
   })
 
+  it('rejects missing or mismatched password confirmation before creating auth state', async () => {
+    const missingConfirmation = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+          password: 'Sparkle2026!',
+        }),
+      }),
+    )
+
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(missingConfirmation.status).toBe(400)
+    await expect(missingConfirmation.json()).resolves.toEqual({
+      code: 'INVALID_INPUT',
+      error: 'Please check the signup form and try again.',
+      fields: expect.objectContaining({
+        passwordConfirm: expect.any(Array),
+      }),
+    })
+
+    const mismatchedConfirmation = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+          password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026?',
+        }),
+      }),
+    )
+
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(mismatchedConfirmation.status).toBe(400)
+    await expect(mismatchedConfirmation.json()).resolves.toEqual({
+      code: 'INVALID_INPUT',
+      error: 'Please check the signup form and try again.',
+      fields: expect.objectContaining({
+        passwordConfirm: ['Enter the same password twice.'],
+      }),
+    })
+  })
+
   it('creates the account when update consent is omitted', async () => {
     const admin = createAdminMock()
     createAdminClientMock.mockReturnValue(admin)
@@ -350,6 +401,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )
@@ -374,6 +426,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )
@@ -404,6 +457,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )
@@ -428,6 +482,7 @@ describe('POST /api/self-serve/signup', () => {
           displayName: 'Jamie Hart',
           email: 'jamie@example.com',
           password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
         }),
       }),
     )

@@ -213,6 +213,7 @@ export function StartSparkleSuiteForm({
           displayName: form.get('displayName'),
           email,
           password,
+          passwordConfirm,
           referralCode: submittedReferralCode || undefined,
         }),
       })

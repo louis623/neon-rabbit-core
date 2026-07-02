@@ -21,6 +21,7 @@ const selfServeSignupSchema = z.object({
   displayName: z.string().trim().min(2),
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
+  passwordConfirm: z.string().min(8),
   referralCode: z
     .string()
     .trim()
@@ -37,6 +38,9 @@ const selfServeSignupSchema = z.object({
       }
       return normalized
     }),
+}).refine((value) => value.password === value.passwordConfirm, {
+  path: ['passwordConfirm'],
+  message: 'Enter the same password twice.',
 })
 
 export type SelfServeSignupInput = z.input<typeof selfServeSignupSchema>

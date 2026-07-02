@@ -4383,6 +4383,95 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   padding: 24px;
 }
 
+.sparkle-landing-v2 .sl2-password-card {
+  display: grid;
+  gap: 16px;
+  max-width: 420px;
+  padding: 26px;
+}
+
+.sparkle-landing-v2 .sl2-password-card h1 {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.sparkle-landing-v2 .sl2-password-card p {
+  color: #775d57;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.sparkle-landing-v2 .sl2-password-form {
+  display: grid;
+  gap: 12px;
+}
+
+.sparkle-landing-v2 .sl2-password-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.sparkle-landing-v2 .sl2-password-form label span {
+  color: #775d57;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sparkle-landing-v2 .sl2-password-form input {
+  border: 1px solid rgba(64, 41, 36, 0.16);
+  border-radius: 8px;
+  color: #402924;
+  font: inherit;
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+.sparkle-landing-v2 .sl2-password-form button {
+  background: #402924;
+  border: 0;
+  border-radius: 8px;
+  color: #fff6fb;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 44px;
+  padding: 10px 14px;
+}
+
+.sparkle-landing-v2 .sl2-password-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.sparkle-landing-v2 .sl2-login__error,
+.sparkle-landing-v2 .sl2-login__message {
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.sparkle-landing-v2 .sl2-login__error {
+  background: #fff1f7;
+  color: #8b3050;
+}
+
+.sparkle-landing-v2 .sl2-login__message {
+  background: #fff6fa;
+  color: #402924;
+}
+
+.sparkle-landing-v2 .sl2-login__secondary-link {
+  color: #775d57;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  justify-content: center;
+  margin-top: 12px;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .sparkle-landing-v2 .sl2-btn {
   align-items: center;
   border: 1px solid transparent;

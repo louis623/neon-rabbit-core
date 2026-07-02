@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { safeRelativeRedirectPath } from '@/lib/auth/safe-redirect'
@@ -13,6 +14,7 @@ export default function LoginClient() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const redirect = safeRelativeRedirectPath(searchParams.get('redirect'))
+  const passwordResetSuccess = searchParams.get('reset') === 'success'
 
   return (
     <div
@@ -67,6 +69,11 @@ export default function LoginClient() {
           style={{ padding: '8px 10px', border: '1px solid #ccc', borderRadius: 4 }}
           required
         />
+        {passwordResetSuccess ? (
+          <div className="sl2-login__message">
+            Your password has been updated. Sign in with your new password.
+          </div>
+        ) : null}
         {error && <div style={{ color: '#b00020', fontSize: 13 }}>{error}</div>}
         <button
           type="submit"
@@ -119,6 +126,9 @@ export default function LoginClient() {
       >
         Continue with Google
       </button>
+      <Link className="sl2-login__secondary-link" href="/reset-password">
+        Forgot or need to change your password?
+      </Link>
     </div>
   )
 }
