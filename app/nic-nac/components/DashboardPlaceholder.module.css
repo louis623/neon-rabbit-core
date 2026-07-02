@@ -3172,6 +3172,13 @@
   line-height: 1.5;
 }
 
+.workspaceInlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .helperNote {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;

@@ -507,7 +507,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Business Tools')
     expect(html).toContain('Team Management')
     expect(html).toContain('Messages</span>')
-    expect((html.match(/Coming soon/g) ?? []).length).toBe(2)
+    expect((html.match(/Coming soon/g) ?? []).length).toBe(1)
     expect(html).not.toContain('Locked</span>')
     expect(html).toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
@@ -659,7 +659,7 @@ describe('DashboardPlaceholder', () => {
       'business-tools',
     )
     expect(getInitialWorkspaceSection('?section=team-management')).toBe(
-      'trade-board',
+      'team-management',
     )
     expect(getInitialWorkspaceSection('?section=messages')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('trade-board')
@@ -702,7 +702,7 @@ describe('DashboardPlaceholder', () => {
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
-    expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
+    expect(isComingSoonWorkspaceSection('team-management')).toBe(false)
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
@@ -716,7 +716,7 @@ describe('DashboardPlaceholder', () => {
       'business-tools',
     )
     expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe(
-      'trade-board',
+      'team-management',
     )
     expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('trade-board')
   })
@@ -849,25 +849,71 @@ describe('DashboardPlaceholder', () => {
     expect(recipesEffectSource).not.toContain('}, [activeSection, recipesState.status])')
   })
 
-  it('renders the locked team management add-on skeleton', () => {
-    const html = renderToStaticMarkup(createElement(TeamManagementCard))
+  it('renders the Team Management add-on prompt without SMS invite tooling', () => {
+    const html = renderToStaticMarkup(
+      createElement(TeamManagementCard, {
+        state: {
+          status: 'locked',
+          access: { enabled: false, status: 'not_enabled', source: null },
+        },
+      }),
+    )
 
     expect(html).toContain('Team Management')
-    expect(html).toContain('Paid add-on locked')
-    expect(html).toContain('Upgrade to manage your team on this platform.')
-    expect(html).toContain('href="/prelaunch"')
-    expect(html).toContain('Team member intake')
-    expect(html).toContain('Name')
-    expect(html).toContain('Phone number')
-    expect(html).toContain('Email')
-    expect(html).toContain('Team name')
-    expect(html).toContain('Social link 1')
-    expect(html).toContain('Social link 2')
-    expect(html).toContain('Social link 3')
-    expect(html).toContain('Team directory')
-    expect(html).toContain('Onboarding website messages')
-    expect(html).toContain('Reply composer')
-    expect(html).toContain('disabled=""')
+    expect(html).toContain('Paid add-on')
+    expect(html).toContain('Team Management is a paid upgrade.')
+    expect(html).toContain('Stripe upgrade can unlock this workspace later.')
+    expect(html).toContain('Create onboarding link')
+    expect(html).not.toContain('Send text')
+    expect(html).not.toContain('SMS')
+  })
+
+  it('renders Brittany beta Team Management as a two-step invite and tracking workspace', () => {
+    const html = renderToStaticMarkup(
+      createElement(TeamManagementCard, {
+        state: {
+          status: 'ready',
+          access: { enabled: true, status: 'manual_beta', source: 'manual_beta' },
+          participants: [
+            {
+              id: 'participant-1',
+              displayName: 'Lindsey',
+              contactEmail: 'lindsey@example.com',
+              status: 'started',
+              accessUrl:
+                'https://britt-with-bling-start-strong.vercel.app/?invite=token',
+              progress: { completed: 3, needsHelp: 1, total: 8 },
+              unreadMessageCount: 1,
+              lastActivityAt: '2026-07-02T12:20:00.000Z',
+              createdAt: '2026-07-02T12:00:00.000Z',
+            },
+          ],
+        },
+        createDraft: { displayName: 'New Rep', contactEmail: '' },
+        replyDraft: 'You are doing great.',
+        onCreateDraftChange: () => {},
+        onCreateParticipant: () => {},
+        onCopyInvite: () => {},
+        onEmailInvite: () => {},
+        onArchiveParticipant: () => {},
+        onReplyDraftChange: () => {},
+        onSendReply: () => {},
+      }),
+    )
+
+    expect(html).toContain('Create onboarding link')
+    expect(html).toContain('Rep name')
+    expect(html).toContain('Optional email')
+    expect(html).toContain('Copy link')
+    expect(html).toContain('Email with my email app')
+    expect(html).toContain('Lindsey')
+    expect(html).toContain('3 of 8')
+    expect(html).toContain('Needs help')
+    expect(html).toContain('1 new')
+    expect(html).toContain('Reply to Lindsey')
+    expect(html).toContain('Archive')
+    expect(html).not.toContain('Send text')
+    expect(html).not.toContain('Sparkle Suite SMS')
   })
 
   it('formats the workspace header rep/show label without deriving sync codes from rep ids', () => {
