@@ -679,4 +679,3 @@ The target destination should be Sparkle Suite:
 `Manage My Team` -> `New Rep Questions` or `Training Questions`
 
 The onboarding site should stay the rep-facing intake surface. Sparkle Suite should be the team-lead workspace.
-
