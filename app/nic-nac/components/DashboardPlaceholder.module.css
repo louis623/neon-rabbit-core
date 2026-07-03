@@ -3855,6 +3855,18 @@
   border: 1px solid rgba(64, 41, 36, 0.08);
 }
 
+.calendarEventPill {
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendarEventPill:hover,
+.calendarEventPill:focus-visible {
+  border-color: rgba(238, 44, 155, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  outline: none;
+}
+
 .calendarPanels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3888,6 +3900,21 @@
   padding: 12px;
   background: rgba(255, 255, 255, 0.68);
   border: 1px solid rgba(64, 41, 36, 0.08);
+}
+
+.calendarEventDetailButton {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendarEventDetailButton:hover,
+.calendarEventDetailButton:focus-visible {
+  border-color: rgba(238, 44, 155, 0.24);
+  background: rgba(255, 255, 255, 0.88);
+  outline: none;
 }
 
 .walletTransactionCopy {
@@ -3954,6 +3981,120 @@
   color: #765045;
   background: rgba(255, 244, 235, 0.9);
   border-color: rgba(197, 111, 75, 0.22);
+}
+
+.calendarEventDialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45, 29, 25, 0.38);
+  padding: 20px;
+}
+
+.calendarEventDialog {
+  width: min(520px, 100%);
+  max-height: min(720px, calc(100vh - 40px));
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid var(--nic-nac-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 250, 0.94)),
+    #fff;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.8),
+    0 28px 72px rgba(54, 34, 29, 0.24);
+  padding: 18px;
+}
+
+.calendarEventDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(64, 41, 36, 0.08);
+}
+
+.calendarEventDialogTitle {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-serif), Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.calendarEventDialogSubtitle {
+  margin-top: 4px;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.calendarEventDialogClose {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+}
+
+.calendarEventDialogClose:hover,
+.calendarEventDialogClose:focus-visible {
+  border-color: rgba(238, 44, 155, 0.3);
+  background: #fff;
+  outline: none;
+}
+
+.calendarEventDetailGrid {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+}
+
+.calendarEventDetailRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(64, 41, 36, 0.06);
+  padding: 10px 12px;
+}
+
+.calendarEventDetailLabel {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.calendarEventDetailValue,
+.calendarEventDetailList {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.calendarEventDetailList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .rosterFallback {
@@ -4130,6 +4271,32 @@
     linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03)),
     #120f0d;
   border-color: rgba(244, 207, 98, 0.3);
+}
+
+.main[data-workspace-skin='black_diamond'] .calendarEventDialog {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+  border-color: rgba(244, 207, 98, 0.24);
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .calendarEventDialogTitle,
+.main[data-workspace-skin='black_diamond'] .calendarEventDetailValue,
+.main[data-workspace-skin='black_diamond'] .calendarEventDetailList {
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .calendarEventDialogSubtitle,
+.main[data-workspace-skin='black_diamond'] .calendarEventDetailLabel {
+  color: #d8cbbd;
+}
+
+.main[data-workspace-skin='black_diamond'] .calendarEventDetailRow,
+.main[data-workspace-skin='black_diamond'] .calendarEventDialogClose {
+  background: #211c18;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: #f8efe4;
 }
 
 .main[data-workspace-skin='black_diamond'] .businessToolBody {
@@ -4530,5 +4697,21 @@
   .calendarEventMore {
     font-size: 10px;
     padding: 3px 6px;
+  }
+
+  .calendarEventDialogBackdrop {
+    align-items: flex-end;
+    padding: 12px;
+  }
+
+  .calendarEventDialog {
+    max-height: calc(100vh - 24px);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .calendarEventDetailRow {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 }

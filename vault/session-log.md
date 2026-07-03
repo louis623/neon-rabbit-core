@@ -2808,3 +2808,19 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Approval-gated writes should be treated as app-owned workflow state. Recording an approval click is not enough; the server must durably prove the tool result or keep the previous assistant row intact.
+
+---
+
+## July 3, 2026 - Rep Workspace Calendar Refresh and Details
+
+**What changed:**
+- Fixed Nic-Nac workspace refresh events so successful calendar write tools (`add_show`, `update_show`, `cancel_show`, recurring-series tools, and live-show status tools) dispatch a `calendar` refresh topic.
+- Updated the rep workspace listener to refetch the Calendar card after calendar mutations and refresh the live-site preview iframe when public calendar details change.
+- Increased the workspace calendar summary request from 8 upcoming shows to 60 upcoming shows so recurring-heavy schedules do not hide later visible-month events.
+- Made workspace calendar event pills and the Next up / Recently wrapped rows clickable.
+- Added an in-workspace event details dialog showing title, status, platform, local date/time, end time, duration, timezone, recurrence, discount codes, featured collections, and description state.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-calendar-summary-route.test.ts` passed: 3 files, 111 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- `npx tsc --noEmit --pretty false` was attempted but timed out after surfacing unrelated pre-existing test typing errors; the production Next build type check passed.

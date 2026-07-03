@@ -1619,6 +1619,94 @@ function formatCalendarEventTime(
   })
 }
 
+function formatCalendarEventEndTime(
+  eventTime: string,
+  durationMinutes: number,
+  timeZone = DEFAULT_CALENDAR_TIME_ZONE,
+) {
+  const endTime = new Date(Date.parse(eventTime) + durationMinutes * 60_000)
+  return endTime.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone,
+    timeZoneName: 'short',
+  })
+}
+
+function formatCalendarDuration(durationMinutes: number) {
+  if (durationMinutes < 60) return `${durationMinutes} minutes`
+
+  const hours = Math.floor(durationMinutes / 60)
+  const minutes = durationMinutes % 60
+  const hourLabel = `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+  if (minutes === 0) return hourLabel
+  return `${hourLabel} ${minutes} minutes`
+}
+
+function formatCalendarRecurrence(event: CalendarEvent) {
+  if (!event.isRecurring) return 'One-time show'
+
+  const cadence =
+    event.recurrenceRule === 'daily'
+      ? 'Daily'
+      : event.recurrenceRule === 'weekly'
+        ? 'Weekly'
+        : 'Recurring'
+  return `${cadence} series`
+}
+
+type CalendarEventDetailGroup = {
+  label: string
+  value?: string
+  items?: string[]
+}
+
+export function getCalendarEventDetailGroups(
+  event: CalendarEvent,
+): CalendarEventDetailGroup[] {
+  const title = getCalendarEventTitle(event)
+  const timeZone = event.timeZone ?? DEFAULT_CALENDAR_TIME_ZONE
+  const discountCodes =
+    event.discountCodes.length > 0
+      ? event.discountCodes.map((discount) =>
+          discount.description
+            ? `${discount.code}: ${discount.description}`
+            : discount.code,
+        )
+      : ['No discount codes listed']
+  const featuredCollections =
+    event.featuredCollections && event.featuredCollections.length > 0
+      ? event.featuredCollections
+      : ['No featured collections listed']
+
+  return [
+    { label: 'Title', value: title },
+    { label: 'Status', value: getCalendarEventStatusLabel(event) },
+    { label: 'Platform', value: event.platform },
+    {
+      label: 'Date and time',
+      value: `${formatCalendarEventDate(event.eventTime, timeZone)} at ${formatCalendarEventTime(
+        event.eventTime,
+        timeZone,
+      )}`,
+    },
+    {
+      label: 'End time',
+      value: formatCalendarEventEndTime(
+        event.eventTime,
+        event.durationMinutes,
+        timeZone,
+      ),
+    },
+    { label: 'Duration', value: formatCalendarDuration(event.durationMinutes) },
+    { label: 'Time zone', value: timeZone },
+    { label: 'Recurrence', value: formatCalendarRecurrence(event) },
+    { label: 'Discount codes', items: discountCodes },
+    { label: 'Featured collections', items: featuredCollections },
+    { label: 'Description', value: event.description?.trim() || 'No description' },
+  ]
+}
+
 function getWalletTransactionLabel(transaction: WalletTransactionSummary) {
   if (transaction.description) return transaction.description
 
@@ -2176,7 +2264,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadCalendar(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/calendar-summary?upcoming=8&history=4', {
+    const response = await fetch('/api/nic-nac/calendar-summary?upcoming=60&history=12', {
       credentials: 'include',
       signal,
     })
@@ -3578,12 +3666,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
   useEffect(() => {
     const refreshAfterNicNacMutation = (event: Event) => {
-      const detail = (event as CustomEvent<{ topic?: string }>).detail
+      const detail = (event as CustomEvent<{ topic?: 'trade' | 'site' | 'calendar' }>).detail
       const topic = detail?.topic
-      if (topic !== 'trade' && topic !== 'site') return
+      if (topic !== 'trade' && topic !== 'site' && topic !== 'calendar') return
       if (document.visibilityState === 'hidden') return
       if (topic === 'trade' && !reviewWorkspaceMode) {
         void refreshTradeWorkspace()
+      }
+      if (topic === 'calendar' && !reviewWorkspaceMode) {
+        void loadCalendar().catch(() => {
+          setCalendarState({ status: 'error' })
+        })
       }
       if (topic === 'site' && activeSection === 'recipes') {
         void loadSiteRecipes(undefined, {
@@ -3602,7 +3695,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       }
       if (
         workspacePreview.mode === 'live_site_preview' &&
-        (topic === 'trade' || topic === 'site')
+        (topic === 'trade' || topic === 'site' || topic === 'calendar')
       ) {
         setPreviewFrameKey((current) => current + 1)
       }
@@ -8791,6 +8884,8 @@ export function ShowCalendarCard({
   state: CalendarState
   referenceDate?: Date
 }) {
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+
   if (state.status === 'error') {
     return (
       <div className={styles.calendarFallback}>
@@ -8817,6 +8912,9 @@ export function ShowCalendarCard({
     state.summary.upcomingEvents,
     referenceDate,
   )
+  const selectedEventDetails = selectedEvent
+    ? getCalendarEventDetailGroups(selectedEvent)
+    : []
 
   return (
     <div className={styles.calendarCard}>
@@ -8872,12 +8970,15 @@ export function ShowCalendarCard({
             <span className={styles.calendarCellDay}>{cell.dayNumber}</span>
             <div className={styles.calendarCellEvents}>
               {cell.events.slice(0, 2).map((event) => (
-                <span
+                <button
                   key={event.id}
+                  type="button"
                   className={`${styles.calendarEventPill} ${getCalendarStatusClassName(event)}`}
+                  onClick={() => setSelectedEvent(event)}
+                  aria-label={`View details for ${getCalendarEventTitle(event)}`}
                 >
                   {getCalendarEventStatusLabel(event)}: {getCalendarEventTitle(event)}
-                </span>
+                </button>
               ))}
               {cell.events.length > 2 ? (
                 <span className={styles.calendarEventMore}>
@@ -8896,7 +8997,13 @@ export function ShowCalendarCard({
               <div className={styles.emptyState}>No upcoming shows on the calendar yet.</div>
             ) : (
               state.summary.upcomingEvents.slice(0, 4).map((event) => (
-                <div key={event.id} className={styles.walletTransactionRow}>
+                <button
+                  key={event.id}
+                  type="button"
+                  className={`${styles.walletTransactionRow} ${styles.calendarEventDetailButton}`}
+                  onClick={() => setSelectedEvent(event)}
+                  aria-label={`View details for ${getCalendarEventTitle(event)}`}
+                >
                   <div className={styles.walletTransactionCopy}>
                     <span className={styles.walletTransactionTitle}>
                       {getCalendarEventTitle(event)}
@@ -8917,7 +9024,7 @@ export function ShowCalendarCard({
                       <span className={styles.timelineItem}>Recurring</span>
                     ) : null}
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -8929,7 +9036,13 @@ export function ShowCalendarCard({
               <div className={styles.emptyState}>No completed or cancelled shows yet.</div>
             ) : (
               state.summary.recentEvents.map((event) => (
-                <div key={event.id} className={styles.walletTransactionRow}>
+                <button
+                  key={event.id}
+                  type="button"
+                  className={`${styles.walletTransactionRow} ${styles.calendarEventDetailButton}`}
+                  onClick={() => setSelectedEvent(event)}
+                  aria-label={`View details for ${getCalendarEventTitle(event)}`}
+                >
                   <div className={styles.walletTransactionCopy}>
                     <span className={styles.walletTransactionTitle}>
                       {getCalendarEventTitle(event)}
@@ -8944,12 +9057,67 @@ export function ShowCalendarCard({
                   >
                     {getCalendarEventStatusLabel(event)}
                   </span>
-                </div>
+                </button>
               ))
             )}
           </div>
         </div>
       </div>
+      {selectedEvent ? (
+        <div
+          className={styles.calendarEventDialogBackdrop}
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div
+            className={styles.calendarEventDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="calendar-event-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.calendarEventDialogHeader}>
+              <div>
+                <div
+                  id="calendar-event-dialog-title"
+                  className={styles.calendarEventDialogTitle}
+                >
+                  {getCalendarEventTitle(selectedEvent)}
+                </div>
+                <div className={styles.calendarEventDialogSubtitle}>
+                  {formatCalendarEventDate(selectedEvent.eventTime, selectedEvent.timeZone)} at{' '}
+                  {formatCalendarEventTime(selectedEvent.eventTime, selectedEvent.timeZone)}
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.calendarEventDialogClose}
+                onClick={() => setSelectedEvent(null)}
+                aria-label="Close event details"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <div className={styles.calendarEventDetailGrid}>
+              {selectedEventDetails.map((detail) => (
+                <div key={detail.label} className={styles.calendarEventDetailRow}>
+                  <span className={styles.calendarEventDetailLabel}>{detail.label}</span>
+                  {detail.items ? (
+                    <ul className={styles.calendarEventDetailList}>
+                      {detail.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className={styles.calendarEventDetailValue}>
+                      {detail.value}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

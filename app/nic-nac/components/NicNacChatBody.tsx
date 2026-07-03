@@ -37,6 +37,7 @@ import type { TradeRequestStatus } from '@/lib/services/types'
 import { shouldStartNicNacRollover, type NicNacConversationRunHealth } from '@/lib/nic-nac/rollover'
 import {
   getWorkspaceRefreshPartKey,
+  isCalendarWorkspaceMutationPart,
   isSiteWorkspaceMutationPart,
   isTradeWorkspaceMutationPart,
   NIC_NAC_WORKSPACE_REFRESH_EVENT,
@@ -462,17 +463,19 @@ export function NicNacChatBody({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const topicsToRefresh = new Set<'trade' | 'site'>()
+    const topicsToRefresh = new Set<'trade' | 'site' | 'calendar'>()
     for (const message of messages) {
       for (const [index, part] of (message.parts ?? []).entries()) {
         const shouldRefreshTrade = isTradeWorkspaceMutationPart(part as never)
         const shouldRefreshSite = isSiteWorkspaceMutationPart(part as never)
-        if (!shouldRefreshTrade && !shouldRefreshSite) continue
+        const shouldRefreshCalendar = isCalendarWorkspaceMutationPart(part as never)
+        if (!shouldRefreshTrade && !shouldRefreshSite && !shouldRefreshCalendar) continue
         const key = getWorkspaceRefreshPartKey(message, part, index)
         if (announcedWorkspaceRefreshPartsRef.current.has(key)) continue
         announcedWorkspaceRefreshPartsRef.current.add(key)
         if (shouldRefreshTrade) topicsToRefresh.add('trade')
         if (shouldRefreshSite) topicsToRefresh.add('site')
+        if (shouldRefreshCalendar) topicsToRefresh.add('calendar')
       }
     }
 

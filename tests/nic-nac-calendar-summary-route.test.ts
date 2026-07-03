@@ -42,7 +42,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     const response = await GET(
       new Request(
-        'http://localhost/api/nic-nac/calendar-summary?upcoming=8&history=4',
+        'http://localhost/api/nic-nac/calendar-summary?upcoming=60&history=12',
       ),
     )
 
@@ -52,7 +52,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
       'rep-1',
       {
         upcoming: true,
-        limit: 8,
+        limit: 60,
       },
     )
     expect(listMyShowsMock).toHaveBeenNthCalledWith(
@@ -61,7 +61,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
       'rep-1',
       {
         upcoming: false,
-        limit: 4,
+        limit: 12,
         status: ['completed', 'cancelled'],
       },
     )
@@ -79,7 +79,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'upcoming must be a whole number between 1 and 20.',
+      error: 'upcoming must be a whole number between 1 and 60.',
     })
   })
 
@@ -90,7 +90,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'history must be a whole number between 1 and 20.',
+      error: 'history must be a whole number between 1 and 60.',
     })
   })
 
@@ -99,12 +99,12 @@ describe('GET /api/nic-nac/calendar-summary', () => {
     ['upcoming', '1.5'],
     ['upcoming', '0'],
     ['upcoming', '-1'],
-    ['upcoming', '21'],
+    ['upcoming', '61'],
     ['history', '4abc'],
     ['history', '2.5'],
     ['history', '0'],
     ['history', '-1'],
-    ['history', '21'],
+    ['history', '61'],
   ])('returns 400 when %s has invalid limit %s', async (key, value) => {
     const response = await GET(
       new Request(`http://localhost/api/nic-nac/calendar-summary?${key}=${value}`),
@@ -112,7 +112,7 @@ describe('GET /api/nic-nac/calendar-summary', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: `${key} must be a whole number between 1 and 20.`,
+      error: `${key} must be a whole number between 1 and 60.`,
     })
     expect(listMyShowsMock).not.toHaveBeenCalled()
   })

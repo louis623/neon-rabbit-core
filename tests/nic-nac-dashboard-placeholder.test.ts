@@ -47,6 +47,7 @@ import {
   getCustomerRecoveryActions,
   getCustomerTimeline,
   getEstimatedTextsRemaining,
+  getCalendarEventDetailGroups,
   getShowCalendarMetrics,
   getSiteSettingsManualSaveStatusText,
   hasSiteSettingsUnsavedChanges,
@@ -1360,7 +1361,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('refreshIfTradeBoardActive')
   })
 
-  it('wires Nic-Nac mutation refresh events into the trade workspace', () => {
+  it('wires Nic-Nac mutation refresh events into the workspace views', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -1370,7 +1371,10 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('refreshAfterNicNacMutation')
     expect(source).toContain("topic === 'trade'")
     expect(source).toContain("topic === 'site'")
+    expect(source).toContain("topic === 'calendar'")
     expect(source).toContain('void refreshTradeWorkspace()')
+    expect(source).toContain('void loadCalendar().catch')
+    expect(source).toContain('/api/nic-nac/calendar-summary?upcoming=60&history=12')
     expect(source).toContain("topic === 'site' && activeSection === 'recipes'")
     expect(source).toContain('void loadSiteRecipes(undefined, {')
     expect(source).toContain('preferredRecipeId: selectedRecipeId')
@@ -2519,6 +2523,51 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Recently wrapped')
     expect(html).toContain('Launch party')
     expect(html).toContain('Recurring')
+    expect(html).toContain('aria-label="View details for Thursday reveal"')
+    expect(html).toContain('aria-label="View details for Sunday party"')
+  })
+
+  it('builds complete show detail rows for the calendar event dialog', () => {
+    const details = getCalendarEventDetailGroups({
+      id: 'show-july-4',
+      repId: 'rep-1',
+      platform: 'TikTok',
+      eventTime: '2026-07-05T00:00:00.000Z',
+      timeZone: 'America/New_York',
+      durationMinutes: 180,
+      title: 'Fireworks Fizzing',
+      description: null,
+      discountCodes: [
+        { code: 'fire15', description: '15% off entire cart' },
+        { code: 'sparkle3', description: 'free shipping on 3 items' },
+      ],
+      featuredCollections: ['July Bday', 'Summer Stack'],
+      isRecurring: false,
+      recurrenceGroupId: null,
+      recurrenceRule: null,
+      status: 'scheduled' as const,
+      createdAt: '2026-07-03T10:00:00.000Z',
+      updatedAt: '2026-07-03T10:00:00.000Z',
+    })
+
+    expect(details).toContainEqual({ label: 'Title', value: 'Fireworks Fizzing' })
+    expect(details).toContainEqual({ label: 'Platform', value: 'TikTok' })
+    expect(details).toContainEqual({
+      label: 'Date and time',
+      value: 'Jul 4 at 8:00 PM EDT',
+    })
+    expect(details).toContainEqual({ label: 'End time', value: '11:00 PM EDT' })
+    expect(details).toContainEqual({ label: 'Duration', value: '3 hours' })
+    expect(details).toContainEqual({ label: 'Recurrence', value: 'One-time show' })
+    expect(details).toContainEqual({
+      label: 'Discount codes',
+      items: ['fire15: 15% off entire cart', 'sparkle3: free shipping on 3 items'],
+    })
+    expect(details).toContainEqual({
+      label: 'Featured collections',
+      items: ['July Bday', 'Summer Stack'],
+    })
+    expect(details).toContainEqual({ label: 'Description', value: 'No description' })
   })
 
   it('renders rep calendar event times in the event timezone instead of UTC', () => {

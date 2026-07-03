@@ -2,7 +2,7 @@ import type { UIMessage } from 'ai'
 
 export const NIC_NAC_WORKSPACE_REFRESH_EVENT = 'nic-nac:workspace-refresh'
 
-export type NicNacWorkspaceRefreshTopic = 'trade' | 'site'
+export type NicNacWorkspaceRefreshTopic = 'trade' | 'site' | 'calendar'
 
 const TRADE_WRITE_TOOL_TYPES = new Set([
   'tool-add_listing',
@@ -20,6 +20,17 @@ const SITE_WRITE_TOOL_TYPES = new Set([
   'tool-update_site_setting',
   'tool-update_streaming_links',
   'tool-manage_site_recipes',
+])
+
+const CALENDAR_WRITE_TOOL_TYPES = new Set([
+  'tool-add_show',
+  'tool-update_show',
+  'tool-cancel_show',
+  'tool-cancel_show_series',
+  'tool-pause_show_series',
+  'tool-skip_show_occurrence',
+  'tool-start_show_session',
+  'tool-end_show',
 ])
 
 type ToolPartLike = {
@@ -40,6 +51,9 @@ export function getWorkspaceRefreshTopicsFromMessages(
       }
       if (isSiteWorkspaceMutationPart(part as ToolPartLike)) {
         topics.add('site')
+      }
+      if (isCalendarWorkspaceMutationPart(part as ToolPartLike)) {
+        topics.add('calendar')
       }
     }
   }
@@ -70,6 +84,14 @@ export function isTradeWorkspaceMutationPart(part: ToolPartLike) {
 
 export function isSiteWorkspaceMutationPart(part: ToolPartLike) {
   if (!part.type || !SITE_WRITE_TOOL_TYPES.has(part.type)) return false
+  if (part.state !== 'output-available') return false
+  if (isToolErrorOutput(part.output)) return false
+
+  return true
+}
+
+export function isCalendarWorkspaceMutationPart(part: ToolPartLike) {
+  if (!part.type || !CALENDAR_WRITE_TOOL_TYPES.has(part.type)) return false
   if (part.state !== 'output-available') return false
   if (isToolErrorOutput(part.output)) return false
 

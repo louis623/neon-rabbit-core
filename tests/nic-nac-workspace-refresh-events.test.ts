@@ -4,6 +4,7 @@ import type { UIMessage } from 'ai'
 import {
   getWorkspaceRefreshPartKey,
   getWorkspaceRefreshTopicsFromMessages,
+  isCalendarWorkspaceMutationPart,
   isSiteWorkspaceMutationPart,
   isTradeWorkspaceMutationPart,
 } from '@/lib/nic-nac/workspace-refresh-events'
@@ -136,6 +137,57 @@ describe('Nic-Nac workspace refresh events', () => {
 
     expect(isSiteWorkspaceMutationPart(messages[0].parts[0] as never)).toBe(true)
     expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['site'])
+  })
+
+  it('requests a calendar workspace refresh after add_show writes a show', () => {
+    const messages = [
+      assistantWithToolPart({
+        type: 'tool-add_show',
+        state: 'output-available',
+        output: {
+          event: {
+            id: 'show-1',
+            title: 'Fireworks Fizzing',
+          },
+        },
+      }),
+    ]
+
+    expect(isCalendarWorkspaceMutationPart(messages[0].parts[0] as never)).toBe(true)
+    expect(getWorkspaceRefreshTopicsFromMessages(messages)).toEqual(['calendar'])
+  })
+
+  it('requests calendar refreshes for recurring and cancellation show writes', () => {
+    for (const type of [
+      'tool-update_show',
+      'tool-cancel_show',
+      'tool-cancel_show_series',
+      'tool-pause_show_series',
+      'tool-skip_show_occurrence',
+      'tool-start_show_session',
+      'tool-end_show',
+    ]) {
+      expect(
+        isCalendarWorkspaceMutationPart({
+          type,
+          state: 'output-available',
+          output: { event: { id: 'show-1' } },
+        }),
+      ).toBe(true)
+    }
+  })
+
+  it('does not refresh the calendar for failed show tools', () => {
+    expect(
+      isCalendarWorkspaceMutationPart({
+        type: 'tool-add_show',
+        state: 'output-available',
+        output: {
+          code: 'INVALID_INPUT',
+          message: 'That show needs a date.',
+        },
+      }),
+    ).toBe(false)
   })
 
   it('does not refresh the site preview for failed site-setting tools', () => {
