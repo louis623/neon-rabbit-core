@@ -130,9 +130,37 @@ const WEEKDAYS: Record<string, number> = {
   saturday: 6,
 }
 
+const NUMBER_WORDS: Record<string, number> = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+}
+
+const WEEKDAY_PATTERN =
+  'sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?'
+
+function parseSmallCount(value: string | undefined): number | undefined {
+  if (!value) return undefined
+  const normalized = value.toLowerCase()
+  const wordCount = NUMBER_WORDS[normalized]
+  if (wordCount) return wordCount
+  const numeric = Number(normalized)
+  if (Number.isInteger(numeric) && numeric > 0 && numeric <= 180) return numeric
+  return undefined
+}
+
 function parseWeekdayEventTime(text: string, now = new Date()): string | undefined {
   const weekdayMatch = text.match(
-    /\b(next\s+)?(sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?)s?\b/i,
+    new RegExp(`\\b(next\\s+)?(${WEEKDAY_PATTERN})s?\\b`, 'i'),
   )
   const timeMatch = text.match(
     /\b(?:starts?\s+at|start\s+at|at)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm)\b/i,
@@ -171,8 +199,33 @@ function parseWeekdayEventTime(text: string, now = new Date()): string | undefin
   return `${year}-${monthText}-${dayText}T${hourOut}:${minuteOut}:00${easternOffsetFor(month)}`
 }
 
+function parseBoundedOccurrenceCount(text: string): number | undefined {
+  if (/\btwice\b/i.test(text)) return 2
+
+  const nextWeekdayMatch = text.match(
+    new RegExp(`\\bnext\\s+(one|two|three|four|five|six|seven|eight|nine|ten|\\d{1,3})\\s+(?:${WEEKDAY_PATTERN})s?\\b`, 'i'),
+  )
+  const nextWeekdayCount = parseSmallCount(nextWeekdayMatch?.[1])
+  if (nextWeekdayCount) return nextWeekdayCount
+
+  const timesMatch = text.match(
+    /\b(?:just\s+)?(?:going\s+to\s+be\s+)?(?:only\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|\d{1,3})\s+times\b/i,
+  )
+  const timesCount = parseSmallCount(timesMatch?.[1])
+  if (timesCount) return timesCount
+
+  const showsMatch = text.match(
+    /\b(?:just|only)\s+(one|two|three|four|five|six|seven|eight|nine|ten|\d{1,3})\s+shows?\b/i,
+  )
+  return parseSmallCount(showsMatch?.[1])
+}
+
 function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] | undefined {
-  if (!/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|foreseeable future)\b/i.test(text)) {
+  const occurrenceCount = parseBoundedOccurrenceCount(text)
+  if (
+    !occurrenceCount &&
+    !/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|foreseeable future)\b/i.test(text)
+  ) {
     return undefined
   }
   const cadence = /\bdaily|every\s+day\b/i.test(text) ? 'daily' : 'weekly'
@@ -182,7 +235,7 @@ function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] 
   } else if (/\bongoing|until\s+i\s+stop|for\s+now|foreseeable future\b/i.test(text)) {
     duration = 'ongoing'
   }
-  return { cadence, duration }
+  return occurrenceCount ? { cadence, duration, occurrenceCount } : { cadence, duration }
 }
 
 function extractPlainTitle(text: string): string | undefined {
@@ -253,25 +306,44 @@ export function mergeCalendarKnownFieldsFromText(
   if (durationMinutes) next.durationMinutes = durationMinutes
 
   const titleMatch = text.match(/\b(?:called|title(?:d)?|named)\s+([^.,\n]+)/i)
-  const title = cleanText(titleMatch?.[1])
-  if (title) next.title = title
+  const showNameMatch = text.match(/\b(?:show name|name of the show)\s+(?:is|will be)\s+([^.,\n]+)/i) ??
+    text.match(
+      /\b(?:it(?:'s| is)\s+going\s+to\s+be|it\s+will\s+be|show\s+will\s+be)\s+((?:(?!\bit(?:'s| is)\s+going\s+to\s+be\b)[\s\S]){3,120}?)\s+for\s+the\s+show\s+name\b/i,
+    )
+  const title = cleanText(showNameMatch?.[1] ?? titleMatch?.[1])
+  if (title) next.title = /[A-Z]/.test(title) ? title : titleCase(title)
   if (!next.title && (next.eventTime || next.durationMinutes)) {
     const plainTitle = extractPlainTitle(text)
     if (plainTitle) next.title = plainTitle
   }
 
   const codeMatch = text.match(/\b(?:code|discount code)\s*(?:is|:)?\s*([A-Z0-9_-]{3,})\b/i)
+  const leadingCodeMatch = text.match(
+    /\b([A-Z0-9_-]{3,})\s+(?:gets?|is)\s+(?:a\s+)?([^.,\n]{0,80}?\b(?:off|discount)\b[^.,\n]*?)\s+discount code\b/i,
+  )
   const code = cleanText(codeMatch?.[1])
-  if (code && !next.discountCodes?.some((discount) => discount.code === code)) {
-    next.discountCodes = [...(next.discountCodes ?? []), { code }]
+  const leadingCode = cleanText(leadingCodeMatch?.[1])
+  const nextCode = code ?? leadingCode
+  const leadingDescription = cleanText(leadingCodeMatch?.[2])
+  if (nextCode && !next.discountCodes?.some((discount) => discount.code === nextCode)) {
+    next.discountCodes = [
+      ...(next.discountCodes ?? []),
+      leadingDescription ? { code: nextCode, description: leadingDescription } : { code: nextCode },
+    ]
   }
 
   const collectionMatch = text.match(
     /\bfeature(?:d)? collection(?:\s+for\s+the\s+first\s+\w+\s+shows?)?(?:\s+will be|\s+is|:)?\s+([^.,\n]+)/i,
   )
-  const collection = cleanText(collectionMatch?.[1])?.replace(/^the\s+/i, '')
-  if (collection && !next.featuredCollections?.includes(collection)) {
-    next.featuredCollections = [...(next.featuredCollections ?? []), collection]
+  const collectionText = cleanText(collectionMatch?.[1])?.replace(/^the\s+/i, '')
+  const collections = collectionText
+    ?.split(/\s*(?:,|&|\band\b)\s*/i)
+    .map((item) => item.replace(/^the\s+/i, '').trim())
+    .filter(Boolean)
+  for (const collection of collections ?? []) {
+    if (!next.featuredCollections?.includes(collection)) {
+      next.featuredCollections = [...(next.featuredCollections ?? []), collection]
+    }
   }
 
   return next

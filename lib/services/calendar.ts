@@ -130,6 +130,20 @@ function normalizeDiscountCodes(discountCodes: DiscountCode[] | undefined): Disc
 }
 
 function getRecurringOccurrenceCount(recurring: RecurringShowInput): number {
+  if (recurring.occurrenceCount !== undefined) {
+    if (
+      !Number.isInteger(recurring.occurrenceCount) ||
+      recurring.occurrenceCount <= 0 ||
+      recurring.occurrenceCount > 180
+    ) {
+      throw errors.INVALID_INPUT(
+        'occurrenceCount must be an integer from 1 to 180',
+        'Bounded repeats need a whole-number count between 1 and 180 shows.',
+      )
+    }
+    return recurring.occurrenceCount
+  }
+
   if (recurring.cadence === 'daily') {
     if (recurring.duration === '1_month') return 30
     if (recurring.duration === '3_months') return 90
@@ -365,6 +379,7 @@ export async function addShow(
   }
 
   const recurrenceGroupId = randomUUID()
+  const shouldCreateSeries = input.recurring.occurrenceCount === undefined
   const eventRows = buildRecurringEventTimes(eventTime, timeZone, input.recurring).map((nextEventTime) => ({
     id: randomUUID(),
     rep_id: repId,
@@ -376,9 +391,9 @@ export async function addShow(
     description,
     discount_codes: discountCodes,
     featured_collections: featuredCollections,
-    is_recurring: true,
-    recurrence_group_id: recurrenceGroupId,
-    recurrence_rule: input.recurring!.cadence,
+    is_recurring: shouldCreateSeries,
+    recurrence_group_id: shouldCreateSeries ? recurrenceGroupId : null,
+    recurrence_rule: shouldCreateSeries ? input.recurring!.cadence : null,
     status: 'scheduled' as const,
   }))
 

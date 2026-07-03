@@ -84,6 +84,7 @@ function makeCtx() {
 function makeCalendarWorkflow(recurring?: {
   cadence: 'daily' | 'weekly'
   duration: '1_month' | '3_months' | 'ongoing'
+  occurrenceCount?: number
 }) {
   return {
     id: 'calendar-workflow-1',
@@ -185,6 +186,33 @@ describe('calendar tools', () => {
       timeZone: 'America/New_York',
       title: 'Bling party',
       durationMinutes: 180,
+      recurring,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ recurring }),
+    )
+  })
+
+  it('add_show preserves exact occurrence counts captured by the active workflow', async () => {
+    addShowMock.mockResolvedValueOnce({
+      count: 2,
+      events: [calendarEvent(), calendarEvent({ id: 'event-2' })],
+    })
+    const recurring = { cadence: 'weekly' as const, duration: '1_month' as const, occurrenceCount: 2 }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: makeCalendarWorkflow(recurring),
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2026-07-07T07:30:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Coffees, Pastries, And Jewelry Reveals',
+      durationMinutes: 120,
       recurring,
     })
 

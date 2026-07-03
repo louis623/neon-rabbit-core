@@ -155,6 +155,40 @@ describe('calendar workflow controller', () => {
     })
   })
 
+  it('captures Louis two-Tuesday bounded repeat as exactly two occurrences', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+
+    const merged = mergeCalendarKnownFieldsFromText(
+      {},
+      "All right, so I'm going to stream to TikTok for this show. It is just going to be two times. It's going to be the next two Tuesday mornings, and it's going to be coffees, pastries, and jewelry reveals for the show name at 7:30 a.m. Eastern Standard Time for two hours. Pastries123 gets a 10% off discount code, and the featured collection is stacks and the July birthdays.",
+    )
+    const readiness = computeCalendarWorkflowReadiness({
+      intent: 'add_show',
+      knownFields: merged,
+      candidateEventIds: [],
+    })
+
+    expect(merged).toMatchObject({
+      title: 'Coffees, Pastries, And Jewelry Reveals',
+      platform: 'TikTok',
+      eventTime: '2026-07-07T07:30:00-04:00',
+      timeZone: 'America/New_York',
+      durationMinutes: 120,
+      recurring: {
+        cadence: 'weekly',
+        duration: '1_month',
+        occurrenceCount: 2,
+      },
+      discountCodes: [{ code: 'Pastries123', description: '10% off' }],
+      featuredCollections: ['stacks', 'July birthdays'],
+    })
+    expect(readiness).toEqual({
+      phase: 'ready_to_add',
+      missingFields: [],
+    })
+  })
+
   it('keeps update intent in identify_existing_event when an event id is missing', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'update_show',

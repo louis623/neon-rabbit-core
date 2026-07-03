@@ -236,6 +236,59 @@ describe('calendar service', () => {
     })
   })
 
+  it('addShow creates exact-count repeated shows as standalone one-time entries', async () => {
+    const rows = [
+      baseRow({
+        id: 'event-1',
+        title: 'Coffees, Pastries, And Jewelry Reveals',
+        is_recurring: false,
+        recurrence_group_id: null,
+        recurrence_rule: null,
+        event_time: '2099-07-07T11:30:00.000Z',
+      }),
+      baseRow({
+        id: 'event-2',
+        title: 'Coffees, Pastries, And Jewelry Reveals',
+        is_recurring: false,
+        recurrence_group_id: null,
+        recurrence_rule: null,
+        event_time: '2099-07-14T11:30:00.000Z',
+      }),
+    ]
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    const result = await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-07-07T11:30:00.000Z',
+      timeZone: 'America/New_York',
+      durationMinutes: 120,
+      title: 'Coffees, Pastries, And Jewelry Reveals',
+      discountCodes: [{ code: 'Pastries123', description: '10% off' }],
+      featuredCollections: ['stacks', 'July birthdays'],
+      recurring: { cadence: 'weekly', duration: '1_month', occurrenceCount: 2 },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload).toHaveLength(2)
+    expect(insertPayload.map((row) => row.event_time)).toEqual([
+      '2099-07-07T11:30:00.000Z',
+      '2099-07-14T11:30:00.000Z',
+    ])
+    expect(insertPayload.every((row) => row.is_recurring === false)).toBe(true)
+    expect(insertPayload.every((row) => row.recurrence_group_id === null)).toBe(true)
+    expect(insertPayload.every((row) => row.recurrence_rule === null)).toBe(true)
+    expect(insertPayload.every((row) => row.duration_minutes === 120)).toBe(true)
+
+    expect(result.count).toBe(2)
+    expect(result.events.every((event) => event.isRecurring === false)).toBe(true)
+  })
+
   it('addShow keeps recurring weekly shows at the same local time across DST', async () => {
     const rows = [
       baseRow({

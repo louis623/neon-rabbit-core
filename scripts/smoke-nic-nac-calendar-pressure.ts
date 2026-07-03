@@ -565,6 +565,7 @@ export async function runCalendarPressureSmoke(
   const runTag = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(4, 14)
   const oneTitle = title(runTag, 'One-Time')
   const bonusTitle = title(runTag, 'Bonus')
+  const boundedTitle = title(runTag, 'Two Tuesdays')
   const seriesTitle = title(runTag, 'Weekly Series')
   const oneTime = futureDate(3)
   const bonusTime = futureDate(4)
@@ -638,6 +639,38 @@ export async function runCalendarPressureSmoke(
       requiredTools: ['add_show'],
       turns,
       text:
+        `I'm going to stream to TikTok for this show. It is just going to be two times. ` +
+        `It's going to be the next two Tuesday mornings, and it's going to be ${boundedTitle} for the show name ` +
+        'at 7:30 a.m. Eastern Standard Time for two hours. PASTRIES123 gets a 10% off discount code, ' +
+        'and the featured collection is Stacks and July Birthdays.',
+    })
+
+    const boundedRows = await getEventsByTitle(supabase, rep.id, boundedTitle)
+    requireRows(boundedRows, 2, 'bounded two-Tuesday add')
+    if (
+      !boundedRows.every((row) => row.duration_minutes === 120 && !row.is_recurring) ||
+      !boundedRows.every((row) => row.recurrence_group_id === null && row.recurrence_rule === null)
+    ) {
+      throw new Error('database assertion failed: bounded two-Tuesday add created recurring rows.')
+    }
+    const boundedGapMs = Date.parse(boundedRows[1].event_time) - Date.parse(boundedRows[0].event_time)
+    if (boundedGapMs !== 7 * 24 * 60 * 60 * 1000) {
+      throw new Error('database assertion failed: bounded two-Tuesday rows were not one week apart.')
+    }
+    expectCodeSet(boundedRows[0], ['PASTRIES123'], 'bounded two-Tuesday add')
+    expectCollectionSet(boundedRows[0], ['Stacks', 'July Birthdays'], 'bounded two-Tuesday add')
+
+    messages = await sendTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      currentMessages: messages,
+      expectedAssistantCount: 4,
+      requiredTools: ['add_show'],
+      turns,
+      text:
         `Add a weekly recurring show. Title: ${seriesTitle}. Platform: Facebook Live. ` +
         `Starts: ${formatIsoForPrompt(seriesTime)}. Duration: 120 minutes. ` +
         'Repeat weekly for three months. Discount codes: WEEKLY5 = $5 off live orders, BUNDLE20 = 20% off bundles. ' +
@@ -665,7 +698,7 @@ export async function runCalendarPressureSmoke(
       appUrl,
       env,
       repId: rep.id,
-      requiredText: [oneTitle, bonusTitle, 'CODEA10', 'FLASH5', 'July Birthday 2026', 'OG Originals'],
+      requiredText: [oneTitle, bonusTitle, boundedTitle, 'CODEA10', 'FLASH5', 'PASTRIES123', 'July Birthday 2026', 'OG Originals'],
     })
 
     messages = await sendTurn({
@@ -675,7 +708,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 4,
+      expectedAssistantCount: 5,
       requiredTools: ['list_my_shows'],
       turns,
       text: `List my upcoming Codex Pressure ${runTag} shows and summarize the codes and collections.`,
@@ -688,7 +721,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 5,
+      expectedAssistantCount: 6,
       requiredTools: ['update_show'],
       turns,
       text:
@@ -709,7 +742,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 6,
+      expectedAssistantCount: 7,
       requiredTools: ['cancel_show'],
       turns,
       text: `Cancel the one-time show titled ${bonusTitle}. Reason: Codex pressure smoke cleanup of one entry.`,
@@ -722,7 +755,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show',
-      expectedAssistantCount: 6,
+      expectedAssistantCount: 7,
       turns,
     })
 
@@ -739,7 +772,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 8,
       requiredTools: ['cancel_show_series'],
       turns,
       text:
@@ -754,7 +787,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show_series',
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 8,
       turns,
     })
 
@@ -778,7 +811,7 @@ export async function runCalendarPressureSmoke(
       createdEventIds: createdRows.map((row) => row.id),
       cleanup: { deletedRows: cleanupDeleted },
       message:
-        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, recurring series, list, update, cancel one event, cancel series, public-site template visibility, and cleanup.',
+        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, exact-count bounded repeat, recurring series, list, update, cancel one event, cancel series, public-site template visibility, and cleanup.',
     }
   } catch (error) {
     const cleanup: CalendarPressureSmokeResult['cleanup'] = { deletedRows: 0 }

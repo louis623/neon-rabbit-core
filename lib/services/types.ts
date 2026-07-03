@@ -198,6 +198,7 @@ export interface DiscountCode {
 export interface RecurringShowInput {
   cadence: 'daily' | 'weekly'
   duration: '1_month' | '3_months' | 'ongoing'
+  occurrenceCount?: number
 }
 
 export interface CalendarEvent {

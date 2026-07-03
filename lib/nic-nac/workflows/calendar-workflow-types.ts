@@ -47,6 +47,7 @@ export interface CalendarWorkflowKnownFields {
   recurring?: {
     cadence: 'daily' | 'weekly'
     duration: '1_month' | '3_months' | 'ongoing'
+    occurrenceCount?: number
   }
 }
 

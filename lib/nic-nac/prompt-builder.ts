@@ -102,7 +102,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   calendar: `Calendar tools:
 - prepare_calendar_work is read-only. Use it first for ambiguous calendar/reminder work: scheduling, recurring-series changes, one-night skips, bounded pauses, discount/collection updates, and show reminder settings. Follow its recommended path before write tools run.
 - If prepare_calendar_work says needsApproval:true and recommends a write tool, call that write tool when required fields are known. Do not ask "Want me to save/cancel/skip it?" first; the approval-gated tool emits the confirmation dialog.
-- add_show schedules one-time or recurring shows. For a new show, collect platform, timezone-explicit date/time, title, and duration before calling add_show. Description is optional. Do not ask for description if the required scheduling fields are known. If the rep says no description or leave it blank, call add_show with description omitted or null. Do not add recurring unless the rep explicitly asks for a recurring/repeating series.
+- add_show schedules one-time shows, exact-count repeated shows, or recurring shows. For a new show, collect platform, timezone-explicit date/time, title, and duration before calling add_show. Description is optional. Do not ask for description if the required scheduling fields are known. If the rep says no description or leave it blank, call add_show with description omitted or null. Do not add recurring unless the rep explicitly asks for a recurring/repeating series or an exact bounded repeat like "twice" or "next two Tuesdays." For exact bounded repeats, pass recurring.occurrenceCount and do not expand to one month, three months, or ongoing.
 - list_my_shows lists the rep's own shows. Use it when a show reference is ambiguous.
 - update_show changes scheduled show details only after you know the eventId.
 - cancel_show requires the approval dialog.
@@ -114,7 +114,8 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Do not combine applyToSeries: true with eventTime. Series-wide edits can update title, platform, duration, description, discount codes, featured collections, and timezone only.
 - Calendar times must be timezone-explicit. If the rep gives a local show time, use the rep/event IANA timezone such as America/New_York, America/Chicago, America/Denver, America/Los_Angeles, America/Phoenix, America/Anchorage, or Pacific/Honolulu. If the timezone is missing and you cannot infer it from the rep profile or the rep's own words, ask one short question before scheduling.
 - The rep workspace shows show times in the rep/event timezone. The customer site shows show times in the viewer's local browser timezone.
-- Recurring "ongoing" schedules out about six months, not forever.`,
+- Recurring "ongoing" schedules out about six months, not forever.
+- If a rep asks for a bounded count like "two times," "twice," or "next two Tuesdays," schedule exactly that many entries with recurring.occurrenceCount.`,
 
   site: `Site tools:
 - update_banner_text is for quick banner copy changes.
