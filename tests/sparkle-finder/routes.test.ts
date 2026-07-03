@@ -10,6 +10,7 @@ import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
 import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
+import { renderRepsPageContent } from "../../app/(hub)/reps/page";
 import { renderFavoritesPageContent } from "../../app/(hub)/favorites/page";
 import { renderCollectorsPageContent } from "../../app/(hub)/collectors/page";
 import RepBoardsPage from "../../app/(hub)/rep-boards/page";
@@ -25,7 +26,7 @@ import { JewelryCard } from "../../components/library/JewelryCard";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
 import type { FavoriteRepCard, PublicCollectorProfile } from "../../lib/sparkle-finder/social-types";
-import type { JewelryItem } from "../../lib/sparkle-finder/types";
+import type { JewelryItem, LiveShow, RepSummary } from "../../lib/sparkle-finder/types";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { buildHomepageBlingVaultModel, type HomepageBlingVaultItem } from "../../lib/sparkle-finder/homepage-bling-vault";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
@@ -45,6 +46,7 @@ const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
   ["library", () => renderToStaticMarkup(renderLibraryPageContent())],
   ["live-shows", () => renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()))],
+  ["reps", () => renderToStaticMarkup(renderRepsPageContent())],
   ["favorites", () => renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver")))],
   ["collectors", () => renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("silver")))],
   ["rep-boards", () => renderToStaticMarkup(createElement(RepBoardsPage))],
@@ -74,6 +76,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).toContain(">Library<");
     expect(navMarkup).toContain('href="/#find-a-piece"');
     expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).toContain('href="/reps"');
+    expect(navMarkup).toContain(">Reps<");
     expect(navMarkup).toContain('href="/account"');
     expect(navMarkup).not.toContain('href="/rep-boards"');
     expect(navMarkup).not.toContain('href="/live-shows"');
@@ -100,6 +104,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).toContain('href="/library"');
     expect(navMarkup).toContain('href="/#find-a-piece"');
     expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).toContain('href="/reps"');
+    expect(navMarkup).toContain(">Reps<");
     expect(navMarkup).not.toContain('href="/live-shows"');
     expect(navMarkup).not.toContain('href="/rep-boards"');
     expect(navMarkup).not.toContain('href="/favorites"');
@@ -521,7 +527,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Nic-Nac, find this for me");
   });
 
-  it.each(["dashboard", "library", "live-shows", "favorites", "collectors", "rep-boards", "silver"] as const)(
+  it.each(["dashboard", "library", "live-shows", "reps", "favorites", "collectors", "rep-boards", "silver"] as const)(
     "gates anonymous visitors before rendering %s hub content",
     (routeName) => {
       const [, renderRoute] = routes.find(([name]) => name === routeName)!;
@@ -561,6 +567,79 @@ describe("Sparkle Finder hub routes", () => {
     expect(liveShowsMarkup).toContain("Rep: Demo");
     expect(liveShowsMarkup).toContain("Visit Rep Site");
     expect(liveShowsMarkup).not.toContain("Preview calendar data");
+  });
+
+  it("renders the Reps main tab as a simple customer directory with next-show status", () => {
+    const reps: RepSummary[] = [
+      {
+        id: "rep-later",
+        businessName: "Later Sparkle Studio",
+        displayName: "Later Rep",
+        avatarUrl: "/fixtures/reps/later.jpg",
+        state: "NC",
+        siteUrl: "https://sparklesuite.example/reps/later",
+        nextLiveShowId: "show-later",
+      },
+      {
+        id: "rep-live",
+        businessName: "Live Sparkle Studio",
+        displayName: "Live Rep",
+        avatarUrl: "/fixtures/reps/live.jpg",
+        state: "TX",
+        siteUrl: "https://sparklesuite.example/reps/live",
+        nextLiveShowId: "show-live",
+      },
+      {
+        id: "rep-no-show",
+        businessName: "Quiet Sparkle Studio",
+        displayName: "Quiet Rep",
+        avatarUrl: "",
+        state: "GA",
+        siteUrl: "https://sparklesuite.example/reps/quiet",
+        nextLiveShowId: "",
+      },
+    ];
+    const shows: LiveShow[] = [
+      {
+        id: "show-later",
+        repId: "rep-later",
+        startsAt: "2026-07-06T19:00:00-04:00",
+        durationMinutes: 45,
+        title: "Later Sparkle Live",
+        status: "scheduled",
+        showUrl: "https://sparklesuite.example/reps/later/show",
+      },
+      {
+        id: "show-live",
+        repId: "rep-live",
+        startsAt: "2026-07-03T18:00:00-04:00",
+        durationMinutes: 45,
+        title: "Live Sparkle Now",
+        status: "live",
+        showUrl: "https://sparklesuite.example/reps/live/show",
+      },
+    ];
+
+    const markup = renderToStaticMarkup(renderRepsPageContent({ reps, liveShows: shows, favoriteRepIds: ["rep-live"] }));
+
+    expect(markup).toContain("Sparkle Suite Reps");
+    expect(markup).toContain("Browse reps, check show times, and save your favorites.");
+    expect(markup).toContain('placeholder="Search reps"');
+    expect(markup).toContain("Live now");
+    expect(markup).toContain("Upcoming");
+    expect(markup).toContain("No show scheduled");
+    expect(markup).toContain("Live Rep");
+    expect(markup).toContain("Live Sparkle Studio");
+    expect(markup).toContain(">TX<");
+    expect(markup).toContain("Later Rep");
+    expect(markup).toContain("Quiet Rep");
+    expect(markup).toContain("View Rep");
+    expect(markup).toContain("Board");
+    expect(markup).toContain('aria-label="Remove rep from favorites"');
+    expect(markup.indexOf("Live Rep")).toBeLessThan(markup.indexOf("Later Rep"));
+    expect(markup.indexOf("Later Rep")).toBeLessThan(markup.indexOf("Quiet Rep"));
+    expect(markup).not.toContain("Command Center");
+    expect(markup).not.toContain("Marketplace");
   });
 
   it("renders favorite reps dashboards for free and Silver customers", () => {

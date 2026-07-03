@@ -7,9 +7,12 @@ type CustomerShowTimeProps = {
 };
 
 const customerShowTimeFormatOptions = {
-  dateStyle: "medium",
-  timeStyle: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  month: "short",
   timeZoneName: "short",
+  year: "numeric",
 } satisfies Intl.DateTimeFormatOptions;
 
 export function CustomerShowTime({ value }: CustomerShowTimeProps) {

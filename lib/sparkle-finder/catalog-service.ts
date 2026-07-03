@@ -1,9 +1,10 @@
 import {
   sparkleFinderJewelryItems,
   sparkleFinderLiveShows,
+  sparkleFinderRepBoardListings,
   sparkleFinderReps,
 } from "../fixtures/sparkle-finder-fixtures";
-import type { BombPartyLabel, JewelryItem, JewelryType } from "./types";
+import type { BombPartyLabel, JewelryItem, JewelryType, LiveShow, RepBoardListing, RepSummary } from "./types";
 
 export type SparkleSuiteFinderJewelryType = "ring" | "necklace" | "earrings" | "stack" | "bracelet";
 
@@ -31,6 +32,28 @@ export type SparkleSuiteFinderLeadShow = {
   customerSiteUrl: string;
 };
 
+export type SparkleSuiteFinderRepDirectoryShow =
+  | SparkleSuiteFinderLeadShow
+  | {
+      id: string;
+      title: string;
+      startsAt: string;
+      status: "scheduled" | "live";
+      customerShowUrl: string | null;
+      durationMinutes?: number | null;
+    };
+
+export type SparkleSuiteFinderRepDirectoryItem = {
+  repId: string;
+  displayName: string;
+  businessName: string | null;
+  avatarUrl: string | null;
+  state: string | null;
+  customerSiteUrl: string | null;
+  repBoardUrl: string | null;
+  nextShow: SparkleSuiteFinderRepDirectoryShow | null;
+};
+
 export type FinderAvailabilityMatch = {
   listingId: string;
   listedAt: string | null;
@@ -49,6 +72,11 @@ export type FinderAvailabilityResult = {
 };
 
 export type FinderLiveShow = SparkleSuiteFinderLeadShow;
+export type FinderRepDirectoryData = {
+  reps: RepSummary[];
+  liveShows: LiveShow[];
+  boardListings: RepBoardListing[];
+};
 export type CatalogFacetKey = "collections" | "materials" | "stones" | "types" | "labels" | "years";
 
 export type CatalogFacetOption = {
@@ -94,6 +122,10 @@ type LiveShowsResponse = {
   shows?: SparkleSuiteFinderLeadShow[];
 };
 
+type RepDirectoryResponse = {
+  reps?: SparkleSuiteFinderRepDirectoryItem[];
+};
+
 type SparkleSuiteFinderAvailabilityMatch = {
   listingId: string;
   listedAt: string | null;
@@ -109,6 +141,7 @@ const defaultSparkleSuiteFinderApiBaseUrl = "https://www.yoursparklesuite.com";
 const defaultCatalogLimit = 50;
 const defaultAvailabilityLimit = 24;
 const defaultLiveShowsLimit = 50;
+const defaultRepDirectoryLimit = 200;
 
 export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): Promise<JewelryItem[]> {
   const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
@@ -237,6 +270,27 @@ export async function getFinderLiveShows(options: CatalogReadOptions = {}): Prom
   }
 }
 
+export async function getFinderRepDirectoryData(options: CatalogReadOptions = {}): Promise<FinderRepDirectoryData> {
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
+
+  if (!apiBaseUrl) {
+    return fallbackRepDirectoryData(options);
+  }
+
+  const params = new URLSearchParams({ limit: String(options.limit ?? defaultRepDirectoryLimit) });
+
+  try {
+    const payload = await fetchJson<RepDirectoryResponse>(
+      `${apiBaseUrl}/api/public/finder/reps?${params.toString()}`,
+      options,
+    );
+
+    return mapRepDirectoryItems(payload.reps);
+  } catch {
+    return fallbackRepDirectoryData(options);
+  }
+}
+
 export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalogItem): JewelryItem {
   return {
     id: item.designId,
@@ -299,6 +353,102 @@ function mapAvailabilityMatches(matches: SparkleSuiteFinderAvailabilityMatch[] |
 
 function mapLiveShows(shows: SparkleSuiteFinderLeadShow[] | undefined): FinderLiveShow[] {
   return (shows ?? []).filter((show) => Boolean(show.showId && show.showName && show.repFirstName && show.startsAt && show.customerSiteUrl));
+}
+
+function mapRepDirectoryItems(items: SparkleSuiteFinderRepDirectoryItem[] | undefined): FinderRepDirectoryData {
+  const directoryItems = (items ?? []).filter((item) => Boolean(item.repId && item.displayName));
+
+  return {
+    reps: directoryItems.map(mapRepDirectoryRep),
+    liveShows: directoryItems.flatMap(mapRepDirectoryLiveShow),
+    boardListings: directoryItems.flatMap(mapRepDirectoryBoardListing),
+  };
+}
+
+function mapRepDirectoryRep(item: SparkleSuiteFinderRepDirectoryItem): RepSummary {
+  return {
+    id: item.repId,
+    avatarUrl: item.avatarUrl?.trim() ?? "",
+    businessName: item.businessName?.trim() || item.displayName,
+    displayName: item.displayName,
+    nextLiveShowId: getRepDirectoryShowId(item.nextShow),
+    siteUrl: item.customerSiteUrl?.trim() ?? "",
+    state: item.state?.trim() ?? "",
+  };
+}
+
+function mapRepDirectoryLiveShow(item: SparkleSuiteFinderRepDirectoryItem): LiveShow[] {
+  const show = item.nextShow;
+
+  if (!show) {
+    return [];
+  }
+
+  const showId = getRepDirectoryShowId(show);
+  const title = getRepDirectoryShowTitle(show);
+  const startsAt = getRepDirectoryShowStartsAt(show);
+  const showUrl = getRepDirectoryShowUrl(show, item.customerSiteUrl);
+
+  if (!showId || !title || !startsAt) {
+    return [];
+  }
+
+  return [
+    {
+      id: showId,
+      durationMinutes: "durationMinutes" in show && typeof show.durationMinutes === "number" ? show.durationMinutes : 120,
+      repId: item.repId,
+      showUrl,
+      startsAt,
+      status: show.status,
+      title,
+    },
+  ];
+}
+
+function mapRepDirectoryBoardListing(item: SparkleSuiteFinderRepDirectoryItem): RepBoardListing[] {
+  const boardUrl = item.repBoardUrl?.trim();
+
+  if (!boardUrl) {
+    return [];
+  }
+
+  return [
+    {
+      id: `${item.repId}-board`,
+      boardUrl,
+      jewelryItemId: "",
+      listedAt: getRepDirectoryShowStartsAt(item.nextShow),
+      repId: item.repId,
+      status: "available",
+    },
+  ];
+}
+
+function getRepDirectoryShowId(show: SparkleSuiteFinderRepDirectoryShow | null): string {
+  if (!show) {
+    return "";
+  }
+
+  return "showId" in show ? show.showId : show.id;
+}
+
+function getRepDirectoryShowTitle(show: SparkleSuiteFinderRepDirectoryShow | null): string {
+  if (!show) {
+    return "";
+  }
+
+  return "showName" in show ? show.showName : show.title;
+}
+
+function getRepDirectoryShowStartsAt(show: SparkleSuiteFinderRepDirectoryShow | null): string {
+  return show?.startsAt ?? "";
+}
+
+function getRepDirectoryShowUrl(show: SparkleSuiteFinderRepDirectoryShow, repSiteUrl: string | null): string {
+  const showUrl = "customerSiteUrl" in show ? show.customerSiteUrl : show.customerShowUrl;
+
+  return showUrl?.trim() || repSiteUrl?.trim() || "";
 }
 
 async function fetchJson<T>(url: string, options: CatalogReadOptions): Promise<T> {
@@ -466,4 +616,20 @@ function fallbackLiveShows(options: CatalogReadOptions): FinderLiveShow[] {
       },
     ];
   });
+}
+
+function fallbackRepDirectoryData(options: CatalogReadOptions): FinderRepDirectoryData {
+  if (options.useFixtureFallback === false) {
+    return {
+      boardListings: [],
+      liveShows: [],
+      reps: [],
+    };
+  }
+
+  return {
+    boardListings: sparkleFinderRepBoardListings.map((listing) => ({ ...listing })),
+    liveShows: sparkleFinderLiveShows.map((show) => ({ ...show })),
+    reps: sparkleFinderReps.map((rep) => ({ ...rep })),
+  };
 }

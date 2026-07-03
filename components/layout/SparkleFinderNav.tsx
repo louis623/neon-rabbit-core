@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Home, LogOut, Menu, Search, UserRound } from "lucide-react";
+import { BookOpen, Home, LogOut, Menu, Search, UserRound, UsersRound } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState, isSparkleFinderSignedIn } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
@@ -9,6 +9,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Find", href: "/#find-a-piece", icon: Search },
+  { label: "Reps", href: "/reps", icon: UsersRound },
 ];
 
 type SparkleFinderNavProps = {

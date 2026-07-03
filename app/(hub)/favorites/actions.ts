@@ -172,6 +172,7 @@ function revalidateFavoriteRepPaths() {
   revalidatePath("/silver");
   revalidatePath("/live-shows");
   revalidatePath("/rep-boards");
+  revalidatePath("/reps");
 }
 
 function cleanFormText(value: FormDataEntryValue | null): string {

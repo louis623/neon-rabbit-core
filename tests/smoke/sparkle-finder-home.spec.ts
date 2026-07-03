@@ -162,9 +162,15 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Silver trial details")).toBeVisible();
     await expect(page.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/auth/sign-up");
 
-    await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
-    await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
-    await expect(page).toHaveURL(`${baseUrl}/`);
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Find the pieces you love.")).toBeVisible();
     await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
 
@@ -182,10 +188,50 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Local fixture mode")).toBeVisible();
   });
 
+  test("Silver preview can browse the Reps main tab", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+
+    await page.goto(`${baseUrl}/reps`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByRole("heading", { name: "Sparkle Suite Reps" })).toBeVisible();
+    await expect(page.getByText("Browse reps, check show times, and save your favorites.")).toBeVisible();
+    await expect(page.getByPlaceholder("Search reps")).toBeVisible();
+    await expect(page.getByText("Lindsay Lucas")).toBeVisible();
+    await expect(page.getByText("Sierra Sparkle Studio")).toBeVisible();
+    await expect(page.getByText("Upcoming").first()).toBeVisible();
+    await expect(page.locator('a[href^="/rep-boards?rep="]').first()).toBeVisible();
+    await expectNoGuardrailCopy(page);
+    await expectNoExampleLinksOnCurrentPage(page);
+    await page.waitForTimeout(750);
+    await expect(page.getByRole("heading", { name: "Sparkle Suite Reps" })).toBeVisible();
+
+    mkdirSync(screenshotDir, { recursive: true });
+    await page.screenshot({
+      fullPage: true,
+      path: join(screenshotDir, "sparkle-finder-reps-desktop.png"),
+    });
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Sparkle Suite Reps" })).toBeVisible();
+    await expect(page.getByPlaceholder("Search reps")).toBeVisible();
+    await page.screenshot({
+      fullPage: true,
+      path: join(screenshotDir, "sparkle-finder-reps-mobile.png"),
+    });
+  });
+
   test("hub routes still gate anonymous visitors", async ({ page }) => {
     await page.context().clearCookies();
 
-    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/favorites", "/collectors", "/silver"]) {
+    for (const path of ["/dashboard", "/library", "/live-shows", "/rep-boards", "/reps", "/favorites", "/collectors", "/silver"]) {
       await page.goto(`${baseUrl}${path}`, { waitUntil: "domcontentloaded" });
       await expect(page.getByText("Sign in to open Sparkle Finder")).toBeVisible();
       await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();
@@ -219,6 +265,14 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();

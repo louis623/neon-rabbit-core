@@ -5,10 +5,12 @@ import {
   getCatalogJewelryItems,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
+  getFinderRepDirectoryData,
   getSparkleSuiteFinderPublicBaseUrl,
   mapSparkleSuiteFinderCatalogItem,
   mapSparkleSuiteFinderJewelryType,
   type SparkleSuiteFinderCatalogItem,
+  type SparkleSuiteFinderRepDirectoryItem,
 } from "../../lib/sparkle-finder/catalog-service";
 
 describe("Sparkle Finder public API catalog service", () => {
@@ -316,6 +318,151 @@ describe("Sparkle Finder public API catalog service", () => {
     expect(shows).toEqual([]);
   });
 
+  it("reads rep directory data from the Sparkle Suite public Finder API", async () => {
+    const fetchReps = vi.fn(async () =>
+      jsonResponse({
+        reps: [
+          apiRepDirectoryItem({
+            repId: "rep-suite-demo",
+            displayName: "Demo Draper",
+            businessName: "Demo Sparkle Studio",
+            state: "OH",
+            customerSiteUrl: "https://suite.example/reps/demo",
+            repBoardUrl: "https://suite.example/reps/demo/board",
+          }),
+        ],
+      }),
+    );
+
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchReps,
+      useFixtureFallback: false,
+    });
+
+    expect(fetchReps).toHaveBeenCalledWith("https://suite.example/api/public/finder/reps?limit=200", {
+      cache: "no-store",
+    });
+    expect(data.reps).toEqual([
+      expect.objectContaining({
+        id: "rep-suite-demo",
+        businessName: "Demo Sparkle Studio",
+        displayName: "Demo Draper",
+        state: "OH",
+        siteUrl: "https://suite.example/reps/demo",
+        nextLiveShowId: "show-demo",
+      }),
+    ]);
+    expect(data.liveShows).toEqual([
+      expect.objectContaining({
+        id: "show-demo",
+        repId: "rep-suite-demo",
+        title: "Demo Glow Show",
+        status: "scheduled",
+        showUrl: "https://suite.example/demo-show?c=rep-demo",
+      }),
+    ]);
+    expect(data.boardListings).toEqual([
+      expect.objectContaining({
+        id: "rep-suite-demo-board",
+        repId: "rep-suite-demo",
+        status: "available",
+        boardUrl: "https://suite.example/reps/demo/board",
+      }),
+    ]);
+  });
+
+  it("can disable fixture fallback when rep directory data is unavailable", async () => {
+    const fetchReps = vi.fn(async () => new Response("not found", { status: 404 }));
+
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchReps,
+      useFixtureFallback: false,
+    });
+
+    expect(data).toEqual({
+      boardListings: [],
+      liveShows: [],
+      reps: [],
+    });
+  });
+
+  it("keeps reps visible when only a board link is available", async () => {
+    const fetchReps = vi.fn(async () =>
+      jsonResponse({
+        reps: [
+          apiRepDirectoryItem({
+            repId: "rep-board-only",
+            customerSiteUrl: null,
+            repBoardUrl: "https://suite.example/reps/board-only/board",
+            nextShow: null,
+          }),
+        ],
+      }),
+    );
+
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchReps,
+      useFixtureFallback: false,
+    });
+
+    expect(data.reps).toEqual([
+      expect.objectContaining({
+        id: "rep-board-only",
+        siteUrl: "",
+      }),
+    ]);
+    expect(data.boardListings).toEqual([
+      expect.objectContaining({
+        repId: "rep-board-only",
+        boardUrl: "https://suite.example/reps/board-only/board",
+      }),
+    ]);
+  });
+
+  it("maps the Reps directory next-show payload shape", async () => {
+    const fetchReps = vi.fn(async () =>
+      jsonResponse({
+        reps: [
+          apiRepDirectoryItem({
+            repId: "rep-directory-show",
+            nextShow: {
+              id: "directory-show",
+              title: "Directory Glow Show",
+              startsAt: "2026-06-07T20:00:00.000Z",
+              status: "live",
+              customerShowUrl: "https://suite.example/shows/directory-glow",
+            },
+          }),
+        ],
+      }),
+    );
+
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchReps,
+      useFixtureFallback: false,
+    });
+
+    expect(data.reps[0]).toEqual(
+      expect.objectContaining({
+        id: "rep-directory-show",
+        nextLiveShowId: "directory-show",
+      }),
+    );
+    expect(data.liveShows).toEqual([
+      expect.objectContaining({
+        id: "directory-show",
+        repId: "rep-directory-show",
+        showUrl: "https://suite.example/shows/directory-glow",
+        status: "live",
+        title: "Directory Glow Show",
+      }),
+    ]);
+  });
+
   it("falls back to fixture items when the API is not configured", async () => {
     const items = await getCatalogJewelryItems({
       apiBaseUrl: "",
@@ -379,6 +526,29 @@ function apiAvailabilityMatch({
       status: "scheduled",
       customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
     },
+  };
+}
+
+function apiRepDirectoryItem(
+  overrides: Partial<SparkleSuiteFinderRepDirectoryItem> = {},
+): SparkleSuiteFinderRepDirectoryItem {
+  return {
+    repId: "rep-demo",
+    displayName: "Demo Draper",
+    businessName: "Demo Sparkle Studio",
+    avatarUrl: "https://cdn.example.test/reps/demo.jpg",
+    state: "OH",
+    customerSiteUrl: "https://suite.example/reps/demo",
+    repBoardUrl: "https://suite.example/reps/demo/board",
+    nextShow: {
+      showId: "show-demo",
+      showName: "Demo Glow Show",
+      repFirstName: "Demo",
+      startsAt: "2026-06-06T20:00:00.000Z",
+      status: "scheduled",
+      customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
+    },
+    ...overrides,
   };
 }
 
