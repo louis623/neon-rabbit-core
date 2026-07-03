@@ -283,6 +283,57 @@ describe('calendar tools', () => {
     )
   })
 
+  it('add_show repairs omitted recurrence from the latest user text when titles match', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 13, events: [calendarEvent({ isRecurring: true })] })
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      latestUserText:
+        'Add a weekly recurring show. Title: Codex Pressure Weekly Series. Platform: Facebook Live. Starts: 2026-07-03T22:28:00.000Z. Duration: 120 minutes. Repeat weekly for three months.',
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'Facebook Live',
+      eventTime: '2026-07-03T22:28:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Codex Pressure Weekly Series',
+      durationMinutes: 120,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        recurring: { cadence: 'weekly', duration: '3_months' },
+      }),
+    )
+  })
+
+  it('add_show lets latest user text recurrence override model occurrence-count drift', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 13, events: [calendarEvent({ isRecurring: true })] })
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      latestUserText:
+        'Add a weekly recurring show. Title: Codex Pressure Weekly Series. Platform: Facebook Live. Starts: 2026-07-03T22:28:00.000Z. Duration: 120 minutes. Repeat weekly for three months.',
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'Facebook Live',
+      eventTime: '2026-07-03T22:28:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Codex Pressure Weekly Series',
+      durationMinutes: 120,
+      recurring: { cadence: 'weekly', duration: '3_months', occurrenceCount: 13 },
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        recurring: { cadence: 'weekly', duration: '3_months' },
+      }),
+    )
+  })
+
   it('add_show does not apply stale workflow recurrence to a different title', async () => {
     addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
     const recurring = { cadence: 'weekly' as const, duration: '3_months' as const }

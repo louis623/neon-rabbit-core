@@ -557,6 +557,7 @@ export async function POST(request: Request) {
       supabase,
       conversationId,
       runId,
+      latestUserText,
       activeTradeBoardWorkflow,
       activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,
     },

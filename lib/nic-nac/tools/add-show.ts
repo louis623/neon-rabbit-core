@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { addShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { mergeCalendarKnownFieldsFromText } from '@/lib/nic-nac/workflows/calendar-workflow-controller'
 import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -54,9 +55,23 @@ function calendarWorkflowRecurringMatchesInput(
   return Boolean(workflowTitle && inputTitle && workflowTitle === inputTitle)
 }
 
+function latestTextRecurringMatchesInput(
+  latestUserText: string | undefined,
+  input: z.infer<typeof inputSchema>,
+) {
+  if (!latestUserText) return undefined
+  const knownFields = mergeCalendarKnownFieldsFromText({}, latestUserText)
+  if (!knownFields.recurring) return undefined
+  const textTitle = knownFields.title?.trim().toLowerCase()
+  const inputTitle = input.title?.trim().toLowerCase()
+  if (!textTitle || !inputTitle || textTitle !== inputTitle) return undefined
+  return knownFields.recurring
+}
+
 export function makeAddShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
+  latestUserText?: string
   activeCalendarWorkflow?: ToolContext['activeCalendarWorkflow']
 }) {
   return tool({
@@ -72,8 +87,11 @@ export function makeAddShowTool(ctx: {
         const workflowRecurring = calendarWorkflowRecurringMatchesInput(ctx.activeCalendarWorkflow, input)
           ? ctx.activeCalendarWorkflow?.knownFields.recurring
           : undefined
+        const latestTextRecurring = latestTextRecurringMatchesInput(ctx.latestUserText, input)
         const mergedInput = workflowRecurring
           ? { ...input, recurring: workflowRecurring }
+          : latestTextRecurring
+            ? { ...input, recurring: latestTextRecurring }
           : input
         const safeInput =
           mergedInput.recurring && !calendarWorkflowAllowsRecurring(ctx.activeCalendarWorkflow)
@@ -110,6 +128,7 @@ export const addShowTool: ToolDefinition = {
     makeAddShowTool({
       repId: ctx.repId,
       supabase: ctx.supabase,
+      latestUserText: ctx.latestUserText,
       activeCalendarWorkflow: ctx.activeCalendarWorkflow,
     }),
 }

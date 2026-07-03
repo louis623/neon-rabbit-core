@@ -119,6 +119,23 @@ describe('calendar workflow controller', () => {
     })
   })
 
+  it('captures Title-colon recurring show prompts for direct add_show repair', () => {
+    const merged = mergeCalendarKnownFieldsFromText(
+      {},
+      'Add a weekly recurring show. Title: Codex Pressure Weekly Series. Platform: Facebook Live. Starts: 2026-07-03T22:28:00.000Z. Duration: 120 minutes. Repeat weekly for three months.',
+    )
+
+    expect(merged).toMatchObject({
+      title: 'Codex Pressure Weekly Series',
+      platform: 'Facebook Live',
+      durationMinutes: 120,
+      recurring: {
+        cadence: 'weekly',
+        duration: '3_months',
+      },
+    })
+  })
+
   it('captures Louis Coffee and Fizz recurring setup language', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))

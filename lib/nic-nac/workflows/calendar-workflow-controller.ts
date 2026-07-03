@@ -305,7 +305,9 @@ export function mergeCalendarKnownFieldsFromText(
   const durationMinutes = parseDurationMinutes(text)
   if (durationMinutes) next.durationMinutes = durationMinutes
 
-  const titleMatch = text.match(/\b(?:called|title(?:d)?|named)\s+([^.,\n]+)/i)
+  const titleMatch =
+    text.match(/\b(?:called|named)\s+([^.,\n]+)/i) ??
+    text.match(/\btitle(?:d)?(?:\s+is|:)?\s+([^.,\n]+)/i)
   const showNameMatch = text.match(/\b(?:show name|name of the show)\s+(?:is|will be)\s+([^.,\n]+)/i) ??
     text.match(
       /\b(?:it(?:'s| is)\s+going\s+to\s+be|it\s+will\s+be|show\s+will\s+be)\s+((?:(?!\bit(?:'s| is)\s+going\s+to\s+be\b)[\s\S]){3,120}?)\s+for\s+the\s+show\s+name\b/i,

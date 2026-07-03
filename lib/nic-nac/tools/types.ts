@@ -12,6 +12,7 @@ export type ToolContext = {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  latestUserText?: string
   activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
   activeCalendarWorkflow?: CalendarWorkflowSessionState | null
 }
