@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { addShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
-import type { ToolDefinition } from './types'
+import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
   platform: z.string(),
@@ -35,7 +35,18 @@ function explainServiceError(err: unknown): never {
   throw err
 }
 
-export function makeAddShowTool(ctx: { repId: string; supabase: SupabaseClient }) {
+function calendarWorkflowAllowsRecurring(
+  workflow: ToolContext['activeCalendarWorkflow'] | undefined,
+) {
+  if (!workflow) return true
+  return Boolean(workflow.knownFields.recurring)
+}
+
+export function makeAddShowTool(ctx: {
+  repId: string
+  supabase: SupabaseClient
+  activeCalendarWorkflow?: ToolContext['activeCalendarWorkflow']
+}) {
   return tool({
     description:
       'Schedule a new show. Can schedule a one-time show or a recurring series. ' +
@@ -45,7 +56,11 @@ export function makeAddShowTool(ctx: { repId: string; supabase: SupabaseClient }
     inputSchema,
     execute: async (input) => {
       try {
-        const result = await addShow(ctx.supabase, ctx.repId, input)
+        const safeInput =
+          input.recurring && !calendarWorkflowAllowsRecurring(ctx.activeCalendarWorkflow)
+            ? { ...input, recurring: undefined }
+            : input
+        const result = await addShow(ctx.supabase, ctx.repId, safeInput)
         const firstEvent = result.events[0] ?? null
         const lastEvent = result.events[result.events.length - 1] ?? null
 
@@ -57,7 +72,7 @@ export function makeAddShowTool(ctx: { repId: string; supabase: SupabaseClient }
             result.count === 1
               ? null
               : {
-                  cadence: input.recurring?.cadence ?? null,
+                  cadence: safeInput.recurring?.cadence ?? null,
                   startTime: firstEvent?.eventTime ?? null,
                   endTime: lastEvent?.eventTime ?? null,
                 },
@@ -72,5 +87,10 @@ export function makeAddShowTool(ctx: { repId: string; supabase: SupabaseClient }
 export const addShowTool: ToolDefinition = {
   name: 'add_show',
   readOnly: false,
-  build: (ctx) => makeAddShowTool({ repId: ctx.repId, supabase: ctx.supabase }),
+  build: (ctx) =>
+    makeAddShowTool({
+      repId: ctx.repId,
+      supabase: ctx.supabase,
+      activeCalendarWorkflow: ctx.activeCalendarWorkflow,
+    }),
 }

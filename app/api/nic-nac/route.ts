@@ -461,6 +461,7 @@ export async function POST(request: Request) {
       conversationId,
       runId,
       activeTradeBoardWorkflow,
+      activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,
     },
     toolIntents,
   )

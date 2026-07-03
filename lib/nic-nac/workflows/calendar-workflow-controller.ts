@@ -88,6 +88,20 @@ function parseNaturalEventTime(text: string): string | undefined {
   return `${year}-${monthText}-${dayText}T${hourOut}:${minuteOut}:00${easternOffsetFor(month)}`
 }
 
+function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] | undefined {
+  if (!/\b(recurring|repeat(?:ing)?|every|weekly|daily)\b/i.test(text)) {
+    return undefined
+  }
+  const cadence = /\bdaily|every\s+day\b/i.test(text) ? 'daily' : 'weekly'
+  let duration: '1_month' | '3_months' | 'ongoing' = '1_month'
+  if (/\bthree\s+months?|3\s+months?\b/i.test(text)) {
+    duration = '3_months'
+  } else if (/\bongoing|until\s+i\s+stop|for\s+now\b/i.test(text)) {
+    duration = 'ongoing'
+  }
+  return { cadence, duration }
+}
+
 function extractPlainTitle(text: string): string | undefined {
   if (
     /\b(?:tik\s*tok|tiktok|facebook|instagram|youtube|america\/new_york|eastern|edt|est)\b/i.test(text) ||
@@ -143,6 +157,9 @@ export function mergeCalendarKnownFieldsFromText(
 
   const eventTime = parseNaturalEventTime(text)
   if (eventTime) next.eventTime = eventTime
+
+  const recurring = parseRecurring(text)
+  if (recurring) next.recurring = recurring
 
   const durationMinutes = parseDurationMinutes(text)
   if (durationMinutes) next.durationMinutes = durationMinutes

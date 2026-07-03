@@ -4,6 +4,7 @@
 
 import type { Tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { CalendarWorkflowSessionState } from '@/lib/nic-nac/workflows/calendar-workflow-types'
 import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
 export type ToolContext = {
@@ -12,6 +13,7 @@ export type ToolContext = {
   conversationId: string
   runId: string
   activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
+  activeCalendarWorkflow?: CalendarWorkflowSessionState | null
 }
 
 export type ToolDefinition = {

@@ -98,6 +98,23 @@ describe('calendar workflow controller', () => {
     })
   })
 
+  it('captures recurrence only from explicit recurring language', () => {
+    const oneTime = mergeCalendarKnownFieldsFromText(
+      {},
+      'Tiktok July 4 7p Est',
+    )
+    const recurring = mergeCalendarKnownFieldsFromText(
+      {},
+      'Make this a weekly recurring show for three months',
+    )
+
+    expect(oneTime.recurring).toBeUndefined()
+    expect(recurring.recurring).toEqual({
+      cadence: 'weekly',
+      duration: '3_months',
+    })
+  })
+
   it('keeps update intent in identify_existing_event when an event id is missing', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'update_show',

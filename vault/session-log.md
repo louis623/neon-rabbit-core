@@ -2779,10 +2779,12 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Updated tool choice so an active ready Calendar workflow pins the next model step to `add_show`.
 - Tightened add-show readiness so title and duration are required before writing, preventing the first partial detail turn from saving a default/recurring show.
 - Prompt now explicitly forbids inferring recurrence unless the rep asks for a recurring/repeating series.
+- Added an `add_show` tool-boundary guard: when an active Calendar workflow did not capture recurrence, model-invented `recurring` input is stripped before writing.
+- Added workflow parsing for explicit daily/weekly recurring language so real recurring requests remain supported.
 - Added the calendar write-abdication phrase to Nic-Nac hard-fail telemetry.
 
 **Verification:**
 - Red/green tests reproduced the exact replay and now prove it reaches `ready_to_add` with `eventTime`, `timeZone`, `durationMinutes`, title, and forced `add_show`.
-- Stable-demo reviewer smoke caught premature recurring event creation after the first partial details turn; synthetic rows were deleted from the reviewer account before closeout.
-- Focused calendar/Nic-Nac suite passed: `npm exec vitest run tests/nic-nac/calendar-workflow-controller.test.ts tests/nic-nac/calendar-workflow-context.test.ts tests/nic-nac/calendar-workflow-store.test.ts tests/nic-nac/calendar-work-preflight.test.ts tests/nic-nac/calendar-tools.test.ts tests/nic-nac/calendar-chaotic-rep-smoke.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac/tool-choice-policy.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/trade-board-intake-eval.test.ts tests/nic-nac/prompt-routing.test.ts` passed: 11 files, 128 tests.
+- Stable-demo reviewer smoke caught premature recurring event creation after the first partial details turn; synthetic rows were deleted from the reviewer account before closeout. A follow-up DB check confirmed zero residual bad smoke events.
+- Focused calendar/Nic-Nac suite passed: `npm exec vitest run tests/nic-nac/calendar-workflow-controller.test.ts tests/nic-nac/calendar-workflow-context.test.ts tests/nic-nac/calendar-workflow-store.test.ts tests/nic-nac/calendar-work-preflight.test.ts tests/nic-nac/calendar-tools.test.ts tests/nic-nac/calendar-chaotic-rep-smoke.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac/tool-choice-policy.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/trade-board-intake-eval.test.ts tests/nic-nac/prompt-routing.test.ts` passed: 11 files, 131 tests.
 - `npm run build` passed locally with Next.js 16.2.1.

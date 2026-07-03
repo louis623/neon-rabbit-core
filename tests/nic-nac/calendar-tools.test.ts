@@ -81,6 +81,27 @@ function makeCtx() {
   }
 }
 
+function makeCalendarWorkflow(recurring?: {
+  cadence: 'daily' | 'weekly'
+  duration: '1_month' | '3_months' | 'ongoing'
+}) {
+  return {
+    id: 'calendar-workflow-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'calendar_event_work',
+    status: 'active',
+    phase: 'ready_to_add',
+    intent: 'add_show',
+    knownFields: recurring ? { recurring } : {},
+    missingFields: [],
+    candidateEventIds: [],
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    createdAt: '2099-01-01T00:00:00.000Z',
+    updatedAt: '2099-01-01T00:00:00.000Z',
+  } as const
+}
+
 beforeEach(() => {
   addShowMock.mockReset()
   listMyShowsMock.mockReset()
@@ -121,6 +142,57 @@ describe('calendar tools', () => {
     )
     expect(result.count).toBe(4)
     expect(result.events).toHaveLength(1)
+  })
+
+  it('add_show strips recurring when active workflow did not capture recurrence', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: makeCalendarWorkflow(),
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2026-07-04T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Bling party',
+      durationMinutes: 180,
+      recurring: { cadence: 'weekly', duration: '1_month' },
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        title: 'Bling party',
+        durationMinutes: 180,
+        recurring: undefined,
+      }),
+    )
+  })
+
+  it('add_show keeps recurring when active workflow captured explicit recurrence', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 4, events: [calendarEvent({ isRecurring: true })] })
+    const recurring = { cadence: 'weekly' as const, duration: '1_month' as const }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: makeCalendarWorkflow(recurring),
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2026-07-04T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Bling party',
+      durationMinutes: 180,
+      recurring,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ recurring }),
+    )
   })
 
   it('list_my_shows returns count + totalCount + discount code arrays', async () => {
