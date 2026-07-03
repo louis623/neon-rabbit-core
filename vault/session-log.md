@@ -1,5 +1,17 @@
 # Sparkle Finder Session Log
 
+## 2026-07-03
+
+- Updated the homepage collector profile statistics:
+  - Replaced the weak `Featured` and `Saved` homepage stats with `Diamonds`, `Unicorns`, and `Found by Sparkle Finder`, while keeping `Owned` and `Wishlist`.
+  - Added durable collection acquisition tracking on `sparkle_finder_collection_items` with `acquisition_source`, `acquisition_context`, and `acquisition_marked_at`.
+  - Finder-assisted finds count only owned collection items whose source is `sparkle_finder_lead` or `nic_nac_request`; Wishlist saves default to `wishlist`, and normal owned saves default to `manual`.
+  - Wired acquisition source through collection persistence, Silver collection actions, Nic-Nac collection save/read tools, authenticated homepage Bling Vault data, fixtures, and tests.
+  - Applied migration `20260702235634_collection_acquisition_source.sql` to the linked `sparkle-finder-auth` Supabase project (`pzksocboqauqjdtsgpdp`) using `supabase db query --linked --file ...`, then verified the new columns and index remotely. Plain `supabase db push` still hits the existing historical migration-history mismatch and tries to replay older migrations.
+  - Verification passed: `npm run lint`, focused profile/acquisition tests (`133` tests), full `npm run test` (`38` files, `507` tests), local `npm run build`, and `npm run smoke:sparkle-finder` (`17` passed, `2` skipped).
+  - Committed and pushed `786df5f feat: update collector profile stats`.
+  - Deployed Finder production `dpl_GX6Dzj8DAM61ERf59JHbFTRwUKcf`, aliased at `https://sparkle-finder-dev.vercel.app`; Vercel inspect shows `READY`, and live checks returned `200` for `/`, `/library`, and `/auth/sign-in`.
+
 ## 2026-06-22
 
 - Cleaned Finder lint health:
