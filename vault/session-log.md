@@ -12,6 +12,11 @@
   - Committed and pushed `786df5f feat: update collector profile stats`.
   - Deployed Finder production `dpl_GX6Dzj8DAM61ERf59JHbFTRwUKcf`, aliased at `https://sparkle-finder-dev.vercel.app`; Vercel inspect shows `READY`, and live checks returned `200` for `/`, `/library`, and `/auth/sign-in`.
 
+- Cleaned up Sparkle Finder Supabase migration history:
+  - The live `supabase_migrations.schema_migrations` table was empty even though several early migrations were already reflected in the database, which caused `supabase db push` to replay old SQL.
+  - Verified live artifacts, repaired already-present migrations as applied, then ran `supabase db push --yes --include-all` to apply the genuinely missing additive migrations for Showcase social collections, customer memory, social favorites/follows/blocks/reports, block-boundary policies, and rep-claim profile/grant metadata.
+  - Normalized the old short local migration filename from `20260613_sparkle_showcase_social_collections.sql` to `20260613000000_sparkle_showcase_social_collections.sql`, repaired the remote history row to match, and confirmed `supabase db push --yes` now reports `Remote database is up to date.`
+
 ## 2026-06-22
 
 - Cleaned Finder lint health:

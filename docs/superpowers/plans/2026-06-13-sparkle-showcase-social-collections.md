@@ -92,7 +92,7 @@ Create:
 - `tests/sparkle-finder/showcase-routes.test.ts`: render tests for public and owner surfaces.
 - `tests/sparkle-finder/showcase-actions.test.ts`: server-action and Supabase-operation coverage.
 - `tests/smoke/sparkle-finder-showcase.spec.ts`: browser smoke for public showcase, follows, comments, and owner controls.
-- `supabase/migrations/20260613_sparkle_showcase_social_collections.sql`: schema/RLS migration, created but not applied.
+- `supabase/migrations/20260613000000_sparkle_showcase_social_collections.sql`: schema/RLS migration.
 
 Modify:
 
@@ -423,7 +423,7 @@ Expected: PASS.
 ## Task 3: Supabase Schema And RLS Migration
 
 **Files:**
-- Create: `supabase/migrations/20260613_sparkle_showcase_social_collections.sql`
+- Create: `supabase/migrations/20260613000000_sparkle_showcase_social_collections.sql`
 - Test: `tests/sparkle-finder/showcase-actions.test.ts`
 
 - [ ] **Step 1: Create migration file**
