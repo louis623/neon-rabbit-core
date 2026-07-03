@@ -503,6 +503,46 @@ describe('calendar tools', () => {
     })
   })
 
+  it('update_show ignores blank optional model fields before series patches', async () => {
+    updateShowMock.mockResolvedValueOnce({
+      event: calendarEvent({
+        discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+      }),
+      updatedCount: 13,
+    })
+    const tool = makeUpdateShowTool(makeCtx()) as unknown as ToolDef
+
+    await tool.execute({
+      eventId: VALID_EVENT_ID,
+      title: '',
+      platform: '',
+      eventTime: '.',
+      timeZone: '',
+      description: '',
+      durationMinutes: 120,
+      discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+      featuredCollections: ['Series Luxe'],
+      applyToSeries: true,
+    })
+
+    expect(updateShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      {
+        title: undefined,
+        platform: undefined,
+        eventTime: undefined,
+        timeZone: undefined,
+        durationMinutes: 120,
+        description: undefined,
+        discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+        featuredCollections: ['Series Luxe'],
+        applyToSeries: true,
+      },
+    )
+  })
+
   it('skip_show_occurrence cancels one selected show while preserving the recurring series', async () => {
     cancelShowMock.mockResolvedValueOnce({
       event: calendarEvent({

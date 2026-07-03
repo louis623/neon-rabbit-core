@@ -48,6 +48,13 @@ function explainServiceError(err: unknown): never {
   throw err
 }
 
+function normalizeOptionalToolText(value: string | undefined) {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+  if (!/[A-Za-z0-9]/.test(trimmed)) return undefined
+  return trimmed
+}
+
 export function makeUpdateShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
@@ -63,16 +70,16 @@ export function makeUpdateShowTool(ctx: {
     execute: async (input) => {
       const {
         eventId,
-        platform,
-        eventTime,
-        timeZone,
         durationMinutes,
-        title,
-        description,
         discountCodes,
         featuredCollections,
         applyToSeries,
       } = input
+      const platform = normalizeOptionalToolText(input.platform)
+      const eventTime = normalizeOptionalToolText(input.eventTime)
+      const timeZone = normalizeOptionalToolText(input.timeZone)
+      const title = normalizeOptionalToolText(input.title)
+      const description = normalizeOptionalToolText(input.description)
 
       const patch = {
         platform,

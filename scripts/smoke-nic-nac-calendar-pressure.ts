@@ -337,6 +337,24 @@ function getObservedToolNames(messages: UIMessage[]) {
   return observed
 }
 
+function getLatestAssistantToolNames(messages: UIMessage[]) {
+  const latestAssistant = [...messages].reverse().find((message) => message.role === 'assistant')
+  if (!latestAssistant) return new Set<string>()
+  const observed = new Set<string>()
+  for (const part of latestAssistant.parts ?? []) {
+    const toolPart = part as UiPart
+    if (!toolPart.type?.startsWith('tool-')) continue
+    if (
+      toolPart.state !== 'output-available' &&
+      toolPart.state !== 'approval-requested'
+    ) {
+      continue
+    }
+    observed.add(toolPart.type.slice('tool-'.length))
+  }
+  return observed
+}
+
 function findApprovalTarget(messages: UIMessage[], toolName: string): ApprovalTarget | null {
   const latestAssistant = [...messages].reverse().find((message) => message.role === 'assistant')
   if (!latestAssistant) return null
@@ -407,11 +425,11 @@ async function sendTurn(input: {
   })
   const assistantText = extractAssistantText(history)
   assertNoHardFails(assistantText)
-  const observedTools = [...getObservedToolNames(history)]
+  const observedTools = [...getLatestAssistantToolNames(history)]
   for (const toolName of input.requiredTools ?? []) {
     if (!observedTools.includes(toolName)) {
       throw new Error(
-        `Did not observe ${toolName}. Observed tools: ${observedTools.join(', ')}`,
+        `Did not observe ${toolName} in latest turn. Observed latest-turn tools: ${observedTools.join(', ')}`,
       )
     }
   }
@@ -705,7 +723,7 @@ export async function runCalendarPressureSmoke(
       requiredTools: ['update_show'],
       turns,
       text:
-        `Update all future occurrences in the recurring series titled ${seriesTitle}. ` +
+        `Update all future occurrences in the recurring series titled ${seriesTitle}. Use event ID ${seriesRows[0].id} and apply it to the series. ` +
         'Replace discount codes with SERIES25 = 25% off the whole cart and KEEP5 = $5 off keepers. ' +
         'Replace featured collections with Series Luxe, Vault Night, and July Birthday 2026. Keep the same time.',
     })
@@ -728,7 +746,7 @@ export async function runCalendarPressureSmoke(
       requiredTools: ['skip_show_occurrence'],
       turns,
       text:
-        `Skip only the second occurrence of ${seriesTitle} on ${formatIsoForPrompt(new Date(seriesRows[1].event_time))}. ` +
+        `Skip only the second occurrence of ${seriesTitle}, event ID ${seriesRows[1].id}, on ${formatIsoForPrompt(new Date(seriesRows[1].event_time))}. ` +
         'Keep the rest of that recurring series scheduled. Reason: Codex pressure smoke one-night skip.',
     })
     messages = await approveTurn({
@@ -763,7 +781,7 @@ export async function runCalendarPressureSmoke(
       turns,
       text:
         `Pause the recurring series titled ${seriesTitle} starting with the third occurrence on ` +
-        `${formatIsoForPrompt(new Date(seriesRows[2].event_time))} through the fourth occurrence on ` +
+        `${formatIsoForPrompt(new Date(seriesRows[2].event_time))}. Use event ID ${seriesRows[2].id}. Pause through the fourth occurrence on ` +
         `${formatIsoForPrompt(new Date(seriesRows[3].event_time))}. Reason: Codex pressure smoke bounded pause.`,
     })
     messages = await approveTurn({
@@ -869,7 +887,7 @@ export async function runCalendarPressureSmoke(
       turns,
       text:
         `Cancel the recurring series titled ${seriesTitle} starting with the fifth occurrence on ` +
-        `${formatIsoForPrompt(new Date(seriesRows[4].event_time))} and all future occurrences. ` +
+        `${formatIsoForPrompt(new Date(seriesRows[4].event_time))}. Use event ID ${seriesRows[4].id} and cancel that occurrence plus all future occurrences. ` +
         'Reason: Codex pressure smoke cleanup of recurring series.',
     })
     await approveTurn({
