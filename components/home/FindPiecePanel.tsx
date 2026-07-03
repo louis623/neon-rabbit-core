@@ -19,7 +19,7 @@ export function FindPiecePanel({ accountState, model }: FindPiecePanelProps) {
       data-smoke="find-piece-panel"
       id="find-a-piece"
     >
-      <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(21rem,0.65fr)] lg:px-10">
+      <div className="sparkle-finder-app-canvas mx-auto grid max-w-[56rem] gap-4 px-5 py-6 sm:px-8 lg:px-10">
         <article className="grid content-start gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Find a Piece</p>

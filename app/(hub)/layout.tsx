@@ -21,7 +21,7 @@ export function renderHubChrome(children: React.ReactNode, accountState: Sparkle
   return (
     <>
       <SparkleFinderNav accountState={accountState} />
-      <main className="min-h-screen bg-[var(--sparkle-warm-bg)]">
+      <main className="min-h-screen bg-[var(--sparkle-warm-bg)] pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-0">
         <div className="mx-auto max-w-[112rem] px-5 py-8 sm:px-8 lg:px-10">
           {isSparkleFinderSignedIn(accountState) ? children : <HubSignInWall />}
         </div>

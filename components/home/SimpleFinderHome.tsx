@@ -21,7 +21,7 @@ export function SimpleFinderHome({ customer, model, profile }: SimpleFinderHomeP
       data-smoke="simple-finder-home"
       id="home"
     >
-      <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-5 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.55fr)] lg:items-stretch lg:px-10 lg:py-7">
+      <div className="sparkle-finder-app-canvas mx-auto grid max-w-[56rem] gap-4 px-5 py-5 sm:px-8 lg:px-10 lg:py-7">
         <article className="grid content-start gap-5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[rgba(255,255,255,0.92)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <div className="grid gap-3">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Sparkle Finder</p>
@@ -48,7 +48,7 @@ export function SimpleFinderHome({ customer, model, profile }: SimpleFinderHomeP
           </div>
         </article>
 
-        <aside className="grid content-between gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
+        <aside className="grid gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
             <div
               aria-label={`${customer.displayName} avatar`}

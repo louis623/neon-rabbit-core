@@ -16,6 +16,14 @@
   - Extended the Sparkle Suite public Reps adapter to accept `favoriteCount` from the feed and added fixture aggregate counts for preview/test mode.
   - Verification passed: focused Reps route/catalog tests, `npm run lint`, full `npm run test` (`38` files, `514` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), with refreshed desktop/mobile Reps screenshots reviewed.
 
+- Added the first single-app-shell mobile-first refinement:
+  - Replaced the signed-in mobile header menu with a persistent app-style bottom tab bar for `Home`, `Library`, `Find`, `Reps`, and `Me`.
+  - Kept desktop on the same core destinations through the top navigation while explicitly hiding the phone tab bar at desktop widths.
+  - Narrowed the authenticated homepage hero and Find panel into a shared mobile-first app canvas so the desktop web app reads like the same product expanded onto a wider screen.
+  - Added safe bottom padding to authenticated home and hub routes so the tab bar does not hide page content on phones.
+  - Preserved the existing feature routes, Bling Vault, collection stats, Reps directory, Nic-Nac helper entry points, and backend plumbing.
+  - Verification passed: focused route test, `npm run lint`, full `npm run test` (`38` files, `514` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), with refreshed Reps desktop/mobile screenshots reviewed.
+
 - Implemented the mobile-first Sparkle Finder homepage overhaul:
   - Replaced the signed-in command-center opening with a simple app home built around `Find the pieces you love. Build your collection with Sparkle Finder.`
   - Simplified primary app navigation to `Home`, `Library`, `Find`, and account status while keeping advanced feature routes reachable from the guided `Find a Piece` panel.

@@ -90,15 +90,18 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("/shop");
   });
 
-  it("renders app navigation in a hub mobile menu with logout for signed-in visitors", () => {
+  it("renders a persistent app-style bottom nav for signed-in visitors", () => {
     const markup = renderToStaticMarkup(
       renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
     );
     const navMarkup = extractNavMarkup(markup);
 
-    expect(navMarkup).toContain("sparkle-finder-mobile-menu");
-    expect(navMarkup).toContain("<summary");
-    expect(navMarkup).toContain(">Menu<");
+    expect(navMarkup).toContain('data-smoke="app-bottom-nav"');
+    expect(navMarkup).toContain("Sparkle Finder app navigation");
+    expect(navMarkup).toContain("sparkle-finder-app-bottom-nav");
+    expect(navMarkup).not.toContain("sparkle-finder-mobile-menu");
+    expect(navMarkup).not.toContain("<summary");
+    expect(navMarkup).not.toContain(">Menu<");
     expect(navMarkup).toContain('href="/"');
     expect(navMarkup).toContain(">Home<");
     expect(navMarkup).toContain('href="/library"');
@@ -106,13 +109,15 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).toContain(">Find<");
     expect(navMarkup).toContain('href="/reps"');
     expect(navMarkup).toContain(">Reps<");
+    expect(navMarkup).toContain('href="/account"');
+    expect(navMarkup).toContain(">Me<");
     expect(navMarkup).not.toContain('href="/live-shows"');
     expect(navMarkup).not.toContain('href="/rep-boards"');
     expect(navMarkup).not.toContain('href="/favorites"');
     expect(navMarkup).not.toContain('href="/collectors"');
     expect(navMarkup).not.toContain('href="/shop"');
-    expect(navMarkup).toContain('href="/auth/sign-out"');
-    expect(navMarkup).toContain(">Log Out<");
+    expect(navMarkup).not.toContain('href="/auth/sign-out"');
+    expect(navMarkup).not.toContain(">Log Out<");
   });
 
   it("shows a sign-in wall for anonymous hub visitors", () => {
@@ -331,6 +336,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).toContain(">Library<");
     expect(navMarkup).toContain('href="/#find-a-piece"');
     expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).toContain('data-smoke="app-bottom-nav"');
+    expect(navMarkup).toContain(">Me<");
     expect(navMarkup).toContain('href="/account"');
     expect(navMarkup).toContain(">Silver<");
     expect(navMarkup).not.toContain('href="/shop"');
@@ -363,6 +370,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
     expect(markup).not.toContain(">Sign in<");
+    expect(markup).toContain('data-layout="mobile-first-app"');
+    expect(markup).toContain("sparkle-finder-app-canvas");
   });
 
   it("renders authenticated home as a simple app home with preserved collection stats", () => {
@@ -379,6 +388,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Ask Nic-Nac or tap a simple action.");
     expect(markup).not.toContain("Command Center");
     expect(markup).not.toContain("Open Showcase Studio");
+    expect(markup).toContain('data-layout="mobile-first-app"');
+    expect(markup).toContain("sparkle-finder-app-canvas");
     expect(markup).toContain("Add a Missing Piece");
     expect(markup).toContain("Find the pieces you love.");
     expect(markup).toContain("Build your collection with Sparkle Finder.");

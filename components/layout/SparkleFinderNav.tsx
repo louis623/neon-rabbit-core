@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Home, LogOut, Menu, Search, UserRound, UsersRound } from "lucide-react";
+import { BookOpen, Home, Search, UserRound, UsersRound } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState, isSparkleFinderSignedIn } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
@@ -21,10 +21,11 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState(), varian
   const isSignedIn = isSparkleFinderSignedIn(accountState);
   const accountLabel = accountState.status === "anonymous" ? "Sign In" : getSparkleFinderNavStatusLabel(accountState);
   const accountHref = isSignedIn ? "/account" : "/auth/sign-in";
+  const appNavItems = [...navItems, { label: "Me", href: accountHref, icon: UserRound }];
   const innerClassName =
     variant === "public"
       ? "mx-auto flex min-h-[5.05rem] w-full max-w-[112rem] items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-10 lg:py-0"
-      : "mx-auto flex min-h-[5.05rem] w-full max-w-[112rem] flex-col gap-3 px-5 py-3 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-10 lg:py-0";
+      : "mx-auto flex min-h-[4.65rem] w-full max-w-[112rem] items-center justify-center gap-4 px-5 py-3 sm:px-8 lg:min-h-[5.05rem] lg:justify-between lg:gap-6 lg:px-10 lg:py-0";
 
   return (
     <header className="sparkle-finder-nav-shell" data-smoke="nav">
@@ -61,34 +62,22 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState(), varian
                 </li>
               </ul>
             </nav>
-            <details className="sparkle-finder-mobile-menu lg:hidden">
-              <summary>
-                <Menu aria-hidden="true" className="size-5" strokeWidth={1.8} />
-                <span>Menu</span>
-              </summary>
-              <nav aria-label="Sparkle Finder mobile navigation">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
+            <nav
+              aria-label="Sparkle Finder app navigation"
+              className="sparkle-finder-app-bottom-nav lg:hidden"
+              data-smoke="app-bottom-nav"
+            >
+              {appNavItems.map((item) => {
+                const Icon = item.icon;
 
-                  return (
-                    <Link href={item.href} key={item.label}>
-                      <Icon aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-                <Link href={accountHref}>
-                  <UserRound aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
-                  <span>{accountLabel}</span>
-                </Link>
-                {isSignedIn ? (
-                  <Link href="/auth/sign-out">
-                    <LogOut aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
-                    <span>Log Out</span>
+                return (
+                  <Link aria-label={item.label} href={item.href} key={item.label}>
+                    <Icon aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
+                    <span>{item.label}</span>
                   </Link>
-                ) : null}
-              </nav>
-            </details>
+                );
+              })}
+            </nav>
           </>
         )}
       </div>

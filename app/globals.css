@@ -312,6 +312,62 @@ select {
   outline-offset: 3px;
 }
 
+.sparkle-finder-app-bottom-nav {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.25rem;
+  max-width: 31rem;
+  margin: 0 auto;
+  padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+  border: 1px solid rgba(75, 31, 104, 0.18);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 46px rgba(43, 18, 61, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+.sparkle-finder-app-bottom-nav a {
+  display: grid;
+  min-height: 3.45rem;
+  min-width: 0;
+  place-items: center;
+  gap: 0.2rem;
+  border-radius: 0.875rem;
+  color: var(--sparkle-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sparkle-finder-app-bottom-nav a:hover {
+  background: var(--sparkle-paper-soft);
+  color: var(--sparkle-plum);
+}
+
+.sparkle-finder-app-bottom-nav a:focus-visible {
+  outline: 2px solid var(--sparkle-rose);
+  outline-offset: 2px;
+}
+
+.sparkle-finder-app-bottom-nav svg {
+  color: var(--sparkle-rose);
+}
+
+.sparkle-finder-app-canvas {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .sparkle-finder-app-bottom-nav {
+    display: none;
+  }
+}
+
 .sparkle-home-primary-cta {
   background: #6f2dbd;
   color: #ffffff;

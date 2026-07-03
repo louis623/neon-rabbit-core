@@ -34,7 +34,11 @@ export function AuthenticatedHomePage({ accountState, collectionItems: persisted
   return (
     <>
       <SparkleFinderNav accountState={accountState} />
-      <main className="overflow-hidden bg-[var(--sparkle-warm-bg)]" data-smoke="authenticated-home">
+      <main
+        className="overflow-hidden bg-[var(--sparkle-warm-bg)] pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-0"
+        data-layout="mobile-first-app"
+        data-smoke="authenticated-home"
+      >
         <SimpleFinderHome customer={customer} model={blingVaultModel} profile={profile} />
         <FindPiecePanel accountState={accountState} model={blingVaultModel} />
         <HomepageBlingVault model={blingVaultModel} />
