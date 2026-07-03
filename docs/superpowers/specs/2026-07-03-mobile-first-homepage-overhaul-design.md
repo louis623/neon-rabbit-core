@@ -22,6 +22,29 @@ Use the visual companion recommendation:
 
 This is not a full rebuild. It is a focused homepage and navigation overhaul that keeps current data, routes, collection stats, Bling Vault, library, and Nic-Nac capabilities.
 
+## Capability Preservation
+
+This redesign must preserve the work already built into Sparkle Finder.
+
+Keep the existing backend plumbing and product capabilities unless a specific implementation detail has to be adjusted to support the simpler UI:
+
+- authenticated website access,
+- Supabase-backed account/profile/collection data,
+- acquisition-source tracking for Found by Sparkle Finder,
+- Silver access rules and account flows,
+- Library search and item detail flows,
+- Wishlist and owned collection saves,
+- Bling Vault data and lazy-loading collection display,
+- Nic-Nac mission guardrails, model policy, memory, telemetry, and tool routing,
+- Nic-Nac read/status tools,
+- Nic-Nac owner save tools,
+- availability/live-show/rep-board discovery flows,
+- profile, Showcase, favorite rep, collector, and legal/account routes.
+
+The UX may hide advanced routes from primary navigation, rename entry points, or make features contextual. It should not remove working capabilities or break existing automation flows.
+
+Implementation should treat current tests and smokes as regression protection. If a feature moves behind a clearer entry point, tests should be updated to the new customer path while still proving the feature works.
+
 ## Brand And Theme Direction
 
 Louis approved changing the look toward the Sparkle Suite Amethyst customer-facing site skin.
@@ -213,6 +236,7 @@ Do not add:
 - new auth architecture,
 - new payment behavior,
 - full Studio file intake,
+- removal of existing backend automations or Nic-Nac capabilities,
 - or a complete app rebuild.
 
 ## Testing And QA
@@ -224,6 +248,7 @@ Add or update tests to cover:
 - homepage renders the new promise copy,
 - primary Find a Piece action is visible above the collection layer,
 - collection stats remain Owned, Wishlist, Diamonds, Unicorns, and Found by Sparkle Finder,
+- existing Library, collection save, Wishlist, Nic-Nac, availability/live-show, account, and legal flows still pass through their current or newly simplified entry points,
 - Bling Vault / collection content still lazy-loads safely,
 - mobile smoke view has no overlapping text or oversized command grids.
 
