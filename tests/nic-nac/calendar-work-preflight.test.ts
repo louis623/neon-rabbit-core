@@ -178,6 +178,20 @@ describe('prepare_calendar_work', () => {
     })
   })
 
+  it('preflights misspelled reoccurring show setup as add_show', async () => {
+    const result = await prepare(
+      'Create a reoccurring show on Wednesday mornings for the foreseeable future called Coffee and Fizz.',
+      { knownTimeZone: 'America/New_York' },
+    )
+
+    expect(result).toMatchObject({
+      intent: 'add_show',
+      scope: 'calendar',
+      recommendedTools: ['add_show'],
+      sendsTriggered: false,
+    })
+  })
+
   it('honors already-known event and pause fields', async () => {
     const result = await prepare('pause Tuesdays for two weeks', {
       knownEventId: '9ec8f40c-7c38-4d95-8d2a-0f06790d7c55',

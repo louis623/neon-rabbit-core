@@ -439,6 +439,124 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     }
   })
 
+  it('keeps calendar tools available for Louis final recurring split confirmation even without active workflow state', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(
+        requestForMessages([
+          {
+            id: 'calendar-remove',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: 'Nic-Nac, please remove the shows from the calendar for both the 3rd and 4th of July.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-cancelled',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text: 'Done - I cancelled BlingKitchen Live.\n\nDone - I cancelled Fireworks Fizzing.',
+              },
+            ],
+          },
+          {
+            id: 'calendar-request',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'So Nic-Nac, I want to create a reoccurring show on Wednesday mornings for the foreseeable future that starts at 9 a.m. The show will be called Coffee and Fizz. It will be Eastern Standard Time. No discount codes, but the feature collection for the first two shows will be the July Birthday Collection.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-platform-duration',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Absolutely. What platform should Coffee and Fizz be on, and how long should each show run? The clean way is first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection.',
+              },
+            ],
+          },
+          {
+            id: 'calendar-platform-duration',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'The show will be dual streamed on both Facebook Live and TikTok Live, and it will have a three-hour duration.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-confirm-split',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Perfect. Do you want this to start next Wednesday, and do you want me to split it like this: first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection?',
+              },
+            ],
+          },
+          {
+            id: 'calendar-confirm-split',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: 'Yes, start next Wednesday, and yes to the split.',
+              },
+            ],
+          },
+        ]),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        system: string
+        tools: Record<string, unknown>
+      }
+      const toolNames = Object.keys(options.tools)
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining([
+          'prepare_calendar_work',
+          'add_show',
+          'list_my_shows',
+          'cancel_show',
+          'cancel_show_series',
+        ]),
+      )
+      expect(options.system).toContain('Calendar tools:')
+      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          intents: expect.arrayContaining(['calendar']),
+          toolNames: expect.arrayContaining(['add_show', 'cancel_show']),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
   it('exposes the recipe draft and save tools through the real chat route', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})

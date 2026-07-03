@@ -13,6 +13,27 @@ function parseDurationMinutes(text: string): number | undefined {
   const hourMatch = text.match(/\b(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)\b/i)
   if (hourMatch) return Math.round(Number(hourMatch[1]) * 60)
 
+  const wordHourMatch = text.match(
+    /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[-\s]+hours?\b/i,
+  )
+  if (wordHourMatch) {
+    const hours: Record<string, number> = {
+      one: 1,
+      two: 2,
+      three: 3,
+      four: 4,
+      five: 5,
+      six: 6,
+      seven: 7,
+      eight: 8,
+      nine: 9,
+      ten: 10,
+      eleven: 11,
+      twelve: 12,
+    }
+    return hours[wordHourMatch[1].toLowerCase()] * 60
+  }
+
   const halfHourMatch = text.match(/\btwo and a half hours?\b/i)
   if (halfHourMatch) return 150
 
@@ -88,15 +109,77 @@ function parseNaturalEventTime(text: string): string | undefined {
   return `${year}-${monthText}-${dayText}T${hourOut}:${minuteOut}:00${easternOffsetFor(month)}`
 }
 
+const WEEKDAYS: Record<string, number> = {
+  sun: 0,
+  sunday: 0,
+  mon: 1,
+  monday: 1,
+  tue: 2,
+  tues: 2,
+  tuesday: 2,
+  wed: 3,
+  weds: 3,
+  wednesday: 3,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  thursday: 4,
+  fri: 5,
+  friday: 5,
+  sat: 6,
+  saturday: 6,
+}
+
+function parseWeekdayEventTime(text: string, now = new Date()): string | undefined {
+  const weekdayMatch = text.match(
+    /\b(next\s+)?(sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?)s?\b/i,
+  )
+  const timeMatch = text.match(
+    /\b(?:starts?\s+at|start\s+at|at)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm)\b/i,
+  )
+  if (!weekdayMatch || !timeMatch) return undefined
+
+  const weekday = WEEKDAYS[weekdayMatch[2].toLowerCase()]
+  if (weekday === undefined) return undefined
+
+  const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const currentWeekday = base.getUTCDay()
+  let daysAhead = (weekday - currentWeekday + 7) % 7
+  if (daysAhead === 0 || weekdayMatch[1]) daysAhead += 7
+  base.setUTCDate(base.getUTCDate() + daysAhead)
+
+  const hourText = Number(timeMatch[1])
+  const minute = timeMatch[2] ? Number(timeMatch[2]) : 0
+  const meridiem = timeMatch[3].toLowerCase()
+  if (!hourText || minute > 59) return undefined
+
+  let hour = hourText
+  if (meridiem.startsWith('p')) {
+    hour = hourText === 12 ? 12 : hourText + 12
+  } else {
+    hour = hourText === 12 ? 0 : hourText
+  }
+  if (hour > 23) return undefined
+
+  const year = base.getUTCFullYear()
+  const month = base.getUTCMonth() + 1
+  const day = base.getUTCDate()
+  const monthText = String(month).padStart(2, '0')
+  const dayText = String(day).padStart(2, '0')
+  const hourOut = String(hour).padStart(2, '0')
+  const minuteOut = String(minute).padStart(2, '0')
+  return `${year}-${monthText}-${dayText}T${hourOut}:${minuteOut}:00${easternOffsetFor(month)}`
+}
+
 function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] | undefined {
-  if (!/\b(recurring|repeat(?:ing)?|every|weekly|daily)\b/i.test(text)) {
+  if (!/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|foreseeable future)\b/i.test(text)) {
     return undefined
   }
   const cadence = /\bdaily|every\s+day\b/i.test(text) ? 'daily' : 'weekly'
   let duration: '1_month' | '3_months' | 'ongoing' = '1_month'
   if (/\bthree\s+months?|3\s+months?\b/i.test(text)) {
     duration = '3_months'
-  } else if (/\bongoing|until\s+i\s+stop|for\s+now\b/i.test(text)) {
+  } else if (/\bongoing|until\s+i\s+stop|for\s+now|foreseeable future\b/i.test(text)) {
     duration = 'ongoing'
   }
   return { cadence, duration }
@@ -138,7 +221,12 @@ export function mergeCalendarKnownFieldsFromText(
     next.description = null
   }
 
-  if (/\btik\s*tok\b/.test(normalized) || /\btiktok\b/.test(normalized)) {
+  if (
+    (/\btik\s*tok\b/.test(normalized) || /\btiktok\b/.test(normalized)) &&
+    /\bfacebook\b/.test(normalized)
+  ) {
+    next.platform = 'Facebook Live + TikTok Live'
+  } else if (/\btik\s*tok\b/.test(normalized) || /\btiktok\b/.test(normalized)) {
     next.platform = 'TikTok'
   } else if (/\bfacebook\b/.test(normalized)) {
     next.platform = 'Facebook Live'
@@ -155,7 +243,7 @@ export function mergeCalendarKnownFieldsFromText(
     next.timeZone = 'America/New_York'
   }
 
-  const eventTime = parseNaturalEventTime(text)
+  const eventTime = parseNaturalEventTime(text) ?? parseWeekdayEventTime(text)
   if (eventTime) next.eventTime = eventTime
 
   const recurring = parseRecurring(text)
@@ -178,8 +266,10 @@ export function mergeCalendarKnownFieldsFromText(
     next.discountCodes = [...(next.discountCodes ?? []), { code }]
   }
 
-  const collectionMatch = text.match(/\bfeatured collection(?:\s+will be|\s+is|:)?\s+([^.,\n]+)/i)
-  const collection = cleanText(collectionMatch?.[1])
+  const collectionMatch = text.match(
+    /\bfeature(?:d)? collection(?:\s+for\s+the\s+first\s+\w+\s+shows?)?(?:\s+will be|\s+is|:)?\s+([^.,\n]+)/i,
+  )
+  const collection = cleanText(collectionMatch?.[1])?.replace(/^the\s+/i, '')
   if (collection && !next.featuredCollections?.includes(collection)) {
     next.featuredCollections = [...(next.featuredCollections ?? []), collection]
   }

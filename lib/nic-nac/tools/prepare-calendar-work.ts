@@ -90,8 +90,10 @@ function includesSeriesLanguage(text: string) {
     /\bevery\b/,
     /\bfuture\b/,
     /\bseries\b/,
+    /\bre[- ]?occur(?:ring|s)?\b/,
     /\brecurring\b/,
     /\bongoing\b/,
+    /\bforeseeable future\b/,
     /\bmon(day)?s?\b/,
     /\btue(s|sday)?s?\b/,
     /\bwed(nesday)?s?\b/,
@@ -104,9 +106,11 @@ function includesSeriesLanguage(text: string) {
 
 function includesAddShowLanguage(text: string) {
   return hasAny(text, [
-    /\b(add|schedule|set up|create)\b[\s\S]{0,120}\b(show|live|event|calendar)\b/,
+    /\b(add|schedule|set up|create|put)\b[\s\S]{0,120}\b(show|live|event|calendar)\b/,
     /\bnew\b[\s\S]{0,100}\b(one[- ]?time|show|live|event)\b/,
     /\breplace\b[\s\S]{0,140}\bwith\b[\s\S]{0,100}\bnew\b[\s\S]{0,100}\b(show|live|event)\b/,
+    /\bre[- ]?occur(?:ring|s)?\b/,
+    /\bforeseeable future\b/,
   ])
 }
 
@@ -118,7 +122,7 @@ function includesSpecificOneTimeCancelLanguage(text: string) {
       /\bcancel\b[\s\S]{0,100}\btitled\b/,
       /\bcancel\b[\s\S]{0,100}\bspecific\b[\s\S]{0,60}\b(show|live|event)\b/,
     ]) &&
-    !hasAny(text, [/\bfuture\b/, /\bseries\b/, /\brecurring\b/, /\bevery\b/, /\ball\b/])
+    !hasAny(text, [/\bfuture\b/, /\bseries\b/, /\bre[- ]?occur(?:ring|s)?\b/, /\brecurring\b/, /\bevery\b/, /\ball\b/])
   )
 }
 
@@ -214,7 +218,7 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
       /\b(skip|cancel|suspend)\b[\s\S]{0,60}\b(tonight|today|one|single|this)\b/,
       /\b(sick|ill|emergency|cannot make|can't make)\b[\s\S]{0,80}\b(show|live|tonight|today)\b/,
     ]) &&
-    !hasAny(text, [/\bfuture\b/, /\bseries\b/, /\brecurring\b/, /\bevery\b/, /\ball\b/])
+    !hasAny(text, [/\bfuture\b/, /\bseries\b/, /\bre[- ]?occur(?:ring|s)?\b/, /\brecurring\b/, /\bevery\b/, /\ball\b/])
   ) {
     return build({
       intent: 'skip_occurrence',
@@ -254,7 +258,7 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
   }
 
   if (
-    hasAny(text, [/\b(stop|cancel|end)\b[\s\S]{0,80}\b(series|recurring|future shows?|future lives?)\b/])
+    hasAny(text, [/\b(stop|cancel|end)\b[\s\S]{0,80}\b(series|recurring|re[- ]?occurring|future shows?|future lives?)\b/])
   ) {
     return build({
       intent: 'cancel_series_future',

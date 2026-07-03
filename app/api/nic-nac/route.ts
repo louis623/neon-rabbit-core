@@ -26,6 +26,7 @@ import {
   recordApprovalEvent,
 } from '@/lib/nic-nac/persistence'
 import {
+  addWorkspaceBaselineToolIntents,
   buildToolsForIntents,
   getToolIntentsForMessages,
   shouldRequireToolCallForMessages,
@@ -529,7 +530,9 @@ export async function POST(request: Request) {
   const requestedToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? latestToolIntents
-      : mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts)
+      : addWorkspaceBaselineToolIntents(
+          mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts),
+        )
   const toolPolicy = filterNicNacToolIntentsForContext(
     productContext,
     requestedToolIntents,

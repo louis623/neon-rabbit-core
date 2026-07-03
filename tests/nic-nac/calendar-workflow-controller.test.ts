@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   computeCalendarWorkflowReadiness,
   mergeCalendarKnownFieldsFromText,
 } from '@/lib/nic-nac/workflows/calendar-workflow-controller'
 
 describe('calendar workflow controller', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('does not require description for add_show readiness', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'add_show',
@@ -112,6 +116,42 @@ describe('calendar workflow controller', () => {
     expect(recurring.recurring).toEqual({
       cadence: 'weekly',
       duration: '3_months',
+    })
+  })
+
+  it('captures Louis Coffee and Fizz recurring setup language', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+
+    const afterRequest = mergeCalendarKnownFieldsFromText(
+      {},
+      'I want to create a reoccurring show on Wednesday mornings for the foreseeable future that starts at 9 a.m. The show will be called Coffee and Fizz. It will be Eastern Standard Time. No discount codes, but the feature collection for the first two shows will be the July Birthday Collection.',
+    )
+    const afterPlatformDuration = mergeCalendarKnownFieldsFromText(
+      afterRequest,
+      'The show will be dual streamed on both Facebook Live and TikTok Live, and it will have a three-hour duration.',
+    )
+    const readiness = computeCalendarWorkflowReadiness({
+      intent: 'add_show',
+      knownFields: afterPlatformDuration,
+      candidateEventIds: [],
+    })
+
+    expect(afterPlatformDuration).toMatchObject({
+      title: 'Coffee and Fizz',
+      platform: 'Facebook Live + TikTok Live',
+      eventTime: '2026-07-08T09:00:00-04:00',
+      timeZone: 'America/New_York',
+      durationMinutes: 180,
+      recurring: {
+        cadence: 'weekly',
+        duration: 'ongoing',
+      },
+      featuredCollections: ['July Birthday Collection'],
+    })
+    expect(readiness).toEqual({
+      phase: 'ready_to_add',
+      missingFields: [],
     })
   })
 

@@ -212,6 +212,16 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   ],
 }
 
+export function addWorkspaceBaselineToolIntents(
+  intents: NicNacToolIntent[],
+): NicNacToolIntent[] {
+  const merged = [...intents]
+  for (const intent of ['calendar'] as NicNacToolIntent[]) {
+    if (!merged.includes(intent)) merged.push(intent)
+  }
+  return merged
+}
+
 const REGISTRY_BY_NAME = new Map(REGISTRY.map((def) => [def.name, def]))
 
 export function getToolIntentsForText(text: string): NicNacToolIntent[] {
@@ -337,6 +347,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\bcalendar\b/,
       /\bschedule\b/,
       /\bupcoming\b/,
+      /\b(add|schedule|set up|create|put)\b[\s\S]{0,100}\b(show|live|event)\b/,
       /\bmove\b.*\bshow\b/,
       /\bcancel\b.*\bshow\b/,
       /\btonight\b.*\b(reminder|reminders|sms|text|email)\b/,
@@ -346,7 +357,9 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\b(stop|cancel|pause|suspend)\b.*\b(series|recurring|future shows?|future lives?)\b/,
       /\b(pause|suspend)\b[\s\S]{0,80}\b(two weeks?|week|weeks?|month|months?|until|through)\b/,
       /\b(code|discount)\b.*\b(all|every|future|mon(day)?s?|tue(s|sday)?s?|wed(nesday)?s?|thu(r|rsday)?s?|fri(day)?s?|sat(urday)?s?|sun(day)?s?|lives?)\b/,
+      /\bre[- ]?occur(?:ring|s)?\b/,
       /\brecurring\b/,
+      /\bforeseeable future\b/,
     ])
   ) {
     add('calendar')
@@ -689,17 +702,17 @@ function assistantIsDiscussingSiteEdit(text: string): boolean {
 
 function assistantIsDiscussingCalendarWork(text: string): boolean {
   return (
-    /\b(?:calendar|schedule|show|live|event|platform|timezone|time zone|duration|recurring|code|discount|featured collection|description)\b/i.test(
+    /\b(?:calendar|schedule|show|live|event|platform|timezone|time zone|duration|recurring|re[- ]?occurring|series|split|code|discount|featured collection|description)\b/i.test(
       text,
     ) &&
-    /\b(?:add|schedule|save|put|create|change|update|move|cancel|skip|pause|need|use|missing|what)\b/i.test(
+    /\b(?:add|schedule|save|put|create|change|update|move|cancel|skip|pause|need|use|missing|what|start|split|confirm)\b/i.test(
       text,
     )
   )
 }
 
 function textLooksLikeCalendarDetailFollowUp(text: string): boolean {
-  return /\b(?:tiktok|tik tok|facebook|instagram|youtube|live|eastern|central|mountain|pacific|standard time|daylight time|timezone|time zone|hours?|minutes?|duration|description|leave blank|no description|am|pm)\b/i.test(
+  return /\b(?:tiktok|tik tok|facebook|instagram|youtube|live|eastern|central|mountain|pacific|standard time|daylight time|timezone|time zone|hours?|minutes?|duration|description|leave blank|no description|am|pm|next\s+(?:mon|tue|wed|thu|fri|sat|sun)|yes to the split|start next)\b/i.test(
     text,
   )
 }

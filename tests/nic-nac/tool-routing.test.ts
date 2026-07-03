@@ -6,6 +6,7 @@ vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
 }))
 
 import {
+  addWorkspaceBaselineToolIntents,
   buildToolsForIntents,
   getToolIntentsForMessages,
   getToolIntentsForText,
@@ -518,6 +519,73 @@ describe('Nic-Nac tool routing', () => {
     expect(intents).toContain('calendar')
     expect(listToolNamesForIntents(intents)).toContain('add_show')
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('routes Louis reoccurring Coffee and Fizz transcript to calendar tools through final confirmation', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'So Nic-Nac, I want to create a reoccurring show on Wednesday mornings for the foreseeable future that starts at 9 a.m. The show will be called Coffee and Fizz. It will be Eastern Standard Time. No discount codes, but the feature collection for the first two shows will be the July Birthday Collection.',
+          },
+        ],
+      },
+      {
+        id: 'assistant-platform-duration',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Absolutely. I just need 2 things from you: What platform should Coffee and Fizz be on? How long should each show run? One quick note: featured collections apply to the whole recurring series, so the clean way is the first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection.',
+          },
+        ],
+      },
+      {
+        id: 'platform-duration',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'The show will be dual streamed on both Facebook Live and TikTok Live, and it will have a three-hour duration.',
+          },
+        ],
+      },
+      {
+        id: 'assistant-confirm',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Perfect. Do you want this to start next Wednesday, and do you want me to split it like this: first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection?',
+          },
+        ],
+      },
+      {
+        id: 'confirm',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Yes, start next Wednesday, and yes to the split.' }],
+      },
+    ]
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('calendar')
+    expect(listToolNamesForIntents(intents)).toContain('add_show')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps Calendar tools in the paid workspace baseline even for a terse confirmation turn', () => {
+    const intents = addWorkspaceBaselineToolIntents(['memory'])
+
+    expect(intents).toEqual(['memory', 'calendar'])
+    expect(listToolNamesForIntents(intents)).toContain('add_show')
+    expect(listToolNamesForIntents(intents)).toContain('cancel_show')
   })
 
   it('routes physical inventory add language to trade-board tools', () => {

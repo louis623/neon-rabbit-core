@@ -70,7 +70,7 @@ function inferCalendarIntent(messages: UIMessage[]): CalendarWorkflowIntent {
     .join('\n')
     .toLowerCase()
 
-  if (/\b(add|schedule|set up|create)\b[\s\S]{0,100}\b(show|live|event|calendar)\b/.test(recentText)) {
+  if (/\b(add|schedule|set up|create|put)\b[\s\S]{0,100}\b(show|live|event|calendar)\b/.test(recentText)) {
     return 'add_show'
   }
   if (/\breplace\b[\s\S]{0,120}\bwith\b[\s\S]{0,80}\bnew\b[\s\S]{0,80}\b(show|live|event)\b/.test(recentText)) {
