@@ -19,6 +19,7 @@ type UiPart = UIMessage['parts'][number] & {
   type?: string
   text?: string
   state?: string
+  output?: unknown
   approval?: { id?: string; approved?: boolean }
 }
 
@@ -57,6 +58,7 @@ type SmokeStatus =
   | 'api_failed'
   | 'tool_not_observed'
   | 'approval_not_found'
+  | 'approval_output_timeout'
   | 'database_assertion_failed'
   | 'public_site_assertion_failed'
 
@@ -271,6 +273,42 @@ async function waitForCanonicalHistory(input: {
   )
 }
 
+async function waitForApprovedToolOutput(input: {
+  supabase: Supabase
+  conversationId: string
+  expectedAssistantCount: number
+  toolName: string
+  approvalId: string
+}) {
+  const startedAt = Date.now()
+  let latest: UIMessage[] = []
+  let latestState = 'missing'
+  while (Date.now() - startedAt < MAX_HISTORY_WAIT_MS) {
+    latest = await loadCanonicalHistory(input.supabase, input.conversationId)
+    const assistantCount = latest.filter((message) => message.role === 'assistant').length
+    if (assistantCount >= input.expectedAssistantCount) {
+      for (const message of latest.filter((m) => m.role === 'assistant').reverse()) {
+        for (const part of message.parts ?? []) {
+          const toolPart = part as UiPart
+          if (toolPart.type !== `tool-${input.toolName}`) continue
+          if (toolPart.approval?.id !== input.approvalId) continue
+          latestState = toolPart.state ?? 'missing-state'
+          if (toolPart.state === 'output-available') return latest
+          if (toolPart.state === 'output-error') {
+            throw new Error(
+              `Approval tool ${input.toolName} returned output-error for ${input.approvalId}.`,
+            )
+          }
+        }
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, HISTORY_POLL_MS))
+  }
+  throw new Error(
+    `approval output timeout: ${input.toolName} ${input.approvalId} never reached output-available; latest state=${latestState}; canonical message count=${latest.length}.`,
+  )
+}
+
 function extractAssistantText(messages: UIMessage[]) {
   return messages
     .filter((message) => message.role === 'assistant')
@@ -406,10 +444,12 @@ async function approveTurn(input: {
     conversationId: input.conversationId,
     messages: approvedMessages,
   })
-  const history = await waitForCanonicalHistory({
+  const history = await waitForApprovedToolOutput({
     supabase: input.supabase,
     conversationId: input.conversationId,
     expectedAssistantCount: input.expectedAssistantCount,
+    toolName: input.toolName,
+    approvalId: approval.approvalId,
   })
   const assistantText = extractAssistantText(history)
   assertNoHardFails(assistantText)
@@ -490,6 +530,7 @@ async function assertPublicSiteData(input: {
 
 function classify(error: unknown): SmokeStatus {
   const message = error instanceof Error ? error.message : String(error)
+  if (message.includes('approval output timeout')) return 'approval_output_timeout'
   if (message.includes('approval')) return 'approval_not_found'
   if (message.includes('Did not observe')) return 'tool_not_observed'
   if (message.includes('database assertion')) return 'database_assertion_failed'

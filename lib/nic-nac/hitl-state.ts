@@ -113,3 +113,30 @@ export function findActionableApproval(
   }
   return null
 }
+
+export function shouldCheckpointContinuation(input: {
+  isAborted: boolean
+  streamErrorMessage?: string
+  parts: UIMessage['parts']
+}): boolean {
+  if (!input.isAborted && !input.streamErrorMessage) return true
+  if ((input.parts ?? []).length === 0) return false
+  return !hasOutputlessApprovalResponse(input.parts)
+}
+
+function hasOutputlessApprovalResponse(parts: UIMessage['parts']): boolean {
+  return (parts ?? []).some((part) => {
+    const p = part as {
+      type?: string
+      state?: string
+      output?: unknown
+      approval?: { id?: string; approved?: boolean }
+    }
+    return (
+      p.type?.startsWith('tool-') === true &&
+      p.state === 'approval-responded' &&
+      p.approval?.id != null &&
+      p.output === undefined
+    )
+  })
+}

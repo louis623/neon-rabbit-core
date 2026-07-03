@@ -58,4 +58,67 @@ describe('Nic-Nac model context selection', () => {
     expect(selected.messages).toEqual([messages[1]])
     expect(selected.wasCompacted).toBe(true)
   })
+
+  it('strips stale output-less approval tool parts before a later user turn', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'u1',
+        role: 'user',
+        parts: [{ type: 'text', text: 'cancel the show' }],
+      } as UIMessage,
+      {
+        id: 'a1',
+        role: 'assistant',
+        parts: [
+          { type: 'step-start' },
+          {
+            type: 'tool-cancel_show',
+            state: 'approval-requested',
+            toolName: 'cancel_show',
+            input: { eventId: 'event-1' },
+            approval: { id: 'approval-1' },
+          },
+        ],
+      } as unknown as UIMessage,
+      {
+        id: 'u2',
+        role: 'user',
+        parts: [{ type: 'text', text: 'now cancel the weekly series' }],
+      } as UIMessage,
+    ]
+
+    const selected = selectMessagesForModel(messages)
+
+    expect(selected.messages.map((message) => message.id)).toEqual(['u1', 'u2'])
+    expect(selected.wasCompacted).toBe(true)
+  })
+
+  it('preserves the last assistant approval response for HITL continuation', () => {
+    const messages: UIMessage[] = [
+      {
+        id: 'u1',
+        role: 'user',
+        parts: [{ type: 'text', text: 'cancel the show' }],
+      } as UIMessage,
+      {
+        id: 'a1',
+        role: 'assistant',
+        parts: [
+          { type: 'step-start' },
+          {
+            type: 'tool-cancel_show',
+            state: 'approval-responded',
+            toolName: 'cancel_show',
+            input: { eventId: 'event-1' },
+            approval: { id: 'approval-1', approved: true },
+          },
+        ],
+      } as unknown as UIMessage,
+    ]
+
+    const selected = selectMessagesForModel(messages)
+
+    expect(selected.messages).toEqual(messages)
+    expect(selected.wasCompacted).toBe(false)
+  })
 })

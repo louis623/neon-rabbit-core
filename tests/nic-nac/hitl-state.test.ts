@@ -17,6 +17,7 @@ import {
   decideAssistantMessageId,
   approvalRequestedInLastStep,
   findActionableApproval,
+  shouldCheckpointContinuation,
 } from '@/lib/nic-nac/hitl-state'
 import { loadConversationForClient } from '@/lib/nic-nac/persistence'
 
@@ -268,6 +269,52 @@ describe('findActionableApproval', () => {
       } as unknown as UIMessage,
     ]
     expect(findActionableApproval(messages)).toBeNull()
+  })
+})
+
+// -- shouldCheckpointContinuation ---------------------------------------
+
+describe('shouldCheckpointContinuation', () => {
+  it('allows clean continuation finishes to persist merged tool output', () => {
+    expect(
+      shouldCheckpointContinuation({
+        isAborted: false,
+        parts: [
+          { type: 'step-start' },
+          {
+            type: 'tool-cancel_show',
+            state: 'output-available',
+            approval: { id: 'approval-1', approved: true },
+            output: { status: 'cancelled' },
+          } as UIMessage['parts'][number],
+        ],
+      }),
+    ).toBe(true)
+  })
+
+  it('blocks aborted continuation checkpoints with empty parts', () => {
+    expect(
+      shouldCheckpointContinuation({
+        isAborted: true,
+        parts: [],
+      }),
+    ).toBe(false)
+  })
+
+  it('blocks aborted continuation checkpoints that only have an output-less approval response', () => {
+    expect(
+      shouldCheckpointContinuation({
+        isAborted: true,
+        parts: [
+          { type: 'step-start' },
+          {
+            type: 'tool-cancel_show',
+            state: 'approval-responded',
+            approval: { id: 'approval-1', approved: true },
+          } as UIMessage['parts'][number],
+        ],
+      }),
+    ).toBe(false)
   })
 })
 

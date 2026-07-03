@@ -6,6 +6,8 @@
 //   (c) recorded parts replay cleanly
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { UIMessage } from 'ai'
+import { shouldCheckpointContinuation } from '@/lib/nic-nac/hitl-state'
 
 // Module under test mocks: we don't import the route directly because Next
 // route handlers expect a Request object and full request lifecycle. Instead
@@ -92,14 +94,23 @@ async function onFinish(
     parts: unknown
     isAborted: boolean
     isContinuation?: boolean
+    streamErrorMessage?: string
   }
 ) {
   if (args.isContinuation) {
-    store.checkpointAssistant({
-      conversationId: args.conversationId,
-      messageId: args.messageId,
-      parts: args.parts,
-    })
+    if (
+      shouldCheckpointContinuation({
+        isAborted: args.isAborted,
+        streamErrorMessage: args.streamErrorMessage,
+        parts: args.parts as UIMessage['parts'],
+      })
+    ) {
+      store.checkpointAssistant({
+        conversationId: args.conversationId,
+        messageId: args.messageId,
+        parts: args.parts,
+      })
+    }
     return
   }
   if (args.isAborted) {
@@ -281,20 +292,27 @@ describe('abort-modes', () => {
     expect(store.abortAssistant).not.toHaveBeenCalled()
   })
 
-  it('HITL continuation aborted mid-resume: status stays complete, parts updated to whatever streamed', async () => {
-    // If the resume stream dies mid-flight, we still want the original row
-    // to stay 'complete' (the prior turn committed cleanly) and the partial
-    // post-approval parts to be persisted. Flipping status to 'aborted' here
-    // would erase the approval-asking turn from canonical history because
-    // loadCanonicalHistory drops non-complete assistant rows.
+  it('HITL continuation aborted mid-resume: status stays complete and output-less approval response is not checkpointed', async () => {
+    // If the resume stream dies before a tool result exists, keep the prior
+    // complete row intact. Persisting a half-state approval-responded part
+    // would poison the next model turn with a tool call that has no result.
     const conversationId = 'conv-6'
     const messageId = 'msg-6-assistant'
+    const priorParts = [
+      { type: 'step-start' },
+      {
+        type: 'tool-remove_listing',
+        state: 'approval-requested',
+        toolName: 'remove_listing',
+        approval: { id: 'approval-x' },
+      },
+    ]
     store.conv.push({
       conversation_id: conversationId,
       message_id: messageId,
       rep_id: 'rep-1',
       role: 'assistant',
-      parts: [],
+      parts: priorParts,
       status: 'complete',
     })
 
@@ -317,7 +335,45 @@ describe('abort-modes', () => {
 
     const row = store.conv.find((r) => r.message_id === messageId)
     expect(row?.status).toBe('complete')
-    expect(row?.parts).toEqual(partial)
+    expect(row?.parts).toEqual(priorParts)
+    expect(store.checkpointAssistant).not.toHaveBeenCalled()
+    expect(store.abortAssistant).not.toHaveBeenCalled()
+  })
+
+  it('HITL continuation aborted after tool output: status stays complete and terminal output can checkpoint', async () => {
+    const conversationId = 'conv-7'
+    const messageId = 'msg-7-assistant'
+    store.conv.push({
+      conversation_id: conversationId,
+      message_id: messageId,
+      rep_id: 'rep-1',
+      role: 'assistant',
+      parts: [],
+      status: 'complete',
+    })
+
+    const terminalParts = [
+      { type: 'step-start' },
+      {
+        type: 'tool-remove_listing',
+        state: 'output-available',
+        toolName: 'remove_listing',
+        approval: { id: 'approval-y', approved: true },
+        output: { status: 'removed' },
+      },
+    ]
+    await onFinish(store, {
+      conversationId,
+      messageId,
+      parts: terminalParts,
+      isAborted: true,
+      isContinuation: true,
+    })
+
+    const row = store.conv.find((r) => r.message_id === messageId)
+    expect(row?.status).toBe('complete')
+    expect(row?.parts).toEqual(terminalParts)
+    expect(store.checkpointAssistant).toHaveBeenCalledTimes(1)
     expect(store.abortAssistant).not.toHaveBeenCalled()
   })
 })

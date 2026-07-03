@@ -34,7 +34,10 @@ import {
 import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
-import { decideAssistantMessageId } from '@/lib/nic-nac/hitl-state'
+import {
+  decideAssistantMessageId,
+  shouldCheckpointContinuation,
+} from '@/lib/nic-nac/hitl-state'
 import { selectMessagesForModel } from '@/lib/nic-nac/model-context'
 import {
   logNicNacRun,
@@ -646,11 +649,17 @@ export async function POST(request: Request) {
             .map((part) => (part as { text?: string }).text ?? ''),
         )
         if (sdkIsContinuation) {
-          await checkpointAssistant(supabase, {
-            conversationId,
-            messageId: responseMessage.id,
+          if (shouldCheckpointContinuation({
+            isAborted,
+            streamErrorMessage,
             parts: normalizedParts,
-          })
+          })) {
+            await checkpointAssistant(supabase, {
+              conversationId,
+              messageId: responseMessage.id,
+              parts: normalizedParts,
+            })
+          }
         } else if (isAborted || streamErrorMessage) {
           await abortAssistant(supabase, {
             conversationId,

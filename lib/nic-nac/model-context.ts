@@ -50,13 +50,50 @@ export function selectMessagesForModel(
     estimatedTokens += messageTokens
   }
 
-  const wasCompacted = selected.length < messages.length
+  const messagesForModel = stripHistoricalOutputlessApprovalParts(selected)
+  const wasCompacted = messagesForModel.length < messages.length
   return {
-    messages: selected,
+    messages: messagesForModel,
     wasCompacted,
-    droppedMessageCount: messages.length - selected.length,
+    droppedMessageCount: messages.length - messagesForModel.length,
     estimatedTokens,
   }
+}
+
+function stripHistoricalOutputlessApprovalParts(messages: UIMessage[]): UIMessage[] {
+  return messages.flatMap((message, index) => {
+    if (message.role !== 'assistant') return [message]
+
+    // HITL resume posts end with the assistant message that contains the
+    // approval response. That last assistant turn must be left intact so the
+    // SDK can execute the approved/denied tool.
+    if (index === messages.length - 1) return [message]
+
+    const parts = message.parts ?? []
+    const nextParts = parts.filter((part) => !isOutputlessApprovalToolPart(part))
+    if (nextParts.length === parts.length) return [message]
+    if (nextParts.length === 0 || !nextParts.some(isModelRelevantPart)) return []
+    return [{ ...message, parts: nextParts as UIMessage['parts'] }]
+  })
+}
+
+function isOutputlessApprovalToolPart(part: UIMessage['parts'][number]): boolean {
+  const p = part as {
+    type?: string
+    state?: string
+    output?: unknown
+    approval?: { id?: string }
+  }
+  return (
+    p.type?.startsWith('tool-') === true &&
+    p.approval?.id != null &&
+    p.output === undefined &&
+    (p.state === 'approval-requested' || p.state === 'approval-responded')
+  )
+}
+
+function isModelRelevantPart(part: UIMessage['parts'][number]): boolean {
+  return (part as { type?: string }).type !== 'step-start'
 }
 
 function estimateMessageTokens(message: UIMessage): number {
