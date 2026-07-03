@@ -72,7 +72,7 @@ export function makeAddShowTool(ctx: {
         const workflowRecurring = calendarWorkflowRecurringMatchesInput(ctx.activeCalendarWorkflow, input)
           ? ctx.activeCalendarWorkflow?.knownFields.recurring
           : undefined
-        const mergedInput = workflowRecurring && !input.recurring
+        const mergedInput = workflowRecurring
           ? { ...input, recurring: workflowRecurring }
           : input
         const safeInput =

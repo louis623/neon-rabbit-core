@@ -252,6 +252,37 @@ describe('calendar tools', () => {
     )
   })
 
+  it('add_show lets active workflow recurrence override model occurrence-count drift', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 13, events: [calendarEvent({ isRecurring: true })] })
+    const workflowRecurring = { cadence: 'weekly' as const, duration: '3_months' as const }
+    const modelRecurring = { ...workflowRecurring, occurrenceCount: 13 }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: {
+        ...makeCalendarWorkflow(workflowRecurring),
+        knownFields: {
+          title: 'Codex Pressure Weekly Series',
+          recurring: workflowRecurring,
+        },
+      },
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'Facebook Live',
+      eventTime: '2026-07-03T22:09:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Codex Pressure Weekly Series',
+      durationMinutes: 120,
+      recurring: modelRecurring,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ recurring: workflowRecurring }),
+    )
+  })
+
   it('add_show does not apply stale workflow recurrence to a different title', async () => {
     addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
     const recurring = { cadence: 'weekly' as const, duration: '3_months' as const }
