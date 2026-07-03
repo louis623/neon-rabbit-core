@@ -185,11 +185,14 @@ Nic-Nac should not be the homepage concept, primary navigation label, or first t
 
 ## Mobile-App Posture
 
-Design the web app as if it will become a mobile app soon.
+Design the web app as if it will also become a mobile app soon.
+
+Sparkle Finder must remain a first-class website that customers can open, log into, and use through the browser. The App Store and Google Play direction is an additional distribution path, not a replacement for the Sparkle Finder website.
 
 Requirements:
 
 - Thumb-friendly primary actions.
+- Browser-safe responsive layout.
 - Bottom-nav-friendly route set.
 - Minimal above-the-fold copy.
 - No dense command grids.
@@ -197,7 +200,7 @@ Requirements:
 - Lazy loading for collection content.
 - Clear empty states for new users.
 
-The first production pass can keep web routes and server-rendered data. It should simply adopt a mobile-app mental model.
+The first production pass should keep web routes and server-rendered data. It should adopt a mobile-app mental model while preserving normal website access, deep links, auth redirects, and responsive desktop/tablet behavior.
 
 ## Out Of Scope
 
@@ -245,4 +248,3 @@ Likely code areas:
 - homepage smoke tests
 
 The safest implementation path is to replace `FinderCommandCenter` with a simpler app-home component and keep the existing Bling Vault components underneath it.
-
