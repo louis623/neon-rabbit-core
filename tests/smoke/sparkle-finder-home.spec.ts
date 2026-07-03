@@ -81,7 +81,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
   });
 
   for (const viewport of viewports) {
-    test(`${viewport.name} authenticated homepage renders unified Nic-Nac Home and Bling Vault`, async ({ page }) => {
+    test(`${viewport.name} authenticated homepage renders simple app home and preserved Finder flows`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.context().clearCookies();
       await page.context().addCookies([
@@ -94,33 +94,44 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
       await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-      await expect(page.locator('[data-smoke="hero"]')).toBeVisible();
-      await expect(page.locator('[data-smoke="finder-command-center"]')).toBeVisible();
+      await expect(page.locator('[data-smoke="simple-finder-home"]')).toBeVisible();
+      await expect(page.locator('[data-smoke="find-piece-panel"]')).toBeVisible();
       await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
-      await expect(page.getByText("Ask Nic-Nac or tap a simple action.")).toBeVisible();
+      await expect(page.getByText("Find the pieces you love.")).toBeVisible();
+      await expect(page.getByText("Build your collection with Sparkle Finder.")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Find a Piece" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "My Collection" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Browse Library" }).first()).toBeVisible();
+      await expect(page.getByText("Nic-Nac Home")).toHaveCount(0);
+      await expect(page.getByText("Ask Nic-Nac or tap a simple action.")).toHaveCount(0);
       await expect(page.getByText("Hero Piece")).toBeVisible();
-      await expect(page.getByText("Bling Vault Mosaic")).toBeVisible();
+      const vault = page.locator('[data-smoke="homepage-bling-vault"]');
+      await expect(vault.getByText("Bling Vault").first()).toBeVisible();
       await expect(page.getByText("My Collection Preview")).toHaveCount(0);
 
-      const commandCenter = page.locator('[data-smoke="finder-command-center"]');
-      await expect(commandCenter.getByText("Owned", { exact: true })).toBeVisible();
-      await expect(commandCenter.getByText("Wishlist", { exact: true })).toBeVisible();
-      await expect(commandCenter.getByText("Diamonds", { exact: true })).toBeVisible();
-      await expect(commandCenter.getByText("Unicorns", { exact: true })).toBeVisible();
-      await expect(commandCenter.getByText("Found by Sparkle Finder", { exact: true })).toBeVisible();
-      await expect(commandCenter.getByText("Featured", { exact: true })).toHaveCount(0);
-      await expect(commandCenter.getByText("Saved", { exact: true })).toHaveCount(0);
+      const simpleHome = page.locator('[data-smoke="simple-finder-home"]');
+      await expect(simpleHome.getByText("Owned", { exact: true })).toBeVisible();
+      await expect(simpleHome.getByText("Wishlist", { exact: true })).toBeVisible();
+      await expect(simpleHome.getByText("Diamonds", { exact: true })).toBeVisible();
+      await expect(simpleHome.getByText("Unicorns", { exact: true })).toBeVisible();
+      await expect(simpleHome.getByText("Found by Sparkle Finder", { exact: true })).toBeVisible();
+      await expect(simpleHome.getByText("Featured", { exact: true })).toHaveCount(0);
+      await expect(simpleHome.getByText("Saved", { exact: true })).toHaveCount(0);
+      await expect(page.getByRole("link", { name: "Live Shows" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Rep Boards" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Favorite Reps" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Collectors" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Photo Setup Guide" })).toBeVisible();
 
       const vaultTiles = page.locator('[data-smoke="bling-vault-tile"]');
       await expect(vaultTiles.first()).toBeVisible();
       expect(await vaultTiles.count()).toBeLessThanOrEqual(8);
 
-      const vault = page.locator('[data-smoke="homepage-bling-vault"]');
       await expect(vault.locator('[data-smoke="library-image-frame"]').first()).toBeVisible();
       expect(await vault.locator('[data-smoke="library-image-frame"]').count()).toBeGreaterThan(1);
 
-      await expectNoOverlap(page.locator('[data-smoke="hero"]'), page.locator('[data-smoke="finder-command-center"]'), "hero", "command center");
-      await expectNoOverlap(page.locator('[data-smoke="finder-command-center"]'), page.locator('[data-smoke="homepage-bling-vault"]'), "command center", "Bling Vault");
+      await expectNoOverlap(page.locator('[data-smoke="simple-finder-home"]'), page.locator('[data-smoke="find-piece-panel"]'), "simple home", "find panel");
+      await expectNoOverlap(page.locator('[data-smoke="find-piece-panel"]'), page.locator('[data-smoke="homepage-bling-vault"]'), "find panel", "Bling Vault");
 
       await page.locator(".sparkle-finder-site-footer").scrollIntoViewIfNeeded();
       await expect(page.locator(".sparkle-finder-site-footer")).toBeVisible();
@@ -148,7 +159,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.goto(`${baseUrl}/auth/sign-in`, { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: /Preview Sparkle Mama/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
+    await expect(page.getByText("Find the pieces you love.")).toBeVisible();
     await expect(page.locator('[data-smoke="homepage-bling-vault"]')).toBeVisible();
 
     await page.goto(`${baseUrl}/account`, { waitUntil: "domcontentloaded" });
@@ -192,7 +203,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.getByRole("link", { name: /Continue as Marlena/ }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
-    await expect(page.getByText("Today across Sparkle Suite")).toBeVisible();
+    await expect(page.getByText("Find the pieces you love.")).toBeVisible();
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Marlena's Sparkle Showcase")).toBeVisible();

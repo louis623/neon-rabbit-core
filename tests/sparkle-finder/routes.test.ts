@@ -64,16 +64,25 @@ describe("Sparkle Finder hub routes", () => {
     const markup = renderToStaticMarkup(
       renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
     );
+    const navMarkup = extractNavMarkup(markup);
 
     expect(markup).toContain("Sparkle Finder");
     expect(markup).toContain("Finder Dashboard");
-    expect(markup).toContain("/library");
+    expect(navMarkup).toContain('href="/"');
+    expect(navMarkup).toContain(">Home<");
+    expect(navMarkup).toContain('href="/library"');
+    expect(navMarkup).toContain(">Library<");
+    expect(navMarkup).toContain('href="/#find-a-piece"');
+    expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).toContain('href="/account"');
+    expect(navMarkup).not.toContain('href="/rep-boards"');
+    expect(navMarkup).not.toContain('href="/live-shows"');
+    expect(navMarkup).not.toContain('href="/favorites"');
+    expect(navMarkup).not.toContain('href="/collectors"');
     expect(markup).toContain("/rep-boards");
     expect(markup).toContain("/live-shows");
     expect(markup).toContain("/favorites");
-    expect(markup).toContain(">Favorites<");
     expect(markup).toContain("/collectors");
-    expect(markup).toContain(">Collectors<");
     expect(markup).not.toContain("/shop");
   });
 
@@ -81,20 +90,23 @@ describe("Sparkle Finder hub routes", () => {
     const markup = renderToStaticMarkup(
       renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
     );
+    const navMarkup = extractNavMarkup(markup);
 
-    expect(markup).toContain("sparkle-finder-mobile-menu");
-    expect(markup).toContain("<summary");
-    expect(markup).toContain(">Menu<");
-    expect(markup).toContain('href="/library"');
-    expect(markup).toContain('href="/live-shows"');
-    expect(markup).toContain('href="/rep-boards"');
-    expect(markup).toContain('href="/favorites"');
-    expect(markup).toContain(">Favorites<");
-    expect(markup).toContain('href="/collectors"');
-    expect(markup).toContain(">Collectors<");
-    expect(markup).not.toContain('href="/shop"');
-    expect(markup).toContain('href="/auth/sign-out"');
-    expect(markup).toContain(">Log Out<");
+    expect(navMarkup).toContain("sparkle-finder-mobile-menu");
+    expect(navMarkup).toContain("<summary");
+    expect(navMarkup).toContain(">Menu<");
+    expect(navMarkup).toContain('href="/"');
+    expect(navMarkup).toContain(">Home<");
+    expect(navMarkup).toContain('href="/library"');
+    expect(navMarkup).toContain('href="/#find-a-piece"');
+    expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).not.toContain('href="/live-shows"');
+    expect(navMarkup).not.toContain('href="/rep-boards"');
+    expect(navMarkup).not.toContain('href="/favorites"');
+    expect(navMarkup).not.toContain('href="/collectors"');
+    expect(navMarkup).not.toContain('href="/shop"');
+    expect(navMarkup).toContain('href="/auth/sign-out"');
+    expect(navMarkup).toContain(">Log Out<");
   });
 
   it("shows a sign-in wall for anonymous hub visitors", () => {
@@ -304,59 +316,102 @@ describe("Sparkle Finder hub routes", () => {
 
   it("renders the main homepage with app navigation for signed-in customers", () => {
     const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
+    const navMarkup = extractNavMarkup(markup);
 
-    expect(markup).toContain("Sparkle Finder primary navigation");
-    expect(markup).toContain('href="/library"');
-    expect(markup).toContain('href="/live-shows"');
-    expect(markup).toContain('href="/rep-boards"');
+    expect(navMarkup).toContain("Sparkle Finder primary navigation");
+    expect(navMarkup).toContain('href="/"');
+    expect(navMarkup).toContain(">Home<");
+    expect(navMarkup).toContain('href="/library"');
+    expect(navMarkup).toContain(">Library<");
+    expect(navMarkup).toContain('href="/#find-a-piece"');
+    expect(navMarkup).toContain(">Find<");
+    expect(navMarkup).toContain('href="/account"');
+    expect(navMarkup).toContain(">Silver<");
+    expect(navMarkup).not.toContain('href="/shop"');
+    expect(navMarkup).not.toContain('href="/live-shows"');
+    expect(navMarkup).not.toContain('href="/rep-boards"');
+    expect(navMarkup).not.toContain('href="/favorites"');
+    expect(navMarkup).not.toContain('href="/collectors"');
+    expect(navMarkup).not.toContain(">Showcase<");
     expect(markup).not.toContain('href="/shop"');
-    expect(markup).toContain('href="/photo-setup"');
-    expect(markup).toContain('href="/account"');
-    expect(markup).toContain(">Silver<");
-    expect(markup).toContain("Today across Sparkle Suite");
-    expect(markup).toContain('data-smoke="finder-command-center"');
+    expect(markup).not.toContain("Today across Sparkle Suite");
+    expect(markup).not.toContain('data-smoke="finder-command-center"');
+    expect(markup).toContain('data-smoke="simple-finder-home"');
+    expect(markup).toContain('data-smoke="find-piece-panel"');
     expect(markup).toContain('data-smoke="homepage-bling-vault"');
-    expect(markup).toContain("Ask Nic-Nac or tap a simple action.");
+    expect(markup).toContain("Find the pieces you love.");
+    expect(markup).toContain("Build your collection with Sparkle Finder.");
+    expect(markup).toContain("Find a Piece");
+    expect(markup).toContain("My Collection");
+    expect(markup).toContain("Browse Library");
     expect(markup).toContain("Bling Vault");
     expect(markup).toContain("Hero Piece");
     expect(markup).toContain("Wishlist");
     const vaultMarkup = markup.slice(markup.indexOf('data-smoke="homepage-bling-vault"'));
     expect(vaultMarkup.indexOf("Hero Piece")).toBeLessThan(vaultMarkup.indexOf("Wishlist"));
-    expect(vaultMarkup.indexOf("Wishlist")).toBeLessThan(vaultMarkup.indexOf("Bling Vault Mosaic"));
+    expect(vaultMarkup.indexOf("Wishlist")).toBeLessThan(
+      vaultMarkup.indexOf("Your collection, loaded as you scroll."),
+    );
     expect((markup.match(/data-smoke="bling-vault-tile"/g) ?? []).length).toBeLessThanOrEqual(8);
-    expect(markup).toContain("Photo Setup Guide");
     expect(markup).not.toContain("My Collection Preview");
     expect(markup).not.toContain("Sparkle Finder public navigation");
     expect(markup).not.toContain("Start free Silver trial");
     expect(markup).not.toContain(">Sign in<");
   });
 
-  it("renders authenticated home as a unified Nic-Nac command center and Bling Vault", () => {
+  it("renders authenticated home as a simple app home with preserved collection stats", () => {
     const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
-    const commandCenterMarkup = markup.slice(
-      markup.indexOf('data-smoke="finder-command-center"'),
+    const homeMarkup = markup.slice(
+      markup.indexOf('data-smoke="simple-finder-home"'),
       markup.indexOf('data-smoke="homepage-bling-vault"'),
     );
 
-    expect(markup).toContain('data-smoke="finder-command-center"');
+    expect(markup).toContain('data-smoke="simple-finder-home"');
+    expect(markup).toContain('data-smoke="find-piece-panel"');
     expect(markup).toContain('data-smoke="homepage-bling-vault"');
-    expect(markup).toContain("Collector profile");
-    expect(markup).toContain("Your Finder Space");
+    expect(markup).not.toContain("Nic-Nac Home");
+    expect(markup).not.toContain("Ask Nic-Nac or tap a simple action.");
+    expect(markup).not.toContain("Command Center");
+    expect(markup).not.toContain("Open Showcase Studio");
+    expect(markup).toContain("Add a Missing Piece");
+    expect(markup).toContain("Find the pieces you love.");
+    expect(markup).toContain("Build your collection with Sparkle Finder.");
+    expect(markup).toContain("Check my Wishlist");
+    expect(markup).toContain("Ask Nic-Nac for Help");
+    expect(markup).toContain("Live Shows");
+    expect(markup).toContain("Rep Boards");
+    expect(markup).toContain("Favorite Reps");
+    expect(markup).toContain("Collectors");
     expect(markup).not.toContain("Trial access");
-    expect(markup).toContain("Profile ready");
     expect(markup).not.toContain("Collection next steps");
-    expect(markup).toContain("Open Showcase Studio");
-    expect(markup).toContain("Find a library piece");
-    expect(markup).toContain("View Bling Vault");
-    expect(markup).toContain("Bling Vault Mosaic");
-    expect(commandCenterMarkup).toContain("Owned");
-    expect(commandCenterMarkup).toContain("Wishlist");
-    expect(commandCenterMarkup).toContain("Diamonds");
-    expect(commandCenterMarkup).toContain("Unicorns");
-    expect(commandCenterMarkup).toContain("Found by Sparkle Finder");
-    expect(commandCenterMarkup).not.toContain("Featured");
-    expect(commandCenterMarkup).not.toContain(">Saved<");
+    expect(homeMarkup).toContain("Owned");
+    expect(homeMarkup).toContain("Wishlist");
+    expect(homeMarkup).toContain("Diamonds");
+    expect(homeMarkup).toContain("Unicorns");
+    expect(homeMarkup).toContain("Found by Sparkle Finder");
+    expect(homeMarkup).not.toContain("Featured");
+    expect(homeMarkup).not.toContain(">Saved<");
     expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
+  });
+
+  it("keeps advanced Finder capabilities reachable from contextual homepage links", () => {
+    const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
+
+    expect(markup).toContain('href="/live-shows"');
+    expect(markup).toContain("Live Shows");
+    expect(markup).toContain('href="/rep-boards"');
+    expect(markup).toContain("Rep Boards");
+    expect(markup).toContain('href="/favorites"');
+    expect(markup).toContain("Favorite Reps");
+    expect(markup).toContain('href="/collectors"');
+    expect(markup).toContain("Collectors");
+    expect(markup).toContain('href="/photo-setup"');
+    expect(markup).toContain("Photo Setup Guide");
+    expect(markup).toContain('href="/silver#showcase-studio"');
+    expect(markup).toContain("Add a Missing Piece");
+    expect(markup).toContain('href="#homepage-nic-nac"');
+    expect(markup).toContain("Ask Nic-Nac for Help");
+    expect(markup).not.toContain('href="/shop"');
   });
 
   it("counts Bling Vault stats by meaningful owned, hunt, rarity, and Finder-find signals", () => {
@@ -1607,6 +1662,17 @@ function silverPreviewRouteAccountState(): CurrentSparkleFinderAccountState & { 
 
 function stripHiddenInputValues(markup: string): string {
   return markup.replace(/<input\b(?=[^>]*type="hidden")[^>]*>/g, "");
+}
+
+function extractNavMarkup(markup: string): string {
+  const navStart = markup.indexOf('data-smoke="nav"');
+  const mainStart = markup.indexOf("<main", navStart);
+
+  if (navStart === -1 || mainStart === -1) {
+    return "";
+  }
+
+  return markup.slice(navStart, mainStart);
 }
 
 function libraryFilterItems(): JewelryItem[] {
