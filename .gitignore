@@ -29,6 +29,9 @@ verification/sparkle-finder/*.png
 # vercel
 .vercel
 
+# supabase local project link/cache
+supabase/.temp
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
