@@ -139,8 +139,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expectNoOverlap(page.locator('[data-smoke="simple-finder-home"]'), page.locator('[data-smoke="find-piece-panel"]'), "simple home", "find panel");
       await expectNoOverlap(page.locator('[data-smoke="find-piece-panel"]'), page.locator('[data-smoke="homepage-bling-vault"]'), "find panel", "Bling Vault");
 
-      await page.locator(".sparkle-finder-site-footer").scrollIntoViewIfNeeded();
-      await expect(page.locator(".sparkle-finder-site-footer")).toBeVisible();
+      await expect(page.locator(".sparkle-finder-site-footer")).toHaveCount(0);
     });
   }
 

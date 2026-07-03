@@ -24,6 +24,12 @@
   - Preserved the existing feature routes, Bling Vault, collection stats, Reps directory, Nic-Nac helper entry points, and backend plumbing.
   - Verification passed: focused route test, `npm run lint`, full `npm run test` (`38` files, `514` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), with refreshed Reps desktop/mobile screenshots reviewed.
 
+- Corrected the signed-in app shell footer mismatch:
+  - Removed the full marketing/legal site footer from signed-in authenticated home and hub routes so app pages end like app screens instead of a website landing page.
+  - Kept the footer on public and anonymous/sign-in-wall surfaces where legal/ecosystem links still belong.
+  - Updated route and smoke tests to enforce that signed-in app surfaces do not append `.sparkle-finder-site-footer`.
+  - Verification passed: focused route test (`90` tests), `npm run lint`, full `npm run test` (`38` files, `515` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), with refreshed Reps mobile screenshot reviewed.
+
 - Implemented the mobile-first Sparkle Finder homepage overhaul:
   - Replaced the signed-in command-center opening with a simple app home built around `Find the pieces you love. Build your collection with Sparkle Finder.`
   - Simplified primary app navigation to `Home`, `Library`, `Find`, and account status while keeping advanced feature routes reachable from the guided `Find a Piece` panel.

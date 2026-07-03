@@ -175,6 +175,19 @@ describe("Sparkle Finder hub routes", () => {
     }
   });
 
+  it("does not append the marketing footer to signed-in app surfaces", () => {
+    const homeMarkup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
+    const hubMarkup = renderToStaticMarkup(
+      renderHubChrome(renderRepsPageContent(), getLocalDevAuthState("silver")),
+    );
+
+    expect(homeMarkup).toContain('data-layout="mobile-first-app"');
+    expect(homeMarkup).not.toContain('class="sparkle-finder-site-footer"');
+    expect(homeMarkup).not.toContain("Footer links");
+    expect(hubMarkup).not.toContain('class="sparkle-finder-site-footer"');
+    expect(hubMarkup).not.toContain("Footer links");
+  });
+
   it("defines Sparkle Finder legal documents with customer-specific coverage", () => {
     expect(sparkleFinderLegalFooterLinks).toEqual([
       { href: "/privacy-policy", label: "Privacy Policy" },

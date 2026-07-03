@@ -18,15 +18,17 @@ export default async function HubLayout({ children }: Readonly<{ children: React
 }
 
 export function renderHubChrome(children: React.ReactNode, accountState: SparkleFinderAccountState) {
+  const isSignedIn = isSparkleFinderSignedIn(accountState);
+
   return (
     <>
       <SparkleFinderNav accountState={accountState} />
       <main className="min-h-screen bg-[var(--sparkle-warm-bg)] pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-0">
         <div className="mx-auto max-w-[112rem] px-5 py-8 sm:px-8 lg:px-10">
-          {isSparkleFinderSignedIn(accountState) ? children : <HubSignInWall />}
+          {isSignedIn ? children : <HubSignInWall />}
         </div>
       </main>
-      <SparkleFinderFooter />
+      {isSignedIn ? null : <SparkleFinderFooter />}
     </>
   );
 }

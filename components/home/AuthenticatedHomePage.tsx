@@ -1,7 +1,6 @@
 import { FindPiecePanel } from "@/components/home/FindPiecePanel";
 import { HomepageBlingVault } from "@/components/home/HomepageBlingVault";
 import { SimpleFinderHome } from "@/components/home/SimpleFinderHome";
-import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import {
   getCollectionItemsByCustomerId,
@@ -43,7 +42,6 @@ export function AuthenticatedHomePage({ accountState, collectionItems: persisted
         <FindPiecePanel accountState={accountState} model={blingVaultModel} />
         <HomepageBlingVault model={blingVaultModel} />
       </main>
-      <SparkleFinderFooter />
     </>
   );
 }
