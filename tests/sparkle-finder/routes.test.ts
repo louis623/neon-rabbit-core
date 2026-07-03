@@ -27,6 +27,7 @@ import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle
 import type { FavoriteRepCard, PublicCollectorProfile } from "../../lib/sparkle-finder/social-types";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
+import { buildHomepageBlingVaultModel, type HomepageBlingVaultItem } from "../../lib/sparkle-finder/homepage-bling-vault";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
 import {
   getLocalRepBoardHref,
@@ -332,6 +333,10 @@ describe("Sparkle Finder hub routes", () => {
 
   it("renders authenticated home as a unified Nic-Nac command center and Bling Vault", () => {
     const markup = renderToStaticMarkup(renderHomeContent(silverPreviewRouteAccountState()));
+    const commandCenterMarkup = markup.slice(
+      markup.indexOf('data-smoke="finder-command-center"'),
+      markup.indexOf('data-smoke="homepage-bling-vault"'),
+    );
 
     expect(markup).toContain('data-smoke="finder-command-center"');
     expect(markup).toContain('data-smoke="homepage-bling-vault"');
@@ -344,7 +349,55 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Find a library piece");
     expect(markup).toContain("View Bling Vault");
     expect(markup).toContain("Bling Vault Mosaic");
+    expect(commandCenterMarkup).toContain("Owned");
+    expect(commandCenterMarkup).toContain("Wishlist");
+    expect(commandCenterMarkup).toContain("Diamonds");
+    expect(commandCenterMarkup).toContain("Unicorns");
+    expect(commandCenterMarkup).toContain("Found by Sparkle Finder");
+    expect(commandCenterMarkup).not.toContain("Featured");
+    expect(commandCenterMarkup).not.toContain(">Saved<");
     expect(markup).not.toContain('min-h-screen overflow-hidden bg-[var(--sparkle-warm-bg)]');
+  });
+
+  it("counts Bling Vault stats by meaningful owned, hunt, rarity, and Finder-find signals", () => {
+    const model = buildHomepageBlingVaultModel([
+      homepageVaultItem({
+        id: "owned-diamond-finder",
+        jewelryItemId: "diamond-owned",
+        state: "owned",
+        acquisitionSource: "sparkle_finder_lead",
+        jewelryItem: jewelryItem({ id: "diamond-owned", bpLabel: "diamond" }),
+      }),
+      homepageVaultItem({
+        id: "owned-unicorn-nic-nac",
+        jewelryItemId: "unicorn-owned",
+        state: "owned",
+        acquisitionSource: "nic_nac_request",
+        jewelryItem: jewelryItem({ id: "unicorn-owned", bpLabel: "unicorn" }),
+      }),
+      homepageVaultItem({
+        id: "owned-standard-manual",
+        jewelryItemId: "standard-owned",
+        state: "owned",
+        acquisitionSource: "manual",
+        jewelryItem: jewelryItem({ id: "standard-owned", bpLabel: "standard" }),
+      }),
+      homepageVaultItem({
+        id: "wishlist-unicorn",
+        jewelryItemId: "unicorn-wishlist",
+        state: "wishlist",
+        acquisitionSource: "wishlist",
+        jewelryItem: jewelryItem({ id: "unicorn-wishlist", bpLabel: "unicorn" }),
+      }),
+    ]);
+
+    expect(model.counts).toEqual({
+      diamonds: 1,
+      finderFinds: 2,
+      owned: 3,
+      unicorns: 1,
+      wishlist: 1,
+    });
   });
 
   it("renders authenticated home profile details from the signed-in account state", () => {
@@ -1599,6 +1652,37 @@ function libraryFacetOptions() {
     types: [{ value: "ring", count: 1 }],
     labels: [{ value: "diamond", count: 1 }],
     years: [{ value: "2026", count: 1 }],
+  };
+}
+
+function homepageVaultItem(
+  overrides: Partial<HomepageBlingVaultItem> & {
+    jewelryItem: JewelryItem;
+    jewelryItemId: string;
+  },
+): HomepageBlingVaultItem {
+  return {
+    id: "collection-item",
+    customerId: "customer-silver-test",
+    jewelryItemId: overrides.jewelryItemId,
+    state: "owned",
+    note: "",
+    isHighlighted: false,
+    ...overrides,
+  };
+}
+
+function jewelryItem(overrides: Partial<JewelryItem> & Pick<JewelryItem, "id" | "bpLabel">): JewelryItem {
+  return {
+    id: overrides.id,
+    name: "Test Piece",
+    collectionName: "Test Collection",
+    jewelryType: "ring",
+    imageUrl: "",
+    bpLabel: overrides.bpLabel,
+    itemNumber: "TEST-1",
+    knownRepListingIds: [],
+    ...overrides,
   };
 }
 

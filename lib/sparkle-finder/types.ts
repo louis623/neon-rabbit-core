@@ -2,6 +2,12 @@ export type CustomerTier = "free" | "silver";
 export type JewelryType = "ring" | "earrings" | "necklace" | "bracelet" | "stack" | "other";
 export type BombPartyLabel = "diamond" | "unicorn" | "standard";
 export type CollectionItemState = "owned" | "wishlist" | "private_note_only";
+export type CollectionAcquisitionSource =
+  | "manual"
+  | "wishlist"
+  | "sparkle_finder_lead"
+  | "nic_nac_request"
+  | "unknown";
 export type ListingStatus = "available" | "pending" | "unavailable";
 export type MatchType = "exact_item" | "same_collection_type" | "near_match";
 export type LiveShowStatus = "scheduled" | "live" | "completed";
@@ -85,6 +91,9 @@ export type CollectionItem = {
   state: CollectionItemState;
   note: string;
   isHighlighted: boolean;
+  acquisitionSource?: CollectionAcquisitionSource;
+  acquisitionContext?: Record<string, unknown>;
+  acquisitionMarkedAt?: string | null;
 };
 
 export type NicNacFindRequest = {

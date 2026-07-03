@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 import type { JewelryItem } from "../../lib/sparkle-finder/types";
@@ -99,6 +100,21 @@ describe("Sparkle Finder launch hardening", () => {
       reason:
         "Missing or invalid SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL; refusing to update membership with an unsafe service role client.",
     });
+  });
+
+  it("tracks collection acquisition source for honest Finder-find statistics", () => {
+    const migration = readFileSync(
+      "supabase/migrations/20260702235634_collection_acquisition_source.sql",
+      "utf8",
+    );
+
+    expect(migration).toContain("alter table public.sparkle_finder_collection_items");
+    expect(migration).toContain("acquisition_source");
+    expect(migration).toContain("acquisition_context");
+    expect(migration).toContain("acquisition_marked_at");
+    expect(migration).toContain("'sparkle_finder_lead'");
+    expect(migration).toContain("'nic_nac_request'");
+    expect(migration).toContain("sparkle_finder_collection_items_user_acquisition_source_idx");
   });
 
   it("uses the verified session client for Silver profile saves", async () => {

@@ -255,6 +255,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           showcase_status: "owned",
           reveal_story: "The fizz reveal was perfect.",
           is_rarest_reveal: true,
+          acquisition_source: "sparkle_finder_lead",
         },
         {
           id: "collection-wishlist",
@@ -267,6 +268,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           showcase_status: "iso",
           reveal_story: "",
           is_rarest_reveal: false,
+          acquisition_source: "wishlist",
         },
       ],
     });
@@ -307,6 +309,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           hasNote: true,
           noteSnippet: "Favorite centerpiece ring for lives.",
           hasRevealStory: true,
+          acquisitionSource: "sparkle_finder_lead",
         },
         {
           collectionItemId: "collection-wishlist",
@@ -323,6 +326,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           hasNote: true,
           noteSnippet: "Looking for a pink pair.",
           hasRevealStory: false,
+          acquisitionSource: "wishlist",
         },
       ],
       guidance:
@@ -455,6 +459,10 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       note: "My favorite reveal.",
       isHighlighted: true,
       showcaseCollectionTitle: "Rarest Reveals",
+      acquisitionSource: "nic_nac_request",
+      acquisitionContext: {
+        requestId: "nic-nac-run-123",
+      },
     });
 
     expect(getCatalogJewelryItemByIdMock).toHaveBeenCalledWith("design-owned", { useFixtureFallback: false });
@@ -462,7 +470,9 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       status: "saved",
       saved: true,
       message: "Collection item saved.",
-      guidance: "Nic-Nac may now say the collection save succeeded because the save tool returned saved.",
+      acquisitionSource: "nic_nac_request",
+      guidance:
+        "Nic-Nac may now say the collection save succeeded because the save tool returned saved. Only describe this as found by Sparkle Finder when acquisitionSource is sparkle_finder_lead or nic_nac_request.",
     });
     expect(supabase.operations).toContainEqual({
       table: "sparkle_finder_collection_items",
@@ -473,6 +483,11 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         state: "owned",
         note: "My favorite reveal.",
         is_highlighted: true,
+        acquisition_source: "nic_nac_request",
+        acquisition_context: {
+          requestId: "nic-nac-run-123",
+        },
+        acquisition_marked_at: expect.any(String),
       },
       options: {
         onConflict: "user_id,jewelry_item_id",

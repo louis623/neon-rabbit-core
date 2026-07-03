@@ -323,6 +323,8 @@ describe("Sparkle Finder entitlements", () => {
           state: "owned",
           note: "Confirmed in my collection.",
           is_highlighted: true,
+          acquisition_source: "manual",
+          acquisition_context: {},
         },
         options: {
           onConflict: "user_id,jewelry_item_id",
@@ -337,6 +339,8 @@ describe("Sparkle Finder entitlements", () => {
           state: "wishlist",
           note: "Watching for this one.",
           is_highlighted: false,
+          acquisition_source: "wishlist",
+          acquisition_context: {},
         },
         options: {
           onConflict: "user_id,jewelry_item_id",
@@ -351,6 +355,8 @@ describe("Sparkle Finder entitlements", () => {
           state: "private_note_only",
           note: "Pairs with layered chains.",
           is_highlighted: false,
+          acquisition_source: "manual",
+          acquisition_context: {},
         },
         options: {
           onConflict: "user_id,jewelry_item_id",
@@ -382,6 +388,8 @@ describe("Sparkle Finder entitlements", () => {
         state: "owned",
         note: "Now highlighted.",
         is_highlighted: true,
+        acquisition_source: "manual",
+        acquisition_context: {},
       },
       options: {
         onConflict: "user_id,jewelry_item_id",
@@ -389,6 +397,47 @@ describe("Sparkle Finder entitlements", () => {
     });
     expect(client.operations).not.toContainEqual(expect.objectContaining({ type: "insert" }));
     expect(client.operations).not.toContainEqual(expect.objectContaining({ type: "update" }));
+  });
+
+  it("records assisted acquisition context for Sparkle Finder-found owned saves", async () => {
+    const accountState = currentAccountState("silver_paid");
+    const client = createFakePersistenceClient({
+      collectionItem: { id: "collection-existing", user_id: "user-123" },
+    });
+
+    const result = await persistCollectionItemForAccount(client, accountState, {
+      jewelryItemId: "jewel-rainbow-crown-ring",
+      state: "owned",
+      note: "Found from a Nic-Nac lead.",
+      isHighlighted: false,
+      acquisitionSource: "sparkle_finder_lead",
+      acquisitionContext: {
+        listingId: "listing-rainbow-crown-sierra",
+        requestId: "fixture-request-jewel-rainbow-crown-ring",
+      },
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(client.operations).toContainEqual({
+      table: "sparkle_finder_collection_items",
+      type: "upsert",
+      values: {
+        user_id: "user-123",
+        jewelry_item_id: "jewel-rainbow-crown-ring",
+        state: "owned",
+        note: "Found from a Nic-Nac lead.",
+        is_highlighted: false,
+        acquisition_source: "sparkle_finder_lead",
+        acquisition_context: {
+          listingId: "listing-rainbow-crown-sierra",
+          requestId: "fixture-request-jewel-rainbow-crown-ring",
+        },
+        acquisition_marked_at: expect.any(String),
+      },
+      options: {
+        onConflict: "user_id,jewelry_item_id",
+      },
+    });
   });
 
   it("links owned saves to the selected Showcase collection", async () => {
@@ -413,6 +462,8 @@ describe("Sparkle Finder entitlements", () => {
         state: "owned",
         note: "Confirmed in my collection.",
         is_highlighted: true,
+        acquisition_source: "manual",
+        acquisition_context: {},
       },
       options: {
         onConflict: "user_id,jewelry_item_id",
@@ -463,6 +514,8 @@ describe("Sparkle Finder entitlements", () => {
           state: "wishlist",
           note: "Recover by upserting one logical row.",
           is_highlighted: false,
+          acquisition_source: "wishlist",
+          acquisition_context: {},
         },
         options: {
           onConflict: "user_id,jewelry_item_id",

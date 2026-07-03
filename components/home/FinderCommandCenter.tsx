@@ -75,8 +75,9 @@ export function FinderCommandCenter({ accountState, customer, model, profile }: 
           <div className="grid grid-cols-2 gap-2">
             <MiniMetric icon={Gem} label="Owned" value={model.counts.owned} />
             <MiniMetric icon={Heart} label="Wishlist" value={model.counts.wishlist} />
-            <MiniMetric icon={ShieldCheck} label="Featured" value={model.counts.highlighted} />
-            <MiniMetric icon={Sparkles} label="Saved" value={model.counts.saved} />
+            <MiniMetric icon={Sparkles} label="Diamonds" value={model.counts.diamonds} />
+            <MiniMetric icon={ShieldCheck} label="Unicorns" value={model.counts.unicorns} />
+            <MiniMetric className="col-span-2" icon={Sparkles} label="Found by Sparkle Finder" value={model.counts.finderFinds} />
           </div>
         </article>
 
@@ -130,16 +131,18 @@ function CommandLink({
 }
 
 function MiniMetric({
+  className = "",
   icon: Icon,
   label,
   value,
 }: {
+  className?: string;
   icon: typeof Gem;
   label: string;
   value: number;
 }) {
   return (
-    <div className="flex min-h-14 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3">
+    <div className={`flex min-h-14 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 ${className}`}>
       <Icon aria-hidden="true" className="size-4 shrink-0 text-[var(--sparkle-coral)]" strokeWidth={1.7} />
       <div>
         <p className="text-base font-black leading-none text-[var(--sparkle-plum-deep)]">{value}</p>

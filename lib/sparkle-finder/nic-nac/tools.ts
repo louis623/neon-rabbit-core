@@ -292,7 +292,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
         const result = await readFinderRows(
           ctx.supabase,
           "sparkle_finder_collection_items",
-          "id,user_id,jewelry_item_id,state,note,is_highlighted,visibility,showcase_status,reveal_story,is_rarest_reveal",
+          "id,user_id,jewelry_item_id,state,note,is_highlighted,visibility,showcase_status,reveal_story,is_rarest_reveal,acquisition_source",
           ctx.userId,
         );
 
@@ -332,8 +332,10 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
         note: z.string().optional(),
         isHighlighted: z.boolean().optional(),
         showcaseCollectionTitle: z.string().optional(),
+        acquisitionSource: z.enum(["manual", "wishlist", "sparkle_finder_lead", "nic_nac_request", "unknown"]).optional(),
+        acquisitionContext: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
       }),
-      execute: async ({ jewelryItemId, state, note, isHighlighted, showcaseCollectionTitle }) => {
+      execute: async ({ jewelryItemId, state, note, isHighlighted, showcaseCollectionTitle, acquisitionSource, acquisitionContext }) => {
         const saveContext = getSaveContext(ctx);
 
         if (!saveContext.ok) {
@@ -353,6 +355,8 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           note: note ?? "",
           isHighlighted: isHighlighted ?? false,
           showcaseCollectionTitle: showcaseCollectionTitle ?? "",
+          acquisitionSource,
+          acquisitionContext,
         });
 
         return result.ok
@@ -360,7 +364,9 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
               status: "saved",
               saved: true,
               message: "Collection item saved.",
-              guidance: "Nic-Nac may now say the collection save succeeded because the save tool returned saved.",
+              acquisitionSource: acquisitionSource ?? (state === "wishlist" ? "wishlist" : "manual"),
+              guidance:
+                "Nic-Nac may now say the collection save succeeded because the save tool returned saved. Only describe this as found by Sparkle Finder when acquisitionSource is sparkle_finder_lead or nic_nac_request.",
             }
           : mapSaveFailure("collection", result.reason);
       },
@@ -875,6 +881,7 @@ async function mapCollectionToolItem(row: Record<string, unknown>) {
     hasNote: Boolean(note),
     noteSnippet: cleanSnippet(note, 160),
     hasRevealStory: Boolean(revealStory),
+    acquisitionSource: normalizeAcquisitionSource(row.acquisition_source),
   };
 }
 
@@ -919,6 +926,16 @@ function normalizeCollectionState(value: unknown): "owned" | "wishlist" | "priva
   return value === "owned" || value === "wishlist" || value === "private_note_only"
     ? value
     : "private_note_only";
+}
+
+function normalizeAcquisitionSource(value: unknown): "manual" | "wishlist" | "sparkle_finder_lead" | "nic_nac_request" | "unknown" {
+  return value === "manual" ||
+    value === "wishlist" ||
+    value === "sparkle_finder_lead" ||
+    value === "nic_nac_request" ||
+    value === "unknown"
+    ? value
+    : "unknown";
 }
 
 function normalizeVisibility(value: unknown): "public" | "private" {

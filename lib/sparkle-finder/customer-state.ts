@@ -1,6 +1,6 @@
 import type { SparkleFinderAccountState } from "./auth";
 import type { CurrentSparkleFinderAccountState } from "./account-service";
-import type { CollectionItem, SilverProfile } from "./types";
+import type { CollectionAcquisitionSource, CollectionItem, SilverProfile } from "./types";
 import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "./showcase-types";
 
 export type CustomerStateDeniedReason = "silver_required" | "account_mismatch" | "save_failed";
@@ -26,6 +26,8 @@ export type CollectionItemUpsertInput = Pick<
   CollectionItem,
   "isHighlighted" | "jewelryItemId" | "note" | "state"
 > & {
+  acquisitionContext?: Record<string, unknown>;
+  acquisitionSource?: CollectionAcquisitionSource;
   showcaseCollectionTitle?: string;
 };
 
@@ -198,6 +200,7 @@ export async function persistCollectionItemForAccount(
     state: input.state,
     note: cleanText(input.note, 500),
     is_highlighted: input.isHighlighted,
+    ...getAcquisitionPersistenceValues(input),
   };
   const result = await supabase.from("sparkle_finder_collection_items").upsert(values, {
     onConflict: "user_id,jewelry_item_id",
@@ -267,6 +270,9 @@ export function addJewelryItemToCustomerCollection(
     state: input.state,
     note: input.note,
     isHighlighted: input.isHighlighted,
+    acquisitionSource: normalizeAcquisitionSource(input.acquisitionSource) ?? getDefaultAcquisitionSource(input.state),
+    acquisitionContext: input.acquisitionContext ?? {},
+    acquisitionMarkedAt: isFinderAssistedAcquisitionSource(input.acquisitionSource) ? new Date().toISOString() : null,
   };
 
   return {
@@ -302,6 +308,71 @@ function mapShowcaseStatusToLegacyCollectionState(status: SparkleShowcaseItemSta
   }
 
   return status === "owned" ? "owned" : "wishlist";
+}
+
+function getAcquisitionPersistenceValues(input: CollectionItemUpsertInput): {
+  acquisition_context: Record<string, unknown>;
+  acquisition_marked_at?: string;
+  acquisition_source: CollectionAcquisitionSource;
+} {
+  const acquisitionSource = normalizeAcquisitionSource(input.acquisitionSource) ?? getDefaultAcquisitionSource(input.state);
+  const values: {
+    acquisition_context: Record<string, unknown>;
+    acquisition_marked_at?: string;
+    acquisition_source: CollectionAcquisitionSource;
+  } = {
+    acquisition_context: cleanAcquisitionContext(input.acquisitionContext),
+    acquisition_source: acquisitionSource,
+  };
+
+  if (isFinderAssistedAcquisitionSource(acquisitionSource)) {
+    values.acquisition_marked_at = new Date().toISOString();
+  }
+
+  return values;
+}
+
+function getDefaultAcquisitionSource(state: CollectionItem["state"]): CollectionAcquisitionSource {
+  return state === "wishlist" ? "wishlist" : "manual";
+}
+
+function normalizeAcquisitionSource(source: CollectionAcquisitionSource | undefined): CollectionAcquisitionSource | null {
+  if (
+    source === "manual" ||
+    source === "wishlist" ||
+    source === "sparkle_finder_lead" ||
+    source === "nic_nac_request" ||
+    source === "unknown"
+  ) {
+    return source;
+  }
+
+  return null;
+}
+
+function isFinderAssistedAcquisitionSource(source: CollectionAcquisitionSource | undefined | null): boolean {
+  return source === "sparkle_finder_lead" || source === "nic_nac_request";
+}
+
+function cleanAcquisitionContext(context: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!context) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(context)
+      .filter(([key, value]) => key.trim() && typeof value !== "undefined" && value !== null)
+      .slice(0, 12)
+      .map(([key, value]) => [cleanText(key, 60), cleanAcquisitionContextValue(value)]),
+  );
+}
+
+function cleanAcquisitionContextValue(value: unknown): string | number | boolean {
+  if (typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+
+  return cleanText(String(value), 180);
 }
 
 async function assignOwnedItemToShowcaseCollection(

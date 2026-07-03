@@ -428,6 +428,11 @@ export const sparkleFinderCollectionItems: CollectionItem[] = [
     state: "owned",
     note: "Favorite centerpiece ring.",
     isHighlighted: true,
+    acquisitionSource: "sparkle_finder_lead",
+    acquisitionContext: {
+      listingId: "listing-rainbow-crown-sierra",
+      surface: "preview",
+    },
   },
   {
     id: "collection-owned-starlit",
@@ -452,6 +457,11 @@ export const sparkleFinderCollectionItems: CollectionItem[] = [
     state: "owned",
     note: "Gold heart necklace for profile showcase.",
     isHighlighted: false,
+    acquisitionSource: "nic_nac_request",
+    acquisitionContext: {
+      requestId: "fixture-request-jewel-golden-heart-necklace",
+      surface: "preview",
+    },
   },
   {
     id: "collection-wishlist-aurora",

@@ -18,15 +18,18 @@ type AuthenticatedHomePageProps = {
   accountState: Extract<SparkleFinderAccountState, { status: "authenticated" }> & {
     silverProfile?: SilverProfile;
   };
+  collectionItems?: HomepageBlingVaultItem[];
 };
 
-export function AuthenticatedHomePage({ accountState }: AuthenticatedHomePageProps) {
+export function AuthenticatedHomePage({ accountState, collectionItems: persistedCollectionItems }: AuthenticatedHomePageProps) {
   const customer = accountState.customer;
-  const collectionItems = getCollectionItemsByCustomerId(customer.id).flatMap((item): HomepageBlingVaultItem[] => {
-    const jewelryItem = getJewelryItemById(item.jewelryItemId);
+  const collectionItems =
+    persistedCollectionItems ??
+    getCollectionItemsByCustomerId(customer.id).flatMap((item): HomepageBlingVaultItem[] => {
+      const jewelryItem = getJewelryItemById(item.jewelryItemId);
 
-    return jewelryItem ? [{ ...item, jewelryItem }] : [];
-  });
+      return jewelryItem ? [{ ...item, jewelryItem }] : [];
+    });
   const profile = accountState.silverProfile ?? getSilverProfileByCustomerId(customer.id);
   const blingVaultModel = buildHomepageBlingVaultModel(collectionItems);
 

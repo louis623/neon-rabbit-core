@@ -121,6 +121,8 @@ export async function saveSilverCollectionItemAction(
     note: String(formData.get("note") ?? ""),
     isHighlighted: formData.get("isHighlighted") === "yes",
     showcaseCollectionTitle: String(formData.get("showcaseCollectionTitle") ?? ""),
+    acquisitionSource: parseAcquisitionSource(formData.get("acquisitionSource")),
+    acquisitionContext: parseAcquisitionContext(formData.get("acquisitionContext")),
   });
 
   if (!result.ok) {
@@ -302,6 +304,34 @@ function parseCollectionState(value: FormDataEntryValue | null): CollectionItem[
   }
 
   return "owned";
+}
+
+function parseAcquisitionSource(value: FormDataEntryValue | null): CollectionItem["acquisitionSource"] | undefined {
+  if (
+    value === "manual" ||
+    value === "wishlist" ||
+    value === "sparkle_finder_lead" ||
+    value === "nic_nac_request" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseAcquisitionContext(value: FormDataEntryValue | null): Record<string, unknown> | undefined {
+  if (typeof value !== "string" || !value.trim()) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function parseShowcaseStatus(value: FormDataEntryValue | null): SparkleShowcaseItemStatus {

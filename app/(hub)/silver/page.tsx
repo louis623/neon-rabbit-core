@@ -199,7 +199,7 @@ async function getPersistedCollectionItems(userId: string, libraryItems: Jewelry
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sparkle_finder_collection_items")
-      .select("id,user_id,jewelry_item_id,state,note,is_highlighted")
+      .select("id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at")
       .eq("user_id", userId);
 
     if (error || !Array.isArray(data)) {
@@ -262,6 +262,9 @@ function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
     state,
     note: readString(record.note),
     isHighlighted: record.is_highlighted === true,
+    acquisitionSource: readAcquisitionSource(record.acquisition_source),
+    acquisitionContext: readAcquisitionContext(record.acquisition_context),
+    acquisitionMarkedAt: readString(record.acquisition_marked_at) || null,
   };
 }
 
@@ -275,4 +278,22 @@ function readCollectionState(value: unknown): CollectionItem["state"] | null {
   }
 
   return null;
+}
+
+function readAcquisitionSource(value: unknown): CollectionItem["acquisitionSource"] {
+  if (
+    value === "manual" ||
+    value === "wishlist" ||
+    value === "sparkle_finder_lead" ||
+    value === "nic_nac_request" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+
+  return "unknown";
+}
+
+function readAcquisitionContext(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }

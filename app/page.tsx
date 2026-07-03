@@ -9,14 +9,21 @@ import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
 } from "@/lib/sparkle-finder/account-service";
+import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
+import { createClient } from "@/lib/supabase/server";
+import type { HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
+import type { CollectionAcquisitionSource, CollectionItem } from "@/lib/sparkle-finder/types";
 
 export function renderPublicHomeContent(accountState: CurrentSparkleFinderAccountState) {
   return <PublicLandingPage accountState={accountState} />;
 }
 
-export function renderHomeContent(accountState: CurrentSparkleFinderAccountState) {
+export function renderHomeContent(
+  accountState: CurrentSparkleFinderAccountState,
+  collectionItems?: HomepageBlingVaultItem[],
+) {
   return accountState.status === "authenticated" ? (
-    <AuthenticatedHomePage accountState={accountState} />
+    <AuthenticatedHomePage accountState={accountState} collectionItems={collectionItems} />
   ) : (
     renderPublicHomeContent(accountState)
   );
@@ -26,6 +33,100 @@ export default async function Home() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
+  const collectionItems =
+    accountState.status === "authenticated"
+      ? await getPersistedHomepageBlingVaultItems(accountState.customer.id)
+      : undefined;
 
-  return renderHomeContent(accountState);
+  return renderHomeContent(accountState, collectionItems && collectionItems.length > 0 ? collectionItems : undefined);
+}
+
+async function getPersistedHomepageBlingVaultItems(userId: string): Promise<HomepageBlingVaultItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("sparkle_finder_collection_items")
+      .select(
+        "id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at",
+      )
+      .eq("user_id", userId);
+
+    if (error || !Array.isArray(data)) {
+      return [];
+    }
+
+    const mappedItems = await Promise.all(
+      data.flatMap((row): CollectionItem[] => {
+        const item = mapPersistedCollectionItem(row);
+
+        return item ? [item] : [];
+      }).map(async (item): Promise<HomepageBlingVaultItem | null> => {
+        const jewelryItem = await getCatalogJewelryItemById(item.jewelryItemId, { useFixtureFallback: false });
+
+        return jewelryItem ? { ...item, jewelryItem } : null;
+      }),
+    );
+
+    return mappedItems.filter((item): item is HomepageBlingVaultItem => item !== null);
+  } catch {
+    return [];
+  }
+}
+
+function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
+  if (!row || typeof row !== "object") {
+    return null;
+  }
+
+  const record = row as Record<string, unknown>;
+  const id = readString(record.id);
+  const customerId = readString(record.user_id);
+  const jewelryItemId = readString(record.jewelry_item_id);
+  const state = readCollectionState(record.state);
+
+  if (!id || !customerId || !jewelryItemId || !state) {
+    return null;
+  }
+
+  return {
+    id,
+    customerId,
+    jewelryItemId,
+    state,
+    note: readString(record.note),
+    isHighlighted: record.is_highlighted === true,
+    acquisitionSource: readAcquisitionSource(record.acquisition_source),
+    acquisitionContext: readAcquisitionContext(record.acquisition_context),
+    acquisitionMarkedAt: readString(record.acquisition_marked_at) || null,
+  };
+}
+
+function readString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function readCollectionState(value: unknown): CollectionItem["state"] | null {
+  if (value === "owned" || value === "wishlist" || value === "private_note_only") {
+    return value;
+  }
+
+  return null;
+}
+
+function readAcquisitionSource(value: unknown): CollectionAcquisitionSource {
+  if (
+    value === "manual" ||
+    value === "wishlist" ||
+    value === "sparkle_finder_lead" ||
+    value === "nic_nac_request" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+
+  return "unknown";
+}
+
+function readAcquisitionContext(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }

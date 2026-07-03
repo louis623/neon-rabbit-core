@@ -102,6 +102,15 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expect(page.getByText("Bling Vault Mosaic")).toBeVisible();
       await expect(page.getByText("My Collection Preview")).toHaveCount(0);
 
+      const commandCenter = page.locator('[data-smoke="finder-command-center"]');
+      await expect(commandCenter.getByText("Owned", { exact: true })).toBeVisible();
+      await expect(commandCenter.getByText("Wishlist", { exact: true })).toBeVisible();
+      await expect(commandCenter.getByText("Diamonds", { exact: true })).toBeVisible();
+      await expect(commandCenter.getByText("Unicorns", { exact: true })).toBeVisible();
+      await expect(commandCenter.getByText("Found by Sparkle Finder", { exact: true })).toBeVisible();
+      await expect(commandCenter.getByText("Featured", { exact: true })).toHaveCount(0);
+      await expect(commandCenter.getByText("Saved", { exact: true })).toHaveCount(0);
+
       const vaultTiles = page.locator('[data-smoke="bling-vault-tile"]');
       await expect(vaultTiles.first()).toBeVisible();
       expect(await vaultTiles.count()).toBeLessThanOrEqual(8);
