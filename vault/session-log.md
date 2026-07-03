@@ -2788,3 +2788,23 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Stable-demo reviewer smoke caught premature recurring event creation after the first partial details turn; synthetic rows were deleted from the reviewer account before closeout. A follow-up DB check confirmed zero residual bad smoke events.
 - Focused calendar/Nic-Nac suite passed: `npm exec vitest run tests/nic-nac/calendar-workflow-controller.test.ts tests/nic-nac/calendar-workflow-context.test.ts tests/nic-nac/calendar-workflow-store.test.ts tests/nic-nac/calendar-work-preflight.test.ts tests/nic-nac/calendar-tools.test.ts tests/nic-nac/calendar-chaotic-rep-smoke.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac/tool-choice-policy.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/trade-board-intake-eval.test.ts tests/nic-nac/prompt-routing.test.ts` passed: 11 files, 131 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
+
+---
+
+## July 3, 2026 - Nic-Nac Calendar Pressure Smoke and Approval Resume Fix
+
+**What changed:**
+- Added `smoke:nic-nac:calendar-pressure`, a stable-demo synthetic reviewer smoke that creates multiple one-time shows, a 13-occurrence weekly series, multiple discount codes, multiple featured collections, public-site visibility checks, update, one-time cancellation approval, recurring-series cancellation approval, and cleanup.
+- Fixed one-time cancellation routing so "cancel the one-time show titled..." routes to `cancel_show`, not `skip_show_occurrence`.
+- Hardened HITL continuation history so stale output-less approvals are not fed back to the model on later turns.
+- Added a server-owned approval continuation path for local Nic-Nac tools: approved write tools now execute, checkpoint `output-available`, and stream a concise confirmation without relying on another model step.
+
+**Verification:**
+- Focused HITL/calendar tests passed after the history hardening: 4 files, 45 tests.
+- Broad Nic-Nac suite passed after the final approval route fix: 121 files passed, 1 skipped; 879 tests passed, 1 skipped.
+- `npm run build` passed locally with Next.js 16.2.1 after both fix passes.
+- Stable demo alias now points to deployment `dpl_D3Gc1pJk1xWjZSAybbSX3GB6nu47` / `https://sparkle-suite-8rqrn3bvp-louis-2849s-projects.vercel.app`.
+- Final stable-demo pressure smoke passed with conversation `1b659166-f085-414d-b83f-b373ba89b567`, run tag `0703135031`, 15 synthetic event rows created/verified/cancelled/deleted, and zero residual `Codex Pressure%` calendar rows.
+
+**Lesson:**
+- Approval-gated writes should be treated as app-owned workflow state. Recording an approval click is not enough; the server must durably prove the tool result or keep the previous assistant row intact.
