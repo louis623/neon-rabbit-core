@@ -92,6 +92,52 @@ Sources:
 
 The customer product should not be treated as just "make the rep board bigger." The existing notes point to a separate product surface with social identity, collection ownership, trust, community, search, and marketplace safety problems.
 
+## 2026-07-03 Collector Profile Stats and Supabase Cleanup Addendum
+
+Louis clarified that the homepage collector profile card should motivate collection building and the hunt for meaningful pieces, not show weak vanity totals. `Saved` was rejected as meaningless because it only blended owned, wishlist, and featured pieces. `Featured` was also considered weak for the homepage because featured pieces are already a subset of owned pieces.
+
+Current profile stat direction:
+
+- Keep `Owned`.
+- Keep `Wishlist`.
+- Add `Diamonds`.
+- Add `Unicorns`.
+- Add `Found by Sparkle Finder`.
+- Do not bring back `Saved` on the homepage collector profile card.
+- Do not use `Featured` as a homepage stat; featured/showcase status can remain deeper management/display behavior.
+
+Implementation completed:
+
+- Homepage collector profile card now shows `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, and `Found by Sparkle Finder`.
+- `Found by Sparkle Finder` is backed by durable acquisition tracking on `sparkle_finder_collection_items`, not a fuzzy inferred count.
+- Acquisition sources now include `manual`, `wishlist`, `sparkle_finder_lead`, `nic_nac_request`, and `unknown`.
+- The Finder-assisted count only includes owned items whose acquisition source is `sparkle_finder_lead` or `nic_nac_request`.
+- Wishlist saves default to `wishlist`; normal owned saves default to `manual`.
+- Nic-Nac save/read tools, Silver collection actions, persisted homepage Bling Vault data, fixtures, and tests were updated around this model.
+
+Deployment and verification:
+
+- Stats implementation commit: `786df5f feat: update collector profile stats`.
+- Deployment: `dpl_GX6Dzj8DAM61ERf59JHbFTRwUKcf`, aliased at `https://sparkle-finder-dev.vercel.app`.
+- Verification included lint, focused acquisition/profile tests, full Vitest suite, local production build, Sparkle Finder smoke, remote Supabase schema checks, Vercel inspect, and live route checks.
+
+Supabase cleanup completed after the stats deployment:
+
+- The live migration history table was out of sync with reality. Some migrations were present in the live database but not recorded; several additive repo migrations were genuinely missing.
+- Already-live migrations were marked as applied with `supabase migration repair`.
+- Missing additive migrations were applied with `supabase db push --yes --include-all`.
+- The old short migration filename `20260613_sparkle_showcase_social_collections.sql` was normalized to `20260613000000_sparkle_showcase_social_collections.sql`, and the remote history row was repaired to match.
+- `supabase/.temp` is now ignored so the repo can stay locally linked to Supabase without dirtying git.
+- Final proof: `supabase db push --yes` reports `Remote database is up to date.`
+
+Key lessons:
+
+- For customer-facing profile stats, use emotionally meaningful collection/hunt signals, not broad admin counters.
+- "Found by Sparkle Finder" must be provenance-backed at save time; do not infer it from a piece merely existing in a collection.
+- Apply database history repair as bookkeeping only after verifying live artifacts. Do not replay old migrations blindly.
+- Keep Supabase project-link metadata ignored, otherwise cleanup creates recurring local dirty files or loses the linked project after temp cleanup.
+- When a migration filename uses a nonstandard short timestamp, normalize it before relying on `supabase db push` as the future no-op check.
+
 ## 2026-06-13 Shop Removal Addendum
 
 Louis decided Sparkle Finder should not carry a shop or paid-link storefront for now. The shop route, disclosure route, paid-link copy, Amazon program disclosure, product recommendation fixtures, and active shop docs should be removed from the current product surface.

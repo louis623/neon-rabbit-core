@@ -1,5 +1,23 @@
 # Sparkle Finder Decisions
 
+## 2026-07-03 - Homepage Collector Stats Should Track Hunt Value
+
+Decision: The homepage collector profile card should show `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, and `Found by Sparkle Finder`. Do not use `Saved` as a homepage stat, and do not use `Featured` as a headline homepage stat.
+
+Reason: Louis wants the stats to drive collection-building and the hunt for meaningful pieces. `Saved` is too broad to matter, and `Featured` is just a subset of owned/showcase behavior. Diamonds and unicorns are the emotional "home run" stats, and `Found by Sparkle Finder` proves the product works.
+
+## 2026-07-03 - Found By Sparkle Finder Requires Acquisition Provenance
+
+Decision: `Found by Sparkle Finder` should be counted from durable acquisition-source data on owned collection items. Count sources `sparkle_finder_lead` and `nic_nac_request`; do not infer Finder success from an item merely being owned or present in the catalog.
+
+Reason: The number should be trusted as product impact evidence. Provenance must be captured when Nic-Nac or a lead flow helps a customer find a piece, otherwise the stat becomes another fuzzy vanity count.
+
+## 2026-07-03 - Supabase Migration History Should Be Kept Clean
+
+Decision: Supabase migration cleanup should repair migration history only after verifying live database artifacts, then apply genuinely missing additive migrations through the normal CLI path. Keep `supabase/.temp` ignored so the repo can stay linked locally without dirty files.
+
+Reason: The live database can be correct while `supabase_migrations.schema_migrations` is wrong. Blindly replaying old migrations risks conflicts; repairing only verified history plus applying missing additive migrations restores the safe future path where `supabase db push --yes` reports `Remote database is up to date.`
+
 ## 2026-06-22 - Sparkle Suite Rep Linking Uses Secret Rep ID Number
 
 Decision: Sparkle Finder rep linking uses the private Sparkle Suite `Secret Rep ID Number`. The claim must be verified server-side against Sparkle Suite before Finder writes `is_rep`, the Suite rep id, and Rep Silver membership. Normal authenticated users must not be able to self-write rep identity columns directly.
