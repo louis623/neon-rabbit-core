@@ -186,7 +186,8 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('Active workflow rules:')
     expect(prompt).toContain('Active workflow: calendar_event_work')
     expect(prompt).toContain('Description: optional')
-    expect(prompt).toContain('Do not ask for description if date/time/timezone and platform are known')
+    expect(prompt).toContain('Do not ask for description if the required scheduling fields are known')
+    expect(prompt).toContain('Do not add recurring unless the rep explicitly asks')
     expect(prompt.indexOf('Active workflow: calendar_event_work')).toBeLessThan(
       prompt.indexOf('Calendar tools:'),
     )

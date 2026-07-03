@@ -81,6 +81,23 @@ describe('calendar workflow controller', () => {
     })
   })
 
+  it('does not mark add_show ready before title and duration are known', () => {
+    const knownFields = mergeCalendarKnownFieldsFromText(
+      {},
+      'Tiktok July 4 7p Est',
+    )
+    const readiness = computeCalendarWorkflowReadiness({
+      intent: 'add_show',
+      knownFields,
+      candidateEventIds: [],
+    })
+
+    expect(readiness).toEqual({
+      phase: 'details_capture',
+      missingFields: ['title', 'durationMinutes'],
+    })
+  })
+
   it('keeps update intent in identify_existing_event when an event id is missing', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'update_show',
