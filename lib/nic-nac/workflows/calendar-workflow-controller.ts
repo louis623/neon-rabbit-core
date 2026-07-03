@@ -10,6 +10,9 @@ function cleanText(value: string | undefined): string | undefined {
 }
 
 function parseDurationMinutes(text: string): number | undefined {
+  const timeRange = parseTimeRange(text)
+  if (timeRange) return timeRange.durationMinutes
+
   const hourMatch = text.match(/\b(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)\b/i)
   if (hourMatch) return Math.round(Number(hourMatch[1]) * 60)
 
@@ -148,6 +151,11 @@ const NUMBER_WORDS: Record<string, number> = {
 const WEEKDAY_PATTERN =
   'sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?'
 
+type LocalStartTime = {
+  hour: number
+  minute: number
+}
+
 function parseSmallCount(value: string | undefined): number | undefined {
   if (!value) return undefined
   const normalized = value.toLowerCase()
@@ -158,14 +166,61 @@ function parseSmallCount(value: string | undefined): number | undefined {
   return undefined
 }
 
-function parseWeekdayEventTime(text: string, now = new Date()): string | undefined {
+function normalizeTimeParts(
+  hourText: string | undefined,
+  minuteText: string | undefined,
+  meridiemText: string | undefined,
+): LocalStartTime | undefined {
+  if (!hourText || !meridiemText) return undefined
+  const hourNumber = Number(hourText)
+  const minute = minuteText ? Number(minuteText) : 0
+  if (!hourNumber || minute > 59) return undefined
+
+  const meridiem = meridiemText.toLowerCase()
+  let hour = hourNumber
+  if (meridiem.startsWith('p')) {
+    hour = hourNumber === 12 ? 12 : hourNumber + 12
+  } else {
+    hour = hourNumber === 12 ? 0 : hourNumber
+  }
+  if (hour > 23) return undefined
+  return { hour, minute }
+}
+
+function parseLocalStartTime(text: string): LocalStartTime | undefined {
+  const match = text.match(
+    /\b(?:starts?\s+at|start\s+at|at)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm|a|p)\b/i,
+  )
+  return normalizeTimeParts(match?.[1], match?.[2], match?.[3])
+}
+
+function parseTimeRange(text: string): { localStartTime: LocalStartTime; durationMinutes: number } | undefined {
+  const match = text.match(
+    /\b(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm|a|p)\s*(?:-|to|until|through)\s*(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm|a|p)\b/i,
+  )
+  const start = normalizeTimeParts(match?.[1], match?.[2], match?.[3])
+  const end = normalizeTimeParts(match?.[4], match?.[5], match?.[6])
+  if (!start || !end) return undefined
+
+  const startMinutes = start.hour * 60 + start.minute
+  let endMinutes = end.hour * 60 + end.minute
+  if (endMinutes <= startMinutes) endMinutes += 24 * 60
+
+  return {
+    localStartTime: start,
+    durationMinutes: endMinutes - startMinutes,
+  }
+}
+
+function parseWeekdayEventTime(
+  text: string,
+  now = new Date(),
+  fallbackLocalStartTime?: LocalStartTime,
+): string | undefined {
   const weekdayMatch = text.match(
-    new RegExp(`\\b(next\\s+)?(${WEEKDAY_PATTERN})s?\\b`, 'i'),
+    new RegExp(`\\b(?:(this|next)\\s+)?(${WEEKDAY_PATTERN})s?\\b`, 'i'),
   )
-  const timeMatch = text.match(
-    /\b(?:starts?\s+at|start\s+at|at)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|am|pm)\b/i,
-  )
-  if (!weekdayMatch || !timeMatch) return undefined
+  if (!weekdayMatch) return undefined
 
   const weekday = WEEKDAYS[weekdayMatch[2].toLowerCase()]
   if (weekday === undefined) return undefined
@@ -173,29 +228,21 @@ function parseWeekdayEventTime(text: string, now = new Date()): string | undefin
   const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const currentWeekday = base.getUTCDay()
   let daysAhead = (weekday - currentWeekday + 7) % 7
-  if (daysAhead === 0 || weekdayMatch[1]) daysAhead += 7
+  const modifier = weekdayMatch[1]?.toLowerCase()
+  if (modifier === 'next') daysAhead += 7
+  if (daysAhead === 0 && modifier !== 'this') daysAhead += 7
   base.setUTCDate(base.getUTCDate() + daysAhead)
 
-  const hourText = Number(timeMatch[1])
-  const minute = timeMatch[2] ? Number(timeMatch[2]) : 0
-  const meridiem = timeMatch[3].toLowerCase()
-  if (!hourText || minute > 59) return undefined
-
-  let hour = hourText
-  if (meridiem.startsWith('p')) {
-    hour = hourText === 12 ? 12 : hourText + 12
-  } else {
-    hour = hourText === 12 ? 0 : hourText
-  }
-  if (hour > 23) return undefined
+  const localStartTime = parseLocalStartTime(text) ?? fallbackLocalStartTime
+  if (!localStartTime) return undefined
 
   const year = base.getUTCFullYear()
   const month = base.getUTCMonth() + 1
   const day = base.getUTCDate()
   const monthText = String(month).padStart(2, '0')
   const dayText = String(day).padStart(2, '0')
-  const hourOut = String(hour).padStart(2, '0')
-  const minuteOut = String(minute).padStart(2, '0')
+  const hourOut = String(localStartTime.hour).padStart(2, '0')
+  const minuteOut = String(localStartTime.minute).padStart(2, '0')
   return `${year}-${monthText}-${dayText}T${hourOut}:${minuteOut}:00${easternOffsetFor(month)}`
 }
 
@@ -220,24 +267,48 @@ function parseBoundedOccurrenceCount(text: string): number | undefined {
   return parseSmallCount(showsMatch?.[1])
 }
 
-function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] | undefined {
+function parseRecurring(
+  text: string,
+  currentRecurring?: CalendarWorkflowKnownFields['recurring'],
+): CalendarWorkflowKnownFields['recurring'] | undefined {
   const occurrenceCount = parseBoundedOccurrenceCount(text)
+  const isWeekdayPattern =
+    /\b(?:every\s*week\s*day|weekdays?|mon(?:day)?\s*(?:-|to|through)\s*fri(?:day)?|monday\s*(?:-|to|through)\s*friday)\b/i.test(
+      text,
+    )
+  const durationOnly =
+    Boolean(currentRecurring) &&
+    /\b(one\s+month|1\s+month|three\s+months?|3\s+months?|ongoing|until\s+i\s+stop|for\s+now|foreseeable future)\b/i.test(
+      text,
+    ) &&
+    !/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|weekdays?)\b/i.test(text)
   if (
     !occurrenceCount &&
-    !/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|foreseeable future)\b/i.test(text)
+    !/\b(recurring|re[- ]?occur(?:ring|s)?|repeat(?:ing)?|every|weekly|daily|foreseeable future)\b/i.test(text) &&
+    !isWeekdayPattern &&
+    !durationOnly
   ) {
     return undefined
   }
-  const cadence = /\bdaily|every\s+day\b/i.test(text) ? 'daily' : 'weekly'
+  const cadence = isWeekdayPattern
+    ? 'weekday'
+    : /\bdaily|every\s+day\b/i.test(text)
+      ? 'daily'
+      : (currentRecurring?.cadence ?? 'weekly')
   let duration: '1_month' | '3_months' | 'ongoing' = '1_month'
   if (/\bthree\s+months?|3\s+months?\b/i.test(text)) {
     duration = '3_months'
   } else if (/\bongoing|until\s+i\s+stop|for\s+now|foreseeable future\b/i.test(text)) {
     duration = 'ongoing'
+  } else if (durationOnly && currentRecurring) {
+    duration = currentRecurring.duration
+  }
+  if (durationOnly && currentRecurring?.occurrenceCount !== undefined) {
+    return { ...currentRecurring, duration }
   }
   return occurrenceCount
     ? { cadence, duration, occurrenceCount, mode: 'exact_count' }
-    : { cadence, duration, mode: 'series' }
+    : { cadence, duration, mode: currentRecurring?.mode ?? 'series' }
 }
 
 function extractPlainTitle(text: string): string | undefined {
@@ -298,13 +369,19 @@ export function mergeCalendarKnownFieldsFromText(
     next.timeZone = 'America/New_York'
   }
 
-  const eventTime = parseNaturalEventTime(text) ?? parseWeekdayEventTime(text)
+  const timeRange = parseTimeRange(text)
+  const localStartTime = timeRange?.localStartTime ?? parseLocalStartTime(text)
+  if (localStartTime) next.localStartTime = localStartTime
+
+  const eventTime =
+    parseNaturalEventTime(text) ??
+    parseWeekdayEventTime(text, new Date(), next.localStartTime)
   if (eventTime) next.eventTime = eventTime
 
-  const recurring = parseRecurring(text)
+  const recurring = parseRecurring(text, current.recurring)
   if (recurring) next.recurring = recurring
 
-  const durationMinutes = parseDurationMinutes(text)
+  const durationMinutes = timeRange?.durationMinutes ?? parseDurationMinutes(text)
   if (durationMinutes) next.durationMinutes = durationMinutes
 
   const titleMatch =

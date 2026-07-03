@@ -196,7 +196,7 @@ export interface DiscountCode {
 }
 
 export interface RecurringShowInput {
-  cadence: 'daily' | 'weekly'
+  cadence: 'daily' | 'weekly' | 'weekday'
   duration: '1_month' | '3_months' | 'ongoing'
   occurrenceCount?: number
   mode?: 'exact_count' | 'series'

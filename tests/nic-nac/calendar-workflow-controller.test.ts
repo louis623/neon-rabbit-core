@@ -210,6 +210,49 @@ describe('calendar workflow controller', () => {
     })
   })
 
+  it('captures a weekday recurring schedule once the rep gives the start date', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+
+    const afterRequest = mergeCalendarKnownFieldsFromText(
+      {},
+      'Add a reoccuring show everyweek day at 9am to 4p Est called Live with Heather',
+    )
+    const afterPlatform = mergeCalendarKnownFieldsFromText(afterRequest, 'Tiktok and facebook')
+    const afterStartDate = mergeCalendarKnownFieldsFromText(afterPlatform, 'this monday')
+    const afterDurationChoice = mergeCalendarKnownFieldsFromText(afterStartDate, 'ongoing')
+    const readiness = computeCalendarWorkflowReadiness({
+      intent: 'add_show',
+      knownFields: afterDurationChoice,
+      candidateEventIds: [],
+    })
+
+    expect(afterRequest).toMatchObject({
+      title: 'Live with Heather',
+      timeZone: 'America/New_York',
+      durationMinutes: 420,
+      localStartTime: { hour: 9, minute: 0 },
+      recurring: {
+        cadence: 'weekday',
+        duration: '1_month',
+        mode: 'series',
+      },
+    })
+    expect(afterDurationChoice).toMatchObject({
+      platform: 'Facebook Live + TikTok Live',
+      eventTime: '2026-07-06T09:00:00-04:00',
+      recurring: {
+        cadence: 'weekday',
+        duration: 'ongoing',
+        mode: 'series',
+      },
+    })
+    expect(readiness).toEqual({
+      phase: 'ready_to_add',
+      missingFields: [],
+    })
+  })
+
   it('keeps update intent in identify_existing_event when an event id is missing', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'update_show',

@@ -75,6 +75,11 @@ function occurrenceCountFor(recurring: RecurringShowInput | undefined) {
     if (recurring.duration === '3_months') return 90
     return 180
   }
+  if (recurring.cadence === 'weekday') {
+    if (recurring.duration === '1_month') return 23
+    if (recurring.duration === '3_months') return 66
+    return 130
+  }
   if (recurring.duration === '1_month') return 4
   if (recurring.duration === '3_months') return 13
   return 26

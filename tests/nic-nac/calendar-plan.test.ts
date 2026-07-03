@@ -6,7 +6,7 @@ import {
 } from '@/lib/nic-nac/workflows/calendar-plan'
 
 function makeWorkflow(recurring?: {
-  cadence: 'daily' | 'weekly'
+  cadence: 'daily' | 'weekly' | 'weekday'
   duration: '1_month' | '3_months' | 'ongoing'
   occurrenceCount?: number
   mode?: 'exact_count' | 'series'
@@ -77,6 +77,27 @@ describe('calendar plan contract', () => {
       },
     })
     expect(plan.normalizedRecurring).not.toHaveProperty('occurrenceCount')
+  })
+
+  it('plans weekday ongoing requests as real Monday-Friday recurring series', () => {
+    const plan = buildCalendarPlanFromText(
+      'Add a recurring show every weekday at 9am to 4p Eastern called Live with Heather, ongoing.',
+    )
+
+    expect(plan).toMatchObject({
+      operation: 'create_recurring_series',
+      normalizedRecurring: {
+        cadence: 'weekday',
+        duration: 'ongoing',
+        mode: 'series',
+      },
+      preview: {
+        occurrenceCount: 130,
+        recurrenceMode: 'series',
+        cadence: 'weekday',
+        duration: 'ongoing',
+      },
+    })
   })
 
   it('strips model-invented recurrence when active workflow is one-time', () => {

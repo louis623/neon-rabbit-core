@@ -118,6 +118,16 @@ function futureDate(hoursFromNow: number) {
   return date
 }
 
+function nextMondayMorningEastern() {
+  const date = new Date()
+  const currentWeekday = date.getUTCDay()
+  let daysAhead = (1 - currentWeekday + 7) % 7
+  if (daysAhead === 0) daysAhead = 7
+  date.setUTCDate(date.getUTCDate() + daysAhead)
+  date.setUTCHours(13, 0, 0, 0)
+  return date
+}
+
 function formatIsoForPrompt(date: Date) {
   return `${date.toISOString()} (America/New_York timezone; keep this exact start instant)`
 }
@@ -585,9 +595,11 @@ export async function runCalendarPressureSmoke(
   const bonusTitle = title(runTag, 'Bonus')
   const boundedTitle = title(runTag, 'Two Tuesdays')
   const seriesTitle = title(runTag, 'Weekly Series')
+  const weekdayTitle = title(runTag, 'Weekday Series')
   const oneTime = futureDate(3)
   const bonusTime = futureDate(4)
   const seriesTime = futureDate(5)
+  const weekdayTime = nextMondayMorningEastern()
   const conversationId = randomUUID()
   const turns: TurnResult[] = []
   let messages: UIMessage[] = []
@@ -720,6 +732,57 @@ export async function runCalendarPressureSmoke(
       conversationId,
       currentMessages: messages,
       expectedAssistantCount: 5,
+      requiredTools: ['add_show'],
+      turns,
+      text:
+        `Add a recurring weekday show. Title: ${weekdayTitle}. Platform: Facebook Live + TikTok Live. ` +
+        `Starts: ${formatIsoForPrompt(weekdayTime)}. Duration: 420 minutes. ` +
+        'Repeat every weekday, Monday through Friday, ongoing. No discount codes. Featured collections: July Birthday 2026.',
+    })
+
+    const weekdayRows = await getEventsByTitle(supabase, rep.id, weekdayTitle)
+    requireRows(weekdayRows, 130, 'weekday recurring add')
+    const weekdayGroupIds = new Set(weekdayRows.map((row) => row.recurrence_group_id))
+    if (
+      weekdayGroupIds.size !== 1 ||
+      !weekdayRows.every((row) => row.is_recurring && row.recurrence_rule === 'weekday')
+    ) {
+      throw new Error('database assertion failed: weekday series recurrence fields were wrong.')
+    }
+    if (!weekdayRows.every((row) => row.duration_minutes === 420)) {
+      throw new Error('database assertion failed: weekday series duration was wrong.')
+    }
+    const firstSixWeekdays = weekdayRows.slice(0, 6).map((row) =>
+      new Date(row.event_time).toLocaleDateString('en-US', {
+        weekday: 'short',
+        timeZone: 'America/New_York',
+      }),
+    )
+    if (firstSixWeekdays.join('|') !== 'Mon|Tue|Wed|Thu|Fri|Mon') {
+      throw new Error(
+        `database assertion failed: weekday series did not skip weekends (${firstSixWeekdays.join(',')}).`,
+      )
+    }
+    const hasWeekendRows = weekdayRows.some((row) => {
+      const weekday = new Date(row.event_time).toLocaleDateString('en-US', {
+        weekday: 'short',
+        timeZone: 'America/New_York',
+      })
+      return weekday === 'Sat' || weekday === 'Sun'
+    })
+    if (hasWeekendRows) {
+      throw new Error('database assertion failed: weekday series included Saturday or Sunday rows.')
+    }
+    expectCollectionSet(weekdayRows[0], ['July Birthday 2026'], 'weekday recurring add')
+
+    messages = await sendTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      currentMessages: messages,
+      expectedAssistantCount: 6,
       requiredTools: ['update_show'],
       turns,
       text:
@@ -742,7 +805,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 6,
+      expectedAssistantCount: 7,
       requiredTools: ['skip_show_occurrence'],
       turns,
       text:
@@ -757,7 +820,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'skip_show_occurrence',
-      expectedAssistantCount: 6,
+      expectedAssistantCount: 7,
       turns,
     })
 
@@ -776,7 +839,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 8,
       requiredTools: ['pause_show_series'],
       turns,
       text:
@@ -792,7 +855,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'pause_show_series',
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 8,
       turns,
     })
 
@@ -818,7 +881,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 8,
+      expectedAssistantCount: 9,
       requiredTools: ['list_my_shows'],
       turns,
       text: `List my upcoming Codex Pressure ${runTag} shows and summarize the codes and collections.`,
@@ -831,7 +894,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 9,
+      expectedAssistantCount: 10,
       requiredTools: ['update_show'],
       turns,
       text:
@@ -852,7 +915,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 10,
+      expectedAssistantCount: 11,
       requiredTools: ['cancel_show'],
       turns,
       text: `Cancel the one-time show titled ${bonusTitle}. Reason: Codex pressure smoke cleanup of one entry.`,
@@ -865,7 +928,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show',
-      expectedAssistantCount: 10,
+      expectedAssistantCount: 11,
       turns,
     })
 
@@ -882,7 +945,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 11,
+      expectedAssistantCount: 12,
       requiredTools: ['cancel_show_series'],
       turns,
       text:
@@ -898,7 +961,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show_series',
-      expectedAssistantCount: 11,
+      expectedAssistantCount: 12,
       turns,
     })
 
@@ -925,7 +988,7 @@ export async function runCalendarPressureSmoke(
       createdEventIds: createdRows.map((row) => row.id),
       cleanup: { deletedRows: cleanupDeleted },
       message:
-        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, exact-count bounded repeat, recurring series, list, update one event, update series, skip one occurrence, pause a bounded series range, cancel one event, cancel future series, public-site template visibility, and cleanup.',
+        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, exact-count bounded repeat, weekly recurring series, weekday recurring series, list, update one event, update series, skip one occurrence, pause a bounded series range, cancel one event, cancel future series, public-site template visibility, and cleanup.',
     }
   } catch (error) {
     const cleanup: CalendarPressureSmokeResult['cleanup'] = { deletedRows: 0 }

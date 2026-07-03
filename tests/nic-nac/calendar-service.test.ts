@@ -345,6 +345,80 @@ describe('calendar service', () => {
     ])
   })
 
+  it('addShow creates weekday recurring shows for Monday through Friday only', async () => {
+    const rows = Array.from({ length: 5 }, (_, index) =>
+      baseRow({
+        id: `event-${index + 1}`,
+        title: 'Live with Heather',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekday',
+        event_time: new Date(Date.parse('2099-07-06T13:00:00.000Z') + index * 24 * 60 * 60 * 1000).toISOString(),
+      }),
+    )
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    await addShow(supabase, 'rep-1', {
+      platform: 'Facebook Live + TikTok Live',
+      eventTime: '2099-07-06T13:00:00.000Z',
+      timeZone: 'America/New_York',
+      durationMinutes: 420,
+      title: 'Live with Heather',
+      recurring: { cadence: 'weekday', duration: '1_month' },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload).toHaveLength(23)
+    expect(insertPayload.slice(0, 6).map((row) => row.event_time)).toEqual([
+      '2099-07-06T13:00:00.000Z',
+      '2099-07-07T13:00:00.000Z',
+      '2099-07-08T13:00:00.000Z',
+      '2099-07-09T13:00:00.000Z',
+      '2099-07-10T13:00:00.000Z',
+      '2099-07-13T13:00:00.000Z',
+    ])
+    expect(insertPayload.every((row) => row.is_recurring === true)).toBe(true)
+    expect(insertPayload.every((row) => row.recurrence_rule === 'weekday')).toBe(true)
+    expect(insertPayload.every((row) => row.duration_minutes === 420)).toBe(true)
+  })
+
+  it('addShow moves a weekend weekday-series start to the next Monday', async () => {
+    const rows = [
+      baseRow({
+        id: 'event-1',
+        title: 'Weekend Repair Weekday Series',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekday',
+        event_time: '2099-07-06T13:00:00.000Z',
+      }),
+    ]
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-07-05T13:00:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Weekend Repair Weekday Series',
+      recurring: { cadence: 'weekday', duration: '1_month' },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload[0].event_time).toBe('2099-07-06T13:00:00.000Z')
+  })
+
   it('addShow rejects more than 10 discount codes', async () => {
     const supabase = {
       from: vi.fn(),

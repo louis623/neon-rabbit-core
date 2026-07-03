@@ -82,7 +82,7 @@ function makeCtx() {
 }
 
 function makeCalendarWorkflow(recurring?: {
-  cadence: 'daily' | 'weekly'
+  cadence: 'daily' | 'weekly' | 'weekday'
   duration: '1_month' | '3_months' | 'ongoing'
   occurrenceCount?: number
 }) {
@@ -224,6 +224,38 @@ describe('calendar tools', () => {
       expect.anything(),
       'rep-1',
       expect.objectContaining({ recurring: { ...recurring, mode: 'exact_count' } }),
+    )
+  })
+
+  it('add_show forwards weekday recurring plans instead of flattening them', async () => {
+    addShowMock.mockResolvedValueOnce({
+      count: 23,
+      events: [calendarEvent({ isRecurring: true })],
+    })
+    const recurring = { cadence: 'weekday' as const, duration: '1_month' as const }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: {
+        ...makeCalendarWorkflow(recurring),
+        knownFields: {
+          title: 'Live with Heather',
+          recurring,
+        },
+      },
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'Facebook Live + TikTok Live',
+      eventTime: '2026-07-06T09:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Live with Heather',
+      durationMinutes: 420,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ recurring: { ...recurring, mode: 'series' } }),
     )
   })
 
@@ -718,6 +750,8 @@ describe('calendar registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('end_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Recurring shows are now supported')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('How often')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('weekdays/Monday-Friday')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('recurring.cadence="weekday"')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('up to 10 discount codes per show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('applyToSeries: true')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Do not combine applyToSeries: true with eventTime')

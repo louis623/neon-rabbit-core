@@ -53,7 +53,7 @@ import {
   hasActiveBoardInventoryBrowse,
 } from '@/lib/nic-nac/board-inventory-view'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
-import { Gem, Search, Sparkles, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Gem, Search, Sparkles, X } from 'lucide-react'
 import styles from './DashboardPlaceholder.module.css'
 
 export {
@@ -1533,12 +1533,13 @@ export function getShowCalendarMetrics(
   upcomingEvents: CalendarEvent[],
   recentEvents: CalendarEvent[],
   referenceDate = new Date(),
+  monthEvents: CalendarEvent[] = upcomingEvents,
 ) {
-  const displayTimeZone = getCalendarDisplayTimeZone(upcomingEvents)
+  const displayTimeZone = getCalendarDisplayTimeZone([...upcomingEvents, ...recentEvents])
   const monthStart = getMonthStartInTimeZone(referenceDate, displayTimeZone)
   const monthKey = getDateKeyInTimeZone(monthStart, 'UTC').slice(0, 7)
 
-  const thisMonthCount = upcomingEvents.filter((event) => {
+  const thisMonthCount = monthEvents.filter((event) => {
     const eventMonthKey = getDateKeyInTimeZone(
       event.eventTime,
       event.timeZone ?? displayTimeZone,
@@ -1560,10 +1561,10 @@ export function getShowCalendarMetrics(
 }
 
 export function buildShowCalendarCells(
-  upcomingEvents: CalendarEvent[],
+  events: CalendarEvent[],
   referenceDate = new Date(),
 ): CalendarDayCell[] {
-  const displayTimeZone = getCalendarDisplayTimeZone(upcomingEvents)
+  const displayTimeZone = getCalendarDisplayTimeZone(events)
   const monthStart = getMonthStartInTimeZone(referenceDate, displayTimeZone)
   const gridStart = new Date(monthStart)
   gridStart.setUTCDate(monthStart.getUTCDate() - monthStart.getUTCDay())
@@ -1571,7 +1572,7 @@ export function buildShowCalendarCells(
   const todayKey = getDateKeyInTimeZone(referenceDate, displayTimeZone)
   const eventsByDay = new Map<string, CalendarEvent[]>()
 
-  for (const event of upcomingEvents) {
+  for (const event of events) {
     const key = getDateKeyInTimeZone(
       event.eventTime,
       event.timeZone ?? displayTimeZone,
@@ -1594,6 +1595,13 @@ export function buildShowCalendarCells(
       events: eventsByDay.get(isoDate) ?? [],
     }
   })
+}
+
+function addCalendarMonths(referenceDate: Date, monthDelta: number) {
+  const next = new Date(referenceDate)
+  next.setUTCDate(1)
+  next.setUTCMonth(next.getUTCMonth() + monthDelta)
+  return next
 }
 
 function formatCalendarEventDate(
@@ -1649,6 +1657,8 @@ function formatCalendarRecurrence(event: CalendarEvent) {
   const cadence =
     event.recurrenceRule === 'daily'
       ? 'Daily'
+      : event.recurrenceRule === 'weekday'
+        ? 'Weekday'
       : event.recurrenceRule === 'weekly'
         ? 'Weekly'
         : 'Recurring'
@@ -2264,7 +2274,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadCalendar(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/calendar-summary?upcoming=60&history=12', {
+    const response = await fetch('/api/nic-nac/calendar-summary?upcoming=180&history=60', {
       credentials: 'include',
       signal,
     })
@@ -8885,6 +8895,11 @@ export function ShowCalendarCard({
   referenceDate?: Date
 }) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [visibleMonthDate, setVisibleMonthDate] = useState(() => referenceDate ?? new Date())
+
+  useEffect(() => {
+    if (referenceDate) setVisibleMonthDate(referenceDate)
+  }, [referenceDate])
 
   if (state.status === 'error') {
     return (
@@ -8903,14 +8918,19 @@ export function ShowCalendarCard({
     )
   }
 
+  const calendarEvents = [
+    ...state.summary.upcomingEvents,
+    ...state.summary.recentEvents,
+  ]
   const metrics = getShowCalendarMetrics(
     state.summary.upcomingEvents,
     state.summary.recentEvents,
-    referenceDate,
+    visibleMonthDate,
+    calendarEvents,
   )
   const calendarCells = buildShowCalendarCells(
-    state.summary.upcomingEvents,
-    referenceDate,
+    calendarEvents,
+    visibleMonthDate,
   )
   const selectedEventDetails = selectedEvent
     ? getCalendarEventDetailGroups(selectedEvent)
@@ -8949,6 +8969,32 @@ export function ShowCalendarCard({
       </div>
       <div className={styles.calendarHeader}>
         <div className={styles.walletSettingsTitle}>{metrics.monthLabel}</div>
+        <div className={styles.calendarNavControls} aria-label="Calendar month navigation">
+          <button
+            type="button"
+            className={styles.calendarNavButton}
+            onClick={() => setVisibleMonthDate((current) => addCalendarMonths(current, -1))}
+            aria-label="Previous month"
+          >
+            <ChevronLeft size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={styles.calendarNavButton}
+            onClick={() => setVisibleMonthDate(new Date())}
+            aria-label="Current month"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            className={styles.calendarNavButton}
+            onClick={() => setVisibleMonthDate((current) => addCalendarMonths(current, 1))}
+            aria-label="Next month"
+          >
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </div>
       </div>
       <div className={styles.calendarWeekdayRow}>
         {WEEKDAY_LABELS.map((label) => (

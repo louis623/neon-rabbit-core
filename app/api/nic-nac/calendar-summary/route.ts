@@ -9,7 +9,7 @@ import { ServiceError } from '@/lib/services/errors'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const MAX_CALENDAR_SUMMARY_LIMIT = 60
+const MAX_CALENDAR_SUMMARY_LIMIT = 180
 const WHOLE_NUMBER_PATTERN = /^[1-9]\d*$/
 
 function readLimit(url: URL, key: string) {

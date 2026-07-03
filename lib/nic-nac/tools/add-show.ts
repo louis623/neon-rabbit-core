@@ -20,7 +20,7 @@ const inputSchema = z.object({
   })).max(10).optional(),
   featuredCollections: z.array(z.string()).optional(),
   recurring: z.object({
-    cadence: z.enum(['daily', 'weekly']),
+    cadence: z.enum(['daily', 'weekly', 'weekday']),
     duration: z.enum(['1_month', '3_months', 'ongoing']),
     occurrenceCount: z.number().int().min(1).max(180).optional(),
     mode: z.enum(['exact_count', 'series']).optional(),
@@ -47,7 +47,7 @@ export function makeAddShowTool(ctx: {
   return tool({
     description:
       'Schedule a new show. Can schedule a one-time show or a recurring series. ' +
-      'For recurring: ask the rep how often (daily or weekly) and how long (a specific number of times, one month, three months, or ongoing). ' +
+      'For recurring: ask the rep how often (daily, weekly, or weekday/Monday-Friday) and how long (a specific number of times, one month, three months, or ongoing). ' +
       'If the rep says a bounded count like "twice" or "next two Tuesdays", pass recurring.occurrenceCount and create exactly that many entries. ' +
       'In the current build, ongoing schedules out about six months ahead. ' +
       'Discount codes support up to 10 per show as an array of {code, description} pairs.',

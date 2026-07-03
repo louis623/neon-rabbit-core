@@ -150,6 +150,12 @@ function getRecurringOccurrenceCount(recurring: RecurringShowInput): number {
     return 180
   }
 
+  if (recurring.cadence === 'weekday') {
+    if (recurring.duration === '1_month') return 23
+    if (recurring.duration === '3_months') return 66
+    return 130
+  }
+
   if (recurring.duration === '1_month') return 4
   if (recurring.duration === '3_months') return 13
   return 26
@@ -212,6 +218,21 @@ function addDaysToLocalDate(parts: ZonedDateTimeParts, days: number): ZonedDateT
   }
 }
 
+function nextWeekdayOffset(parts: ZonedDateTimeParts, occurrenceIndex: number): number {
+  let offset = 0
+  let seen = 0
+
+  while (true) {
+    const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + offset))
+    const weekday = date.getUTCDay()
+    if (weekday >= 1 && weekday <= 5) {
+      if (seen === occurrenceIndex) return offset
+      seen += 1
+    }
+    offset += 1
+  }
+}
+
 function zonedLocalTimeToIso(parts: ZonedDateTimeParts, timeZone: string): string {
   const targetLocalMs = localPartsToUtcMs(parts)
   let utcMs = targetLocalMs
@@ -232,13 +253,18 @@ function buildRecurringEventTimes(
   recurring: RecurringShowInput,
 ): string[] {
   const occurrences = getRecurringOccurrenceCount(recurring)
-  const stepDays = recurring.cadence === 'daily' ? 1 : 7
   const startInstant = new Date(eventTime)
   const startLocalParts = getZonedDateTimeParts(startInstant, timeZone)
 
   return Array.from({ length: occurrences }, (_, index) => {
-    if (index === 0) return eventTime
-    const nextLocalParts = addDaysToLocalDate(startLocalParts, index * stepDays)
+    if (index === 0 && recurring.cadence !== 'weekday') return eventTime
+    const daysToAdd =
+      recurring.cadence === 'daily'
+        ? index
+        : recurring.cadence === 'weekday'
+          ? nextWeekdayOffset(startLocalParts, index)
+          : index * 7
+    const nextLocalParts = addDaysToLocalDate(startLocalParts, daysToAdd)
     return zonedLocalTimeToIso(nextLocalParts, timeZone)
   })
 }

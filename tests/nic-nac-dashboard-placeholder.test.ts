@@ -1401,7 +1401,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain("topic === 'calendar'")
     expect(source).toContain('void refreshTradeWorkspace()')
     expect(source).toContain('void loadCalendar().catch')
-    expect(source).toContain('/api/nic-nac/calendar-summary?upcoming=60&history=12')
+    expect(source).toContain('/api/nic-nac/calendar-summary?upcoming=180&history=60')
     expect(source).toContain("topic === 'site' && activeSection === 'recipes'")
     expect(source).toContain('void loadSiteRecipes(undefined, {')
     expect(source).toContain('preferredRecipeId: selectedRecipeId')
@@ -2547,6 +2547,9 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Read-only here. Ask Nic-Nac to add or edit shows.')
     expect(html).toContain('Thursday reveal')
     expect(html).toContain('Sunday party')
+    expect(html).toContain('aria-label="Previous month"')
+    expect(html).toContain('aria-label="Current month"')
+    expect(html).toContain('aria-label="Next month"')
     expect(html).toContain('Recently wrapped')
     expect(html).toContain('Launch party')
     expect(html).toContain('Recurring')
@@ -2694,6 +2697,15 @@ describe('DashboardPlaceholder', () => {
     expect(cells[0].isoDate).toBe('2026-04-26')
     expect(cells[34].isoDate).toBe('2026-05-30')
     expect(cells.find((cell) => cell.isoDate === '2026-05-15')?.events).toHaveLength(1)
+  })
+
+  it('can render recently wrapped shows on the visible month grid', () => {
+    const cells = buildShowCalendarCells(
+      CALENDAR_READY_STATE.summary.recentEvents,
+      new Date('2026-05-10T12:00:00.000Z'),
+    )
+
+    expect(cells.find((cell) => cell.isoDate === '2026-05-05')?.events).toHaveLength(1)
   })
 
   it('derives the calendar metrics from upcoming and recent shows', () => {
