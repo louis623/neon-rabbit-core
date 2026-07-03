@@ -223,6 +223,61 @@ describe('calendar tools', () => {
     )
   })
 
+  it('add_show applies active workflow recurrence when the model omits it for the same title', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 13, events: [calendarEvent({ isRecurring: true })] })
+    const recurring = { cadence: 'weekly' as const, duration: '3_months' as const }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: {
+        ...makeCalendarWorkflow(recurring),
+        knownFields: {
+          title: 'Codex Pressure Weekly Series',
+          recurring,
+        },
+      },
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'Facebook Live',
+      eventTime: '2026-07-03T22:09:00.000Z',
+      timeZone: 'America/New_York',
+      title: 'Codex Pressure Weekly Series',
+      durationMinutes: 120,
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ recurring }),
+    )
+  })
+
+  it('add_show does not apply stale workflow recurrence to a different title', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
+    const recurring = { cadence: 'weekly' as const, duration: '3_months' as const }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      activeCalendarWorkflow: {
+        ...makeCalendarWorkflow(recurring),
+        knownFields: {
+          title: 'Old Weekly Series',
+          recurring,
+        },
+      },
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2026-07-04T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Different One-Time Show',
+      durationMinutes: 180,
+    })
+
+    const forwardedInput = addShowMock.mock.calls[0][2] as { recurring?: unknown }
+    expect(forwardedInput.recurring).toBeUndefined()
+  })
+
   it('list_my_shows returns count + totalCount + discount code arrays', async () => {
     listMyShowsMock.mockResolvedValueOnce({
       events: [calendarEvent()],

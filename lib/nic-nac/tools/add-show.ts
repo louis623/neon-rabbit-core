@@ -43,6 +43,17 @@ function calendarWorkflowAllowsRecurring(
   return Boolean(workflow.knownFields.recurring)
 }
 
+function calendarWorkflowRecurringMatchesInput(
+  workflow: ToolContext['activeCalendarWorkflow'] | undefined,
+  input: z.infer<typeof inputSchema>,
+) {
+  if (!workflow?.knownFields.recurring) return false
+  if (workflow.intent !== 'add_show') return false
+  const workflowTitle = workflow.knownFields.title?.trim().toLowerCase()
+  const inputTitle = input.title?.trim().toLowerCase()
+  return Boolean(workflowTitle && inputTitle && workflowTitle === inputTitle)
+}
+
 export function makeAddShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
@@ -58,10 +69,16 @@ export function makeAddShowTool(ctx: {
     inputSchema,
     execute: async (input) => {
       try {
+        const workflowRecurring = calendarWorkflowRecurringMatchesInput(ctx.activeCalendarWorkflow, input)
+          ? ctx.activeCalendarWorkflow?.knownFields.recurring
+          : undefined
+        const mergedInput = workflowRecurring && !input.recurring
+          ? { ...input, recurring: workflowRecurring }
+          : input
         const safeInput =
-          input.recurring && !calendarWorkflowAllowsRecurring(ctx.activeCalendarWorkflow)
-            ? { ...input, recurring: undefined }
-            : input
+          mergedInput.recurring && !calendarWorkflowAllowsRecurring(ctx.activeCalendarWorkflow)
+            ? { ...mergedInput, recurring: undefined }
+            : mergedInput
         const result = await addShow(ctx.supabase, ctx.repId, safeInput)
         const firstEvent = result.events[0] ?? null
         const lastEvent = result.events[result.events.length - 1] ?? null
