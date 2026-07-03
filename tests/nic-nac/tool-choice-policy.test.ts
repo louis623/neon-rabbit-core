@@ -66,6 +66,21 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'add_listing' })
   })
 
+  it('forces add_show when the active Calendar workflow is ready to add', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['prepare_calendar_work', 'add_show', 'list_my_shows'],
+        activeCalendarWorkflow: {
+          status: 'active',
+          phase: 'ready_to_add',
+          missing: [],
+        },
+      }),
+    ).toEqual({ type: 'tool', toolName: 'add_show' })
+  })
+
   it('does not force a tool after the first model step', () => {
     expect(
       chooseNicNacToolChoiceForStep({

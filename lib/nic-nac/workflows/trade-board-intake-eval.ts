@@ -14,6 +14,12 @@ export const TRADE_BOARD_INTAKE_HARD_FAIL_PATTERNS: Array<{
     pattern: /\bi\s+can(?:no|')?t\s+actually\s+add\s+listings\b/i,
   },
   {
+    id: 'cannot_write_calendar',
+    phrase: "I can't actually write to the calendar",
+    pattern:
+      /\bi\s+can(?:no|')?t\s+actually\s+(?:write\s+to|add\s+to|update)\s+(?:the\s+)?calendar\b/i,
+  },
+  {
     id: 'manual_workspace_add',
     phrase: 'Log into your workspace and add it manually',
     pattern: /\blog\s+into\s+your\s+workspace\b[\s\S]{0,120}\badd\s+it\s+manually\b/i,

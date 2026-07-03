@@ -10,16 +10,23 @@ type TradeBoardWorkflowForToolChoice = {
   } | null
 } | null | undefined
 
+type CalendarWorkflowForToolChoice = {
+  status?: string
+  phase?: string
+  missing?: string[] | null
+} | null | undefined
+
 export type NicNacStepToolChoice =
   | 'auto'
   | 'required'
-  | { type: 'tool'; toolName: 'add_listing' | 'prepare_trade_board_work' }
+  | { type: 'tool'; toolName: 'add_listing' | 'prepare_trade_board_work' | 'add_show' }
 
 export function chooseNicNacToolChoiceForStep(args: {
   requireToolCall: boolean
   stepsLength: number
   activeToolNames: string[]
   activeTradeBoardWorkflow?: TradeBoardWorkflowForToolChoice
+  activeCalendarWorkflow?: CalendarWorkflowForToolChoice
   latestUserText?: string
   previousAssistantText?: string
 }): NicNacStepToolChoice {
@@ -31,6 +38,12 @@ export function chooseNicNacToolChoiceForStep(args: {
       tradeBoardWorkflowHasDuplicatePhysicalConfirmation(args))
   ) {
     return { type: 'tool', toolName: 'add_listing' }
+  }
+  if (
+    args.activeToolNames.includes('add_show') &&
+    calendarWorkflowIsReadyToAdd(args.activeCalendarWorkflow)
+  ) {
+    return { type: 'tool', toolName: 'add_show' }
   }
   if (args.activeToolNames.includes('prepare_trade_board_work')) {
     return { type: 'tool', toolName: 'prepare_trade_board_work' }
@@ -53,6 +66,16 @@ function tradeBoardWorkflowHasDuplicatePhysicalConfirmation(args: {
     Boolean(workflow.known?.itemNumber) &&
     textIsAffirmative(args.latestUserText ?? '') &&
     textAsksDuplicatePhysicalPieceQuestion(args.previousAssistantText ?? '')
+  )
+}
+
+function calendarWorkflowIsReadyToAdd(
+  workflow: CalendarWorkflowForToolChoice,
+): boolean {
+  return (
+    workflow?.status === 'active' &&
+    workflow.phase === 'ready_to_add' &&
+    (workflow.missing?.length ?? 0) === 0
   )
 }
 

@@ -342,11 +342,13 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
         id: 'calendar-workflow-1',
         status: 'active',
         phase: 'ready_to_add',
+        missingFields: [],
       },
       sessionAfter: {
         id: 'calendar-workflow-1',
         status: 'active',
         phase: 'ready_to_add',
+        missingFields: [],
       },
       activeWorkflow: {
         workflowId: 'calendar-workflow-1',
@@ -417,7 +419,10 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       )
       expect(options.system).toContain('Active workflow: calendar_event_work')
       expect(options.system).toContain('Description: optional')
-      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
+      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
+        type: 'tool',
+        toolName: 'add_show',
+      })
       expect(logNicNacRunMock).toHaveBeenCalledWith(
         expect.objectContaining({
           conversationId: 'calendar-chaos-conversation',

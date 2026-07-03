@@ -2767,3 +2767,19 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 **Verification:**
 - `npm exec vitest run tests/nic-nac-branding.test.ts tests/nic-nac/tool-routing.test.ts tests/reviewer-smoke-ui.test.ts` passed: 3 files, 82 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
+
+---
+
+## July 3, 2026 - Calendar Add-Show Replay Follow-Up
+
+**What changed:**
+- Louis found the Calendar quick chip still failed on the real path: Nic-Nac gathered `Tiktok July 4 7p Est` and `Bling party and 3 hrs`, then said he could not write to the calendar.
+- Root cause: the durable Calendar workflow kept Calendar tools available, but workflow state did not parse `7p Est`, `3 hrs`, or a plain title like `Bling party`; the route also did not force `add_show` once Calendar workflow state was ready.
+- Fixed Calendar workflow extraction for month/day/time shorthand, Eastern timezone, `hrs`, and plain title + duration follow-ups.
+- Updated tool choice so an active ready Calendar workflow pins the next model step to `add_show`.
+- Added the calendar write-abdication phrase to Nic-Nac hard-fail telemetry.
+
+**Verification:**
+- Red/green tests reproduced the exact replay and now prove it reaches `ready_to_add` with `eventTime`, `timeZone`, `durationMinutes`, title, and forced `add_show`.
+- Focused calendar/Nic-Nac suite passed: `npm exec vitest run tests/nic-nac/calendar-workflow-controller.test.ts tests/nic-nac/calendar-workflow-context.test.ts tests/nic-nac/calendar-workflow-store.test.ts tests/nic-nac/calendar-work-preflight.test.ts tests/nic-nac/calendar-tools.test.ts tests/nic-nac/calendar-chaotic-rep-smoke.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac/tool-choice-policy.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/trade-board-intake-eval.test.ts` passed: 10 files, 121 tests.
+- `npm run build` passed locally with Next.js 16.2.1.

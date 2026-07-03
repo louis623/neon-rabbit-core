@@ -17,6 +17,16 @@ describe('Trade Board intake hard-fail detection', () => {
     ])
   })
 
+  it('detects calendar write abdication from the add-show regression', () => {
+    const result = detectTradeBoardIntakeHardFails(
+      "I can't actually write to the calendar from this turn, but those are the exact details to enter.",
+    )
+
+    expect(result.matches.map((m) => m.id)).toEqual([
+      'cannot_write_calendar',
+    ])
+  })
+
   it('detects label-photo jewelry critique language', () => {
     const result = detectTradeBoardIntakeHardFails(
       'The photo of the earrings needs a closer retake.',

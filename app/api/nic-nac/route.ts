@@ -550,6 +550,13 @@ export async function POST(request: Request) {
             stepsLength: steps.length,
             activeToolNames,
             activeTradeBoardWorkflow,
+            activeCalendarWorkflow: calendarWorkflowContext.sessionAfter
+              ? {
+                  status: calendarWorkflowContext.sessionAfter.status,
+                  phase: calendarWorkflowContext.sessionAfter.phase,
+                  missing: calendarWorkflowContext.sessionAfter.missingFields,
+                }
+              : null,
             latestUserText,
             previousAssistantText,
           }),

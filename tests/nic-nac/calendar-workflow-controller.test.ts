@@ -53,6 +53,34 @@ describe('calendar workflow controller', () => {
     expect(merged.durationMinutes).toBe(150)
   })
 
+  it('extracts the quick-chip add-show details from Louis real replay', () => {
+    const afterTime = mergeCalendarKnownFieldsFromText(
+      {},
+      'Tiktok July 4 7p Est',
+    )
+    const afterTitleAndDuration = mergeCalendarKnownFieldsFromText(
+      afterTime,
+      'Bling party and 3 hrs',
+    )
+    const readiness = computeCalendarWorkflowReadiness({
+      intent: 'add_show',
+      knownFields: afterTitleAndDuration,
+      candidateEventIds: [],
+    })
+
+    expect(afterTitleAndDuration).toMatchObject({
+      title: 'Bling Party',
+      platform: 'TikTok',
+      eventTime: '2026-07-04T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      durationMinutes: 180,
+    })
+    expect(readiness).toEqual({
+      phase: 'ready_to_add',
+      missingFields: [],
+    })
+  })
+
   it('keeps update intent in identify_existing_event when an event id is missing', () => {
     const state = computeCalendarWorkflowReadiness({
       intent: 'update_show',
