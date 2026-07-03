@@ -378,8 +378,17 @@ export async function addShow(
     return { events: [mapEvent(data as CalendarEventRow)], count: 1 }
   }
 
+  if (input.recurring.mode === 'exact_count' && input.recurring.occurrenceCount === undefined) {
+    throw errors.INVALID_INPUT(
+      'recurring.mode exact_count requires occurrenceCount',
+      'Tell me exactly how many times you want that repeated show to run.',
+    )
+  }
+
   const recurrenceGroupId = randomUUID()
-  const shouldCreateSeries = input.recurring.occurrenceCount === undefined
+  const shouldCreateSeries =
+    input.recurring.mode === 'series' ||
+    (input.recurring.mode !== 'exact_count' && input.recurring.occurrenceCount === undefined)
   const eventRows = buildRecurringEventTimes(eventTime, timeZone, input.recurring).map((nextEventTime) => ({
     id: randomUUID(),
     rep_id: repId,
@@ -552,7 +561,7 @@ export async function updateShow(
       .update(update)
       .eq('rep_id', repId)
       .eq('recurrence_group_id', current.recurrence_group_id)
-      .gt('event_time', new Date().toISOString())
+      .gte('event_time', current.event_time)
       .eq('status', 'scheduled')
       .select(EVENT_SELECT)
     if (error) throw error

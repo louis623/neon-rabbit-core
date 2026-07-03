@@ -677,7 +677,7 @@ export async function runCalendarPressureSmoke(
         'Featured collections: OG Originals, Luxe Layers, July Birthday 2026.',
     })
 
-    const seriesRows = await getEventsByTitle(supabase, rep.id, seriesTitle)
+    let seriesRows = await getEventsByTitle(supabase, rep.id, seriesTitle)
     requireRows(seriesRows, 13, 'weekly recurring add')
     const groupIds = new Set(seriesRows.map((row) => row.recurrence_group_id))
     if (
@@ -694,6 +694,98 @@ export async function runCalendarPressureSmoke(
       'weekly recurring add',
     )
 
+    messages = await sendTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      currentMessages: messages,
+      expectedAssistantCount: 5,
+      requiredTools: ['update_show'],
+      turns,
+      text:
+        `Update all future occurrences in the recurring series titled ${seriesTitle}. ` +
+        'Replace discount codes with SERIES25 = 25% off the whole cart and KEEP5 = $5 off keepers. ' +
+        'Replace featured collections with Series Luxe, Vault Night, and July Birthday 2026. Keep the same time.',
+    })
+
+    seriesRows = await getEventsByTitle(supabase, rep.id, seriesTitle)
+    requireRows(seriesRows, 13, 'series-wide update')
+    for (const row of seriesRows) {
+      expectCodeSet(row, ['SERIES25', 'KEEP5'], 'series-wide update')
+      expectCollectionSet(row, ['Series Luxe', 'Vault Night', 'July Birthday 2026'], 'series-wide update')
+    }
+
+    messages = await sendTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      currentMessages: messages,
+      expectedAssistantCount: 6,
+      requiredTools: ['skip_show_occurrence'],
+      turns,
+      text:
+        `Skip only the second occurrence of ${seriesTitle} on ${formatIsoForPrompt(new Date(seriesRows[1].event_time))}. ` +
+        'Keep the rest of that recurring series scheduled. Reason: Codex pressure smoke one-night skip.',
+    })
+    messages = await approveTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      messages,
+      toolName: 'skip_show_occurrence',
+      expectedAssistantCount: 6,
+      turns,
+    })
+
+    seriesRows = await getEventsByTitle(supabase, rep.id, seriesTitle)
+    if (seriesRows[1].status !== 'cancelled') {
+      throw new Error('database assertion failed: skip occurrence did not cancel the selected occurrence.')
+    }
+    if (seriesRows[0].status !== 'scheduled' || seriesRows[2].status !== 'scheduled') {
+      throw new Error('database assertion failed: skip occurrence cancelled neighboring series rows.')
+    }
+
+    messages = await sendTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      currentMessages: messages,
+      expectedAssistantCount: 7,
+      requiredTools: ['pause_show_series'],
+      turns,
+      text:
+        `Pause the recurring series titled ${seriesTitle} starting with the third occurrence on ` +
+        `${formatIsoForPrompt(new Date(seriesRows[2].event_time))} through the fourth occurrence on ` +
+        `${formatIsoForPrompt(new Date(seriesRows[3].event_time))}. Reason: Codex pressure smoke bounded pause.`,
+    })
+    messages = await approveTurn({
+      appUrl,
+      env,
+      cookie: session.cookie,
+      supabase,
+      conversationId,
+      messages,
+      toolName: 'pause_show_series',
+      expectedAssistantCount: 7,
+      turns,
+    })
+
+    seriesRows = await getEventsByTitle(supabase, rep.id, seriesTitle)
+    if (seriesRows[2].status !== 'cancelled' || seriesRows[3].status !== 'cancelled') {
+      throw new Error('database assertion failed: pause range did not cancel the bounded occurrences.')
+    }
+    if (seriesRows[4].status !== 'scheduled') {
+      throw new Error('database assertion failed: pause range cancelled beyond the pause window.')
+    }
+
     await assertPublicSiteData({
       appUrl,
       env,
@@ -708,7 +800,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 5,
+      expectedAssistantCount: 8,
       requiredTools: ['list_my_shows'],
       turns,
       text: `List my upcoming Codex Pressure ${runTag} shows and summarize the codes and collections.`,
@@ -721,7 +813,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 6,
+      expectedAssistantCount: 9,
       requiredTools: ['update_show'],
       turns,
       text:
@@ -742,7 +834,7 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 10,
       requiredTools: ['cancel_show'],
       turns,
       text: `Cancel the one-time show titled ${bonusTitle}. Reason: Codex pressure smoke cleanup of one entry.`,
@@ -755,7 +847,7 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show',
-      expectedAssistantCount: 7,
+      expectedAssistantCount: 10,
       turns,
     })
 
@@ -772,11 +864,12 @@ export async function runCalendarPressureSmoke(
       supabase,
       conversationId,
       currentMessages: messages,
-      expectedAssistantCount: 8,
+      expectedAssistantCount: 11,
       requiredTools: ['cancel_show_series'],
       turns,
       text:
-        `Cancel the recurring series titled ${seriesTitle} starting with the first occurrence and all future occurrences. ` +
+        `Cancel the recurring series titled ${seriesTitle} starting with the fifth occurrence on ` +
+        `${formatIsoForPrompt(new Date(seriesRows[4].event_time))} and all future occurrences. ` +
         'Reason: Codex pressure smoke cleanup of recurring series.',
     })
     await approveTurn({
@@ -787,14 +880,17 @@ export async function runCalendarPressureSmoke(
       conversationId,
       messages,
       toolName: 'cancel_show_series',
-      expectedAssistantCount: 8,
+      expectedAssistantCount: 11,
       turns,
     })
 
     const cancelledSeries = await getEventsByTitle(supabase, rep.id, seriesTitle)
     requireRows(cancelledSeries, 13, 'series cancellation')
-    if (!cancelledSeries.every((row) => row.status === 'cancelled')) {
-      throw new Error('database assertion failed: series cancellation left scheduled rows behind.')
+    if (cancelledSeries[0].status !== 'scheduled') {
+      throw new Error('database assertion failed: cancel future series cancelled the first occurrence.')
+    }
+    if (!cancelledSeries.slice(1).every((row) => row.status === 'cancelled')) {
+      throw new Error('database assertion failed: cancel future series left selected/future rows scheduled.')
     }
 
     const createdRows = await getPressureRows(supabase, rep.id, runTag)
@@ -811,7 +907,7 @@ export async function runCalendarPressureSmoke(
       createdEventIds: createdRows.map((row) => row.id),
       cleanup: { deletedRows: cleanupDeleted },
       message:
-        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, exact-count bounded repeat, recurring series, list, update, cancel one event, cancel series, public-site template visibility, and cleanup.',
+        'Nic-Nac calendar pressure smoke passed: multiple one-time entries, exact-count bounded repeat, recurring series, list, update one event, update series, skip one occurrence, pause a bounded series range, cancel one event, cancel future series, public-site template visibility, and cleanup.',
     }
   } catch (error) {
     const cleanup: CalendarPressureSmokeResult['cleanup'] = { deletedRows: 0 }

@@ -505,10 +505,48 @@ describe('calendar service', () => {
       ['recurrence_group_id', 'group-1'],
       ['status', 'scheduled'],
     ])
-    expect(updated.state.gt[0][0]).toBe('event_time')
+    expect(updated.state.gte).toEqual([['event_time', '2099-05-01T20:00:00.000Z']])
     expect(result.updatedCount).toBe(2)
     expect(result.event.title).toBe('Wednesday Sparkles')
     expect(result.event.discountCodes).toEqual([{ code: 'NEWCODE', description: 'Updated' }])
+  })
+
+  it('addShow can explicitly create a real series even when occurrenceCount is present for preview', async () => {
+    const rows = Array.from({ length: 13 }, (_, index) =>
+      baseRow({
+        id: `event-${index + 1}`,
+        title: 'Previewed Weekly Sparkles',
+        is_recurring: true,
+        recurrence_group_id: 'group-1',
+        recurrence_rule: 'weekly',
+        event_time: new Date(Date.parse('2099-05-01T20:00:00.000Z') + index * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }),
+    )
+    const insertMany = makeInsertManyChain({ data: rows, error: null })
+    const insert = vi.fn(() => ({ select: insertMany.select }))
+    const supabase = {
+      from: vi.fn(() => ({ insert })),
+    } as never
+
+    const result = await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-05-01T20:00:00.000Z',
+      title: 'Previewed Weekly Sparkles',
+      recurring: {
+        cadence: 'weekly',
+        duration: '3_months',
+        occurrenceCount: 13,
+        mode: 'series',
+      },
+    })
+
+    const insertPayload = (insert as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >
+    expect(insertPayload).toHaveLength(13)
+    expect(insertPayload.every((row) => row.is_recurring === true)).toBe(true)
+    expect(new Set(insertPayload.map((row) => row.recurrence_group_id))).toHaveLength(1)
+    expect(result.events.every((event) => event.isRecurring)).toBe(true)
   })
 
   it('updateShow rejects applyToSeries for a non-recurring event', async () => {

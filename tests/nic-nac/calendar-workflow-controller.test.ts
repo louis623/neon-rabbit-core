@@ -116,6 +116,7 @@ describe('calendar workflow controller', () => {
     expect(recurring.recurring).toEqual({
       cadence: 'weekly',
       duration: '3_months',
+      mode: 'series',
     })
   })
 
@@ -132,6 +133,7 @@ describe('calendar workflow controller', () => {
       recurring: {
         cadence: 'weekly',
         duration: '3_months',
+        mode: 'series',
       },
     })
   })
@@ -163,6 +165,7 @@ describe('calendar workflow controller', () => {
       recurring: {
         cadence: 'weekly',
         duration: 'ongoing',
+        mode: 'series',
       },
       featuredCollections: ['July Birthday Collection'],
     })
@@ -196,6 +199,7 @@ describe('calendar workflow controller', () => {
         cadence: 'weekly',
         duration: '1_month',
         occurrenceCount: 2,
+        mode: 'exact_count',
       },
       discountCodes: [{ code: 'Pastries123', description: '10% off' }],
       featuredCollections: ['stacks', 'July birthdays'],

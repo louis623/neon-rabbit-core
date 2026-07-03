@@ -44,10 +44,14 @@ export interface CalendarWorkflowKnownFields {
   description?: string | null
   discountCodes?: Array<{ code: string; description?: string }>
   featuredCollections?: string[]
+  completedToolName?: string
+  resultEventIds?: string[]
+  resultCount?: number
   recurring?: {
     cadence: 'daily' | 'weekly'
     duration: '1_month' | '3_months' | 'ongoing'
     occurrenceCount?: number
+    mode?: 'exact_count' | 'series'
   }
 }
 

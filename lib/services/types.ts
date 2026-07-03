@@ -199,6 +199,7 @@ export interface RecurringShowInput {
   cadence: 'daily' | 'weekly'
   duration: '1_month' | '3_months' | 'ongoing'
   occurrenceCount?: number
+  mode?: 'exact_count' | 'series'
 }
 
 export interface CalendarEvent {

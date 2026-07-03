@@ -21,6 +21,7 @@
 import type { Tool } from 'ai'
 import { logToolExecution } from '@/lib/nic-nac/guardian-telemetry'
 import { hashState } from '@/lib/nic-nac/audit'
+import { finalizeCalendarWorkflowAfterWrite } from '@/lib/nic-nac/workflows/calendar-workflow-finalize'
 import type { ToolContext } from '../types'
 
 export function withTelemetry(toolName: string, ctx: ToolContext, tool: Tool): Tool {
@@ -33,6 +34,15 @@ export function withTelemetry(toolName: string, ctx: ToolContext, tool: Tool): T
     let errorMessage: string | undefined
     try {
       const result = await original.apply(tool, args)
+      try {
+        await finalizeCalendarWorkflowAfterWrite({ toolName, ctx, output: result })
+      } catch (finalizeErr) {
+        console.error('[nic-nac] calendar workflow finalize failed', {
+          toolName,
+          workflowId: ctx.activeCalendarWorkflow?.id,
+          finalizeErr,
+        })
+      }
       success = true
       return result
     } catch (err) {

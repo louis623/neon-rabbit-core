@@ -138,9 +138,13 @@ describe('calendar tools', () => {
         timeZone: 'America/New_York',
         title: 'Friday Sparkles',
         discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
-        recurring: { cadence: 'weekly', duration: '1_month' },
+        recurring: { cadence: 'weekly', duration: '1_month', mode: 'series' },
       }),
     )
+    expect(result.calendarPlan).toMatchObject({
+      operation: 'create_recurring_series',
+      preview: { occurrenceCount: 4, recurrenceMode: 'series' },
+    })
     expect(result.count).toBe(4)
     expect(result.events).toHaveLength(1)
   })
@@ -192,7 +196,7 @@ describe('calendar tools', () => {
     expect(addShowMock).toHaveBeenCalledWith(
       expect.anything(),
       'rep-1',
-      expect.objectContaining({ recurring }),
+      expect.objectContaining({ recurring: { ...recurring, mode: 'series' } }),
     )
   })
 
@@ -219,7 +223,7 @@ describe('calendar tools', () => {
     expect(addShowMock).toHaveBeenCalledWith(
       expect.anything(),
       'rep-1',
-      expect.objectContaining({ recurring }),
+      expect.objectContaining({ recurring: { ...recurring, mode: 'exact_count' } }),
     )
   })
 
@@ -248,7 +252,7 @@ describe('calendar tools', () => {
     expect(addShowMock).toHaveBeenCalledWith(
       expect.anything(),
       'rep-1',
-      expect.objectContaining({ recurring }),
+      expect.objectContaining({ recurring: { ...recurring, mode: 'series' } }),
     )
   })
 
@@ -279,7 +283,7 @@ describe('calendar tools', () => {
     expect(addShowMock).toHaveBeenCalledWith(
       expect.anything(),
       'rep-1',
-      expect.objectContaining({ recurring: workflowRecurring }),
+      expect.objectContaining({ recurring: { ...workflowRecurring, mode: 'series' } }),
     )
   })
 
@@ -303,7 +307,7 @@ describe('calendar tools', () => {
       expect.anything(),
       'rep-1',
       expect.objectContaining({
-        recurring: { cadence: 'weekly', duration: '3_months' },
+        recurring: { cadence: 'weekly', duration: '3_months', mode: 'series' },
       }),
     )
   })
@@ -329,7 +333,7 @@ describe('calendar tools', () => {
       expect.anything(),
       'rep-1',
       expect.objectContaining({
-        recurring: { cadence: 'weekly', duration: '3_months' },
+        recurring: { cadence: 'weekly', duration: '3_months', mode: 'series' },
       }),
     )
   })

@@ -235,7 +235,9 @@ function parseRecurring(text: string): CalendarWorkflowKnownFields['recurring'] 
   } else if (/\bongoing|until\s+i\s+stop|for\s+now|foreseeable future\b/i.test(text)) {
     duration = 'ongoing'
   }
-  return occurrenceCount ? { cadence, duration, occurrenceCount } : { cadence, duration }
+  return occurrenceCount
+    ? { cadence, duration, occurrenceCount, mode: 'exact_count' }
+    : { cadence, duration, mode: 'series' }
 }
 
 function extractPlainTitle(text: string): string | undefined {

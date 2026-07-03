@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { addShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
-import { mergeCalendarKnownFieldsFromText } from '@/lib/nic-nac/workflows/calendar-workflow-controller'
+import { reconcileAddShowInputWithCalendarPlan } from '@/lib/nic-nac/workflows/calendar-plan'
 import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -23,6 +23,7 @@ const inputSchema = z.object({
     cadence: z.enum(['daily', 'weekly']),
     duration: z.enum(['1_month', '3_months', 'ongoing']),
     occurrenceCount: z.number().int().min(1).max(180).optional(),
+    mode: z.enum(['exact_count', 'series']).optional(),
   }).optional(),
 })
 
@@ -35,37 +36,6 @@ function explainServiceError(err: unknown): never {
     })
   }
   throw err
-}
-
-function calendarWorkflowAllowsRecurring(
-  workflow: ToolContext['activeCalendarWorkflow'] | undefined,
-) {
-  if (!workflow) return true
-  return Boolean(workflow.knownFields.recurring)
-}
-
-function calendarWorkflowRecurringMatchesInput(
-  workflow: ToolContext['activeCalendarWorkflow'] | undefined,
-  input: z.infer<typeof inputSchema>,
-) {
-  if (!workflow?.knownFields.recurring) return false
-  if (workflow.intent !== 'add_show') return false
-  const workflowTitle = workflow.knownFields.title?.trim().toLowerCase()
-  const inputTitle = input.title?.trim().toLowerCase()
-  return Boolean(workflowTitle && inputTitle && workflowTitle === inputTitle)
-}
-
-function latestTextRecurringMatchesInput(
-  latestUserText: string | undefined,
-  input: z.infer<typeof inputSchema>,
-) {
-  if (!latestUserText) return undefined
-  const knownFields = mergeCalendarKnownFieldsFromText({}, latestUserText)
-  if (!knownFields.recurring) return undefined
-  const textTitle = knownFields.title?.trim().toLowerCase()
-  const inputTitle = input.title?.trim().toLowerCase()
-  if (!textTitle || !inputTitle || textTitle !== inputTitle) return undefined
-  return knownFields.recurring
 }
 
 export function makeAddShowTool(ctx: {
@@ -84,24 +54,17 @@ export function makeAddShowTool(ctx: {
     inputSchema,
     execute: async (input) => {
       try {
-        const workflowRecurring = calendarWorkflowRecurringMatchesInput(ctx.activeCalendarWorkflow, input)
-          ? ctx.activeCalendarWorkflow?.knownFields.recurring
-          : undefined
-        const latestTextRecurring = latestTextRecurringMatchesInput(ctx.latestUserText, input)
-        const mergedInput = workflowRecurring
-          ? { ...input, recurring: workflowRecurring }
-          : latestTextRecurring
-            ? { ...input, recurring: latestTextRecurring }
-          : input
-        const safeInput =
-          mergedInput.recurring && !calendarWorkflowAllowsRecurring(ctx.activeCalendarWorkflow)
-            ? { ...mergedInput, recurring: undefined }
-            : mergedInput
+        const { input: safeInput, plan } = reconcileAddShowInputWithCalendarPlan({
+          input,
+          latestUserText: ctx.latestUserText,
+          activeCalendarWorkflow: ctx.activeCalendarWorkflow,
+        })
         const result = await addShow(ctx.supabase, ctx.repId, safeInput)
         const firstEvent = result.events[0] ?? null
         const lastEvent = result.events[result.events.length - 1] ?? null
 
         return {
+          calendarPlan: plan,
           count: result.count,
           events: result.events,
           event: result.count === 1 ? firstEvent : null,

@@ -3,6 +3,7 @@
 
 import { z } from 'zod'
 import { tool } from 'ai'
+import { buildCalendarPlanFromText, type CalendarPlan } from '@/lib/nic-nac/workflows/calendar-plan'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -73,6 +74,7 @@ type CalendarWorkPlan = {
     discountCodes?: Array<{ code: string }>
     featuredCollections?: string[]
   }
+  normalizedPlan?: CalendarPlan
   parsedReminderPatch?: {
     enabled?: boolean
     channels?: Array<'sms' | 'email'>
@@ -334,6 +336,7 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
         'Recurring ongoing schedules generate bounded future occurrences, not forever.',
         'Description is optional for add_show; do not ask for it when the required scheduling fields are known.',
       ],
+      normalizedPlan: buildCalendarPlanFromText(originalText),
     })
   }
 
@@ -374,6 +377,7 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
         'Calendar times must be timezone-explicit before scheduling.',
         'Recurring ongoing schedules generate bounded future occurrences, not forever.',
       ],
+      normalizedPlan: buildCalendarPlanFromText(originalText),
     })
   }
 
