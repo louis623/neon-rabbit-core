@@ -329,6 +329,7 @@ describe("Sparkle Finder public API catalog service", () => {
             state: "OH",
             customerSiteUrl: "https://suite.example/reps/demo",
             repBoardUrl: "https://suite.example/reps/demo/board",
+            favoriteCount: 7,
           }),
         ],
       }),
@@ -370,6 +371,7 @@ describe("Sparkle Finder public API catalog service", () => {
         boardUrl: "https://suite.example/reps/demo/board",
       }),
     ]);
+    expect(data.favoriteCounts.get("rep-suite-demo")).toBe(7);
   });
 
   it("can disable fixture fallback when rep directory data is unavailable", async () => {
@@ -383,6 +385,7 @@ describe("Sparkle Finder public API catalog service", () => {
 
     expect(data).toEqual({
       boardListings: [],
+      favoriteCounts: new Map(),
       liveShows: [],
       reps: [],
     });
@@ -540,6 +543,7 @@ function apiRepDirectoryItem(
     state: "OH",
     customerSiteUrl: "https://suite.example/reps/demo",
     repBoardUrl: "https://suite.example/reps/demo/board",
+    favoriteCount: 1,
     nextShow: {
       showId: "show-demo",
       showName: "Demo Glow Show",

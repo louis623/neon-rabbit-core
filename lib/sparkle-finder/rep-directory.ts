@@ -11,6 +11,7 @@ export type RepDirectoryCard = {
   customerSiteUrl: string | null;
   repBoardUrl: string | null;
   isFavorited: boolean;
+  favoriteCount: number;
   status: RepDirectoryStatus;
   statusLabel: string;
   nextShow: {
@@ -27,6 +28,7 @@ export type BuildRepDirectoryCardsInput = {
   liveShows: LiveShow[];
   boardListings?: RepBoardListing[];
   favoriteRepIds?: Iterable<string>;
+  favoriteCounts?: ReadonlyMap<string, number>;
   now?: Date;
   query?: string;
 };
@@ -43,6 +45,7 @@ export function buildRepDirectoryCards({
   liveShows,
   boardListings = [],
   favoriteRepIds = [],
+  favoriteCounts = new Map(),
   now = new Date(),
   query = "",
 }: BuildRepDirectoryCardsInput): RepDirectoryCard[] {
@@ -55,6 +58,7 @@ export function buildRepDirectoryCards({
       const nextShow = showsById.get(rep.nextLiveShowId);
       const boardUrl = boardListings.find((listing) => listing.repId === rep.id && listing.status === "available")?.boardUrl ?? null;
       const status = deriveRepDirectoryStatus(nextShow, now);
+      const favoriteCount = Math.max(0, favoriteCounts.get(rep.id) ?? 0);
 
       return {
         repId: rep.id,
@@ -65,6 +69,7 @@ export function buildRepDirectoryCards({
         customerSiteUrl: rep.siteUrl.trim() || null,
         repBoardUrl: boardUrl,
         isFavorited: favoriteIds.has(rep.id),
+        favoriteCount,
         status,
         statusLabel: getRepDirectoryStatusLabel(status),
         nextShow: nextShow
@@ -116,6 +121,12 @@ function matchesRepDirectoryQuery(card: RepDirectoryCard, normalizedQuery: strin
 }
 
 function compareRepDirectoryCards(left: RepDirectoryCard, right: RepDirectoryCard): number {
+  const favoriteDelta = right.favoriteCount - left.favoriteCount;
+
+  if (favoriteDelta !== 0) {
+    return favoriteDelta;
+  }
+
   const rankDelta = statusRank[left.status] - statusRank[right.status];
 
   if (rankDelta !== 0) {

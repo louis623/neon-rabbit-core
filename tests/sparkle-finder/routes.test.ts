@@ -620,11 +620,26 @@ describe("Sparkle Finder hub routes", () => {
       },
     ];
 
-    const markup = renderToStaticMarkup(renderRepsPageContent({ reps, liveShows: shows, favoriteRepIds: ["rep-live"] }));
+    const markup = renderToStaticMarkup(
+      renderRepsPageContent({
+        reps,
+        liveShows: shows,
+        favoriteRepIds: ["rep-live"],
+        favoriteCounts: new Map([
+          ["rep-live", 1],
+          ["rep-later", 2],
+          ["rep-no-show", 5],
+        ]),
+      }),
+    );
 
     expect(markup).toContain("Sparkle Suite Reps");
     expect(markup).toContain("Browse reps, check show times, and save your favorites.");
+    expect(markup).toContain("Ranked by customer favorites.");
     expect(markup).toContain('placeholder="Search reps"');
+    expect(markup).toContain("5 favorites");
+    expect(markup).toContain("2 favorites");
+    expect(markup).toContain("1 favorite");
     expect(markup).toContain("Live now");
     expect(markup).toContain("Upcoming");
     expect(markup).toContain("No show scheduled");
@@ -636,8 +651,9 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("View Rep");
     expect(markup).toContain("Board");
     expect(markup).toContain('aria-label="Remove rep from favorites"');
-    expect(markup.indexOf("Live Rep")).toBeLessThan(markup.indexOf("Later Rep"));
-    expect(markup.indexOf("Later Rep")).toBeLessThan(markup.indexOf("Quiet Rep"));
+    expect(markup.indexOf("Quiet Rep")).toBeLessThan(markup.indexOf("Later Rep"));
+    expect(markup.indexOf("Later Rep")).toBeLessThan(markup.indexOf("Live Rep"));
+    expect(markup.indexOf("Quiet Rep")).toBeLessThan(markup.indexOf('placeholder="Search reps"'));
     expect(markup).not.toContain("Command Center");
     expect(markup).not.toContain("Marketplace");
   });

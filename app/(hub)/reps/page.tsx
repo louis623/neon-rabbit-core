@@ -25,6 +25,7 @@ type RenderRepsPageContentOptions = {
   liveShows?: LiveShow[];
   boardListings?: RepBoardListing[];
   favoriteRepIds?: Iterable<string>;
+  favoriteCounts?: ReadonlyMap<string, number>;
   query?: string;
   now?: Date;
 };
@@ -51,11 +52,13 @@ export function renderRepsPageContent({
   liveShows = [],
   boardListings = [],
   favoriteRepIds = [],
+  favoriteCounts = new Map(),
   query = "",
   now,
 }: RenderRepsPageContentOptions = {}) {
   const cards = buildRepDirectoryCards({
     boardListings,
+    favoriteCounts,
     favoriteRepIds,
     liveShows,
     now,

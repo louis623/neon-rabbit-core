@@ -27,14 +27,34 @@ export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             Browse reps, check show times, and save your favorites.
           </p>
+          <p className="mt-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">Ranked by customer favorites.</p>
         </div>
       </div>
 
-      <form action="/reps" className="grid gap-3 rounded-[var(--sparkle-radius-md)] border border-[var(--sparkle-border)] bg-white/80 p-4 shadow-[var(--sparkle-shadow-sm)]">
+      <div className="flex flex-wrap gap-2" aria-label="Rep directory filters">
+        <StatusChip label="Live now" />
+        <StatusChip label="Live today" />
+        <StatusChip label="Upcoming" />
+        <StatusChip label={`Your favorites${favoriteCount > 0 ? ` (${favoriteCount})` : ""}`} />
+      </div>
+
+      {cards.length > 0 ? (
+        <div className="grid gap-3">
+          {cards.map((card) => (
+            <RepDirectoryListCard card={card} key={card.repId} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
+          No reps match that search.
+        </div>
+      )}
+
+      <form action="/reps" className="grid gap-2 border-t border-[var(--sparkle-border)] pt-4">
         <label className="text-sm font-bold text-[var(--sparkle-plum-deep)]" htmlFor="rep-directory-search">
           Search reps
         </label>
-        <div className="flex min-h-12 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3">
+        <div className="flex min-h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3">
           <Search aria-hidden="true" className="size-4 shrink-0 text-[var(--sparkle-rose)]" />
           <input
             className="min-h-10 flex-1 bg-transparent text-base text-[var(--sparkle-ink)] outline-none placeholder:text-[var(--sparkle-ink-muted)]"
@@ -49,25 +69,6 @@ export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
           </button>
         </div>
       </form>
-
-      <div className="flex flex-wrap gap-2" aria-label="Rep directory filters">
-        <StatusChip label="Live now" />
-        <StatusChip label="Live today" />
-        <StatusChip label="Upcoming" />
-        <StatusChip label={`Favorites${favoriteCount > 0 ? ` (${favoriteCount})` : ""}`} />
-      </div>
-
-      {cards.length > 0 ? (
-        <div className="grid gap-3">
-          {cards.map((card) => (
-            <RepDirectoryListCard card={card} key={card.repId} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
-          No reps match that search.
-        </div>
-      )}
     </section>
   );
 }
@@ -93,6 +94,9 @@ function RepDirectoryListCard({ card }: { card: RepDirectoryCard }) {
             <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               {card.displayName}
             </h2>
+            <span className="inline-flex min-h-7 items-center rounded-full border border-[rgba(238,44,155,0.2)] bg-[var(--sparkle-blush-bg)] px-2 text-xs font-extrabold text-[var(--sparkle-plum-deep)]">
+              {formatFavoriteCount(card.favoriteCount)}
+            </span>
             {card.state ? (
               <span className="inline-flex min-h-7 items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-2 text-xs font-extrabold text-[var(--sparkle-ink-muted)]">
                 {card.state}
@@ -168,4 +172,12 @@ function getInitials(name: string): string {
     .join("");
 
   return initials || "SF";
+}
+
+function formatFavoriteCount(count: number): string {
+  if (count === 1) {
+    return "1 favorite";
+  }
+
+  return `${count} favorites`;
 }

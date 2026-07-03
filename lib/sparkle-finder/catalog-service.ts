@@ -1,4 +1,5 @@
 import {
+  sparkleFinderFavoriteReps,
   sparkleFinderJewelryItems,
   sparkleFinderLiveShows,
   sparkleFinderRepBoardListings,
@@ -51,6 +52,7 @@ export type SparkleSuiteFinderRepDirectoryItem = {
   state: string | null;
   customerSiteUrl: string | null;
   repBoardUrl: string | null;
+  favoriteCount?: number | null;
   nextShow: SparkleSuiteFinderRepDirectoryShow | null;
 };
 
@@ -76,6 +78,7 @@ export type FinderRepDirectoryData = {
   reps: RepSummary[];
   liveShows: LiveShow[];
   boardListings: RepBoardListing[];
+  favoriteCounts: Map<string, number>;
 };
 export type CatalogFacetKey = "collections" | "materials" | "stones" | "types" | "labels" | "years";
 
@@ -362,6 +365,7 @@ function mapRepDirectoryItems(items: SparkleSuiteFinderRepDirectoryItem[] | unde
     reps: directoryItems.map(mapRepDirectoryRep),
     liveShows: directoryItems.flatMap(mapRepDirectoryLiveShow),
     boardListings: directoryItems.flatMap(mapRepDirectoryBoardListing),
+    favoriteCounts: mapRepDirectoryFavoriteCounts(directoryItems),
   };
 }
 
@@ -423,6 +427,19 @@ function mapRepDirectoryBoardListing(item: SparkleSuiteFinderRepDirectoryItem): 
       status: "available",
     },
   ];
+}
+
+function mapRepDirectoryFavoriteCounts(items: SparkleSuiteFinderRepDirectoryItem[]): Map<string, number> {
+  const favoriteCounts = new Map<string, number>();
+
+  for (const item of items) {
+    const count = typeof item.favoriteCount === "number" && Number.isFinite(item.favoriteCount)
+      ? Math.max(0, Math.floor(item.favoriteCount))
+      : 0;
+    favoriteCounts.set(item.repId, count);
+  }
+
+  return favoriteCounts;
 }
 
 function getRepDirectoryShowId(show: SparkleSuiteFinderRepDirectoryShow | null): string {
@@ -622,6 +639,7 @@ function fallbackRepDirectoryData(options: CatalogReadOptions): FinderRepDirecto
   if (options.useFixtureFallback === false) {
     return {
       boardListings: [],
+      favoriteCounts: new Map(),
       liveShows: [],
       reps: [],
     };
@@ -629,7 +647,18 @@ function fallbackRepDirectoryData(options: CatalogReadOptions): FinderRepDirecto
 
   return {
     boardListings: sparkleFinderRepBoardListings.map((listing) => ({ ...listing })),
+    favoriteCounts: getFixtureFavoriteRepCounts(),
     liveShows: sparkleFinderLiveShows.map((show) => ({ ...show })),
     reps: sparkleFinderReps.map((rep) => ({ ...rep })),
   };
+}
+
+function getFixtureFavoriteRepCounts(): Map<string, number> {
+  const favoriteCounts = new Map<string, number>();
+
+  for (const favorite of sparkleFinderFavoriteReps) {
+    favoriteCounts.set(favorite.repId, (favoriteCounts.get(favorite.repId) ?? 0) + 1);
+  }
+
+  return favoriteCounts;
 }

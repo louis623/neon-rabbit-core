@@ -10,6 +10,12 @@
   - Fixed `CustomerShowTime` browser hydration by replacing the invalid `Intl.DateTimeFormat` `dateStyle`/`timeStyle` plus `timeZoneName` combination with explicit date/time fields.
   - Verification passed: focused Reps route tests, focused catalog-service adapter tests, `npm run lint`, full `npm run test` (`38` files, `512` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), including desktop/mobile Reps screenshots.
 
+- Refined the Reps tab into a list-first directory:
+  - Moved the large search surface below the ranked list so customers land on the reps first while still retaining search.
+  - Added aggregate favorite counts to Reps directory cards and sorted reps by highest favorite count first, with show status/time as the tie-breaker.
+  - Extended the Sparkle Suite public Reps adapter to accept `favoriteCount` from the feed and added fixture aggregate counts for preview/test mode.
+  - Verification passed: focused Reps route/catalog tests, `npm run lint`, full `npm run test` (`38` files, `514` tests), `npm run build`, and `npm run smoke:sparkle-finder` (`18` passed, `2` optional API checks skipped), with refreshed desktop/mobile Reps screenshots reviewed.
+
 - Implemented the mobile-first Sparkle Finder homepage overhaul:
   - Replaced the signed-in command-center opening with a simple app home built around `Find the pieces you love. Build your collection with Sparkle Finder.`
   - Simplified primary app navigation to `Home`, `Library`, `Find`, and account status while keeping advanced feature routes reachable from the guided `Find a Piece` panel.
