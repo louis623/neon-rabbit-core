@@ -48,3 +48,9 @@ Reason:
 - Amethyst is a Sparkle Suite rep-site skin/template.
 - Sparkle Finder should feel like an official customer-side product in the Sparkle Suite ecosystem.
 - Using the main Sparkle Suite brand avoids making the customer hub feel like one rep template.
+
+## 2026-07-03 Amethyst App-Skin Update
+
+Louis approved moving the simplified mobile-first Sparkle Finder homepage/app UI toward the Sparkle Suite Amethyst customer-facing site skin.
+
+This changes the earlier visual direction. Amethyst should be used as a visual theme direction for the app-style redesign, while Sparkle Finder remains the product name and customer-facing brand. Do not use "Amethyst" as broad customer-facing product copy.

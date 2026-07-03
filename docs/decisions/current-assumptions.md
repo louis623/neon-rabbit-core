@@ -10,8 +10,8 @@ These are working assumptions for research only unless a later decision note mar
 - The customer side should not block active `neon-rabbit-core` launch work.
 - The customer hub working name is Sparkle Finder.
 - Sparkle Finder should use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
-- Sparkle Finder should use the main Sparkle Suite brand system, not the Amethyst skin/template.
-- Sparkle Finder's locked homepage/UI direction is the updated Concept 2 mockup: an editorial discovery hub with the `SF` circular seal, a `Today across Sparkle Suite` agenda panel, and an integrated Silver Collector Space.
+- Sparkle Finder should use the Sparkle Suite Amethyst customer-facing site skin as the visual direction for the simplified mobile-first app redesign, while keeping Sparkle Finder as the customer-facing product brand.
+- Sparkle Finder's current homepage/UI direction is a simplified mobile-first app home: open with "Find the pieces you love. Build your collection with Sparkle Finder.", use a primary Find a Piece action, flow into My Collection / Bling Vault, and keep Nic-Nac as a helper layer rather than a homepage destination.
 - The customer side is more than a trade board. For v1, it is a secured discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
 - Current rep-side trade board rules are intentionally narrow.

@@ -18,6 +18,12 @@ Decision: Supabase migration cleanup should repair migration history only after 
 
 Reason: The live database can be correct while `supabase_migrations.schema_migrations` is wrong. Blindly replaying old migrations risks conflicts; repairing only verified history plus applying missing additive migrations restores the safe future path where `supabase db push --yes` reports `Remote database is up to date.`
 
+## 2026-07-03 - Mobile-First Homepage Simplification And Amethyst Skin
+
+Decision: Sparkle Finder's simplified app-style homepage should be built around `Find the pieces you love. Build your collection with Sparkle Finder.` The signed-in homepage should open to a simple home dashboard, flow into the customer's collection/Bling Vault, and use a guided `Find a Piece` path. Nic-Nac remains the helper layer, not a homepage destination. The visual direction should move toward the Sparkle Suite Amethyst customer-facing site skin.
+
+Reason: Louis found the current interface too complex and unintuitive, especially labels such as `Nic-Nac Home` and broad command grids. The product should feel simple enough for a future mobile app and should expose customer goals before internal feature names.
+
 ## 2026-06-22 - Sparkle Suite Rep Linking Uses Secret Rep ID Number
 
 Decision: Sparkle Finder rep linking uses the private Sparkle Suite `Secret Rep ID Number`. The claim must be verified server-side against Sparkle Suite before Finder writes `is_rep`, the Suite rep id, and Rep Silver membership. Normal authenticated users must not be able to self-write rep identity columns directly.
