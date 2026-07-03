@@ -38,6 +38,26 @@ describe('prepare_calendar_work', () => {
     )
   })
 
+  it('preflights a titled one-time show cancellation as cancel_show', async () => {
+    const result = await prepare(
+      'Cancel the one-time show titled Codex Pressure Bonus. Reason: smoke cleanup.',
+    )
+
+    expect(result).toMatchObject({
+      intent: 'cancel_show',
+      scope: 'event',
+      needsEventId: true,
+      needsPauseUntil: false,
+      needsApproval: true,
+      sendsTriggered: false,
+      recommendedTools: ['list_my_shows', 'cancel_show'],
+      missingFields: ['eventId'],
+    })
+    expect(result.hardRules).toContain(
+      'cancel_show cancels one scheduled/live show entry. Use it for one-time, specific, or titled show cancellation when the rep is not asking to preserve a recurring series occurrence.',
+    )
+  })
+
   it('preflights a bounded recurring pause', async () => {
     const result = await prepare('pause Tuesdays for two weeks, i cannot deal lol')
 

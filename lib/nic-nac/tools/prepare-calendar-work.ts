@@ -16,6 +16,7 @@ type CalendarWorkIntent =
   | 'add_show'
   | 'update_show'
   | 'series_update'
+  | 'cancel_show'
   | 'skip_occurrence'
   | 'cancel_series_future'
   | 'pause_series_range'
@@ -46,6 +47,9 @@ const SERIES_UPDATE_HARD_RULE =
 
 const SKIP_HARD_RULE =
   'skip_show_occurrence cancels exactly one occurrence and preserves the rest of a recurring series.'
+
+const CANCEL_SHOW_HARD_RULE =
+  'cancel_show cancels one scheduled/live show entry. Use it for one-time, specific, or titled show cancellation when the rep is not asking to preserve a recurring series occurrence.'
 
 const PAUSE_HARD_RULE =
   'pause_show_series needs a bounded pauseUntil date and cancels only scheduled occurrences inside that window.'
@@ -104,6 +108,18 @@ function includesAddShowLanguage(text: string) {
     /\bnew\b[\s\S]{0,100}\b(one[- ]?time|show|live|event)\b/,
     /\breplace\b[\s\S]{0,140}\bwith\b[\s\S]{0,100}\bnew\b[\s\S]{0,100}\b(show|live|event)\b/,
   ])
+}
+
+function includesSpecificOneTimeCancelLanguage(text: string) {
+  return (
+    hasAny(text, [
+      /\bcancel\b[\s\S]{0,100}\bone[- ]?time\b[\s\S]{0,60}\b(show|live|event)\b/,
+      /\bcancel\b[\s\S]{0,100}\b(show|live|event)\s+titled\b/,
+      /\bcancel\b[\s\S]{0,100}\btitled\b/,
+      /\bcancel\b[\s\S]{0,100}\bspecific\b[\s\S]{0,60}\b(show|live|event)\b/,
+    ]) &&
+    !hasAny(text, [/\bfuture\b/, /\bseries\b/, /\brecurring\b/, /\bevery\b/, /\ball\b/])
+  )
 }
 
 function extractDiscountCode(requestText: string) {
@@ -174,6 +190,23 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
       hardRules: [...hardRules, ...(partial.hardRules ?? [])],
       sendsTriggered: false,
     }
+  }
+
+  if (includesSpecificOneTimeCancelLanguage(text)) {
+    return build({
+      intent: 'cancel_show',
+      scope: 'event',
+      needsEventId: true,
+      needsPauseUntil: false,
+      needsApproval: true,
+      recommendedTools: knownEventId
+        ? ['cancel_show']
+        : ['list_my_shows', 'cancel_show'],
+      nextAction: knownEventId
+        ? 'Call cancel_show for the selected one-time or specific show; its approval dialog is the confirmation step.'
+        : 'Call list_my_shows to identify the one-time or specific show, then call cancel_show; its approval dialog is the confirmation step.',
+      hardRules: [CANCEL_SHOW_HARD_RULE],
+    })
   }
 
   if (

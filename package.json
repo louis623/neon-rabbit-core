@@ -42,6 +42,7 @@
     "smoke:nic-nac:trade-board-intake": "tsx scripts/smoke-nic-nac-trade-board-intake.ts",
     "smoke:nic-nac:trade-board-non-item-number": "tsx scripts/smoke-nic-nac-trade-board-non-item-number.ts",
     "smoke:nic-nac:calendar-reminders": "tsx scripts/smoke-nic-nac-calendar-reminders.ts",
+    "smoke:nic-nac:calendar-pressure": "tsx scripts/smoke-nic-nac-calendar-pressure.ts",
     "smoke:nic-nac:recipe-builder": "tsx scripts/smoke-nic-nac-recipe-builder.ts",
     "smoke:nic-nac:recipe-chat": "tsx scripts/smoke-nic-nac-recipe-chat.ts",
     "smoke:nic-nac:recipe-tool-contract": "npm exec vitest run tests/nic-nac/site-recipe-draft-tool.test.ts tests/nic-nac/tool-routing.test.ts tests/nic-nac/nic-nac-calendar-route-routing-smoke.test.ts tests/nic-nac-workspace-refresh-events.test.ts",
