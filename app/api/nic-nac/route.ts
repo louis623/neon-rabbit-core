@@ -158,6 +158,97 @@ function extractApprovalResponses(
   return out
 }
 
+type ApprovalContinuationResult = {
+  handled: boolean
+  updatedParts?: UIMessage['parts']
+  responseText?: string
+  executedToolNames?: string[]
+}
+
+async function executeApprovedToolContinuations(args: {
+  messages: UIMessage[]
+  tools: Record<string, unknown>
+}): Promise<ApprovalContinuationResult> {
+  const last = args.messages.at(-1)
+  if (last?.role !== 'assistant') return { handled: false }
+
+  let handled = false
+  const executedToolNames: string[] = []
+  const responseLines: string[] = []
+  const updatedParts = [...(last.parts ?? [])] as UIMessage['parts']
+
+  for (let index = 0; index < updatedParts.length; index += 1) {
+    const part = updatedParts[index] as UIMessage['parts'][number] & {
+      type?: string
+      state?: string
+      toolName?: string
+      input?: unknown
+      output?: unknown
+      toolCallId?: string
+      approval?: { id?: string; approved?: boolean; reason?: string }
+    }
+    if (part.state !== 'approval-responded' || !part.approval?.id) continue
+
+    const toolName =
+      part.toolName ??
+      (part.type?.startsWith('tool-') ? part.type.slice('tool-'.length) : undefined)
+    if (!toolName || !part.toolCallId) continue
+
+    const tool = args.tools[toolName] as {
+      needsApproval?: boolean
+      execute?: (input: unknown) => Promise<unknown>
+    } | undefined
+    if (tool?.needsApproval !== true || typeof tool.execute !== 'function') continue
+
+    handled = true
+    if (part.approval.approved === false) {
+      updatedParts[index] = {
+        ...part,
+        toolName,
+        state: 'output-denied',
+      } as UIMessage['parts'][number]
+      responseLines.push('No problem — I left that unchanged.')
+      continue
+    }
+
+    const output = await tool.execute(part.input ?? {})
+    executedToolNames.push(toolName)
+    updatedParts[index] = {
+      ...part,
+      toolName,
+      state: 'output-available',
+      output,
+    } as UIMessage['parts'][number]
+    responseLines.push(formatApprovalContinuationText(toolName, output))
+  }
+
+  if (!handled) return { handled: false }
+  return {
+    handled: true,
+    updatedParts,
+    responseText: responseLines.filter(Boolean).join('\n\n'),
+    executedToolNames,
+  }
+}
+
+function formatApprovalContinuationText(toolName: string, output: unknown): string {
+  const data = output as {
+    event?: { title?: string; status?: string }
+    cancelledCount?: number
+  }
+  if (toolName === 'cancel_show') {
+    const title = data.event?.title ? ` ${data.event.title}` : ''
+    return `Done — I cancelled${title}.`
+  }
+  if (toolName === 'cancel_show_series') {
+    const count = typeof data.cancelledCount === 'number' ? data.cancelledCount : undefined
+    return count
+      ? `Done — I cancelled ${count} future show${count === 1 ? '' : 's'} in that series.`
+      : 'Done — I cancelled that recurring show series.'
+  }
+  return 'Done — I made that approved change.'
+}
+
 export async function POST(request: Request) {
   const runId = randomUUID()
   const runStartedAt = Date.now()
@@ -493,6 +584,91 @@ export async function POST(request: Request) {
       estimatedTokens: modelContext.estimatedTokens,
     })
   }
+
+  if (isContinuation && approvals.length > 0) {
+    const continuation = await executeApprovedToolContinuations({ messages, tools })
+    if (continuation.handled && continuation.updatedParts) {
+      const textId = randomUUID()
+      const responseText =
+        continuation.responseText?.trim() || 'Done — I made that approved change.'
+      const finalParts = normalizeNicNacAssistantParts([
+        ...continuation.updatedParts,
+        { type: 'text', text: responseText },
+      ] as UIMessage['parts'])
+
+      await checkpointAssistant(supabase, {
+        conversationId,
+        messageId: assistantMessageId,
+        parts: finalParts,
+      })
+      await logNicNacRun({
+        runId,
+        repId,
+        conversationId,
+        model: modelPolicy.modelId,
+        modelPolicy: modelPolicy.key,
+        modelProvider: modelPolicy.provider,
+        reasoningLevel: modelPolicy.reasoning,
+        productContext,
+        status: 'complete',
+        latencyMs: Date.now() - runStartedAt,
+        intents: toolIntents,
+        toolNames: continuation.executedToolNames?.length
+          ? continuation.executedToolNames
+          : activeToolNames,
+        modelContext: {
+          originalMessageCount: messages.length,
+          modelMessageCount: modelContext.messages.length,
+          droppedMessageCount: modelContext.droppedMessageCount,
+          estimatedTokens: modelContext.estimatedTokens,
+          wasCompacted: modelContext.wasCompacted,
+        },
+        contextAssembly: assembledContext.telemetry,
+      })
+
+      const approvedIds = new Set(approvals.map((approval) => approval.approvalId))
+      const stream = createUIMessageStream({
+        originalMessages: messages,
+        generateId: () => assistantMessageId,
+        execute: async ({ writer }) => {
+          writer.write({ type: 'start', messageId: assistantMessageId })
+          for (const part of finalParts) {
+            const toolPart = part as {
+              state?: string
+              output?: unknown
+              toolCallId?: string
+              approval?: { id?: string }
+            }
+            if (!toolPart.toolCallId || !approvedIds.has(toolPart.approval?.id ?? '')) {
+              continue
+            }
+            if (toolPart.state === 'output-available') {
+              writer.write({
+                type: 'tool-output-available',
+                toolCallId: toolPart.toolCallId,
+                output: toolPart.output,
+              })
+            } else if (toolPart.state === 'output-denied') {
+              writer.write({
+                type: 'tool-output-denied',
+                toolCallId: toolPart.toolCallId,
+              })
+            }
+          }
+          writer.write({ type: 'text-start', id: textId })
+          writer.write({ type: 'text-delta', id: textId, delta: responseText })
+          writer.write({ type: 'text-end', id: textId })
+          writer.write({ type: 'finish', finishReason: 'stop' })
+        },
+      })
+
+      return createUIMessageStreamResponse({
+        stream,
+        headers: responseHeaders,
+      })
+    }
+  }
+
   const modelMessages = await convertToModelMessages(modelContext.messages)
   const systemPrompt = buildNicNacSystemPrompt({
     intents: toolIntents,
