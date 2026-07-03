@@ -55,15 +55,15 @@ export function BlingVaultMosaic({ items }: BlingVaultMosaicProps) {
   return (
     <section aria-labelledby="bling-vault-mosaic-title" className="grid gap-4">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Bling Vault Mosaic</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Bling Vault</p>
         <h3 id="bling-vault-mosaic-title" className="mt-1 font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-          The rest of your sparkle, loaded as you scroll.
+          Your collection, loaded as you scroll.
         </h3>
       </div>
 
       {items.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:auto-rows-[11rem] sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {visibleItems.map((item, index) => (
               <BlingVaultTile index={index} item={item} key={item.id} />
             ))}

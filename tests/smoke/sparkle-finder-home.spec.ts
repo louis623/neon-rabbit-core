@@ -122,6 +122,12 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expect(page.getByRole("link", { name: "Favorite Reps" })).toBeVisible();
       await expect(page.getByRole("link", { name: "Collectors" })).toBeVisible();
       await expect(page.getByRole("link", { name: "Photo Setup Guide" })).toBeVisible();
+      const missingPieceLink = page.getByRole("link", { name: "Add a Missing Piece" });
+      await expect(missingPieceLink).toHaveAttribute("href", "/silver#showcase-studio");
+      await missingPieceLink.click();
+      await expect(page).toHaveURL(`${baseUrl}/silver#showcase-studio`);
+      await expect(page.locator("#showcase-studio")).toBeVisible();
+      await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
       const vaultTiles = page.locator('[data-smoke="bling-vault-tile"]');
       await expect(vaultTiles.first()).toBeVisible();

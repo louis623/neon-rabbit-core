@@ -12,7 +12,7 @@ type HomepageBlingVaultProps = {
 export function HomepageBlingVault({ model }: HomepageBlingVaultProps) {
   return (
     <section
-      className="bg-[linear-gradient(180deg,rgba(255,246,250,0.72),rgba(252,248,246,0.98)_18%,rgba(255,255,255,0.82)_100%)]"
+      className="bg-[linear-gradient(180deg,rgba(245,237,255,0.74),rgba(251,247,255,0.98)_18%,rgba(255,250,253,0.86)_100%)]"
       data-smoke="homepage-bling-vault"
       id="bling-vault"
     >
@@ -24,7 +24,7 @@ export function HomepageBlingVault({ model }: HomepageBlingVaultProps) {
               Bling Vault
             </p>
             <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold leading-tight text-[var(--sparkle-plum-deep)] sm:text-4xl">
-              Browse your saved sparkle.
+              Build your collection.
             </h2>
           </div>
           <Link
@@ -32,7 +32,7 @@ export function HomepageBlingVault({ model }: HomepageBlingVaultProps) {
             href="/silver"
           >
             <Gem aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
-            Manage full collection
+            Manage Collection
           </Link>
         </div>
 

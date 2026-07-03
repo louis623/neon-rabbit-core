@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fcf8f6;
-  --foreground: #402924;
-  --sparkle-warm-bg: #fcf8f6;
-  --sparkle-blush-bg: #fff6fa;
+  --background: #fbf7ff;
+  --foreground: #281533;
+  --sparkle-warm-bg: #fbf7ff;
+  --sparkle-blush-bg: #f5edff;
   --sparkle-paper: #ffffff;
-  --sparkle-paper-soft: #fff6fa;
-  --sparkle-plum: #402924;
-  --sparkle-plum-deep: #36221d;
-  --sparkle-ink-muted: #775d57;
-  --sparkle-blush: #ffd4ea;
-  --sparkle-rose: #ee2c9b;
-  --sparkle-coral: #ee2c9b;
-  --sparkle-border: rgba(64, 41, 36, 0.12);
-  --sparkle-border-strong: rgba(64, 41, 36, 0.2);
-  --sparkle-panel: #36221d;
-  --sparkle-panel-text: #f6e7da;
-  --sparkle-shadow-sm: 0 18px 44px rgba(90, 52, 92, 0.08);
-  --sparkle-shadow-md: 0 18px 44px rgba(238, 44, 155, 0.1);
+  --sparkle-paper-soft: #f7f0ff;
+  --sparkle-plum: #4b1f68;
+  --sparkle-plum-deep: #281533;
+  --sparkle-ink-muted: #6c5a76;
+  --sparkle-blush: #ead9ff;
+  --sparkle-rose: #9d4edd;
+  --sparkle-coral: #c77dff;
+  --sparkle-border: rgba(75, 31, 104, 0.14);
+  --sparkle-border-strong: rgba(75, 31, 104, 0.24);
+  --sparkle-panel: #2b123d;
+  --sparkle-panel-text: #fbf4ff;
+  --sparkle-shadow-sm: 0 18px 44px rgba(43, 18, 61, 0.1);
+  --sparkle-shadow-md: 0 22px 54px rgba(157, 78, 221, 0.16);
   --sparkle-radius-sm: 0.5rem;
   --sparkle-radius-md: 0.75rem;
   --sparkle-radius-lg: 1rem;
@@ -41,8 +41,9 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 82% 8%, rgba(255, 212, 234, 0.5), transparent 34rem),
-    linear-gradient(135deg, var(--sparkle-warm-bg) 0%, var(--sparkle-blush-bg) 48%, #f6ede8 100%);
+    radial-gradient(circle at 82% 8%, rgba(199, 125, 255, 0.24), transparent 32rem),
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.82), transparent 22rem),
+    linear-gradient(145deg, #fbf7ff 0%, #f5edff 48%, #fffafd 100%);
   color: var(--foreground);
   font-family: var(--font-dm-sans), Arial, sans-serif;
 }
@@ -102,7 +103,7 @@ select {
 .sparkle-finder-nav-shell {
   min-height: 5.05rem;
   border-bottom: 1px solid rgba(246, 231, 218, 0.14);
-  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
+  background: linear-gradient(145deg, #281533 0%, #4b1f68 58%, #6f2dbd 100%);
   box-shadow: 0 14px 36px rgba(54, 34, 29, 0.16);
   color: var(--sparkle-panel-text);
 }
@@ -312,17 +313,17 @@ select {
 }
 
 .sparkle-home-primary-cta {
-  background: #d91b87;
+  background: #6f2dbd;
   color: #ffffff;
 }
 
 .sparkle-home-primary-cta:hover {
-  background: #c9157b;
+  background: #5a189a;
 }
 
 .sparkle-nic-nac-mark {
   align-items: center;
-  background: #ee2c9b;
+  background: #9d4edd;
   border-radius: 999px;
   color: #ffffff;
   display: inline-flex;
@@ -575,8 +576,8 @@ select {
 .finder-nic-nac-chatbot__form button {
   min-height: 2.625rem;
   border-radius: 0.75rem;
-  background: #ee2c9b;
-  color: #fff6fb;
+  background: #6f2dbd;
+  color: #ffffff;
   padding: 0.625rem 0.875rem;
 }
 
@@ -601,7 +602,7 @@ select {
 
 .sparkle-finder-footer-strip {
   border-color: rgba(246, 231, 218, 0.14);
-  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
+  background: linear-gradient(145deg, #281533 0%, #4b1f68 58%, #6f2dbd 100%);
   color: var(--sparkle-panel-text);
 }
 
@@ -638,7 +639,7 @@ select {
 
 .sparkle-finder-site-footer {
   border-top: 1px solid rgba(246, 231, 218, 0.14);
-  background: linear-gradient(145deg, #402924 0%, #36221d 100%);
+  background: linear-gradient(145deg, #281533 0%, #4b1f68 58%, #6f2dbd 100%);
   color: rgba(246, 231, 218, 0.78);
 }
 

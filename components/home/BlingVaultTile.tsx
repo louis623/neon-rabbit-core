@@ -12,7 +12,7 @@ export function BlingVaultTile({ item, index }: BlingVaultTileProps) {
   return (
     <Link
       aria-label={`View ${item.jewelryItem.name}`}
-      className={`group grid break-inside-avoid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] transition hover:-translate-y-0.5 hover:border-[var(--sparkle-border-strong)] hover:shadow-[var(--sparkle-shadow-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)] ${tileSpanClass(index)}`}
+      className="group grid break-inside-avoid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] transition hover:-translate-y-0.5 hover:border-[var(--sparkle-border-strong)] hover:shadow-[var(--sparkle-shadow-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
       data-smoke="bling-vault-tile"
       href={`/library/${item.jewelryItemId}`}
     >
@@ -36,7 +36,7 @@ export function BlingVaultTile({ item, index }: BlingVaultTileProps) {
         <div className="mt-3 flex flex-wrap gap-2">
           <StateBadge state={item.state} />
           {item.jewelryItem.bpLabel !== "standard" ? (
-            <span className="rounded border border-[rgba(238,44,155,0.18)] bg-[var(--sparkle-blush-bg)] px-2 py-1 text-xs font-black capitalize text-[var(--sparkle-rose)]">
+            <span className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-2 py-1 text-xs font-black capitalize text-[var(--sparkle-plum)]">
               {item.jewelryItem.bpLabel}
             </span>
           ) : null}
@@ -70,12 +70,4 @@ function imageAspectClass(index: number) {
   }
 
   return "aspect-[4/3]";
-}
-
-function tileSpanClass(index: number) {
-  if (index % 7 === 0) {
-    return "sm:[grid-row:span_2]";
-  }
-
-  return "";
 }

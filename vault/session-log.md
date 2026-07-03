@@ -2,6 +2,17 @@
 
 ## 2026-07-03
 
+- Implemented the mobile-first Sparkle Finder homepage overhaul:
+  - Replaced the signed-in command-center opening with a simple app home built around `Find the pieces you love. Build your collection with Sparkle Finder.`
+  - Simplified primary app navigation to `Home`, `Library`, `Find`, and account status while keeping advanced feature routes reachable from the guided `Find a Piece` panel.
+  - Moved live shows, rep boards, favorite reps, collectors, Photo Setup, missing-piece flow, and Nic-Nac help into contextual find paths without removing backend plumbing or feature routes.
+  - Applied the Sparkle Suite Amethyst customer-site direction through shared theme tokens, app nav/footer surfaces, CTAs, Nic-Nac accents, and the authenticated homepage collection layer.
+  - Preserved collection stats, Bling Vault lazy loading, Wishlist and owned-item persistence, the Nic-Nac `FindThisForMe` helper, customer profile/TikTok details, and route/account gating behavior.
+  - Added the active Silver missing-piece anchor to the Nic-Nac curator workspace so `/silver#showcase-studio` lands on the current missing-piece helper area.
+  - Removed the old `FinderCommandCenter` component after replacing its capabilities with `SimpleFinderHome` and `FindPiecePanel`.
+  - Stabilized the growing Next route test suite by raising Vitest's default test timeout to `20_000` ms; the affected tests were timing out during full-suite transforms while passing in isolation.
+  - Verification passed: `npm run lint`, `npm exec vitest run tests/sparkle-finder/routes.test.ts`, plain `npm run test` (`38` files, `508` tests), `npm run build`, `npm run smoke:sparkle-finder` (`17` passed, `2` optional API checks skipped), direct homepage smoke earlier in the final pass (`11` passed, `2` skipped), authenticated 390/430/768/1440 viewport screenshots, and route pressure checks for 11 Silver-preview routes plus 7 anonymous gates.
+
 - Updated the homepage collector profile statistics:
   - Replaced the weak `Featured` and `Saved` homepage stats with `Diamonds`, `Unicorns`, and `Found by Sparkle Finder`, while keeping `Owned` and `Wishlist`.
   - Added durable collection acquisition tracking on `sparkle_finder_collection_items` with `acquisition_source`, `acquisition_context`, and `acquisition_marked_at`.

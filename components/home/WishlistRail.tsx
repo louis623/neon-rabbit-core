@@ -19,7 +19,7 @@ export function WishlistRail({ items }: WishlistRailProps) {
             Wishlist
           </p>
           <h3 className="mt-1 font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-            Pieces Nic-Nac can watch.
+            Pieces you want to find.
           </h3>
         </div>
       </div>
@@ -55,7 +55,7 @@ export function WishlistRail({ items }: WishlistRailProps) {
         <div className="mt-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-4">
           <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">No Wishlist pieces yet.</p>
           <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Add a piece from the library and Nic-Nac can watch for fresh 48-hour leads.
+            Add pieces from the Library so Sparkle Finder knows what to look for.
           </p>
           <Link className="mt-3 inline-flex min-h-10 items-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-black text-white" href="/library">
             Browse Library

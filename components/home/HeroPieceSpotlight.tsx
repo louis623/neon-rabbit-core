@@ -15,10 +15,10 @@ export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
         <div>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Hero Piece</p>
           <h3 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-            Start your Bling Vault.
+            Start your collection.
           </h3>
           <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Add a library piece to your Wishlist or mark one as owned, then Nic-Nac can help keep the hunt simple.
+            Find a piece in the Library, add it to your Wishlist, or mark it as owned so Sparkle Finder can help with the hunt.
           </p>
         </div>
         <Link className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-black text-white" href="/library">

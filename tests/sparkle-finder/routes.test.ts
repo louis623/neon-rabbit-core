@@ -376,7 +376,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Add a Missing Piece");
     expect(markup).toContain("Find the pieces you love.");
     expect(markup).toContain("Build your collection with Sparkle Finder.");
-    expect(markup).toContain("Check my Wishlist");
+    expect(markup).toContain("Find pieces on my list");
     expect(markup).toContain("Ask Nic-Nac for Help");
     expect(markup).toContain("Live Shows");
     expect(markup).toContain("Rep Boards");
@@ -1173,6 +1173,7 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(markup).toContain("Sparkle Mama&#x27;s Sparkle Showcase");
     expect(markup).toContain("Nic-Nac Collection Curator");
+    expect(markup).toContain('id="showcase-studio"');
     expect(markup).toContain("Tell Nic-Nac what you want to add, find, or update");
     expect(markup).toContain("Add a piece I own");
     expect(markup).toContain("I am looking for a piece");
