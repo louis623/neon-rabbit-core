@@ -152,10 +152,13 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('messages: []')
   })
 
-  it('offers a guided trade-board intake starter chip', () => {
+  it('offers guided Trade Board and Calendar starter chips', () => {
     expect(chips).toContain('Add a piece to Trade Board')
+    expect(chips).toContain('Add a Show to the Calendar')
+    expect(chips).not.toContain("What's on my board?")
+    expect(chips).not.toContain('Remove a listing')
     expect(chips.indexOf('Add a piece to Trade Board')).toBeLessThan(
-      chips.indexOf("What's on my board?"),
+      chips.indexOf('Add a Show to the Calendar'),
     )
   })
 

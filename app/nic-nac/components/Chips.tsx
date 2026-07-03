@@ -3,8 +3,7 @@ import type { NicNacChatMode } from './EmptyGreeting'
 
 const WORKSPACE_CHIP_LABELS = [
   'Add a piece to Trade Board',
-  "What's on my board?",
-  'Remove a listing',
+  'Add a Show to the Calendar',
 ]
 
 export function Chips({

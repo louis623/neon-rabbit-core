@@ -62,6 +62,16 @@ describe('Nic-Nac tool routing', () => {
     expect(listToolNamesForIntents(intents)).toContain('add_listing')
   })
 
+  it('routes the guided add-a-show chip to calendar tools', () => {
+    const intents = getToolIntentsForText('Add a Show to the Calendar')
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toContain('calendar')
+    expect(toolNames).toContain('prepare_calendar_work')
+    expect(toolNames).toContain('add_show')
+    expect(toolNames).toContain('list_my_shows')
+  })
+
   it('keeps casual chat on the lightweight memory pack', () => {
     const intents = getToolIntentsForText('hey, how are you holding up today?')
 

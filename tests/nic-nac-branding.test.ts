@@ -82,8 +82,10 @@ describe('Nic-Nac branding copy', () => {
       }),
     )
 
-    expect(chipsHtml).toContain('What&#x27;s on my board?')
-    expect(chipsHtml).toContain('Remove a listing')
+    expect(chipsHtml).toContain('Add a piece to Trade Board')
+    expect(chipsHtml).toContain('Add a Show to the Calendar')
+    expect(chipsHtml).not.toContain('What&#x27;s on my board?')
+    expect(chipsHtml).not.toContain('Remove a listing')
     expect(chipsHtml).not.toContain('Start account basics')
     expect(chipsHtml).not.toContain('What do you need from me?')
   })

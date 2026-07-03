@@ -2754,3 +2754,16 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Nic-Nac tool availability cannot depend only on the newest message. Any workflow that may span clarifying questions needs durable app-owned state that survives conversational drift.
+
+---
+
+## July 3, 2026 - Nic-Nac Calendar Starter Chip
+
+**What changed:**
+- Removed the workspace Nic-Nac quick chips `What's on my board?` and `Remove a listing`.
+- Added `Add a Show to the Calendar` beside `Add a piece to Trade Board`.
+- Added a routing regression so the new chip opens Calendar tools, including `prepare_calendar_work`, `add_show`, and `list_my_shows`.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-branding.test.ts tests/nic-nac/tool-routing.test.ts tests/reviewer-smoke-ui.test.ts` passed: 3 files, 82 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
