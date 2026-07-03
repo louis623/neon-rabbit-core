@@ -2803,8 +2803,8 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused HITL/calendar tests passed after the history hardening: 4 files, 45 tests.
 - Broad Nic-Nac suite passed after the final approval route fix: 121 files passed, 1 skipped; 879 tests passed, 1 skipped.
 - `npm run build` passed locally with Next.js 16.2.1 after both fix passes.
-- Stable demo alias now points to deployment `dpl_D3Gc1pJk1xWjZSAybbSX3GB6nu47` / `https://sparkle-suite-8rqrn3bvp-louis-2849s-projects.vercel.app`.
-- Final stable-demo pressure smoke passed with conversation `1b659166-f085-414d-b83f-b373ba89b567`, run tag `0703135031`, 15 synthetic event rows created/verified/cancelled/deleted, and zero residual `Codex Pressure%` calendar rows.
+- Stable demo alias now points to final branch-tip deployment `dpl_Ga11xmQy84ZfSTRPj6UKpgrCi359` / `https://sparkle-suite-l7s02a2m3-louis-2849s-projects.vercel.app`.
+- Final stable-demo pressure smoke passed with conversation `87cc6a66-4e13-4d81-a890-acda32860112`, run tag `0703135901`, 15 synthetic event rows created/verified/cancelled/deleted, and zero residual `Codex Pressure%` calendar rows.
 
 **Lesson:**
 - Approval-gated writes should be treated as app-owned workflow state. Recording an approval click is not enough; the server must durably prove the tool result or keep the previous assistant row intact.
