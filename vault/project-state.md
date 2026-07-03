@@ -600,3 +600,13 @@ Verification passed:
 - Customer-facing Trade Board ticker now shows item name, item type, and collection instead of MSRP/price.
 - Verification passed: homepage ticker regression, Amethyst homepage/join/trade unit phase, broader Amethyst static/template tests, Vercel preview build, stable alias update, stable root 200, and deployed homepage asset inspection confirming the new ticker line with no old price fallback.
 - Caveat: local `npm run build` hung in the Codex shell without compiler output; Vercel's production build completed successfully.
+
+### July 3, 2026 Nic-Nac Durable Calendar Tool Context
+
+- Active branch: `codex/sparkle-cross-phase-hardening`.
+- Stable demo URL: `https://sparkle-suite-demo.vercel.app`.
+- Nic-Nac Calendar work now has durable app-owned workflow state in Supabase table `public.nic_nac_calendar_workflows`; tool routing merges active workflow intents with the latest turn so Calendar tools stay available through long conversations, corrections, and short replies.
+- `add_show` treats description as optional, and "no description"/"leave blank" keeps Calendar tools available instead of falling back to memory-only handling.
+- Targeted public sites no longer use generated BlingKitchen fallback cards after Supabase resolves a real rep with zero events. Missing real rows must now be fixed in `calendar_events`.
+- Real BlingKitchen event inserted: `4cbba9fe-cd32-46df-ad62-24bc7c689894`, Friday July 3, 2026 8:00 PM EDT, TikTok Live, duration 150 minutes, description blank, discount code `bling123`, featured collection `July Birthday Collection`.
+- Verification passed locally: focused Nic-Nac/public calendar suites, production `npm run build`, Supabase migration push/list verification, linked DB query, and local service smoke returning the real BlingKitchen event.

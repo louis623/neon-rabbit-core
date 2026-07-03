@@ -689,7 +689,7 @@ function assistantIsDiscussingSiteEdit(text: string): boolean {
 
 function assistantIsDiscussingCalendarWork(text: string): boolean {
   return (
-    /\b(?:calendar|schedule|show|live|event|platform|timezone|time zone|duration|recurring|code|discount|featured collection)\b/i.test(
+    /\b(?:calendar|schedule|show|live|event|platform|timezone|time zone|duration|recurring|code|discount|featured collection|description)\b/i.test(
       text,
     ) &&
     /\b(?:add|schedule|save|put|create|change|update|move|cancel|skip|pause|need|use|missing|what)\b/i.test(
@@ -699,7 +699,7 @@ function assistantIsDiscussingCalendarWork(text: string): boolean {
 }
 
 function textLooksLikeCalendarDetailFollowUp(text: string): boolean {
-  return /\b(?:tiktok|tik tok|facebook|instagram|youtube|live|eastern|central|mountain|pacific|standard time|daylight time|timezone|time zone|hours?|minutes?|duration|am|pm)\b/i.test(
+  return /\b(?:tiktok|tik tok|facebook|instagram|youtube|live|eastern|central|mountain|pacific|standard time|daylight time|timezone|time zone|hours?|minutes?|duration|description|leave blank|no description|am|pm)\b/i.test(
     text,
   )
 }

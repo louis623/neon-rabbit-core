@@ -21,6 +21,10 @@ type BuildPromptInput = {
 const SHARED_KNOWLEDGE_PROMPT = `Shared Nic-Nac knowledge:
 ${buildNicNacCoreKnowledgeText()}`
 
+const ACTIVE_WORKFLOW_RULES = `Active workflow rules:
+- Active workflow state is app-owned. If active workflow state says a tool family is available, keep using those tools through clarifying questions, corrections, short replies, and retry language until the workflow is completed, cancelled, expired, blocked by policy, or escalated.
+- Do not tell a rep that a workspace tool is unavailable merely because the latest message is short, corrective, or conversational.`
+
 const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   memory: `Memory tools:
 - read_recent_rep_notes is internal context. Use it quietly when prior rep preferences, processes, customer patterns, or follow-ups would help.
@@ -98,7 +102,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   calendar: `Calendar tools:
 - prepare_calendar_work is read-only. Use it first for ambiguous calendar/reminder work: scheduling, recurring-series changes, one-night skips, bounded pauses, discount/collection updates, and show reminder settings. Follow its recommended path before write tools run.
 - If prepare_calendar_work says needsApproval:true and recommends a write tool, call that write tool when required fields are known. Do not ask "Want me to save/cancel/skip it?" first; the approval-gated tool emits the confirmation dialog.
-- add_show schedules one-time or recurring shows.
+- add_show schedules one-time or recurring shows. Description is optional. Do not ask for description if date/time/timezone and platform are known. If the rep says no description or leave it blank, call add_show with description omitted or null.
 - list_my_shows lists the rep's own shows. Use it when a show reference is ambiguous.
 - update_show changes scheduled show details only after you know the eventId.
 - cancel_show requires the approval dialog.
@@ -167,7 +171,7 @@ export function buildNicNacSystemPrompt({
       : uniqueIntents.map((intent) => INTENT_PROMPTS[intent])
   const toolList = activeToolNames.length ? activeToolNames.join(', ') : 'none'
   const workflowPrompt = workflowPromptState
-    ? `Active workflow state:\n${workflowPromptState}`
+    ? `${ACTIVE_WORKFLOW_RULES}\n\nActive workflow state:\n${workflowPromptState}`
     : ''
   const surfacePrompt = buildNicNacSurfacePrompt({
     productContext,

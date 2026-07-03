@@ -468,6 +468,48 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps calendar tools when the rep rejects optional event description', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Add BlingKitchen Live to my calendar this Friday at 8pm on TikTok for 150 minutes.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'Last thing I need: a short description for the event.',
+          },
+        ],
+      },
+      {
+        id: 'details',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: "No, you don't need a short description of the event.",
+          },
+        ],
+      },
+    ]
+
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('calendar')
+    expect(listToolNamesForIntents(intents)).toContain('add_show')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('routes physical inventory add language to trade-board tools', () => {
     const intents = getToolIntentsForText('I have 4 of this item to add')
 

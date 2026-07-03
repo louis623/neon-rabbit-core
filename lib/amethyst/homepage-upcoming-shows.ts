@@ -362,8 +362,9 @@ export async function loadAmethystHomepageUpcomingShows(
     })
 
     if (!result.events.length) {
+      if (targeted) return []
       if (isBlingKitchen) return buildBlingKitchenFallbackEvents(limit)
-      return targeted ? [] : defaultAmethystHomepageEvents
+      return defaultAmethystHomepageEvents
     }
 
     return result.events

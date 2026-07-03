@@ -185,7 +185,7 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(listMyShowsMock).not.toHaveBeenCalled()
   })
 
-  it('keeps the BlingKitchen public calendar visible when no database events exist', async () => {
+  it('does not generate BlingKitchen fallback events for a resolved targeted rep with an empty calendar', async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co'
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key'
     process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL = 'blingkitchen19@gmail.com'
@@ -218,29 +218,32 @@ describe('Amethyst homepage upcoming shows', () => {
       limit: 2,
     })
 
+    expect(result).toEqual([])
+    expect(listMyShowsMock).toHaveBeenCalledWith(admin, 'rep-bling-kitchen', {
+      upcoming: true,
+      limit: 2,
+    })
+  })
+
+  it('may keep the BlingKitchen fallback when Supabase is not configured', async () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    const result = await loadAmethystHomepageUpcomingShows({
+      publicSiteSlug: 'blingkitchen',
+      targeted: true,
+      limit: 2,
+    })
+
     expect(result).toHaveLength(2)
     expect(result[0]).toMatchObject({
       title: 'BlingKitchen Live Reveal',
       timeZone: 'America/New_York',
       durationMinutes: 90,
       featured: true,
-      platforms: [
-        {
-          kind: 'tt',
-          label: 'Join me on TikTok',
-          href: 'https://www.tiktok.com/@blingkitchen',
-        },
-        {
-          kind: 'fb',
-          label: 'Watch on Facebook Live',
-          href: 'https://www.facebook.com/groups/1485026002799524',
-        },
-      ],
     })
     expect(Date.parse(result[0].eventTime)).toBeGreaterThan(Date.now())
-    expect(listMyShowsMock).toHaveBeenCalledWith(admin, 'rep-bling-kitchen', {
-      upcoming: true,
-      limit: 2,
-    })
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(listMyShowsMock).not.toHaveBeenCalled()
   })
 })

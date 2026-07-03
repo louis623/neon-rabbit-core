@@ -128,6 +128,36 @@ describe('prepare_calendar_work', () => {
     )
   })
 
+  it('classifies replace-with-new one-time show as add_show when no event id is known', async () => {
+    const result = await prepare(
+      'Replace the current Friday show with a new one-time show called BlingKitchen Live at 8 PM EDT. Discount code bling123 and featured collection July Birthday Collection.',
+      {
+        knownTimeZone: 'America/New_York',
+        knownEventId: '00000000-0000-0000-0000-000000000000',
+      },
+    )
+
+    expect(result).toMatchObject({
+      intent: 'add_show',
+      scope: 'calendar',
+      needsEventId: false,
+      recommendedTools: ['add_show'],
+    })
+    expect(result.missingFields).not.toContain('description')
+  })
+
+  it('does not treat featured collection on a new show as series_update', async () => {
+    const result = await prepare(
+      'Add a one-time show on TikTok for Friday, July 3 at 8 PM EDT with code bling123 and featured collection July Birthday Collection.',
+      { knownTimeZone: 'America/New_York' },
+    )
+
+    expect(result).toMatchObject({
+      intent: 'add_show',
+      recommendedTools: ['add_show'],
+    })
+  })
+
   it('honors already-known event and pause fields', async () => {
     const result = await prepare('pause Tuesdays for two weeks', {
       knownEventId: '9ec8f40c-7c38-4d95-8d2a-0f06790d7c55',

@@ -98,6 +98,14 @@ function includesSeriesLanguage(text: string) {
   ])
 }
 
+function includesAddShowLanguage(text: string) {
+  return hasAny(text, [
+    /\b(add|schedule|set up|create)\b[\s\S]{0,120}\b(show|live|event|calendar)\b/,
+    /\bnew\b[\s\S]{0,100}\b(one[- ]?time|show|live|event)\b/,
+    /\breplace\b[\s\S]{0,140}\bwith\b[\s\S]{0,100}\bnew\b[\s\S]{0,100}\b(show|live|event)\b/,
+  ])
+}
+
 function extractDiscountCode(requestText: string) {
   const match = requestText.match(/\b(?:code|discount)\b[\s\S]{0,80}\b([A-Z0-9][A-Z0-9_-]{2,24})\b/i)
   const code = match?.[1]?.toUpperCase()
@@ -271,6 +279,27 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
     })
   }
 
+  if (includesAddShowLanguage(text)) {
+    const needsTimeZone = !input.knownTimeZone
+    return build({
+      intent: 'add_show',
+      scope: 'calendar',
+      needsEventId: false,
+      needsPauseUntil: false,
+      needsApproval: false,
+      recommendedTools: ['add_show'],
+      missingFields: needsTimeZone ? ['timeZone'] : [],
+      nextAction: needsTimeZone
+        ? 'Collect a timezone-explicit show time before calling add_show.'
+        : 'Call add_show once platform and timezone-explicit eventTime are known. Description is optional.',
+      hardRules: [
+        'Calendar times must be timezone-explicit before scheduling.',
+        'Recurring ongoing schedules generate bounded future occurrences, not forever.',
+        'Description is optional for add_show; do not ask for it when the required scheduling fields are known.',
+      ],
+    })
+  }
+
   if (hasAny(text, [/\b(code|discount|collection|collections?|highlight)\b/])) {
     const discountCode = extractDiscountCode(originalText)
     return build({
@@ -291,7 +320,7 @@ function plan(input: z.infer<typeof inputSchema>): CalendarWorkPlan {
     })
   }
 
-  if (hasAny(text, [/\b(add|schedule|set up|create)\b[\s\S]{0,80}\b(show|live)\b/])) {
+  if (includesAddShowLanguage(text)) {
     const needsTimeZone = !input.knownTimeZone
     return build({
       intent: 'add_show',

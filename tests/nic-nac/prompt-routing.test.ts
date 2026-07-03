@@ -175,6 +175,23 @@ describe('Nic-Nac routed system prompt', () => {
     )
   })
 
+  it('includes active calendar workflow state and optional description guidance before Calendar tools', () => {
+    const prompt = buildNicNacSystemPrompt({
+      intents: ['calendar'],
+      activeToolNames: ['prepare_calendar_work', 'add_show', 'list_my_shows'],
+      workflowPromptState:
+        'Active workflow: calendar_event_work\nWorkflow phase: ready_to_add\nDescription: optional; do not ask for description before add_show.',
+    })
+
+    expect(prompt).toContain('Active workflow rules:')
+    expect(prompt).toContain('Active workflow: calendar_event_work')
+    expect(prompt).toContain('Description: optional')
+    expect(prompt).toContain('Do not ask for description if date/time/timezone and platform are known')
+    expect(prompt.indexOf('Active workflow: calendar_event_work')).toBeLessThan(
+      prompt.indexOf('Calendar tools:'),
+    )
+  })
+
   it('keeps provider guardrails in notification prompts', () => {
     const prompt = buildNicNacSystemPrompt({
       intents: ['notification'],

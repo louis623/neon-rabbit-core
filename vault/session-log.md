@@ -2732,3 +2732,25 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 **Lesson:**
 - Closeout memory should include the product decision and the verification target together. For Louis review, the stable demo URL plus deployment id matters as much as the commit hash.
+
+---
+
+## July 3, 2026 - Nic-Nac Durable Calendar Tool Context
+
+**What changed:**
+- Fixed Nic-Nac's calendar tool routing so active Calendar work is stored as app-owned workflow state by rep and conversation, not inferred only from the latest chat turn.
+- Added durable `nic_nac_calendar_workflows` Supabase storage with RLS, prompt/tool-policy retention, and two-hour rolling expiry while reps keep working.
+- Calendar tools now remain available through long conversations, corrections, and short replies like "no description"; description is optional for `add_show`.
+- Stopped targeted BlingKitchen public pages from masking missing calendar rows with generated fallback events once Supabase resolves the real rep.
+- Inserted the real BlingKitchen July 3, 2026 8:00 PM EDT event into `calendar_events` with blank description, TikTok Live, `bling123`, and July Birthday Collection.
+
+**Verification:**
+- `supabase db push` applied migration `20260703003209_ss_nic_nac_calendar_workflows.sql` to the linked remote project.
+- Focused Nic-Nac/public calendar tests passed: 11 files, 122 tests.
+- Route/workflow regression tests passed again after final route cleanup: 6 files, 44 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Supabase linked smoke confirmed BlingKitchen had zero real calendar rows before the insert and returned event `4cbba9fe-cd32-46df-ad62-24bc7c689894` after the guarded insert.
+- Local service smoke against `loadAmethystHomepageUpcomingShows({ publicSiteSlug:'blingkitchen', targeted:true })` returned the real event with description `null`.
+
+**Lesson:**
+- Nic-Nac tool availability cannot depend only on the newest message. Any workflow that may span clarifying questions needs durable app-owned state that survives conversational drift.

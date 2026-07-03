@@ -19,6 +19,7 @@ const {
   getNicNacProviderOptionsMock,
   createAdminClientMock,
   getOrCreateTradeBoardIntakeContextMock,
+  getOrCreateCalendarWorkflowContextMock,
   loadSuiteRepMemoryCardsMock,
 } = vi.hoisted(() => ({
   streamTextMock: vi.fn(),
@@ -39,6 +40,7 @@ const {
   getNicNacProviderOptionsMock: vi.fn(),
   createAdminClientMock: vi.fn(),
   getOrCreateTradeBoardIntakeContextMock: vi.fn(),
+  getOrCreateCalendarWorkflowContextMock: vi.fn(),
   loadSuiteRepMemoryCardsMock: vi.fn(),
 }))
 
@@ -97,6 +99,10 @@ vi.mock('@/lib/nic-nac/workflows/trade-board-intake-context', async (importOrigi
   }
 })
 
+vi.mock('@/lib/nic-nac/workflows/calendar-workflow-context', () => ({
+  getOrCreateCalendarWorkflowContext: getOrCreateCalendarWorkflowContextMock,
+}))
+
 vi.mock('@/lib/nic-nac/core/memory/rep-memory-cards', () => ({
   loadSuiteRepMemoryCards: loadSuiteRepMemoryCardsMock,
 }))
@@ -150,6 +156,14 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     getOrCreateTradeBoardIntakeContextMock.mockResolvedValue({
       sessionBefore: null,
       sessionAfter: null,
+      workflowIntents: [],
+      toolPolicySource: 'latest_turn_intent',
+      workflowPromptState: '',
+    })
+    getOrCreateCalendarWorkflowContextMock.mockResolvedValue({
+      sessionBefore: null,
+      sessionAfter: null,
+      activeWorkflow: null,
       workflowIntents: [],
       toolPolicySource: 'latest_turn_intent',
       workflowPromptState: '',
@@ -311,6 +325,107 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
           conversationId: 'calendar-chaos-conversation',
           intents: expect.arrayContaining(['calendar']),
           toolNames: expect.arrayContaining(['add_show']),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('keeps calendar tools from active workflow state when the latest correction looks like memory', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    getOrCreateCalendarWorkflowContextMock.mockResolvedValueOnce({
+      sessionBefore: {
+        id: 'calendar-workflow-1',
+        status: 'active',
+        phase: 'ready_to_add',
+      },
+      sessionAfter: {
+        id: 'calendar-workflow-1',
+        status: 'active',
+        phase: 'ready_to_add',
+      },
+      activeWorkflow: {
+        workflowId: 'calendar-workflow-1',
+        workflowType: 'calendar_event_work',
+        status: 'active',
+        phase: 'ready_to_add',
+        workflowIntents: ['calendar'],
+        toolPolicySource: 'active_workflow',
+        promptState:
+          'Active workflow: calendar_event_work\nWorkflow phase: ready_to_add\nDescription: optional; do not ask for description before add_show.',
+      },
+      workflowIntents: ['calendar'],
+      toolPolicySource: 'active_workflow',
+      workflowPromptState:
+        'Active workflow: calendar_event_work\nWorkflow phase: ready_to_add\nDescription: optional; do not ask for description before add_show.',
+    })
+
+    try {
+      const response = await POST(
+        requestForMessages([
+          {
+            id: 'calendar-request',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Just a one-time show for this Friday night, July 3. Replace the current show with BlingKitchen Live at 8 p.m. EDT. Discount code bling123 for 15% off whole cart with 3+ items. Featured collection July Birthday Collection.',
+              },
+            ],
+          },
+          {
+            id: 'assistant-calendar-description',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'I still don’t see an existing upcoming show on the calendar to replace, so I’ll treat this as a new one-time show. Last thing I need: a short description for the event.',
+              },
+            ],
+          },
+          {
+            id: 'calendar-no-description',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: "No, you don't need a short description of the event.",
+              },
+            ],
+          },
+        ]),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        system: string
+        tools: Record<string, unknown>
+      }
+      const toolNames = Object.keys(options.tools)
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining(['prepare_calendar_work', 'add_show', 'list_my_shows']),
+      )
+      expect(options.system).toContain('Active workflow: calendar_event_work')
+      expect(options.system).toContain('Description: optional')
+      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          intents: expect.arrayContaining(['calendar']),
+          toolNames: expect.arrayContaining(['add_show']),
+          workflow: expect.objectContaining({
+            toolPolicySource: 'active_workflow',
+          }),
         }),
       )
     } finally {

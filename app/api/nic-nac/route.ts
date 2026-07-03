@@ -58,8 +58,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 import {
   getOrCreateTradeBoardIntakeContext,
-  mergeWorkflowToolIntents,
 } from '@/lib/nic-nac/workflows/trade-board-intake-context'
+import { getOrCreateCalendarWorkflowContext } from '@/lib/nic-nac/workflows/calendar-workflow-context'
+import {
+  activeWorkflowRequiresToolCall,
+  mergeActiveWorkflowToolIntents,
+  renderActiveWorkflowPromptStates,
+  type ActiveNicNacWorkflowContext,
+} from '@/lib/nic-nac/workflows/active-tool-context'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 
 export const runtime = 'nodejs'
@@ -394,15 +400,42 @@ export async function POST(request: Request) {
     nowIso: new Date().toISOString(),
   })
   const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
+  const activeWorkflowContexts: ActiveNicNacWorkflowContext[] = []
+  if (
+    tradeBoardWorkflowContext.sessionAfter?.status === 'active' &&
+    tradeBoardWorkflowContext.workflowIntents.length
+  ) {
+    activeWorkflowContexts.push({
+      workflowId: tradeBoardWorkflowContext.sessionAfter.id,
+      workflowType: 'trade_board_add_listing',
+      status: 'active',
+      phase: tradeBoardWorkflowContext.sessionAfter.phase,
+      workflowIntents: tradeBoardWorkflowContext.workflowIntents,
+      toolPolicySource: 'active_workflow',
+      promptState: tradeBoardWorkflowContext.workflowPromptState,
+    })
+  }
+  const calendarWorkflowContext = await getOrCreateCalendarWorkflowContext({
+    supabase,
+    workflowSupabase: supabase,
+    repId,
+    conversationId,
+    messages,
+    latestUserMessageId: latestUserMessage?.id,
+    mode,
+    nowIso: new Date().toISOString(),
+  })
+  if (calendarWorkflowContext.activeWorkflow) {
+    activeWorkflowContexts.push(calendarWorkflowContext.activeWorkflow)
+  }
   const latestToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? ['required_setup']
       : getToolIntentsForMessages(messages)
-  const workflowToolIntents = tradeBoardWorkflowContext.workflowIntents
   const requestedToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? latestToolIntents
-      : mergeWorkflowToolIntents(latestToolIntents, workflowToolIntents)
+      : mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts)
   const toolPolicy = filterNicNacToolIntentsForContext(
     productContext,
     requestedToolIntents,
@@ -411,14 +444,16 @@ export async function POST(request: Request) {
   const toolPolicySource =
     mode === 'required_setup'
       ? 'mode_required_setup'
-      : tradeBoardWorkflowContext.toolPolicySource === 'active_workflow'
-        ? tradeBoardWorkflowContext.toolPolicySource
+      : activeWorkflowContexts.length > 0
+        ? 'active_workflow'
         : latestToolIntents.includes('resources')
           ? 'fallback_resources'
           : latestToolIntents.includes('memory')
             ? 'fallback_memory'
             : 'latest_turn_intent'
-  const requireToolCall = shouldRequireToolCallForMessages(messages, toolIntents)
+  const requireToolCall =
+    shouldRequireToolCallForMessages(messages, toolIntents) ||
+    activeWorkflowRequiresToolCall(activeWorkflowContexts)
   const tools = buildToolsForIntents(
     {
       repId,
@@ -459,7 +494,7 @@ export async function POST(request: Request) {
     intents: toolIntents,
     activeToolNames,
     mode,
-    workflowPromptState: tradeBoardWorkflowContext.workflowPromptState,
+    workflowPromptState: renderActiveWorkflowPromptStates(activeWorkflowContexts),
     productContext,
     blockedToolIntents: toolPolicy.blockedIntents,
     memoryContextPrompt: assembledContext.promptText,
@@ -666,7 +701,24 @@ export async function POST(request: Request) {
                 hardFailPhraseCount: hardFailSummary.count,
                 hardFailPhrases: hardFailSummary.phrases,
               }
-            : undefined,
+            : calendarWorkflowContext.sessionAfter
+              ? {
+                  id: calendarWorkflowContext.sessionAfter.id,
+                  type: calendarWorkflowContext.sessionAfter.workflowType,
+                  phaseBefore:
+                    calendarWorkflowContext.sessionBefore?.phase ??
+                    calendarWorkflowContext.sessionAfter.phase,
+                  phaseAfter: calendarWorkflowContext.sessionAfter.phase,
+                  statusBefore:
+                    calendarWorkflowContext.sessionBefore?.status ??
+                    calendarWorkflowContext.sessionAfter.status,
+                  statusAfter: calendarWorkflowContext.sessionAfter.status,
+                  toolPolicySource,
+                  photoRoles: [],
+                  hardFailPhraseCount: hardFailSummary.count,
+                  hardFailPhrases: hardFailSummary.phrases,
+                }
+              : undefined,
         })
       } catch (err) {
         console.error('[nic-nac] persistence onFinish error:', err)
