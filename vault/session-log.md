@@ -2824,3 +2824,16 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm exec vitest run tests/nic-nac-workspace-refresh-events.test.ts tests/nic-nac-dashboard-placeholder.test.ts tests/nic-nac-calendar-summary-route.test.ts` passed: 3 files, 111 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
 - `npx tsc --noEmit --pretty false` was attempted but timed out after surfacing unrelated pre-existing test typing errors; the production Next build type check passed.
+
+---
+
+## July 3, 2026 - Workspace Calendar Espresso Card
+
+**What changed:**
+- Changed the rep workspace Calendar card shell to the Sparkle Suite espresso gradient (`#402924` to `#36221d`) for all current and future workspace skins.
+- Added Calendar-specific header/month label/tag color overrides so the darker shell remains readable while the inner calendar grid and event panels stay light.
+- Prevented the Black Diamond skin override from replacing the Calendar card back to its darker black surface.
+
+**Verification:**
+- `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 1 file, 85 tests.
+- `npm run build` passed locally with Next.js 16.2.1.

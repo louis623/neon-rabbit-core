@@ -1590,18 +1590,33 @@
   margin-top: 4px;
   border-radius: 20px;
   background:
-    radial-gradient(circle at 92% 10%, rgba(238, 44, 155, 0.08), transparent 18rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 251, 0.86));
-  border: 1px solid var(--nic-nac-border);
+    radial-gradient(circle at 92% 10%, rgba(238, 44, 155, 0.18), transparent 18rem),
+    linear-gradient(145deg, #402924 0%, #36221d 100%);
+  border: 1px solid rgba(255, 246, 250, 0.14);
   box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.88),
-    0 18px 42px rgba(54, 34, 29, 0.08);
+    inset 0 1px rgba(255, 255, 255, 0.12),
+    0 18px 42px rgba(54, 34, 29, 0.16);
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   overflow: hidden;
   position: relative;
+}
+
+.calendarCard > .workspaceSectionHeader .cardTitle,
+.calendarCard > .calendarHeader .walletSettingsTitle {
+  color: #fff8fb;
+}
+
+.calendarCard > .workspaceSectionHeader .cardSubtitle {
+  color: rgba(255, 246, 250, 0.78);
+}
+
+.calendarCard > .workspaceSectionHeader .rosterTag {
+  background: rgba(255, 246, 250, 0.12);
+  border-color: rgba(255, 246, 250, 0.24);
+  color: rgba(255, 246, 250, 0.86);
 }
 
 .siteSettingsCard {
@@ -4166,7 +4181,6 @@
 .main[data-workspace-skin='black_diamond'] .businessToolCard,
 .main[data-workspace-skin='black_diamond'] .wisprFlowPanel,
 .main[data-workspace-skin='black_diamond'] .walletCard,
-.main[data-workspace-skin='black_diamond'] .calendarCard,
 .main[data-workspace-skin='black_diamond'] .siteSettingsCard,
 .main[data-workspace-skin='black_diamond'] .accountBillingCard,
 .main[data-workspace-skin='black_diamond'] .referralCard,

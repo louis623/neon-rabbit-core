@@ -1337,6 +1337,33 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain('color: #d8cbbd')
   })
 
+  it('uses the espresso background for every workspace calendar card', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+    const calendarCardCss = css.match(/\.calendarCard \{[\s\S]*?\n\}/)?.[0] ?? ''
+    const blackDiamondSurfaceCss =
+      css.match(
+        /\.main\[data-workspace-skin='black_diamond'\] \.topbar,[\s\S]*?color: #f8efe4;\n\}/,
+      )?.[0] ?? ''
+
+    expect(calendarCardCss).toContain(
+      'linear-gradient(145deg, #402924 0%, #36221d 100%)',
+    )
+    expect(calendarCardCss).toContain(
+      'border: 1px solid rgba(255, 246, 250, 0.14)',
+    )
+    expect(css).toContain('.calendarCard > .workspaceSectionHeader .cardTitle')
+    expect(css).toContain('.calendarCard > .calendarHeader .walletSettingsTitle')
+    expect(blackDiamondSurfaceCss).not.toContain(
+      ".main[data-workspace-skin='black_diamond'] .calendarCard",
+    )
+  })
+
   it('keeps the workspace Nic-Nac glyph backed by the shared mark', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/NicNacGlyph.tsx'),
