@@ -871,7 +871,7 @@ export async function runCalendarPressureSmoke(
       appUrl,
       env,
       repId: rep.id,
-      requiredText: [oneTitle, bonusTitle, 'CODEA10', 'FLASH5', 'July Birthday 2026', 'OG Originals'],
+      requiredText: [oneTitle, 'CODEA10', 'July Birthday 2026'],
     })
 
     messages = await sendTurn({

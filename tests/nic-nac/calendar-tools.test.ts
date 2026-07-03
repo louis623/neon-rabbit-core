@@ -575,6 +575,62 @@ describe('calendar tools', () => {
     )
   })
 
+  it('update_show drops model-default duration when the rep did not request a duration change', async () => {
+    updateShowMock.mockResolvedValueOnce({
+      event: calendarEvent({
+        discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+      }),
+      updatedCount: 13,
+    })
+    const tool = makeUpdateShowTool({
+      ...makeCtx(),
+      latestUserText:
+        'Replace discount codes with SERIES25 = 25% off the whole cart and KEEP5 = $5 off keepers. Replace featured collections with Series Luxe and Vault Night. Keep the same time.',
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      eventId: VALID_EVENT_ID,
+      durationMinutes: 60,
+      discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+      featuredCollections: ['Series Luxe', 'Vault Night'],
+      applyToSeries: true,
+    })
+
+    expect(updateShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      expect.objectContaining({
+        durationMinutes: undefined,
+        discountCodes: [{ code: 'SERIES25', description: '25% off' }],
+        featuredCollections: ['Series Luxe', 'Vault Night'],
+      }),
+    )
+  })
+
+  it('update_show keeps duration when the rep explicitly requests a duration change', async () => {
+    updateShowMock.mockResolvedValueOnce({
+      event: calendarEvent({ durationMinutes: 90 }),
+      updatedCount: 1,
+    })
+    const tool = makeUpdateShowTool({
+      ...makeCtx(),
+      latestUserText: 'Change this show duration to 90 minutes.',
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      eventId: VALID_EVENT_ID,
+      durationMinutes: 90,
+    })
+
+    expect(updateShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      VALID_EVENT_ID,
+      expect.objectContaining({ durationMinutes: 90 }),
+    )
+  })
+
   it('skip_show_occurrence cancels one selected show while preserving the recurring series', async () => {
     cancelShowMock.mockResolvedValueOnce({
       event: calendarEvent({

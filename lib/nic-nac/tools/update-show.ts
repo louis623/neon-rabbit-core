@@ -55,22 +55,29 @@ function normalizeOptionalToolText(value: string | undefined) {
   return trimmed
 }
 
+function latestTurnRequestsDurationChange(text: string | undefined) {
+  if (!text) return true
+  return /\b(?:duration|length|run(?:s)?\s+for|last(?:s)?\s+for|\d+(?:\.\d+)?\s*(?:minutes?|hours?|hrs?)|(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:minutes?|hours?|hrs?))\b/i.test(
+    text,
+  )
+}
+
 export function makeUpdateShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  latestUserText?: string
 }) {
   return tool({
     description:
       'Update details on a scheduled show. Can change time, platform, title, description, discount codes, or featured collections. ' +
       'Set applyToSeries=true to apply non-time changes to all future shows in a recurring series. ' +
-      'Do not combine applyToSeries=true with eventTime.',
+      'Do not combine applyToSeries=true with eventTime. Do not include durationMinutes unless the rep asks to change duration or length.',
     inputSchema,
     execute: async (input) => {
       const {
         eventId,
-        durationMinutes,
         discountCodes,
         featuredCollections,
         applyToSeries,
@@ -80,6 +87,9 @@ export function makeUpdateShowTool(ctx: {
       const timeZone = normalizeOptionalToolText(input.timeZone)
       const title = normalizeOptionalToolText(input.title)
       const description = normalizeOptionalToolText(input.description)
+      const durationMinutes = latestTurnRequestsDurationChange(ctx.latestUserText)
+        ? input.durationMinutes
+        : undefined
 
       const patch = {
         platform,
@@ -171,5 +181,6 @@ export const updateShowTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      latestUserText: ctx.latestUserText,
     }),
 }
