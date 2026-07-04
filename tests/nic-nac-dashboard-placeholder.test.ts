@@ -496,8 +496,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).not.toContain('Open account')
-    expect(html).toContain('Track active pieces, requests, fulfillment, and trade history from one place.')
+    expect(html).toContain('Track active pieces, requests, and fulfillment from one place.')
     expect(html).toContain('Request inbox')
+    expect(html).not.toContain('Trade history')
+    expect(html).not.toContain('No trade history yet.')
     expect(html).toContain('Loading board')
     expect(html).not.toContain('View live site')
     expect(html).not.toContain('href="/amethyst/Homepage.html"')
@@ -516,7 +518,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Public page copy and branding')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
-    expect(html).toContain('Listings, requests, queue, and history')
+    expect(html).toContain('Listings, requests, and fulfillment')
     expect(html).not.toContain('I confirm I own the piece')
   })
 
@@ -1454,18 +1456,6 @@ describe('DashboardPlaceholder', () => {
         tradeBoardState: TRADE_BOARD_READY_STATE,
         tradeRequestsState: { status: 'ready', requests: [] },
         fulfillmentQueueState: { status: 'ready', items: [] },
-        tradeHistoryState: {
-          status: 'ready',
-          history: {
-            items: [],
-            summary: {
-              totalCompleted: 0,
-              totalMsrpTraded: 0,
-              avgFulfillmentDays: null,
-              repeatCustomers: [],
-            },
-          },
-        },
         tradeBoardSearchQuery: 'RG',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
@@ -1502,18 +1492,6 @@ describe('DashboardPlaceholder', () => {
         tradeBoardState: TRADE_BOARD_READY_STATE,
         tradeRequestsState: { status: 'ready', requests: [] },
         fulfillmentQueueState: { status: 'ready', items: [] },
-        tradeHistoryState: {
-          status: 'ready',
-          history: {
-            items: [],
-            summary: {
-              totalCompleted: 0,
-              totalMsrpTraded: 0,
-              avgFulfillmentDays: null,
-              repeatCustomers: [],
-            },
-          },
-        },
         tradeBoardSearchQuery: '',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
@@ -1542,18 +1520,6 @@ describe('DashboardPlaceholder', () => {
         tradeBoardState: TRADE_BOARD_READY_STATE,
         tradeRequestsState: { status: 'ready', requests: [] },
         fulfillmentQueueState: { status: 'ready', items: [] },
-        tradeHistoryState: {
-          status: 'ready',
-          history: {
-            items: [],
-            summary: {
-              totalCompleted: 0,
-              totalMsrpTraded: 0,
-              avgFulfillmentDays: null,
-              repeatCustomers: [],
-            },
-          },
-        },
         tradeSwapCleanupState: {
           status: 'ready',
           items: [
@@ -1667,18 +1633,6 @@ describe('DashboardPlaceholder', () => {
         },
         tradeRequestsState: { status: 'ready', requests: [] },
         fulfillmentQueueState: { status: 'ready', items: [] },
-        tradeHistoryState: {
-          status: 'ready',
-          history: {
-            items: [],
-            summary: {
-              totalCompleted: 0,
-              totalMsrpTraded: 0,
-              avgFulfillmentDays: null,
-              repeatCustomers: [],
-            },
-          },
-        },
         tradeBoardSearchQuery: 'RG',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',

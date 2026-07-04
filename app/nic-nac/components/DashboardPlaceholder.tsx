@@ -26,7 +26,6 @@ import type {
   SiteSettingsDashboardResult,
   SiteAnalyticsDashboardResult,
   SiteAppearancePreset,
-  TradeHistoryResult,
   TradeListingWithDesign,
   TradeRequestWithListing,
   TradeSwapCleanupItem,
@@ -62,7 +61,7 @@ export {
 }
 
 const WORKSPACE_SECTIONS = [
-  { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, queue, and history' },
+  { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, and fulfillment' },
   { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
   { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
   { key: 'business-tools', label: 'Business Tools', subtitle: 'Calculator, voice workflow, and growth tools' },
@@ -361,11 +360,6 @@ type FulfillmentQueueState = {
   items?: FulfillmentQueueItem[]
 }
 
-type TradeHistoryState = {
-  status: 'loading' | 'ready' | 'error'
-  history?: TradeHistoryResult
-}
-
 type TradeSwapCleanupState = {
   status: 'loading' | 'ready' | 'error'
   items?: TradeSwapCleanupItem[]
@@ -567,7 +561,6 @@ type AccountBillingResponsePayload = AccountBillingDashboardResult
 type TradeBoardResponsePayload = BoardResult
 type TradeRequestsResponsePayload = TradeRequestWithListing[]
 type FulfillmentQueueResponsePayload = FulfillmentQueueItem[]
-type TradeHistoryResponsePayload = TradeHistoryResult
 type TradeSwapCleanupResponsePayload = TradeSwapCleanupItem[]
 type JewelryLibraryFacetOption = {
   value: string
@@ -2113,20 +2106,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       status: reviewWorkspaceMode ? 'ready' : 'loading',
       items: reviewWorkspaceMode ? [] : undefined,
     })
-  const [tradeHistoryState, setTradeHistoryState] = useState<TradeHistoryState>({
-    status: reviewWorkspaceMode ? 'ready' : 'loading',
-    history: reviewWorkspaceMode
-      ? {
-          items: [],
-          summary: {
-            totalCompleted: 0,
-            totalMsrpTraded: 0,
-            avgFulfillmentDays: null,
-            repeatCustomers: [],
-          },
-        }
-      : undefined,
-  })
   const [tradeSwapCleanupState, setTradeSwapCleanupState] =
     useState<TradeSwapCleanupState>({
       status: reviewWorkspaceMode ? 'ready' : 'loading',
@@ -2416,22 +2395,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   }
 
-  async function loadTradeHistory(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/trade-history?limit=12', {
-      credentials: 'include',
-      signal,
-    })
-    if (!response.ok) {
-      throw new Error(`trade history request failed: ${response.status}`)
-    }
-
-    const payload = (await response.json()) as TradeHistoryResponsePayload
-    setTradeHistoryState({
-      status: 'ready',
-      history: payload,
-    })
-  }
-
   async function loadTradeSwapCleanup(signal?: AbortSignal) {
     const response = await fetch('/api/nic-nac/trade-swap-cleanup', {
       credentials: 'include',
@@ -2619,10 +2582,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadFulfillmentQueue(signal).catch((error) => {
         if ((error as { name?: string }).name === 'AbortError') return
         setFulfillmentQueueState({ status: 'error' })
-      }),
-      loadTradeHistory(signal).catch((error) => {
-        if ((error as { name?: string }).name === 'AbortError') return
-        setTradeHistoryState({ status: 'error' })
       }),
       loadTradeSwapCleanup(signal).catch((error) => {
         if ((error as { name?: string }).name === 'AbortError') return
@@ -3529,7 +3488,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadTradeBoard(),
       loadTradeRequests(),
       loadFulfillmentQueue(),
-      loadTradeHistory(),
       loadTradeSwapCleanup(),
       loadAnalytics(),
     ])
@@ -3542,7 +3500,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadTradeBoard(),
       loadTradeRequests(),
       loadFulfillmentQueue(),
-      loadTradeHistory(),
       loadTradeSwapCleanup(),
       loadAnalytics(),
     ])
@@ -4918,7 +4875,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               actionState={tradeBoardActionState}
               tradeRequestsState={tradeRequestsState}
               fulfillmentQueueState={fulfillmentQueueState}
-              tradeHistoryState={tradeHistoryState}
               tradeSwapCleanupState={tradeSwapCleanupState}
               onQuickAddListing={handleQuickAddListing}
               onRemoveListing={handleRemoveTradeListing}
@@ -5188,7 +5144,6 @@ export function TradeBoardWorkspaceCard({
   actionState,
   tradeRequestsState,
   fulfillmentQueueState,
-  tradeHistoryState,
   tradeSwapCleanupState = { status: 'ready', items: [] },
   onQuickAddListing,
   onRemoveListing,
@@ -5210,7 +5165,6 @@ export function TradeBoardWorkspaceCard({
   actionState: TradeBoardActionState
   tradeRequestsState: TradeRequestsState
   fulfillmentQueueState: FulfillmentQueueState
-  tradeHistoryState: TradeHistoryState
   tradeSwapCleanupState?: TradeSwapCleanupState
   onQuickAddListing: () => void
   onRemoveListing: (listingId: string) => void
@@ -5265,7 +5219,6 @@ export function TradeBoardWorkspaceCard({
   )
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
-  const history = tradeHistoryState.history
   const cleanupItems = tradeSwapCleanupState.items ?? []
   const normalizedRevealedItemNumber = revealedItemNumber.trim().toUpperCase()
   const approvingSwap = swapApprovalDraft
@@ -5291,7 +5244,7 @@ export function TradeBoardWorkspaceCard({
           <div>
             <div className={styles.cardTitle}>Trade Board</div>
             <div className={styles.cardSubtitle}>
-              Track active pieces, requests, fulfillment, and trade history from one place.
+              Track active pieces, requests, and fulfillment from one place.
             </div>
           </div>
           <div className={styles.headerActions}>
@@ -5881,67 +5834,6 @@ export function TradeBoardWorkspaceCard({
           )}
         </div>
 
-        <div className={styles.workspacePanel}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Trade history</div>
-            <span className={styles.rosterTag}>
-              {tradeHistoryState.status === 'ready' && history
-                ? `${history.summary.totalCompleted} completed`
-                : 'Loading'}
-            </span>
-          </div>
-          {tradeHistoryState.status === 'ready' && history ? (
-            <>
-              <div className={styles.metricGrid}>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Completed</span>
-                  <span className={styles.metricValue}>{history.summary.totalCompleted}</span>
-                </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>MSRP traded</span>
-                  <span className={styles.metricValue}>
-                    {formatTradeMoney(history.summary.totalMsrpTraded)}
-                  </span>
-                </div>
-                <div className={styles.metricBlock}>
-                  <span className={styles.metricLabel}>Avg days</span>
-                  <span className={styles.metricValue}>
-                    {history.summary.avgFulfillmentDays?.toFixed(1) ?? '-'}
-                  </span>
-                </div>
-              </div>
-              <div className={styles.tradeList}>
-                {history.items.length > 0 ? (
-                  history.items.map((item) => (
-                    <div key={item.requestId} className={styles.tradeRow}>
-                      <div className={styles.tradeIdentity}>
-                        <div className={styles.customerName}>{item.customerName}</div>
-                        <div className={styles.customerDate}>
-                          {item.design.itemNumber
-                            ? `${item.design.itemNumber} - ${item.design.designName}`
-                            : item.design.designName}
-                        </div>
-                      </div>
-                      <div className={styles.tradeMeta}>
-                        <span className={styles.timelineItem}>{item.status}</span>
-                        <span className={styles.timelineItem}>
-                          {item.fulfillmentStatus ?? 'No fulfillment'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className={styles.emptyState}>No trade history yet.</div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
