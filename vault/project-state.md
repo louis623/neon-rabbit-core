@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 2, 2026
+**Last updated:** July 4, 2026
 
 ---
 
@@ -18,12 +18,12 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest local implementation checkpoint:** `74ca64b test: unlock team management reviewer smoke`
-- **Latest local docs/memory checkpoint:** July 2 Team Management Public Cards / reviewer-smoke lesson and Open Brain closeout docs update on the current branch head.
-- **Latest local/deployed checkpoints:** Current stable work adds Public Team Cards to the Team Management workspace so Brittany can manage customer-facing Join Team cards from the dashboard using the existing `join_team_members` data path. It keeps onboarding invites separate from public publishing, preserves imported roster metadata, blocks unsafe public social-link schemes, and seeds Team Management access for synthetic reviewer-smoke dashboard sessions so the paid-add-on UI can be safely verified. The prior July 2 checkpoint added Brittany's entitlement-backed Team Management beta with private onboarding links, participant progress/messages, and the standalone Britt With Bling Start Strong app wired to the stable Sparkle Suite demo API. Brittany is enabled through `manual_beta`; future paid add-on access can use the same entitlement table with Stripe setting status to `active`. Earlier July 2 work added reusable Alpine Opal (`alpine_opal`, `AO-01`) and moved Mile High Fizz onto the standard switchable public-site model with Alpine Opal as its default/persisted skin.
+- **Latest local implementation checkpoint:** `0aa1996 fix: guard calendar update duration patches`
+- **Latest local docs/memory checkpoint:** July 4 Nic-Nac Calendar hardening / weekday recurrence / reusable tool-contract lessons for future Trade Board and Trade tools work.
+- **Latest local/deployed checkpoints:** Current stable work hardens Nic-Nac Calendar as the model-to-tool contract pattern for future Nic-Nac tools: durable calendar workflow state keeps tools available through long chats, weekday recurrence is first-class, workspace Calendar has past/future month navigation, calendar summaries load enough future events for recurring schedules, and update tools ignore model-invented duration patches unless the rep explicitly asked to change duration. Stable demo pressure smoke against deployed code created one-time shows, exact-count repeats, a 130-row weekday series, code/collection updates, skips, pauses, cancellations, public-site visibility checks, and cleanup. Prior July 2 work added Public Team Cards to the Team Management workspace so Brittany can manage customer-facing Join Team cards from the dashboard using the existing `join_team_members` data path. It keeps onboarding invites separate from public publishing, preserves imported roster metadata, blocks unsafe public social-link schemes, and seeds Team Management access for synthetic reviewer-smoke dashboard sessions so the paid-add-on UI can be safely verified.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-fjtiwq4jh-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_27LM7EksMdpb2jGogaEMw7yUDc7K`
+- **Current stable demo target:** `https://sparkle-suite-c1b192dk4-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_BYfWohZhHq1kw2rGYdpGXPPJGJrS`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
@@ -610,3 +610,21 @@ Verification passed:
 - Targeted public sites no longer use generated BlingKitchen fallback cards after Supabase resolves a real rep with zero events. Missing real rows must now be fixed in `calendar_events`.
 - Real BlingKitchen event inserted: `4cbba9fe-cd32-46df-ad62-24bc7c689894`, Friday July 3, 2026 8:00 PM EDT, TikTok Live, duration 150 minutes, description blank, discount code `bling123`, featured collection `July Birthday Collection`.
 - Verification passed locally: focused Nic-Nac/public calendar suites, production `npm run build`, Supabase migration push/list verification, linked DB query, and local service smoke returning the real BlingKitchen event.
+
+### July 4, 2026 Nic-Nac Calendar Tool Contract and Weekday Recurrence
+
+- Latest pushed checkpoints:
+  - `9e14d46 fix: support weekday calendar series`
+  - `0aa1996 fix: guard calendar update duration patches`
+- Stable demo URL: `https://sparkle-suite-demo.vercel.app`.
+- Current stable demo target: `https://sparkle-suite-c1b192dk4-louis-2849s-projects.vercel.app`.
+- Deployment id: `dpl_BYfWohZhHq1kw2rGYdpGXPPJGJrS`.
+- Calendar recurrence now treats `weekday` / Monday-Friday as first-class structured cadence, separate from daily and weekly. Ongoing weekday requests materialize as 130 future weekday rows, skipping Saturdays and Sundays.
+- Calendar workflow state now stores normalized local start time, parses shorthand time ranges and durations, and combines date-only follow-ups with previously captured time.
+- Calendar mutation tools now defend against model drift: `add_show` strips recurrence that was not captured by workflow state, and `update_show` drops `durationMinutes` unless the latest rep turn explicitly asks to change duration/length.
+- Workspace Calendar now loads a wider event window and has previous/current/next month controls, so generated recurring rows can be inspected beyond the first visible week.
+- The working architectural lesson is now explicit: Nic-Nac is filling an app-owned workflow form with model-assisted extraction. The form/state machine must be smarter, durable, and safer; do not try to script every possible rep phrasing.
+- Verification passed locally: focused Calendar/route/dashboard tests, broad Nic-Nac suite with 915 passing tests and 1 skipped, and production `npm run build`.
+- Stable-demo pressure smoke passed against the deployed alias with conversation `6ea818bc-820b-4476-acfd-5223eb336f76`, run tag `0703200456`, and cleanup of 147 synthetic calendar rows.
+- Pressure smoke verified one-time shows, exact-count two-Tuesday repeat, weekly recurring series, weekday recurring series, code/collection updates, single-occurrence skip, bounded pause, one-time cancel, future-series cancel, public-site visibility, and cleanup.
+- Carry-forward for Trade Board and Trade tools: apply the same durable workflow contract, active tool retention, model-input sanitization, DB assertions, public visibility checks, and deployed pressure smoke pattern before declaring those tools hardened.

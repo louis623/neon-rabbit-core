@@ -4,6 +4,31 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 4, 2026 - Nic-Nac Calendar Tool Contract
+
+**Nic-Nac tool workflows are app-owned forms with model-assisted extraction**
+Nic-Nac should not need a bespoke prompt branch for every way a rep might request a calendar or trade action. The app owns the durable form/state machine: required fields, optional fields, field normalization, defaults, recurrence math, allowed transitions, authorization, mutation validation, and database verification. The model helps understand language and choose tools inside that contract.
+
+**Calendar recurrence is structured state, not prose**
+Calendar repeats must be represented before mutation as explicit structured cadence and bounds. Supported Calendar cadence now includes `daily`, `weekly`, and `weekday` for Monday-Friday patterns. Ongoing schedules are bounded future rows, not infinite hidden magic.
+
+**Tool inputs must be sanitized against model drift**
+Tool code should not trust every field the model sends. If the latest rep turn did not ask to change duration, `update_show` drops `durationMinutes` even if the model included a default. The same principle should apply to Trade Board and other mutation tools: only authorized/latest-turn or workflow-backed changes should reach the service layer.
+
+**Active workflow context keeps tools available**
+Tool availability should merge current user intent with active durable workflow state. A long conversation, a correction, or a short answer like "yes" or "no description" must not remove Calendar/Trade tools when the app knows a workflow is still active.
+
+**Calendar UI must let reps inspect generated schedules**
+Recurring-heavy accounts need Calendar summary loading and month navigation that make future rows visible in the workspace, not only on the customer-facing site. The workspace Calendar now supports moving between months and loading a wider event window.
+
+**Pressure smoke is the proof standard for complex Nic-Nac tools**
+For complex Nic-Nac workflow changes, the readiness bar is deployed model/tool pressure smoke with DB assertions, public/workspace visibility checks where relevant, hard-fail phrase gates, and cleanup. Unit tests and assistant transcript quality are necessary but not sufficient.
+
+**Trade Board and Trade tools should inherit the Calendar hardening pattern**
+Future Trade Board/Trade tool work should reuse the Calendar pattern: durable workflow state, app-owned field normalization, tool-input drift guards, workflow-backed tool availability, structured service contracts, real model/tool replay, DB assertions, public-site visibility checks, and cleanup. Do not solve Trade Board brittleness by adding phrase-by-phrase prompt patches.
+
+---
+
 ## July 2, 2026 - Team Management Beta
 
 **Team Management beta uses private onboarding links**

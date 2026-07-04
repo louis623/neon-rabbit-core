@@ -4,6 +4,45 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 4, 2026 - Nic-Nac Calendar Tool Contract Hardening and Weekday Recurrence
+
+**What changed:**
+- Treated Nic-Nac Calendar failures as a tool-contract/workflow-state problem, not as a need to program every possible rep phrase.
+- Added first-class weekday recurrence for rep language such as "every weekday", "Monday through Friday", and "everyweek day".
+- `RecurringShowInput.cadence` now supports `weekday`; calendar generation skips Saturdays/Sundays and normalizes weekend starts forward to the next weekday.
+- Ongoing weekday series are bounded as 130 future weekday rows, giving reps a durable schedule without pretending the database stores infinite rows.
+- Calendar workflow parsing now captures shorthand such as `9am to 4p`, `7p Est`, `3 hrs`, `this monday`, and follow-up recurrence duration answers without overwriting earlier workflow truth.
+- Added `localStartTime` to calendar workflow state so date-only follow-ups can combine with previously captured times.
+- Tool choice now pins `add_show` when the active Calendar workflow is complete enough to write, while still requiring title/time/duration before mutation.
+- Hardened `add_show` and `update_show` against model drift: model-invented recurrence is stripped when the workflow did not capture recurrence, and model-default `durationMinutes` is ignored on updates unless the rep explicitly asked to change duration/length.
+- Updated Calendar prompt/tool descriptions so Nic-Nac asks for weekday recurrence correctly and does not treat description as required.
+- Increased Calendar summary loading for the workspace and added previous/current/next month controls so reps can inspect future and past calendar months.
+- Changed the workspace Calendar card to the espresso background and preserved readable inner calendar surfaces.
+- Added clickable workspace calendar event pills/rows and a detail dialog with event title, status, platform, local time, end time, duration, timezone, recurrence, discount codes, featured collections, and description state.
+
+**Verification:**
+- Focused calendar/dashboard suites passed during the hardening passes, including calendar workflow controller, calendar plan, calendar service, calendar tools, calendar summary route, dashboard Calendar UI, prompt routing, tool routing, tool choice policy, and route routing smoke tests.
+- Final broad Nic-Nac suite passed: 123 files, 915 tests passed, 1 skipped.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed commits:
+  - `9e14d46 fix: support weekday calendar series`
+  - `0aa1996 fix: guard calendar update duration patches`
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` points to `https://sparkle-suite-c1b192dk4-louis-2849s-projects.vercel.app` / deployment `dpl_BYfWohZhHq1kw2rGYdpGXPPJGJrS`.
+- Stable demo health check passed with API/DB reachable and recent error rate `0`.
+- Deployed pressure smoke passed against the stable demo with conversation `6ea818bc-820b-4476-acfd-5223eb336f76`, run tag `0703200456`.
+- Pressure smoke verified multiple one-time entries, exact-count bounded two-Tuesday repeat, 13-row weekly series, 130-row weekday Monday-Friday series, multiple discount codes, multiple featured collections, public-site template visibility, update one event, update future series, skip one occurrence, pause a bounded range, cancel one event, cancel future series, and cleanup of 147 synthetic rows.
+
+**Lessons carried forward:**
+- Nic-Nac is effectively filling an app-owned form before using a tool. The fix is not to enumerate every way a rep may talk; the fix is to make the form/state machine smarter, durable, forgiving, and authoritative.
+- The model can suggest field values, but app code must own required fields, recurrence math, allowed transitions, mutation defaults, and final validation.
+- "Keep the same time" must mean no time/duration patch, even if the model sends a default duration. Tool boundaries should drop fields the latest user turn did not actually authorize.
+- Recurrence should be represented as structured workflow state (`daily`, `weekly`, `weekday`, counted repeats, bounded ongoing) before mutation. Do not let the model improvise recurrence rows directly from prose.
+- Workflow state needs to survive long conversations, clarifying questions, corrections, and short replies. Losing tools because the latest message is terse is an architecture bug.
+- Pressure smokes must assert database state and public/workspace visibility after real model/tool runs. Assistant text alone is not proof.
+- This Calendar pattern should be reused for Trade Board and Trade tools: durable workflow state, app-owned normalization, model-drift guards, deterministic tool contracts, deployed synthetic smokes, and cleanup.
+
+---
+
 ## July 2, 2026 - Team Management Public Team Cards
 
 **What changed:**
