@@ -5737,6 +5737,10 @@ export function TradeBoardWorkspaceCard({
                 : 'Loading'}
             </span>
           </div>
+          <div className={styles.helperNote}>
+            Approved swaps land here when the replacement reveal still needs a ring
+            size or catalog details before fulfillment can finish.
+          </div>
           {tradeSwapCleanupState.status === 'ready' ? (
             <div className={styles.tradeList}>
               {cleanupItems.length > 0 ? (
@@ -5757,7 +5761,7 @@ export function TradeBoardWorkspaceCard({
                 ))
               ) : (
                 <div className={styles.emptyState}>
-                  No trade swaps need cleanup right now.
+                  No swap follow-ups need finishing right now.
                 </div>
               )}
             </div>

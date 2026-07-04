@@ -1550,6 +1550,9 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('Swap cleanup')
     expect(html).toContain('1 to finish')
+    expect(html).toContain(
+      'Approved swaps land here when the replacement reveal still needs a ring size or catalog details before fulfillment can finish.',
+    )
     expect(html).toContain('Revealed item number: ER00001')
     expect(html).toContain(
       'Finish catalog details after the show to put this reveal back on the board.',
@@ -1564,7 +1567,10 @@ describe('DashboardPlaceholder', () => {
 
     expect(source).toContain('/api/nic-nac/trade-swap-cleanup')
     expect(source).toContain('Swap cleanup')
-    expect(source).toContain('No trade swaps need cleanup right now.')
+    expect(source).toContain(
+      'Approved swaps land here when the replacement reveal still needs a ring',
+    )
+    expect(source).toContain('No swap follow-ups need finishing right now.')
     expect(source).toContain(
       'Revealed item number (optional)',
     )
