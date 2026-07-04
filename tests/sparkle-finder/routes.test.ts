@@ -293,26 +293,32 @@ describe("Sparkle Finder hub routes", () => {
     expect(findSparkleFinderCopyViolations(`${privacyMarkup} ${termsMarkup}`)).toEqual([]);
   });
 
-  it("renders the selected trust-first public landing for anonymous visitors", () => {
+  it("renders a simple account-gated public landing for anonymous visitors", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
     expect(markup).toContain("Sparkle Finder");
-    expect(markup).toContain("Start free Silver trial");
+    expect(markup).toContain("Find the pieces you love.");
+    expect(markup).toContain("Build your collection with Sparkle Finder.");
+    expect(markup).toContain("Free or Silver account required.");
+    expect(markup).toContain("Create free account");
     expect(markup).toContain("Sign in");
     expect(markup).toContain("Sparkle Finder public navigation");
-    expect(markup).toContain('data-smoke="public-hero-editorial"');
-    expect(markup).toContain("Find it, favorite it, show it off.");
+    expect(markup).toContain('data-smoke="account-gate-copy"');
+    expect(markup).toContain('href="/auth/sign-up?next=/"');
+    expect(markup).toContain('href="/auth/sign-in"');
+    expect(markup).toContain("use Sparkle Finder");
+    expect(markup).not.toContain('data-smoke="public-hero-editorial"');
+    expect(markup).not.toContain("Find it, favorite it, show it off.");
     expect(markup).not.toContain("Collector-first discovery");
-    expect(markup).toContain("How Sparkle Finder works");
+    expect(markup).not.toContain("How Sparkle Finder works");
     expect(markup).toContain("sparkle-home-primary-cta");
-    expect(markup).toContain("bg-[var(--sparkle-rose)]");
-    expect(markup).toContain("Find pieces you like.");
-    expect(markup).toContain("Check rep trade boards.");
-    expect(markup).toContain("Live show calendar.");
-    expect(markup).toContain("Collect and show off.");
-    expect(markup).toContain("Included tools");
-    expect((markup.match(/data-tone="espresso"/g) ?? []).length).toBe(2);
-    expect((markup.match(/data-tone="light"/g) ?? []).length).toBe(2);
+    expect(markup).not.toContain("Find pieces you like.");
+    expect(markup).not.toContain("Check rep trade boards.");
+    expect(markup).not.toContain("Live show calendar.");
+    expect(markup).not.toContain("Collect and show off.");
+    expect(markup).not.toContain("Included tools");
+    expect((markup.match(/data-tone="espresso"/g) ?? []).length).toBe(0);
+    expect((markup.match(/data-tone="light"/g) ?? []).length).toBe(0);
     expect(markup).not.toContain("What Sparkle Finder helps with");
     expect(markup).not.toContain("Public preview");
     expect(markup).not.toContain("Start with this");
@@ -325,20 +331,19 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain('href="/auth/sign-up?next=/live-shows"');
     expect(markup).not.toContain('href="/auth/sign-up?next=/rep-boards"');
     expect(markup).not.toContain('href="/auth/sign-up?next=/shop"');
-    expect(markup).toContain("Master Jewelry Library");
-    expect(markup).toContain("Live Show Calendar");
-    expect(markup).toContain("Rep Trade Boards / Dance Floors");
-    expect(markup).toContain("Collection Showcase");
-    expect(markup).toContain("Photo-ready uploads");
-    expect(markup).toContain("Find the pieces you like, see which reps have them on trade boards");
-    expect(markup).toContain("Start with your 45-day Silver Tier trial");
-    expect(markup).toContain("Silver opens the full collector workflow");
-    expect(markup).toContain("$4.99/month");
-    expect(markup).toContain("Show off pieces you already own with a digital collection.");
-    expect(markup).toContain("Get Started");
+    expect(markup).not.toContain("Master Jewelry Library");
+    expect(markup).not.toContain("Live Show Calendar");
+    expect(markup).not.toContain("Rep Trade Boards / Dance Floors");
+    expect(markup).not.toContain("Collection Showcase");
+    expect(markup).not.toContain("Photo-ready uploads");
+    expect(markup).not.toContain("Find the pieces you like, see which reps have them on trade boards");
+    expect(markup).not.toContain("Start with your 45-day Silver Tier trial");
+    expect(markup).not.toContain("Silver opens the full collector workflow");
+    expect(markup).not.toContain("$4.99/month");
+    expect(markup).not.toContain("Show off pieces you already own with a digital collection.");
+    expect(markup).not.toContain("Get Started");
     expect(markup).not.toContain(">Free tier<");
     expect(markup).not.toContain(">Silver tier<");
-    expect(markup).not.toContain("Create free account");
   });
 
   it("renders the main homepage with app navigation for signed-in customers", () => {
@@ -583,13 +588,15 @@ describe("Sparkle Finder hub routes", () => {
     expect(cardMarkup).toContain('loading="lazy"');
   });
 
-  it("renders public landing independence and avoids live/demo jewelry data", () => {
+  it("keeps anonymous public landing gated and avoids live/demo jewelry data", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
-    expect(markup.indexOf("Master Jewelry Library")).toBeLessThan(markup.indexOf("Independent discovery hub"));
-    expect(markup).toContain("Built for collectors, independently.");
-    expect(markup).toContain("Sparkle Finder organizes the hunt");
-    expect(markup).toContain("Sparkle Finder is not Bomb Party, a Bomb Party affiliate, or a Bomb Party rep.");
+    expect(markup).toContain("Free or Silver account required.");
+    expect(markup).not.toContain("Independent discovery hub");
+    expect(markup).not.toContain("Built for collectors, independently.");
+    expect(markup).not.toContain("Sparkle Finder organizes the hunt");
+    expect(markup).not.toContain("Sparkle Finder is not Bomb Party, a Bomb Party affiliate, or a Bomb Party rep.");
+    expect(markup).not.toContain("Master Jewelry Library");
     expect(markup).not.toContain("Rainbow Crown Ring");
     expect(markup).not.toContain("Celestial Lights Preview");
     expect(markup).not.toContain("Sierra Sparkle Studio");
@@ -606,6 +613,8 @@ describe("Sparkle Finder hub routes", () => {
       );
 
       expect(markup).toContain("Create a free Sparkle Finder account to open this tool.");
+      expect(markup).toContain("Create free account");
+      expect(markup).not.toContain("Start free Silver trial");
       expect(markup).toContain("/auth/sign-up");
       expect(markup).toContain("/auth/sign-in");
     },

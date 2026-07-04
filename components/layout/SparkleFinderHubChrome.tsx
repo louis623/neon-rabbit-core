@@ -36,7 +36,7 @@ function HubSignInWall() {
           className="inline-flex h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-5 text-sm font-bold text-white"
           href="/auth/sign-up"
         >
-          Start free Silver trial
+          Create free account
         </Link>
         <Link
           className="inline-flex h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-5 text-sm font-bold text-[var(--sparkle-plum-deep)]"
