@@ -119,15 +119,25 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           allowedPath: 'remove_rep_trade_board_listing',
           nextTool: 'remove_listing',
           requiresApproval: true,
+          requiresExactListing: matches.length !== 1,
+          selectedListingId: matches.length === 1 ? matches[0].id : null,
           catalogDeletionAllowed: false,
           boardMatches: matches.map((listing) => ({
             listingId: listing.id,
             itemNumber: getTradeListingDisplayFields(listing).itemNumber,
             designName: getTradeListingDisplayFields(listing).designName,
             status: listing.status,
+            listedAt: listing.listed_at,
+            ringSize: listing.ring_size,
           })),
+          nextQuestion:
+            matches.length === 0
+              ? "I don't see that exact piece on your board. Which listing did you want to remove?"
+              : matches.length > 1
+                ? 'I found more than one active physical piece for that item. Which exact listing should I remove?'
+                : undefined,
           guidance:
-            'Remove only the rep TradeBoard listing, and use remove_listing because it has the approval dialog. Do not remove or delete the shared jewelry database record.',
+            'Remove only the rep TradeBoard listing, and use remove_listing because it has the approval dialog. If more than one active physical listing matches, ask the rep to choose the exact listingId before calling remove_listing. Do not remove or delete the shared jewelry database record.',
         }
       }
 
@@ -148,10 +158,10 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           action: input.action,
           allowedPath: 'catalog_correction_request',
           nextTool: 'report_jewelry_catalog_issue',
-          requiresApproval: false,
+          requiresApproval: true,
           catalogDeletionAllowed: false,
           guidance:
-            'Use catalog correction tools for bad shared data or photos. Destructive jewelry database deletion is not available to Nic-Nac.',
+            'Use catalog correction tools for bad shared data or photos. Shared catalog corrections require approval before mutation. Destructive jewelry database deletion is not available to Nic-Nac.',
         }
       }
 

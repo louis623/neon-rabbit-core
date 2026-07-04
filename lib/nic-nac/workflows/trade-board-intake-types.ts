@@ -73,6 +73,7 @@ export interface TradeBoardIntakeKnownFields {
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
+  duplicatePhysicalConfirmed?: boolean
 }
 
 export interface TradeBoardIntakePhotoState {

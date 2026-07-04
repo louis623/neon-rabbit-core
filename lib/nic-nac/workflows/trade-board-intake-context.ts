@@ -165,6 +165,32 @@ function assistantIsPostCompletionFollowUp(text: string): boolean {
   )
 }
 
+function latestTurnConfirmsAdditionalPhysicalPiece(args: {
+  latestUserText: string
+  previousAssistantText: string
+}): boolean {
+  const assistantAskedAboutDuplicatePhysicalPiece =
+    /\balready\s+on\s+your\s+Trade\s+Board\b/i.test(args.previousAssistantText) &&
+    /\b(?:another|second|additional|extra)\s+physical\s+piece\b/i.test(
+      args.previousAssistantText,
+    ) &&
+    /\b(?:same|that\s+same)\s+design\b/i.test(args.previousAssistantText)
+  const positiveAnswer =
+    /\b(yes|yep|yeah|yup|correct|right|exactly|please|do\s+it|go\s+ahead)\b/i.test(
+      args.latestUserText,
+    )
+  if (assistantAskedAboutDuplicatePhysicalPiece && positiveAnswer) return true
+
+  return (
+    /\b(?:another|second|additional|extra|duplicate)\s+(?:physical\s+)?(?:piece|copy|unit)\b[\s\S]{0,100}\b(?:same|that\s+same|this\s+same)\s+(?:design|item|piece)\b/i.test(
+      args.latestUserText,
+    ) ||
+    /\bI\s+(?:have|got|found)\s+(?:another|a\s+second|an\s+additional|an\s+extra)\s+(?:physical\s+)?(?:piece|copy|unit)\b/i.test(
+      args.latestUserText,
+    )
+  )
+}
+
 function inferCatalogModeFromTurn(args: {
   currentMode: TradeBoardIntakeSessionState['catalogMode']
   latestUserText: string
@@ -207,13 +233,21 @@ export async function ingestLatestTradeBoardIntakeTurn(
       .reverse()
       .find((message) => message.role === 'assistant'),
   )
-  const known = mergeTradeBoardKnownFields(
+  let known = mergeTradeBoardKnownFields(
     mergeTradeBoardKnownFields(
       args.session.known,
       extractKnownFieldsFromCatalogToolOutputs(args.messages),
     ),
     extractKnownFieldsFromText(latestUserText),
   )
+  if (
+    latestTurnConfirmsAdditionalPhysicalPiece({
+      latestUserText,
+      previousAssistantText,
+    })
+  ) {
+    known = { ...known, duplicatePhysicalConfirmed: true }
+  }
   const catalogMode = inferCatalogModeFromTurn({
     currentMode: args.session.catalogMode,
     latestUserText,
@@ -330,6 +364,10 @@ export async function ingestLatestTradeBoardIntakeTurn(
       ring_size: known.ringSize ?? null,
       rep_notes: known.repNotes ?? null,
       trade_preferences: known.tradePreferences ?? null,
+      metadata: {
+        duplicatePhysicalConfirmed:
+          known.duplicatePhysicalConfirmed === true,
+      },
       current_phase: normalized.phase,
       missing_fields: normalized.missing,
       hard_blockers: normalized.blockers,

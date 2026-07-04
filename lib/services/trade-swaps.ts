@@ -2,20 +2,17 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { addListing } from '@/lib/services/trade-board'
 import { approveTrade } from '@/lib/services/trade-requests'
-import { errors } from '@/lib/services/errors'
+import { ServiceError, errors } from '@/lib/services/errors'
+import { resolveItemNumber } from '@/lib/services/jewelry-database'
 import type {
   ApproveTradeSwapInput,
   ApproveTradeSwapResult,
   JewelryType,
+  ResolveTradeSwapReplacementInput,
+  ResolveTradeSwapReplacementResult,
   TradeSwapCleanupItem,
   TradeSwapReplacementStatus,
 } from '@/lib/services/types'
-
-type RevealedDesignRow = {
-  id: string
-  item_number: string
-  type_prefix: JewelryType
-}
 
 type CleanupRow = {
   id: string
@@ -87,35 +84,36 @@ export async function approveTradeWithRevealedItemCapture(
     input.repNotes,
   )
 
-  const { data: design, error: designError } = await supabase
-    .from('jewelry_designs')
-    .select('id, item_number, type_prefix')
-    .eq('item_number', revealedItemNumber)
-    .maybeSingle()
-  if (designError) throw designError
-
-  const revealedDesign = design as RevealedDesignRow | null
+  const resolvedDesign = await resolveItemNumber(supabase, revealedItemNumber, {
+    material: input.revealedMaterial,
+  })
   const revealedRingSize = normalizeOptionalText(input.revealedRingSize)
   let replacementStatus: TradeSwapReplacementStatus = 'needs_catalog_details'
   let revealedDesignId: string | null = null
   let replacementListingId: string | null = null
 
-  if (revealedDesign) {
-    revealedDesignId = revealedDesign.id
-    if (isRingType(revealedDesign.type_prefix) && !revealedRingSize) {
+  if (resolvedDesign.found) {
+    revealedDesignId = resolvedDesign.design.id
+    if (isRingType(resolvedDesign.design.typePrefix) && !revealedRingSize) {
       replacementStatus = 'needs_ring_size'
     } else {
-      const replacement = await addListing(supabase, repId, {
-        itemNumber: revealedItemNumber,
-        ringSize: revealedRingSize,
-        repNotes: `Added from approved trade swap for ${approved.customerName}.`,
-      })
-      replacementListingId = replacement.listingId
-      replacementStatus = 'added_to_board'
+      try {
+        const replacement = await addListing(supabase, repId, {
+          itemNumber: revealedItemNumber,
+          material: input.revealedMaterial,
+          ringSize: revealedRingSize,
+          repNotes: `Added from approved trade swap for ${approved.customerName}.`,
+        })
+        replacementListingId = replacement.listingId
+        replacementStatus = 'added_to_board'
+      } catch (err) {
+        if (!expectedReplacementCleanupError(err)) throw err
+        replacementStatus = 'needs_catalog_details'
+      }
     }
   }
 
-  const { error: swapError } = await supabase
+  const { data: swapRow, error: swapError } = await supabase
     .from('trade_swaps')
     .insert({
       request_id: approved.requestId,
@@ -132,6 +130,7 @@ export async function approveTradeWithRevealedItemCapture(
   if (swapError) throw swapError
 
   return {
+    swapId: swapRow.id as string,
     requestId: approved.requestId,
     fulfillmentId: approved.fulfillmentId,
     outgoingListingId: approved.listingId,
@@ -141,6 +140,13 @@ export async function approveTradeWithRevealedItemCapture(
     replacementListingId,
     replacementStatus,
   }
+}
+
+function expectedReplacementCleanupError(err: unknown): boolean {
+  return (
+    err instanceof ServiceError &&
+    ['NEEDS_COLLECTION', 'NEEDS_FULL_INFO', 'NEEDS_MATERIAL_VARIANT'].includes(err.code)
+  )
 }
 
 function getSingleRelation<T>(value: T | T[] | null): T | null {
@@ -191,4 +197,89 @@ export async function getTradeSwapCleanupQueue(
   }
 
   return items
+}
+
+export async function resolveTradeSwapReplacementListing(
+  supabase: SupabaseClient,
+  repId: string,
+  input: ResolveTradeSwapReplacementInput,
+): Promise<ResolveTradeSwapReplacementResult> {
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (!input.swapId || !input.replacementListingId) {
+    throw errors.INVALID_INPUT(
+      'swapId and replacementListingId required',
+      'I need the cleanup item and the new listing before I can close that swap cleanup.',
+    )
+  }
+
+  const { data: listingRow, error: listingError } = await supabase
+    .from('trade_listings')
+    .select('id, rep_id')
+    .eq('id', input.replacementListingId)
+    .maybeSingle()
+  if (listingError) throw listingError
+  if (!listingRow) throw errors.LISTING_NOT_FOUND(input.replacementListingId)
+  if ((listingRow as { rep_id?: string }).rep_id !== repId) {
+    throw errors.UNAUTHORIZED('replacement listing belongs to another rep')
+  }
+
+  const { data: swapRow, error: swapError } = await supabase
+    .from('trade_swaps')
+    .select(
+      `
+        id, request_id,
+        request:trade_requests!inner(
+          listing:trade_listings!inner(rep_id)
+        )
+      `,
+    )
+    .eq('id', input.swapId)
+    .maybeSingle()
+  if (swapError) throw swapError
+  if (!swapRow) throw errors.LISTING_NOT_FOUND(`swap ${input.swapId}`)
+
+  const request = getSingleRelation(
+    (swapRow as {
+      request:
+        | { listing: { rep_id: string } | Array<{ rep_id: string }> | null }
+        | Array<{ listing: { rep_id: string } | Array<{ rep_id: string }> | null }>
+        | null
+    }).request,
+  )
+  const ownerListing = request ? getSingleRelation(request.listing) : null
+  if (!ownerListing || ownerListing.rep_id !== repId) {
+    throw errors.UNAUTHORIZED('swap belongs to another rep')
+  }
+
+  const requestId = (swapRow as { request_id: string }).request_id
+  const { data: updatedSwap, error: updateSwapError } = await supabase
+    .from('trade_swaps')
+    .update({
+      replacement_listing_id: input.replacementListingId,
+      replacement_status: 'added_to_board',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', input.swapId)
+    .select('id, request_id, replacement_listing_id, replacement_status')
+    .single()
+  if (updateSwapError) throw updateSwapError
+
+  const { data: fulfillmentRow, error: fulfillmentError } = await supabase
+    .from('trade_fulfillment')
+    .update({
+      received_listing_id: input.replacementListingId,
+      status_updated_at: new Date().toISOString(),
+    })
+    .eq('request_id', requestId)
+    .select('id')
+    .maybeSingle()
+  if (fulfillmentError) throw fulfillmentError
+
+  return {
+    swapId: updatedSwap.id as string,
+    requestId: updatedSwap.request_id as string,
+    replacementListingId: updatedSwap.replacement_listing_id as string,
+    replacementStatus: 'added_to_board',
+    fulfillmentId: (fulfillmentRow as { id?: string } | null)?.id ?? null,
+  }
 }

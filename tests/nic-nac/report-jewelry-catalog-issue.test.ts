@@ -51,6 +51,7 @@ describe('report_jewelry_catalog_issue', () => {
         collectionName: 'March Birthday',
         collectionYear: 2026,
         searchTags: ['rose gold', 'heart'],
+        modelInventedDeleteFlag: 'please delete the duplicate',
       },
     })
 
@@ -122,9 +123,10 @@ describe('report_jewelry_catalog_issue', () => {
   it('tells Nic-Nac to replace bad catalog photos only with approved jewelry-front photos', () => {
     const tool = makeTool()
 
-    expect(tool.needsApproval).toBeFalsy()
+    expect(tool.needsApproval).toBe(true)
     expect(tool.description).toContain('approved jewelry-front')
     expect(tool.description).toContain('label/details')
     expect(tool.description).toContain('canonical catalog photo')
+    expect(tool.description).toContain('Requires explicit user approval')
   })
 })

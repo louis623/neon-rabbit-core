@@ -3,6 +3,12 @@ import type { TradeBoardIntakeToolPolicySource } from './trade-board-intake-type
 
 export type ActiveNicNacWorkflowType =
   | 'trade_board_add_listing'
+  | 'trade_board_remove_listing'
+  | 'trade_request_decision'
+  | 'trade_swap_capture'
+  | 'trade_swap_cleanup'
+  | 'trade_fulfillment_update'
+  | 'trade_catalog_correction'
   | 'calendar_event_work'
 
 export type ActiveNicNacWorkflowStatus =
@@ -55,7 +61,14 @@ export function activeWorkflowRequiresToolCall(
     (workflow) =>
       workflow.status === 'active' &&
       workflow.workflowIntents.some((intent) =>
-        ['calendar', 'trade_board', 'catalog', 'site'].includes(intent),
+        [
+          'calendar',
+          'trade_board',
+          'catalog',
+          'site',
+          'trade_requests',
+          'fulfillment',
+        ].includes(intent),
       ),
   )
 }

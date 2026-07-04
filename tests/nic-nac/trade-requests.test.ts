@@ -19,6 +19,7 @@ const rejectTradeMock = vi.fn()
 const getTradeHistoryMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
+const completeTradeWorkflowSessionMock = vi.fn()
 
 vi.mock('@/lib/services/trade-requests', () => ({
   getTradeRequests: (...args: unknown[]) => getTradeRequestsMock(...args),
@@ -40,6 +41,11 @@ vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logIncident: (...args: unknown[]) => logIncidentMock(...args),
 }))
 
+vi.mock('@/lib/nic-nac/workflows/trade-workflow-store', () => ({
+  completeTradeWorkflowSession: (...args: unknown[]) =>
+    completeTradeWorkflowSessionMock(...args),
+}))
+
 import { makeGetTradeRequestsTool } from '@/lib/nic-nac/tools/get-trade-requests'
 import { makeApproveTradeTool } from '@/lib/nic-nac/tools/approve-trade'
 import { makeRejectTradeTool } from '@/lib/nic-nac/tools/reject-trade'
@@ -57,21 +63,44 @@ function makeGetTool(): ToolDef {
   }) as unknown as ToolDef
 }
 
-function makeApproveTool(): ToolDef {
+function activeDecisionWorkflow() {
+  return {
+    id: 'workflow-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'trade_request_decision',
+    status: 'active',
+    phase: 'ready_to_approve',
+    intent: 'approve_trade',
+    knownFields: {},
+    missingFields: [],
+    blockers: [],
+    candidates: [],
+    approvalState: 'required',
+  } as const
+}
+
+function makeApproveTool(
+  activeTradeWorkflow: ReturnType<typeof activeDecisionWorkflow> | null = null,
+): ToolDef {
   return makeApproveTradeTool({
     repId: 'rep-1',
     supabase: {} as never,
     conversationId: 'conv-1',
     runId: 'run-1',
+    activeTradeWorkflow,
   }) as unknown as ToolDef
 }
 
-function makeRejectTool(): ToolDef {
+function makeRejectTool(
+  activeTradeWorkflow: ReturnType<typeof activeDecisionWorkflow> | null = null,
+): ToolDef {
   return makeRejectTradeTool({
     repId: 'rep-1',
     supabase: {} as never,
     conversationId: 'conv-1',
     runId: 'run-1',
+    activeTradeWorkflow,
   }) as unknown as ToolDef
 }
 
@@ -89,6 +118,7 @@ beforeEach(() => {
   getTradeHistoryMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
+  completeTradeWorkflowSessionMock.mockReset()
 })
 
 describe('get_trade_requests — flattened structured output', () => {
@@ -291,6 +321,49 @@ describe('approve_trade — write + audit', () => {
     const tool = makeApproveTool()
     expect(tool.needsApproval).toBe(true)
   })
+
+  it('completes an active trade request workflow after approval succeeds', async () => {
+    approveTradeMock.mockResolvedValueOnce({
+      requestId: 'req-1',
+      fulfillmentId: 'ful-1',
+      listingId: 'listing-1',
+      customerName: 'Alice',
+    })
+
+    const tool = makeApproveTool(activeDecisionWorkflow())
+    await tool.execute({
+      requestId: '11111111-1111-1111-1111-111111111111',
+    })
+
+    expect(completeTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        id: 'workflow-1',
+        workflowType: 'trade_request_decision',
+      }),
+      expect.objectContaining({
+        knownFields: expect.objectContaining({
+          requestId: 'req-1',
+          listingId: 'listing-1',
+          decision: 'approve',
+          fulfillmentRequestId: 'ful-1',
+        }),
+        approvalState: 'approved',
+        dbAssertions: expect.objectContaining({
+          tradeRequest: { id: 'req-1', status: 'approved' },
+          tradeListing: { id: 'listing-1', status: 'traded' },
+        }),
+        publicProof: expect.objectContaining({
+          tradeBoardListingShouldBeHidden: true,
+        }),
+        createdMutationIds: expect.arrayContaining([
+          { kind: 'trade_request', id: 'req-1' },
+          { kind: 'listing', id: 'listing-1' },
+          { kind: 'fulfillment', id: 'ful-1' },
+        ]),
+      }),
+    )
+  })
 })
 
 describe('reject_trade — write + audit', () => {
@@ -417,6 +490,48 @@ describe('reject_trade — write + audit', () => {
   it('does NOT expose needsApproval — rejection is reversible and runs without a dialog', () => {
     const tool = makeRejectTool()
     expect(tool.needsApproval).toBeFalsy()
+  })
+
+  it('completes an active trade request workflow after rejection succeeds', async () => {
+    rejectTradeMock.mockResolvedValueOnce({
+      requestId: 'req-1',
+      listingId: 'listing-1',
+      listingRestored: true,
+    })
+
+    const tool = makeRejectTool({
+      ...activeDecisionWorkflow(),
+      phase: 'ready_to_reject',
+      intent: 'reject_trade',
+      approvalState: 'not_required',
+    })
+    await tool.execute({
+      requestId: '22222222-2222-2222-2222-222222222222',
+      reason: 'not_interested',
+    })
+
+    expect(completeTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        id: 'workflow-1',
+        workflowType: 'trade_request_decision',
+      }),
+      expect.objectContaining({
+        knownFields: expect.objectContaining({
+          requestId: 'req-1',
+          listingId: 'listing-1',
+          decision: 'reject',
+        }),
+        approvalState: 'not_required',
+        dbAssertions: expect.objectContaining({
+          tradeRequest: { id: 'req-1', status: 'denied' },
+          tradeListing: { id: 'listing-1', status: 'available' },
+        }),
+        publicProof: expect.objectContaining({
+          tradeBoardListingShouldBeVisible: true,
+        }),
+      }),
+    )
   })
 })
 

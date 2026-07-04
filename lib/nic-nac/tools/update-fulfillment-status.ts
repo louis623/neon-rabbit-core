@@ -13,6 +13,9 @@ import { ServiceError } from '@/lib/services/errors'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
+import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type {
   FulfillmentStatus,
   UpdateFulfillmentInput,
@@ -73,6 +76,7 @@ export function makeUpdateFulfillmentStatusTool(ctx: {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeWorkflow?: TradeWorkflowSessionState | null
 }) {
   return tool({
     description:
@@ -156,6 +160,43 @@ export function makeUpdateFulfillmentStatusTool(ctx: {
         }
       }
 
+      if (ctx.activeTradeWorkflow?.workflowType === 'trade_fulfillment_update') {
+        try {
+          await completeTradeWorkflowSession(createAdminClient(), ctx.activeTradeWorkflow, {
+            knownFields: {
+              requestId: result.requestId,
+              fulfillmentRequestId: result.fulfillmentId,
+              nextFulfillmentStatus: result.status,
+            },
+            approvalState: 'not_required',
+            dbAssertions: {
+              fulfillment: {
+                id: result.fulfillmentId,
+                requestId: result.requestId,
+                previousStatus: result.previousStatus,
+                status: result.status,
+                completedAt: result.completedAt,
+                changed: result.changed,
+              },
+            },
+            publicProof: {
+              tradeBoardListingVisibilityUnaffected: true,
+              shouldPromptAddToBoard: result.shouldPromptAddToBoard,
+            },
+            createdMutationIds: [
+              { kind: 'fulfillment', id: result.fulfillmentId },
+              { kind: 'trade_request', id: result.requestId },
+            ],
+          })
+        } catch (workflowErr) {
+          console.error('[nic-nac] trade workflow completion failed', {
+            workflowId: ctx.activeTradeWorkflow.id,
+            toolName: 'update_fulfillment_status',
+            workflowErr,
+          })
+        }
+      }
+
       return {
         fulfillmentId: result.fulfillmentId,
         requestId: result.requestId,
@@ -179,5 +220,6 @@ export const updateFulfillmentStatusTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      activeTradeWorkflow: ctx.activeTradeWorkflow,
     }),
 }

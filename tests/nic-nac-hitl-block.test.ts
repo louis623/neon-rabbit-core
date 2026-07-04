@@ -11,6 +11,14 @@ describe('Nic-Nac HITL approval copy', () => {
     })
   })
 
+  it('uses catalog-specific approval copy for shared catalog corrections', () => {
+    expect(APPROVAL_COPY.report_jewelry_catalog_issue).toEqual({
+      title: 'Update shared catalog data?',
+      confirm: 'Update catalog',
+      cancel: 'Cancel',
+    })
+  })
+
   it('adds occurrence-specific detail for one-night show skips', () => {
     expect(
       getApprovalCopy('skip_show_occurrence', {

@@ -97,6 +97,14 @@ export const errors = {
       message: `active listing already exists for item ${itemNumber}`,
       userMessage: `You already have ${itemNumber} listed and available.`,
     }),
+  AMBIGUOUS_LISTING: (itemNumber: string) =>
+    new ServiceError({
+      code: 'AMBIGUOUS_LISTING',
+      message: `multiple active listings match item ${itemNumber}`,
+      userMessage:
+        'I found more than one active physical piece for that item. Pick the exact listing before removing it.',
+      statusCode: 409,
+    }),
   REQUEST_NOT_PENDING: () =>
     new ServiceError({
       code: 'REQUEST_NOT_PENDING',

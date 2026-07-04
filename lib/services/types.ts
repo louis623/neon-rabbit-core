@@ -989,11 +989,13 @@ export type TradeSwapReplacementStatus =
 export interface ApproveTradeSwapInput {
   requestId: string
   revealedItemNumber: string
+  revealedMaterial?: string
   revealedRingSize?: string
   repNotes?: string
 }
 
 export interface ApproveTradeSwapResult {
+  swapId: string
   requestId: string
   fulfillmentId: string
   outgoingListingId: string
@@ -1013,6 +1015,19 @@ export interface TradeSwapCleanupItem {
   revealedRingSize: string | null
   replacementStatus: TradeSwapReplacementStatus
   createdAt: string
+}
+
+export interface ResolveTradeSwapReplacementInput {
+  swapId: string
+  replacementListingId: string
+}
+
+export interface ResolveTradeSwapReplacementResult {
+  swapId: string
+  requestId: string
+  replacementListingId: string
+  replacementStatus: 'added_to_board'
+  fulfillmentId: string | null
 }
 
 // ============================================================================

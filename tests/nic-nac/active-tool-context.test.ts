@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 import {
+  activeWorkflowRequiresToolCall,
   mergeActiveWorkflowToolIntents,
   renderActiveWorkflowPromptStates,
   type ActiveNicNacWorkflowContext,
@@ -53,6 +54,24 @@ describe('active Nic-Nac workflow tool context', () => {
     expect(merged).toEqual(['memory', 'trade_board', 'catalog', 'calendar'])
   })
 
+  it('supports durable trade workflow contexts beyond add-listing', () => {
+    const merged = mergeActiveWorkflowToolIntents(
+      ['memory'],
+      [
+        context('trade_swap_capture', ['trade_requests', 'trade_board', 'catalog']),
+        context('trade_fulfillment_update', ['fulfillment', 'trade_board']),
+      ],
+    )
+
+    expect(merged).toEqual([
+      'memory',
+      'trade_requests',
+      'trade_board',
+      'catalog',
+      'fulfillment',
+    ])
+  })
+
   it('does not retain tools from terminal workflows', () => {
     const merged = mergeActiveWorkflowToolIntents(
       ['memory'],
@@ -70,5 +89,18 @@ describe('active Nic-Nac workflow tool context', () => {
 
     expect(prompt).toContain('Active workflow: calendar_event_work')
     expect(prompt).not.toContain('Active workflow: trade_board_add_listing')
+  })
+
+  it('requires tool calls for active trade request and fulfillment workflows', () => {
+    expect(
+      activeWorkflowRequiresToolCall([
+        context('trade_request_decision', ['trade_requests']),
+      ]),
+    ).toBe(true)
+    expect(
+      activeWorkflowRequiresToolCall([
+        context('trade_fulfillment_update', ['fulfillment']),
+      ]),
+    ).toBe(true)
   })
 })

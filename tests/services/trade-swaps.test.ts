@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { errors } from '@/lib/services/errors'
 
 const approveTradeMock = vi.fn()
 const addListingMock = vi.fn()
@@ -14,11 +15,15 @@ vi.mock('@/lib/services/trade-board', () => ({
 import {
   approveTradeWithRevealedItemCapture,
   getTradeSwapCleanupQueue,
+  resolveTradeSwapReplacementListing,
 } from '@/lib/services/trade-swaps'
 
-function makeApproveSupabase(design: Record<string, unknown> | null = null) {
-  const designMaybeSingle = vi.fn().mockResolvedValue({ data: design, error: null })
-  const designEq = vi.fn().mockReturnValue({ maybeSingle: designMaybeSingle })
+function makeApproveSupabase(
+  design: Record<string, unknown> | Array<Record<string, unknown>> | null = null,
+) {
+  const designRows = Array.isArray(design) ? design : design ? [design] : []
+  const designLimit = vi.fn().mockResolvedValue({ data: designRows, error: null })
+  const designEq = vi.fn().mockReturnValue({ limit: designLimit })
   const designSelect = vi.fn().mockReturnValue({ eq: designEq })
   const insertSingle = vi.fn().mockResolvedValue({
     data: { id: 'swap-1', replacement_status: 'needs_catalog_details' },
@@ -34,7 +39,7 @@ function makeApproveSupabase(design: Record<string, unknown> | null = null) {
 
   return {
     client: { from } as never,
-    spies: { from, designEq, insert, insertSingle },
+    spies: { from, designEq, designLimit, insert, insertSingle },
   }
 }
 
@@ -49,6 +54,87 @@ function makeCleanupSupabase(rows: Array<Record<string, unknown>>) {
   })
 
   return { client: { from } as never, spies: { from, eq, neq, order } }
+}
+
+function makeResolveReplacementSupabase(options: {
+  replacementListing?: Record<string, unknown> | null
+  swap?: Record<string, unknown> | null
+  fulfillment?: Record<string, unknown> | null
+} = {}) {
+  const replacementListing =
+    options.replacementListing === undefined
+      ? { id: 'replacement-listing-1', rep_id: 'rep-1' }
+      : options.replacementListing
+  const swap =
+    options.swap === undefined
+      ? {
+          id: 'swap-1',
+          request_id: 'request-1',
+          request: { listing: { rep_id: 'rep-1' } },
+        }
+      : options.swap
+  const fulfillment =
+    options.fulfillment === undefined
+      ? { id: 'fulfillment-1' }
+      : options.fulfillment
+
+  const listingMaybeSingle = vi
+    .fn()
+    .mockResolvedValue({ data: replacementListing, error: null })
+  const listingEq = vi.fn().mockReturnValue({ maybeSingle: listingMaybeSingle })
+  const listingSelect = vi.fn().mockReturnValue({ eq: listingEq })
+
+  const swapMaybeSingle = vi.fn().mockResolvedValue({ data: swap, error: null })
+  const swapReadEq = vi.fn().mockReturnValue({ maybeSingle: swapMaybeSingle })
+  const swapReadSelect = vi.fn().mockReturnValue({ eq: swapReadEq })
+  const swapUpdateSingle = vi.fn().mockResolvedValue({
+    data: {
+      id: 'swap-1',
+      request_id: 'request-1',
+      replacement_listing_id: 'replacement-listing-1',
+      replacement_status: 'added_to_board',
+    },
+    error: null,
+  })
+  const swapUpdateSelect = vi
+    .fn()
+    .mockReturnValue({ single: swapUpdateSingle })
+  const swapUpdateEq = vi.fn().mockReturnValue({ select: swapUpdateSelect })
+  const swapUpdate = vi.fn().mockReturnValue({ eq: swapUpdateEq })
+
+  const fulfillmentMaybeSingle = vi
+    .fn()
+    .mockResolvedValue({ data: fulfillment, error: null })
+  const fulfillmentSelect = vi
+    .fn()
+    .mockReturnValue({ maybeSingle: fulfillmentMaybeSingle })
+  const fulfillmentEq = vi.fn().mockReturnValue({ select: fulfillmentSelect })
+  const fulfillmentUpdate = vi.fn().mockReturnValue({ eq: fulfillmentEq })
+
+  const from = vi.fn((table: string) => {
+    if (table === 'trade_listings') return { select: listingSelect }
+    if (table === 'trade_swaps') {
+      return {
+        select: swapReadSelect,
+        update: swapUpdate,
+      }
+    }
+    if (table === 'trade_fulfillment') return { update: fulfillmentUpdate }
+    throw new Error(`unexpected table ${table}`)
+  })
+
+  return {
+    client: { from } as never,
+    spies: {
+      from,
+      listingEq,
+      swapReadEq,
+      swapUpdate,
+      swapUpdateEq,
+      fulfillmentUpdate,
+      fulfillmentEq,
+    },
+  }
 }
 
 beforeEach(() => {
@@ -75,7 +161,15 @@ describe('approveTradeWithRevealedItemCapture', () => {
     const { client, spies } = makeApproveSupabase({
       id: 'design-1',
       item_number: 'NK12345',
+      design_name: 'Moonlit Pendant',
+      material: null,
+      main_stone: null,
+      bp_msrp: 138,
+      canonical_photo_url: null,
       type_prefix: 'NK',
+      collection_id: 'collection-1',
+      search_tags: [],
+      collection: { name: 'Lustre', collection_year: 2026 },
     })
 
     const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
@@ -91,6 +185,7 @@ describe('approveTradeWithRevealedItemCapture', () => {
     )
     expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
       itemNumber: 'NK12345',
+      material: undefined,
       ringSize: undefined,
       repNotes: 'Added from approved trade swap for Jamie.',
     })
@@ -105,6 +200,7 @@ describe('approveTradeWithRevealedItemCapture', () => {
       replacement_status: 'added_to_board',
     })
     expect(result).toMatchObject({
+      swapId: 'swap-1',
       replacementStatus: 'added_to_board',
       replacementListingId: 'replacement-listing-1',
       revealedDesignId: 'design-1',
@@ -122,7 +218,15 @@ describe('approveTradeWithRevealedItemCapture', () => {
     const { client, spies } = makeApproveSupabase({
       id: 'design-1',
       item_number: 'RG99999',
+      design_name: 'Moon Ring',
+      material: null,
+      main_stone: null,
+      bp_msrp: 138,
+      canonical_photo_url: null,
       type_prefix: 'RG',
+      collection_id: 'collection-1',
+      search_tags: [],
+      collection: { name: 'Lustre', collection_year: 2026 },
     })
 
     const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
@@ -182,7 +286,15 @@ describe('approveTradeWithRevealedItemCapture', () => {
     const { client, spies } = makeApproveSupabase({
       id: 'design-1',
       item_number: 'RG99999',
+      design_name: 'Moon Ring',
+      material: null,
+      main_stone: null,
+      bp_msrp: 138,
+      canonical_photo_url: null,
       type_prefix: 'RG',
+      collection_id: 'collection-1',
+      search_tags: [],
+      collection: { name: 'Lustre', collection_year: 2026 },
     })
 
     const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
@@ -193,6 +305,7 @@ describe('approveTradeWithRevealedItemCapture', () => {
 
     expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
       itemNumber: 'RG99999',
+      material: undefined,
       ringSize: '8',
       repNotes: 'Added from approved trade swap for Jamie.',
     })
@@ -201,6 +314,108 @@ describe('approveTradeWithRevealedItemCapture', () => {
       replacement_status: 'added_to_board',
     })
     expect(result.replacementStatus).toBe('added_to_board')
+  })
+
+  it('uses revealed material to choose the correct catalog variant', async () => {
+    approveTradeMock.mockResolvedValueOnce({
+      requestId: 'request-1',
+      fulfillmentId: 'fulfillment-1',
+      listingId: 'outgoing-listing-1',
+      customerName: 'Jamie',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'replacement-listing-1',
+      designId: 'design-hematite',
+      itemNumber: 'NK12032',
+      designName: 'Reveal Necklace',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    const { client, spies } = makeApproveSupabase([
+      {
+        id: 'design-rhodium',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Rhodium Plating',
+        main_stone: null,
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+      {
+        id: 'design-hematite',
+        item_number: 'NK12032',
+        design_name: 'Reveal Necklace',
+        material: 'Hematite Plating',
+        main_stone: null,
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+    ])
+
+    const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
+      requestId: 'request-1',
+      revealedItemNumber: 'NK12032',
+      revealedMaterial: 'hematite plating',
+    })
+
+    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
+      itemNumber: 'NK12032',
+      material: 'hematite plating',
+      ringSize: undefined,
+      repNotes: 'Added from approved trade swap for Jamie.',
+    })
+    expect(spies.insert.mock.calls[0][0]).toMatchObject({
+      revealed_design_id: 'design-hematite',
+      replacement_status: 'added_to_board',
+    })
+    expect(result.revealedDesignId).toBe('design-hematite')
+  })
+
+  it('records cleanup when replacement auto-add hits an expected catalog gap after approval', async () => {
+    approveTradeMock.mockResolvedValueOnce({
+      requestId: 'request-1',
+      fulfillmentId: 'fulfillment-1',
+      listingId: 'outgoing-listing-1',
+      customerName: 'Jamie',
+    })
+    addListingMock.mockRejectedValueOnce(
+      errors.NEEDS_COLLECTION('design-1', 'Moonlit Pendant'),
+    )
+    const { client, spies } = makeApproveSupabase({
+      id: 'design-1',
+      item_number: 'NK12345',
+      design_name: 'Moonlit Pendant',
+      material: null,
+      main_stone: null,
+      bp_msrp: 138,
+      canonical_photo_url: null,
+      type_prefix: 'NK',
+      collection_id: null,
+      search_tags: [],
+      collection: null,
+    })
+
+    const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
+      requestId: 'request-1',
+      revealedItemNumber: 'NK12345',
+    })
+
+    expect(spies.insert.mock.calls[0][0]).toMatchObject({
+      request_id: 'request-1',
+      revealed_item_number: 'NK12345',
+      revealed_design_id: 'design-1',
+      replacement_listing_id: null,
+      replacement_status: 'needs_catalog_details',
+    })
+    expect(result.replacementStatus).toBe('needs_catalog_details')
   })
 })
 
@@ -257,5 +472,47 @@ describe('getTradeSwapCleanupQueue', () => {
         createdAt: '2026-06-11T20:00:00.000Z',
       },
     ])
+  })
+})
+
+describe('resolveTradeSwapReplacementListing', () => {
+  it('links the replacement listing to the swap and received fulfillment row', async () => {
+    const { client, spies } = makeResolveReplacementSupabase()
+
+    const result = await resolveTradeSwapReplacementListing(client, 'rep-1', {
+      swapId: 'swap-1',
+      replacementListingId: 'replacement-listing-1',
+    })
+
+    expect(spies.listingEq).toHaveBeenCalledWith(
+      'id',
+      'replacement-listing-1',
+    )
+    expect(spies.swapReadEq).toHaveBeenCalledWith('id', 'swap-1')
+    expect(spies.swapUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        replacement_listing_id: 'replacement-listing-1',
+        replacement_status: 'added_to_board',
+        updated_at: expect.any(String),
+      }),
+    )
+    expect(spies.swapUpdateEq).toHaveBeenCalledWith('id', 'swap-1')
+    expect(spies.fulfillmentUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        received_listing_id: 'replacement-listing-1',
+        status_updated_at: expect.any(String),
+      }),
+    )
+    expect(spies.fulfillmentEq).toHaveBeenCalledWith(
+      'request_id',
+      'request-1',
+    )
+    expect(result).toEqual({
+      swapId: 'swap-1',
+      requestId: 'request-1',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+      fulfillmentId: 'fulfillment-1',
+    })
   })
 })

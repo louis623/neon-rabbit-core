@@ -5,6 +5,7 @@ const approveTradeWithRevealedItemCaptureMock = vi.fn()
 const getTradeSwapCleanupQueueMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
+const completeTradeWorkflowSessionMock = vi.fn()
 
 vi.mock('@/lib/services/trade-swaps', () => ({
   approveTradeWithRevealedItemCapture: (...args: unknown[]) =>
@@ -26,6 +27,11 @@ vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logIncident: (...args: unknown[]) => logIncidentMock(...args),
 }))
 
+vi.mock('@/lib/nic-nac/workflows/trade-workflow-store', () => ({
+  completeTradeWorkflowSession: (...args: unknown[]) =>
+    completeTradeWorkflowSessionMock(...args),
+}))
+
 import { makeApproveTradeSwapTool } from '@/lib/nic-nac/tools/approve-trade-swap'
 import { makeGetTradeSwapCleanupTool } from '@/lib/nic-nac/tools/get-trade-swap-cleanup'
 
@@ -35,12 +41,32 @@ interface ToolDef {
   description?: string
 }
 
-function makeApproveTool(): ToolDef {
+function activeSwapWorkflow() {
+  return {
+    id: 'workflow-swap-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'trade_swap_capture',
+    status: 'active',
+    phase: 'ready_to_approve',
+    intent: 'approve_trade_swap',
+    knownFields: {},
+    missingFields: [],
+    blockers: [],
+    candidates: [],
+    approvalState: 'required',
+  } as const
+}
+
+function makeApproveTool(
+  activeTradeWorkflow: ReturnType<typeof activeSwapWorkflow> | null = null,
+): ToolDef {
   return makeApproveTradeSwapTool({
     repId: 'rep-1',
     supabase: {} as never,
     conversationId: 'conv-1',
     runId: 'run-1',
+    activeTradeWorkflow,
   }) as unknown as ToolDef
 }
 
@@ -56,11 +82,13 @@ beforeEach(() => {
   getTradeSwapCleanupQueueMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
+  completeTradeWorkflowSessionMock.mockReset()
 })
 
 describe('approve_trade_swap', () => {
   it('captures the revealed item number while approving the trade', async () => {
     approveTradeWithRevealedItemCaptureMock.mockResolvedValueOnce({
+      swapId: 'swap-1',
       requestId: 'req-1',
       fulfillmentId: 'ful-1',
       outgoingListingId: 'outgoing-listing-1',
@@ -84,6 +112,7 @@ describe('approve_trade_swap', () => {
       {
         requestId: '11111111-1111-1111-1111-111111111111',
         revealedItemNumber: ' nk12345 ',
+        revealedMaterial: undefined,
         revealedRingSize: undefined,
         repNotes: 'approved live',
       },
@@ -101,12 +130,62 @@ describe('approve_trade_swap', () => {
       }),
     )
     expect(result).toMatchObject({
+      swapId: 'swap-1',
       requestId: 'req-1',
       fulfillmentId: 'ful-1',
       outgoingListingId: 'outgoing-listing-1',
       revealedItemNumber: 'NK12345',
       replacementStatus: 'added_to_board',
     })
+  })
+
+  it('completes an active swap workflow with the trade_swaps row proof', async () => {
+    approveTradeWithRevealedItemCaptureMock.mockResolvedValueOnce({
+      swapId: 'swap-1',
+      requestId: 'req-1',
+      fulfillmentId: 'ful-1',
+      outgoingListingId: 'outgoing-listing-1',
+      customerName: 'Jamie',
+      revealedItemNumber: 'NK12345',
+      revealedDesignId: 'design-1',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+    })
+
+    const tool = makeApproveTool(activeSwapWorkflow())
+    await tool.execute({
+      requestId: '11111111-1111-1111-1111-111111111111',
+      revealedItemNumber: 'NK12345',
+    })
+
+    expect(completeTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      { admin: true },
+      expect.objectContaining({
+        id: 'workflow-swap-1',
+        workflowType: 'trade_swap_capture',
+      }),
+      expect.objectContaining({
+        knownFields: expect.objectContaining({
+          requestId: 'req-1',
+          swapId: 'swap-1',
+          revealedItemNumber: 'NK12345',
+        }),
+        dbAssertions: expect.objectContaining({
+          tradeSwap: {
+            id: 'swap-1',
+            requestId: 'req-1',
+            replacementStatus: 'added_to_board',
+          },
+        }),
+        createdMutationIds: expect.arrayContaining([
+          { kind: 'trade_swap', id: 'swap-1' },
+          { kind: 'trade_request', id: 'req-1' },
+          { kind: 'listing', id: 'outgoing-listing-1' },
+          { kind: 'fulfillment', id: 'ful-1' },
+          { kind: 'listing', id: 'replacement-listing-1' },
+        ]),
+      }),
+    )
   })
 
   it('includes the exact live-show prompt wording in the tool description', () => {

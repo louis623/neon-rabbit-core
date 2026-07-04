@@ -330,20 +330,19 @@ export async function removeListing(
 
   let listingId = input.listingId
   if (!listingId && input.itemNumber) {
-    const { data: designRow, error: designErr } = await supabase
+    const { data: designRows, error: designErr } = await supabase
       .from('jewelry_designs')
       .select('id')
       .eq('item_number', input.itemNumber)
-      .maybeSingle()
+      .limit(2)
     if (designErr) throw designErr
-    if (!designRow) {
+    if (!designRows || designRows.length === 0) {
       throw new TradeBoardError('LISTING_NOT_FOUND', `No design for item ${input.itemNumber}`)
     }
-    // COMPAT: when a rep has multiple non-removed listings for the same design,
-    // we deliberately pick the most-recent one by created_at DESC limit 1.
-    // This is "ambiguous, pick one" rather than a defined product rule —
-    // scripts/verify-trade-board.ts intentionally does not assert which row
-    // gets hit. Don't refactor this into something cleaner without product input.
+    if (designRows.length > 1) throw errors.NEEDS_MATERIAL_VARIANT(input.itemNumber)
+    const designRow = designRows[0]
+    // Do not pick one active duplicate physical listing by item number. The
+    // caller must resolve the exact listingId before a destructive removal.
     const { data: listingRows, error: listingErr } = await supabase
       .from('trade_listings')
       .select('id, created_at')
@@ -351,10 +350,13 @@ export async function removeListing(
       .eq('rep_id', repId)
       .neq('status', 'removed')
       .order('created_at', { ascending: false })
-      .limit(1)
+      .limit(2)
     if (listingErr) throw listingErr
     if (!listingRows || listingRows.length === 0) {
       throw new TradeBoardError('LISTING_NOT_FOUND', `No active listing for item ${input.itemNumber}`)
+    }
+    if (listingRows.length > 1) {
+      throw errors.AMBIGUOUS_LISTING(input.itemNumber)
     }
     listingId = listingRows[0].id as string
   }

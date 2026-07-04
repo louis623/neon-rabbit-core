@@ -5,6 +5,7 @@ const getFulfillmentQueueMock = vi.fn()
 const updateFulfillmentStatusMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
+const completeTradeWorkflowSessionMock = vi.fn()
 
 vi.mock('@/lib/services/trade-fulfillment', () => ({
   getFulfillmentQueue: (...args: unknown[]) => getFulfillmentQueueMock(...args),
@@ -22,6 +23,15 @@ vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logToolExecution: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({ admin: true }),
+}))
+
+vi.mock('@/lib/nic-nac/workflows/trade-workflow-store', () => ({
+  completeTradeWorkflowSession: (...args: unknown[]) =>
+    completeTradeWorkflowSessionMock(...args),
+}))
+
 import { makeGetFulfillmentQueueTool } from '@/lib/nic-nac/tools/get-fulfillment-queue'
 import { makeUpdateFulfillmentStatusTool } from '@/lib/nic-nac/tools/update-fulfillment-status'
 import { buildAllTools } from '@/lib/nic-nac/tools'
@@ -32,12 +42,32 @@ interface ToolDef {
   needsApproval?: boolean
 }
 
-function makeCtx() {
+function activeFulfillmentWorkflow() {
+  return {
+    id: 'workflow-fulfillment-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'trade_fulfillment_update',
+    status: 'active',
+    phase: 'ready_to_update',
+    intent: 'update_fulfillment_status',
+    knownFields: {},
+    missingFields: [],
+    blockers: [],
+    candidates: [],
+    approvalState: 'not_required',
+  } as const
+}
+
+function makeCtx(
+  activeTradeWorkflow: ReturnType<typeof activeFulfillmentWorkflow> | null = null,
+) {
   return {
     repId: 'rep-1',
     supabase: {} as never,
     conversationId: 'conv-1',
     runId: 'run-1',
+    activeTradeWorkflow,
   }
 }
 
@@ -45,8 +75,12 @@ function makeGetTool(): ToolDef {
   return makeGetFulfillmentQueueTool(makeCtx()) as unknown as ToolDef
 }
 
-function makeUpdateTool(): ToolDef {
-  return makeUpdateFulfillmentStatusTool(makeCtx()) as unknown as ToolDef
+function makeUpdateTool(
+  activeTradeWorkflow: ReturnType<typeof activeFulfillmentWorkflow> | null = null,
+): ToolDef {
+  return makeUpdateFulfillmentStatusTool(
+    makeCtx(activeTradeWorkflow),
+  ) as unknown as ToolDef
 }
 
 beforeEach(() => {
@@ -54,6 +88,7 @@ beforeEach(() => {
   updateFulfillmentStatusMock.mockReset()
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
+  completeTradeWorkflowSessionMock.mockReset()
 })
 
 describe('get_fulfillment_queue', () => {
@@ -313,6 +348,55 @@ describe('update_fulfillment_status', () => {
   it('does not require HITL approval because status updates are operational follow-through', () => {
     const tool = makeUpdateTool()
     expect(tool.needsApproval).toBeFalsy()
+  })
+
+  it('completes an active fulfillment workflow after the status update succeeds', async () => {
+    updateFulfillmentStatusMock.mockResolvedValueOnce({
+      fulfillmentId: 'ful-1',
+      requestId: 'req-1',
+      previousStatus: 'approved',
+      status: 'shipped',
+      completedAt: null,
+      changed: true,
+      shouldPromptAddToBoard: false,
+    })
+
+    const tool = makeUpdateTool(activeFulfillmentWorkflow())
+    await tool.execute({
+      requestId: '11111111-1111-4111-8111-111111111111',
+      nextStatus: 'shipped',
+    })
+
+    expect(completeTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      { admin: true },
+      expect.objectContaining({
+        id: 'workflow-fulfillment-1',
+        workflowType: 'trade_fulfillment_update',
+      }),
+      expect.objectContaining({
+        knownFields: expect.objectContaining({
+          requestId: 'req-1',
+          fulfillmentRequestId: 'ful-1',
+          nextFulfillmentStatus: 'shipped',
+        }),
+        dbAssertions: expect.objectContaining({
+          fulfillment: expect.objectContaining({
+            id: 'ful-1',
+            requestId: 'req-1',
+            previousStatus: 'approved',
+            status: 'shipped',
+            changed: true,
+          }),
+        }),
+        publicProof: expect.objectContaining({
+          tradeBoardListingVisibilityUnaffected: true,
+        }),
+        createdMutationIds: expect.arrayContaining([
+          { kind: 'fulfillment', id: 'ful-1' },
+          { kind: 'trade_request', id: 'req-1' },
+        ]),
+      }),
+    )
   })
 })
 

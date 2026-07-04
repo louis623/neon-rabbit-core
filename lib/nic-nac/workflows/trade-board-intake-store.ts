@@ -79,6 +79,10 @@ export function mapTradeBoardIntakeSessionRow(
       ...(row.trade_preferences
         ? { tradePreferences: row.trade_preferences as string }
         : {}),
+      ...((row.metadata as { duplicatePhysicalConfirmed?: unknown } | null)
+        ?.duplicatePhysicalConfirmed
+        ? { duplicatePhysicalConfirmed: true }
+        : {}),
     },
     missing: (row.missing_fields as string[] | null) ?? [],
     blockers: (row.hard_blockers as string[] | null) ?? [],

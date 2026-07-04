@@ -20,6 +20,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
+import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -46,6 +48,7 @@ export function makeRejectTradeTool(ctx: {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeWorkflow?: TradeWorkflowSessionState | null
 }) {
   return tool({
     description:
@@ -134,6 +137,43 @@ export function makeRejectTradeTool(ctx: {
         }
       }
 
+      if (ctx.activeTradeWorkflow?.workflowType === 'trade_request_decision') {
+        try {
+          await completeTradeWorkflowSession(admin, ctx.activeTradeWorkflow, {
+            knownFields: {
+              requestId: result.requestId,
+              listingId: result.listingId,
+              decision: 'reject',
+            },
+            approvalState: 'not_required',
+            dbAssertions: {
+              tradeRequest: {
+                id: result.requestId,
+                status: 'denied',
+              },
+              tradeListing: {
+                id: result.listingId,
+                status: result.listingRestored ? 'available' : 'pending_trade',
+              },
+            },
+            publicProof: {
+              listingId: result.listingId,
+              tradeBoardListingShouldBeVisible: result.listingRestored,
+            },
+            createdMutationIds: [
+              { kind: 'trade_request', id: result.requestId },
+              { kind: 'listing', id: result.listingId },
+            ],
+          })
+        } catch (workflowErr) {
+          console.error('[nic-nac] trade workflow completion failed', {
+            workflowId: ctx.activeTradeWorkflow.id,
+            toolName: 'reject_trade',
+            workflowErr,
+          })
+        }
+      }
+
       return {
         requestId: result.requestId,
         listingId: result.listingId,
@@ -152,5 +192,6 @@ export const rejectTradeTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      activeTradeWorkflow: ctx.activeTradeWorkflow,
     }),
 }

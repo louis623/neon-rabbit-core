@@ -63,6 +63,7 @@ import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 import {
   getOrCreateTradeBoardIntakeContext,
 } from '@/lib/nic-nac/workflows/trade-board-intake-context'
+import { getOrCreateTradeWorkflowContext } from '@/lib/nic-nac/workflows/trade-workflow-context'
 import { getOrCreateCalendarWorkflowContext } from '@/lib/nic-nac/workflows/calendar-workflow-context'
 import {
   activeWorkflowRequiresToolCall,
@@ -484,6 +485,10 @@ export async function POST(request: Request) {
     .find((message) => message.role === 'assistant')
   const latestUserText = readTextFromMessage(latestUserMessage)
   const previousAssistantText = readTextFromMessage(previousAssistantMessage)
+  const latestToolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? ['required_setup']
+      : getToolIntentsForMessages(messages)
   const tradeBoardWorkflowContext = await getOrCreateTradeBoardIntakeContext({
     supabase,
     workflowSupabase: createAdminClient(),
@@ -510,6 +515,20 @@ export async function POST(request: Request) {
       promptState: tradeBoardWorkflowContext.workflowPromptState,
     })
   }
+  const tradeWorkflowContext = await getOrCreateTradeWorkflowContext({
+    supabase: createAdminClient(),
+    repId,
+    conversationId,
+    latestUserText,
+    latestToolIntents,
+    messages,
+    latestUserMessageId: latestUserMessage?.id,
+    mode,
+    nowIso: new Date().toISOString(),
+  })
+  if (tradeWorkflowContext.activeWorkflow) {
+    activeWorkflowContexts.push(tradeWorkflowContext.activeWorkflow)
+  }
   const calendarWorkflowContext = await getOrCreateCalendarWorkflowContext({
     supabase,
     workflowSupabase: supabase,
@@ -523,10 +542,6 @@ export async function POST(request: Request) {
   if (calendarWorkflowContext.activeWorkflow) {
     activeWorkflowContexts.push(calendarWorkflowContext.activeWorkflow)
   }
-  const latestToolIntents: NicNacToolIntent[] =
-    mode === 'required_setup'
-      ? ['required_setup']
-      : getToolIntentsForMessages(messages)
   const requestedToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? latestToolIntents
@@ -559,6 +574,7 @@ export async function POST(request: Request) {
       runId,
       latestUserText,
       activeTradeBoardWorkflow,
+      activeTradeWorkflow: tradeWorkflowContext.sessionAfter,
       activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,
     },
     toolIntents,

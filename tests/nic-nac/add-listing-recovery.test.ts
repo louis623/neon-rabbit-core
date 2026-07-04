@@ -18,6 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ServiceError, errors } from '@/lib/services/errors'
 import type { ToolContext } from '@/lib/nic-nac/tools'
 import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
+import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
 
 const addListingMock = vi.fn()
 const addListingBatchMock = vi.fn()
@@ -37,6 +38,8 @@ const processRepListingPhotoUrlMock = vi.fn()
 const writeTradeActionAuditMock = vi.fn()
 const logIncidentMock = vi.fn()
 const updateTradeBoardIntakeSessionMock = vi.fn()
+const completeTradeWorkflowSessionMock = vi.fn()
+const resolveTradeSwapReplacementListingMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const fetchMock = vi.fn()
 
@@ -63,6 +66,11 @@ vi.mock('@/lib/services/trade-board', () => ({
   addListingBatch: (...args: unknown[]) => addListingBatchMock(...args),
   addNonItemNumberListing: (...args: unknown[]) =>
     addNonItemNumberListingMock(...args),
+}))
+
+vi.mock('@/lib/services/trade-swaps', () => ({
+  resolveTradeSwapReplacementListing: (...args: unknown[]) =>
+    resolveTradeSwapReplacementListingMock(...args),
 }))
 
 vi.mock('@/lib/services/jewelry-database', () => ({
@@ -122,6 +130,11 @@ vi.mock('@/lib/nic-nac/workflows/trade-board-intake-store', () => ({
     updateTradeBoardIntakeSessionMock(...args),
 }))
 
+vi.mock('@/lib/nic-nac/workflows/trade-workflow-store', () => ({
+  completeTradeWorkflowSession: (...args: unknown[]) =>
+    completeTradeWorkflowSessionMock(...args),
+}))
+
 import { makeAddListingTool } from '@/lib/nic-nac/tools/add-listing'
 
 interface AddListingToolDef {
@@ -171,6 +184,31 @@ function activeWorkflow(
         notes: ['backs of earrings visible'],
       },
     ],
+    ...overrides,
+  }
+}
+
+function activeSwapCleanupWorkflow(
+  overrides: Partial<TradeWorkflowSessionState> = {},
+): TradeWorkflowSessionState {
+  return {
+    id: 'cleanup-workflow-1',
+    repId: 'rep-1',
+    conversationId: 'conv-1',
+    workflowType: 'trade_swap_cleanup',
+    status: 'active',
+    phase: 'ready_to_update',
+    intent: 'resolve_swap_cleanup',
+    knownFields: {
+      swapId: 'swap-1',
+      requestId: 'request-1',
+      revealedItemNumber: 'NK12345',
+      itemNumber: 'NK12345',
+    },
+    missingFields: [],
+    blockers: [],
+    candidates: [],
+    approvalState: 'not_required',
     ...overrides,
   }
 }
@@ -254,6 +292,8 @@ beforeEach(() => {
   writeTradeActionAuditMock.mockReset()
   logIncidentMock.mockReset()
   updateTradeBoardIntakeSessionMock.mockReset()
+  completeTradeWorkflowSessionMock.mockReset()
+  resolveTradeSwapReplacementListingMock.mockReset()
   createAdminClientMock.mockReset()
   createAdminClientMock.mockReturnValue(makeAdminClientMock())
   fetchMock.mockReset()
@@ -445,6 +485,96 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       listingId: 'listing-1',
       createdNewDesign: false,
     })
+  })
+
+  it('links an active swap cleanup workflow to the replacement listing it just added', async () => {
+    const adminClient = makeAdminClientMock()
+    createAdminClientMock.mockReturnValue(adminClient)
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      hasCollection: true,
+      design: {
+        id: 'design-existing',
+        itemNumber: 'NK12345',
+        designName: 'Moonlit Pendant',
+      },
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'replacement-listing-1',
+      designId: 'design-existing',
+      itemNumber: 'NK12345',
+      designName: 'Moonlit Pendant',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    resolveTradeSwapReplacementListingMock.mockResolvedValueOnce({
+      swapId: 'swap-1',
+      requestId: 'request-1',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+      fulfillmentId: 'fulfillment-1',
+    })
+
+    const workflow = activeSwapCleanupWorkflow()
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeWorkflow: workflow,
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'NK12345',
+        designName: 'Moonlit Pendant',
+        collectionName: 'July Birthday',
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'replacement-listing-1',
+      createdNewDesign: false,
+    })
+
+    expect(resolveTradeSwapReplacementListingMock).toHaveBeenCalledWith(
+      adminClient,
+      'rep-1',
+      {
+        swapId: 'swap-1',
+        replacementListingId: 'replacement-listing-1',
+      },
+    )
+    expect(completeTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      adminClient,
+      workflow,
+      expect.objectContaining({
+        knownFields: expect.objectContaining({
+          swapId: 'swap-1',
+          requestId: 'request-1',
+          itemNumber: 'NK12345',
+          revealedItemNumber: 'NK12345',
+        }),
+        dbAssertions: {
+          tradeSwap: {
+            id: 'swap-1',
+            requestId: 'request-1',
+            replacementListingId: 'replacement-listing-1',
+            replacementStatus: 'added_to_board',
+          },
+          fulfillment: {
+            id: 'fulfillment-1',
+            requestId: 'request-1',
+            receivedListingId: 'replacement-listing-1',
+          },
+        },
+        publicProof: {
+          replacementListingShouldBeVisible: true,
+          replacementListingId: 'replacement-listing-1',
+        },
+        createdMutationIds: expect.arrayContaining([
+          { kind: 'trade_swap', id: 'swap-1' },
+          { kind: 'listing', id: 'replacement-listing-1' },
+          { kind: 'fulfillment', id: 'fulfillment-1' },
+        ]),
+      }),
+    )
   })
 
   it('uses a confirmed workflow photo as a listing photo when recovery fields find an existing design', async () => {
@@ -2056,6 +2186,66 @@ describe('add_listing - active workflow readiness guard', () => {
         itemNumber: 'ER13229',
         listingPhotoUrl: undefined,
       }),
+    )
+  })
+
+  it('uses durable workflow duplicate confirmation instead of depending on recent wording', async () => {
+    resolveItemNumberMock.mockResolvedValueOnce({
+      found: true,
+      hasCollection: true,
+      design: {
+        id: 'design-er13229',
+        itemNumber: 'ER13229',
+        designName: 'The Florence Earrings',
+        canonicalPhotoUrl: 'https://cdn.example.com/catalog/er13229.png',
+      },
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-2',
+      designId: 'design-er13229',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    createAdminClientMock.mockReturnValue(
+      makeAdminClientMock([{ id: 'listing-existing' }]),
+    )
+    const supabaseMock = makeConversationLookupMock([
+      {
+        role: 'user',
+        parts: [{ type: 'text', text: 'Go ahead.' }],
+      },
+      {
+        role: 'assistant',
+        parts: [{ type: 'text', text: 'I have the details now.' }],
+      },
+    ])
+    const tool = makeTool(supabaseMock, {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'details_capture',
+        known: {
+          itemNumber: 'ER13229',
+          duplicatePhysicalConfirmed: true,
+        },
+        missing: ['designName', 'collectionName', 'jewelryFrontPhoto'],
+        photos: [],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER13229',
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-2',
+    })
+    expect(addListingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({ itemNumber: 'ER13229' }),
     )
   })
 

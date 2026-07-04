@@ -298,4 +298,68 @@ describe('prepare_trade_board_work', () => {
     })
     expect(result.guidance).toContain('Do not remove or delete the shared jewelry database record')
   })
+
+  it('requires exact listing selection when removal matches duplicate physical pieces', async () => {
+    getMyBoardMock.mockResolvedValueOnce({
+      listings: [
+        {
+          id: 'listing-1',
+          status: 'available',
+          ring_size: null,
+          trade_preferences: null,
+          rep_notes: null,
+          listed_at: '2026-06-22T00:00:00.000Z',
+          design: {
+            item_number: 'ER13229',
+            design_name: 'The Florence Earrings',
+            type_prefix: 'ER',
+            material: null,
+            main_stone: null,
+            bp_msrp: 160,
+            collection: { name: 'July Birthday 2026' },
+          },
+        },
+        {
+          id: 'listing-2',
+          status: 'available',
+          ring_size: null,
+          trade_preferences: null,
+          rep_notes: null,
+          listed_at: '2026-06-23T00:00:00.000Z',
+          design: {
+            item_number: 'ER13229',
+            design_name: 'The Florence Earrings',
+            type_prefix: 'ER',
+            material: null,
+            main_stone: null,
+            bp_msrp: 160,
+            collection: { name: 'July Birthday 2026' },
+          },
+        },
+      ],
+      summary: {
+        totalMsrp: 320,
+        typeBreakdown: { ER: 2, RG: 0, NK: 0, ST: 0, BR: 0 },
+        pendingRequestCount: 0,
+      },
+    })
+
+    const result = await makeTool().execute({
+      action: 'remove_piece',
+      itemNumber: 'ER13229',
+    })
+
+    expect(result).toMatchObject({
+      action: 'remove_piece',
+      requiresExactListing: true,
+      selectedListingId: null,
+      nextQuestion:
+        'I found more than one active physical piece for that item. Which exact listing should I remove?',
+      boardMatches: [
+        { listingId: 'listing-1', itemNumber: 'ER13229' },
+        { listingId: 'listing-2', itemNumber: 'ER13229' },
+      ],
+    })
+    expect(result.guidance).toContain('choose the exact listingId')
+  })
 })

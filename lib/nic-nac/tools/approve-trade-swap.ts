@@ -11,11 +11,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
+import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
   requestId: z.string().uuid(),
   revealedItemNumber: z.string().min(1),
+  revealedMaterial: z.string().optional(),
   revealedRingSize: z.string().optional(),
   repNotes: z.string().optional(),
 })
@@ -36,17 +39,19 @@ export function makeApproveTradeSwapTool(ctx: {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeWorkflow?: TradeWorkflowSessionState | null
 }) {
   return tool({
     description:
       "Approve a live-show Trade Board swap for the authenticated rep. Ask the rep exactly: \"Which item number was just revealed for the customer?\" " +
       'Use this instead of plain approve_trade when approving an in-show swap: the customer gets the requested board piece, and Sparkle Suite captures the just-revealed item number so it can be added back to the board or finished after the show. ' +
-      'If the revealed item is a ring and the rep knows the size, include revealedRingSize. Requires explicit user approval.',
+      'If the item number has multiple plating/material variants, include revealedMaterial when the rep provides it. If the revealed item is a ring and the rep knows the size, include revealedRingSize. Requires explicit user approval.',
     inputSchema,
     needsApproval: true,
     execute: async ({
       requestId,
       revealedItemNumber,
+      revealedMaterial,
       revealedRingSize,
       repNotes,
     }) => {
@@ -57,6 +62,7 @@ export function makeApproveTradeSwapTool(ctx: {
         result = await approveTradeWithRevealedItemCapture(admin, ctx.repId, {
           requestId,
           revealedItemNumber,
+          revealedMaterial,
           revealedRingSize,
           repNotes,
         })
@@ -119,6 +125,75 @@ export function makeApproveTradeSwapTool(ctx: {
         }
       }
 
+      if (ctx.activeTradeWorkflow?.workflowType === 'trade_swap_capture') {
+        try {
+          await completeTradeWorkflowSession(admin, ctx.activeTradeWorkflow, {
+            knownFields: {
+              requestId: result.requestId,
+              swapId: result.swapId,
+              listingId: result.outgoingListingId,
+              revealedItemNumber: result.revealedItemNumber,
+              revealedMaterial,
+              revealedRingSize,
+            },
+            approvalState: 'approved',
+            dbAssertions: {
+              tradeRequest: {
+                id: result.requestId,
+                status: 'approved',
+              },
+              outgoingListing: {
+                id: result.outgoingListingId,
+                status: 'traded',
+              },
+              fulfillment: {
+                id: result.fulfillmentId,
+                requestId: result.requestId,
+                status: 'approved',
+              },
+              replacementListing: result.replacementListingId
+                ? {
+                    id: result.replacementListingId,
+                    status: 'available',
+                  }
+                : null,
+              replacementStatus: result.replacementStatus,
+              tradeSwap: {
+                id: result.swapId,
+                requestId: result.requestId,
+                replacementStatus: result.replacementStatus,
+              },
+            },
+            publicProof: {
+              outgoingListingShouldBeHidden: true,
+              replacementListingShouldBeVisible:
+                result.replacementStatus === 'added_to_board',
+              replacementListingId: result.replacementListingId ?? null,
+            },
+            createdMutationIds: [
+              { kind: 'trade_swap', id: result.swapId },
+              { kind: 'trade_request', id: result.requestId },
+              { kind: 'listing', id: result.outgoingListingId },
+              { kind: 'fulfillment', id: result.fulfillmentId },
+              ...(result.replacementListingId
+                ? [
+                    {
+                      kind: 'listing' as const,
+                      id: result.replacementListingId,
+                    },
+                  ]
+                : []),
+            ],
+          })
+        } catch (workflowErr) {
+          console.error('[nic-nac] trade workflow completion failed', {
+            workflowId: ctx.activeTradeWorkflow.id,
+            toolName: 'approve_trade_swap',
+            workflowErr,
+          })
+        }
+      }
+
       return result
     },
   })
@@ -133,5 +208,6 @@ export const approveTradeSwapTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      activeTradeWorkflow: ctx.activeTradeWorkflow,
     }),
 }

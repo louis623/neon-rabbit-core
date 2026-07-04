@@ -17,6 +17,7 @@ import {
   addListingBatch,
   addNonItemNumberListing,
 } from '@/lib/services/trade-board'
+import { resolveTradeSwapReplacementListing } from '@/lib/services/trade-swaps'
 import {
   createDesign,
   resolveItemNumber,
@@ -41,6 +42,7 @@ import {
   transitionTradeBoardIntake,
 } from '@/lib/nic-nac/workflows/trade-board-intake-controller'
 import { updateTradeBoardIntakeSession } from '@/lib/nic-nac/workflows/trade-board-intake-store'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { ToolContext, ToolDefinition } from './types'
 
 const itemBaseShape = {
@@ -397,6 +399,7 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
   itemNumber: string
   material?: string
   designId?: string
+  activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
 }) {
   const alreadyListed = await repAlreadyHasActiveListingForItem({
     admin: input.admin,
@@ -406,6 +409,7 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
     designId: input.designId,
   })
   if (!alreadyListed) return
+  if (input.activeTradeBoardWorkflow?.known.duplicatePhysicalConfirmed) return
 
   const confirmed = await latestConversationConfirmsAdditionalPhysicalPiece({
     supabase: input.supabase,
@@ -626,6 +630,117 @@ async function markActiveTradeBoardWorkflowCompleted(input: {
   }
 }
 
+function getSingleSwapCleanupCandidate(
+  workflow: ToolContext['activeTradeWorkflow'] | undefined | null,
+) {
+  if (workflow?.workflowType !== 'trade_swap_cleanup') return null
+  if (workflow.knownFields.swapId) {
+    return {
+      swapId: workflow.knownFields.swapId,
+      requestId: workflow.knownFields.requestId,
+      revealedItemNumber: workflow.knownFields.revealedItemNumber,
+    }
+  }
+  const swapCandidates = workflow.candidates.filter(
+    (candidate) => candidate.kind === 'swap',
+  )
+  if (swapCandidates.length !== 1) return null
+  const [candidate] = swapCandidates
+  return {
+    swapId: candidate.id,
+    requestId: undefined,
+    revealedItemNumber: candidate.itemNumber,
+  }
+}
+
+async function markActiveTradeSwapCleanupWorkflowCompleted(input: {
+  workflow?: ToolContext['activeTradeWorkflow'] | null
+  admin: SupabaseClient
+  listingId: string
+  itemNumber?: string | null
+  repId: string
+  conversationId: string
+  runId: string
+}) {
+  const workflow = input.workflow
+  const candidate = getSingleSwapCleanupCandidate(workflow)
+  if (!workflow || !candidate) return
+
+  try {
+    const linked = await resolveTradeSwapReplacementListing(
+      input.admin,
+      input.repId,
+      {
+        swapId: candidate.swapId,
+        replacementListingId: input.listingId,
+      },
+    )
+    await completeTradeWorkflowSession(input.admin, workflow, {
+      knownFields: {
+        swapId: linked.swapId,
+        requestId: linked.requestId,
+        itemNumber: input.itemNumber ?? candidate.revealedItemNumber,
+        revealedItemNumber:
+          input.itemNumber ?? candidate.revealedItemNumber,
+      },
+      approvalState: 'not_required',
+      dbAssertions: {
+        tradeSwap: {
+          id: linked.swapId,
+          requestId: linked.requestId,
+          replacementListingId: linked.replacementListingId,
+          replacementStatus: linked.replacementStatus,
+        },
+        fulfillment: linked.fulfillmentId
+          ? {
+              id: linked.fulfillmentId,
+              requestId: linked.requestId,
+              receivedListingId: linked.replacementListingId,
+            }
+          : null,
+      },
+      publicProof: {
+        replacementListingShouldBeVisible: true,
+        replacementListingId: linked.replacementListingId,
+      },
+      createdMutationIds: [
+        { kind: 'trade_swap', id: linked.swapId },
+        { kind: 'listing', id: linked.replacementListingId },
+        ...(linked.fulfillmentId
+          ? [
+              {
+                kind: 'fulfillment' as const,
+                id: linked.fulfillmentId,
+              },
+            ]
+          : []),
+      ],
+    })
+  } catch (error) {
+    try {
+      await logIncident({
+        errorType: 'trade_swap_cleanup_completion_failed',
+        repId: input.repId,
+        conversationId: input.conversationId,
+        severity: 'warn',
+        details: {
+          toolName: 'add_listing',
+          runId: input.runId,
+          workflowId: workflow.id,
+          swapId: candidate.swapId,
+          listingId: input.listingId,
+          message:
+            error instanceof Error
+              ? error.message
+              : 'unknown swap cleanup completion error',
+        },
+      })
+    } catch {
+      /* swallow - cleanup telemetry must not undo a successful listing */
+    }
+  }
+}
+
 async function shouldCollapseRepeatedBatchToSingle(
   input: ToolInput,
   ctx: { supabase: SupabaseClient; conversationId: string },
@@ -654,6 +769,7 @@ async function runNonItemNumberSingle(
     runId: string
     supabase: SupabaseClient
     activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
+    activeTradeWorkflow?: ToolContext['activeTradeWorkflow']
   },
   admin: SupabaseClient,
 ) {
@@ -752,6 +868,15 @@ async function runNonItemNumberSingle(
     conversationId: ctx.conversationId,
     runId: ctx.runId,
   })
+  await markActiveTradeSwapCleanupWorkflowCompleted({
+    workflow: ctx.activeTradeWorkflow,
+    admin,
+    listingId: result.listingId,
+    itemNumber: null,
+    repId: ctx.repId,
+    conversationId: ctx.conversationId,
+    runId: ctx.runId,
+  })
 
   await writeAuditIsolated({
     actionType: 'add_listing',
@@ -794,6 +919,7 @@ async function runSingle(
     runId: string
     supabase: SupabaseClient
     activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
+    activeTradeWorkflow?: ToolContext['activeTradeWorkflow']
   },
   admin: SupabaseClient,
 ) {
@@ -912,6 +1038,7 @@ async function runSingle(
           itemNumber,
           material: input.material,
           designId: existingDesign.design.id,
+          activeTradeBoardWorkflow: activeWorkflow,
         })
         const useExistingCatalogCanonicalPhoto =
           !input.listingPhotoUrl &&
@@ -943,6 +1070,15 @@ async function runSingle(
           admin,
           listingId: existingResult.listingId,
           designId: existingResult.designId,
+          repId: ctx.repId,
+          conversationId: ctx.conversationId,
+          runId: ctx.runId,
+        })
+        await markActiveTradeSwapCleanupWorkflowCompleted({
+          workflow: ctx.activeTradeWorkflow,
+          admin,
+          listingId: existingResult.listingId,
+          itemNumber: existingResult.itemNumber,
           repId: ctx.repId,
           conversationId: ctx.conversationId,
           runId: ctx.runId,
@@ -1304,6 +1440,7 @@ async function runSingle(
       designId: resolvedCatalogDesign?.found
         ? resolvedCatalogDesign.design.id
         : undefined,
+      activeTradeBoardWorkflow: activeWorkflow,
     })
   }
 
@@ -1379,6 +1516,15 @@ async function runSingle(
     admin,
     listingId: result.listingId,
     designId: result.designId,
+    repId: ctx.repId,
+    conversationId: ctx.conversationId,
+    runId: ctx.runId,
+  })
+  await markActiveTradeSwapCleanupWorkflowCompleted({
+    workflow: ctx.activeTradeWorkflow,
+    admin,
+    listingId: result.listingId,
+    itemNumber: result.itemNumber,
     repId: ctx.repId,
     conversationId: ctx.conversationId,
     runId: ctx.runId,
@@ -1630,6 +1776,7 @@ export function makeAddListingTool(ctx: {
   conversationId: string
   runId: string
   activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
+  activeTradeWorkflow?: ToolContext['activeTradeWorkflow']
 }) {
   return tool({
     description:
@@ -1677,5 +1824,6 @@ export const addListingTool: ToolDefinition = {
       conversationId: ctx.conversationId,
       runId: ctx.runId,
       activeTradeBoardWorkflow: ctx.activeTradeBoardWorkflow,
+      activeTradeWorkflow: ctx.activeTradeWorkflow,
     }),
 }

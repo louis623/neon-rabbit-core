@@ -177,6 +177,70 @@ describe('trade listing recovery service', () => {
     )
   })
 
+  it('blocks item-number removal when multiple active physical listings match', async () => {
+    const designLookup = new ThenableQuery({
+      data: [{ id: 'design-1' }],
+      error: null,
+    })
+    const listingCandidates = new ThenableQuery({
+      data: [
+        { id: 'listing-newer', created_at: '2026-05-16T12:00:00.000Z' },
+        { id: 'listing-older', created_at: '2026-05-15T12:00:00.000Z' },
+      ],
+      error: null,
+    })
+    const update = vi.fn()
+    const from = vi.fn((table: string) => {
+      if (table === 'jewelry_designs') {
+        return { select: vi.fn(() => designLookup) }
+      }
+      if (table === 'trade_listings') {
+        return {
+          select: vi.fn(() => listingCandidates),
+          update,
+        }
+      }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    await expect(
+      removeListing({ from } as never, 'rep-1', {
+        itemNumber: 'ER13229',
+        reason: 'mistake',
+      }),
+    ).rejects.toMatchObject({
+      code: 'AMBIGUOUS_LISTING',
+    })
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('blocks item-number removal when the catalog item has material variants', async () => {
+    const designLookup = new ThenableQuery({
+      data: [{ id: 'design-silver' }, { id: 'design-gold' }],
+      error: null,
+    })
+    const update = vi.fn()
+    const from = vi.fn((table: string) => {
+      if (table === 'jewelry_designs') {
+        return { select: vi.fn(() => designLookup) }
+      }
+      if (table === 'trade_listings') {
+        return { update }
+      }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    await expect(
+      removeListing({ from } as never, 'rep-1', {
+        itemNumber: 'ER13229',
+        reason: 'mistake',
+      }),
+    ).rejects.toMatchObject({
+      code: 'NEEDS_MATERIAL_VARIANT',
+    })
+    expect(update).not.toHaveBeenCalled()
+  })
+
   it('restores a removed listing inside the configured 7-day window', async () => {
     const fetch = new ThenableQuery({
       data: makeListing({ deleted_at: '2026-05-12T12:00:00.000Z' }),

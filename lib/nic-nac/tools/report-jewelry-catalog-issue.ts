@@ -4,6 +4,8 @@ import { reportJewelryCatalogIssue } from '@/lib/services/jewelry-catalog-correc
 import { ServiceError } from '@/lib/services/errors'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { sanitizeCatalogCorrectionFields } from '@/lib/nic-nac/workflows/trade-workflow-sanitizers'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -56,19 +58,63 @@ export const reportJewelryCatalogIssueTool: ToolDefinition = {
   build: (ctx: ToolContext) =>
     tool({
       description:
-        'Report and, when the rep provides corrected information, fix inaccurate shared jewelry catalog data. Use for wrong collection, bad photo, wrong MSRP, wrong name, wrong stone/material, duplicates, or other catalog quality issues. Canonical catalog photo replacement must use an approved jewelry-front image; never replace the canonical catalog photo with a label/details or back-of-card photo. Nic-Nac applies the correction; Louis is not the default review queue.',
+        'Report and, when the rep provides corrected information, fix inaccurate shared jewelry catalog data. Use for wrong collection, bad photo, wrong MSRP, wrong name, wrong stone/material, duplicates, or other catalog quality issues. Canonical catalog photo replacement must use an approved jewelry-front image; never replace the canonical catalog photo with a label/details or back-of-card photo. Requires explicit user approval because shared catalog corrections affect every rep.',
       inputSchema,
+      needsApproval: true,
       execute: async (input) => {
         const admin = createAdminClient()
+        const correction = input.correction
+          ? sanitizeCatalogCorrectionFields(input.correction)
+          : undefined
         try {
-          return await reportJewelryCatalogIssue(admin, {
+          const result = await reportJewelryCatalogIssue(admin, {
             itemNumber: input.itemNumber,
             repId: ctx.repId,
             conversationId: ctx.conversationId,
             issueType: input.issueType,
             reason: input.reason,
-            correction: input.correction,
+            correction,
           })
+          if (ctx.activeTradeWorkflow?.workflowType === 'trade_catalog_correction') {
+            try {
+              await completeTradeWorkflowSession(admin, ctx.activeTradeWorkflow, {
+                knownFields: {
+                  itemNumber: input.itemNumber,
+                  catalogIssueType: input.issueType,
+                  catalogCorrectionFields: correction,
+                },
+                approvalState: 'approved',
+                dbAssertions: {
+                  catalogIssue: {
+                    itemNumber: input.itemNumber,
+                    issueType: input.issueType,
+                    issueLogged: true,
+                    corrected: result.corrected,
+                    changedFields: result.changedFields,
+                  },
+                  catalogDesign: {
+                    id: result.designId,
+                    itemNumber: result.itemNumber,
+                  },
+                },
+                publicProof: {
+                  publicTradeBoardMayUseUpdatedCatalogData: result.corrected,
+                  itemNumber: result.itemNumber,
+                },
+                createdMutationIds: [
+                  { kind: 'catalog_design', id: result.designId },
+                  { kind: 'catalog_issue', id: result.itemNumber },
+                ],
+              })
+            } catch (workflowErr) {
+              console.error('[nic-nac] trade workflow completion failed', {
+                workflowId: ctx.activeTradeWorkflow.id,
+                toolName: 'report_jewelry_catalog_issue',
+                workflowErr,
+              })
+            }
+          }
+          return result
         } catch (err) {
           explainServiceError(err)
         }

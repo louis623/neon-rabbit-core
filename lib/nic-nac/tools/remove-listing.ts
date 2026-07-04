@@ -11,9 +11,13 @@ import {
   TradeBoardError,
   type RemovalReason,
 } from '@/lib/services/trade-board'
+import { ServiceError } from '@/lib/services/errors'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
+import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -25,12 +29,14 @@ const inputSchema = z.object({
 })
 
 function explainTradeBoardError(err: unknown): never {
-  if (err instanceof TradeBoardError) {
+  if (err instanceof TradeBoardError || err instanceof ServiceError) {
     const msg =
       err.code === 'LISTING_NOT_FOUND'
         ? "I couldn't find that listing on your board."
         : err.code === 'UNAUTHORIZED'
           ? "That listing isn't on your board, so I can't change it."
+          : err.code === 'AMBIGUOUS_LISTING'
+            ? 'I found more than one active physical piece for that item. Pick the exact listing before I remove anything.'
           : err.message
     throw new NicNacToolError({ code: err.code, userMessage: msg, cause: err })
   }
@@ -42,6 +48,7 @@ export function makeRemoveListingTool(ctx: {
   supabase: SupabaseClient
   conversationId: string
   runId: string
+  activeTradeWorkflow?: TradeWorkflowSessionState | null
 }) {
   return tool({
     description:
@@ -108,6 +115,54 @@ export function makeRemoveListingTool(ctx: {
         }
       }
 
+      if (ctx.activeTradeWorkflow?.workflowType === 'trade_board_remove_listing') {
+        try {
+          await completeTradeWorkflowSession(createAdminClient(), ctx.activeTradeWorkflow, {
+            knownFields: {
+              listingId: result.listingId,
+              itemNumber,
+              removalReason: reason as RemovalReason,
+            },
+            approvalState: 'approved',
+            dbAssertions: {
+              tradeListing: {
+                id: result.listingId,
+                previousStatus: result.previousStatus,
+                status: 'removed',
+                removalReason: reason,
+              },
+              cancelledTradeRequest: result.cancelledRequestId
+                ? {
+                    id: result.cancelledRequestId,
+                    status: 'cancelled',
+                  }
+                : null,
+            },
+            publicProof: {
+              listingId: result.listingId,
+              tradeBoardListingShouldBeHidden: true,
+            },
+            createdMutationIds: [
+              { kind: 'listing', id: result.listingId },
+              ...(result.cancelledRequestId
+                ? [
+                    {
+                      kind: 'trade_request' as const,
+                      id: result.cancelledRequestId,
+                    },
+                  ]
+                : []),
+            ],
+          })
+        } catch (workflowErr) {
+          console.error('[nic-nac] trade workflow completion failed', {
+            workflowId: ctx.activeTradeWorkflow.id,
+            toolName: 'remove_listing',
+            workflowErr,
+          })
+        }
+      }
+
       return {
         listingId: result.listingId,
         designName: result.designName,
@@ -132,5 +187,6 @@ export const removeListingTool: ToolDefinition = {
       supabase: ctx.supabase,
       conversationId: ctx.conversationId,
       runId: ctx.runId,
+      activeTradeWorkflow: ctx.activeTradeWorkflow,
     }),
 }
