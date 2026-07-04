@@ -622,6 +622,16 @@ describe('Nic-Nac tool routing', () => {
     expect(toolNames).toContain('get_trade_swap_cleanup')
   })
 
+  it('routes Trade Board request inbox language to trade request tools', () => {
+    const intents = getToolIntentsForText(
+      'Open my pending Trade Board request inbox for Morgan.',
+    )
+    const toolNames = listToolNamesForIntents(intents)
+
+    expect(intents).toContain('trade_requests')
+    expect(toolNames).toContain('get_trade_requests')
+  })
+
   it('keeps trade-board tools for terse collection-name replies', () => {
     const messages = [
       {

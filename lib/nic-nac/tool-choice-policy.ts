@@ -35,6 +35,7 @@ export type NicNacStepToolChoice =
         | 'prepare_trade_board_work'
         | 'add_show'
         | 'remove_listing'
+        | 'get_trade_requests'
         | 'approve_trade'
         | 'approve_trade_swap'
         | 'reject_trade'
@@ -71,6 +72,12 @@ export function chooseNicNacToolChoiceForStep(args: {
     calendarWorkflowIsReadyToAdd(args.activeCalendarWorkflow)
   ) {
     return { type: 'tool', toolName: 'add_show' }
+  }
+  if (
+    args.activeToolNames.includes('get_trade_requests') &&
+    textAsksForTradeRequestInbox(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'get_trade_requests' }
   }
   if (args.activeToolNames.includes('prepare_trade_board_work')) {
     return { type: 'tool', toolName: 'prepare_trade_board_work' }
@@ -152,6 +159,15 @@ function textAsksDuplicatePhysicalPieceQuestion(text: string): boolean {
     /\balready\s+on\s+your\s+Trade\s+Board\b/i.test(text) &&
     /\b(?:another|second|additional|extra)\s+physical\s+piece\b/i.test(text) &&
     /\b(?:same|that\s+same)\s+design\b/i.test(text)
+  )
+}
+
+function textAsksForTradeRequestInbox(text: string): boolean {
+  return (
+    /\btrade\s+requests?\b/i.test(text) ||
+    /\bpending\b[\s\S]{0,80}\brequests?\b/i.test(text) ||
+    /\brequests?\b[\s\S]{0,60}\binbox\b/i.test(text) ||
+    /\binbox\b[\s\S]{0,60}\brequests?\b/i.test(text)
   )
 }
 

@@ -81,6 +81,22 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'add_show' })
   })
 
+  it('forces get_trade_requests for request inbox reads instead of generic board prep', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: [
+          'prepare_trade_board_work',
+          'list_my_trade_board',
+          'get_trade_requests',
+        ],
+        latestUserText:
+          'Open my pending Trade Board request inbox for this customer.',
+      }),
+    ).toEqual({ type: 'tool', toolName: 'get_trade_requests' })
+  })
+
   it('does not force a tool after the first model step', () => {
     expect(
       chooseNicNacToolChoiceForStep({
