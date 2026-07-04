@@ -192,10 +192,25 @@ function ingestTradeWorkflowTurn(
     knownFields.itemNumber ??= textItemNumbers[0]
   }
   if (
-    state.workflowType === 'trade_swap_capture' ||
     state.workflowType === 'trade_swap_cleanup'
   ) {
     knownFields.revealedItemNumber ??= textItemNumbers[0]
+    knownFields.revealedRingSize ??= textRingSize
+  }
+  if (state.workflowType === 'trade_swap_capture') {
+    const explicitRevealedItemNumber = extractRevealedItemNumberFromText(
+      latestUserText,
+      textItemNumbers,
+    )
+    if (explicitRevealedItemNumber) {
+      const currentRevealed = normalizeTradeItemNumber(knownFields.revealedItemNumber)
+      const outgoingItem = normalizeTradeItemNumber(knownFields.itemNumber)
+      if (!currentRevealed || currentRevealed === outgoingItem) {
+        knownFields.revealedItemNumber = explicitRevealedItemNumber
+      }
+    } else if (shouldFallbackToSingleSwapItemNumber(latestUserText, textItemNumbers)) {
+      knownFields.revealedItemNumber ??= textItemNumbers[0]
+    }
     knownFields.revealedRingSize ??= textRingSize
   }
   if (state.workflowType === 'trade_swap_capture' && shouldSkipReplacementCapture(latestUserText)) {
@@ -230,6 +245,20 @@ function ingestTradeWorkflowTurn(
     if (selected?.kind === 'trade_request') {
       knownFields.requestId = selected.id
       knownFields.itemNumber ??= selected.itemNumber
+      if (state.workflowType === 'trade_swap_capture') {
+        const explicitRevealedItemNumber = extractRevealedItemNumberFromText(
+          latestUserText,
+          textItemNumbers,
+        )
+        const currentRevealed = normalizeTradeItemNumber(knownFields.revealedItemNumber)
+        const outgoingItem = normalizeTradeItemNumber(knownFields.itemNumber)
+        if (
+          explicitRevealedItemNumber &&
+          (!currentRevealed || currentRevealed === outgoingItem)
+        ) {
+          knownFields.revealedItemNumber = explicitRevealedItemNumber
+        }
+      }
     }
   }
 
@@ -533,6 +562,58 @@ function renderTradeWorkflowPromptState(
 function extractItemNumbersFromText(text: string): string[] {
   const matches = text.match(/\b[A-Z]{1,4}[\s-]*\d[A-Z0-9-]{2,20}\b/gi) ?? []
   return [...new Set(matches.map(normalizeTradeItemNumber).filter(Boolean) as string[])]
+}
+
+function extractRevealedItemNumberFromText(
+  text: string,
+  normalizedItemNumbers = extractItemNumbersFromText(text),
+): string | undefined {
+  if (!normalizedItemNumbers.length) return undefined
+
+  const itemPattern = '[A-Z]{1,4}[\\s-]*\\d[A-Z0-9-]{2,20}'
+  const directPatterns = [
+    new RegExp(
+      `\\b(?:item\\s*(?:number|#)\\s*)?(?:just\\s+)?revealed(?:\\s+(?:item|piece|replacement))?(?:\\s+(?:for\\s+the\\s+customer|for\\s+them))?\\s*(?:is|was|:)?\\s*(${itemPattern})\\b`,
+      'i',
+    ),
+    new RegExp(
+      `\\b(?:revealed|replacement|received)\\s+(?:item|piece)(?:\\s*(?:number|#))?\\s*(?:is|was|:)?\\s*(${itemPattern})\\b`,
+      'i',
+    ),
+    new RegExp(
+      `\\b(?:item\\s*(?:number|#)|piece)\\s+(${itemPattern})\\s+(?:was|is)\\s+(?:just\\s+)?revealed\\b`,
+      'i',
+    ),
+  ]
+  for (const pattern of directPatterns) {
+    const match = text.match(pattern)
+    const itemNumber = normalizeTradeItemNumber(match?.[1])
+    if (itemNumber) return itemNumber
+  }
+
+  const lowerText = text.toLocaleLowerCase()
+  const rawMatches = [
+    ...text.matchAll(/\b[A-Z]{1,4}[\s-]*\d[A-Z0-9-]{2,20}\b/gi),
+  ]
+  for (const match of rawMatches) {
+    const itemNumber = normalizeTradeItemNumber(match[0])
+    if (!itemNumber || !normalizedItemNumbers.includes(itemNumber)) continue
+    const before = lowerText.slice(Math.max(0, match.index - 90), match.index)
+    if (/\b(just\s+revealed|revealed|replacement|received)\b/.test(before)) {
+      return itemNumber
+    }
+  }
+
+  return undefined
+}
+
+function shouldFallbackToSingleSwapItemNumber(text: string, itemNumbers: string[]) {
+  return (
+    itemNumbers.length === 1 &&
+    /\b(just\s+revealed|revealed\s+(?:item|piece)|replacement\s+(?:item|piece))\b/i.test(
+      text,
+    )
+  )
 }
 
 function extractRingSizeFromText(text: string): string | undefined {

@@ -246,6 +246,97 @@ describe('Nic-Nac Trade workflow replay matrix', () => {
     )
   })
 
+  it('does not treat the outgoing listing item as the revealed item before capture', async () => {
+    await replay({
+      active: workflow({
+        workflowType: 'trade_swap_capture',
+        intent: 'approve_trade_swap',
+      }),
+      latestUserText:
+        'Open request request-1 from Jamie for NK18149 before I approve the live swap.',
+      latestToolIntents: ['trade_requests'],
+      messages: [
+        assistantToolPart('tool-get_trade_requests', {
+          requests: [
+            {
+              requestId: 'request-1',
+              status: 'pending',
+              customerName: 'Jamie',
+              listing: {
+                listingId: 'listing-1',
+                design: {
+                  itemNumber: 'NK18149',
+                  designName: 'The Harper Necklace',
+                },
+              },
+            },
+          ],
+        }),
+      ],
+    })
+
+    expect(updateTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        phase: 'details_capture',
+        knownFields: expect.objectContaining({
+          requestId: 'request-1',
+          itemNumber: 'NK18149',
+        }),
+        missingFields: ['revealedItemNumber'],
+      }),
+    )
+    expect(updateTradeWorkflowSessionMock.mock.calls.at(-1)?.[1].knownFields)
+      .not.toHaveProperty('revealedItemNumber')
+  })
+
+  it('uses the explicit just-revealed item when outgoing and revealed items are both present', async () => {
+    await replay({
+      active: workflow({
+        workflowType: 'trade_swap_capture',
+        intent: 'approve_trade_swap',
+        knownFields: {
+          requestId: 'request-1',
+          itemNumber: 'NK18149',
+          revealedItemNumber: 'NK18149',
+        },
+      }),
+      latestUserText:
+        'Approve live-show swap request request-1 for NK18149. The item number just revealed for the customer is ER13229.',
+      latestToolIntents: ['trade_requests'],
+      messages: [
+        assistantToolPart('tool-get_trade_requests', {
+          requests: [
+            {
+              requestId: 'request-1',
+              status: 'pending',
+              customerName: 'Jamie',
+              listing: {
+                listingId: 'listing-1',
+                design: {
+                  itemNumber: 'NK18149',
+                  designName: 'The Harper Necklace',
+                },
+              },
+            },
+          ],
+        }),
+      ],
+    })
+
+    expect(updateTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        phase: 'ready_to_approve',
+        knownFields: expect.objectContaining({
+          requestId: 'request-1',
+          itemNumber: 'NK18149',
+          revealedItemNumber: 'ER13229',
+        }),
+      }),
+    )
+  })
+
   it('selects the fulfillment row and shipped status from queue replay', async () => {
     await replay({
       active: workflow({
