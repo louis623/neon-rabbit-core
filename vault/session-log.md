@@ -28,7 +28,7 @@ Running log of significant work sessions. Most recent first.
 - Pushed commits:
   - `a3407b5 test: add Nic-Nac catalog correction smoke`
   - `34dc328 test: add Nic-Nac trade board pressure smoke`
-- Stable demo alias `https://sparkle-suite-demo.vercel.app` points to `https://sparkle-suite-hpldlpj76-louis-2849s-projects.vercel.app` / deployment `dpl_FtBq9DTVvQV3fCRAsVjazfUq2Pjm`.
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` points to `https://sparkle-suite-or1okdndq-louis-2849s-projects.vercel.app` / deployment `dpl_FzUFwAv26TCbLTuXrDSNbAFtv5wS`.
 - Stable demo health check passed with API/DB reachable and recent error rate `0`.
 - Final deployed Trade Board pressure sweep passed 8/8 workflows against the stable alias, started `2026-07-04T17:31:46.674Z`, finished `2026-07-04T17:34:22.534Z`, duration `155860ms`.
 - Final pressure conversations:
