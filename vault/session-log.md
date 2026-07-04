@@ -2,6 +2,14 @@
 
 ## 2026-07-04
 
+- Added the account-gated public landing for Sparkle Finder:
+  - Replaced the anonymous `/` marketing/product-tour homepage with a simple Amethyst landing/sign-in gate: `Find the pieces you love.`, `Build your collection with Sparkle Finder.`, `Free or Silver account required.`, `Create free account`, and `Sign in`.
+  - Kept signed-in app behavior intact; authenticated users still land in the mobile-first Sparkle Finder app home with preserved Finder flows.
+  - Removed the old logged-out feature tour from `/`, including `Find it, favorite it, show it off.`, public feature cards, public membership tier block, and broad tool previews. Anonymous customers now must create/sign in before seeing product surfaces.
+  - Updated the shared hub sign-in wall CTA from `Start free Silver trial` to `Create free account` so gated routes align with the free-or-Silver account rule.
+  - Verification passed: TDD red/green focused route tests, `npm run lint`, full `npm run test` (`38` files, `515` tests), production `npm run build`, full `npm run smoke:sparkle-finder` (`18` passed, `2` optional checks skipped), desktop/mobile screenshot review, Vercel inspect, and live route checks for `/`, `/reps`, `/library`, `/auth/sign-in`, and `/auth/sign-up`.
+  - Deployed commit `eda1a6f` as Vercel deployment `dpl_94RcwTnZgadnTdPh5TsWXtSNBJ3b`, aliased at `https://sparkle-finder-dev.vercel.app`. Live root check confirmed the new headline/account gate are present and old public landing copy/feature tour are absent.
+
 - Realigned the signed-in Sparkle Finder homepage to the July 3 A/B/C mobile app preview:
   - A: the app now opens on a simple Amethyst home card: `Find the pieces you love. Build your collection with Sparkle Finder.`
   - C: `Find a Piece` is a guided flow with simple choices first, Nic-Nac as the helper layer, and advanced routes tucked behind `More ways to look`.
