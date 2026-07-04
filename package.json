@@ -44,6 +44,7 @@
     "smoke:nic-nac:remove-listing": "tsx scripts/smoke-nic-nac-remove-listing.ts",
     "smoke:nic-nac:trade-request-decisions": "tsx scripts/smoke-nic-nac-trade-request-decisions.ts",
     "smoke:nic-nac:fulfillment-update": "tsx scripts/smoke-nic-nac-fulfillment-update.ts",
+    "smoke:nic-nac:swap-cleanup": "tsx scripts/smoke-nic-nac-swap-cleanup.ts",
     "smoke:nic-nac:trade-swap": "tsx scripts/smoke-trade-swap.ts",
     "smoke:nic-nac:calendar-reminders": "tsx scripts/smoke-nic-nac-calendar-reminders.ts",
     "smoke:nic-nac:calendar-pressure": "tsx scripts/smoke-nic-nac-calendar-pressure.ts",
