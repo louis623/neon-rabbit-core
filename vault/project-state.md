@@ -17,13 +17,13 @@
 - **Framework:** Next.js 16
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
-- **Active local branch:** `codex/sparkle-cross-phase-hardening`
-- **Latest local implementation checkpoint:** `0aa1996 fix: guard calendar update duration patches`
-- **Latest local docs/memory checkpoint:** July 4 Nic-Nac Calendar hardening / weekday recurrence / reusable tool-contract lessons for future Trade Board and Trade tools work.
-- **Latest local/deployed checkpoints:** Current stable work hardens Nic-Nac Calendar as the model-to-tool contract pattern for future Nic-Nac tools: durable calendar workflow state keeps tools available through long chats, weekday recurrence is first-class, workspace Calendar has past/future month navigation, calendar summaries load enough future events for recurring schedules, and update tools ignore model-invented duration patches unless the rep explicitly asked to change duration. Stable demo pressure smoke against deployed code created one-time shows, exact-count repeats, a 130-row weekday series, code/collection updates, skips, pauses, cancellations, public-site visibility checks, and cleanup. Prior July 2 work added Public Team Cards to the Team Management workspace so Brittany can manage customer-facing Join Team cards from the dashboard using the existing `join_team_members` data path. It keeps onboarding invites separate from public publishing, preserves imported roster metadata, blocks unsafe public social-link schemes, and seeds Team Management access for synthetic reviewer-smoke dashboard sessions so the paid-add-on UI can be safely verified.
+- **Active local branch:** `codex/nic-nac-trade-hardening`
+- **Latest local implementation checkpoint:** `34dc328 test: add Nic-Nac trade board pressure smoke`
+- **Latest local docs/memory checkpoint:** July 4 Nic-Nac Trade Board tool-contract hardening / shared catalog correction sanitizer / combined pressure sweep closeout.
+- **Latest local/deployed checkpoints:** Current stable work applies the Calendar model-to-tool contract pattern to Nic-Nac Trade Board and Trade tools. The Trade Board pressure bank now covers item-number add listing, non-item-number add listing, listing removal, trade request approve/reject decisions, fulfillment updates, live-show swaps, after-show swap cleanup, and shared catalog corrections through real `/api/nic-nac` model/tool replay with reviewer-smoke auth, approvals, DB assertions, public-site proof, and cleanup. Catalog corrections now drop stray canonical photo URLs for non-photo issue types while preserving the approved-photo-only guard for bad-photo corrections. Prior July 4 Calendar work remains the pattern source: durable workflow state, app-owned normalization, tool-input drift guards, DB/public proof, and deployed pressure smoke.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-c1b192dk4-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_BYfWohZhHq1kw2rGYdpGXPPJGJrS`
+- **Current stable demo target:** `https://sparkle-suite-hpldlpj76-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_FtBq9DTVvQV3fCRAsVjazfUq2Pjm`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`

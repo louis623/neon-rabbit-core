@@ -4,6 +4,51 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 4, 2026 - Nic-Nac Trade Board Tool Contract Hardening and Pressure Sweep
+
+**What changed:**
+- Continued the Calendar hardening lesson into the Trade Board / Trade tools family: app-owned workflow state, tool retention, approval-gated mutations, model-input sanitization, DB assertions, public-site proof, and synthetic cleanup.
+- Added `smoke:nic-nac:catalog-correction`, a deployed reviewer-smoke path that seeds a synthetic catalog design/listing, asks Nic-Nac to correct shared catalog MSRP, replays the approval, verifies `jewelry_designs`, `jewelry_catalog_change_log`, completed `nic_nac_trade_workflows`, public Trade Board MSRP, and cleanup.
+- The first catalog correction smoke caught a real model-drift bug: the model chose `report_jewelry_catalog_issue` correctly but carried the existing canonical photo URL into a non-photo MSRP correction. The service rejected the unapproved photo replacement, while assistant text still claimed success.
+- Hardened `report_jewelry_catalog_issue` so non-photo issue types drop stray `canonicalPhotoUrl` before the service layer, while `bad_photo` corrections still require an approved jewelry-front replacement asset.
+- Added `smoke:nic-nac:trade-board-pressure`, a single orchestration command that runs the deployed Trade Board smoke bank in order and reports a compact JSON summary:
+  - item-number add listing with label/details and boxed jewelry photos
+  - non-item-number listing
+  - approval-gated listing removal
+  - trade request approve/reject decisions
+  - fulfillment shipped/completed updates
+  - live-show swap approval
+  - after-show swap cleanup
+  - shared catalog correction
+
+**Verification:**
+- Focused local smoke-helper suite passed after adding the pressure runner: 9 files, 21 tests.
+- Focused catalog/tool/routing suite passed after the catalog sanitizer fix: 6 files, 96 tests.
+- `npm run build` passed locally with Next.js 16.2.1.
+- Pushed commits:
+  - `a3407b5 test: add Nic-Nac catalog correction smoke`
+  - `34dc328 test: add Nic-Nac trade board pressure smoke`
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` points to `https://sparkle-suite-hpldlpj76-louis-2849s-projects.vercel.app` / deployment `dpl_FtBq9DTVvQV3fCRAsVjazfUq2Pjm`.
+- Stable demo health check passed with API/DB reachable and recent error rate `0`.
+- Final deployed Trade Board pressure sweep passed 8/8 workflows against the stable alias, started `2026-07-04T17:31:46.674Z`, finished `2026-07-04T17:34:22.534Z`, duration `155860ms`.
+- Final pressure conversations:
+  - add listing: `92febf49-19c6-4b50-be94-f815f7e25ecb`
+  - non-item-number listing: `f6b70629-d74d-47e2-b1d9-d5315bffe6be`
+  - remove listing: `def5ed86-3120-4a31-b4e4-929ff4134a08`
+  - trade request decisions: `8fae2949-7066-48ea-a742-69355415d282`
+  - fulfillment update: `587c7cba-ca6b-49c0-acb9-752099fcdc08`
+  - live swap: `eedf9762-4b00-4680-b0f2-cd5e5fc18d75`
+  - swap cleanup: `3fd2d991-66c6-4b70-a5b6-d5d74509e823`
+  - catalog correction: `75f3adeb-18eb-4526-94e5-3bf4a05bf7c8`
+- Each deployed smoke used reviewer/synthetic data and reported cleanup for seeded listings, requests, swaps, fulfillment rows, catalog audit rows, designs, and collections.
+
+**Lessons carried forward:**
+- Tool-choice success is not enough; mutation tools must also sanitize model-suggested fields by workflow/issue type before service execution.
+- Catalog corrections are shared-data mutations, so approval replay plus audit-log and public-board proof are mandatory before calling the path hardened.
+- A single pressure command should be the standard closeout gate for Trade Board changes so future regressions are caught across related workflows, not only in the one script a session happened to remember.
+
+---
+
 ## July 4, 2026 - Nic-Nac Calendar Tool Contract Hardening and Weekday Recurrence
 
 **What changed:**

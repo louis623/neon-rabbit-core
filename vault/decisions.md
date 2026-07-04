@@ -4,6 +4,19 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 4, 2026 - Nic-Nac Trade Board Tool Contract
+
+**Trade Board hardening uses deployed pressure sweeps, not isolated happy paths**
+Trade Board and Trade tool changes should close with the combined `smoke:nic-nac:trade-board-pressure` gate whenever the change can affect listing intake, non-item-number listings, removals, request decisions, fulfillment, live swaps, cleanup, or catalog correction. The pressure sweep is intentionally synthetic/reviewer-scoped, approval-aware, DB-asserting, public-site-aware, and cleanup-backed.
+
+**Catalog correction inputs are sanitized by issue type**
+For `report_jewelry_catalog_issue`, the model may suggest correction fields, but the tool owns which fields are valid for the requested issue. Non-photo corrections such as wrong MSRP, name, material, stone, collection, tags, or duplicate must drop stray `canonicalPhotoUrl` before the service layer. `bad_photo` remains the only path that can send a canonical photo replacement, and that replacement must be an approved jewelry-front asset.
+
+**Shared catalog corrections require approval plus audit and public proof**
+Catalog corrections affect shared Sparkle Suite reference data, not only one rep's board. They must be approval-gated and verified with the catalog row, `jewelry_catalog_change_log`, completed workflow assertions, and public Trade Board proof when an available listing uses the corrected catalog data.
+
+---
+
 ## July 4, 2026 - Nic-Nac Calendar Tool Contract
 
 **Nic-Nac tool workflows are app-owned forms with model-assisted extraction**
