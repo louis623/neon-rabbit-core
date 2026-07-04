@@ -56,9 +56,10 @@ function buildInput(args: {
   shippingNotes?: string
   addToBoard?: boolean
 }): UpdateFulfillmentInput {
+  const shippingNotes = normalizeOptionalToolText(args.shippingNotes)
   const base = {
     nextStatus: args.nextStatus,
-    shippingNotes: args.shippingNotes,
+    ...(shippingNotes === undefined ? {} : { shippingNotes }),
     addToBoard: args.addToBoard,
   }
 
@@ -73,6 +74,12 @@ function buildInput(args: {
     customerName: args.customerName ?? '',
     ...base,
   }
+}
+
+function normalizeOptionalToolText(value: string | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value.trim()
+  return trimmed ? trimmed : undefined
 }
 
 export function makeUpdateFulfillmentStatusTool(ctx: {

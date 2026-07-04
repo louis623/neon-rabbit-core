@@ -300,6 +300,35 @@ describe('update_fulfillment_status', () => {
     })
   })
 
+  it('drops blank model-supplied shipping notes instead of clearing saved tracking on completion', async () => {
+    updateFulfillmentStatusMock.mockResolvedValueOnce({
+      fulfillmentId: 'ful-2',
+      requestId: 'req-2',
+      previousStatus: 'shipped',
+      status: 'completed',
+      completedAt: '2026-05-05T23:00:00Z',
+      shouldPromptAddToBoard: true,
+    })
+
+    const tool = makeUpdateTool()
+    await tool.execute({
+      requestId: '11111111-1111-4111-8111-111111111111',
+      nextStatus: 'completed',
+      shippingNotes: '',
+      addToBoard: true,
+    })
+
+    expect(updateFulfillmentStatusMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      {
+        requestId: '11111111-1111-4111-8111-111111111111',
+        nextStatus: 'completed',
+        addToBoard: true,
+      },
+    )
+  })
+
   it('returns the success result even when audit logging fails', async () => {
     updateFulfillmentStatusMock.mockResolvedValueOnce({
       fulfillmentId: 'ful-1',
