@@ -138,6 +138,57 @@ describe('generic Trade workflow context', () => {
     expect(result.activeWorkflow).toBeNull()
   })
 
+  it('keeps explicit skip-capture approvals on the plain trade decision path', async () => {
+    getActiveTradeWorkflowSessionMock.mockResolvedValueOnce(null)
+    createTradeWorkflowSessionMock.mockResolvedValueOnce({
+      id: 'workflow-1',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      workflowType: 'trade_request_decision',
+      status: 'active',
+      phase: 'started',
+      intent: 'approve_trade',
+      knownFields: {},
+      missingFields: [],
+      blockers: [],
+      candidates: [],
+      approvalState: 'not_required',
+    })
+    updateTradeWorkflowSessionMock.mockImplementation((_client, state) =>
+      Promise.resolve(state),
+    )
+
+    const result = await getOrCreateTradeWorkflowContext({
+      supabase: {} as never,
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      latestUserText:
+        'Approve trade request request-1 for NK12345. Do not capture the revealed replacement item now; I will add the received piece later.',
+      latestToolIntents: ['trade_requests'],
+      latestUserMessageId: 'message-1',
+      mode: 'workspace',
+      nowIso: '2026-07-04T12:00:00.000Z',
+    })
+
+    expect(createTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        workflowType: 'trade_request_decision',
+        intent: 'approve_trade',
+      }),
+    )
+    expect(createTradeWorkflowSessionMock).not.toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        workflowType: 'trade_swap_capture',
+      }),
+    )
+    expect(result.activeWorkflow).toMatchObject({
+      workflowType: 'trade_request_decision',
+      workflowIntents: ['trade_requests'],
+    })
+  })
+
   it('captures a single swap cleanup candidate from get_trade_swap_cleanup output', async () => {
     getActiveTradeWorkflowSessionMock.mockResolvedValueOnce({
       id: 'workflow-1',

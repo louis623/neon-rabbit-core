@@ -473,6 +473,12 @@ function inferWorkflowTypeFromTurn(
     if (/\b(cleanup|missing\s+details|ring\s+size|after[-\s]?show)\b/i.test(text)) {
       return 'trade_swap_cleanup'
     }
+    if (
+      /\b(approve|accept|yes|okay|ok|confirm)\b/i.test(text) &&
+      shouldSkipReplacementCapture(text)
+    ) {
+      return 'trade_request_decision'
+    }
     if (/\b(swap|revealed|just\s+revealed|item\s*(?:number|#))\b/i.test(text)) {
       return 'trade_swap_capture'
     }
@@ -537,7 +543,7 @@ function extractRingSizeFromText(text: string): string | undefined {
 }
 
 function shouldSkipReplacementCapture(text: string): boolean {
-  return /\b(skip|too busy|later|after\s+show|not now|don't know|do not know)\b/i.test(text)
+  return /\b(skip|too busy|later|after\s+show|not now|don't know|do not know|do\s+not\s+capture|don['’]?t\s+capture|without\s+(?:the\s+)?(?:revealed\s+)?(?:replacement\s+)?(?:item\s+)?capture|add\s+(?:the\s+)?(?:received|revealed|replacement)\s+piece\s+later)\b/i.test(text)
 }
 
 function inferFulfillmentStatus(
