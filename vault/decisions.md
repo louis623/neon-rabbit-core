@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-07-04 - Bling Vault Shares The App Canvas
+
+Decision: The signed-in Bling Vault/collection section should use the same mobile-first app canvas as the opening home and guided Find sections. It should not expand back into the older wide dashboard layout on desktop.
+
+Reason: Louis called out that section 3 broke the new mobile-app format. Sparkle Finder should feel like one simple app surface across web and future native shells, with collection details flowing naturally after A and C instead of becoming a separate admin-style page.
+
 ## 2026-07-04 - Mobile App Preview Is The Signed-In UI Reference
 
 Decision: The July 3 A/B/C mobile app preview is the active signed-in Sparkle Finder UI reference. A opens the app as a simple home dashboard, C is the guided `Find a Piece` flow behind the primary action, and B is the collection/Bling Vault layer customers flow into. The old May 29 locked homepage concept is not the target for this redesign pass.

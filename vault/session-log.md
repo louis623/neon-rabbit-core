@@ -2,6 +2,13 @@
 
 ## 2026-07-04
 
+- Aligned the Bling Vault section with the mobile-first signed-in app layout after Louis pointed out section 3 still looked like the older wide web dashboard:
+  - Changed the Bling Vault wrapper from the old `max-w-[112rem]` dashboard width to the same app canvas scale used by the home and Find sections (`max-w-[34rem]` on mobile, `lg:max-w-[56rem]` on desktop).
+  - Stacked Hero Piece, Wishlist, and mosaic content into the app flow instead of a wide side-by-side dashboard composition; tightened empty/fixture states and collection stat cards so they read like mobile app panels.
+  - Added route regression assertions blocking the old wide `max-w-[112rem]` and `xl:grid-cols` layout from returning in the Bling Vault markup.
+  - Verification passed: `npm run lint`, focused route tests (`90` tests), full `npm run test` (`38` files, `515` tests), production `npm run build`, local production signed-in mobile/desktop Playwright layout checks with no console warnings/errors, and full `npm run smoke:sparkle-finder` (`18` passed, `2` optional checks skipped).
+  - Deployed commit `521589b` as Vercel deployment `dpl_3Dox4Dp6qvNx173ddcYoGGQi1nmy`, aliased at `https://sparkle-finder-dev.vercel.app`. Vercel inspect shows `READY`, and live Chromium checks returned `200` for `/` and `/auth/sign-in`.
+
 - Added visible sign-out controls after Louis found he was still signed in with no obvious way out:
   - Signed-in desktop navigation now shows a `Sign out` link next to the account status.
   - The authenticated Account page now shows a `Sign out` button near the page title so mobile users can tap `Me` then sign out.
