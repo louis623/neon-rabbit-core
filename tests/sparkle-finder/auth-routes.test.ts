@@ -890,6 +890,8 @@ describe("Sparkle Finder account route", () => {
     expect(markup).toContain("Marketing texts are optional and separate from account/security notices.");
     expect(markup).toContain("Phone is used for account identification, recovery, trial protection, and security notices.");
     expect(markup).toContain("We do not sell your phone number.");
+    expect(markup).toContain('href="/auth/sign-out"');
+    expect(markup).toContain("Sign out");
     expect(markup).toContain('name="promotionalSms"');
     expect(markup).not.toContain('name="promotionalSms" checked');
   }, 10_000);

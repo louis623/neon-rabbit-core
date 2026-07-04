@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { LogIn } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { AccountPreferences } from "@/components/account/AccountPreferences";
 import { RepBadge } from "@/components/account/RepBadge";
 import { RepClaimPanel } from "@/components/account/RepClaimPanel";
@@ -80,15 +80,25 @@ export function renderAccountPageContent(accountState: CurrentSparkleFinderAccou
   return (
     <main className="min-h-screen bg-[var(--sparkle-shell)] px-5 py-8 sm:px-8 lg:px-10">
       <div className="mx-auto grid w-full max-w-6xl gap-5">
-        <section className="grid gap-2">
-          <p className="text-sm font-bold uppercase tracking-wide text-[var(--sparkle-coral)]">Account</p>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold text-[var(--sparkle-plum-deep)]">Sparkle Finder account</h1>
-            <RepBadge repIdentity={getSelfFacingRepIdentity(accountState)} />
+        <section className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="grid gap-2">
+            <p className="text-sm font-bold uppercase tracking-wide text-[var(--sparkle-coral)]">Account</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold text-[var(--sparkle-plum-deep)]">Sparkle Finder account</h1>
+              <RepBadge repIdentity={getSelfFacingRepIdentity(accountState)} />
+            </div>
+            <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+              Manage the signed-in profile, privacy choices, and Silver access attached to verified account data.
+            </p>
           </div>
-          <p className="max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Manage the signed-in profile, privacy choices, and Silver access attached to verified account data.
-          </p>
+          <Link
+            className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-5 text-sm font-bold text-[var(--sparkle-plum-deep)] transition hover:bg-[var(--sparkle-shell)]"
+            href="/auth/sign-out"
+            prefetch={false}
+          >
+            <LogOut aria-hidden="true" className="size-4" />
+            Sign out
+          </Link>
         </section>
 
         {notice ? <AccountNoticePanel notice={notice} /> : null}

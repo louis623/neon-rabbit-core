@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gem, Home, Search, UserRound, UsersRound } from "lucide-react";
+import { Gem, Home, LogOut, Search, UserRound, UsersRound } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState, isSparkleFinderSignedIn } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
@@ -60,6 +60,19 @@ export function SparkleFinderNav({ accountState = getLocalDevAuthState(), varian
                     <span>{accountLabel}</span>
                   </Link>
                 </li>
+                {isSignedIn ? (
+                  <li>
+                    <Link
+                      aria-label="Sign out"
+                      className="sparkle-finder-nav-link px-3"
+                      href="/auth/sign-out"
+                      prefetch={false}
+                    >
+                      <LogOut aria-hidden="true" className="size-5 shrink-0" strokeWidth={1.8} />
+                      <span>Sign out</span>
+                    </Link>
+                  </li>
+                ) : null}
               </ul>
             </nav>
             <nav

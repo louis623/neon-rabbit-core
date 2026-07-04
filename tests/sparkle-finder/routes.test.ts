@@ -96,6 +96,7 @@ describe("Sparkle Finder hub routes", () => {
       renderHubChrome(renderDashboardPageContent(), getLocalDevAuthState("silver")),
     );
     const navMarkup = extractNavMarkup(markup);
+    const bottomNavMarkup = navMarkup.slice(navMarkup.indexOf('data-smoke="app-bottom-nav"'));
 
     expect(navMarkup).toContain('data-smoke="app-bottom-nav"');
     expect(navMarkup).toContain("Sparkle Finder app navigation");
@@ -119,8 +120,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).not.toContain('href="/favorites"');
     expect(navMarkup).not.toContain('href="/collectors"');
     expect(navMarkup).not.toContain('href="/shop"');
-    expect(navMarkup).not.toContain('href="/auth/sign-out"');
-    expect(navMarkup).not.toContain(">Log Out<");
+    expect(bottomNavMarkup).not.toContain('href="/auth/sign-out"');
+    expect(bottomNavMarkup).not.toContain(">Sign out<");
   });
 
   it("shows a sign-in wall for anonymous hub visitors", () => {
@@ -363,6 +364,8 @@ describe("Sparkle Finder hub routes", () => {
     expect(navMarkup).toContain(">Me<");
     expect(navMarkup).toContain('href="/account"');
     expect(navMarkup).toContain(">Silver<");
+    expect(navMarkup).toContain('href="/auth/sign-out"');
+    expect(navMarkup).toContain(">Sign out<");
     expect(navMarkup).not.toContain('href="/library"');
     expect(navMarkup).not.toContain('href="/shop"');
     expect(navMarkup).not.toContain('href="/live-shows"');
