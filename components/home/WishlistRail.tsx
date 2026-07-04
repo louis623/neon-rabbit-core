@@ -11,7 +11,7 @@ const visibleWishlistCount = 6;
 
 export function WishlistRail({ items }: WishlistRailProps) {
   return (
-    <aside className="grid rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
+    <aside className="grid rounded-[1.25rem] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
@@ -25,15 +25,15 @@ export function WishlistRail({ items }: WishlistRailProps) {
       </div>
 
       {items.length > 0 ? (
-        <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2 xl:grid xl:overflow-visible xl:pb-0">
+        <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0">
           {items.slice(0, visibleWishlistCount).map((item) => (
             <Link
               aria-label={`View Wishlist piece ${item.jewelryItem.name}`}
-              className="grid min-w-[14rem] snap-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[var(--sparkle-shadow-sm)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)] xl:min-w-0 xl:grid-cols-[5.5rem_minmax(0,1fr)] xl:items-center"
+              className="grid min-w-[14rem] snap-start gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[var(--sparkle-shadow-sm)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)] md:min-w-0 md:grid-cols-[5.5rem_minmax(0,1fr)] md:items-center"
               href={`/library/${item.jewelryItemId}`}
               key={item.id}
             >
-              <div className="aspect-[4/3] overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white xl:aspect-square">
+              <div className="aspect-[4/3] overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white md:aspect-square">
                 <JewelryImageFrame
                   imageUrl={item.jewelryItem.imageUrl}
                   jewelryType={item.jewelryItem.jewelryType}

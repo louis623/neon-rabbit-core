@@ -404,6 +404,10 @@ describe("Sparkle Finder hub routes", () => {
     expect(simpleHomeMarkup).not.toContain("Unicorns");
     expect(simpleHomeMarkup).not.toContain("Account");
     const vaultMarkup = markup.slice(collectionIndex);
+    expect(vaultMarkup).toContain("max-w-[34rem]");
+    expect(vaultMarkup).toContain("lg:max-w-[56rem]");
+    expect(vaultMarkup).not.toContain("max-w-[112rem]");
+    expect(vaultMarkup).not.toContain("xl:grid-cols");
     expect(vaultMarkup).toContain("Owned");
     expect(vaultMarkup).toContain("Wishlist");
     expect(vaultMarkup).toContain("Diamonds");
@@ -462,6 +466,9 @@ describe("Sparkle Finder hub routes", () => {
     expect(homeMarkup).not.toContain("Featured");
     expect(homeMarkup).not.toContain(">Saved<");
     const collectionMarkup = markup.slice(markup.indexOf('data-smoke="homepage-bling-vault"'));
+    expect(collectionMarkup).toContain("max-w-[34rem]");
+    expect(collectionMarkup).toContain("lg:max-w-[56rem]");
+    expect(collectionMarkup).not.toContain("max-w-[112rem]");
     expect(collectionMarkup).toContain("Owned");
     expect(collectionMarkup).toContain("Wishlist");
     expect(collectionMarkup).toContain("Diamonds");

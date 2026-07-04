@@ -63,7 +63,7 @@ export function BlingVaultMosaic({ items }: BlingVaultMosaicProps) {
 
       {items.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {visibleItems.map((item, index) => (
               <BlingVaultTile index={index} item={item} key={item.id} />
             ))}

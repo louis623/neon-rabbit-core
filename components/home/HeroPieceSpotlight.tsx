@@ -10,8 +10,8 @@ type HeroPieceSpotlightProps = {
 export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
   if (!item) {
     return (
-      <article className="grid min-h-[26rem] content-center gap-4 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-        <Sparkles aria-hidden="true" className="size-9 text-[var(--sparkle-coral)]" />
+      <article className="grid gap-4 rounded-[1.25rem] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+        <Sparkles aria-hidden="true" className="size-8 text-[var(--sparkle-coral)]" />
         <div>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Hero Piece</p>
           <h3 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
@@ -29,11 +29,11 @@ export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
   }
 
   return (
-    <article className="overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] shadow-[var(--sparkle-shadow-sm)]">
-      <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.72fr)]">
+    <article className="overflow-hidden rounded-[1.25rem] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] shadow-[var(--sparkle-shadow-sm)]">
+      <div className="grid md:grid-cols-[minmax(0,0.82fr)_minmax(16rem,0.68fr)]">
         <Link
           aria-label={`View ${item.jewelryItem.name}`}
-          className="block aspect-[4/3] overflow-hidden bg-[var(--sparkle-paper-soft)] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[25rem]"
+          className="block aspect-[4/3] overflow-hidden bg-[var(--sparkle-paper-soft)] md:aspect-auto md:min-h-[18rem]"
           href={`/library/${item.jewelryItemId}`}
         >
           <JewelryImageFrame

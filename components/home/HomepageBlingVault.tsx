@@ -24,8 +24,8 @@ export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVa
       data-smoke="homepage-bling-vault"
       id="bling-vault"
     >
-      <div className="mx-auto grid max-w-[112rem] gap-4 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="sparkle-finder-app-canvas mx-auto grid max-w-[34rem] gap-4 px-5 py-6 sm:px-8 lg:max-w-[56rem] lg:px-10">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div>
             <p className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
               <Sparkles aria-hidden="true" className="size-4" />
@@ -36,7 +36,7 @@ export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVa
             </h2>
           </div>
           <Link
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-4 text-sm font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-4 text-sm font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)] sm:w-fit"
             href="/silver"
           >
             <Gem aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
@@ -44,7 +44,7 @@ export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVa
           </Link>
         </div>
 
-        <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[rgba(255,255,255,0.92)] p-4 shadow-[var(--sparkle-shadow-sm)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="grid gap-3 rounded-[1.25rem] border border-[var(--sparkle-border)] bg-[rgba(255,255,255,0.94)] p-4 shadow-[var(--sparkle-shadow-sm)] sm:p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
             <div
               aria-label={`${customer.displayName} avatar`}
@@ -80,16 +80,16 @@ export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVa
             <UserRound aria-hidden="true" className="size-4" />
             Me
           </Link>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:col-span-2" data-smoke="collection-stats">
+          <div className="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3" data-smoke="collection-stats">
             <CollectionMetric icon={Gem} label="Owned" value={model.counts.owned} />
             <CollectionMetric icon={Heart} label="Wishlist" value={model.counts.wishlist} />
             <CollectionMetric icon={Sparkles} label="Diamonds" value={model.counts.diamonds} />
             <CollectionMetric icon={ShieldCheck} label="Unicorns" value={model.counts.unicorns} />
-            <CollectionMetric className="col-span-2 sm:col-span-1" icon={Search} label="Found by Sparkle Finder" value={model.counts.finderFinds} />
+            <CollectionMetric className="col-span-2 sm:col-span-2" icon={Search} label="Found by Sparkle Finder" value={model.counts.finderFinds} />
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.42fr)_minmax(20rem,0.58fr)] xl:items-stretch">
+        <div className="grid gap-3">
           <HeroPieceSpotlight item={model.heroItem} />
           <WishlistRail items={model.wishlistItems} />
         </div>
@@ -191,7 +191,7 @@ function CollectionMetric({
   value: number;
 }) {
   return (
-    <div className={`flex min-h-16 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 ${className}`}>
+    <div className={`flex min-h-14 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-3 ${className}`}>
       <Icon aria-hidden="true" className="size-4 shrink-0 text-[var(--sparkle-coral)]" strokeWidth={1.7} />
       <div>
         <p className="text-base font-black leading-none text-[var(--sparkle-plum-deep)]">{value}</p>
