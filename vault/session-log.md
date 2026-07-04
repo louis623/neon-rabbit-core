@@ -1,5 +1,16 @@
 # Sparkle Finder Session Log
 
+## 2026-07-04
+
+- Realigned the signed-in Sparkle Finder homepage to the July 3 A/B/C mobile app preview:
+  - A: the app now opens on a simple Amethyst home card: `Find the pieces you love. Build your collection with Sparkle Finder.`
+  - C: `Find a Piece` is a guided flow with simple choices first, Nic-Nac as the helper layer, and advanced routes tucked behind `More ways to look`.
+  - B: the Bling Vault collection layer now carries the customer profile cue, `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, `Found by Sparkle Finder`, Hero Piece, Wishlist rail, and lazy-loading mosaic.
+  - Primary app navigation is now `Home`, `Find`, `Collection`, `Reps`, `Me`; Library remains reachable from A and C but is not a top-level app tab.
+  - Moved the shared hub chrome helper out of the App Router layout file so production builds are not affected by test-only exports, and hardened smoke cleanup against stale `.next/dev` generated types.
+  - Preserved existing backend plumbing, Nic-Nac route/tool behavior, collection persistence, Reps, Library, Wishlist, Live Shows, Rep Boards, Favorites, Collectors, Silver Studio, auth/account, and legal routes.
+  - Verification passed: subagent review issues addressed, `npm run lint`, focused route tests (`90` tests), full `npm run test` (`38` files, `515` tests), `npm run build`, `npm run smoke:sparkle-finder` (`18` passed, `2` optional live/API checks skipped), and signed-in mobile/desktop A/B/C screenshots reviewed.
+
 ## 2026-07-03
 
 - Added the simple customer-facing Reps main tab:

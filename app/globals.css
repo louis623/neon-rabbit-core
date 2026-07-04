@@ -339,9 +339,10 @@ select {
   gap: 0.2rem;
   border-radius: 0.875rem;
   color: var(--sparkle-ink-muted);
-  font-size: 0.6875rem;
+  font-size: 0.64rem;
   font-weight: 900;
   line-height: 1;
+  text-align: center;
 }
 
 .sparkle-finder-app-bottom-nav a:hover {
@@ -369,12 +370,12 @@ select {
 }
 
 .sparkle-home-primary-cta {
-  background: #6f2dbd;
+  background: var(--sparkle-plum);
   color: #ffffff;
 }
 
 .sparkle-home-primary-cta:hover {
-  background: #5a189a;
+  background: var(--sparkle-plum-deep);
 }
 
 .sparkle-nic-nac-mark {

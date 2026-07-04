@@ -65,7 +65,7 @@ export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
             {item.isHighlighted ? (
               <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-black text-[#704b11]">
                 <ShieldCheck aria-hidden="true" className="size-3.5" />
-                Featured
+                Hero Piece
               </span>
             ) : null}
           </div>

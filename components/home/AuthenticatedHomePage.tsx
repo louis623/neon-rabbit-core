@@ -38,9 +38,9 @@ export function AuthenticatedHomePage({ accountState, collectionItems: persisted
         data-layout="mobile-first-app"
         data-smoke="authenticated-home"
       >
-        <SimpleFinderHome customer={customer} model={blingVaultModel} profile={profile} />
+        <SimpleFinderHome customer={customer} model={blingVaultModel} />
         <FindPiecePanel accountState={accountState} model={blingVaultModel} />
-        <HomepageBlingVault model={blingVaultModel} />
+        <HomepageBlingVault customer={customer} model={blingVaultModel} profile={profile} />
       </main>
     </>
   );

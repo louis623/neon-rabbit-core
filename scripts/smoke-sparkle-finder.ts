@@ -1,5 +1,5 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { get } from "node:http";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
@@ -17,6 +17,7 @@ const smokeEnv = {
 async function main() {
   mkdirSync(screenshotDir, { recursive: true });
 
+  rmSync(resolve(".next/dev"), { force: true, recursive: true });
   runCommand(npmCommand, ["run", "build"], smokeEnv);
   await assertPortIsFree(port);
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Home, Search, UserRound, UsersRound } from "lucide-react";
+import { Gem, Home, Search, UserRound, UsersRound } from "lucide-react";
 import { SparkleFinderLogo } from "@/components/brand/SparkleFinderLogo";
 import { getLocalDevAuthState, isSparkleFinderSignedIn } from "@/lib/sparkle-finder/auth";
 import { getSparkleFinderNavStatusLabel } from "@/lib/sparkle-finder/account-service";
@@ -7,8 +7,8 @@ import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 
 const navItems = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Library", href: "/library", icon: BookOpen },
   { label: "Find", href: "/#find-a-piece", icon: Search },
+  { label: "Collection", href: "/#bling-vault", icon: Gem },
   { label: "Reps", href: "/reps", icon: UsersRound },
 ];
 

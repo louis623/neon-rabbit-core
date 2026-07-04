@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-07-04 - Mobile App Preview Is The Signed-In UI Reference
+
+Decision: The July 3 A/B/C mobile app preview is the active signed-in Sparkle Finder UI reference. A opens the app as a simple home dashboard, C is the guided `Find a Piece` flow behind the primary action, and B is the collection/Bling Vault layer customers flow into. The old May 29 locked homepage concept is not the target for this redesign pass.
+
+Reason: Louis clarified that the A/B/C preview, not the old locked homepage concept, is the model for the future mobile-app-style experience. The web app must keep the same capabilities and plumbing while presenting customer goals first and internal feature names second.
+
 ## 2026-07-03 - Homepage Collector Stats Should Track Hunt Value
 
 Decision: The homepage collector profile card should show `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, and `Found by Sparkle Finder`. Do not use `Saved` as a homepage stat, and do not use `Featured` as a headline homepage stat.
