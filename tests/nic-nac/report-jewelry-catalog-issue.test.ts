@@ -138,6 +138,38 @@ describe('report_jewelry_catalog_issue', () => {
     )
   })
 
+  it('drops stray catalog photo URLs from non-photo corrections', async () => {
+    reportJewelryCatalogIssueMock.mockResolvedValueOnce({
+      designId: 'design-1',
+      itemNumber: 'ER13229',
+      changedFields: ['bpMsrp'],
+      issueLogged: true,
+      corrected: true,
+    })
+
+    const tool = makeTool()
+    await tool.execute({
+      itemNumber: 'ER13229',
+      issueType: 'wrong_msrp',
+      reason: 'The shared catalog MSRP is wrong.',
+      correction: {
+        bpMsrp: 54,
+        canonicalPhotoUrl:
+          'https://static.example.invalid/sparkle-suite/current-catalog-photo.png',
+      },
+    })
+
+    expect(reportJewelryCatalogIssueMock).toHaveBeenCalledWith(
+      { __isAdmin: true },
+      expect.objectContaining({
+        issueType: 'wrong_msrp',
+        correction: {
+          bpMsrp: 54,
+        },
+      }),
+    )
+  })
+
   it('is registered as a write tool', () => {
     expect(reportJewelryCatalogIssueTool.name).toBe('report_jewelry_catalog_issue')
     expect(reportJewelryCatalogIssueTool.readOnly).toBe(false)

@@ -42,6 +42,18 @@ const inputSchema = z.object({
     .optional(),
 })
 
+function sanitizeCorrectionForIssueType(
+  issueType: z.infer<typeof inputSchema>['issueType'],
+  correction: Record<string, unknown> | undefined,
+) {
+  if (!correction) return undefined
+  const sanitized = sanitizeCatalogCorrectionFields(correction)
+  if (issueType !== 'bad_photo') {
+    delete sanitized.canonicalPhotoUrl
+  }
+  return sanitized
+}
+
 function explainServiceError(err: unknown): never {
   if (err instanceof ServiceError) {
     throw new NicNacToolError({
@@ -77,9 +89,7 @@ export const reportJewelryCatalogIssueTool: ToolDefinition = {
           ],
         })
         const admin = createAdminClient()
-        const correction = input.correction
-          ? sanitizeCatalogCorrectionFields(input.correction)
-          : undefined
+        const correction = sanitizeCorrectionForIssueType(input.issueType, input.correction)
         try {
           const result = await reportJewelryCatalogIssue(admin, {
             itemNumber: input.itemNumber,

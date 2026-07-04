@@ -46,6 +46,7 @@
     "smoke:nic-nac:fulfillment-update": "tsx scripts/smoke-nic-nac-fulfillment-update.ts",
     "smoke:nic-nac:live-swap": "tsx scripts/smoke-nic-nac-live-swap.ts",
     "smoke:nic-nac:swap-cleanup": "tsx scripts/smoke-nic-nac-swap-cleanup.ts",
+    "smoke:nic-nac:catalog-correction": "tsx scripts/smoke-nic-nac-catalog-correction.ts",
     "smoke:nic-nac:trade-swap": "tsx scripts/smoke-trade-swap.ts",
     "smoke:nic-nac:calendar-reminders": "tsx scripts/smoke-nic-nac-calendar-reminders.ts",
     "smoke:nic-nac:calendar-pressure": "tsx scripts/smoke-nic-nac-calendar-pressure.ts",
