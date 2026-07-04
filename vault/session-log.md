@@ -2,6 +2,13 @@
 
 ## 2026-07-04
 
+- Added visible sign-out controls after Louis found he was still signed in with no obvious way out:
+  - Signed-in desktop navigation now shows a `Sign out` link next to the account status.
+  - The authenticated Account page now shows a `Sign out` button near the page title so mobile users can tap `Me` then sign out.
+  - Disabled Next.js prefetch on both sign-out links. Full smoke initially caught that a GET `/auth/sign-out` link could be prefetched and clear the preview auth cookie just by being visible; prefetch is now off so sign-out happens only on click/tap.
+  - Verification passed: focused route/account tests, `npm run lint`, full `npm run test` (`38` files, `515` tests), production `npm run build`, and full `npm run smoke:sparkle-finder` (`18` passed, `2` optional checks skipped).
+  - Deployed commit `63e055d` as Vercel deployment `dpl_7HEfccnpkPWKN56vfuaQ4ocpez1w`, aliased at `https://sparkle-finder-dev.vercel.app`. Live logged-out check still confirms the account-gated public landing is active.
+
 - Added the account-gated public landing for Sparkle Finder:
   - Replaced the anonymous `/` marketing/product-tour homepage with a simple Amethyst landing/sign-in gate: `Find the pieces you love.`, `Build your collection with Sparkle Finder.`, `Free or Silver account required.`, `Create free account`, and `Sign in`.
   - Kept signed-in app behavior intact; authenticated users still land in the mobile-first Sparkle Finder app home with preserved Finder flows.
