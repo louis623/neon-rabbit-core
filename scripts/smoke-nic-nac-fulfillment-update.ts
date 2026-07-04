@@ -690,7 +690,11 @@ export async function runFulfillmentUpdateSmoke(
     })
 
     const finalAssistantText = extractAssistantText(messages)
-    if (!/add the piece|add .* to (?:your|my) board|piece .* received/i.test(finalAssistantText)) {
+    if (
+      !/add the piece|add (?:the )?received piece|add .* to (?:your|my) (?:Trade Board|board)|piece .* received/i.test(
+        finalAssistantText,
+      )
+    ) {
       throw new Error(
         'database assertion failed: completed fulfillment response did not prompt to add the received piece.',
       )
