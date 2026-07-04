@@ -10,6 +10,7 @@
   - Moved the shared hub chrome helper out of the App Router layout file so production builds are not affected by test-only exports, and hardened smoke cleanup against stale `.next/dev` generated types.
   - Preserved existing backend plumbing, Nic-Nac route/tool behavior, collection persistence, Reps, Library, Wishlist, Live Shows, Rep Boards, Favorites, Collectors, Silver Studio, auth/account, and legal routes.
   - Verification passed: subagent review issues addressed, `npm run lint`, focused route tests (`90` tests), full `npm run test` (`38` files, `515` tests), `npm run build`, `npm run smoke:sparkle-finder` (`18` passed, `2` optional live/API checks skipped), and signed-in mobile/desktop A/B/C screenshots reviewed.
+  - Deployed Finder production `dpl_gdKzhuuCqeKJm9cVqCX6ZDefZTGT`, aliased at `https://sparkle-finder-dev.vercel.app`, and live-checked `/`, `/reps`, `/library`, and `/auth/sign-in` with `200 OK`.
 
 ## 2026-07-03
 
