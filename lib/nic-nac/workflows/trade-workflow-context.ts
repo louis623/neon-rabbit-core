@@ -13,9 +13,14 @@ import {
 } from './trade-workflow-store'
 import {
   getTradeWorkflowToolIntents,
+  type TradeWorkflowCandidate,
   type TradeWorkflowSessionState,
   type TradeWorkflowType,
 } from './trade-workflow-types'
+import {
+  normalizeTradeItemNumber,
+  normalizeTradeRingSize,
+} from './trade-workflow-sanitizers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export async function getOrCreateTradeWorkflowContext(args: {
@@ -29,6 +34,7 @@ export async function getOrCreateTradeWorkflowContext(args: {
   mode: 'workspace' | 'required_setup'
   nowIso: string
 }): Promise<{
+  sessionBefore: TradeWorkflowSessionState | null
   sessionAfter: TradeWorkflowSessionState | null
   activeWorkflow: ActiveNicNacWorkflowContext | null
 }> {
@@ -51,10 +57,19 @@ export async function getOrCreateTradeWorkflowContext(args: {
         repId: args.repId,
         conversationId: args.conversationId,
         workflowType,
-        intent: inferTradeWorkflowIntent(workflowType),
+        intent: inferWorkflowIntentFromTurn(workflowType, args.latestUserText),
         lastUserMessageId: args.latestUserMessageId,
       }))
-    const ingested = ingestTradeWorkflowTurn(base, args.messages ?? [])
+    const ingested = ingestTradeWorkflowTurn(
+      {
+        ...base,
+        intent: existing
+          ? inferWorkflowIntentFromTurn(base.workflowType, args.latestUserText, base.intent)
+          : base.intent,
+      },
+      args.messages ?? [],
+      args.latestUserText,
+    )
     const readiness = computeTradeWorkflowReadiness({
       workflowType: ingested.workflowType,
       intent: ingested.intent,
@@ -78,6 +93,7 @@ export async function getOrCreateTradeWorkflowContext(args: {
           })
     const workflowIntents = getTradeWorkflowToolIntents(updated)
     return {
+      sessionBefore: existing,
       sessionAfter: updated,
       activeWorkflow:
         updated.status === 'active' && workflowIntents.length
@@ -103,10 +119,49 @@ export async function getOrCreateTradeWorkflowContext(args: {
   }
 }
 
-type TradeSwapCleanupToolPart = {
+type TradeToolOutputPart = {
   type?: string
   state?: string
   output?: {
+    listings?: Array<{
+      listingId?: unknown
+      itemNumber?: unknown
+      designName?: unknown
+      status?: unknown
+      repFacingNote?: unknown
+      collection?: unknown
+      ringSize?: unknown
+    }>
+    requests?: Array<{
+      requestId?: unknown
+      status?: unknown
+      customerName?: unknown
+      customerDescription?: unknown
+      listing?: {
+        listingId?: unknown
+        design?: {
+          itemNumber?: unknown
+          designName?: unknown
+        }
+      }
+    }>
+    queue?: Array<{
+      fulfillmentId?: unknown
+      requestId?: unknown
+      status?: unknown
+      customerName?: unknown
+      designName?: unknown
+      itemNumber?: unknown
+      suggestedNextAction?: unknown
+    }>
+    results?: Array<{
+      designId?: unknown
+      itemNumber?: unknown
+      designName?: unknown
+      collectionName?: unknown
+      type?: unknown
+      isOnMyBoard?: unknown
+    }>
     items?: Array<{
       swapId?: unknown
       requestId?: unknown
@@ -122,57 +177,111 @@ type TradeSwapCleanupToolPart = {
 function ingestTradeWorkflowTurn(
   state: TradeWorkflowSessionState,
   messages: UIMessage[],
+  latestUserText: string,
 ): TradeWorkflowSessionState {
-  if (state.workflowType !== 'trade_swap_cleanup') return state
-
-  const cleanup = extractLatestTradeSwapCleanupOutput(messages)
-  if (!cleanup) return state
-
-  const items = cleanup.items ?? []
-  const candidates = items
-    .filter(
-      (item) =>
-        typeof item.swapId === 'string' && item.swapId.trim().length > 0,
-    )
-    .map((item) => {
-      const swapId = typeof item.swapId === 'string' ? item.swapId.trim() : ''
-      return {
-        id: swapId,
-        kind: 'swap' as const,
-        itemNumber:
-          typeof item.revealedItemNumber === 'string'
-            ? item.revealedItemNumber.trim().toUpperCase()
-            : undefined,
-        status:
-          typeof item.replacementStatus === 'string'
-            ? item.replacementStatus
-            : undefined,
-        summary: [
-          typeof item.customerName === 'string' ? item.customerName : 'Swap',
-          typeof item.revealedItemNumber === 'string'
-            ? item.revealedItemNumber.trim().toUpperCase()
-            : null,
-          typeof item.revealedRingSize === 'string'
-            ? `size ${item.revealedRingSize.trim()}`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(' - '),
-        risk: 'medium' as const,
-      }
-    })
-
   const knownFields = { ...state.knownFields }
-  if (items.length === 1) {
-    const item = items[0]
-    if (typeof item.swapId === 'string') knownFields.swapId = item.swapId.trim()
-    if (typeof item.requestId === 'string') knownFields.requestId = item.requestId.trim()
-    if (typeof item.revealedItemNumber === 'string') {
-      knownFields.revealedItemNumber = item.revealedItemNumber.trim().toUpperCase()
-      knownFields.itemNumber = item.revealedItemNumber.trim().toUpperCase()
+  let candidates = state.candidates
+
+  const textItemNumbers = extractItemNumbersFromText(latestUserText)
+  const textRingSize = extractRingSizeFromText(latestUserText)
+
+  if (
+    state.workflowType === 'trade_board_remove_listing' ||
+    state.workflowType === 'trade_catalog_correction'
+  ) {
+    knownFields.itemNumber ??= textItemNumbers[0]
+  }
+  if (
+    state.workflowType === 'trade_swap_capture' ||
+    state.workflowType === 'trade_swap_cleanup'
+  ) {
+    knownFields.revealedItemNumber ??= textItemNumbers[0]
+    knownFields.revealedRingSize ??= textRingSize
+  }
+  if (state.workflowType === 'trade_swap_capture' && shouldSkipReplacementCapture(latestUserText)) {
+    knownFields.skipReplacementCapture = true
+  }
+  if (state.workflowType === 'trade_fulfillment_update') {
+    knownFields.nextFulfillmentStatus ??= inferFulfillmentStatus(latestUserText)
+  }
+  if (state.workflowType === 'trade_catalog_correction') {
+    knownFields.catalogIssueType ??= inferCatalogIssueType(latestUserText)
+  }
+
+  if (state.workflowType === 'trade_board_remove_listing') {
+    const listingOutput = extractLatestToolOutput(messages, 'tool-list_my_trade_board')
+    const listings = listingOutput?.listings ?? []
+    candidates = listingsToCandidates(listings)
+    const selected = selectCandidate(candidates, latestUserText, textItemNumbers)
+    if (selected?.kind === 'listing') {
+      knownFields.listingId = selected.id
+      knownFields.itemNumber ??= selected.itemNumber
     }
-    if (typeof item.revealedRingSize === 'string') {
-      knownFields.revealedRingSize = item.revealedRingSize.trim()
+  }
+
+  if (
+    state.workflowType === 'trade_request_decision' ||
+    state.workflowType === 'trade_swap_capture'
+  ) {
+    const requestOutput = extractLatestToolOutput(messages, 'tool-get_trade_requests')
+    const requests = requestOutput?.requests ?? []
+    candidates = requestsToCandidates(requests)
+    const selected = selectCandidate(candidates, latestUserText, textItemNumbers)
+    if (selected?.kind === 'trade_request') {
+      knownFields.requestId = selected.id
+      knownFields.itemNumber ??= selected.itemNumber
+    }
+  }
+
+  if (state.workflowType === 'trade_fulfillment_update') {
+    const queueOutput = extractLatestToolOutput(messages, 'tool-get_fulfillment_queue')
+    const queue = queueOutput?.queue ?? []
+    candidates = fulfillmentToCandidates(queue)
+    const selected = selectCandidate(candidates, latestUserText, textItemNumbers)
+    if (selected?.kind === 'fulfillment') {
+      knownFields.fulfillmentRequestId = selected.id
+      const row = queue.find((entry) => entry.fulfillmentId === selected.id)
+      if (typeof row?.requestId === 'string') knownFields.requestId = row.requestId
+      knownFields.nextFulfillmentStatus ??= normalizeSuggestedFulfillmentAction(
+        row?.suggestedNextAction,
+      )
+    }
+  }
+
+  if (state.workflowType === 'trade_catalog_correction') {
+    const searchOutput = extractLatestToolOutput(messages, 'tool-search_jewelry_database')
+    const results = searchOutput?.results ?? []
+    candidates = catalogResultsToCandidates(results)
+    const selected = selectCandidate(candidates, latestUserText, textItemNumbers)
+    if (selected?.kind === 'catalog_design') {
+      knownFields.itemNumber = selected.itemNumber
+    }
+  }
+
+  if (state.workflowType === 'trade_swap_cleanup') {
+    const cleanup = extractLatestToolOutput(messages, 'tool-get_trade_swap_cleanup')
+    const items = cleanup?.items ?? []
+    candidates = swapCleanupToCandidates(items)
+    const selected = selectCandidate(candidates, latestUserText, textItemNumbers)
+    if (selected?.kind === 'swap') {
+      knownFields.swapId = selected.id
+      knownFields.revealedItemNumber ??= selected.itemNumber
+      knownFields.itemNumber ??= selected.itemNumber
+      const item = items.find((entry) => entry.swapId === selected.id)
+      if (typeof item?.requestId === 'string') knownFields.requestId = item.requestId.trim()
+      knownFields.revealedRingSize ??= normalizeTradeRingSize(item?.revealedRingSize)
+    } else if (items.length === 1) {
+      const item = items[0]
+      if (typeof item.swapId === 'string') knownFields.swapId = item.swapId.trim()
+      if (typeof item.requestId === 'string') knownFields.requestId = item.requestId.trim()
+      if (typeof item.revealedItemNumber === 'string') {
+        const itemNumber = normalizeTradeItemNumber(item.revealedItemNumber)
+        if (itemNumber) {
+          knownFields.revealedItemNumber = itemNumber
+          knownFields.itemNumber = itemNumber
+        }
+      }
+      knownFields.revealedRingSize ??= normalizeTradeRingSize(item.revealedRingSize)
     }
   }
 
@@ -183,18 +292,161 @@ function ingestTradeWorkflowTurn(
   }
 }
 
-function extractLatestTradeSwapCleanupOutput(messages: UIMessage[]) {
+function extractLatestToolOutput(messages: UIMessage[], type: string) {
   const parts = messages.flatMap(
-    (message) => (message.parts ?? []) as TradeSwapCleanupToolPart[],
+    (message) => (message.parts ?? []) as TradeToolOutputPart[],
   )
   return [...parts]
     .reverse()
     .find(
       (part) =>
-        part.type === 'tool-get_trade_swap_cleanup' &&
+        part.type === type &&
         part.state === 'output-available' &&
-        Array.isArray(part.output?.items),
+        part.output,
     )?.output
+}
+
+function listingsToCandidates(
+  listings: NonNullable<TradeToolOutputPart['output']>['listings'] = [],
+): TradeWorkflowCandidate[] {
+  return listings
+    .filter((listing) => typeof listing.listingId === 'string')
+    .map((listing) => ({
+      id: String(listing.listingId),
+      kind: 'listing' as const,
+      itemNumber: normalizeTradeItemNumber(listing.itemNumber),
+      designName: stringValue(listing.designName),
+      status: stringValue(listing.status),
+      summary: [
+        normalizeTradeItemNumber(listing.itemNumber),
+        stringValue(listing.designName),
+        stringValue(listing.collection),
+        stringValue(listing.ringSize) ? `size ${stringValue(listing.ringSize)}` : null,
+      ]
+        .filter(Boolean)
+        .join(' - '),
+      risk: 'high' as const,
+    }))
+}
+
+function requestsToCandidates(
+  requests: NonNullable<TradeToolOutputPart['output']>['requests'] = [],
+): TradeWorkflowCandidate[] {
+  return requests
+    .filter((request) => typeof request.requestId === 'string')
+    .map((request) => {
+      const design = request.listing?.design
+      return {
+        id: String(request.requestId),
+        kind: 'trade_request' as const,
+        itemNumber: normalizeTradeItemNumber(design?.itemNumber),
+        designName: stringValue(design?.designName),
+        status: stringValue(request.status),
+        summary: [
+          stringValue(request.customerName),
+          normalizeTradeItemNumber(design?.itemNumber),
+          stringValue(design?.designName),
+          stringValue(request.customerDescription),
+        ]
+          .filter(Boolean)
+          .join(' - '),
+        risk: 'high' as const,
+      }
+    })
+}
+
+function fulfillmentToCandidates(
+  queue: NonNullable<TradeToolOutputPart['output']>['queue'] = [],
+): TradeWorkflowCandidate[] {
+  return queue
+    .filter((item) => typeof item.fulfillmentId === 'string')
+    .map((item) => ({
+      id: String(item.fulfillmentId),
+      kind: 'fulfillment' as const,
+      itemNumber: normalizeTradeItemNumber(item.itemNumber),
+      designName: stringValue(item.designName),
+      status: typeof item.requestId === 'string' ? item.requestId : stringValue(item.status),
+      summary: [
+        stringValue(item.customerName),
+        normalizeTradeItemNumber(item.itemNumber),
+        stringValue(item.designName),
+        stringValue(item.status),
+      ]
+        .filter(Boolean)
+        .join(' - '),
+      risk: 'medium' as const,
+    }))
+}
+
+function catalogResultsToCandidates(
+  results: NonNullable<TradeToolOutputPart['output']>['results'] = [],
+): TradeWorkflowCandidate[] {
+  return results
+    .filter((result) => typeof result.designId === 'string')
+    .map((result) => ({
+      id: String(result.designId),
+      kind: 'catalog_design' as const,
+      itemNumber: normalizeTradeItemNumber(result.itemNumber),
+      designName: stringValue(result.designName),
+      status: stringValue(result.collectionName),
+      summary: [
+        normalizeTradeItemNumber(result.itemNumber),
+        stringValue(result.designName),
+        stringValue(result.collectionName),
+        stringValue(result.type),
+      ]
+        .filter(Boolean)
+        .join(' - '),
+      risk: 'medium' as const,
+    }))
+}
+
+function swapCleanupToCandidates(
+  items: NonNullable<TradeToolOutputPart['output']>['items'] = [],
+): TradeWorkflowCandidate[] {
+  return items
+    .filter((item) => typeof item.swapId === 'string' && item.swapId.trim().length > 0)
+    .map((item) => {
+      const itemNumber = normalizeTradeItemNumber(item.revealedItemNumber)
+      return {
+        id: String(item.swapId).trim(),
+        kind: 'swap' as const,
+        itemNumber,
+        status: stringValue(item.replacementStatus),
+        summary: [
+          stringValue(item.customerName) || 'Swap',
+          itemNumber,
+          stringValue(item.revealedRingSize)
+            ? `size ${stringValue(item.revealedRingSize)}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' - '),
+        risk: 'medium' as const,
+      }
+    })
+}
+
+function selectCandidate(
+  candidates: TradeWorkflowCandidate[],
+  latestUserText: string,
+  itemNumbers: string[],
+): TradeWorkflowCandidate | null {
+  if (candidates.length === 1) return candidates[0]
+  const normalizedText = latestUserText.toLocaleLowerCase()
+  const itemNumberMatches = candidates.filter(
+    (candidate) =>
+      candidate.itemNumber && itemNumbers.includes(candidate.itemNumber),
+  )
+  if (itemNumberMatches.length === 1) return itemNumberMatches[0]
+  const summaryMatches = candidates.filter((candidate) =>
+    candidate.summary
+      .toLocaleLowerCase()
+      .split(/\s+-\s+|\s+/)
+      .filter((part) => part.length >= 4)
+      .some((part) => normalizedText.includes(part)),
+  )
+  return summaryMatches.length === 1 ? summaryMatches[0] : null
 }
 
 function inferWorkflowTypeFromTurn(
@@ -239,6 +491,18 @@ function inferWorkflowTypeFromTurn(
   return null
 }
 
+function inferWorkflowIntentFromTurn(
+  workflowType: TradeWorkflowType,
+  text: string,
+  fallback?: ReturnType<typeof inferTradeWorkflowIntent>,
+) {
+  if (workflowType === 'trade_request_decision') {
+    if (/\b(reject|decline|deny|cancel|pass)\b/i.test(text)) return 'reject_trade'
+    if (/\b(approve|accept|yes|okay|ok|confirm)\b/i.test(text)) return 'approve_trade'
+  }
+  return fallback ?? inferTradeWorkflowIntent(workflowType)
+}
+
 function renderTradeWorkflowPromptState(
   state: TradeWorkflowSessionState,
   intents: NicNacToolIntent[],
@@ -250,12 +514,67 @@ function renderTradeWorkflowPromptState(
     `- phase: ${state.phase}`,
     `- status: ${state.status}`,
     `- intent: ${state.intent}`,
+    `- known fields: ${JSON.stringify(state.knownFields)}`,
+    `- candidates: ${state.candidates.length ? JSON.stringify(state.candidates) : 'none'}`,
     `- missing: ${state.missingFields.length ? state.missingFields.join(', ') : 'none'}`,
     `- blockers: ${state.blockers.length ? state.blockers.join(', ') : 'none'}`,
     `- approval: ${state.approvalState}`,
     `- active tool intents: ${intents.join(', ')}`,
     'Rules: keep the listed Trade tools available until this workflow completes, is cancelled, expires, or needs human review. Do not invent mutation fields; ask for missing required fields or exact candidates before calling write tools.',
   ].join('\n')
+}
+
+function extractItemNumbersFromText(text: string): string[] {
+  const matches = text.match(/\b[A-Z]{1,4}[\s-]*\d[A-Z0-9-]{2,20}\b/gi) ?? []
+  return [...new Set(matches.map(normalizeTradeItemNumber).filter(Boolean) as string[])]
+}
+
+function extractRingSizeFromText(text: string): string | undefined {
+  const sizeMatch = text.match(/\b(?:size|sz)\s*([4-9]|1[0-3])(?:\s*(?:\.|and a half)\s*5?)?\b/i)
+  if (!sizeMatch) return normalizeTradeRingSize(text)
+  const raw = /half/i.test(sizeMatch[0]) ? `${sizeMatch[1]}.5` : sizeMatch[0].match(/\.\s*5/) ? `${sizeMatch[1]}.5` : sizeMatch[1]
+  return normalizeTradeRingSize(raw)
+}
+
+function shouldSkipReplacementCapture(text: string): boolean {
+  return /\b(skip|too busy|later|after\s+show|not now|don't know|do not know)\b/i.test(text)
+}
+
+function inferFulfillmentStatus(
+  text: string,
+): 'approved' | 'shipped' | 'completed' | undefined {
+  if (/\b(completed|complete|done|finished|fulfilled|received|got it)\b/i.test(text)) {
+    return 'completed'
+  }
+  if (/\b(shipped|ship|mailed|tracking|sent)\b/i.test(text)) return 'shipped'
+  return undefined
+}
+
+function normalizeSuggestedFulfillmentAction(
+  value: unknown,
+): 'approved' | 'shipped' | 'completed' | undefined {
+  if (value === 'mark_shipped') return 'shipped'
+  if (value === 'mark_completed') return 'completed'
+  return undefined
+}
+
+function inferCatalogIssueType(
+  text: string,
+): NonNullable<TradeWorkflowSessionState['knownFields']['catalogIssueType']> | undefined {
+  if (/\b(photo|image|picture)\b/i.test(text)) return 'bad_photo'
+  if (/\b(collection)\b/i.test(text)) return 'wrong_collection'
+  if (/\b(msrp|price)\b/i.test(text)) return 'wrong_msrp'
+  if (/\b(material|plating)\b/i.test(text)) return 'wrong_material'
+  if (/\b(stone|gem)\b/i.test(text)) return 'wrong_stone'
+  if (/\b(name|called)\b/i.test(text)) return 'wrong_design_name'
+  if (/\b(duplicate)\b/i.test(text)) return 'duplicate'
+  return undefined
+}
+
+function stringValue(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed || undefined
 }
 
 function sameArray(left: string[], right: string[]) {
@@ -268,6 +587,7 @@ function sameJson(left: unknown, right: unknown) {
 
 function emptyContext() {
   return {
+    sessionBefore: null,
     sessionAfter: null,
     activeWorkflow: null,
   }

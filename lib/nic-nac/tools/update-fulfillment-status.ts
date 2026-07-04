@@ -15,6 +15,10 @@ import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import {
+  assertTradeWorkflowInputMatches,
+  workflowKnownString,
+} from '@/lib/nic-nac/workflows/trade-workflow-tool-guards'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type {
   FulfillmentStatus,
@@ -94,9 +98,26 @@ export function makeUpdateFulfillmentStatusTool(ctx: {
       shippingNotes,
       addToBoard,
     }) => {
+      assertTradeWorkflowInputMatches({
+        workflow: ctx.activeTradeWorkflow,
+        workflowType: 'trade_fulfillment_update',
+        toolName: 'update_fulfillment_status',
+        checks: [
+          { field: 'requestId', value: requestId, label: 'fulfillment request' },
+          {
+            field: 'nextFulfillmentStatus',
+            value: nextStatus,
+            label: 'fulfillment status',
+          },
+        ],
+      })
+      const workflowRequestId = workflowKnownString(
+        ctx.activeTradeWorkflow,
+        'requestId',
+      )
       const input = buildInput({
-        requestId,
-        customerName,
+        requestId: requestId ?? workflowRequestId,
+        customerName: requestId ?? workflowRequestId ? undefined : customerName,
         nextStatus: nextStatus as FulfillmentStatus,
         shippingNotes,
         addToBoard,

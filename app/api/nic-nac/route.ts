@@ -750,6 +750,16 @@ export async function POST(request: Request) {
             stepsLength: steps.length,
             activeToolNames,
             activeTradeBoardWorkflow,
+            activeTradeWorkflow: tradeWorkflowContext.sessionAfter
+              ? {
+                  status: tradeWorkflowContext.sessionAfter.status,
+                  workflowType: tradeWorkflowContext.sessionAfter.workflowType,
+                  phase: tradeWorkflowContext.sessionAfter.phase,
+                  intent: tradeWorkflowContext.sessionAfter.intent,
+                  missingFields: tradeWorkflowContext.sessionAfter.missingFields,
+                  blockers: tradeWorkflowContext.sessionAfter.blockers,
+                }
+              : null,
             activeCalendarWorkflow: calendarWorkflowContext.sessionAfter
               ? {
                   status: calendarWorkflowContext.sessionAfter.status,
@@ -914,24 +924,41 @@ export async function POST(request: Request) {
                 hardFailPhraseCount: hardFailSummary.count,
                 hardFailPhrases: hardFailSummary.phrases,
               }
-            : calendarWorkflowContext.sessionAfter
+            : tradeWorkflowContext.sessionAfter
               ? {
-                  id: calendarWorkflowContext.sessionAfter.id,
-                  type: calendarWorkflowContext.sessionAfter.workflowType,
+                  id: tradeWorkflowContext.sessionAfter.id,
+                  type: tradeWorkflowContext.sessionAfter.workflowType,
                   phaseBefore:
-                    calendarWorkflowContext.sessionBefore?.phase ??
-                    calendarWorkflowContext.sessionAfter.phase,
-                  phaseAfter: calendarWorkflowContext.sessionAfter.phase,
+                    tradeWorkflowContext.sessionBefore?.phase ??
+                    tradeWorkflowContext.sessionAfter.phase,
+                  phaseAfter: tradeWorkflowContext.sessionAfter.phase,
                   statusBefore:
-                    calendarWorkflowContext.sessionBefore?.status ??
-                    calendarWorkflowContext.sessionAfter.status,
-                  statusAfter: calendarWorkflowContext.sessionAfter.status,
+                    tradeWorkflowContext.sessionBefore?.status ??
+                    tradeWorkflowContext.sessionAfter.status,
+                  statusAfter: tradeWorkflowContext.sessionAfter.status,
                   toolPolicySource,
                   photoRoles: [],
                   hardFailPhraseCount: hardFailSummary.count,
                   hardFailPhrases: hardFailSummary.phrases,
                 }
-              : undefined,
+              : calendarWorkflowContext.sessionAfter
+                ? {
+                    id: calendarWorkflowContext.sessionAfter.id,
+                    type: calendarWorkflowContext.sessionAfter.workflowType,
+                    phaseBefore:
+                      calendarWorkflowContext.sessionBefore?.phase ??
+                      calendarWorkflowContext.sessionAfter.phase,
+                    phaseAfter: calendarWorkflowContext.sessionAfter.phase,
+                    statusBefore:
+                      calendarWorkflowContext.sessionBefore?.status ??
+                      calendarWorkflowContext.sessionAfter.status,
+                    statusAfter: calendarWorkflowContext.sessionAfter.status,
+                    toolPolicySource,
+                    photoRoles: [],
+                    hardFailPhraseCount: hardFailSummary.count,
+                    hardFailPhrases: hardFailSummary.phrases,
+                  }
+                : undefined,
         })
       } catch (err) {
         console.error('[nic-nac] persistence onFinish error:', err)

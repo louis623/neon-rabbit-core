@@ -29,6 +29,18 @@ describe('trade workflow controller', () => {
     expect(readiness.blockers).toEqual([])
   })
 
+  it('blocks ambiguous trade request decisions before approving or rejecting', () => {
+    const readiness = computeTradeWorkflowReadiness({
+      workflowType: 'trade_request_decision',
+      knownFields: {},
+      candidateCount: 2,
+    })
+
+    expect(readiness.phase).toBe('identify_target')
+    expect(readiness.missingFields).toEqual(['requestId'])
+    expect(readiness.blockers).toEqual(['ambiguousTradeRequestCandidate'])
+  })
+
   it('treats approved removal as ready to remove', () => {
     const readiness = computeTradeWorkflowReadiness({
       workflowType: 'trade_board_remove_listing',
@@ -64,6 +76,18 @@ describe('trade workflow controller', () => {
     })
   })
 
+  it('blocks ambiguous fulfillment updates before changing status', () => {
+    const readiness = computeTradeWorkflowReadiness({
+      workflowType: 'trade_fulfillment_update',
+      knownFields: { nextFulfillmentStatus: 'shipped' },
+      candidateCount: 2,
+    })
+
+    expect(readiness.phase).toBe('identify_target')
+    expect(readiness.missingFields).toEqual(['requestId'])
+    expect(readiness.blockers).toEqual(['ambiguousFulfillmentCandidate'])
+  })
+
   it('requires ring size for ring swap cleanup', () => {
     const readiness = computeTradeWorkflowReadiness({
       workflowType: 'trade_swap_cleanup',
@@ -72,6 +96,18 @@ describe('trade workflow controller', () => {
 
     expect(readiness.phase).toBe('details_capture')
     expect(readiness.missingFields).toEqual(['revealedRingSize'])
+  })
+
+  it('blocks ambiguous swap cleanup candidates before linking replacement listings', () => {
+    const readiness = computeTradeWorkflowReadiness({
+      workflowType: 'trade_swap_cleanup',
+      knownFields: { revealedItemNumber: 'ER13229' },
+      candidateCount: 2,
+    })
+
+    expect(readiness.phase).toBe('details_capture')
+    expect(readiness.missingFields).toEqual(['swapId'])
+    expect(readiness.blockers).toEqual(['ambiguousSwapCandidate'])
   })
 
   it('requires approval for shared catalog correction fields', () => {

@@ -41,7 +41,7 @@ interface ToolDef {
   description?: string
 }
 
-function activeSwapWorkflow() {
+function activeSwapWorkflow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'workflow-swap-1',
     repId: 'rep-1',
@@ -55,6 +55,7 @@ function activeSwapWorkflow() {
     blockers: [],
     candidates: [],
     approvalState: 'required',
+    ...overrides,
   } as const
 }
 
@@ -213,6 +214,30 @@ describe('approve_trade_swap', () => {
       name: 'NicNacToolError',
       code: 'REQUEST_NOT_PENDING',
     })
+    expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects live swap approval when the revealed item number conflicts with workflow state', async () => {
+    const tool = makeApproveTool(
+      activeSwapWorkflow({
+        knownFields: {
+          requestId: '11111111-1111-4111-8111-111111111111',
+          revealedItemNumber: 'NK12345',
+        },
+      }),
+    )
+
+    await expect(
+      tool.execute({
+        requestId: '11111111-1111-4111-8111-111111111111',
+        revealedItemNumber: 'ER99999',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'WORKFLOW_TARGET_MISMATCH',
+    })
+
+    expect(approveTradeWithRevealedItemCaptureMock).not.toHaveBeenCalled()
     expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
   })
 })

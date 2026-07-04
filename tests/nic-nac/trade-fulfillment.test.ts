@@ -42,7 +42,7 @@ interface ToolDef {
   needsApproval?: boolean
 }
 
-function activeFulfillmentWorkflow() {
+function activeFulfillmentWorkflow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'workflow-fulfillment-1',
     repId: 'rep-1',
@@ -56,6 +56,7 @@ function activeFulfillmentWorkflow() {
     blockers: [],
     candidates: [],
     approvalState: 'not_required',
+    ...overrides,
   } as const
 }
 
@@ -396,6 +397,64 @@ describe('update_fulfillment_status', () => {
           { kind: 'trade_request', id: 'req-1' },
         ]),
       }),
+    )
+  })
+
+  it('rejects fulfillment updates when the model status conflicts with workflow state', async () => {
+    const tool = makeUpdateTool(
+      activeFulfillmentWorkflow({
+        knownFields: {
+          requestId: '11111111-1111-4111-8111-111111111111',
+          nextFulfillmentStatus: 'shipped',
+        },
+      }),
+    )
+
+    await expect(
+      tool.execute({
+        requestId: '11111111-1111-4111-8111-111111111111',
+        nextStatus: 'completed',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'WORKFLOW_TARGET_MISMATCH',
+    })
+
+    expect(updateFulfillmentStatusMock).not.toHaveBeenCalled()
+    expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
+  })
+
+  it('uses the workflow-selected request id instead of a loose customer-name target', async () => {
+    updateFulfillmentStatusMock.mockResolvedValueOnce({
+      fulfillmentId: 'ful-1',
+      requestId: 'req-1',
+      previousStatus: 'approved',
+      status: 'shipped',
+      completedAt: null,
+      changed: true,
+      shouldPromptAddToBoard: false,
+    })
+
+    const tool = makeUpdateTool(
+      activeFulfillmentWorkflow({
+        knownFields: {
+          requestId: '11111111-1111-4111-8111-111111111111',
+          nextFulfillmentStatus: 'shipped',
+        },
+      }),
+    )
+    await tool.execute({
+      customerName: 'Jamie',
+      nextStatus: 'shipped',
+    })
+
+    expect(updateFulfillmentStatusMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      {
+        requestId: '11111111-1111-4111-8111-111111111111',
+        nextStatus: 'shipped',
+      },
     )
   })
 })

@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import { sanitizeCatalogCorrectionFields } from '@/lib/nic-nac/workflows/trade-workflow-sanitizers'
 import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
+import { assertTradeWorkflowInputMatches } from '@/lib/nic-nac/workflows/trade-workflow-tool-guards'
 import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -62,6 +63,19 @@ export const reportJewelryCatalogIssueTool: ToolDefinition = {
       inputSchema,
       needsApproval: true,
       execute: async (input) => {
+        assertTradeWorkflowInputMatches({
+          workflow: ctx.activeTradeWorkflow,
+          workflowType: 'trade_catalog_correction',
+          toolName: 'report_jewelry_catalog_issue',
+          checks: [
+            { field: 'itemNumber', value: input.itemNumber, label: 'catalog item' },
+            {
+              field: 'catalogIssueType',
+              value: input.issueType,
+              label: 'catalog issue type',
+            },
+          ],
+        })
         const admin = createAdminClient()
         const correction = input.correction
           ? sanitizeCatalogCorrectionFields(input.correction)

@@ -13,6 +13,7 @@ import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import { assertTradeWorkflowInputMatches } from '@/lib/nic-nac/workflows/trade-workflow-tool-guards'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -55,6 +56,24 @@ export function makeApproveTradeSwapTool(ctx: {
       revealedRingSize,
       repNotes,
     }) => {
+      assertTradeWorkflowInputMatches({
+        workflow: ctx.activeTradeWorkflow,
+        workflowType: 'trade_swap_capture',
+        toolName: 'approve_trade_swap',
+        checks: [
+          { field: 'requestId', value: requestId, label: 'trade request' },
+          {
+            field: 'revealedItemNumber',
+            value: revealedItemNumber,
+            label: 'revealed item number',
+          },
+          {
+            field: 'revealedRingSize',
+            value: revealedRingSize,
+            label: 'revealed ring size',
+          },
+        ],
+      })
       const admin = createAdminClient()
 
       let result: Awaited<ReturnType<typeof approveTradeWithRevealedItemCapture>>

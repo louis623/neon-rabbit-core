@@ -17,6 +17,10 @@ import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import {
+  assertTradeWorkflowInputMatches,
+  workflowKnownString,
+} from '@/lib/nic-nac/workflows/trade-workflow-tool-guards'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
 
@@ -58,11 +62,33 @@ export function makeRemoveListingTool(ctx: {
     inputSchema,
     needsApproval: true,
     execute: async ({ listingId, itemNumber, reason }) => {
+      assertTradeWorkflowInputMatches({
+        workflow: ctx.activeTradeWorkflow,
+        workflowType: 'trade_board_remove_listing',
+        toolName: 'remove_listing',
+        checks: [
+          { field: 'listingId', value: listingId, label: 'listing' },
+          { field: 'itemNumber', value: itemNumber, label: 'item number' },
+          { field: 'removalReason', value: reason, label: 'removal reason' },
+        ],
+      })
+      const workflowListingId = workflowKnownString(
+        ctx.activeTradeWorkflow,
+        'listingId',
+      )
+      const workflowItemNumber = workflowKnownString(
+        ctx.activeTradeWorkflow,
+        'itemNumber',
+      )
+      const guardedListingId = listingId ?? workflowListingId
+      const guardedItemNumber = guardedListingId
+        ? itemNumber
+        : itemNumber ?? workflowItemNumber
       let result: Awaited<ReturnType<typeof removeListing>>
       try {
         result = await removeListing(ctx.supabase, ctx.repId, {
-          listingId,
-          itemNumber,
+          listingId: guardedListingId,
+          itemNumber: guardedItemNumber,
           reason: reason as RemovalReason,
         })
       } catch (err) {
@@ -120,7 +146,7 @@ export function makeRemoveListingTool(ctx: {
           await completeTradeWorkflowSession(createAdminClient(), ctx.activeTradeWorkflow, {
             knownFields: {
               listingId: result.listingId,
-              itemNumber,
+              itemNumber: guardedItemNumber,
               removalReason: reason as RemovalReason,
             },
             approvalState: 'approved',

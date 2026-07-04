@@ -63,7 +63,7 @@ function makeGetTool(): ToolDef {
   }) as unknown as ToolDef
 }
 
-function activeDecisionWorkflow() {
+function activeDecisionWorkflow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'workflow-1',
     repId: 'rep-1',
@@ -77,6 +77,7 @@ function activeDecisionWorkflow() {
     blockers: [],
     candidates: [],
     approvalState: 'required',
+    ...overrides,
   } as const
 }
 
@@ -364,6 +365,26 @@ describe('approve_trade — write + audit', () => {
       }),
     )
   })
+
+  it('rejects approve_trade when the model requestId does not match the active workflow target', async () => {
+    const tool = makeApproveTool(
+      activeDecisionWorkflow({
+        knownFields: { requestId: '11111111-1111-4111-8111-111111111111' },
+      }),
+    )
+
+    await expect(
+      tool.execute({
+        requestId: '22222222-2222-4222-8222-222222222222',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'WORKFLOW_TARGET_MISMATCH',
+    })
+
+    expect(approveTradeMock).not.toHaveBeenCalled()
+    expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
+  })
 })
 
 describe('reject_trade — write + audit', () => {
@@ -532,6 +553,29 @@ describe('reject_trade — write + audit', () => {
         }),
       }),
     )
+  })
+
+  it('rejects reject_trade when the model requestId does not match the active workflow target', async () => {
+    const tool = makeRejectTool(
+      activeDecisionWorkflow({
+        phase: 'ready_to_reject',
+        intent: 'reject_trade',
+        approvalState: 'not_required',
+        knownFields: { requestId: '11111111-1111-4111-8111-111111111111' },
+      }),
+    )
+
+    await expect(
+      tool.execute({
+        requestId: '22222222-2222-4222-8222-222222222222',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'WORKFLOW_TARGET_MISMATCH',
+    })
+
+    expect(rejectTradeMock).not.toHaveBeenCalled()
+    expect(writeTradeActionAuditMock).not.toHaveBeenCalled()
   })
 })
 

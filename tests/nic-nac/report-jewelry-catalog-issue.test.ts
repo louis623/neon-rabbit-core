@@ -19,12 +19,35 @@ interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(): ToolDef {
+function activeCatalogWorkflow() {
+  return {
+    id: 'workflow-catalog-1',
+    repId: 'rep-1',
+    conversationId: 'conversation-1',
+    workflowType: 'trade_catalog_correction',
+    status: 'active',
+    phase: 'ready_to_report',
+    intent: 'report_catalog_issue',
+    knownFields: {
+      itemNumber: 'ER13229',
+      catalogIssueType: 'bad_photo',
+    },
+    missingFields: [],
+    blockers: [],
+    candidates: [],
+    approvalState: 'required',
+  } as const
+}
+
+function makeTool(
+  activeTradeWorkflow: ReturnType<typeof activeCatalogWorkflow> | null = null,
+): ToolDef {
   return reportJewelryCatalogIssueTool.build({
     repId: 'rep-1',
     conversationId: 'conversation-1',
     runId: 'run-1',
     supabase: {} as never,
+    activeTradeWorkflow,
   }) as unknown as ToolDef
 }
 
@@ -118,6 +141,23 @@ describe('report_jewelry_catalog_issue', () => {
   it('is registered as a write tool', () => {
     expect(reportJewelryCatalogIssueTool.name).toBe('report_jewelry_catalog_issue')
     expect(reportJewelryCatalogIssueTool.readOnly).toBe(false)
+  })
+
+  it('rejects catalog corrections that point at a different item than the active workflow', async () => {
+    const tool = makeTool(activeCatalogWorkflow())
+
+    await expect(
+      tool.execute({
+        itemNumber: 'NK99999',
+        issueType: 'bad_photo',
+        reason: 'Wrong photo.',
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'WORKFLOW_TARGET_MISMATCH',
+    })
+
+    expect(reportJewelryCatalogIssueMock).not.toHaveBeenCalled()
   })
 
   it('tells Nic-Nac to replace bad catalog photos only with approved jewelry-front photos', () => {

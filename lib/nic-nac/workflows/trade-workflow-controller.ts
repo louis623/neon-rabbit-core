@@ -56,6 +56,9 @@ export function computeTradeWorkflowReadiness(args: {
 
   if (args.workflowType === 'trade_request_decision') {
     if (!args.knownFields.requestId) missingFields.push('requestId')
+    if (candidateCount > 1 && !args.knownFields.requestId) {
+      blockers.push('ambiguousTradeRequestCandidate')
+    }
     if (intent === 'reject_trade') {
       return readyWithApproval({
         missingFields,
@@ -76,6 +79,9 @@ export function computeTradeWorkflowReadiness(args: {
 
   if (args.workflowType === 'trade_swap_capture') {
     if (!args.knownFields.requestId) missingFields.push('requestId')
+    if (candidateCount > 1 && !args.knownFields.requestId) {
+      blockers.push('ambiguousTradeRequestCandidate')
+    }
     if (!args.knownFields.revealedItemNumber && !args.knownFields.skipReplacementCapture) {
       missingFields.push('revealedItemNumber')
     }
@@ -90,6 +96,9 @@ export function computeTradeWorkflowReadiness(args: {
 
   if (args.workflowType === 'trade_swap_cleanup') {
     if (!args.knownFields.swapId) missingFields.push('swapId')
+    if (candidateCount > 1 && !args.knownFields.swapId) {
+      blockers.push('ambiguousSwapCandidate')
+    }
     if (!args.knownFields.revealedItemNumber) missingFields.push('revealedItemNumber')
     if (isRingItem(args.knownFields.revealedItemNumber) && !args.knownFields.revealedRingSize) {
       missingFields.push('revealedRingSize')
@@ -104,6 +113,13 @@ export function computeTradeWorkflowReadiness(args: {
   if (args.workflowType === 'trade_fulfillment_update') {
     if (!args.knownFields.fulfillmentRequestId && !args.knownFields.requestId) {
       missingFields.push('requestId')
+    }
+    if (
+      candidateCount > 1 &&
+      !args.knownFields.fulfillmentRequestId &&
+      !args.knownFields.requestId
+    ) {
+      blockers.push('ambiguousFulfillmentCandidate')
     }
     if (!args.knownFields.nextFulfillmentStatus) missingFields.push('nextFulfillmentStatus')
     return {

@@ -22,6 +22,7 @@ import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import { completeTradeWorkflowSession } from '@/lib/nic-nac/workflows/trade-workflow-store'
 import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import { assertTradeWorkflowInputMatches } from '@/lib/nic-nac/workflows/trade-workflow-tool-guards'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -57,6 +58,12 @@ export function makeRejectTradeTool(ctx: {
       "No approval dialog — rejecting is reversible. Identify the request by requestId. Optionally include reason (msrp_mismatch | not_interested | changed_mind | other) and repNotes the rep wants attached to the rejection.",
     inputSchema,
     execute: async ({ requestId, reason, repNotes }) => {
+      assertTradeWorkflowInputMatches({
+        workflow: ctx.activeTradeWorkflow,
+        workflowType: 'trade_request_decision',
+        toolName: 'reject_trade',
+        checks: [{ field: 'requestId', value: requestId, label: 'trade request' }],
+      })
       const admin = createAdminClient()
 
       let result: Awaited<ReturnType<typeof rejectTrade>>

@@ -112,4 +112,57 @@ describe('Nic-Nac tool choice policy', () => {
       }),
     ).toBe('auto')
   })
+
+  it.each([
+    ['trade_board_remove_listing', 'ready_to_remove', 'remove_listing'],
+    ['trade_request_decision', 'ready_to_approve', 'approve_trade'],
+    ['trade_request_decision', 'ready_to_reject', 'reject_trade'],
+    ['trade_swap_capture', 'ready_to_approve', 'approve_trade_swap'],
+    ['trade_fulfillment_update', 'ready_to_update', 'update_fulfillment_status'],
+    ['trade_swap_cleanup', 'ready_to_update', 'add_listing'],
+    ['trade_catalog_correction', 'ready_to_report', 'report_jewelry_catalog_issue'],
+  ])(
+    'forces %s workflow in %s to %s',
+    (workflowType, phase, toolName) => {
+      expect(
+        chooseNicNacToolChoiceForStep({
+          requireToolCall: true,
+          stepsLength: 0,
+          activeToolNames: [
+            'remove_listing',
+            'approve_trade',
+            'reject_trade',
+            'approve_trade_swap',
+            'update_fulfillment_status',
+            'add_listing',
+            'report_jewelry_catalog_issue',
+          ],
+          activeTradeWorkflow: {
+            status: 'active',
+            workflowType,
+            phase,
+            missingFields: [],
+            blockers: [],
+          },
+        }),
+      ).toEqual({ type: 'tool', toolName })
+    },
+  )
+
+  it('does not force a generic Trade write tool when candidate blockers remain', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['remove_listing'],
+        activeTradeWorkflow: {
+          status: 'active',
+          workflowType: 'trade_board_remove_listing',
+          phase: 'ready_to_remove',
+          missingFields: [],
+          blockers: ['ambiguousListingCandidate'],
+        },
+      }),
+    ).toBe('required')
+  })
 })
