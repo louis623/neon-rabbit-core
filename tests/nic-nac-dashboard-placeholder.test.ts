@@ -497,7 +497,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Checking workspace access')
     expect(html).not.toContain('Open account')
     expect(html).toContain('Track active pieces, requests, and fulfillment from one place.')
-    expect(html).toContain('Request inbox')
+    expect(html).toContain('Today&#x27;s trade work')
+    expect(html).toContain('Pending requests')
+    expect(html).toContain('Cleanup follow-ups')
+    expect(html).toContain('Fulfillment swaps')
+    expect(html).not.toContain('Request inbox')
     expect(html).not.toContain('Trade history')
     expect(html).not.toContain('No trade history yet.')
     expect(html).toContain('Loading board')
@@ -1520,7 +1524,12 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('Jewelry Type')
     expect(html).toContain('Collection')
+    expect(html).toContain('Today&#x27;s trade work')
+    expect(html).toContain('No trade requests, cleanup, or fulfillment work needs attention right now.')
     expect(html).toContain('Use search or filters to browse pieces currently on your board.')
+    expect(html).not.toContain('Request inbox')
+    expect(html).not.toContain('Swap cleanup')
+    expect(html).not.toContain('Fulfillment queue')
     expect(html).not.toContain('Load more')
     expect(html).not.toContain('Loading board pieces...')
   })
@@ -1581,7 +1590,9 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain(
       'Approved swaps land here when the replacement reveal still needs a ring',
     )
-    expect(source).toContain('No swap follow-ups need finishing right now.')
+    expect(source).toContain(
+      'No trade requests, cleanup, or fulfillment work needs attention right now.',
+    )
     expect(source).toContain(
       'Revealed item number (optional)',
     )

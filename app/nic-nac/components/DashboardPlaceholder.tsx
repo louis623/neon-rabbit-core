@@ -5220,6 +5220,11 @@ export function TradeBoardWorkspaceCard({
   const requests = tradeRequestsState.requests ?? []
   const queueItems = fulfillmentQueueState.items ?? []
   const cleanupItems = tradeSwapCleanupState.items ?? []
+  const tradeWorkCount = requests.length + cleanupItems.length + queueItems.length
+  const tradeStatusReady =
+    tradeRequestsState.status === 'ready' &&
+    tradeSwapCleanupState.status === 'ready' &&
+    fulfillmentQueueState.status === 'ready'
   const normalizedRevealedItemNumber = revealedItemNumber.trim().toUpperCase()
   const approvingSwap = swapApprovalDraft
     ? actionState.pendingKey === `approve:${swapApprovalDraft.requestId}`
@@ -5367,18 +5372,62 @@ export function TradeBoardWorkspaceCard({
         </div>
       ) : null}
 
-      <div className={styles.tradeBoardFlow}>
-        <div className={styles.workspacePanel}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.walletSettingsTitle}>Request inbox</div>
-            <span className={styles.rosterTag}>
-              {tradeRequestsState.status === 'ready' ? `${requests.length} pending` : 'Loading'}
-            </span>
+      <div className={styles.tradeAttentionStrip}>
+        <div className={styles.tradeAttentionSummary}>
+          <div className={styles.walletSettingsTitle}>Today&apos;s trade work</div>
+          <div className={styles.helperNote}>
+            {tradeStatusReady
+              ? tradeWorkCount > 0
+                ? `${tradeWorkCount} item${tradeWorkCount === 1 ? '' : 's'} need attention before the board is fully caught up.`
+                : 'No trade requests, cleanup, or fulfillment work needs attention right now.'
+              : 'Checking requests, cleanup, and fulfillment.'}
           </div>
-          {tradeRequestsState.status === 'ready' ? (
+        </div>
+        <div className={styles.tradeAttentionStats} aria-label="Trade Board work summary">
+          <div
+            className={`${styles.tradeAttentionItem} ${
+              requests.length > 0 ? styles.tradeAttentionItemActive : ''
+            }`}
+          >
+            <span className={styles.tradeAttentionCount}>
+              {tradeRequestsState.status === 'ready' ? requests.length : '...'}
+            </span>
+            <span className={styles.tradeAttentionLabel}>Pending requests</span>
+          </div>
+          <div
+            className={`${styles.tradeAttentionItem} ${
+              cleanupItems.length > 0 ? styles.tradeAttentionItemActive : ''
+            }`}
+          >
+            <span className={styles.tradeAttentionCount}>
+              {tradeSwapCleanupState.status === 'ready' ? cleanupItems.length : '...'}
+            </span>
+            <span className={styles.tradeAttentionLabel}>Cleanup follow-ups</span>
+          </div>
+          <div
+            className={`${styles.tradeAttentionItem} ${
+              queueItems.length > 0 ? styles.tradeAttentionItemActive : ''
+            }`}
+          >
+            <span className={styles.tradeAttentionCount}>
+              {fulfillmentQueueState.status === 'ready' ? queueItems.length : '...'}
+            </span>
+            <span className={styles.tradeAttentionLabel}>Fulfillment swaps</span>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.tradeBoardFlow}>
+        {tradeRequestsState.status === 'ready' && requests.length > 0 ? (
+          <div className={styles.workspacePanel}>
+            <div className={styles.calendarHeader}>
+              <div className={styles.walletSettingsTitle}>Request inbox</div>
+              <span className={styles.rosterTag}>
+                {`${requests.length} pending`}
+              </span>
+            </div>
             <div className={styles.tradeList}>
-              {requests.length > 0 ? (
-                requests.map((request) => {
+              {requests.map((request) => {
                   const ruleCheckTarget = request.listing.design.collectionName
                     ? `${request.listing.design.typePrefix} / ${request.listing.design.collectionName}`
                     : request.listing.design.typePrefix
@@ -5455,18 +5504,10 @@ export function TradeBoardWorkspaceCard({
                       </div>
                     </div>
                   )
-                })
-              ) : (
-                <div className={styles.emptyState}>No pending trade requests right now.</div>
-              )}
+                })}
             </div>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
@@ -5728,23 +5769,20 @@ export function TradeBoardWorkspaceCard({
           )}
         </div>
 
+        {tradeSwapCleanupState.status === 'ready' && cleanupItems.length > 0 ? (
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
             <div className={styles.walletSettingsTitle}>Swap cleanup</div>
             <span className={styles.rosterTag}>
-              {tradeSwapCleanupState.status === 'ready'
-                ? `${cleanupItems.length} to finish`
-                : 'Loading'}
+              {`${cleanupItems.length} to finish`}
             </span>
           </div>
           <div className={styles.helperNote}>
             Approved swaps land here when the replacement reveal still needs a ring
             size or catalog details before fulfillment can finish.
           </div>
-          {tradeSwapCleanupState.status === 'ready' ? (
             <div className={styles.tradeList}>
-              {cleanupItems.length > 0 ? (
-                cleanupItems.map((item) => (
+              {cleanupItems.map((item) => (
                   <div key={item.swapId} className={styles.tradeRow}>
                     <div className={styles.tradeIdentity}>
                       <div className={styles.customerName}>{item.customerName}</div>
@@ -5758,34 +5796,21 @@ export function TradeBoardWorkspaceCard({
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className={styles.emptyState}>
-                  No swap follow-ups need finishing right now.
-                </div>
-              )}
+                ))}
             </div>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
         </div>
+        ) : null}
 
+        {fulfillmentQueueState.status === 'ready' && queueItems.length > 0 ? (
         <div className={styles.workspacePanel}>
           <div className={styles.calendarHeader}>
             <div className={styles.walletSettingsTitle}>Fulfillment queue</div>
             <span className={styles.rosterTag}>
-              {fulfillmentQueueState.status === 'ready'
-                ? `${queueItems.length} active swaps`
-                : 'Loading'}
+              {`${queueItems.length} active swaps`}
             </span>
           </div>
-          {fulfillmentQueueState.status === 'ready' ? (
             <div className={styles.tradeList}>
-              {queueItems.length > 0 ? (
-                queueItems.map((item) => {
+              {queueItems.map((item) => {
                   const nextStatus = getNextFulfillmentStatus(item.status)
                   return (
                     <div key={item.fulfillmentId} className={styles.tradeRow}>
@@ -5825,18 +5850,10 @@ export function TradeBoardWorkspaceCard({
                       </div>
                     </div>
                   )
-                })
-              ) : (
-                <div className={styles.emptyState}>No open fulfillment work right now.</div>
-              )}
+                })}
             </div>
-          ) : (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          )}
         </div>
+        ) : null}
 
       </div>
     </div>

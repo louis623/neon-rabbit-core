@@ -712,6 +712,65 @@
   align-items: start;
 }
 
+.tradeAttentionStrip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1.05fr);
+  gap: 12px;
+  align-items: center;
+  border-radius: 18px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 246, 250, 0.7));
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.82),
+    0 12px 30px rgba(54, 34, 29, 0.07);
+  padding: 14px;
+}
+
+.tradeAttentionSummary {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tradeAttentionStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tradeAttentionItem {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background: rgba(255, 255, 255, 0.64);
+  padding: 10px;
+}
+
+.tradeAttentionItemActive {
+  border-color: rgba(238, 44, 155, 0.34);
+  background: rgba(255, 246, 250, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.54);
+}
+
+.tradeAttentionCount {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.tradeAttentionLabel {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .workspaceFormRow {
   display: grid;
   grid-template-columns: minmax(150px, 1fr);
@@ -4291,6 +4350,7 @@
 .main[data-workspace-skin='black_diamond'] .topbarInfoPill,
 .main[data-workspace-skin='black_diamond'] .workspaceSidebar,
 .main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
+.main[data-workspace-skin='black_diamond'] .tradeAttentionStrip,
 .main[data-workspace-skin='black_diamond'] .businessToolCard,
 .main[data-workspace-skin='black_diamond'] .wisprFlowPanel,
 .main[data-workspace-skin='black_diamond'] .siteSettingsSection,
@@ -4342,6 +4402,7 @@
 .main[data-workspace-skin='black_diamond'] .libraryTag,
 .main[data-workspace-skin='black_diamond'] .timelineItem,
 .main[data-workspace-skin='black_diamond'] .walletToggleRow,
+.main[data-workspace-skin='black_diamond'] .tradeAttentionItem,
 .main[data-workspace-skin='black_diamond'] .teamManagementPanel,
 .main[data-workspace-skin='black_diamond'] .teamRosterEditor,
 .main[data-workspace-skin='black_diamond'] .teamRosterCard,
@@ -4645,6 +4706,14 @@
   }
 
   .workspaceSectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tradeAttentionStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .tradeAttentionStats {
     grid-template-columns: 1fr;
   }
 
