@@ -1270,7 +1270,7 @@ describe('DashboardPlaceholder', () => {
 
     const siteSettingsBaseIndex = css.indexOf('.siteSettingsTextarea:focus')
     const blackDiamondSiteSettingsIndex = css.lastIndexOf(
-      ".main[data-workspace-skin='black_diamond'] .siteSettingsCard",
+      ".main[data-workspace-skin='black_diamond'] .siteSettingsSection",
     )
 
     expect(blackDiamondSiteSettingsIndex).toBeGreaterThan(
@@ -1310,12 +1310,6 @@ describe('DashboardPlaceholder', () => {
       ".main[data-workspace-skin='black_diamond'] .customerSiteLooks",
     )
     expect(css).toContain(
-      ".main[data-workspace-skin='black_diamond'] .accountBillingCard",
-    )
-    expect(css).toContain(
-      ".main[data-workspace-skin='black_diamond'] .referralCard",
-    )
-    expect(css).toContain(
       ".main[data-workspace-skin='black_diamond'] .accountDetailRow",
     )
     expect(css).toContain(
@@ -1339,7 +1333,7 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain('color: #d8cbbd')
   })
 
-  it('uses the espresso background for every workspace calendar card', () => {
+  it('uses the espresso background for workspace center cards', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -1347,22 +1341,39 @@ describe('DashboardPlaceholder', () => {
       ),
       'utf8',
     )
-    const calendarCardCss = css.match(/\.calendarCard \{[\s\S]*?\n\}/)?.[0] ?? ''
+    const workspaceCenterCardCss =
+      css.match(
+        /\.workspacePanel,[\s\S]*?\.librarySearchCard \{[\s\S]*?\n\}/,
+      )?.[0] ?? ''
     const blackDiamondSurfaceCss =
       css.match(
         /\.main\[data-workspace-skin='black_diamond'\] \.topbar,[\s\S]*?color: #f8efe4;\n\}/,
       )?.[0] ?? ''
 
-    expect(calendarCardCss).toContain(
+    expect(workspaceCenterCardCss).toContain('.workspacePanel')
+    expect(workspaceCenterCardCss).toContain('.walletCard')
+    expect(workspaceCenterCardCss).toContain('.calendarCard')
+    expect(workspaceCenterCardCss).toContain('.siteSettingsCard')
+    expect(workspaceCenterCardCss).toContain('.accountBillingCard')
+    expect(workspaceCenterCardCss).toContain('.referralCard')
+    expect(workspaceCenterCardCss).toContain('.librarySearchCard')
+    expect(workspaceCenterCardCss).toContain(
       'linear-gradient(145deg, #402924 0%, #36221d 100%)',
     )
-    expect(calendarCardCss).toContain(
+    expect(workspaceCenterCardCss).toContain(
       'border: 1px solid rgba(255, 246, 250, 0.14)',
     )
     expect(css).toContain('.calendarCard > .workspaceSectionHeader .cardTitle')
+    expect(css).toContain(') > .calendarHeader .walletSettingsTitle')
     expect(css).toContain('.calendarCard > .calendarHeader .walletSettingsTitle')
     expect(blackDiamondSurfaceCss).not.toContain(
       ".main[data-workspace-skin='black_diamond'] .calendarCard",
+    )
+    expect(blackDiamondSurfaceCss).not.toContain(
+      ".main[data-workspace-skin='black_diamond'] .workspacePanel",
+    )
+    expect(blackDiamondSurfaceCss).not.toContain(
+      ".main[data-workspace-skin='black_diamond'] .siteSettingsCard",
     )
   })
 

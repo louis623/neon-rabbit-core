@@ -1686,6 +1686,84 @@
   position: relative;
 }
 
+.workspacePanel,
+.walletCard,
+.calendarCard,
+.siteSettingsCard,
+.accountBillingCard,
+.referralCard,
+.librarySearchCard {
+  background:
+    radial-gradient(circle at 92% 10%, rgba(238, 44, 155, 0.18), transparent 18rem),
+    linear-gradient(145deg, #402924 0%, #36221d 100%);
+  border: 1px solid rgba(255, 246, 250, 0.14);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.12),
+    0 18px 42px rgba(54, 34, 29, 0.16);
+  color: #fff8fb;
+}
+
+:where(
+  .workspacePanel,
+  .walletCard,
+  .calendarCard,
+  .siteSettingsCard,
+  .accountBillingCard,
+  .referralCard,
+  .librarySearchCard
+) > .workspaceSectionHeader .cardTitle,
+:where(
+  .workspacePanel,
+  .walletCard,
+  .calendarCard,
+  .siteSettingsCard,
+  .accountBillingCard,
+  .referralCard,
+  .librarySearchCard
+) > .calendarHeader .walletSettingsTitle,
+.accountBillingCard .accountBillingHeader .cardTitle {
+  color: #fff8fb;
+}
+
+:where(
+  .workspacePanel,
+  .walletCard,
+  .calendarCard,
+  .siteSettingsCard,
+  .accountBillingCard,
+  .referralCard,
+  .librarySearchCard
+) > .workspaceSectionHeader .cardSubtitle,
+.workspacePanel > .helperNote,
+.accountBillingCard .accountMuted {
+  color: rgba(255, 246, 250, 0.78);
+}
+
+:where(
+  .workspacePanel,
+  .walletCard,
+  .calendarCard,
+  .siteSettingsCard,
+  .accountBillingCard,
+  .referralCard,
+  .librarySearchCard
+) > .workspaceSectionHeader .rosterTag,
+.workspacePanel > .calendarHeader .rosterTag,
+.accountBillingCard .accountStatusBadge {
+  background: rgba(255, 246, 250, 0.12);
+  border-color: rgba(255, 246, 250, 0.24);
+  color: rgba(255, 246, 250, 0.86);
+}
+
+.librarySearchCard .librarySearchLabel {
+  color: #fff8fb;
+}
+
+.librarySearchCard .librarySearchHint,
+.librarySearchCard .librarySelectedFiltersLabel {
+  color: rgba(255, 246, 250, 0.78);
+}
+
 .referralCodePanel {
   display: flex;
   align-items: center;
@@ -4213,13 +4291,8 @@
 .main[data-workspace-skin='black_diamond'] .topbarInfoPill,
 .main[data-workspace-skin='black_diamond'] .workspaceSidebar,
 .main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
-.main[data-workspace-skin='black_diamond'] .workspacePanel,
 .main[data-workspace-skin='black_diamond'] .businessToolCard,
 .main[data-workspace-skin='black_diamond'] .wisprFlowPanel,
-.main[data-workspace-skin='black_diamond'] .walletCard,
-.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
-.main[data-workspace-skin='black_diamond'] .accountBillingCard,
-.main[data-workspace-skin='black_diamond'] .referralCard,
 .main[data-workspace-skin='black_diamond'] .siteSettingsSection,
 .main[data-workspace-skin='black_diamond'] .customerSiteLooksSummary,
 .main[data-workspace-skin='black_diamond'] .walletSettingsPanel,
@@ -4243,21 +4316,14 @@
   color: #f8efe4;
 }
 
-.main[data-workspace-skin='black_diamond'] .workspaceIntroCard,
-.main[data-workspace-skin='black_diamond'] .siteSettingsCard,
-.main[data-workspace-skin='black_diamond'] .accountBillingCard,
-.main[data-workspace-skin='black_diamond'] .referralCard {
+.main[data-workspace-skin='black_diamond'] .workspaceIntroCard {
   background:
     radial-gradient(circle at 96% 16%, rgba(0, 217, 255, 0.08), transparent 18rem),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
     #15110f;
 }
 
-.main[data-workspace-skin='black_diamond'] .workspacePanel::before,
-.main[data-workspace-skin='black_diamond'] .workspaceSidebar::before,
-.main[data-workspace-skin='black_diamond'] .siteSettingsCard::before,
-.main[data-workspace-skin='black_diamond'] .accountBillingCard::before,
-.main[data-workspace-skin='black_diamond'] .referralCard::before {
+.main[data-workspace-skin='black_diamond'] .workspaceSidebar::before {
   background: linear-gradient(90deg, #d4af37 0%, #00d9ff 72%, #f4c2c2 100%);
 }
 
