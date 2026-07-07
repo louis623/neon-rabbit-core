@@ -88,9 +88,17 @@ describe('Nic-Nac trade board surface reset', () => {
       }),
     )
 
-    expect(html).toContain('Today&#x27;s trade work')
-    expect(html).toContain('Quick add')
-    expect(html).toContain('Browse board')
-    expect(html).not.toContain('BoardInventoryControlsDesktopRail')
+    const summaryIndex = html.indexOf('Today&#x27;s trade work')
+    const quickAddIndex = html.indexOf('Quick add')
+    const browseBoardIndex = html.indexOf('Browse board')
+    const jewelryTypeIndex = html.indexOf('Jewelry Type')
+
+    expect(summaryIndex).toBeGreaterThan(-1)
+    expect(quickAddIndex).toBeGreaterThan(-1)
+    expect(browseBoardIndex).toBeGreaterThan(-1)
+    expect(jewelryTypeIndex).toBeGreaterThan(-1)
+    expect(summaryIndex).toBeLessThan(quickAddIndex)
+    expect(quickAddIndex).toBeLessThan(browseBoardIndex)
+    expect(browseBoardIndex).toBeLessThan(jewelryTypeIndex)
   })
 })

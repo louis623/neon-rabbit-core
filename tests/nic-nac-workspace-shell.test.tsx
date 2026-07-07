@@ -9,7 +9,12 @@ describe('Nic-Nac workspace shell reset', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
     expect(html).toContain('role="tablist"')
+    expect(html).toContain('aria-label="Workspace sections"')
+    expect(html).toContain('role="tab"')
     expect(html).toContain('aria-selected="true"')
+    expect(html).toContain('>Trade Board<')
+    expect(html).toContain('>Jewelry Library<')
+    expect(html).toContain('>Calendar<')
     expect(html).not.toContain(
       'Manage the live workspace, customer site, trade tools, messages, and account settings.',
     )
