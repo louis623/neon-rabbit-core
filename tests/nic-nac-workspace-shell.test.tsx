@@ -27,7 +27,7 @@ describe('Nic-Nac workspace shell reset', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
-        'app/nic-nac/components/DashboardPlaceholder.module.css',
+        'app/nic-nac/components/WorkspaceShell.module.css',
       ),
       'utf8',
     )

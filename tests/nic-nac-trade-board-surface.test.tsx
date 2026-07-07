@@ -1,6 +1,4 @@
 import { createElement } from 'react'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
@@ -89,11 +87,6 @@ describe('Nic-Nac trade board surface reset', () => {
         onAdvanceFulfillment: () => {},
       }),
     )
-    const source = readFileSync(
-      resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
-      'utf8',
-    )
-
     expect(html.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
     expect(html.indexOf('Quick add')).toBeGreaterThan(-1)
     expect(html.indexOf('Browse board')).toBeGreaterThan(-1)
@@ -101,6 +94,5 @@ describe('Nic-Nac trade board surface reset', () => {
       html.indexOf('Quick add'),
     )
     expect(html.indexOf('Quick add')).toBeLessThan(html.indexOf('Browse board'))
-    expect(source).not.toContain("from './DashboardPlaceholder.module.css'")
   })
 })
