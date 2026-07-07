@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 
 import {
+  getWorkspaceSectionPanelId,
+  getWorkspaceSectionTabId,
   WorkspaceSectionTabs,
   type WorkspaceSectionTab,
 } from './WorkspaceSectionTabs'
@@ -21,6 +23,9 @@ export function WorkspaceShell<TKey extends string>({
   notice?: ReactNode
   children: ReactNode
 }) {
+  const activeTabId = getWorkspaceSectionTabId(activeSection)
+  const activePanelId = getWorkspaceSectionPanelId(activeSection)
+
   return (
     <div className={styles.shell}>
       {header ? <div className={styles.header}>{header}</div> : null}
@@ -31,7 +36,12 @@ export function WorkspaceShell<TKey extends string>({
           onSectionChange={onSectionChange}
         />
       </div>
-      <section className={styles.content}>
+      <section
+        className={styles.content}
+        role="tabpanel"
+        id={activePanelId}
+        aria-labelledby={activeTabId}
+      >
         {notice}
         {children}
       </section>

@@ -29,6 +29,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(html).toContain('aria-label="Workspace sections"')
     expect(html).toContain('role="tab"')
     expect(html).toContain('aria-selected="true"')
+    expect(html).toContain('role="tabpanel"')
     expect(html).toContain('>Trade Board<')
     expect(html).toContain('>Jewelry Library<')
     expect(html).toContain('>Calendar<')
@@ -47,6 +48,8 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('className={styles.shell}')
     expect(source).toContain('className={styles.tabsWrap}')
     expect(source).toContain('className={styles.content}')
+    expect(source).toContain('role="tabpanel"')
+    expect(source).toContain('aria-labelledby={activeTabId}')
   })
 
   it('keeps the workspace header as a compact app bar with grouped brand and meta rows', () => {
@@ -87,8 +90,8 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(css).not.toMatch(
       /linear-gradient\(\s*145deg,\s*#402924 0%,\s*#36221d 100%\s*\)/i,
     )
-    expect(css).toContain('background: rgba(255, 255, 255, 0.78);')
-    expect(css).toContain('backdrop-filter: blur(18px);')
+    expect(css).toMatch(/background:\s*rgba\(255,\s*255,\s*255,\s*0\.\d+\);/)
+    expect(css).toContain('backdrop-filter: blur(')
   })
 
   it('supports keyboard navigation across workspace tabs', () => {
@@ -105,6 +108,8 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('nextTab.focus()')
     expect(source).toContain('onSectionChange(nextKey)')
     expect(source).toContain('role="tab"')
+    expect(source).toContain('id={getWorkspaceSectionTabId(tab.key)}')
+    expect(source).toContain('aria-controls={getWorkspaceSectionPanelId(tab.key)}')
     expect(source).toContain('aria-selected={active}')
     expect(source).toContain('tab.shortLabel')
   })

@@ -4,6 +4,24 @@ import styles from './WorkspaceSectionTabs.module.css'
 
 type WorkspaceSectionIcon = ComponentType<SVGProps<SVGSVGElement>>
 
+function getWorkspaceSectionDomKey(section: string) {
+  const normalized = section
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return normalized || 'section'
+}
+
+export function getWorkspaceSectionTabId(section: string) {
+  return `workspace-section-tab-${getWorkspaceSectionDomKey(section)}`
+}
+
+export function getWorkspaceSectionPanelId(section: string) {
+  return `workspace-section-panel-${getWorkspaceSectionDomKey(section)}`
+}
+
 export type WorkspaceSectionTab<TKey extends string = string> = {
   key: TKey
   label: string
@@ -76,6 +94,8 @@ export function WorkspaceSectionTabs<TKey extends string>({
             key={tab.key}
             type="button"
             role="tab"
+            id={getWorkspaceSectionTabId(tab.key)}
+            aria-controls={getWorkspaceSectionPanelId(tab.key)}
             data-section-key={tab.key}
             className={`${active ? styles.tabActive : styles.tab} ${
               isComingSoon ? styles.tabComingSoon : ''

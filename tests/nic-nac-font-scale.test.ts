@@ -58,16 +58,16 @@ describe('Nic-Nac readable font scale', () => {
 
   it('lets the rep workspace fill the left column while keeping account cards compact', () => {
     const dashboard = css('app/nic-nac/components/DashboardPlaceholder.module.css')
+    const workspaceSurface = css('app/nic-nac/components/WorkspaceSurface.module.css')
 
     expect(cssBlock(dashboard, '.topbar')).toContain('max-width: none')
-    expect(cssBlock(dashboard, '.workspaceShell')).toContain('max-width: none')
-    expect(cssBlock(dashboard, '.cardTitle')).toContain('font-size: 20px')
+    expect(dashboard).not.toContain('.workspaceShell')
+    expect(cssBlock(workspaceSurface, '.cardTitle')).toContain('font-size: 20px')
     expect(cssBlock(dashboard, '.referralCodeBlock strong')).toContain('font-size: 21px')
     expect(cssBlock(dashboard, '.metricValue')).toContain('font-size: 18px')
 
     expect(cssBlock(dashboard, '.topbar')).not.toContain('max-width: 1180px')
-    expect(cssBlock(dashboard, '.workspaceShell')).not.toContain('max-width: 1180px')
-    expect(cssBlock(dashboard, '.cardTitle')).not.toContain('font-size: 24px')
+    expect(cssBlock(workspaceSurface, '.cardTitle')).not.toContain('font-size: 24px')
     expect(cssBlock(dashboard, '.referralCodeBlock strong')).not.toContain('font-size: 28px')
     expect(cssBlock(dashboard, '.metricValue')).not.toContain('font-size: 19px')
   })
