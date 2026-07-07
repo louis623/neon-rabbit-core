@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
@@ -69,6 +72,21 @@ const TRADE_BOARD_READY_STATE = {
 }
 
 describe('Nic-Nac trade board surface reset', () => {
+  it('uses shared workspace primitives instead of DashboardPlaceholder shell styles', () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/TradeBoardWorkspaceCard.tsx',
+      ),
+      'utf8',
+    )
+
+    expect(source).toContain(
+      "import surfaceStyles from './WorkspaceSurface.module.css'",
+    )
+    expect(source).not.toContain("from './DashboardPlaceholder.module.css'")
+  })
+
   it('puts today, quick add, and browse ahead of queue detail sections', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {

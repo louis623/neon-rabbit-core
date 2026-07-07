@@ -1,0 +1,629 @@
+.sectionTitle,
+.cardTitle {
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--nic-nac-text-primary);
+}
+
+.sectionHint,
+.cardSubtitle {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--nic-nac-text-secondary);
+  max-width: 64ch;
+}
+
+.cardFill {
+  height: 120px;
+  border-radius: 8px;
+  background: var(--nic-nac-surface-dashboard-placeholder);
+  margin-top: 4px;
+}
+
+.rosterTag {
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(64, 41, 36, 0.12);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--nic-nac-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.searchField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.searchLabel {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--nic-nac-text-secondary);
+}
+
+.searchInput,
+.boardInventorySelect {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.searchInput {
+  max-width: 100%;
+  padding: 11px 12px;
+}
+
+.boardInventorySelect {
+  padding: 10px 12px;
+}
+
+.searchInput:focus,
+.boardInventorySelect:focus {
+  outline: 2px solid rgba(238, 44, 155, 0.18);
+  outline-offset: 1px;
+  border-color: var(--nic-nac-border-input-focus);
+}
+
+.boardInventorySelect:disabled {
+  color: var(--nic-nac-text-secondary);
+  opacity: 0.64;
+}
+
+.customerName {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--nic-nac-text-primary);
+}
+
+.customerDate {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--nic-nac-text-secondary);
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actionButton {
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  color: #fff6fb;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 10px 14px;
+  cursor: pointer;
+  white-space: normal;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.32),
+    0 10px 22px rgba(54, 34, 29, 0.1);
+}
+
+.actionButton:hover {
+  background: linear-gradient(180deg, #f73fa5 0%, var(--nic-nac-accent-hover) 100%);
+  border-color: transparent;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.actionButton:disabled:hover {
+  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
+  border-color: transparent;
+}
+
+.helperButton,
+.helperLink,
+.boardInventoryReset,
+.boardInventoryArrow,
+.boardInventoryRemoveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  border: 1px solid rgba(238, 44, 155, 0.46);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 76, 174, 0.13), rgba(255, 246, 250, 0.94));
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 10px 14px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  white-space: normal;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.82),
+    0 10px 22px rgba(54, 34, 29, 0.08);
+}
+
+.boardInventoryReset,
+.boardInventoryArrow,
+.boardInventoryRemoveButton {
+  white-space: nowrap;
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.84));
+  border-color: rgba(238, 44, 155, 0.22);
+  box-shadow: none;
+  padding: 10px 12px;
+}
+
+.boardInventoryReset:hover,
+.boardInventoryArrow:hover,
+.boardInventoryRemoveButton:hover {
+  border-color: rgba(238, 44, 155, 0.4);
+  background: linear-gradient(180deg, rgba(255, 236, 246, 0.98), rgba(255, 255, 255, 0.88));
+}
+
+.helperButton:disabled {
+  color: #402924;
+  cursor: default;
+  opacity: 1;
+}
+
+.boardInventoryReset:disabled,
+.boardInventoryArrow:disabled,
+.boardInventoryRemoveButton:disabled {
+  cursor: default;
+  opacity: 0.54;
+}
+
+.tradeList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tradeRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--nic-nac-surface-primary);
+  border: 1px solid var(--nic-nac-border);
+}
+
+.tradeIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tradeScreenshotLink {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 10px;
+  background: rgba(255, 246, 250, 0.66);
+  color: var(--nic-nac-text-primary);
+  padding: 7px;
+  text-decoration: none;
+}
+
+.tradeScreenshotLink:focus-visible {
+  outline: 2px solid var(--nic-nac-focus-ring);
+  outline-offset: 2px;
+}
+
+.tradeScreenshotThumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--nic-nac-surface-secondary);
+  border: 1px solid var(--nic-nac-border);
+}
+
+.tradeScreenshotTitle,
+.tradeScreenshotMeta {
+  display: block;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  line-height: 1.25;
+}
+
+.tradeScreenshotTitle {
+  color: var(--nic-nac-text-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tradeScreenshotMeta {
+  color: var(--nic-nac-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tradeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.boardInventoryCarousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.boardInventoryCarouselHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.boardInventoryArrowGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.boardInventoryCarouselGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.boardInventoryPieceCard {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(104px, 1fr) auto;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-primary);
+  padding: 10px;
+}
+
+.boardInventoryMedia,
+.boardInventoryMediaButton {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.boardInventoryMedia {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--nic-nac-border);
+  background:
+    linear-gradient(135deg, rgba(255, 212, 234, 0.48), rgba(225, 250, 245, 0.62));
+}
+
+.boardInventoryMediaButton {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.tradePieceImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tradePieceFallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-primary);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.boardInventoryPieceBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.boardInventoryPieceBody .customerName {
+  overflow-wrap: anywhere;
+}
+
+.tradePieceMetaLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--nic-nac-text-secondary);
+}
+
+.boardInventoryRemoveButton {
+  width: 100%;
+}
+
+.imagePreviewMask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(64, 41, 36, 0.42);
+}
+
+.imagePreviewDialog {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(760px, 90vh);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 18px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-primary-solid);
+  padding: 16px;
+  box-shadow: 0 24px 72px rgba(64, 41, 36, 0.24);
+}
+
+.imagePreviewClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--nic-nac-border);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.imagePreviewFrame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  max-height: 62vh;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--nic-nac-surface-dashboard-placeholder);
+}
+
+.imagePreviewImage {
+  width: 100%;
+  height: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  display: block;
+}
+
+.statusBadgeWarning {
+  background: rgba(255, 227, 168, 0.62);
+  color: #6a4b12;
+}
+
+.emptyState {
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 16px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.74));
+  border: 1px dashed rgba(238, 44, 155, 0.22);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--nic-nac-text-secondary);
+}
+
+.actionError {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff0f5;
+  border: 1px solid rgba(238, 44, 155, 0.16);
+  color: #9b174f;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+}
+
+.helperMessage {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(191, 244, 224, 0.48);
+  border: 1px solid rgba(39, 83, 69, 0.12);
+  color: #275345;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+}
+
+.helperNote {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--nic-nac-text-secondary);
+}
+
+.walletSettingsTitle {
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nic-nac-text-primary);
+}
+
+.timelineItem {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(64, 41, 36, 0.08);
+  padding: 4px 10px;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--nic-nac-text-secondary);
+}
+
+.loadingLine {
+  width: 72%;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(64, 41, 36, 0.1);
+  margin: 14px 12px 0;
+}
+
+.loadingLineShort {
+  width: 46%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(64, 41, 36, 0.08);
+  margin: 10px 12px 0;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .cardTitle,
+:global(.main[data-workspace-skin='black_diamond']) .customerName,
+:global(.main[data-workspace-skin='black_diamond']) .walletSettingsTitle {
+  color: #f8efe4;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .rosterTag,
+:global(.main[data-workspace-skin='black_diamond']) .timelineItem,
+:global(.main[data-workspace-skin='black_diamond']) .emptyState {
+  background: #211c18;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: #f8efe4;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .emptyState {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03)),
+    #120f0d;
+  border-color: rgba(244, 207, 98, 0.3);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .imagePreviewDialog {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #15110f;
+  border-color: rgba(244, 207, 98, 0.24);
+  color: #f8efe4;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .imagePreviewClose,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventoryPieceCard,
+:global(.main[data-workspace-skin='black_diamond']) .tradeRow {
+  background: #211c18;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: #f8efe4;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .searchInput,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventorySelect {
+  background: rgba(0, 0, 0, 0.34);
+  border-color: rgba(244, 207, 98, 0.34);
+  color: #f8efe4;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .searchInput::placeholder {
+  color: rgba(216, 203, 189, 0.66);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .searchInput:focus,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventorySelect:focus {
+  outline-color: rgba(0, 217, 255, 0.28);
+  border-color: rgba(0, 217, 255, 0.52);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .cardSubtitle,
+:global(.main[data-workspace-skin='black_diamond']) .searchLabel,
+:global(.main[data-workspace-skin='black_diamond']) .helperNote,
+:global(.main[data-workspace-skin='black_diamond']) .tradeMeta,
+:global(.main[data-workspace-skin='black_diamond']) .customerDate {
+  color: #d8cbbd;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .actionButton {
+  background: linear-gradient(90deg, #d4af37, #f4c2c2, #d4af37);
+  color: #141111;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .actionButton:disabled {
+  background: #342b25;
+  border-color: rgba(244, 207, 98, 0.2);
+  color: rgba(248, 239, 228, 0.72);
+  opacity: 1;
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .helperButton,
+:global(.main[data-workspace-skin='black_diamond']) .helperLink,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventoryReset,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventoryArrow,
+:global(.main[data-workspace-skin='black_diamond']) .boardInventoryRemoveButton {
+  color: #e8fbff;
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.08);
+}
+
+:global(.main[data-workspace-skin='black_diamond']) .loadingLine,
+:global(.main[data-workspace-skin='black_diamond']) .loadingLineShort {
+  background: rgba(244, 207, 98, 0.16);
+}
+
+@media (max-width: 840px) {
+  .tradeRow {
+    grid-template-columns: 1fr;
+  }
+
+  .boardInventoryReset,
+  .boardInventoryArrow {
+    width: 100%;
+  }
+
+  .boardInventoryCarouselHeader {
+    align-items: stretch;
+  }
+
+  .boardInventoryArrowGroup {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .boardInventoryCarouselGrid {
+    grid-template-columns: 1fr;
+  }
+}
