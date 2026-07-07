@@ -4740,14 +4740,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   })
   const workspaceHeader = !isLiveSitePreview ? (
     <header className={styles.topbar}>
-      <div className={styles.topbarCopy}>
-        <SparkleSeal className={styles.brandSeal} />
-        <div className={styles.brandText}>
-          <span className={styles.brand}>Sparkle Suite</span>
-          <span className={styles.topbarSubtitle}>Workspace</span>
+      <div className={styles.topbarBrandRow}>
+        <div className={styles.topbarCopy}>
+          <SparkleSeal className={styles.brandSeal} />
+          <div className={styles.brandText}>
+            <span className={styles.brand}>Sparkle Suite</span>
+            <span className={styles.topbarSubtitle}>Workspace</span>
+          </div>
         </div>
       </div>
-      <div className={styles.topbarActions}>
+      <div className={styles.topbarMetaRow}>
         <div className={styles.topbarInfoPill}>
           <span className={styles.topbarInfoLabel}>Rep</span>
           <span className={styles.topbarInfoValue}>{headerRepName}</span>
@@ -4763,13 +4765,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </span>
         </div>
         {hasPaidWorkspace ? (
-          <button
-            type="button"
-            className={styles.liveSiteButton}
-            onClick={handleOpenLiveSitePreview}
-          >
-            View live site
-          </button>
+          <div className={styles.topbarMetaAction}>
+            <button
+              type="button"
+              className={styles.liveSiteButton}
+              onClick={handleOpenLiveSitePreview}
+            >
+              View live site
+            </button>
+          </div>
         ) : null}
       </div>
     </header>

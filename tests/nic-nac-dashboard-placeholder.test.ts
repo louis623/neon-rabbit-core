@@ -1169,10 +1169,12 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Extension code')
     expect(html).not.toContain('Live Queue sync code')
-    expect(css).toContain('align-items: center;')
-    expect(css).toContain('min-height: 52px;')
+    expect(css).toContain('.topbarMetaRow')
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));')
+    expect(css).toContain('align-items: flex-start;')
+    expect(css).toContain('min-height: 58px;')
     expect(css).toContain('font-size: 14px;')
-    expect(css).toContain('text-align: center;')
+    expect(css).toContain('text-align: left;')
   })
 
   it('keeps the workspace shell on the Morganite Sparkle Suite skin regardless of saved or draft appearance rows', () => {
@@ -1346,14 +1348,16 @@ describe('DashboardPlaceholder', () => {
     expect(shellCss).toContain('--workspace-surface-border: rgba(64, 41, 36, 0.10);')
     expect(shellCss).toContain('--workspace-surface-shadow: 0 10px 28px rgba(43, 31, 27, 0.08);')
     expect(shellCss).toContain('--workspace-tab-active-bg: #ffffff;')
-    expect(shellCss).toContain('top: 8px;')
-    expect(shellCss).toContain('border-radius: 18px;')
+    expect(shellCss).toContain('top: 10px;')
+    expect(shellCss).toContain('border-radius: 20px;')
+    expect(shellCss).toContain('backdrop-filter: blur(18px);')
     expect(tabsCss).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
     expect(tabsCss).toContain('min-height: 44px;')
-    expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.82);')
+    expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.76);')
     expect(tabsCss).toContain(
       'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
     )
+    expect(tabsCss).toContain('scroll-snap-align: start;')
   })
 
   it('ships a mobile-first workspace top nav treatment for the section rail', () => {

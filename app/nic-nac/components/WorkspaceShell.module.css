@@ -13,25 +13,28 @@
   --workspace-tab-icon-active: #ee2c9b;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   max-width: none;
   width: 100%;
 }
 
 .header {
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .tabsWrap {
   position: sticky;
-  top: 8px;
+  top: 10px;
   z-index: 12;
-  padding: 10px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
+  padding: 8px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid var(--workspace-surface-border);
   box-shadow: var(--workspace-surface-shadow);
   overflow: hidden;
+  backdrop-filter: blur(18px);
 }
 
 .tabsWrap::before {
@@ -50,7 +53,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   min-width: 0;
   container-type: inline-size;
 }
@@ -92,6 +95,6 @@
   .tabsWrap {
     top: 6px;
     padding: 8px;
-    border-radius: 16px;
+    border-radius: 18px;
   }
 }
