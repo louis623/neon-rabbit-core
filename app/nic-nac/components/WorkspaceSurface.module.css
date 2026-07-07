@@ -35,20 +35,20 @@
   overflow-wrap: anywhere;
 }
 
-.customerName {
+.entityTitle {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--nic-nac-text-primary);
 }
 
-.customerDate {
+.entityMeta {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
   color: var(--nic-nac-text-secondary);
 }
 
-.statusBadgeWarning {
+.warningBadge {
   border-radius: 999px;
   padding: 4px 10px;
   background: rgba(255, 227, 168, 0.62);
@@ -237,7 +237,7 @@
 
 :global(.main[data-workspace-skin='black_diamond']) .cardTitle,
 :global(.main[data-workspace-skin='black_diamond']) .walletSettingsTitle,
-:global(.main[data-workspace-skin='black_diamond']) .customerName {
+:global(.main[data-workspace-skin='black_diamond']) .entityTitle {
   color: #f8efe4;
 }
 
@@ -276,7 +276,7 @@
 :global(.main[data-workspace-skin='black_diamond']) .cardSubtitle,
 :global(.main[data-workspace-skin='black_diamond']) .searchLabel,
 :global(.main[data-workspace-skin='black_diamond']) .helperNote,
-:global(.main[data-workspace-skin='black_diamond']) .customerDate {
+:global(.main[data-workspace-skin='black_diamond']) .entityMeta {
   color: #d8cbbd;
 }
 

@@ -7,6 +7,27 @@ import { describe, expect, it } from 'vitest'
 
 import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/TradeBoardWorkspaceCard'
 
+function escapeForRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function hasSelectorBlock(css: string, selector: string) {
+  return new RegExp(`${escapeForRegex(selector)}\\s*\\{[\\s\\S]*?\\}`).test(css)
+}
+
+function hasComposeAlias(
+  css: string,
+  localSelector: string,
+  sharedSelector: string,
+  source = './WorkspaceSurface.module.css',
+) {
+  return new RegExp(
+    `${escapeForRegex(localSelector)}\\s*\\{[\\s\\S]*?composes:\\s*${escapeForRegex(
+      sharedSelector,
+    )}\\s+from\\s+'${escapeForRegex(source)}';[\\s\\S]*?\\}`,
+  ).test(css)
+}
+
 const TRADE_BOARD_READY_STATE = {
   status: 'ready' as const,
   board: {
@@ -110,8 +131,8 @@ describe('Nic-Nac trade board surface reset', () => {
       '.imagePreviewMask',
       '.tradeRow',
     ]) {
-      expect(workspaceSurfaceCss).not.toContain(selector)
-      expect(tradeBoardCss).toContain(selector)
+      expect(hasSelectorBlock(workspaceSurfaceCss, selector)).toBe(false)
+      expect(hasSelectorBlock(tradeBoardCss, selector)).toBe(true)
     }
   })
 
@@ -155,8 +176,8 @@ describe('Nic-Nac trade board surface reset', () => {
     expect(placeholderCss).not.toContain('.tradeList')
     expect(placeholderCss).not.toContain('.tradeRow')
     expect(placeholderCss).not.toContain('.tradeIdentity')
-    expect(placeholderCss).toContain('.messageList')
-    expect(placeholderCss).toContain('.messageRow')
+    expect(hasSelectorBlock(placeholderCss, '.messageList')).toBe(true)
+    expect(hasSelectorBlock(placeholderCss, '.messageRow')).toBe(true)
 
     for (const selector of [
       'cardTitle',
@@ -178,40 +199,50 @@ describe('Nic-Nac trade board surface reset', () => {
       'loadingLine',
       'loadingLineShort',
     ]) {
-      expect(placeholderCss).toMatch(
-        new RegExp(
-          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
-        ),
-      )
+      expect(
+        hasComposeAlias(placeholderCss, `.${selector}`, selector),
+      ).toBe(true)
     }
 
-    for (const selector of [
-      'customerName',
-      'customerDate',
-      'statusBadgeWarning',
-    ]) {
-      expect(workspaceSurfaceCss).toContain(`.${selector}`)
-      expect(tradeBoardCss).toMatch(
-        new RegExp(
-          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
-        ),
-      )
-      expect(placeholderCss).toMatch(
-        new RegExp(
-          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
-        ),
-      )
+    for (const selector of ['.entityTitle', '.entityMeta', '.warningBadge']) {
+      expect(hasSelectorBlock(workspaceSurfaceCss, selector)).toBe(true)
     }
 
-    expect(placeholderCss).toMatch(
-      /\.customerContact\s*\{\s*composes:\s*customerDate from '\.\/WorkspaceSurface\.module\.css';/s,
+    expect(hasComposeAlias(tradeBoardCss, '.customerName', 'entityTitle')).toBe(
+      true,
     )
-    expect(workspaceSurfaceCss).toContain(
-      ":global(.main[data-workspace-skin='black_diamond']) .customerName",
+    expect(hasComposeAlias(tradeBoardCss, '.customerDate', 'entityMeta')).toBe(
+      true,
     )
-    expect(workspaceSurfaceCss).toContain(
-      ":global(.main[data-workspace-skin='black_diamond']) .customerDate",
-    )
+    expect(
+      hasComposeAlias(tradeBoardCss, '.statusBadgeWarning', 'warningBadge'),
+    ).toBe(true)
+
+    expect(
+      hasComposeAlias(placeholderCss, '.customerName', 'entityTitle'),
+    ).toBe(true)
+    expect(
+      hasComposeAlias(placeholderCss, '.customerDate', 'entityMeta'),
+    ).toBe(true)
+    expect(
+      hasComposeAlias(placeholderCss, '.customerContact', 'entityMeta'),
+    ).toBe(true)
+    expect(
+      hasComposeAlias(placeholderCss, '.statusBadgeWarning', 'warningBadge'),
+    ).toBe(true)
+
+    expect(
+      hasSelectorBlock(
+        workspaceSurfaceCss,
+        ":global(.main[data-workspace-skin='black_diamond']) .entityTitle",
+      ),
+    ).toBe(true)
+    expect(
+      hasSelectorBlock(
+        workspaceSurfaceCss,
+        ":global(.main[data-workspace-skin='black_diamond']) .entityMeta",
+      ),
+    ).toBe(true)
     for (const localOverride of [
       ".main[data-workspace-skin='black_diamond'] .cardTitle",
       ".main[data-workspace-skin='black_diamond'] .cardSubtitle",

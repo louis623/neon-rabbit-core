@@ -134,11 +134,11 @@
 }
 
 .customerName {
-  composes: customerName from './WorkspaceSurface.module.css';
+  composes: entityTitle from './WorkspaceSurface.module.css';
 }
 
 .customerDate {
-  composes: customerDate from './WorkspaceSurface.module.css';
+  composes: entityMeta from './WorkspaceSurface.module.css';
 }
 
 .tradeList {
@@ -172,7 +172,7 @@
 }
 
 .statusBadgeWarning {
-  composes: statusBadgeWarning from './WorkspaceSurface.module.css';
+  composes: warningBadge from './WorkspaceSurface.module.css';
 }
 
 .tradeScreenshotLink {
