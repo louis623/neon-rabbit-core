@@ -226,6 +226,16 @@ describe('Nic-Nac trade board surface reset', () => {
     ]) {
       expect(placeholderCss).not.toContain(localOverride)
     }
+
+    for (const sharedSkinLeak of [
+      ".main[data-workspace-skin='black_diamond'] .rosterTag",
+      ".main[data-workspace-skin='black_diamond'] .emptyState",
+      ".main[data-workspace-skin='black_diamond'] .searchInput,",
+      ".main[data-workspace-skin='black_diamond'] .searchInput::placeholder",
+      ".main[data-workspace-skin='black_diamond'] .searchInput:focus",
+    ]) {
+      expect(placeholderCss).not.toContain(sharedSkinLeak)
+    }
   })
 
   it('puts today, quick add, and browse ahead of queue detail sections', () => {

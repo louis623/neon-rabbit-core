@@ -1283,16 +1283,16 @@ describe('DashboardPlaceholder', () => {
     expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .timelineItem",
     )
-    expect(dashboardCss).toContain(
+    expect(dashboardCss).not.toContain(
       ".main[data-workspace-skin='black_diamond'] .rosterTag",
     )
     expect(tabsCss).toContain(
       ":global([data-workspace-skin='black_diamond']) .tabActive",
     )
-    expect(dashboardCss).toContain(
+    expect(dashboardCss).not.toContain(
       ".main[data-workspace-skin='black_diamond'] .emptyState",
     )
-    expect(dashboardCss).toContain(
+    expect(dashboardCss).not.toContain(
       ".main[data-workspace-skin='black_diamond'] .searchInput",
     )
     expect(dashboardCss).toContain(

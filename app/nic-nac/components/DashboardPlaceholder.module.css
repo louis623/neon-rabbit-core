@@ -3918,7 +3918,6 @@
 }
 
 .main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag,
-.main[data-workspace-skin='black_diamond'] .rosterTag,
 .main[data-workspace-skin='black_diamond'] .libraryTag,
 .main[data-workspace-skin='black_diamond'] .timelineItem,
 .main[data-workspace-skin='black_diamond'] .walletToggleRow,
@@ -3954,19 +3953,11 @@
 .main[data-workspace-skin='black_diamond'] .statusBadge,
 .main[data-workspace-skin='black_diamond'] .recipeListItem,
 .main[data-workspace-skin='black_diamond'] .recipeEditorImageEmpty,
-.main[data-workspace-skin='black_diamond'] .emptyState,
 .main[data-workspace-skin='black_diamond'] .statusBadgeNeutral {
   background: #211c18;
   border-color: rgba(244, 207, 98, 0.2);
   color: #f8efe4;
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.main[data-workspace-skin='black_diamond'] .emptyState {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03)),
-    #120f0d;
-  border-color: rgba(244, 207, 98, 0.3);
 }
 
 .main[data-workspace-skin='black_diamond'] .calendarEventDialog {
@@ -4003,7 +3994,6 @@
   color: #f8efe4;
 }
 
-.main[data-workspace-skin='black_diamond'] .searchInput,
 .main[data-workspace-skin='black_diamond'] .sortSelect,
 .main[data-workspace-skin='black_diamond'] .siteSettingsTextarea,
 .main[data-workspace-skin='black_diamond'] .supportReportTextarea,
@@ -4013,14 +4003,12 @@
   color: #f8efe4;
 }
 
-.main[data-workspace-skin='black_diamond'] .searchInput::placeholder,
 .main[data-workspace-skin='black_diamond'] .siteSettingsTextarea::placeholder,
 .main[data-workspace-skin='black_diamond'] .supportReportTextarea::placeholder,
 .main[data-workspace-skin='black_diamond'] .calculatorInput::placeholder {
   color: rgba(216, 203, 189, 0.66);
 }
 
-.main[data-workspace-skin='black_diamond'] .searchInput:focus,
 .main[data-workspace-skin='black_diamond'] .sortSelect:focus,
 .main[data-workspace-skin='black_diamond'] .siteSettingsTextarea:focus,
 .main[data-workspace-skin='black_diamond'] .supportReportTextarea:focus,
