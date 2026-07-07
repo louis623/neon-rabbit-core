@@ -73,8 +73,52 @@ describe('Nic-Nac trade board surface reset', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
-        tradeRequestsState: { status: 'ready', requests: [] },
-        fulfillmentQueueState: { status: 'ready', items: [] },
+        tradeRequestsState: {
+          status: 'ready',
+          requests: [
+            {
+              id: 'request-1',
+              customerName: 'Jamie Lane',
+              customerDescription: 'Swap in the sapphire ring instead.',
+              revealScreenshot: null,
+              listing: {
+                id: 'listing-1',
+                repFacingNote: null,
+                design: {
+                  itemNumber: 'RG100',
+                  designName: 'Sapphire Halo',
+                  collectionName: 'Birthday',
+                  typePrefix: 'RG',
+                },
+              },
+            },
+          ],
+        },
+        fulfillmentQueueState: {
+          status: 'ready',
+          items: [
+            {
+              fulfillmentId: 'fulfillment-1',
+              requestId: 'request-1',
+              status: 'approved',
+              customerName: 'Jamie Lane',
+              itemNumber: 'RG100',
+              designName: 'Sapphire Halo',
+              daysSinceLastUpdate: 1,
+            },
+          ],
+        },
+        tradeSwapCleanupState: {
+          status: 'ready',
+          items: [
+            {
+              swapId: 'swap-1',
+              customerName: 'Jamie Lane',
+              revealedItemNumber: 'RG200',
+              replacementStatus: 'needs_ring_size',
+            },
+          ],
+        },
         tradeBoardSearchQuery: '',
         onTradeBoardSearchQueryChange: () => {},
         quickAddItemNumber: '',
@@ -90,9 +134,17 @@ describe('Nic-Nac trade board surface reset', () => {
     expect(html.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
     expect(html.indexOf('Quick add')).toBeGreaterThan(-1)
     expect(html.indexOf('Browse board')).toBeGreaterThan(-1)
+    expect(html.indexOf('Request inbox')).toBeGreaterThan(-1)
+    expect(html.indexOf('Swap cleanup')).toBeGreaterThan(-1)
+    expect(html.indexOf('Fulfillment queue')).toBeGreaterThan(-1)
     expect(html.indexOf('Today&#x27;s trade work')).toBeLessThan(
       html.indexOf('Quick add'),
     )
     expect(html.indexOf('Quick add')).toBeLessThan(html.indexOf('Browse board'))
+    expect(html.indexOf('Browse board')).toBeLessThan(html.indexOf('Request inbox'))
+    expect(html.indexOf('Request inbox')).toBeLessThan(html.indexOf('Swap cleanup'))
+    expect(html.indexOf('Swap cleanup')).toBeLessThan(
+      html.indexOf('Fulfillment queue'),
+    )
   })
 })
