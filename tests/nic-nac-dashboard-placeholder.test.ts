@@ -485,15 +485,19 @@ describe('DashboardPlaceholder', () => {
 
   it('renders the Sparkle Suite Nic-Nac workspace shell', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
 
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Workspace')
     expect(html).toContain('>Rep<')
     expect(html).toContain('>Show<')
     expect(html).toContain('Secret Rep ID Number')
+    expect(source).toContain('View live site')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
-    expect(html).toContain('View customer board')
     expect(html).toContain('Pending requests')
     expect(html).toContain('Cleanup follow-ups')
     expect(html).toContain('Fulfillment swaps')

@@ -17,6 +17,13 @@ describe('Nic-Nac workspace shell reset', () => {
       resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
       'utf8',
     )
+    const dashboardCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
 
     expect(html).toContain('role="tablist"')
     expect(html).toContain('aria-label="Workspace sections"')
@@ -30,6 +37,13 @@ describe('Nic-Nac workspace shell reset', () => {
     )
     expect(source).not.toContain('workspaceSidebar')
     expect(css).not.toContain('.workspaceSidebar')
+    expect(dashboardCss).not.toContain('.workspaceShell')
+    expect(dashboardCss).not.toContain('.workspaceSidebar')
+    expect(dashboardCss).not.toContain('.workspaceSidebarTitle')
+    expect(dashboardCss).not.toContain('.workspaceSidebarIntro')
+    expect(dashboardCss).not.toContain('.workspaceNavButton')
+    expect(dashboardCss).not.toContain('.workspaceNavButtonActive')
+    expect(dashboardCss).not.toContain('.workspaceNavButtonComingSoon')
     expect(source).toContain('className={styles.shell}')
     expect(source).toContain('className={styles.tabsWrap}')
     expect(source).toContain('className={styles.content}')
