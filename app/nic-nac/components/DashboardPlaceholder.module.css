@@ -797,13 +797,13 @@
   margin-top: 2px;
 }
 
-.tradeList {
+.messageList {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.tradeRow {
+.messageRow {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) auto auto;
   gap: 12px;
@@ -1251,26 +1251,15 @@
 }
 
 .cardTitle {
-  font-family: var(--font-prelaunch-display), Georgia, serif;
-  font-size: 20px;
-  line-height: 1.15;
-  font-weight: 700;
-  color: var(--nic-nac-text-primary);
+  composes: cardTitle from './WorkspaceSurface.module.css';
 }
 
 .cardSubtitle {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--nic-nac-text-secondary);
-  max-width: 64ch;
+  composes: cardSubtitle from './WorkspaceSurface.module.css';
 }
 
 .cardFill {
-  height: 120px;
-  border-radius: 8px;
-  background: var(--nic-nac-surface-dashboard-placeholder);
-  margin-top: 4px;
+  composes: cardFill from './WorkspaceSurface.module.css';
 }
 
 .rosterCard {
@@ -1940,17 +1929,7 @@
 }
 
 .rosterTag {
-  width: fit-content;
-  max-width: 100%;
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(64, 41, 36, 0.12);
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 11px;
-  line-height: 1.25;
-  color: var(--nic-nac-text-secondary);
-  overflow-wrap: anywhere;
+  composes: rosterTag from './WorkspaceSurface.module.css';
 }
 
 .libraryTagList {
@@ -2408,10 +2387,7 @@
 }
 
 .searchField {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+  composes: searchField from './WorkspaceSurface.module.css';
 }
 
 .sortField {
@@ -2428,10 +2404,7 @@
 }
 
 .searchLabel {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--nic-nac-text-secondary);
+  composes: searchLabel from './WorkspaceSurface.module.css';
 }
 
 .sortLabel {
@@ -2441,24 +2414,9 @@
 }
 
 .searchInput {
-  width: 100%;
-  min-width: 0;
+  composes: searchInput from './WorkspaceSurface.module.css';
   max-width: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--nic-nac-border-strong);
-  border-radius: 12px;
-  background: var(--nic-nac-surface-input);
-  color: var(--nic-nac-text-primary);
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.2;
   padding: 11px 12px;
-}
-
-.searchInput:focus {
-  outline: 2px solid rgba(238, 44, 155, 0.18);
-  outline-offset: 1px;
-  border-color: var(--nic-nac-border-input-focus);
 }
 
 .sortSelect {
@@ -2599,9 +2557,7 @@
 }
 
 .actionRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  composes: actionRow from './WorkspaceSurface.module.css';
 }
 
 .emailComposer {
@@ -2627,36 +2583,7 @@
 }
 
 .actionButton {
-  max-width: 100%;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
-  color: #fff6fb;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-  padding: 10px 14px;
-  cursor: pointer;
-  white-space: normal;
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.32),
-    0 10px 22px rgba(54, 34, 29, 0.1);
-}
-
-.actionButton:hover {
-  background: linear-gradient(180deg, #f73fa5 0%, var(--nic-nac-accent-hover) 100%);
-  border-color: transparent;
-}
-
-.actionButton:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.actionButton:disabled:hover {
-  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
-  border-color: transparent;
+  composes: actionButton from './WorkspaceSurface.module.css';
 }
 
 .secondaryActionButton {
@@ -2683,34 +2610,12 @@
   cursor: default;
 }
 
-.helperButton,
-.helperLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 100%;
-  border: 1px solid rgba(238, 44, 155, 0.46);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 76, 174, 0.13), rgba(255, 246, 250, 0.94));
-  color: var(--nic-nac-text-primary);
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
-  padding: 10px 14px;
-  text-decoration: none;
-  text-align: center;
-  cursor: pointer;
-  white-space: normal;
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.82),
-    0 10px 22px rgba(54, 34, 29, 0.08);
+.helperButton {
+  composes: helperButton from './WorkspaceSurface.module.css';
 }
 
-.helperButton:disabled {
-  color: #402924;
-  cursor: default;
-  opacity: 1;
+.helperLink {
+  composes: helperLink from './WorkspaceSurface.module.css';
 }
 
 .termsAcceptance {
@@ -2930,37 +2835,15 @@
 }
 
 .emptyState {
-  max-width: 100%;
-  box-sizing: border-box;
-  border-radius: 16px;
-  padding: 18px;
-  background:
-    linear-gradient(135deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.74));
-  border: 1px dashed rgba(238, 44, 155, 0.22);
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--nic-nac-text-secondary);
+  composes: emptyState from './WorkspaceSurface.module.css';
 }
 
 .actionError {
-  border-radius: 14px;
-  padding: 12px 14px;
-  background: #fff0f5;
-  border: 1px solid rgba(238, 44, 155, 0.16);
-  color: #9b174f;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
+  composes: actionError from './WorkspaceSurface.module.css';
 }
 
 .helperMessage {
-  border-radius: 14px;
-  padding: 12px 14px;
-  background: rgba(191, 244, 224, 0.48);
-  border: 1px solid rgba(39, 83, 69, 0.12);
-  color: #275345;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
+  composes: helperMessage from './WorkspaceSurface.module.css';
 }
 
 .teamUpgradeNotice {
@@ -3146,9 +3029,7 @@
 }
 
 .helperNote {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--nic-nac-text-secondary);
+  composes: helperNote from './WorkspaceSurface.module.css';
 }
 
 .duplicateWarning {
@@ -3196,10 +3077,7 @@
 }
 
 .walletSettingsTitle {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--nic-nac-text-primary);
+  composes: walletSettingsTitle from './WorkspaceSurface.module.css';
 }
 
 .walletSettingsGrid {
@@ -3983,19 +3861,11 @@
 }
 
 .loadingLine {
-  width: 72%;
-  height: 16px;
-  border-radius: 999px;
-  background: rgba(64, 41, 36, 0.1);
-  margin: 14px 12px 0;
+  composes: loadingLine from './WorkspaceSurface.module.css';
 }
 
 .loadingLineShort {
-  width: 46%;
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(64, 41, 36, 0.08);
-  margin: 10px 12px 0;
+  composes: loadingLineShort from './WorkspaceSurface.module.css';
 }
 
 .main[data-workspace-skin='black_diamond'] .topbar,
@@ -4490,7 +4360,7 @@
     flex-direction: column;
   }
 
-  .tradeRow {
+  .messageRow {
     grid-template-columns: 1fr;
   }
 

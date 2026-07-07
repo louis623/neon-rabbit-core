@@ -5498,10 +5498,10 @@ function MessagesCenterCard({
       ) : null}
       {state.status === 'ready' && state.inbox ? (
         <>
-          <div className={styles.tradeList}>
+          <div className={styles.messageList}>
             {state.inbox.messages.length > 0 ? (
               state.inbox.messages.map((message) => (
-                <div key={message.id} className={styles.tradeRow}>
+                <div key={message.id} className={styles.messageRow}>
                   <div className={styles.tradeIdentity}>
                     <div className={styles.customerName}>
                       {message.subject || MESSAGE_TYPE_LABELS[message.messageType]}

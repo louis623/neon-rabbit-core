@@ -115,6 +115,60 @@ describe('Nic-Nac trade board surface reset', () => {
     }
   })
 
+  it('keeps DashboardPlaceholder message rows local while aliasing shared surface primitives', () => {
+    const placeholderSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.tsx',
+      ),
+      'utf8',
+    )
+    const placeholderCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(placeholderSource).not.toContain('styles.tradeList')
+    expect(placeholderSource).not.toContain('styles.tradeRow')
+    expect(placeholderSource).toContain('styles.messageList')
+    expect(placeholderSource).toContain('styles.messageRow')
+
+    expect(placeholderCss).not.toContain('.tradeList')
+    expect(placeholderCss).not.toContain('.tradeRow')
+    expect(placeholderCss).toContain('.messageList')
+    expect(placeholderCss).toContain('.messageRow')
+
+    for (const selector of [
+      'cardTitle',
+      'cardSubtitle',
+      'cardFill',
+      'rosterTag',
+      'searchField',
+      'searchLabel',
+      'searchInput',
+      'actionRow',
+      'actionButton',
+      'helperButton',
+      'helperLink',
+      'emptyState',
+      'actionError',
+      'helperMessage',
+      'helperNote',
+      'walletSettingsTitle',
+      'loadingLine',
+      'loadingLineShort',
+    ]) {
+      expect(placeholderCss).toMatch(
+        new RegExp(
+          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
+        ),
+      )
+    }
+  })
+
   it('puts today, quick add, and browse ahead of queue detail sections', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
