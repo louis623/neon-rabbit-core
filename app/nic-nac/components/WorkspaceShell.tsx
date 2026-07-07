@@ -22,21 +22,19 @@ export function WorkspaceShell<TKey extends string>({
   children: ReactNode
 }) {
   return (
-    <>
-      {header}
-      <div className={styles.workspaceShell}>
-        <div className={styles.workspaceSidebar}>
-          <WorkspaceSectionTabs
-            tabs={tabs}
-            activeSection={activeSection}
-            onSectionChange={onSectionChange}
-          />
-        </div>
-        <section className={styles.workspaceContent}>
-          {notice}
-          {children}
-        </section>
+    <div className={styles.shell}>
+      {header ? <div className={styles.header}>{header}</div> : null}
+      <div className={styles.tabsWrap}>
+        <WorkspaceSectionTabs
+          tabs={tabs}
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+        />
       </div>
-    </>
+      <section className={styles.content}>
+        {notice}
+        {children}
+      </section>
+    </div>
   )
 }

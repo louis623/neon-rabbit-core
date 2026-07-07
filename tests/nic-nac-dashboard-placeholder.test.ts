@@ -1278,7 +1278,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(shellCss).toContain('--workspace-surface: rgba(255, 255, 255, 0.94);')
     expect(shellCss).toContain(
-      ":global([data-workspace-skin='black_diamond']) .workspaceSidebar",
+      ":global([data-workspace-skin='black_diamond']) .tabsWrap",
     )
     expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .timelineItem",
@@ -1287,7 +1287,7 @@ describe('DashboardPlaceholder', () => {
       ".main[data-workspace-skin='black_diamond'] .rosterTag",
     )
     expect(tabsCss).toContain(
-      ":global([data-workspace-skin='black_diamond']) .workspaceNavButtonActive",
+      ":global([data-workspace-skin='black_diamond']) .tabActive",
     )
     expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .emptyState",
@@ -1369,8 +1369,8 @@ describe('DashboardPlaceholder', () => {
     expect(tabsSource).toContain('role="tablist"')
     expect(tabsSource).toContain('aria-label="Workspace sections"')
     expect(tabsSource).toContain('role="tab"')
-    expect(tabsSource).toContain('aria-selected={isActiveSection}')
-    expect(tabsSource).toContain('tabIndex={isActiveSection ? 0 : -1}')
+    expect(tabsSource).toContain('aria-selected={active}')
+    expect(tabsSource).toContain('tabIndex={active ? 0 : -1}')
     expect(tabsSource).toContain('tab.shortLabel')
     expect(tabsSource).not.toContain('workspaceNavStatusTag')
     expect(tabsSource).not.toContain('tab.subtitle')
@@ -1378,8 +1378,8 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 999px;')
     expect(tabsCss).toContain('min-height: 44px;')
-    expect(tabsCss).toContain('.workspaceNav::-webkit-scrollbar')
-    expect(tabsCss).toContain('.workspaceNavLabelShort')
+    expect(tabsCss).toContain('.tabs::-webkit-scrollbar')
+    expect(tabsCss).toContain('.labelShort')
   })
 
   it('keeps the extracted trade board surfaces light instead of reverting to espresso-heavy cards', () => {

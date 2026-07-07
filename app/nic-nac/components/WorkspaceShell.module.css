@@ -1,4 +1,4 @@
-.workspaceShell {
+.shell {
   --workspace-shell-bg: #f7f4f1;
   --workspace-surface: rgba(255, 255, 255, 0.94);
   --workspace-surface-strong: rgba(255, 255, 255, 0.98);
@@ -18,23 +18,23 @@
   width: 100%;
 }
 
-.workspaceSidebar {
+.header {
+  min-width: 0;
+}
+
+.tabsWrap {
   position: sticky;
   top: 8px;
   z-index: 12;
   padding: 10px;
   border-radius: 18px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.96),
-    rgba(250, 245, 242, 0.94)
-  );
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--workspace-surface-border);
   box-shadow: var(--workspace-surface-shadow);
   overflow: hidden;
 }
 
-.workspaceSidebar::before {
+.tabsWrap::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
@@ -47,23 +47,15 @@
   );
 }
 
-.workspaceSidebarTitle {
-  display: none;
-}
-
-.workspaceSidebarIntro {
-  display: none;
-}
-
-.workspaceContent {
+.content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
   container-type: inline-size;
 }
 
-:global([data-workspace-skin='black_diamond']) .workspaceSidebar {
+:global([data-workspace-skin='black_diamond']) .tabsWrap {
   --workspace-tab-active-bg: rgba(248, 239, 228, 0.96);
   --workspace-tab-active-border: rgba(212, 175, 55, 0.36);
   --workspace-tab-active-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
@@ -71,17 +63,13 @@
   --workspace-tab-muted-text: rgba(248, 239, 228, 0.78);
   --workspace-tab-icon: #d8cbbd;
   --workspace-tab-icon-active: #241c18;
-  background: linear-gradient(
-    180deg,
-    rgba(32, 24, 20, 0.96),
-    rgba(21, 17, 15, 0.94)
-  );
+  background: linear-gradient(180deg, rgba(32, 24, 20, 0.96), rgba(21, 17, 15, 0.94));
   border-color: rgba(244, 207, 98, 0.24);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.26);
   color: #f8efe4;
 }
 
-:global([data-workspace-skin='black_diamond']) .workspaceSidebar::before {
+:global([data-workspace-skin='black_diamond']) .tabsWrap::before {
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -90,26 +78,18 @@
   );
 }
 
-:global([data-workspace-skin='black_diamond']) .workspaceSidebarTitle {
-  color: #f8efe4;
-}
-
-:global([data-workspace-skin='black_diamond']) .workspaceSidebarIntro {
-  color: #d8cbbd;
-}
-
 @media (max-width: 1180px) {
-  .workspaceShell {
+  .shell {
     gap: 14px;
   }
 }
 
 @media (max-width: 840px) {
-  .workspaceShell {
+  .shell {
     gap: 12px;
   }
 
-  .workspaceSidebar {
+  .tabsWrap {
     top: 6px;
     padding: 8px;
     border-radius: 16px;

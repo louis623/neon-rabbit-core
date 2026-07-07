@@ -9,6 +9,14 @@ import { DashboardPlaceholder } from '@/app/nic-nac/components/DashboardPlacehol
 describe('Nic-Nac workspace shell reset', () => {
   it('renders workspace sections inside a top tablist instead of a sidebar rail', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
+      'utf8',
+    )
 
     expect(html).toContain('role="tablist"')
     expect(html).toContain('aria-label="Workspace sections"')
@@ -20,7 +28,11 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(html).not.toContain(
       'Manage the live workspace, customer site, trade tools, messages, and account settings.',
     )
-    expect(html).not.toContain('class="workspaceSidebar"')
+    expect(source).not.toContain('workspaceSidebar')
+    expect(css).not.toContain('.workspaceSidebar')
+    expect(source).toContain('className={styles.shell}')
+    expect(source).toContain('className={styles.tabsWrap}')
+    expect(source).toContain('className={styles.content}')
   })
 
   it('does not use the espresso gradient as the dominant shell surface', () => {
@@ -50,5 +62,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('querySelectorAll<HTMLButtonElement>')
     expect(source).toContain('nextTab.focus()')
     expect(source).toContain('onSectionChange(nextKey)')
+    expect(source).toContain('role="tab"')
+    expect(source).toContain('aria-selected={active}')
   })
 })

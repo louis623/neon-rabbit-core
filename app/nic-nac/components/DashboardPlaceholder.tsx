@@ -5026,6 +5026,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
     return null
   }
+  const renderedSection = renderActiveWorkspaceSection()
   return (
     <main
       className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
@@ -5094,7 +5095,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           header={workspaceHeader}
           notice={showWorkspaceAccessNotice ? accessNotice : null}
         >
-          {renderActiveWorkspaceSection()}
+          {renderedSection}
         </WorkspaceShell>
       )}
     </main>

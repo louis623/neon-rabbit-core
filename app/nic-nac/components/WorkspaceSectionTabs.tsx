@@ -30,14 +30,10 @@ export function WorkspaceSectionTabs<TKey extends string>({
   onSectionChange: (section: TKey) => void
 }) {
   return (
-    <nav
-      className={styles.workspaceNav}
-      role="tablist"
-      aria-label="Workspace sections"
-    >
+    <nav className={styles.tabs} role="tablist" aria-label="Workspace sections">
       {tabs.map((tab) => {
-        const isActiveSection = activeSection === tab.key
-        const isComingSoonSection = tab.comingSoon === true
+        const active = activeSection === tab.key
+        const isComingSoon = tab.comingSoon === true
         const Icon = tab.icon
         const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
           const { key, currentTarget } = event
@@ -82,27 +78,19 @@ export function WorkspaceSectionTabs<TKey extends string>({
             type="button"
             role="tab"
             data-section-key={tab.key}
-            className={`${styles.workspaceNavButton} ${
-              isActiveSection ? styles.workspaceNavButtonActive : ''
-            } ${
-              isComingSoonSection ? styles.workspaceNavButtonComingSoon : ''
+            className={`${active ? styles.tabActive : styles.tab} ${
+              isComingSoon ? styles.tabComingSoon : ''
             }`}
-            disabled={isComingSoonSection}
-            aria-disabled={isComingSoonSection}
-            aria-selected={isActiveSection}
-            tabIndex={isActiveSection ? 0 : -1}
-            onClick={() => !isComingSoonSection && onSectionChange(tab.key)}
+            disabled={isComingSoon}
+            aria-disabled={isComingSoon}
+            aria-selected={active}
+            tabIndex={active ? 0 : -1}
+            onClick={() => !isComingSoon && onSectionChange(tab.key)}
             onKeyDown={handleKeyDown}
           >
-            <Icon className={styles.workspaceNavIcon} aria-hidden="true" />
-            <span className={styles.workspaceNavCopy}>
-              <span className={styles.workspaceNavLabel}>
-                <span className={styles.workspaceNavLabelFull}>{tab.label}</span>
-                <span className={styles.workspaceNavLabelShort}>
-                  {tab.shortLabel}
-                </span>
-              </span>
-            </span>
+            <Icon className={styles.icon} aria-hidden="true" />
+            <span className={styles.labelFull}>{tab.label}</span>
+            <span className={styles.labelShort}>{tab.shortLabel}</span>
           </button>
         )
       })}
