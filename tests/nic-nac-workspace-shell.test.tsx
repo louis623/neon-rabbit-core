@@ -1,4 +1,6 @@
 import { createElement } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
@@ -19,5 +21,20 @@ describe('Nic-Nac workspace shell reset', () => {
       'Manage the live workspace, customer site, trade tools, messages, and account settings.',
     )
     expect(html).not.toContain('class="workspaceSidebar"')
+  })
+
+  it('supports keyboard navigation across workspace tabs', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain("key !== 'ArrowLeft'")
+    expect(source).toContain("key !== 'ArrowRight'")
+    expect(source).toContain("key !== 'Home'")
+    expect(source).toContain("key !== 'End'")
+    expect(source).toContain('querySelectorAll<HTMLButtonElement>')
+    expect(source).toContain('nextTab.focus()')
+    expect(source).toContain('onSectionChange(nextKey)')
   })
 })
