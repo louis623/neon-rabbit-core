@@ -1276,6 +1276,7 @@ describe('DashboardPlaceholder', () => {
     expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .topbar",
     )
+    expect(shellCss).toContain('--workspace-surface: rgba(255, 255, 255, 0.94);')
     expect(shellCss).toContain(
       ":global([data-workspace-skin='black_diamond']) .workspaceSidebar",
     )
@@ -1330,6 +1331,31 @@ describe('DashboardPlaceholder', () => {
     expect(dashboardCss).toContain('color: #d8cbbd')
   })
 
+  it('uses light utility shell surfaces and avoids espresso-heavy active tabs', () => {
+    const shellCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
+      'utf8',
+    )
+    const tabsCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.module.css'),
+      'utf8',
+    )
+
+    expect(shellCss).toContain('--workspace-shell-bg: #f7f4f1;')
+    expect(shellCss).toContain('--workspace-surface: rgba(255, 255, 255, 0.94);')
+    expect(shellCss).toContain('--workspace-surface-border: rgba(64, 41, 36, 0.10);')
+    expect(shellCss).toContain('--workspace-surface-shadow: 0 10px 28px rgba(43, 31, 27, 0.08);')
+    expect(shellCss).toContain('--workspace-tab-active-bg: #ffffff;')
+    expect(shellCss).toContain('top: 8px;')
+    expect(shellCss).toContain('border-radius: 18px;')
+    expect(tabsCss).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
+    expect(tabsCss).toContain('min-height: 44px;')
+    expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.82);')
+    expect(tabsCss).toContain(
+      'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
+    )
+  })
+
   it('ships a mobile-first workspace top nav treatment for the section rail', () => {
     const tabsSource = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.tsx'),
@@ -1351,6 +1377,7 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('scroll-snap-type: x proximity;')
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 999px;')
+    expect(tabsCss).toContain('min-height: 44px;')
     expect(tabsCss).toContain('.workspaceNav::-webkit-scrollbar')
     expect(tabsCss).toContain('.workspaceNavLabelShort')
   })
