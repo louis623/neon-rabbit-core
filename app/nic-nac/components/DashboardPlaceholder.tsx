@@ -5502,7 +5502,7 @@ function MessagesCenterCard({
             {state.inbox.messages.length > 0 ? (
               state.inbox.messages.map((message) => (
                 <div key={message.id} className={styles.messageRow}>
-                  <div className={styles.tradeIdentity}>
+                  <div className={styles.customerIdentity}>
                     <div className={styles.customerName}>
                       {message.subject || MESSAGE_TYPE_LABELS[message.messageType]}
                     </div>

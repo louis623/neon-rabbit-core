@@ -134,16 +134,11 @@
 }
 
 .customerName {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--nic-nac-text-primary);
+  composes: customerName from './WorkspaceSurface.module.css';
 }
 
 .customerDate {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--nic-nac-text-secondary);
+  composes: customerDate from './WorkspaceSurface.module.css';
 }
 
 .tradeList {
@@ -177,14 +172,7 @@
 }
 
 .statusBadgeWarning {
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: rgba(255, 227, 168, 0.62);
-  color: #6a4b12;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.2;
+  composes: statusBadgeWarning from './WorkspaceSurface.module.css';
 }
 
 .tradeScreenshotLink {
@@ -428,10 +416,6 @@
   display: block;
 }
 
-:global(.main[data-workspace-skin='black_diamond']) .customerName {
-  color: #f8efe4;
-}
-
 :global(.main[data-workspace-skin='black_diamond']) .timelineItem,
 :global(.main[data-workspace-skin='black_diamond']) .imagePreviewClose,
 :global(.main[data-workspace-skin='black_diamond']) .boardInventoryPieceCard,
@@ -447,7 +431,6 @@
   border-color: rgba(0, 217, 255, 0.24);
 }
 
-:global(.main[data-workspace-skin='black_diamond']) .customerDate,
 :global(.main[data-workspace-skin='black_diamond']) .tradeScreenshotMeta,
 :global(.main[data-workspace-skin='black_diamond']) .tradePieceMetaLine,
 :global(.main[data-workspace-skin='black_diamond']) .tradeMeta {

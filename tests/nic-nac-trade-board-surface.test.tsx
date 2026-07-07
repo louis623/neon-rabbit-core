@@ -130,14 +130,31 @@ describe('Nic-Nac trade board surface reset', () => {
       ),
       'utf8',
     )
+    const workspaceSurfaceCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/WorkspaceSurface.module.css',
+      ),
+      'utf8',
+    )
+    const tradeBoardCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/TradeBoardWorkspaceCard.module.css',
+      ),
+      'utf8',
+    )
 
     expect(placeholderSource).not.toContain('styles.tradeList')
     expect(placeholderSource).not.toContain('styles.tradeRow')
+    expect(placeholderSource).not.toContain('styles.tradeIdentity')
     expect(placeholderSource).toContain('styles.messageList')
     expect(placeholderSource).toContain('styles.messageRow')
+    expect(placeholderSource).toContain('styles.customerIdentity')
 
     expect(placeholderCss).not.toContain('.tradeList')
     expect(placeholderCss).not.toContain('.tradeRow')
+    expect(placeholderCss).not.toContain('.tradeIdentity')
     expect(placeholderCss).toContain('.messageList')
     expect(placeholderCss).toContain('.messageRow')
 
@@ -166,6 +183,48 @@ describe('Nic-Nac trade board surface reset', () => {
           `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
         ),
       )
+    }
+
+    for (const selector of [
+      'customerName',
+      'customerDate',
+      'statusBadgeWarning',
+    ]) {
+      expect(workspaceSurfaceCss).toContain(`.${selector}`)
+      expect(tradeBoardCss).toMatch(
+        new RegExp(
+          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
+        ),
+      )
+      expect(placeholderCss).toMatch(
+        new RegExp(
+          `\\.${selector}\\s*\\{\\s*composes:\\s*${selector} from '\\./WorkspaceSurface\\.module\\.css';`,
+        ),
+      )
+    }
+
+    expect(placeholderCss).toMatch(
+      /\.customerContact\s*\{\s*composes:\s*customerDate from '\.\/WorkspaceSurface\.module\.css';/s,
+    )
+    expect(workspaceSurfaceCss).toContain(
+      ":global(.main[data-workspace-skin='black_diamond']) .customerName",
+    )
+    expect(workspaceSurfaceCss).toContain(
+      ":global(.main[data-workspace-skin='black_diamond']) .customerDate",
+    )
+    for (const localOverride of [
+      ".main[data-workspace-skin='black_diamond'] .cardTitle",
+      ".main[data-workspace-skin='black_diamond'] .cardSubtitle",
+      ".main[data-workspace-skin='black_diamond'] .searchLabel",
+      ".main[data-workspace-skin='black_diamond'] .helperNote",
+      ".main[data-workspace-skin='black_diamond'] .walletSettingsTitle",
+      ".main[data-workspace-skin='black_diamond'] .actionButton",
+      ".main[data-workspace-skin='black_diamond'] .helperButton",
+      ".main[data-workspace-skin='black_diamond'] .helperLink",
+      ".main[data-workspace-skin='black_diamond'] .loadingLine",
+      ".main[data-workspace-skin='black_diamond'] .loadingLineShort",
+    ]) {
+      expect(placeholderCss).not.toContain(localOverride)
     }
   })
 
