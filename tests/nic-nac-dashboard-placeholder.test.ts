@@ -501,6 +501,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Pending requests')
     expect(html).toContain('Cleanup follow-ups')
     expect(html).toContain('Fulfillment swaps')
+    expect(html).toContain('aria-pressed="true"')
+    expect(html).toContain('aria-pressed="false"')
     expect(html).not.toContain('Request inbox')
     expect(html).not.toContain('Trade history')
     expect(html).not.toContain('No trade history yet.')
@@ -1335,6 +1337,24 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain('#211c18')
     expect(css).toContain('color: #f8efe4')
     expect(css).toContain('color: #d8cbbd')
+  })
+
+  it('ships a mobile-first workspace top nav treatment for the section rail', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
+
+    expect(source).toContain('aria-pressed={isActiveSection}')
+    expect(css).toContain('scroll-snap-type: x proximity;')
+    expect(css).toContain('overscroll-behavior-x: contain;')
+    expect(css).toContain('border-radius: 999px;')
+    expect(css).toContain('.workspaceNav::-webkit-scrollbar')
+    expect(css).toContain('.workspaceNavSubtitle')
   })
 
   it('uses the espresso background for workspace center cards', () => {

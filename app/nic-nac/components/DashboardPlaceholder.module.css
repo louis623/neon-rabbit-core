@@ -4671,6 +4671,7 @@
 
   .workspaceShell {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .previewShell {
@@ -4702,7 +4703,65 @@
   }
 
   .workspaceSidebar {
-    position: static;
+    position: sticky;
+    top: 10px;
+    z-index: 12;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .workspaceSidebar::before {
+    height: 4px;
+  }
+
+  .workspaceSidebarTitle {
+    font-size: 14px;
+  }
+
+  .workspaceSidebarIntro {
+    display: none;
+  }
+
+  .workspaceNav {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .workspaceNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workspaceNavButton {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 124px;
+    border-radius: 999px;
+    padding: 10px 12px;
+    gap: 3px;
+    scroll-snap-align: start;
+  }
+
+  .workspaceNavLabelRow {
+    justify-content: flex-start;
+  }
+
+  .workspaceNavLabel {
+    font-size: 12px;
+  }
+
+  .workspaceNavStatusTag {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .workspaceNavSubtitle {
+    display: none;
   }
 
   .workspaceSectionGrid {

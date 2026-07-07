@@ -4805,19 +4805,19 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             {visibleWorkspaceSections.map((section) => {
               const isComingSoonSection =
                 'comingSoon' in section && section.comingSoon
+              const isActiveSection = activeSection === section.key
               return (
                 <button
                   key={section.key}
                   type="button"
                   className={`${styles.workspaceNavButton} ${
-                    activeSection === section.key
-                      ? styles.workspaceNavButtonActive
-                      : ''
+                    isActiveSection ? styles.workspaceNavButtonActive : ''
                   } ${
                     isComingSoonSection ? styles.workspaceNavButtonComingSoon : ''
                   }`}
                   disabled={isComingSoonSection}
                   aria-disabled={isComingSoonSection}
+                  aria-pressed={isActiveSection}
                   onClick={() =>
                     setActiveSection(
                       resolveWorkspaceSectionForAccess(
