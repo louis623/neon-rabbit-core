@@ -154,6 +154,23 @@ export function getJewelryLibrarySearchErrorMessage(_status?: number) {
   return 'Unable to search the jewelry library right now. Try again in a minute, or ask Nic-Nac to help look up the piece.'
 }
 
+export function createTradeRequestDecisionHandlers(
+  handleTradeRequestDecision: (
+    requestId: string,
+    action: 'approve' | 'reject',
+    swap?: { revealedItemNumber?: string; revealedRingSize?: string },
+  ) => void | Promise<void>,
+) {
+  return {
+    onApproveRequest: (
+      requestId: string,
+      swap?: { revealedItemNumber?: string; revealedRingSize?: string },
+    ) => handleTradeRequestDecision(requestId, 'approve', swap),
+    onRejectRequest: (requestId: string) =>
+      handleTradeRequestDecision(requestId, 'reject'),
+  }
+}
+
 export function formatHeaderRepShow(
   displayName?: string | null,
   businessName?: string | null,
@@ -4802,6 +4819,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (canRenderWorkspaceSections && activeSection === 'trade-board') {
+      const tradeRequestDecisionHandlers = createTradeRequestDecisionHandlers(
+        handleTradeRequestDecision,
+      )
+
       return (
         <TradeBoardWorkspaceCard
           tradeBoardState={tradeBoardState}
@@ -4815,12 +4836,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           tradeSwapCleanupState={tradeSwapCleanupState}
           onQuickAddListing={handleQuickAddListing}
           onRemoveListing={handleRemoveTradeListing}
-          onApproveRequest={(requestId, swap) =>
-            handleTradeRequestDecision(requestId, 'approve', swap)
-          }
-          onRejectRequest={(requestId) =>
-            handleTradeRequestDecision(requestId, 'reject')
-          }
+          onApproveRequest={tradeRequestDecisionHandlers.onApproveRequest}
+          onRejectRequest={tradeRequestDecisionHandlers.onRejectRequest}
           onAdvanceFulfillment={handleAdvanceFulfillment}
           customerBoardHref={customerTradeBoardHref}
           onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}

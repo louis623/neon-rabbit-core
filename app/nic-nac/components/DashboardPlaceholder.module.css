@@ -292,7 +292,7 @@
 
 .topbarMetaRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
   min-width: 0;
@@ -328,7 +328,7 @@
 .topbarInfoValue {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 800;
@@ -336,10 +336,11 @@
   color: var(--nic-nac-text-primary);
   text-align: left;
   width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .topbarInfoValueCode {
-  white-space: nowrap;
+  white-space: normal;
   font-family: 'Geist Mono', 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.2;
@@ -4074,13 +4075,64 @@
 
 @media (max-width: 840px) {
   .topbar {
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
   }
 
   .topbarBrandRow {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .topbarCopy {
+    gap: 10px;
+  }
+
+  .brandSeal {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .topbarSubtitle {
+    font-size: 10px;
+  }
+
+  .topbarMetaRow {
+    gap: 8px;
+  }
+
+  .topbarInfoPill {
+    min-height: 0;
+    border-radius: 14px;
+    padding: 8px 10px;
+  }
+
+  .topbarInfoLabel {
+    font-size: 9px;
+  }
+
+  .topbarInfoValue {
+    font-size: 12px;
+    line-height: 1.15;
+  }
+
+  .topbarInfoValueCode {
+    font-size: 11px;
+  }
+
+  .topbarMetaAction {
+    grid-column: 1 / -1;
+  }
+
+  .liveSiteButton {
+    min-height: 44px;
+    padding: 10px 14px;
   }
 
   .previewShell {

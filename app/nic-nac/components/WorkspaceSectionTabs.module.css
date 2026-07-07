@@ -119,9 +119,16 @@
 @media (max-width: 840px) {
   .tab,
   .tabActive {
-    min-height: 44px;
-    padding: 10px 13px;
-    gap: 7px;
+    min-width: 84px;
+    min-height: 58px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 11px 12px 10px;
+    white-space: normal;
+    text-align: center;
   }
 
   .icon {

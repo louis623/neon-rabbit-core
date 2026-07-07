@@ -17,6 +17,8 @@ export function NicNacMobileShell({
 }) {
   const bubbleRef = useRef<HTMLButtonElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
+  const hasMountedRef = useRef(false)
+  const wasOpenRef = useRef(open)
 
   // Body scroll lock + Escape close + focus trap when modal is open.
   useEffect(() => {
@@ -57,9 +59,17 @@ export function NicNacMobileShell({
 
   // Return focus to bubble on close.
   useEffect(() => {
-    if (!open && bubbleRef.current) {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true
+      wasOpenRef.current = open
+      return
+    }
+
+    if (wasOpenRef.current && !open && bubbleRef.current) {
       bubbleRef.current.focus()
     }
+
+    wasOpenRef.current = open
   }, [open])
 
   return (

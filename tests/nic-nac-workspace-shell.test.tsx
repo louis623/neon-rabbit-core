@@ -6,6 +6,31 @@ import { describe, expect, it } from 'vitest'
 
 import { DashboardPlaceholder } from '@/app/nic-nac/components/DashboardPlaceholder'
 
+function escapeForRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function hasDeclaration(css: string, selector: string, declaration: string) {
+  return new RegExp(
+    `${escapeForRegex(selector)}\\s*\\{[\\s\\S]*?${escapeForRegex(
+      declaration,
+    )}\\s*;[\\s\\S]*?\\}`,
+  ).test(css)
+}
+
+function hasNestedDeclaration(
+  css: string,
+  atRule: string,
+  selector: string,
+  declaration: string,
+) {
+  return new RegExp(
+    `${escapeForRegex(atRule)}\\s*\\{[\\s\\S]*?${escapeForRegex(
+      selector,
+    )}[^{]*\\{[\\s\\S]*?${escapeForRegex(declaration)}\\s*;[\\s\\S]*?\\}[\\s\\S]*?\\}`,
+  ).test(css)
+}
+
 describe('Nic-Nac workspace shell reset', () => {
   it('renders workspace sections inside a top tablist instead of a sidebar rail', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
@@ -74,8 +99,25 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(css).toContain('.topbarBrandRow')
     expect(css).toContain('.topbarMetaRow')
     expect(css).toContain('.topbarMetaAction')
-    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));')
+    expect(
+      hasDeclaration(css, '.topbarMetaRow', 'grid-template-columns: repeat(3, minmax(0, 1fr))'),
+    ).toBe(true)
     expect(css).toContain('border-radius: 24px;')
+    expect(hasDeclaration(css, '.topbarInfoValue', 'overflow-wrap: anywhere')).toBe(true)
+    expect(
+      hasNestedDeclaration(css, '@media (max-width: 840px)', '.topbarMetaAction', 'grid-column: 1 / -1'),
+    ).toBe(true)
+    expect(
+      hasNestedDeclaration(css, '@media (max-width: 840px)', '.liveSiteButton', 'min-height: 44px'),
+    ).toBe(true)
+    expect(
+      hasNestedDeclaration(
+        css,
+        '@media (min-width: 960px)',
+        '.topbarMetaRow',
+        'grid-template-columns: repeat(4, minmax(0, 1fr))',
+      ),
+    ).toBe(true)
   })
 
   it('does not use the espresso gradient as the dominant shell surface', () => {
@@ -112,5 +154,23 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('aria-controls={getWorkspaceSectionPanelId(tab.key)}')
     expect(source).toContain('aria-selected={active}')
     expect(source).toContain('tab.shortLabel')
+  })
+
+  it('styles mobile workspace tabs like thumb-friendly app navigation buttons', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/WorkspaceSectionTabs.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(css).toContain('@media (max-width: 840px)')
+    expect(css).toContain('flex-direction: column;')
+    expect(css).toContain('align-items: center;')
+    expect(css).toContain('justify-content: center;')
+    expect(css).toContain('min-width: 84px;')
+    expect(css).toContain('min-height: 58px;')
+    expect(css).toContain('border-radius: 20px;')
   })
 })

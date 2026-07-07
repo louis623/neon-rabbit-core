@@ -28,6 +28,36 @@ function hasComposeAlias(
   ).test(css)
 }
 
+function hasDeclaration(css: string, selector: string, declaration: string) {
+  return new RegExp(
+    `${escapeForRegex(selector)}\\s*\\{[\\s\\S]*?${escapeForRegex(
+      declaration,
+    )}\\s*;[\\s\\S]*?\\}`,
+  ).test(css)
+}
+
+function hasNestedDeclaration(
+  css: string,
+  atRule: string,
+  selector: string,
+  declaration: string,
+) {
+  return new RegExp(
+    `${escapeForRegex(atRule)}\\s*\\{[\\s\\S]*?${escapeForRegex(
+      selector,
+    )}[^{]*\\{[\\s\\S]*?${escapeForRegex(declaration)}\\s*;[\\s\\S]*?\\}[\\s\\S]*?\\}`,
+  ).test(css)
+}
+
+function getTradeBoardSectionLabels(html: string) {
+  return Array.from(
+    html.matchAll(
+      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Swap cleanup|Fulfillment queue)</g,
+    ),
+    (match) => match[1].replace('&#x27;', "'"),
+  )
+}
+
 const TRADE_BOARD_READY_STATE = {
   status: 'ready' as const,
   board: {
@@ -269,7 +299,7 @@ describe('Nic-Nac trade board surface reset', () => {
     }
   })
 
-  it('puts today, quick add, and browse ahead of queue detail sections', () => {
+  it('keeps today, quick add, and browse as the first surfaced sections before queue detail', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -331,54 +361,84 @@ describe('Nic-Nac trade board surface reset', () => {
         onAdvanceFulfillment: () => {},
       }),
     )
-    expect(html.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
-    expect(html.indexOf('Quick add')).toBeGreaterThan(-1)
-    expect(html.indexOf('Browse board')).toBeGreaterThan(-1)
-    expect(html.indexOf('Request inbox')).toBeGreaterThan(-1)
-    expect(html.indexOf('Swap cleanup')).toBeGreaterThan(-1)
-    expect(html.indexOf('Fulfillment queue')).toBeGreaterThan(-1)
-    expect(html.indexOf('Today&#x27;s trade work')).toBeLessThan(
-      html.indexOf('Quick add'),
-    )
-    expect(html.indexOf('Quick add')).toBeLessThan(html.indexOf('Browse board'))
-    expect(html.indexOf('Browse board')).toBeLessThan(html.indexOf('Request inbox'))
-    expect(html.indexOf('Request inbox')).toBeLessThan(html.indexOf('Swap cleanup'))
-    expect(html.indexOf('Swap cleanup')).toBeLessThan(
-      html.indexOf('Fulfillment queue'),
-    )
+    expect(getTradeBoardSectionLabels(html)).toEqual([
+      'Trade Board',
+      "Today's trade work",
+      'Quick add',
+      'Browse board',
+      'Request inbox',
+      'Swap cleanup',
+      'Fulfillment queue',
+    ])
   })
 
-  it('keeps the first screen mobile-first and action-led before queue detail', () => {
-    const html = renderToStaticMarkup(
-      createElement(TradeBoardWorkspaceCard, {
-        tradeBoardState: TRADE_BOARD_READY_STATE,
-        tradeRequestsState: { status: 'ready', requests: [] },
-        fulfillmentQueueState: { status: 'ready', items: [] },
-        tradeSwapCleanupState: { status: 'ready', items: [] },
-        tradeBoardSearchQuery: '',
-        onTradeBoardSearchQueryChange: () => {},
-        quickAddItemNumber: '',
-        onQuickAddItemNumberChange: () => {},
-        actionState: { pendingKey: null, error: null, helperMessage: null },
-        onQuickAddListing: () => {},
-        onRemoveListing: () => {},
-        onApproveRequest: () => {},
-        onRejectRequest: () => {},
-        onAdvanceFulfillment: () => {},
-      }),
+  it('locks the first screen into a mobile container contract instead of desktop spreadsheet grids', () => {
+    const tradeBoardCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/TradeBoardWorkspaceCard.module.css',
+      ),
+      'utf8',
     )
 
-    expect(html).not.toContain('Default landing section')
-    expect(html).toContain(
-      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
+    expect(hasDeclaration(tradeBoardCss, '.stack', 'container-type: inline-size')).toBe(
+      true,
     )
-    expect(html).toContain('Know the item number? Add it in one step.')
-    expect(html).toContain(
-      'Start with search. Open filters only when you need a tighter match.',
-    )
-    expect(html).toContain('More filters')
-    expect(html).toContain(
-      'Search by item number, design, or collection to pull up a live piece fast.',
-    )
+    expect(
+      hasDeclaration(
+        tradeBoardCss,
+        '.summaryStats',
+        'grid-template-columns: repeat(3, minmax(0, 1fr))',
+      ),
+    ).toBe(true)
+    expect(
+      hasDeclaration(
+        tradeBoardCss,
+        '.quickAddRow',
+        'grid-template-columns: minmax(0, 1fr) auto',
+      ),
+    ).toBe(true)
+    expect(
+      hasDeclaration(
+        tradeBoardCss,
+        '.filterGrid',
+        'grid-template-columns: repeat(2, minmax(0, 1fr)) auto',
+      ),
+    ).toBe(true)
+    expect(
+      hasDeclaration(tradeBoardCss, '.tradeRow', 'flex-direction: column'),
+    ).toBe(true)
+    expect(
+      hasNestedDeclaration(
+        tradeBoardCss,
+        '@container (max-width: 760px)',
+        '.summaryStats',
+        'grid-template-columns: 1fr',
+      ),
+    ).toBe(false)
+    expect(
+      hasNestedDeclaration(
+        tradeBoardCss,
+        '@container (max-width: 560px)',
+        '.quickAddRow',
+        'grid-template-columns: 1fr',
+      ),
+    ).toBe(true)
+    expect(
+      hasNestedDeclaration(
+        tradeBoardCss,
+        '@container (max-width: 560px)',
+        '.filterGrid',
+        'grid-template-columns: 1fr',
+      ),
+    ).toBe(true)
+    expect(
+      hasNestedDeclaration(
+        tradeBoardCss,
+        '@media (max-width: 840px)',
+        '.boardInventoryCarouselGrid',
+        'grid-template-columns: 1fr',
+      ),
+    ).toBe(true)
   })
 })

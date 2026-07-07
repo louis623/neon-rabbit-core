@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'
@@ -24,6 +24,7 @@ import {
   moveJoinTeamRosterMember,
   buildShowCalendarCells,
   buildCustomerSparkleSiteHref,
+  createTradeRequestDecisionHandlers,
   getAutoRechargeAmountOptions,
   getAutoRechargeDraft,
   getAutoRechargeThresholdOptions,
@@ -70,6 +71,15 @@ import {
 } from '@/app/nic-nac/components/DashboardPlaceholder'
 import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/TradeBoardWorkspaceCard'
 import { getHelpResources } from '@/lib/services/help-resources'
+
+function getTradeBoardSectionLabels(html: string) {
+  return Array.from(
+    html.matchAll(
+      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Swap cleanup|Fulfillment queue)</g,
+    ),
+    (match) => match[1].replace('&#x27;', "'"),
+  )
+}
 
 const READY_STATE = {
   status: 'ready' as const,
@@ -1363,7 +1373,7 @@ describe('DashboardPlaceholder', () => {
     expect(shellCss).toContain('border-radius: 20px;')
     expect(shellCss).toContain('backdrop-filter: blur(18px);')
     expect(tabsCss).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
-    expect(tabsCss).toContain('min-height: 44px;')
+    expect(tabsCss).toContain('min-height: 46px;')
     expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.76);')
     expect(tabsCss).toContain(
       'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
@@ -1403,7 +1413,8 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('scroll-snap-type: x proximity;')
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 999px;')
-    expect(tabsCss).toContain('min-height: 44px;')
+    expect(tabsCss).toContain('min-height: 46px;')
+    expect(tabsCss).toContain('min-height: 58px;')
     expect(tabsCss).toContain('.tabs::-webkit-scrollbar')
     expect(tabsCss).toContain('.labelShort')
   })
@@ -1568,9 +1579,14 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
+    expect(getTradeBoardSectionLabels(html)).toEqual([
+      'Trade Board',
+      "Today's trade work",
+      'Quick add',
+      'Browse board',
+    ])
     expect(html).toContain('Jewelry Type')
     expect(html).toContain('Collection')
-    expect(html).toContain('Today&#x27;s trade work')
     expect(html).toContain(
       'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
     )
@@ -1635,33 +1651,38 @@ describe('DashboardPlaceholder', () => {
     )
   })
 
-  it('wires dashboard trade approval through revealed item capture', () => {
+  it('routes trade-board approve and reject actions through the dashboard decision handler', () => {
     const dashboardSource = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
     )
-    const tradeBoardCardSource = readFileSync(
-      resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
-      'utf8',
-    )
-    const normalizedTradeBoardCardSource = tradeBoardCardSource.replace(/\s+/g, ' ')
+    const handleTradeRequestDecision = vi.fn()
+    const handlers = createTradeRequestDecisionHandlers(handleTradeRequestDecision)
 
     expect(dashboardSource).toContain('/api/nic-nac/trade-swap-cleanup')
-    expect(tradeBoardCardSource).toContain('Swap cleanup')
-    expect(normalizedTradeBoardCardSource).toContain(
-      'Approved swaps stay here until the missing ring size or catalog details are finished.',
+    expect(dashboardSource).toMatch(
+      /const tradeRequestDecisionHandlers = createTradeRequestDecisionHandlers\(\s*handleTradeRequestDecision,\s*\)/,
     )
-    expect(tradeBoardCardSource).toContain(
-      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
+    expect(dashboardSource).toContain(
+      'onApproveRequest={tradeRequestDecisionHandlers.onApproveRequest}',
     )
-    expect(tradeBoardCardSource).toContain(
-      'Revealed item number (optional)',
+    expect(dashboardSource).toContain(
+      'onRejectRequest={tradeRequestDecisionHandlers.onRejectRequest}',
     )
-    expect(normalizedTradeBoardCardSource).toContain(
-      'Add it now if you have it, or approve the trade and add the revealed piece later with Nic-Nac.',
-    )
-    expect(tradeBoardCardSource).toContain(
-      'Approve without item number',
+    handlers.onApproveRequest('request-1', {
+      revealedItemNumber: 'RG200',
+      revealedRingSize: '8',
+    })
+    handlers.onRejectRequest('request-2')
+
+    expect(handleTradeRequestDecision).toHaveBeenNthCalledWith(1, 'request-1', 'approve', {
+      revealedItemNumber: 'RG200',
+      revealedRingSize: '8',
+    })
+    expect(handleTradeRequestDecision).toHaveBeenNthCalledWith(
+      2,
+      'request-2',
+      'reject',
     )
     expect(dashboardSource).toContain(
       'Trade approved. Added the revealed piece back to your board.',

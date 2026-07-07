@@ -527,8 +527,7 @@
   }
 }
 
-@container (max-width: 760px) {
-  .summaryStats,
+@container (max-width: 560px) {
   .quickAddRow,
   .filterGrid,
   .boardInventoryCarouselGrid {
@@ -543,9 +542,28 @@
     padding: 12px;
   }
 
-  .summaryStats,
+  .summaryStats {
+    gap: 6px;
+  }
+
+  .summaryStat {
+    min-height: 70px;
+    padding: 10px;
+  }
+
+  .summaryCount {
+    font-size: 18px;
+  }
+
+  .summaryLabel {
+    font-size: 10px;
+  }
+
   .quickAddRow,
-  .filterGrid,
+  .filterGrid {
+    gap: 8px;
+  }
+
   .boardInventoryCarouselGrid {
     grid-template-columns: 1fr;
   }
