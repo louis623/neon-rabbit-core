@@ -8,7 +8,6 @@ export type WorkspaceSectionTab<TKey extends string = string> = {
   key: TKey
   label: string
   shortLabel: string
-  subtitle: string
   icon: WorkspaceSectionIcon
   comingSoon?: boolean
 }

@@ -1374,6 +1374,7 @@ describe('DashboardPlaceholder', () => {
     expect(tabsSource).toContain('tab.shortLabel')
     expect(tabsSource).not.toContain('workspaceNavStatusTag')
     expect(tabsSource).not.toContain('tab.subtitle')
+    expect(tabsSource).not.toContain('subtitle: string')
     expect(tabsCss).toContain('scroll-snap-type: x proximity;')
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 999px;')
