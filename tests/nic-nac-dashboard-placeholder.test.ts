@@ -508,18 +508,19 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('View live site')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
+    expect(html).toContain('Add a piece')
+    expect(html).toContain('Check my board')
+    expect(html).toContain('Add a show')
+    expect(html).toContain('Today&#x27;s trade work')
     expect(html).toContain('Pending requests')
     expect(html).toContain('Cleanup follow-ups')
     expect(html).toContain('Fulfillment swaps')
     expect(html).not.toContain('Trade history')
+    expect(html).toContain('Nic-Nac')
     expect(html).toContain('Trade Board')
     expect(html).toContain('Jewelry Library')
     expect(html).toContain('Calendar')
-    expect(html).toContain('Business Tools')
-    expect(html).toContain('Team Management')
-    expect(html).toContain('Messages')
-    expect(html).toContain('Help &amp; Resources')
-    expect(html).toContain('Account')
+    expect(html).toContain('More')
     expect(html).not.toContain('Setup Checklist')
     expect(html).not.toContain('Confirm business/profile basics')
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
@@ -670,14 +671,14 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=team-management')).toBe(
       'team-management',
     )
-    expect(getInitialWorkspaceSection('?section=messages')).toBe('trade-board')
-    expect(getInitialWorkspaceSection('?section=unknown')).toBe('trade-board')
+    expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
+    expect(getInitialWorkspaceSection('?section=unknown')).toBe('home')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
-      'trade-board',
+      'home',
     )
   })
 
-  it('keeps the dashboard section list complete for unlocked workspace reps', () => {
+  it('keeps the primary dashboard section list streamlined for unlocked workspace reps', () => {
     expect(hasPaidWorkspaceSubscription(null)).toBe(false)
     expect(
       hasPaidWorkspaceSubscription({
@@ -695,19 +696,13 @@ describe('DashboardPlaceholder', () => {
       }),
     ).toBe(true)
     expect(getVisibleWorkspaceSections(false, false).map((section) => section.key)).toEqual([
+      'home',
       'trade-board',
-      'jewelry-library',
       'show-calendar',
-      'business-tools',
-      'team-management',
-      'messages',
-      'site-settings',
-      'help-resources',
-      'account',
+      'jewelry-library',
+      'more',
     ])
-    expect(getVisibleWorkspaceSections(false, true).map((section) => section.key)).toContain(
-      'recipes',
-    )
+    expect(getVisibleWorkspaceSections(false, true).map((section) => section.key)).not.toContain('recipes')
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
@@ -716,7 +711,7 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
     expect(resolveWorkspaceSectionForAccess('recipes', true, false)).toBe(
-      'trade-board',
+      'more',
     )
     expect(resolveWorkspaceSectionForAccess('recipes', true, true)).toBe(
       'recipes',
@@ -727,7 +722,7 @@ describe('DashboardPlaceholder', () => {
     expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe(
       'team-management',
     )
-    expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('trade-board')
+    expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('more')
   })
 
   it('only shows Recipes for Heather BlingKitchen workspaces', () => {
@@ -755,6 +750,7 @@ describe('DashboardPlaceholder', () => {
         reviewWorkspaceMode: true,
         repIdOverride: 'rep-1',
         publicSiteSlugOverride: 'sparklebysasha',
+        initialSectionOverride: 'more',
       }),
     )
     const blingKitchenHtml = renderToStaticMarkup(
@@ -762,6 +758,7 @@ describe('DashboardPlaceholder', () => {
         reviewWorkspaceMode: true,
         repIdOverride: '9a971c05-3631-443e-bcb8-4e9a26e15885',
         publicSiteSlugOverride: 'blingkitchen',
+        initialSectionOverride: 'more',
       }),
     )
 
@@ -1369,11 +1366,12 @@ describe('DashboardPlaceholder', () => {
     expect(shellCss).toContain('--workspace-surface-border: rgba(64, 41, 36, 0.10);')
     expect(shellCss).toContain('--workspace-surface-shadow: 0 10px 28px rgba(43, 31, 27, 0.08);')
     expect(shellCss).toContain('--workspace-tab-active-bg: #ffffff;')
-    expect(shellCss).toContain('top: 10px;')
+    expect(shellCss).toContain('bottom: 0;')
+    expect(shellCss).toContain('env(safe-area-inset-bottom)')
     expect(shellCss).toContain('border-radius: 20px;')
     expect(shellCss).toContain('backdrop-filter: blur(18px);')
     expect(tabsCss).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
-    expect(tabsCss).toContain('min-height: 46px;')
+    expect(tabsCss).toContain('min-height: 56px;')
     expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.76);')
     expect(tabsCss).toContain(
       'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
@@ -1391,7 +1389,7 @@ describe('DashboardPlaceholder', () => {
     expect(dashboardCss).toContain(".main[data-workspace-skin='black_diamond'] :where(")
   })
 
-  it('ships a mobile-first workspace top nav treatment for the section rail', () => {
+  it('ships a mobile-first workspace bottom nav treatment for the section rail', () => {
     const tabsSource = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.tsx'),
       'utf8',
@@ -1413,7 +1411,7 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('scroll-snap-type: x proximity;')
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 999px;')
-    expect(tabsCss).toContain('min-height: 46px;')
+    expect(tabsCss).toContain('min-height: 56px;')
     expect(tabsCss).toContain('min-height: 58px;')
     expect(tabsCss).toContain('.tabs::-webkit-scrollbar')
     expect(tabsCss).toContain('.labelShort')

@@ -26,6 +26,10 @@ import {
 import {
   buildCustomerSparkleSiteHref,
 } from '@/lib/nic-nac/rep-links'
+import {
+  getLaunchPromptForWorkspaceAction,
+  type WorkspaceLaunchAction,
+} from '@/lib/nic-nac/workspace-launch-actions'
 import { resolveNicNacWorkspaceMode } from '@/lib/nic-nac/required-setup-client-mode'
 import type { SiteSettingsDashboardResult } from '@/lib/services/types'
 import {
@@ -266,6 +270,7 @@ export default function NicNacClient({
   const [isDesktop, setIsDesktop] = useState(getInitialDesktopMatch)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [desktopOpen, setDesktopOpen] = useState(true)
+  const [pendingLaunchPrompt, setPendingLaunchPrompt] = useState<string | null>(null)
   // Lifted from the chat body so "New conversation" can disable correctly
   // without a context dance. The chat body pushes streaming/HITL state up.
   const [chatState, setChatState] = useState<{
@@ -765,6 +770,20 @@ export default function NicNacClient({
     activateConversation(newConversationId(), [])
   }, [activateConversation, chatState])
 
+  const handleLaunchNicNacAction = useCallback(
+    (action: WorkspaceLaunchAction) => {
+      const prompt = getLaunchPromptForWorkspaceAction(action)
+      if (!prompt) return
+      setPendingLaunchPrompt(prompt)
+      if (!isDesktop) {
+        setMobileOpen(true)
+      } else {
+        setDesktopOpen(true)
+      }
+    },
+    [isDesktop],
+  )
+
   const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
   const showReviewerSetupActions =
     reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)
@@ -864,6 +883,8 @@ export default function NicNacClient({
       onChatStateChange={setChatState}
       onRolloverRecommended={rolloverConversation}
       resetSignal={conversationId!}
+      launchPrompt={pendingLaunchPrompt}
+      onLaunchPromptConsumed={() => setPendingLaunchPrompt(null)}
     />
   ) : initResolveError ? (
     <div className={shellStyles.loading}>
@@ -960,6 +981,7 @@ export default function NicNacClient({
         liveQueueSyncCodeOverride={requiredSetupSyncCode}
         initialSiteSettings={buildReviewSiteSettings(setupState)}
         reviewWorkspaceMode={showWorkspaceReviewState}
+        onLaunchNicNacAction={handleLaunchNicNacAction}
       />
       {isDesktop ? (
         desktopOpen || shouldKeepDesktopNicNacOpen ? (

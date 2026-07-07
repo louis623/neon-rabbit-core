@@ -10,7 +10,7 @@
   .root {
     align-items: stretch;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width);
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 420px);
   }
   .rootMinimized {
     display: block;

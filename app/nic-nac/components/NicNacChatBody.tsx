@@ -177,6 +177,8 @@ export function NicNacChatBody({
   initialMessages,
   onChatStateChange,
   onRolloverRecommended,
+  launchPrompt,
+  onLaunchPromptConsumed,
 }: {
   conversationId: string
   chatMode?: NicNacChatMode
@@ -188,6 +190,8 @@ export function NicNacChatBody({
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
   onRolloverRecommended: (conversationId: string) => Promise<boolean>
   resetSignal: string
+  launchPrompt?: string | null
+  onLaunchPromptConsumed?: () => void
 }) {
   // Server-owned ThinkingIndicator state machine. The server emits transient
   // `data-thinking` parts with phase: 'show' | 'confirm' | 'hide'. The client
@@ -355,6 +359,25 @@ export function NicNacChatBody({
     [messages]
   )
   const hasPendingApproval = actionableApproval !== null
+  const consumedLaunchPromptRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!launchPrompt) {
+      consumedLaunchPromptRef.current = null
+      return
+    }
+    if (consumedLaunchPromptRef.current === launchPrompt) return
+    if (isStreaming || hasPendingApproval) return
+    consumedLaunchPromptRef.current = launchPrompt
+    void sendMessage({ text: launchPrompt })
+    onLaunchPromptConsumed?.()
+  }, [
+    hasPendingApproval,
+    isStreaming,
+    launchPrompt,
+    onLaunchPromptConsumed,
+    sendMessage,
+  ])
 
   const refreshConversationMessages = useCallback(async () => {
     if (!conversationId || status !== 'ready' || hasPendingApproval) return

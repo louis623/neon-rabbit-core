@@ -20,7 +20,7 @@
   justify-content: flex-start;
   gap: 8px;
   flex: 0 0 auto;
-  min-height: 46px;
+  min-height: 56px;
   min-width: 0;
   border: 1px solid rgba(64, 41, 36, 0.1);
   border-radius: 999px;
@@ -149,6 +149,8 @@
   .tabs {
     flex-wrap: wrap;
     overflow: visible;
+    justify-content: flex-start;
+    gap: 12px;
   }
 }
 

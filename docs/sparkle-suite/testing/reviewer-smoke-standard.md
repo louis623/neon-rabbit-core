@@ -52,4 +52,17 @@ Finder live-shows endpoint and every advertised customer-site calendar path, so
 the workspace can never promote a calendar link that the customer-facing site
 cannot resolve.
 
+## Nic-Nac-First Workspace Smoke
+
+1. Open `/start` on the stable demo and enter reviewer smoke mode.
+2. Open the workspace preview.
+3. Confirm the primary nav shows `Nic-Nac`, `Trade Board`, `Calendar`,
+   `Jewelry Library`, and `More`.
+4. On mobile width, tap `Add a piece` and verify the Nic-Nac chat opens and
+   starts the add-listing flow automatically.
+5. On mobile width, close chat and confirm the floating `N` remains available
+   to reopen it.
+6. On desktop width, confirm the chat remains persistent and the home surface
+   still shows compact Today/Trade/Calendar glance modules.
+
 If any item is missing, say so plainly before calling the work ready.

@@ -560,6 +560,72 @@
   align-items: start;
 }
 
+.sectionHeadingRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.moreToolGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.moreToolButton {
+  min-height: 74px;
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--nic-nac-text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.76);
+}
+
+.moreToolButton:hover:not(:disabled) {
+  border-color: rgba(122, 74, 180, 0.22);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.moreToolButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.moreToolIcon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  color: #7a4ab4;
+  stroke-width: 2;
+}
+
+.moreToolCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.moreToolLabel {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.moreToolHint {
+  color: var(--nic-nac-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .headerActions {
   display: flex;
   flex-wrap: wrap;

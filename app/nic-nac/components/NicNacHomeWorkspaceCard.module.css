@@ -1,0 +1,165 @@
+.homeShell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.chatIntro,
+.todayPanel,
+.glanceGrid button,
+.quickActions button {
+  border: 1px solid rgba(64, 41, 36, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.82),
+    0 14px 32px rgba(54, 34, 29, 0.07);
+}
+
+.chatIntro {
+  border-radius: 20px;
+  padding: 18px;
+}
+
+.chatTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.chatMark {
+  width: 18px;
+  height: 18px;
+  color: #7a4ab4;
+}
+
+.chatTitle {
+  color: var(--nic-nac-text-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.chatSubtitle {
+  margin: 10px 0 0;
+  color: var(--nic-nac-text-muted);
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.45;
+  max-width: 44rem;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quickActions button,
+.glanceGrid button {
+  min-height: 58px;
+  border-radius: 18px;
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 13px 14px;
+  text-align: left;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.quickActions button:hover,
+.glanceGrid button:hover {
+  border-color: rgba(122, 74, 180, 0.24);
+  background: #fff;
+}
+
+.quickActions svg,
+.glanceGrid svg {
+  width: 18px;
+  height: 18px;
+  color: #7a4ab4;
+  flex: 0 0 auto;
+}
+
+.todayPanel {
+  border-radius: 18px;
+  padding: 15px;
+  display: grid;
+  gap: 12px;
+}
+
+.todayLabel,
+.todayCopy {
+  display: block;
+}
+
+.todayLabel {
+  color: var(--nic-nac-text-primary);
+  font-size: 0.86rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.todayCopy {
+  color: var(--nic-nac-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.todayStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.todayStrip span {
+  border-radius: 14px;
+  background: rgba(245, 239, 251, 0.78);
+  color: var(--nic-nac-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.todayStrip strong {
+  color: var(--nic-nac-text-primary);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.glanceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 760px) {
+  .glanceGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .quickActions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .todayStrip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

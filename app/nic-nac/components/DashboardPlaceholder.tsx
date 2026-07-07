@@ -48,6 +48,7 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  CircleEllipsis,
   Gem,
   HelpCircle,
   MessagesSquare,
@@ -59,8 +60,10 @@ import {
   Wrench,
   X,
 } from 'lucide-react'
+import type { WorkspaceLaunchAction } from '@/lib/nic-nac/workspace-launch-actions'
 import { WorkspaceShell } from './WorkspaceShell'
 import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
+import { NicNacHomeWorkspaceCard } from './NicNacHomeWorkspaceCard'
 import { TradeBoardWorkspaceCard } from './TradeBoardWorkspaceCard'
 import styles from './DashboardPlaceholder.module.css'
 
@@ -71,10 +74,22 @@ export {
 
 const WORKSPACE_SECTIONS = [
   {
+    key: 'home',
+    label: 'Nic-Nac',
+    shortLabel: 'Home',
+    icon: Sparkles,
+  },
+  {
     key: 'trade-board',
     label: 'Trade Board',
     shortLabel: 'Trade',
     icon: Gem,
+  },
+  {
+    key: 'show-calendar',
+    label: 'Calendar',
+    shortLabel: 'Calendar',
+    icon: CalendarDays,
   },
   {
     key: 'jewelry-library',
@@ -83,11 +98,14 @@ const WORKSPACE_SECTIONS = [
     icon: Search,
   },
   {
-    key: 'show-calendar',
-    label: 'Calendar',
-    shortLabel: 'Calendar',
-    icon: CalendarDays,
+    key: 'more',
+    label: 'More',
+    shortLabel: 'More',
+    icon: CircleEllipsis,
   },
+] as const satisfies readonly WorkspaceSectionTab<string>[]
+
+const SECONDARY_WORKSPACE_SECTIONS = [
   {
     key: 'business-tools',
     label: 'Business Tools',
@@ -213,10 +231,14 @@ function mergeTradeBoardResults(
   }
 }
 
-type WorkspaceSectionKey = (typeof WORKSPACE_SECTIONS)[number]['key']
+type WorkspaceSectionKey =
+  | (typeof WORKSPACE_SECTIONS)[number]['key']
+  | (typeof SECONDARY_WORKSPACE_SECTIONS)[number]['key']
 
 const WORKSPACE_SECTION_KEYS = new Set<string>(
-  WORKSPACE_SECTIONS.map((section) => section.key),
+  [...WORKSPACE_SECTIONS, ...SECONDARY_WORKSPACE_SECTIONS].map(
+    (section) => section.key,
+  ),
 )
 
 const BLING_KITCHEN_RECIPE_REP_IDS = new Set([
@@ -225,7 +247,9 @@ const BLING_KITCHEN_RECIPE_REP_IDS = new Set([
 const BLING_KITCHEN_RECIPE_SLUGS = new Set(['blingkitchen', 'bling-kitchen'])
 
 const COMING_SOON_WORKSPACE_SECTIONS = new Set<WorkspaceSectionKey>(
-  WORKSPACE_SECTIONS.filter((section) => 'comingSoon' in section && section.comingSoon)
+  SECONDARY_WORKSPACE_SECTIONS.filter(
+    (section) => 'comingSoon' in section && section.comingSoon,
+  )
     .map((section) => section.key),
 )
 
@@ -239,9 +263,9 @@ export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey 
   if (requested === 'business-calculator') return 'business-tools'
   if (WORKSPACE_SECTION_KEYS.has(requested)) {
     const section = requested as WorkspaceSectionKey
-    return isComingSoonWorkspaceSection(section) ? 'trade-board' : section
+    return isComingSoonWorkspaceSection(section) ? 'more' : section
   }
-  return 'trade-board'
+  return 'home'
 }
 
 export function hasPaidWorkspaceSubscription(
@@ -266,11 +290,9 @@ export function hasBlingKitchenRecipeWorkspaceAccess(input: {
 
 export function getVisibleWorkspaceSections(
   _hasPaidWorkspace: boolean,
-  hasRecipeWorkspaceAccess = false,
+  _hasRecipeWorkspaceAccess = false,
 ) {
-  return WORKSPACE_SECTIONS.filter(
-    (section) => section.key !== 'recipes' || hasRecipeWorkspaceAccess,
-  )
+  return WORKSPACE_SECTIONS
 }
 
 export function resolveWorkspaceSectionForAccess(
@@ -278,8 +300,8 @@ export function resolveWorkspaceSectionForAccess(
   _hasPaidWorkspace: boolean,
   hasRecipeWorkspaceAccess = true,
 ): WorkspaceSectionKey {
-  if (isComingSoonWorkspaceSection(section)) return 'trade-board'
-  if (section === 'recipes' && !hasRecipeWorkspaceAccess) return 'trade-board'
+  if (isComingSoonWorkspaceSection(section)) return 'more'
+  if (section === 'recipes' && !hasRecipeWorkspaceAccess) return 'more'
   return section
 }
 
@@ -309,9 +331,18 @@ export function shouldShowWorkspaceLoadingSkeleton(
 
 function getWorkspaceSectionLabel(section: WorkspaceSectionKey) {
   return (
-    WORKSPACE_SECTIONS.find((workspaceSection) => workspaceSection.key === section)
+    [...WORKSPACE_SECTIONS, ...SECONDARY_WORKSPACE_SECTIONS].find(
+      (workspaceSection) => workspaceSection.key === section,
+    )
       ?.label ?? 'Workspace'
   )
+}
+
+export function buildHomeNextShowLabel(events: CalendarEvent[]) {
+  const next = events[0]
+  if (!next) return 'Calendar'
+  const title = next.title?.trim() || next.description?.trim() || 'Next show'
+  return title.length > 28 ? `${title.slice(0, 25).trim()}...` : title
 }
 
 export type RosterFilter =
@@ -1927,6 +1958,8 @@ export type DashboardPlaceholderProps = {
   liveQueueSyncCodeOverride?: string | null
   initialSiteSettings?: SiteSettingsDashboardResult
   reviewWorkspaceMode?: boolean
+  initialSectionOverride?: WorkspaceSectionKey
+  onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
 }
 
 type WorkspacePreviewState =
@@ -1944,12 +1977,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     liveQueueSyncCodeOverride,
     initialSiteSettings,
     reviewWorkspaceMode = false,
+    initialSectionOverride,
+    onLaunchNicNacAction,
   } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>(() =>
-      typeof window === 'undefined'
-        ? 'trade-board'
-        : getInitialWorkspaceSection(window.location.search),
+      initialSectionOverride ??
+      (typeof window === 'undefined'
+        ? 'home'
+        : getInitialWorkspaceSection(window.location.search)),
     )
   const [workspacePreview, setWorkspacePreview] = useState<WorkspacePreviewState>({
     mode: 'workspace',
@@ -1982,12 +2018,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   })
 
   useEffect(() => {
+    if (initialSectionOverride) return
     if (typeof window === 'undefined') return
     const requestedSection = getInitialWorkspaceSection(window.location.search)
     setActiveSection((currentSection) =>
       currentSection === requestedSection ? currentSection : requestedSection,
     )
-  }, [])
+  }, [initialSectionOverride])
   const [rosterFilter, setRosterFilter] = useState<RosterFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<RosterSort>('newest')
@@ -4755,6 +4792,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     actionState: siteSettingsActionState,
     statusMessage: siteSettingsActionState.helperMessage,
   })
+  const activeWorkspaceShellSection = WORKSPACE_SECTIONS.some(
+    (section) => section.key === activeSection,
+  )
+    ? (activeSection as (typeof WORKSPACE_SECTIONS)[number]['key'])
+    : 'more'
   const workspaceHeader = !isLiveSitePreview ? (
     <header className={styles.topbar}>
       <div className={styles.topbarBrandRow}>
@@ -4850,6 +4892,23 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       )
     }
 
+    if (canRenderWorkspaceSections && activeSection === 'home') {
+      return (
+        <NicNacHomeWorkspaceCard
+          tradeRequestsCount={tradeRequestsState.requests?.length ?? 0}
+          cleanupCount={tradeSwapCleanupState.items?.length ?? 0}
+          fulfillmentCount={fulfillmentQueueState.items?.length ?? 0}
+          nextShowLabel={buildHomeNextShowLabel(
+            calendarState.summary?.upcomingEvents ?? [],
+          )}
+          onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
+          onOpenTradeBoard={() => setActiveSection('trade-board')}
+          onOpenCalendar={() => setActiveSection('show-calendar')}
+          onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
+        />
+      )
+    }
+
     if (canRenderWorkspaceSections && activeSection === 'jewelry-library') {
       return (
         <JewelryLibraryCard
@@ -4876,6 +4935,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
     if (canRenderWorkspaceSections && activeSection === 'business-tools') {
       return <BusinessToolsCard />
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'more') {
+      return (
+        <MoreWorkspaceCard
+          sections={SECONDARY_WORKSPACE_SECTIONS.filter(
+            (section) => section.key !== 'recipes' || hasRecipeWorkspaceAccess,
+          )}
+          onSectionChange={(section) =>
+            setActiveSection(
+              resolveWorkspaceSectionForAccess(
+                section,
+                hasPaidWorkspace,
+                hasRecipeWorkspaceAccess,
+              ),
+            )
+          }
+        />
+      )
     }
 
     if (canRenderWorkspaceSections && activeSection === 'team-management') {
@@ -5093,7 +5171,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       ) : (
         <WorkspaceShell
           tabs={visibleWorkspaceSections}
-          activeSection={activeSection}
+          activeSection={activeWorkspaceShellSection}
           onSectionChange={(section) =>
             setActiveSection(
               resolveWorkspaceSectionForAccess(
@@ -5168,6 +5246,50 @@ export function WorkspaceAccessNotice({
         onAgreementAcceptedChange={onAgreementAcceptedChange}
       />
     </div>
+  )
+}
+
+function MoreWorkspaceCard({
+  sections,
+  onSectionChange,
+}: {
+  sections: readonly (typeof SECONDARY_WORKSPACE_SECTIONS)[number][]
+  onSectionChange: (section: WorkspaceSectionKey) => void
+}) {
+  return (
+    <section className={styles.workspaceIntroCard}>
+      <div className={styles.sectionHeadingRow}>
+        <div>
+          <h2 className={styles.cardTitle}>More workspace tools</h2>
+          <p className={styles.cardSubtitle}>
+            Keep the everyday tabs simple and open these when you need them.
+          </p>
+        </div>
+      </div>
+      <div className={styles.moreToolGrid}>
+        {sections.map((section) => {
+          const Icon = section.icon
+          const disabled = 'comingSoon' in section && section.comingSoon === true
+          return (
+            <button
+              key={section.key}
+              type="button"
+              className={styles.moreToolButton}
+              disabled={disabled}
+              onClick={() => onSectionChange(section.key)}
+            >
+              <Icon className={styles.moreToolIcon} aria-hidden="true" />
+              <span className={styles.moreToolCopy}>
+                <span className={styles.moreToolLabel}>{section.label}</span>
+                <span className={styles.moreToolHint}>
+                  {disabled ? 'Coming soon' : 'Open tool'}
+                </span>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 

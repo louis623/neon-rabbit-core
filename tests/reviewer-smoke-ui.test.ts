@@ -15,6 +15,10 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
     'utf8',
   )
+  const nicNacChatBody = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/NicNacChatBody.tsx'),
+    'utf8',
+  )
   const nicNacPage = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/page.tsx'),
     'utf8',
@@ -25,6 +29,14 @@ describe('reviewer smoke UI wiring', () => {
   )
   const requiredSetupHome = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupHome.tsx'),
+    'utf8',
+  )
+  const nicNacHeader = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/NicNacHeader.tsx'),
+    'utf8',
+  )
+  const nicNacHeaderCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/NicNacHeader.module.css'),
     'utf8',
   )
   const dashboardPlaceholder = readFileSync(
@@ -45,6 +57,18 @@ describe('reviewer smoke UI wiring', () => {
   )
   const nicNacShellCss = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/_shell.module.css'),
+    'utf8',
+  )
+  const workspaceShell = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.tsx'),
+    'utf8',
+  )
+  const workspaceShellCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
+    'utf8',
+  )
+  const workspaceSectionTabsCss = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.module.css'),
     'utf8',
   )
   const nicNacPageCss = readFileSync(
@@ -321,12 +345,36 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacPageCss).toContain('min-height: 0')
     expect(nicNacPageCss).toContain('overflow-x: clip')
     expect(nicNacPageCss).toContain('margin-top: 0')
-    expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) var(--nic-nac-column-width)')
+    expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(380px, 420px)')
     expect(nicNacColumnCss).not.toMatch(/\.desktop\s*{[^}]*position:\s*fixed/s)
     expect(nicNacColumnCss).toMatch(/\.desktop\s*{[^}]*position:\s*sticky/s)
     expect(requiredSetupCss).not.toMatch(/\.root\s*{[^}]*height:\s*100dvh/s)
     expect(requiredSetupCss).toContain('var(--nic-nac-app-height')
     expect(dashboardCss).toContain('var(--nic-nac-app-height')
+  })
+
+  it('uses the streamlined primary workspace navigation', () => {
+    expect(dashboardPlaceholder).toContain("label: 'Nic-Nac'")
+    expect(dashboardPlaceholder).toContain("label: 'Trade Board'")
+    expect(dashboardPlaceholder).toContain("label: 'Calendar'")
+    expect(dashboardPlaceholder).toContain("label: 'Jewelry Library'")
+    expect(dashboardPlaceholder).toContain("label: 'More'")
+    expect(dashboardPlaceholder).toContain('SECONDARY_WORKSPACE_SECTIONS')
+    expect(workspaceShell).toContain('className={styles.content}')
+    expect(workspaceShell.indexOf('className={styles.content}')).toBeLessThan(
+      workspaceShell.indexOf('className={styles.tabsWrap}'),
+    )
+    expect(workspaceShellCss).toContain('bottom: 0')
+    expect(workspaceShellCss).toContain('env(safe-area-inset-bottom)')
+    expect(workspaceSectionTabsCss).toContain('min-height: 56px')
+  })
+
+  it('keeps the Nic-Nac header compact instead of oversized branding', () => {
+    expect(nicNacHeader).toContain('<NicNacGlyph size={20} />')
+    expect(nicNacHeader).toContain('<span className={styles.title}>Nic-Nac</span>')
+    expect(nicNacHeaderCss).toContain('min-height: 56px;')
+    expect(nicNacHeaderCss).toContain('padding: 0 16px;')
+    expect(nicNacHeaderCss).not.toContain('font-size: 28px')
   })
 
   it('opens Nic-Nac with an empty starter chat in workspace review mode', () => {
@@ -343,6 +391,16 @@ describe('reviewer smoke UI wiring', () => {
     expect(chips.indexOf('Add a piece to Trade Board')).toBeLessThan(
       chips.indexOf('Add a Show to the Calendar'),
     )
+  })
+
+  it('keeps mobile Nic-Nac launch affordances wired for quick actions', () => {
+    expect(nicNacClient).toContain('pendingLaunchPrompt')
+    expect(nicNacClient).toContain('setMobileOpen(true)')
+    expect(nicNacClient).toContain('setDesktopOpen(true)')
+    expect(nicNacClient).toContain('getLaunchPromptForWorkspaceAction')
+    expect(dashboardPlaceholder).toContain('onLaunchNicNacAction')
+    expect(dashboardPlaceholder).toContain("onLaunchAction={(action) => onLaunchNicNacAction?.(action)}")
+    expect(nicNacChatBody).toContain('consumedLaunchPromptRef.current = null')
   })
 
   it('puts the trade request inbox before board inventory in the workspace card', () => {

@@ -15,7 +15,7 @@ export function NicNacHeader({
   return (
     <header className={styles.header}>
       <div className={styles.titleGroup}>
-        <NicNacGlyph size={30} />
+        <NicNacGlyph size={20} />
         <span className={styles.title}>Nic-Nac</span>
       </div>
       <div className={styles.actions}>
