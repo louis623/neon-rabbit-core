@@ -1571,8 +1571,18 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Jewelry Type')
     expect(html).toContain('Collection')
     expect(html).toContain('Today&#x27;s trade work')
-    expect(html).toContain('No trade requests, cleanup, or fulfillment work needs attention right now.')
-    expect(html).toContain('Search the board or open filters to find a live piece.')
+    expect(html).toContain(
+      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
+    )
+    expect(html).toContain('Know the item number? Add it in one step.')
+    expect(html).toContain(
+      'Start with search. Open filters only when you need a tighter match.',
+    )
+    expect(html).toContain('More filters')
+    expect(html).toContain(
+      'Search by item number, design, or collection to pull up a live piece fast.',
+    )
+    expect(html).not.toContain('Default landing section')
     expect(html).not.toContain('Request inbox')
     expect(html).not.toContain('Swap cleanup')
     expect(html).not.toContain('Fulfillment queue')
@@ -1617,7 +1627,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Swap cleanup')
     expect(html).toContain('1 to finish')
     expect(html).toContain(
-      'Approved swaps land here when the replacement reveal still needs a ring size or catalog details before fulfillment can finish.',
+      'Approved swaps stay here until the missing ring size or catalog details are finished.',
     )
     expect(html).toContain('Revealed item number: ER00001')
     expect(html).toContain(
@@ -1639,10 +1649,10 @@ describe('DashboardPlaceholder', () => {
     expect(dashboardSource).toContain('/api/nic-nac/trade-swap-cleanup')
     expect(tradeBoardCardSource).toContain('Swap cleanup')
     expect(normalizedTradeBoardCardSource).toContain(
-      'Approved swaps land here when the replacement reveal still needs a ring size or catalog details before fulfillment can finish.',
+      'Approved swaps stay here until the missing ring size or catalog details are finished.',
     )
     expect(tradeBoardCardSource).toContain(
-      'No trade requests, cleanup, or fulfillment work needs attention right now.',
+      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
     )
     expect(tradeBoardCardSource).toContain(
       'Revealed item number (optional)',

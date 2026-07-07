@@ -221,7 +221,8 @@ export function TradeBoardWorkspaceCard({
           <div>
             <div className={surfaceStyles.cardTitle}>Trade Board</div>
             <div className={surfaceStyles.cardSubtitle}>
-              Track active pieces, requests, and fulfillment from one place.
+              Keep today&apos;s swaps, quick adds, and board checks moving without
+              digging through the whole queue.
             </div>
           </div>
           <div className={styles.heroActions}>
@@ -243,7 +244,6 @@ export function TradeBoardWorkspaceCard({
                 View customer board
               </a>
             )}
-            <span className={surfaceStyles.rosterTag}>Default landing section</span>
           </div>
         </div>
         {actionState.error ? (
@@ -357,8 +357,8 @@ export function TradeBoardWorkspaceCard({
             <div className={surfaceStyles.helperNote}>
               {tradeStatusReady
                 ? tradeWorkCount > 0
-                  ? `${tradeWorkCount} item${tradeWorkCount === 1 ? '' : 's'} need attention before the board is fully caught up.`
-                  : 'No trade requests, cleanup, or fulfillment work needs attention right now.'
+                  ? `${tradeWorkCount} item${tradeWorkCount === 1 ? '' : 's'} need attention. Start with requests, then cleanup, then fulfillment.`
+                  : 'Everything is caught up. New requests, cleanup, and fulfillment work will land here.'
                 : 'Checking requests, cleanup, and fulfillment.'}
             </div>
           </div>
@@ -402,7 +402,7 @@ export function TradeBoardWorkspaceCard({
           <div>
             <div className={surfaceStyles.walletSettingsTitle}>Quick add</div>
             <div className={surfaceStyles.helperNote}>
-              Add a known item fast when you already have the item number.
+              Know the item number? Add it in one step.
             </div>
           </div>
         </div>
@@ -442,7 +442,7 @@ export function TradeBoardWorkspaceCard({
           <div>
             <div className={surfaceStyles.walletSettingsTitle}>Browse board</div>
             <div className={surfaceStyles.helperNote}>
-              Search the active board first. Open filters only when you need to narrow it down.
+              Start with search. Open filters only when you need a tighter match.
             </div>
           </div>
           <span className={surfaceStyles.rosterTag}>
@@ -473,7 +473,9 @@ export function TradeBoardWorkspaceCard({
                 setIsFilterDisclosureOpen(event.currentTarget.open)
               }
             >
-              <summary className={styles.filterSummary}>Filters</summary>
+              <summary className={styles.filterSummary} aria-label="Filters">
+                More filters
+              </summary>
               <div className={styles.filterGrid}>
                 <select
                   aria-label="Jewelry Type"
@@ -619,12 +621,15 @@ export function TradeBoardWorkspaceCard({
                 <div className={surfaceStyles.emptyState}>
                   {isInventoryBrowseLoading
                     ? 'Loading board pieces...'
-                    : 'No board pieces match this search.'}
+                    : 'No live pieces match that search. Reset filters or try another keyword.'}
                 </div>
               )
             ) : (
-              <div className={styles.browseHint}>
-                Search the board or open filters to find a live piece.
+              <div
+                className={styles.browseHint}
+                aria-label="Search the board or open filters to find a live piece."
+              >
+                Search by item number, design, or collection to pull up a live piece fast.
               </div>
             )}
             {previewListing ? (() => {
@@ -688,7 +693,7 @@ export function TradeBoardWorkspaceCard({
             <div>
               <div className={surfaceStyles.walletSettingsTitle}>Request inbox</div>
               <div className={surfaceStyles.helperNote}>
-                Review incoming trade requests and approve the right swaps.
+                Review each request, check the screenshot if there is one, and approve the right swap.
               </div>
             </div>
             <span className={surfaceStyles.rosterTag}>{`${requests.length} pending`}</span>
@@ -738,7 +743,7 @@ export function TradeBoardWorkspaceCard({
                       Rule check: compare against {ruleCheckTarget}
                     </div>
                   </div>
-                  <div className={surfaceStyles.actionRow}>
+                  <div className={`${surfaceStyles.actionRow} ${styles.tradeActions}`}>
                     <button
                       type="button"
                       className={surfaceStyles.actionButton}
@@ -780,8 +785,7 @@ export function TradeBoardWorkspaceCard({
             <div>
               <div className={surfaceStyles.walletSettingsTitle}>Swap cleanup</div>
               <div className={surfaceStyles.helperNote}>
-                Approved swaps land here when the replacement reveal still needs a
-                ring size or catalog details before fulfillment can finish.
+                Approved swaps stay here until the missing ring size or catalog details are finished.
               </div>
             </div>
             <span className={surfaceStyles.rosterTag}>{`${cleanupItems.length} to finish`}</span>
@@ -812,7 +816,7 @@ export function TradeBoardWorkspaceCard({
             <div>
               <div className={surfaceStyles.walletSettingsTitle}>Fulfillment queue</div>
               <div className={surfaceStyles.helperNote}>
-                Keep approved swaps moving until they are fully closed out.
+                Keep approved swaps moving until they are shipped and fully closed out.
               </div>
             </div>
             <span className={surfaceStyles.rosterTag}>{`${queueItems.length} active swaps`}</span>
@@ -834,7 +838,7 @@ export function TradeBoardWorkspaceCard({
                   <div className={styles.tradeMeta}>
                     <span className={styles.statusBadgeWarning}>{item.status}</span>
                   </div>
-                  <div className={surfaceStyles.actionRow}>
+                  <div className={`${surfaceStyles.actionRow} ${styles.tradeActions}`}>
                     {nextStatus ? (
                       <button
                         type="button"

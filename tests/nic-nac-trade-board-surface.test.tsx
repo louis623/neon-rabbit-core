@@ -347,4 +347,38 @@ describe('Nic-Nac trade board surface reset', () => {
       html.indexOf('Fulfillment queue'),
     )
   })
+
+  it('keeps the first screen mobile-first and action-led before queue detail', () => {
+    const html = renderToStaticMarkup(
+      createElement(TradeBoardWorkspaceCard, {
+        tradeBoardState: TRADE_BOARD_READY_STATE,
+        tradeRequestsState: { status: 'ready', requests: [] },
+        fulfillmentQueueState: { status: 'ready', items: [] },
+        tradeSwapCleanupState: { status: 'ready', items: [] },
+        tradeBoardSearchQuery: '',
+        onTradeBoardSearchQueryChange: () => {},
+        quickAddItemNumber: '',
+        onQuickAddItemNumberChange: () => {},
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+        onQuickAddListing: () => {},
+        onRemoveListing: () => {},
+        onApproveRequest: () => {},
+        onRejectRequest: () => {},
+        onAdvanceFulfillment: () => {},
+      }),
+    )
+
+    expect(html).not.toContain('Default landing section')
+    expect(html).toContain(
+      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
+    )
+    expect(html).toContain('Know the item number? Add it in one step.')
+    expect(html).toContain(
+      'Start with search. Open filters only when you need a tighter match.',
+    )
+    expect(html).toContain('More filters')
+    expect(html).toContain(
+      'Search by item number, design, or collection to pull up a live piece fast.',
+    )
+  })
 })
