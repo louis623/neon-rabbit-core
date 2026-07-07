@@ -52,7 +52,23 @@ import {
   hasActiveBoardInventoryBrowse,
 } from '@/lib/nic-nac/board-inventory-view'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
-import { ChevronLeft, ChevronRight, Gem, Search, Sparkles, X } from 'lucide-react'
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Gem,
+  HelpCircle,
+  MessagesSquare,
+  Search,
+  Settings2,
+  Sparkles,
+  Users,
+  WalletCards,
+  Wrench,
+  X,
+} from 'lucide-react'
+import { WorkspaceShell } from './WorkspaceShell'
+import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
 import styles from './DashboardPlaceholder.module.css'
 
 export {
@@ -61,17 +77,78 @@ export {
 }
 
 const WORKSPACE_SECTIONS = [
-  { key: 'trade-board', label: 'Trade Board', subtitle: 'Listings, requests, and fulfillment' },
-  { key: 'jewelry-library', label: 'Jewelry Library', subtitle: 'Search the shared catalog and add pieces' },
-  { key: 'show-calendar', label: 'Calendar', subtitle: 'Upcoming shows and recent history' },
-  { key: 'business-tools', label: 'Business Tools', subtitle: 'Calculator, voice workflow, and growth tools' },
-  { key: 'team-management', label: 'Team Management', subtitle: 'Team onboarding and shared customer workflows' },
-  { key: 'messages', label: 'Messages', subtitle: 'Announcements, reports, and audience backup tools', comingSoon: true },
-  { key: 'site-settings', label: 'Site Settings', subtitle: 'Public page copy and branding' },
-  { key: 'recipes', label: 'Recipes', subtitle: 'Pantry recipe cards and images' },
-  { key: 'help-resources', label: 'Help & Resources', subtitle: 'Quick operating guides for reps' },
-  { key: 'account', label: 'Account', subtitle: 'Billing, wallet, and site analytics' },
-] as const
+  {
+    key: 'trade-board',
+    label: 'Trade Board',
+    shortLabel: 'Trade',
+    subtitle: 'Listings, requests, and fulfillment',
+    icon: Gem,
+  },
+  {
+    key: 'jewelry-library',
+    label: 'Jewelry Library',
+    shortLabel: 'Library',
+    subtitle: 'Shared catalog and add pieces',
+    icon: Search,
+  },
+  {
+    key: 'show-calendar',
+    label: 'Calendar',
+    shortLabel: 'Calendar',
+    subtitle: 'Upcoming shows and recent history',
+    icon: CalendarDays,
+  },
+  {
+    key: 'business-tools',
+    label: 'Business Tools',
+    shortLabel: 'Tools',
+    subtitle: 'Calculator, voice workflow, and growth tools',
+    icon: Wrench,
+  },
+  {
+    key: 'team-management',
+    label: 'Team Management',
+    shortLabel: 'Team',
+    subtitle: 'Team onboarding and shared customer workflows',
+    icon: Users,
+  },
+  {
+    key: 'messages',
+    label: 'Messages',
+    shortLabel: 'Messages',
+    subtitle: 'Announcements, reports, and audience backup tools',
+    icon: MessagesSquare,
+    comingSoon: true,
+  },
+  {
+    key: 'site-settings',
+    label: 'Site Settings',
+    shortLabel: 'Site',
+    subtitle: 'Public page copy and branding',
+    icon: Settings2,
+  },
+  {
+    key: 'recipes',
+    label: 'Recipes',
+    shortLabel: 'Recipes',
+    subtitle: 'Pantry recipe cards and images',
+    icon: Sparkles,
+  },
+  {
+    key: 'help-resources',
+    label: 'Help & Resources',
+    shortLabel: 'Help',
+    subtitle: 'Quick operating guides for reps',
+    icon: HelpCircle,
+  },
+  {
+    key: 'account',
+    label: 'Account',
+    shortLabel: 'Account',
+    subtitle: 'Billing, wallet, and site analytics',
+    icon: WalletCards,
+  },
+] as const satisfies readonly WorkspaceSectionTab<string>[]
 
 const TRADE_WORKSPACE_REFRESH_MS = 15_000
 const TRADE_BOARD_PAGE_SIZE = 12
@@ -4706,47 +4783,289 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     actionState: siteSettingsActionState,
     statusMessage: siteSettingsActionState.helperMessage,
   })
+  const workspaceHeader = !isLiveSitePreview ? (
+    <header className={styles.topbar}>
+      <div className={styles.topbarCopy}>
+        <SparkleSeal className={styles.brandSeal} />
+        <div className={styles.brandText}>
+          <span className={styles.brand}>Sparkle Suite</span>
+          <span className={styles.topbarSubtitle}>Workspace</span>
+        </div>
+      </div>
+      <div className={styles.topbarActions}>
+        <div className={styles.topbarInfoPill}>
+          <span className={styles.topbarInfoLabel}>Rep</span>
+          <span className={styles.topbarInfoValue}>{headerRepName}</span>
+        </div>
+        <div className={styles.topbarInfoPill}>
+          <span className={styles.topbarInfoLabel}>Show</span>
+          <span className={styles.topbarInfoValue}>{headerShowName}</span>
+        </div>
+        <div className={styles.topbarInfoPill}>
+          <span className={styles.topbarInfoLabel}>Secret Rep ID Number</span>
+          <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
+            {headerLiveQueueSyncCode}
+          </span>
+        </div>
+        {hasPaidWorkspace ? (
+          <button
+            type="button"
+            className={styles.liveSiteButton}
+            onClick={handleOpenLiveSitePreview}
+          >
+            View live site
+          </button>
+        ) : null}
+      </div>
+    </header>
+  ) : null
+  const accessNotice = (
+    <WorkspaceAccessNotice
+      sectionLabel={getWorkspaceSectionLabel(activeSection)}
+      state={accountBillingState}
+      actionState={accountBillingActionState}
+      onOpenAccount={() => setActiveSection('account')}
+      onStartSubscription={() => handleAccountBillingAction('subscribe')}
+      onManageBilling={() => handleAccountBillingAction('manage')}
+      statusMessage={accountBillingActionState.helperMessage}
+      agreementAccepted={subscriptionAgreementAccepted}
+      onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
+    />
+  )
+  const renderActiveWorkspaceSection = () => {
+    if (showWorkspaceLoadingSkeleton && !canRenderWorkspaceSections) {
+      return (
+        <div className={styles.cardFill}>
+          <div className={styles.loadingLine} />
+          <div className={styles.loadingLineShort} />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'trade-board') {
+      return (
+        <TradeBoardWorkspaceCard
+          tradeBoardState={tradeBoardState}
+          tradeBoardSearchQuery={tradeBoardSearchQuery}
+          onTradeBoardSearchQueryChange={setTradeBoardSearchQuery}
+          quickAddItemNumber={quickAddItemNumber}
+          onQuickAddItemNumberChange={setQuickAddItemNumber}
+          actionState={tradeBoardActionState}
+          tradeRequestsState={tradeRequestsState}
+          fulfillmentQueueState={fulfillmentQueueState}
+          tradeSwapCleanupState={tradeSwapCleanupState}
+          onQuickAddListing={handleQuickAddListing}
+          onRemoveListing={handleRemoveTradeListing}
+          onApproveRequest={(requestId, swap) =>
+            handleTradeRequestDecision(requestId, 'approve', swap)
+          }
+          onRejectRequest={(requestId) =>
+            handleTradeRequestDecision(requestId, 'reject')
+          }
+          onAdvanceFulfillment={handleAdvanceFulfillment}
+          customerBoardHref={customerTradeBoardHref}
+          onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
+          hasMoreListings={tradeBoardState.hasMoreListings === true}
+          onEnsureInventoryBrowseLoaded={handleEnsureInventoryBrowseLoaded}
+          isInventoryBrowseLoading={
+            tradeBoardActionState.pendingKey === 'load-more-listings'
+          }
+        />
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'jewelry-library') {
+      return (
+        <JewelryLibraryCard
+          state={jewelryLibraryState}
+          searchQuery={librarySearchQuery}
+          filters={libraryFilters}
+          onSearchQueryChange={setLibrarySearchQuery}
+          onSearch={handleLibrarySearch}
+          onFilterChange={handleLibraryFilterChange}
+          onClear={handleLibraryClear}
+          onAddToBoard={handleAddFromLibrary}
+          actionState={tradeBoardActionState}
+        />
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'show-calendar') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <ShowCalendarCard state={calendarState} />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'business-tools') {
+      return <BusinessToolsCard />
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'team-management') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <TeamManagementCard
+            state={teamManagementState}
+            actionState={teamManagementActionState}
+            createDraft={teamCreateDraft}
+            publicTeamDraft={publicTeamDraft}
+            replyDraft={teamReplyDraft}
+            joinTeamPreviewHref={customerJoinTeamHref}
+            onCreateDraftChange={handleTeamCreateDraftChange}
+            onCreateParticipant={handleCreateTeamOnboardingParticipant}
+            onCopyInvite={handleCopyTeamOnboardingInvite}
+            onEmailInvite={handleEmailTeamOnboardingInvite}
+            onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
+            onPublicTeamDraftChange={handlePublicTeamDraftChange}
+            onSavePublicTeamMember={handleSavePublicTeamMember}
+            onEditPublicTeamMember={handleEditPublicTeamMember}
+            onTogglePublicTeamMember={handleTogglePublicTeamMember}
+            onMovePublicTeamMember={handleMovePublicTeamMember}
+            onRemovePublicTeamMember={handleRemovePublicTeamMember}
+            onReplyDraftChange={setTeamReplyDraft}
+            onSendReply={handleSendTeamOnboardingReply}
+          />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'messages') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <MessagesCenterCard
+            state={messagesState}
+            actionState={messagesActionState}
+            supportSubject={supportSubject}
+            supportBody={supportBody}
+            onSupportSubjectChange={setSupportSubject}
+            onSupportBodyChange={setSupportBody}
+            onCreateSupportRequest={handleCreateSupportRequest}
+            onMarkRead={handleMarkMessageRead}
+          />
+          <CustomerRosterCard
+            state={audienceState}
+            activeFilter={rosterFilter}
+            onFilterChange={setRosterFilter}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+            actionState={actionState}
+            onUnsubscribe={handleUnsubscribe}
+            onCopySignupLink={handleCopySignupLink}
+            onCopyVisibleContacts={handleCopyVisibleContacts}
+            activeComposerAudienceId={emailComposer.audienceId}
+            composerSubject={emailComposer.subject}
+            composerBody={emailComposer.body}
+            composerPending={emailComposer.pending}
+            onOpenEmailComposer={handleOpenEmailComposer}
+            onCloseEmailComposer={handleCloseEmailComposer}
+            onComposerSubjectChange={(value) =>
+              setEmailComposer((current) => ({ ...current, subject: value }))
+            }
+            onComposerBodyChange={(value) =>
+              setEmailComposer((current) => ({ ...current, body: value }))
+            }
+            onSendEmail={handleSendEmail}
+          />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'site-settings') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <SiteSettingsCard
+            state={siteSettingsState}
+            draft={siteSettingsDraft}
+            actionState={siteSettingsActionState}
+            hasUnsavedChanges={siteSettingsHasUnsavedChanges}
+            statusMessage={siteSettingsSaveStatusText}
+            onDraftChange={handleSiteSettingsDraftChange}
+            onSocialHandleChange={handleSocialHandleChange}
+            onSave={handleSaveSiteSettings}
+          />
+        </div>
+      )
+    }
+
+    if (
+      canRenderWorkspaceSections &&
+      activeSection === 'recipes' &&
+      hasRecipeWorkspaceAccess
+    ) {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <RecipesCard
+            state={recipesState}
+            draft={recipeDraft}
+            actionState={recipeActionState}
+            statusMessage={getRecipeSaveStatusText(recipeActionState)}
+            onDraftChange={handleRecipeDraftChange}
+            onSelectRecipe={handleSelectRecipe}
+            onNewRecipe={handleNewRecipeDraft}
+            onSave={handleSaveRecipe}
+            onRemove={handleRemoveRecipe}
+            onUploadImage={handleRecipeImageUpload}
+            onBuildDraft={handleBuildRecipeDraft}
+          />
+        </div>
+      )
+    }
+
+    if (activeSection === 'help-resources') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <HelpResourcesCard
+            state={resourcesState}
+            hasPaidWorkspace={hasPaidWorkspace}
+          />
+        </div>
+      )
+    }
+
+    if (activeSection === 'account') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          <AccountBillingCard
+            state={accountBillingState}
+            actionState={accountBillingActionState}
+            onStartSubscription={() => handleAccountBillingAction('subscribe')}
+            onManageBilling={() => handleAccountBillingAction('manage')}
+            statusMessage={accountBillingActionState.helperMessage}
+            agreementAccepted={subscriptionAgreementAccepted}
+            onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
+          />
+          {accountBillingState.status === 'ready' &&
+          accountBillingState.summary ? (
+            <ReferralProgramCard referral={accountBillingState.summary.referral} />
+          ) : null}
+          {canRenderWorkspaceSections ? (
+            <>
+              <WalletSummaryCard
+                state={walletState}
+                actionState={walletActionState}
+                autoRechargeDraft={autoRechargeDraft}
+                onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
+                onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
+                onLoadWallet={handleWalletLoad}
+                statusMessage={walletActionState.helperMessage}
+              />
+              <SiteAnalyticsCard state={analyticsState} />
+            </>
+          ) : null}
+        </div>
+      )
+    }
+
+    return null
+  }
   return (
     <main
       className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
       data-workspace-skin={workspaceSkinPreset}
     >
-      {!isLiveSitePreview ? (
-      <header className={styles.topbar}>
-        <div className={styles.topbarCopy}>
-          <SparkleSeal className={styles.brandSeal} />
-          <div className={styles.brandText}>
-            <span className={styles.brand}>Sparkle Suite</span>
-            <span className={styles.topbarSubtitle}>Workspace</span>
-          </div>
-        </div>
-        <div className={styles.topbarActions}>
-          <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Rep</span>
-            <span className={styles.topbarInfoValue}>{headerRepName}</span>
-          </div>
-          <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Show</span>
-            <span className={styles.topbarInfoValue}>{headerShowName}</span>
-          </div>
-          <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Secret Rep ID Number</span>
-            <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
-              {headerLiveQueueSyncCode}
-            </span>
-          </div>
-          {hasPaidWorkspace ? (
-            <button
-              type="button"
-              className={styles.liveSiteButton}
-              onClick={handleOpenLiveSitePreview}
-            >
-              View live site
-            </button>
-          ) : null}
-        </div>
-      </header>
-      ) : null}
       {previewUnavailableMessage ? (
         <div className={styles.previewUnavailableNotice}>
           {previewUnavailableMessage}
@@ -4795,276 +5114,23 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           />
         </section>
       ) : (
-      <div className={styles.workspaceShell}>
-        <aside className={styles.workspaceSidebar}>
-          <div className={styles.workspaceSidebarTitle}>Dashboard</div>
-          <div className={styles.workspaceSidebarIntro}>
-            Manage the live workspace, customer site, trade tools, messages, and account settings.
-          </div>
-          <nav className={styles.workspaceNav}>
-            {visibleWorkspaceSections.map((section) => {
-              const isComingSoonSection =
-                'comingSoon' in section && section.comingSoon
-              const isActiveSection = activeSection === section.key
-              return (
-                <button
-                  key={section.key}
-                  type="button"
-                  className={`${styles.workspaceNavButton} ${
-                    isActiveSection ? styles.workspaceNavButtonActive : ''
-                  } ${
-                    isComingSoonSection ? styles.workspaceNavButtonComingSoon : ''
-                  }`}
-                  disabled={isComingSoonSection}
-                  aria-disabled={isComingSoonSection}
-                  aria-pressed={isActiveSection}
-                  onClick={() =>
-                    setActiveSection(
-                      resolveWorkspaceSectionForAccess(
-                        section.key,
-                        hasPaidWorkspace,
-                        hasRecipeWorkspaceAccess,
-                      ),
-                    )
-                  }
-                >
-                  <span className={styles.workspaceNavLabelRow}>
-                    <span className={styles.workspaceNavLabel}>{section.label}</span>
-                    {isComingSoonSection ? (
-                      <span className={styles.workspaceNavStatusTag}>
-                        Coming soon
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className={styles.workspaceNavSubtitle}>
-                    {section.subtitle}
-                  </span>
-                </button>
-              )
-            })}
-          </nav>
-        </aside>
-        <section className={styles.workspaceContent}>
-          {showWorkspaceAccessNotice ? (
-            <WorkspaceAccessNotice
-              sectionLabel={getWorkspaceSectionLabel(activeSection)}
-              state={accountBillingState}
-              actionState={accountBillingActionState}
-              onOpenAccount={() => setActiveSection('account')}
-              onStartSubscription={() => handleAccountBillingAction('subscribe')}
-              onManageBilling={() => handleAccountBillingAction('manage')}
-              statusMessage={accountBillingActionState.helperMessage}
-              agreementAccepted={subscriptionAgreementAccepted}
-              onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
-            />
-          ) : null}
-          {showWorkspaceLoadingSkeleton && !canRenderWorkspaceSections ? (
-            <div className={styles.cardFill}>
-              <div className={styles.loadingLine} />
-              <div className={styles.loadingLineShort} />
-            </div>
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'trade-board' ? (
-            <TradeBoardWorkspaceCard
-              tradeBoardState={tradeBoardState}
-              tradeBoardSearchQuery={tradeBoardSearchQuery}
-              onTradeBoardSearchQueryChange={setTradeBoardSearchQuery}
-              quickAddItemNumber={quickAddItemNumber}
-              onQuickAddItemNumberChange={setQuickAddItemNumber}
-              actionState={tradeBoardActionState}
-              tradeRequestsState={tradeRequestsState}
-              fulfillmentQueueState={fulfillmentQueueState}
-              tradeSwapCleanupState={tradeSwapCleanupState}
-              onQuickAddListing={handleQuickAddListing}
-              onRemoveListing={handleRemoveTradeListing}
-              onApproveRequest={(requestId, swap) =>
-                handleTradeRequestDecision(requestId, 'approve', swap)
-              }
-              onRejectRequest={(requestId) =>
-                handleTradeRequestDecision(requestId, 'reject')
-              }
-              onAdvanceFulfillment={handleAdvanceFulfillment}
-              customerBoardHref={customerTradeBoardHref}
-              onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
-              hasMoreListings={tradeBoardState.hasMoreListings === true}
-              onEnsureInventoryBrowseLoaded={handleEnsureInventoryBrowseLoaded}
-              isInventoryBrowseLoading={
-                tradeBoardActionState.pendingKey === 'load-more-listings'
-              }
-            />
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'jewelry-library' ? (
-            <JewelryLibraryCard
-              state={jewelryLibraryState}
-              searchQuery={librarySearchQuery}
-              filters={libraryFilters}
-              onSearchQueryChange={setLibrarySearchQuery}
-              onSearch={handleLibrarySearch}
-              onFilterChange={handleLibraryFilterChange}
-              onClear={handleLibraryClear}
-              onAddToBoard={handleAddFromLibrary}
-              actionState={tradeBoardActionState}
-            />
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'show-calendar' ? (
-            <div className={styles.workspaceSectionStack}>
-              <ShowCalendarCard state={calendarState} />
-            </div>
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'business-tools' ? (
-            <BusinessToolsCard />
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'team-management' ? (
-            <div className={styles.workspaceSectionStack}>
-              <TeamManagementCard
-                state={teamManagementState}
-                actionState={teamManagementActionState}
-                createDraft={teamCreateDraft}
-                publicTeamDraft={publicTeamDraft}
-                replyDraft={teamReplyDraft}
-                joinTeamPreviewHref={customerJoinTeamHref}
-                onCreateDraftChange={handleTeamCreateDraftChange}
-                onCreateParticipant={handleCreateTeamOnboardingParticipant}
-                onCopyInvite={handleCopyTeamOnboardingInvite}
-                onEmailInvite={handleEmailTeamOnboardingInvite}
-                onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
-                onPublicTeamDraftChange={handlePublicTeamDraftChange}
-                onSavePublicTeamMember={handleSavePublicTeamMember}
-                onEditPublicTeamMember={handleEditPublicTeamMember}
-                onTogglePublicTeamMember={handleTogglePublicTeamMember}
-                onMovePublicTeamMember={handleMovePublicTeamMember}
-                onRemovePublicTeamMember={handleRemovePublicTeamMember}
-                onReplyDraftChange={setTeamReplyDraft}
-                onSendReply={handleSendTeamOnboardingReply}
-              />
-            </div>
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'messages' ? (
-            <div className={styles.workspaceSectionStack}>
-              <MessagesCenterCard
-                state={messagesState}
-                actionState={messagesActionState}
-                supportSubject={supportSubject}
-                supportBody={supportBody}
-                onSupportSubjectChange={setSupportSubject}
-                onSupportBodyChange={setSupportBody}
-                onCreateSupportRequest={handleCreateSupportRequest}
-                onMarkRead={handleMarkMessageRead}
-              />
-              <CustomerRosterCard
-                state={audienceState}
-                activeFilter={rosterFilter}
-                onFilterChange={setRosterFilter}
-                searchQuery={searchQuery}
-                onSearchQueryChange={setSearchQuery}
-                sortOrder={sortOrder}
-                onSortOrderChange={setSortOrder}
-                actionState={actionState}
-                onUnsubscribe={handleUnsubscribe}
-                onCopySignupLink={handleCopySignupLink}
-                onCopyVisibleContacts={handleCopyVisibleContacts}
-                activeComposerAudienceId={emailComposer.audienceId}
-                composerSubject={emailComposer.subject}
-                composerBody={emailComposer.body}
-                composerPending={emailComposer.pending}
-                onOpenEmailComposer={handleOpenEmailComposer}
-                onCloseEmailComposer={handleCloseEmailComposer}
-                onComposerSubjectChange={(value) =>
-                  setEmailComposer((current) => ({ ...current, subject: value }))
-                }
-                onComposerBodyChange={(value) =>
-                  setEmailComposer((current) => ({ ...current, body: value }))
-                }
-                onSendEmail={handleSendEmail}
-              />
-            </div>
-          ) : null}
-
-          {canRenderWorkspaceSections && activeSection === 'site-settings' ? (
-            <div className={styles.workspaceSectionStack}>
-              <SiteSettingsCard
-                state={siteSettingsState}
-                draft={siteSettingsDraft}
-                actionState={siteSettingsActionState}
-                hasUnsavedChanges={siteSettingsHasUnsavedChanges}
-                statusMessage={siteSettingsSaveStatusText}
-                onDraftChange={handleSiteSettingsDraftChange}
-                onSocialHandleChange={handleSocialHandleChange}
-                onSave={handleSaveSiteSettings}
-              />
-            </div>
-          ) : null}
-
-          {canRenderWorkspaceSections &&
-          activeSection === 'recipes' &&
-          hasRecipeWorkspaceAccess ? (
-            <div className={styles.workspaceSectionStack}>
-              <RecipesCard
-                state={recipesState}
-                draft={recipeDraft}
-                actionState={recipeActionState}
-                statusMessage={getRecipeSaveStatusText(recipeActionState)}
-                onDraftChange={handleRecipeDraftChange}
-                onSelectRecipe={handleSelectRecipe}
-                onNewRecipe={handleNewRecipeDraft}
-                onSave={handleSaveRecipe}
-                onRemove={handleRemoveRecipe}
-                onUploadImage={handleRecipeImageUpload}
-                onBuildDraft={handleBuildRecipeDraft}
-              />
-            </div>
-          ) : null}
-
-          {activeSection === 'help-resources' ? (
-            <div className={styles.workspaceSectionStack}>
-              <HelpResourcesCard
-                state={resourcesState}
-                hasPaidWorkspace={hasPaidWorkspace}
-              />
-            </div>
-          ) : null}
-
-          {activeSection === 'account' ? (
-            <div className={styles.workspaceSectionStack}>
-              <AccountBillingCard
-                state={accountBillingState}
-                actionState={accountBillingActionState}
-                onStartSubscription={() => handleAccountBillingAction('subscribe')}
-                onManageBilling={() => handleAccountBillingAction('manage')}
-                statusMessage={accountBillingActionState.helperMessage}
-                agreementAccepted={subscriptionAgreementAccepted}
-                onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
-              />
-              {accountBillingState.status === 'ready' &&
-              accountBillingState.summary ? (
-                <ReferralProgramCard
-                  referral={accountBillingState.summary.referral}
-                />
-              ) : null}
-              {canRenderWorkspaceSections ? (
-                <>
-                  <WalletSummaryCard
-                    state={walletState}
-                    actionState={walletActionState}
-                    autoRechargeDraft={autoRechargeDraft}
-                    onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
-                    onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
-                    onLoadWallet={handleWalletLoad}
-                    statusMessage={walletActionState.helperMessage}
-                  />
-                  <SiteAnalyticsCard state={analyticsState} />
-                </>
-              ) : null}
-            </div>
-          ) : null}
-        </section>
-      </div>
+        <WorkspaceShell
+          tabs={visibleWorkspaceSections}
+          activeSection={activeSection}
+          onSectionChange={(section) =>
+            setActiveSection(
+              resolveWorkspaceSectionForAccess(
+                section,
+                hasPaidWorkspace,
+                hasRecipeWorkspaceAccess,
+              ),
+            )
+          }
+          header={workspaceHeader}
+          notice={showWorkspaceAccessNotice ? accessNotice : null}
+        >
+          {renderActiveWorkspaceSection()}
+        </WorkspaceShell>
       )}
     </main>
   )

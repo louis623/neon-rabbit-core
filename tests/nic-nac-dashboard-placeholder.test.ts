@@ -506,7 +506,6 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Messages')
     expect(html).toContain('Help &amp; Resources')
     expect(html).toContain('Account')
-    expect((html.match(/Coming soon/g) ?? []).length).toBe(1)
     expect(html).not.toContain('Setup Checklist')
     expect(html).not.toContain('Confirm business/profile basics')
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
@@ -752,8 +751,8 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(genericHtml).not.toContain('Pantry recipe cards and images')
-    expect(blingKitchenHtml).toContain('Pantry recipe cards and images')
+    expect(genericHtml).not.toContain('>Recipes<')
+    expect(blingKitchenHtml).toContain('>Recipes<')
   })
 
   it('shows account access guidance instead of a blank panel for locked workspace sections', () => {
@@ -1250,95 +1249,110 @@ describe('DashboardPlaceholder', () => {
   })
 
   it('keeps Black Diamond workspace surfaces readable with dark-theme overrides', () => {
-    const css = readFileSync(
+    const dashboardCss = readFileSync(
       resolve(
         process.cwd(),
         'app/nic-nac/components/DashboardPlaceholder.module.css',
       ),
       'utf8',
     )
+    const shellCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
+      'utf8',
+    )
+    const tabsCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.module.css'),
+      'utf8',
+    )
 
-    const siteSettingsBaseIndex = css.indexOf('.siteSettingsTextarea:focus')
-    const blackDiamondSiteSettingsIndex = css.lastIndexOf(
+    const siteSettingsBaseIndex = dashboardCss.indexOf('.siteSettingsTextarea:focus')
+    const blackDiamondSiteSettingsIndex = dashboardCss.lastIndexOf(
       ".main[data-workspace-skin='black_diamond'] .siteSettingsSection",
     )
 
     expect(blackDiamondSiteSettingsIndex).toBeGreaterThan(
       siteSettingsBaseIndex,
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .topbar",
     )
-    expect(css).toContain(
-      ".main[data-workspace-skin='black_diamond'] .workspaceSidebar",
+    expect(shellCss).toContain(
+      ":global([data-workspace-skin='black_diamond']) .workspaceSidebar",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .timelineItem",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .rosterTag",
     )
-    expect(css).toContain(
-      ".main[data-workspace-skin='black_diamond'] .workspaceNavStatusTag",
+    expect(tabsCss).toContain(
+      ":global([data-workspace-skin='black_diamond']) .workspaceNavButtonActive",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .emptyState",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .searchInput",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .sortSelect",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .siteSettingsTextarea",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .siteSettingsPreviewNote",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .customerSiteLooks",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .accountDetailRow",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .referralCodePanel",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .playbookGroup",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .supportPath",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .supportReportChoice",
     )
-    expect(css).toContain(
+    expect(dashboardCss).toContain(
       ".main[data-workspace-skin='black_diamond'] .supportReportTextarea",
     )
-    expect(css).toContain('#15110f')
-    expect(css).toContain('#211c18')
-    expect(css).toContain('color: #f8efe4')
-    expect(css).toContain('color: #d8cbbd')
+    expect(dashboardCss).toContain('#15110f')
+    expect(dashboardCss).toContain('#211c18')
+    expect(dashboardCss).toContain('color: #f8efe4')
+    expect(dashboardCss).toContain('color: #d8cbbd')
   })
 
   it('ships a mobile-first workspace top nav treatment for the section rail', () => {
-    const source = readFileSync(
-      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+    const tabsSource = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.tsx'),
       'utf8',
     )
-    const css = readFileSync(
-      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+    const tabsCss = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.module.css'),
       'utf8',
     )
 
-    expect(source).toContain('aria-pressed={isActiveSection}')
-    expect(css).toContain('scroll-snap-type: x proximity;')
-    expect(css).toContain('overscroll-behavior-x: contain;')
-    expect(css).toContain('border-radius: 999px;')
-    expect(css).toContain('.workspaceNav::-webkit-scrollbar')
-    expect(css).toContain('.workspaceNavSubtitle')
+    expect(tabsSource).toContain('role="tablist"')
+    expect(tabsSource).toContain('aria-label="Workspace sections"')
+    expect(tabsSource).toContain('role="tab"')
+    expect(tabsSource).toContain('aria-selected={isActiveSection}')
+    expect(tabsSource).toContain('tabIndex={isActiveSection ? 0 : -1}')
+    expect(tabsSource).toContain('tab.shortLabel')
+    expect(tabsSource).not.toContain('workspaceNavStatusTag')
+    expect(tabsSource).not.toContain('tab.subtitle')
+    expect(tabsCss).toContain('scroll-snap-type: x proximity;')
+    expect(tabsCss).toContain('overscroll-behavior-x: contain;')
+    expect(tabsCss).toContain('border-radius: 999px;')
+    expect(tabsCss).toContain('.workspaceNav::-webkit-scrollbar')
+    expect(tabsCss).toContain('.workspaceNavLabelShort')
   })
 
   it('uses the espresso background for workspace center cards', () => {
