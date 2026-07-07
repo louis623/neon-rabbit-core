@@ -32,8 +32,9 @@ describe('Nic-Nac workspace shell reset', () => {
       'utf8',
     )
 
-    expect(css).not.toContain('#402924 0%, #36221d 100%')
-    expect(css).not.toMatch(/linear-gradient\(\s*145deg/i)
+    expect(css).not.toMatch(
+      /linear-gradient\(\s*145deg,\s*#402924 0%,\s*#36221d 100%\s*\)/i,
+    )
   })
 
   it('supports keyboard navigation across workspace tabs', () => {

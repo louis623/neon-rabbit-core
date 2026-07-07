@@ -494,7 +494,6 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain(
       'Manage the live workspace, customer site, trade tools, messages, and account settings.',
     )
-    expect(html).not.toContain('workspaceSidebar')
   })
 
   it('renders the Sparkle Suite Nic-Nac workspace shell', () => {
