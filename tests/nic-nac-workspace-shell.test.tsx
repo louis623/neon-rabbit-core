@@ -23,6 +23,18 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(html).not.toContain('class="workspaceSidebar"')
   })
 
+  it('does not use the espresso gradient as the dominant shell surface', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(css).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
+  })
+
   it('supports keyboard navigation across workspace tabs', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/WorkspaceSectionTabs.tsx'),

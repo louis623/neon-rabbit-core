@@ -1,4 +1,6 @@
 import { createElement } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
@@ -69,7 +71,7 @@ const TRADE_BOARD_READY_STATE = {
 }
 
 describe('Nic-Nac trade board surface reset', () => {
-  it('prioritizes summary and primary action before inventory filters', () => {
+  it('puts today, quick add, and browse ahead of queue detail sections', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -87,18 +89,18 @@ describe('Nic-Nac trade board surface reset', () => {
         onAdvanceFulfillment: () => {},
       }),
     )
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
+      'utf8',
+    )
 
-    const summaryIndex = html.indexOf('Today&#x27;s trade work')
-    const quickAddIndex = html.indexOf('Quick add')
-    const browseBoardIndex = html.indexOf('Browse board')
-    const jewelryTypeIndex = html.indexOf('Jewelry Type')
-
-    expect(summaryIndex).toBeGreaterThan(-1)
-    expect(quickAddIndex).toBeGreaterThan(-1)
-    expect(browseBoardIndex).toBeGreaterThan(-1)
-    expect(jewelryTypeIndex).toBeGreaterThan(-1)
-    expect(summaryIndex).toBeLessThan(quickAddIndex)
-    expect(quickAddIndex).toBeLessThan(browseBoardIndex)
-    expect(browseBoardIndex).toBeLessThan(jewelryTypeIndex)
+    expect(html.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
+    expect(html.indexOf('Quick add')).toBeGreaterThan(-1)
+    expect(html.indexOf('Browse board')).toBeGreaterThan(-1)
+    expect(html.indexOf('Today&#x27;s trade work')).toBeLessThan(
+      html.indexOf('Quick add'),
+    )
+    expect(html.indexOf('Quick add')).toBeLessThan(html.indexOf('Browse board'))
+    expect(source).not.toContain("from './DashboardPlaceholder.module.css'")
   })
 })

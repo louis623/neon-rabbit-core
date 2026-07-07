@@ -483,6 +483,25 @@ describe('DashboardPlaceholder', () => {
     expect(helpText).not.toContain('Start setup checklist')
   })
 
+  it('renders workspace sections as top app tabs instead of a sidebar rail', () => {
+    const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
+    const shellSource = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.tsx'),
+      'utf8',
+    )
+
+    expect(html).toContain('role="tablist"')
+    expect(html).toContain('aria-label="Workspace sections"')
+    expect(html).toContain('>Trade Board<')
+    expect(html).toContain('>Jewelry Library<')
+    expect(html).toContain('>Calendar<')
+    expect(html).not.toContain(
+      'Manage the live workspace, customer site, trade tools, messages, and account settings.',
+    )
+    expect(html).not.toContain('workspaceSidebar')
+    expect(shellSource).not.toContain('workspaceSidebar')
+  })
+
   it('renders the Sparkle Suite Nic-Nac workspace shell', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
 
