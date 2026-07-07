@@ -1338,6 +1338,13 @@ describe('DashboardPlaceholder', () => {
   })
 
   it('uses light utility shell surfaces and avoids espresso-heavy active tabs', () => {
+    const dashboardCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
     const shellCss = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/WorkspaceShell.module.css'),
       'utf8',
@@ -1362,6 +1369,16 @@ describe('DashboardPlaceholder', () => {
       'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
     )
     expect(tabsCss).toContain('scroll-snap-align: start;')
+    expect(dashboardCss).toContain('.workspacePanel,')
+    expect(dashboardCss).toContain('.librarySearchCard {')
+    expect(dashboardCss).toContain(
+      'linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 250, 247, 0.90));',
+    )
+    expect(dashboardCss).toContain('border: 1px solid rgba(64, 41, 36, 0.10);')
+    expect(dashboardCss).not.toContain(
+      'linear-gradient(145deg, #402924 0%, #36221d 100%);',
+    )
+    expect(dashboardCss).toContain(".main[data-workspace-skin='black_diamond'] :where(")
   })
 
   it('ships a mobile-first workspace top nav treatment for the section rail', () => {
