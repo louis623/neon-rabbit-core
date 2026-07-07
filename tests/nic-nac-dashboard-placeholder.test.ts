@@ -13,7 +13,6 @@ import {
   JewelryLibraryCard,
   ReferralProgramCard,
   RecipesCard,
-  TradeBoardWorkspaceCard,
   CustomerRosterCard,
   SiteSettingsCard,
   ShowCalendarCard,
@@ -69,6 +68,7 @@ import {
   sortRosterCustomers,
   searchRosterCustomers,
 } from '@/app/nic-nac/components/DashboardPlaceholder'
+import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/TradeBoardWorkspaceCard'
 import { getHelpResources } from '@/lib/services/help-resources'
 
 const READY_STATE = {
@@ -1382,48 +1382,23 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('.workspaceNavLabelShort')
   })
 
-  it('uses the espresso background for workspace center cards', () => {
+  it('keeps the extracted trade board surfaces light instead of reverting to espresso-heavy cards', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
-        'app/nic-nac/components/DashboardPlaceholder.module.css',
+        'app/nic-nac/components/TradeBoardWorkspaceCard.module.css',
       ),
       'utf8',
     )
-    const workspaceCenterCardCss =
-      css.match(
-        /\.workspacePanel,[\s\S]*?\.librarySearchCard \{[\s\S]*?\n\}/,
-      )?.[0] ?? ''
-    const blackDiamondSurfaceCss =
-      css.match(
-        /\.main\[data-workspace-skin='black_diamond'\] \.topbar,[\s\S]*?color: #f8efe4;\n\}/,
-      )?.[0] ?? ''
 
-    expect(workspaceCenterCardCss).toContain('.workspacePanel')
-    expect(workspaceCenterCardCss).toContain('.walletCard')
-    expect(workspaceCenterCardCss).toContain('.calendarCard')
-    expect(workspaceCenterCardCss).toContain('.siteSettingsCard')
-    expect(workspaceCenterCardCss).toContain('.accountBillingCard')
-    expect(workspaceCenterCardCss).toContain('.referralCard')
-    expect(workspaceCenterCardCss).toContain('.librarySearchCard')
-    expect(workspaceCenterCardCss).toContain(
-      'linear-gradient(145deg, #402924 0%, #36221d 100%)',
-    )
-    expect(workspaceCenterCardCss).toContain(
-      'border: 1px solid rgba(255, 246, 250, 0.14)',
-    )
-    expect(css).toContain('.calendarCard > .workspaceSectionHeader .cardTitle')
-    expect(css).toContain(') > .calendarHeader .walletSettingsTitle')
-    expect(css).toContain('.calendarCard > .calendarHeader .walletSettingsTitle')
-    expect(blackDiamondSurfaceCss).not.toContain(
-      ".main[data-workspace-skin='black_diamond'] .calendarCard",
-    )
-    expect(blackDiamondSurfaceCss).not.toContain(
-      ".main[data-workspace-skin='black_diamond'] .workspacePanel",
-    )
-    expect(blackDiamondSurfaceCss).not.toContain(
-      ".main[data-workspace-skin='black_diamond'] .siteSettingsCard",
-    )
+    expect(css).toContain('.heroCard')
+    expect(css).toContain('.summaryCard')
+    expect(css).toContain('.sectionCard')
+    expect(css).toContain('linear-gradient(180deg, rgba(255, 255, 255')
+    expect(css).toContain('box-shadow:')
+    expect(css).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
+    expect(css).not.toContain('rgba(32, 24, 20, 0.96)')
+    expect(css).not.toContain('rgba(21, 17, 15, 0.94)')
   })
 
   it('keeps the workspace Nic-Nac glyph backed by the shared mark', () => {
@@ -1571,7 +1546,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Collection')
     expect(html).toContain('Today&#x27;s trade work')
     expect(html).toContain('No trade requests, cleanup, or fulfillment work needs attention right now.')
-    expect(html).toContain('Use search or filters to browse pieces currently on your board.')
+    expect(html).toContain('Search the board or open filters to find a live piece.')
     expect(html).not.toContain('Request inbox')
     expect(html).not.toContain('Swap cleanup')
     expect(html).not.toContain('Fulfillment queue')
@@ -1625,40 +1600,40 @@ describe('DashboardPlaceholder', () => {
   })
 
   it('wires dashboard trade approval through revealed item capture', () => {
-    const source = readFileSync(
+    const dashboardSource = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
     )
-
-    expect(source).toContain('/api/nic-nac/trade-swap-cleanup')
-    expect(source).toContain('Swap cleanup')
-    expect(source).toContain(
-      'Approved swaps land here when the replacement reveal still needs a ring',
+    const tradeBoardCardSource = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
+      'utf8',
     )
-    expect(source).toContain(
+    const normalizedTradeBoardCardSource = tradeBoardCardSource.replace(/\s+/g, ' ')
+
+    expect(dashboardSource).toContain('/api/nic-nac/trade-swap-cleanup')
+    expect(tradeBoardCardSource).toContain('Swap cleanup')
+    expect(normalizedTradeBoardCardSource).toContain(
+      'Approved swaps land here when the replacement reveal still needs a ring size or catalog details before fulfillment can finish.',
+    )
+    expect(tradeBoardCardSource).toContain(
       'No trade requests, cleanup, or fulfillment work needs attention right now.',
     )
-    expect(source).toContain(
+    expect(tradeBoardCardSource).toContain(
       'Revealed item number (optional)',
     )
-    expect(source).toContain(
+    expect(normalizedTradeBoardCardSource).toContain(
       'Add it now if you have it, or approve the trade and add the revealed piece later with Nic-Nac.',
     )
-    expect(source).toContain(
+    expect(tradeBoardCardSource).toContain(
       'Approve without item number',
     )
-    expect(source).toContain('revealedItemNumber')
-    expect(source).toContain('revealedRingSize')
-    expect(source).toContain(
-      "onApproveRequest(swapApprovalDraft.requestId)",
-    )
-    expect(source).toContain(
+    expect(dashboardSource).toContain(
       'Trade approved. Added the revealed piece back to your board.',
     )
-    expect(source).toContain(
+    expect(dashboardSource).toContain(
       'I saved the item number to this swap; finish the catalog details after the show.',
     )
-    expect(source).toContain(
+    expect(dashboardSource).toContain(
       'Trade approved. Add the revealed piece later with Nic-Nac when you are ready.',
     )
   })

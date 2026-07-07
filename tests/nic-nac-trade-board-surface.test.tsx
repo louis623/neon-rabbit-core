@@ -2,7 +2,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/DashboardPlaceholder'
+import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/TradeBoardWorkspaceCard'
 
 const TRADE_BOARD_READY_STATE = {
   status: 'ready' as const,

@@ -1,6 +1,10 @@
+import { createElement } from 'react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+
+import { TradeBoardWorkspaceCard } from '@/app/nic-nac/components/TradeBoardWorkspaceCard'
 
 describe('reviewer smoke UI wiring', () => {
   const startForm = readFileSync(
@@ -25,6 +29,10 @@ describe('reviewer smoke UI wiring', () => {
   )
   const dashboardPlaceholder = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+    'utf8',
+  )
+  const tradeBoardWorkspaceCard = readFileSync(
+    resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
     'utf8',
   )
   const chips = readFileSync(
@@ -54,6 +62,181 @@ describe('reviewer smoke UI wiring', () => {
   const dashboardCss = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
     'utf8',
+  )
+  const tradeBoardWorkspaceCardHtml = renderToStaticMarkup(
+    createElement(TradeBoardWorkspaceCard, {
+      tradeBoardState: {
+        status: 'ready',
+        board: {
+          summary: {
+            totalPieces: 2,
+            totalMsrp: 78,
+            typeBreakdown: { RG: 1, NK: 0, ER: 0, ST: 1, BR: 0 },
+            pendingRequestCount: 1,
+          },
+          listings: [
+            {
+              id: 'listing-1',
+              rep_id: 'rep-1',
+              status: 'available',
+              rep_notes: null,
+              trade_preferences: null,
+              listing_photo_url: 'https://cdn.example.com/sapphire-halo.jpg',
+              uses_canonical_photo: false,
+              listed_at: '2026-05-05T12:00:00Z',
+              removal_reason: null,
+              deleted_at: null,
+              created_at: '2026-05-05T12:00:00Z',
+              updated_at: '2026-05-05T12:00:00Z',
+              design: {
+                id: 'design-1',
+                item_number: 'RG100',
+                design_name: 'Sapphire Halo',
+                material: 'Sterling',
+                main_stone: 'Sapphire',
+                bp_msrp: 39,
+                canonical_photo_url: null,
+                type_prefix: 'RG',
+                collection: { id: 'collection-1', name: 'Birthday' },
+              },
+            },
+          ],
+        },
+      },
+      tradeRequestsState: {
+        status: 'ready',
+        requests: [
+          {
+            id: 'request-1',
+            customerName: 'Jamie',
+            customerDescription: 'Looking for a silver swap.',
+            createdAt: '2026-06-10T20:00:00.000Z',
+            listing: {
+              id: 'listing-1',
+              rep_id: 'rep-1',
+              status: 'available',
+              rep_notes: null,
+              trade_preferences: null,
+              listing_photo_url: 'https://cdn.example.com/sapphire-halo.jpg',
+              uses_canonical_photo: false,
+              listed_at: '2026-05-05T12:00:00Z',
+              removal_reason: null,
+              deleted_at: null,
+              created_at: '2026-05-05T12:00:00Z',
+              updated_at: '2026-05-05T12:00:00Z',
+              design: {
+                id: 'design-1',
+                item_number: 'RG100',
+                design_name: 'Sapphire Halo',
+                material: 'Sterling',
+                main_stone: 'Sapphire',
+                bp_msrp: 39,
+                canonical_photo_url: null,
+                type_prefix: 'RG',
+                collection: { id: 'collection-1', name: 'Birthday' },
+              },
+            },
+            revealScreenshot: null,
+          },
+        ],
+      },
+      fulfillmentQueueState: {
+        status: 'ready',
+        items: [
+          {
+            fulfillmentId: 'fulfillment-1',
+            requestId: 'request-1',
+            customerName: 'Jamie',
+            itemNumber: 'RG100',
+            designName: 'Sapphire Halo',
+            status: 'approved',
+            daysSinceLastUpdate: 2,
+          },
+        ],
+      },
+      tradeSwapCleanupState: {
+        status: 'ready',
+        items: [
+          {
+            swapId: 'swap-1',
+            requestId: 'request-1',
+            customerName: 'Jamie',
+            outgoingListingId: 'listing-1',
+            revealedItemNumber: 'ER00001',
+            revealedRingSize: null,
+            replacementStatus: 'needs_catalog_details',
+            createdAt: '2026-06-11T20:00:00.000Z',
+          },
+        ],
+      },
+      tradeBoardSearchQuery: '',
+      onTradeBoardSearchQueryChange: () => {},
+      quickAddItemNumber: '',
+      onQuickAddItemNumberChange: () => {},
+      actionState: { pendingKey: null, error: null, helperMessage: null },
+      onQuickAddListing: () => {},
+      onRemoveListing: () => {},
+      onApproveRequest: () => {},
+      onRejectRequest: () => {},
+      onAdvanceFulfillment: () => {},
+    }),
+  )
+  const tradeBoardWorkspaceCardQuietHtml = renderToStaticMarkup(
+    createElement(TradeBoardWorkspaceCard, {
+      tradeBoardState: {
+        status: 'ready',
+        board: {
+          summary: {
+            totalPieces: 2,
+            totalMsrp: 78,
+            typeBreakdown: { RG: 1, NK: 0, ER: 0, ST: 1, BR: 0 },
+            pendingRequestCount: 0,
+          },
+          listings: [
+            {
+              id: 'listing-1',
+              rep_id: 'rep-1',
+              status: 'available',
+              rep_notes: null,
+              trade_preferences: null,
+              listing_photo_url: 'https://cdn.example.com/sapphire-halo.jpg',
+              uses_canonical_photo: false,
+              listed_at: '2026-05-05T12:00:00Z',
+              removal_reason: null,
+              deleted_at: null,
+              created_at: '2026-05-05T12:00:00Z',
+              updated_at: '2026-05-05T12:00:00Z',
+              design: {
+                id: 'design-1',
+                item_number: 'RG100',
+                design_name: 'Sapphire Halo',
+                material: 'Sterling',
+                main_stone: 'Sapphire',
+                bp_msrp: 39,
+                canonical_photo_url: null,
+                type_prefix: 'RG',
+                collection: { id: 'collection-1', name: 'Birthday' },
+              },
+            },
+          ],
+        },
+      },
+      tradeRequestsState: { status: 'ready', requests: [] },
+      fulfillmentQueueState: { status: 'ready', items: [] },
+      tradeSwapCleanupState: { status: 'ready', items: [] },
+      tradeBoardSearchQuery: '',
+      onTradeBoardSearchQueryChange: () => {},
+      quickAddItemNumber: '',
+      onQuickAddItemNumberChange: () => {},
+      actionState: { pendingKey: null, error: null, helperMessage: null },
+      onQuickAddListing: () => {},
+      onRemoveListing: () => {},
+      onApproveRequest: () => {},
+      onRejectRequest: () => {},
+      onAdvanceFulfillment: () => {},
+      hasMoreListings: true,
+      isInventoryBrowseLoading: true,
+    }),
   )
 
   it('adds reviewer controls to the start page without replacing normal signup', () => {
@@ -163,19 +346,26 @@ describe('reviewer smoke UI wiring', () => {
   })
 
   it('puts the trade request inbox before board inventory in the workspace card', () => {
-    const componentStart = dashboardPlaceholder.indexOf(
-      'export function TradeBoardWorkspaceCard',
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Quick add')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse board')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Fulfillment queue')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Today&#x27;s trade work')).toBeLessThan(
+      tradeBoardWorkspaceCardHtml.indexOf('Quick add'),
     )
-    const componentEnd = dashboardPlaceholder.indexOf(
-      'function FulfillmentQueueCard',
-      componentStart,
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Quick add')).toBeLessThan(
+      tradeBoardWorkspaceCardHtml.indexOf('Browse board'),
     )
-    const componentSource = dashboardPlaceholder.slice(componentStart, componentEnd)
-
-    expect(componentSource.indexOf('Request inbox')).toBeGreaterThan(-1)
-    expect(componentSource.indexOf('Board Inventory')).toBeGreaterThan(-1)
-    expect(componentSource.indexOf('Request inbox')).toBeLessThan(
-      componentSource.indexOf('Board Inventory'),
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse board')).toBeLessThan(
+      tradeBoardWorkspaceCardHtml.indexOf('Request inbox'),
+    )
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeLessThan(
+      tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup'),
+    )
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup')).toBeLessThan(
+      tradeBoardWorkspaceCardHtml.indexOf('Fulfillment queue'),
     )
   })
 
@@ -193,55 +383,35 @@ describe('reviewer smoke UI wiring', () => {
   })
 
   it('keeps summary metrics out of board inventory', () => {
-    const componentStart = dashboardPlaceholder.indexOf(
-      'export function TradeBoardWorkspaceCard',
-    )
-    const boardInventoryStart = dashboardPlaceholder.indexOf(
-      'Board Inventory',
-      componentStart,
-    )
-    const quickAddStart = dashboardPlaceholder.indexOf(
-      'Quick add by item number',
-      boardInventoryStart,
-    )
-    const boardInventorySource = dashboardPlaceholder.slice(
-      boardInventoryStart,
-      quickAddStart,
+    const browseBoardStart = tradeBoardWorkspaceCardHtml.indexOf('Browse board')
+    const requestInboxStart = tradeBoardWorkspaceCardHtml.indexOf('Request inbox')
+    const browseBoardMarkup = tradeBoardWorkspaceCardHtml.slice(
+      browseBoardStart,
+      requestInboxStart,
     )
 
-    expect(boardInventorySource).not.toContain('Active pieces')
-    expect(boardInventorySource).not.toContain('Board MSRP')
-    expect(boardInventorySource).not.toContain('Top type')
-    expect(boardInventorySource).not.toContain('Pending requests')
-    expect(boardInventorySource).not.toContain('pendingRequestCount')
+    expect(browseBoardMarkup).not.toContain('Active pieces')
+    expect(browseBoardMarkup).not.toContain('Board MSRP')
+    expect(browseBoardMarkup).not.toContain('Top type')
+    expect(browseBoardMarkup).not.toContain('Pending requests')
+    expect(browseBoardMarkup).not.toContain('pendingRequestCount')
   })
 
   it('uses search and filters to browse board inventory without a default full grid', () => {
-    const componentStart = dashboardPlaceholder.indexOf(
-      'export function TradeBoardWorkspaceCard',
+    expect(tradeBoardWorkspaceCardQuietHtml).toContain(
+      'Search the board or open filters to find a live piece.',
     )
-    const componentEnd = dashboardPlaceholder.indexOf(
-      'function FulfillmentQueueCard',
-      componentStart,
+    expect(tradeBoardWorkspaceCardQuietHtml).toContain('Jewelry Type')
+    expect(tradeBoardWorkspaceCardQuietHtml).toContain('Collection')
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Request inbox')
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Swap cleanup')
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Fulfillment queue')
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain(
+      'No pieces on your board yet. Add your first item above.',
     )
-    const componentSource = dashboardPlaceholder.slice(componentStart, componentEnd)
-
-    expect(componentSource).toContain(
-      'Use search or filters to browse pieces currently on your board.',
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain(
+      'No board listings match this search yet.',
     )
-    expect(componentSource).toContain('No board pieces match this search.')
-    expect(componentSource).toContain('Jewelry Type')
-    expect(componentSource).toContain('Collection')
-    expect(componentSource).toContain('Reset')
-    expect(componentSource).toContain('getBoardInventoryResults')
-    expect(componentSource).toContain('getCarouselWindow')
-    expect(componentSource).toContain('useSyncExternalStore')
-    expect(componentSource).toContain('inventoryCarouselPageSize')
-    expect(componentSource).toContain('if (!hasMoreListings) return')
-    expect(componentSource).not.toContain('carousel.startIndex - 3')
-    expect(componentSource).not.toContain('carousel.startIndex + 3')
-    expect(componentSource).not.toContain('No pieces on your board yet. Add your first item above.')
-    expect(componentSource).not.toContain('No board listings match this search yet.')
   })
 
   it('keeps customer site previewing inside the workspace with Nic-Nac available', () => {
