@@ -2409,8 +2409,6 @@
 
 .searchInput {
   composes: searchInput from './WorkspaceSurface.module.css';
-  max-width: 100%;
-  padding: 11px 12px;
 }
 
 .sortSelect {
