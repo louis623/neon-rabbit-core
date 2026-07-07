@@ -256,7 +256,7 @@ export function TradeBoardWorkspaceCard({
 
       {swapApprovalDraft ? (
         <div
-          className={surfaceStyles.imagePreviewMask}
+          className={styles.imagePreviewMask}
           role="dialog"
           aria-modal="true"
           aria-label={`Approve trade swap for ${swapApprovalDraft.customerName}`}
@@ -266,12 +266,12 @@ export function TradeBoardWorkspaceCard({
           }}
         >
           <div
-            className={surfaceStyles.imagePreviewDialog}
+            className={styles.imagePreviewDialog}
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
-              className={surfaceStyles.imagePreviewClose}
+              className={styles.imagePreviewClose}
               onClick={() => setSwapApprovalDraft(null)}
               disabled={approvingSwap}
             >
@@ -478,7 +478,7 @@ export function TradeBoardWorkspaceCard({
                 <select
                   aria-label="Jewelry Type"
                   value={inventoryJewelryType}
-                  className={surfaceStyles.boardInventorySelect}
+                  className={`${surfaceStyles.selectInput} ${styles.boardInventorySelect}`}
                   disabled={boardListings.length === 0}
                   onChange={(event) => {
                     setInventoryCarouselIndex(0)
@@ -495,7 +495,7 @@ export function TradeBoardWorkspaceCard({
                 <select
                   aria-label="Collection"
                   value={inventoryCollection}
-                  className={surfaceStyles.boardInventorySelect}
+                  className={`${surfaceStyles.selectInput} ${styles.boardInventorySelect}`}
                   disabled={boardListings.length === 0}
                   onChange={(event) => {
                     setInventoryCarouselIndex(0)
@@ -512,7 +512,7 @@ export function TradeBoardWorkspaceCard({
                 {hasActiveInventoryBrowse ? (
                   <button
                     type="button"
-                    className={surfaceStyles.boardInventoryReset}
+                    className={`${surfaceStyles.helperButton} ${styles.inventoryButton}`}
                     onClick={handleResetInventoryBrowse}
                   >
                     Reset
@@ -523,15 +523,15 @@ export function TradeBoardWorkspaceCard({
             {hasActiveInventoryBrowse ? (
               inventoryResults.length > 0 ? (
                 <div
-                  className={surfaceStyles.boardInventoryCarousel}
+                  className={styles.boardInventoryCarousel}
                   aria-label="Filtered active board pieces"
                 >
-                  <div className={surfaceStyles.boardInventoryCarouselHeader}>
+                  <div className={styles.boardInventoryCarouselHeader}>
                     <span className={surfaceStyles.helperNote}>{carousel.rangeLabel}</span>
-                    <div className={surfaceStyles.boardInventoryArrowGroup}>
+                    <div className={styles.boardInventoryArrowGroup}>
                       <button
                         type="button"
-                        className={surfaceStyles.boardInventoryArrow}
+                        className={`${surfaceStyles.helperButton} ${styles.inventoryButton}`}
                         disabled={!carousel.canGoPrevious}
                         onClick={() =>
                           setInventoryCarouselIndex(
@@ -544,7 +544,7 @@ export function TradeBoardWorkspaceCard({
                       </button>
                       <button
                         type="button"
-                        className={surfaceStyles.boardInventoryArrow}
+                        className={`${surfaceStyles.helperButton} ${styles.inventoryButton}`}
                         disabled={!carousel.canGoNext}
                         onClick={() =>
                           setInventoryCarouselIndex(
@@ -560,49 +560,49 @@ export function TradeBoardWorkspaceCard({
                   {isInventoryBrowseLoading ? (
                     <div className={surfaceStyles.helperNote}>Loading board pieces...</div>
                   ) : null}
-                  <div className={surfaceStyles.boardInventoryCarouselGrid}>
+                  <div className={styles.boardInventoryCarouselGrid}>
                     {carousel.visibleItems.map((listing) => {
                       const photoUrl = getTradeListingPhotoUrl(listing)
                       const display = getTradeListingDisplayFields(listing)
                       return (
-                        <div key={listing.id} className={surfaceStyles.boardInventoryPieceCard}>
+                        <div key={listing.id} className={styles.boardInventoryPieceCard}>
                           <button
                             type="button"
-                            className={surfaceStyles.boardInventoryMediaButton}
+                            className={styles.boardInventoryMediaButton}
                             aria-label={`Open image preview for ${display.designName}`}
                             onClick={() => setPreviewListing(listing)}
                           >
-                            <span className={surfaceStyles.boardInventoryMedia}>
+                            <span className={styles.boardInventoryMedia}>
                               {photoUrl ? (
                                 <img
-                                  className={surfaceStyles.tradePieceImage}
+                                  className={styles.tradePieceImage}
                                   src={photoUrl}
                                   alt={display.designName}
                                   loading="lazy"
                                 />
                               ) : (
-                                <span className={surfaceStyles.tradePieceFallback}>
+                                <span className={styles.tradePieceFallback}>
                                   {display.typePrefix}
                                 </span>
                               )}
                             </span>
                           </button>
-                          <div className={surfaceStyles.boardInventoryPieceBody}>
-                            <div className={surfaceStyles.customerName}>{display.designName}</div>
-                            <div className={surfaceStyles.tradePieceMetaLine}>
+                          <div className={styles.boardInventoryPieceBody}>
+                            <div className={styles.customerName}>{display.designName}</div>
+                            <div className={styles.tradePieceMetaLine}>
                               {display.itemNumber ?? display.repFacingNote}
                             </div>
-                            <div className={surfaceStyles.tradePieceMetaLine}>
+                            <div className={styles.tradePieceMetaLine}>
                               {display.typePrefix}
                               {display.collectionName ? ` - ${display.collectionName}` : ''}
                             </div>
-                            <div className={surfaceStyles.timelineItem}>
+                            <div className={styles.timelineItem}>
                               {formatTradeMoney(display.bpMsrp)}
                             </div>
                           </div>
                           <button
                             type="button"
-                            className={surfaceStyles.boardInventoryRemoveButton}
+                            className={`${surfaceStyles.helperButton} ${styles.inventoryButton} ${styles.boardInventoryRemoveButton}`}
                             disabled={actionState.pendingKey === `remove:${listing.id}`}
                             onClick={() => onRemoveListing(listing.id)}
                           >
@@ -632,33 +632,33 @@ export function TradeBoardWorkspaceCard({
               const previewPhotoUrl = getTradeListingPhotoUrl(previewListing)
               return (
                 <div
-                  className={surfaceStyles.imagePreviewMask}
+                  className={styles.imagePreviewMask}
                   role="dialog"
                   aria-modal="true"
                   aria-label={`${previewDisplay.designName} image preview`}
                   onClick={() => setPreviewListing(null)}
                 >
                   <div
-                    className={surfaceStyles.imagePreviewDialog}
+                    className={styles.imagePreviewDialog}
                     onClick={(event) => event.stopPropagation()}
                   >
                     <button
                       type="button"
-                      className={surfaceStyles.imagePreviewClose}
+                      className={styles.imagePreviewClose}
                       aria-label="Close image preview"
                       onClick={() => setPreviewListing(null)}
                     >
                       x
                     </button>
-                    <div className={surfaceStyles.imagePreviewFrame}>
+                    <div className={styles.imagePreviewFrame}>
                       {previewPhotoUrl ? (
                         <img
                           src={previewPhotoUrl}
                           alt={previewDisplay.designName}
-                          className={surfaceStyles.imagePreviewImage}
+                          className={styles.imagePreviewImage}
                         />
                       ) : (
-                        <div className={surfaceStyles.tradePieceFallback}>
+                        <div className={styles.tradePieceFallback}>
                           {previewDisplay.typePrefix}
                         </div>
                       )}
@@ -693,7 +693,7 @@ export function TradeBoardWorkspaceCard({
             </div>
             <span className={surfaceStyles.rosterTag}>{`${requests.length} pending`}</span>
           </div>
-          <div className={surfaceStyles.tradeList}>
+          <div className={styles.tradeList}>
             {requests.map((request) => {
               const ruleCheckTarget = request.listing.design.collectionName
                 ? `${request.listing.design.typePrefix} / ${request.listing.design.collectionName}`
@@ -705,30 +705,30 @@ export function TradeBoardWorkspaceCard({
                   }`
 
               return (
-                <div key={request.id} className={surfaceStyles.tradeRow}>
-                  <div className={surfaceStyles.tradeIdentity}>
-                    <div className={surfaceStyles.customerName}>{request.customerName}</div>
-                    <div className={surfaceStyles.customerDate}>
+                <div key={request.id} className={styles.tradeRow}>
+                  <div className={styles.tradeIdentity}>
+                    <div className={styles.customerName}>{request.customerName}</div>
+                    <div className={styles.customerDate}>
                       Wants {requestedItemLabel}
                     </div>
                     <div className={surfaceStyles.helperNote}>{request.customerDescription}</div>
                     {request.revealScreenshot ? (
                       <a
-                        className={surfaceStyles.tradeScreenshotLink}
+                        className={styles.tradeScreenshotLink}
                         href={`/api/nic-nac/trade-requests/${request.id}/reveal-screenshot`}
                         target="_blank"
                         rel="noreferrer"
                       >
                         <img
-                          className={surfaceStyles.tradeScreenshotThumb}
+                          className={styles.tradeScreenshotThumb}
                           src={`/api/nic-nac/trade-requests/${request.id}/reveal-screenshot`}
                           alt={`Reveal screenshot from ${request.customerName}`}
                         />
                         <span>
-                          <span className={surfaceStyles.tradeScreenshotTitle}>
+                          <span className={styles.tradeScreenshotTitle}>
                             Reveal screenshot
                           </span>
-                          <span className={surfaceStyles.tradeScreenshotMeta}>
+                          <span className={styles.tradeScreenshotMeta}>
                             View customer upload
                           </span>
                         </span>
@@ -786,12 +786,12 @@ export function TradeBoardWorkspaceCard({
             </div>
             <span className={surfaceStyles.rosterTag}>{`${cleanupItems.length} to finish`}</span>
           </div>
-          <div className={surfaceStyles.tradeList}>
+          <div className={styles.tradeList}>
             {cleanupItems.map((item) => (
-              <div key={item.swapId} className={surfaceStyles.tradeRow}>
-                <div className={surfaceStyles.tradeIdentity}>
-                  <div className={surfaceStyles.customerName}>{item.customerName}</div>
-                  <div className={surfaceStyles.customerDate}>
+              <div key={item.swapId} className={styles.tradeRow}>
+                <div className={styles.tradeIdentity}>
+                  <div className={styles.customerName}>{item.customerName}</div>
+                  <div className={styles.customerDate}>
                     Revealed item number: {item.revealedItemNumber}
                   </div>
                   <div className={surfaceStyles.helperNote}>
@@ -817,22 +817,22 @@ export function TradeBoardWorkspaceCard({
             </div>
             <span className={surfaceStyles.rosterTag}>{`${queueItems.length} active swaps`}</span>
           </div>
-          <div className={surfaceStyles.tradeList}>
+          <div className={styles.tradeList}>
             {queueItems.map((item) => {
               const nextStatus = getNextFulfillmentStatus(item.status)
               return (
-                <div key={item.fulfillmentId} className={surfaceStyles.tradeRow}>
-                  <div className={surfaceStyles.tradeIdentity}>
-                    <div className={surfaceStyles.customerName}>{item.customerName}</div>
-                    <div className={surfaceStyles.customerDate}>
+                <div key={item.fulfillmentId} className={styles.tradeRow}>
+                  <div className={styles.tradeIdentity}>
+                    <div className={styles.customerName}>{item.customerName}</div>
+                    <div className={styles.customerDate}>
                       {item.itemNumber ? `${item.itemNumber} - ${item.designName}` : item.designName}
                     </div>
                     <div className={surfaceStyles.helperNote}>
                       {item.daysSinceLastUpdate} day(s) since last update
                     </div>
                   </div>
-                  <div className={surfaceStyles.tradeMeta}>
-                    <span className={surfaceStyles.statusBadgeWarning}>{item.status}</span>
+                  <div className={styles.tradeMeta}>
+                    <span className={styles.statusBadgeWarning}>{item.status}</span>
                   </div>
                   <div className={surfaceStyles.actionRow}>
                     {nextStatus ? (

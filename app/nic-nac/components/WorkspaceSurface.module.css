@@ -1,4 +1,3 @@
-.sectionTitle,
 .cardTitle {
   font-family: var(--font-prelaunch-display), Georgia, serif;
   font-size: 20px;
@@ -7,7 +6,6 @@
   color: var(--nic-nac-text-primary);
 }
 
-.sectionHint,
 .cardSubtitle {
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
@@ -52,7 +50,7 @@
 }
 
 .searchInput,
-.boardInventorySelect {
+.selectInput {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -70,33 +68,15 @@
   padding: 11px 12px;
 }
 
-.boardInventorySelect {
+.selectInput {
   padding: 10px 12px;
 }
 
 .searchInput:focus,
-.boardInventorySelect:focus {
+.selectInput:focus {
   outline: 2px solid rgba(238, 44, 155, 0.18);
   outline-offset: 1px;
   border-color: var(--nic-nac-border-input-focus);
-}
-
-.boardInventorySelect:disabled {
-  color: var(--nic-nac-text-secondary);
-  opacity: 0.64;
-}
-
-.customerName {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--nic-nac-text-primary);
-}
-
-.customerDate {
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--nic-nac-text-secondary);
 }
 
 .actionRow {
@@ -139,10 +119,7 @@
 }
 
 .helperButton,
-.helperLink,
-.boardInventoryReset,
-.boardInventoryArrow,
-.boardInventoryRemoveButton {
+.helperLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -165,278 +142,10 @@
     0 10px 22px rgba(54, 34, 29, 0.08);
 }
 
-.boardInventoryReset,
-.boardInventoryArrow,
-.boardInventoryRemoveButton {
-  white-space: nowrap;
-  background: linear-gradient(180deg, rgba(255, 246, 250, 0.96), rgba(255, 255, 255, 0.84));
-  border-color: rgba(238, 44, 155, 0.22);
-  box-shadow: none;
-  padding: 10px 12px;
-}
-
-.boardInventoryReset:hover,
-.boardInventoryArrow:hover,
-.boardInventoryRemoveButton:hover {
-  border-color: rgba(238, 44, 155, 0.4);
-  background: linear-gradient(180deg, rgba(255, 236, 246, 0.98), rgba(255, 255, 255, 0.88));
-}
-
 .helperButton:disabled {
   color: #402924;
   cursor: default;
   opacity: 1;
-}
-
-.boardInventoryReset:disabled,
-.boardInventoryArrow:disabled,
-.boardInventoryRemoveButton:disabled {
-  cursor: default;
-  opacity: 0.54;
-}
-
-.tradeList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tradeRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto auto;
-  gap: 12px;
-  align-items: center;
-  border-radius: 14px;
-  padding: 12px;
-  background: var(--nic-nac-surface-primary);
-  border: 1px solid var(--nic-nac-border);
-}
-
-.tradeIdentity {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tradeScreenshotLink {
-  width: fit-content;
-  max-width: 100%;
-  display: inline-grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--nic-nac-border);
-  border-radius: 10px;
-  background: rgba(255, 246, 250, 0.66);
-  color: var(--nic-nac-text-primary);
-  padding: 7px;
-  text-decoration: none;
-}
-
-.tradeScreenshotLink:focus-visible {
-  outline: 2px solid var(--nic-nac-focus-ring);
-  outline-offset: 2px;
-}
-
-.tradeScreenshotThumb {
-  width: 46px;
-  height: 46px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: var(--nic-nac-surface-secondary);
-  border: 1px solid var(--nic-nac-border);
-}
-
-.tradeScreenshotTitle,
-.tradeScreenshotMeta {
-  display: block;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  line-height: 1.25;
-}
-
-.tradeScreenshotTitle {
-  color: var(--nic-nac-text-primary);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.tradeScreenshotMeta {
-  color: var(--nic-nac-text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.tradeMeta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.boardInventoryCarousel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.boardInventoryCarouselHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.boardInventoryArrowGroup {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.boardInventoryCarouselGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.boardInventoryPieceCard {
-  min-width: 0;
-  display: grid;
-  grid-template-rows: auto minmax(104px, 1fr) auto;
-  gap: 8px;
-  border-radius: 14px;
-  border: 1px solid var(--nic-nac-border);
-  background: var(--nic-nac-surface-primary);
-  padding: 10px;
-}
-
-.boardInventoryMedia,
-.boardInventoryMediaButton {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-}
-
-.boardInventoryMedia {
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--nic-nac-border);
-  background:
-    linear-gradient(135deg, rgba(255, 212, 234, 0.48), rgba(225, 250, 245, 0.62));
-}
-
-.boardInventoryMediaButton {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: zoom-in;
-}
-
-.tradePieceImage {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.tradePieceFallback {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  color: var(--nic-nac-text-primary);
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.boardInventoryPieceBody {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.boardInventoryPieceBody .customerName {
-  overflow-wrap: anywhere;
-}
-
-.tradePieceMetaLine {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--nic-nac-text-secondary);
-}
-
-.boardInventoryRemoveButton {
-  width: 100%;
-}
-
-.imagePreviewMask {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(64, 41, 36, 0.42);
-}
-
-.imagePreviewDialog {
-  position: relative;
-  width: min(720px, 100%);
-  max-height: min(760px, 90vh);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-radius: 18px;
-  border: 1px solid var(--nic-nac-border);
-  background: var(--nic-nac-surface-primary-solid);
-  padding: 16px;
-  box-shadow: 0 24px 72px rgba(64, 41, 36, 0.24);
-}
-
-.imagePreviewClose {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--nic-nac-border);
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--nic-nac-text-primary);
-  cursor: pointer;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-weight: 800;
-}
-
-.imagePreviewFrame {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 320px;
-  max-height: 62vh;
-  overflow: hidden;
-  border-radius: 14px;
-  background: var(--nic-nac-surface-dashboard-placeholder);
-}
-
-.imagePreviewImage {
-  width: 100%;
-  height: 100%;
-  max-height: 62vh;
-  object-fit: contain;
-  display: block;
-}
-
-.statusBadgeWarning {
-  background: rgba(255, 227, 168, 0.62);
-  color: #6a4b12;
 }
 
 .emptyState {
@@ -486,16 +195,6 @@
   color: var(--nic-nac-text-primary);
 }
 
-.timelineItem {
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(64, 41, 36, 0.08);
-  padding: 4px 10px;
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 11px;
-  color: var(--nic-nac-text-secondary);
-}
-
 .loadingLine {
   width: 72%;
   height: 16px;
@@ -513,13 +212,11 @@
 }
 
 :global(.main[data-workspace-skin='black_diamond']) .cardTitle,
-:global(.main[data-workspace-skin='black_diamond']) .customerName,
 :global(.main[data-workspace-skin='black_diamond']) .walletSettingsTitle {
   color: #f8efe4;
 }
 
 :global(.main[data-workspace-skin='black_diamond']) .rosterTag,
-:global(.main[data-workspace-skin='black_diamond']) .timelineItem,
 :global(.main[data-workspace-skin='black_diamond']) .emptyState {
   background: #211c18;
   border-color: rgba(244, 207, 98, 0.2);
@@ -534,25 +231,8 @@
   border-color: rgba(244, 207, 98, 0.3);
 }
 
-:global(.main[data-workspace-skin='black_diamond']) .imagePreviewDialog {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-    #15110f;
-  border-color: rgba(244, 207, 98, 0.24);
-  color: #f8efe4;
-}
-
-:global(.main[data-workspace-skin='black_diamond']) .imagePreviewClose,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventoryPieceCard,
-:global(.main[data-workspace-skin='black_diamond']) .tradeRow {
-  background: #211c18;
-  border-color: rgba(244, 207, 98, 0.2);
-  color: #f8efe4;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
-}
-
 :global(.main[data-workspace-skin='black_diamond']) .searchInput,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventorySelect {
+:global(.main[data-workspace-skin='black_diamond']) .selectInput {
   background: rgba(0, 0, 0, 0.34);
   border-color: rgba(244, 207, 98, 0.34);
   color: #f8efe4;
@@ -563,16 +243,14 @@
 }
 
 :global(.main[data-workspace-skin='black_diamond']) .searchInput:focus,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventorySelect:focus {
+:global(.main[data-workspace-skin='black_diamond']) .selectInput:focus {
   outline-color: rgba(0, 217, 255, 0.28);
   border-color: rgba(0, 217, 255, 0.52);
 }
 
 :global(.main[data-workspace-skin='black_diamond']) .cardSubtitle,
 :global(.main[data-workspace-skin='black_diamond']) .searchLabel,
-:global(.main[data-workspace-skin='black_diamond']) .helperNote,
-:global(.main[data-workspace-skin='black_diamond']) .tradeMeta,
-:global(.main[data-workspace-skin='black_diamond']) .customerDate {
+:global(.main[data-workspace-skin='black_diamond']) .helperNote {
   color: #d8cbbd;
 }
 
@@ -589,10 +267,7 @@
 }
 
 :global(.main[data-workspace-skin='black_diamond']) .helperButton,
-:global(.main[data-workspace-skin='black_diamond']) .helperLink,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventoryReset,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventoryArrow,
-:global(.main[data-workspace-skin='black_diamond']) .boardInventoryRemoveButton {
+:global(.main[data-workspace-skin='black_diamond']) .helperLink {
   color: #e8fbff;
   border-color: rgba(0, 217, 255, 0.45);
   background: rgba(0, 217, 255, 0.08);
@@ -601,29 +276,4 @@
 :global(.main[data-workspace-skin='black_diamond']) .loadingLine,
 :global(.main[data-workspace-skin='black_diamond']) .loadingLineShort {
   background: rgba(244, 207, 98, 0.16);
-}
-
-@media (max-width: 840px) {
-  .tradeRow {
-    grid-template-columns: 1fr;
-  }
-
-  .boardInventoryReset,
-  .boardInventoryArrow {
-    width: 100%;
-  }
-
-  .boardInventoryCarouselHeader {
-    align-items: stretch;
-  }
-
-  .boardInventoryArrowGroup {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .boardInventoryCarouselGrid {
-    grid-template-columns: 1fr;
-  }
 }

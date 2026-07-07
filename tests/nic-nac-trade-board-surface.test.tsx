@@ -87,6 +87,34 @@ describe('Nic-Nac trade board surface reset', () => {
     expect(source).not.toContain("from './DashboardPlaceholder.module.css'")
   })
 
+  it('keeps trade board-private surface structure out of WorkspaceSurface', () => {
+    const workspaceSurfaceCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/WorkspaceSurface.module.css',
+      ),
+      'utf8',
+    )
+    const tradeBoardCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/TradeBoardWorkspaceCard.module.css',
+      ),
+      'utf8',
+    )
+
+    for (const selector of [
+      '.boardInventoryCarousel',
+      '.boardInventoryPieceCard',
+      '.tradeScreenshotLink',
+      '.imagePreviewMask',
+      '.tradeRow',
+    ]) {
+      expect(workspaceSurfaceCss).not.toContain(selector)
+      expect(tradeBoardCss).toContain(selector)
+    }
+  })
+
   it('puts today, quick add, and browse ahead of queue detail sections', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
