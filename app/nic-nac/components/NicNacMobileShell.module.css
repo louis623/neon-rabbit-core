@@ -1,9 +1,9 @@
 .bubble {
   position: fixed;
-  bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
-  right: max(12px, calc(env(safe-area-inset-right) + 8px));
-  width: 52px;
-  height: 52px;
+  bottom: max(86px, calc(env(safe-area-inset-bottom) + 82px));
+  right: max(14px, calc(env(safe-area-inset-right) + 14px));
+  width: 48px;
+  height: 48px;
   border-radius: 999px;
   border: 0;
   background: var(--nic-nac-accent);

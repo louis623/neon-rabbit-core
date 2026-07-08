@@ -501,20 +501,24 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Sparkle Suite')
-    expect(html).toContain('Workspace')
-    expect(html).toContain('>Rep<')
-    expect(html).toContain('>Show<')
-    expect(html).toContain('Secret Rep ID Number')
-    expect(source).toContain('View live site')
+    expect(html).toContain('Ask Nic-Nac anything...')
+    expect(html).toContain('aria-label="Notifications"')
+    expect(html).not.toContain('>Rep<')
+    expect(html).not.toContain('>Show<')
+    expect(html).not.toContain('Secret Rep ID Number')
+    expect(source).toContain('function WorkspaceAppHeader')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).toContain('Add a piece')
     expect(html).toContain('Check my board')
     expect(html).toContain('Add a show')
-    expect(html).toContain('Today&#x27;s trade work')
-    expect(html).toContain('Pending requests')
-    expect(html).toContain('Cleanup follow-ups')
-    expect(html).toContain('Fulfillment swaps')
+    expect(html).toContain('Today')
+    expect(html).toContain('Trade requests')
+    expect(html).toContain('Swap cleanup')
+    expect(html).toContain('Fulfillment')
+    expect(html).toContain('Active Board')
+    expect(html).toContain('Public Site')
+    expect(html).toContain('Need help?')
     expect(html).not.toContain('Trade history')
     expect(html).toContain('Nic-Nac')
     expect(html).toContain('Trade Board')
@@ -1161,7 +1165,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('formatExtensionRepId(')
   })
 
-  it('renders the saved Secret Rep ID Number in the workspace topbar', () => {
+  it('keeps the workspace app bar focused on rep identity instead of setup codes', () => {
     const html = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
         liveQueueSyncCodeOverride: 'MHF-7342',
@@ -1172,20 +1176,22 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(html).toContain('Secret Rep ID Number')
-    expect(html).toContain('MHF-7342')
-    expect(html).toContain('>Rep<')
-    expect(html).toContain('>Show<')
+    expect(html).toContain('Ask Nic-Nac anything...')
+    expect(html).toContain('aria-label="Notifications"')
+    expect(html).toContain('Rep info loading')
+    expect(html).toContain('Show info loading')
+    expect(html).not.toContain('Secret Rep ID Number')
+    expect(html).not.toContain('MHF-7342')
+    expect(html).not.toContain('>Rep<')
+    expect(html).not.toContain('>Show<')
     expect(html).not.toContain('Rep / show')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Extension code')
     expect(html).not.toContain('Live Queue sync code')
-    expect(css).toContain('.topbarMetaRow')
-    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));')
-    expect(css).toContain('align-items: flex-start;')
-    expect(css).toContain('min-height: 58px;')
-    expect(css).toContain('font-size: 14px;')
-    expect(css).toContain('text-align: left;')
+    expect(css).toContain('.appHeader')
+    expect(css).toContain('.appSearch')
+    expect(css).toContain('.appProfile')
+    expect(css).toContain('grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr);')
   })
 
   it('keeps the workspace shell on the Morganite Sparkle Suite skin regardless of saved or draft appearance rows', () => {
@@ -1226,7 +1232,8 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('data-workspace-skin="sparkle_suite_morganite"')
+    expect(html).toContain('data-workspace-skin="concept-one"')
+    expect(html).toContain('data-customer-site-skin="sparkle_suite_morganite"')
     expect(html).not.toContain('data-nic-nac-skin="velvet"')
   })
 
@@ -1243,7 +1250,8 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(source).toContain('data-workspace-skin={workspaceSkinPreset}')
+    expect(source).toContain('data-workspace-skin="concept-one"')
+    expect(source).toContain('data-customer-site-skin={workspaceSkinPreset}')
     expect(styles).toContain(".main[data-workspace-skin='velvet']")
     expect(styles).toContain('--workspace-accent')
     expect(styles).not.toContain('--nic-nac-accent: #9333EA')
@@ -1361,21 +1369,19 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(shellCss).toContain('--workspace-shell-bg: #f7f4f1;')
+    expect(shellCss).toContain('--workspace-shell-bg: #f8f5ff;')
     expect(shellCss).toContain('--workspace-surface: rgba(255, 255, 255, 0.94);')
-    expect(shellCss).toContain('--workspace-surface-border: rgba(64, 41, 36, 0.10);')
-    expect(shellCss).toContain('--workspace-surface-shadow: 0 10px 28px rgba(43, 31, 27, 0.08);')
-    expect(shellCss).toContain('--workspace-tab-active-bg: #ffffff;')
+    expect(shellCss).toContain('--workspace-surface-border: rgba(67, 42, 116, 0.12);')
+    expect(shellCss).toContain('--workspace-surface-shadow: 0 16px 44px rgba(48, 30, 92, 0.08);')
+    expect(shellCss).toContain('--workspace-tab-active-bg: #fff0f8;')
     expect(shellCss).toContain('bottom: 0;')
     expect(shellCss).toContain('env(safe-area-inset-bottom)')
-    expect(shellCss).toContain('border-radius: 20px;')
+    expect(shellCss).toContain('border-radius: 24px;')
     expect(shellCss).toContain('backdrop-filter: blur(18px);')
     expect(tabsCss).not.toContain('linear-gradient(145deg, #402924 0%, #36221d 100%)')
-    expect(tabsCss).toContain('min-height: 56px;')
-    expect(tabsCss).toContain('background: rgba(255, 255, 255, 0.76);')
-    expect(tabsCss).toContain(
-      'border-color: var(--workspace-tab-active-border, rgba(238, 44, 155, 0.30));',
-    )
+    expect(tabsCss).toContain('min-height: 54px;')
+    expect(tabsCss).toContain('background: transparent;')
+    expect(tabsCss).toContain('justify-content: space-around;')
     expect(tabsCss).toContain('scroll-snap-align: start;')
     expect(dashboardCss).toContain('.workspacePanel,')
     expect(dashboardCss).toContain('.librarySearchCard {')
@@ -1410,8 +1416,8 @@ describe('DashboardPlaceholder', () => {
     expect(tabsSource).not.toContain('subtitle: string')
     expect(tabsCss).toContain('scroll-snap-type: x proximity;')
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
-    expect(tabsCss).toContain('border-radius: 999px;')
-    expect(tabsCss).toContain('min-height: 56px;')
+    expect(tabsCss).toContain('border-radius: 18px;')
+    expect(tabsCss).toContain('min-height: 54px;')
     expect(tabsCss).toContain('min-height: 58px;')
     expect(tabsCss).toContain('.tabs::-webkit-scrollbar')
     expect(tabsCss).toContain('.labelShort')
@@ -2403,7 +2409,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Ready after checkout')
     expect(html).not.toContain('Continue in Site Settings')
     expect(html).not.toContain('After checkout')
-    expect(html).not.toContain('Ask Nic-Nac')
+    expect(html).toContain('Ask Nic-Nac anything...')
   })
 
   it('keeps customer site looks in Site Settings instead of Help & Resources', () => {

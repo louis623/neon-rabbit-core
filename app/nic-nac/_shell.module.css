@@ -1,16 +1,15 @@
 .root {
   min-height: var(--nic-nac-app-height, 100vh);
   background:
-    linear-gradient(180deg, #fffdfc 0%, var(--nic-nac-surface-dashboard) 52%, #fffdfc 100%);
+    radial-gradient(circle at 22% 0%, rgba(194, 160, 255, 0.2), transparent 34rem),
+    linear-gradient(180deg, #fcfbff 0%, #f7f3ff 54%, #ffffff 100%);
   font-family: 'Geist', system-ui, sans-serif;
   color: var(--nic-nac-text-primary);
 }
 
 @media (min-width: 1024px) {
   .root {
-    align-items: stretch;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(380px, 420px);
+    display: block;
   }
   .rootMinimized {
     display: block;

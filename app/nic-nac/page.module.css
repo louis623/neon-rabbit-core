@@ -1,19 +1,7 @@
 .page {
-  --nic-nac-app-height: calc(100dvh - 79px);
-  background: #fffdfc;
+  --nic-nac-app-height: 100dvh;
+  background: #f8f5ff;
   overflow-x: clip;
-}
-
-.chrome {
-  background: transparent;
-  min-height: 0;
-  overflow: visible;
-  position: relative;
-  z-index: 2;
-}
-
-.chrome :global(.sl2-footer) {
-  margin-top: 0;
 }
 
 .app {

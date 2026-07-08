@@ -120,7 +120,7 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('shouldKeepDesktopNicNacOpen')
     expect(client).toContain('desktopOpen || shouldKeepDesktopNicNacOpen')
     expect(client).toContain(
-      'shouldKeepDesktopNicNacOpen ? undefined : () => setDesktopOpen(false)',
+      'desktopOpen || shouldKeepDesktopNicNacOpen ? null',
     )
     expect(client).toContain('!desktopOpen && !shouldKeepDesktopNicNacOpen')
   })

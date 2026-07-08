@@ -191,6 +191,13 @@ function buildWorkspaceReviewFallbackState(): SetupStateWithLiveQueue | null {
   }
 }
 
+function shouldUseLocalWorkspaceReviewFallback() {
+  if (typeof window === 'undefined') return false
+
+  const host = window.location.hostname
+  return host === 'localhost' || host === '127.0.0.1'
+}
+
 type SetupStateResponse = {
   state?: SetupStateWithLiveQueue
   error?: string
@@ -291,6 +298,16 @@ export default function NicNacClient({
     async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
       if (options.showLoading) setSetupStateStatus('loading')
       setSetupStateError(null)
+
+      const localReviewFallbackState =
+        reviewerSmokeVisible && shouldUseLocalWorkspaceReviewFallback()
+          ? buildWorkspaceReviewFallbackState()
+          : null
+      if (localReviewFallbackState) {
+        setSetupState(localReviewFallbackState)
+        setSetupStateStatus('ready')
+        return
+      }
 
       const controller = new AbortController()
       const abortFromCaller = () => controller.abort('caller')
@@ -982,20 +999,14 @@ export default function NicNacClient({
         initialSiteSettings={buildReviewSiteSettings(setupState)}
         reviewWorkspaceMode={showWorkspaceReviewState}
         onLaunchNicNacAction={handleLaunchNicNacAction}
+        desktopChat={
+          isDesktop && (desktopOpen || shouldKeepDesktopNicNacOpen)
+            ? chatContent
+            : null
+        }
       />
       {isDesktop ? (
-        desktopOpen || shouldKeepDesktopNicNacOpen ? (
-          <NicNacColumn
-            variant="desktop"
-            onClose={
-              shouldKeepDesktopNicNacOpen ? undefined : () => setDesktopOpen(false)
-            }
-            onNewConversation={handleNewConversation}
-            newConversationDisabled={newDisabled}
-          >
-            {chatContent}
-          </NicNacColumn>
-        ) : (
+        desktopOpen || shouldKeepDesktopNicNacOpen ? null : (
           <button
             type="button"
             className={shellStyles.desktopReopen}

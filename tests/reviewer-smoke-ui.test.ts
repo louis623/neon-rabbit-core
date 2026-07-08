@@ -314,17 +314,14 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('GS2-2335')
   })
 
-  it('keeps public Sparkle Suite header and footer around setup and workspace', () => {
-    expect(nicNacPage).toContain('SparkleSuitePublicHeader')
-    expect(nicNacPage).toContain('SparkleSuitePublicFooter')
-    expect(nicNacPage).toContain('sparkle-landing-v2')
-    expect(nicNacPage).toContain('sl2-shell')
-    expect(nicNacPage.indexOf('<SparkleSuitePublicHeader')).toBeLessThan(
-      nicNacPage.indexOf('<NicNacClient'),
-    )
-    expect(nicNacPage.indexOf('<NicNacClient')).toBeLessThan(
-      nicNacPage.indexOf('<SparkleSuitePublicFooter'),
-    )
+  it('lets the Nic-Nac workspace own its Concept 1 app chrome', () => {
+    expect(nicNacPage).not.toContain('SparkleSuitePublicHeader')
+    expect(nicNacPage).not.toContain('SparkleSuitePublicFooter')
+    expect(nicNacPage).not.toContain('sparkle-landing-v2')
+    expect(nicNacPage).toContain('<NicNacClient')
+    expect(dashboardPlaceholder).toContain('function WorkspaceAppHeader')
+    expect(dashboardPlaceholder).toContain('Ask Nic-Nac anything...')
+    expect(dashboardPlaceholder).toContain('className={styles.appProfile}')
   })
 
   it('keeps public Sparkle Suite header and footer around login', () => {
@@ -341,11 +338,13 @@ describe('reviewer smoke UI wiring', () => {
   })
 
   it('keeps Nic-Nac page chrome from fighting the workspace layout', () => {
-    expect(nicNacPage).toContain('styles.chrome')
-    expect(nicNacPageCss).toContain('min-height: 0')
+    expect(nicNacPage).not.toContain('styles.chrome')
+    expect(nicNacPageCss).toContain('--nic-nac-app-height: 100dvh')
     expect(nicNacPageCss).toContain('overflow-x: clip')
-    expect(nicNacPageCss).toContain('margin-top: 0')
-    expect(nicNacShellCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(380px, 420px)')
+    expect(nicNacShellCss).not.toContain('grid-template-columns: minmax(0, 1fr) minmax(380px, 420px)')
+    expect(nicNacClient).toContain('desktopChat={')
+    expect(dashboardPlaceholder).toContain('desktopChat?: ReactNode')
+    expect(dashboardPlaceholder).toContain('ConceptHomeWorkspace')
     expect(nicNacColumnCss).not.toMatch(/\.desktop\s*{[^}]*position:\s*fixed/s)
     expect(nicNacColumnCss).toMatch(/\.desktop\s*{[^}]*position:\s*sticky/s)
     expect(requiredSetupCss).not.toMatch(/\.root\s*{[^}]*height:\s*100dvh/s)
@@ -366,7 +365,8 @@ describe('reviewer smoke UI wiring', () => {
     )
     expect(workspaceShellCss).toContain('bottom: 0')
     expect(workspaceShellCss).toContain('env(safe-area-inset-bottom)')
-    expect(workspaceSectionTabsCss).toContain('min-height: 56px')
+    expect(workspaceSectionTabsCss).toContain('min-height: 54px')
+    expect(workspaceSectionTabsCss).toContain('justify-content: space-around')
   })
 
   it('keeps the Nic-Nac header compact instead of oversized branding', () => {

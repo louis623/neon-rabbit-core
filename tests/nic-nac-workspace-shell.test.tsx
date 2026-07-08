@@ -77,7 +77,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('aria-labelledby={activeTabId}')
   })
 
-  it('keeps the workspace header as a compact app bar with grouped brand and meta rows', () => {
+  it('keeps the workspace header as a Concept 1 app bar', () => {
     const source = readFileSync(
       resolve(
         process.cwd(),
@@ -93,30 +93,29 @@ describe('Nic-Nac workspace shell reset', () => {
       'utf8',
     )
 
-    expect(source).toContain('className={styles.topbarBrandRow}')
-    expect(source).toContain('className={styles.topbarMetaRow}')
-    expect(source).toContain('className={styles.topbarMetaAction}')
-    expect(css).toContain('.topbarBrandRow')
-    expect(css).toContain('.topbarMetaRow')
-    expect(css).toContain('.topbarMetaAction')
+    expect(source).toContain('function WorkspaceAppHeader')
+    expect(source).toContain('className={styles.appBrand}')
+    expect(source).toContain('className={styles.appSearch}')
+    expect(source).toContain('className={styles.appProfile}')
+    expect(source).not.toContain('Secret Rep ID Number')
+    expect(css).toContain('.appHeader')
+    expect(css).toContain('.appBrand')
+    expect(css).toContain('.appSearch')
+    expect(css).toContain('.appProfile')
     expect(
-      hasDeclaration(css, '.topbarMetaRow', 'grid-template-columns: repeat(3, minmax(0, 1fr))'),
+      hasDeclaration(
+        css,
+        '.appHeader',
+        'grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr)',
+      ),
     ).toBe(true)
     expect(css).toContain('border-radius: 24px;')
-    expect(hasDeclaration(css, '.topbarInfoValue', 'overflow-wrap: anywhere')).toBe(true)
+    expect(hasDeclaration(css, '.appSearch', 'border-radius: 18px')).toBe(true)
     expect(
-      hasNestedDeclaration(css, '@media (max-width: 840px)', '.topbarMetaAction', 'grid-column: 1 / -1'),
+      hasNestedDeclaration(css, '@media (max-width: 840px)', '.appSearch', 'display: none'),
     ).toBe(true)
     expect(
-      hasNestedDeclaration(css, '@media (max-width: 840px)', '.liveSiteButton', 'min-height: 44px'),
-    ).toBe(true)
-    expect(
-      hasNestedDeclaration(
-        css,
-        '@media (min-width: 960px)',
-        '.topbarMetaRow',
-        'grid-template-columns: repeat(4, minmax(0, 1fr))',
-      ),
+      hasNestedDeclaration(css, '@media (max-width: 840px)', '.appBrandSeal', 'width: 34px'),
     ).toBe(true)
   })
 
@@ -169,8 +168,8 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(css).toContain('flex-direction: column;')
     expect(css).toContain('align-items: center;')
     expect(css).toContain('justify-content: center;')
-    expect(css).toContain('min-width: 84px;')
+    expect(css).toContain('min-width: 58px;')
     expect(css).toContain('min-height: 58px;')
-    expect(css).toContain('border-radius: 20px;')
+    expect(css).toContain('border-radius: 18px;')
   })
 })

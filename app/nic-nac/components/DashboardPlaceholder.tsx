@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import {
   useCallback,
   useEffect,
@@ -46,6 +46,8 @@ import {
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import {
   CalendarDays,
+  Bell,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   CircleEllipsis,
@@ -1960,6 +1962,7 @@ export type DashboardPlaceholderProps = {
   reviewWorkspaceMode?: boolean
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
+  desktopChat?: ReactNode
 }
 
 type WorkspacePreviewState =
@@ -1979,6 +1982,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode = false,
     initialSectionOverride,
     onLaunchNicNacAction,
+    desktopChat,
   } = props
   const [activeSection, setActiveSection] =
     useState<WorkspaceSectionKey>(() =>
@@ -4747,8 +4751,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const headerShowName = formatHeaderShowName(
     siteSettingsState.settings?.businessName,
   )
-  const headerLiveQueueSyncCode =
-    liveQueueSyncCodeOverride ?? repProfileState.liveQueueSyncCode ?? 'Not assigned yet'
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
     siteSettingsDraft,
@@ -4798,44 +4800,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     ? (activeSection as (typeof WORKSPACE_SECTIONS)[number]['key'])
     : 'more'
   const workspaceHeader = !isLiveSitePreview ? (
-    <header className={styles.topbar}>
-      <div className={styles.topbarBrandRow}>
-        <div className={styles.topbarCopy}>
-          <SparkleSeal className={styles.brandSeal} />
-          <div className={styles.brandText}>
-            <span className={styles.brand}>Sparkle Suite</span>
-            <span className={styles.topbarSubtitle}>Workspace</span>
-          </div>
-        </div>
-      </div>
-      <div className={styles.topbarMetaRow}>
-        <div className={styles.topbarInfoPill}>
-          <span className={styles.topbarInfoLabel}>Rep</span>
-          <span className={styles.topbarInfoValue}>{headerRepName}</span>
-        </div>
-        <div className={styles.topbarInfoPill}>
-          <span className={styles.topbarInfoLabel}>Show</span>
-          <span className={styles.topbarInfoValue}>{headerShowName}</span>
-        </div>
-        <div className={styles.topbarInfoPill}>
-          <span className={styles.topbarInfoLabel}>Secret Rep ID Number</span>
-          <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>
-            {headerLiveQueueSyncCode}
-          </span>
-        </div>
-        {hasPaidWorkspace ? (
-          <div className={styles.topbarMetaAction}>
-            <button
-              type="button"
-              className={styles.liveSiteButton}
-              onClick={handleOpenLiveSitePreview}
-            >
-              View live site
-            </button>
-          </div>
-        ) : null}
-      </div>
-    </header>
+    <WorkspaceAppHeader
+      repName={headerRepName}
+      showName={headerShowName}
+      onOpenLiveSite={hasPaidWorkspace ? handleOpenLiveSitePreview : undefined}
+    />
   ) : null
   const accessNotice = (
     <WorkspaceAccessNotice
@@ -5116,10 +5085,18 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     return null
   }
   const renderedSection = renderActiveWorkspaceSection()
+  const showConceptHome = activeSection === 'home'
+  const homeTradeRequestsCount = tradeRequestsState.requests?.length ?? 0
+  const homeCleanupCount = tradeSwapCleanupState.items?.length ?? 0
+  const homeFulfillmentCount = fulfillmentQueueState.items?.length ?? 0
+  const homeNextShowLabel = buildHomeNextShowLabel(
+    calendarState.summary?.upcomingEvents ?? [],
+  )
   return (
     <main
       className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
-      data-workspace-skin={workspaceSkinPreset}
+      data-workspace-skin="concept-one"
+      data-customer-site-skin={workspaceSkinPreset}
     >
       {previewUnavailableMessage ? (
         <div className={styles.previewUnavailableNotice}>
@@ -5184,10 +5161,319 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           header={workspaceHeader}
           notice={showWorkspaceAccessNotice ? accessNotice : null}
         >
-          {renderedSection}
+          {showConceptHome ? (
+            <ConceptHomeWorkspace
+              chat={desktopChat}
+              tradeRequestsCount={homeTradeRequestsCount}
+              cleanupCount={homeCleanupCount}
+              fulfillmentCount={homeFulfillmentCount}
+              totalPieces={tradeBoardState.board?.summary.totalPieces ?? 0}
+              nextShowLabel={homeNextShowLabel}
+              siteLive={Boolean(currentPublicSiteSlug || currentRepId)}
+              onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
+              onOpenTradeBoard={() => setActiveSection('trade-board')}
+              onOpenCalendar={() => setActiveSection('show-calendar')}
+              onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
+              onOpenLiveSitePreview={handleOpenLiveSitePreview}
+              onOpenHelp={() => setActiveSection('help-resources')}
+            />
+          ) : (
+            renderedSection
+          )}
         </WorkspaceShell>
       )}
     </main>
+  )
+}
+
+function WorkspaceAppHeader({
+  repName,
+  showName,
+  onOpenLiveSite,
+}: {
+  repName: string
+  showName: string
+  onOpenLiveSite?: () => void
+}) {
+  return (
+    <header className={styles.appHeader}>
+      <div className={styles.appBrand}>
+        <SparkleSeal className={styles.appBrandSeal} />
+        <span>Sparkle Suite</span>
+      </div>
+      <label className={styles.appSearch}>
+        <Search aria-hidden="true" />
+        <span className={styles.searchPlaceholder}>Ask Nic-Nac anything...</span>
+        <span className={styles.searchShortcut}>⌘ K</span>
+      </label>
+      <div className={styles.appHeaderActions}>
+        {onOpenLiveSite ? (
+          <button
+            type="button"
+            className={styles.appHeaderGhost}
+            onClick={onOpenLiveSite}
+          >
+            Preview site
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={styles.appHeaderIcon}
+          aria-label="Notifications"
+        >
+          <Bell aria-hidden="true" />
+        </button>
+        <div className={styles.appProfile}>
+          <span className={styles.appProfileInitial}>
+            {repName.charAt(0).toUpperCase()}
+          </span>
+          <span>
+            <strong>{repName}</strong>
+            <small>{showName}</small>
+          </span>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function ConceptHomeWorkspace({
+  chat,
+  tradeRequestsCount,
+  cleanupCount,
+  fulfillmentCount,
+  totalPieces,
+  nextShowLabel,
+  siteLive,
+  onLaunchAction,
+  onOpenTradeBoard,
+  onOpenCalendar,
+  onOpenCustomerBoardPreview,
+  onOpenLiveSitePreview,
+  onOpenHelp,
+}: {
+  chat?: ReactNode | null
+  tradeRequestsCount: number
+  cleanupCount: number
+  fulfillmentCount: number
+  totalPieces: number
+  nextShowLabel: string
+  siteLive: boolean
+  onLaunchAction: (action: WorkspaceLaunchAction) => void
+  onOpenTradeBoard: () => void
+  onOpenCalendar: () => void
+  onOpenCustomerBoardPreview: () => void
+  onOpenLiveSitePreview: () => void
+  onOpenHelp: () => void
+}) {
+  return (
+    <section className={styles.conceptHome} aria-label="Nic-Nac first workspace">
+      <aside className={styles.conceptRail} aria-label="Today at a glance">
+        <ConceptPanel title="Today" icon={<CalendarDays aria-hidden="true" />}>
+          <MetricRows
+            rows={[
+              ['Trade requests', tradeRequestsCount],
+              ['Swap cleanup', cleanupCount],
+              ['Fulfillment', fulfillmentCount],
+            ]}
+          />
+          <button type="button" className={styles.panelLink} onClick={onOpenTradeBoard}>
+            View full today
+          </button>
+        </ConceptPanel>
+        <ConceptPanel
+          title="Trade Board"
+          action="View board"
+          onAction={onOpenTradeBoard}
+        >
+          <img
+            className={styles.boardPreviewImage}
+            src="/nic-nac/concept-trade-card.png"
+            alt=""
+          />
+          <p className={styles.panelStrong}>{totalPieces} active pieces on your board</p>
+          <button
+            type="button"
+            className={styles.panelRowButton}
+            onClick={onOpenTradeBoard}
+          >
+            {tradeRequestsCount} new requests need your review
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </ConceptPanel>
+        <ConceptPanel
+          title="Upcoming Show"
+          icon={<CalendarDays aria-hidden="true" />}
+          action="View calendar"
+          onAction={onOpenCalendar}
+        >
+          <p className={styles.panelStrong}>{nextShowLabel}</p>
+          <span className={styles.panelAccent}>3 days away</span>
+        </ConceptPanel>
+      </aside>
+
+      <div className={styles.conceptCenter}>
+        <div className={styles.nicNacHero}>
+          <div className={styles.nicNacHeroMark}>
+            <span>N</span>
+          </div>
+          <h1>Nic-Nac</h1>
+          <p>How can I help you today?</p>
+          <div className={styles.heroQuickActions}>
+            <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
+              <span className={styles.quickIcon}>+</span>
+              Add a piece
+            </button>
+            <button type="button" onClick={() => onLaunchAction('check_board')}>
+              <CircleEllipsis aria-hidden="true" />
+              Check my board
+            </button>
+            <button type="button" onClick={() => onLaunchAction('add_calendar_show')}>
+              <CalendarDays aria-hidden="true" />
+              Add a show
+            </button>
+          </div>
+        </div>
+        {chat ? (
+          <>
+            <div className={styles.chatDivider}>
+              <span>Today</span>
+            </div>
+            <div className={styles.embeddedChat}>{chat}</div>
+          </>
+        ) : null}
+      </div>
+
+      <aside className={styles.conceptRail} aria-label="Workspace glance">
+        <ConceptPanel
+          title="Active Board"
+          subtitle="at a glance"
+          action="View all"
+          onAction={onOpenTradeBoard}
+        >
+          <div className={styles.activeBoardRows}>
+            <div>
+              <img
+                className={styles.boardThumbGold}
+                src="/nic-nac/concept-board-gold.png"
+                alt=""
+              />
+              <strong>{totalPieces}</strong>
+              <span>Active pieces</span>
+            </div>
+            <button type="button" onClick={onOpenTradeBoard}>
+              <img
+                className={styles.boardThumbSilver}
+                src="/nic-nac/concept-board-silver.png"
+                alt=""
+              />
+              <strong>{tradeRequestsCount}</strong>
+              <span>New requests</span>
+              <ChevronRight aria-hidden="true" />
+            </button>
+          </div>
+        </ConceptPanel>
+        <ConceptPanel
+          title="Upcoming Show"
+          action="View calendar"
+          onAction={onOpenCalendar}
+        >
+          <div className={styles.showPreviewRow}>
+            <span><CalendarDays aria-hidden="true" /></span>
+            <p>{nextShowLabel}</p>
+          </div>
+          <span className={styles.panelAccent}>3 days away</span>
+        </ConceptPanel>
+        <ConceptPanel
+          title="Public Site"
+          action="Preview site"
+          onAction={onOpenLiveSitePreview}
+        >
+          <button
+            type="button"
+            className={styles.publicSitePreview}
+            onClick={onOpenLiveSitePreview}
+          >
+            <span>Sparkle with us.</span>
+            <img src="/nic-nac/concept-public-site.png" alt="" />
+          </button>
+          <span className={siteLive ? styles.siteLive : styles.siteDraft}>
+            {siteLive ? 'Your site is live' : 'Site preview ready'}
+          </span>
+        </ConceptPanel>
+        <ConceptPanel title="Need help?" action="Visit resources" onAction={onOpenHelp}>
+          <button type="button" className={styles.helpPreview} onClick={onOpenHelp}>
+            <BookOpen aria-hidden="true" />
+            Guides, playbooks, and quick answers
+          </button>
+        </ConceptPanel>
+        <ConceptPanel title="Recent conversations" className={styles.mobileRecentPanel}>
+          <div className={styles.recentConversationList}>
+            <button type="button" onClick={() => onLaunchAction('check_board')}>
+              <span>N</span>
+              Added 2 new pieces to my board
+              <small>9:30 AM</small>
+            </button>
+            <button type="button" onClick={onOpenCalendar}>
+              <span>N</span>
+              Next show setup
+              <small>Yesterday</small>
+            </button>
+          </div>
+        </ConceptPanel>
+      </aside>
+    </section>
+  )
+}
+
+function ConceptPanel({
+  title,
+  subtitle,
+  icon,
+  action,
+  onAction,
+  className,
+  children,
+}: {
+  title: string
+  subtitle?: string
+  icon?: ReactNode
+  action?: string
+  onAction?: () => void
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <section className={`${styles.conceptPanel} ${className ?? ''}`}>
+      <div className={styles.panelHeader}>
+        <div>
+          <span className={styles.panelTitle}>
+            {icon}
+            {title}
+          </span>
+          {subtitle ? <span className={styles.panelSubtitle}>{subtitle}</span> : null}
+        </div>
+        {action ? (
+          <button type="button" onClick={onAction} className={styles.panelAction}>
+            {action}
+          </button>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function MetricRows({ rows }: { rows: Array<[string, number]> }) {
+  return (
+    <div className={styles.metricRows}>
+      {rows.map(([label, value]) => (
+        <div key={label} className={styles.metricRow}>
+          <span>{value}</span>
+          <small>{label}</small>
+        </div>
+      ))}
+    </div>
   )
 }
 
