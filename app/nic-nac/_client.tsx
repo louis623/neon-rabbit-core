@@ -801,6 +801,27 @@ export default function NicNacClient({
     [isDesktop],
   )
 
+  const handleOpenNicNac = useCallback(() => {
+    if (!isDesktop) {
+      setMobileOpen(true)
+      return
+    }
+    setDesktopOpen(true)
+  }, [isDesktop])
+
+  const handleSendNicNacPrompt = useCallback(
+    (prompt: string) => {
+      const trimmed = prompt.trim()
+      if (!trimmed) {
+        handleOpenNicNac()
+        return
+      }
+      setPendingLaunchPrompt(trimmed)
+      handleOpenNicNac()
+    },
+    [handleOpenNicNac],
+  )
+
   const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
   const showReviewerSetupActions =
     reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)
@@ -999,6 +1020,8 @@ export default function NicNacClient({
         initialSiteSettings={buildReviewSiteSettings(setupState)}
         reviewWorkspaceMode={showWorkspaceReviewState}
         onLaunchNicNacAction={handleLaunchNicNacAction}
+        onSendNicNacPrompt={handleSendNicNacPrompt}
+        onOpenNicNac={handleOpenNicNac}
         desktopChat={
           isDesktop && (desktopOpen || shouldKeepDesktopNicNacOpen)
             ? chatContent

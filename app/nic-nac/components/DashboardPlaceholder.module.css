@@ -399,10 +399,15 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  border: 0;
+  background: transparent;
   color: #171034;
+  cursor: pointer;
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 1rem;
   font-weight: 850;
+  padding: 0;
+  text-align: left;
 }
 
 .appBrandSeal {
@@ -432,6 +437,30 @@
   flex: 0 0 auto;
 }
 
+.appBrand:focus-visible,
+.appSearch:focus-within {
+  outline: 2px solid rgba(115, 69, 202, 0.28);
+  outline-offset: 2px;
+}
+
+.appSearchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #171034;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  outline: 0;
+}
+
+.appSearchInput::placeholder {
+  color: #8a7b9f;
+  opacity: 1;
+}
+
 .searchPlaceholder {
   flex: 1 1 auto;
   overflow: hidden;
@@ -446,10 +475,19 @@
   border: 1px solid rgba(67, 42, 116, 0.12);
   border-radius: 8px;
   background: #fff;
+  cursor: pointer;
   padding: 3px 7px;
   color: #6c5e8f;
   font-size: 0.72rem;
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.searchShortcut:hover,
+.searchShortcut:focus-visible {
+  background: #f1eafd;
+  color: #7345ca;
+  outline: 0;
 }
 
 .appHeaderActions {

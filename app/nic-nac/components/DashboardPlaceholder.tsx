@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent, KeyboardEvent, ReactNode } from 'react'
 import {
   useCallback,
   useEffect,
@@ -1962,6 +1962,8 @@ export type DashboardPlaceholderProps = {
   reviewWorkspaceMode?: boolean
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
+  onSendNicNacPrompt?: (prompt: string) => void
+  onOpenNicNac?: () => void
   desktopChat?: ReactNode
 }
 
@@ -1982,6 +1984,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode = false,
     initialSectionOverride,
     onLaunchNicNacAction,
+    onSendNicNacPrompt,
+    onOpenNicNac,
     desktopChat,
   } = props
   const [activeSection, setActiveSection] =
@@ -4803,6 +4807,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     <WorkspaceAppHeader
       repName={headerRepName}
       showName={headerShowName}
+      onGoHome={() => {
+        setWorkspacePreview({ mode: 'workspace' })
+        setPreviewUnavailableMessage(null)
+        setActiveSection('home')
+      }}
+      onAskNicNac={(prompt) => onSendNicNacPrompt?.(prompt)}
+      onOpenNicNac={onOpenNicNac}
       onOpenLiveSite={hasPaidWorkspace ? handleOpenLiveSitePreview : undefined}
     />
   ) : null
@@ -5189,23 +5200,71 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 function WorkspaceAppHeader({
   repName,
   showName,
+  onGoHome,
+  onAskNicNac,
+  onOpenNicNac,
   onOpenLiveSite,
 }: {
   repName: string
   showName: string
+  onGoHome: () => void
+  onAskNicNac?: (prompt: string) => void
+  onOpenNicNac?: () => void
   onOpenLiveSite?: () => void
 }) {
+  const [query, setQuery] = useState('')
+
+  const submitPrompt = () => {
+    const prompt = query.trim()
+    if (!prompt) {
+      onOpenNicNac?.()
+      return
+    }
+    onAskNicNac?.(prompt)
+    setQuery('')
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    submitPrompt()
+  }
+
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    submitPrompt()
+  }
+
   return (
     <header className={styles.appHeader}>
-      <div className={styles.appBrand}>
+      <button
+        type="button"
+        className={styles.appBrand}
+        onClick={onGoHome}
+        aria-label="Go to Nic-Nac home"
+      >
         <SparkleSeal className={styles.appBrandSeal} />
         <span>Sparkle Suite</span>
-      </div>
-      <label className={styles.appSearch}>
+      </button>
+      <form className={styles.appSearch} onSubmit={handleSubmit}>
         <Search aria-hidden="true" />
-        <span className={styles.searchPlaceholder}>Ask Nic-Nac anything...</span>
-        <span className={styles.searchShortcut}>⌘ K</span>
-      </label>
+        <input
+          className={styles.appSearchInput}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onFocus={onOpenNicNac}
+          onKeyDown={handleSearchKeyDown}
+          placeholder="Ask Nic-Nac anything..."
+          aria-label="Ask Nic-Nac anything"
+        />
+        <button
+          type="submit"
+          className={styles.searchShortcut}
+          aria-label="Send message to Nic-Nac"
+        >
+          ⌘ K
+        </button>
+      </form>
       <div className={styles.appHeaderActions}>
         {onOpenLiveSite ? (
           <button

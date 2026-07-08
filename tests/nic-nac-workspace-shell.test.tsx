@@ -94,6 +94,11 @@ describe('Nic-Nac workspace shell reset', () => {
     )
 
     expect(source).toContain('function WorkspaceAppHeader')
+    expect(source).toContain('aria-label="Go to Nic-Nac home"')
+    expect(source).toContain('onClick={onGoHome}')
+    expect(source).toContain('<form className={styles.appSearch} onSubmit={handleSubmit}>')
+    expect(source).toContain('aria-label="Ask Nic-Nac anything"')
+    expect(source).toContain('onFocus={onOpenNicNac}')
     expect(source).toContain('className={styles.appBrand}')
     expect(source).toContain('className={styles.appSearch}')
     expect(source).toContain('className={styles.appProfile}')
@@ -101,6 +106,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(css).toContain('.appHeader')
     expect(css).toContain('.appBrand')
     expect(css).toContain('.appSearch')
+    expect(css).toContain('.appSearchInput')
     expect(css).toContain('.appProfile')
     expect(
       hasDeclaration(

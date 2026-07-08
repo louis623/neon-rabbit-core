@@ -321,6 +321,12 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacPage).toContain('<NicNacClient')
     expect(dashboardPlaceholder).toContain('function WorkspaceAppHeader')
     expect(dashboardPlaceholder).toContain('Ask Nic-Nac anything...')
+    expect(dashboardPlaceholder).toContain('aria-label="Go to Nic-Nac home"')
+    expect(dashboardPlaceholder).toContain('<form className={styles.appSearch} onSubmit={handleSubmit}>')
+    expect(dashboardPlaceholder).toContain('aria-label="Ask Nic-Nac anything"')
+    expect(dashboardPlaceholder).toContain('onSendNicNacPrompt')
+    expect(nicNacClient).toContain('handleSendNicNacPrompt')
+    expect(nicNacClient).toContain('onOpenNicNac={handleOpenNicNac}')
     expect(dashboardPlaceholder).toContain('className={styles.appProfile}')
   })
 
