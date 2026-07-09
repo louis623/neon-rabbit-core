@@ -1474,6 +1474,24 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('NicNacMark')
   })
 
+  it('uses compact shared workspace marks instead of an oversized fake Nic-Nac hero logo', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
+
+    expect(source).toContain('styles.nicNacHeroBadge')
+    expect(source).not.toContain('styles.nicNacHeroMark')
+    expect(css).toContain('.nicNacHeroBadge')
+    expect(css).toContain('background: #e2198f;')
+    expect(css).toContain('.appBrandSeal text')
+    expect(css).not.toContain('.nicNacHeroMark')
+  })
+
   it('wires idle refresh hooks for the trade workspace', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),

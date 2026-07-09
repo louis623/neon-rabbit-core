@@ -5430,10 +5430,12 @@ function ConceptHomeWorkspace({
 
       <div className={styles.conceptCenter}>
         <div className={styles.nicNacHero}>
-          <div className={styles.nicNacHeroMark}>
-            <span>N</span>
-          </div>
-          <h1>Nic-Nac</h1>
+          <h1>
+            <span className={styles.nicNacHeroBadge} aria-hidden="true">
+              N
+            </span>
+            <span>Nic-Nac</span>
+          </h1>
           <p>How can I help you today?</p>
           <div className={styles.heroQuickActions}>
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
