@@ -1,7 +1,7 @@
 .repRow {
   display: flex;
   justify-content: flex-end;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 
 .repCol {
@@ -15,7 +15,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 
 .nicNacCol {
@@ -34,9 +34,9 @@
 }
 
 .bubble {
-  padding: 10px 14px;
+  padding: 8px 11px;
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--nic-nac-text-primary);
   white-space: pre-wrap;
@@ -50,7 +50,7 @@
 .rep {
   background: var(--nic-nac-surface-rep-message);
   border-radius: 14px 14px 4px 14px;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
   color: var(--nic-nac-speaker-rep);
@@ -60,16 +60,16 @@
   background: var(--nic-nac-surface-nic-nac-message);
   border: 1px solid var(--nic-nac-border);
   border-radius: 14px 14px 14px 4px;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
   color: var(--nic-nac-speaker-nic-nac);
 }
 
 .timestamp {
-  font-size: 11px;
+  font-size: 9px;
   color: var(--nic-nac-text-muted);
-  margin-top: 4px;
+  margin-top: 3px;
   padding: 0 4px;
 }
 

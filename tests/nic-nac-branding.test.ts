@@ -153,7 +153,7 @@ describe('Nic-Nac branding copy', () => {
     expect(html).not.toContain('dashboard')
   })
 
-  it('keeps Nic-Nac and rep message text readable and bold for live-show use', () => {
+  it('keeps Nic-Nac and rep message text compact and bold for workspace use', () => {
     const bubbleCss = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/Bubble.module.css'),
       'utf8',
@@ -172,16 +172,16 @@ describe('Nic-Nac branding copy', () => {
     )
 
     expect(bubbleCss).toContain('.nicNac')
-    expect(bubbleCss).toContain('font-size: 16px')
+    expect(bubbleCss).toContain('font-size: 13px')
     expect(bubbleCss).toContain('font-weight: 700')
     expect(bubbleCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
-    expect(streamingCss).toContain('font-size: 16px')
+    expect(streamingCss).toContain('font-size: 13px')
     expect(streamingCss).toContain('font-weight: 700')
     expect(streamingCss).toContain('color: var(--nic-nac-speaker-nic-nac)')
-    expect(greetingCss).toContain('font-size: 16px')
+    expect(greetingCss).toContain('font-size: 13px')
     expect(greetingCss).toContain('font-weight: 700')
     expect(bubbleCss).toContain('.rep')
-    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-size: 16px/s)
+    expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-size: 13px/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*font-weight: 700/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*line-height: 1\.45/s)
     expect(bubbleCss).toMatch(/\.rep\s*\{[^}]*color: var\(--nic-nac-speaker-rep\)/s)
@@ -217,11 +217,11 @@ describe('Nic-Nac branding copy', () => {
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*font-weight: 900/s)
     expect(requiredSetupCss).toMatch(/\.chatHeader p\s*\{[^}]*text-transform: none/s)
     expect(requiredSetupCss).not.toContain('.chatStatus')
-    expect(headerCss).toContain('min-height: 60px')
+    expect(headerCss).toContain('min-height: 56px')
     expect(headerCss).toMatch(/\.title\s*\{[^}]*font-size: 14px/s)
     expect(headerCss).toMatch(/\.closeBtn\s*\{[^}]*width: 40px/s)
     expect(headerCss).toMatch(/\.newBtn\s*\{[^}]*width: 40px/s)
-    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-size: 14px/s)
+    expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-size: 12px/s)
     expect(inputCss).toMatch(/\.textarea\s*\{[^}]*font-weight: 700/s)
     expect(inputCss).toMatch(/\.iconBtn\s*\{[^}]*width: 42px/s)
     expect(inputCss).toMatch(/\.send\s*\{[^}]*width: 42px/s)

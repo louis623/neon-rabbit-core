@@ -16,7 +16,9 @@
   gap: 0;
   max-width: none;
   width: 100%;
-  min-height: calc(var(--nic-nac-app-height, 100vh) - 32px);
+  height: calc(var(--nic-nac-app-height, 100vh) - 32px);
+  max-height: calc(var(--nic-nac-app-height, 100vh) - 32px);
+  min-height: 0;
   border: 1px solid rgba(67, 42, 116, 0.14);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.56);
@@ -62,7 +64,10 @@
   flex-direction: column;
   gap: 0;
   min-width: 0;
+  min-height: 0;
   flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   container-type: inline-size;
 }
 
@@ -121,10 +126,6 @@
     border-radius: 0;
     box-shadow: none;
     background: transparent;
-  }
-
-  .content {
-    overflow-y: auto;
   }
 
   .tabsWrap {

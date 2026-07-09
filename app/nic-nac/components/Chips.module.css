@@ -1,20 +1,20 @@
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 16px 0 16px;
+  gap: 6px;
+  padding: 6px 16px 0 16px;
   flex-shrink: 0;
 }
 
 .chip {
-  height: 32px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid var(--nic-nac-border);
   background: var(--nic-nac-surface-input);
   color: var(--nic-nac-text-primary);
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1.3;
   cursor: pointer;

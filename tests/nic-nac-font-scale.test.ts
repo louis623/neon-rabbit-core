@@ -17,22 +17,24 @@ function cssBlock(source: string, selector: string) {
 }
 
 describe('Nic-Nac readable font scale', () => {
-  it('keeps workspace chat typography about 25 percent smaller than the oversized pass', () => {
+  it('keeps workspace chat typography about 20 percent smaller than the previous pass', () => {
     const bubble = css('app/nic-nac/components/Bubble.module.css')
     const streaming = css('app/nic-nac/components/StreamingBubble.module.css')
     const greeting = css('app/nic-nac/components/EmptyGreeting.module.css')
     const input = css('app/nic-nac/components/InputRow.module.css')
     const header = css('app/nic-nac/components/NicNacHeader.module.css')
 
-    expect(bubble).toContain('font-size: 16px')
-    expect(streaming).toContain('font-size: 16px')
-    expect(greeting).toContain('font-size: 16px')
-    expect(input).toContain('font-size: 14px')
+    expect(bubble).toContain('font-size: 13px')
+    expect(streaming).toContain('font-size: 13px')
+    expect(greeting).toContain('font-size: 13px')
+    expect(input).toContain('font-size: 12px')
     expect(header).toContain('font-size: 14px')
 
     for (const source of [bubble, streaming, greeting]) {
+      expect(source).not.toContain('font-size: 16px')
       expect(source).not.toContain('font-size: 21px')
     }
+    expect(input).not.toContain('font-size: 14px')
     expect(input).not.toContain('font-size: 18px')
     expect(header).not.toContain('font-size: 19px')
   })

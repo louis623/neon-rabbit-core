@@ -1,9 +1,9 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  margin: 8px 16px 16px 16px;
+  gap: 6px;
+  padding: 8px;
+  margin: 6px 16px 12px 16px;
   background: var(--nic-nac-surface-input);
   border: 1px solid var(--nic-nac-border);
   border-radius: 12px;
@@ -128,11 +128,11 @@
   outline: 0;
   background: transparent;
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.45;
   color: var(--nic-nac-text-primary);
-  min-height: 42px;
+  min-height: 38px;
   max-height: 160px;
   padding: 8px 0;
   overflow-y: auto;

@@ -75,6 +75,19 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain('className={styles.content}')
     expect(source).toContain('role="tabpanel"')
     expect(source).toContain('aria-labelledby={activeTabId}')
+    expect(
+      hasDeclaration(
+        css,
+        '.shell',
+        'height: calc(var(--nic-nac-app-height, 100vh) - 32px)',
+      ),
+    ).toBe(true)
+    expect(hasDeclaration(css, '.shell', 'min-height: 0')).toBe(true)
+    expect(hasDeclaration(css, '.content', 'min-height: 0')).toBe(true)
+    expect(hasDeclaration(css, '.content', 'overflow-y: auto')).toBe(true)
+    expect(hasDeclaration(dashboardCss, '.main', 'overflow: hidden')).toBe(true)
+    expect(hasDeclaration(dashboardCss, '.conceptHome', 'overflow: hidden')).toBe(true)
+    expect(hasDeclaration(dashboardCss, '.embeddedChat', 'overflow: hidden')).toBe(true)
   })
 
   it('keeps the workspace header as a Concept 1 app bar', () => {

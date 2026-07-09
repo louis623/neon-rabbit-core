@@ -2,7 +2,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 
 .glyphSlot {
@@ -14,12 +14,12 @@
 
 .bubble {
   max-width: 75%;
-  padding: 10px 14px;
+  padding: 8px 11px;
   background: var(--nic-nac-surface-nic-nac-message);
   border: 1px solid var(--nic-nac-border);
   border-radius: 14px 14px 14px 4px;
   font-family: 'Geist', system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
   color: var(--nic-nac-speaker-nic-nac);
@@ -68,9 +68,9 @@
 }
 
 .timestamp {
-  font-size: 11px;
+  font-size: 9px;
   color: var(--nic-nac-text-muted);
-  margin-top: 4px;
+  margin-top: 3px;
   padding: 0 4px;
   text-align: left;
 }
