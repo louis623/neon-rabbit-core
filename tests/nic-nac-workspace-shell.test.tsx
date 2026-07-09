@@ -18,19 +18,6 @@ function hasDeclaration(css: string, selector: string, declaration: string) {
   ).test(css)
 }
 
-function hasNestedDeclaration(
-  css: string,
-  atRule: string,
-  selector: string,
-  declaration: string,
-) {
-  return new RegExp(
-    `${escapeForRegex(atRule)}\\s*\\{[\\s\\S]*?${escapeForRegex(
-      selector,
-    )}[^{]*\\{[\\s\\S]*?${escapeForRegex(declaration)}\\s*;[\\s\\S]*?\\}[\\s\\S]*?\\}`,
-  ).test(css)
-}
-
 describe('Nic-Nac workspace shell reset', () => {
   it('renders workspace sections inside a top tablist instead of a sidebar rail', () => {
     const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
@@ -79,7 +66,7 @@ describe('Nic-Nac workspace shell reset', () => {
       hasDeclaration(
         css,
         '.shell',
-        'height: calc(var(--nic-nac-app-height, 100vh) - 32px)',
+        'height: calc(var(--nic-nac-app-height, 100vh) - 12px)',
       ),
     ).toBe(true)
     expect(hasDeclaration(css, '.shell', 'min-height: 0')).toBe(true)
@@ -90,7 +77,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(hasDeclaration(dashboardCss, '.embeddedChat', 'overflow: hidden')).toBe(true)
   })
 
-  it('keeps the workspace header as a Concept 1 app bar', () => {
+  it('removes the duplicate workspace header and keeps the shell gutter tight', () => {
     const source = readFileSync(
       resolve(
         process.cwd(),
@@ -106,36 +93,20 @@ describe('Nic-Nac workspace shell reset', () => {
       'utf8',
     )
 
-    expect(source).toContain('function WorkspaceAppHeader')
-    expect(source).toContain('aria-label="Go to Nic-Nac home"')
-    expect(source).toContain('onClick={onGoHome}')
-    expect(source).toContain('<form className={styles.appSearch} onSubmit={handleSubmit}>')
-    expect(source).toContain('aria-label="Ask Nic-Nac anything"')
-    expect(source).toContain('onFocus={onOpenNicNac}')
-    expect(source).toContain('className={styles.appBrand}')
-    expect(source).toContain('className={styles.appSearch}')
-    expect(source).toContain('className={styles.appProfile}')
+    expect(source).not.toContain('function WorkspaceAppHeader')
+    expect(source).not.toContain('aria-label="Go to Nic-Nac home"')
+    expect(source).not.toContain('<form className={styles.appSearch} onSubmit={handleSubmit}>')
+    expect(source).not.toContain('aria-label="Ask Nic-Nac anything"')
+    expect(source).not.toContain('className={styles.appBrand}')
+    expect(source).not.toContain('className={styles.appSearch}')
+    expect(source).not.toContain('className={styles.appProfile}')
     expect(source).not.toContain('Secret Rep ID Number')
-    expect(css).toContain('.appHeader')
-    expect(css).toContain('.appBrand')
-    expect(css).toContain('.appSearch')
-    expect(css).toContain('.appSearchInput')
-    expect(css).toContain('.appProfile')
-    expect(
-      hasDeclaration(
-        css,
-        '.appHeader',
-        'grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr)',
-      ),
-    ).toBe(true)
-    expect(css).toContain('border-radius: 24px;')
-    expect(hasDeclaration(css, '.appSearch', 'border-radius: 18px')).toBe(true)
-    expect(
-      hasNestedDeclaration(css, '@media (max-width: 840px)', '.appSearch', 'display: none'),
-    ).toBe(true)
-    expect(
-      hasNestedDeclaration(css, '@media (max-width: 840px)', '.appBrandSeal', 'width: 34px'),
-    ).toBe(true)
+    expect(css).not.toContain('.appHeader')
+    expect(css).not.toContain('.appBrand')
+    expect(css).not.toContain('.appSearch')
+    expect(css).not.toContain('.appSearchInput')
+    expect(css).not.toContain('.appProfile')
+    expect(hasDeclaration(css, '.main', 'padding: 6px')).toBe(true)
   })
 
   it('does not use the espresso gradient as the dominant shell surface', () => {

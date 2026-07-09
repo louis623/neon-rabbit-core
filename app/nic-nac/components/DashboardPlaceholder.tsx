@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { FormEvent, KeyboardEvent, ReactNode } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import {
   useCallback,
   useEffect,
@@ -33,7 +33,6 @@ import type {
 } from '@/lib/services/types'
 import { SMS_CHARGE_MILS, walletMilsToUsd } from '@/lib/services/wallet-units'
 import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh-events'
-import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import {
   DEFAULT_AMETHYST_APPEARANCE_PRESET,
   normalizeAmethystAppearancePreset,
@@ -46,7 +45,6 @@ import {
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import {
   CalendarDays,
-  Bell,
   BookOpen,
   ChevronLeft,
   ChevronRight,
@@ -1984,7 +1982,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode = false,
     initialSectionOverride,
     onLaunchNicNacAction,
-    onSendNicNacPrompt,
     onOpenNicNac,
     desktopChat,
   } = props
@@ -4751,12 +4748,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       title: 'Customer Trade Board Preview',
     })
   }
-  const headerRepName = formatHeaderRepName(
-    siteSettingsState.settings?.displayName ?? repProfileState.displayName,
-  )
-  const headerShowName = formatHeaderShowName(
-    siteSettingsState.settings?.businessName,
-  )
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
     siteSettingsDraft,
@@ -4809,20 +4800,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const publicSitePreviewImageUrl = cleanOptionalText(
     siteSettingsState.settings?.heroImageUrl,
   )
-  const workspaceHeader = !isLiveSitePreview ? (
-    <WorkspaceAppHeader
-      repName={headerRepName}
-      showName={headerShowName}
-      onGoHome={() => {
-        setWorkspacePreview({ mode: 'workspace' })
-        setPreviewUnavailableMessage(null)
-        setActiveSection('home')
-      }}
-      onAskNicNac={(prompt) => onSendNicNacPrompt?.(prompt)}
-      onOpenNicNac={onOpenNicNac}
-      onOpenLiveSite={hasPaidWorkspace ? handleOpenLiveSitePreview : undefined}
-    />
-  ) : null
   const accessNotice = (
     <WorkspaceAccessNotice
       sectionLabel={getWorkspaceSectionLabel(activeSection)}
@@ -5210,7 +5187,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               ),
             )
           }
-          header={workspaceHeader}
           notice={showWorkspaceAccessNotice ? accessNotice : null}
         >
           {showConceptHome ? (
@@ -5234,108 +5210,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         </WorkspaceShell>
       )}
     </main>
-  )
-}
-
-function WorkspaceAppHeader({
-  repName,
-  showName,
-  onGoHome,
-  onAskNicNac,
-  onOpenNicNac,
-  onOpenLiveSite,
-}: {
-  repName: string
-  showName: string
-  onGoHome: () => void
-  onAskNicNac?: (prompt: string) => void
-  onOpenNicNac?: () => void
-  onOpenLiveSite?: () => void
-}) {
-  const [query, setQuery] = useState('')
-
-  const submitPrompt = () => {
-    const prompt = query.trim()
-    if (!prompt) {
-      onOpenNicNac?.()
-      return
-    }
-    onAskNicNac?.(prompt)
-    setQuery('')
-  }
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    submitPrompt()
-  }
-
-  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter') return
-    event.preventDefault()
-    submitPrompt()
-  }
-
-  return (
-    <header className={styles.appHeader}>
-      <button
-        type="button"
-        className={styles.appBrand}
-        onClick={onGoHome}
-        aria-label="Go to Nic-Nac home"
-      >
-        <SparkleSeal className={styles.appBrandSeal} />
-        <span className={styles.appBrandText}>
-          <span className={styles.appBrandName}>Sparkle Suite</span>
-          <span className={styles.appBrandSubtitle}>Workspace</span>
-        </span>
-      </button>
-      <form className={styles.appSearch} onSubmit={handleSubmit}>
-        <Search aria-hidden="true" />
-        <input
-          className={styles.appSearchInput}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onFocus={onOpenNicNac}
-          onKeyDown={handleSearchKeyDown}
-          placeholder="Ask Nic-Nac anything..."
-          aria-label="Ask Nic-Nac anything"
-        />
-        <button
-          type="submit"
-          className={styles.searchShortcut}
-          aria-label="Send message to Nic-Nac"
-        >
-          ⌘ K
-        </button>
-      </form>
-      <div className={styles.appHeaderActions}>
-        {onOpenLiveSite ? (
-          <button
-            type="button"
-            className={styles.appHeaderGhost}
-            onClick={onOpenLiveSite}
-          >
-            Preview site
-          </button>
-        ) : null}
-        <button
-          type="button"
-          className={styles.appHeaderIcon}
-          aria-label="Notifications"
-        >
-          <Bell aria-hidden="true" />
-        </button>
-        <div className={styles.appProfile}>
-          <span className={styles.appProfileInitial}>
-            {repName.charAt(0).toUpperCase()}
-          </span>
-          <span>
-            <strong>{repName}</strong>
-            <small>{showName}</small>
-          </span>
-        </div>
-      </div>
-    </header>
   )
 }
 
