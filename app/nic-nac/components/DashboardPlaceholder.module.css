@@ -1190,28 +1190,12 @@
   white-space: normal;
 }
 
-.previewAction:nth-child(2) {
-  border-color: transparent;
-  background: linear-gradient(180deg, #ff4cae 0%, #d81b87 100%);
-  color: #fff6fb;
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.34),
-    0 10px 22px var(--workspace-button-shadow);
-}
-
 .previewAction:hover,
 .previewAction:focus-visible {
   border-color: rgba(238, 44, 155, 0.36);
   background: #fff;
   color: var(--workspace-accent-hover);
   outline: none;
-}
-
-.previewAction:nth-child(2):hover,
-.previewAction:nth-child(2):focus-visible {
-  border-color: transparent;
-  background: linear-gradient(180deg, #f73fa5 0%, var(--workspace-accent-hover) 100%);
-  color: #fff6fb;
 }
 
 .previewWorkbench {

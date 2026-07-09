@@ -1998,6 +1998,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [workspacePreview, setWorkspacePreview] = useState<WorkspacePreviewState>({
     mode: 'workspace',
   })
+  const [previewNicNacOpen, setPreviewNicNacOpen] = useState(false)
   const [previewFrameKey, setPreviewFrameKey] = useState(0)
   const [previewUnavailableMessage, setPreviewUnavailableMessage] = useState<
     string | null
@@ -4732,6 +4733,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   })
   const openWorkspacePreview = (nextPreview: Extract<WorkspacePreviewState, { mode: 'live_site_preview' }>) => {
     setPreviewUnavailableMessage(null)
+    setPreviewNicNacOpen(false)
     setWorkspacePreview(nextPreview)
     setPreviewFrameKey((current) => current + 1)
   }
@@ -4783,6 +4785,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
   const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
+  const showPreviewNicNacSidecar = previewNicNacOpen && Boolean(desktopChat)
   const activeWorkspacePreviewSrc = activeWorkspacePreview
     ? `${activeWorkspacePreview.href}${
         activeWorkspacePreview.href.includes('?') ? '&' : '?'
@@ -5139,6 +5142,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onClick={() => {
                   setWorkspacePreview({ mode: 'workspace' })
                   setPreviewUnavailableMessage(null)
+                  setPreviewNicNacOpen(false)
                 }}
               >
                 Back to workspace
@@ -5161,17 +5165,22 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               <button
                 type="button"
                 className={`${styles.previewAction} ${styles.previewNicNacDrawerToggle}`}
-                onClick={() => onOpenNicNac?.()}
+                onClick={() => {
+                  if (!previewNicNacOpen) {
+                    onOpenNicNac?.()
+                  }
+                  setPreviewNicNacOpen((current) => !current)
+                }}
                 aria-controls="nic-nac-workspace-chat"
-                aria-expanded={Boolean(desktopChat)}
+                aria-expanded={showPreviewNicNacSidecar}
               >
-                Open Nic-Nac
+                {showPreviewNicNacSidecar ? 'Close Nic-Nac' : 'Open Nic-Nac'}
               </button>
             </div>
           </div>
           <div
             className={`${styles.previewWorkbench} ${
-              desktopChat ? styles.previewWorkbenchWithSidecar : ''
+              showPreviewNicNacSidecar ? styles.previewWorkbenchWithSidecar : ''
             }`}
           >
             <div className={styles.previewFramePane}>
@@ -5182,7 +5191,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 title="Sparkle Suite live site preview"
               />
             </div>
-            {desktopChat ? (
+            {showPreviewNicNacSidecar ? (
               <aside
                 className={styles.previewNicNacSidecar}
                 aria-label="Nic-Nac live preview sidecar"
