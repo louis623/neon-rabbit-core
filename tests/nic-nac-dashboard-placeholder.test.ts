@@ -530,6 +530,28 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
   })
 
+  it('does not render fake workspace preview thumbnails', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const html = renderToStaticMarkup(
+      createElement(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        initialSiteSettings: SITE_SETTINGS_READY_STATE.settings,
+      }),
+    )
+
+    expect(source).not.toContain('/nic-nac/concept-trade-card.png')
+    expect(source).not.toContain('/nic-nac/concept-board-gold.png')
+    expect(source).not.toContain('/nic-nac/concept-board-silver.png')
+    expect(source).not.toContain('/nic-nac/concept-public-site.png')
+    expect(source).toContain('boardPreviewImageUrl')
+    expect(source).toContain('siteSettingsState.settings?.heroImageUrl')
+    expect(html).toContain('https://cdn.example.com/hero.jpg')
+    expect(html).not.toContain('/nic-nac/concept-')
+  })
+
   it('renders Finder-matching jewelry library search controls and board actions', () => {
     const html = renderToStaticMarkup(
       createElement(JewelryLibraryCard, {
