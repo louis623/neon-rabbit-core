@@ -75,7 +75,7 @@ import { getHelpResources } from '@/lib/services/help-resources'
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Swap cleanup|Fulfillment queue)</g,
+      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -514,8 +514,9 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Add a show')
     expect(html).toContain('Today')
     expect(html).toContain('Trade requests')
-    expect(html).toContain('Swap cleanup')
+    expect(html).toContain('Trade follow-up')
     expect(html).toContain('Fulfillment')
+    expect(html).toContain('Open Trade Workspace')
     expect(html).toContain('Active Board')
     expect(html).toContain('Public Site')
     expect(html).toContain('Need help?')
@@ -1688,7 +1689,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Jewelry Type')
     expect(html).toContain('Collection')
     expect(html).toContain(
-      'Everything is caught up. New requests, cleanup, and fulfillment work will land here.',
+      'Everything is caught up. New requests, trade follow-up, and fulfillment work will land here.',
     )
     expect(html).toContain('Know the item number? Add it in one step.')
     expect(html).toContain(
@@ -1700,13 +1701,13 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).not.toContain('Default landing section')
     expect(html).not.toContain('Request inbox')
-    expect(html).not.toContain('Swap cleanup')
+    expect(html).not.toContain('Trade follow-up')
     expect(html).not.toContain('Fulfillment queue')
     expect(html).not.toContain('Load more')
     expect(html).not.toContain('Loading board pieces...')
   })
 
-  it('renders swap cleanup items in the Trade Board workspace', () => {
+  it('renders trade follow-up items in the Trade Board workspace', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -1740,10 +1741,10 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Swap cleanup')
+    expect(html).toContain('Trade follow-up')
     expect(html).toContain('1 to finish')
     expect(html).toContain(
-      'Approved swaps stay here until the missing ring size or catalog details are finished.',
+      'Approved trades stay here until the missing ring size or catalog details are finished.',
     )
     expect(html).toContain('Revealed item number: ER00001')
     expect(html).toContain(

@@ -5390,12 +5390,12 @@ function ConceptHomeWorkspace({
           <MetricRows
             rows={[
               ['Trade requests', tradeRequestsCount],
-              ['Swap cleanup', cleanupCount],
+              ['Trade follow-up', cleanupCount],
               ['Fulfillment', fulfillmentCount],
             ]}
           />
-          <button type="button" className={styles.panelLink} onClick={onOpenTradeBoard}>
-            View full today
+          <button type="button" className={styles.panelCtaButton} onClick={onOpenTradeBoard}>
+            Open Trade Workspace
           </button>
         </ConceptPanel>
         <ConceptPanel

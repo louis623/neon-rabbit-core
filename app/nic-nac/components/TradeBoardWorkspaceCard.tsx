@@ -357,9 +357,9 @@ export function TradeBoardWorkspaceCard({
             <div className={surfaceStyles.helperNote}>
               {tradeStatusReady
                 ? tradeWorkCount > 0
-                  ? `${tradeWorkCount} item${tradeWorkCount === 1 ? '' : 's'} need attention. Start with requests, then cleanup, then fulfillment.`
-                  : 'Everything is caught up. New requests, cleanup, and fulfillment work will land here.'
-                : 'Checking requests, cleanup, and fulfillment.'}
+                  ? `${tradeWorkCount} item${tradeWorkCount === 1 ? '' : 's'} need attention. Start with requests, then trade follow-up, then fulfillment.`
+                  : 'Everything is caught up. New requests, trade follow-up, and fulfillment work will land here.'
+                : 'Checking requests, trade follow-up, and fulfillment.'}
             </div>
           </div>
         </div>
@@ -382,7 +382,7 @@ export function TradeBoardWorkspaceCard({
             <span className={styles.summaryCount}>
               {tradeSwapCleanupState.status === 'ready' ? cleanupItems.length : '...'}
             </span>
-            <span className={styles.summaryLabel}>Cleanup follow-ups</span>
+            <span className={styles.summaryLabel}>Follow-ups</span>
           </div>
           <div
             className={`${styles.summaryStat} ${
@@ -783,9 +783,9 @@ export function TradeBoardWorkspaceCard({
         <section className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <div>
-              <div className={surfaceStyles.walletSettingsTitle}>Swap cleanup</div>
+              <div className={surfaceStyles.walletSettingsTitle}>Trade follow-up</div>
               <div className={surfaceStyles.helperNote}>
-                Approved swaps stay here until the missing ring size or catalog details are finished.
+                Approved trades stay here until the missing ring size or catalog details are finished.
               </div>
             </div>
             <span className={surfaceStyles.rosterTag}>{`${cleanupItems.length} to finish`}</span>

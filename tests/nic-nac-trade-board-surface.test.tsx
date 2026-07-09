@@ -52,7 +52,7 @@ function hasNestedDeclaration(
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Swap cleanup|Fulfillment queue)</g,
+      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -367,7 +367,7 @@ describe('Nic-Nac trade board surface reset', () => {
       'Quick add',
       'Browse board',
       'Request inbox',
-      'Swap cleanup',
+      'Trade follow-up',
       'Fulfillment queue',
     ])
   })

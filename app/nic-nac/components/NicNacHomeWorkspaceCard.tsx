@@ -63,7 +63,7 @@ export function NicNacHomeWorkspaceCard({
             <strong>{tradeRequestsCount}</strong> Pending requests
           </span>
           <span>
-            <strong>{cleanupCount}</strong> Cleanup follow-ups
+            <strong>{cleanupCount}</strong> Trade follow-up
           </span>
           <span>
             <strong>{fulfillmentCount}</strong> Fulfillment swaps

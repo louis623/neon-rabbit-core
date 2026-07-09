@@ -414,7 +414,7 @@ describe('reviewer smoke UI wiring', () => {
     expect(tradeBoardWorkspaceCardHtml.indexOf('Quick add')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Browse board')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeGreaterThan(-1)
-    expect(tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Trade follow-up')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Fulfillment queue')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Today&#x27;s trade work')).toBeLessThan(
       tradeBoardWorkspaceCardHtml.indexOf('Quick add'),
@@ -426,9 +426,9 @@ describe('reviewer smoke UI wiring', () => {
       tradeBoardWorkspaceCardHtml.indexOf('Request inbox'),
     )
     expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeLessThan(
-      tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup'),
+      tradeBoardWorkspaceCardHtml.indexOf('Trade follow-up'),
     )
-    expect(tradeBoardWorkspaceCardHtml.indexOf('Swap cleanup')).toBeLessThan(
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Trade follow-up')).toBeLessThan(
       tradeBoardWorkspaceCardHtml.indexOf('Fulfillment queue'),
     )
   })
@@ -468,7 +468,7 @@ describe('reviewer smoke UI wiring', () => {
     expect(tradeBoardWorkspaceCardQuietHtml).toContain('Jewelry Type')
     expect(tradeBoardWorkspaceCardQuietHtml).toContain('Collection')
     expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Request inbox')
-    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Swap cleanup')
+    expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Trade follow-up')
     expect(tradeBoardWorkspaceCardQuietHtml).not.toContain('Fulfillment queue')
     expect(tradeBoardWorkspaceCardQuietHtml).not.toContain(
       'No pieces on your board yet. Add your first item above.',
