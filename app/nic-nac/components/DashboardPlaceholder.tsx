@@ -5135,7 +5135,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             <div className={styles.previewFocusActions}>
               <button
                 type="button"
-                className={styles.helperButton}
+                className={styles.previewAction}
                 onClick={() => {
                   setWorkspacePreview({ mode: 'workspace' })
                   setPreviewUnavailableMessage(null)
@@ -5145,27 +5145,56 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               </button>
               <button
                 type="button"
-                className={styles.liveSiteButton}
+                className={styles.previewAction}
                 onClick={() => setPreviewFrameKey((current) => current + 1)}
               >
                 Refresh preview
               </button>
               <a
-                className={styles.helperLink}
+                className={styles.previewAction}
                 href={activeWorkspacePreview.href}
                 target="_blank"
                 rel="noreferrer"
               >
                 Open full site
               </a>
+              <button
+                type="button"
+                className={`${styles.previewAction} ${styles.previewNicNacDrawerToggle}`}
+                onClick={() => onOpenNicNac?.()}
+                aria-controls="nic-nac-workspace-chat"
+                aria-expanded={Boolean(desktopChat)}
+              >
+                Open Nic-Nac
+              </button>
             </div>
           </div>
-          <iframe
-            key={`${previewFrameKey}:${activeWorkspacePreview.href}`}
-            className={styles.previewFocusFrame}
-            src={activeWorkspacePreviewSrc ?? activeWorkspacePreview.href}
-            title="Sparkle Suite live site preview"
-          />
+          <div
+            className={`${styles.previewWorkbench} ${
+              desktopChat ? styles.previewWorkbenchWithSidecar : ''
+            }`}
+          >
+            <div className={styles.previewFramePane}>
+              <iframe
+                key={`${previewFrameKey}:${activeWorkspacePreview.href}`}
+                className={styles.previewFocusFrame}
+                src={activeWorkspacePreviewSrc ?? activeWorkspacePreview.href}
+                title="Sparkle Suite live site preview"
+              />
+            </div>
+            {desktopChat ? (
+              <aside
+                className={styles.previewNicNacSidecar}
+                aria-label="Nic-Nac live preview sidecar"
+              >
+                <div className={styles.previewNicNacHeader}>
+                  <span>Nic-Nac</span>
+                  <small>Live site helper</small>
+                </div>
+                <div className={styles.previewNicNacBody}>{desktopChat}</div>
+              </aside>
+            ) : null}
+          </div>
         </section>
       ) : (
         <WorkspaceShell

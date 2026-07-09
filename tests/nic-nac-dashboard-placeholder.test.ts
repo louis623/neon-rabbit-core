@@ -1529,6 +1529,37 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('href={customerSparkleSiteHref}\n              target="_blank"')
   })
 
+  it('keeps Nic-Nac available as a live-preview sidecar with centered equal actions', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
+
+    expect(source).toContain('Open Nic-Nac')
+    expect(source).toContain('aria-controls="nic-nac-workspace-chat"')
+    expect(source).toContain('styles.previewWorkbench')
+    expect(source).toContain('styles.previewNicNacSidecar')
+    expect(source).toContain('styles.previewNicNacDrawerToggle')
+    expect(source).toContain('desktopChat')
+    expect(source).toContain('onOpenNicNac?.()')
+    expect(source).toContain('Refresh preview')
+    expect(source).toContain('Open full site')
+    expect(source).toContain('Back to workspace')
+    expect(css).toContain('.previewFocusActions')
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(150px, 1fr));')
+    expect(css).toContain('.previewAction')
+    expect(css).toContain('min-height: 44px;')
+    expect(css).toContain('.previewWorkbench')
+    expect(css).toContain('grid-template-columns: minmax(0, 1fr) minmax(320px, var(--nic-nac-column-width));')
+    expect(css).toContain('.previewNicNacSidecar')
+    expect(css).toContain('.previewNicNacDrawerToggle')
+    expect(css).toMatch(/@media\s*\(max-width:\s*1023px\)[\s\S]*\.previewNicNacSidecar/)
+  })
+
   it('keeps live site focus preview available on narrow workspaces', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),

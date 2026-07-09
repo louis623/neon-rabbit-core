@@ -16,16 +16,40 @@ describe('workspace live site focus preview', () => {
     expect(component).toContain('styles.previewFocusShell')
     expect(component).toContain('styles.previewFocusBar')
     expect(component).toContain('styles.previewFocusFrame')
+    expect(component).toContain('Back to workspace')
+    expect(component).toContain('Refresh preview')
     expect(component).toContain('Open full site')
+    expect(component).toContain('Open Nic-Nac')
+    expect(component).toContain('aria-controls="nic-nac-workspace-chat"')
     expect(component).toContain('target="_blank"')
     expect(component).toContain('rel="noreferrer"')
   })
 
-  it('centers helper link text inside the pill button shape', () => {
-    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*display:\s*inline-flex/s)
-    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*align-items:\s*center/s)
-    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*justify-content:\s*center/s)
-    expect(css).toMatch(/\.helperButton,\s*\.helperLink\s*{[^}]*text-align:\s*center/s)
+  it('centers the four preview actions in an equal two-column control cluster', () => {
+    expect(component).toContain('styles.previewAction')
+    expect(css).toMatch(/\.previewFocusBar\s*{[^}]*display:\s*grid/s)
+    expect(css).toMatch(/\.previewFocusActions\s*{[^}]*display:\s*grid/s)
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(150px, 1fr));')
+    expect(css).toMatch(/\.previewFocusActions\s*{[^}]*justify-self:\s*center/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*display:\s*inline-flex/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*align-items:\s*center/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*justify-content:\s*center/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*min-height:\s*44px/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*width:\s*100%/s)
+    expect(css).toMatch(/\.previewAction\s*{[^}]*text-align:\s*center/s)
+  })
+
+  it('restores Nic-Nac as a desktop sidecar without replacing the iframe preview', () => {
+    expect(component).toContain('styles.previewWorkbench')
+    expect(component).toContain('styles.previewWorkbenchWithSidecar')
+    expect(component).toContain('styles.previewFramePane')
+    expect(component).toContain('styles.previewNicNacSidecar')
+    expect(component).toContain('styles.previewNicNacBody')
+    expect(component).toContain('desktopChat ? (')
+    expect(component).toContain('<iframe')
+    expect(component).toContain('onOpenNicNac?.()')
+    expect(css).toContain('grid-template-columns: minmax(0, 1fr) minmax(320px, var(--nic-nac-column-width));')
+    expect(css).toMatch(/\.previewNicNacSidecar\s*{[^}]*display:\s*flex/s)
   })
 
   it('does not block embedded preview on tablet or mobile widths', () => {
@@ -33,6 +57,8 @@ describe('workspace live site focus preview', () => {
     expect(component).not.toContain('canUseEmbeddedLiveSitePreview')
     expect(component).not.toContain('Use a wider screen to preview')
     expect(css).not.toMatch(/\.previewFrame\s*{[^}]*display:\s*none/s)
+    expect(css).toMatch(/@media\s*\(max-width:\s*1023px\)[\s\S]*\.previewNicNacSidecar\s*{[^}]*display:\s*none/s)
+    expect(component).toContain('styles.previewNicNacDrawerToggle')
   })
 
   it('allocates most available workspace height to the iframe preview', () => {
