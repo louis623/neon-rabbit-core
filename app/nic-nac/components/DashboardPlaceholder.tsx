@@ -4806,14 +4806,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
     ? (activeSection as (typeof WORKSPACE_SECTIONS)[number]['key'])
     : 'more'
-  const boardPreviewImageUrl =
-    tradeBoardState.board?.listings
-      .map(
-        (listing) =>
-          cleanOptionalText(listing.manual_photo_url) ||
-          cleanOptionalText(listing.listing_photo_url),
-      )
-      .find(Boolean) ?? ''
   const publicSitePreviewImageUrl = cleanOptionalText(
     siteSettingsState.settings?.heroImageUrl,
   )
@@ -5227,15 +5219,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               tradeRequestsCount={homeTradeRequestsCount}
               cleanupCount={homeCleanupCount}
               fulfillmentCount={homeFulfillmentCount}
-              totalPieces={tradeBoardState.board?.summary.totalPieces ?? 0}
-              boardPreviewImageUrl={boardPreviewImageUrl}
               nextShowLabel={homeNextShowLabel}
               siteLive={Boolean(currentPublicSiteSlug || currentRepId)}
               publicSitePreviewImageUrl={publicSitePreviewImageUrl}
               onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
               onOpenTradeBoard={() => setActiveSection('trade-board')}
               onOpenCalendar={() => setActiveSection('show-calendar')}
-              onOpenCustomerBoardPreview={handleOpenTradeBoardPreview}
               onOpenLiveSitePreview={handleOpenLiveSitePreview}
               onOpenHelp={() => setActiveSection('help-resources')}
             />
@@ -5355,15 +5344,12 @@ function ConceptHomeWorkspace({
   tradeRequestsCount,
   cleanupCount,
   fulfillmentCount,
-  totalPieces,
-  boardPreviewImageUrl,
   nextShowLabel,
   siteLive,
   publicSitePreviewImageUrl,
   onLaunchAction,
   onOpenTradeBoard,
   onOpenCalendar,
-  onOpenCustomerBoardPreview,
   onOpenLiveSitePreview,
   onOpenHelp,
 }: {
@@ -5371,15 +5357,12 @@ function ConceptHomeWorkspace({
   tradeRequestsCount: number
   cleanupCount: number
   fulfillmentCount: number
-  totalPieces: number
-  boardPreviewImageUrl?: string
   nextShowLabel: string
   siteLive: boolean
   publicSitePreviewImageUrl?: string
   onLaunchAction: (action: WorkspaceLaunchAction) => void
   onOpenTradeBoard: () => void
   onOpenCalendar: () => void
-  onOpenCustomerBoardPreview: () => void
   onOpenLiveSitePreview: () => void
   onOpenHelp: () => void
 }) {
@@ -5397,37 +5380,6 @@ function ConceptHomeWorkspace({
           <button type="button" className={styles.panelCtaButton} onClick={onOpenTradeBoard}>
             Open Trade Workspace
           </button>
-        </ConceptPanel>
-        <ConceptPanel
-          title="Trade Board"
-          action="View board"
-          onAction={onOpenTradeBoard}
-        >
-          {boardPreviewImageUrl ? (
-            <img
-              className={styles.boardPreviewImage}
-              src={boardPreviewImageUrl}
-              alt=""
-            />
-          ) : null}
-          <p className={styles.panelStrong}>{totalPieces} active pieces on your board</p>
-          <button
-            type="button"
-            className={styles.panelRowButton}
-            onClick={onOpenTradeBoard}
-          >
-            {tradeRequestsCount} new requests need your review
-            <ChevronRight aria-hidden="true" />
-          </button>
-        </ConceptPanel>
-        <ConceptPanel
-          title="Upcoming Show"
-          icon={<CalendarDays aria-hidden="true" />}
-          action="View calendar"
-          onAction={onOpenCalendar}
-        >
-          <p className={styles.panelStrong}>{nextShowLabel}</p>
-          <span className={styles.panelAccent}>3 days away</span>
         </ConceptPanel>
       </aside>
 
@@ -5466,24 +5418,6 @@ function ConceptHomeWorkspace({
       </div>
 
       <aside className={styles.conceptRail} aria-label="Workspace glance">
-        <ConceptPanel
-          title="Active Board"
-          subtitle="at a glance"
-          action="View all"
-          onAction={onOpenTradeBoard}
-        >
-          <div className={styles.activeBoardRows}>
-            <div>
-              <strong>{totalPieces}</strong>
-              <span>Active pieces</span>
-            </div>
-            <button type="button" onClick={onOpenTradeBoard}>
-              <strong>{tradeRequestsCount}</strong>
-              <span>New requests</span>
-              <ChevronRight aria-hidden="true" />
-            </button>
-          </div>
-        </ConceptPanel>
         <ConceptPanel
           title="Upcoming Show"
           action="View calendar"
