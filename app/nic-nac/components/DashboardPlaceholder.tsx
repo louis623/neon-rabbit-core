@@ -5295,7 +5295,10 @@ function WorkspaceAppHeader({
         aria-label="Go to Nic-Nac home"
       >
         <SparkleSeal className={styles.appBrandSeal} />
-        <span>Sparkle Suite</span>
+        <span className={styles.appBrandText}>
+          <span className={styles.appBrandName}>Sparkle Suite</span>
+          <span className={styles.appBrandSubtitle}>Workspace</span>
+        </span>
       </button>
       <form className={styles.appSearch} onSubmit={handleSubmit}>
         <Search aria-hidden="true" />

@@ -413,12 +413,34 @@
 .appBrandSeal {
   width: 42px;
   height: 42px;
-  color: #7345ca;
+  color: #e2198f;
   flex: 0 0 auto;
 }
 
 .appBrandSeal text {
   transform: translateX(-1.5px);
+}
+
+.appBrandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.appBrandName {
+  color: #171034;
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.appBrandSubtitle {
+  color: #6f6389;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .appSearch {
