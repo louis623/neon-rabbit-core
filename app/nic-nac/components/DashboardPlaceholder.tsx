@@ -45,6 +45,7 @@ import {
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import {
   CalendarDays,
+  Bell,
   BookOpen,
   ChevronLeft,
   ChevronRight,
@@ -60,6 +61,7 @@ import {
   Wrench,
   X,
 } from 'lucide-react'
+import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import type { WorkspaceLaunchAction } from '@/lib/nic-nac/workspace-launch-actions'
 import { WorkspaceShell } from './WorkspaceShell'
 import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
@@ -4748,6 +4750,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       title: 'Customer Trade Board Preview',
     })
   }
+  const headerRepName = formatHeaderRepName(
+    siteSettingsState.settings?.displayName ?? repProfileState.displayName,
+  )
+  const headerShowName = formatHeaderShowName(
+    siteSettingsState.settings?.businessName,
+  )
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
     siteSettingsDraft,
@@ -4800,6 +4808,18 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const publicSitePreviewImageUrl = cleanOptionalText(
     siteSettingsState.settings?.heroImageUrl,
   )
+  const workspaceHeader = !isLiveSitePreview ? (
+    <WorkspaceAppHeader
+      repName={headerRepName}
+      showName={headerShowName}
+      onGoHome={() => {
+        setWorkspacePreview({ mode: 'workspace' })
+        setPreviewUnavailableMessage(null)
+        setActiveSection('home')
+      }}
+      onOpenLiveSite={hasPaidWorkspace ? handleOpenLiveSitePreview : undefined}
+    />
+  ) : null
   const accessNotice = (
     <WorkspaceAccessNotice
       sectionLabel={getWorkspaceSectionLabel(activeSection)}
@@ -5178,6 +5198,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         <WorkspaceShell
           tabs={visibleWorkspaceSections}
           activeSection={activeWorkspaceShellSection}
+          header={workspaceHeader}
           onSectionChange={(section) =>
             setActiveSection(
               resolveWorkspaceSectionForAccess(
@@ -5210,6 +5231,62 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         </WorkspaceShell>
       )}
     </main>
+  )
+}
+
+function WorkspaceAppHeader({
+  repName,
+  showName,
+  onGoHome,
+  onOpenLiveSite,
+}: {
+  repName: string
+  showName: string
+  onGoHome: () => void
+  onOpenLiveSite?: () => void
+}) {
+  return (
+    <header className={styles.appHeader}>
+      <button
+        type="button"
+        className={styles.appBrand}
+        onClick={onGoHome}
+        aria-label="Go to Nic-Nac home"
+      >
+        <SparkleSeal className={styles.appBrandSeal} />
+        <span className={styles.appBrandText}>
+          <span className={styles.appBrandName}>Sparkle Suite</span>
+          <span className={styles.appBrandSubtitle}>Workspace</span>
+        </span>
+      </button>
+      <div className={styles.appHeaderActions}>
+        {onOpenLiveSite ? (
+          <button
+            type="button"
+            className={styles.appHeaderGhost}
+            onClick={onOpenLiveSite}
+          >
+            Preview site
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={styles.appHeaderIcon}
+          aria-label="Notifications"
+        >
+          <Bell aria-hidden="true" />
+        </button>
+        <div className={styles.appProfile}>
+          <span className={styles.appProfileInitial}>
+            {repName.charAt(0).toUpperCase()}
+          </span>
+          <span>
+            <strong>{repName}</strong>
+            <small>{showName}</small>
+          </span>
+        </div>
+      </div>
+    </header>
   )
 }
 

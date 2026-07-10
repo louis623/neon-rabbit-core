@@ -502,11 +502,15 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('How can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
-    expect(html).not.toContain('aria-label="Notifications"')
+    expect(html).toContain('aria-label="Notifications"')
+    expect(html).toContain('Sparkle Suite')
+    expect(html).toContain('Workspace')
+    expect(html).toContain('Rep info loading')
+    expect(html).toContain('Show info loading')
     expect(html).not.toContain('>Rep<')
     expect(html).not.toContain('>Show<')
     expect(html).not.toContain('Secret Rep ID Number')
-    expect(source).not.toContain('function WorkspaceAppHeader')
+    expect(source).toContain('function WorkspaceAppHeader')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).toContain('Add a piece')
@@ -1190,7 +1194,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('formatExtensionRepId(')
   })
 
-  it('removes the duplicate workspace app bar while keeping setup codes hidden', () => {
+  it('keeps a compact workspace app header without the duplicate Nic-Nac search', () => {
     const html = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
         liveQueueSyncCodeOverride: 'MHF-7342',
@@ -1203,9 +1207,9 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('How can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
-    expect(html).not.toContain('aria-label="Notifications"')
-    expect(html).not.toContain('Rep info loading')
-    expect(html).not.toContain('Show info loading')
+    expect(html).toContain('aria-label="Notifications"')
+    expect(html).toContain('Rep info loading')
+    expect(html).toContain('Show info loading')
     expect(html).not.toContain('Secret Rep ID Number')
     expect(html).not.toContain('MHF-7342')
     expect(html).not.toContain('>Rep<')
@@ -1214,9 +1218,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Extension code')
     expect(html).not.toContain('Live Queue sync code')
-    expect(css).not.toContain('.appHeader')
+    expect(css).toContain('.appHeader')
+    expect(css).toContain('.appBrand')
+    expect(css).toContain('.appProfile')
     expect(css).not.toContain('.appSearch')
-    expect(css).not.toContain('.appProfile')
+    expect(css).not.toContain('.appSearchInput')
     expect(css).not.toContain('grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr);')
   })
 
@@ -1444,7 +1450,7 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('overscroll-behavior-x: contain;')
     expect(tabsCss).toContain('border-radius: 18px;')
     expect(tabsCss).toContain('min-height: 54px;')
-    expect(tabsCss).toContain('min-height: 58px;')
+    expect(tabsCss).not.toContain('min-height: 58px;')
     expect(tabsCss).toContain('.tabs::-webkit-scrollbar')
     expect(tabsCss).toContain('.labelShort')
   })
@@ -1495,7 +1501,7 @@ describe('DashboardPlaceholder', () => {
     expect(css).not.toContain('.nicNacHeroMark')
   })
 
-  it('does not render a duplicate Sparkle Suite app header above the workspace', () => {
+  it('uses a compact two-line Sparkle Suite workspace brand in the app header', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -1505,11 +1511,13 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(source).not.toContain('styles.appBrandText')
-    expect(source).not.toContain('styles.appBrandName')
-    expect(source).not.toContain('styles.appBrandSubtitle')
-    expect(css).not.toContain('.appBrandSeal')
-    expect(css).not.toContain('.appBrandSubtitle')
+    expect(source).toContain('styles.appBrandText')
+    expect(source).toContain('styles.appBrandName')
+    expect(source).toContain('styles.appBrandSubtitle')
+    expect(source).toContain('Workspace')
+    expect(source).not.toContain('styles.appSearch')
+    expect(css).toContain('.appBrandSeal')
+    expect(css).toContain('.appBrandSubtitle')
   })
 
   it('wires idle refresh hooks for the trade workspace', () => {

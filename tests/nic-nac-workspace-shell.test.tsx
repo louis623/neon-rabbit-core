@@ -77,7 +77,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(hasDeclaration(dashboardCss, '.embeddedChat', 'overflow: hidden')).toBe(true)
   })
 
-  it('removes the duplicate workspace header and keeps the shell gutter tight', () => {
+  it('keeps the compact workspace header while removing only the duplicate search', () => {
     const source = readFileSync(
       resolve(
         process.cwd(),
@@ -93,19 +93,19 @@ describe('Nic-Nac workspace shell reset', () => {
       'utf8',
     )
 
-    expect(source).not.toContain('function WorkspaceAppHeader')
-    expect(source).not.toContain('aria-label="Go to Nic-Nac home"')
+    expect(source).toContain('function WorkspaceAppHeader')
+    expect(source).toContain('aria-label="Go to Nic-Nac home"')
     expect(source).not.toContain('<form className={styles.appSearch} onSubmit={handleSubmit}>')
     expect(source).not.toContain('aria-label="Ask Nic-Nac anything"')
-    expect(source).not.toContain('className={styles.appBrand}')
+    expect(source).toContain('className={styles.appBrand}')
     expect(source).not.toContain('className={styles.appSearch}')
-    expect(source).not.toContain('className={styles.appProfile}')
+    expect(source).toContain('className={styles.appProfile}')
     expect(source).not.toContain('Secret Rep ID Number')
-    expect(css).not.toContain('.appHeader')
-    expect(css).not.toContain('.appBrand')
+    expect(css).toContain('.appHeader')
+    expect(css).toContain('.appBrand')
     expect(css).not.toContain('.appSearch')
     expect(css).not.toContain('.appSearchInput')
-    expect(css).not.toContain('.appProfile')
+    expect(css).toContain('.appProfile')
     expect(hasDeclaration(css, '.main', 'padding: 6px')).toBe(true)
   })
 
@@ -159,7 +159,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(css).toContain('align-items: center;')
     expect(css).toContain('justify-content: center;')
     expect(css).toContain('min-width: 58px;')
-    expect(css).toContain('min-height: 58px;')
+    expect(css).toContain('min-height: 54px;')
     expect(css).toContain('border-radius: 18px;')
   })
 })
