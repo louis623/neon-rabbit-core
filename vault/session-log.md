@@ -4,6 +4,77 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 11, 2026 - Open Brain Session Closeout
+
+**What was captured:**
+- Confirmed the full `codex/nic-nac-trade-hardening` workspace UI sequence is preserved in Open Brain, including the Live Site Preview workbench, optional Nic-Nac sidecar, global/account-generic branding and copy cleanup, duplicate-card removal, viewport-contained chat shell, compact header correction, bottom-navigation containment, verification evidence, commit history, and final stable-demo deployment.
+- Confirmed the key product decisions are recorded: Live Site Preview is an editing context; Nic-Nac starts closed and is user-toggleable; shared workspace behavior must work for every current/future/demo account; the inline composer replaces only the redundant top search field, not the entire product header; workspace images must be real or absent; and direct workflow language should replace vague labels.
+- Confirmed the process lessons are recorded: questions are not implementation approval; stop immediately when Louis pauses work; use real functionality smoke for shell redesigns; verify navigation by viewport bounds; keep testing proportional; and stop cycling through browser/server launch methods when the code gates are green and the testing integration itself is the blocker.
+- No additional application code, commit, push, deployment, database data, or customer account state changed during this memory-only closeout.
+
+**Current handoff:**
+- Final implementation commit: `a8b7e1d4 fix: restore compact workspace header` on `codex/nic-nac-trade-hardening`.
+- Stable review target: `https://sparkle-suite-demo.vercel.app`, pointing to deployment `dpl_CMJ3bWJyfx3eDNULcpQvVkvFMCsH` / `https://sparkle-suite-lx0ohg5f7-louis-2849s-projects.vercel.app`.
+- Remaining immediate item: Louis's final deployed desktop/mobile acceptance smoke for the July 10 workspace UI.
+
+---
+
+## July 10, 2026 - Live Preview Workbench and Rep Workspace UI Closeout
+
+**What changed:**
+- Restored Nic-Nac inside Live Site Preview as a rep editing workbench. The toolbar now centers four equal-size controls in a 2x2 layout: Back to workspace, Refresh preview, Open full site, and Open Nic-Nac.
+- Changed Refresh preview from a solid pink primary button to the same white background/pink text treatment as the other preview controls.
+- Made the preview sidecar dynamic in `50051b8c`: Nic-Nac is closed by default, `Open Nic-Nac` opens the chat beside the desktop preview, and the control changes to `Close Nic-Nac` so reps can reclaim the larger preview area. The sidecar uses the current account/site context and is not Heather-specific.
+- Simplified workspace branding across all accounts and demos: removed the oversized fake purple Nic-Nac mark, reused the compact pink `N` chat mark beside the Nic-Nac heading, centered the Sparkle Suite seal letter, changed the seal/border to Nic-Nac pink, and added the smaller `Workspace` subtitle below Sparkle Suite.
+- Renamed `Swap cleanup` to `Trade follow-up` and changed `View full today` into the clearer `Open Trade Workspace` button.
+- Removed duplicate left Trade Board / Upcoming Show cards and the right Active Board card, allowing remaining cards to move up naturally.
+- Reworked the rep workspace shell so the browser page does not need to scroll to reach the Nic-Nac composer or bottom navigation. The shell is viewport-contained, Nic-Nac conversation content owns the internal scroll, and chat typography was reduced approximately 20% for denser reading.
+- Corrected the header after an over-removal in `1f2b6a6e`: the final `a8b7e1d4` restores the compact Sparkle Suite Workspace header but leaves out only the redundant `Ask Nic-Nac anything...` search field. It also reduces tab heights and increases bottom/safe-area padding so navigation icons remain inside the shell.
+- Final commit `a8b7e1d4 fix: restore compact workspace header` was pushed on `codex/nic-nac-trade-hardening`.
+
+**Verification and release:**
+- Focused tests passed: 3 workspace files / 115 tests. Adjacent Nic-Nac branding and font-scale tests passed: 2 files / 15 tests.
+- Local production build passed with Next.js 16.2.1. Vercel build also passed and deployment `dpl_CMJ3bWJyfx3eDNULcpQvVkvFMCsH` reached Ready at `https://sparkle-suite-lx0ohg5f7-louis-2849s-projects.vercel.app`.
+- Local synthetic reviewer smoke verified the final desktop workspace at 1280x720: header visible, redundant header search count `0`, document/client height both `720`, all five bottom tabs fully above the viewport edge, no framework overlay, and no console warnings/errors.
+- The in-app Browser DOM snapshot function failed during the smoke. Bounded page evaluation and screenshot capture still worked, but the mobile pass was not completed before Louis asked to stop the smoke loop and ship. Louis chose to perform the final deployed smoke himself.
+- Stable demo `https://sparkle-suite-demo.vercel.app` was promoted to the new deployment and `/start` returned HTTP 200 with the expected page title.
+
+**Decisions and lessons carried forward:**
+- Live Site Preview is an editing surface: preview and Nic-Nac must coexist, while the rep controls whether chat consumes screen width.
+- Workspace shell/UI changes are global account behavior unless explicitly scoped. Do not hard-code customer-specific assumptions into shared workspace components or reviewer demos.
+- Remove redundancy by preserving the strongest instance of a control. The inline Nic-Nac composer replaces the top search field; it does not justify removing the entire product header.
+- App-shell navigation must be proven by element bounds and viewport containment, not only by CSS assertions or a cropped screenshot.
+- Keep verification proportional. When the requested code tests/build are green and a browser capability itself becomes the blocker, report it promptly, use one supported fallback, and do not cycle through repeated server/browser launch strategies. If Louis elects to smoke the deployment, release cleanly and hand off the exact stable URL.
+- Stop immediately when Louis pauses work, and do not resume until he explicitly approves continuation.
+
+---
+
+## July 9, 2026 - Nic-Nac-First Workspace Shell Recovery and Asset Authenticity
+
+**What changed:**
+- Shipped the Nic-Nac-first / Concept 1 workspace shell direction on branch `codex/nic-nac-trade-hardening`, then repaired concrete functionality regressions Louis found during review.
+- Commit `1df7e780 fix: wire Nic-Nac workspace header controls` made the top "Ask Nic-Nac anything..." control a real input/form, routed submitted prompts into Nic-Nac, opened the chat on focus/submit, and made the Sparkle Suite brand in the app header a real Home button.
+- Commit `8f4a1573 fix: remove fake Nic-Nac workspace thumbnails` removed the fake Trade Board, Active Board, and Public Site mock thumbnails from the workspace and deleted the four PNG assets under `public/nic-nac`. Those cards now use real data-backed image URLs only when available; otherwise they render without images.
+- The live-site preview regression was identified: preview mode currently replaces the normal workspace shell with only an iframe/toolbar, which removes the desktop Nic-Nac chat surface. Best product direction was agreed conceptually: Live Site Preview should be a preview workbench with Nic-Nac available as a desktop sidecar and mobile floating/drawer chat. This was not implemented in this closeout because Louis was asking for design direction and approval boundaries were clarified.
+- Process correction: future Codex sessions must not treat "what is best", "what went wrong", "should we", or similar strategy/product questions as permission to inspect, edit, test, commit, deploy, or otherwise start work. Wait for explicit approval before implementation or tool work.
+
+**Verification:**
+- Focused tests passed after the header-control fix: `npm exec vitest run tests/nic-nac-workspace-shell.test.tsx tests/nic-nac-dashboard-placeholder.test.ts tests/reviewer-smoke-ui.test.ts` with 3 files / 111 tests.
+- Local production browser smoke passed for desktop and 390x844 mobile after the header-control fix: top prompt typed/submitted/cleared, chat opened, brand returned Home from Trade Board, primary tabs navigated, More > Help & Resources opened, Preview Site and Back worked, and mobile quick actions opened/closed Nic-Nac.
+- Focused tests passed after the fake-thumbnail removal: 3 files / 112 tests.
+- `npm run build` passed locally after both fixes. One build attempt timed out and left a temporary Next build lock; rerun passed after the first process cleared.
+- Vercel deployment `dpl_E5qpe9oq5Y6YPNbUorN64jRe7r3x` is Ready at `https://sparkle-suite-4kwpq14ps-louis-2849s-projects.vercel.app`, and stable demo `https://sparkle-suite-demo.vercel.app` was promoted to it.
+- Stable health check passed after promotion: API reachable, DB reachable, recent error rate `0`.
+- Stable desktop and mobile DOM smoke confirmed the affected workspace view had no fake concept image sources: `conceptSources: []`; on the reviewed data state the affected cards rendered with `imageCount: 0`.
+
+**Lessons carried forward:**
+- Visual redesign acceptance is not enough. Workspace shell work must preserve primary behaviors and should be closed with real interaction smoke: type into prompts, click navigation, return home, open/close previews, and verify mobile drawers.
+- Workspace images must be authentic. If Sparkle Suite cannot source a real image from the rep's site/listings/storage, the UI should show no image rather than a decorative or generated placeholder that looks like product evidence.
+- Live Site Preview is an editing context, not a read-only escape hatch. Nic-Nac needs to remain available there so reps can ask for copy/site changes while visually inspecting the page, then refresh the preview.
+- Tool and implementation autonomy must respect Louis's approval boundary. Questions and product-design prompts get answers first; implementation begins only after explicit permission.
+
+---
+
 ## July 4, 2026 - Nic-Nac Trade Board Tool Contract Hardening and Pressure Sweep
 
 **What changed:**

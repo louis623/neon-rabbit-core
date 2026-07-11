@@ -4,6 +4,47 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 10, 2026 - Live Preview and Workspace Shell UI Contract
+
+**Open Brain updates include full GitHub closeout**
+When Louis asks Codex to update Open Brain, the default scope includes updating the relevant vault memory/log files, reviewing all legitimate unfinished project changes in the working tree, committing those memory and project changes, and pushing the current Sparkle Suite branch to GitHub. Do not leave completed Open Brain updates or other legitimate session work only on the local computer unless Louis explicitly asks not to commit or push them. Automatically generated test output such as `artifacts/` and `test-results/` remains excluded unless Louis specifically asks to preserve it; report those folders plainly instead of describing them as unfinished project work.
+
+**Live Site Preview is a toggleable Nic-Nac workbench**
+Desktop preview keeps the customer site primary and offers Nic-Nac as an optional sidecar. Nic-Nac starts closed, opens only after `Open Nic-Nac`, and changes that control to `Close Nic-Nac` while open. Closing it restores the larger preview area. Keep Back to workspace, Refresh preview, and Open full site alongside the toggle as four equal-size centered controls. Refresh uses the same white/pink treatment as the other controls.
+
+**Shared workspace UI is account-generic**
+The rep workspace and Live Site Preview behavior apply to every current customer, future account, and reviewer/demo account. Customer data may personalize names, site copy, listings, shows, and images, but shared component structure and controls must not be implemented as Heather/BlingKitchen-only behavior.
+
+**Preserve the compact product header; remove only redundant search**
+The workspace needs a compact Sparkle Suite / Workspace header for product identity, Preview site, notifications, and rep identity. The top `Ask Nic-Nac anything...` field is redundant because the page has a full Nic-Nac composer, so remove that field only. Do not remove the complete header.
+
+**Workspace navigation and composer stay inside the app shell**
+The workspace shell should fit the viewport without requiring page-level scrolling to reach chat input or navigation. Conversation history owns the internal scroll. Header, quick actions/composer, and bottom navigation remain available. Bottom tabs need stable heights plus sufficient safe-area padding so icons and labels cannot be clipped.
+
+**Workspace terminology favors direct workflow language**
+Use `Trade follow-up` instead of `Swap cleanup`, and `Open Trade Workspace` instead of `View full today`. Remove duplicate summary cards when the same information/action already exists elsewhere in the first screen.
+
+**Verification escalation has a stopping rule**
+For customer-facing shell changes, run focused tests, production build, and one supported synthetic reviewer/browser path. If the browser integration itself fails, use one documented fallback and report the remaining visual gap. Do not spend a long loop trying unrelated server/browser launch mechanisms after the code-level gates are green. Respect Louis's decision to take over manual smoke testing.
+
+---
+
+## July 9, 2026 - Nic-Nac Workspace Shell and Approval Boundaries
+
+**Workspace preview images must be real or absent**
+Nic-Nac workspace cards must not use fake, generated, or decorative product/site thumbnails that imply real inventory or a real public site screenshot. Trade Board and Active Board imagery can render only from real listing/customer-site data. Public Site imagery can render only from real configured site assets such as a hero image. If no real image exists, show copy, counts, and actions with no image.
+
+**Live Site Preview should keep Nic-Nac available**
+The intended Live Site Preview experience is a workbench, not a standalone iframe. Desktop should keep the live preview visible while Nic-Nac remains available as a sidecar for on-the-fly copy/site changes. Mobile/tablet should keep the preview primary and expose Nic-Nac through a floating button or drawer. Preview controls such as Back to workspace, Refresh preview, and Open full site must remain available.
+
+**Concept-shell changes require functionality smoke**
+Any future workspace visual/shell redesign must smoke-test real app behavior before closeout: type and submit the top prompt, open Nic-Nac, navigate tabs, return Home from the brand/header, open Help & Resources, open/refresh/back out of live-site preview, and check the mobile breakpoint. Screenshot resemblance alone is not sufficient.
+
+**Questions are not implementation approval**
+When Louis asks for product/design judgment, analysis, "what went wrong", or "what is the best way", answer the question and wait. Do not inspect, patch, test, commit, deploy, or otherwise start implementation unless Louis explicitly approves the work.
+
+---
+
 ## July 4, 2026 - Nic-Nac Trade Board Tool Contract
 
 **Trade Board hardening uses deployed pressure sweeps, not isolated happy paths**

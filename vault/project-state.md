@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 4, 2026
+**Last updated:** July 11, 2026
 
 ---
 
@@ -18,15 +18,26 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `34dc328 test: add Nic-Nac trade board pressure smoke`
-- **Latest local docs/memory checkpoint:** July 4 Nic-Nac Trade Board tool-contract hardening / shared catalog correction sanitizer / combined pressure sweep closeout.
-- **Latest local/deployed checkpoints:** Current stable work applies the Calendar model-to-tool contract pattern to Nic-Nac Trade Board and Trade tools. The Trade Board pressure bank now covers item-number add listing, non-item-number add listing, listing removal, trade request approve/reject decisions, fulfillment updates, live-show swaps, after-show swap cleanup, and shared catalog corrections through real `/api/nic-nac` model/tool replay with reviewer-smoke auth, approvals, DB assertions, public-site proof, and cleanup. Catalog corrections now drop stray canonical photo URLs for non-photo issue types while preserving the approved-photo-only guard for bad-photo corrections. Prior July 4 Calendar work remains the pattern source: durable workflow state, app-owned normalization, tool-input drift guards, DB/public proof, and deployed pressure smoke.
+- **Latest local implementation checkpoint:** `a8b7e1d4 fix: restore compact workspace header`
+- **Latest local docs/memory checkpoint:** July 11 Open Brain closeout confirming the full live-preview workbench and rep-workspace UI session record.
+- **Latest local/deployed checkpoints:** The Nic-Nac-first workspace now includes a Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. The Nic-Nac sidecar is closed by default, opens beside the preview on desktop, and can be closed again to restore preview width. The rep workspace uses a compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell is viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-or1okdndq-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_FzUFwAv26TCbLTuXrDSNbAFtv5wS`
+- **Current stable demo target:** `https://sparkle-suite-lx0ohg5f7-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_CMJ3bWJyfx3eDNULcpQvVkvFMCsH`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
+
+---
+
+## July 10 Workspace UI State
+
+- Commits shipped in this UI pass: `b96b7e84` live-preview Nic-Nac sidecar, `50051b8c` toggleable/closed-by-default sidecar, `9f26d1ed` simplified Nic-Nac branding, `56383876` Sparkle Suite Workspace lockup, `a71e25ed` Trade follow-up copy, `55cd428e` duplicate glance-card removal, `cb48f80b` contained workspace chat shell, `1f2b6a6e` duplicate-header removal attempt, and `a8b7e1d4` final compact-header correction.
+- The final header correction restores the Sparkle Suite Workspace header while removing only the redundant top Nic-Nac search field. It retains Preview site, notifications, and rep profile on desktop and uses a smaller mobile form.
+- The final bottom navigation uses shorter fixed tab heights and additional shell/safe-area padding so icons and labels remain contained instead of clipping below the viewport.
+- Focused workspace suites passed with 115 tests; adjacent branding/font-scale suites passed with 15 tests; local and Vercel Next.js 16.2.1 production builds passed.
+- Local synthetic reviewer smoke reached the final desktop workspace and verified a visible 56px header, no `Ask Nic-Nac anything...` header input, a document height equal to the 720px viewport, all five 46px bottom tabs ending above the viewport edge, no framework overlay, and no console warnings/errors. The in-app Browser DOM snapshot capability failed, so checks used bounded page evaluation and screenshot evidence. Louis elected to perform the final deployed/manual smoke after release.
+- Stable alias verification returned HTTP 200 for `https://sparkle-suite-demo.vercel.app/start` after promotion.
 
 ---
 
