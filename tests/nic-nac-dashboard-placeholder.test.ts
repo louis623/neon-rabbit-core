@@ -23,6 +23,7 @@ import {
   getJoinTeamRosterDraft,
   moveJoinTeamRosterMember,
   buildShowCalendarCells,
+  buildHomeNextShowSummary,
   buildCustomerSparkleSiteHref,
   createTradeRequestDecisionHandlers,
   getAutoRechargeAmountOptions,
@@ -524,6 +525,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Active Board')
     expect(html).not.toContain('View board')
     expect(html.match(/Upcoming Show/g)).toHaveLength(1)
+    expect(html).toContain('No upcoming shows')
+    expect(html).toContain('Add a show')
     expect(html).toContain('Public Site')
     expect(html).toContain('Need help?')
     expect(html).not.toContain('Trade history')
@@ -535,6 +538,37 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Setup Checklist')
     expect(html).not.toContain('Confirm business/profile basics')
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
+  })
+
+  it('formats the next upcoming show for the workspace glance card', () => {
+    expect(
+      buildHomeNextShowSummary([
+        {
+          id: 'show-1',
+          repId: 'rep-1',
+          platform: 'TikTok Live',
+          eventTime: '2026-07-14T23:00:00.000Z',
+          timeZone: 'America/New_York',
+          durationMinutes: 180,
+          title: 'Tuesday Night Sparkle Party',
+          description: null,
+          discountCodes: [],
+          featuredCollections: null,
+          isRecurring: false,
+          recurrenceGroupId: null,
+          recurrenceRule: null,
+          status: 'scheduled',
+          createdAt: '2026-07-01T12:00:00.000Z',
+          updatedAt: '2026-07-01T12:00:00.000Z',
+        },
+      ]),
+    ).toEqual({
+      title: 'Tuesday Night Sparkle Party',
+      weekday: 'Tuesday',
+      date: 'Jul 14, 2026',
+      time: '7:00 PM',
+      timeZone: 'EDT',
+    })
   })
 
   it('does not render fake workspace preview thumbnails', () => {

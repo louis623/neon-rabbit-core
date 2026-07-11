@@ -341,10 +341,47 @@ function getWorkspaceSectionLabel(section: WorkspaceSectionKey) {
 }
 
 export function buildHomeNextShowLabel(events: CalendarEvent[]) {
-  const next = events[0]
-  if (!next) return 'Calendar'
-  const title = next.title?.trim() || next.description?.trim() || 'Next show'
+  const next = buildHomeNextShowSummary(events)
+  if (!next) return 'No upcoming shows'
+  const title = next.title
   return title.length > 28 ? `${title.slice(0, 25).trim()}...` : title
+}
+
+export type HomeNextShowSummary = {
+  title: string
+  weekday: string
+  date: string
+  time: string
+  timeZone: string
+}
+
+export function buildHomeNextShowSummary(
+  events: CalendarEvent[],
+): HomeNextShowSummary | null {
+  const next = events[0]
+  if (!next) return null
+
+  const eventDate = new Date(next.eventTime)
+  const dateParts = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: next.timeZone,
+    timeZoneName: 'short',
+  }).formatToParts(eventDate)
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    dateParts.find((part) => part.type === type)?.value ?? ''
+
+  return {
+    title: next.title?.trim() || next.description?.trim() || 'Upcoming show',
+    weekday: getPart('weekday'),
+    date: `${getPart('month')} ${getPart('day')}, ${getPart('year')}`,
+    time: `${getPart('hour')}:${getPart('minute')} ${getPart('dayPeriod')}`,
+    timeZone: getPart('timeZoneName') || next.timeZone,
+  }
 }
 
 export type RosterFilter =
@@ -5106,6 +5143,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const homeNextShowLabel = buildHomeNextShowLabel(
     calendarState.summary?.upcomingEvents ?? [],
   )
+  const homeNextShow = buildHomeNextShowSummary(
+    calendarState.summary?.upcomingEvents ?? [],
+  )
   return (
     <main
       className={`${styles.main} ${isLiveSitePreview ? styles.mainPreviewFocus : ''}`}
@@ -5216,7 +5256,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               tradeRequestsCount={homeTradeRequestsCount}
               cleanupCount={homeCleanupCount}
               fulfillmentCount={homeFulfillmentCount}
-              nextShowLabel={homeNextShowLabel}
+              nextShow={homeNextShow}
               siteLive={Boolean(currentPublicSiteSlug || currentRepId)}
               publicSitePreviewImageUrl={publicSitePreviewImageUrl}
               onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
@@ -5295,7 +5335,7 @@ function ConceptHomeWorkspace({
   tradeRequestsCount,
   cleanupCount,
   fulfillmentCount,
-  nextShowLabel,
+  nextShow,
   siteLive,
   publicSitePreviewImageUrl,
   onLaunchAction,
@@ -5308,7 +5348,7 @@ function ConceptHomeWorkspace({
   tradeRequestsCount: number
   cleanupCount: number
   fulfillmentCount: number
-  nextShowLabel: string
+  nextShow: HomeNextShowSummary | null
   siteLive: boolean
   publicSitePreviewImageUrl?: string
   onLaunchAction: (action: WorkspaceLaunchAction) => void
@@ -5374,11 +5414,38 @@ function ConceptHomeWorkspace({
           action="View calendar"
           onAction={onOpenCalendar}
         >
-          <div className={styles.showPreviewRow}>
-            <span><CalendarDays aria-hidden="true" /></span>
-            <p>{nextShowLabel}</p>
-          </div>
-          <span className={styles.panelAccent}>3 days away</span>
+          {nextShow ? (
+            <button
+              type="button"
+              className={styles.nextShowPreview}
+              onClick={onOpenCalendar}
+              aria-label={`View ${nextShow.title} in Calendar`}
+            >
+              <span className={styles.nextShowIcon}>
+                <CalendarDays aria-hidden="true" />
+              </span>
+              <span className={styles.nextShowDetails}>
+                <strong>{nextShow.title}</strong>
+                <span>{nextShow.weekday}, {nextShow.date}</span>
+                <span>{nextShow.time} {nextShow.timeZone}</span>
+              </span>
+            </button>
+          ) : (
+            <div className={styles.emptyShowPreview}>
+              <span className={styles.nextShowIcon}>
+                <CalendarDays aria-hidden="true" />
+              </span>
+              <span>
+                <strong>No upcoming shows</strong>
+                <button
+                  type="button"
+                  onClick={() => onLaunchAction('add_calendar_show')}
+                >
+                  Add a show
+                </button>
+              </span>
+            </div>
+          )}
         </ConceptPanel>
         <ConceptPanel
           title="Public Site"
