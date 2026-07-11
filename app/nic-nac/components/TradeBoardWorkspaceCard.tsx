@@ -232,7 +232,7 @@ export function TradeBoardWorkspaceCard({
                 className={surfaceStyles.helperButton}
                 onClick={onOpenCustomerBoardPreview}
               >
-                View customer board
+                Customer view
               </button>
             ) : (
               <a
@@ -241,7 +241,7 @@ export function TradeBoardWorkspaceCard({
                 target="_blank"
                 rel="noreferrer"
               >
-                View customer board
+                Customer view
               </a>
             )}
           </div>

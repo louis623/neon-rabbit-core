@@ -32,6 +32,16 @@ Supabase migrations, smoke tests, notes, memory, plans, handoffs, and skills.
 The old `C:\Users\louis\sparkle-suite` folder is retained only as a redirect
 and historical archive; do not depend on it for active instructions.
 
+## Default Release Rule
+
+Every approved Sparkle Suite code or content change includes committing the
+legitimate session changes, pushing the current branch, deploying the exact
+branch tip to Vercel, promoting `https://sparkle-suite-demo.vercel.app/` to that
+deployment, and verifying the stable review URL. Louis does not need to request
+commit, push, or deploy separately each time. Skip any release step only when
+Louis explicitly says the work is local-only, should not be committed, should
+not be pushed, or should not be deployed.
+
 Do not touch Chrome Web Store settings or local Sparkle Suite Chrome extension
 code. Treat live queue extension files as protected live-show material. Read
 `LIVE_EXTENSION_SAFETY.md` before any live extension discussion or handoff.

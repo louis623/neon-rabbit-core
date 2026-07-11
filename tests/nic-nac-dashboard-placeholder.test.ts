@@ -1685,7 +1685,7 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('View customer board')
+    expect(html).toContain('Customer view')
     expect(html).toContain('href="/amethyst/Trade.html?c=rep-1"')
     expect(html).toContain('target="_blank"')
     expect(html).toContain('src="https://cdn.example.com/sapphire-halo.jpg"')
