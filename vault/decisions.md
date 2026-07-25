@@ -4,6 +4,22 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 25, 2026 - Workspace Summary Cards and Default Release Flow
+
+**Workspace summary cards should show real next-step value**
+The workspace Upcoming Show card should not show a generic static `Calendar` label. If a real upcoming event exists, the card should summarize the next show with date, weekday, time, time zone, and show name, and that summary should link into the Calendar workspace. If no upcoming event exists, the card should say `No upcoming shows` and offer `Add a show` as the next action. Shared dashboard cards should either show real account data or a clear empty state with an action.
+
+**Trade Board header action uses shorter customer-facing copy**
+Use `Customer view` instead of `View customer board` for the Trade Board top-right action. The shorter label fits the existing workspace tone better and keeps the header lighter without changing behavior.
+
+**Approved Sparkle Suite changes release by default**
+Louis does not need to restate commit/push/deploy on each Sparkle Suite change. The standing repo rule is now explicit: once work is approved and implemented, Codex should commit legitimate session changes, push the current branch, deploy the exact tip to Vercel, promote `https://sparkle-suite-demo.vercel.app/` to that deployment, and verify the stable review URL unless Louis explicitly scopes the work to local-only or says not to commit, push, or deploy.
+
+**Operational triage should separate tool-surface gaps from product facts**
+When a support or billing-looking email arrives, distinguish what Codex can directly verify from what it cannot. A mailbox connector mismatch blocks direct header/authentication review, but Sparkle Suite records can still confirm whether the sender exists in waitlist, intake, rep, or subscription data before escalating.
+
+---
+
 ## July 10, 2026 - Live Preview and Workspace Shell UI Contract
 
 **Open Brain updates include full GitHub closeout**

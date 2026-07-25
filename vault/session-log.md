@@ -4,6 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 25, 2026 - Workspace Card Polish, Release Flow Standardization, and Session Closeout
+
+**What changed:**
+- Replaced the junk static `Calendar` label in the workspace Upcoming Show card with real next-show content. When a real event exists, the card now shows the next show's weekday, date, time, time zone, and event name, and the summary links into Calendar for more detail.
+- Added the agreed empty state for that card: `No upcoming shows` plus an `Add a show` action so reps are not left with a dead card when the calendar is empty.
+- Updated the Trade Board top-right button copy from `View customer board` to `Customer view`.
+- Added the durable default release rule to `AGENTS.md`: approved Sparkle Suite code/content work now automatically includes commit, push, deploy, stable-alias promotion, and verification unless Louis explicitly says the work is local-only or skips one of those release steps.
+- Investigated the suspicious Stephanie Graham email as a read-only operational check. The connected Gmail mailbox available to Codex was `louischapman1@gmail.com`, not the Neon Rabbit mailbox that received the message, so message-header verification was not possible from the tool side. Read-only Sparkle Suite data checks found no exact match for `cookiefountainadk@gmail.com` in the waitlist, intake submissions, rep records, or linked subscription rows, which supported treating the email as likely spam/phishing or a mistaken recipient rather than a real Sparkle Suite customer issue.
+
+**Verification and release:**
+- Upcoming Show card work passed focused workspace tests with 116 tests and passed local plus Vercel production builds before release.
+- Trade Board copy work passed a focused workspace/dashboard test slice with 93 tests before release.
+- Latest pushed implementation checkpoints from this session are:
+  - `5ad2b43 feat: show next event in workspace card`
+  - `7cafd213 chore: standardize Sparkle Suite release flow`
+- Stable demo alias `https://sparkle-suite-demo.vercel.app` currently points to deployment `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp` at `https://sparkle-suite-2rho3mzu4-louis-2849s-projects.vercel.app`.
+- For the release-flow checkpoint, stable `/start` returned HTTP 200 after alias promotion. Reviewer-smoke controls were not available on that route during the direct check, so no personal-account browser session was used.
+
+**Decisions and lessons carried forward:**
+- Shared workspace side cards must either show real actionable data or an explicit empty state with the right next action. A generic label like `Calendar` is dead weight if it does not communicate or do anything.
+- When a summary card implies navigation, the useful content itself should be the click target rather than forcing the rep to hunt for a separate control.
+- Louis's standing expectation for approved Sparkle Suite changes is now operationalized in repo instructions: commit, push, deploy, promote the stable demo alias, and verify the stable review URL by default.
+- Operational investigations should distinguish mailbox/tooling limits from product evidence. In this case, the Gmail connector mismatch meant Codex could not verify the sender headers directly, but the absence of any matching waitlist, intake, rep, or subscription record was still useful evidence for triage.
+
+---
+
 ## July 11, 2026 - Open Brain Session Closeout
 
 **What was captured:**

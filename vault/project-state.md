@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 11, 2026
+**Last updated:** July 25, 2026
 
 ---
 
@@ -18,15 +18,26 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `a8b7e1d4 fix: restore compact workspace header`
-- **Latest local docs/memory checkpoint:** July 11 Open Brain closeout confirming the full live-preview workbench and rep-workspace UI session record.
-- **Latest local/deployed checkpoints:** The Nic-Nac-first workspace now includes a Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. The Nic-Nac sidecar is closed by default, opens beside the preview on desktop, and can be closed again to restore preview width. The rep workspace uses a compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell is viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
+- **Latest local implementation checkpoint:** `7cafd213 chore: standardize Sparkle Suite release flow`
+- **Latest local docs/memory checkpoint:** July 25 Open Brain closeout capturing the workspace-card follow-up, release-rule standardization, and operational notes from the session.
+- **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. On top of that July 10 shell, the right-hand Upcoming Show card now shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-lx0ohg5f7-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_CMJ3bWJyfx3eDNULcpQvVkvFMCsH`
+- **Current stable demo target:** `https://sparkle-suite-2rho3mzu4-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
+
+---
+
+## July 25 Workspace Card and Release Flow State
+
+- Shipped workspace-card polish in `5ad2b43 feat: show next event in workspace card`. The Upcoming Show card no longer shows a dead `Calendar` label. It now renders the next real upcoming show summary when one exists and links that detail area into Calendar. The empty state is explicit: `No upcoming shows` plus `Add a show`.
+- Shipped Trade Board copy polish in the same branch tip: the top-right button now reads `Customer view` instead of `View customer board`.
+- Focused verification for the July 25 workspace-card pass: the workspace dashboard/card suite passed with 116 tests after the Upcoming Show work, and the focused Trade Board/dashboard label suite passed with 93 tests after the button-copy update.
+- Local Next.js production builds passed for both release steps. Vercel previews were built and the stable alias was promoted after each approved change.
+- Current branch-tip release-flow checkpoint is `7cafd213 chore: standardize Sparkle Suite release flow`, which records the durable rule that approved Sparkle Suite code/content changes automatically include commit, push, deploy, stable-alias promotion, and stable URL verification unless Louis explicitly scopes the work to local-only or otherwise opts out.
+- Stable demo reviewer target is `https://sparkle-suite-demo.vercel.app`, currently promoted to deployment `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp`.
 
 ---
 
