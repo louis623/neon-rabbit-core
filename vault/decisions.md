@@ -4,6 +4,22 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 26, 2026 - Emerald Garden and Brianna Beta Boundaries
+
+**Emerald Garden is a reusable standard skin**
+Emerald Garden belongs in the normal rep-selectable Amethyst appearance choices. Brianna's former Readdy site supplied brand reference for its green, neutral, floral/spa character, but the implementation must remain account-generic and use the standard Sparkle Suite public-site structure.
+
+**Brianna returns only as a standard Sparkle Suite beta**
+Brianna Williams / Bri's Glowtique may return as a beta tester, but the older bespoke-client arrangement remains superseded. Do not rebuild or revive a custom Readdy site, and do not add extra side-business content. Her site remains Bomb Party focused with her real copy and links populated only where they fit the standard product.
+
+**Billing and domain changes remain deferred**
+Brianna's current internal beta is `$0`, has no Stripe customer, and must not produce a live charge. Honor the previously offered original `$39/month` price only when Louis decides billing should begin. Keep `brisglowtique.com` disconnected until Louis explicitly approves a domain cutover after review.
+
+**Brianna's credential is private operational memory**
+At Louis's explicit request, the temporary login is stored in private Open Brain recall so it can be retrieved later. It must not be committed into the Git-tracked vault, and it should be rotated after Brianna receives or first uses it.
+
+---
+
 ## July 25, 2026 - Workspace Summary Cards and Default Release Flow
 
 **Workspace summary cards should show real next-step value**

@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 26, 2026 - Emerald Garden Skin and Brianna Beta Account
+
+**What changed:**
+- Added Emerald Garden as a reusable rep-selectable Amethyst customer-site skin. The skin captures the green, neutral, botanical/spa direction of Brianna's former Readdy site without creating a bespoke site fork.
+- Preserved legacy appearance-preset identifiers while adding `emerald_garden`, corrected inactive Trade filter contrast, and hardened generic Join template data so new accounts do not inherit another rep's name or location.
+- Created Brianna Williams's standard Sparkle Suite beta account for `Bri's Glowtique` with public slug `brisglowtique`, Emerald Garden selected, real Bomb Party/team/shop/social details, and an active internal-beta subscription with no Stripe customer or live charge.
+- Kept the account intentionally sparse: no fake inventory, trades, customers, join roster, or calendar events. Her existing live queue code `BGL-2463` was safely associated with the new account.
+- Did not connect `brisglowtique.com`, revive her bespoke Readdy site, or add Scentsy, Celesty, Monat, or other side-business scope.
+
+**Verification and release:**
+- Five focused files / 111 tests passed after the final generic Join-data correction. The broader focused skin pass had already reached eight files / 135 tests.
+- Local and Vercel Next.js 16.2.1 production builds passed.
+- Brianna's credential authenticated successfully. Live stable-demo checks confirmed Emerald Garden on Home, Trade, and Join; the Join page uses `Hustle and Heart / Fizz City`, has the correct Bomb Party starter link, contains no `Sparkle by Sasha` or `Austin, TX` placeholder, and showed no framework overlay.
+- Released implementation commit `2583f896 feat: add Emerald Garden customer-site skin`.
+- Stable demo `https://sparkle-suite-demo.vercel.app` points to deployment `dpl_9HNuzkTpmwvw5mzJoMZAFSGWThb4` at `https://sparkle-suite-13dk4smk4-louis-2849s-projects.vercel.app`.
+
+**Decisions and remaining work:**
+- Brianna receives the normal Sparkle Suite workspace and customer-site system, with Emerald Garden as her selected standard skin. No bespoke exceptions.
+- Honor the previously offered original `$39/month` rate when billing begins; the current beta is `$0` and must not trigger a live charge.
+- Louis still needs to conduct the final hands-on smoke of Brianna's workspace, homepage, Trade Board, Join page, links, and mobile presentation before beta handoff is considered accepted.
+- Brianna's temporary login is saved in Louis's private Open Brain recall entry by explicit request and is excluded from the Git-tracked vault. Rotate it after handoff or first use.
+
+---
+
 ## July 25, 2026 - Workspace Card Polish, Release Flow Standardization, and Session Closeout
 
 **What changed:**

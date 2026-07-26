@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 25, 2026
+**Last updated:** July 26, 2026
 
 ---
 
@@ -18,15 +18,26 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `7cafd213 chore: standardize Sparkle Suite release flow`
-- **Latest local docs/memory checkpoint:** July 25 Open Brain closeout capturing the workspace-card follow-up, release-rule standardization, and operational notes from the session.
+- **Latest local implementation checkpoint:** `2583f896 feat: add Emerald Garden customer-site skin`
+- **Latest local docs/memory checkpoint:** July 26 Open Brain closeout capturing Emerald Garden, Brianna Williams's standard beta account, release evidence, and the remaining manual smoke.
 - **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. On top of that July 10 shell, the right-hand Upcoming Show card now shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-2rho3mzu4-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp`
+- **Current stable demo target:** `https://sparkle-suite-13dk4smk4-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_9HNuzkTpmwvw5mzJoMZAFSGWThb4`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
+
+---
+
+## July 26 Emerald Garden and Brianna Beta State
+
+- Emerald Garden is a standard selectable Amethyst customer-site skin, not a bespoke Brianna-only build. It carries the green, neutral, botanical/spa direction from Brianna's former Readdy site while keeping the shared Sparkle Suite site structure and editing behavior.
+- Brianna Williams now has an active standard beta workspace for `Bri's Glowtique`, public slug `brisglowtique`, with Emerald Garden selected. The account is Bomb Party focused, uses her real business/team/shop/social information, and has no fabricated listings, customers, trades, or calendar events.
+- Brianna's beta uses an internal `$0` subscription record with no Stripe customer or live charge. Preserve the earlier decision to honor her original `$39/month` rate when billing begins. Do not restore bespoke-site scope or add Scentsy, Celesty, Monat, or other side-business content.
+- The public review paths are `/brisglowtique`, `/brisglowtique/trade`, and `/brisglowtique/join` on the stable demo. `brisglowtique.com` is not connected and must remain unchanged until Louis explicitly approves a later domain cutover.
+- Focused verification passed across five files / 111 tests, the local and Vercel production builds passed, Brianna's credentials successfully authenticated, and bounded live checks confirmed Emerald Garden on Home/Trade/Join with no framework overlay or legacy Join placeholders. Louis still wants to perform the final hands-on workspace and customer-site smoke before treating Brianna's beta onboarding as accepted.
+- Brianna's temporary credential is intentionally stored in Louis's private Open Brain recall entry and is not committed to the Git repository. Rotate it after handoff or first use.
 
 ---
 

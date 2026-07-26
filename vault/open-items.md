@@ -1,5 +1,8 @@
 # Open Items
 
+- [ ] **Complete Brianna Williams / Bri's Glowtique acceptance smoke** - before beta handoff is treated as accepted, Louis should sign in through `https://sparkle-suite-demo.vercel.app/login` and inspect the standard workspace plus `https://sparkle-suite-demo.vercel.app/brisglowtique`, `/trade`, and `/join`. Check desktop/mobile presentation, Emerald Garden styling, navigation and external links, empty Trade Board behavior, Join copy, and the absence of unrelated rep data. Do not connect `brisglowtique.com` or start billing during this smoke.
+- [ ] **Rotate Brianna's temporary password after handoff or first use** - the temporary login is saved in Louis's private Open Brain recall entry as requested and intentionally omitted from Git-tracked vault files. Once Brianna receives or uses it, replace it with a durable password through the normal account-security flow.
+
 Everything deferred, undecided, or waiting — tasks, planning sessions, and open questions.
 
 ---
