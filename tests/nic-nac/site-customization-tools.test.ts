@@ -293,6 +293,7 @@ describe('site customization tools', () => {
     ['AB-01', 'amber'],
     ['MS-01', 'moonstone'],
     ['AO-01', 'alpine_opal'],
+    ['EG-01', 'emerald_garden'],
     ['VE-01', 'velvet'],
     ['RQ-01', 'rose_quartz'],
   ])('update_site_setting saves %s as the supported customer-facing skin code', async (code, expectedPreset) => {

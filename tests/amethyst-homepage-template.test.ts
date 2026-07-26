@@ -11,7 +11,7 @@ import {
 import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
-  const tickerAssetVersion = '20260628-constant-pixel-ticker'
+  const tickerAssetVersion = '20260725-emerald-garden'
 
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
     const homepage = readFileSync(
@@ -770,15 +770,24 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('Amber')
     expect(jsx).toContain('alpine_opal')
     expect(jsx).toContain('Alpine Opal')
+    expect(jsx).toContain('emerald_garden')
+    expect(jsx).toContain('Emerald Garden')
     expect(jsx).toContain('velvet')
     expect(jsx).toContain('Velvet')
     expect(jsx).toContain('rose_quartz')
     expect(jsx).toContain('Rose Quartz')
     expect(html).toContain('Bitter')
     expect(html).toContain('Nunito')
+    expect(html).toContain('Great+Vibes')
+    expect(html).toContain('Cormorant+Garamond')
+    expect(html).toContain('Lato')
     expect(css).toContain('body.bg-suite-paper .hp-signup-submit')
     expect(css).toContain('body.bg-amber-paper .hp-signup-submit')
     expect(css).toContain('body.bg-quartz-paper .hp-signup-submit')
+    expect(css).toContain('body.bg-emerald-garden')
+    expect(css).toContain('body.surface-spa-ivory .hp-event-card')
+    expect(css).toContain('body.btn-garden-lift .hp-btn-primary:hover')
+    expect(css).toContain('body.champagne-botanical .tp-card.unicorn')
   })
 
   it('does not ship legacy placeholder skins in the local homepage preset picker', () => {

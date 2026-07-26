@@ -594,15 +594,20 @@ export function mapPreviewSettingsToJoinTemplateData(
   )
   const teamName = firstText(settings.teamName, defaultAmethystJoinTemplateData.teamName)
   const shopUrl = resolveShopUrl(extras)
+  const streamingLinks = asRecord(extras.streamingLinks)
+  const joinUrl = clean(streamingLinks.join) || shopUrl
 
   const join: AmethystJoinTemplateData = {
     ...defaultAmethystJoinTemplateData,
     repName,
+    repCity: '',
+    repState: '',
     businessName,
     teamName,
+    heroTitle: `Join ${teamName}`,
     heroPitch: `Join ${teamName} with ${repName}. Build your Bomb Party business with a clear live-show path, support, and a Sparkle Suite-ready customer hub.`,
     finalPitch: `Pick your starter pack, follow the steps on Bomb Party, and connect with ${repName} for the next onboarding step.`,
-    bpReferralUrl: shopUrl,
+    bpReferralUrl: joinUrl,
     tickerTopText: buildTicker(settings, defaultAmethystJoinTemplateData.tickerTopText),
     shopUrl,
     footerTagline: firstText(settings.tagline, defaultAmethystJoinTemplateData.footerTagline),
@@ -617,6 +622,7 @@ export function mapPreviewSettingsToJoinTemplateData(
       ...defaultAmethystJoinTemplateData.footerLinks,
       catalog: shopUrl,
       preOrders: shopUrl,
+      contact: `mailto:${settings.email}`,
     },
     ...(teamMembers ? { teamMembers } : {}),
   }

@@ -5644,3 +5644,316 @@ body.homepage.bling-kitchen .bk-home-hero {
     min-height: 520px;
   }
 }
+
+/* Emerald Garden
+   Readdy-inspired spa styling expressed as a reusable visual-only Amethyst skin. */
+body.bg-emerald-garden {
+  --fg: #173f34;
+  --fg-muted: #557268;
+  --border: rgba(6, 78, 59, 0.16);
+  --eg-forest: #064e3b;
+  --eg-emerald: #059669;
+  --eg-mint: #34d399;
+  --eg-champagne: #e5d3b3;
+  --eg-gardenia: #f8f7f0;
+  --eg-serif: "Cormorant Garamond", Georgia, serif;
+  background:
+    radial-gradient(ellipse at 8% 12%, rgba(255, 255, 255, 0.9) 0 7rem, transparent 18rem),
+    radial-gradient(ellipse at 92% 9%, rgba(202, 221, 197, 0.62) 0 8rem, transparent 22rem),
+    linear-gradient(135deg, #f8f7f0 0%, #ffffff 48%, #e5eee2 100%);
+  color: var(--fg);
+}
+
+body.bg-emerald-garden .hp-header {
+  background: rgba(4, 47, 37, 0.96);
+  border-bottom-color: rgba(229, 211, 179, 0.34);
+  box-shadow: 0 12px 34px rgba(4, 47, 37, 0.18);
+}
+
+body.bg-emerald-garden .hp-brand-name,
+body.bg-emerald-garden .hp-footer-brand {
+  color: #ffffff;
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+}
+
+body.bg-emerald-garden .hp-brand-sub,
+body.bg-emerald-garden .hp-header-link,
+body.bg-emerald-garden .hp-header-link-disabled {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+body.bg-emerald-garden .hp-header-link:hover,
+body.bg-emerald-garden .hp-header-link[aria-current="page"],
+body.bg-emerald-garden .hp-coming-soon-badge {
+  color: var(--eg-champagne);
+}
+
+body.bg-emerald-garden .hp-ticker {
+  border-color: rgba(6, 78, 59, 0.18);
+  box-shadow: 0 10px 24px rgba(6, 78, 59, 0.1);
+}
+
+body.bg-emerald-garden .hp-ticker-row {
+  background: linear-gradient(90deg, #064e3b, #065f46 54%, #047857);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body.bg-emerald-garden .hp-ticker-row.reverse {
+  background: linear-gradient(90deg, #6ee7b7, #34d399 52%, #a7f3d0);
+  color: #053c2e;
+}
+
+body.bg-emerald-garden .hp-ticker-label {
+  background: rgba(3, 44, 34, 0.94);
+  color: #ffffff;
+}
+
+body.bg-emerald-garden .hp-ticker-row.reverse .hp-ticker-label {
+  background: #e9ddc6;
+  color: #064e3b;
+}
+
+body.bg-emerald-garden .hp-hero,
+body.bg-emerald-garden .tp-hero,
+body.bg-emerald-garden .jp-hero {
+  background: linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%);
+}
+
+body.bg-emerald-garden .hp-hero-media,
+body.bg-emerald-garden .jp-hero-media {
+  background:
+    radial-gradient(ellipse at 9% 48%, rgba(255, 255, 255, 0.94) 0 5%, rgba(229, 211, 179, 0.42) 6%, transparent 17%),
+    radial-gradient(ellipse at 19% 62%, rgba(126, 153, 104, 0.68) 0 7%, transparent 20%),
+    radial-gradient(ellipse at 88% 28%, rgba(255, 255, 255, 0.72) 0 5%, transparent 17%),
+    radial-gradient(ellipse at 80% 54%, rgba(130, 160, 122, 0.52) 0 8%, transparent 24%),
+    linear-gradient(118deg, #eef0e2 0%, #b7c9ad 31%, #315f49 62%, #f3ebda 100%);
+}
+
+body.bg-emerald-garden .hp-hero-media::after,
+body.bg-emerald-garden .jp-hero-media::after {
+  background:
+    linear-gradient(90deg, rgba(6, 78, 59, 0.14), rgba(4, 47, 37, 0.28)),
+    radial-gradient(circle at 52% 40%, transparent 0%, rgba(4, 47, 37, 0.32) 100%);
+}
+
+body.bg-emerald-garden .hp-hero-inner > div,
+body.bg-emerald-garden .jp-hero-card {
+  background: rgba(5, 62, 47, 0.62);
+  border: 1px solid rgba(229, 211, 179, 0.58);
+  border-radius: 28px;
+  box-shadow:
+    0 28px 76px rgba(4, 47, 37, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+body.bg-emerald-garden .hp-hero-inner > div {
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+}
+
+body.bg-emerald-garden .hp-hero-headline,
+body.bg-emerald-garden .tp-hero-title,
+body.bg-emerald-garden .jp-hero-title {
+  background: linear-gradient(90deg, #e5d3b3, #ffffff 45%, #c8dac4 72%, #e5d3b3);
+  background-size: 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.24));
+  animation: emerald-garden-title-shimmer 9s ease-in-out infinite;
+}
+
+body.bg-emerald-garden .hp-hero-sub,
+body.bg-emerald-garden .tp-hero-sub,
+body.bg-emerald-garden .jp-hero-pitch,
+body.bg-emerald-garden .jp-hero-localized,
+body.bg-emerald-garden .jp-hero-compliance {
+  color: rgba(255, 255, 255, 0.86);
+  font-family: var(--eg-serif);
+}
+
+body.bg-emerald-garden .hp-shop-btn,
+body.bg-emerald-garden .hp-btn-primary,
+body.bg-emerald-garden .hp-signup-submit,
+body.bg-emerald-garden .tp-card-expand-cta,
+body.bg-emerald-garden .tp-sheet-submit,
+body.bg-emerald-garden .jp-spot-btn,
+body.bg-emerald-garden .jp-final-btn {
+  background: linear-gradient(90deg, #047857, #059669 52%, #10b981);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 14px 32px rgba(4, 120, 87, 0.22);
+}
+
+body.bg-emerald-garden .hp-btn-outline,
+body.bg-emerald-garden .hp-btn-watch {
+  border-color: rgba(229, 211, 179, 0.78);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.bg-emerald-garden #events,
+body.bg-emerald-garden #about {
+  background:
+    radial-gradient(ellipse at 6% 18%, rgba(202, 218, 196, 0.45), transparent 20rem),
+    radial-gradient(ellipse at 96% 88%, rgba(229, 211, 179, 0.26), transparent 22rem),
+    #ffffff;
+}
+
+body.bg-emerald-garden #wibp,
+body.bg-emerald-garden .hp-signup {
+  position: relative;
+  background:
+    radial-gradient(circle at 105% -8%, rgba(255, 255, 255, 0.2), transparent 28rem),
+    radial-gradient(circle at -8% 108%, rgba(4, 120, 87, 0.38), transparent 28rem),
+    linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%) !important;
+}
+
+body.bg-emerald-garden .hp-section-title,
+body.bg-emerald-garden .hp-wibp-title,
+body.bg-emerald-garden .hp-signup-title,
+body.bg-emerald-garden .hp-event-name,
+body.bg-emerald-garden .tp-card-name,
+body.bg-emerald-garden .tp-card-expand-name,
+body.bg-emerald-garden .jp-team-name,
+body.bg-emerald-garden .jp-benefit-title,
+body.bg-emerald-garden .jp-spot-title,
+body.bg-emerald-garden .jp-final-title {
+  font-family: var(--eg-serif);
+}
+
+body.bg-emerald-garden #events .hp-section-title,
+body.bg-emerald-garden #about .hp-section-title {
+  background: linear-gradient(90deg, #064e3b, #059669, #34d399);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+}
+
+body.bg-emerald-garden #wibp .hp-wibp-title,
+body.bg-emerald-garden #wibp .hp-wibp-eyebrow,
+body.bg-emerald-garden #wibp .hp-wibp-body,
+body.bg-emerald-garden .hp-signup .hp-signup-title,
+body.bg-emerald-garden .hp-signup .hp-signup-eyebrow,
+body.bg-emerald-garden .hp-signup .hp-signup-sub {
+  color: #ffffff;
+}
+
+body.bg-emerald-garden #wibp .hp-wibp-title,
+body.bg-emerald-garden .hp-signup .hp-signup-title {
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+}
+
+body.surface-spa-ivory .hp-event-card,
+body.surface-spa-ivory .hp-wibp-card,
+body.surface-spa-ivory .hp-trade-card,
+body.surface-spa-ivory .hp-about-copy,
+body.surface-spa-ivory .hp-signup-card,
+body.surface-spa-ivory .tp-lrq-rail,
+body.surface-spa-ivory .tp-filters,
+body.surface-spa-ivory .tp-card,
+body.surface-spa-ivory .tp-card-expand,
+body.surface-spa-ivory .tp-sheet,
+body.surface-spa-ivory .jp-hero-card,
+body.surface-spa-ivory .jp-team-card,
+body.surface-spa-ivory .jp-benefit-card,
+body.surface-spa-ivory .jp-faq-item,
+body.surface-spa-ivory .jp-final-card {
+  background: rgba(255, 255, 252, 0.92);
+  border-color: rgba(229, 211, 179, 0.92);
+  box-shadow: 0 18px 48px rgba(6, 78, 59, 0.1);
+}
+
+body.surface-spa-ivory .hp-wibp-card,
+body.surface-spa-ivory .hp-signup-card,
+body.surface-spa-ivory .jp-final-card {
+  background: rgba(255, 255, 252, 0.94);
+}
+
+body.bg-emerald-garden.surface-spa-ivory .jp-hero-card {
+  background: rgba(5, 62, 47, 0.62);
+  border-color: rgba(229, 211, 179, 0.58);
+}
+
+body.surface-spa-ivory .hp-step,
+body.surface-spa-ivory .hp-signup-consent-box,
+body.surface-spa-ivory .tp-filter-panel,
+body.surface-spa-ivory .jp-faq-note {
+  background: rgba(248, 247, 240, 0.92);
+  border-color: rgba(229, 211, 179, 0.84);
+}
+
+body.surface-spa-ivory .hp-step-num,
+body.surface-spa-ivory .jp-benefit-icon,
+body.surface-spa-ivory .jp-final-icon {
+  background: linear-gradient(135deg, #e5d3b3, #f5c08a);
+  color: #ffffff;
+}
+
+body.surface-spa-ivory .hp-event-name,
+body.surface-spa-ivory .hp-wibp-title,
+body.surface-spa-ivory .hp-signup-title,
+body.surface-spa-ivory .tp-card-name,
+body.surface-spa-ivory .tp-card-expand-name,
+body.surface-spa-ivory .tp-sheet-title,
+body.surface-spa-ivory .jp-team-name,
+body.surface-spa-ivory .jp-benefit-title,
+body.surface-spa-ivory .jp-spot-title,
+body.surface-spa-ivory .jp-final-title {
+  color: #193f34;
+}
+
+body.bg-emerald-garden .hp-footer {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  color: rgba(255, 255, 255, 0.82);
+  border-top-color: rgba(229, 211, 179, 0.32);
+}
+
+body.bg-emerald-garden .hp-footer a:hover {
+  color: var(--eg-champagne);
+}
+
+body.btn-garden-lift .hp-btn-primary:hover,
+body.btn-garden-lift .hp-btn-outline:hover,
+body.btn-garden-lift .hp-shop-btn:hover,
+body.btn-garden-lift .hp-signup-submit:hover,
+body.btn-garden-lift .tp-card:hover,
+body.btn-garden-lift .tp-card-expand-cta:hover,
+body.btn-garden-lift .jp-team-card:hover,
+body.btn-garden-lift .jp-benefit-card:hover,
+body.btn-garden-lift .jp-spot-btn:hover,
+body.btn-garden-lift .jp-final-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 44px rgba(4, 120, 87, 0.2);
+}
+
+body.champagne-botanical .tp-card.unicorn,
+body.champagne-botanical .tp-card.diamond,
+body.champagne-botanical .hp-trade-card {
+  border-color: rgba(229, 211, 179, 0.96);
+  box-shadow: 0 20px 48px rgba(6, 78, 59, 0.12);
+}
+
+@keyframes emerald-garden-title-shimmer {
+  0%,
+  100% {
+    background-position: 100% center;
+  }
+  50% {
+    background-position: 0% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bg-emerald-garden .hp-hero-headline,
+  body.bg-emerald-garden .tp-hero-title,
+  body.bg-emerald-garden .jp-hero-title {
+    animation: none;
+  }
+}

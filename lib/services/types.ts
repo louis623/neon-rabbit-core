@@ -456,6 +456,7 @@ export type SiteAppearancePreset =
   | 'black_diamond'
   | 'moonstone'
   | 'alpine_opal'
+  | 'emerald_garden'
   | 'rose_gold'
   | 'garnet'
   | 'amber'

@@ -229,12 +229,17 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('Amber')
     expect(jsx).toContain('alpine_opal')
     expect(jsx).toContain('Alpine Opal')
+    expect(jsx).toContain('emerald_garden')
+    expect(jsx).toContain('Emerald Garden')
     expect(jsx).toContain('velvet')
     expect(jsx).toContain('Velvet')
     expect(jsx).toContain('rose_quartz')
     expect(jsx).toContain('Rose Quartz')
     expect(html).toContain('Bitter')
     expect(html).toContain('Nunito')
+    expect(html).toContain('Great+Vibes')
+    expect(html).toContain('Cormorant+Garamond')
+    expect(html).toContain('Lato')
   })
 
   it('does not ship legacy placeholder skins in the local join preset picker', () => {

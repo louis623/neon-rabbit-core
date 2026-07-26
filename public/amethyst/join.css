@@ -1501,3 +1501,49 @@ body.bling-kitchen-join .hp-footer-bottom,
 body.bling-kitchen-join .hp-footer-bottom p {
   color: rgba(255, 248, 238, 0.78);
 }
+
+/* Emerald Garden join-page continuation */
+body.bg-emerald-garden #team,
+body.bg-emerald-garden #faq {
+  background:
+    radial-gradient(ellipse at 8% 14%, rgba(202, 218, 196, 0.44), transparent 21rem),
+    radial-gradient(ellipse at 94% 88%, rgba(229, 211, 179, 0.28), transparent 22rem),
+    #ffffff;
+}
+
+body.bg-emerald-garden .jp-why,
+body.bg-emerald-garden .jp-final {
+  background:
+    radial-gradient(circle at 104% -10%, rgba(255, 255, 255, 0.2), transparent 26rem),
+    radial-gradient(circle at -8% 108%, rgba(4, 120, 87, 0.4), transparent 27rem),
+    linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%);
+}
+
+body.bg-emerald-garden .jp-section-title {
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+}
+
+body.bg-emerald-garden #team .jp-section-title,
+body.bg-emerald-garden #faq .jp-section-title {
+  background: linear-gradient(90deg, #064e3b, #059669, #34d399);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.bg-emerald-garden .jp-why .jp-section-title,
+body.bg-emerald-garden .jp-why .jp-section-eyebrow,
+body.bg-emerald-garden .jp-why .jp-section-sub {
+  color: #ffffff;
+}
+
+body.bg-emerald-garden .jp-benefit-card,
+body.bg-emerald-garden .jp-final-card {
+  border-color: rgba(229, 211, 179, 0.94);
+}
+
+body.bg-emerald-garden .jp-final-title {
+  font-family: "Great Vibes", "Playfair Display", cursive;
+  font-weight: 400;
+}

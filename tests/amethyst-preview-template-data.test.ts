@@ -47,6 +47,7 @@ const repExtras = {
   streamingLinks: {
     tiktok: 'https://www.tiktok.com/@sparklesuitedemo',
     facebook: 'https://www.facebook.com/sparklesuitedemo',
+    join: 'https://www.bombparty.com/shop/sparkle-suite-demo/packs',
   },
 }
 
@@ -140,9 +141,13 @@ describe('Amethyst preview template data', () => {
     expect(join.repName).toBe('Launch')
     expect(join.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(join.teamName).toBe('Sparkle Demo Circle')
+    expect(join.heroTitle).toBe('Join Sparkle Demo Circle')
+    expect(join.repCity).toBe('')
+    expect(join.repState).toBe('')
     expect(join.bpReferralUrl).toBe(
-      'https://www.bombparty.com/shop/sparkle-suite-demo',
+      'https://www.bombparty.com/shop/sparkle-suite-demo/packs',
     )
+    expect(join.footerLinks.contact).toBe('mailto:demo@example.com')
   })
 
   it('hides Join Team customer links when the rep has not launched that page', () => {

@@ -192,6 +192,13 @@ const PRESETS = {
     bgTone: "alpineOpal", primaryColor: "#ec4899", accentColor: "#38bdf8",
     headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
   },
+  emerald_garden: {
+    sparkleLevel: "subtle", bgTreatment: "emerald-garden", cardSurface: "spa-ivory",
+    textureOverlay: "none", buttonEnergy: "garden-lift", ctaEmphasis: "standard",
+    tradeFlair: "champagne-botanical", cursorEffect: "default", saturation: 104,
+    bgTone: "emeraldGarden", primaryColor: "#059669", accentColor: "#E5D3B3",
+    headingFont: "greatVibes", bodyFont: "lato", headingWeight: 400,
+  },
   rose_gold: {
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
     textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
@@ -240,6 +247,7 @@ const TONES = {
   blackDiamond: { bg: "#080808", elevated: "#15110f", deep: "#030303" },
   moonstone: { bg: "#15121d", elevated: "#211b2c", deep: "#0d0b13" },
   alpineOpal: { bg: "#fdf2f8", elevated: "#f0f9ff", deep: "#1e1b4b" },
+  emeraldGarden: { bg: "#f8f7f0", elevated: "#ffffff", deep: "#dfe9dd" },
   roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
   garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
   amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
@@ -254,6 +262,8 @@ const FONTS = {
   italiana: '"Italiana", "Playfair Display", serif',
   playfair: '"Playfair Display", Georgia, serif',
   dmSans: '"DM Sans", "Inter", system-ui, sans-serif',
+  greatVibes: '"Great Vibes", "Playfair Display", cursive',
+  lato: '"Lato", "DM Sans", "Inter", system-ui, sans-serif',
   boska: '"Boska", "Playfair Display", Georgia, serif',
   switzer: '"Switzer", "DM Sans", "Inter", system-ui, sans-serif',
   melodrama: '"Melodrama", "Playfair Display", Georgia, serif',
@@ -998,6 +1008,7 @@ function App() {
     if (t.bgTreatment === "black-velvet") body.classList.add("bg-black-velvet");
     if (t.bgTreatment === "moonstone-charcoal") body.classList.add("bg-moonstone-charcoal");
     if (t.bgTreatment === "alpine-opal") body.classList.add("bg-alpine-opal");
+    if (t.bgTreatment === "emerald-garden") body.classList.add("bg-emerald-garden");
     if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
     if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
     if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
@@ -1009,6 +1020,7 @@ function App() {
     if (t.cardSurface === "dark-metallic") body.classList.add("surface-dark-metallic");
     if (t.cardSurface === "silver-pearl") body.classList.add("surface-silver-pearl");
     if (t.cardSurface === "frosted-opal") body.classList.add("surface-frosted-opal");
+    if (t.cardSurface === "spa-ivory") body.classList.add("surface-spa-ivory");
     if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
     if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
     if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
@@ -1022,6 +1034,7 @@ function App() {
     if (t.buttonEnergy === "diamond-lift") body.classList.add("btn-diamond-lift");
     if (t.buttonEnergy === "moonstone-lift") body.classList.add("btn-moonstone-lift");
     if (t.buttonEnergy === "alpine-pop") body.classList.add("btn-alpine-pop");
+    if (t.buttonEnergy === "garden-lift") body.classList.add("btn-garden-lift");
     if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
     if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
     if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
@@ -1033,6 +1046,7 @@ function App() {
     if (t.tradeFlair === "cyan-diamond") body.classList.add("cyan-diamond");
     if (t.tradeFlair === "silver-violet") body.classList.add("silver-violet");
     if (t.tradeFlair === "opal-summit") body.classList.add("opal-summit");
+    if (t.tradeFlair === "champagne-botanical") body.classList.add("champagne-botanical");
     if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
     if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
@@ -1156,6 +1170,7 @@ function App() {
               { value: "black_diamond", label: "Black Diamond" },
               { value: "moonstone", label: "Moonstone" },
               { value: "alpine_opal", label: "Alpine Opal" },
+              { value: "emerald_garden", label: "Emerald Garden" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },

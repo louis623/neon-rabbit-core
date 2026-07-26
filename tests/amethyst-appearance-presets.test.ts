@@ -30,6 +30,27 @@ import {
 } from '@/lib/amethyst/skin-cards'
 
 describe('Amethyst appearance presets', () => {
+  it('preserves database-only legacy appearance ids while adding Emerald Garden', () => {
+    const migration = readFileSync(
+      resolve(
+        process.cwd(),
+        'supabase',
+        'migrations',
+        '20260725230000_add_emerald_garden_appearance_preset.sql',
+      ),
+      'utf8',
+    )
+
+    for (const preset of [
+      'emerald_garden',
+      'pearl',
+      'luxe',
+      'ocean_sapphire',
+    ]) {
+      expect(migration).toContain(`'${preset}'`)
+    }
+  })
+
   it('locks the customer-site template to Amethyst and defaults appearance to Sparkle Suite/Morganite', () => {
     expect(AMETHYST_CUSTOMER_SITE_TEMPLATE).toBe('amethyst')
     expect(DEFAULT_AMETHYST_APPEARANCE_PRESET).toBe('sparkle_suite_morganite')
@@ -60,6 +81,7 @@ describe('Amethyst appearance presets', () => {
       'black_diamond',
       'moonstone',
       'alpine_opal',
+      'emerald_garden',
       'rose_gold',
       'garnet',
       'amber',
@@ -72,6 +94,7 @@ describe('Amethyst appearance presets', () => {
       'Black Diamond',
       'Moonstone',
       'Alpine Opal',
+      'Emerald Garden',
       'Rose Gold',
       'Garnet',
       'Amber',
@@ -460,6 +483,57 @@ describe('Amethyst appearance presets', () => {
     )
     expect(normalizeAmethystSkinSelection('AO-01')).toBe('alpine_opal')
     expect(normalizeAmethystSkinSelection('Alpine Opal')).toBe('alpine_opal')
+  })
+
+  it('adds Emerald Garden as a visual-only Amethyst skin with a browsing card', () => {
+    const preset = getAmethystAppearancePreset('emerald_garden')
+    const homepage = applyAmethystAppearancePreset(
+      buildAmethystHomepageTweakDefaults(defaultAmethystHomepageTemplateData),
+      preset.id,
+    )
+    const trade = applyAmethystAppearancePreset(
+      buildAmethystTradeTweakDefaults(defaultAmethystTradeTemplateData),
+      preset.id,
+    )
+    const join = applyAmethystAppearancePreset(
+      buildAmethystJoinTweakDefaults(defaultAmethystJoinTemplateData),
+      preset.id,
+    )
+    const card = getAmethystSkinCard('emerald_garden')
+    const expectedTokens = {
+      preset: 'emerald_garden',
+      primaryColor: '#059669',
+      accentColor: '#E5D3B3',
+      bgTone: 'emeraldGarden',
+      headingFont: 'greatVibes',
+      bodyFont: 'lato',
+      bgTreatment: 'emerald-garden',
+      cardSurface: 'spa-ivory',
+      buttonEnergy: 'garden-lift',
+      tradeFlair: 'champagne-botanical',
+    }
+
+    expect(normalizeAmethystAppearancePreset('emerald_garden')).toBe(
+      'emerald_garden',
+    )
+    expect(preset.label).toBe('Emerald Garden')
+    expect(homepage).toMatchObject(expectedTokens)
+    expect(trade).toMatchObject(expectedTokens)
+    expect(join).toMatchObject(expectedTokens)
+    expect(card).toMatchObject({
+      id: 'emerald_garden',
+      code: 'EG-01',
+      label: 'Emerald Garden',
+      headingFont: 'Great Vibes / Cormorant Garamond',
+      bodyFont: 'Lato',
+    })
+    expect(card.swatches.map((swatch) => swatch.value)).toEqual(
+      expect.arrayContaining(['#064E3B', '#059669', '#E5D3B3', '#F8F7F0']),
+    )
+    expect(normalizeAmethystSkinSelection('EG-01')).toBe('emerald_garden')
+    expect(normalizeAmethystSkinSelection('Emerald Garden')).toBe(
+      'emerald_garden',
+    )
   })
 
   it.each([

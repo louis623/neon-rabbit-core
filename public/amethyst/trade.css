@@ -2188,3 +2188,58 @@ body.bling-kitchen-trade .hp-footer-bottom,
 body.bling-kitchen-trade .hp-footer-bottom p {
   color: rgba(255, 248, 238, 0.78);
 }
+
+/* Emerald Garden trade-board continuation */
+body.bg-emerald-garden .tp-hero {
+  background:
+    radial-gradient(circle at 103% -12%, rgba(255, 255, 255, 0.2), transparent 24rem),
+    radial-gradient(circle at -8% 108%, rgba(4, 120, 87, 0.42), transparent 26rem),
+    linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%);
+}
+
+body.bg-emerald-garden .tp-board {
+  background:
+    radial-gradient(ellipse at 8% 10%, rgba(202, 218, 196, 0.42), transparent 22rem),
+    radial-gradient(ellipse at 92% 90%, rgba(229, 211, 179, 0.3), transparent 22rem),
+    linear-gradient(135deg, #f8f7f0, #ffffff 52%, #e5eee2);
+}
+
+body.bg-emerald-garden .tp-filters,
+body.bg-emerald-garden .tp-card,
+body.bg-emerald-garden .tp-card-expand,
+body.bg-emerald-garden .tp-sheet,
+body.bg-emerald-garden .tp-empty {
+  color: #173f34;
+}
+
+body.bg-emerald-garden .tp-filter-chip {
+  background: rgba(255, 255, 252, 0.94);
+  border-color: rgba(229, 211, 179, 0.92);
+  color: #064e3b;
+}
+
+body.bg-emerald-garden .tp-filter-pill.active,
+body.bg-emerald-garden .tp-filter-chip.active,
+body.bg-emerald-garden .tp-load-more {
+  background: linear-gradient(90deg, #047857, #059669);
+  border-color: #059669;
+  color: #ffffff;
+}
+
+body.bg-emerald-garden .tp-filter-pill.active .count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+body.bg-emerald-garden .tp-card-collection,
+body.bg-emerald-garden .tp-card-expand-collection,
+body.bg-emerald-garden .tp-sheet-eyebrow {
+  color: #047857;
+}
+
+body.bg-emerald-garden .tp-card-photo,
+body.bg-emerald-garden .tp-card-expand-photo {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.82), transparent 12rem),
+    linear-gradient(135deg, #e8eee3, #c7d7c2 52%, #f1e5cf);
+}

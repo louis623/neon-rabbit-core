@@ -105,6 +105,23 @@ export const AMETHYST_SKIN_CARDS: AmethystSkinCard[] = [
     ],
   },
   {
+    id: 'emerald_garden',
+    code: 'EG-01',
+    label: 'Emerald Garden',
+    description:
+      'A serene emerald garden look with spa-soft ivory, eucalyptus depth, and champagne details.',
+    headingFont: 'Great Vibes / Cormorant Garamond',
+    bodyFont: 'Lato',
+    surfaceNote: 'Gardenia-white cards with champagne edges and botanical softness',
+    motionNote: 'Gentle spa lift with calm emerald CTA polish',
+    swatches: [
+      { label: 'Deep forest', value: '#064E3B' },
+      { label: 'Emerald', value: '#059669' },
+      { label: 'Champagne', value: '#E5D3B3' },
+      { label: 'Gardenia', value: '#F8F7F0' },
+    ],
+  },
+  {
     id: 'rose_gold',
     code: 'RG-01',
     label: 'Rose Gold',
