@@ -32,6 +32,25 @@ Supabase migrations, smoke tests, notes, memory, plans, handoffs, and skills.
 The old `C:\Users\louis\sparkle-suite` folder is retained only as a redirect
 and historical archive; do not depend on it for active instructions.
 
+## Task Creation Source Gate (Before Any Agent Starts)
+
+This rule applies **before a Sparkle Suite coding task is created**, not at
+commit or deployment time. The primary coordinator must never create a task
+with an implicit/default starting branch and must never hand an agent an
+existing Codex worktree.
+
+The current approved task baseline is
+`codex/nic-nac-trade-hardening` at `799b4faa`. Every new Sparkle Suite coding
+task must be created with an explicit branch starting state pointing to that
+approved baseline (or to the later baseline explicitly recorded in project
+memory). Do not use `main`, `working-tree`, a detached commit, or a pre-existing
+worktree unless Louis explicitly approves that exact exception.
+
+Before creating a task, the coordinator must verify the chosen branch and SHA
+in the primary active repo. If the approved source cannot be identified with
+certainty, do not create the task. Ask or audit first. A newly created worktree
+may be used only after it is confirmed to descend from that approved source.
+
 ## Default Release Rule
 
 Every approved Sparkle Suite code or content change includes committing the
@@ -64,6 +83,41 @@ when reporting ordinary Sparkle Suite work unless Louis explicitly asks about a
 custom-domain cutover or separate environment. If Louis says something is still
 wrong, verify the exact URL he has open, preferably through the Chrome connector,
 before claiming the fix is live.
+
+## Release Source Safety Gate (Non-Negotiable)
+
+Only the current upgraded demo line may release to the stable demo. The current
+approved release baseline is `codex/nic-nac-trade-hardening` at `799b4faa`.
+Do not substitute `main`, a detached commit, an old worktree, or a raw Vercel
+deployment as a release source.
+
+Before **any** Sparkle Suite commit that will be pushed, any push, Vercel
+deployment, alias promotion, rollback, or release verification, the agent must
+record and satisfy every item below:
+
+1. Run `git fetch origin` and identify the current approved release branch and
+   commit from project memory. If it has changed since this rule was written,
+   update this section or the project release record first; never guess.
+2. Confirm `git status`, `git branch --show-current`, and `git rev-parse HEAD`.
+   A detached HEAD is never releasable.
+3. Confirm the checkout is not under `C:\\Users\\louis\\.codex\\worktrees\\`.
+   Codex worktrees are isolated task scratch copies and may be used for local
+   investigation only; they may never push, deploy, promote, or change an alias.
+4. Prove the proposed release tip descends from the approved baseline with
+   `git merge-base --is-ancestor <approved-baseline> HEAD`. If it does not,
+   stop and report the mismatch.
+5. Before changing a Vercel alias, verify the deployment's commit SHA, branch,
+   project, and representative workspace route. A READY build alone is not
+   approval to promote it.
+6. After release, verify the canonical stable demo URL serves the expected
+   workspace/login route—not the prelaunch site, a standalone prototype, or an
+   unrelated app—and report the commit plus deployment URL.
+
+No subagent may push, deploy, promote, rollback, or alter a Vercel alias.
+Subagents may prepare a commit and report its SHA only. The primary coordinator
+must run the gate above and perform the release itself. If a task was created
+from an unapproved base or stale worktree, abandon that release path and rebuild
+from the approved baseline.
 
 ## Customer-Facing Flow Definition of Done
 
