@@ -7356,7 +7356,11 @@ type BusinessCalculatorTab = 'monthly' | 'single-show'
 
 const WISPR_FLOW_INVITE_URL = 'https://wisprflow.ai/r?LOUIS20696'
 
-const BUSINESS_TOOL_PLACEHOLDERS = ['Business Calculator', 'Business Cards'] as const
+const BUSINESS_TOOL_PLACEHOLDERS = [
+  'Business Calculator',
+  'Business Cards',
+  'Collection Intake',
+] as const
 
 export function BusinessToolsCard() {
   return (
@@ -7364,7 +7368,7 @@ export function BusinessToolsCard() {
       <div className={styles.workspaceIntroCard}>
         <div className={styles.workspaceSectionHeader}>
           <div>
-            <div className={styles.cardTitle}>Business Tools</div>
+            <div className={styles.cardTitle}>Tools</div>
             <div className={styles.cardSubtitle}>
               Practical add-ons for reps, gathered in one workspace tab as each
               tool becomes ready.

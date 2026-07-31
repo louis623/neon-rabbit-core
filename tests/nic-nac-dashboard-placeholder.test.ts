@@ -2678,14 +2678,15 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Sales needed per show')
   })
 
-  it('renders business tools with Wispr Flow guidance and coming-soon placeholders', () => {
+  it('renders the tools page with Wispr Flow and sparse coming-soon entries', () => {
     const html = renderToStaticMarkup(createElement(BusinessToolsCard))
 
-    expect(html).toContain('Business Tools')
+    expect(html).toContain('Tools')
     expect(html).toContain('Business Calculator')
     expect(html).toContain('Wispr Flow')
     expect(html).toContain('Business Cards')
-    expect(html.match(/Coming Soon/g) ?? []).toHaveLength(2)
+    expect(html).toContain('Collection Intake')
+    expect(html.match(/Coming Soon/g) ?? []).toHaveLength(3)
     expect(html).toContain('https://wisprflow.ai/r?LOUIS20696')
     expect(html).toContain('Talk to Nic-Nac without typing during a live show')
     expect(html).toContain('Open Louis&#x27;s Wispr Flow invite')
