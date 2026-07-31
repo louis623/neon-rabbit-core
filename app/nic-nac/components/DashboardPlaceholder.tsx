@@ -25,6 +25,7 @@ import { NIC_NAC_WORKSPACE_REFRESH_EVENT } from '@/lib/nic-nac/workspace-refresh
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import { normalizeAmethystAppearancePreset } from '@/lib/amethyst/appearance-presets'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
+import { createClient } from '@/lib/supabase/client'
 import styles from './DashboardPlaceholder.module.css'
 
 const WORKSPACE_SECTIONS = [
@@ -61,6 +62,77 @@ export function formatHeaderRepShow(
   const show = businessName?.trim()
   if (rep && show) return `${rep} / ${show}`
   return rep || show || 'Rep info loading'
+}
+
+export function formatHeaderAvatarInitial(
+  displayName?: string | null,
+  businessName?: string | null,
+) {
+  return (displayName?.trim() || businessName?.trim() || 'R').charAt(0).toUpperCase()
+}
+
+export function AccountMenu({
+  displayName,
+  businessName,
+}: {
+  displayName?: string | null
+  businessName?: string | null
+}) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
+  const repShow = formatHeaderRepShow(displayName, businessName)
+
+  async function handleLogout() {
+    setLogoutError(null)
+    setIsLoggingOut(true)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      window.location.assign('/login')
+    } catch (error) {
+      setLogoutError(
+        error instanceof Error ? error.message : 'Unable to log out right now.',
+      )
+      setIsLoggingOut(false)
+    }
+  }
+
+  return (
+    <details className={styles.accountMenu}>
+      <summary
+        className={`${styles.topbarInfoPill} ${styles.accountMenuTrigger}`}
+        aria-label={`Open account menu for ${repShow}`}
+      >
+        <span className={styles.accountAvatar} aria-hidden="true">
+          {formatHeaderAvatarInitial(displayName, businessName)}
+        </span>
+        <span className={styles.accountIdentity}>
+          <span className={styles.topbarInfoLabel}>Rep / show</span>
+          <span className={styles.topbarInfoValue}>{repShow}</span>
+        </span>
+        <span className={styles.accountMenuChevron} aria-hidden="true">
+          ▾
+        </span>
+      </summary>
+      <div className={styles.accountMenuPopover}>
+        <button
+          type="button"
+          className={styles.logoutButton}
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? 'Logging out…' : 'Logout'}
+        </button>
+        {logoutError ? (
+          <span className={styles.logoutError} role="alert">
+            {logoutError}
+          </span>
+        ) : null}
+      </div>
+    </details>
+  )
 }
 
 export function formatExtensionRepId(repId?: string | null) {
@@ -2271,10 +2343,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const customerSparkleSiteHref = buildCustomerSparkleSiteHref(
     repIdOverride ?? repProfileState.repId,
   )
-  const headerRepShow = formatHeaderRepShow(
-    siteSettingsState.settings?.displayName ?? repProfileState.displayName,
-    siteSettingsState.settings?.businessName,
-  )
+  const headerDisplayName =
+    siteSettingsState.settings?.displayName ?? repProfileState.displayName
+  const headerBusinessName = siteSettingsState.settings?.businessName
   const headerExtensionId = formatExtensionRepId(repIdOverride ?? repProfileState.repId)
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
@@ -2292,10 +2363,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           </div>
         </div>
         <div className={styles.topbarActions}>
-          <div className={styles.topbarInfoPill}>
-            <span className={styles.topbarInfoLabel}>Rep / show</span>
-            <span className={styles.topbarInfoValue}>{headerRepShow}</span>
-          </div>
+          <AccountMenu
+            displayName={headerDisplayName}
+            businessName={headerBusinessName}
+          />
           <div className={styles.topbarInfoPill}>
             <span className={styles.topbarInfoLabel}>Extension code</span>
             <span className={`${styles.topbarInfoValue} ${styles.topbarInfoValueCode}`}>

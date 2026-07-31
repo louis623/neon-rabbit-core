@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import {
+  AccountMenu,
   AccountBillingCard,
   BusinessCalculatorCard,
   DashboardPlaceholder,
@@ -37,6 +38,7 @@ import {
   buildTradeBoardFetchUrl,
   type DashboardPlaceholderProps,
   formatExtensionRepId,
+  formatHeaderAvatarInitial,
   formatHeaderRepShow,
   formatWalletAmount,
   needsFreshOptIn,
@@ -426,6 +428,23 @@ describe('DashboardPlaceholder', () => {
     )
     expect(formatExtensionRepId('123456')).toBe('123456')
     expect(formatExtensionRepId(undefined)).toBe('Waiting for code')
+  })
+
+  it('renders the signed-in rep identity as an accessible account menu', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountMenu, {
+        displayName: 'Louis',
+        businessName: 'Sparkle by Sasha',
+      }),
+    )
+
+    expect(formatHeaderAvatarInitial('Louis', 'Sparkle by Sasha')).toBe('L')
+    expect(formatHeaderAvatarInitial('', 'Sparkle by Sasha')).toBe('S')
+    expect(formatHeaderAvatarInitial(undefined, undefined)).toBe('R')
+    expect(html).toContain('aria-label="Open account menu for Louis / Sparkle by Sasha"')
+    expect(html).toContain('Louis / Sparkle by Sasha')
+    expect(html).toContain('>L</span>')
+    expect(html).toContain('>Logout</button>')
   })
 
   it('derives the workspace skin from the current site settings draft first', () => {

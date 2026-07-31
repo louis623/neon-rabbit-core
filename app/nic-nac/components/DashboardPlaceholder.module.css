@@ -295,6 +295,120 @@
   min-width: 0;
 }
 
+.accountMenu {
+  position: relative;
+  max-width: 260px;
+}
+
+.accountMenuTrigger {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  max-width: 260px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.accountMenuTrigger::-webkit-details-marker {
+  display: none;
+}
+
+.accountMenuTrigger:hover {
+  border-color: var(--workspace-accent);
+}
+
+.accountMenuTrigger:focus-visible {
+  outline: 3px solid var(--workspace-accent-soft);
+  outline-offset: 2px;
+}
+
+.accountAvatar {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--workspace-accent-soft);
+  color: var(--workspace-accent);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.accountIdentity {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.accountMenuChevron {
+  flex: 0 0 auto;
+  color: var(--nic-nac-text-secondary);
+  font-size: 12px;
+  transition: transform 140ms ease;
+}
+
+.accountMenu[open] .accountMenuChevron {
+  transform: rotate(180deg);
+}
+
+.accountMenuPopover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(220px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: var(--workspace-surface-primary);
+  padding: 8px;
+  box-shadow: 0 16px 34px var(--workspace-panel-shadow);
+}
+
+.logoutButton {
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  padding: 9px 11px;
+}
+
+.logoutButton:hover {
+  background: var(--workspace-accent-soft);
+}
+
+.logoutButton:focus-visible {
+  outline: 2px solid var(--workspace-accent);
+  outline-offset: 1px;
+}
+
+.logoutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.logoutError {
+  color: #b42318;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 0 11px 4px;
+}
+
 .topbarInfoLabel {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 10px;
@@ -2023,6 +2137,15 @@
 
   .topbarInfoPill {
     flex: 1 1 190px;
+    max-width: none;
+  }
+
+  .accountMenu {
+    flex: 1 1 240px;
+    max-width: none;
+  }
+
+  .accountMenuTrigger {
     max-width: none;
   }
 
