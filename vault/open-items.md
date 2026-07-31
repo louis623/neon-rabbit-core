@@ -1,5 +1,18 @@
 # Open Items
 
+- [ ] **Complete GitHub quarantine ruleset identity verification** - the active
+  ruleset is configured to match all branches except
+  `codex/nic-nac-trade-hardening` and restrict creation, updates, deletion, and
+  force pushes. GitHub requires an identity-verification email before it can be
+  saved; trigger/complete that verification only with Louis's action-time
+  approval.
+- [ ] **Audit quarantined branch-only work before any cleanup** - review the 20
+  legacy-main-only team-onboarding commits, the two
+  `incident-approved-line` commits (`621708b1`, `0fda2b47`), the local
+  Collection Intake commit `90dda81f`, and the backed-up detached `c385`
+  `app/demos/` plus `tests/collection-intake-demo.test.ts`. Merge only validated
+  work into the active line. Do not delete or rename any ref/worktree as part
+  of this review.
 - [ ] **Automate the Sparkle Suite production provenance gate** - add a safe script or CI check that reports/validates the active repo, GitHub remote, branch, HEAD, Vercel project, deployment, and live/stable aliases before production promotion. It should fail closed on mismatches and emit the currently served deployment URLs for incident preservation.
 - [ ] **Automate post-auth production smoke for protected account classes** - extend the safe smoke harness so production restores verify landing-page stability plus the expected post-login destination without live charges or personal credentials. Include an explicit invariant check that the protected Louis admin/demo account cannot be classified as `checkout_required`.
 - [ ] **Complete Brianna Williams / Bri's Glowtique acceptance smoke** - before beta handoff is treated as accepted, Louis should sign in through `https://sparkle-suite-demo.vercel.app/login` and inspect the standard workspace plus `https://sparkle-suite-demo.vercel.app/brisglowtique`, `/trade`, and `/join`. Check desktop/mobile presentation, Emerald Garden styling, navigation and external links, empty Trade Board behavior, Join copy, and the absence of unrelated rep data. Do not connect `brisglowtique.com` or start billing during this smoke.

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "repository": "louis623/sparkle-suite",
+  "primaryLocalWorktree": "C:\\Users\\louis\\sparkle-suite-repo",
+  "policy": "deny-unlisted",
+  "activeBranches": [
+    "codex/nic-nac-trade-hardening"
+  ],
+  "productionBranch": "codex/nic-nac-trade-hardening",
+  "lastReviewed": "2026-07-31"
+}

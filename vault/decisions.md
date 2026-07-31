@@ -21,6 +21,28 @@ If an established admin, demo, beta, or customer account resolves to `checkout_r
 **Voice mode is paused for risky Sparkle Suite work**
 Do not use voice mode for Sparkle Suite repository selection, deployments, domain aliases, authentication, billing, or production-data changes until Louis explicitly re-enables it. Voice transcription or an old-session reference never overrides the active repo memory/provenance checks.
 
+**Sparkle Suite branches use a deny-unlisted policy**
+The only active branch is `codex/nic-nac-trade-hardening`. The authoritative
+machine allowlist is `config\active-branches.json`. Any other branch permits
+read-only provenance review only: no edits, builds, tests, commits, pushes,
+deploys, migrations, or production/account changes. Changing the active branch
+requires Louis's explicit approval and a coordinated update to the allowlist,
+branch register, GitHub default, and Vercel production branch.
+
+**Branch age never proves deletion safety**
+Branches are classified from live deployment provenance, Git ancestry,
+branch-only commits, vault decisions, attached worktree state, and Louis's
+approval. Zero branch-only commits plus a clean worktree may be marked
+archive-safe. Unique commits, divergent history, or dirty worktrees must remain
+quarantined/needs-review. Before any eventual branch deletion, preserve the tip
+with an annotated tag and verified all-ref backup.
+
+**Legacy branch pointers remain preserved during containment**
+July 31 containment changes the GitHub default and freezes non-active refs; it
+does not delete, rename, reset, or rewrite branches/worktrees. Legacy `main`,
+incident lines, Collection Intake lines, and detached worktree files remain
+available for deliberate review.
+
 ---
 
 ## July 26, 2026 - Emerald Garden and Brianna Beta Boundaries

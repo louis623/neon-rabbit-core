@@ -41,6 +41,22 @@
 - Voice mode is paused for Sparkle Suite repository, deployment, authentication, billing, and production-data work until Louis explicitly re-enables it.
 - Full incident record and reusable session prompts:
   `docs\sparkle-suite\incidents\2026-07-31-production-rollback-and-checkout-routing.md`.
+- Branch containment now uses a machine-readable deny-unlisted allowlist at
+  `config\active-branches.json`, a build/push guard at
+  `scripts\check-active-branch.mjs`, and the audited register at
+  `docs\sparkle-suite\operations\branch-register.md`.
+- GitHub's default branch and local `origin/HEAD` now point to
+  `codex/nic-nac-trade-hardening`. Vercel's authenticated project record
+  confirms the same branch is its production branch.
+- Every audited branch tip was preserved with an annotated GitHub
+  safety/archive tag. A verified all-ref Git bundle and a separate zip of the
+  detached `c385` uncommitted demo files are stored under the ignored
+  `.local\git-backups\2026-07-31-branch-containment\` directory.
+- No branch, worktree, or commit was deleted, renamed, reset, or rewritten.
+  Unique/divergent work remains quarantined for explicit review.
+- A GitHub ruleset that freezes creation, updates, deletion, and force-pushes
+  for every branch except the active allowlisted branch is fully configured
+  but still requires GitHub's identity-verification email before creation.
 
 ---
 

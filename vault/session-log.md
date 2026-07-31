@@ -20,6 +20,33 @@ Running log of significant work sessions. Most recent first.
 - Sparkle Suite production work must use only `C:\Users\louis\sparkle-suite-repo` / `louis623/sparkle-suite`; historical folders, branches, and deployments are evidence, not release sources.
 - Voice mode is paused for Sparkle Suite repo, deploy, auth, billing, and production-data work until Louis explicitly re-enables it.
 
+**Non-destructive branch containment:**
+- Proved GitHub's legacy `main` was still the default even though it diverged
+  from the verified active line by 483 active-only and 20 main-only commits.
+  Corrected GitHub's default branch and local `origin/HEAD` to
+  `codex/nic-nac-trade-hardening`.
+- Verified through Vercel's authenticated project API that
+  `codex/nic-nac-trade-hardening` was already the configured production
+  branch; no Vercel setting change was required.
+- Classified every known remote/local branch and attached worktree in
+  `docs\sparkle-suite\operations\branch-register.md`. Fully contained history
+  is archive-safe; divergent or unique work is quarantined/needs-review.
+- Created and pushed nine annotated safety/archive tags covering the verified
+  live checkpoint, active line, legacy main, incident lines, Collection Intake
+  line, and fully contained phase branches.
+- Created and verified a complete all-ref Git bundle plus a separate zip of
+  the uncommitted detached `c385` demo/test files before containment. No branch,
+  worktree, commit, or uncommitted source file was deleted or rewritten.
+- Added `config\active-branches.json`, the fail-closed
+  `scripts\check-active-branch.mjs`, local pre-push hook, npm predev/prebuild/
+  prestart gates, focused policy tests, and explicit `AGENTS.md` stop rules.
+- The policy guard passed locally, four focused tests passed, and the full
+  Next.js production build passed with the prebuild branch gate.
+- GitHub's all-branches-except-active quarantine ruleset is configured with
+  creation/update/deletion/force-push restrictions, but GitHub requires an
+  identity-verification email before saving it. The email was not triggered
+  without Louis's action-time approval.
+
 ---
 
 ## July 26, 2026 - Emerald Garden Skin and Brianna Beta Account

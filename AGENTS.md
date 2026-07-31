@@ -76,8 +76,18 @@ Sparkle Suite implementation and release work must use only:
 
 - Local repo: `C:\Users\louis\sparkle-suite-repo`
 - GitHub repo: `louis623/sparkle-suite`
+- Active branch: `codex/nic-nac-trade-hardening`
 - Live customer domain: `https://www.yoursparklesuite.com`
 - Stable review target: `https://sparkle-suite-demo.vercel.app`
+
+The active-branch source of truth is `config\active-branches.json`; the audited
+status of every known branch/worktree is
+`docs\sparkle-suite\operations\branch-register.md`. If the current branch is
+not allowlisted, stop after read-only inspection. Do not edit, build, test,
+commit, push, deploy, run migrations, or change production/account state from
+that branch. Do not bypass `scripts\check-active-branch.mjs`. A branch-status
+change requires Louis's explicit approval and must update the config, branch
+register, GitHub default branch, and Vercel production branch together.
 
 The old `C:\Users\louis\sparkle-suite` folder and old branches/deployments are
 historical evidence only. Never build, restore, deploy, or move an alias from
