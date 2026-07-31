@@ -40,8 +40,18 @@ Running log of significant work sessions. Most recent first.
 - Added `config\active-branches.json`, the fail-closed
   `scripts\check-active-branch.mjs`, local pre-push hook, npm predev/prebuild/
   prestart gates, focused policy tests, and explicit `AGENTS.md` stop rules.
-- The policy guard passed locally, four focused tests passed, and the full
+- The policy guard passed locally, five focused tests passed, and the full
   Next.js production build passed with the prebuild branch gate.
+- The first guarded Vercel build stopped safely because Vercel's temporary
+  clone did not expose a normal Git `origin`. Commit
+  `37c89c86 fix: validate Vercel branch provenance` corrected the environment
+  adapter to validate Vercel's injected repository-owner, repository-slug, and
+  branch metadata without weakening the deny-unlisted policy.
+- Vercel deployment `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2` visibly passed the
+  repository/branch gate and became READY. The stable demo alias was promoted
+  to that exact deployment, and a five-second Chrome settle check remained on
+  the Sparkle Suite landing page with no Stripe redirect. This release did not
+  use Louis's personal production account.
 - GitHub's all-branches-except-active quarantine ruleset is configured with
   creation/update/deletion/force-push restrictions, but GitHub requires an
   identity-verification email before saving it. The email was not triggered

@@ -34,6 +34,10 @@ session history.
 The machine-readable source is `config/active-branches.json`. The build and
 local Git push guard is `scripts/check-active-branch.mjs`.
 
+The guard validates ordinary local Git metadata and Vercel's injected
+`VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_REPO_OWNER`, and
+`VERCEL_GIT_REPO_SLUG` metadata. Missing platform provenance fails closed.
+
 ## Evidence Used
 
 A branch is classified from all of the following:
@@ -116,3 +120,14 @@ renamed, reset, or rewritten during containment.
 4. Before deleting any branch pointer, create and verify a preservation tag and
    full-ref backup.
 5. Branch deletion remains a separate, explicit Louis-approved action.
+
+## Containment Release Verification
+
+- Implementation commits: `973195e0`, `37c89c86`
+- Focused policy tests: 5 passed
+- Local Next.js production build: passed
+- Vercel deployment: `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2` (READY)
+- Stable review alias: promoted to the exact deployment above
+- Browser check: stable landing page remained in place after five seconds; no
+  Stripe redirect
+- Personal-account use: none during this containment release smoke
