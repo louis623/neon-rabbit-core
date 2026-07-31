@@ -3133,8 +3133,9 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Replaced the static workspace profile display with an account menu that provides a Supabase-backed `Log out` action and returns the user to the public landing page after sign-out.
 - Removed the top-header `Preview site` action.
 - Removed the Nic-Nac home rail's `Public Site` / `Sparkle with us.` preview card.
+- Renamed the left workspace summary panel from `Today` to `Trade Info`; the chat timeline's date marker remains `Today`.
 - Kept the account menu accessible on mobile while hiding only the long profile text.
 
 **Verification:**
-- Focused workspace and reviewer-smoke tests passed: 3 files, 116 tests.
+- Focused workspace and reviewer-smoke tests passed, including the 93-test dashboard placeholder suite after the `Trade Info` label update.
 - `npm run build` passed with the active-branch safety gate, Next.js 16.2.1 production compilation, and TypeScript validation.

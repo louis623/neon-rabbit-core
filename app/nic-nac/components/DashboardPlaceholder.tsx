@@ -5373,8 +5373,8 @@ function ConceptHomeWorkspace({
 }) {
   return (
     <section className={styles.conceptHome} aria-label="Nic-Nac first workspace">
-      <aside className={styles.conceptRail} aria-label="Today at a glance">
-        <ConceptPanel title="Today" icon={<CalendarDays aria-hidden="true" />}>
+      <aside className={styles.conceptRail} aria-label="Trade info at a glance">
+        <ConceptPanel title="Trade Info" icon={<CalendarDays aria-hidden="true" />}>
           <MetricRows
             rows={[
               ['Trade requests', tradeRequestsCount],
