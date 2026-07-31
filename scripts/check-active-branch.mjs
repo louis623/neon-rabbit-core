@@ -110,6 +110,23 @@ function currentBranch() {
   return gitMetadata().branch;
 }
 
+export function currentRepository() {
+  if (process.env.VERCEL === "1") {
+    const owner = process.env.VERCEL_GIT_REPO_OWNER?.trim();
+    const repository = process.env.VERCEL_GIT_REPO_SLUG?.trim();
+
+    if (!owner || !repository) {
+      throw new Error(
+        "Vercel Git repository metadata is missing; expected VERCEL_GIT_REPO_OWNER and VERCEL_GIT_REPO_SLUG.",
+      );
+    }
+
+    return `${owner}/${repository}`;
+  }
+
+  return normalizeRepository(gitMetadata().originUrl);
+}
+
 function main() {
   const operationIndex = process.argv.indexOf("--operation");
   const operation =
@@ -118,7 +135,7 @@ function main() {
       : process.env.npm_lifecycle_event || "operation";
   const branch = currentBranch();
   const worktree = repositoryRoot;
-  const remoteRepository = normalizeRepository(gitMetadata().originUrl);
+  const remoteRepository = currentRepository();
   const errors = evaluateBranchPolicy({
     branch,
     remoteRepository,

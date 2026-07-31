@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  currentRepository,
   evaluateBranchPolicy,
   normalizeRepository,
 } from "../scripts/check-active-branch.mjs";
@@ -48,5 +49,29 @@ describe("Sparkle Suite active branch policy", () => {
     expect(normalizeRepository("git@github.com:louis623/sparkle-suite.git")).toBe(
       "louis623/sparkle-suite",
     );
+  });
+
+  it("reads repository identity from Vercel system metadata without a Git remote", () => {
+    const previous = {
+      vercel: process.env.VERCEL,
+      owner: process.env.VERCEL_GIT_REPO_OWNER,
+      repository: process.env.VERCEL_GIT_REPO_SLUG,
+    };
+
+    process.env.VERCEL = "1";
+    process.env.VERCEL_GIT_REPO_OWNER = "louis623";
+    process.env.VERCEL_GIT_REPO_SLUG = "sparkle-suite";
+
+    try {
+      expect(currentRepository()).toBe("louis623/sparkle-suite");
+    } finally {
+      if (previous.vercel === undefined) delete process.env.VERCEL;
+      else process.env.VERCEL = previous.vercel;
+      if (previous.owner === undefined) delete process.env.VERCEL_GIT_REPO_OWNER;
+      else process.env.VERCEL_GIT_REPO_OWNER = previous.owner;
+      if (previous.repository === undefined)
+        delete process.env.VERCEL_GIT_REPO_SLUG;
+      else process.env.VERCEL_GIT_REPO_SLUG = previous.repository;
+    }
   });
 });
