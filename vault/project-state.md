@@ -22,8 +22,12 @@
 - **Latest local docs/memory checkpoint:** July 31 production rollback/checkout-routing incident closeout and non-destructive branch containment, including Git/Vercel recovery evidence, Louis's repaired admin/demo-account invariant, deny-unlisted branch guards, audited preservation checkpoints, and permanent provenance/post-auth safeguards.
 - **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. On top of that July 10 shell, the right-hand Upcoming Show card now shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-dsgcwyjoi-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2`
+- **Stable demo deployment provenance:** Inspect the live
+  `sparkle-suite-demo.vercel.app` alias in Vercel before every release or
+  incident response; do not treat a raw deployment ID recorded in memory as
+  the current source of truth.
+- **Last application-bearing branch-containment deployment:**
+  `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
