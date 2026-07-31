@@ -23,7 +23,7 @@ Project skills live in this repo at `.agents\skills`. Use them when their
 trigger rules apply, especially:
 
 - `sparkle-suite-existing-site-migration`
-- `sparkle-suite-demo-smoke`
+- `sparkle-suite-production-smoke`
 - `sparkle-nic-nac-agent-architecture`
 - `sparkle-live-queue`
 
@@ -36,34 +36,32 @@ and historical archive; do not depend on it for active instructions.
 
 Every approved Sparkle Suite code or content change includes committing the
 legitimate session changes, pushing the current branch, deploying the exact
-branch tip to Vercel, promoting `https://sparkle-suite-demo.vercel.app/` to that
-deployment, and verifying the stable review URL. Louis does not need to request
-commit, push, or deploy separately each time. Skip any release step only when
-Louis explicitly says the work is local-only, should not be committed, should
-not be pushed, or should not be deployed.
+branch tip to Vercel production, confirming both `https://www.yoursparklesuite.com`
+and `https://yoursparklesuite.com` resolve to that exact deployment, and
+verifying the affected workflow on the live customer domain. Louis does not
+need to request commit, push, or deploy separately each time. Skip any release
+step only when Louis explicitly says the work is local-only, should not be
+committed, should not be pushed, or should not be deployed.
 
 Do not touch Chrome Web Store settings or local Sparkle Suite Chrome extension
 code. Treat live queue extension files as protected live-show material. Read
 `LIVE_EXTENSION_SAFETY.md` before any live extension discussion or handoff.
 
-For Sparkle Suite demo verification, Vercel alias checks, logged-in workspace
-smoke tests, required setup checks, Help & Resources checks, or Nic-Nac UI
-checks, use `sparkle-suite-demo-smoke` when available. Prefer the stable demo
-URL `https://sparkle-suite-demo.vercel.app` and Chrome reviewer-smoke sessions
-instead of Louis's personal account.
+For Vercel production checks, logged-in workspace smoke tests, required setup
+checks, Help & Resources checks, or Nic-Nac UI checks, use
+`sparkle-suite-production-smoke` when available. Use reviewer-smoke/synthetic
+sessions instead of Louis's personal account.
 
-For Sparkle Suite demo deploys, the expected review/deploy target is the stable
-alias `https://sparkle-suite-demo.vercel.app/`. A raw Vercel preview URL is not
-enough for Louis to review unless he explicitly asks for a one-off preview.
-After creating a Vercel preview, move/confirm the stable demo alias points to
-the intended deployment before telling Louis the work is deployed.
-
-Treat `https://sparkle-suite-demo.vercel.app/` as Louis's canonical Sparkle
-Suite review target. Do not split explanations between "production" and "demo"
-when reporting ordinary Sparkle Suite work unless Louis explicitly asks about a
-custom-domain cutover or separate environment. If Louis says something is still
-wrong, verify the exact URL he has open, preferably through the Chrome connector,
-before claiming the fix is live.
+The only default deployed review target is
+`https://www.yoursparklesuite.com`. The apex
+`https://yoursparklesuite.com` must resolve to the same production deployment.
+Sparkle Suite's "demo" is safe reviewer data/mode inside this live site, not a
+separate environment, deployment lane, or review domain.
+Raw Vercel deployment URLs and `sparkle-suite-demo.vercel.app` are provenance
+evidence only. Do not promote them, hand them to Louis for ordinary review, or
+describe work as complete because they respond. If Louis says something is
+still wrong, verify the exact live-domain URL he has open, preferably through
+the Chrome connector, before claiming the fix is live.
 
 ## Production Provenance and Account Safety
 
@@ -78,7 +76,9 @@ Sparkle Suite implementation and release work must use only:
 - GitHub repo: `louis623/sparkle-suite`
 - Active branch: `codex/nic-nac-trade-hardening`
 - Live customer domain: `https://www.yoursparklesuite.com`
-- Stable review target: `https://sparkle-suite-demo.vercel.app`
+- Live review target: `https://www.yoursparklesuite.com`
+- Environment model: one live Sparkle Suite surface; demo/reviewer mode uses
+  safe data inside the live site
 
 The active-branch source of truth is `config\active-branches.json`; the audited
 status of every known branch/worktree is
@@ -140,7 +140,8 @@ it has a reviewer smoke path.
 Required for signup, checkout, onboarding, customer-site, Nic-Nac, Live queue,
 Trade board, email, SMS, and dashboard workflows:
 
-- A Vercel preview URL or explicit local URL.
+- The exact live path on `https://www.yoursparklesuite.com` after release, or
+  an explicit local URL only when Louis requested local-only work.
 - Safe reviewer/test data so Louis does not need to use personal information.
 - No live charges and no live customer/provider side effects.
 - A reset or reseed path for repeated testing.

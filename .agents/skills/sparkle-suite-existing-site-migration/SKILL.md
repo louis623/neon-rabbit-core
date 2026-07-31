@@ -141,7 +141,9 @@ Always compare against the original source and the Sparkle Suite route:
 - Check text fit, mobile stacking, and no Black Diamond/default styling leaks.
 - Verify media loads, especially videos.
 
-For deployed Sparkle Suite demo checks, use `sparkle-suite-demo-smoke`. Promote and verify the stable alias when Louis needs to review the demo.
+For deployed Sparkle Suite checks, use `sparkle-suite-production-smoke`.
+Reviewer/demo data runs inside the live `yoursparklesuite.com` surface. Verify
+the affected live path and exact production deployment before handoff.
 
 ## Common Failure Modes
 
@@ -174,6 +176,7 @@ Before committing or deploying:
 2. Run affected Amethyst template tests or `npm run qa:amethyst`.
 3. Run `npm run build`.
 4. Browser-smoke local or preview desktop and mobile for each touched public route.
-5. After Vercel deploy, move the stable demo alias if Louis is reviewing stable demo.
-6. Screenshot the stable public routes.
-7. Report commit, deployment id, preview/stable URL, and what was visually verified.
+5. Deploy the exact active-branch tip to Vercel production and confirm
+   `www.yoursparklesuite.com` plus `yoursparklesuite.com` resolve to it.
+6. Screenshot the affected live public routes.
+7. Report commit, production deployment id, live URL, and what was visually verified.

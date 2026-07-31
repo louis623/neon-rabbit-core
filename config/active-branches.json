@@ -7,5 +7,13 @@
     "codex/nic-nac-trade-hardening"
   ],
   "productionBranch": "codex/nic-nac-trade-hardening",
+  "productionReviewUrl": "https://www.yoursparklesuite.com",
+  "productionDomains": [
+    "www.yoursparklesuite.com",
+    "yoursparklesuite.com"
+  ],
+  "environmentModel": "single-live-surface",
+  "reviewerMode": "safe-data-on-production-domain",
+  "temporaryDeploymentUrls": "provenance-only",
   "lastReviewed": "2026-07-31"
 }

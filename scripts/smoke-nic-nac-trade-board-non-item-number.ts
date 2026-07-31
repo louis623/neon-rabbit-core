@@ -19,7 +19,7 @@ import { DEFAULT_DEMO_PASSWORD } from '@/scripts/seed-demo-rep'
 config({ path: '.env.local' })
 
 const DEFAULT_FIXTURE_DIR = 'C:\\Users\\louis\\sparkle-suite-smoke-assets'
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const DEFAULT_PHOTO_ASSET = 'ER13229-jewelry-boxed-front.jpg'
 const HISTORY_WAIT_MS = 60_000
 const HISTORY_POLL_MS = 1_000

@@ -3,12 +3,16 @@
 Customer-facing Sparkle Suite work is not ready for Louis review until Louis can
 walk the full customer path with safe reviewer data.
 
+Sparkle Suite has one live review surface:
+`https://www.yoursparklesuite.com`. Reviewer/demo mode means safe test data and
+token-gated behavior on that live site, not a separate deployment environment.
+
 ## Required Standard
 
 Every signup, checkout, onboarding, customer-site, Nic-Nac, Live queue, Trade
 board, email, SMS, and dashboard workflow must include:
 
-- a Vercel preview URL or explicit local URL
+- the exact live `www.yoursparklesuite.com` path after release
 - safe reviewer/test data
 - no need for Louis to use personal information
 - no live charges or live customer/provider side effects
@@ -20,10 +24,10 @@ board, email, SMS, and dashboard workflow must include:
 ## Reviewer Mode Rules
 
 Reviewer mode must be gated by environment and token. It may run in local
-development or Vercel preview. It may also run on the stable demo alias when a
-long `SPARKLE_REVIEWER_SMOKE_TOKEN` is configured and supplied through the
-`review` query parameter. Production reviewer mode must stay blocked without
-that matching token.
+development for pre-release checks. On `www.yoursparklesuite.com`, it may run
+only when a long `SPARKLE_REVIEWER_SMOKE_TOKEN` is configured and supplied
+through the `review` query parameter. Production reviewer mode must stay
+blocked without that matching token.
 
 Reviewer mode should use one reusable QA persona instead of disposable accounts:
 
@@ -39,22 +43,22 @@ press another button before checkout or setup.
 
 When handing a customer-facing feature to Louis, include:
 
-- preview URL
+- exact live `www.yoursparklesuite.com` URL
 - reviewer URL with token omitted from public notes unless Louis supplied it
 - exact click path
 - what is real vs simulated
 - reset instructions
 - verification commands run
 
-For event-calendar work, run `npm run smoke:calendar` against the intended local
-or preview target before reviewer handoff. This smoke must verify the public
+For event-calendar work, run `npm run smoke:calendar` locally before release
+and against the live production target after release. This smoke must verify the public
 Finder live-shows endpoint and every advertised customer-site calendar path, so
 the workspace can never promote a calendar link that the customer-facing site
 cannot resolve.
 
 ## Nic-Nac-First Workspace Smoke
 
-1. Open `/start` on the stable demo and enter reviewer smoke mode.
+1. Open `https://www.yoursparklesuite.com/start` and enter reviewer smoke mode.
 2. Open the workspace preview.
 3. Confirm the primary nav shows `Nic-Nac`, `Trade Board`, `Calendar`,
    `Jewelry Library`, and `More`.

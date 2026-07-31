@@ -11,7 +11,7 @@ import {
   REVIEWER_SMOKE_CALENDAR,
 } from '@/lib/reviewer-smoke/session'
 
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 60_000
 const HISTORY_POLL_MS = 1_000
 

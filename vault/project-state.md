@@ -19,16 +19,30 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:** `af7cef25 fix: restore landing account sign-in controls`
-- **Latest local docs/memory checkpoint:** July 31 production rollback/checkout-routing incident closeout and non-destructive branch containment, including Git/Vercel recovery evidence, Louis's repaired admin/demo-account invariant, deny-unlisted branch guards, audited preservation checkpoints, and permanent provenance/post-auth safeguards.
+- **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
+  correction: Sparkle Suite live and demo are one surface at
+  `yoursparklesuite.com`; all approved work flows to Vercel production and is
+  verified on the live domain. This sits on top of the production
+  rollback/checkout-routing incident closeout, repaired admin/demo-account
+  invariant, deny-unlisted branch guards, audited preservation checkpoints,
+  and permanent provenance/post-auth safeguards.
 - **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. On top of that July 10 shell, the right-hand Upcoming Show card now shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
-- **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Stable demo deployment provenance:** Inspect the live
-  `sparkle-suite-demo.vercel.app` alias in Vercel before every release or
-  incident response; do not treat a raw deployment ID recorded in memory as
-  the current source of truth.
+- **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
+- **Apex production URL:** `https://yoursparklesuite.com`
+- **Environment model:** Sparkle Suite live and demo are one surface. Demo
+  means safe reviewer data/mode on `yoursparklesuite.com`, not a separate
+  domain or deployment lane.
+- **Production deployment provenance:** Inspect both live domains in Vercel
+  before every release or incident response; do not treat a raw deployment ID
+  recorded in memory as the current source of truth.
 - **Last application-bearing branch-containment deployment:**
   `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2`
-- **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
+- **Production deploy rule:** Louis reviews Sparkle Suite work at
+  `https://www.yoursparklesuite.com/`. Every approved release deploys the exact
+  active-branch tip to Vercel production, confirms the `www` and apex domains
+  resolve to that deployment, and verifies the affected live path. Raw Vercel
+  deployment URLs and `sparkle-suite-demo.vercel.app` are provenance evidence
+  only and are never the default handoff target.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
 
@@ -41,7 +55,7 @@
 - Louis's Google-auth account `louis@neonrabbit.net` is the original admin/demo workspace. Its production state was incorrectly `onboarding` / `checkout_required` with no entitlement and an accidental founder reservation, which caused the post-auth Stripe redirect.
 - The account was repaired to `active` / `dashboard_unlocked` with a `$0`, non-live `internal_demo` entitlement; the accidental founder reservation was released. No live Stripe subscription or charge was created during the repair.
 - Signed-in Chrome verification on the exact live custom domain reached and remained in Louis Chapman's `/nic-nac` workspace. Louis confirmed the platform was back in business.
-- `AGENTS.md`, the demo-smoke skill, and the incident runbook now require repo/branch/commit/deployment/alias provenance before production changes, exact-domain and post-auth verification afterward, and preservation of deployment evidence.
+- `AGENTS.md`, the production-smoke skill, and the incident runbook now require repo/branch/commit/deployment/alias provenance before production changes, exact-domain and post-auth verification afterward, and preservation of deployment evidence.
 - Voice mode is paused for Sparkle Suite repository, deployment, authentication, billing, and production-data work until Louis explicitly re-enables it.
 - Full incident record and reusable session prompts:
   `docs\sparkle-suite\incidents\2026-07-31-production-rollback-and-checkout-routing.md`.
@@ -65,7 +79,8 @@
   provenance adapter corrected in `37c89c86`. Five focused policy tests and the
   full local build passed. Vercel deployment
   `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2` visibly passed the active
-  repository/branch gate and became READY; stable demo now points to it.
+  repository/branch gate and became READY. Its former demo-alias promotion is
+  historical evidence only and no longer defines the release target.
 
 ---
 
@@ -74,7 +89,10 @@
 - Emerald Garden is a standard selectable Amethyst customer-site skin, not a bespoke Brianna-only build. It carries the green, neutral, botanical/spa direction from Brianna's former Readdy site while keeping the shared Sparkle Suite site structure and editing behavior.
 - Brianna Williams now has an active standard beta workspace for `Bri's Glowtique`, public slug `brisglowtique`, with Emerald Garden selected. The account is Bomb Party focused, uses her real business/team/shop/social information, and has no fabricated listings, customers, trades, or calendar events.
 - Brianna's beta uses an internal `$0` subscription record with no Stripe customer or live charge. Preserve the earlier decision to honor her original `$39/month` rate when billing begins. Do not restore bespoke-site scope or add Scentsy, Celesty, Monat, or other side-business content.
-- The public review paths are `/brisglowtique`, `/brisglowtique/trade`, and `/brisglowtique/join` on the stable demo. `brisglowtique.com` is not connected and must remain unchanged until Louis explicitly approves a later domain cutover.
+- The public review paths are `/brisglowtique`, `/brisglowtique/trade`, and
+  `/brisglowtique/join` on `https://www.yoursparklesuite.com`.
+  `brisglowtique.com` is not connected and must remain unchanged until Louis
+  explicitly approves a later domain cutover.
 - Focused verification passed across five files / 111 tests, the local and Vercel production builds passed, Brianna's credentials successfully authenticated, and bounded live checks confirmed Emerald Garden on Home/Trade/Join with no framework overlay or legacy Join placeholders. Louis still wants to perform the final hands-on workspace and customer-site smoke before treating Brianna's beta onboarding as accepted.
 - Brianna's temporary credential is intentionally stored in Louis's private Open Brain recall entry and is not committed to the Git repository. Rotate it after handoff or first use.
 
@@ -86,8 +104,11 @@
 - Shipped Trade Board copy polish in the same branch tip: the top-right button now reads `Customer view` instead of `View customer board`.
 - Focused verification for the July 25 workspace-card pass: the workspace dashboard/card suite passed with 116 tests after the Upcoming Show work, and the focused Trade Board/dashboard label suite passed with 93 tests after the button-copy update.
 - Local Next.js production builds passed for both release steps. Vercel previews were built and the stable alias was promoted after each approved change.
-- Current branch-tip release-flow checkpoint is `7cafd213 chore: standardize Sparkle Suite release flow`, which records the durable rule that approved Sparkle Suite code/content changes automatically include commit, push, deploy, stable-alias promotion, and stable URL verification unless Louis explicitly scopes the work to local-only or otherwise opts out.
-- Stable demo reviewer target is `https://sparkle-suite-demo.vercel.app`, currently promoted to deployment `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp`.
+- The former `7cafd213 chore: standardize Sparkle Suite release flow` demo-alias
+  rule is superseded on July 31, 2026. Approved Sparkle Suite code/content
+  changes now include commit, push, exact-tip Vercel production deployment,
+  live-domain confirmation, and verification at
+  `https://www.yoursparklesuite.com` unless Louis explicitly opts out.
 
 ---
 
@@ -153,8 +174,11 @@ As of June 21, the immediate migration/control-center priorities are:
 
 1. Louis/Brittany need a safe logged-in smoke of Brittany's Team Management beta: create one real/test-by-Louis onboarding participant, open the Start Strong invite, sync progress/messages, and archive when finished. Do not create fake rep accounts.
 2. Louis/Brittany still need to review/accept Britt With Bling, with extra attention on editable Join Team cards.
-3. Louis/Heather still need to review BlingKitchen on the stable demo before any custom-domain cutover.
-4. Louis/Lindsey still need to review Mile High Fizz on Alpine Opal at the stable demo before any domain cutover; the Trade Board should stay empty until Lindsey adds real pieces.
+3. Louis/Heather still need to review BlingKitchen on
+   `https://www.yoursparklesuite.com` before any custom-domain cutover.
+4. Louis/Lindsey still need to review Mile High Fizz on Alpine Opal at
+   `https://www.yoursparklesuite.com` before any domain cutover; the Trade Board
+   should stay empty until Lindsey adds real pieces.
 5. Control Center is now growing into the internal operating workspace; customer/demo account database polish, editable account status/notes, and richer billing details remain next-step work.
 6. Continue Phase 1 closeout and Phase 2 prep after these migrated public sites and Control Center v1 workflows are accepted.
 

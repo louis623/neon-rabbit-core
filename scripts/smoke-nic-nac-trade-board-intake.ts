@@ -13,7 +13,7 @@ import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 import { DEFAULT_DEMO_PASSWORD } from '@/scripts/seed-demo-rep'
 
 const DEFAULT_FIXTURE_DIR = 'C:\\Users\\louis\\sparkle-suite-smoke-assets'
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 60_000
 const HISTORY_POLL_MS = 1_000
 

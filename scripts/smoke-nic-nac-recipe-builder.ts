@@ -8,7 +8,7 @@ import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
 
 config({ path: '.env.local' })
 
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 
 type Env = Record<string, string | undefined>
 type SmokeTarget = 'reviewer' | 'bling-kitchen'

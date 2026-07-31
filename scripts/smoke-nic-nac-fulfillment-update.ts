@@ -8,7 +8,7 @@ import { loadCanonicalHistory } from '@/lib/nic-nac/persistence'
 import { getReviewerSmokePersona } from '@/lib/reviewer-smoke/config'
 import { resetReviewerSmokeSession } from '@/lib/reviewer-smoke/session'
 
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 75_000
 const HISTORY_POLL_MS = 1_000
 const SMOKE_PREFIX = 'Codex Fulfillment Smoke'

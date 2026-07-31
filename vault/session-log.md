@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 31, 2026 - Single Live Surface Release Rule Correction
+
+**Rule corrected:**
+- Sparkle Suite live and demo are one surface. "Demo" means safe
+  reviewer/test data or token-gated reviewer mode inside the live product; it
+  is not a separate environment, deployment lane, or review domain.
+- All approved work flows from the exact active-branch tip to Vercel
+  production and is reviewed at `https://www.yoursparklesuite.com`.
+- `https://yoursparklesuite.com` must resolve to the same production
+  deployment.
+- Raw Vercel deployment URLs and `sparkle-suite-demo.vercel.app` are
+  provenance evidence only. They are not ordinary review targets and do not
+  prove a release is complete.
+
+**Repository safeguards updated:**
+- Replaced the obsolete `sparkle-suite-demo-smoke` skill with
+  `sparkle-suite-production-smoke`.
+- Updated `AGENTS.md`, active-branch configuration, current vault memory,
+  reviewer-smoke standards, and related project skills.
+- Changed deployed Nic-Nac smoke-script defaults from the former demo hostname
+  to `https://www.yoursparklesuite.com`.
+- Preserved older deployment records as historical evidence only.
+- Focused policy/smoke-harness tests passed: 3 files, 19 tests.
+- Full Next.js production build passed with the active-branch gate.
+
+---
+
 ## July 31, 2026 - Production Restore, Louis Account Repair, and Safety Closeout
 
 **Incident and recovery:**

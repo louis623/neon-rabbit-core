@@ -16,7 +16,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 config({ path: '.env.local', quiet: true })
 
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 75_000
 const HISTORY_POLL_MS = 1_000
 const SMOKE_TITLE_PREFIX = 'Smoke Chocolate-Dipped Strawberries'

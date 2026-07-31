@@ -13,7 +13,7 @@ import {
   getMissingRemoveListingSmokeEnv,
 } from './smoke-nic-nac-remove-listing'
 
-const DEFAULT_APP_URL = 'https://sparkle-suite-demo.vercel.app'
+const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 75_000
 const HISTORY_POLL_MS = 1_000
 const SMOKE_PREFIX = 'Codex Trade Decision Smoke'

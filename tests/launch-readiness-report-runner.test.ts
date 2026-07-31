@@ -106,7 +106,7 @@ const cancellationCovered: CancellationSmokeReport = {
 const dashboardNicNacCovered: RecipeChatSmokeResult = {
   ok: true,
   status: 'passed',
-  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  appUrl: 'https://www.yoursparklesuite.com',
   conversationId: 'recipe-chat-conversation',
   rep: { id: 'rep-1', email: 'sparkle-reviewer@example.com' },
   turns: [
@@ -132,7 +132,7 @@ const dashboardNicNacCovered: RecipeChatSmokeResult = {
 const dashboardNicNacFailed: RecipeChatSmokeResult = {
   ok: false,
   status: 'model_unavailable',
-  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  appUrl: 'https://www.yoursparklesuite.com',
   conversationId: 'recipe-chat-conversation',
   turns: [
     {
@@ -149,7 +149,7 @@ const dashboardNicNacFailed: RecipeChatSmokeResult = {
 const dashboardNicNacQuotaBlocked: RecipeChatSmokeResult = {
   ok: true,
   status: 'model_unavailable',
-  appUrl: 'https://sparkle-suite-demo.vercel.app',
+  appUrl: 'https://www.yoursparklesuite.com',
   conversationId: 'recipe-chat-conversation',
   rep: {
     id: 'rep-1',

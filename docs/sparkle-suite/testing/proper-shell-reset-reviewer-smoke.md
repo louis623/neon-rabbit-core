@@ -4,13 +4,14 @@ Use this when reviewing the Nic-Nac rep workspace shell reset and Trade Board su
 
 ## Target
 
-- Stable demo URL: `https://sparkle-suite-demo.vercel.app`
-- Preferred entry: `https://sparkle-suite-demo.vercel.app/start`
+- Live Sparkle Suite URL: `https://www.yoursparklesuite.com`
+- Preferred entry: `https://www.yoursparklesuite.com/start`
 - Session type: reviewer smoke synthetic workspace session only
+- Environment model: reviewer/demo data inside the one live Sparkle Suite site
 
 ## Reviewer Flow
 
-1. Open `https://sparkle-suite-demo.vercel.app/start`.
+1. Open `https://www.yoursparklesuite.com/start`.
 2. Use `Reviewer smoke mode`.
 3. Choose `Open workspace preview`.
 4. Open the `Trade Board` section if it is not already active.
@@ -58,9 +59,10 @@ Before handoff, pair this reviewer path with:
 
 - focused Vitest coverage for workspace shell and Trade Board surface
 - `npm run build`
-- stable demo alias confirmation on `https://sparkle-suite-demo.vercel.app`
+- exact production deployment confirmation on
+  `https://www.yoursparklesuite.com`
 
 ## Notes
 
 - Do not use Louis's personal account for this review.
-- Do not treat a raw Vercel preview URL as the final review target unless Louis explicitly asks for one.
+- Raw Vercel deployment URLs are provenance evidence only, not review targets.

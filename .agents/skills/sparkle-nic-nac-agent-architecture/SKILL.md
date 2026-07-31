@@ -15,7 +15,8 @@ Use this skill to keep Nic-Nac work grounded in the approved stateful agent arch
 - Use `C:\Users\louis\sparkle-suite-repo` for implementation, builds, tests, commits, deploys, and smoke tests only after Louis gives a concrete implementation task.
 - Do not touch Chrome Web Store settings or local Sparkle Suite Chrome extension code.
 - Treat Sparkle Suite live queue extension files as protected live-show material.
-- For demo verification, prefer `https://sparkle-suite-demo.vercel.app` and reviewer-smoke/synthetic sessions over Louis's personal account.
+- For deployed verification, use `https://www.yoursparklesuite.com` with
+  reviewer-smoke/synthetic sessions instead of Louis's personal account.
 - Do not call Nic-Nac fixed until the relevant workflow has real replay verification, not only prompt assertions or unit tests.
 
 ## Architecture Rule
@@ -104,7 +105,9 @@ Hard-fail phrases include:
 4. For design/planning, keep work in specs/plans and get Louis approval before implementation.
 5. For implementation, prefer workflow state, controller contracts, and evals over prompt/regex patching.
 6. For verification, include deterministic tests plus real replay/smoke appropriate to the risk.
-7. For deployed review, ensure the stable demo alias points at the intended deployment before telling Louis it is ready.
+7. For deployed review, ensure `www.yoursparklesuite.com` and
+   `yoursparklesuite.com` point at the exact intended production deployment,
+   then verify the affected live path before telling Louis it is ready.
 
 ## When To Use The Reference
 

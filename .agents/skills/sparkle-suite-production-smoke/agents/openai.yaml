@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sparkle Suite Production Smoke"
+  short_description: "Verify Sparkle Suite production and safe logged-in reviewer flows."
+  default_prompt: "Use the Sparkle Suite production smoke workflow to verify yoursparklesuite.com and the logged-in reviewer setup/workspace flow."

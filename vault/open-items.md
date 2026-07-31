@@ -1,5 +1,10 @@
 # Open Items
 
+Current release authority: Sparkle Suite live and demo are one surface at
+`https://www.yoursparklesuite.com`. Any older completed-item wording below that
+mentions a stable demo alias is historical evidence only and does not control
+future work.
+
 - [ ] **Complete GitHub quarantine ruleset identity verification** - the active
   ruleset is configured to match all branches except
   `codex/nic-nac-trade-hardening` and restrict creation, updates, deletion, and
@@ -13,9 +18,20 @@
   `app/demos/` plus `tests/collection-intake-demo.test.ts`. Merge only validated
   work into the active line. Do not delete or rename any ref/worktree as part
   of this review.
-- [ ] **Automate the Sparkle Suite production provenance gate** - add a safe script or CI check that reports/validates the active repo, GitHub remote, branch, HEAD, Vercel project, deployment, and live/stable aliases before production promotion. It should fail closed on mismatches and emit the currently served deployment URLs for incident preservation.
+- [ ] **Automate the Sparkle Suite production provenance gate** - add a safe
+  script or CI check that reports/validates the active repo, GitHub remote,
+  branch, HEAD, Vercel project, deployment, and both live domains before
+  production promotion. It should fail closed on mismatches and emit the
+  currently served deployment URLs for incident preservation.
 - [ ] **Automate post-auth production smoke for protected account classes** - extend the safe smoke harness so production restores verify landing-page stability plus the expected post-login destination without live charges or personal credentials. Include an explicit invariant check that the protected Louis admin/demo account cannot be classified as `checkout_required`.
-- [ ] **Complete Brianna Williams / Bri's Glowtique acceptance smoke** - before beta handoff is treated as accepted, Louis should sign in through `https://sparkle-suite-demo.vercel.app/login` and inspect the standard workspace plus `https://sparkle-suite-demo.vercel.app/brisglowtique`, `/trade`, and `/join`. Check desktop/mobile presentation, Emerald Garden styling, navigation and external links, empty Trade Board behavior, Join copy, and the absence of unrelated rep data. Do not connect `brisglowtique.com` or start billing during this smoke.
+- [ ] **Complete Brianna Williams / Bri's Glowtique acceptance smoke** - before
+  beta handoff is treated as accepted, use the protected reviewer-smoke path at
+  `https://www.yoursparklesuite.com/login` and inspect the standard workspace
+  plus `/brisglowtique`, `/brisglowtique/trade`, and `/brisglowtique/join`.
+  Check desktop/mobile presentation, Emerald Garden styling, navigation and
+  external links, empty Trade Board behavior, Join copy, and the absence of
+  unrelated rep data. Do not connect `brisglowtique.com` or start billing
+  during this smoke.
 - [ ] **Rotate Brianna's temporary password after handoff or first use** - the temporary login is saved in Louis's private Open Brain recall entry as requested and intentionally omitted from Git-tracked vault files. Once Brianna receives or uses it, replace it with a durable password through the normal account-security flow.
 
 Everything deferred, undecided, or waiting — tasks, planning sessions, and open questions.
@@ -27,9 +43,20 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Restore Nic-Nac inside Live Site Preview** - completed July 10 through `b96b7e84` and `50051b8c`. The centered 2x2 preview toolbar preserves Back to workspace, Refresh preview, and Open full site, adds Open/Close Nic-Nac, keeps Nic-Nac closed by default, and opens the chat beside the desktop preview when requested. The behavior is shared across current/future accounts and demos.
 - [x] **Show real next-show details in the workspace Upcoming Show card** - completed July 25 in `5ad2b43 feat: show next event in workspace card`. The right-hand card now shows the next real upcoming show's weekday, date, time, time zone, and name when data exists, links that summary into Calendar, and falls back to `No upcoming shows` plus `Add a show` when the calendar is empty.
 - [x] **Shorten the Trade Board customer-site action label** - completed July 25. The Trade Board top-right button now reads `Customer view` instead of `View customer board`.
-- [ ] **Louis final acceptance smoke for current workspace UI polish** - review `https://sparkle-suite-demo.vercel.app` at deployment `dpl_6w4oBPPNqGJH6i39MyXa2NCMR5Hp`. Confirm desktop/mobile Live Site Preview toggle behavior, compact header without the redundant top search, internal Nic-Nac chat scrolling, fully visible bottom navigation, the dynamic Upcoming Show card behavior, and the Trade Board `Customer view` button label. Local focused tests/builds and stable alias checks passed; Louis elected to perform the final deployed/manual smoke.
+- [ ] **Louis final acceptance smoke for current workspace UI polish** - review
+  `https://www.yoursparklesuite.com` after confirming it serves the exact
+  intended production deployment. Confirm desktop/mobile Live Site Preview
+  toggle behavior, compact header without the redundant top search, internal
+  Nic-Nac chat scrolling, fully visible bottom navigation, the dynamic Upcoming
+  Show card behavior, and the Trade Board `Customer view` button label.
 - [ ] **Expand Business Tools beyond the Wispr Flow MVP** - June 23 now has the unlocked Business Tools workspace section with a usable Wispr Flow section and Louis's invite link. Business Calculator and Business Cards intentionally render only `Coming Soon` for now. Next work: make the calculator more robust for show/month planning when Louis is ready, decide whether any Bomb Party business-number import can be safely researched without touching protected Live Queue extension behavior, and design the paid business-card proof/order/contractor workflow before taking orders.
-- [ ] **Finish live calendar reminder launch readiness** - June 23 hardening added durable reminder preferences/overrides, SMS+email pre-show planning, run observability, reviewer-smoke seed data, and a deployed stable-demo smoke harness. Before enabling customer-facing sends, finish provider/compliance review, audience consent/unsubscribe rules, copy/templates, deliverability/error handling, production channel flags, operator monitoring, and a no-live-side-effects reviewer path for repeated delivery tests.
+- [ ] **Finish live calendar reminder launch readiness** - June 23 hardening
+  added durable reminder preferences/overrides, SMS+email pre-show planning,
+  run observability, reviewer-smoke seed data, and a deployed smoke harness.
+  Before enabling customer-facing sends, finish provider/compliance review,
+  audience consent/unsubscribe rules, copy/templates, deliverability/error
+  handling, production channel flags, operator monitoring, and a
+  no-live-side-effects reviewer path on the live site for repeated tests.
 - [ ] **Design rep business reminders and reminder UI controls** - Louis wants Nic-Nac to support optional rep reminders outside show notifications, such as in-show or business-task nudges. This still needs product design: reminder types, due times/time zones, recurrence, snooze/dismiss behavior, where reminders appear, whether any can send SMS/email to the rep, and how Nic-Nac lists/edits/cancels them.
 - [ ] **Execute Nic-Nac stable baseline closure matrix** - created June 22 in `docs/superpowers/plans/2026-06-22-nic-nac-stable-baseline-closure.md` and HQ task `task_11_10_nic_nac_stable_baseline`. This is the current definition of "stable baseline Nic-Nac": Suite local/deployed gates, Finder local/deployed gates, linked-rep memory gate, Lab guardrail gate, model policy/cost telemetry gate, browser smoke, and release/vault closeout all pass. Fix baseline blockers; move enhancements to backlog.
 - [x] **Build durable Nic-Nac Trade Board and jewelry database tool knowledge** - completed July 4 for the current Suite Trade Board tool family. Durable workflow/controller coverage now spans item-number add listing, label/details and customer-facing jewelry photo handling, non-item-number listings, duplicate physical piece add guidance, listing removals, request inbox decisions, live swaps, after-show cleanup, fulfillment updates, and shared catalog corrections. Catalog identity supports item number plus plating/material variants. The deployed pressure bank now exercises these paths with real `/api/nic-nac` model/tool replay, DB assertions, public-site assertions, approvals, and cleanup.
@@ -48,7 +75,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Close out BlingKitchen migration** - completed June 19 in `ccd4456 feat: migrate BlingKitchen public site`. Recipes were seeded, Supabase reported remote DB up to date, focused BlingKitchen/Nic-Nac recipe tests passed, `qa:amethyst` passed, build passed locally and on Vercel, branch was pushed, and stable demo now points to `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`.
 - [x] **Smoke Heather's account after BlingKitchen deploy** - account provisioning/login verified for `blingkitchen19@gmail.com`, rep id `9a971c05-3631-443e-bcb8-4e9a26e15885`, live queue sync code `BLI-3767`, and `readyForDomainCutover: true`. Do not store the temporary password in long-term docs; rotate it after handoff if needed.
 - [ ] **Finish Britt With Bling acceptance pass** - pushed checkpoint `2617b8c feat: migrate Britt With Bling public site` carries the custom public site. July 2 Team Management work added a dashboard Public Team Cards manager for Brittany's Join Team cards, with preservation for imported photos/names/links/copy/order and unsafe-link validation. Stable-demo synthetic reviewer-smoke now verifies the unlocked Team Management Public Team Cards UI. Still confirm Louis/Brittany acceptance. Diamonds/unicorns/FAQ pages were intentionally dropped per Louis.
-- [ ] **Finish BlingKitchen acceptance pass after Moonstone/Pantry hardening** - latest stable demo is deployed through `c0782bf fix: improve Moonstone Pantry contrast` at `https://sparkle-suite-demo.vercel.app`. Louis still needs to approve the final BlingKitchen public-site experience before any custom-domain cutover. Pay special attention to the standard Sparkle Suite header, Trade Board/Live Queue placement, ticker pacing, Live event calendar, Moonstone readability, Pantry route, and DB-backed recipe editing.
+- [ ] **Finish BlingKitchen acceptance pass after Moonstone/Pantry hardening** -
+  verify the current exact production deployment at
+  `https://www.yoursparklesuite.com/blingkitchen`. Louis still needs to approve
+  the final BlingKitchen public-site experience before any custom-domain
+  cutover. Pay special attention to the standard Sparkle Suite header, Trade
+  Board/Live Queue placement, ticker pacing, Live event calendar, Moonstone
+  readability, Pantry route, and DB-backed recipe editing.
 - [x] **Heather exact-account public Pantry recipe smoke** - completed July 1. OpenAI-backed reviewer-smoke proof passed after Louis added API credits, then the exact Heather BlingKitchen account smoke passed against stable demo with the temporary password supplied at runtime. Nic-Nac used `build_site_recipe_draft`, saved with `manage_site_recipes`, verified the DB row and public Pantry template data, and cleaned up the smoke recipe. Dashboard / Nic-Nac now has passing launch-readiness proof from `.local/launch-readiness-results/bling-kitchen-recipe-chat.json`.
 - [ ] **Make migrated editable content durable** - Britt With Bling team cards now have a deployed, reviewer-smoked dashboard Public Team Cards manager backed by the existing Join Team roster API. Continue hardening other migrated content such as BlingKitchen recipes through Nic-Nac/dashboard data paths. Do not leave rep-maintained migrated content as source-only static markup after the first import.
 - [x] **Fold Sparkle Suite binder back into repo** - completed June 19. The active repo now contains the former binder vault, docs, plans, lessons, and project skills. Future Sparkle Suite sessions should open `C:\Users\louis\sparkle-suite-repo` directly with workspace-write access. The old `C:\Users\louis\sparkle-suite` folder is now a redirect/archive.
@@ -66,7 +99,14 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Create reusable existing-site migration skill** - completed June 18. New skill: `C:\Users\louis\sparkle-suite\.agents\skills\sparkle-suite-existing-site-migration\SKILL.md`. It captures the Mile High Fizz lesson that exact migrations require source code/project exports, asks Louis one question at a time, and preserves Sparkle Suite automation behavior while migrating a rep's original public-site brand.
 - [x] **Fix customer Trade Board request confirmation after screenshot submit** - completed June 18 in `1635ce1 fix: keep trade request confirmation visible`. Root cause was a customer UI effect clearing request success/error state after the post-submit board refresh changed available listings. Verification passed focused tests, `qa:amethyst`, local build, local screenshot multipart smoke, 6-request pressure smoke, Vercel build, stable alias check, deployed screenshot API smoke, and deployed rendered customer confirmation smoke. Stable demo now points to `https://sparkle-suite-pyfv4xpp7-louis-2849s-projects.vercel.app`.
 - [ ] **Use existing-site migration skill for the next two rep websites** - Louis said two more websites need the same treatment as Lindsey/Mile High Fizz. For each one, start with `sparkle-suite-existing-site-migration`, ask for the source code/project export first, then build a migration brief before implementation.
-- [ ] **Mile High Fizz final acceptance and eventual domain cutover** - Homepage, Trade Board, and Join are deployed on the stable demo through `c8f8d92 fix: apply Alpine Opal demo migration`. The earlier bespoke-hybrid framing is superseded: Mile High Fizz now uses the standard switchable Amethyst public-site model with Alpine Opal (`alpine_opal`, `AO-01`) selected by default/persisted Site Settings. The Trade Board should be empty until Lindsey adds real pieces. Louis/Lindsey still need to review/accept the full public site. Keep `milehighfizz.com` on the current live host until Louis explicitly approves domain cutover. If accepted later, plan DNS/domain move, final asset/content checks, and any remaining section polish.
+- [ ] **Mile High Fizz final acceptance and eventual domain cutover** - verify
+  Homepage, Trade Board, and Join on the current exact production deployment at
+  `https://www.yoursparklesuite.com/milehighfizz`. The earlier bespoke-hybrid
+  framing is superseded: Mile High Fizz uses the standard switchable Amethyst
+  public-site model with Alpine Opal (`alpine_opal`, `AO-01`) selected by
+  default/persisted Site Settings. The Trade Board should be empty until Lindsey
+  adds real pieces. Keep `milehighfizz.com` on the current live host until Louis
+  explicitly approves domain cutover.
 - [ ] **Fill verified phone numbers for active customer records** - Control Center now has phone fields, but repo-local Open Brain/HQ search did not find reliable paying-client phone numbers. Add them only from an authorized source or direct Louis input.
 
 ---
@@ -108,7 +148,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] **Review stale broad Nic-Nac/support regression expectations** - the durable memory work passed its focused tests/build/smoke, but a broad test sweep still showed unrelated stale failures in branding CSS expectations and old TradeBoard shared-knowledge wording. Triage before using that broad suite as a final green gate.
 - [ ] **Triage current full Suite Vitest sweep failures** - June 22 full `npx vitest run --passWithNoTests` still fails unrelated start/prelaunch server-page render tests and master brand document expectation tests. Focused Secret Rep ID bridge tests and production build pass.
 - [ ] **Investigate unrelated Sparkle Finder public API 500s** - final Vercel log scan during the Nic-Nac memory closeout showed two unrelated `www.yoursparklesuite.com` public Finder 500s for availability/catalog detail. Nic-Nac memory routes were clean; investigate separately if the Finder surface is in scope.
-- [ ] **Continue Sparkle Suite polishing/editing** - paused awaiting Louis's next concrete item. For deployed review, start at `https://sparkle-suite-demo.vercel.app`, currently pointing to `https://sparkle-suite-fjtiwq4jh-louis-2849s-projects.vercel.app` / deployment `dpl_27LM7EksMdpb2jGogaEMw7yUDc7K` from the Team Management Public Team Cards reviewer-smoke deploy. For local implementation review, use `C:\Users\louis\sparkle-suite-repo` on branch `codex/sparkle-cross-phase-hardening` and local dev at `http://localhost:3000/`. Use reviewer-smoke/synthetic sessions for stable demo logged-in workspace checks when available, not Louis's personal account.
+- [ ] **Continue Sparkle Suite polishing/editing** - paused awaiting Louis's
+  next concrete item. For deployed review, use
+  `https://www.yoursparklesuite.com` after confirming it serves the exact
+  active-branch production deployment. For implementation, use
+  `C:\Users\louis\sparkle-suite-repo` on
+  `codex/nic-nac-trade-hardening`. Use reviewer-smoke/synthetic sessions on the
+  live site, not Louis's personal account.
 - [ ] **Run first real Team Management beta smoke** - Brittany's `brittwithbling` demo/live-transition account is verified as `active` with Team Management `manual_beta` access. After Louis or Brittany signs in through an appropriate safe path, create one real onboarding participant link, open `https://britt-with-bling-start-strong.vercel.app/?invite=...`, verify the rep name personalizes, mark progress, send a question, confirm Brittany's workspace sees progress/messages, and archive the invite when finished. Do not create fake rep accounts.
 - [ ] **Build safer Nic-Nac catalog photo replacement from a new chat upload** - current deployed guard lets Nic-Nac replace a bad canonical catalog photo only when an approved jewelry-front replacement URL already exists. A future improvement should let Nic-Nac accept a corrected jewelry-front photo for an existing design, run it through the same photo pipeline/approval guard, and then call the catalog correction path. Do not let raw label/details photos become canonical catalog images.
 - [ ] **Create and smoke-test Sparkle Rep Onboarding Codespace** - paused unless Louis reselects Codespaces; if resumed, stop the rotating secondary Codespace if GitHub's two-running-Codespaces limit blocks creation, create a 4-core Codespace for `louis623/sparkle-rep-onboarding`, then verify terminal, repo path, branch, remote, and write/read/delete.

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Sparkle Suite Demo Smoke"
-  short_description: "Verify Sparkle Suite demo and logged-in reviewer smoke flows."
-  default_prompt: "Use the Sparkle Suite demo smoke workflow to verify the stable demo URL and logged-in reviewer setup/workspace flow."

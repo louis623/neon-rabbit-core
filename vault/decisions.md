@@ -6,6 +6,19 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ## July 31, 2026 - Production Provenance, Voice Pause, and Admin/Demo Invariant
 
+**The live customer domain is the only default release and review target**
+Approved Sparkle Suite work deploys from the exact active-branch tip to Vercel
+production and is handed off at `https://www.yoursparklesuite.com`. The apex
+`https://yoursparklesuite.com` must resolve to the same deployment. Raw Vercel
+deployment URLs and `sparkle-suite-demo.vercel.app` are provenance evidence
+only; they must not be promoted as the ordinary review target or used as proof
+that a release is complete.
+
+**Live and demo are one Sparkle Suite surface**
+"Demo" describes safe reviewer data or reviewer mode on the live
+`yoursparklesuite.com` product. It is not a separate environment, domain,
+deployment lane, or handoff target. All approved work flows to the live site.
+
 **Production changes require provenance proof**
 Before a Sparkle Suite deploy, rollback, alias move, authentication repair, or billing-data repair, Codex must verify the absolute active repo, GitHub remote, branch, HEAD commit, Vercel project/deployment, and affected domains. If Louis requests a restore, use exact Git/Vercel history; do not rebuild the visible page from memory. Preserve current and suspected bad deployment URLs for inspection.
 
@@ -71,6 +84,10 @@ Use `Customer view` instead of `View customer board` for the Trade Board top-rig
 
 **Approved Sparkle Suite changes release by default**
 Louis does not need to restate commit/push/deploy on each Sparkle Suite change. The standing repo rule is now explicit: once work is approved and implemented, Codex should commit legitimate session changes, push the current branch, deploy the exact tip to Vercel, promote `https://sparkle-suite-demo.vercel.app/` to that deployment, and verify the stable review URL unless Louis explicitly scopes the work to local-only or says not to commit, push, or deploy.
+
+Superseded July 31, 2026: the release target is now Vercel production at
+`https://www.yoursparklesuite.com`, with the apex domain resolving to the same
+deployment. The demo alias is provenance evidence only.
 
 **Operational triage should separate tool-surface gaps from product facts**
 When a support or billing-looking email arrives, distinguish what Codex can directly verify from what it cannot. A mailbox connector mismatch blocks direct header/authentication review, but Sparkle Suite records can still confirm whether the sender exists in waitlist, intake, rep, or subscription data before escalating.
@@ -426,14 +443,25 @@ The working referral rule is: after a referred rep has three paid subscription m
 **Stripe live smoke is a launch gate**
 The referral automation is not considered launch-ready until live Stripe is checked immediately before launch: live webhook endpoint, live webhook secret in Vercel, required Stripe events, checkout flow, and referral credit behavior all need one controlled smoke test.
 
-**Chrome reviewer-smoke is required for stable demo UI checks**
-For Sparkle Suite demo verification, logged-in workspace smoke tests, Help & Resources checks, Account/Billing checks, and Nic-Nac UI checks, use the `sparkle-suite-demo-smoke` workflow and Chrome reviewer-smoke when the Chrome connector is available. If Chrome reviewer-smoke is skipped, say so explicitly and explain why.
+**Chrome reviewer-smoke is required for live-site UI checks**
+For Sparkle Suite deployed verification, logged-in workspace smoke tests, Help
+& Resources checks, Account/Billing checks, and Nic-Nac UI checks, use the
+`sparkle-suite-production-smoke` workflow and Chrome reviewer-smoke when the
+Chrome connector is available. Reviewer/demo mode uses safe data inside the
+live site. If Chrome reviewer-smoke is skipped, say so explicitly and explain
+why.
 
-**Stable demo alias is the Sparkle Suite demo deploy target**
-For Sparkle Suite demo work, Louis expects to refresh `https://sparkle-suite-demo.vercel.app/`. A raw Vercel preview deployment URL does not count as deployed for Louis's review unless he explicitly asks for a one-off preview. After deploying a preview, move or confirm the stable alias points to the intended deployment before reporting that demo work is deployed.
+**The live production domain is the Sparkle Suite deploy target**
+Louis expects approved work to appear at
+`https://www.yoursparklesuite.com/`. Raw Vercel deployment URLs and the former
+demo alias do not count as deployed for Louis's review.
 
 **Sparkle Suite code changes should be pushed and deployed for Louis review**
-When Sparkle Suite implementation changes are made for Louis to smoke test, the default closeout is: commit the active repo work, push the branch, deploy to Vercel, and update/confirm `https://sparkle-suite-demo.vercel.app/` points at the new deployment. Do not stop at local verification unless Louis explicitly asks not to deploy.
+When Sparkle Suite implementation changes are made for Louis to smoke test, the
+default closeout is: commit the active repo work, push the branch, deploy the
+exact tip to Vercel production, confirm both live domains resolve to it, and
+verify the affected path at `https://www.yoursparklesuite.com/`. Do not stop at
+local verification unless Louis explicitly asks not to deploy.
 
 **Workspace pages should fill the available app column**
 The rep workspace should not have an internal max-width that creates a large blank gutter beside the fixed Nic-Nac panel at 100% browser zoom. Keep the left workspace column fluid within the app shell, with stable spacing and no accidental horizontal overflow.
