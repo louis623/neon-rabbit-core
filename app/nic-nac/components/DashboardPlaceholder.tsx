@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import type { FormEvent, ReactNode } from 'react'
 import {
   useCallback,
@@ -54,6 +55,7 @@ import {
   CircleEllipsis,
   Gem,
   HelpCircle,
+  Images,
   LogOut,
   MessagesSquare,
   Search,
@@ -71,6 +73,10 @@ import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
 import { NicNacHomeWorkspaceCard } from './NicNacHomeWorkspaceCard'
 import { TradeBoardWorkspaceCard } from './TradeBoardWorkspaceCard'
 import styles from './DashboardPlaceholder.module.css'
+
+const CollectionIntakeTool = dynamic(() =>
+  import('./CollectionIntakeTool').then((module) => module.CollectionIntakeTool),
+)
 
 export {
   buildCustomerSparkleSiteHref,
@@ -104,9 +110,9 @@ const WORKSPACE_SECTIONS = [
   },
   {
     key: 'more',
-    label: 'More',
-    shortLabel: 'More',
-    icon: CircleEllipsis,
+    label: 'Tools',
+    shortLabel: 'Tools',
+    icon: Wrench,
   },
 ] as const satisfies readonly WorkspaceSectionTab<string>[]
 
@@ -116,6 +122,12 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     label: 'Business Tools',
     shortLabel: 'Tools',
     icon: Wrench,
+  },
+  {
+    key: 'collection-intake',
+    label: 'Collection Intake',
+    shortLabel: 'Intake',
+    icon: Images,
   },
   {
     key: 'team-management',
@@ -4945,6 +4957,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return <BusinessToolsCard />
     }
 
+    if (canRenderWorkspaceSections && activeSection === 'collection-intake') {
+      return <CollectionIntakeTool />
+    }
+
     if (canRenderWorkspaceSections && activeSection === 'more') {
       return (
         <MoreWorkspaceCard
@@ -5606,9 +5622,10 @@ function MoreWorkspaceCard({
     <section className={styles.workspaceIntroCard}>
       <div className={styles.sectionHeadingRow}>
         <div>
-          <h2 className={styles.cardTitle}>More workspace tools</h2>
+          <h2 className={styles.cardTitle}>Tools</h2>
           <p className={styles.cardSubtitle}>
-            Keep the everyday tabs simple and open these when you need them.
+            Open Collection Intake, business helpers, settings, and other
+            workspace tools when you need them.
           </p>
         </div>
       </div>

@@ -114,6 +114,9 @@ The workspace shell should fit the viewport without requiring page-level scrolli
 **Workspace terminology favors direct workflow language**
 Use `Trade follow-up` instead of `Swap cleanup`, and `Open Trade Workspace` instead of `View full today`. Remove duplicate summary cards when the same information/action already exists elsewhere in the first screen.
 
+**Collection Intake begins as a safe local review workflow**
+The workspace `Tools` area includes Collection Intake as a first-class tool. Reps select one image folder with each piece kept together in capture order; Nic-Nac may propose groupings and flag uncertainty, but every result requires human review. This first release does not write inventory, Trade Board listings, or shared jewelry catalog records. Trade Board-only candidates require a jewelry photo plus collection type, and shared-database candidates require an item number plus verified jewelry details. No fake catalog placeholder is permitted.
+
 **Verification escalation has a stopping rule**
 For customer-facing shell changes, run focused tests, production build, and one supported synthetic reviewer/browser path. If the browser integration itself fails, use one documented fallback and report the remaining visual gap. Do not spend a long loop trying unrelated server/browser launch mechanisms after the code-level gates are green. Respect Louis's decision to take over manual smoke testing.
 

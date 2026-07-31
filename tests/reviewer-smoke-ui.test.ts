@@ -363,8 +363,9 @@ describe('reviewer smoke UI wiring', () => {
     expect(dashboardPlaceholder).toContain("label: 'Trade Board'")
     expect(dashboardPlaceholder).toContain("label: 'Calendar'")
     expect(dashboardPlaceholder).toContain("label: 'Jewelry Library'")
-    expect(dashboardPlaceholder).toContain("label: 'More'")
+    expect(dashboardPlaceholder).toContain("label: 'Tools'")
     expect(dashboardPlaceholder).toContain('SECONDARY_WORKSPACE_SECTIONS')
+    expect(dashboardPlaceholder).toContain("key: 'collection-intake'")
     expect(workspaceShell).toContain('className={styles.content}')
     expect(workspaceShell.indexOf('className={styles.content}')).toBeLessThan(
       workspaceShell.indexOf('className={styles.tabsWrap}'),

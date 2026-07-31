@@ -17,7 +17,11 @@ future work.
   Collection Intake commit `90dda81f`, and the backed-up detached `c385`
   `app/demos/` plus `tests/collection-intake-demo.test.ts`. Merge only validated
   work into the active line. Do not delete or rename any ref/worktree as part
-  of this review.
+  of this review. The Collection Intake slice was audited on July 31:
+  `90dda81f` and `0fda2b47` contain the same Tools placeholder patch, and the
+  exact `c385` archive supplied the preserved intake workflow that was adapted
+  onto the active branch. The other quarantined branch-only work still needs
+  separate review.
 - [ ] **Automate the Sparkle Suite production provenance gate** - add a safe
   script or CI check that reports/validates the active repo, GitHub remote,
   branch, HEAD, Vercel project, deployment, and both live domains before

@@ -3139,3 +3139,23 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 **Verification:**
 - Focused workspace and reviewer-smoke tests passed, including the 93-test dashboard placeholder suite after the `Trade Info` label update.
 - `npm run build` passed with the active-branch safety gate, Next.js 16.2.1 production compilation, and TypeScript validation.
+
+---
+
+## July 31, 2026 - Tools Tab and Collection Intake Recovery
+
+**Recovered evidence:**
+- Audited preserved commits `90dda81f` and `0fda2b47`; both contained the same Collection Intake placeholder entry and were not merged.
+- Read the exact detached-worktree preservation archive at `.local/git-backups/2026-07-31-branch-containment/c385-uncommitted-demo-files.zip`, including the Collection Intake component, responsive styling, route, and regression test.
+
+**What changed:**
+- Renamed the primary workspace `More` tab to `Tools`.
+- Added Collection Intake as a first-class Tools destination.
+- Adapted the preserved folder-first workflow into the live workspace with a real image-folder picker, capture-order instructions, Nic-Nac-assisted local triage, review queues, required collection handling for board-only pieces, and explicit catalog safeguards.
+- Kept this initial workflow local-only: it does not write inventory, Trade Board listings, or shared catalog records.
+- Loaded the Collection Intake client component dynamically so the larger workflow bundle is deferred until opened.
+
+**Verification:**
+- Focused Collection Intake, dashboard, and reviewer-smoke tests passed: 3 files, 113 tests.
+- `npm run build` passed with the active-branch safety gate, Next.js 16.2.1 production compilation, and TypeScript validation.
+- Local Browser QA reached the app but stalled at the setup-loading boundary before reviewer state resolved; no production or personal account was used as a fallback.
