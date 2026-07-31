@@ -527,7 +527,8 @@ describe('DashboardPlaceholder', () => {
     expect(html.match(/Upcoming Show/g)).toHaveLength(1)
     expect(html).toContain('No upcoming shows')
     expect(html).toContain('Add a show')
-    expect(html).toContain('Public Site')
+    expect(html).not.toContain('Public Site')
+    expect(html).not.toContain('Sparkle with us.')
     expect(html).toContain('Need help?')
     expect(html).not.toContain('Trade history')
     expect(html).toContain('Nic-Nac')
@@ -588,8 +589,8 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('/nic-nac/concept-board-silver.png')
     expect(source).not.toContain('/nic-nac/concept-public-site.png')
     expect(source).not.toContain('boardPreviewImageUrl')
-    expect(source).toContain('siteSettingsState.settings?.heroImageUrl')
-    expect(html).toContain('https://cdn.example.com/hero.jpg')
+    expect(source).not.toContain('publicSitePreviewImageUrl')
+    expect(html).not.toContain('https://cdn.example.com/hero.jpg')
     expect(html).not.toContain('/nic-nac/concept-')
   })
 
@@ -1587,18 +1588,19 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('preferredRecipeId: selectedRecipeId')
     expect(source).toContain('Unable to refresh site recipes right now.')
     expect(source).toContain('setPreviewFrameKey')
-    expect(source).toContain('window.addEventListener(\n      NIC_NAC_WORKSPACE_REFRESH_EVENT')
+    expect(source).toContain('window.addEventListener(')
+    expect(source).toContain('NIC_NAC_WORKSPACE_REFRESH_EVENT')
     expect(source).not.toContain("if (activeSection !== 'trade-board') return\n\n    const refreshAfterNicNacMutation")
   })
 
-  it('keeps live site and customer board previews inside the Nic-Nac workspace shell', () => {
+  it('keeps customer board previews inside the Nic-Nac workspace shell', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
     )
 
     expect(source).toContain('type WorkspacePreviewState')
-    expect(source).toContain('handleOpenLiveSitePreview')
+    expect(source).not.toContain('handleOpenLiveSitePreview')
     expect(source).toContain('handleOpenTradeBoardPreview')
     expect(source).toContain('workspacePreview.mode === \'live_site_preview\'')
     expect(source).toContain('Live Site Preview')
@@ -1606,6 +1608,8 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('Refresh preview')
     expect(source).toContain('<iframe')
     expect(source).toContain('title="Sparkle Suite live site preview"')
+    expect(source).not.toContain('Preview site')
+    expect(source).not.toContain('Sparkle with us.')
     expect(source).not.toContain('href={customerSparkleSiteHref}\n              target="_blank"')
   })
 

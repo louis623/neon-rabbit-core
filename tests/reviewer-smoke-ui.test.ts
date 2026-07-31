@@ -479,9 +479,9 @@ describe('reviewer smoke UI wiring', () => {
     )
   })
 
-  it('keeps customer site previewing inside the workspace with Nic-Nac available', () => {
+  it('keeps customer board previewing inside the workspace with Nic-Nac available', () => {
     expect(dashboardPlaceholder).toContain('type WorkspacePreviewState')
-    expect(dashboardPlaceholder).toContain('handleOpenLiveSitePreview')
+    expect(dashboardPlaceholder).not.toContain('handleOpenLiveSitePreview')
     expect(dashboardPlaceholder).toContain('handleOpenTradeBoardPreview')
     expect(dashboardPlaceholder).toContain('Back to workspace')
     expect(dashboardPlaceholder).toContain('Refresh preview')
@@ -490,6 +490,8 @@ describe('reviewer smoke UI wiring', () => {
     expect(dashboardPlaceholder).toContain('previewNicNacSidecar')
     expect(dashboardPlaceholder).toContain('title="Sparkle Suite live site preview"')
     expect(dashboardPlaceholder).toContain('customerTradeBoardHref')
+    expect(dashboardPlaceholder).not.toContain('Preview site')
+    expect(dashboardPlaceholder).not.toContain('Sparkle with us.')
     expect(nicNacClient).toContain('handleOpenNicNac')
     expect(nicNacClient).toContain('setMobileOpen(true)')
     expect(nicNacClient).toContain('setDesktopOpen(true)')

@@ -391,8 +391,7 @@
 .appBrand,
 .appHeaderActions,
 .appProfile,
-.appHeaderIcon,
-.appHeaderGhost {
+.appHeaderIcon {
   min-width: 0;
 }
 
@@ -413,7 +412,8 @@
 
 .appBrand:focus-visible,
 .appHeaderIcon:focus-visible,
-.appHeaderGhost:focus-visible {
+.appProfile:focus-visible,
+.appProfileLogout:focus-visible {
   outline: 2px solid rgba(115, 69, 202, 0.28);
   outline-offset: 2px;
 }
@@ -459,8 +459,7 @@
   margin-left: auto;
 }
 
-.appHeaderIcon,
-.appHeaderGhost {
+.appHeaderIcon {
   border: 0;
   background: transparent;
   color: #5c5275;
@@ -477,8 +476,7 @@
   justify-content: center;
 }
 
-.appHeaderIcon:hover,
-.appHeaderGhost:hover {
+.appHeaderIcon:hover {
   background: rgba(115, 69, 202, 0.08);
 }
 
@@ -487,18 +485,32 @@
   height: 18px;
 }
 
-.appHeaderGhost {
-  min-height: 34px;
-  border-radius: 999px;
-  padding: 0 12px;
-  font-size: 0.78rem;
-  font-weight: 800;
+.appProfileMenu {
+  position: relative;
+}
+
+.appProfileMenu[open] .appProfileChevron {
+  transform: rotate(180deg);
 }
 
 .appProfile {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  list-style: none;
+  padding: 3px 5px;
+}
+
+.appProfile::-webkit-details-marker {
+  display: none;
+}
+
+.appProfile:hover {
+  background: rgba(115, 69, 202, 0.08);
 }
 
 .appProfileInitial {
@@ -514,7 +526,7 @@
   font-weight: 850;
 }
 
-.appProfile span:last-child {
+.appProfileCopy {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -532,6 +544,67 @@
   color: #6f6389;
   font-size: 0.72rem;
   font-weight: 650;
+}
+
+.appProfileChevron {
+  width: 15px;
+  height: 15px;
+  color: #6f6389;
+  transition: transform 160ms ease;
+}
+
+.appProfilePopover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(220px, calc(100vw - 28px));
+  border: 1px solid rgba(67, 42, 116, 0.14);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(50, 27, 91, 0.18);
+  padding: 8px;
+}
+
+.appProfileLogout {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #39245f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  text-align: left;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.appProfileLogout:hover {
+  background: #f6f0ff;
+  color: #d81684;
+}
+
+.appProfileLogout:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.appProfileLogout svg {
+  width: 17px;
+  height: 17px;
+}
+
+.appProfileError {
+  display: block;
+  padding: 6px 12px 4px;
+  color: #a22a58;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .conceptHome {
@@ -940,45 +1013,6 @@
   line-height: 1.28;
 }
 
-.publicSitePreview {
-  width: 100%;
-  min-height: 84px;
-  border: 0;
-  border-radius: 12px;
-  background: #251457;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  overflow: hidden;
-  padding: 0 16px;
-  text-align: left;
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 850;
-}
-
-.publicSitePreview span {
-  position: relative;
-  z-index: 1;
-  max-width: 100%;
-}
-
-.publicSitePreviewWithImage {
-  justify-content: space-between;
-  padding: 0 0 0 16px;
-}
-
-.publicSitePreviewWithImage img {
-  align-self: stretch;
-  width: 118px;
-  min-height: 84px;
-  object-fit: cover;
-  object-position: right center;
-}
-
 .mobileRecentPanel {
   display: none;
 }
@@ -1027,30 +1061,6 @@
   color: #6f6389;
   font-size: 0.68rem;
   font-weight: 700;
-}
-
-.siteLive,
-.siteDraft {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 10px;
-  color: #129466;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.siteLive::before,
-.siteDraft::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.siteDraft {
-  color: #8a719f;
 }
 
 .helpPreview {
@@ -4977,8 +4987,7 @@
     gap: 6px;
   }
 
-  .appHeaderGhost,
-  .appProfile {
+  .appProfileCopy {
     display: none;
   }
 
@@ -5123,20 +5132,6 @@
 
   .metricRow small {
     font-size: 0.68rem;
-  }
-
-  .publicSitePreview {
-    min-height: 72px;
-  }
-
-  .publicSitePreviewWithImage img {
-    width: 118px;
-    min-height: 72px;
-  }
-
-  .siteLive,
-  .siteDraft {
-    margin-top: 8px;
   }
 
   .topbar {

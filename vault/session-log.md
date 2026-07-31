@@ -3124,3 +3124,17 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 **Verification:**
 - `npm exec vitest run tests/nic-nac-dashboard-placeholder.test.ts` passed: 1 file, 85 tests.
 - `npm run build` passed locally with Next.js 16.2.1.
+
+---
+
+## July 31, 2026 - Workspace Account Menu and Preview Cleanup
+
+**What changed:**
+- Replaced the static workspace profile display with an account menu that provides a Supabase-backed `Log out` action and returns the user to the public landing page after sign-out.
+- Removed the top-header `Preview site` action.
+- Removed the Nic-Nac home rail's `Public Site` / `Sparkle with us.` preview card.
+- Kept the account menu accessible on mobile while hiding only the long profile text.
+
+**Verification:**
+- Focused workspace and reviewer-smoke tests passed: 3 files, 116 tests.
+- `npm run build` passed with the active-branch safety gate, Next.js 16.2.1 production compilation, and TypeScript validation.

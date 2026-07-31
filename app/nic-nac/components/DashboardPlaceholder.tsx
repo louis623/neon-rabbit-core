@@ -43,15 +43,18 @@ import {
   buildCustomerTradeBoardHref,
 } from '@/lib/nic-nac/rep-links'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
+import { createClient } from '@/lib/supabase/client'
 import {
   CalendarDays,
   Bell,
   BookOpen,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleEllipsis,
   Gem,
   HelpCircle,
+  LogOut,
   MessagesSquare,
   Search,
   Settings2,
@@ -4751,10 +4754,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  const customerSparkleSiteHref = buildCustomerSparkleSiteHref({
-    repId: repIdOverride ?? repProfileState.repId,
-    publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
-  })
   const currentPublicSiteSlug =
     publicSiteSlugOverride ?? repProfileState.publicSiteSlug
   const currentRepId = repIdOverride ?? repProfileState.repId
@@ -4772,13 +4771,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setPreviewNicNacOpen(false)
     setWorkspacePreview(nextPreview)
     setPreviewFrameKey((current) => current + 1)
-  }
-  const handleOpenLiveSitePreview = () => {
-    openWorkspacePreview({
-      mode: 'live_site_preview',
-      href: customerSparkleSiteHref,
-      title: 'Live Site Preview',
-    })
   }
   const handleOpenTradeBoardPreview = () => {
     openWorkspacePreview({
@@ -4842,9 +4834,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
     ? (activeSection as (typeof WORKSPACE_SECTIONS)[number]['key'])
     : 'more'
-  const publicSitePreviewImageUrl = cleanOptionalText(
-    siteSettingsState.settings?.heroImageUrl,
-  )
   const workspaceHeader = !isLiveSitePreview ? (
     <WorkspaceAppHeader
       repName={headerRepName}
@@ -4854,7 +4843,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         setPreviewUnavailableMessage(null)
         setActiveSection('home')
       }}
-      onOpenLiveSite={hasPaidWorkspace ? handleOpenLiveSitePreview : undefined}
     />
   ) : null
   const accessNotice = (
@@ -5257,12 +5245,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               cleanupCount={homeCleanupCount}
               fulfillmentCount={homeFulfillmentCount}
               nextShow={homeNextShow}
-              siteLive={Boolean(currentPublicSiteSlug || currentRepId)}
-              publicSitePreviewImageUrl={publicSitePreviewImageUrl}
               onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
               onOpenTradeBoard={() => setActiveSection('trade-board')}
               onOpenCalendar={() => setActiveSection('show-calendar')}
-              onOpenLiveSitePreview={handleOpenLiveSitePreview}
               onOpenHelp={() => setActiveSection('help-resources')}
             />
           ) : (
@@ -5278,13 +5263,35 @@ function WorkspaceAppHeader({
   repName,
   showName,
   onGoHome,
-  onOpenLiveSite,
 }: {
   repName: string
   showName: string
   onGoHome: () => void
-  onOpenLiveSite?: () => void
 }) {
+  const [logoutBusy, setLogoutBusy] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
+
+  const handleLogout = async () => {
+    setLogoutBusy(true)
+    setLogoutError(null)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        throw error
+      }
+
+      window.location.assign('/')
+    } catch (error) {
+      setLogoutBusy(false)
+      setLogoutError(
+        error instanceof Error ? error.message : 'Unable to log out right now.',
+      )
+    }
+  }
+
   return (
     <header className={styles.appHeader}>
       <button
@@ -5300,15 +5307,6 @@ function WorkspaceAppHeader({
         </span>
       </button>
       <div className={styles.appHeaderActions}>
-        {onOpenLiveSite ? (
-          <button
-            type="button"
-            className={styles.appHeaderGhost}
-            onClick={onOpenLiveSite}
-          >
-            Preview site
-          </button>
-        ) : null}
         <button
           type="button"
           className={styles.appHeaderIcon}
@@ -5316,15 +5314,37 @@ function WorkspaceAppHeader({
         >
           <Bell aria-hidden="true" />
         </button>
-        <div className={styles.appProfile}>
-          <span className={styles.appProfileInitial}>
-            {repName.charAt(0).toUpperCase()}
-          </span>
-          <span>
-            <strong>{repName}</strong>
-            <small>{showName}</small>
-          </span>
-        </div>
+        <details className={styles.appProfileMenu}>
+          <summary
+            className={styles.appProfile}
+            aria-label={`Open account menu for ${repName}`}
+          >
+            <span className={styles.appProfileInitial}>
+              {repName.charAt(0).toUpperCase()}
+            </span>
+            <span className={styles.appProfileCopy}>
+              <strong>{repName}</strong>
+              <small>{showName}</small>
+            </span>
+            <ChevronDown className={styles.appProfileChevron} aria-hidden="true" />
+          </summary>
+          <div className={styles.appProfilePopover}>
+            <button
+              type="button"
+              className={styles.appProfileLogout}
+              disabled={logoutBusy}
+              onClick={() => void handleLogout()}
+            >
+              <LogOut aria-hidden="true" />
+              {logoutBusy ? 'Logging out…' : 'Log out'}
+            </button>
+            {logoutError ? (
+              <span className={styles.appProfileError} role="alert">
+                {logoutError}
+              </span>
+            ) : null}
+          </div>
+        </details>
       </div>
     </header>
   )
@@ -5336,12 +5356,9 @@ function ConceptHomeWorkspace({
   cleanupCount,
   fulfillmentCount,
   nextShow,
-  siteLive,
-  publicSitePreviewImageUrl,
   onLaunchAction,
   onOpenTradeBoard,
   onOpenCalendar,
-  onOpenLiveSitePreview,
   onOpenHelp,
 }: {
   chat?: ReactNode | null
@@ -5349,12 +5366,9 @@ function ConceptHomeWorkspace({
   cleanupCount: number
   fulfillmentCount: number
   nextShow: HomeNextShowSummary | null
-  siteLive: boolean
-  publicSitePreviewImageUrl?: string
   onLaunchAction: (action: WorkspaceLaunchAction) => void
   onOpenTradeBoard: () => void
   onOpenCalendar: () => void
-  onOpenLiveSitePreview: () => void
   onOpenHelp: () => void
 }) {
   return (
@@ -5446,27 +5460,6 @@ function ConceptHomeWorkspace({
               </span>
             </div>
           )}
-        </ConceptPanel>
-        <ConceptPanel
-          title="Public Site"
-          action="Preview site"
-          onAction={onOpenLiveSitePreview}
-        >
-          <button
-            type="button"
-            className={`${styles.publicSitePreview} ${
-              publicSitePreviewImageUrl ? styles.publicSitePreviewWithImage : ''
-            }`}
-            onClick={onOpenLiveSitePreview}
-          >
-            <span>Sparkle with us.</span>
-            {publicSitePreviewImageUrl ? (
-              <img src={publicSitePreviewImageUrl} alt="" />
-            ) : null}
-          </button>
-          <span className={siteLive ? styles.siteLive : styles.siteDraft}>
-            {siteLive ? 'Your site is live' : 'Site preview ready'}
-          </span>
         </ConceptPanel>
         <ConceptPanel title="Need help?" action="Visit resources" onAction={onOpenHelp}>
           <button type="button" className={styles.helpPreview} onClick={onOpenHelp}>
