@@ -68,11 +68,13 @@ cannot resolve.
    to reopen it without covering the `More` tab.
 6. On desktop width, confirm the chat remains persistent and the home surface
    still shows compact Today/Trade/Calendar glance modules.
-7. Confirm the workspace does not show the old public-site header, logout bar,
-   Secret Rep ID card, or right-side legacy chat rail.
-8. Confirm the Concept 1 thumbnail treatment is present: Trade Board jewelry,
-   Active Board jewelry, and Public Site preview image.
-9. On mobile width, confirm the first viewport includes the `Recent conversations`
-   cue below the Public Site preview.
+7. Confirm the workspace does not show the old public-site header, Secret Rep ID
+   card, right-side legacy chat rail, top `Preview site` action, or `Public Site`
+   preview card.
+8. Open the rep profile menu and confirm it contains a `Log out` action. Do not
+   use Louis's protected admin/demo account for this smoke.
+9. Confirm the Trade Board and Active Board jewelry thumbnail treatments remain
+   present, and on mobile width confirm `Recent conversations` remains available
+   in the first workspace flow without relying on a Public Site preview.
 
 If any item is missing, say so plainly before calling the work ready.

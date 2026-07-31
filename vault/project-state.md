@@ -115,11 +115,11 @@
 ## July 10 Workspace UI State
 
 - Commits shipped in this UI pass: `b96b7e84` live-preview Nic-Nac sidecar, `50051b8c` toggleable/closed-by-default sidecar, `9f26d1ed` simplified Nic-Nac branding, `56383876` Sparkle Suite Workspace lockup, `a71e25ed` Trade follow-up copy, `55cd428e` duplicate glance-card removal, `cb48f80b` contained workspace chat shell, `1f2b6a6e` duplicate-header removal attempt, and `a8b7e1d4` final compact-header correction.
-- The final header correction restores the Sparkle Suite Workspace header while removing only the redundant top Nic-Nac search field. It retains Preview site, notifications, and rep profile on desktop and uses a smaller mobile form.
+- The Sparkle Suite Workspace header retains product identity, notifications, and a responsive rep profile. The profile now opens an account menu with `Log out`; the redundant top Nic-Nac search field and `Preview site` action are intentionally absent.
 - The final bottom navigation uses shorter fixed tab heights and additional shell/safe-area padding so icons and labels remain contained instead of clipping below the viewport.
 - Focused workspace suites passed with 115 tests; adjacent branding/font-scale suites passed with 15 tests; local and Vercel Next.js 16.2.1 production builds passed.
 - Local synthetic reviewer smoke reached the final desktop workspace and verified a visible 56px header, no `Ask Nic-Nac anything...` header input, a document height equal to the 720px viewport, all five 46px bottom tabs ending above the viewport edge, no framework overlay, and no console warnings/errors. The in-app Browser DOM snapshot capability failed, so checks used bounded page evaluation and screenshot evidence. Louis elected to perform the final deployed/manual smoke after release.
-- Stable alias verification returned HTTP 200 for `https://sparkle-suite-demo.vercel.app/start` after promotion.
+- The released workspace is verified at the canonical live surface, `https://www.yoursparklesuite.com`.
 
 ---
 

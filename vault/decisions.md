@@ -105,8 +105,8 @@ Desktop preview keeps the customer site primary and offers Nic-Nac as an optiona
 **Shared workspace UI is account-generic**
 The rep workspace and Live Site Preview behavior apply to every current customer, future account, and reviewer/demo account. Customer data may personalize names, site copy, listings, shows, and images, but shared component structure and controls must not be implemented as Heather/BlingKitchen-only behavior.
 
-**Preserve the compact product header; remove only redundant search**
-The workspace needs a compact Sparkle Suite / Workspace header for product identity, Preview site, notifications, and rep identity. The top `Ask Nic-Nac anything...` field is redundant because the page has a full Nic-Nac composer, so remove that field only. Do not remove the complete header.
+**Preserve the compact product header; keep account controls focused**
+The workspace needs a compact Sparkle Suite / Workspace header for product identity, notifications, and rep identity. The rep profile opens an account menu with `Log out`. The top `Ask Nic-Nac anything...` field and `Preview site` action are intentionally absent because the page already has a full Nic-Nac composer and the workspace should not advertise a separate preview surface. Do not remove the complete header.
 
 **Workspace navigation and composer stay inside the app shell**
 The workspace shell should fit the viewport without requiring page-level scrolling to reach chat input or navigation. Conversation history owns the internal scroll. Header, quick actions/composer, and bottom navigation remain available. Bottom tabs need stable heights plus sufficient safe-area padding so icons and labels cannot be clipped.
