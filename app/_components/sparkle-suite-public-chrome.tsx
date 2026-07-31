@@ -32,10 +32,8 @@ export function SparkleSeal({ className }: { className?: string }) {
 }
 
 export function SparkleSuitePublicHeader({
-  accountMode = 'public',
   homeHref = '/',
 }: {
-  accountMode?: 'public' | 'workspace'
   homeHref?: string
 }) {
   const { brand } = sparkleSuitePublicLandingContent
@@ -48,7 +46,7 @@ export function SparkleSuitePublicHeader({
           <span>{brand}</span>
         </a>
         <nav className="sl2-header__actions" aria-label="Account links">
-          <SparkleSuitePublicAccountAction mode={accountMode} />
+          <SparkleSuitePublicAccountAction />
         </nav>
       </div>
     </header>

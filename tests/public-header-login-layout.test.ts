@@ -7,32 +7,26 @@ function source(path: string) {
 }
 
 describe('Sparkle Suite public header and login layout', () => {
-  it('uses one workspace login CTA and routes signed-in reps into the workspace', () => {
+  it('keeps public pages visible and lets reps sign in or clear an old session', () => {
     const header = source('app/_components/sparkle-suite-public-chrome.tsx')
     const accountAction = source('app/_components/SparkleSuitePublicAccountAction.tsx')
     const nicNacPage = source('app/nic-nac/page.tsx')
 
     expect(header).toContain('SparkleSuitePublicAccountAction')
-    expect(header).toContain("accountMode = 'public'")
-    expect(header).toContain('mode={accountMode}')
+    expect(header).not.toContain("accountMode = 'public'")
+    expect(header).not.toContain('mode={accountMode}')
     expect(header).not.toContain('<a href="/login">Sign in here.</a>')
-    expect(nicNacPage).toContain('<SparkleSuitePublicHeader accountMode="workspace" />')
+    expect(nicNacPage).not.toContain('<SparkleSuitePublicHeader accountMode="workspace" />')
     expect(accountAction).toContain("'use client'")
     expect(accountAction).toContain('getSession')
     expect(accountAction).toContain('onAuthStateChange')
-    expect(accountAction).toContain('redirectToWorkspaceUnlessAlreadyThere')
-    expect(accountAction).toContain('window.location.pathname')
-    expect(accountAction).toContain('currentPathname !== workspaceHref')
-    expect(accountAction).toContain("const workspaceHref = '/nic-nac'")
-    expect(accountAction).toContain("const loginHref = '/login?redirect=%2Fnic-nac'")
-    expect(accountAction).toContain('Sparkle Suite workspace')
-    expect(accountAction).toContain('Log in to your Sparkle Suite workspace')
-    expect(accountAction).toContain("if (mode === 'workspace')")
+    expect(accountAction).not.toContain('redirectToWorkspaceUnlessAlreadyThere')
+    expect(accountAction).not.toContain('window.location.replace')
+    expect(accountAction).toContain('Already have Sparkle Suite?')
+    expect(accountAction).toContain('Sign in here.')
     expect(accountAction).toContain('signOut')
     expect(accountAction).toContain("window.location.assign('/')")
     expect(accountAction).toContain('Log out')
-    expect(accountAction).not.toContain('Already have Sparkle Suite?')
-    expect(accountAction).not.toContain('Sign in here.')
   })
 
   it('keeps the login form inside the first Sparkle landing shell instead of below a full-height header wrapper', () => {

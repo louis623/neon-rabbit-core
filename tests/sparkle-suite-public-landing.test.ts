@@ -123,9 +123,7 @@ describe('Sparkle Suite public landing page', () => {
 
     expect(html).toContain('class="sparkle-landing sparkle-landing-v2"')
     expect(html).toContain('class="sl2-shell"')
-    expect(headerHtml).toContain('Log in to your Sparkle Suite workspace')
-    expect(headerHtml).not.toContain('Already have Sparkle Suite?')
-    expect(headerHtml).not.toContain('Sign in here.')
+    expect(headerHtml).toContain('Sparkle Suite account')
     expect(headerHtml).not.toContain('Start Sparkle Suite')
     expect(headerHtml).not.toContain('Level up your live stream')
     expect(heroIndex).toBeGreaterThan(-1)
@@ -531,7 +529,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(heroHtml).not.toContain('modules')
   })
 
-  it('keeps the root landing server render public-safe and lets the client account action redirect signed-in reps', () => {
+  it('keeps the root landing public-safe without redirecting signed-in reps', () => {
     const pageSource = readFileSync(join(process.cwd(), 'app', 'page.tsx'), 'utf8')
     const accountActionSource = readFileSync(
       join(process.cwd(), 'app', '_components', 'SparkleSuitePublicAccountAction.tsx'),
@@ -545,7 +543,10 @@ describe('Sparkle Suite public landing page', () => {
     expect(pageSource).toContain('<SparkleSuitePublicLanding />')
     expect(pageSource).toContain('application/ld+json')
     expect(accountActionSource).toContain('getSession')
-    expect(accountActionSource).toContain('redirectToWorkspaceUnlessAlreadyThere')
+    expect(accountActionSource).not.toContain('redirectToWorkspaceUnlessAlreadyThere')
+    expect(accountActionSource).not.toContain('window.location.replace')
+    expect(accountActionSource).toContain('Sign in here.')
+    expect(accountActionSource).toContain('Log out')
   })
 
   it('exports public landing metadata without third-party brand-led framing', () => {
