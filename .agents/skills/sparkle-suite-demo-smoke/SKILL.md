@@ -32,6 +32,27 @@ When logged-in UI matters, use the Chrome plugin if available or explicitly enab
 
 Do not ask Louis for a password just to smoke test Sparkle Suite. The reviewer-smoke path should create and sign into the synthetic demo account from the app flow itself. If reviewer-smoke controls are missing or disabled, report that as the blocker and do not fall back to Louis's personal account unless he explicitly asks.
 
+### Louis admin/demo invariant
+
+When Louis explicitly asks to verify or repair his Google-auth account,
+`louis@neonrabbit.net` is the original Sparkle Suite admin/demo workspace. It is
+not a disposable signup account and must not be used to exercise checkout.
+
+Expected production state:
+
+- rep status: `active`
+- required setup status: `dashboard_unlocked`
+- entitlement: `$0` internal demo
+- Stripe mode: non-live
+- post-auth destination: Sparkle Suite Workspace, normally `/nic-nac`
+
+If this account reaches Stripe or reports `checkout_required`, treat that as an
+account-state incident. Before any live checkout action, inspect the rep,
+required-setup session, entitlement/subscription, and pricing reservation
+together. Release any accidental reservation and restore the established
+internal-demo contract with an identity-guarded, audited repair. Do not create
+a live charge or delete Stripe evidence.
+
 ## Required Checks
 
 For logged-in smoke verification, check the relevant real UI state, not just source or unauthenticated HTML.
@@ -40,6 +61,10 @@ For logged-in smoke verification, check the relevant real UI state, not just sou
 - Help & Resources: workflow sections are scannable/collapsible, with clear expand indicators.
 - Workspace: Nic-Nac is integrated as expected for the section under review.
 - Stable alias: `sparkle-suite-demo.vercel.app` serves the intended latest preview after alias updates.
+- Production custom domain: after a production restore or alias change, verify
+  `https://www.yoursparklesuite.com` does not refresh away from the landing
+  page, then verify the relevant post-auth destination. Root HTML or a brief
+  landing-page flash is not sufficient.
 
 ## Reporting
 

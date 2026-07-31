@@ -4,6 +4,25 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## July 31, 2026 - Production Provenance, Voice Pause, and Admin/Demo Invariant
+
+**Production changes require provenance proof**
+Before a Sparkle Suite deploy, rollback, alias move, authentication repair, or billing-data repair, Codex must verify the absolute active repo, GitHub remote, branch, HEAD commit, Vercel project/deployment, and affected domains. If Louis requests a restore, use exact Git/Vercel history; do not rebuild the visible page from memory. Preserve current and suspected bad deployment URLs for inspection.
+
+**Exact-domain and post-auth verification are release gates**
+A raw Vercel preview, stable-demo check, root HTTP 200, or briefly correct landing page is not enough after production recovery. Verification must use the exact live domain Louis uses, wait for delayed redirects, authenticate through the relevant account class, and confirm the expected workspace/customer-site destination.
+
+**Louis's Google-auth account is a protected admin/demo workspace**
+`louis@neonrabbit.net` must remain `active`, `dashboard_unlocked`, and backed by a `$0`, non-live internal demo entitlement. It must land in the Sparkle Suite Workspace and must never be used for disposable signup/checkout testing. Use synthetic reviewer smoke or `louis+sparkle-demo-2@neonrabbit.net` for disposable signup tests.
+
+**Unexpected checkout is an account-state incident**
+If an established admin, demo, beta, or customer account resolves to `checkout_required`, stop before live checkout. Inspect the rep, setup, entitlement/subscription, and pricing reservation as one state machine. Repairs require exact identity guards, audit notes, release of accidental pricing reservations, and preservation of provider evidence.
+
+**Voice mode is paused for risky Sparkle Suite work**
+Do not use voice mode for Sparkle Suite repository selection, deployments, domain aliases, authentication, billing, or production-data changes until Louis explicitly re-enables it. Voice transcription or an old-session reference never overrides the active repo memory/provenance checks.
+
+---
+
 ## July 26, 2026 - Emerald Garden and Brianna Beta Boundaries
 
 **Emerald Garden is a reusable standard skin**

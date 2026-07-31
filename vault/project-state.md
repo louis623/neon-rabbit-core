@@ -1,6 +1,6 @@
 # Project State
 
-**Last updated:** July 26, 2026
+**Last updated:** July 31, 2026
 
 ---
 
@@ -18,15 +18,29 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `2583f896 feat: add Emerald Garden customer-site skin`
-- **Latest local docs/memory checkpoint:** July 26 Open Brain closeout capturing Emerald Garden, Brianna Williams's standard beta account, release evidence, and the remaining manual smoke.
+- **Latest local implementation checkpoint:** `af7cef25 fix: restore landing account sign-in controls`
+- **Latest local docs/memory checkpoint:** July 31 production rollback/checkout-routing incident closeout, including Git/Vercel recovery evidence, Louis's repaired admin/demo-account invariant, and permanent provenance/post-auth safeguards.
 - **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. On top of that July 10 shell, the right-hand Upcoming Show card now shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
 - **Stable demo URL / Louis review target:** `https://sparkle-suite-demo.vercel.app`
-- **Current stable demo target:** `https://sparkle-suite-13dk4smk4-louis-2849s-projects.vercel.app`
-- **Current stable demo deployment id:** `dpl_9HNuzkTpmwvw5mzJoMZAFSGWThb4`
+- **Current stable demo target:** `https://sparkle-suite-c0vjukn1r-louis-2849s-projects.vercel.app`
+- **Current stable demo deployment id:** `dpl_3WtzJMr5fK7LMEqTrVqJCJLZSWqL`
 - **Demo deploy rule:** Louis reviews Sparkle Suite work at `https://sparkle-suite-demo.vercel.app/`. Treat this as the canonical review/production-equivalent target for ordinary work. Raw Vercel preview URLs or other domains are not sufficient unless Louis explicitly asks for them, and do not report a fix as live until this exact URL has been promoted and verified.
 - **Local review URL:** `http://localhost:3000/`
 - **Local signup URL:** `http://localhost:3000/start`
+
+---
+
+## July 31 Production Recovery and Safeguard State
+
+- Production provenance drift from historical branches/deployments temporarily reverted `yoursparklesuite.com`, the workspace, and customer-facing sites to old application state. Recovery used exact Git/Vercel history rather than rebuilding from memory.
+- Current verified application checkpoint is `af7cef25 fix: restore landing account sign-in controls` on `codex/nic-nac-trade-hardening`, deployed as `dpl_3WtzJMr5fK7LMEqTrVqJCJLZSWqL`.
+- Louis's Google-auth account `louis@neonrabbit.net` is the original admin/demo workspace. Its production state was incorrectly `onboarding` / `checkout_required` with no entitlement and an accidental founder reservation, which caused the post-auth Stripe redirect.
+- The account was repaired to `active` / `dashboard_unlocked` with a `$0`, non-live `internal_demo` entitlement; the accidental founder reservation was released. No live Stripe subscription or charge was created during the repair.
+- Signed-in Chrome verification on the exact live custom domain reached and remained in Louis Chapman's `/nic-nac` workspace. Louis confirmed the platform was back in business.
+- `AGENTS.md`, the demo-smoke skill, and the incident runbook now require repo/branch/commit/deployment/alias provenance before production changes, exact-domain and post-auth verification afterward, and preservation of deployment evidence.
+- Voice mode is paused for Sparkle Suite repository, deployment, authentication, billing, and production-data work until Louis explicitly re-enables it.
+- Full incident record and reusable session prompts:
+  `docs\sparkle-suite\incidents\2026-07-31-production-rollback-and-checkout-routing.md`.
 
 ---
 

@@ -65,6 +65,63 @@ custom-domain cutover or separate environment. If Louis says something is still
 wrong, verify the exact URL he has open, preferably through the Chrome connector,
 before claiming the fix is live.
 
+## Production Provenance and Account Safety
+
+The July 31, 2026 production rollback/checkout incident is documented at
+`docs\sparkle-suite\incidents\2026-07-31-production-rollback-and-checkout-routing.md`.
+Read it before any production restore, alias change, authentication repair,
+checkout repair, or Louis admin/demo-account work.
+
+Sparkle Suite implementation and release work must use only:
+
+- Local repo: `C:\Users\louis\sparkle-suite-repo`
+- GitHub repo: `louis623/sparkle-suite`
+- Live customer domain: `https://www.yoursparklesuite.com`
+- Stable review target: `https://sparkle-suite-demo.vercel.app`
+
+The old `C:\Users\louis\sparkle-suite` folder and old branches/deployments are
+historical evidence only. Never build, restore, deploy, or move an alias from
+them merely because they are available in session history.
+
+Before any production deploy, rollback, promotion, or domain-alias change:
+
+1. Read the four current `vault\` memory files.
+2. Report and verify the absolute repo path, GitHub remote, current branch,
+   exact HEAD commit, intended Vercel project, intended deployment, and every
+   alias/domain that will move.
+3. Inspect Git and Vercel history first. If Louis asks to restore a previous
+   version, restore the known-good Git commit/deployment; do not rebuild the
+   page from memory.
+4. Preserve the currently served deployment URL and the suspected bad
+   deployment URL for inspection before changing aliases.
+5. Deploy the exact verified branch tip, then confirm the target aliases point
+   to that exact deployment.
+6. Smoke the exact live domain Louis uses, including landing-page stability,
+   sign-in, post-auth destination, workspace identity, and representative
+   customer-facing routes. A root-page HTTP 200 is not sufficient.
+
+Louis's Google-auth account `louis@neonrabbit.net` is the original Sparkle Suite
+admin/demo workspace, not a disposable signup or prospective customer. Its
+production invariant is: rep status `active`, setup status
+`dashboard_unlocked`, and a `$0`, non-live internal demo entitlement. It must
+land in the Sparkle Suite Workspace and must never be sent to Stripe checkout.
+Use `louis+sparkle-demo-2@neonrabbit.net` or the supported synthetic reviewer
+flow for disposable signup/checkout testing.
+
+If an existing admin, demo, beta, or customer account unexpectedly resolves to
+`checkout_required`, stop before creating or opening a live checkout. Inspect
+the rep, setup-session, entitlement/subscription, and pricing-reservation rows
+together. Repair production data only with an exact identity guard, preserve an
+audit note, release accidental pricing reservations, and use non-live `$0`
+internal entitlements where that is the established account contract. Never
+delete or mutate live Stripe provider objects merely to hide evidence.
+
+Do not use voice mode for Sparkle Suite repo, deployment, authentication,
+billing, or production-data work until Louis explicitly re-enables it. If voice
+is re-enabled later, the session must still begin with the provenance preflight
+above; a conversational reference to an old session is not authority to select
+an old repo, branch, or deployment.
+
 ## Customer-Facing Flow Definition of Done
 
 Any customer-facing Sparkle Suite workflow is not ready for Louis review until

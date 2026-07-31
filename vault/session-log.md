@@ -4,6 +4,24 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## July 31, 2026 - Production Restore, Louis Account Repair, and Safety Closeout
+
+**Incident and recovery:**
+- A voice-led session used historical Sparkle Suite branches/deployments without first proving the active repo, branch, commit, and alias target. `yoursparklesuite.com`, the rep workspace, and customer-facing sites were temporarily reverted to old application state.
+- Recovery switched to Git/Vercel evidence: restored the known-good application history, shipped `af7cef25 fix: restore landing account sign-in controls`, and verified deployment `dpl_3WtzJMr5fK7LMEqTrVqJCJLZSWqL` on the live custom domain.
+- After the landing was restored, Google auth for `louis@neonrabbit.net` still opened Stripe because the original admin/demo account was incorrectly `onboarding` / `checkout_required`, had no subscription/entitlement, and held an accidental founder reservation.
+- The exact identity-guarded production repair released the founder reservation, restored the rep to `active`, restored setup to `dashboard_unlocked`, and added a `$0`, non-live `internal_demo` entitlement with an audit marker. No live Stripe subscription or charge was created as part of the repair, and provider evidence was not deleted.
+- Signed-in Chrome verification reached Louis Chapman's `/nic-nac` workspace on the exact live domain and remained there after the page settled. Louis confirmed the system was back in business.
+
+**Safeguards recorded:**
+- Added a production-provenance and account-safety section to `AGENTS.md`.
+- Expanded `sparkle-suite-demo-smoke` with the Louis admin/demo invariant and exact-domain/post-auth checks.
+- Added the full incident/recovery runbook and reusable start/in-session prompts at `docs\sparkle-suite\incidents\2026-07-31-production-rollback-and-checkout-routing.md`.
+- Sparkle Suite production work must use only `C:\Users\louis\sparkle-suite-repo` / `louis623/sparkle-suite`; historical folders, branches, and deployments are evidence, not release sources.
+- Voice mode is paused for Sparkle Suite repo, deploy, auth, billing, and production-data work until Louis explicitly re-enables it.
+
+---
+
 ## July 26, 2026 - Emerald Garden Skin and Brianna Beta Account
 
 **What changed:**
