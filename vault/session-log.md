@@ -4,6 +4,46 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Emerald Garden Customer-Site Parity Repair
+
+**Audit findings:**
+- The announcement ticker had an Emerald-only dark text override on a dark
+  background. The shared measured ticker engine itself was already correct:
+  46 pixels per second for announcements and 55.2 pixels per second for Trade
+  Board inventory.
+- Emerald Garden uniquely wrapped the homepage hero in a large blurred glass
+  box over four pale radial blobs. The other established skins use the shared
+  full-bleed hero composition.
+- Homepage, Trade Board, and Join retained the shared Amethyst content and
+  feature structure; the regression was visual, not a missing-content fork.
+
+**What changed:**
+- Announcement text is explicitly white with champagne separators; the light
+  reverse Trade Board ticker retains dark readable text.
+- Homepage, Trade Board, and Join use one restrained full-bleed emerald
+  gradient treatment.
+- The homepage-only oversized glass container and pale radial blobs were
+  removed. Join retains its smaller standard hero card structure.
+- Regression coverage protects the shared ticker-speed contract, readable
+  announcement color, and Emerald hero composition.
+
+**Verification and release:**
+- Four focused template/preset suites passed: 88 tests.
+- Static Amethyst and public-site route suites passed: 18 tests.
+- Local homepage and Trade Board link verification returned HTTP 200, and the
+  Next.js 16.2.1 production build passed.
+- Exact live-domain browser smoke verified Homepage, Trade Board, and Join for
+  The Dudes Fizzfest. Announcements computed white; the live announcement
+  ticker measured 45.69 pixels per second against the configured 46; the Trade
+  Board track reported the shared 55.2 setting; all three routes retained their
+  shared content and Live Reveal Queue surfaces.
+- Production deployment `dpl_F7FSNS9fGZiKQ1nRQxAXzGUdEUka` became Ready from
+  exact application commit `4a2917c8` with both `www.yoursparklesuite.com` and
+  the apex assigned. The apex redirects to the `www` live surface.
+- Production error and fatal logs were empty during the verification window.
+
+---
+
 ## August 1, 2026 - Public Site Settings Wiring Audit and Repair
 
 **Exact-account audit:**

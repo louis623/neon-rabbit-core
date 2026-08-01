@@ -4,6 +4,19 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Emerald Garden Uses the Shared Public-Site Contract
+
+Emerald Garden is a visual skin, not a separate customer-site implementation.
+Homepage, Trade Board, and Join must keep the shared Amethyst content,
+navigation, Live Reveal Queue, and measured ticker engine. Announcement tracks
+use the shared 46-pixels-per-second standard and Trade Board inventory uses
+55.2 pixels per second; Emerald must not override those timings. On its dark
+announcement row, announcement text is white. Its hero treatment follows the
+shared full-bleed composition and may not reintroduce the removed pale radial
+blob field or oversized homepage glass container.
+
+---
+
 ## August 1, 2026 - A Valid Customer URL Defines Public-Site Readiness
 
 Workspace public-site readiness must be derived from the canonical resolved

@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `86feb94 fix: wire public site settings and access`
+  `4a2917c fix: align emerald public site skin`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -39,6 +39,14 @@
   Preview, while the copy control and exact stored Live Queue code remain
   available. The rejected `Sparkle with us.` bubble and redundant `Preview
   site` controls remain removed.
+- **Latest Emerald Garden production checkpoint:** The Emerald Garden
+  customer-site skin now uses the shared content and ticker contract across
+  Homepage, Trade Board, and Join. Announcement text is white on the dark
+  emerald row, announcement and Trade Board tracks retain the shared 46 and
+  55.2 pixels-per-second pacing, and the old pale blob/glass-box hero treatment
+  has been replaced with the shared full-bleed composition. Production
+  deployment `dpl_F7FSNS9fGZiKQ1nRQxAXzGUdEUka` is Ready from exact commit
+  `4a2917c8` with both live domains assigned.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo

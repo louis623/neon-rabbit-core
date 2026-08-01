@@ -64,6 +64,12 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Immediate Sparkle Suite Follow-Up
 
+- [x] **Repair Emerald Garden customer-site parity** - completed August 1 in
+  `4a2917c fix: align emerald public site skin`. Homepage, Trade Board, and Join
+  retain the shared content/ticker contract; announcements are readable white;
+  the 46/55.2 pixels-per-second ticker standards remain intact; and the
+  Emerald hero now follows the shared full-bleed composition. Exact production
+  deployment `dpl_F7FSNS9fGZiKQ1nRQxAXzGUdEUka` is Ready on both live domains.
 - [x] **Audit and repair customer-site customization wiring** - completed
   August 1 in `86feb94 fix: wire public site settings and access`. The exact
   Louis admin/demo audit proved the uploaded photo and captions were persisted
