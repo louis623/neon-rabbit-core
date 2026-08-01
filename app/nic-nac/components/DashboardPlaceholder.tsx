@@ -220,8 +220,22 @@ export function formatHeaderRepName(displayName?: string | null) {
   return displayName?.trim() || 'Rep info loading'
 }
 
-export function formatHeaderShowName(businessName?: string | null) {
-  return businessName?.trim() || 'Show info loading'
+export function formatHeaderShowName(
+  businessName?: string | null,
+  displayName?: string | null,
+  isLoading = false,
+) {
+  const showName = businessName?.trim()
+  const repName = displayName?.trim()
+
+  if (
+    showName &&
+    (!repName || showName.localeCompare(repName, undefined, { sensitivity: 'base' }) !== 0)
+  ) {
+    return showName
+  }
+
+  return isLoading ? 'Live show name loading' : 'Live show name not set'
 }
 
 function mergeTradeBoardResults(
@@ -500,6 +514,7 @@ type RepProfileState = {
   status: 'loading' | 'ready' | 'error'
   repId?: string
   displayName?: string
+  businessName?: string
   publicSiteSlug?: string | null
   liveQueueSyncCode?: string | null
   timeZone?: string | null
@@ -703,6 +718,7 @@ type MeResponsePayload = {
   rep?: {
     id?: string
     display_name?: string
+    business_name?: string
     public_site_slug?: string | null
     time_zone?: string | null
     live_queue_sync_code?: string | null
@@ -2072,6 +2088,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     repId: repIdOverride,
     displayName: initialSiteSettings?.displayName,
+    businessName: initialSiteSettings?.businessName,
     publicSiteSlug: publicSiteSlugOverride ?? null,
     liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
@@ -2373,6 +2390,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       status: 'ready',
       repId: payload.rep?.id,
       displayName: payload.rep?.display_name,
+      businessName: payload.rep?.business_name,
       publicSiteSlug: payload.rep?.public_site_slug ?? null,
       liveQueueSyncCode: payload.rep?.live_queue_sync_code ?? null,
       timeZone: payload.rep?.time_zone ?? null,
@@ -4809,7 +4827,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     siteSettingsState.settings?.displayName ?? repProfileState.displayName,
   )
   const headerShowName = formatHeaderShowName(
-    siteSettingsState.settings?.businessName,
+    siteSettingsState.settings?.businessName ?? repProfileState.businessName,
+    headerRepName,
+    siteSettingsState.status === 'loading' && repProfileState.status === 'loading',
   )
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,

@@ -16,6 +16,7 @@ export interface NicNacAuthContext {
     auth_user_id: string
     email: string
     display_name: string
+    business_name: string
     stripe_customer_id: string | null
     public_site_slug: string | null
     time_zone: string

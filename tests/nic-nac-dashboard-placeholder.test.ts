@@ -508,7 +508,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Workspace')
     expect(html).toContain('Rep info loading')
-    expect(html).toContain('Show info loading')
+    expect(html).toContain('Live show name loading')
     expect(html).not.toContain('>Rep<')
     expect(html).not.toContain('>Show<')
     expect(html).not.toContain('Secret Rep ID Number')
@@ -1223,7 +1223,18 @@ describe('DashboardPlaceholder', () => {
     expect(formatHeaderRepName('Louis')).toBe('Louis')
     expect(formatHeaderRepName(undefined)).toBe('Rep info loading')
     expect(formatHeaderShowName('Sparkle by Sasha')).toBe('Sparkle by Sasha')
-    expect(formatHeaderShowName(undefined)).toBe('Show info loading')
+    expect(formatHeaderShowName('Louis Chapman', 'Louis Chapman')).toBe(
+      'Live show name not set',
+    )
+    expect(formatHeaderShowName('louis chapman', 'Louis Chapman')).toBe(
+      'Live show name not set',
+    )
+    expect(formatHeaderShowName(undefined, 'Louis Chapman')).toBe(
+      'Live show name not set',
+    )
+    expect(formatHeaderShowName(undefined, 'Louis Chapman', true)).toBe(
+      'Live show name loading',
+    )
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -1246,7 +1257,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Ask Nic-Nac anything...')
     expect(html).toContain('aria-label="Notifications"')
     expect(html).toContain('Rep info loading')
-    expect(html).toContain('Show info loading')
+    expect(html).toContain('Live show name loading')
     expect(html).not.toContain('Secret Rep ID Number')
     expect(html).not.toContain('MHF-7342')
     expect(html).not.toContain('>Rep<')
