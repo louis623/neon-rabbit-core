@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `9f35cd0 feat: restore homepage media controls`
+  `86feb94 fix: wire public site settings and access`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -27,18 +27,18 @@
   rollback/checkout-routing incident closeout, repaired admin/demo-account
   invariant, deny-unlisted branch guards, audited preservation checkpoints,
   and permanent provenance/post-auth safeguards.
-- **Latest local/deployed checkpoints:** The current local release candidate
-  restores the recovered three-slot customer-homepage media contract in Site
-  Settings: Showcase, About media 1, and About media 2, each with a photo
-  upload, TikTok/video URL, caption, preview, and removal. The old hero-image
-  control remains removed. Saved media maps into the existing Amethyst public
-  renderer. The Nic-Nac-first workspace still includes the Live Site Preview
-  workbench with centered equal-size 2x2 controls for Back to workspace,
-  Refresh preview, Open full site, and Open/Close Nic-Nac. Its persistent
-  header shows the canonical public-site address with a copy control and the
-  exact stored Live Queue code. The right rail preserves the useful `Public
-  Site` status card while omitting the rejected `Sparkle with us.` bubble and
-  redundant `Preview site` controls.
+- **Latest local/deployed checkpoints:** The recovered three-slot
+  customer-homepage media contract is now verified end to end. Site Settings
+  accepts a photo, caption, and either TikTok embed markup or a plain video URL
+  for Showcase, About media 1, and About media 2. Invalid nonblank media input
+  now produces a visible field-specific error instead of reporting a false
+  successful save. Saved photo/caption data maps into the existing Amethyst
+  public renderer. A valid rep-targeted customer URL now counts as a live site
+  even when the account has no vanity slug. The persistent header customer
+  address and right-rail `Open site` action both open the embedded Live Site
+  Preview, while the copy control and exact stored Live Queue code remain
+  available. The rejected `Sparkle with us.` bubble and redundant `Preview
+  site` controls remain removed.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo
@@ -48,7 +48,8 @@
   before every release or incident response; do not treat a raw deployment ID
   recorded in memory as the current source of truth.
 - **Latest homepage-media production deployment:**
-  `dpl_Ghyo6Rh1dGNTwAZx7Q3J4n347sfj`, Ready with the `www` and apex live
+  `dpl_3ZeRTLEqwSyE2neQvvekoHcxKNmy`, Ready from exact commit
+  `86feb94dcaa08a6ee9ae702de30e095c31583ff4` with the `www` and apex live
   domains assigned.
 - **Last application-bearing branch-containment deployment:**
   `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2`

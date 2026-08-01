@@ -4,6 +4,20 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - A Valid Customer URL Defines Public-Site Readiness
+
+Workspace public-site readiness must be derived from the canonical resolved
+customer-site URL, not from the presence of a vanity slug alone. Accounts
+without a slug still have a valid rep-targeted Amethyst URL and must be shown
+as live when that URL is available. The persistent header address and the
+right-rail Public Site card are actionable entry points into the existing
+embedded Live Site Preview; the adjacent copy control remains the sharing
+action. Site Settings media inputs accept either a plain HTTP(S) video URL or
+TikTok embed markup, canonicalize the stored source URL, and must visibly
+reject invalid nonblank input instead of silently saving an empty value.
+
+---
+
 ## August 1, 2026 - Homepage Media Uses the Recovered Three-Slot Contract
 
 Site Settings exposes exactly three customer-homepage media placements:

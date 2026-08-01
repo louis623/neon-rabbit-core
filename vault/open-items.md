@@ -64,6 +64,21 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Immediate Sparkle Suite Follow-Up
 
+- [x] **Audit and repair customer-site customization wiring** - completed
+  August 1 in `86feb94 fix: wire public site settings and access`. The exact
+  Louis admin/demo audit proved the uploaded photo and captions were persisted
+  and rendered, identified silent TikTok embed-code loss and the slug-only
+  readiness gate, and shipped visible media-validation errors, embed parsing,
+  rep-targeted live-site readiness, and direct Live Site Preview access from
+  the header and Public Site card. Exact production deployment
+  `dpl_3ZeRTLEqwSyE2neQvvekoHcxKNmy` is READY on both live domains. The two
+  TikTok values lost by the former normalizer must be pasted once more because
+  they were never stored.
+- [ ] **Repair the production synthetic-reviewer launcher token** - the current
+  configured token is shorter than the production route's 12-character
+  minimum. Choose and set a compliant token through the approved production
+  secret workflow, then rerun the token-gated `/start` reviewer path. Do not
+  alter this secret silently during unrelated feature releases.
 - [x] **Restore Nic-Nac inside Live Site Preview** - completed July 10 through `b96b7e84` and `50051b8c`. The centered 2x2 preview toolbar preserves Back to workspace, Refresh preview, and Open full site, adds Open/Close Nic-Nac, keeps Nic-Nac closed by default, and opens the chat beside the desktop preview when requested. The behavior is shared across current/future accounts and demos.
 - [x] **Show real next-show details in the workspace Upcoming Show card** - completed July 25 in `5ad2b43 feat: show next event in workspace card`. The right-hand card now shows the next real upcoming show's weekday, date, time, time zone, and name when data exists, links that summary into Calendar, and falls back to `No upcoming shows` plus `Add a show` when the calendar is empty.
 - [x] **Shorten the Trade Board customer-site action label** - completed July 25. The Trade Board top-right button now reads `Customer view` instead of `View customer board`.

@@ -4,6 +4,69 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Public Site Settings Wiring Audit and Repair
+
+**Exact-account audit:**
+- Audited Louis's protected admin/demo workspace read-only with an exact
+  `louis@neonrabbit.net` identity guard. The account remained `active`,
+  `dashboard_unlocked`, and on its established non-live internal demo
+  entitlement; no signup, checkout, Stripe, billing, or production-data
+  mutation was performed.
+- The uploaded Showcase photo and saved captions were present in durable Site
+  Settings data and rendered on the rep-targeted Amethyst customer homepage.
+- Both submitted TikTok values were absent from storage. The former normalizer
+  only accepted a plain URL, silently converted pasted TikTok embed markup to
+  an empty value, and still returned a successful save response.
+- The workspace incorrectly reported `site setup in progress` because its
+  status gate required a vanity slug even though the account had a valid
+  rep-targeted public-site URL.
+- The public-site address and status card were informational only, leaving no
+  direct way to open the customer site from those workspace surfaces.
+
+**What changed:**
+- TikTok media fields now accept either full TikTok embed markup or a plain
+  HTTP(S) video URL and store the canonical URL.
+- Invalid nonblank media input now returns a visible field-specific error
+  instead of silently discarding the value.
+- Any valid customer-site URL, including the rep-targeted fallback, counts as a
+  live site.
+- The header customer address and right-rail `Open site` action now open the
+  existing embedded Live Site Preview. The header copy action remains
+  available.
+- The oversized `Sparkle with us.` bubble and redundant `Preview site` header
+  action remain removed.
+
+**Verification and release:**
+- Focused Site Settings, dashboard, and Amethyst public-renderer coverage
+  passed: 4 files, 167 tests.
+- The full Next.js 16.2.1 production build passed with the active-branch gate.
+- Local synthetic reviewer smoke proved a rep-targeted customer URL shows
+  `Your site is live`, exposes `Open site`, and loads the exact customer
+  homepage inside Live Site Preview.
+- Exact live-domain smoke on Louis's signed-in workspace verified the header
+  address is actionable, the right rail says `Your site is live`, `Open site`
+  loads the embedded customer homepage, and the profile shows Louis Chapman
+  above The Dudes Fizzfest.
+- The live rep-targeted customer homepage rendered the exact Supabase-hosted
+  uploaded photo plus the saved `Louis` and `testing` captions.
+- Production checkpoint:
+  `86feb94 fix: wire public site settings and access`.
+- Production deployment `dpl_3ZeRTLEqwSyE2neQvvekoHcxKNmy` became READY from
+  exact commit `86feb94dcaa08a6ee9ae702de30e095c31583ff4`, with both
+  `www.yoursparklesuite.com` and the apex assigned. The apex redirects to the
+  `www` live surface.
+- Production runtime error/fatal logs for the new deployment were empty during
+  the verification window.
+- The two previously pasted TikTok values cannot be recovered because the old
+  code discarded them before persistence. They must be pasted once more after
+  this release; future invalid input will fail visibly instead of appearing to
+  save.
+- The token-gated production synthetic-reviewer launcher remains a separate
+  environment follow-up because the configured token is shorter than the
+  route's 12-character production minimum. No production secret was changed.
+
+---
+
 ## August 1, 2026 - Recovered Homepage Media Controls
 
 **Historical recovery:**
