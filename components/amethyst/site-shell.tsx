@@ -4,10 +4,22 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
-import type { AmethystSiteContent, AmethystTier } from '@/lib/amethyst/site-content'
+import type {
+  AmethystSiteContent,
+  AmethystTier,
+  AmethystTradeListing,
+} from '@/lib/amethyst/site-content'
 
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46
 const TRADE_TICKER_SPEED_PPS = 55.2
+const EMPTY_TRADE_TICKER_ITEM = {
+  id: 'empty-trade-board',
+  message: 'Trade Board listings will appear here after pieces are added.',
+  isEmpty: true as const,
+}
+type TradeTickerItem =
+  | (AmethystTradeListing & { isEmpty: false })
+  | typeof EMPTY_TRADE_TICKER_ITEM
 
 function buildTickerLoopItems<T>(items: T[], minimumSegmentItems: number): T[] {
   if (!Array.isArray(items) || items.length === 0) return []
@@ -178,7 +190,10 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
   useDynamicTickerMotion()
   const announcementItems = buildTickerLoopItems(content.announcementItems, 6)
   const announcementSegmentLength = announcementItems.length / 2
-  const tradeItems = buildTickerLoopItems(content.tradeBoardListings, 15)
+  const tradeTickerSource: TradeTickerItem[] = content.tradeBoardListings.length > 0
+    ? content.tradeBoardListings.map((listing) => ({ ...listing, isEmpty: false as const }))
+    : [EMPTY_TRADE_TICKER_ITEM]
+  const tradeItems = buildTickerLoopItems(tradeTickerSource, 15)
   const tradeSegmentLength = tradeItems.length / 2
 
   return (
@@ -223,20 +238,39 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
               'amethyst-scroll var(--amethyst-ticker-dynamic-duration, 60s) linear infinite reverse',
           }}
         >
-          {tradeItems.map((listing, index) => (
-            <a
-              className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"
-              data-ticker-segment-repeat-start={index === tradeSegmentLength ? 'true' : undefined}
-              data-ticker-segment-start={index === 0 ? 'true' : undefined}
-              href={listing.href ?? '#events'}
-              key={`${listing.id}-${index}`}
-            >
-              <span className={`h-2 w-2 rotate-45 rounded-[2px] ${tierChipClass(listing.tier)}`} />
-              <span>
-                {listing.title} - {listing.type || 'Jewelry'} - {listing.collection || 'Collection pending'}
-              </span>
-            </a>
-          ))}
+          {tradeItems.map((listing, index) => {
+            const segmentProps = {
+              'data-ticker-segment-repeat-start':
+                index === tradeSegmentLength ? 'true' : undefined,
+              'data-ticker-segment-start': index === 0 ? 'true' : undefined,
+            }
+
+            if (listing.isEmpty) {
+              return (
+                <span
+                  className="inline-flex items-center whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)]"
+                  key={`${listing.id}-${index}`}
+                  {...segmentProps}
+                >
+                  {listing.message}
+                </span>
+              )
+            }
+
+            return (
+              <a
+                className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"
+                href={listing.href ?? '#events'}
+                key={`${listing.id}-${index}`}
+                {...segmentProps}
+              >
+                <span className={`h-2 w-2 rotate-45 rounded-[2px] ${tierChipClass(listing.tier)}`} />
+                <span>
+                  {listing.title} - {listing.type || 'Jewelry'} - {listing.collection || 'Collection pending'}
+                </span>
+              </a>
+            )
+          })}
         </div>
       </div>
     </div>

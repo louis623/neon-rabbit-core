@@ -607,6 +607,12 @@ function Hero({ t, isLive, liveShow }) {
 // ============================================================
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
+const EMPTY_TRADE_TICKER_ITEM = {
+  name: "Trade Board listings will appear here after pieces are added.",
+  type: "",
+  collection: "",
+  isEmpty: true,
+};
 
 function buildTickerLoopItems(items, minimumSegmentItems) {
   if (!Array.isArray(items) || items.length === 0) return [];
@@ -694,7 +700,8 @@ function Ticker({ topText }) {
   const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted ? contentTrades : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
-  const tickerTrades = buildTickerLoopItems(trades, 15);
+  const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
+  const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);
   const tradeSegmentLength = tickerTrades.length / 2;
   return (
     <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
@@ -719,7 +726,16 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
-          {tickerTrades.length > 0 ? tickerTrades.map((tr, i) => (
+          {tickerTrades.map((tr, i) => tr.isEmpty ? (
+            <span
+              key={i}
+              className="hp-ticker-empty"
+              data-ticker-segment-start={i === 0 ? "true" : undefined}
+              data-ticker-segment-repeat-start={i === tradeSegmentLength ? "true" : undefined}
+            >
+              {tr.name}
+            </span>
+          ) : (
             <a
               key={i}
               {...linkProps(getTradeBoardHref())}
@@ -729,9 +745,7 @@ function Ticker({ topText }) {
             >
               {tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}
             </a>
-          )) : (
-            <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>
-          )}
+          ))}
         </div>
       </div>
     </div>

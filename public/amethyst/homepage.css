@@ -1057,7 +1057,17 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   transition: color var(--dur-fast) var(--ease);
 }
 .hp-ticker-trade:hover { color: var(--hp-primary); }
+.hp-ticker-empty {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--fg);
+  font-weight: 500;
+}
 .hp-ticker-row.reverse .hp-ticker-trade {
+  color: #ffffff;
+}
+.hp-ticker-row.reverse .hp-ticker-empty {
   color: #ffffff;
 }
 .hp-ticker-row.reverse .hp-ticker-trade:hover {

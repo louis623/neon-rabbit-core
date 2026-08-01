@@ -710,6 +710,12 @@ function Header({ businessName }) {
 
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
+const EMPTY_TRADE_TICKER_ITEM = {
+  name: "Trade Board listings will appear here after pieces are added.",
+  type: "",
+  collection: "",
+  isEmpty: true,
+};
 
 function buildTickerLoopItems(items, minimumSegmentItems) {
   if (!Array.isArray(items) || items.length === 0) return [];
@@ -807,7 +813,8 @@ function Ticker({ topText }) {
       : RUNTIME_CONTEXT.targeted ? [] : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
-  const tickerTrades = buildTickerLoopItems(trades, 15);
+  const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
+  const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);
   const tradeSegmentLength = tickerTrades.length / 2;
 
   return (
@@ -832,7 +839,16 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row reverse">
         <span className="hp-ticker-label">Trade Board</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
-          {tickerTrades.length > 0 ? tickerTrades.map((tr, index) => (
+          {tickerTrades.map((tr, index) => tr.isEmpty ? (
+            <span
+              key={index}
+              className="hp-ticker-empty"
+              data-ticker-segment-start={index === 0 ? "true" : undefined}
+              data-ticker-segment-repeat-start={index === tradeSegmentLength ? "true" : undefined}
+            >
+              {tr.name}
+            </span>
+          ) : (
             <a
               key={index}
               {...linkProps(TRADE_BOARD_HREF)}
@@ -842,9 +858,7 @@ function Ticker({ topText }) {
             >
               {tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}
             </a>
-          )) : (
-            <span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>
-          )}
+          ))}
         </div>
       </div>
     </div>

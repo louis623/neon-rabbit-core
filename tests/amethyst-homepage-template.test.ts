@@ -160,6 +160,13 @@ describe('Amethyst homepage template data wiring', () => {
     expect(shell).toContain('useDynamicTickerMotion()')
     expect(shell).toContain('`${distance / pixelsPerSecond}s`')
     expect(shell).not.toContain('Math.max(12, distance / pixelsPerSecond)')
+    expect(shell).toContain('const EMPTY_TRADE_TICKER_ITEM = {')
+    expect(shell).toContain(
+      'const tradeTickerSource = content.tradeBoardListings.length > 0',
+    )
+    expect(shell).toContain(
+      'const tradeItems = buildTickerLoopItems(tradeTickerSource, 15)',
+    )
     expect(shell).toContain('{listing.title} - {listing.type || \'Jewelry\'} - {listing.collection || \'Collection pending\'}')
     expect(shell).not.toContain('{listing.title} · {listing.msrpLabel}')
     expect(shell).not.toContain('amethyst-scroll 72s linear infinite')
@@ -169,6 +176,19 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsx).toContain('tickerSpeed: 1')
       expect(jsx).toContain('`${distance / pixelsPerSecond}s`')
       expect(jsx).not.toContain('Math.max(12, distance / pixelsPerSecond)')
+      expect(jsx).toContain('const EMPTY_TRADE_TICKER_ITEM = {')
+      expect(jsx).toContain(
+        'const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];',
+      )
+      expect(jsx).toContain(
+        'const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);',
+      )
+      expect(jsx).not.toContain(
+        '<span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>',
+      )
+      expect(jsx).toMatch(
+        /className="hp-ticker-empty"[\s\S]*?data-ticker-segment-start=[\s\S]*?data-ticker-segment-repeat-start=/,
+      )
     }
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
       expect(preset.values.tickerSpeed).toBe(1)
@@ -226,9 +246,9 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(homepage).toContain('buildTickerLoopItems(trades, 15)')
-    expect(trade).toContain('buildTickerLoopItems(trades, 15)')
-    expect(join).toContain('buildTickerLoopItems(trades, 15)')
+    expect(homepage).toContain('buildTickerLoopItems(tradeTickerSource, 15)')
+    expect(trade).toContain('buildTickerLoopItems(tradeTickerSource, 15)')
+    expect(join).toContain('buildTickerLoopItems(tradeTickerSource, 15)')
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('const ANNOUNCEMENT_TICKER_SPEED_PPS = 46')

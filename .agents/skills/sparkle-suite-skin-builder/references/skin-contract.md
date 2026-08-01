@@ -44,6 +44,20 @@ Skins must not change:
 - SEO metadata or real rep/customer data mapping
 - authorization, provider, payment, SMS, email, SignWell, or calendar behavior
 
+## Ticker Motion Contract
+
+Announcement and Trade Board tickers use measured constant pixel speed. The
+animation duration is the measured repeated-segment distance divided by the
+row's pixels-per-second constant; content length must never select a fixed
+duration or minimum-duration floor.
+
+Empty-state Trade Board copy is still ticker content. It must be duplicated
+into a complete loop with the same segment-start and segment-repeat markers as
+real listings. Never render a lone unmarked empty-state span inside an animated
+ticker track, because that bypasses measured speed and falls back to the slow
+legacy duration. This rule applies across Homepage, Trade Board, Join, every
+skin, and every current or future customer site.
+
 ## Skin Branding Cards
 
 Every skin needs a small browsing card for reps. The card is not the live site and must not require Nic-Nac to apply the skin just so the rep can preview it.
