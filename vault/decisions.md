@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Trade Board Ticker Copy Is Bold
+
+Trade Board ticker copy uses `700` font weight for both populated listings and
+the empty-state message across Homepage, Trade Board, Join, every current skin,
+and future shared public sites. Announcement ticker copy keeps its separate
+established weight. Skin-specific color treatment may preserve readability but
+must not flatten the Trade Board row back to regular or medium weight.
+
+---
+
 ## August 1, 2026 - Empty Ticker States Use the Measured Motion Contract
 
 An empty or short Trade Board state is ticker content, not a separate static

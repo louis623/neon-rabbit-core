@@ -5,6 +5,12 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Restore bold Trade Board ticker typography** - both populated listings
+  and the empty-state message now render at `700` weight across the shared
+  React shell and static Home, Trade Board, and Join pages. Computed local
+  verification confirmed announcements remain `500`, Trade Board is `700`,
+  and motion remains 55.2 pixels per second. Six suites (107 tests) and the
+  production build passed at application checkpoint `929638da`.
 - [x] **Restore constant-speed empty Trade Board tickers** - the empty state
   now uses the shared duplicated, segment-measured loop on Homepage, Trade
   Board, and Join. Live customer-domain measurements hold the Trade Board row

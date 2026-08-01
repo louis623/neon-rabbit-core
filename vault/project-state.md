@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `8f6f5b6 fix: keep empty trade tickers at constant speed`
+  `929638da fix: restore bold trade ticker text`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -63,6 +63,12 @@
   deployment `dpl_2kboNgryVqYjRkQN3JsSH8JZRFpt` is Ready from exact application
   commit `8f6f5b6a78603e5fa40a8a4ffb90eab5b3097c11` with both live domains
   assigned.
+- **Latest Trade Board ticker typography checkpoint:** Trade Board ticker copy
+  now uses true `700` weight for both populated listings and the empty-state
+  message across the shared React shell and static Homepage, Trade Board, and
+  Join pages. Announcement ticker copy remains at its established `500` weight,
+  and the measured Trade Board pace remains 55.2 pixels per second. Application
+  commit: `929638daff8fd8f8798e3a86196b16d4d558cbe2`.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo

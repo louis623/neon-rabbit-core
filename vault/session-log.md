@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Trade Board Ticker Typography Repair
+
+**Audit finding:**
+- The empty-state speed repair correctly restored measured motion but left the
+  Trade Board copy at medium `500` weight. The shared React site shell also
+  retained medium weight for both empty and populated Trade Board items.
+
+**What changed:**
+- Trade Board ticker copy now uses true bold `700` weight for both populated
+  listings and the empty-state message.
+- Announcement copy remains at its separate established `500` weight.
+- The correction covers the shared React shell and the static Homepage, Trade
+  Board, and Join pages used by every current skin.
+- The skin contract and regression suite now lock this visual distinction.
+
+**Verification:**
+- Computed local styles confirmed announcement weight `500` and Trade Board
+  weight `700`.
+- Home, Trade Board, and Join retained the exact 55.2-pixels-per-second Trade
+  Board pace after the font-metric change.
+- Six public-site skin and route suites passed: 107 tests.
+- The Next.js 16.2.1 production build passed, including TypeScript and all 30
+  static page generations.
+- Application commit: `929638daff8fd8f8798e3a86196b16d4d558cbe2`.
+
+---
+
 ## August 1, 2026 - Empty Trade Ticker Constant-Speed Repair
 
 **Audit finding:**
