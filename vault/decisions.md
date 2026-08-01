@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Workspace Header Keeps Share and Live Queue References Visible
+
+The authenticated Sparkle Suite workspace header always shows two account-level
+references: the canonical customer-facing site address with a copy control and
+the exact stored Live Queue code. These values come from the authenticated rep
+profile and remain visible on mobile. The header is read-only: it must not
+generate, reset, replace, or mutate Live Queue codes or queue state.
+
+---
+
 ## August 1, 2026 - Public Site Status Remains, Preview Decoration Does Not
 
 The Nic-Nac right rail retains a compact `Public Site` card because its

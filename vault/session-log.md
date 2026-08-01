@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Persistent Public-Site and Live Queue Header References
+
+**What changed:**
+- Added the account's canonical public-site address to the persistent Sparkle
+  Suite workspace header.
+- Added a small copy control that copies the full HTTPS customer-site link.
+- Added the account's exact stored Live Queue sync code beside the site link so
+  it remains available during Live Queue setup and reset support.
+- Kept both utilities visible in the responsive mobile header.
+- The workspace only reads these existing account values. It does not create,
+  replace, reset, or mutate Live Queue codes or queue data, and no extension
+  or Chrome Web Store files were touched.
+- Implementation checkpoint:
+  `83ea2de feat: add workspace header quick references`.
+
+**Verification:**
+- Focused header, workspace shell, authenticated profile, and reviewer-smoke
+  tests passed: 4 files, 118 tests.
+- The full Next.js 16.2.1 production build passed with the active-branch gate.
+- No personal account or signed-in browser session was used for testing.
+
+---
+
 ## August 1, 2026 - Public Site Status Card Restoration
 
 **What changed:**
