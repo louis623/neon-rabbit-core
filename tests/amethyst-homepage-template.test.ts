@@ -175,6 +175,40 @@ describe('Amethyst homepage template data wiring', () => {
     }
   })
 
+  it('keeps Emerald Garden on the shared ticker contract with readable announcements and the standard hero composition', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const tradeCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.css'),
+      'utf8',
+    )
+    const emeraldCss = css.slice(css.indexOf('/* Emerald Garden'))
+    const emeraldTradeCss = tradeCss.slice(
+      tradeCss.indexOf('/* Emerald Garden trade-board continuation */'),
+    )
+
+    expect(AMETHYST_APPEARANCE_PRESETS.emerald_garden.values.tickerSpeed).toBe(1)
+    expect(emeraldCss).not.toContain('--ticker-speed')
+    expect(emeraldCss).not.toContain('animation-duration')
+    expect(emeraldCss).toMatch(
+      /body\.bg-emerald-garden \.hp-ticker-row:not\(\.reverse\) \.hp-ticker-item\s*\{[\s\S]*?color:\s*#ffffff;/,
+    )
+    expect(emeraldCss).toContain(
+      'linear-gradient(135deg, #dce8dc 0%, #7fa58c 30%, #236c55 58%, #063b2e 100%)',
+    )
+    expect(emeraldTradeCss).toContain(
+      'linear-gradient(135deg, #dce8dc 0%, #7fa58c 30%, #236c55 58%, #063b2e 100%)',
+    )
+    expect(emeraldCss).not.toContain(
+      'radial-gradient(ellipse at 9% 48%, rgba(255, 255, 255, 0.94)',
+    )
+    expect(emeraldCss).toMatch(
+      /body\.bg-emerald-garden \.hp-hero-inner > div\s*\{[\s\S]*?background:\s*transparent;[\s\S]*?backdrop-filter:\s*none;/,
+    )
+  })
+
   it('builds duplicate ticker loops for measured pixel-speed animation', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),

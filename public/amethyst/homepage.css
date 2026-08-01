@@ -5714,42 +5714,61 @@ body.bg-emerald-garden .hp-ticker-row.reverse .hp-ticker-label {
   color: #064e3b;
 }
 
+body.bg-emerald-garden .hp-ticker-row:not(.reverse) .hp-ticker-item {
+  color: #ffffff;
+}
+
+body.bg-emerald-garden .hp-ticker-row:not(.reverse) .hp-ticker-item .dot {
+  background: var(--eg-champagne);
+  box-shadow: 0 0 10px rgba(229, 211, 179, 0.34);
+}
+
+body.bg-emerald-garden .hp-ticker-row.reverse .hp-ticker-trade,
+body.bg-emerald-garden .hp-ticker-row.reverse .hp-ticker-empty {
+  color: #053c2e;
+}
+
+body.bg-emerald-garden .hp-ticker-row.reverse .hp-ticker-trade:hover {
+  color: #022c22;
+}
+
 body.bg-emerald-garden .hp-hero,
 body.bg-emerald-garden .tp-hero,
 body.bg-emerald-garden .jp-hero {
-  background: linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%);
+  background: #063b2e;
 }
 
 body.bg-emerald-garden .hp-hero-media,
 body.bg-emerald-garden .jp-hero-media {
   background:
-    radial-gradient(ellipse at 9% 48%, rgba(255, 255, 255, 0.94) 0 5%, rgba(229, 211, 179, 0.42) 6%, transparent 17%),
-    radial-gradient(ellipse at 19% 62%, rgba(126, 153, 104, 0.68) 0 7%, transparent 20%),
-    radial-gradient(ellipse at 88% 28%, rgba(255, 255, 255, 0.72) 0 5%, transparent 17%),
-    radial-gradient(ellipse at 80% 54%, rgba(130, 160, 122, 0.52) 0 8%, transparent 24%),
-    linear-gradient(118deg, #eef0e2 0%, #b7c9ad 31%, #315f49 62%, #f3ebda 100%);
+    linear-gradient(180deg, rgba(3, 44, 34, 0.06) 0%, rgba(3, 44, 34, 0.36) 62%, rgba(3, 44, 34, 0.78) 100%),
+    linear-gradient(135deg, #dce8dc 0%, #7fa58c 30%, #236c55 58%, #063b2e 100%);
 }
 
 body.bg-emerald-garden .hp-hero-media::after,
 body.bg-emerald-garden .jp-hero-media::after {
   background:
-    linear-gradient(90deg, rgba(6, 78, 59, 0.14), rgba(4, 47, 37, 0.28)),
-    radial-gradient(circle at 52% 40%, transparent 0%, rgba(4, 47, 37, 0.32) 100%);
+    linear-gradient(90deg, rgba(229, 211, 179, 0.12), transparent 46%, rgba(3, 44, 34, 0.28)),
+    linear-gradient(180deg, transparent 48%, rgba(3, 44, 34, 0.32) 100%);
 }
 
-body.bg-emerald-garden .hp-hero-inner > div,
 body.bg-emerald-garden .jp-hero-card {
-  background: rgba(5, 62, 47, 0.62);
+  background: rgba(3, 44, 34, 0.72);
   border: 1px solid rgba(229, 211, 179, 0.58);
   border-radius: 28px;
   box-shadow:
     0 28px 76px rgba(4, 47, 37, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
 }
 
 body.bg-emerald-garden .hp-hero-inner > div {
-  padding: clamp(1.75rem, 4vw, 3.5rem);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
 }
 
 body.bg-emerald-garden .hp-hero-headline,
@@ -5773,6 +5792,11 @@ body.bg-emerald-garden .jp-hero-localized,
 body.bg-emerald-garden .jp-hero-compliance {
   color: rgba(255, 255, 255, 0.86);
   font-family: var(--eg-serif);
+}
+
+body.bg-emerald-garden .hp-hero-headline,
+body.bg-emerald-garden .hp-hero-sub {
+  text-shadow: 0 3px 24px rgba(3, 44, 34, 0.48);
 }
 
 body.bg-emerald-garden .hp-shop-btn,

@@ -2192,9 +2192,8 @@ body.bling-kitchen-trade .hp-footer-bottom p {
 /* Emerald Garden trade-board continuation */
 body.bg-emerald-garden .tp-hero {
   background:
-    radial-gradient(circle at 103% -12%, rgba(255, 255, 255, 0.2), transparent 24rem),
-    radial-gradient(circle at -8% 108%, rgba(4, 120, 87, 0.42), transparent 26rem),
-    linear-gradient(160deg, #059669 0%, #10b981 50%, #047857 100%);
+    linear-gradient(180deg, rgba(3, 44, 34, 0.06) 0%, rgba(3, 44, 34, 0.36) 62%, rgba(3, 44, 34, 0.78) 100%),
+    linear-gradient(135deg, #dce8dc 0%, #7fa58c 30%, #236c55 58%, #063b2e 100%);
 }
 
 body.bg-emerald-garden .tp-board {
