@@ -162,7 +162,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(shell).not.toContain('Math.max(12, distance / pixelsPerSecond)')
     expect(shell).toContain('const EMPTY_TRADE_TICKER_ITEM = {')
     expect(shell).toContain(
-      'const tradeTickerSource = content.tradeBoardListings.length > 0',
+      'const tradeTickerSource: TradeTickerItem[] = content.tradeBoardListings.length > 0',
     )
     expect(shell).toContain(
       'const tradeItems = buildTickerLoopItems(tradeTickerSource, 15)',
@@ -171,6 +171,12 @@ describe('Amethyst homepage template data wiring', () => {
     expect(shell).not.toContain('{listing.title} · {listing.msrpLabel}')
     expect(shell).not.toContain('amethyst-scroll 72s linear infinite')
     expect(shell).not.toContain('amethyst-scroll 60s linear infinite reverse')
+    expect(shell).toContain(
+      'className="inline-flex items-center whitespace-nowrap text-[13px] font-bold text-[var(--amethyst-fg)]"',
+    )
+    expect(shell).toContain(
+      'className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-bold text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"',
+    )
 
     for (const jsx of [homepage, trade, join]) {
       expect(jsx).toContain('tickerSpeed: 1')
@@ -190,6 +196,12 @@ describe('Amethyst homepage template data wiring', () => {
         /className="hp-ticker-empty"[\s\S]*?data-ticker-segment-start=[\s\S]*?data-ticker-segment-repeat-start=/,
       )
     }
+    expect(css).toMatch(
+      /\.hp-ticker-trade\s*\{[\s\S]*?font-weight:\s*700;/,
+    )
+    expect(css).toMatch(
+      /\.hp-ticker-empty\s*\{[\s\S]*?font-weight:\s*700;/,
+    )
     for (const preset of Object.values(AMETHYST_APPEARANCE_PRESETS)) {
       expect(preset.values.tickerSpeed).toBe(1)
     }

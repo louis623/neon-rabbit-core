@@ -58,6 +58,11 @@ ticker track, because that bypasses measured speed and falls back to the slow
 legacy duration. This rule applies across Homepage, Trade Board, Join, every
 skin, and every current or future customer site.
 
+Trade Board ticker copy is bold at `700` weight for both populated listings and
+the empty-state message. Announcement ticker copy keeps its separate established
+weight. Skins may change readable colors but must not flatten the Trade Board
+row back to regular or medium weight.
+
 ## Skin Branding Cards
 
 Every skin needs a small browsing card for reps. The card is not the live site and must not require Nic-Nac to apply the skin just so the rep can preview it.

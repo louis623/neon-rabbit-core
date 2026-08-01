@@ -1052,7 +1052,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 8px;
   font-size: 13px;
   color: var(--fg);
-  font-weight: 500;
+  font-weight: 700;
   text-decoration: none;
   transition: color var(--dur-fast) var(--ease);
 }
@@ -1062,7 +1062,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   align-items: center;
   font-size: 13px;
   color: var(--fg);
-  font-weight: 500;
+  font-weight: 700;
 }
 .hp-ticker-row.reverse .hp-ticker-trade {
   color: #ffffff;

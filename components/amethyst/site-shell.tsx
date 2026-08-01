@@ -248,7 +248,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
             if (listing.isEmpty) {
               return (
                 <span
-                  className="inline-flex items-center whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)]"
+                  className="inline-flex items-center whitespace-nowrap text-[13px] font-bold text-[var(--amethyst-fg)]"
                   key={`${listing.id}-${index}`}
                   {...segmentProps}
                 >
@@ -259,7 +259,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
 
             return (
               <a
-                className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"
+                className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] font-bold text-[var(--amethyst-fg)] transition hover:text-[var(--amethyst-primary)]"
                 href={listing.href ?? '#events'}
                 key={`${listing.id}-${index}`}
                 {...segmentProps}
