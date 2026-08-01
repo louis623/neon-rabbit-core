@@ -125,8 +125,8 @@ const SECONDARY_WORKSPACE_SECTIONS = [
   },
   {
     key: 'collection-intake',
-    label: 'Collection Intake',
-    shortLabel: 'Intake',
+    label: 'Bulk Collection Intake',
+    shortLabel: 'Bulk Intake',
     icon: Images,
   },
   {
@@ -353,6 +353,20 @@ function getWorkspaceSectionLabel(section: WorkspaceSectionKey) {
     )
       ?.label ?? 'Workspace'
   )
+}
+
+export function getWorkspaceBackDestination(
+  section: WorkspaceSectionKey,
+): { section: WorkspaceSectionKey; label: string } | null {
+  if (section === 'home') return null
+
+  const isToolSection = SECONDARY_WORKSPACE_SECTIONS.some(
+    (workspaceSection) => workspaceSection.key === section,
+  )
+
+  return isToolSection
+    ? { section: 'more', label: 'Tools' }
+    : { section: 'home', label: 'Nic-Nac' }
 }
 
 export function buildHomeNextShowLabel(events: CalendarEvent[]) {
@@ -5141,6 +5155,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
   const renderedSection = renderActiveWorkspaceSection()
   const showConceptHome = activeSection === 'home'
+  const workspaceBackDestination = getWorkspaceBackDestination(activeSection)
   const homeTradeRequestsCount = tradeRequestsState.requests?.length ?? 0
   const homeCleanupCount = tradeSwapCleanupState.items?.length ?? 0
   const homeFulfillmentCount = fulfillmentQueueState.items?.length ?? 0
@@ -5267,7 +5282,24 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               onOpenHelp={() => setActiveSection('help-resources')}
             />
           ) : (
-            renderedSection
+            <div className={styles.workspaceSectionPage}>
+              {workspaceBackDestination ? (
+                <button
+                  type="button"
+                  className={styles.workspaceBackButton}
+                  onClick={() => {
+                    setWorkspacePreview({ mode: 'workspace' })
+                    setPreviewUnavailableMessage(null)
+                    setActiveSection(workspaceBackDestination.section)
+                  }}
+                  aria-label={`Back to ${workspaceBackDestination.label}`}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                  <span>Back to {workspaceBackDestination.label}</span>
+                </button>
+              ) : null}
+              {renderedSection}
+            </div>
           )}
         </WorkspaceShell>
       )}
@@ -5624,7 +5656,7 @@ function MoreWorkspaceCard({
         <div>
           <h2 className={styles.cardTitle}>Tools</h2>
           <p className={styles.cardSubtitle}>
-            Open Collection Intake, business helpers, settings, and other
+            Open Bulk Collection Intake, business helpers, settings, and other
             workspace tools when you need them.
           </p>
         </div>

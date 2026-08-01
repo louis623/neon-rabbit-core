@@ -9,7 +9,7 @@ describe('CollectionIntakeTool', () => {
   it('renders the preserved folder-first intake contract inside the workspace', () => {
     const html = renderToStaticMarkup(createElement(CollectionIntakeTool))
 
-    expect(html).toContain('Collection Intake')
+    expect(html).toContain('Bulk Collection Intake')
     expect(html).toContain('Bulk-add jewelry to your Trade Board.')
     expect(html).toContain('Work one piece at a time.')
     expect(html).toContain('Capture order keeps each set grouped.')

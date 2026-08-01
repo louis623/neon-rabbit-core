@@ -30,6 +30,7 @@ import {
   getAutoRechargeDraft,
   getAutoRechargeThresholdOptions,
   getInitialWorkspaceSection,
+  getWorkspaceBackDestination,
   getVisibleWorkspaceSections,
   hasBlingKitchenRecipeWorkspaceAccess,
   hasPaidWorkspaceSubscription,
@@ -1612,6 +1613,26 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('Preview site')
     expect(source).not.toContain('Sparkle with us.')
     expect(source).not.toContain('href={customerSparkleSiteHref}\n              target="_blank"')
+  })
+
+  it('provides a consistent back path for primary and nested tool sections', () => {
+    expect(getWorkspaceBackDestination('home')).toBeNull()
+    expect(getWorkspaceBackDestination('trade-board')).toEqual({
+      section: 'home',
+      label: 'Nic-Nac',
+    })
+    expect(getWorkspaceBackDestination('more')).toEqual({
+      section: 'home',
+      label: 'Nic-Nac',
+    })
+    expect(getWorkspaceBackDestination('collection-intake')).toEqual({
+      section: 'more',
+      label: 'Tools',
+    })
+    expect(getWorkspaceBackDestination('account')).toEqual({
+      section: 'more',
+      label: 'Tools',
+    })
   })
 
   it('keeps Nic-Nac available as a live-preview sidecar with centered equal actions', () => {

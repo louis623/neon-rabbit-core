@@ -113,7 +113,7 @@ export function CollectionIntakeTool() {
     <div className={styles.stack}>
       <section className={styles.intro}>
         <div>
-          <span className={styles.eyebrow}>Collection Intake</span>
+          <span className={styles.eyebrow}>Bulk Collection Intake</span>
           <h2>Bulk-add jewelry to your Trade Board.</h2>
           <p>
             Select one photo folder, keep each piece together in capture order,
@@ -202,7 +202,7 @@ export function CollectionIntakeTool() {
               <span className={styles.eyebrow}>Local batch review</span>
               <h3>Review proposed groupings</h3>
               <p>
-                This queue previews the preserved Collection Intake workflow.
+                This queue previews the preserved Bulk Collection Intake workflow.
                 Approvals stay local and do not write inventory or catalog data.
               </p>
             </div>
