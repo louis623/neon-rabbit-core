@@ -459,6 +459,91 @@
   margin-left: auto;
 }
 
+.appHeaderReferences {
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.appHeaderReference {
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(67, 42, 116, 0.1);
+  border-radius: 10px;
+  background: rgba(248, 245, 255, 0.72);
+  padding: 6px 9px;
+}
+
+.appHeaderReferenceLabel {
+  grid-column: 1 / -1;
+  color: #756987;
+  font-size: 0.59rem;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.appHeaderReferenceValue,
+.appHeaderQueueCode {
+  min-width: 0;
+  overflow: hidden;
+  color: #2f214b;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHeaderReferenceValue {
+  max-width: clamp(150px, 22vw, 300px);
+}
+
+.appHeaderQueueCode {
+  letter-spacing: 0.045em;
+}
+
+.appHeaderCopyButton {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #7345ca;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.appHeaderCopyButton:hover,
+.appHeaderCopyButton:focus-visible {
+  background: rgba(115, 69, 202, 0.1);
+  outline: none;
+}
+
+.appHeaderCopyButton:focus-visible {
+  box-shadow: 0 0 0 2px rgba(115, 69, 202, 0.24);
+}
+
+.appHeaderCopyButton:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.appHeaderCopyButtonCopied {
+  color: #0b8f5a;
+}
+
 .appHeaderIcon {
   border: 0;
   background: transparent;
@@ -5060,6 +5145,7 @@
     min-height: 54px;
     padding: 8px 14px;
     gap: 10px;
+    flex-wrap: wrap;
   }
 
   .appBrand {
@@ -5074,6 +5160,20 @@
 
   .appHeaderActions {
     gap: 6px;
+  }
+
+  .appHeaderReferences {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .appHeaderReference {
+    flex: 1 1 0;
+  }
+
+  .appHeaderReferenceValue {
+    max-width: min(58vw, 260px);
   }
 
   .appProfileCopy {

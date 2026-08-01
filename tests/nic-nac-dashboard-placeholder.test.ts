@@ -1246,6 +1246,9 @@ describe('DashboardPlaceholder', () => {
   it('keeps a compact workspace app header without the duplicate Nic-Nac search', () => {
     const html = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        repIdOverride: 'rep-1',
+        publicSiteSlugOverride: 'milehighfizz',
         liveQueueSyncCodeOverride: 'MHF-7342',
       }),
     )
@@ -1257,10 +1260,12 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('How can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
     expect(html).toContain('aria-label="Notifications"')
-    expect(html).toContain('Rep info loading')
-    expect(html).toContain('Live show name loading')
+    expect(html).toContain('Public site')
+    expect(html).toContain('yoursparklesuite.com/milehighfizz')
+    expect(html).toContain('aria-label="Copy public site address"')
+    expect(html).toContain('Live Queue code')
+    expect(html).toContain('MHF-7342')
     expect(html).not.toContain('Secret Rep ID Number')
-    expect(html).not.toContain('MHF-7342')
     expect(html).not.toContain('>Rep<')
     expect(html).not.toContain('>Show<')
     expect(html).not.toContain('Rep / show')
@@ -1269,6 +1274,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Live Queue sync code')
     expect(css).toContain('.appHeader')
     expect(css).toContain('.appBrand')
+    expect(css).toContain('.appHeaderReferences')
+    expect(css).toContain('.appHeaderCopyButton')
     expect(css).toContain('.appProfile')
     expect(css).not.toContain('.appSearch')
     expect(css).not.toContain('.appSearchInput')

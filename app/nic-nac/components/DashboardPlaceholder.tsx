@@ -49,10 +49,12 @@ import {
   CalendarDays,
   Bell,
   BookOpen,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleEllipsis,
+  Copy,
   Gem,
   Globe2,
   HelpCircle,
@@ -4802,6 +4804,23 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const currentPublicSiteSlug =
     publicSiteSlugOverride ?? repProfileState.publicSiteSlug
   const currentRepId = repIdOverride ?? repProfileState.repId
+  const currentLiveQueueSyncCode =
+    liveQueueSyncCodeOverride ?? repProfileState.liveQueueSyncCode
+  const customerSparkleSiteHref =
+    currentPublicSiteSlug || currentRepId
+      ? buildCustomerSparkleSiteHref({
+          repId: currentRepId,
+          publicSiteSlug: currentPublicSiteSlug,
+        })
+      : null
+  const customerSparkleSiteUrl = customerSparkleSiteHref
+    ? `https://www.yoursparklesuite.com${customerSparkleSiteHref}`
+    : null
+  const customerSparkleSiteDisplay = customerSparkleSiteUrl
+    ? customerSparkleSiteUrl.replace(/^https:\/\/www\./, '')
+    : repProfileState.status === 'loading'
+      ? 'Site address loading'
+      : 'Site address not set'
   const customerJoinTeamHref = currentPublicSiteSlug
     ? `/${encodeURIComponent(currentPublicSiteSlug.trim().toLowerCase())}/join`
     : currentRepId
@@ -4885,6 +4904,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     <WorkspaceAppHeader
       repName={headerRepName}
       showName={headerShowName}
+      publicSiteUrl={customerSparkleSiteUrl}
+      publicSiteDisplay={customerSparkleSiteDisplay}
+      liveQueueSyncCode={currentLiveQueueSyncCode}
       onGoHome={() => {
         setWorkspacePreview({ mode: 'workspace' })
         setPreviewUnavailableMessage(null)
@@ -5332,14 +5354,38 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 function WorkspaceAppHeader({
   repName,
   showName,
+  publicSiteUrl,
+  publicSiteDisplay,
+  liveQueueSyncCode,
   onGoHome,
 }: {
   repName: string
   showName: string
+  publicSiteUrl: string | null
+  publicSiteDisplay: string
+  liveQueueSyncCode?: string | null
   onGoHome: () => void
 }) {
   const [logoutBusy, setLogoutBusy] = useState(false)
   const [logoutError, setLogoutError] = useState<string | null>(null)
+  const [siteLinkCopied, setSiteLinkCopied] = useState(false)
+
+  useEffect(() => {
+    if (!siteLinkCopied) return
+    const timeoutId = window.setTimeout(() => setSiteLinkCopied(false), 1800)
+    return () => window.clearTimeout(timeoutId)
+  }, [siteLinkCopied])
+
+  const handleCopyPublicSite = async () => {
+    if (!publicSiteUrl) return
+
+    try {
+      await navigator.clipboard.writeText(publicSiteUrl)
+      setSiteLinkCopied(true)
+    } catch {
+      setSiteLinkCopied(false)
+    }
+  }
 
   const handleLogout = async () => {
     setLogoutBusy(true)
@@ -5376,6 +5422,37 @@ function WorkspaceAppHeader({
           <span className={styles.appBrandSubtitle}>Workspace</span>
         </span>
       </button>
+      <div className={styles.appHeaderReferences} aria-label="Workspace quick reference">
+        <div className={styles.appHeaderReference}>
+          <span className={styles.appHeaderReferenceLabel}>Public site</span>
+          <span className={styles.appHeaderReferenceValue} title={publicSiteUrl ?? undefined}>
+            {publicSiteDisplay}
+          </span>
+          <button
+            type="button"
+            className={`${styles.appHeaderCopyButton} ${
+              siteLinkCopied ? styles.appHeaderCopyButtonCopied : ''
+            }`}
+            onClick={() => void handleCopyPublicSite()}
+            disabled={!publicSiteUrl}
+            aria-label={
+              siteLinkCopied
+                ? 'Public site address copied'
+                : 'Copy public site address'
+            }
+            title={siteLinkCopied ? 'Copied' : 'Copy public site address'}
+          >
+            {siteLinkCopied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+          </button>
+        </div>
+        <div className={styles.appHeaderReference}>
+          <span className={styles.appHeaderReferenceLabel}>Live Queue code</span>
+          <strong className={styles.appHeaderQueueCode}>
+            {liveQueueSyncCode?.trim() ||
+              (repName === 'Rep info loading' ? 'Loading' : 'Not set')}
+          </strong>
+        </div>
+      </div>
       <div className={styles.appHeaderActions}>
         <button
           type="button"
