@@ -6,6 +6,8 @@ import {
 } from '@/lib/amethyst/appearance-presets'
 import type {
   HeroAnimationType,
+  PublicSiteMediaSlot,
+  PublicSiteMediaSlotKey,
   SiteSettingsDashboardResult,
   UpdateSiteSettingsDashboardInput,
 } from '@/lib/services/types'
@@ -22,6 +24,7 @@ type SiteSettingsRow = {
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
+  homepage_media_slots: unknown
 }
 
 type RepProfileRow = {
@@ -33,7 +36,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -79,6 +82,58 @@ function normalizeSocialHandles(
   )
 }
 
+const PUBLIC_SITE_MEDIA_SLOT_KEYS: PublicSiteMediaSlotKey[] = [
+  'showcase',
+  'about_1',
+  'about_2',
+]
+
+export function getDefaultPublicSiteMediaSlots(): PublicSiteMediaSlot[] {
+  return PUBLIC_SITE_MEDIA_SLOT_KEYS.map((key) => ({
+    key,
+    caption: '',
+    imageUrl: '',
+    videoUrl: '',
+  }))
+}
+
+function normalizePublicMediaUrl(value: unknown) {
+  if (typeof value !== 'string') return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+
+  try {
+    const url = new URL(trimmed)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : ''
+  } catch {
+    return ''
+  }
+}
+
+export function normalizePublicSiteMediaSlots(
+  value: unknown,
+): PublicSiteMediaSlot[] {
+  const rows = Array.isArray(value) ? value : []
+  const byKey = new Map<string, Record<string, unknown>>()
+
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue
+    const record = row as Record<string, unknown>
+    if (typeof record.key === 'string') byKey.set(record.key, record)
+  }
+
+  return PUBLIC_SITE_MEDIA_SLOT_KEYS.map((key) => {
+    const row = byKey.get(key)
+    return {
+      key,
+      caption:
+        typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : '',
+      imageUrl: normalizePublicMediaUrl(row?.imageUrl),
+      videoUrl: normalizePublicMediaUrl(row?.videoUrl),
+    }
+  })
+}
+
 function buildDashboardResult(args: {
   siteSettings: SiteSettingsRow | null
   repProfile: RepProfileRow
@@ -106,6 +161,9 @@ function buildDashboardResult(args: {
       args.siteSettings?.appearance_preset,
     ),
     socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
+    homepageMediaSlots: normalizePublicSiteMediaSlots(
+      args.siteSettings?.homepage_media_slots,
+    ),
   }
 }
 
@@ -219,6 +277,11 @@ export async function updateSiteSettingsDashboard(
   if (input.appearancePreset !== undefined) {
     siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(
       input.appearancePreset,
+    )
+  }
+  if (input.homepageMediaSlots !== undefined) {
+    siteSettingsPatch.homepage_media_slots = normalizePublicSiteMediaSlots(
+      input.homepageMediaSlots,
     )
   }
 

@@ -22,6 +22,7 @@ import type {
   UpsertJoinTeamMemberInput,
   JewelryDatabaseResult,
   PublicSiteRecipe,
+  PublicSiteMediaSlotKey,
   RepMessagesDashboardResult,
   SiteSettingsDashboardResult,
   SiteAnalyticsDashboardResult,
@@ -1494,15 +1495,37 @@ function readFileAsDataUrl(file: File) {
   })
 }
 
+const EMPTY_HOMEPAGE_MEDIA_SLOTS = [
+  { key: 'showcase' as const, caption: '', imageUrl: '', videoUrl: '' },
+  { key: 'about_1' as const, caption: '', imageUrl: '', videoUrl: '' },
+  { key: 'about_2' as const, caption: '', imageUrl: '', videoUrl: '' },
+]
+
 export function getSiteSettingsDraft(
   settings: SiteSettingsDashboardResult,
 ): SiteSettingsDraft {
+  const homepageMediaSlots =
+    settings.homepageMediaSlots ?? EMPTY_HOMEPAGE_MEDIA_SLOTS
   return {
     ...settings,
     appearancePreset: normalizeAmethystAppearancePreset(
       settings.appearancePreset,
     ) as SiteAppearancePreset,
     socialHandles: { ...settings.socialHandles },
+    homepageMediaSlots: homepageMediaSlots.map((slot) => ({ ...slot })),
+  }
+}
+
+export function updateHomepageMediaSlot(
+  draft: SiteSettingsDraft,
+  key: PublicSiteMediaSlotKey,
+  patch: Partial<NonNullable<SiteSettingsDraft['homepageMediaSlots']>[number]>,
+): SiteSettingsDraft {
+  return {
+    ...draft,
+    homepageMediaSlots: (draft.homepageMediaSlots ?? []).map((slot) =>
+      slot.key === key ? { ...slot, ...patch, key } : slot,
+    ),
   }
 }
 
@@ -1516,10 +1539,11 @@ export function getWorkspaceSkinPreset(
 export function getNormalizedSiteSettingsDraft(
   draft: SiteSettingsDraft,
 ): SiteSettingsDraft {
+  const normalizedDraft = getSiteSettingsDraft(draft)
   return {
-    ...draft,
+    ...normalizedDraft,
     appearancePreset: normalizeAmethystAppearancePreset(
-      draft.appearancePreset,
+      normalizedDraft.appearancePreset,
     ) as SiteAppearancePreset,
   }
 }
@@ -1532,7 +1556,10 @@ export function hasSiteSettingsUnsavedChanges({
   draft?: SiteSettingsDraft | null
 }) {
   if (!settings || !draft) return false
-  return JSON.stringify(getNormalizedSiteSettingsDraft(draft)) !== JSON.stringify(settings)
+  return (
+    JSON.stringify(getNormalizedSiteSettingsDraft(draft)) !==
+    JSON.stringify(getNormalizedSiteSettingsDraft(getSiteSettingsDraft(settings)))
+  )
 }
 
 export function getSiteSettingsManualSaveStatusText({
@@ -2216,6 +2243,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+  const [siteSettingsMediaUploadKey, setSiteSettingsMediaUploadKey] =
+    useState<PublicSiteMediaSlotKey | null>(null)
   const [recipesState, setRecipesState] = useState<RecipesState>({
     status: 'idle',
     recipes: [],
@@ -3225,6 +3254,67 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         },
       }
     })
+  }
+
+  function handleHomepageMediaChange(
+    key: PublicSiteMediaSlotKey,
+    patch: Partial<NonNullable<SiteSettingsDraft['homepageMediaSlots']>[number]>,
+  ) {
+    setSiteSettingsActionState((current) => ({
+      pending: current.pending,
+      error: null,
+      helperMessage: null,
+    }))
+    setSiteSettingsDraft((current) =>
+      current ? updateHomepageMediaSlot(current, key, patch) : current,
+    )
+  }
+
+  async function handleHomepageMediaUpload(
+    key: PublicSiteMediaSlotKey,
+    file: File,
+  ) {
+    setSiteSettingsMediaUploadKey(key)
+    setSiteSettingsActionState((current) => ({
+      pending: current.pending,
+      error: null,
+      helperMessage: null,
+    }))
+
+    try {
+      const base64Data = await readFileAsDataUrl(file)
+      const response = await fetch('/api/nic-nac/site-settings/media', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ base64Data, filename: file.name }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; imageUrl?: string }
+        | null
+      if (!response.ok || !payload?.imageUrl) {
+        throw new Error(payload?.error || 'Unable to upload that image.')
+      }
+      setSiteSettingsDraft((current) =>
+        current
+          ? updateHomepageMediaSlot(current, key, { imageUrl: payload.imageUrl })
+          : current,
+      )
+      setSiteSettingsActionState((current) => ({
+        pending: current.pending,
+        error: null,
+        helperMessage: 'Image uploaded. Save site settings to publish it.',
+      }))
+    } catch (error) {
+      setSiteSettingsActionState((current) => ({
+        pending: current.pending,
+        error:
+          error instanceof Error ? error.message : 'Unable to upload that image.',
+        helperMessage: null,
+      }))
+    } finally {
+      setSiteSettingsMediaUploadKey(null)
+    }
   }
 
   function refreshLiveSitePreviewAfterSiteSettingsSave() {
@@ -5119,6 +5209,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             statusMessage={siteSettingsSaveStatusText}
             onDraftChange={handleSiteSettingsDraftChange}
             onSocialHandleChange={handleSocialHandleChange}
+            onHomepageMediaChange={handleHomepageMediaChange}
+            onHomepageMediaUpload={handleHomepageMediaUpload}
+            mediaUploadKey={siteSettingsMediaUploadKey}
             onSave={handleSaveSiteSettings}
           />
         </div>
@@ -6635,6 +6728,9 @@ export function SiteSettingsCard({
   statusMessage,
   onDraftChange,
   onSocialHandleChange,
+  onHomepageMediaChange,
+  onHomepageMediaUpload,
+  mediaUploadKey,
   onSave,
 }: {
   state: SiteSettingsState
@@ -6644,6 +6740,15 @@ export function SiteSettingsCard({
   statusMessage?: string | null
   onDraftChange?: (patch: Partial<SiteSettingsDraft>) => void
   onSocialHandleChange?: (platform: string, value: string) => void
+  onHomepageMediaChange?: (
+    key: PublicSiteMediaSlotKey,
+    patch: Partial<NonNullable<SiteSettingsDraft['homepageMediaSlots']>[number]>,
+  ) => void
+  onHomepageMediaUpload?: (
+    key: PublicSiteMediaSlotKey,
+    file: File,
+  ) => void
+  mediaUploadKey?: PublicSiteMediaSlotKey | null
   onSave?: () => void
 }) {
   if (state.status === 'error') {
@@ -6831,6 +6936,95 @@ export function SiteSettingsCard({
               its polish on desktop and mobile.
             </span>
           </label>
+        </div>
+      </div>
+
+      <div className={styles.siteSettingsSection}>
+        <div>
+          <div className={styles.walletSettingsTitle}>Homepage photos and videos</div>
+          <p className={styles.siteSettingsPreviewNote}>
+            These three placements match the customer-facing homepage. Add a
+            photo, a TikTok or video link, or both for each placement.
+          </p>
+        </div>
+        <div className={styles.homepageMediaGrid}>
+          {(draft.homepageMediaSlots ?? EMPTY_HOMEPAGE_MEDIA_SLOTS).map((slot) => {
+            const label =
+              slot.key === 'showcase'
+                ? 'Showcase video'
+                : slot.key === 'about_1'
+                  ? 'About media 1'
+                  : 'About media 2'
+            const isUploading = mediaUploadKey === slot.key
+
+            return (
+              <section className={styles.homepageMediaCard} key={slot.key}>
+                <div className={styles.homepageMediaCardHeader}>
+                  <strong>{label}</strong>
+                  {slot.imageUrl ? <span>Photo added</span> : null}
+                </div>
+                {slot.imageUrl ? (
+                  <img
+                    className={styles.homepageMediaPreview}
+                    src={slot.imageUrl}
+                    alt={`${label} preview`}
+                  />
+                ) : null}
+                <label className={styles.homepageMediaUploadButton}>
+                  {isUploading ? 'Uploading...' : 'Upload photo'}
+                  <input
+                    className={styles.homepageMediaFileInput}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={isUploading}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (file) onHomepageMediaUpload?.(slot.key, file)
+                      event.target.value = ''
+                    }}
+                  />
+                </label>
+                <label className={styles.searchField}>
+                  <span className={styles.searchLabel}>TikTok or video URL</span>
+                  <input
+                    className={styles.searchInput}
+                    type="url"
+                    placeholder="https://www.tiktok.com/..."
+                    value={slot.videoUrl}
+                    onChange={(event) =>
+                      onHomepageMediaChange?.(slot.key, {
+                        videoUrl: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label className={styles.searchField}>
+                  <span className={styles.searchLabel}>Caption</span>
+                  <input
+                    className={styles.searchInput}
+                    maxLength={240}
+                    value={slot.caption}
+                    onChange={(event) =>
+                      onHomepageMediaChange?.(slot.key, {
+                        caption: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                {slot.imageUrl ? (
+                  <button
+                    type="button"
+                    className={styles.homepageMediaRemoveButton}
+                    onClick={() =>
+                      onHomepageMediaChange?.(slot.key, { imageUrl: '' })
+                    }
+                  >
+                    Remove photo
+                  </button>
+                ) : null}
+              </section>
+            )
+          })}
         </div>
       </div>
 

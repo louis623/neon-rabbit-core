@@ -85,6 +85,11 @@ describe('site settings service', () => {
       socialHandles: {
         instagram: '@sparklebysasha',
       },
+      homepageMediaSlots: [
+        { key: 'showcase', caption: '', imageUrl: '', videoUrl: '' },
+        { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },
+        { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+      ],
     })
   })
 
@@ -102,6 +107,14 @@ describe('site settings service', () => {
         show_join_page: false,
         customer_site_template: 'amethyst',
         appearance_preset: 'rose_gold',
+        homepage_media_slots: [
+          {
+            key: 'showcase',
+            caption: 'Favorite reveal',
+            imageUrl: 'https://cdn.example.com/showcase.jpg',
+            videoUrl: 'https://www.tiktok.com/@sparkle/video/1',
+          },
+        ],
       },
       error: null,
     })
@@ -148,6 +161,14 @@ describe('site settings service', () => {
         facebook: 'sparklebysasha',
         tiktok: '   ',
       },
+      homepageMediaSlots: [
+        {
+          key: 'showcase',
+          caption: ' Favorite reveal ',
+          imageUrl: 'https://cdn.example.com/showcase.jpg',
+          videoUrl: 'https://www.tiktok.com/@sparkle/video/1',
+        },
+      ],
     })
 
     expect(siteSettingsChain.spies.upsert).toHaveBeenCalledWith(
@@ -164,6 +185,16 @@ describe('site settings service', () => {
         show_join_page: false,
         customer_site_template: 'amethyst',
         appearance_preset: 'rose_gold',
+        homepage_media_slots: [
+          {
+            key: 'showcase',
+            caption: 'Favorite reveal',
+            imageUrl: 'https://cdn.example.com/showcase.jpg',
+            videoUrl: 'https://www.tiktok.com/@sparkle/video/1',
+          },
+          { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },
+          { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+        ],
       },
       { onConflict: 'rep_id' },
     )

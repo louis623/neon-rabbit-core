@@ -450,6 +450,15 @@ export interface WalletDashboardResult {
 
 export type HeroAnimationType = 'still' | 'sparkle_rise' | 'soft_glow'
 export type CustomerSiteTemplate = 'amethyst'
+export type PublicSiteMediaSlotKey = 'showcase' | 'about_1' | 'about_2'
+
+export interface PublicSiteMediaSlot {
+  key: PublicSiteMediaSlotKey
+  caption: string
+  imageUrl: string
+  videoUrl: string
+}
+
 export type SiteAppearancePreset =
   | 'amethyst'
   | 'sparkle_suite_morganite'
@@ -480,6 +489,7 @@ export interface SiteSettingsDashboardResult {
   customerSiteTemplate: CustomerSiteTemplate
   appearancePreset: SiteAppearancePreset
   socialHandles: Record<string, string>
+  homepageMediaSlots?: PublicSiteMediaSlot[]
 }
 
 export interface UpdateSiteSettingsDashboardInput {
@@ -499,6 +509,7 @@ export interface UpdateSiteSettingsDashboardInput {
   customerSiteTemplate?: string
   appearancePreset?: SiteAppearancePreset | string
   socialHandles?: Record<string, string>
+  homepageMediaSlots?: PublicSiteMediaSlot[]
 }
 
 export type AccountBillingSubscriptionStatus =

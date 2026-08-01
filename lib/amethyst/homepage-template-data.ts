@@ -121,6 +121,7 @@ export interface AmethystHomepageTemplateData {
   legalDisclaimer: string
   showcaseVideoCaption: string
   showcaseVideoUrl: string
+  showcaseImageUrl?: string
   showJoinPage: boolean
   streamLinks: {
     shop: string
@@ -239,6 +240,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
   showcaseVideoCaption: '@sparklebysasha - "When the box hits different..."',
   showcaseVideoUrl: '#',
+  showcaseImageUrl: '',
   showJoinPage: true,
   streamLinks: {
     shop: 'https://bombparty.com',
@@ -498,6 +500,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }`,
     `  function bindButton(selector, value) { var node = document.querySelector(selector); if (!node || !value) return; node.style.cursor = 'pointer'; node.onclick = function () { if (/^https?:\\/\\//.test(value)) window.open(value, '_blank', 'noopener,noreferrer'); else window.location.href = value; }; }`,
     `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
+    `  var showcase = document.querySelector('[data-slot="showcase video"]'); if (showcase) { if (content.showcaseImageUrl) { showcase.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.2), rgba(14, 8, 32, 0.48)), url("' + content.showcaseImageUrl + '")'; showcase.style.backgroundPosition = 'center'; showcase.style.backgroundSize = 'cover'; } if (content.showcaseVideoUrl && /^https?:\\/\\//.test(content.showcaseVideoUrl)) { showcase.style.cursor = 'pointer'; showcase.onclick = function () { window.open(content.showcaseVideoUrl, '_blank', 'noopener,noreferrer'); }; } }`,
     `  text('[data-slot="about headline"]', content.aboutHeadline);`,
     `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,
     `  text('[data-slot="about paragraph 2"]', content.aboutParagraphs && content.aboutParagraphs[1]);`,

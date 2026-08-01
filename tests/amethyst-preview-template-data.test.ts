@@ -40,6 +40,26 @@ const demoSettings: SiteSettingsDashboardResult = {
     instagram: '@sparklesuitedemo',
     facebook: 'sparklesuitedemo',
   },
+  homepageMediaSlots: [
+    {
+      key: 'showcase',
+      caption: 'A favorite live reveal',
+      imageUrl: 'https://cdn.example.com/showcase.jpg',
+      videoUrl: 'https://www.tiktok.com/@sparklesuitedemo/video/1',
+    },
+    {
+      key: 'about_1',
+      caption: 'At the show table',
+      imageUrl: 'https://cdn.example.com/about-1.jpg',
+      videoUrl: '',
+    },
+    {
+      key: 'about_2',
+      caption: 'Behind the scenes',
+      imageUrl: '',
+      videoUrl: 'https://www.tiktok.com/@sparklesuitedemo/video/2',
+    },
+  ],
 }
 
 const repExtras = {
@@ -122,6 +142,27 @@ describe('Amethyst preview template data', () => {
     expect(data.streamLinks.tiktok).toBe(
       'https://www.tiktok.com/@sparklesuitedemo',
     )
+    expect(data.showcaseVideoCaption).toBe('A favorite live reveal')
+    expect(data.showcaseVideoUrl).toBe(
+      'https://www.tiktok.com/@sparklesuitedemo/video/1',
+    )
+    expect(data.showcaseImageUrl).toBe(
+      'https://cdn.example.com/showcase.jpg',
+    )
+    expect(data.aboutMediaSlots).toEqual([
+      {
+        typeLabel: 'Photo',
+        caption: 'At the show table',
+        href: '#',
+        mediaUrl: 'https://cdn.example.com/about-1.jpg',
+      },
+      {
+        typeLabel: 'TikTok or video',
+        caption: 'Behind the scenes',
+        href: 'https://www.tiktok.com/@sparklesuitedemo/video/2',
+        mediaUrl: undefined,
+      },
+    ])
     expect(data.legalDisclaimer).toContain('Sparkle Suite Demo Boutique')
   })
 

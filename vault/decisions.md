@@ -4,6 +4,18 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Homepage Media Uses the Recovered Three-Slot Contract
+
+Site Settings exposes exactly three customer-homepage media placements:
+`Showcase`, `About media 1`, and `About media 2`. Each placement may hold a
+rep-uploaded photo, a TikTok/video URL, and a caption. This is the exact
+pre-rebuild product contract recovered from the Master Build Plan and Amethyst
+DesignKit and matches the three slots already present in the current public
+renderer. The previously removed hero-image control stays removed; it is not a
+fourth upload placement.
+
+---
+
 ## August 1, 2026 - Workspace Header Keeps Share and Live Queue References Visible
 
 The authenticated Sparkle Suite workspace header always shows two account-level

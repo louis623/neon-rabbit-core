@@ -150,7 +150,7 @@ export async function uploadPublicSiteMedia(
   base64Data: string,
   options: {
     filename?: string
-    folder?: 'recipes'
+    folder?: 'recipes' | 'profile'
   } = {},
 ): Promise<string> {
   const admin = createAdminClient()

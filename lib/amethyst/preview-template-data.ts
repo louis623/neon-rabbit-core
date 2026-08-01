@@ -491,6 +491,13 @@ export function mapPreviewSettingsToHomepageTemplateData(
   const tagline = firstText(settings.tagline, defaultAmethystHomepageTemplateData.tagline)
   const streamLinks = resolveStreamingLinks(settings, extras)
   const showJoinPage = settings.showJoinPage !== false
+  const homepageMediaSlots = settings.homepageMediaSlots ?? []
+  const showcaseMedia = homepageMediaSlots.find(
+    (slot) => slot.key === 'showcase',
+  )
+  const aboutMedia = ['about_1', 'about_2'].map((key) =>
+    homepageMediaSlots.find((slot) => slot.key === key),
+  )
 
   const homepage: AmethystHomepageTemplateData = {
     ...defaultAmethystHomepageTemplateData,
@@ -516,6 +523,26 @@ export function mapPreviewSettingsToHomepageTemplateData(
       : '',
     streamLinks,
     socialLinks: buildSocialLinks(settings),
+    showcaseVideoCaption:
+      showcaseMedia?.caption ||
+      defaultAmethystHomepageTemplateData.showcaseVideoCaption,
+    showcaseVideoUrl: showcaseMedia?.videoUrl || '#',
+    showcaseImageUrl: showcaseMedia?.imageUrl || '',
+    aboutMediaSlots: defaultAmethystHomepageTemplateData.aboutMediaSlots.map(
+      (fallback, index) => {
+        const media = aboutMedia[index]
+        return {
+          typeLabel: media?.videoUrl
+            ? 'TikTok or video'
+            : media?.imageUrl
+              ? 'Photo'
+              : fallback.typeLabel,
+          caption: media?.caption || fallback.caption,
+          href: media?.videoUrl || '#',
+          mediaUrl: media?.imageUrl || undefined,
+        }
+      },
+    ) as AmethystHomepageTemplateData['aboutMediaSlots'],
     footerLinks: {
       ...defaultAmethystHomepageTemplateData.footerLinks,
       joinTeam: showJoinPage

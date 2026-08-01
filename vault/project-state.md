@@ -18,7 +18,9 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `83ea2de feat: add workspace header quick references`
+- **Latest local implementation checkpoint:** current August 1 homepage-media
+  recovery session on top of `ae105bd docs: record workspace header
+  references`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -26,7 +28,18 @@
   rollback/checkout-routing incident closeout, repaired admin/demo-account
   invariant, deny-unlisted branch guards, audited preservation checkpoints,
   and permanent provenance/post-auth safeguards.
-- **Latest local/deployed checkpoints:** The Nic-Nac-first workspace still includes the Live Site Preview workbench with centered equal-size 2x2 controls for Back to workspace, Refresh preview, Open full site, and Open/Close Nic-Nac. Its persistent header now shows the account's canonical public-site address with a one-click copy control and the exact stored Live Queue code; both remain visible in the responsive mobile header. This display is read-only and does not create, reset, or mutate Live Queue data. The right rail preserves the useful `Public Site` status card while omitting the removed oversized `Sparkle with us.` preview bubble and redundant `Preview site` controls. On top of the July 10 shell, the right-hand Upcoming Show card shows the actual next show details when a real upcoming event exists: weekday, date, time, time zone, and show name, and the detail area clicks through to Calendar. When no upcoming event exists, the card shows `No upcoming shows` with an `Add a show` link into the existing calendar flow. The Trade Board top-right action label is now `Customer view`. The rep workspace still uses the compact Sparkle Suite / Workspace header with no redundant top Nic-Nac search box, a pink Sparkle Suite seal, a compact pink Nic-Nac mark, simplified data-backed side cards, `Trade follow-up` terminology, and an `Open Trade Workspace` action. The workspace shell remains viewport-contained: Nic-Nac conversation content scrolls inside the app while the header, composer, and bottom navigation remain available. Final navigation sizing/padding keeps icons inside the shell. These patterns are account-generic for current customers, future accounts, and reviewer demos rather than Heather-specific.
+- **Latest local/deployed checkpoints:** The current local release candidate
+  restores the recovered three-slot customer-homepage media contract in Site
+  Settings: Showcase, About media 1, and About media 2, each with a photo
+  upload, TikTok/video URL, caption, preview, and removal. The old hero-image
+  control remains removed. Saved media maps into the existing Amethyst public
+  renderer. The Nic-Nac-first workspace still includes the Live Site Preview
+  workbench with centered equal-size 2x2 controls for Back to workspace,
+  Refresh preview, Open full site, and Open/Close Nic-Nac. Its persistent
+  header shows the canonical public-site address with a copy control and the
+  exact stored Live Queue code. The right rail preserves the useful `Public
+  Site` status card while omitting the rejected `Sparkle with us.` bubble and
+  redundant `Preview site` controls.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo

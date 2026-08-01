@@ -37,6 +37,7 @@ vi.mock('@/lib/nic-nac/site-recipe-draft-builder', () => ({
 import { GET, POST } from '@/app/api/nic-nac/site-recipes/route'
 import { POST as POST_DRAFT } from '@/app/api/nic-nac/site-recipes/draft/route'
 import { POST as POST_IMAGE } from '@/app/api/nic-nac/site-recipes/image/route'
+import { POST as POST_SITE_MEDIA } from '@/app/api/nic-nac/site-settings/media/route'
 import { AuthError } from '@/lib/nic-nac/auth'
 
 describe('/api/nic-nac/site-recipes', () => {
@@ -213,6 +214,41 @@ describe('/api/nic-nac/site-recipes', () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       imageUrl: 'https://cdn.example.com/recipe.jpg',
+    })
+  })
+
+  it('uploads homepage media through paid context', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-bling',
+      supabase: { marker: 'supabase' },
+    })
+    uploadPublicSiteMediaMock.mockResolvedValueOnce(
+      'https://cdn.example.com/homepage.jpg',
+    )
+
+    const response = await POST_SITE_MEDIA(
+      new Request('http://localhost/api/nic-nac/site-settings/media', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          base64Data: 'data:image/jpeg;base64,Zm9v',
+          filename: 'homepage.jpg',
+        }),
+      }),
+    )
+
+    expect(uploadPublicSiteMediaMock).toHaveBeenCalledWith(
+      'rep-bling',
+      'data:image/jpeg;base64,Zm9v',
+      {
+        filename: 'homepage.jpg',
+        folder: 'profile',
+      },
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      imageUrl: 'https://cdn.example.com/homepage.jpg',
     })
   })
 

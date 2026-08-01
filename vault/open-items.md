@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Complete homepage-media live reviewer smoke** - after applying the
+  `homepage_media_slots` migration and deploying the exact active-branch tip,
+  use the safe Britt Test Rep reviewer flow on
+  `https://www.yoursparklesuite.com` to verify all three Site Settings media
+  cards, one photo upload, per-slot TikTok/video fields, save persistence, and
+  the corresponding customer-site placements. Reset the reviewer account
+  afterward and do not use Louis's personal account.
 - [ ] **Set the protected admin/demo account's live-show name** - a read-only
   August 1 lookup confirmed `louis@neonrabbit.net` has `Louis Chapman` in both
   rep-name and business-name fields and no separate setup live-show name. The

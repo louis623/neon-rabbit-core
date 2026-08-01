@@ -4,6 +4,40 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Recovered Homepage Media Controls
+
+**Historical recovery:**
+- Audited reachable, reflog, unreachable, and preserved worktree Git history
+  instead of rebuilding the old editor from memory.
+- No committed Site Settings media editor was found. The exact pre-rebuild
+  product contract was recovered from the Master Build Plan and Amethyst
+  DesignKit: three homepage media placements, each accepting a personal photo,
+  personal video, or TikTok source.
+- The current public-site renderer already divided those three placements into
+  `Showcase`, `About media 1`, and `About media 2`. The removed hero-image
+  control remains removed.
+
+**What changed:**
+- Restored one editor card for each of those three homepage placements in
+  workspace Site Settings.
+- Each placement now supports a photo upload, its own TikTok/video URL,
+  optional caption, preview, and photo removal.
+- Added authenticated, rep-scoped media upload handling and durable
+  `homepage_media_slots` persistence.
+- Connected saved media to the existing customer-facing Amethyst homepage
+  renderer, including the Showcase image/video and both About placements.
+
+**Verification before release:**
+- Focused Site Settings, route, dashboard, and public-site mapping tests pass:
+  4 files, 141 tests.
+- The Next.js 16.2.1 production build passes with the active-branch gate.
+- The local reviewer path reached the safe Britt Test Rep workspace. The
+  pre-migration Site Settings request correctly remains unavailable until the
+  new database column is applied; production migration and exact live-domain
+  smoke are part of this release closeout.
+
+---
+
 ## August 1, 2026 - Persistent Public-Site and Live Queue Header References
 
 **What changed:**

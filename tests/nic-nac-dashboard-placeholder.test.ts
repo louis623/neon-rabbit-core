@@ -2343,6 +2343,12 @@ describe('DashboardPlaceholder', () => {
       'Applies only to your public customer-facing site.',
     )
     expect(html).toContain('Join page visible')
+    expect(html).toContain('Homepage photos and videos')
+    expect(html).toContain('Showcase video')
+    expect(html).toContain('About media 1')
+    expect(html).toContain('About media 2')
+    expect(html.match(/TikTok or video URL/g)).toHaveLength(3)
+    expect(html.match(/Upload photo/g)).toHaveLength(3)
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).toContain('Save site settings')
