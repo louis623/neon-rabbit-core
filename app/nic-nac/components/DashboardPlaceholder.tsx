@@ -54,6 +54,7 @@ import {
   ChevronRight,
   CircleEllipsis,
   Gem,
+  Globe2,
   HelpCircle,
   Images,
   LogOut,
@@ -5296,6 +5297,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               cleanupCount={homeCleanupCount}
               fulfillmentCount={homeFulfillmentCount}
               nextShow={homeNextShow}
+              siteLive={Boolean(currentPublicSiteSlug)}
               onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
               onOpenTradeBoard={() => setActiveSection('trade-board')}
               onOpenCalendar={() => setActiveSection('show-calendar')}
@@ -5424,6 +5426,7 @@ function ConceptHomeWorkspace({
   cleanupCount,
   fulfillmentCount,
   nextShow,
+  siteLive,
   onLaunchAction,
   onOpenTradeBoard,
   onOpenCalendar,
@@ -5434,6 +5437,7 @@ function ConceptHomeWorkspace({
   cleanupCount: number
   fulfillmentCount: number
   nextShow: HomeNextShowSummary | null
+  siteLive: boolean
   onLaunchAction: (action: WorkspaceLaunchAction) => void
   onOpenTradeBoard: () => void
   onOpenCalendar: () => void
@@ -5528,6 +5532,21 @@ function ConceptHomeWorkspace({
               </span>
             </div>
           )}
+        </ConceptPanel>
+        <ConceptPanel title="Public Site">
+          <div className={styles.publicSiteStatus}>
+            <span className={styles.publicSiteStatusIcon}>
+              <Globe2 aria-hidden="true" />
+            </span>
+            <span className={styles.publicSiteStatusCopy}>
+              <strong>{siteLive ? 'Your site is live' : 'Site setup in progress'}</strong>
+              <small>
+                {siteLive
+                  ? 'Customers can visit your Sparkle Suite site.'
+                  : 'Finish Site Settings to publish your customer site.'}
+              </small>
+            </span>
+          </div>
         </ConceptPanel>
         <ConceptPanel title="Need help?" action="Visit resources" onAction={onOpenHelp}>
           <button type="button" className={styles.helpPreview} onClick={onOpenHelp}>

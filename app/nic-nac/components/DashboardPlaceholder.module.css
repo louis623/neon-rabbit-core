@@ -990,6 +990,50 @@
   outline: none;
 }
 
+.publicSiteStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.publicSiteStatusIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f1eafd;
+  color: #7345ca;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.publicSiteStatusIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.publicSiteStatusCopy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.publicSiteStatusCopy strong {
+  color: #171034;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.publicSiteStatusCopy small {
+  color: #6f6389;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
 .showPreviewRow > span,
 .helpPreview svg {
   width: 48px;
@@ -5084,7 +5128,7 @@
     order: 2;
   }
 
-  .conceptRail:last-child .conceptPanel:nth-child(2) {
+  .conceptRail:last-child .conceptPanel:nth-child(3) {
     display: block;
     order: 3;
   }

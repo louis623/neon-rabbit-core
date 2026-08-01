@@ -491,6 +491,8 @@ describe('reviewer smoke UI wiring', () => {
     expect(dashboardPlaceholder).toContain('previewNicNacSidecar')
     expect(dashboardPlaceholder).toContain('title="Sparkle Suite live site preview"')
     expect(dashboardPlaceholder).toContain('customerTradeBoardHref')
+    expect(dashboardPlaceholder).toContain('Public Site')
+    expect(dashboardPlaceholder).toContain('Your site is live')
     expect(dashboardPlaceholder).not.toContain('Preview site')
     expect(dashboardPlaceholder).not.toContain('Sparkle with us.')
     expect(nicNacClient).toContain('handleOpenNicNac')
