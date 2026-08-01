@@ -18,7 +18,7 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** `632ec87 feat: add workspace back navigation`
+- **Latest local implementation checkpoint:** `01ffdef fix: show live show name in workspace header`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is

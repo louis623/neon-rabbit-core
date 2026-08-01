@@ -5,6 +5,12 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Set the protected admin/demo account's live-show name** - a read-only
+  August 1 lookup confirmed `louis@neonrabbit.net` has `Louis Chapman` in both
+  rep-name and business-name fields and no separate setup live-show name. The
+  header now safely says `Live show name not set`; save the intended show name
+  through the normal Site Settings/profile flow once Louis supplies it. Do not
+  invent or production-patch a name.
 - [ ] **Visually close the Bulk Collection Intake/back-navigation reviewer
   smoke** - focused tests and the production build pass at checkpoint
   `632ec87`. The local synthetic workspace remained on `Loading setup...`, so

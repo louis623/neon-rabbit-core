@@ -4,6 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Workspace Header Rep and Live-Show Identity
+
+**What changed:**
+- Corrected the workspace profile lockup so the first line is the rep's name
+  and the second line is the stored live-show/business name.
+- Added the rep business name to the authenticated `/api/nic-nac/me` profile
+  payload as a resilient fallback when Site Settings is delayed.
+- Prevented case-insensitive duplicate names. If the live-show name is empty
+  or identical to the rep name, the header now says
+  `Live show name not set` instead of repeating the person.
+- Implementation checkpoint:
+  `01ffdef fix: show live show name in workspace header`.
+
+**Production data finding:**
+- A read-only exact-email lookup confirmed the protected Louis admin/demo
+  account currently stores `Louis Chapman` in both `display_name` and
+  `business_name`; no separate live-show name exists in its setup profile.
+- No production account, authentication, billing, or setup data was changed.
+
+**Verification:**
+- Header/profile/workspace/reviewer tests passed: 4 files, 118 tests.
+- Auth boundary tests passed: 2 files, 6 tests.
+- The full Next.js 16.2.1 production build passed with the active-branch gate.
+
+---
+
 ## August 1, 2026 - Bulk Collection Intake Naming and Workspace Back Navigation
 
 **What changed:**

@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Workspace Header Separates Person and Live-Show Identity
+
+The workspace profile header uses two distinct identity fields: the rep's
+display name on top and the live-show/business name below. It must never repeat
+the same value on both lines. Missing or duplicate live-show data is labeled
+`Live show name not set` until the rep saves a distinct value through the
+normal profile/Site Settings flow; the UI must not invent one.
+
+---
+
 ## August 1, 2026 - Workspace Back Navigation Uses the Section Hierarchy
 
 Sparkle Suite workspace back controls follow the product hierarchy instead of
