@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `4a2917c fix: align emerald public site skin`
+  `44c5a79 fix: make skin card text surface-aware`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -47,6 +47,14 @@
   has been replaced with the shared full-bleed composition. Production
   deployment `dpl_F7FSNS9fGZiKQ1nRQxAXzGUdEUka` is Ready from exact commit
   `4a2917c8` with both live domains assigned.
+- **Latest skin-readability production checkpoint:** Customer-site cards and
+  forms now derive foreground, muted, and accent text from their own surface
+  tokens instead of inheriting the surrounding section color. This restores
+  the previously invisible Emerald Garden signup heading and protects every
+  registered skin surface from the same light-on-light or dark-on-dark
+  regression. Production deployment `dpl_ET3A3q8orA3uya6oE6b1myQZJjEr` is
+  Ready from exact commit
+  `44c5a79ca5c6e0204cbb0d399260401eebb9dfe6` with both live domains assigned.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo

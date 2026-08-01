@@ -4,6 +4,39 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Skin-Aware Customer-Site Card Readability
+
+**Audit finding:**
+- The Emerald Garden signup card was not empty. Its heading, description, and
+  supporting copy were present, but an Emerald section-level override rendered
+  them white on an ivory card surface.
+
+**What changed:**
+- Customer-site card surfaces now define semantic primary, muted, and accent
+  text tokens.
+- The signup card and its labels, placeholders, consent text, and headings
+  consume those surface tokens instead of inheriting the surrounding section
+  color.
+- Every registered card surface has explicit semantic token coverage, and the
+  skin contract now requires surface-owned readability rather than one-off
+  descendant overrides.
+
+**Verification and release:**
+- Six public-site skin and route suites passed: 107 tests.
+- The Next.js 16.2.1 production build and local Amethyst link verification
+  passed.
+- Exact live-domain browser smoke verified the Emerald signup card uses an
+  ivory background with dark emerald primary text, muted supporting text, and
+  a readable emerald accent. All seven form controls and the submit button
+  were visible and enabled; no form was submitted and no customer data was
+  changed.
+- Production deployment `dpl_ET3A3q8orA3uya6oE6b1myQZJjEr` became Ready from
+  exact commit `44c5a79ca5c6e0204cbb0d399260401eebb9dfe6` with both live
+  domains assigned. The apex redirects to the `www` live surface.
+- Production error and fatal logs were empty during the verification window.
+
+---
+
 ## August 1, 2026 - Emerald Garden Customer-Site Parity Repair
 
 **Audit findings:**

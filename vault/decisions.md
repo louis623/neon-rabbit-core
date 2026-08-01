@@ -4,6 +4,18 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Card Surfaces Own Their Readability
+
+Customer-site cards and forms must derive their primary, muted, and accent text
+from semantic tokens defined by the card surface, not from the surrounding
+skin section. Every registered surface must provide those tokens. Skin-specific
+rules may style the section around a card, but must not force descendant card
+copy to a section foreground color when the card has a contrasting surface.
+This keeps content readable as skins combine dark, light, glass, paper, pearl,
+and metallic treatments.
+
+---
+
 ## August 1, 2026 - Emerald Garden Uses the Shared Public-Site Contract
 
 Emerald Garden is a visual skin, not a separate customer-site implementation.

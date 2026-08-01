@@ -64,6 +64,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Immediate Sparkle Suite Follow-Up
 
+- [x] **Make customer-site card readability adapt across skins** - completed
+  August 1 in `44c5a79 fix: make skin card text surface-aware`. Every
+  registered card surface now defines semantic primary, muted, and accent text
+  tokens, and the signup component consumes those tokens. Exact live-domain
+  smoke confirmed the Emerald Garden signup heading and supporting copy are
+  readable on the ivory card. Production deployment
+  `dpl_ET3A3q8orA3uya6oE6b1myQZJjEr` is Ready on both live domains.
 - [x] **Repair Emerald Garden customer-site parity** - completed August 1 in
   `4a2917c fix: align emerald public site skin`. Homepage, Trade Board, and Join
   retain the shared content/ticker contract; announcements are readable white;
