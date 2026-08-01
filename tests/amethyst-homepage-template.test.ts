@@ -207,6 +207,9 @@ describe('Amethyst homepage template data wiring', () => {
     expect(emeraldCss).toMatch(
       /body\.bg-emerald-garden \.hp-hero-inner > div\s*\{[\s\S]*?background:\s*transparent;[\s\S]*?backdrop-filter:\s*none;/,
     )
+    expect(emeraldCss).not.toContain(
+      'body.bg-emerald-garden .hp-signup .hp-signup-title,',
+    )
   })
 
   it('builds duplicate ticker loops for measured pixel-speed animation', () => {

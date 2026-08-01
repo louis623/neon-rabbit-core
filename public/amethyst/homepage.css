@@ -29,6 +29,87 @@
   --hp-form-panel-fg: var(--fg);
   --hp-field-bg: var(--hp-bg);
   --hp-field-fg: var(--fg);
+  --hp-card-fg: var(--fg);
+  --hp-card-muted: var(--fg-muted);
+  --hp-card-accent: var(--hp-primary);
+}
+
+/*
+ * Card-surface readability contract.
+ * Every appearance preset selects one of these surface classes. Components
+ * consume these semantic colors instead of inheriting section colors, so a
+ * light card remains readable inside a dark section and vice versa.
+ */
+body.fx-holographic {
+  --hp-card-fg: #2a1f40;
+  --hp-card-muted: #5c576a;
+  --hp-card-accent: #5c0eff;
+}
+
+body.surface-glass {
+  --hp-card-fg: #2a1f40;
+  --hp-card-muted: #5c576a;
+  --hp-card-accent: #5c0eff;
+}
+
+body.surface-warm-paper {
+  --hp-card-fg: #402924;
+  --hp-card-muted: #775d57;
+  --hp-card-accent: #ee2c9b;
+}
+
+body.surface-dark-metallic {
+  --hp-card-fg: #f9f3ec;
+  --hp-card-muted: #d7c3b9;
+  --hp-card-accent: #d4af37;
+}
+
+body.surface-silver-pearl {
+  --hp-card-fg: #171421;
+  --hp-card-muted: #4b465d;
+  --hp-card-accent: #7c3aed;
+}
+
+body.surface-frosted-opal {
+  --hp-card-fg: #1e1b4b;
+  --hp-card-muted: #514b70;
+  --hp-card-accent: #ec4899;
+}
+
+body.surface-spa-ivory {
+  --hp-card-fg: #193f34;
+  --hp-card-muted: #526f65;
+  --hp-card-accent: #047857;
+}
+
+body.surface-pearl-rose {
+  --hp-card-fg: #2b1717;
+  --hp-card-muted: #7e5457;
+  --hp-card-accent: #e04f73;
+}
+
+body.surface-blush-shell {
+  --hp-card-fg: #2b1717;
+  --hp-card-muted: #7e5457;
+  --hp-card-accent: #b91c1c;
+}
+
+body.surface-sunlit-pearl {
+  --hp-card-fg: #2d1607;
+  --hp-card-muted: #7a4a32;
+  --hp-card-accent: #a54206;
+}
+
+body.surface-plush-orchid {
+  --hp-card-fg: #2b1336;
+  --hp-card-muted: #6b3b76;
+  --hp-card-accent: #7e22ce;
+}
+
+body.surface-pink-quartz {
+  --hp-card-fg: #34113c;
+  --hp-card-muted: #70467a;
+  --hp-card-accent: #9d2dac;
 }
 
 body.bling-kitchen {
@@ -2486,6 +2567,7 @@ body.bg-quartz-paper .hp-step-num {
   gap: 32px;
   position: relative;
   overflow: hidden;
+  color: var(--hp-card-fg);
 }
 .hp-signup-card::before {
   content: "";
@@ -2519,7 +2601,7 @@ body.bg-quartz-paper .hp-step-num {
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--hp-primary);
+  color: var(--hp-card-accent);
   margin-bottom: 12px;
 }
 .hp-signup-title {
@@ -2530,13 +2612,13 @@ body.bg-quartz-paper .hp-step-num {
   line-height: 1.14;
   margin: 0 0 8px;
   padding-block: 0.03em 0.09em;
-  color: var(--fg);
+  color: var(--hp-card-fg);
   overflow: visible;
 }
 .hp-signup-sub {
   font-size: 15px;
   line-height: 1.6;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
   margin: 0;
   max-width: 520px;
   margin-left: auto;
@@ -2569,7 +2651,7 @@ body.bg-quartz-paper .hp-step-num {
   letter-spacing: 0.12em;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
@@ -2579,7 +2661,7 @@ body.bg-quartz-paper .hp-step-num {
   letter-spacing: 0.04em;
   text-transform: none;
   font-weight: 400;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
   opacity: 0.7;
 }
 .hp-signup-input {
@@ -2598,7 +2680,7 @@ body.bg-quartz-paper .hp-step-num {
   border-color: var(--hp-primary);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--hp-primary) 14%, transparent);
 }
-.hp-signup-input::placeholder { color: var(--fg-muted); opacity: 0.55; }
+.hp-signup-input::placeholder { color: var(--hp-card-muted); opacity: 0.55; }
 .hp-signup-consent-box {
   display: grid;
   gap: 12px;
@@ -2708,7 +2790,7 @@ body.bg-quartz-paper .hp-step-num {
 .hp-signup-consent {
   font-size: 11px;
   line-height: 1.55;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
   margin: 0;
   text-align: center;
   max-width: 540px;
@@ -5861,10 +5943,7 @@ body.bg-emerald-garden #about .hp-section-title {
 
 body.bg-emerald-garden #wibp .hp-wibp-title,
 body.bg-emerald-garden #wibp .hp-wibp-eyebrow,
-body.bg-emerald-garden #wibp .hp-wibp-body,
-body.bg-emerald-garden .hp-signup .hp-signup-title,
-body.bg-emerald-garden .hp-signup .hp-signup-eyebrow,
-body.bg-emerald-garden .hp-signup .hp-signup-sub {
+body.bg-emerald-garden #wibp .hp-wibp-body {
   color: #ffffff;
 }
 

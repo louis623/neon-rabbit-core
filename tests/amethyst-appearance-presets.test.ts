@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import {
+  AMETHYST_APPEARANCE_PRESETS,
   AMETHYST_APPEARANCE_PRESET_IDS,
   AMETHYST_CUSTOMER_SITE_TEMPLATE,
   DEFAULT_AMETHYST_APPEARANCE_PRESET,
@@ -341,6 +342,52 @@ describe('Amethyst appearance presets', () => {
     expect(homepageCss).toContain('color: #141111')
     expect(tradeCss).toContain('.tp-filter-pill.active .count')
     expect(tradeCss).toContain('color: currentColor')
+  })
+
+  it('uses surface-aware semantic colors for the signup card in every skin', () => {
+    const homepageCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const cardSurfaces = new Set(
+      Object.values(AMETHYST_APPEARANCE_PRESETS).map(
+        (preset) => preset.values.cardSurface,
+      ),
+    )
+
+    expect(homepageCss).toMatch(
+      /\.hp-signup-title\s*\{[\s\S]*?color:\s*var\(--hp-card-fg\);/,
+    )
+    expect(homepageCss).toMatch(
+      /\.hp-signup-sub\s*\{[\s\S]*?color:\s*var\(--hp-card-muted\);/,
+    )
+    expect(homepageCss).toMatch(
+      /\.hp-signup-eyebrow\s*\{[\s\S]*?color:\s*var\(--hp-card-accent\);/,
+    )
+
+    for (const surface of cardSurfaces) {
+      const className =
+        surface === 'holographic' ? 'fx-holographic' : `surface-${surface}`
+      expect(homepageCss).toMatch(
+        new RegExp(
+          `body\\.${className.replaceAll('-', '\\-')}\\s*\\{[\\s\\S]*?--hp-card-fg:[\\s\\S]*?--hp-card-muted:[\\s\\S]*?--hp-card-accent:`,
+        ),
+      )
+
+      if (surface === 'holographic') {
+        expect(homepage).toContain(
+          'if (t.cardSurface === "holographic") body.classList.add("fx-holographic")',
+        )
+      } else {
+        expect(homepage).toContain(
+          `if (t.cardSurface === "${surface}") body.classList.add("surface-${surface}")`,
+        )
+      }
+    }
   })
 
   it('adds Rose Gold as a visual-only Amethyst skin with a browsing card', () => {

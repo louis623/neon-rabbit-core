@@ -18,6 +18,21 @@ Skins may change only the visual layer:
 - sparkle, texture, and decorative intensity
 - button and CTA treatment
 
+Every card surface must also define or inherit semantic readability colors:
+
+- primary card text
+- muted card text
+- card accent text
+- form-panel text/background
+- form-field text/background
+
+Customer-site components must consume those surface-aware tokens instead of
+inheriting a surrounding section's foreground color. A light card inside a
+dark or saturated section must remain readable, and a dark card inside a light
+section must do the same. Do not fix contrast by adding one-off descendant
+colors for a single skin when the semantic surface contract can carry the
+correct value across every skin.
+
 Skins must not change:
 
 - Homepage section order or slot names
