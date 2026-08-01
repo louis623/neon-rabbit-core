@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Public Site Status Remains, Preview Decoration Does Not
+
+The Nic-Nac right rail retains a compact `Public Site` card because its
+live/setup status is useful workspace information. The oversized purple
+`Sparkle with us.` preview bubble and redundant `Preview site` actions remain
+removed. Removing a child preview treatment must not be interpreted as
+removing the entire status card.
+
+---
+
 ## August 1, 2026 - Workspace Header Separates Person and Live-Show Identity
 
 The workspace profile header uses two distinct identity fields: the rep's

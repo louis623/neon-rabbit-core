@@ -4,6 +4,26 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Public Site Status Card Restoration
+
+**What changed:**
+- Restored the useful `Public Site` card to the Nic-Nac right rail after an
+  earlier interpretation removed the whole card.
+- Kept the specifically rejected oversized `Sparkle with us.` preview bubble
+  and both redundant `Preview site` controls removed.
+- The compact card now shows the real live/setup state without acting as
+  another preview launcher.
+- Implementation checkpoint:
+  `ded4a51 fix: restore public site status card`.
+
+**Verification:**
+- Focused Nic-Nac workspace, shell, and reviewer-smoke tests passed: 3 files,
+  117 tests.
+- The full Next.js 16.2.1 production build passed with the active-branch gate.
+- No personal account or signed-in browser session was used for testing.
+
+---
+
 ## August 1, 2026 - Workspace Header Rep and Live-Show Identity
 
 **What changed:**
