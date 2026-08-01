@@ -505,6 +505,30 @@
 
 .appHeaderReferenceValue {
   max-width: clamp(150px, 22vw, 300px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.appHeaderReferenceValue:hover,
+.appHeaderReferenceValue:focus-visible {
+  color: #6f2cc9;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.appHeaderReferenceValue:focus-visible {
+  outline: 2px solid rgba(115, 69, 202, 0.34);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.appHeaderReferenceValue:disabled {
+  cursor: default;
+  text-decoration: none;
 }
 
 .appHeaderQueueCode {
@@ -1076,9 +1100,31 @@
 }
 
 .publicSiteStatus {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
+}
+
+.publicSiteStatus:disabled {
+  cursor: default;
+}
+
+.publicSiteStatus:not(:disabled):hover .publicSiteStatusCopy strong,
+.publicSiteStatus:not(:disabled):focus-visible .publicSiteStatusCopy strong {
+  color: #6f2cc9;
+}
+
+.publicSiteStatus:focus-visible {
+  outline: 2px solid #8f55dc;
+  outline-offset: 4px;
+  border-radius: 10px;
 }
 
 .publicSiteStatusIcon {

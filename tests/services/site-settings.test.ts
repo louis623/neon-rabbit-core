@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   getSiteSettingsDashboard,
+  normalizePublicSiteMediaSlots,
   updateSiteSettingsDashboard,
 } from '@/lib/services/site-settings'
 
@@ -41,6 +42,49 @@ function makeUpdateSingle(response: { data: unknown; error: unknown }) {
 }
 
 describe('site settings service', () => {
+  it('accepts TikTok embed markup and stores the canonical video URL', () => {
+    expect(
+      normalizePublicSiteMediaSlots(
+        [
+          {
+            key: 'about_1',
+            caption: 'Live reveal',
+            imageUrl: '',
+            videoUrl:
+              '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@sparkle/video/7412345678901234567" data-video-id="7412345678901234567"></blockquote>',
+          },
+        ],
+        { rejectInvalidUrls: true },
+      ),
+    ).toEqual([
+      { key: 'showcase', caption: '', imageUrl: '', videoUrl: '' },
+      {
+        key: 'about_1',
+        caption: 'Live reveal',
+        imageUrl: '',
+        videoUrl:
+          'https://www.tiktok.com/@sparkle/video/7412345678901234567',
+      },
+      { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+    ])
+  })
+
+  it('rejects invalid media text instead of silently reporting it as saved', () => {
+    expect(() =>
+      normalizePublicSiteMediaSlots(
+        [
+          {
+            key: 'about_2',
+            caption: 'Broken clip',
+            imageUrl: '',
+            videoUrl: 'not a URL or embed',
+          },
+        ],
+        { rejectInvalidUrls: true },
+      ),
+    ).toThrow('about_2 video URL or embed code is invalid')
+  })
+
   it('returns rep profile data with safe defaults when site settings row is missing', async () => {
     const siteSettingsChain = makeSelectSingle({ data: null, error: null })
     const repsChain = makeSelectSingle({

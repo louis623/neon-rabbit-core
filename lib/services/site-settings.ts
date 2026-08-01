@@ -102,16 +102,41 @@ function normalizePublicMediaUrl(value: unknown) {
   const trimmed = value.trim()
   if (!trimmed) return ''
 
-  try {
-    const url = new URL(trimmed)
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : ''
-  } catch {
-    return ''
+  const decoded = trimmed
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+
+  const candidates = [decoded]
+  const attributePattern = /\b(?:cite|src|href)\s*=\s*["']([^"']+)["']/gi
+  let attributeMatch: RegExpExecArray | null
+  while ((attributeMatch = attributePattern.exec(decoded))) {
+    candidates.push(attributeMatch[1])
   }
+
+  const urlPattern = /https?:\/\/[^\s"'<>]+/gi
+  const embeddedUrls = decoded.match(urlPattern)
+  if (embeddedUrls) candidates.push(...embeddedUrls)
+
+  for (const candidate of candidates) {
+    try {
+      const url = new URL(candidate.replace(/&amp;/gi, '&'))
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        return url.toString()
+      }
+    } catch {
+      // Keep looking through URLs extracted from embed markup.
+    }
+  }
+
+  return ''
 }
 
 export function normalizePublicSiteMediaSlots(
   value: unknown,
+  options: { rejectInvalidUrls?: boolean } = {},
 ): PublicSiteMediaSlot[] {
   const rows = Array.isArray(value) ? value : []
   const byKey = new Map<string, Record<string, unknown>>()
@@ -124,12 +149,45 @@ export function normalizePublicSiteMediaSlots(
 
   return PUBLIC_SITE_MEDIA_SLOT_KEYS.map((key) => {
     const row = byKey.get(key)
+    const imageUrl = normalizePublicMediaUrl(row?.imageUrl)
+    const videoUrl = normalizePublicMediaUrl(row?.videoUrl)
+    const mediaLabel =
+      key === 'showcase'
+        ? 'Showcase video'
+        : key === 'about_1'
+          ? 'About media 1'
+          : 'About media 2'
+
+    if (
+      options.rejectInvalidUrls &&
+      typeof row?.imageUrl === 'string' &&
+      row.imageUrl.trim() &&
+      !imageUrl
+    ) {
+      throw errors.INVALID_INPUT(
+        `${key} image URL is invalid`,
+        `${mediaLabel} needs a valid photo URL.`,
+      )
+    }
+
+    if (
+      options.rejectInvalidUrls &&
+      typeof row?.videoUrl === 'string' &&
+      row.videoUrl.trim() &&
+      !videoUrl
+    ) {
+      throw errors.INVALID_INPUT(
+        `${key} video URL or embed code is invalid`,
+        `${mediaLabel} needs a valid video URL or TikTok embed code.`,
+      )
+    }
+
     return {
       key,
       caption:
         typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : '',
-      imageUrl: normalizePublicMediaUrl(row?.imageUrl),
-      videoUrl: normalizePublicMediaUrl(row?.videoUrl),
+      imageUrl,
+      videoUrl,
     }
   })
 }
@@ -282,6 +340,7 @@ export async function updateSiteSettingsDashboard(
   if (input.homepageMediaSlots !== undefined) {
     siteSettingsPatch.homepage_media_slots = normalizePublicSiteMediaSlots(
       input.homepageMediaSlots,
+      { rejectInvalidUrls: true },
     )
   }
 

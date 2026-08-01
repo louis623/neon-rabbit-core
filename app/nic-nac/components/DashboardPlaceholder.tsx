@@ -4933,6 +4933,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       title: 'Customer Trade Board Preview',
     })
   }
+  const handleOpenCustomerSitePreview = () => {
+    if (!customerSparkleSiteHref) return
+    openWorkspacePreview({
+      mode: 'live_site_preview',
+      href: customerSparkleSiteHref,
+      title: 'Live Site Preview',
+    })
+  }
   const headerRepName = formatHeaderRepName(
     siteSettingsState.settings?.displayName ?? repProfileState.displayName,
   )
@@ -4997,6 +5005,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       publicSiteUrl={customerSparkleSiteUrl}
       publicSiteDisplay={customerSparkleSiteDisplay}
       liveQueueSyncCode={currentLiveQueueSyncCode}
+      onOpenPublicSite={handleOpenCustomerSitePreview}
       onGoHome={() => {
         setWorkspacePreview({ mode: 'workspace' })
         setPreviewUnavailableMessage(null)
@@ -5412,10 +5421,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               cleanupCount={homeCleanupCount}
               fulfillmentCount={homeFulfillmentCount}
               nextShow={homeNextShow}
-              siteLive={Boolean(currentPublicSiteSlug)}
+              siteLive={Boolean(customerSparkleSiteHref)}
               onLaunchAction={(action) => onLaunchNicNacAction?.(action)}
               onOpenTradeBoard={() => setActiveSection('trade-board')}
               onOpenCalendar={() => setActiveSection('show-calendar')}
+              onOpenPublicSite={handleOpenCustomerSitePreview}
               onOpenHelp={() => setActiveSection('help-resources')}
             />
           ) : (
@@ -5450,6 +5460,7 @@ function WorkspaceAppHeader({
   publicSiteUrl,
   publicSiteDisplay,
   liveQueueSyncCode,
+  onOpenPublicSite,
   onGoHome,
 }: {
   repName: string
@@ -5457,6 +5468,7 @@ function WorkspaceAppHeader({
   publicSiteUrl: string | null
   publicSiteDisplay: string
   liveQueueSyncCode?: string | null
+  onOpenPublicSite: () => void
   onGoHome: () => void
 }) {
   const [logoutBusy, setLogoutBusy] = useState(false)
@@ -5518,9 +5530,15 @@ function WorkspaceAppHeader({
       <div className={styles.appHeaderReferences} aria-label="Workspace quick reference">
         <div className={styles.appHeaderReference}>
           <span className={styles.appHeaderReferenceLabel}>Public site</span>
-          <span className={styles.appHeaderReferenceValue} title={publicSiteUrl ?? undefined}>
+          <button
+            type="button"
+            className={styles.appHeaderReferenceValue}
+            title={publicSiteUrl ?? undefined}
+            onClick={onOpenPublicSite}
+            disabled={!publicSiteUrl}
+          >
             {publicSiteDisplay}
-          </span>
+          </button>
           <button
             type="button"
             className={`${styles.appHeaderCopyButton} ${
@@ -5600,6 +5618,7 @@ function ConceptHomeWorkspace({
   onLaunchAction,
   onOpenTradeBoard,
   onOpenCalendar,
+  onOpenPublicSite,
   onOpenHelp,
 }: {
   chat?: ReactNode | null
@@ -5611,6 +5630,7 @@ function ConceptHomeWorkspace({
   onLaunchAction: (action: WorkspaceLaunchAction) => void
   onOpenTradeBoard: () => void
   onOpenCalendar: () => void
+  onOpenPublicSite: () => void
   onOpenHelp: () => void
 }) {
   return (
@@ -5703,8 +5723,17 @@ function ConceptHomeWorkspace({
             </div>
           )}
         </ConceptPanel>
-        <ConceptPanel title="Public Site">
-          <div className={styles.publicSiteStatus}>
+        <ConceptPanel
+          title="Public Site"
+          action={siteLive ? 'Open site' : undefined}
+          onAction={siteLive ? onOpenPublicSite : undefined}
+        >
+          <button
+            type="button"
+            className={styles.publicSiteStatus}
+            onClick={onOpenPublicSite}
+            disabled={!siteLive}
+          >
             <span className={styles.publicSiteStatusIcon}>
               <Globe2 aria-hidden="true" />
             </span>
@@ -5716,7 +5745,7 @@ function ConceptHomeWorkspace({
                   : 'Finish Site Settings to publish your customer site.'}
               </small>
             </span>
-          </div>
+          </button>
         </ConceptPanel>
         <ConceptPanel title="Need help?" action="Visit resources" onAction={onOpenHelp}>
           <button type="button" className={styles.helpPreview} onClick={onOpenHelp}>
@@ -6985,11 +7014,13 @@ export function SiteSettingsCard({
                   />
                 </label>
                 <label className={styles.searchField}>
-                  <span className={styles.searchLabel}>TikTok or video URL</span>
+                  <span className={styles.searchLabel}>
+                    TikTok embed code or video URL
+                  </span>
                   <input
                     className={styles.searchInput}
-                    type="url"
-                    placeholder="https://www.tiktok.com/..."
+                    type="text"
+                    placeholder="Paste a TikTok embed code or https://..."
                     value={slot.videoUrl}
                     onChange={(event) =>
                       onHomepageMediaChange?.(slot.key, {

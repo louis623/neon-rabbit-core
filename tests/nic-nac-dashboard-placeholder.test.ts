@@ -544,6 +544,20 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
   })
 
+  it('treats a rep-targeted customer site as live even without a vanity slug', () => {
+    const html = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        repIdOverride: 'rep-1',
+      }),
+    )
+
+    expect(html).toContain('Your site is live')
+    expect(html).toContain('Open site')
+    expect(html).not.toContain('Site setup in progress')
+    expect(html).toContain('/amethyst/Homepage.html?c=rep-1')
+  })
+
   it('formats the next upcoming show for the workspace glance card', () => {
     expect(
       buildHomeNextShowSummary([
@@ -2347,7 +2361,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Showcase video')
     expect(html).toContain('About media 1')
     expect(html).toContain('About media 2')
-    expect(html.match(/TikTok or video URL/g)).toHaveLength(3)
+    expect(html.match(/TikTok embed code or video URL/g)).toHaveLength(3)
     expect(html.match(/Upload photo/g)).toHaveLength(3)
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
