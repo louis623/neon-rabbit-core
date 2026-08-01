@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Workspace Back Navigation Uses the Section Hierarchy
+
+Sparkle Suite workspace back controls follow the product hierarchy instead of
+depending on browser history. Primary tabs return to Nic-Nac home. Nested tools
+return to the Tools index. This gives direct-entry sections a predictable
+destination and keeps Tools-to-tool navigation usable even though workspace
+sections render inside one `/nic-nac` route.
+
+---
+
 ## July 31, 2026 - Production Provenance, Voice Pause, and Admin/Demo Invariant
 
 **The live customer domain is the only default release and review target**

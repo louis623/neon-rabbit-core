@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Bulk Collection Intake Naming and Workspace Back Navigation
+
+**What changed:**
+- Renamed the workspace tool from `Collection Intake` to
+  `Bulk Collection Intake` in the Tools launcher and intake screen.
+- Added one shared back-navigation row to every non-home workspace section.
+- Primary sections return to Nic-Nac. Nested Tools sections, including Bulk
+  Collection Intake, Business Tools, Team Management, Site Settings, Help &
+  Resources, and Account, return to Tools.
+- The implementation checkpoint is
+  `632ec87 feat: add workspace back navigation`.
+
+**Verification:**
+- Focused workspace, intake, shell, and reviewer-smoke tests passed: 4 files,
+  119 tests.
+- The Next.js 16.2.1 production build passed with the active-branch gate.
+- Local in-app browser reviewer controls rendered, but the local synthetic
+  workspace remained on `Loading setup...`; no personal account was used.
+- Production deployment and exact live-domain verification remain the release
+  closeout step for this checkpoint.
+
+---
+
 ## July 31, 2026 - Single Live Surface Release Rule Correction
 
 **Rule corrected:**

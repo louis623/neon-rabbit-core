@@ -5,6 +5,11 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Visually close the Bulk Collection Intake/back-navigation reviewer
+  smoke** - focused tests and the production build pass at checkpoint
+  `632ec87`. The local synthetic workspace remained on `Loading setup...`, so
+  complete the visual click-through on the live domain with the safe
+  reviewer-smoke path after deployment. Do not use Louis's personal account.
 - [ ] **Complete GitHub quarantine ruleset identity verification** - the active
   ruleset is configured to match all branches except
   `codex/nic-nac-trade-hardening` and restrict creation, updates, deletion, and
