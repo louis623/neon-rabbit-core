@@ -6,12 +6,14 @@ mentions a stable demo alias is historical evidence only and does not control
 future work.
 
 - [ ] **Complete homepage-media live reviewer smoke** - after applying the
-  `homepage_media_slots` migration and deploying the exact active-branch tip,
-  use the safe Britt Test Rep reviewer flow on
-  `https://www.yoursparklesuite.com` to verify all three Site Settings media
-  cards, one photo upload, per-slot TikTok/video fields, save persistence, and
-  the corresponding customer-site placements. Reset the reviewer account
-  afterward and do not use Louis's personal account.
+  migration and deploying `9f35cd0`, local safe-reviewer visual smoke verified
+  all three cards plus save/persistence/customer-site mapping, and a live
+  synthetic-auth request verified the three-slot Site Settings payload. The
+  remaining live browser click-through is blocked because production's
+  configured reviewer token is shorter than the enforced 12-character
+  minimum. Repair that environment secret with explicit release coordination,
+  redeploy, then repeat the live UI check and one photo upload. Do not use
+  Louis's personal account.
 - [ ] **Set the protected admin/demo account's live-show name** - a read-only
   August 1 lookup confirmed `louis@neonrabbit.net` has `Louis Chapman` in both
   rep-name and business-name fields and no separate setup live-show name. The

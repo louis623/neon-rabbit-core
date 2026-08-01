@@ -18,9 +18,8 @@
 - **Repo:** louis623/sparkle-suite on GitHub
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
-- **Latest local implementation checkpoint:** current August 1 homepage-media
-  recovery session on top of `ae105bd docs: record workspace header
-  references`
+- **Latest local implementation checkpoint:**
+  `9f35cd0 feat: restore homepage media controls`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -48,6 +47,9 @@
 - **Production deployment provenance:** Inspect both live domains in Vercel
   before every release or incident response; do not treat a raw deployment ID
   recorded in memory as the current source of truth.
+- **Latest homepage-media production deployment:**
+  `dpl_Ghyo6Rh1dGNTwAZx7Q3J4n347sfj`, Ready with the `www` and apex live
+  domains assigned.
 - **Last application-bearing branch-containment deployment:**
   `dpl_HHZmsd7AK6iVTtKdDRKtZUmLfxA2`
 - **Production deploy rule:** Louis reviews Sparkle Suite work at

@@ -27,14 +27,27 @@ Running log of significant work sessions. Most recent first.
 - Connected saved media to the existing customer-facing Amethyst homepage
   renderer, including the Showcase image/video and both About placements.
 
-**Verification before release:**
+**Verification and release:**
 - Focused Site Settings, route, dashboard, and public-site mapping tests pass:
   4 files, 141 tests.
 - The Next.js 16.2.1 production build passes with the active-branch gate.
-- The local reviewer path reached the safe Britt Test Rep workspace. The
-  pre-migration Site Settings request correctly remains unavailable until the
-  new database column is applied; production migration and exact live-domain
-  smoke are part of this release closeout.
+- Migration `20260801183000_ss_homepage_media_slots.sql` was applied to the
+  linked production database.
+- Local safe-reviewer browser smoke reached Britt Test Rep Site Settings,
+  displayed all three media cards, saved Showcase TikTok/caption data, and
+  rendered that caption on the customer homepage. The reviewer account was
+  reset afterward.
+- Production code checkpoint:
+  `9f35cd0 feat: restore homepage media controls`.
+- Production deployment `dpl_Ghyo6Rh1dGNTwAZx7Q3J4n347sfj` became Ready with
+  both `www.yoursparklesuite.com` and the apex assigned.
+- A live synthetic reviewer-authenticated Site Settings request returned HTTP
+  200 with exactly `showcase`, `about_1`, and `about_2`. The live Britt Test Rep
+  customer homepage rendered without a framework error.
+- The token-gated `/start` production reviewer button still needs a separate
+  environment repair: the configured reviewer token is shorter than the
+  route's 12-character production minimum. No production secret was changed
+  during this feature release.
 
 ---
 
