@@ -19,7 +19,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `44c5a79 fix: make skin card text surface-aware`
+  `8f6f5b6 fix: keep empty trade tickers at constant speed`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is
@@ -55,6 +55,14 @@
   regression. Production deployment `dpl_ET3A3q8orA3uya6oE6b1myQZJjEr` is
   Ready from exact commit
   `44c5a79ca5c6e0204cbb0d399260401eebb9dfe6` with both live domains assigned.
+- **Latest constant-speed ticker production checkpoint:** Empty or short Trade
+  Board states now enter the same duplicated, measured ticker loop as populated
+  inventory on Homepage, Trade Board, and Join. The exact live customer-domain
+  routes measured about 55.2 pixels per second for Trade Board content while
+  announcements remained at their established 46 pixels per second. Production
+  deployment `dpl_2kboNgryVqYjRkQN3JsSH8JZRFpt` is Ready from exact application
+  commit `8f6f5b6a78603e5fa40a8a4ffb90eab5b3097c11` with both live domains
+  assigned.
 - **Live production URL / Louis review target:** `https://www.yoursparklesuite.com`
 - **Apex production URL:** `https://yoursparklesuite.com`
 - **Environment model:** Sparkle Suite live and demo are one surface. Demo

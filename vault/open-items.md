@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Restore constant-speed empty Trade Board tickers** - the empty state
+  now uses the shared duplicated, segment-measured loop on Homepage, Trade
+  Board, and Join. Live customer-domain measurements hold the Trade Board row
+  near 55.2 pixels per second regardless of listing count while announcements
+  retain their established 46-pixels-per-second pace. Six suites (107 tests),
+  the production build, both live domains, and production logs passed at
+  application checkpoint `8f6f5b6`.
 - [ ] **Complete homepage-media live reviewer smoke** - after applying the
   migration and deploying `9f35cd0`, local safe-reviewer visual smoke verified
   all three cards plus save/persistence/customer-site mapping, and a live

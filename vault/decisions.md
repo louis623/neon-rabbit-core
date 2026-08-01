@@ -4,6 +4,18 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 1, 2026 - Empty Ticker States Use the Measured Motion Contract
+
+An empty or short Trade Board state is ticker content, not a separate static
+fallback. It must enter the same duplicated segment, carry the same
+start/repeat measurement markers, and calculate duration as measured segment
+distance divided by the row's pixels-per-second standard. This applies to
+Homepage, Trade Board, Join, every registered skin, and future shared public
+sites. A fixed-duration or minimum-duration fallback may not determine ticker
+speed based on how much content happens to be present.
+
+---
+
 ## August 1, 2026 - Card Surfaces Own Their Readability
 
 Customer-site cards and forms must derive their primary, muted, and accent text

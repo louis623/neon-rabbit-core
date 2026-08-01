@@ -4,6 +4,38 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 1, 2026 - Empty Trade Ticker Constant-Speed Repair
+
+**Audit finding:**
+- Louis's diagnosis was correct: when a customer had no Trade Board listings,
+  the renderer emitted one unmarked empty-state span. It therefore had no
+  measurable repeated segment and fell back to a fixed 60-second animation,
+  producing an observed speed of about 4.9 pixels per second instead of the
+  established 55.2-pixels-per-second Trade Board pace.
+
+**What changed:**
+- The empty Trade Board state is now a real ticker item that enters the same
+  duplicated, segment-marked loop as populated inventory.
+- The repair covers the shared React site shell plus the static Homepage,
+  Trade Board, and Join renderers, so every current skin and future shared skin
+  inherits the same behavior.
+- The skin contract now explicitly requires empty and short ticker states to
+  use measured segment distance divided by the row's pixels-per-second
+  standard; fixed or minimum-duration fallbacks are not acceptable pacing.
+
+**Verification and release:**
+- Six public-site skin and route suites passed: 107 tests.
+- The Next.js 16.2.1 production build passed.
+- Exact live customer-domain browser measurements showed Trade Board motion at
+  about 55.2 pixels per second on Homepage, Trade Board, and Join while
+  announcement motion remained at about 46 pixels per second.
+- Production deployment `dpl_2kboNgryVqYjRkQN3JsSH8JZRFpt` became Ready from
+  exact application commit `8f6f5b6a78603e5fa40a8a4ffb90eab5b3097c11`
+  with both live domains assigned.
+- Production error and fatal logs were empty during the verification window.
+
+---
+
 ## August 1, 2026 - Skin-Aware Customer-Site Card Readability
 
 **Audit finding:**
