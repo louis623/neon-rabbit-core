@@ -4370,6 +4370,23 @@
   object-fit: cover;
 }
 
+.homepageMediaUploadSuccess,
+.homepageMediaUploadError {
+  margin: 0;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.homepageMediaUploadSuccess {
+  color: var(--nic-nac-success, #16875f);
+}
+
+.homepageMediaUploadError {
+  color: var(--nic-nac-danger, #b42318);
+}
+
 .homepageMediaUploadButton,
 .homepageMediaRemoveButton {
   display: inline-flex;

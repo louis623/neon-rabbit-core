@@ -155,7 +155,7 @@ describe('site settings service', () => {
           {
             key: 'showcase',
             caption: 'Favorite reveal',
-            imageUrl: 'https://cdn.example.com/showcase.jpg',
+            imageUrl: '',
             videoUrl: 'https://www.tiktok.com/@sparkle/video/1',
           },
         ],
@@ -233,7 +233,7 @@ describe('site settings service', () => {
           {
             key: 'showcase',
             caption: 'Favorite reveal',
-            imageUrl: 'https://cdn.example.com/showcase.jpg',
+            imageUrl: '',
             videoUrl: 'https://www.tiktok.com/@sparkle/video/1',
           },
           { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },

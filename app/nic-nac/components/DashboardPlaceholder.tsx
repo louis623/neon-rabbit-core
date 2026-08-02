@@ -1530,6 +1530,59 @@ export function getSiteSettingsDraft(
   }
 }
 
+const PUBLIC_SITE_MEDIA_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+])
+const DIRECT_PUBLIC_SITE_MEDIA_MAX_BYTES = 2_700_000
+const COMPRESSED_PUBLIC_SITE_MEDIA_MAX_BYTES = 2_400_000
+
+async function preparePublicSiteMediaUpload(file: File) {
+  if (!PUBLIC_SITE_MEDIA_MIME_TYPES.has(file.type)) {
+    throw new Error('Choose a JPG, PNG, or WebP photo.')
+  }
+
+  if (file.size <= DIRECT_PUBLIC_SITE_MEDIA_MAX_BYTES) {
+    return { base64Data: await readFileAsDataUrl(file), filename: file.name }
+  }
+
+  const objectUrl = URL.createObjectURL(file)
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const nextImage = new Image()
+      nextImage.onload = () => resolve(nextImage)
+      nextImage.onerror = () => reject(new Error('Unable to prepare that photo.'))
+      nextImage.src = objectUrl
+    })
+    const longestEdge = Math.max(image.naturalWidth, image.naturalHeight)
+    const scale = Math.min(1, 1800 / longestEdge)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Unable to prepare that photo.')
+    context.drawImage(image, 0, 0, canvas.width, canvas.height)
+
+    const compressed = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', 0.84),
+    )
+    if (!compressed || compressed.size > COMPRESSED_PUBLIC_SITE_MEDIA_MAX_BYTES) {
+      throw new Error('Choose a photo smaller than 2.5 MB.')
+    }
+
+    const filename = `${file.name.replace(/\.[^/.]+$/, '') || 'homepage-photo'}.jpg`
+    return {
+      base64Data: await readFileAsDataUrl(
+        new File([compressed], filename, { type: 'image/jpeg' }),
+      ),
+      filename,
+    }
+  } finally {
+    URL.revokeObjectURL(objectUrl)
+  }
+}
+
 export function updateHomepageMediaSlot(
   draft: SiteSettingsDraft,
   key: PublicSiteMediaSlotKey,
@@ -2264,6 +2317,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   const [siteSettingsMediaUploadKey, setSiteSettingsMediaUploadKey] =
     useState<PublicSiteMediaSlotKey | null>(null)
+  const [siteSettingsMediaUploadFeedback, setSiteSettingsMediaUploadFeedback] =
+    useState<{ key: PublicSiteMediaSlotKey; message: string; tone: 'error' | 'success' } | null>(null)
   const [recipesState, setRecipesState] = useState<RecipesState>({
     status: 'idle',
     recipes: [],
@@ -3294,6 +3349,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     file: File,
   ) {
     setSiteSettingsMediaUploadKey(key)
+    setSiteSettingsMediaUploadFeedback(null)
     setSiteSettingsActionState((current) => ({
       pending: current.pending,
       error: null,
@@ -3301,12 +3357,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }))
 
     try {
-      const base64Data = await readFileAsDataUrl(file)
+      const { base64Data, filename } = await preparePublicSiteMediaUpload(file)
       const response = await fetch('/api/nic-nac/site-settings/media', {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ base64Data, filename: file.name }),
+        body: JSON.stringify({ base64Data, filename }),
       })
       const payload = (await response.json().catch(() => null)) as
         | { error?: string; imageUrl?: string }
@@ -3324,13 +3380,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error: null,
         helperMessage: 'Image uploaded. Save site settings to publish it.',
       }))
+      setSiteSettingsMediaUploadFeedback({
+        key,
+        message: 'Photo uploaded. It is ready to save.',
+        tone: 'success',
+      })
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to upload that image.'
       setSiteSettingsActionState((current) => ({
         pending: current.pending,
-        error:
-          error instanceof Error ? error.message : 'Unable to upload that image.',
+        error: message,
         helperMessage: null,
       }))
+      setSiteSettingsMediaUploadFeedback({ key, message, tone: 'error' })
     } finally {
       setSiteSettingsMediaUploadKey(null)
     }
@@ -5248,6 +5311,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onHomepageMediaChange={handleHomepageMediaChange}
             onHomepageMediaUpload={handleHomepageMediaUpload}
             mediaUploadKey={siteSettingsMediaUploadKey}
+            mediaUploadFeedback={siteSettingsMediaUploadFeedback}
             canPreview={Boolean(customerSparkleSiteHref)}
             onPreview={handleOpenCustomerSitePreview}
             onSave={handleSaveSiteSettings}
@@ -7027,6 +7091,7 @@ export function SiteSettingsCard({
   onHomepageMediaChange,
   onHomepageMediaUpload,
   mediaUploadKey,
+  mediaUploadFeedback,
   canPreview,
   onPreview,
   onSave,
@@ -7047,6 +7112,11 @@ export function SiteSettingsCard({
     file: File,
   ) => void
   mediaUploadKey?: PublicSiteMediaSlotKey | null
+  mediaUploadFeedback?: {
+    key: PublicSiteMediaSlotKey
+    message: string
+    tone: 'error' | 'success'
+  } | null
   canPreview?: boolean
   onPreview?: () => void
   onSave?: () => void
@@ -7251,8 +7321,8 @@ export function SiteSettingsCard({
         <div>
           <div className={styles.walletSettingsTitle}>Homepage photos and videos</div>
           <p className={styles.siteSettingsPreviewNote}>
-            These three placements match the customer-facing homepage. Add a
-            photo, a TikTok or video link, or both for each placement.
+            Showcase video accepts a TikTok embed or video link. About media 1
+            and 2 each accept a photo, a TikTok or video link, or both.
           </p>
         </div>
         <div className={styles.homepageMediaGrid}>
@@ -7278,20 +7348,38 @@ export function SiteSettingsCard({
                     alt={`${label} preview`}
                   />
                 ) : null}
-                <label className={styles.homepageMediaUploadButton}>
-                  {isUploading ? 'Uploading...' : 'Upload photo'}
-                  <input
-                    className={styles.homepageMediaFileInput}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={isUploading}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0]
-                      if (file) onHomepageMediaUpload?.(slot.key, file)
-                      event.target.value = ''
-                    }}
-                  />
-                </label>
+                {slot.key !== 'showcase' ? (
+                  <label className={styles.homepageMediaUploadButton}>
+                    {isUploading
+                      ? 'Uploading...'
+                      : slot.imageUrl
+                        ? 'Replace photo'
+                        : 'Upload photo'}
+                    <input
+                      className={styles.homepageMediaFileInput}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={isUploading}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) onHomepageMediaUpload?.(slot.key, file)
+                        event.target.value = ''
+                      }}
+                    />
+                  </label>
+                ) : null}
+                {mediaUploadFeedback?.key === slot.key ? (
+                  <p
+                    className={
+                      mediaUploadFeedback.tone === 'success'
+                        ? styles.homepageMediaUploadSuccess
+                        : styles.homepageMediaUploadError
+                    }
+                    role="status"
+                  >
+                    {mediaUploadFeedback.message}
+                  </p>
+                ) : null}
                 <label className={styles.searchField}>
                   <span className={styles.searchLabel}>
                     TikTok embed code or video URL
@@ -7321,7 +7409,7 @@ export function SiteSettingsCard({
                     }
                   />
                 </label>
-                {slot.imageUrl ? (
+                {slot.key !== 'showcase' && slot.imageUrl ? (
                   <button
                     type="button"
                     className={styles.homepageMediaRemoveButton}

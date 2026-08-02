@@ -146,9 +146,7 @@ describe('Amethyst preview template data', () => {
     expect(data.showcaseVideoUrl).toBe(
       'https://www.tiktok.com/@sparklesuitedemo/video/1',
     )
-    expect(data.showcaseImageUrl).toBe(
-      'https://cdn.example.com/showcase.jpg',
-    )
+    expect(data.showcaseImageUrl).toBe('')
     expect(data.aboutMediaSlots).toEqual([
       {
         typeLabel: 'Photo',

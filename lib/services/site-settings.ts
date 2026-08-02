@@ -186,7 +186,7 @@ export function normalizePublicSiteMediaSlots(
       key,
       caption:
         typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : '',
-      imageUrl,
+      imageUrl: key === 'showcase' ? '' : imageUrl,
       videoUrl,
     }
   })

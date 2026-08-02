@@ -526,7 +526,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
       showcaseMedia?.caption ||
       defaultAmethystHomepageTemplateData.showcaseVideoCaption,
     showcaseVideoUrl: showcaseMedia?.videoUrl || '#',
-    showcaseImageUrl: showcaseMedia?.imageUrl || '',
+    showcaseImageUrl: '',
     aboutMediaSlots: defaultAmethystHomepageTemplateData.aboutMediaSlots.map(
       (fallback, index) => {
         const media = aboutMedia[index]
