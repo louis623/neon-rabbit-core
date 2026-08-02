@@ -26,6 +26,8 @@ describe('Sparkle Suite public header and login layout', () => {
     expect(accountAction).toContain('Sign in here.')
     expect(accountAction).toContain('signOut')
     expect(accountAction).toContain("window.location.assign('/')")
+    expect(accountAction).toContain('href="/nic-nac"')
+    expect(accountAction).toContain('Open workspace')
     expect(accountAction).toContain('Log out')
   })
 

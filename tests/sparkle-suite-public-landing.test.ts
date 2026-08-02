@@ -553,6 +553,8 @@ describe('Sparkle Suite public landing page', () => {
     expect(accountActionSource).not.toContain('redirectToWorkspaceUnlessAlreadyThere')
     expect(accountActionSource).not.toContain('window.location.replace')
     expect(accountActionSource).toContain('Sign in here.')
+    expect(accountActionSource).toContain('href="/nic-nac"')
+    expect(accountActionSource).toContain('Open workspace')
     expect(accountActionSource).toContain('Log out')
   })
 

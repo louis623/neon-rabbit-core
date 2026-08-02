@@ -43,14 +43,19 @@ export function SparkleSuitePublicAccountAction() {
 
   if (authState === 'signed_in') {
     return (
-      <button
-        className="sl2-header__account-button"
-        disabled={busy}
-        onClick={() => void handleLogout()}
-        type="button"
-      >
-        {busy ? 'Logging out...' : 'Log out'}
-      </button>
+      <>
+        <a className="sl2-header__workspace-link" href="/nic-nac">
+          Open workspace
+        </a>
+        <button
+          className="sl2-header__account-button"
+          disabled={busy}
+          onClick={() => void handleLogout()}
+          type="button"
+        >
+          {busy ? 'Logging out...' : 'Log out'}
+        </button>
+      </>
     )
   }
 
