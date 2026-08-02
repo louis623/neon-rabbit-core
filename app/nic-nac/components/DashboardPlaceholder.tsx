@@ -7455,7 +7455,9 @@ export function SiteSettingsCard({
           <div>
             <div className={styles.walletSettingsTitle}>About section narrative</div>
             <p className={styles.siteSettingsPreviewNote}>
-              Use or work with Nic-Nac to write your About section narrative.
+              Build this with Nic-Nac: share your story, refine a few options
+              together, then approve the one that feels right. Nic-Nac publishes
+              the approved narrative directly to your customer-facing site.
             </p>
           </div>
           <button
@@ -7463,19 +7465,9 @@ export function SiteSettingsCard({
             className={styles.previewSiteButton}
             onClick={onWriteAboutNarrative}
           >
-            Work with Nic-Nac
+            Write with Nic-Nac
           </button>
         </div>
-        <label className={styles.searchField}>
-          <span className={styles.searchLabel}>Narrative</span>
-          <textarea
-            className={styles.siteSettingsTextarea}
-            maxLength={3000}
-            placeholder="Your saved About narrative will appear here."
-            value={draft.aboutNarrative ?? ''}
-            onChange={(event) => onDraftChange?.({ aboutNarrative: event.target.value })}
-          />
-        </label>
       </div>
 
       <div className={styles.siteSettingsSection}>
