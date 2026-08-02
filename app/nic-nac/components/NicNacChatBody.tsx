@@ -10,7 +10,6 @@ import {
 } from 'ai'
 import { Bubble } from './Bubble'
 import { ChatHistory } from './ChatHistory'
-import { Chips } from './Chips'
 import { EmptyGreeting, type NicNacChatMode } from './EmptyGreeting'
 import { ErrorBlock } from './ErrorBlock'
 import { HITLBlock } from './HITLBlock'
@@ -608,7 +607,6 @@ export function NicNacChatBody({
 
   const hasError = !!error
   const hasMessages = messages.length > 0
-  const chipsVisible = !isStreaming && !hasPendingApproval && !hasError
   const showLookPicker =
     chatMode === 'required_setup' && requiredSetupStep === 'site_skin'
   const showLiveQueuePanel =
@@ -708,11 +706,6 @@ export function NicNacChatBody({
       previousLatestUserId: findLatestUserMessageId(messages),
     })
     await sendWithParts(parts)
-  }
-
-  const handleChip = (text: string) => {
-    if (hasPendingApproval || isStreaming) return
-    void sendMessage({ text })
   }
 
   const handleLookChoice = (text: string) => {
@@ -868,12 +861,6 @@ export function NicNacChatBody({
           />
         ) : null}
       </ChatHistory>
-      <Chips
-        visible={chipsVisible}
-        mode={chatMode}
-        onPick={handleChip}
-        disabled={isStreaming || hasPendingApproval}
-      />
       <InputRow
         ref={textareaRef}
         value={draft}

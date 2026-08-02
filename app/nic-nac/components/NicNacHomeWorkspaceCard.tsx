@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, ExternalLink, Gem, Search, Sparkles } from 'lucide-react'
+import { CalendarDays, ExternalLink, Gem, Sparkles } from 'lucide-react'
 
 import type { WorkspaceLaunchAction } from '@/lib/nic-nac/workspace-launch-actions'
 
@@ -33,8 +33,8 @@ export function NicNacHomeWorkspaceCard({
           <span className={styles.chatTitle}>Nic-Nac</span>
         </div>
         <p className={styles.chatSubtitle}>
-          Start here. I can add pieces, set up shows, check your board, and walk
-          you through the next step.
+          Start here. I can add pieces, set up shows, and walk you through the
+          next step.
         </p>
       </div>
 
@@ -42,10 +42,6 @@ export function NicNacHomeWorkspaceCard({
         <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
           <Gem aria-hidden="true" />
           <span>Add a piece</span>
-        </button>
-        <button type="button" onClick={() => onLaunchAction('check_board')}>
-          <Search aria-hidden="true" />
-          <span>Check my board</span>
         </button>
         <button type="button" onClick={() => onLaunchAction('add_calendar_show')}>
           <CalendarDays aria-hidden="true" />

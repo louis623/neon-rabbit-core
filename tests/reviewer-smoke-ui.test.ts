@@ -47,10 +47,6 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
     'utf8',
   )
-  const chips = readFileSync(
-    resolve(process.cwd(), 'app/nic-nac/components/Chips.tsx'),
-    'utf8',
-  )
   const standard = readFileSync(
     resolve(process.cwd(), 'docs/sparkle-suite/testing/reviewer-smoke-standard.md'),
     'utf8',
@@ -391,14 +387,9 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('messages: []')
   })
 
-  it('offers guided Trade Board and Calendar starter chips', () => {
-    expect(chips).toContain('Add a piece to Trade Board')
-    expect(chips).toContain('Add a Show to the Calendar')
-    expect(chips).not.toContain("What's on my board?")
-    expect(chips).not.toContain('Remove a listing')
-    expect(chips.indexOf('Add a piece to Trade Board')).toBeLessThan(
-      chips.indexOf('Add a Show to the Calendar'),
-    )
+  it('does not render post-chat suggestion chips', () => {
+    expect(nicNacChatBody).not.toContain("from './Chips'")
+    expect(nicNacChatBody).not.toContain('<Chips')
   })
 
   it('keeps mobile Nic-Nac launch affordances wired for quick actions', () => {

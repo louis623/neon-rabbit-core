@@ -54,7 +54,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  CircleEllipsis,
   Copy,
   Gem,
   Globe2,
@@ -5663,10 +5662,6 @@ function ConceptHomeWorkspace({
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
               <span className={styles.quickIcon}>+</span>
               Add a piece
-            </button>
-            <button type="button" onClick={() => onLaunchAction('check_board')}>
-              <CircleEllipsis aria-hidden="true" />
-              Check my board
             </button>
             <button type="button" onClick={() => onLaunchAction('add_calendar_show')}>
               <CalendarDays aria-hidden="true" />

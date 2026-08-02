@@ -516,7 +516,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
     expect(html).toContain('Add a piece')
-    expect(html).toContain('Check my board')
+    expect(html).not.toContain('Check my board')
     expect(html).toContain('Add a show')
     expect(html).toContain('Trade Info')
     expect(html).toContain('aria-label="Trade info at a glance"')

@@ -9,7 +9,6 @@ import { EmptyGreeting } from '@/app/nic-nac/components/EmptyGreeting'
 import { RequiredSetupLiveQueuePanel } from '@/app/nic-nac/components/RequiredSetupLiveQueuePanel'
 import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupLookPicker'
 import { RequiredSetupPreviewPanel } from '@/app/nic-nac/components/RequiredSetupPreviewPanel'
-import { Chips } from '@/app/nic-nac/components/Chips'
 import { InputRow } from '@/app/nic-nac/components/InputRow'
 import { ThinkingIndicator } from '@/app/nic-nac/components/ThinkingIndicator'
 import { NicNacHeader } from '@/app/nic-nac/components/NicNacHeader'
@@ -51,14 +50,6 @@ describe('Nic-Nac branding copy', () => {
     const greetingHtml = renderToStaticMarkup(
       createElement(EmptyGreeting, { mode: 'required_setup' }),
     )
-    const chipsHtml = renderToStaticMarkup(
-      createElement(Chips, {
-        visible: true,
-        mode: 'required_setup',
-        onPick: () => {},
-      }),
-    )
-
     expect(greetingHtml).toContain('Welcome to your new Sparkle Suite.')
     expect(greetingHtml).toContain('We&#x27;re happy to have you.')
     expect(greetingHtml).toContain('I&#x27;m Nic-Nac, your built-in live show assistant.')
@@ -66,28 +57,6 @@ describe('Nic-Nac branding copy', () => {
     expect(greetingHtml).toContain('customer-facing website ready!')
     expect(greetingHtml).toContain('What should I call you?')
     expect(greetingHtml).not.toContain('What&#x27;s on your mind?')
-    expect(chipsHtml).toBe('')
-    expect(chipsHtml).not.toContain('Start account basics')
-    expect(chipsHtml).not.toContain('What do you need from me?')
-    expect(chipsHtml).not.toContain('What&#x27;s on my board?')
-    expect(chipsHtml).not.toContain('Remove a listing')
-  })
-
-  it('keeps prompt chips available in the normal workspace', () => {
-    const chipsHtml = renderToStaticMarkup(
-      createElement(Chips, {
-        visible: true,
-        mode: 'workspace',
-        onPick: () => {},
-      }),
-    )
-
-    expect(chipsHtml).toContain('Add a piece to Trade Board')
-    expect(chipsHtml).toContain('Add a Show to the Calendar')
-    expect(chipsHtml).not.toContain('What&#x27;s on my board?')
-    expect(chipsHtml).not.toContain('Remove a listing')
-    expect(chipsHtml).not.toContain('Start account basics')
-    expect(chipsHtml).not.toContain('What do you need from me?')
   })
 
   it('renders customer-facing site Look choices for required setup', () => {
