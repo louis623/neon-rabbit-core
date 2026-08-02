@@ -5,6 +5,21 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Simplify the shared beta workspace and add Live Queue guidance** -
+  Jewelry Library now lives in Tools; Nic-Nac quick actions and preview
+  controls were simplified; Team Management and Bulk Collection Intake are
+  preserved behind `Coming soon`; the shared explainer card is readable across
+  skins; and Tools includes the workspace-specific Live Queue install,
+  verification, troubleshooting, and explanation guide. Final application
+  checkpoint `1ca7b48d` is live on both production domains.
+- [ ] **Run the first real rep Live Queue onboarding acceptance smoke** - with
+  the next operator-provisioned rep or an explicitly authorized synthetic
+  reviewer, follow Tools > Live Queue from start to finish: install the official
+  Web Store extension in the correct Chrome profile, enter that rep's exact
+  assigned code, open Party Orders, select the correct Party Filter, verify a
+  connected/green state, and confirm the customer-site queue or clear empty
+  state. Do not use Louis's personal account, alter the extension package, or
+  create live provider/order side effects for synthetic review.
 - [x] **Implement operator-led five-day beta trials** - public entry is
   waitlist-first; Louis can create an approved rep account from a ready setup
   profile; the temporary password is entered twice and handed over manually;
@@ -51,11 +66,11 @@ future work.
   header now safely says `Live show name not set`; save the intended show name
   through the normal Site Settings/profile flow once Louis supplies it. Do not
   invent or production-patch a name.
-- [ ] **Visually close the Bulk Collection Intake/back-navigation reviewer
-  smoke** - focused tests and the production build pass at checkpoint
-  `632ec87`. The local synthetic workspace remained on `Loading setup...`, so
-  complete the visual click-through on the live domain with the safe
-  reviewer-smoke path after deployment. Do not use Louis's personal account.
+- [x] **Close the immediate Bulk Collection Intake/back-navigation beta
+  follow-up** - superseded August 2 when Bulk Collection Intake was deliberately
+  preserved behind a disabled `Coming soon` entry for first beta testers.
+  Existing implementation remains available for later reactivation; perform a
+  fresh reviewer smoke before access is restored.
 - [ ] **Complete GitHub quarantine ruleset identity verification** - the active
   ruleset is configured to match all branches except
   `codex/nic-nac-trade-hardening` and restrict creation, updates, deletion, and
@@ -238,7 +253,14 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   `C:\Users\louis\sparkle-suite-repo` on
   `codex/nic-nac-trade-hardening`. Use reviewer-smoke/synthetic sessions on the
   live site, not Louis's personal account.
-- [ ] **Run first real Team Management beta smoke** - Brittany's `brittwithbling` demo/live-transition account is verified as `active` with Team Management `manual_beta` access. After Louis or Brittany signs in through an appropriate safe path, create one real onboarding participant link, open `https://britt-with-bling-start-strong.vercel.app/?invite=...`, verify the rep name personalizes, mark progress, send a question, confirm Brittany's workspace sees progress/messages, and archive the invite when finished. Do not create fake rep accounts.
+- [ ] **Run first real Team Management beta smoke when the tool is re-enabled**
+  - deferred August 2 because Team Management is deliberately visible but
+  inaccessible as `Coming soon` for first beta testers. Brittany's
+  `brittwithbling` account remains verified as `active` with historical
+  `manual_beta` data preserved. When Louis reopens the tool, use an appropriate
+  safe path to create one real onboarding participant link, verify
+  personalization/progress/messages, and archive the invite when finished.
+  Do not create fake rep accounts.
 - [ ] **Build safer Nic-Nac catalog photo replacement from a new chat upload** - current deployed guard lets Nic-Nac replace a bad canonical catalog photo only when an approved jewelry-front replacement URL already exists. A future improvement should let Nic-Nac accept a corrected jewelry-front photo for an existing design, run it through the same photo pipeline/approval guard, and then call the catalog correction path. Do not let raw label/details photos become canonical catalog images.
 - [ ] **Create and smoke-test Sparkle Rep Onboarding Codespace** - paused unless Louis reselects Codespaces; if resumed, stop the rotating secondary Codespace if GitHub's two-running-Codespaces limit blocks creation, create a 4-core Codespace for `louis623/sparkle-rep-onboarding`, then verify terminal, repo path, branch, remote, and write/read/delete.
 - [ ] **External drive backup routine** - after Louis buys a backup drive, copy `C:\Users\louis\Sparkle-Suite-Local-Archive` to it and create a simple periodic GitHub/archive backup checklist.

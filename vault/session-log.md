@@ -4,6 +4,73 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 2, 2026 - Workspace Beta Simplification and Live Queue Guide
+
+**Workspace and customer-site changes:**
+- Removed the redundant Nic-Nac `Check my board` quick action and composer
+  suggestion chips.
+- Moved Jewelry Library from the bottom navigation into Tools, leaving the
+  shared workspace with Nic-Nac, Trade Board, Calendar, and Tools as its four
+  primary tabs.
+- Kept `Add a piece` in the left rail and kept the only `Add a show` action in
+  the right-rail Upcoming Show card, giving the Nic-Nac conversation more room.
+- Preserved Team Management and Bulk Collection Intake implementation while
+  presenting both as disabled `Coming soon` tools for the first beta testers.
+- Simplified Live Site Preview to `Back to workspace` and `Open full site` by
+  removing `Refresh preview` and its preview-only Nic-Nac drawer control.
+- Repaired the customer-site explainer card with semantic surface-owned text
+  colors across all skins and refreshed the static stylesheet cache key so the
+  fix reached the shared customer-site pages.
+
+**Live Queue work:**
+- Assigned Louis's protected admin/demo workspace a convention-compliant Live
+  Queue code. The exact private code was stored in private Open Brain recall
+  and intentionally omitted from the Git-tracked vault.
+- Added a Live Queue entry to Tools for every workspace. Its subpage shows the
+  authenticated rep's assigned code, the canonical Chrome Web Store listing,
+  Bomb Party Party Orders, six setup steps, a pre-show checklist,
+  troubleshooting guidance, customer-site/help actions, and a plain-English
+  explanation of what the extension reads and does not change.
+- Kept the extension boundary intact: no Chrome extension source/package,
+  Chrome Web Store settings, production queue data, or Bomb Party behavior was
+  changed.
+
+**Onboarding and billing restructure:**
+- The same session shipped the separately documented operator-led five-day
+  trial model below: waitlist-first acquisition, operator provisioning,
+  first-sign-in trial activation, twice-entered strong passwords, paid
+  conversion without setup loss, and restricted account/billing/security/help
+  access after trial expiry or billing delinquency.
+
+**Verification and release:**
+- Session commits after the prior documented tip were:
+  `426a78a7`, `36318fcd`, `0f6b8704`, `4aafc66b`, `e9c64ce0`,
+  `9394ce5e`, `04dc49dd`, `d7253e99`, `ff244ea9`, `2f5a745e`,
+  `5ebc995d`, and `1ca7b48d`.
+- The operator-trial release passed 354 focused tests plus Finder boundary
+  coverage and a Next.js 16.2.1 production build. The final Live Queue guide
+  passed 130 focused tests and another production build.
+- Final application tip
+  `1ca7b48d9f9ba725e178e3ded5ec0c32eda12376` deployed Ready as
+  `dpl_psy1p3NGqfp9ygM4a77ncxBKfMK5`; Vercel confirmed the `www` and apex live
+  domains on that exact deployment.
+- Signed-in live-domain browser verification confirmed the new Tools entry,
+  assigned workspace code, canonical external links, guide copy, and Back to
+  Tools navigation. Louis reviewed the result and reported nothing to fix or
+  add.
+
+**Operational lesson:**
+- A transient timeout to one GitHub edge blocked a normal push even though
+  GitHub status and API access were healthy. Experimental REST fallbacks were
+  stopped before moving the branch when exact blob/commit identity differed.
+  Pinning the standard Git push to another official reachable GitHub edge
+  preserved exact commit identity and completed the push. Future recovery
+  should prefer an ordinary exact-SHA Git transport through a verified
+  reachable official edge; never move the protected branch from a normalized
+  or reconstructed API commit.
+
+---
+
 ## August 2, 2026 - Operator-Led Five-Day Trial Onboarding
 
 **Outcome:**

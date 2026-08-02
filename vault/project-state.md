@@ -10,6 +10,45 @@
 
 ---
 
+## August 2 Workspace Simplification and Live Queue Checkpoint
+
+- The shared workspace now uses four primary tabs: Nic-Nac, Trade Board,
+  Calendar, and Tools. Jewelry Library moved from the bottom navigation into
+  Tools so the change applies to every current workspace, demo/reviewer
+  account, and future account.
+- Nic-Nac's redundant `Check my board` action and composer suggestion chips
+  were removed. `Add a piece` remains in the left workspace rail, while
+  `Add a show` remains only in the Upcoming Show card on the right rail. This
+  preserves the central column for the Nic-Nac conversation.
+- Team Management and Bulk Collection Intake are visible but disabled with
+  `Coming soon`. Their existing implementation and historical evidence remain
+  preserved for later reactivation; first beta testers cannot enter them.
+- Live Site Preview keeps only `Back to workspace` and `Open full site`.
+  `Refresh preview` and the preview-only Nic-Nac drawer control were removed.
+- The customer-site explainer card now uses surface-owned semantic text colors
+  across every skin. A static asset cache-key refresh ensured the shared fix
+  reached the production customer-site HTML.
+- Louis's protected admin/demo workspace received a convention-compliant Live
+  Queue code. The exact private value is retained in private Open Brain recall,
+  not in this Git-tracked vault.
+- Tools now includes a shared Live Queue guide. It reads the authenticated
+  workspace's assigned code, links to the official Sparkle Suite Live Queue
+  Chrome Web Store listing and Bomb Party Party Orders, provides six plain
+  English setup steps, a pre-show verification checklist, troubleshooting,
+  customer-site/help links, and an explanation of the extension's read-only
+  queue behavior. The guide does not change extension source, Web Store
+  settings, queue data, or Bomb Party behavior.
+- Final application checkpoint:
+  `1ca7b48d9f9ba725e178e3ded5ec0c32eda12376 feat: add live queue workspace guide`.
+  Focused Live Queue/workspace verification passed 130 tests and the Next.js
+  16.2.1 production build. Production deployment
+  `dpl_psy1p3NGqfp9ygM4a77ncxBKfMK5` serves both live domains from that exact
+  commit; signed-in live-domain verification confirmed the Tools entry,
+  workspace-specific code, canonical links, guide content, and back
+  navigation.
+
+---
+
 ## August 2 Operator-Led Trial Onboarding Checkpoint
 
 - Public acquisition is waitlist-first. Ordinary `/start` traffic redirects to
@@ -50,7 +89,7 @@
 - **Active local workbench:** `C:\Users\louis\sparkle-suite-repo`
 - **Active local branch:** `codex/nic-nac-trade-hardening`
 - **Latest local implementation checkpoint:**
-  `929638da fix: restore bold trade ticker text`
+  `1ca7b48d feat: add live queue workspace guide`
 - **Latest local docs/memory checkpoint:** July 31 single-live-surface rule
   correction: Sparkle Suite live and demo are one surface at
   `yoursparklesuite.com`; all approved work flows to Vercel production and is

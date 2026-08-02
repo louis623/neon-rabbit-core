@@ -4,6 +4,58 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 2, 2026 - Beta Workspace Navigation and Live Queue Setup Boundaries
+
+**Shared workspace changes apply account-wide**
+Workspace shell, customer-site skin, and plumbing changes belong to shared
+components and data contracts. They apply to all current workspaces,
+demo/reviewer accounts, and future accounts unless a feature is explicitly
+account-gated. Rep-specific names, sites, codes, listings, and shows remain
+data, not separate implementations.
+
+**The bottom navigation stays focused**
+The primary workspace tabs are Nic-Nac, Trade Board, Calendar, and Tools.
+Jewelry Library lives inside Tools. Team Management and Bulk Collection Intake
+remain visible as `Coming soon` so beta testers can see the roadmap without
+accessing unfinished workflows. Existing implementation is preserved rather
+than deleted and must be re-smoked before either tool is re-enabled.
+
+**Nic-Nac owns the central workspace**
+The first screen reserves its center for conversation. `Add a piece` belongs
+in the left rail. `Add a show` belongs in the Upcoming Show card on the right.
+The redundant `Check my board` action and composer suggestion chips stay
+removed because Nic-Nac can answer board questions directly.
+
+**Live Site Preview is intentionally minimal**
+The preview toolbar keeps `Back to workspace` and `Open full site`. The
+separate refresh control and preview-only Nic-Nac drawer stay removed. Reps
+return to the main workspace for Nic-Nac rather than maintaining a second chat
+surface inside preview.
+
+**Live Queue guidance is workspace-owned; extension behavior is protected**
+Tools contains the account-generic Live Queue setup guide. It must read the
+authenticated rep's stored code and reuse the canonical Chrome Web Store and
+Bomb Party Party Orders links. It may explain installation, Party Filter
+selection, connection verification, customer-site checking, and safe
+troubleshooting. It must not generate or replace codes, modify extension
+source/package or Web Store settings, mutate queue data, place/reveal orders,
+refresh Bomb Party, or change the Bomb Party back office.
+
+**Skin readability belongs to semantic surfaces**
+The explainer card follows the same surface-owned primary, muted, and accent
+text contract as customer-site contact/signup cards. Skin-specific section
+colors may not make card copy unreadable. Static customer-site asset cache keys
+must be refreshed when shared stylesheet behavior changes.
+
+**Exact Git identity outranks convenience during network recovery**
+If a normal Git push cannot reach one GitHub edge, use an ordinary Git
+transport through another verified official reachable edge. Do not reconstruct
+and move the protected branch through a REST fallback when line-ending,
+timezone, tree, parent, author, committer, or signature normalization produces
+a different commit SHA.
+
+---
+
 ## August 2, 2026 - Beta Onboarding Is Operator-Led with a Fixed Five-Day Trial
 
 The public site remains waitlist-first. Louis advances interested reps,
