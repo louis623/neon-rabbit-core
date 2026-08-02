@@ -1251,10 +1251,6 @@ function Events({ count }) {
 // What is a Bomb Party
 // ============================================================
 function Wibp({ repName }) {
-  const showcaseVideoCaption = RUNTIME_CONTEXT.targeted
-    ? CONTENT.showcaseVideoCaption || "Intro video coming soon."
-    : CONTENT.showcaseVideoCaption || "Showcase video coming soon.";
-
   return (
     <section className="hp-section" id="wibp" style={{ background: "var(--hp-bg-elevated)" }}>
       <div className="hp-container">
@@ -1287,14 +1283,13 @@ function Wibp({ repName }) {
           </div>
           <TikTokEmbed
             className="hp-wibp-video slot"
-            title={showcaseVideoCaption}
+            title="TikTok video"
             videoUrl={CONTENT.showcaseVideoUrl}
           >
             <div className="hp-wibp-video-meta">
               <div className="hp-video-pill"><span className="pip" />TikTok · Loops</div>
               <div className="hp-video-play">▶</div>
             </div>
-            <div className="hp-wibp-video-caption">{showcaseVideoCaption}</div>
           </TikTokEmbed>
         </div>
       </div>

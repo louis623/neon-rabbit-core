@@ -182,10 +182,12 @@ export function normalizePublicSiteMediaSlots(
       )
     }
 
+    const caption =
+      typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : ''
+
     return {
       key,
-      caption:
-        typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : '',
+      caption: videoUrl ? '' : caption,
       imageUrl: key === 'showcase' ? '' : imageUrl,
       videoUrl,
     }

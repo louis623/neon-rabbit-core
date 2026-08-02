@@ -522,9 +522,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
       : '',
     streamLinks,
     socialLinks: buildSocialLinks(settings),
-    showcaseVideoCaption:
-      showcaseMedia?.caption ||
-      defaultAmethystHomepageTemplateData.showcaseVideoCaption,
+    showcaseVideoCaption: '',
     showcaseVideoUrl: showcaseMedia?.videoUrl || '#',
     showcaseImageUrl: '',
     aboutMediaSlots: defaultAmethystHomepageTemplateData.aboutMediaSlots.map(
@@ -536,7 +534,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
             : media?.imageUrl
               ? 'Photo'
               : fallback.typeLabel,
-          caption: media?.caption || fallback.caption,
+          caption: media?.videoUrl ? '' : media?.caption || fallback.caption,
           href: media?.videoUrl || '#',
           mediaUrl: media?.imageUrl || undefined,
         }

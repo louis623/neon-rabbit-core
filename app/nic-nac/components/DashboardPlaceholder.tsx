@@ -7334,6 +7334,7 @@ export function SiteSettingsCard({
                   ? 'About media 1'
                   : 'About media 2'
             const isUploading = mediaUploadKey === slot.key
+            const hasVideoUrl = Boolean(slot.videoUrl.trim())
 
             return (
               <section className={styles.homepageMediaCard} key={slot.key}>
@@ -7389,17 +7390,23 @@ export function SiteSettingsCard({
                     type="text"
                     placeholder="Paste a TikTok embed code or https://..."
                     value={slot.videoUrl}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const videoUrl = event.target.value
                       onHomepageMediaChange?.(slot.key, {
-                        videoUrl: event.target.value,
+                        videoUrl,
+                        caption: videoUrl.trim() ? '' : slot.caption,
                       })
-                    }
+                    }}
                   />
                 </label>
                 <label className={styles.searchField}>
                   <span className={styles.searchLabel}>Caption</span>
                   <input
                     className={styles.searchInput}
+                    aria-describedby={
+                      hasVideoUrl ? `caption-video-note-${slot.key}` : undefined
+                    }
+                    disabled={hasVideoUrl}
                     maxLength={240}
                     value={slot.caption}
                     onChange={(event) =>
@@ -7408,6 +7415,14 @@ export function SiteSettingsCard({
                       })
                     }
                   />
+                  {hasVideoUrl ? (
+                    <span
+                      className={styles.siteSettingsPreviewNote}
+                      id={`caption-video-note-${slot.key}`}
+                    >
+                      Captions are available for photos only.
+                    </span>
+                  ) : null}
                 </label>
                 {slot.key !== 'showcase' && slot.imageUrl ? (
                   <button

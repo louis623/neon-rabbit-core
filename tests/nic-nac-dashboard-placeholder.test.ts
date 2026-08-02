@@ -2594,6 +2594,34 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('disabled=""')
   })
 
+  it('disables About media captions when the slot contains a video URL', () => {
+    const html = renderToStaticMarkup(
+      createElement(SiteSettingsCard, {
+        state: SITE_SETTINGS_READY_STATE,
+        draft: {
+          ...SITE_SETTINGS_READY_STATE.settings,
+          homepageMediaSlots: [
+            { key: 'showcase', caption: '', imageUrl: '', videoUrl: '' },
+            {
+              key: 'about_1',
+              caption: '',
+              imageUrl: '',
+              videoUrl: 'https://www.tiktok.com/@sparkle/video/7412345678901234567',
+            },
+            { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+          ],
+        },
+        actionState: { pending: false, error: null, helperMessage: null },
+        hasUnsavedChanges: true,
+        statusMessage: 'Unsaved changes.',
+      }),
+    )
+
+    expect(html).toContain('Captions are available for photos only.')
+    expect(html).toContain('caption-video-note-about_1')
+    expect(html).toContain('disabled=""')
+  })
+
   it('shows the five-day trial deadline and preserved-work expiry message', () => {
     const activeHtml = renderToStaticMarkup(
       createElement(AccountBillingCard, {
