@@ -4,6 +4,34 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 2, 2026 - Customer-Facing Media and Narrative Ownership
+
+**Customer-facing site setup is a destination-specific tool**
+The workspace tool is named **Customer-facing site setup**, not generic Site
+Settings. Its responsibility is the public customer experience, and it should
+always expose a safe preview route into that site.
+
+**Media modes must not display irrelevant controls**
+Showcase is TikTok/video-only; About placements may be a photo or TikTok/video.
+Captions belong solely to photos. Saving a video clears its caption in the
+data contract, and the UI removes the Caption input rather than displaying it
+disabled with explanatory copy.
+
+**TikTok is inline customer-site media**
+Customer-site TikTok embeds autoplay muted when visible and loop inside their
+placement. Sparkle Suite supplies exactly one mute/unmute control. Native
+TikTok controls stay hidden because duplicate controls caused confusing
+click-through navigation away from the customer site.
+
+**Nic-Nac owns About narrative authoring**
+The durable `about_narrative` field exists for published customer-site copy,
+but Customer-facing site setup is not an editor for it. Reps use the explicit
+Nic-Nac handoff to talk through their story, compare polished options, and
+approve a final version. Nic-Nac publishes the approved option using the
+regular site-setting tool.
+
+---
+
 ## August 2, 2026 - Beta Workspace Navigation and Live Queue Setup Boundaries
 
 **Shared workspace changes apply account-wide**

@@ -10,6 +10,39 @@
 
 ---
 
+## August 2 Customer-Facing Site Setup and Media Checkpoint
+
+- The workspace tool formerly called `Site Settings` is now consistently named
+  **Customer-facing site setup**. It includes a customer-site preview action.
+- Public announcement copy now comes only from the configured ticker text; it
+  no longer pulls in unrelated defaults or other site content.
+- The public homepage has three distinct media placements: **Showcase video**
+  accepts only a TikTok/video URL; **About media 1** and **About media 2** can
+  each contain either a photo or a TikTok/video URL. Photo uploads show an
+  immediate success state and remain a draft until the rep saves settings.
+- TikTok media renders inline in its placement, autoplaying muted when scrolled
+  into view. Sparkle Suite provides the single mute/unmute control; TikTok's
+  native controls are suppressed to prevent navigation away from the site.
+- Captions are a photo-only concept. A video URL clears any stored caption and
+  hides the Caption control entirely; photo-only cards retain it.
+- The About narrative is deliberately **Nic-Nac-owned**, not a second manual
+  editor. The setup card explains the conversation flow and offers **Write
+  with Nic-Nac**. Nic-Nac gathers free-talk, offers polished choices, and
+  publishes the approved narrative to the customer-facing site through the
+  durable `about_narrative` setting.
+- Production migrations and releases in this checkpoint:
+  `20260802170000_ss_add_about_narrative.sql`, commits `9dda0974`,
+  `8c70aa2a`, and `778bbe3e`. The active final-media deployment is
+  `dpl_4kzFrRuh5XCv4mffPuzXfsmRBuSc`, from exact commit
+  `778bbe3ea3333cb52ba73e2a0722e5ebefece213`, with both production domains
+  assigned.
+- Focused media/workspace tests and production builds passed for every release.
+  Live authenticated reviewer click-through remains blocked by the known
+  reviewer-token configuration issue; do not substitute Louis's account for
+  state-changing review.
+
+---
+
 ## August 2 Workspace Simplification and Live Queue Checkpoint
 
 - The shared workspace now uses four primary tabs: Nic-Nac, Trade Board,

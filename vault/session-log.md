@@ -4,6 +4,53 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 2, 2026 - Customer-Facing Site Setup, TikTok, and About Narrative
+
+**Customer-site setup and copy:**
+- Renamed the workspace tool to **Customer-facing site setup**, added a
+  customer-site preview action, and corrected the public announcement row so
+  it repeats only the saved ticker text.
+
+**Homepage media contract:**
+- Defined three explicit placements: Showcase is TikTok/video only; About
+  media 1 and 2 each accept a photo or TikTok/video. Removed Showcase photo
+  upload and repaired About upload feedback/save behavior.
+- TikTok URLs and embed markup are canonicalized and rendered inline. Videos
+  autoplay muted once visible, loop, and use one Sparkle Suite mute/unmute
+  control. TikTok native controls are hidden to avoid duplicate mute controls
+  and click-through navigation.
+- Captions remain only for photos. A video clears its persisted caption and
+  the setup UI removes the Caption control entirely for video cards.
+
+**About narrative:**
+- Reintroduced the retired onboarding capability as a durable normal setting,
+  `site_settings.about_narrative`, via migration
+  `20260802170000_ss_add_about_narrative.sql`.
+- Nic-Nac's `update_site_setting` tool and system guidance now support free
+  talk, 2–3 polished choices, then publication of the approved narrative.
+- The initial manual narrative textarea was intentionally removed after review.
+  The setup card is instruction-only with **Write with Nic-Nac**; it does not
+  duplicate the narrative editor or show draft copy.
+
+**Release and verification:**
+- Released `9dda0974`, `8c70aa2a`, and `778bbe3e` on
+  `codex/nic-nac-trade-hardening`. Each passed targeted Vitest coverage and a
+  Next.js 16.2.1 production build. Vercel confirmed both live domains on the
+  final exact commit; the apex redirects to canonical www.
+- Read-only authenticated visual inspection confirmed the new setup placement
+  and copy before the final caption cleanup. Reviewer-browser smoke remains
+  blocked by the known too-short reviewer token.
+
+**Lessons learned:**
+- Do not show a disabled control when a media mode makes it inapplicable;
+  remove it.
+- Keep authoring ownership singular: Nic-Nac owns conversational About copy;
+  setup points reps into that workflow rather than adding a competing editor.
+- Create a new migration after the latest already-applied remote timestamp to
+  prevent migration-order drift.
+
+---
+
 ## August 2, 2026 - Workspace Beta Simplification and Live Queue Guide
 
 **Workspace and customer-site changes:**
