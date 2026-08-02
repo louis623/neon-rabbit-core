@@ -755,6 +755,7 @@ describe('DashboardPlaceholder', () => {
       'business-tools',
     )
     expect(getInitialWorkspaceSection('?section=team-management')).toBe('more')
+    expect(getInitialWorkspaceSection('?section=collection-intake')).toBe('more')
     expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('home')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
@@ -790,6 +791,7 @@ describe('DashboardPlaceholder', () => {
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
     expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
+    expect(isComingSoonWorkspaceSection('collection-intake')).toBe(true)
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
@@ -803,6 +805,7 @@ describe('DashboardPlaceholder', () => {
       'business-tools',
     )
     expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe('more')
+    expect(resolveWorkspaceSectionForAccess('collection-intake', true)).toBe('more')
     expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('more')
   })
 

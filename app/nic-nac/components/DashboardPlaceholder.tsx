@@ -131,6 +131,7 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     label: 'Bulk Collection Intake',
     shortLabel: 'Bulk Intake',
     icon: Images,
+    comingSoon: true,
   },
   {
     key: 'team-management',
