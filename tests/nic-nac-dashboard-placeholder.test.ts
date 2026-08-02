@@ -11,6 +11,7 @@ import {
   DashboardPlaceholder,
   HelpResourcesCard,
   JewelryLibraryCard,
+  LiveQueueTool,
   ReferralProgramCard,
   RecipesCard,
   CustomerRosterCard,
@@ -749,6 +750,7 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
     expect(getInitialWorkspaceSection('?section=jewelry-library')).toBe('jewelry-library')
+    expect(getInitialWorkspaceSection('?section=live-queue')).toBe('live-queue')
     expect(getInitialWorkspaceSection('?section=recipes')).toBe('recipes')
     expect(getInitialWorkspaceSection('?section=business-tools')).toBe(
       'business-tools',
@@ -1664,6 +1666,10 @@ describe('DashboardPlaceholder', () => {
       label: 'Tools',
     })
     expect(getWorkspaceBackDestination('jewelry-library')).toEqual({
+      section: 'more',
+      label: 'Tools',
+    })
+    expect(getWorkspaceBackDestination('live-queue')).toEqual({
       section: 'more',
       label: 'Tools',
     })
@@ -2810,6 +2816,49 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Monthly Planner')
     expect(html).not.toContain('Average show sales')
     expect(html).not.toContain('BP dashboard number import')
+  })
+
+  it('renders a plain-English Live Queue setup and verification tool', () => {
+    const html = renderToStaticMarkup(
+      createElement(LiveQueueTool, {
+        liveQueueSyncCode: 'TDF-8535',
+        customerSiteHref:
+          '/amethyst/Homepage.html?c=ac3e643a-6ccf-4400-8230-662f63a07f3e',
+        onOpenHelp: () => {},
+      }),
+    )
+
+    expect(html).toContain('Live Queue')
+    expect(html).toContain('Install the Chrome extension')
+    expect(html).toContain(
+      'https://chromewebstore.google.com/detail/sparkle-suite-live-queue/kmodgfffflplfdlkkhadgimmobplhoih',
+    )
+    expect(html).toContain('https://myoffice.bombparty.com/live-party-orders')
+    expect(html).toContain('TDF-8535')
+    expect(html).toContain('Copy code')
+    expect(html).toContain('Keep this code private')
+    expect(html).toContain('Set it up step by step')
+    expect(html).toContain('Make sure everything is working')
+    expect(html).toContain('How Live Queue works')
+    expect(html).toContain('oldest unrevealed customer first')
+    expect(html).toContain('Open customer site')
+    expect(html).toContain('Open Help &amp; Resources')
+  })
+
+  it('does not invent a Live Queue code when one is not assigned', () => {
+    const html = renderToStaticMarkup(
+      createElement(LiveQueueTool, {
+        liveQueueSyncCode: null,
+        customerSiteHref: null,
+        onOpenHelp: () => {},
+      }),
+    )
+
+    expect(html).toContain('Code not assigned yet')
+    expect(html).toContain(
+      'Ask Nic-Nac or support to retrieve your assigned code',
+    )
+    expect(html).toContain('disabled=""')
   })
 
   it('formats wallet amounts and estimated texts for display', () => {

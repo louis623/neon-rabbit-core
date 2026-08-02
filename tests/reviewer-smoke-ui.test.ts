@@ -365,6 +365,9 @@ describe('reviewer smoke UI wiring', () => {
       dashboardPlaceholder.indexOf("key: 'jewelry-library'"),
     )
     expect(dashboardPlaceholder).toContain("key: 'collection-intake'")
+    expect(dashboardPlaceholder).toContain("key: 'live-queue'")
+    expect(dashboardPlaceholder).toContain('LiveQueueTool')
+    expect(dashboardPlaceholder).toContain('LIVE_QUEUE_CHROME_EXTENSION_URL')
     expect(workspaceShell).toContain('className={styles.content}')
     expect(workspaceShell.indexOf('className={styles.content}')).toBeLessThan(
       workspaceShell.indexOf('className={styles.tabsWrap}'),

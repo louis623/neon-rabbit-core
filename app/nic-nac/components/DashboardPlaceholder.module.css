@@ -1585,6 +1585,252 @@
   line-height: 1.2;
 }
 
+.liveQueueSetupGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.liveQueueCodePanel,
+.liveQueueInstallPanel {
+  min-width: 0;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 16px;
+  background: var(--nic-nac-surface-primary);
+  color: var(--nic-nac-text-primary);
+  padding: 18px;
+}
+
+.liveQueueCodePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.liveQueueInstallPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.liveQueueInstallPanel h3 {
+  margin: 0;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-display), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.liveQueueEyebrow {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.liveQueueCode {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.liveQueueBody,
+.liveQueueInstallPanel p,
+.liveQueueSteps p,
+.liveQueueTroubleshooting p,
+.liveQueueFlowGrid p,
+.liveQueuePrivacyNote {
+  margin: 0;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.liveQueueWarning {
+  margin: 0;
+  border: 1px solid rgba(238, 44, 155, 0.2);
+  border-radius: 12px;
+  background: var(--workspace-accent-soft);
+  color: var(--nic-nac-text-primary);
+  padding: 10px 12px;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.liveQueuePrimaryLink,
+.liveQueueSecondaryLink,
+.liveQueueTextLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.liveQueuePrimaryLink {
+  min-height: 44px;
+  border-radius: 999px;
+  background: var(--workspace-accent);
+  color: var(--nic-nac-text-inverse);
+  padding: 11px 16px;
+  font-size: 13px;
+}
+
+.liveQueuePrimaryLink:hover,
+.liveQueuePrimaryLink:focus-visible {
+  background: var(--workspace-accent-hover);
+  outline: none;
+}
+
+.liveQueueTextLink {
+  justify-content: flex-start;
+  color: var(--workspace-accent-hover);
+  font-size: 12px;
+}
+
+.liveQueueSteps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liveQueueSteps li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: var(--nic-nac-surface-primary);
+  padding: 14px;
+}
+
+.liveQueueSteps strong,
+.liveQueueFlowGrid strong,
+.liveQueueTroubleshooting strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.liveQueueStepNumber {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--workspace-accent);
+  color: var(--nic-nac-text-inverse);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.liveQueueChecklist {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liveQueueChecklist li {
+  position: relative;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 12px;
+  background: var(--nic-nac-surface-primary);
+  color: var(--nic-nac-text-primary);
+  padding: 11px 12px 11px 40px;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.liveQueueChecklist li::before {
+  content: '✓';
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  color: var(--workspace-accent);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.liveQueueActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.liveQueueSecondaryLink,
+.liveQueueHelpButton {
+  min-height: 42px;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 999px;
+  background: var(--nic-nac-surface-primary);
+  color: var(--nic-nac-text-primary);
+  padding: 10px 15px;
+  font-size: 12px;
+}
+
+.liveQueueHelpButton {
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.liveQueueSecondaryLink:hover,
+.liveQueueSecondaryLink:focus-visible,
+.liveQueueHelpButton:hover,
+.liveQueueHelpButton:focus-visible {
+  border-color: var(--workspace-accent);
+  outline: none;
+}
+
+.liveQueueTroubleshooting {
+  border: 1px solid rgba(238, 44, 155, 0.2);
+  border-radius: 14px;
+  background: var(--workspace-accent-soft);
+  padding: 14px;
+}
+
+.liveQueueFlowGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.liveQueueFlowGrid > div {
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: var(--nic-nac-surface-primary);
+  padding: 14px;
+}
+
+.liveQueuePrivacyNote {
+  border-left: 4px solid var(--workspace-accent);
+  padding-left: 12px;
+}
+
 .headerActions {
   display: flex;
   flex-wrap: wrap;
@@ -5226,6 +5472,11 @@
     height: 36px;
   }
 
+  .liveQueueSetupGrid,
+  .liveQueueFlowGrid {
+    grid-template-columns: 1fr;
+  }
+
   .conceptHome {
     display: flex;
     flex-direction: column;
@@ -5609,6 +5860,21 @@
 
   .workspaceBackButton {
     min-height: 40px;
+  }
+
+  .liveQueueSteps li {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .liveQueueStepNumber {
+    width: 30px;
+    height: 30px;
+  }
+
+  .liveQueueActionRow > * {
+    flex: 1 1 100%;
   }
 }
 
