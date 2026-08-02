@@ -2622,9 +2622,9 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Captions are available for photos only.')
-    expect(html).toContain('caption-video-note-about_1')
-    expect(html).toContain('disabled=""')
+    expect(html).not.toContain('Captions are available for photos only.')
+    expect(html).not.toContain('caption-video-note-about_1')
+    expect(html.match(/Caption<\/span>/g)).toHaveLength(2)
   })
 
   it('shows the five-day trial deadline and preserved-work expiry message', () => {

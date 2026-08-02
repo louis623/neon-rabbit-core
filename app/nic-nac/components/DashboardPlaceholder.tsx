@@ -7408,31 +7408,21 @@ export function SiteSettingsCard({
                     }}
                   />
                 </label>
-                <label className={styles.searchField}>
-                  <span className={styles.searchLabel}>Caption</span>
-                  <input
-                    className={styles.searchInput}
-                    aria-describedby={
-                      hasVideoUrl ? `caption-video-note-${slot.key}` : undefined
-                    }
-                    disabled={hasVideoUrl}
-                    maxLength={240}
-                    value={slot.caption}
-                    onChange={(event) =>
-                      onHomepageMediaChange?.(slot.key, {
-                        caption: event.target.value,
-                      })
-                    }
-                  />
-                  {hasVideoUrl ? (
-                    <span
-                      className={styles.siteSettingsPreviewNote}
-                      id={`caption-video-note-${slot.key}`}
-                    >
-                      Captions are available for photos only.
-                    </span>
-                  ) : null}
-                </label>
+                {!hasVideoUrl ? (
+                  <label className={styles.searchField}>
+                    <span className={styles.searchLabel}>Caption</span>
+                    <input
+                      className={styles.searchInput}
+                      maxLength={240}
+                      value={slot.caption}
+                      onChange={(event) =>
+                        onHomepageMediaChange?.(slot.key, {
+                          caption: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                ) : null}
                 {slot.key !== 'showcase' && slot.imageUrl ? (
                   <button
                     type="button"
