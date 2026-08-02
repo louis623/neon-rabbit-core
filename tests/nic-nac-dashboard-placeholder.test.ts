@@ -2371,6 +2371,7 @@ describe('DashboardPlaceholder', () => {
     expect(html.match(/Upload photo/g)).toHaveLength(3)
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
+    expect(html).toContain('Customer-facing site setup')
     expect(html).toContain('Save site settings')
     expect(html).toContain('Preview customer site')
     expect(html).toContain('No unsaved changes.')

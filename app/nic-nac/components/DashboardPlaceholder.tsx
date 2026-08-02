@@ -159,8 +159,8 @@ const SECONDARY_WORKSPACE_SECTIONS = [
   },
   {
     key: 'site-settings',
-    label: 'Site Settings',
-    shortLabel: 'Site',
+    label: 'Customer-facing site setup',
+    shortLabel: 'Site setup',
     icon: Settings2,
   },
   {
@@ -5734,7 +5734,7 @@ function ConceptHomeWorkspace({
               <small>
                 {siteLive
                   ? 'Customers can visit your Sparkle Suite site.'
-                  : 'Finish Site Settings to publish your customer site.'}
+                  : 'Finish customer-facing site setup to publish your customer site.'}
               </small>
             </span>
           </button>
@@ -7072,7 +7072,7 @@ export function SiteSettingsCard({
     <div className={styles.siteSettingsCard}>
       <div className={styles.workspaceSectionHeader}>
         <div>
-          <div className={styles.cardTitle}>Site Settings</div>
+          <div className={styles.cardTitle}>Customer-facing site setup</div>
           <div className={styles.cardSubtitle}>
             Keep your public profile, customer pages, and brand details tuned up.
           </div>
