@@ -5673,10 +5673,6 @@ function ConceptHomeWorkspace({
               <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>
               Add a piece
             </button>
-            <button type="button" onClick={() => onLaunchAction('add_calendar_show')}>
-              <CalendarDays aria-hidden="true" />
-              Add a show
-            </button>
           </div>
         </div>
         {chat ? (
@@ -5690,14 +5686,6 @@ function ConceptHomeWorkspace({
       </div>
 
       <aside className={styles.conceptRail} aria-label="Workspace glance">
-        <button
-          type="button"
-          className={styles.railLaunchAction}
-          onClick={() => onLaunchAction('add_calendar_show')}
-        >
-          <CalendarDays aria-hidden="true" />
-          <span>Add a show</span>
-        </button>
         <ConceptPanel
           title="Upcoming Show"
           action="View calendar"
