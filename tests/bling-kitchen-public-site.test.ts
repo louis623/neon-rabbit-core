@@ -227,6 +227,7 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('recipe.tiktokUrl')
     expect(pantryJsx).toContain('function TikTokRecipePlayer')
     expect(pantryJsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
+    expect(pantryJsx).toContain('autoplay=1&muted=1&loop=1&controls=0')
     expect(pantryJsx).toContain('new IntersectionObserver')
     expect(pantryJsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(pantryHtml).toContain('class="bk-pantry-page"')

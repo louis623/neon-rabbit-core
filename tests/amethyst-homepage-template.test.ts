@@ -627,7 +627,7 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('function TikTokEmbed')
     expect(jsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
-    expect(jsx).toContain('autoplay=1&muted=1&loop=1&controls=1')
+    expect(jsx).toContain('autoplay=1&muted=1&loop=1&controls=0')
     expect(jsx).toContain('new IntersectionObserver')
     expect(jsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(jsx).toContain('<TikTokEmbed')

@@ -703,7 +703,7 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
         allowFullScreen
         className="ss-tiktok-embed-frame"
         loading="lazy"
-        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1&muted=1&loop=1&controls=1&description=0&music_info=0&rel=0`}
+        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1&muted=1&loop=1&controls=0&description=0&music_info=0&rel=0`}
         title={title || "TikTok video"}
       />
       <button
