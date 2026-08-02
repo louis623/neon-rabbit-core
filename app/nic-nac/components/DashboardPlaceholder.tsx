@@ -2162,6 +2162,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode = false,
     initialSectionOverride,
     onLaunchNicNacAction,
+    onSendNicNacPrompt,
     desktopChat,
   } = props
   const [activeSection, setActiveSection] =
@@ -5314,6 +5315,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             mediaUploadFeedback={siteSettingsMediaUploadFeedback}
             canPreview={Boolean(customerSparkleSiteHref)}
             onPreview={handleOpenCustomerSitePreview}
+            onWriteAboutNarrative={() => {
+              setActiveSection('home')
+              onSendNicNacPrompt?.(
+                'Help me write my customer-facing About section narrative. Ask me to free-talk first, then give me 2 or 3 polished choices that keep my real details and voice. Once I choose one, save it to my customer-facing site.',
+              )
+            }}
             onSave={handleSaveSiteSettings}
           />
         </div>
@@ -7094,6 +7101,7 @@ export function SiteSettingsCard({
   mediaUploadFeedback,
   canPreview,
   onPreview,
+  onWriteAboutNarrative,
   onSave,
 }: {
   state: SiteSettingsState
@@ -7119,6 +7127,7 @@ export function SiteSettingsCard({
   } | null
   canPreview?: boolean
   onPreview?: () => void
+  onWriteAboutNarrative?: () => void
   onSave?: () => void
 }) {
   if (state.status === 'error') {
@@ -7439,6 +7448,34 @@ export function SiteSettingsCard({
             )
           })}
         </div>
+      </div>
+
+      <div className={styles.siteSettingsSection}>
+        <div className={styles.workspaceSectionHeader}>
+          <div>
+            <div className={styles.walletSettingsTitle}>About section narrative</div>
+            <p className={styles.siteSettingsPreviewNote}>
+              Use or work with Nic-Nac to write your About section narrative.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.previewSiteButton}
+            onClick={onWriteAboutNarrative}
+          >
+            Work with Nic-Nac
+          </button>
+        </div>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Narrative</span>
+          <textarea
+            className={styles.siteSettingsTextarea}
+            maxLength={3000}
+            placeholder="Your saved About narrative will appear here."
+            value={draft.aboutNarrative ?? ''}
+            onChange={(event) => onDraftChange?.({ aboutNarrative: event.target.value })}
+          />
+        </label>
       </div>
 
       <div className={styles.siteSettingsSection}>

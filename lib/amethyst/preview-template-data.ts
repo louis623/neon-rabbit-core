@@ -98,6 +98,17 @@ function socialKeyForUrl(value: string) {
   return 'website'
 }
 
+function splitAboutNarrative(value: string | undefined): [string, string, string] | null {
+  const paragraphs = (value ?? '')
+    .split(/\r?\n\s*\r?\n/)
+    .map((paragraph) => paragraph.replace(/\s*\r?\n\s*/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 3)
+
+  if (paragraphs.length === 0) return null
+  return [paragraphs[0] ?? '', paragraphs[1] ?? '', paragraphs[2] ?? '']
+}
+
 function mergePrimarySocialLink(
   socialHandles: Record<string, string>,
   primaryLink: string,
@@ -497,6 +508,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
   const aboutMedia = ['about_1', 'about_2'].map((key) =>
     homepageMediaSlots.find((slot) => slot.key === key),
   )
+  const aboutParagraphs = splitAboutNarrative(settings.aboutNarrative)
 
   const homepage: AmethystHomepageTemplateData = {
     ...defaultAmethystHomepageTemplateData,
@@ -512,6 +524,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
       defaultAmethystHomepageTemplateData.tickerTopText,
     ),
     aboutHeadline: `Meet ${repName} and the story behind ${businessName}.`,
+    ...(aboutParagraphs ? { aboutParagraphs } : {}),
     signupSub: `Get a heads-up when ${repName} goes live, plus first dibs on new drops.`,
     signupConsent: `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Msg & data rates may apply. Reply STOP to unsubscribe.`,
     footerTagline: tagline,

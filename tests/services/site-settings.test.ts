@@ -129,6 +129,7 @@ describe('site settings service', () => {
       socialHandles: {
         instagram: '@sparklebysasha',
       },
+      aboutNarrative: '',
       homepageMediaSlots: [
         { key: 'showcase', caption: '', imageUrl: '', videoUrl: '' },
         { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },
@@ -151,6 +152,7 @@ describe('site settings service', () => {
         show_join_page: false,
         customer_site_template: 'amethyst',
         appearance_preset: 'rose_gold',
+        about_narrative: 'A little about our reveal community.',
         homepage_media_slots: [
           {
             key: 'showcase',
@@ -200,6 +202,7 @@ describe('site settings service', () => {
       showJoinPage: false,
       customerSiteTemplate: 'not-a-real-template',
       appearancePreset: 'rose_gold',
+      aboutNarrative: 'A little about our reveal community.',
       socialHandles: {
         instagram: '@sparklebysasha',
         facebook: 'sparklebysasha',
@@ -229,6 +232,7 @@ describe('site settings service', () => {
         show_join_page: false,
         customer_site_template: 'amethyst',
         appearance_preset: 'rose_gold',
+        about_narrative: 'A little about our reveal community.',
         homepage_media_slots: [
           {
             key: 'showcase',

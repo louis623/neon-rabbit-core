@@ -489,6 +489,7 @@ export interface SiteSettingsDashboardResult {
   customerSiteTemplate: CustomerSiteTemplate
   appearancePreset: SiteAppearancePreset
   socialHandles: Record<string, string>
+  aboutNarrative?: string
   homepageMediaSlots?: PublicSiteMediaSlot[]
 }
 
@@ -509,6 +510,7 @@ export interface UpdateSiteSettingsDashboardInput {
   customerSiteTemplate?: string
   appearancePreset?: SiteAppearancePreset | string
   socialHandles?: Record<string, string>
+  aboutNarrative?: string
   homepageMediaSlots?: PublicSiteMediaSlot[]
 }
 

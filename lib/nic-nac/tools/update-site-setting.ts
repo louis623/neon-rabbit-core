@@ -20,6 +20,7 @@ const inputSchema = z.object({
   showJoinPage: z.boolean().optional(),
   customerSiteTemplate: z.string().optional(),
   appearancePreset: z.string().optional(),
+  aboutNarrative: z.string().max(3000).optional(),
   socialHandles: z.record(z.string(), z.string().min(1)).optional(),
 })
 
@@ -35,6 +36,7 @@ type SiteSettingsRow = {
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
+  about_narrative: string | null
 }
 
 type RepsSocialHandlesRow = {
@@ -57,7 +59,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
+      'This can patch banner, ticker, tagline, About narrative, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -70,6 +72,7 @@ export function makeUpdateSiteSettingTool(ctx: {
       showJoinPage,
       customerSiteTemplate,
       appearancePreset,
+      aboutNarrative,
       socialHandles,
     }) => {
       const hasAnyPatch =
@@ -83,6 +86,7 @@ export function makeUpdateSiteSettingTool(ctx: {
         showJoinPage !== undefined ||
         customerSiteTemplate !== undefined ||
         appearancePreset !== undefined ||
+        aboutNarrative !== undefined ||
         socialHandles !== undefined
 
       if (!hasAnyPatch) {
@@ -112,6 +116,9 @@ export function makeUpdateSiteSettingTool(ctx: {
         siteSettingsPatch.appearance_preset =
           normalizeAmethystSkinSelection(appearancePreset)
       }
+      if (aboutNarrative !== undefined) {
+        siteSettingsPatch.about_narrative = aboutNarrative.trim() || null
+      }
 
       const updatedFields: string[] = []
       const updated: Record<string, unknown> = {}
@@ -122,7 +129,7 @@ export function makeUpdateSiteSettingTool(ctx: {
           .update(siteSettingsPatch)
           .eq('rep_id', ctx.repId)
           .select(
-            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset',
+            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative',
           )
           .single()
 
@@ -177,6 +184,10 @@ export function makeUpdateSiteSettingTool(ctx: {
           updated.appearancePreset = normalizeAmethystAppearancePreset(
             row.appearance_preset,
           )
+        }
+        if (aboutNarrative !== undefined) {
+          updatedFields.push('aboutNarrative')
+          updated.aboutNarrative = row.about_narrative
         }
       }
 

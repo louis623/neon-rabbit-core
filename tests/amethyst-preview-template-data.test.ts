@@ -189,6 +189,19 @@ describe('Amethyst preview template data', () => {
     expect(join.footerLinks.contact).toBe('mailto:demo@example.com')
   })
 
+  it('uses the saved About narrative without adding default filler copy', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData({
+      ...demoSettings,
+      aboutNarrative: 'I love bringing surprise and connection to every live show.\n\nCome hang out, find a favorite, and make some sparkle-filled memories.',
+    })
+
+    expect(homepage.aboutParagraphs).toEqual([
+      'I love bringing surprise and connection to every live show.',
+      'Come hang out, find a favorite, and make some sparkle-filled memories.',
+      '',
+    ])
+  })
+
   it('hides Join Team customer links when the rep has not launched that page', () => {
     const settings: SiteSettingsDashboardResult = {
       ...demoSettings,

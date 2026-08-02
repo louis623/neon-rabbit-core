@@ -24,6 +24,7 @@ type SiteSettingsRow = {
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
+  about_narrative: string | null
   homepage_media_slots: unknown
 }
 
@@ -36,7 +37,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -221,6 +222,7 @@ function buildDashboardResult(args: {
       args.siteSettings?.appearance_preset,
     ),
     socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
+    aboutNarrative: normalizeText(args.siteSettings?.about_narrative),
     homepageMediaSlots: normalizePublicSiteMediaSlots(
       args.siteSettings?.homepage_media_slots,
     ),
@@ -337,6 +339,11 @@ export async function updateSiteSettingsDashboard(
   if (input.appearancePreset !== undefined) {
     siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(
       input.appearancePreset,
+    )
+  }
+  if (input.aboutNarrative !== undefined) {
+    siteSettingsPatch.about_narrative = normalizeNullableText(
+      input.aboutNarrative.slice(0, 3000),
     )
   }
   if (input.homepageMediaSlots !== undefined) {

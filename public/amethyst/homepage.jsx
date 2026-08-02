@@ -1344,6 +1344,7 @@ function AboutSection({ repName }) {
   const aboutParagraphs = Array.isArray(CONTENT.aboutParagraphs)
     ? CONTENT.aboutParagraphs
     : neutralAbout;
+  const visibleAboutParagraphs = aboutParagraphs.filter(Boolean);
   const aboutHeadline = CONTENT.aboutHeadline || `Meet ${repName} and the story behind the sparkle.`;
 
   return (
@@ -1354,15 +1355,11 @@ function AboutSection({ repName }) {
             <div className="hp-section-eyebrow">About the rep</div>
             <h2 className="hp-section-title slot" data-slot="about headline">{aboutHeadline}</h2>
             <div className="hp-about-body">
-              <p className="slot" data-slot="about paragraph 1">
-                {aboutParagraphs[0] || neutralAbout[0]}
-              </p>
-              <p className="slot" data-slot="about paragraph 2">
-                {aboutParagraphs[1] || neutralAbout[1]}
-              </p>
-              <p className="slot" data-slot="about paragraph 3">
-                {aboutParagraphs[2] || neutralAbout[2]}
-              </p>
+              {visibleAboutParagraphs.map((paragraph, index) => (
+                <p className="slot" data-slot={`about paragraph ${index + 1}`} key={index}>
+                  {paragraph}
+                </p>
+              ))}
             </div>
           </div>
 
