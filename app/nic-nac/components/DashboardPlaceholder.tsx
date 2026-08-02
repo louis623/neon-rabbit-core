@@ -5248,6 +5248,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onHomepageMediaChange={handleHomepageMediaChange}
             onHomepageMediaUpload={handleHomepageMediaUpload}
             mediaUploadKey={siteSettingsMediaUploadKey}
+            canPreview={Boolean(customerSparkleSiteHref)}
+            onPreview={handleOpenCustomerSitePreview}
             onSave={handleSaveSiteSettings}
           />
         </div>
@@ -7025,6 +7027,8 @@ export function SiteSettingsCard({
   onHomepageMediaChange,
   onHomepageMediaUpload,
   mediaUploadKey,
+  canPreview,
+  onPreview,
   onSave,
 }: {
   state: SiteSettingsState
@@ -7043,6 +7047,8 @@ export function SiteSettingsCard({
     file: File,
   ) => void
   mediaUploadKey?: PublicSiteMediaSlotKey | null
+  canPreview?: boolean
+  onPreview?: () => void
   onSave?: () => void
 }) {
   if (state.status === 'error') {
@@ -7080,6 +7086,14 @@ export function SiteSettingsCard({
           >
             {statusMessage ?? 'No unsaved changes.'}
           </span>
+          <button
+            type="button"
+            className={styles.siteSettingsPreviewButton}
+            onClick={onPreview}
+            disabled={!canPreview}
+          >
+            Preview customer site
+          </button>
           <button
             type="button"
             className={styles.siteSettingsSaveButton}

@@ -4283,6 +4283,32 @@
     0 10px 22px rgba(54, 34, 29, 0.1);
 }
 
+.siteSettingsPreviewButton {
+  flex: 0 0 auto;
+  max-width: 100%;
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 11px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.siteSettingsPreviewButton:hover:not(:disabled) {
+  border-color: var(--nic-nac-accent);
+  background: #fff6fa;
+}
+
+.siteSettingsPreviewButton:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
 .siteSettingsSaveButton:hover {
   background: linear-gradient(180deg, #f73fa5 0%, var(--nic-nac-accent-hover) 100%);
 }
@@ -5836,6 +5862,10 @@
   }
 
   .siteSettingsSaveButton {
+    width: 100%;
+  }
+
+  .siteSettingsPreviewButton {
     width: 100%;
   }
 

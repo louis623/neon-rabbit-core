@@ -2372,6 +2372,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).toContain('Save site settings')
+    expect(html).toContain('Preview customer site')
     expect(html).toContain('No unsaved changes.')
     expect(html).toContain('data-testid="site-settings-save-status"')
   })
@@ -2387,12 +2388,15 @@ describe('DashboardPlaceholder', () => {
         actionState: { pending: false, error: null, helperMessage: null },
         hasUnsavedChanges: true,
         statusMessage: 'Unsaved changes.',
+        canPreview: true,
+        onPreview: () => undefined,
         onSave: () => undefined,
       }),
     )
 
     expect(html).not.toContain('Changes will auto-save.')
     expect(html).toContain('Unsaved changes.')
+    expect(html).toContain('Preview customer site')
     expect(html).toContain('Save site settings')
     expect(html).not.toContain('No unsaved changes')
     expect(html).not.toContain('disabled=""')
@@ -2465,6 +2469,7 @@ describe('DashboardPlaceholder', () => {
 
       expect(html).toContain('data-testid="site-settings-save-status"')
       expect(html).toContain('Save site settings')
+      expect(html).toContain('Preview customer site')
       expect(html).toContain('No unsaved changes.')
       expect(html).toContain('siteSettingsSaveActions')
       expect(html).not.toContain('siteSettingsAutoSaveStatus')
@@ -2495,6 +2500,7 @@ describe('DashboardPlaceholder', () => {
     expect(styles).not.toContain('.workspaceSaveDock')
     expect(styles).toContain('.siteSettingsSaveActions')
     expect(styles).toContain('.siteSettingsSaveButton')
+    expect(styles).toContain('.siteSettingsPreviewButton')
     expect(styles).not.toContain('.siteSettingsSaveFooter')
     expect(styles).not.toContain('.siteSettingsAutoSaveStatus')
     expect(styles).not.toContain('.siteSettingsSaveBar')
