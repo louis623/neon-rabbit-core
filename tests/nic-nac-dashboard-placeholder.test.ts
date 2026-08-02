@@ -518,6 +518,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Add a piece')
     expect(html).not.toContain('Check my board')
     expect(html).toContain('Add a show')
+    expect(source).toContain('styles.railLaunchAction')
+    expect(source).not.toContain('styles.heroQuickActions')
     expect(html).toContain('Trade Info')
     expect(html).toContain('aria-label="Trade info at a glance"')
     expect(html).toContain('Trade requests')

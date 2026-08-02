@@ -736,6 +736,52 @@
   overscroll-behavior: contain;
 }
 
+.railLaunchAction {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid rgba(67, 42, 116, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #171034;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+  box-shadow: 0 12px 34px rgba(48, 30, 92, 0.05);
+}
+
+.railLaunchAction:hover,
+.railLaunchAction:focus-visible {
+  border-color: rgba(226, 25, 143, 0.28);
+  background: #fff7fc;
+  outline: none;
+}
+
+.railLaunchAction svg {
+  width: 21px;
+  height: 21px;
+  color: #7345ca;
+}
+
+.railLaunchPieceIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2198f;
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 650;
+  line-height: 1;
+}
+
 .conceptPanel {
   border: 1px solid rgba(67, 42, 116, 0.12);
   border-radius: 16px;
@@ -882,7 +928,7 @@
   align-items: center;
   text-align: center;
   flex: 0 0 auto;
-  padding: 4px 20px 14px;
+  padding: 4px 20px 8px;
 }
 
 .nicNacHero h1 {
@@ -921,56 +967,8 @@
   font-weight: 650;
 }
 
-.heroQuickActions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(112px, 1fr));
-  gap: 12px;
-  width: min(520px, 100%);
-  margin-top: 18px;
-}
-
-.heroQuickActions button {
-  min-height: 78px;
-  border: 1px solid rgba(67, 42, 116, 0.12);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.86);
-  color: #171034;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 850;
-  box-shadow: 0 12px 34px rgba(48, 30, 92, 0.05);
-}
-
-.heroQuickActions button:hover {
-  border-color: rgba(226, 25, 143, 0.28);
-  transform: translateY(-1px);
-}
-
-.heroQuickActions svg {
-  width: 26px;
-  height: 26px;
-  color: #7345ca;
-}
-
-.quickIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #e2198f;
-  color: #fff;
-  font-size: 1.8rem;
-  font-weight: 650;
-  line-height: 1;
+.mobileHeroQuickActions {
+  display: none;
 }
 
 .chatDivider {
@@ -5338,12 +5336,12 @@
     display: none;
   }
 
-  .conceptRail:first-child .conceptPanel:nth-child(1) {
+  .conceptRail:first-child .conceptPanel:nth-child(2) {
     display: block;
     order: 2;
   }
 
-  .conceptRail:last-child .conceptPanel:nth-child(3) {
+  .conceptRail:last-child .conceptPanel:nth-child(4) {
     display: block;
     order: 3;
   }
@@ -5366,27 +5364,45 @@
     font-size: 1.25rem;
   }
 
-  .heroQuickActions {
+  .railLaunchAction {
+    display: none;
+  }
+
+  .mobileHeroQuickActions {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin-top: 24px;
+    width: 100%;
+    margin-top: 16px;
   }
 
-  .heroQuickActions button {
-    min-height: 88px;
-    padding: 10px 8px;
-    font-size: 0.74rem;
+  .mobileHeroQuickActions button {
+    min-height: 52px;
+    border: 1px solid rgba(67, 42, 116, 0.12);
     border-radius: 10px;
+    background: rgba(255, 255, 255, 0.86);
+    color: #171034;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 850;
   }
 
-  .heroQuickActions svg {
+  .mobileHeroQuickActions svg {
+    width: 20px;
+    height: 20px;
+    color: #7345ca;
+  }
+
+  .mobileHeroQuickActions .railLaunchPieceIcon {
     width: 24px;
     height: 24px;
-  }
-
-  .quickIcon {
-    width: 34px;
-    height: 34px;
+    font-size: 1.2rem;
   }
 
   .chatDivider,

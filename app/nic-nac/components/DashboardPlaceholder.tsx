@@ -5637,6 +5637,14 @@ function ConceptHomeWorkspace({
   return (
     <section className={styles.conceptHome} aria-label="Nic-Nac first workspace">
       <aside className={styles.conceptRail} aria-label="Trade info at a glance">
+        <button
+          type="button"
+          className={styles.railLaunchAction}
+          onClick={() => onLaunchAction('add_trade_piece')}
+        >
+          <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>
+          <span>Add a piece</span>
+        </button>
         <ConceptPanel title="Trade Info" icon={<CalendarDays aria-hidden="true" />}>
           <MetricRows
             rows={[
@@ -5660,9 +5668,9 @@ function ConceptHomeWorkspace({
             <span>Nic-Nac</span>
           </h1>
           <p>How can I help you today?</p>
-          <div className={styles.heroQuickActions}>
+          <div className={styles.mobileHeroQuickActions}>
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
-              <span className={styles.quickIcon}>+</span>
+              <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>
               Add a piece
             </button>
             <button type="button" onClick={() => onLaunchAction('add_calendar_show')}>
@@ -5682,6 +5690,14 @@ function ConceptHomeWorkspace({
       </div>
 
       <aside className={styles.conceptRail} aria-label="Workspace glance">
+        <button
+          type="button"
+          className={styles.railLaunchAction}
+          onClick={() => onLaunchAction('add_calendar_show')}
+        >
+          <CalendarDays aria-hidden="true" />
+          <span>Add a show</span>
+        </button>
         <ConceptPanel
           title="Upcoming Show"
           action="View calendar"
