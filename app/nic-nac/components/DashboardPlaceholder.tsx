@@ -137,6 +137,7 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     label: 'Team Management',
     shortLabel: 'Team',
     icon: Users,
+    comingSoon: true,
   },
   {
     key: 'messages',
