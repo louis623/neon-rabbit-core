@@ -1021,7 +1021,6 @@ export default function NicNacClient({
         reviewWorkspaceMode={showWorkspaceReviewState}
         onLaunchNicNacAction={handleLaunchNicNacAction}
         onSendNicNacPrompt={handleSendNicNacPrompt}
-        onOpenNicNac={handleOpenNicNac}
         desktopChat={
           isDesktop && (desktopOpen || shouldKeepDesktopNicNacOpen)
             ? chatContent

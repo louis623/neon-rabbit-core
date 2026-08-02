@@ -1641,7 +1641,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('workspacePreview.mode === \'live_site_preview\'')
     expect(source).toContain('Live Site Preview')
     expect(source).toContain('Back to workspace')
-    expect(source).toContain('Refresh preview')
+    expect(source).not.toContain('Refresh preview')
     expect(source).toContain('<iframe')
     expect(source).toContain('title="Sparkle Suite live site preview"')
     expect(source).not.toContain('Preview site')
@@ -1673,7 +1673,7 @@ describe('DashboardPlaceholder', () => {
     })
   })
 
-  it('keeps Nic-Nac available as a live-preview sidecar with centered equal actions', () => {
+  it('keeps the live preview focused on the site with two centered actions', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -1683,31 +1683,26 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(source).toContain('Open Nic-Nac')
-    expect(source).toContain('Close Nic-Nac')
-    expect(source).toContain('aria-controls="nic-nac-workspace-chat"')
     expect(source).toContain('styles.previewWorkbench')
-    expect(source).toContain('styles.previewNicNacSidecar')
-    expect(source).toContain('styles.previewNicNacDrawerToggle')
-    expect(source).toContain('const [previewNicNacOpen, setPreviewNicNacOpen] = useState(false)')
-    expect(source).toContain('const showPreviewNicNacSidecar = previewNicNacOpen && Boolean(desktopChat)')
     expect(source).toContain('desktopChat')
-    expect(source).toContain('onOpenNicNac?.()')
-    expect(source).toContain('setPreviewNicNacOpen((current) => !current)')
-    expect(source).toContain('aria-expanded={showPreviewNicNacSidecar}')
-    expect(source).toContain('Refresh preview')
     expect(source).toContain('Open full site')
     expect(source).toContain('Back to workspace')
+    expect(source).not.toContain('Open Nic-Nac')
+    expect(source).not.toContain('Close Nic-Nac')
+    expect(source).not.toContain('Refresh preview')
+    expect(source).not.toContain('aria-controls="nic-nac-workspace-chat"')
+    expect(source).not.toContain('previewNicNacOpen')
+    expect(source).not.toContain('showPreviewNicNacSidecar')
+    expect(source).not.toContain('onOpenNicNac')
     expect(css).toContain('.previewFocusActions')
     expect(css).toContain('grid-template-columns: repeat(2, minmax(150px, 1fr));')
     expect(css).toContain('.previewAction')
     expect(css).toContain('min-height: 44px;')
     expect(css).not.toContain('.previewAction:nth-child(2)')
     expect(css).toContain('.previewWorkbench')
-    expect(css).toContain('grid-template-columns: minmax(0, 1fr) minmax(320px, var(--nic-nac-column-width));')
-    expect(css).toContain('.previewNicNacSidecar')
-    expect(css).toContain('.previewNicNacDrawerToggle')
-    expect(css).toMatch(/@media\s*\(max-width:\s*1023px\)[\s\S]*\.previewNicNacSidecar/)
+    expect(css).not.toContain('.previewWorkbenchWithSidecar')
+    expect(css).not.toContain('.previewNicNacSidecar')
+    expect(css).not.toContain('.previewNicNacDrawerToggle')
   })
 
   it('keeps live site focus preview available on narrow workspaces', () => {

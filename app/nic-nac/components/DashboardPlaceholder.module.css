@@ -1400,10 +1400,6 @@
   min-height: 0;
 }
 
-.previewWorkbenchWithSidecar {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, var(--nic-nac-column-width));
-}
-
 .previewFramePane {
   min-width: 0;
   min-height: 0;
@@ -1417,63 +1413,6 @@
   border-radius: 10px;
   background: var(--nic-nac-surface-primary-solid);
   box-shadow: 0 12px 28px rgba(54, 34, 29, 0.08);
-}
-
-.previewNicNacSidecar {
-  min-width: 0;
-  height: calc(var(--nic-nac-app-height, 100vh) - 92px);
-  min-height: min(760px, calc(var(--nic-nac-app-height, 100vh) - 92px));
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(64, 41, 36, 0.14);
-  border-radius: 10px;
-  background: var(--nic-nac-surface-primary-solid);
-  box-shadow: 0 12px 28px rgba(54, 34, 29, 0.08);
-}
-
-.previewNicNacHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  border-bottom: 1px solid rgba(64, 41, 36, 0.10);
-  background: rgba(255, 246, 250, 0.72);
-  padding: 12px 14px;
-}
-
-.previewNicNacHeader span {
-  color: var(--nic-nac-text-primary);
-  font-family: var(--font-prelaunch-display), Georgia, serif;
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.previewNicNacHeader small {
-  color: var(--nic-nac-text-secondary);
-  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.previewNicNacBody {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.previewNicNacBody > * {
-  flex: 1;
-  min-height: 0;
-}
-
-.previewNicNacDrawerToggle {
-  display: inline-flex;
 }
 
 .workspaceContent {
@@ -5238,17 +5177,6 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .previewWorkbench,
-  .previewWorkbenchWithSidecar {
-    grid-template-columns: 1fr;
-  }
-
-  .previewNicNacSidecar {
-    display: none;
-  }
-}
-
 @media (max-width: 840px) {
   .main {
     padding: 0;
@@ -5540,13 +5468,8 @@
     padding: 10px 12px;
   }
 
-  .previewWorkbench,
-  .previewWorkbenchWithSidecar {
+  .previewWorkbench {
     grid-template-columns: 1fr;
-  }
-
-  .previewNicNacSidecar {
-    display: none;
   }
 
   .previewFocusFrame {

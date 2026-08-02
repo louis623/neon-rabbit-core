@@ -2080,7 +2080,6 @@ export type DashboardPlaceholderProps = {
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
   onSendNicNacPrompt?: (prompt: string) => void
-  onOpenNicNac?: () => void
   desktopChat?: ReactNode
 }
 
@@ -2101,7 +2100,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode = false,
     initialSectionOverride,
     onLaunchNicNacAction,
-    onOpenNicNac,
     desktopChat,
   } = props
   const [activeSection, setActiveSection] =
@@ -2114,7 +2112,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [workspacePreview, setWorkspacePreview] = useState<WorkspacePreviewState>({
     mode: 'workspace',
   })
-  const [previewNicNacOpen, setPreviewNicNacOpen] = useState(false)
   const [previewFrameKey, setPreviewFrameKey] = useState(0)
   const [previewUnavailableMessage, setPreviewUnavailableMessage] = useState<
     string | null
@@ -4935,7 +4932,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   })
   const openWorkspacePreview = (nextPreview: Extract<WorkspacePreviewState, { mode: 'live_site_preview' }>) => {
     setPreviewUnavailableMessage(null)
-    setPreviewNicNacOpen(false)
     setWorkspacePreview(nextPreview)
     setPreviewFrameKey((current) => current + 1)
   }
@@ -4990,7 +4986,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const isLiveSitePreview = workspacePreview.mode === 'live_site_preview'
   const activeWorkspacePreview = isLiveSitePreview ? workspacePreview : null
-  const showPreviewNicNacSidecar = previewNicNacOpen && Boolean(desktopChat)
   const activeWorkspacePreviewSrc = activeWorkspacePreview
     ? `${activeWorkspacePreview.href}${
         activeWorkspacePreview.href.includes('?') ? '&' : '?'
@@ -5349,17 +5344,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 onClick={() => {
                   setWorkspacePreview({ mode: 'workspace' })
                   setPreviewUnavailableMessage(null)
-                  setPreviewNicNacOpen(false)
                 }}
               >
                 Back to workspace
-              </button>
-              <button
-                type="button"
-                className={styles.previewAction}
-                onClick={() => setPreviewFrameKey((current) => current + 1)}
-              >
-                Refresh preview
               </button>
               <a
                 className={styles.previewAction}
@@ -5369,27 +5356,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               >
                 Open full site
               </a>
-              <button
-                type="button"
-                className={`${styles.previewAction} ${styles.previewNicNacDrawerToggle}`}
-                onClick={() => {
-                  if (!previewNicNacOpen) {
-                    onOpenNicNac?.()
-                  }
-                  setPreviewNicNacOpen((current) => !current)
-                }}
-                aria-controls="nic-nac-workspace-chat"
-                aria-expanded={showPreviewNicNacSidecar}
-              >
-                {showPreviewNicNacSidecar ? 'Close Nic-Nac' : 'Open Nic-Nac'}
-              </button>
             </div>
           </div>
-          <div
-            className={`${styles.previewWorkbench} ${
-              showPreviewNicNacSidecar ? styles.previewWorkbenchWithSidecar : ''
-            }`}
-          >
+          <div className={styles.previewWorkbench}>
             <div className={styles.previewFramePane}>
               <iframe
                 key={`${previewFrameKey}:${activeWorkspacePreview.href}`}
@@ -5398,18 +5367,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                 title="Sparkle Suite live site preview"
               />
             </div>
-            {showPreviewNicNacSidecar ? (
-              <aside
-                className={styles.previewNicNacSidecar}
-                aria-label="Nic-Nac live preview sidecar"
-              >
-                <div className={styles.previewNicNacHeader}>
-                  <span>Nic-Nac</span>
-                  <small>Live site helper</small>
-                </div>
-                <div className={styles.previewNicNacBody}>{desktopChat}</div>
-              </aside>
-            ) : null}
           </div>
         </section>
       ) : (

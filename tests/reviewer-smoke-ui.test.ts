@@ -324,7 +324,6 @@ describe('reviewer smoke UI wiring', () => {
     expect(dashboardPlaceholder).not.toContain('aria-label="Ask Nic-Nac anything"')
     expect(dashboardPlaceholder).toContain('onSendNicNacPrompt')
     expect(nicNacClient).toContain('handleSendNicNacPrompt')
-    expect(nicNacClient).toContain('onOpenNicNac={handleOpenNicNac}')
     expect(dashboardPlaceholder).toContain('className={styles.appProfile}')
   })
 
@@ -475,15 +474,16 @@ describe('reviewer smoke UI wiring', () => {
     )
   })
 
-  it('keeps customer board previewing inside the workspace with Nic-Nac available', () => {
+  it('keeps customer board previewing inside the workspace with only primary preview actions', () => {
     expect(dashboardPlaceholder).toContain('type WorkspacePreviewState')
     expect(dashboardPlaceholder).not.toContain('handleOpenLiveSitePreview')
     expect(dashboardPlaceholder).toContain('handleOpenTradeBoardPreview')
     expect(dashboardPlaceholder).toContain('Back to workspace')
-    expect(dashboardPlaceholder).toContain('Refresh preview')
-    expect(dashboardPlaceholder).toContain('Open Nic-Nac')
-    expect(dashboardPlaceholder).toContain('onOpenNicNac?.()')
-    expect(dashboardPlaceholder).toContain('previewNicNacSidecar')
+    expect(dashboardPlaceholder).toContain('Open full site')
+    expect(dashboardPlaceholder).not.toContain('Refresh preview')
+    expect(dashboardPlaceholder).not.toContain('Open Nic-Nac')
+    expect(dashboardPlaceholder).not.toContain('onOpenNicNac')
+    expect(dashboardPlaceholder).not.toContain('previewNicNacSidecar')
     expect(dashboardPlaceholder).toContain('title="Sparkle Suite live site preview"')
     expect(dashboardPlaceholder).toContain('customerTradeBoardHref')
     expect(dashboardPlaceholder).toContain('Public Site')
@@ -494,5 +494,6 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacClient).toContain('setMobileOpen(true)')
     expect(nicNacClient).toContain('setDesktopOpen(true)')
     expect(nicNacClient).toContain('<DashboardPlaceholder')
+    expect(nicNacClient).not.toContain('onOpenNicNac={handleOpenNicNac}')
   })
 })
