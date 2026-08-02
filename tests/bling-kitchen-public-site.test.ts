@@ -225,6 +225,10 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('AMETHYST_PANTRY_TEMPLATE_DATA')
     expect(pantryJsx).toContain('appearancePreset')
     expect(pantryJsx).toContain('recipe.tiktokUrl')
+    expect(pantryJsx).toContain('function TikTokRecipePlayer')
+    expect(pantryJsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
+    expect(pantryJsx).toContain('new IntersectionObserver')
+    expect(pantryJsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
     expect(pantryCss).toContain(

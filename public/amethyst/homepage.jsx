@@ -1,5 +1,5 @@
 /* global React, ReactDOM */
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 
 // Read tweaks panel components from the global scope (loaded from tweaks-panel.jsx)
 const {
@@ -636,6 +636,126 @@ function syncDynamicTickerTracks() {
   });
 }
 
+function getTikTokVideoId(value) {
+  const input = String(value || "");
+  const dataId = input.match(/data-video-id\s*=\s*["']?(\d+)/i);
+  if (dataId) return dataId[1];
+
+  const urlId = input.match(/(?:\/video\/|\/player\/v1\/)(\d+)/i);
+  return urlId ? urlId[1] : "";
+}
+
+function TikTokEmbed({ className = "", videoUrl, title, children }) {
+  const frameRef = useRef(null);
+  const videoId = getTikTokVideoId(videoUrl);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !videoId) return undefined;
+
+    const send = (type) => {
+      frame.contentWindow?.postMessage(
+        { type, "x-tiktok-player": true },
+        "https://www.tiktok.com",
+      );
+    };
+    const playMuted = () => {
+      send("mute");
+      setMuted(true);
+      send("play");
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          playMuted();
+        } else if (!entry.isIntersecting) {
+          send("pause");
+        }
+      },
+      { threshold: [0, 0.5] },
+    );
+
+    observer.observe(frame);
+    frame.addEventListener("load", playMuted);
+    return () => {
+      frame.removeEventListener("load", playMuted);
+      observer.disconnect();
+    };
+  }, [videoId]);
+
+  if (!videoId) return children || null;
+
+  const toggleMute = () => {
+    const nextMuted = !muted;
+    frameRef.current?.contentWindow?.postMessage(
+      { type: nextMuted ? "mute" : "unMute", "x-tiktok-player": true },
+      "https://www.tiktok.com",
+    );
+    setMuted(nextMuted);
+  };
+
+  return (
+    <div className={`ss-tiktok-embed ${className}`} data-tiktok-embed="true">
+      <iframe
+        ref={frameRef}
+        allow="autoplay; fullscreen"
+        allowFullScreen
+        className="ss-tiktok-embed-frame"
+        loading="lazy"
+        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1&muted=1&loop=1&controls=1&description=0&music_info=0&rel=0`}
+        title={title || "TikTok video"}
+      />
+      <button
+        aria-label={muted ? "Unmute TikTok video" : "Mute TikTok video"}
+        className="ss-tiktok-sound-toggle"
+        onClick={toggleMute}
+        type="button"
+      >
+        {muted ? "Unmute" : "Mute"}
+      </button>
+    </div>
+  );
+}
+
+function AboutMediaCard({ index, fallbackType, fallbackCaption }) {
+  const slot = getAboutMediaSlot(index);
+  const videoId = getTikTokVideoId(slot?.href);
+  const className = "hp-about-media-card slot";
+  const content = (
+    <>
+      <div className="hp-about-media-type">{slot?.typeLabel || fallbackType}</div>
+      {!videoId && <div className="hp-about-media-play">Play</div>}
+      <div className="hp-about-media-caption">{slot?.caption || fallbackCaption}</div>
+    </>
+  );
+
+  if (videoId) {
+    return (
+      <TikTokEmbed
+        className={className}
+        title={slot?.caption || "TikTok video"}
+        videoUrl={slot.href}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={className}
+      data-slot={`about media ${index + 1}`}
+      onClick={() => {
+        if (slot?.href && /^https?:\/\//.test(slot.href)) {
+          window.open(slot.href, "_blank", "noopener,noreferrer");
+        }
+      }}
+      style={aboutMediaStyle(slot)}
+    >
+      {content}
+    </div>
+  );
+}
+
 function useDynamicTickerMotion() {
   useEffect(() => {
     let frame = 0;
@@ -1172,13 +1292,17 @@ function Wibp({ repName }) {
               </div>
             </div>
           </div>
-          <div className="hp-wibp-video slot" data-slot="showcase video">
+          <TikTokEmbed
+            className="hp-wibp-video slot"
+            title={showcaseVideoCaption}
+            videoUrl={CONTENT.showcaseVideoUrl}
+          >
             <div className="hp-wibp-video-meta">
               <div className="hp-video-pill"><span className="pip" />TikTok · Loops</div>
               <div className="hp-video-play">▶</div>
             </div>
             <div className="hp-wibp-video-caption">{showcaseVideoCaption}</div>
-          </div>
+          </TikTokEmbed>
         </div>
       </div>
     </section>
@@ -1255,16 +1379,16 @@ function AboutSection({ repName }) {
           </div>
 
           <div className="hp-about-media-grid">
-            <div className="hp-about-media-card slot" data-slot="about media 1">
-              <div className="hp-about-media-type">Meet Heather</div>
-              <div className="hp-about-media-play">Play</div>
-              <div className="hp-about-media-caption">Heather Daugherty - BlingKitchen, Ohio</div>
-            </div>
-            <div className="hp-about-media-card slot" data-slot="about media 2">
-              <div className="hp-about-media-type">In the Pantry</div>
-              <div className="hp-about-media-play">Play</div>
-              <div className="hp-about-media-caption">Family recipes, kitchen tips, and Heather-style notes.</div>
-            </div>
+            <AboutMediaCard
+              fallbackCaption="Heather Daugherty - BlingKitchen, Ohio"
+              fallbackType="Meet Heather"
+              index={0}
+            />
+            <AboutMediaCard
+              fallbackCaption="Family recipes, kitchen tips, and Heather-style notes."
+              fallbackType="In the Pantry"
+              index={1}
+            />
           </div>
         </div>
       </div>
@@ -1616,11 +1740,15 @@ function BrittWithBlingFeaturedReveal() {
             {reveal.ctaLabel}
           </a>
         </div>
-        <a {...linkProps(reveal.videoUrl || reveal.ctaHref)} className="bwb-featured-video" aria-label={reveal.videoTitle}>
+        <TikTokEmbed
+          className="bwb-featured-video"
+          title={reveal.videoTitle}
+          videoUrl={reveal.videoUrl}
+        >
           <span className="bwb-video-play" aria-hidden="true">▶</span>
           <span className="bwb-video-kicker">Featured TikTok</span>
           <span className="bwb-video-title">{reveal.videoTitle}</span>
-        </a>
+        </TikTokEmbed>
       </div>
     </section>
   );
@@ -1656,10 +1784,14 @@ function BrittWithBlingRevealExplainer() {
               <p>{explainer.videoHandle}</p>
             </div>
           </div>
-          <a {...linkProps(explainer.videoUrl || explainer.ctaHref)} className="bwb-tiktok-frame">
+          <TikTokEmbed
+            className="bwb-tiktok-frame"
+            title={explainer.videoTitle}
+            videoUrl={explainer.videoUrl}
+          >
             <span className="bwb-video-play" aria-hidden="true">▶</span>
             <span className="bwb-video-title">{explainer.videoTitle}</span>
-          </a>
+          </TikTokEmbed>
           <a {...linkProps(explainer.ctaHref)} className="bwb-tiktok-cta">
             {explainer.ctaLabel}
           </a>

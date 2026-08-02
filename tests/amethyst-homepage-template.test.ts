@@ -387,8 +387,8 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(jsx).toContain('data-slot="about media 1"')
-    expect(jsx).toContain('data-slot="about media 2"')
+    expect(jsx).toContain('data-slot={`about media ${index + 1}`}')
+    expect(jsx).toContain('function AboutMediaCard')
     expect(jsx).toContain('Heather Daugherty - BlingKitchen, Ohio')
     expect(jsx).toContain('Family recipes, kitchen tips, and Heather-style notes.')
     expect(jsx).not.toContain('data-slot="about media 3"')
@@ -613,6 +613,27 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).not.toContain('const trades = RUNTIME_CONTEXT.targeted ? []')
     expect(jsx).not.toContain('function buildHybridTickerItems')
     expect(jsx).not.toContain('const tickerItems = [promoTickerText, promoTickerText, promoTickerText]')
+  })
+
+  it('renders customer TikTok media in an inline muted player instead of opening a new tab', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const templateData = readFileSync(
+      resolve(process.cwd(), 'lib/amethyst/homepage-template-data.ts'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function TikTokEmbed')
+    expect(jsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
+    expect(jsx).toContain('autoplay=1&muted=1&loop=1&controls=1')
+    expect(jsx).toContain('new IntersectionObserver')
+    expect(jsx).toContain('type: nextMuted ? "mute" : "unMute"')
+    expect(jsx).toContain('<TikTokEmbed')
+    expect(jsx).toContain('function AboutMediaCard')
+    expect(templateData).not.toContain("window.open(content.showcaseVideoUrl")
+    expect(templateData).not.toContain("window.open(slot.href, '_blank', 'noopener,noreferrer')")
   })
 
   it('derives live indicators from scheduled show windows instead of permanent live chrome', () => {

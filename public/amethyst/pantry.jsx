@@ -1,5 +1,5 @@
 /* global React, ReactDOM */
-const { useEffect, useMemo, useState } = React;
+const { useEffect, useMemo, useRef, useState } = React;
 
 const CONTENT = window.AMETHYST_PANTRY_TEMPLATE_DATA || {};
 
@@ -99,8 +99,74 @@ function getRecipeImage(recipe) {
 }
 
 function getVideoId(tiktokUrl) {
-  const match = String(tiktokUrl || "").match(/\/video\/(\d+)/);
+  const match = String(tiktokUrl || "").match(/(?:\/video\/|\/player\/v1\/)(\d+)/);
   return match ? match[1] : "";
+}
+
+function TikTokRecipePlayer({ title, videoId }) {
+  const frameRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !videoId) return undefined;
+
+    const send = (type) => {
+      frame.contentWindow?.postMessage(
+        { type, "x-tiktok-player": true },
+        "https://www.tiktok.com",
+      );
+    };
+    const playMuted = () => {
+      send("mute");
+      setMuted(true);
+      send("play");
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) playMuted();
+        else send("pause");
+      },
+      { threshold: 0.5 },
+    );
+
+    observer.observe(frame);
+    frame.addEventListener("load", playMuted);
+    return () => {
+      frame.removeEventListener("load", playMuted);
+      observer.disconnect();
+    };
+  }, [videoId]);
+
+  const toggleMute = () => {
+    const nextMuted = !muted;
+    frameRef.current?.contentWindow?.postMessage(
+      { type: nextMuted ? "mute" : "unMute", "x-tiktok-player": true },
+      "https://www.tiktok.com",
+    );
+    setMuted(nextMuted);
+  };
+
+  return (
+    <div className="bk-video-frame" data-tiktok-embed="true">
+      <iframe
+        ref={frameRef}
+        allow="autoplay; fullscreen"
+        allowFullScreen
+        loading="lazy"
+        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1&muted=1&loop=1&controls=1&description=0&music_info=0&rel=0`}
+        title={`${title} TikTok`}
+      />
+      <button
+        aria-label={muted ? "Unmute TikTok video" : "Mute TikTok video"}
+        className="bk-tiktok-sound-toggle"
+        onClick={toggleMute}
+        type="button"
+      >
+        {muted ? "Unmute" : "Mute"}
+      </button>
+    </div>
+  );
 }
 
 function RecipeModal({ recipe, onClose }) {
@@ -123,16 +189,7 @@ function RecipeModal({ recipe, onClose }) {
             <span>{recipe.prepTime}</span>
             <span>{recipe.servings} servings</span>
           </div>
-          {videoId && (
-            <div className="bk-video-frame">
-              <iframe
-                title={`${recipe.title} TikTok`}
-                src={`https://www.tiktok.com/embed/v2/${videoId}`}
-                allow="encrypted-media;"
-                loading="lazy"
-              />
-            </div>
-          )}
+          {videoId && <TikTokRecipePlayer title={recipe.title} videoId={videoId} />}
           <div className="bk-recipe-columns">
             <section>
               <h3>Ingredients</h3>

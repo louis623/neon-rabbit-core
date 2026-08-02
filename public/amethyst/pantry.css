@@ -388,6 +388,7 @@ button {
 }
 
 .bk-video-frame {
+  position: relative;
   margin: 22px 0;
   overflow: hidden;
   border-radius: 8px;
@@ -399,6 +400,31 @@ button {
   width: 100%;
   min-height: 520px;
   border: 0;
+}
+
+.bk-tiktok-sound-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  border: 1px solid rgba(255,255,255,0.34);
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: rgba(17,17,17,0.72);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.bk-tiktok-sound-toggle:hover,
+.bk-tiktok-sound-toggle:focus-visible {
+  background: rgba(17,17,17,0.94);
+  outline: 2px solid #25f4ee;
+  outline-offset: 2px;
 }
 
 .bk-recipe-columns {
