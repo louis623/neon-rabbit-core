@@ -390,6 +390,29 @@ describe('Amethyst appearance presets', () => {
     }
   })
 
+  it('uses surface-aware semantic colors for the explainer card in every skin', () => {
+    const homepageCss = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(homepageCss).toMatch(
+      /\.hp-wibp-card\s*\{[\s\S]*?color:\s*var\(--hp-card-fg\);/,
+    )
+    expect(homepageCss).toMatch(
+      /\.hp-wibp-title\s*\{[\s\S]*?color:\s*var\(--hp-card-fg\);/,
+    )
+    expect(homepageCss).toMatch(
+      /\.hp-wibp-body\s*\{[\s\S]*?color:\s*var\(--hp-card-muted\);/,
+    )
+    expect(homepageCss).toMatch(
+      /\.hp-wibp-eyebrow\s*\{[\s\S]*?color:\s*var\(--hp-card-accent\);/,
+    )
+    expect(homepageCss).not.toMatch(
+      /body\.bg-emerald-garden #wibp \.hp-wibp-(?:title|eyebrow|body)[^{]*\{[^}]*color:\s*#ffffff;/,
+    )
+  })
+
   it('adds Rose Gold as a visual-only Amethyst skin with a browsing card', () => {
     const preset = getAmethystAppearancePreset('rose_gold')
     const homepage = applyAmethystAppearancePreset(

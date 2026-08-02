@@ -2281,6 +2281,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   background: var(--hp-bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--hp-radius-card);
+  color: var(--hp-card-fg);
   padding: 36px;
   display: flex;
   flex-direction: column;
@@ -2291,7 +2292,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--hp-primary);
+  color: var(--hp-card-accent);
   font-weight: 600;
 }
 .hp-wibp-title {
@@ -2299,11 +2300,12 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   font-size: 32px;
   letter-spacing: var(--hp-heading-tracking);
   line-height: 1.1;
+  color: var(--hp-card-fg);
 }
 .hp-wibp-body {
   font-size: 15px;
   line-height: 1.6;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
 }
 .hp-steps {
   display: grid;
@@ -2341,11 +2343,11 @@ body.bg-quartz-paper .hp-step-num {
 .hp-step-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--fg);
+  color: var(--hp-card-fg);
 }
 .hp-step-desc {
   font-size: 12px;
-  color: var(--fg-muted);
+  color: var(--hp-card-muted);
   line-height: 1.5;
 }
 .hp-wibp-video {
@@ -5949,12 +5951,6 @@ body.bg-emerald-garden #about .hp-section-title {
   color: transparent;
   font-family: "Great Vibes", "Playfair Display", cursive;
   font-weight: 400;
-}
-
-body.bg-emerald-garden #wibp .hp-wibp-title,
-body.bg-emerald-garden #wibp .hp-wibp-eyebrow,
-body.bg-emerald-garden #wibp .hp-wibp-body {
-  color: #ffffff;
 }
 
 body.bg-emerald-garden #wibp .hp-wibp-title,
