@@ -82,12 +82,14 @@ describe('POST /api/self-serve/signup', () => {
   const originalNodeEnv = process.env.NODE_ENV
   const originalVercelEnv = process.env.VERCEL_ENV
   const originalReviewerSmokeMode = process.env.SPARKLE_REVIEWER_SMOKE_MODE
+  const originalOnboardingMode = process.env.SPARKLE_ONBOARDING_MODE
 
   beforeEach(() => {
     createAdminClientMock.mockReset()
     process.env.NODE_ENV = originalNodeEnv
     process.env.VERCEL_ENV = originalVercelEnv
     process.env.SPARKLE_REVIEWER_SMOKE_MODE = originalReviewerSmokeMode
+    process.env.SPARKLE_ONBOARDING_MODE = originalOnboardingMode
     process.env.SPARKLE_SELF_SERVE_ENABLED = 'true'
   })
 
@@ -284,6 +286,29 @@ describe('POST /api/self-serve/signup', () => {
       code: 'SELF_SERVE_NOT_OPEN',
       error: 'Sparkle Suite self-serve signup is not open yet.',
     })
+  })
+
+  it('stays waitlist-only in production unless self-serve mode is explicitly restored', async () => {
+    process.env.NODE_ENV = 'production'
+    process.env.VERCEL_ENV = 'production'
+    process.env.SPARKLE_SELF_SERVE_ENABLED = 'true'
+    delete process.env.SPARKLE_ONBOARDING_MODE
+
+    const response = await POST(
+      new Request('http://localhost/api/self-serve/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Jamie Hart',
+          email: 'jamie@example.com',
+          password: 'Sparkle2026!',
+          passwordConfirm: 'Sparkle2026!',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(403)
+    expect(createAdminClientMock).not.toHaveBeenCalled()
   })
 
   it('opens in Vercel preview when reviewer smoke mode is enabled', async () => {

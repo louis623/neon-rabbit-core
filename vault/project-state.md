@@ -1,12 +1,41 @@
 # Project State
 
-**Last updated:** August 1, 2026
+**Last updated:** August 2, 2026
 
 ---
 
 ## Current Phase
 
 **Phase 1 closing into Phase 2**
+
+---
+
+## August 2 Operator-Led Trial Onboarding Checkpoint
+
+- Public acquisition is waitlist-first. Ordinary `/start` traffic redirects to
+  `/prelaunch#waitlist`; the protected synthetic reviewer controls remain
+  available only through their authorized token path.
+- Louis provisions approved reps individually from Control Center after their
+  setup profile is ready. Account creation requires the temporary password to
+  be entered twice, creates no checkout, sends no automatic account-ready
+  email, and leaves the fixed five-day trial pending until the rep's first
+  successful sign-in.
+- Full workspace and customer-site access is granted only by an `active` or
+  `trialing` Stripe subscription or an unexpired active operator trial.
+  `past_due`, paused, cancelled, revoked, pending, and expired states do not
+  grant product access. Account, billing, password/security, recovery, and help
+  remain reachable; stored customer/workspace data is preserved.
+- Trial checkout converts to the existing paid plan without rerunning required
+  setup or Light Box fulfillment. The trial row is revoked but retained as
+  audit history after paid checkout.
+- Password recovery and authenticated password change share a 12-character
+  strong-password policy and require exact confirmation.
+- Supabase migration
+  `20260802160000_ss_operator_workspace_trials.sql` is applied to linked project
+  `bqhzfkgkjyuhlsozpylf`.
+- Focused verification passed across 23 files / 354 tests, the Finder boundary
+  suites passed, and the Next.js 16.2.1 production build passed. Final Git and
+  Vercel production provenance is recorded after release.
 
 ---
 

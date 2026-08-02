@@ -1,5 +1,9 @@
 import Link from 'next/link'
 import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/auth/password-policy'
+import {
   buildPrelaunchScoutInput,
   type PrelaunchIntakeReviewSubmission,
 } from '@/lib/prelaunch/intake-review'
@@ -1663,23 +1667,36 @@ export function PrelaunchIntakeReviewPageContent({
                       type="checkbox"
                       value="true"
                     />
-                    Create client account
+                    Create five-day trial account
                   </label>
                   <label className="text-xs font-semibold text-slate-700">
                     Temporary password
                     <input
                       autoComplete="new-password"
                       className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      minLength={PASSWORD_MIN_LENGTH}
                       name="temporaryPassword"
                       placeholder="Required only when creating account"
                       type="password"
                     />
                   </label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Confirm temporary password
+                    <input
+                      autoComplete="new-password"
+                      className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-950"
+                      minLength={PASSWORD_MIN_LENGTH}
+                      name="temporaryPasswordConfirm"
+                      placeholder="Enter the same password again"
+                      type="password"
+                    />
+                  </label>
                 </div>
                 <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Account creation uses the customer email on this build,
-                  confirms the auth user, and sends the account-ready email
-                  without exposing the temporary password.
+                  Account creation uses the customer email on this build and
+                  does not send an email. Hand the login details to the rep
+                  yourself. The five-day trial starts on their first successful
+                  sign-in, not when you create the account. {PASSWORD_REQUIREMENTS}
                 </p>
                 <button
                   className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-400 hover:bg-slate-100"

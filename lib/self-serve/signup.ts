@@ -62,7 +62,6 @@ export type SelfServeSignupResult =
 
 export function selfServeSignupEnabled(env: NodeJS.ProcessEnv = process.env) {
   const flag = env.SPARKLE_SELF_SERVE_ENABLED?.trim().toLowerCase()
-  if (flag === 'true') return true
   if (flag === 'false') return false
   const reviewerFlag = env.SPARKLE_REVIEWER_SMOKE_MODE?.trim().toLowerCase()
   if (
@@ -71,7 +70,13 @@ export function selfServeSignupEnabled(env: NodeJS.ProcessEnv = process.env) {
   ) {
     return true
   }
-  return env.NODE_ENV !== 'production'
+  if (env.NODE_ENV === 'production') {
+    return (
+      flag === 'true' &&
+      env.SPARKLE_ONBOARDING_MODE?.trim().toLowerCase() === 'self_serve'
+    )
+  }
+  return flag !== 'false'
 }
 
 function flattenSignupErrors(error: z.ZodError) {

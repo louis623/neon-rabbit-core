@@ -1,5 +1,6 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { getAmethystCustomDomainCandidates } from './host-routing'
-import { PAID_WORKSPACE_STATUSES } from '@/lib/nic-nac/subscription-access'
+import { resolveWorkspaceAccess } from '@/lib/services/workspace-access'
 
 export const DEFAULT_AMETHYST_PREVIEW_EMAIL = 'testrep@neonrabbit.net'
 
@@ -129,80 +130,16 @@ async function loadLatestReadyLaunchRepId(admin: PreviewAdminClient) {
   return data?.rep_id?.trim() || null
 }
 
-async function hasPaidPublicCustomerSiteAccess(
-  admin: PreviewAdminClient,
-  repId: string,
-) {
-  const query = admin.from('subscriptions').select('id, status') as {
-    eq(column: string, value: string): {
-      in(column: string, value: string[]): {
-        order(
-          column: string,
-          options: { ascending: boolean },
-        ): {
-          limit(count: number): {
-            maybeSingle(): Promise<{
-              data: { id: string; status: string } | null
-              error: unknown
-            }>
-          }
-        }
-      }
-    }
-  }
-
-  const { data, error } = await query
-    .eq('rep_id', repId)
-    .in('status', [...PAID_WORKSPACE_STATUSES])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (error) throw error
-  return Boolean(data)
-}
-
-async function hasReadyLaunchBuild(admin: PreviewAdminClient, repId: string) {
-  const query = admin.from('sparkle_suite_launch_builds').select('id') as {
-    eq(column: string, value: string): {
-      eq(column: string, value: string): {
-        eq(column: string, value: string): {
-          order(
-            column: string,
-            options: { ascending: boolean },
-          ): {
-            limit(count: number): {
-              maybeSingle(): Promise<{
-                data: { id: string } | null
-                error: unknown
-              }>
-            }
-          }
-        }
-      }
-    }
-  }
-
-  const { data, error } = await query
-    .eq('rep_id', repId)
-    .eq('stage', 'ready_for_launch')
-    .eq('status', 'ready')
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (error) throw error
-  return Boolean(data)
-}
-
 async function canServePublicCustomerSite(
   admin: PreviewAdminClient,
   repId: string,
 ) {
   return (
-    (await hasPaidPublicCustomerSiteAccess(admin, repId)) ||
-    (await hasReadyLaunchBuild(admin, repId))
-  )
+    await resolveWorkspaceAccess({
+      supabase: admin as unknown as SupabaseClient,
+      repId,
+    })
+  ).hasFullAccess
 }
 
 export async function resolveAmethystPreviewRep(

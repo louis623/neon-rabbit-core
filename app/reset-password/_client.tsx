@@ -3,6 +3,11 @@
 import Link from 'next/link'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  getNewPasswordValidationError,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/auth/password-policy'
 import { createClient } from '@/lib/supabase/client'
 
 type ResetMode = 'request' | 'update'
@@ -78,9 +83,11 @@ export default function ResetPasswordClient() {
     const newPasswordConfirm = String(form.get('newPasswordConfirm') ?? '')
 
     try {
-      if (newPassword !== newPasswordConfirm) {
-        throw new Error('Enter the same new password twice.')
-      }
+      const validationError = getNewPasswordValidationError(
+        newPassword,
+        newPasswordConfirm,
+      )
+      if (validationError) throw new Error(validationError)
 
       const supabase = createClient()
       const { error: updateError } = await supabase.auth.updateUser({
@@ -116,7 +123,8 @@ export default function ResetPasswordClient() {
               name="newPassword"
               type="password"
               autoComplete="new-password"
-              minLength={8}
+              minLength={PASSWORD_MIN_LENGTH}
+              aria-describedby="password-requirements"
               required
             />
           </label>
@@ -126,10 +134,12 @@ export default function ResetPasswordClient() {
               name="newPasswordConfirm"
               type="password"
               autoComplete="new-password"
-              minLength={8}
+              minLength={PASSWORD_MIN_LENGTH}
+              aria-describedby="password-requirements"
               required
             />
           </label>
+          <p id="password-requirements">{PASSWORD_REQUIREMENTS}</p>
           <button type="submit" disabled={busy}>
             {busy ? 'Updating...' : 'Update password'}
           </button>

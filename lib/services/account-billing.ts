@@ -12,6 +12,7 @@ import type {
   AccountBillingSubscriptionStatus,
 } from '@/lib/services/types'
 import { generateUniqueSparkleSuiteReferralCode } from '@/lib/services/sparkle-suite-referrals'
+import { resolveWorkspaceAccess } from '@/lib/services/workspace-access'
 
 type SubscriptionRow = {
   status: AccountBillingSubscriptionStatus
@@ -278,6 +279,10 @@ export async function getAccountBillingDashboard(args: {
       (!subscription || subscription.status !== 'cancelled'),
   )
   const canStartSubscription = !subscription || subscription.status === 'cancelled'
+  const workspaceAccess = await resolveWorkspaceAccess({
+    supabase: args.supabase,
+    repId: args.repId,
+  })
 
   return {
     stripeConfigured,
@@ -286,6 +291,14 @@ export async function getAccountBillingDashboard(args: {
     paymentMethod,
     invoices,
     referral,
+    workspaceAccess: {
+      hasFullAccess: workspaceAccess.hasFullAccess,
+      source: workspaceAccess.source,
+      status: workspaceAccess.status,
+      subscriptionStatus: workspaceAccess.subscriptionStatus,
+      trialStartsAt: workspaceAccess.trialStartsAt,
+      trialEndsAt: workspaceAccess.trialEndsAt,
+    },
     canStartSubscription,
     canManageBilling,
   }

@@ -1,3 +1,14 @@
+import { getNewPasswordValidationError } from '@/lib/auth/password-policy'
+import {
+  buildPrelaunchLaunchBuildReadiness,
+  normalizePrelaunchLaunchBuildRows,
+  PRELAUNCH_LAUNCH_BUILD_SELECT,
+  type PrelaunchLaunchBuild,
+  type PrelaunchLaunchBuildGateStatus,
+  type PrelaunchLaunchBuildRow,
+  type PrelaunchLaunchBuildStage,
+  type PrelaunchLaunchBuildStatus,
+} from '@/lib/prelaunch/launch-builds'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -5,18 +16,24 @@ type AdminClient = ReturnType<typeof createAdminClient>
 interface PreparePrelaunchClientAccountInput {
   launchBuildId: string
   temporaryPassword: string
+  temporaryPasswordConfirm: string
+  notes?: string
   operatorRepId?: string | null
 }
 
 interface LaunchBuildClientAccountRow {
   id: string
   rep_id: string | null
+  stage: PrelaunchLaunchBuildStage
+  status: PrelaunchLaunchBuildStatus
   lead_name: string
   lead_email: string
-  setup_profile_status: string
-  payment_gate_status: string
-  agreement_gate_status: string
-  build_check_status: string
+  setup_profile_status: PrelaunchLaunchBuildGateStatus
+  payment_gate_status: PrelaunchLaunchBuildGateStatus
+  agreement_gate_status: PrelaunchLaunchBuildGateStatus
+  build_check_status: PrelaunchLaunchBuildGateStatus
+  production_roster_status: PrelaunchLaunchBuildGateStatus
+  blockers: string[]
 }
 
 interface LaunchSetupProfileClientAccountRow {
@@ -47,6 +64,9 @@ export interface PrelaunchClientAccountResult {
   email: string
   createdAuthUser: boolean
   sentInvite: false
+  trialStatus: 'pending'
+  trialDurationDays: 5
+  build: PrelaunchLaunchBuild
 }
 
 function cleanRequiredString(value: string, label: string) {
@@ -72,19 +92,18 @@ function cleanDomain(value: string | null | undefined) {
   return cleanNullable(value)?.toLowerCase() ?? null
 }
 
+function cleanText(value: string | null | undefined) {
+  return value?.trim() ?? ''
+}
+
 function assertClientAccountAllowed(build: LaunchBuildClientAccountRow) {
   if (build.rep_id) {
     throw new Error('This launch build already has a client account connected.')
   }
 
-  if (
-    build.setup_profile_status !== 'ready' ||
-    build.payment_gate_status !== 'ready' ||
-    build.agreement_gate_status !== 'ready' ||
-    build.build_check_status !== 'passed'
-  ) {
+  if (build.setup_profile_status !== 'ready') {
     throw new Error(
-      'Client account requires setup, payment, agreement, and build checks to be ready.',
+      'Client account creation requires the setup profile to be ready.',
     )
   }
 }
@@ -96,7 +115,20 @@ async function loadLaunchBuildClientAccountRow(
   const { data, error } = await admin
     .from('sparkle_suite_launch_builds')
     .select(
-      'id, rep_id, lead_name, lead_email, setup_profile_status, payment_gate_status, agreement_gate_status, build_check_status',
+      [
+        'id',
+        'rep_id',
+        'stage',
+        'status',
+        'lead_name',
+        'lead_email',
+        'setup_profile_status',
+        'payment_gate_status',
+        'agreement_gate_status',
+        'build_check_status',
+        'production_roster_status',
+        'blockers',
+      ].join(', '),
     )
     .eq('id', launchBuildId)
     .single()
@@ -136,20 +168,137 @@ async function assertNoExistingAuthUserByEmail(
   email: string,
   admin: AdminClient,
 ) {
-  const { data, error } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
+  const perPage = 200
+
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({
+      page,
+      perPage,
+    })
+
+    if (error) throw error
+
+    const existing = data.users.find(
+      (user) => user.email?.trim().toLowerCase() === email,
+    )
+
+    if (existing) {
+      throw new Error(
+        'An auth user already exists for this email. Use the existing rep account path.',
+      )
+    }
+
+    if (data.users.length < perPage) return
+  }
+}
+
+async function linkLaunchBuildToCreatedRep(
+  build: LaunchBuildClientAccountRow,
+  repId: string,
+  notes: string,
+  admin: AdminClient,
+) {
+  const readiness = buildPrelaunchLaunchBuildReadiness({
+    setupProfileStatus: build.setup_profile_status,
+    paymentGateStatus: build.payment_gate_status,
+    agreementGateStatus: build.agreement_gate_status,
+    buildCheckStatus: build.build_check_status,
+    productionRosterStatus: 'connected',
   })
 
+  const { data, error } = await admin
+    .from('sparkle_suite_launch_builds')
+    .update({
+      rep_id: repId,
+      production_roster_status: 'connected',
+      stage: readiness.status === 'ready' ? 'ready_for_launch' : 'checks',
+      status: readiness.status,
+      blockers: readiness.blockers,
+      notes,
+    })
+    .eq('id', build.id)
+    .is('rep_id', null)
+    .select(PRELAUNCH_LAUNCH_BUILD_SELECT)
+    .single()
+
   if (error) throw error
+  if (!data) {
+    throw new Error('The launch build could not be linked to the new account.')
+  }
 
-  const existing = data.users.find(
-    (user) => user.email?.trim().toLowerCase() === email,
-  )
+  return normalizePrelaunchLaunchBuildRows([
+    data as unknown as PrelaunchLaunchBuildRow,
+  ])[0]
+}
 
-  if (existing) {
-    throw new Error(
-      'An auth user already exists for this email. Use the existing rep account path.',
+interface CleanupProvisionedClientAccountInput {
+  authUserId: string
+  repId: string | null
+  build: LaunchBuildClientAccountRow
+}
+
+async function cleanupProvisionedClientAccount(
+  input: CleanupProvisionedClientAccountInput,
+  admin: AdminClient,
+) {
+  const cleanupErrors: unknown[] = []
+
+  if (input.repId) {
+    try {
+      const { error } = await admin
+        .from('sparkle_suite_launch_builds')
+        .update({
+          rep_id: null,
+          production_roster_status: input.build.production_roster_status,
+          stage: input.build.stage,
+          status: input.build.status,
+          blockers: input.build.blockers,
+        })
+        .eq('id', input.build.id)
+        .eq('rep_id', input.repId)
+
+      if (error) cleanupErrors.push(error)
+    } catch (error) {
+      cleanupErrors.push(error)
+    }
+
+    for (const table of [
+      'workspace_trials',
+      'self_serve_setup_sessions',
+      'onboarding_status',
+      'site_settings',
+    ]) {
+      try {
+        const { error } = await admin
+          .from(table)
+          .delete()
+          .eq('rep_id', input.repId)
+
+        if (error) cleanupErrors.push(error)
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+    }
+
+    try {
+      const { error } = await admin.from('reps').delete().eq('id', input.repId)
+      if (error) cleanupErrors.push(error)
+    } catch (error) {
+      cleanupErrors.push(error)
+    }
+  }
+
+  try {
+    const { error } = await admin.auth.admin.deleteUser(input.authUserId)
+    if (error) cleanupErrors.push(error)
+  } catch (error) {
+    cleanupErrors.push(error)
+  }
+
+  if (cleanupErrors.length > 0) {
+    console.error(
+      '[prelaunch/client-account] Provisioning cleanup encountered errors:',
+      cleanupErrors,
     )
   }
 }
@@ -166,6 +315,16 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
     input.temporaryPassword,
     'temporaryPassword',
   )
+  const temporaryPasswordConfirm = cleanRequiredString(
+    input.temporaryPasswordConfirm,
+    'temporaryPasswordConfirm',
+  )
+  const passwordError = getNewPasswordValidationError(
+    temporaryPassword,
+    temporaryPasswordConfirm,
+  )
+  if (passwordError) throw new Error(passwordError)
+
   const build = await loadLaunchBuildClientAccountRow(launchBuildId, admin)
   assertClientAccountAllowed(build)
 
@@ -199,71 +358,129 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
     throw new Error('Supabase did not return an auth user id.')
   }
 
-  const { data: repData, error: repError } = await admin
-    .from('reps')
-    .insert({
-      auth_user_id: authUserId,
-      email,
-      display_name: cleanRequiredString(build.lead_name, 'leadName'),
-      business_name: businessName,
-      custom_domain: cleanDomain(profile?.custom_domain),
-      phone: null,
-      shop_link: cleanNullable(profile?.shop_url),
-      streaming_links: {
-        primary: cleanNullable(profile?.primary_social_url),
-        secondary: cleanNullable(profile?.secondary_social_url),
-      },
-      social_handles: {},
-      template_id: 'default',
-      status: 'active',
-    })
-    .select('id, auth_user_id, email, display_name, business_name')
-    .single()
+  let createdRepId: string | null = null
 
-  if (repError) throw repError
+  try {
+    const { data: repData, error: repError } = await admin
+      .from('reps')
+      .insert({
+        auth_user_id: authUserId,
+        email,
+        display_name: cleanRequiredString(build.lead_name, 'leadName'),
+        business_name: businessName,
+        custom_domain: cleanDomain(profile?.custom_domain),
+        phone: null,
+        shop_link: cleanNullable(profile?.shop_url),
+        streaming_links: {
+          primary: cleanNullable(profile?.primary_social_url),
+          secondary: cleanNullable(profile?.secondary_social_url),
+        },
+        social_handles: {},
+        template_id: 'default',
+        status: 'active',
+      })
+      .select('id, auth_user_id, email, display_name, business_name')
+      .single()
 
-  const rep = repData as unknown as CreatedRepRow
-  const { error: siteSettingsError } = await admin.from('site_settings').upsert(
-    {
+    if (repError) throw repError
+
+    const rep = repData as unknown as CreatedRepRow
+    createdRepId = rep.id
+    const unlockedAt = new Date().toISOString()
+
+    const { error: siteSettingsError } = await admin
+      .from('site_settings')
+      .upsert(
+        {
+          rep_id: rep.id,
+          tagline: profile?.public_site_goal ?? '',
+          banner_text: `Welcome to ${businessName}`,
+          banner_visible: true,
+          ticker_text: null,
+          ticker_visible: false,
+          team_name: businessName,
+          show_join_page: true,
+          hero_animation_type: 'sparkle_rise',
+        },
+        { onConflict: 'rep_id' },
+      )
+
+    if (siteSettingsError) throw siteSettingsError
+
+    const { error: onboardingError } = await admin
+      .from('onboarding_status')
+      .upsert(
+        {
+          rep_id: rep.id,
+          current_stage: 'intake_completed',
+          completed_steps: [
+            'waitlist',
+            'conversation',
+            'setup_profile',
+            'trial_provisioned',
+          ],
+        },
+        { onConflict: 'rep_id' },
+      )
+
+    if (onboardingError) throw onboardingError
+
+    const { error: setupSessionError } = await admin
+      .from('self_serve_setup_sessions')
+      .upsert(
+        {
+          rep_id: rep.id,
+          status: 'dashboard_unlocked',
+          current_step: 'account_basics',
+          completed_steps: ['operator_account_provisioned'],
+          answers: {
+            displayName: rep.display_name,
+            businessName: rep.business_name,
+            email: rep.email,
+          },
+          dashboard_unlocked_at: unlockedAt,
+          updated_at: unlockedAt,
+        },
+        { onConflict: 'rep_id' },
+      )
+
+    if (setupSessionError) throw setupSessionError
+
+    const { error: trialError } = await admin.from('workspace_trials').insert({
       rep_id: rep.id,
-      tagline: profile?.public_site_goal ?? '',
-      banner_text: `Welcome to ${businessName}`,
-      banner_visible: true,
-      ticker_text: null,
-      ticker_visible: false,
-      team_name: businessName,
-      show_join_page: true,
-      hero_animation_type: 'sparkle_rise',
-    },
-    { onConflict: 'rep_id' },
-  )
+      status: 'pending',
+      duration_days: 5,
+      provisioned_by_rep_id: input.operatorRepId ?? null,
+      launch_build_id: launchBuildId,
+    })
 
-  if (siteSettingsError) throw siteSettingsError
+    if (trialError) throw trialError
 
-  const { error: onboardingError } = await admin
-    .from('onboarding_status')
-    .upsert(
-      {
-        rep_id: rep.id,
-        current_stage: 'launch_ready',
-        completed_steps: [
-          'waitlist',
-          'conversation',
-          'setup_profile',
-          'payment_gate',
-          'agreement_gate',
-          'build_checks',
-        ],
-      },
-      { onConflict: 'rep_id' },
+    const linkedBuild = await linkLaunchBuildToCreatedRep(
+      build,
+      rep.id,
+      cleanText(input.notes),
+      admin,
     )
 
-  if (onboardingError) throw onboardingError
-
-  return {
-    repId: rep.id,
-    email: rep.email,
-    createdAuthUser: true,
-    sentInvite: false,
+    return {
+      repId: rep.id,
+      email: rep.email,
+      createdAuthUser: true,
+      sentInvite: false,
+      trialStatus: 'pending',
+      trialDurationDays: 5,
+      build: linkedBuild,
+    }
+  } catch (error) {
+    await cleanupProvisionedClientAccount(
+      {
+        authUserId,
+        repId: createdRepId,
+        build,
+      },
+      admin,
+    )
+    throw error
   }
 }

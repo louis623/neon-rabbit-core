@@ -242,6 +242,18 @@ export async function POST(request: Request) {
       )
     }
 
+    const { data: workspaceTrial, error: workspaceTrialError } = await admin
+      .from('workspace_trials')
+      .select('id, status')
+      .eq('rep_id', repId)
+      .maybeSingle()
+
+    if (workspaceTrialError) {
+      throw workspaceTrialError
+    }
+
+    const isOperatorTrialConversion = Boolean(workspaceTrial)
+
     const testBuyerCheckoutEnabled = isTestBuyerCheckoutEnabled()
     if (testBuyerCheckoutEnabled && !canUseTestBuyerCheckout()) {
       return NextResponse.json(
@@ -316,20 +328,31 @@ export async function POST(request: Request) {
       agreement_version: getSelfServeAgreementVersion(),
       signwell_required: 'false',
     }
-    const requiredSetupMetadata = {
-      first_run_setup: 'required_nic_nac',
-      light_box_required: 'true',
-    }
+    const requiredSetupMetadata = isOperatorTrialConversion
+      ? {
+          first_run_setup: 'operator_trial_conversion',
+          light_box_required: 'false',
+        }
+      : {
+          first_run_setup: 'required_nic_nac',
+          light_box_required: 'true',
+        }
 
     const returnOrigin = resolveCheckoutReturnOrigin(request)
+    const successUrl = isOperatorTrialConversion
+      ? `${returnOrigin}/nic-nac?section=account&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`
+      : `${returnOrigin}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`
+    const cancelUrl = isOperatorTrialConversion
+      ? `${returnOrigin}/nic-nac?section=account&billing=subscription-cancelled`
+      : `${returnOrigin}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: [...SPARKLE_SUITE_CHECKOUT_PAYMENT_METHODS],
       line_items: pricing.lineItems,
-      success_url: `${returnOrigin}/nic-nac?onboarding=required-setup&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${returnOrigin}/nic-nac?onboarding=checkout-required&billing=subscription-cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       shipping_address_collection: { allowed_countries: ['US'] },
       phone_number_collection: { enabled: true },
       metadata: {

@@ -1674,4 +1674,117 @@ describe('POST /api/stripe/webhook', () => {
       { onConflict: 'stripe_subscription_id' },
     )
   })
+
+  it('revokes an operator workspace trial after paid subscription checkout while preserving its row', async () => {
+    const rpcMock = createStripeEventRpcMock()
+    const repsUpdateEqMock = vi.fn().mockResolvedValue({ error: null })
+    const subscriptionsUpsertMock = vi.fn().mockResolvedValue({ error: null })
+    const workspaceTrialEqMock = vi.fn().mockResolvedValue({ error: null })
+    const workspaceTrialUpdateMock = vi.fn(() => ({
+      eq: workspaceTrialEqMock,
+    }))
+    const admin = {
+      rpc: rpcMock,
+      from: vi.fn((table: string) => {
+        if (table === 'reps') {
+          return {
+            update: vi.fn(() => ({ eq: repsUpdateEqMock })),
+          }
+        }
+        if (table === 'subscriptions') {
+          return { upsert: subscriptionsUpsertMock }
+        }
+        if (table === 'workspace_trials') {
+          return { update: workspaceTrialUpdateMock }
+        }
+        throw new Error(`unexpected table ${table}`)
+      }),
+    }
+    const event = {
+      id: 'evt_operator_trial_conversion',
+      type: 'checkout.session.completed',
+      livemode: true,
+      created: 1_779_120_000,
+      data: {
+        object: {
+          id: 'cs_operator_trial_conversion',
+          mode: 'subscription',
+          payment_status: 'paid',
+          subscription: 'sub_operator_trial_conversion',
+          metadata: {
+            rep_id: 'rep-operator-trial',
+            plan_type: 'monthly',
+            first_run_setup: 'operator_trial_conversion',
+            light_box_required: 'false',
+            pricing_tier: 'standard',
+            build_fee_charged: 'true',
+          },
+        },
+      },
+    }
+
+    createAdminClientMock.mockReturnValue(admin)
+    getStripeMock.mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue(event),
+      },
+      subscriptions: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: 'sub_operator_trial_conversion',
+          customer: 'cus_operator_trial_conversion',
+          status: 'active',
+          start_date: 1_779_120_000,
+          billing_cycle_anchor: 1_781_712_000,
+          cancel_at_period_end: false,
+          schedule: null,
+          items: {
+            data: [
+              {
+                current_period_start: 1_779_120_000,
+                current_period_end: 1_781_712_000,
+              },
+            ],
+          },
+        }),
+      },
+      subscriptionSchedules: {
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': 'verified_sig' },
+        body: JSON.stringify({ id: event.id }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(subscriptionsUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rep_id: 'rep-operator-trial',
+        stripe_subscription_id: 'sub_operator_trial_conversion',
+        status: 'active',
+      }),
+      { onConflict: 'stripe_subscription_id' },
+    )
+    expect(workspaceTrialUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'revoked',
+        revoked_at: expect.any(String),
+        updated_at: expect.any(String),
+      }),
+    )
+    expect(workspaceTrialEqMock).toHaveBeenCalledWith(
+      'rep_id',
+      'rep-operator-trial',
+    )
+    expect(createLightBoxFulfillmentTaskMock).not.toHaveBeenCalled()
+    expect(rpcMock).toHaveBeenCalledWith('mark_stripe_event_processed', {
+      p_event_id: event.id,
+      p_event_type: 'checkout.session.completed',
+    })
+  })
 })

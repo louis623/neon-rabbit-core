@@ -49,6 +49,7 @@ function createCheckoutAdminMock(
   options: {
     pricingAssignment?: PricingAssignmentRow
     requireRpcThis?: boolean
+    workspaceTrial?: { id: string; status: 'pending' | 'active' | 'revoked' } | null
   } = {},
 ) {
   const pricingAssignment =
@@ -123,6 +124,19 @@ function createCheckoutAdminMock(
             eq: vi.fn(() => ({
               maybeSingle: vi.fn().mockResolvedValue({
                 data: null,
+                error: null,
+              }),
+            })),
+          })),
+        }
+      }
+
+      if (table === 'workspace_trials') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: options.workspaceTrial ?? null,
                 error: null,
               }),
             })),
@@ -225,6 +239,62 @@ describe('POST /api/stripe/create-checkout', () => {
     expect(response.status).toBe(200)
   })
 
+  it('returns operator trial conversions to Account without required setup or Light Box fulfillment', async () => {
+    stripeEnabledMock.mockReturnValue(true)
+    getAuthenticatedRepMock.mockResolvedValueOnce({
+      repId: 'rep-operator-trial',
+      rep: { id: 'rep-operator-trial' },
+    })
+    createAdminClientMock.mockReturnValue(
+      createCheckoutAdminMock(0, {
+        workspaceTrial: { id: 'trial-1', status: 'active' },
+      }),
+    )
+    getSparkleSuitePriceIdsMock.mockReturnValue({
+      buildFee: 'price_build_fee',
+      founderMonthly: 'price_founder_monthly',
+      standardMonthly: 'price_standard_monthly',
+    })
+    getOrCreateStripeCustomerMock.mockResolvedValueOnce('cus_operator_trial')
+
+    const createMock = vi.fn().mockResolvedValue({
+      id: 'cs_operator_trial',
+      url: 'https://checkout.stripe.test/cs_operator_trial',
+    })
+    getStripeMock.mockReturnValue({
+      checkout: { sessions: { create: createMock } },
+    })
+
+    const response = await POST(
+      new Request('https://sparkle-suite.example/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ agreementAccepted: true }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url:
+          'http://localhost:3000/nic-nac?section=account&billing=subscription-success&session_id={CHECKOUT_SESSION_ID}',
+        cancel_url:
+          'http://localhost:3000/nic-nac?section=account&billing=subscription-cancelled',
+        metadata: expect.objectContaining({
+          rep_id: 'rep-operator-trial',
+          first_run_setup: 'operator_trial_conversion',
+          light_box_required: 'false',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            first_run_setup: 'operator_trial_conversion',
+            light_box_required: 'false',
+          }),
+        }),
+      }),
+    )
+  })
+
   it('adds a resolved referral to checkout and subscription metadata', async () => {
     stripeEnabledMock.mockReturnValue(true)
     getAuthenticatedRepMock.mockResolvedValueOnce({
@@ -263,6 +333,19 @@ describe('POST /api/stripe/create-checkout', () => {
               eq: vi.fn(() => ({
                 maybeSingle: vi.fn().mockResolvedValue({
                   data: { answers: { referralCode: 'SS-K7M4Q9' } },
+                  error: null,
+                }),
+              })),
+            })),
+          }
+        }
+
+        if (table === 'workspace_trials') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: null,
                   error: null,
                 }),
               })),

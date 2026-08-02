@@ -2585,6 +2585,59 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('disabled=""')
   })
 
+  it('shows the five-day trial deadline and preserved-work expiry message', () => {
+    const activeHtml = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            paymentMethod: null,
+            invoices: [],
+            workspaceAccess: {
+              hasFullAccess: true,
+              source: 'trial',
+              status: 'trial_active',
+              subscriptionStatus: null,
+              trialStartsAt: '2026-08-02T14:00:00.000Z',
+              trialEndsAt: '2026-08-07T14:00:00.000Z',
+            },
+            canStartSubscription: true,
+            canManageBilling: false,
+          },
+        },
+      }),
+    )
+    const expiredHtml = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            workspaceAccess: {
+              hasFullAccess: false,
+              source: 'none',
+              status: 'trial_expired',
+              subscriptionStatus: null,
+              trialStartsAt: '2026-08-02T14:00:00.000Z',
+              trialEndsAt: '2026-08-07T14:00:00.000Z',
+            },
+            canStartSubscription: true,
+            canManageBilling: false,
+          },
+        },
+      }),
+    )
+
+    expect(activeHtml).toContain('5-day trial active')
+    expect(activeHtml).toContain('full Sparkle Suite trial is active through')
+    expect(activeHtml).toContain('keep your workspace and customer site')
+    expect(expiredHtml).toContain('Your five-day trial has ended.')
+    expect(expiredHtml).toContain('Your work is saved')
+  })
+
   it('hides empty billing admin states during unpaid checkout review', () => {
     const html = renderToStaticMarkup(
       createElement(AccountBillingCard, {

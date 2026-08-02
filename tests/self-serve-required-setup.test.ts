@@ -417,7 +417,6 @@ describe('self-serve required setup service contract', () => {
     expect(subscriptionInMock).toHaveBeenCalledWith('status', [
       'active',
       'trialing',
-      'past_due',
     ])
     expect(updateMock).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -4,6 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 2, 2026 - Operator-Led Five-Day Trial Onboarding
+
+**Outcome:**
+- Replaced public self-serve acquisition with the existing waitlist while
+  preserving protected synthetic reviewer paths.
+- Added Control Center provisioning for a confirmed rep account with a pending
+  fixed five-day trial. The trial starts atomically on first successful sign-in
+  and credentials are handed over manually without an automatic email.
+- Centralized workspace/customer-site access so active paid accounts and
+  unexpired trials remain open while past-due or expired accounts retain only
+  account, billing, password/security, recovery, and help access.
+- Added twice-entered strong password change and recovery flows.
+- Converted trial checkout into the normal paid subscription without repeating
+  first-run setup; retained the revoked trial as audit history.
+
+**Verification:**
+- Applied migration `20260802160000_ss_operator_workspace_trials.sql` to the
+  linked production Supabase project after a clean dry run.
+- Twenty-three focused suites passed with 354 tests; additional public Finder
+  and trial-surface coverage passed.
+- Next.js 16.2.1 production build passed, including TypeScript and all 30 static
+  page generations.
+- Final Git/Vercel provenance follows in the release closeout.
+
+---
+
 ## August 1, 2026 - Trade Board Ticker Typography Repair
 
 **Audit finding:**

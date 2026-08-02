@@ -17,7 +17,7 @@ export const sparkleSuitePublicLandingContent = {
     headline: 'A better customer experience starts with a better rep setup.',
     body:
       'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
-    primaryCta: { label: 'Level up your live stream', href: '/start' },
+    primaryCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
   },
   workspaceProof: {
     eyebrow: 'Rep workspace',
@@ -73,8 +73,8 @@ export const sparkleSuitePublicLandingContent = {
       'SMS updates',
       'Nic-Nac',
     ],
-    primaryCta: { label: 'Start Sparkle Suite', href: '/start' },
-    sectionCta: { label: "I'm Ready to Level Up", href: '/start' },
+    primaryCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
+    sectionCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
   },
   publicNicNacAssistant: {
     teaser: 'Still have questions? Ask Nic-Nac.',
@@ -83,7 +83,7 @@ export const sparkleSuitePublicLandingContent = {
     buttonLabel: 'Ask Nic-Nac',
     panelTitle: 'Ask Nic-Nac',
     panelIntro:
-      'Nic-Nac can answer public Sparkle Suite questions before you start checkout.',
+      'Nic-Nac can answer public Sparkle Suite questions before you join the waitlist.',
     starterQuestions: [
       "What's included?",
       'How does setup work?',

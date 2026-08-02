@@ -666,20 +666,19 @@ export async function loadPublicFinderEligibleRepIds(supabase: SupabaseClient) {
   }
 
   try {
-    const { data: builds, error: buildErr } = await supabase
-      .from('sparkle_suite_launch_builds')
+    const { data: trials, error: trialErr } = await supabase
+      .from('workspace_trials')
       .select('rep_id')
-      .eq('stage', 'ready_for_launch')
-      .eq('status', 'ready')
-      .not('rep_id', 'is', null)
-    if (buildErr) throw buildErr
+      .eq('status', 'active')
+      .gt('expires_at', new Date().toISOString())
+    if (trialErr) throw trialErr
 
-    for (const row of (builds ?? []) as Array<{ rep_id: string | null }>) {
+    for (const row of (trials ?? []) as Array<{ rep_id: string | null }>) {
       if (row.rep_id) paidRepIds.add(row.rep_id)
     }
   } catch {
-    // Older/local databases may not have launch builds. Paid subscriptions are
-    // enough for the public Finder boundary.
+    // Older/local databases may not have workspace trials yet. Paid
+    // subscriptions remain sufficient for the public Finder boundary.
   }
 
   return Array.from(paidRepIds)

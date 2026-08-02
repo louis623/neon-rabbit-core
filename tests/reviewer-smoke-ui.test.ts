@@ -259,7 +259,7 @@ describe('reviewer smoke UI wiring', () => {
     }),
   )
 
-  it('adds reviewer controls to the start page without replacing normal signup', () => {
+  it('keeps reviewer controls on the protected start route without public signup', () => {
     expect(startForm).toContain('/api/reviewer-smoke/session')
     expect(startForm).toContain('reviewerSmokeVisible')
     expect(startForm).toContain('Start smoke checkout')
@@ -269,7 +269,9 @@ describe('reviewer smoke UI wiring', () => {
     expect(startForm).toContain("startReviewerSmoke('dashboard_unlocked')")
     expect(startForm).not.toContain('Review checkout recovery')
     expect(startForm).not.toContain('{reviewToken ? (')
-    expect(startForm).toContain('/api/self-serve/signup')
+    expect(startForm).not.toContain('/api/self-serve/signup')
+    expect(startForm).not.toContain('/api/stripe/create-checkout')
+    expect(startForm).not.toContain('Continue with Google')
   })
 
   it('opens checkout automatically instead of rendering a duplicate checkout page', () => {

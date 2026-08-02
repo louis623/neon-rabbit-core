@@ -13,6 +13,7 @@ function makeAdminClient({
   latestLaunchRepId = null,
   paidRepIds = [],
   readyLaunchRepIds = [],
+  activeTrialRepIds = [],
 }: {
   repsByEmail?: Record<string, { id: string; email: string; streaming_links?: unknown }>
   repsById?: Record<string, { id: string; email: string; streaming_links?: unknown }>
@@ -21,6 +22,7 @@ function makeAdminClient({
   latestLaunchRepId?: string | null
   paidRepIds?: string[]
   readyLaunchRepIds?: string[]
+  activeTrialRepIds?: string[]
 }) {
   const repEq = vi.fn((column: string, value: string) => {
     if (column === 'email') {
@@ -97,17 +99,8 @@ function makeAdminClient({
       error: null,
     }),
   )
-  const subscriptionLimit = vi.fn((repId: string) => ({
-    maybeSingle: () => subscriptionMaybeSingle(repId),
-  }))
-  const subscriptionOrder = vi.fn((repId: string) => ({
-    limit: () => subscriptionLimit(repId),
-  }))
-  const subscriptionIn = vi.fn((repId: string) => ({
-    order: () => subscriptionOrder(repId),
-  }))
   const subscriptionEq = vi.fn((_column: string, repId: string) => ({
-    in: () => subscriptionIn(repId),
+    maybeSingle: () => subscriptionMaybeSingle(repId),
   }))
 
   const from = vi.fn((table: string) => {
@@ -128,6 +121,32 @@ function makeAdminClient({
     if (table === 'subscriptions') {
       return {
         select: vi.fn(() => ({ eq: subscriptionEq })),
+      }
+    }
+
+    if (table === 'workspace_trials') {
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn((_column: string, repId: string) => ({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: activeTrialRepIds.includes(repId)
+                ? {
+                    id: 'trial-1',
+                    rep_id: repId,
+                    status: 'active',
+                    duration_days: 5,
+                    provisioned_by_rep_id: null,
+                    launch_build_id: null,
+                    provisioned_at: '2098-12-31T00:00:00.000Z',
+                    first_signed_in_at: '2099-01-01T00:00:00.000Z',
+                    expires_at: '2099-01-06T00:00:00.000Z',
+                    revoked_at: null,
+                  }
+                : null,
+              error: null,
+            }),
+          })),
+        })),
       }
     }
 
@@ -454,7 +473,7 @@ describe('Amethyst preview rep resolver', () => {
     ).resolves.toBeNull()
   })
 
-  it('allows an explicit rep id with a ready launch build before subscription', async () => {
+  it('does not expose a ready launch build without subscription or active trial', async () => {
     const admin = makeAdminClient({
       repsById: {
         'rep-demo-ready': {
@@ -469,9 +488,25 @@ describe('Amethyst preview rep resolver', () => {
       resolveAmethystPreviewRep(admin, {
         repId: 'rep-demo-ready',
       }),
+    ).resolves.toBeNull()
+  })
+
+  it('serves an explicit customer site during an unexpired operator trial', async () => {
+    const admin = makeAdminClient({
+      repsById: {
+        'rep-trial': {
+          id: 'rep-trial',
+          email: 'trial@example.com',
+        },
+      },
+      activeTrialRepIds: ['rep-trial'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, { repId: 'rep-trial' }),
     ).resolves.toEqual({
-      id: 'rep-demo-ready',
-      email: 'demo-ready@example.com',
+      id: 'rep-trial',
+      email: 'trial@example.com',
     })
   })
 

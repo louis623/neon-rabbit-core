@@ -579,6 +579,20 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
 
   if (error) throw error
 
+  if (session.metadata?.first_run_setup === 'operator_trial_conversion') {
+    const now = new Date().toISOString()
+    const { error: workspaceTrialError } = await admin
+      .from('workspace_trials')
+      .update({
+        status: 'revoked',
+        revoked_at: now,
+        updated_at: now,
+      })
+      .eq('rep_id', repId)
+
+    if (workspaceTrialError) throw workspaceTrialError
+  }
+
   await createPendingReferralAfterPaidCheckout({
     supabase: admin,
     referrerRepId: session.metadata?.referrer_rep_id,

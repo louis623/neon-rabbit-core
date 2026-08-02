@@ -9,23 +9,28 @@ function createSubscriptionClient(result: {
   data: { id: string; status: string } | null
   error: unknown
 }) {
-  const maybeSingle = vi.fn().mockResolvedValue(result)
-  const limit = vi.fn(() => ({ maybeSingle }))
-  const order = vi.fn(() => ({ limit }))
-  const inFilter = vi.fn(() => ({ order }))
-  const eq = vi.fn(() => ({ in: inFilter }))
+  const subscriptionMaybeSingle = vi.fn().mockResolvedValue(result)
+  const trialMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+  const eq = vi.fn(() => ({ maybeSingle: subscriptionMaybeSingle }))
   const select = vi.fn(() => ({ eq }))
-  const from = vi.fn(() => ({ select }))
+  const from = vi.fn((table: string) => {
+    if (table === 'subscriptions') return { select }
+    if (table === 'workspace_trials') {
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle: trialMaybeSingle })),
+        })),
+      }
+    }
+    throw new Error(`Unexpected table ${table}`)
+  })
 
   return {
     client: { from },
     from,
     select,
     eq,
-    inFilter,
-    order,
-    limit,
-    maybeSingle,
+    subscriptionMaybeSingle,
   }
 }
 
@@ -41,13 +46,8 @@ describe('Nic-Nac subscription access', () => {
     ).resolves.toBe(true)
 
     expect(supabase.from).toHaveBeenCalledWith('subscriptions')
-    expect(supabase.select).toHaveBeenCalledWith('id, status')
+    expect(supabase.select).toHaveBeenCalledWith('status')
     expect(supabase.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
-    expect(supabase.inFilter).toHaveBeenCalledWith('status', [
-      'active',
-      'trialing',
-      'past_due',
-    ])
   })
 
   it('denies paid workspace access when the rep has no active subscription', async () => {
@@ -76,8 +76,19 @@ describe('Nic-Nac subscription access', () => {
     await expect(
       assertPaidWorkspaceAccess(supabase.client as never, 'rep-1'),
     ).rejects.toMatchObject({
-      code: 'SPARKLE_SUBSCRIPTION_LOOKUP_FAILED',
+      code: 'WORKSPACE_ACCESS_LOOKUP_FAILED',
       statusCode: 500,
     })
+  })
+
+  it('denies past-due subscription access', async () => {
+    const supabase = createSubscriptionClient({
+      data: { id: 'sub-1', status: 'past_due' },
+      error: null,
+    })
+
+    await expect(
+      hasPaidWorkspaceAccess(supabase.client as never, 'rep-1'),
+    ).resolves.toBe(false)
   })
 })

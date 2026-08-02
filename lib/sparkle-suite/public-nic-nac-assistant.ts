@@ -72,6 +72,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       'pay here',
       'pay on this page',
       'account',
+      'waitlist',
       'sign up',
       'signup',
       'start page',
@@ -87,7 +88,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       return {
         kind: 'answer',
         message:
-          'No card is needed on this step. Creating your account does not charge you; you review the plan and terms before continuing to Stripe checkout.',
+          'No card is needed to join the waitlist. Joining does not create an account or charge you. If Louis approves your onboarding, you receive a five-day trial account and can complete billing from the workspace before the trial expires.',
       }
     }
 
@@ -103,14 +104,14 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       return {
         kind: 'answer',
         message:
-          'After this, you review the plan and terms, continue to Stripe checkout, then open Nic-Nac to finish customer-site, TradeBoard, LiveQ, calendar, and updates setup.',
+          'After you join the waitlist, Louis reviews your interest, reaches out, and schedules coaching one person at a time. Approved reps receive a five-day trial account, explore the full workspace during coaching, and complete billing from the workspace before the trial expires.',
       }
     }
 
     return {
       kind: 'answer',
       message:
-        'This form creates your Sparkle Suite account first. It asks for name, business name, email, password, optional phone, primary live/social link, and shop link so Sparkle Suite can prepare your customer-site setup details.',
+        'This is the Sparkle Suite waitlist. It collects contact and rep-context details for Louis to review; it does not create an account, workspace, trial, or checkout.',
     }
   }
 

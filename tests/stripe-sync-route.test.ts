@@ -248,7 +248,9 @@ describe('POST /api/stripe/sync', () => {
     expect(spies.subscriptionsUpsert).not.toHaveBeenCalled()
   })
 
-  it('does not unlock paid access for non-entitled Stripe subscription statuses', async () => {
+  it.each(['incomplete', 'past_due'] as const)(
+    'does not unlock paid access for the non-entitled Stripe status %s',
+    async (status) => {
     stripeEnabledMock.mockReturnValue(true)
     getAuthenticatedRepMock.mockResolvedValueOnce({
       repId: 'rep-test-buyer',
@@ -257,12 +259,12 @@ describe('POST /api/stripe/sync', () => {
         stripe_customer_id: null,
       },
     })
-    const subscription = makeSubscription({ status: 'incomplete' })
+    const subscription = makeSubscription({ status })
     const retrieveSession = vi.fn().mockResolvedValue({
-      id: 'cs_incomplete',
+      id: `cs_${status}`,
       mode: 'subscription',
       customer: 'cus_test_buyer',
-      subscription: 'sub_incomplete',
+      subscription: `sub_${status}`,
       metadata: {
         rep_id: 'rep-test-buyer',
         plan_type: 'monthly',
@@ -286,20 +288,21 @@ describe('POST /api/stripe/sync', () => {
       new Request('http://localhost/api/stripe/sync', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: 'cs_incomplete' }),
+        body: JSON.stringify({ sessionId: `cs_${status}` }),
       }),
     )
 
     expect(response.status).toBe(402)
     await expect(response.json()).resolves.toEqual({
       error: 'Stripe subscription is not active yet.',
-      status: 'incomplete',
+      status,
     })
     expect(spies.subscriptionsUpsert).not.toHaveBeenCalledWith(
       expect.objectContaining({ status: 'active' }),
       expect.anything(),
     )
-  })
+    },
+  )
 
   it('uses returned Stripe checkout sync to start required setup when the webhook is delayed', async () => {
     stripeEnabledMock.mockReturnValue(true)

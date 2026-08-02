@@ -44,6 +44,20 @@ export default function LoginClient() {
               setError(signErr.message)
               return
             }
+            const trialResponse = await fetch('/api/account/activate-trial', {
+              method: 'POST',
+            })
+            if (!trialResponse.ok) {
+              await supabase.auth.signOut()
+              const payload = (await trialResponse.json().catch(() => null)) as
+                | { error?: string }
+                | null
+              setError(
+                payload?.error ??
+                  'We could not start your trial. Please sign in again.',
+              )
+              return
+            }
             router.replace(redirect)
           } catch (err) {
             setError((err as Error).message)

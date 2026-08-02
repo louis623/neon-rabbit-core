@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { buildPrelaunchAccountReadyEmailContent } from '@/lib/prelaunch/email-content'
-import { sendPrelaunchEmail } from '@/lib/prelaunch/waitlist-email'
+import { getNewPasswordValidationError } from '@/lib/auth/password-policy'
 import { preparePrelaunchClientAccountForLaunchBuild } from '@/lib/prelaunch/client-account'
 import { connectPrelaunchLaunchBuildToProductionRep } from '@/lib/prelaunch/production-roster'
 import {
@@ -41,6 +40,7 @@ async function parsePayload(request: Request) {
       repId: readString(body.repId),
       createClientAccount: readBoolean(body.createClientAccount),
       temporaryPassword: readString(body.temporaryPassword),
+      temporaryPasswordConfirm: readString(body.temporaryPasswordConfirm),
       notes: readString(body.notes),
       returnTo: '/control-center/intake',
       wantsJson: true,
@@ -54,6 +54,9 @@ async function parsePayload(request: Request) {
     repId: readString(form.get('repId')),
     createClientAccount: readBoolean(form.get('createClientAccount')),
     temporaryPassword: readString(form.get('temporaryPassword')),
+    temporaryPasswordConfirm: readString(
+      form.get('temporaryPasswordConfirm'),
+    ),
     notes: readString(form.get('notes')),
     returnTo: sanitizeReturnTo(readString(form.get('returnTo'))),
     wantsJson: false,
@@ -76,45 +79,51 @@ export async function POST(request: Request) {
     let clientAccount: Awaited<
       ReturnType<typeof preparePrelaunchClientAccountForLaunchBuild>
     > | null = null
+    let build: Awaited<
+      ReturnType<typeof connectPrelaunchLaunchBuildToProductionRep>
+    >
 
     if (payload.createClientAccount) {
-      if (!payload.temporaryPassword) {
+      if (!payload.temporaryPassword || !payload.temporaryPasswordConfirm) {
         return NextResponse.json(
-          { error: 'temporaryPassword is required.' },
+          {
+            error:
+              'temporaryPassword and temporaryPasswordConfirm are required.',
+          },
           { status: 400 },
         )
+      }
+
+      const passwordError = getNewPasswordValidationError(
+        payload.temporaryPassword,
+        payload.temporaryPasswordConfirm,
+      )
+      if (passwordError) {
+        return NextResponse.json({ error: passwordError }, { status: 400 })
       }
 
       clientAccount = await preparePrelaunchClientAccountForLaunchBuild({
         launchBuildId: payload.launchBuildId,
         temporaryPassword: payload.temporaryPassword,
+        temporaryPasswordConfirm: payload.temporaryPasswordConfirm,
+        notes: payload.notes,
         operatorRepId: operator.repId,
       })
       repId = clientAccount.repId
-    }
+      build = clientAccount.build
+    } else {
+      if (!repId) {
+        return NextResponse.json(
+          { error: 'repId is required.' },
+          { status: 400 },
+        )
+      }
 
-    if (!repId) {
-      return NextResponse.json(
-        { error: 'repId is required.' },
-        { status: 400 },
-      )
-    }
-
-    const build = await connectPrelaunchLaunchBuildToProductionRep({
-      launchBuildId: payload.launchBuildId,
-      repId,
-      notes: payload.notes,
-      operatorRepId: operator.repId,
-    })
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000'
-    if (build.leadEmail) {
-      await sendPrelaunchEmail({
-        email: build.leadEmail,
-        content: buildPrelaunchAccountReadyEmailContent({
-          name: build.leadName || build.leadEmail,
-          accountUrl: `${appUrl.replace(/\/+$/, '')}/nic-nac`,
-        }),
+      build = await connectPrelaunchLaunchBuildToProductionRep({
+        launchBuildId: payload.launchBuildId,
+        repId,
+        notes: payload.notes,
+        operatorRepId: operator.repId,
       })
     }
 

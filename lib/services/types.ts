@@ -553,6 +553,15 @@ export interface AccountBillingReferralSummary {
   creditedCount: number
 }
 
+export interface AccountWorkspaceAccessSummary {
+  hasFullAccess: boolean
+  source: 'subscription' | 'trial' | 'none'
+  status: string
+  subscriptionStatus: string | null
+  trialStartsAt: string | null
+  trialEndsAt: string | null
+}
+
 export interface AccountBillingDashboardResult {
   stripeConfigured: boolean
   checkoutMode: 'standard' | 'test_buyer'
@@ -560,6 +569,7 @@ export interface AccountBillingDashboardResult {
   paymentMethod: AccountBillingPaymentMethodSummary | null
   invoices: AccountBillingInvoiceSummary[]
   referral: AccountBillingReferralSummary
+  workspaceAccess?: AccountWorkspaceAccessSummary
   canStartSubscription: boolean
   canManageBilling: boolean
 }

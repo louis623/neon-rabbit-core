@@ -41,7 +41,10 @@ describe('Sparkle Suite public landing page', () => {
       headline: 'A better customer experience starts with a better rep setup.',
       body:
         'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
-      primaryCta: { label: 'Level up your live stream', href: '/start' },
+      primaryCta: {
+        label: 'Join the waitlist',
+        href: '/prelaunch#waitlist',
+      },
     })
 
     expect(sparkleSuitePublicLandingContent.workspaceProof).toMatchObject({
@@ -96,8 +99,14 @@ describe('Sparkle Suite public landing page', () => {
         term: 'Monthly subscription from the start.',
         firstCheckout: '$124.98 first checkout. Tax is not included in this price.',
       },
-      primaryCta: { label: 'Start Sparkle Suite', href: '/start' },
-      sectionCta: { label: "I'm Ready to Level Up", href: '/start' },
+      primaryCta: {
+        label: 'Join the waitlist',
+        href: '/prelaunch#waitlist',
+      },
+      sectionCta: {
+        label: 'Join the waitlist',
+        href: '/prelaunch#waitlist',
+      },
     })
 
     expect(sparkleSuitePublicLandingContent.publicNicNacAssistant).toMatchObject({
@@ -163,10 +172,10 @@ describe('Sparkle Suite public landing page', () => {
     )
     expect(html).not.toContain('class="sl2-build-fee"')
     expect(html).not.toContain('class="sl2-pricing-card sl2-pricing-card--standard"')
-    expect(html).toContain('href="/start"')
-    expect(html).toContain('Level up your live stream')
-    expect(html).toContain('I&#x27;m Ready to Level Up')
-    expect(html.indexOf('I&#x27;m Ready to Level Up')).toBeLessThan(
+    expect(html).toContain('href="/prelaunch#waitlist"')
+    expect(html).not.toContain('href="/start"')
+    expect(html).toContain('Join the waitlist')
+    expect(html.indexOf('Join the waitlist')).toBeLessThan(
       html.indexOf('Still have questions? Ask Nic-Nac.'),
     )
     expect(html).toContain('Still have questions? Ask Nic-Nac.')
@@ -280,7 +289,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(shippingAnswer.message).toContain('does not handle shipping')
   })
 
-  it('answers public signup-page form and next-step questions', () => {
+  it('answers public waitlist form and next-step questions', () => {
     const formAnswer = answerPublicNicNacQuestion('What is this form for?')
     const cardAnswer = answerPublicNicNacQuestion('Do I need a card here?')
     const nextAnswer = answerPublicNicNacQuestion(
@@ -288,18 +297,16 @@ describe('Sparkle Suite public landing page', () => {
     )
 
     expect(formAnswer.kind).toBe('answer')
-    expect(formAnswer.message).toContain('creates your Sparkle Suite account')
-    expect(formAnswer.message).toContain('name, business name, email, password')
-    expect(formAnswer.message).toContain('phone')
-    expect(formAnswer.message).toContain('primary live/social link')
-    expect(formAnswer.message).toContain('shop link')
+    expect(formAnswer.message).toContain('Sparkle Suite waitlist')
+    expect(formAnswer.message).toContain('does not create an account')
     expect(cardAnswer.kind).toBe('answer')
-    expect(cardAnswer.message).toContain('No card is needed on this step')
-    expect(cardAnswer.message).toContain('does not charge you')
+    expect(cardAnswer.message).toContain('No card is needed to join the waitlist')
+    expect(cardAnswer.message).toContain('five-day trial account')
     expect(nextAnswer.kind).toBe('answer')
-    expect(nextAnswer.message).toContain('review the plan and terms')
-    expect(nextAnswer.message).toContain('Stripe checkout')
-    expect(nextAnswer.message).toContain('open Nic-Nac')
+    expect(nextAnswer.message).toContain('Louis reviews your interest')
+    expect(nextAnswer.message).toContain('schedules coaching')
+    expect(nextAnswer.message).toContain('five-day trial account')
+    expect(nextAnswer.message).toContain('complete billing from the workspace')
   })
 
   it('routes public Nic-Nac questions through the landing-page API', () => {
@@ -438,10 +445,10 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).not.toContain('CSS 3D')
     expect(html).not.toContain('AI-powered platform')
     expect(html).not.toContain('Coming Soon')
-    expect(html).not.toContain('Join the Waitlist')
+    expect(html).toContain('Join the waitlist')
     expect(html).not.toContain('Founder pricing')
     expect(html).not.toContain('first 20 paid reps')
-    expect(html).not.toContain('prelaunch')
+    expect(html).toContain('/prelaunch#waitlist')
     expect(html).not.toContain('post-launch')
     expect(html).not.toContain('pipeline')
     expect(html).not.toContain('modules')

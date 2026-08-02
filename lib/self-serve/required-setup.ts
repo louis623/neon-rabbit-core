@@ -92,7 +92,7 @@ const REQUIRED_SETUP_STATUSES: RequiredSetupStatus[] = [
   'setup_blocked',
   'dashboard_unlocked',
 ]
-const PAID_SETUP_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
+const PAID_SETUP_SUBSCRIPTION_STATUSES = ['active', 'trialing'] as const
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

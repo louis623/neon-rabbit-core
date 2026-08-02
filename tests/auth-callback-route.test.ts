@@ -70,6 +70,7 @@ function createAdminMock(existingRep?: { id: string } | null) {
 
   return {
     from,
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     repsInsert,
     repsMaybeSingle,
     repsSingle,
@@ -158,6 +159,22 @@ describe('GET /api/auth/callback', () => {
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toBe(
       'https://sparkle.example/login?error=oauth_exchange_failed',
+    )
+  })
+
+  it('does not start a workspace trial during password recovery', async () => {
+    const admin = createAdminMock({ id: 'rep-google' })
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await GET(
+      new Request(
+        'https://sparkle.example/api/auth/callback?code=recovery-code&next=/reset-password',
+      ),
+    )
+
+    expect(admin.rpc).not.toHaveBeenCalled()
+    expect(response.headers.get('location')).toBe(
+      'https://sparkle.example/reset-password',
     )
   })
 

@@ -30,7 +30,7 @@ function mapStripeStatus(s: string): string {
 }
 
 function hasStripePaidWorkspaceAccess(status: string) {
-  return ['active', 'trialing', 'past_due'].includes(mapStripeStatus(status))
+  return ['active', 'trialing'].includes(mapStripeStatus(status))
 }
 
 function getStripeCustomerId(value: Stripe.Checkout.Session | Stripe.Subscription) {

@@ -74,6 +74,9 @@ function makeAccountBillingSupabase(args: {
         }
       }
       if (table === 'rep_referrals') return referralsChain.api
+      if (table === 'workspace_trials') {
+        return makeSelectSingle({ data: null, error: null }).api
+      }
       throw new Error(`Unexpected table ${table}`)
     }),
     repsUpdate,
@@ -141,6 +144,14 @@ describe('account billing service', () => {
         pendingCount: 0,
         earnedCount: 0,
         creditedCount: 0,
+      },
+      workspaceAccess: {
+        hasFullAccess: false,
+        source: 'none',
+        status: 'no_entitlement',
+        subscriptionStatus: null,
+        trialStartsAt: null,
+        trialEndsAt: null,
       },
       canStartSubscription: true,
       canManageBilling: false,

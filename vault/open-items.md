@@ -5,6 +5,24 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Implement operator-led five-day beta trials** - public entry is
+  waitlist-first; Louis can create an approved rep account from a ready setup
+  profile; the temporary password is entered twice and handed over manually;
+  first sign-in starts an atomic fixed five-day trial; paid conversion preserves
+  trial audit history; and centralized access closes workflow/customer-site
+  access for past-due or expired accounts without deleting data. Migration
+  `20260802160000` is applied and the production build passed.
+- [ ] **Run the first operator-provisioned rep acceptance smoke** - use the next
+  real approved beta rep or an explicitly authorized synthetic reviewer
+  identity. Verify Control Center provisioning, manual credential handoff,
+  first-sign-in trial activation, Account trial deadline, customer-site access,
+  paid conversion, and expiry/past-due restricted mode. Do not use Louis's
+  protected admin/demo account and do not submit a live charge during synthetic
+  review.
+- [ ] **Repair the protected reviewer-smoke token through coordinated secret
+  handling** - the live signed-in reviewer path remains blocked by the known
+  too-short production token. Fix it only with explicit coordinated secret
+  handling, then use the synthetic reviewer path for authenticated live smoke.
 - [x] **Restore bold Trade Board ticker typography** - both populated listings
   and the empty-state message now render at `700` weight across the shared
   React shell and static Home, Trade Board, and Join pages. Computed local

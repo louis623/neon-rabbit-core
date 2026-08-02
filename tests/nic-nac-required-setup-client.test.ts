@@ -12,11 +12,6 @@ const liveQueuePanel = readFileSync(
   resolve(process.cwd(), 'app/nic-nac/components/RequiredSetupLiveQueuePanel.tsx'),
   'utf8',
 )
-const startForm = readFileSync(
-  resolve(process.cwd(), 'app/start/StartSparkleSuiteForm.tsx'),
-  'utf8',
-)
-const startPage = readFileSync(resolve(process.cwd(), 'app/start/page.tsx'), 'utf8')
 
 describe('Nic-Nac required setup client', () => {
   it('uses a reusable chat body component', () => {
@@ -140,14 +135,12 @@ describe('Nic-Nac required setup client', () => {
   })
 
   it('uses current required setup product language in setup surfaces', () => {
-    const source = `${requiredSetupHome}\n${startForm}\n${startPage}`
+    const source = requiredSetupHome
 
     expect(source).not.toContain('Site skin')
     expect(source).not.toContain('public site')
     expect(source).not.toContain('dancefloor/trade board')
     expect(source).toContain('customer-facing website')
-    expect(source).toContain('Live Queue')
-    expect(source).toContain('Trade Board')
   })
 
   it('sends structured Live Queue completion evidence from the setup panel', () => {

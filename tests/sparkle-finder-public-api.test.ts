@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   countListingsByDesignForQualifiedReps,
   deriveSparkleFinderCatalogFacets,
@@ -7,10 +7,47 @@ import {
   mapSparkleFinderLiveShowRows,
   mapSparkleFinderAvailabilityListingRow,
   mapSparkleFinderDesignRow,
+  loadPublicFinderEligibleRepIds,
   parseSparkleFinderLimit,
 } from '@/lib/sparkle-finder/public-api'
 
 describe('Sparkle Finder public API contract helpers', () => {
+  it('includes paid and unexpired trial reps without launch-build bypasses', async () => {
+    const subscriptionIn = vi.fn().mockResolvedValue({
+      data: [{ rep_id: 'rep-paid' }],
+      error: null,
+    })
+    const trialGt = vi.fn().mockResolvedValue({
+      data: [{ rep_id: 'rep-trial' }],
+      error: null,
+    })
+    const from = vi.fn((table: string) => {
+      if (table === 'subscriptions') {
+        return {
+          select: vi.fn(() => ({ in: subscriptionIn })),
+        }
+      }
+      if (table === 'workspace_trials') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({ gt: trialGt })),
+          })),
+        }
+      }
+      throw new Error(`Unexpected table ${table}`)
+    })
+
+    await expect(
+      loadPublicFinderEligibleRepIds({ from } as never),
+    ).resolves.toEqual(['rep-paid', 'rep-trial'])
+    expect(subscriptionIn).toHaveBeenCalledWith('status', [
+      'active',
+      'trialing',
+    ])
+    expect(trialGt).toHaveBeenCalledWith('expires_at', expect.any(String))
+    expect(from).not.toHaveBeenCalledWith('sparkle_suite_launch_builds')
+  })
+
   it('maps canonical jewelry rows with collection year and safe search tags', () => {
     const item = mapSparkleFinderDesignRow(
       {

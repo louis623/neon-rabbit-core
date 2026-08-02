@@ -4,6 +4,29 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 2, 2026 - Beta Onboarding Is Operator-Led with a Fixed Five-Day Trial
+
+The public site remains waitlist-first. Louis advances interested reps,
+provisions each approved account before coaching, and hands over credentials
+manually. A provisioned trial lasts exactly five days and begins on the rep's
+first successful sign-in, not at account creation. Trial accounts receive full
+workspace and customer-site access until expiration and can convert through the
+existing workspace billing flow.
+
+Product access is centralized: only active/trialing paid subscriptions or an
+unexpired active operator trial grant full access. Past-due, paused, cancelled,
+revoked, pending, or expired states close workflow tools and the customer site
+without deleting stored work. Account, billing, password/security, recovery,
+and help remain available so a rep can restore access without operator data
+repair. Password creation/change/recovery requires exact confirmation and the
+shared strong-password policy.
+
+Protected reviewer smoke remains separate from public acquisition. Reopening
+self-serve signup later requires an explicit production onboarding-mode change;
+the legacy enabled flag alone does not reopen it.
+
+---
+
 ## August 1, 2026 - Trade Board Ticker Copy Is Bold
 
 Trade Board ticker copy uses `700` font weight for both populated listings and

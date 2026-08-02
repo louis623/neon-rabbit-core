@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { safeRelativeRedirectPath } from '@/lib/auth/safe-redirect'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { activatePendingWorkspaceTrial } from '@/lib/services/workspace-access'
 import {
   ensureSelfServeWorkspaceForAuthUser,
   getSelfServeDisplayNameFromAuthUser,
@@ -66,6 +67,7 @@ export async function GET(request: Request) {
   const selfServeSignupCallback =
     requestUrl.searchParams.get('signup') === 'self-serve'
   const selfServeOpen = selfServeSignupEnabled()
+  const admin = createAdminClient()
   const workspace = await ensureSelfServeWorkspaceForAuthUser(
     {
       authUserId: user.id,
@@ -73,7 +75,7 @@ export async function GET(request: Request) {
       displayName: getSelfServeDisplayNameFromAuthUser(user),
       referralCode: requestUrl.searchParams.get('ref'),
     },
-    createAdminClient(),
+    admin,
     { allowCreate: selfServeSignupCallback && selfServeOpen },
   )
   if (!workspace.repId) {
@@ -83,6 +85,16 @@ export async function GET(request: Request) {
     return NextResponse.redirect(
       new URL(`/login?error=${errorCode}`, requestUrl.origin),
     )
+  }
+
+  const nextPath = safeRelativeRedirectPath(
+    requestUrl.searchParams.get('next'),
+  )
+  if (!nextPath.startsWith('/reset-password')) {
+    await activatePendingWorkspaceTrial({
+      supabase: admin,
+      repId: workspace.repId,
+    })
   }
 
   return redirectTo(requestUrl, requestUrl.searchParams.get('next'))

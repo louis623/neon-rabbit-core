@@ -22,13 +22,13 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
     'Sparkle Suite includes customer-facing website customization support so the site can feel polished and aligned with the rep.',
   signupPage: {
     purpose:
-      'The Start Sparkle Suite page creates the rep account first. No card is needed on this step; payment review comes next.',
+      'The public Sparkle Suite path is a waitlist. Joining it does not create a rep account, workspace, trial, or checkout.',
     fields:
-      'The form asks for name, business name, email, password, optional phone, primary live/social link, and shop link so Sparkle Suite can create the rep account and prepare customer-site setup details.',
+      'The waitlist asks for contact and rep-context details so Louis can review interest and reach out about a coaching session.',
     safety:
-      'Submitting the signup form does not text or email customers, does not post anywhere, does not change provider settings, and does not charge the rep.',
+      'Submitting the waitlist form does not create login credentials, charge the rep, post anywhere, change provider settings, or send messages to the rep’s customers.',
     nextSteps:
-      'After account creation, the rep reviews the plan and terms, continues to Stripe checkout, then opens Nic-Nac to finish setup for the customer site, TradeBoard, LiveQ, live event calendar, and updates.',
+      'Louis reviews the waitlist one person at a time, confirms interest, and schedules a coaching session. An approved rep receives a five-day trial account before coaching, then can pay through the Sparkle Suite workspace before the trial expires.',
   },
   tradeBoardRules: [
     NIC_NAC_TRADEBOARD_KNOWLEDGE.summary,
@@ -67,7 +67,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
     firstCheckout: '$124.98',
     taxNote: 'Tax is not included in the listed first checkout price.',
     feeNote:
-      'The build fee is one-time and non-refundable. The monthly subscription starts from checkout.',
+      'The build fee is one-time and non-refundable. Approved reps receive a five-day trial and complete billing through their workspace before it expires.',
   },
   tools: [...NIC_NAC_CORE_KNOWLEDGE.publicToolNames],
   toolDetails: {

@@ -46,6 +46,7 @@ import {
 } from '@/lib/nic-nac/rep-links'
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import { createClient } from '@/lib/supabase/client'
+import { AccountSecurityCard } from './AccountSecurityCard'
 import {
   CalendarDays,
   Bell,
@@ -307,8 +308,11 @@ export function getInitialWorkspaceSection(search: string): WorkspaceSectionKey 
 export function hasPaidWorkspaceSubscription(
   summary: AccountBillingDashboardResult | null | undefined,
 ) {
+  if (summary?.workspaceAccess) {
+    return summary.workspaceAccess.hasFullAccess
+  }
   const status = summary?.subscription?.status
-  return status === 'active' || status === 'trialing' || status === 'past_due'
+  return status === 'active' || status === 'trialing'
 }
 
 export function hasBlingKitchenRecipeWorkspaceAccess(input: {
@@ -2226,6 +2230,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               pendingCount: 0,
               earnedCount: 0,
               creditedCount: 0,
+            },
+            workspaceAccess: {
+              hasFullAccess: true,
+              source: 'subscription',
+              status: 'subscription_active',
+              subscriptionStatus: 'active',
+              trialStartsAt: null,
+              trialEndsAt: null,
             },
             canStartSubscription: false,
             canManageBilling: false,
@@ -4962,7 +4974,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
   })
   const isWorkspaceAccessLoading = accountBillingState.status !== 'ready'
-  const canRenderWorkspaceSections = isWorkspaceAccessLoading || hasPaidWorkspace
+  const canRenderWorkspaceSections = hasPaidWorkspace
   const visibleWorkspaceSections = getVisibleWorkspaceSections(
     hasPaidWorkspace,
     hasRecipeWorkspaceAccess,
@@ -5275,6 +5287,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             agreementAccepted={subscriptionAgreementAccepted}
             onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
           />
+          <AccountSecurityCard />
           {accountBillingState.status === 'ready' &&
           accountBillingState.summary ? (
             <ReferralProgramCard referral={accountBillingState.summary.referral} />
@@ -8694,10 +8707,15 @@ export function AccountBillingCard({
   }
 
   const { summary } = state
+  const workspaceAccess = summary.workspaceAccess
+  const isActiveWorkspaceTrial =
+    workspaceAccess?.source === 'trial' && workspaceAccess.hasFullAccess
   const subscriptionStatus = summary.subscription
     ? summary.subscription.status.replace('_', ' ')
     : 'No active subscription'
-  const subscriptionTitle = summary.subscription
+  const subscriptionTitle = isActiveWorkspaceTrial
+    ? '5-day trial active'
+    : summary.subscription
     ? subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)
     : 'Not active yet'
   const nextBillingDate = formatAccountBillingDate(
@@ -8724,6 +8742,20 @@ export function AccountBillingCard({
         </div>
         <span className={styles.accountStatusBadge}>{subscriptionTitle}</span>
       </div>
+
+      {isActiveWorkspaceTrial ? (
+        <div className={styles.helperMessage} role="status">
+          Your full Sparkle Suite trial is active through{' '}
+          {formatAccountBillingDate(workspaceAccess?.trialEndsAt ?? null)}.
+          Start billing before then to keep your workspace and customer site
+          available without interruption.
+        </div>
+      ) : workspaceAccess?.status === 'trial_expired' ? (
+        <div className={styles.actionError} role="status">
+          Your five-day trial has ended. Your work is saved; start billing to
+          reopen the workspace and customer site.
+        </div>
+      ) : null}
 
       {!summary.canStartSubscription ? (
         <>
