@@ -11,7 +11,6 @@ describe('workspace launch actions', () => {
       'home',
       'trade-board',
       'show-calendar',
-      'jewelry-library',
       'more',
     ])
   })

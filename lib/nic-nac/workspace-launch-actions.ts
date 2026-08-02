@@ -2,7 +2,6 @@ export const WORKSPACE_PRIMARY_SECTIONS = [
   'home',
   'trade-board',
   'show-calendar',
-  'jewelry-library',
   'more',
 ] as const
 

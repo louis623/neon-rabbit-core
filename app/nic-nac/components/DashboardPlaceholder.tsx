@@ -106,12 +106,6 @@ const WORKSPACE_SECTIONS = [
     icon: CalendarDays,
   },
   {
-    key: 'jewelry-library',
-    label: 'Jewelry Library',
-    shortLabel: 'Library',
-    icon: Search,
-  },
-  {
     key: 'more',
     label: 'Tools',
     shortLabel: 'Tools',
@@ -120,6 +114,12 @@ const WORKSPACE_SECTIONS = [
 ] as const satisfies readonly WorkspaceSectionTab<string>[]
 
 const SECONDARY_WORKSPACE_SECTIONS = [
+  {
+    key: 'jewelry-library',
+    label: 'Jewelry Library',
+    shortLabel: 'Library',
+    icon: Search,
+  },
   {
     key: 'business-tools',
     label: 'Business Tools',
@@ -5889,8 +5889,8 @@ function MoreWorkspaceCard({
         <div>
           <h2 className={styles.cardTitle}>Tools</h2>
           <p className={styles.cardSubtitle}>
-            Open Bulk Collection Intake, business helpers, settings, and other
-            workspace tools when you need them.
+            Open the Jewelry Library, Bulk Collection Intake, business helpers,
+            settings, and other workspace tools when you need them.
           </p>
         </div>
       </div>

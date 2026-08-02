@@ -43,7 +43,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(html).toContain('aria-selected="true"')
     expect(html).toContain('role="tabpanel"')
     expect(html).toContain('>Trade Board<')
-    expect(html).toContain('>Jewelry Library<')
+    expect(html).not.toContain('>Jewelry Library<')
     expect(html).toContain('>Calendar<')
     expect(html).not.toContain(
       'Manage the live workspace, customer site, trade tools, messages, and account settings.',

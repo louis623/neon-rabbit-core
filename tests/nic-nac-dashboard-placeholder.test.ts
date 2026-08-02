@@ -536,7 +536,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Trade history')
     expect(html).toContain('Nic-Nac')
     expect(html).toContain('Trade Board')
-    expect(html).toContain('Jewelry Library')
+    expect(html).not.toContain('Jewelry Library')
     expect(html).toContain('Calendar')
     expect(html).toContain('Tools')
     expect(html).not.toContain('Setup Checklist')
@@ -746,6 +746,7 @@ describe('DashboardPlaceholder', () => {
   it('deep-links workspace sections without self-serve-started first-run routing', () => {
     expect(getInitialWorkspaceSection('?section=account')).toBe('account')
     expect(getInitialWorkspaceSection('?section=trade-board')).toBe('trade-board')
+    expect(getInitialWorkspaceSection('?section=jewelry-library')).toBe('jewelry-library')
     expect(getInitialWorkspaceSection('?section=recipes')).toBe('recipes')
     expect(getInitialWorkspaceSection('?section=business-tools')).toBe(
       'business-tools',
@@ -784,7 +785,6 @@ describe('DashboardPlaceholder', () => {
       'home',
       'trade-board',
       'show-calendar',
-      'jewelry-library',
       'more',
     ])
     expect(getVisibleWorkspaceSections(false, true).map((section) => section.key)).not.toContain('recipes')
@@ -1659,6 +1659,10 @@ describe('DashboardPlaceholder', () => {
       label: 'Nic-Nac',
     })
     expect(getWorkspaceBackDestination('collection-intake')).toEqual({
+      section: 'more',
+      label: 'Tools',
+    })
+    expect(getWorkspaceBackDestination('jewelry-library')).toEqual({
       section: 'more',
       label: 'Tools',
     })
