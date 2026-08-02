@@ -26,7 +26,14 @@ Running log of significant work sessions. Most recent first.
   and trial-surface coverage passed.
 - Next.js 16.2.1 production build passed, including TypeScript and all 30 static
   page generations.
-- Final Git/Vercel provenance follows in the release closeout.
+- Application commit `04dc49ddcb9e8a1a2a547e82d17f5bf21a5434ee`
+  deployed READY as `dpl_Ev92KLHuTSckDFiRY68SNSXgXfsn`; both
+  `https://www.yoursparklesuite.com` and the apex resolved to that deployment.
+- Live public smoke confirmed waitlist-only entry, `/start` redirection to the
+  waitlist, login/password-recovery visibility, blocked public signup (`403`),
+  blocked anonymous trial activation (`401`), a representative customer route,
+  and no recent Vercel runtime errors. Logged-in synthetic reviewer smoke still
+  requires the separately tracked production reviewer-token repair.
 
 ---
 

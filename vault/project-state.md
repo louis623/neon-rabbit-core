@@ -34,8 +34,10 @@
   `20260802160000_ss_operator_workspace_trials.sql` is applied to linked project
   `bqhzfkgkjyuhlsozpylf`.
 - Focused verification passed across 23 files / 354 tests, the Finder boundary
-  suites passed, and the Next.js 16.2.1 production build passed. Final Git and
-  Vercel production provenance is recorded after release.
+  suites passed, and the Next.js 16.2.1 production build passed. Application
+  commit `04dc49ddcb9e8a1a2a547e82d17f5bf21a5434ee` deployed READY as
+  `dpl_Ev92KLHuTSckDFiRY68SNSXgXfsn`; Vercel confirmed both live domains on
+  that exact deployment.
 
 ---
 
