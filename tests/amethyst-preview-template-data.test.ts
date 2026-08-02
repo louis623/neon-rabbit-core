@@ -134,7 +134,7 @@ describe('Amethyst preview template data', () => {
     )
     expect(data.heroMotion).toBe('sparkle_rise')
     expect(data.tickerTopText).toBe(
-      'Demo launch week | New demo listings added before every live show.',
+      'New demo listings added before every live show.',
     )
     expect(data.streamLinks.shop).toBe(
       'https://www.bombparty.com/shop/sparkle-suite-demo',

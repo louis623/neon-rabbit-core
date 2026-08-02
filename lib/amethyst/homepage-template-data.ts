@@ -273,10 +273,6 @@ function normalizeTickerPart(value: string | null | undefined) {
   return String(value ?? '').trim().replace(/\s+/g, ' ')
 }
 
-function tickerAlreadyMentions(base: string, label: string) {
-  return base.toLowerCase().includes(label.toLowerCase())
-}
-
 function formatTradeBoardTickerItem(
   listing: AmethystTradeBoardListing,
 ): AmethystHomepageTradeBoardTickerItem {
@@ -351,18 +347,9 @@ export function enrichAmethystHomepageFeatureData(
   const liveQueueSummary = scrubStaleBrittQueue
     ? CUSTOMER_READY_LIVE_QUEUE_SUMMARY
     : liveQueueSummaryFromSnapshot(liveQueueSnapshot)
-  const tickerParts = [homepage.tickerTopText, tradeBoardSummary, liveQueueSummary]
-    .map(normalizeTickerPart)
-    .filter(Boolean)
-    .filter((part, index, parts) => {
-      if (index === 1 && tickerAlreadyMentions(parts[0] ?? '', 'Trade Board')) return false
-      if (index === 2 && tickerAlreadyMentions(parts[0] ?? '', 'Live Queue')) return false
-      return true
-    })
-
   return {
     ...homepage,
-    tickerTopText: tickerParts.join(' | '),
+    tickerTopText: normalizeTickerPart(homepage.tickerTopText),
     tradeBoardSummary,
     tradeBoardTickerItems: tradeBoardListings
       .slice(0, 8)

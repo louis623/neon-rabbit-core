@@ -570,8 +570,7 @@ describe('Amethyst homepage template data wiring', () => {
       },
     )
 
-    expect(data.tickerTopText).toContain('Trade Board: 1 available piece')
-    expect(data.tickerTopText).toContain('Live Queue: Jamie is currently unboxing')
+    expect(data.tickerTopText).toBe('Welcome to the live party')
     expect(data.liveQueueState).toBe('live')
     expect(data.liveQueueEntries).toEqual([
       {

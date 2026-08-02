@@ -235,12 +235,11 @@ function normalizeSocialUrl(label: string, value: string | undefined) {
 }
 
 function buildTicker(settings: SiteSettingsDashboardResult, fallback: string) {
-  const parts = [
-    settings.bannerVisible ? settings.bannerText : '',
-    settings.tickerVisible ? settings.tickerText : '',
-  ].filter((value) => clean(value).length > 0 && !hasLegacyPlaceholderText(value))
+  const tickerText = settings.tickerVisible ? settings.tickerText : ''
 
-  return parts.length > 0 ? parts.join(' | ') : fallback
+  return clean(tickerText).length > 0 && !hasLegacyPlaceholderText(tickerText)
+    ? tickerText
+    : fallback
 }
 
 function buildSocialLinks(settings: SiteSettingsDashboardResult) {
