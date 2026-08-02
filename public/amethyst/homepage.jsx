@@ -718,14 +718,12 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
   );
 }
 
-function AboutMediaCard({ index, fallbackType, fallbackCaption }) {
+function AboutMediaCard({ index, fallbackCaption }) {
   const slot = getAboutMediaSlot(index);
   const videoId = getTikTokVideoId(slot?.href);
   const className = "hp-about-media-card slot";
   const content = (
     <>
-      <div className="hp-about-media-type">{slot?.typeLabel || fallbackType}</div>
-      {!videoId && <div className="hp-about-media-play">Play</div>}
       <div className="hp-about-media-caption">{slot?.caption || fallbackCaption}</div>
     </>
   );
@@ -744,11 +742,6 @@ function AboutMediaCard({ index, fallbackType, fallbackCaption }) {
     <div
       className={className}
       data-slot={`about media ${index + 1}`}
-      onClick={() => {
-        if (slot?.href && /^https?:\/\//.test(slot.href)) {
-          window.open(slot.href, "_blank", "noopener,noreferrer");
-        }
-      }}
       style={aboutMediaStyle(slot)}
     >
       {content}
@@ -1381,12 +1374,10 @@ function AboutSection({ repName }) {
           <div className="hp-about-media-grid">
             <AboutMediaCard
               fallbackCaption="Heather Daugherty - BlingKitchen, Ohio"
-              fallbackType="Meet Heather"
               index={0}
             />
             <AboutMediaCard
               fallbackCaption="Family recipes, kitchen tips, and Heather-style notes."
-              fallbackType="In the Pantry"
               index={1}
             />
           </div>
