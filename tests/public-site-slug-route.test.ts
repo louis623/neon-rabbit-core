@@ -105,7 +105,9 @@ describe('public site slug route', () => {
     )
     expect(html).toContain('href="/amethyst/tokens.css?v=20260725-emerald-garden"')
     expect(html).toContain('href="/amethyst/components.css?v=20260725-emerald-garden"')
-    expect(html).toContain('href="/amethyst/homepage.css?v=20260725-emerald-garden"')
+    expect(html).toContain(
+      'href="/amethyst/homepage.css?v=20260802-explainer-card-readability"',
+    )
     expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260725-emerald-garden"')
     expect(html).toContain('src="/amethyst/homepage.jsx?v=20260725-emerald-garden"')
     expect(html).toContain(
