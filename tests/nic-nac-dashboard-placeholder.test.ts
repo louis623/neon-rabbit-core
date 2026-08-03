@@ -889,7 +889,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Trade Board needs account setup')
     expect(html).toContain('Your account page has the current checkout or billing step.')
     expect(html).toContain('Open account')
-    expect(html).toContain('Continue to secure Stripe checkout')
+    expect(html).toContain('Stripe Billing and Payments')
   })
 
   it('starts workspace section data loading without waiting on billing access data', () => {
@@ -2595,7 +2595,7 @@ describe('DashboardPlaceholder', () => {
       'href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"',
     )
     expect(html).not.toContain('target="_blank"')
-    expect(html).toContain('Continue to secure Stripe checkout')
+    expect(html).toContain('Stripe Billing and Payments')
     expect(html).not.toContain('Manage billing and cancel')
     expect(html).toContain('disabled=""')
   })

@@ -9228,7 +9228,7 @@ export function AccountBillingCard({
             target="_blank"
             rel="noreferrer"
           >
-            Continue to secure Stripe checkout
+            Stripe Billing and Payments
           </a>
         </section>
       ) : null}
@@ -9389,7 +9389,7 @@ export function AccountBillingCard({
           >
             {actionState?.pendingAction === 'subscribe'
               ? 'Opening checkout...'
-              : 'Continue to secure Stripe checkout'}
+              : 'Stripe Billing and Payments'}
           </button>
         ) : null}
         {summary.canManageBilling && !summary.canStartSubscription ? (
