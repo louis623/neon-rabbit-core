@@ -15,6 +15,18 @@ import {
   processReferralPaidSubscriptionInvoice,
 } from '@/lib/services/sparkle-suite-referral-rewards'
 
+const BRIANNA_WILLIAMS_REP_ID = '2b5a27c5-9c05-4014-8d0b-754e19815bf6'
+const BRIANNA_WILLIAMS_EMAIL = 'williams.brianna19@yahoo.com'
+
+function getGrandfatheredPaymentLinkRepId(
+  session: Stripe.Checkout.Session,
+): string | null {
+  if (session.client_reference_id !== BRIANNA_WILLIAMS_REP_ID) return null
+
+  const email = session.customer_details?.email?.trim().toLowerCase()
+  return email === BRIANNA_WILLIAMS_EMAIL ? BRIANNA_WILLIAMS_REP_ID : null
+}
+
 export const dynamic = 'force-dynamic'
 
 function logStripeEvent(
@@ -504,9 +516,12 @@ async function handleCheckoutCompleted(event: Stripe.Event) {
     return
   }
 
-  const repId = session.metadata?.rep_id
-  const planType = session.metadata?.plan_type
-  const pricingTier = session.metadata?.pricing_tier
+  const grandfatheredRepId = getGrandfatheredPaymentLinkRepId(session)
+  const repId = session.metadata?.rep_id ?? grandfatheredRepId
+  const planType = session.metadata?.plan_type ?? (grandfatheredRepId ? 'monthly' : undefined)
+  const pricingTier =
+    session.metadata?.pricing_tier ??
+    (grandfatheredRepId ? 'grandfathered' : undefined)
   const founderSequence = parsePositiveIntMetadata(
     session.metadata?.founder_sequence,
   )

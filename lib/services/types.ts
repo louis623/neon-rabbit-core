@@ -564,6 +564,12 @@ export interface AccountWorkspaceAccessSummary {
   trialEndsAt: string | null
 }
 
+export interface AccountBillingGrandfatheredCheckout {
+  href: string
+  monthlyAmountCents: number
+  buildFeeCents: 0
+}
+
 export interface AccountBillingDashboardResult {
   stripeConfigured: boolean
   checkoutMode: 'standard' | 'test_buyer'
@@ -572,6 +578,7 @@ export interface AccountBillingDashboardResult {
   invoices: AccountBillingInvoiceSummary[]
   referral: AccountBillingReferralSummary
   workspaceAccess?: AccountWorkspaceAccessSummary
+  grandfatheredCheckout: AccountBillingGrandfatheredCheckout | null
   canStartSubscription: boolean
   canManageBilling: boolean
 }

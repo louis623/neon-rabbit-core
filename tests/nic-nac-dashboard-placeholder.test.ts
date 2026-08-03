@@ -411,6 +411,7 @@ const ACCOUNT_BILLING_READY_STATE = {
       earnedCount: 1,
       creditedCount: 3,
     },
+    grandfatheredCheckout: null,
     canStartSubscription: false,
     canManageBilling: true,
   },
@@ -2597,6 +2598,30 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Continue to secure Stripe checkout')
     expect(html).not.toContain('Manage billing and cancel')
     expect(html).toContain('disabled=""')
+  })
+
+  it('renders Brianna\'s grandfathered Stripe link without the standard build-fee checkout', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            grandfatheredCheckout: {
+              href: 'https://buy.stripe.com/eVq00l4TT7Xu0nX7sod7q02?client_reference_id=2b5a27c5-9c05-4014-8d0b-754e19815bf6',
+              monthlyAmountCents: 3900,
+              buildFeeCents: 0,
+            },
+          },
+        },
+      }),
+    )
+
+    expect(html).toContain('$39/month grandfathered plan - no build fee')
+    expect(html).toContain('Grandfathered Sparkle Suite membership')
+    expect(html).toContain('$39.00 per month with no build fee')
+    expect(html).toContain('eVq00l4TT7Xu0nX7sod7q02')
+    expect(html).not.toContain('Build fee + monthly plan')
   })
 
   it('disables About media captions when the slot contains a video URL', () => {

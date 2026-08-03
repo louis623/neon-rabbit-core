@@ -153,6 +153,7 @@ describe('account billing service', () => {
         trialStartsAt: null,
         trialEndsAt: null,
       },
+      grandfatheredCheckout: null,
       canStartSubscription: true,
       canManageBilling: false,
     })
@@ -242,6 +243,33 @@ describe('account billing service', () => {
     expect(result.canStartSubscription).toBe(false)
     expect(result.canManageBilling).toBe(true)
     expect(result.checkoutMode).toBe('standard')
+  })
+
+  it('returns Brianna\'s exact grandfathered checkout only before her Stripe customer exists', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+
+    const subscriptionsChain = makeSelectSingle({ data: null, error: null })
+    const supabase = makeAccountBillingSupabase({ subscriptionsChain })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: '2b5a27c5-9c05-4014-8d0b-754e19815bf6',
+      stripeCustomerId: null,
+    })
+
+    expect(result.grandfatheredCheckout).toEqual({
+      href: 'https://buy.stripe.com/eVq00l4TT7Xu0nX7sod7q02?client_reference_id=2b5a27c5-9c05-4014-8d0b-754e19815bf6&locked_prefilled_email=williams.brianna19%40yahoo.com',
+      monthlyAmountCents: 3900,
+      buildFeeCents: 0,
+    })
+
+    const afterPayment = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: '2b5a27c5-9c05-4014-8d0b-754e19815bf6',
+      stripeCustomerId: 'cus_brianna',
+    })
+
+    expect(afterPayment.grandfatheredCheckout).toBeNull()
   })
 
   it('returns the rep referral code, public link, and referral status counts', async () => {

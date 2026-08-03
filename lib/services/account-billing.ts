@@ -6,6 +6,7 @@ import {
 import { ServiceError } from '@/lib/services/errors'
 import type {
   AccountBillingDashboardResult,
+  AccountBillingGrandfatheredCheckout,
   AccountBillingInvoiceSummary,
   AccountBillingPaymentMethodSummary,
   AccountBillingReferralSummary,
@@ -29,6 +30,28 @@ type RepReferralCodeRow = {
 
 type RepReferralStatusRow = {
   reward_status: string | null
+}
+
+const BRIANNA_WILLIAMS_REP_ID = '2b5a27c5-9c05-4014-8d0b-754e19815bf6'
+const BRIANNA_WILLIAMS_EMAIL = 'williams.brianna19@yahoo.com'
+const BRIANNA_WILLIAMS_GRANDFATHERED_PAYMENT_LINK =
+  'https://buy.stripe.com/eVq00l4TT7Xu0nX7sod7q02'
+
+function getGrandfatheredCheckout(
+  repId: string,
+  stripeCustomerId: string | null,
+): AccountBillingGrandfatheredCheckout | null {
+  if (repId !== BRIANNA_WILLIAMS_REP_ID || stripeCustomerId) return null
+
+  const url = new URL(BRIANNA_WILLIAMS_GRANDFATHERED_PAYMENT_LINK)
+  url.searchParams.set('client_reference_id', BRIANNA_WILLIAMS_REP_ID)
+  url.searchParams.set('locked_prefilled_email', BRIANNA_WILLIAMS_EMAIL)
+
+  return {
+    href: url.toString(),
+    monthlyAmountCents: 3900,
+    buildFeeCents: 0,
+  }
 }
 
 function toServiceError(
@@ -299,6 +322,10 @@ export async function getAccountBillingDashboard(args: {
       trialStartsAt: workspaceAccess.trialStartsAt,
       trialEndsAt: workspaceAccess.trialEndsAt,
     },
+    grandfatheredCheckout: getGrandfatheredCheckout(
+      args.repId,
+      args.stripeCustomerId,
+    ),
     canStartSubscription,
     canManageBilling,
   }

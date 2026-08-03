@@ -2305,6 +2305,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               trialStartsAt: null,
               trialEndsAt: null,
             },
+            grandfatheredCheckout: null,
             canStartSubscription: false,
             canManageBilling: false,
           }
@@ -9155,6 +9156,7 @@ export function AccountBillingCard({
 
   const { summary } = state
   const workspaceAccess = summary.workspaceAccess
+  const grandfatheredCheckout = summary.grandfatheredCheckout
   const isActiveWorkspaceTrial =
     workspaceAccess?.source === 'trial' && workspaceAccess.hasFullAccess
   const subscriptionStatus = summary.subscription
@@ -9184,7 +9186,9 @@ export function AccountBillingCard({
         <div>
           <div className={styles.cardTitle}>Account</div>
           <div className={styles.accountMuted}>
-            Build fee + monthly plan - cancel anytime
+            {grandfatheredCheckout
+              ? '$39/month grandfathered plan - no build fee'
+              : 'Build fee + monthly plan - cancel anytime'}
           </div>
         </div>
         <span className={styles.accountStatusBadge}>{subscriptionTitle}</span>
@@ -9202,6 +9206,31 @@ export function AccountBillingCard({
           Your five-day trial has ended. Your work is saved; start billing to
           reopen the workspace and customer site.
         </div>
+      ) : null}
+
+      {grandfatheredCheckout ? (
+        <section
+          className={styles.checkoutReview}
+          aria-label="Grandfathered Sparkle Suite billing"
+        >
+          <div className={styles.checkoutReviewHeader}>
+            <span className={styles.checkoutReviewKicker}>Your plan</span>
+            <h3 className={styles.checkoutReviewTitle}>
+              Grandfathered Sparkle Suite membership
+            </h3>
+            <p className={styles.checkoutReviewCopy}>
+              Your grandfathered rate is $39.00 per month with no build fee.
+            </p>
+          </div>
+          <a
+            className={styles.actionButton}
+            href={grandfatheredCheckout.href}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Continue to secure Stripe checkout
+          </a>
+        </section>
       ) : null}
 
       {!summary.canStartSubscription ? (
@@ -9271,7 +9300,7 @@ export function AccountBillingCard({
         <div className={styles.helperMessage}>{statusMessage}</div>
       ) : null}
 
-      {summary.canStartSubscription ? (
+      {summary.canStartSubscription && !grandfatheredCheckout ? (
         <div className={styles.termsAcceptance}>
           <section
             className={styles.checkoutReview}
@@ -9351,7 +9380,7 @@ export function AccountBillingCard({
       ) : null}
 
       <div className={styles.actionRow}>
-        {summary.canStartSubscription ? (
+        {summary.canStartSubscription && !grandfatheredCheckout ? (
           <button
             type="button"
             className={styles.actionButton}
