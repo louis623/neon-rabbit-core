@@ -1028,19 +1028,12 @@ export default function NicNacClient({
         reviewWorkspaceMode={showWorkspaceReviewState}
         onLaunchNicNacAction={handleLaunchNicNacAction}
         onSendNicNacPrompt={handleSendNicNacPrompt}
+        onNewConversation={handleNewConversation}
+        onRefreshConversation={handleRefreshConversation}
+        conversationControlsDisabled={newDisabled}
         desktopChat={
           isDesktop && (desktopOpen || shouldKeepDesktopNicNacOpen)
-            ? (
-                <NicNacColumn
-                  variant="desktop"
-                  onClose={() => setDesktopOpen(false)}
-                  onNewConversation={handleNewConversation}
-                  onRefreshConversation={handleRefreshConversation}
-                  newConversationDisabled={newDisabled}
-                >
-                  {chatContent}
-                </NicNacColumn>
-              )
+            ? chatContent
             : null
         }
       />

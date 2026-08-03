@@ -2142,6 +2142,9 @@ export type DashboardPlaceholderProps = {
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
   onSendNicNacPrompt?: (prompt: string) => void
+  onNewConversation?: () => void
+  onRefreshConversation?: () => void
+  conversationControlsDisabled?: boolean
   desktopChat?: ReactNode
 }
 
@@ -2163,6 +2166,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     initialSectionOverride,
     onLaunchNicNacAction,
     onSendNicNacPrompt,
+    onNewConversation,
+    onRefreshConversation,
+    conversationControlsDisabled = false,
     desktopChat,
   } = props
   const [activeSection, setActiveSection] =
@@ -5490,6 +5496,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               onOpenCalendar={() => setActiveSection('show-calendar')}
               onOpenPublicSite={handleOpenCustomerSitePreview}
               onOpenHelp={() => setActiveSection('help-resources')}
+              onNewConversation={onNewConversation}
+              onRefreshConversation={onRefreshConversation}
+              conversationControlsDisabled={conversationControlsDisabled}
             />
           ) : (
             <div className={styles.workspaceSectionPage}>
@@ -5683,6 +5692,9 @@ function ConceptHomeWorkspace({
   onOpenCalendar,
   onOpenPublicSite,
   onOpenHelp,
+  onNewConversation,
+  onRefreshConversation,
+  conversationControlsDisabled,
 }: {
   chat?: ReactNode | null
   tradeRequestsCount: number
@@ -5695,6 +5707,9 @@ function ConceptHomeWorkspace({
   onOpenCalendar: () => void
   onOpenPublicSite: () => void
   onOpenHelp: () => void
+  onNewConversation?: () => void
+  onRefreshConversation?: () => void
+  conversationControlsDisabled: boolean
 }) {
   return (
     <section className={styles.conceptHome} aria-label="Nic-Nac first workspace">
@@ -5723,12 +5738,57 @@ function ConceptHomeWorkspace({
 
       <div className={styles.conceptCenter}>
         <div className={styles.nicNacHero}>
-          <h1>
-            <span className={styles.nicNacHeroBadge} aria-hidden="true">
-              N
-            </span>
-            <span>Nic-Nac</span>
-          </h1>
+          <div className={styles.nicNacHeroTitleRow}>
+            <h1>
+              <span className={styles.nicNacHeroBadge} aria-hidden="true">
+                N
+              </span>
+              <span>Nic-Nac</span>
+            </h1>
+            {onNewConversation || onRefreshConversation ? (
+              <div className={styles.nicNacHeroActions} aria-label="Nic-Nac conversation controls">
+                {onRefreshConversation ? (
+                  <button
+                    type="button"
+                    onClick={onRefreshConversation}
+                    disabled={conversationControlsDisabled}
+                    aria-label="Refresh conversation"
+                    title="Refresh conversation"
+                  >
+                    <svg viewBox="0 0 14 14" aria-hidden="true">
+                      <path
+                        d="M11.75 5.5 A5 5 0 1 0 12 7 M11.75 1.75 V 5.5 H8"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                ) : null}
+                {onNewConversation ? (
+                  <button
+                    type="button"
+                    onClick={onNewConversation}
+                    disabled={conversationControlsDisabled}
+                    aria-label="New conversation"
+                    title="New conversation"
+                  >
+                    <svg viewBox="0 0 14 14" aria-hidden="true">
+                      <path
+                        d="M7 1.5 V 12.5 M 1.5 7 H 12.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
           <p>How can I help you today?</p>
           <div className={styles.mobileHeroQuickActions}>
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>

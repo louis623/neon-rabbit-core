@@ -118,7 +118,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(hasDeclaration(css, '.main', 'padding: 6px')).toBe(true)
   })
 
-  it('keeps Nic-Nac conversation controls in both workspace chat rails', () => {
+  it('keeps Nic-Nac conversation controls beside the central workspace heading', () => {
     const client = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
       'utf8',
@@ -128,9 +128,10 @@ describe('Nic-Nac workspace shell reset', () => {
       'utf8',
     )
 
-    expect(client).toContain('variant="desktop"')
+    expect(client).toContain('onNewConversation={handleNewConversation}')
     expect(client).toContain('onRefreshConversation={handleRefreshConversation}')
     expect(client).toContain('refreshSignal={refreshSignal}')
+    expect(client).not.toContain('<NicNacColumn\n                  variant="desktop"')
     expect(header).toContain('aria-label="New conversation"')
     expect(header).toContain('aria-label="Refresh conversation"')
   })

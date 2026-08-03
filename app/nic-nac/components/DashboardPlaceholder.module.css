@@ -944,6 +944,51 @@
   letter-spacing: 0;
 }
 
+.nicNacHeroTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nicNacHeroActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nicNacHeroActions button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #6f6389;
+  cursor: pointer;
+}
+
+.nicNacHeroActions button:hover:not(:disabled) {
+  background: rgba(67, 42, 116, 0.08);
+  color: #171034;
+}
+
+.nicNacHeroActions button:focus-visible {
+  outline: 2px solid rgba(115, 69, 202, 0.35);
+  outline-offset: 2px;
+}
+
+.nicNacHeroActions button:disabled {
+  color: rgba(111, 99, 137, 0.42);
+  cursor: not-allowed;
+}
+
+.nicNacHeroActions svg {
+  width: 16px;
+  height: 16px;
+}
+
 .nicNacHeroBadge {
   width: 1.2em;
   height: 1.2em;
@@ -5584,6 +5629,11 @@
 
   .nicNacHero h1 {
     font-size: 1.25rem;
+  }
+
+  .nicNacHeroActions button {
+    width: 32px;
+    height: 32px;
   }
 
   .railLaunchAction {
