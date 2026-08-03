@@ -9233,7 +9233,7 @@ export function AccountBillingCard({
         </section>
       ) : null}
 
-      {!summary.canStartSubscription ? (
+      {!summary.canStartSubscription && !grandfatheredCheckout ? (
         <>
           <div className={styles.accountDetailList}>
             <div className={styles.accountDetailRow}>

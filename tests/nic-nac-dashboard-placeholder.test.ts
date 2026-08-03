@@ -2622,6 +2622,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('$39.00 per month with no build fee')
     expect(html).toContain('eVq00l4TT7Xu0nX7sod7q02')
     expect(html).not.toContain('Build fee + monthly plan')
+    expect(html).not.toContain('Payment method')
+    expect(html).not.toContain('Billing history')
+    expect(html).not.toContain('No card on file yet.')
+    expect(html).not.toContain('Renews through')
   })
 
   it('disables About media captions when the slot contains a video URL', () => {
