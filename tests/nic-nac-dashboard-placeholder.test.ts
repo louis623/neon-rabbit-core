@@ -506,7 +506,7 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('How can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
-    expect(html).toContain('aria-label="Notifications"')
+    expect(html).not.toContain('aria-label="Notifications"')
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Workspace')
     expect(html).toContain('Rep info loading')
@@ -1277,7 +1277,7 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('How can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
-    expect(html).toContain('aria-label="Notifications"')
+    expect(html).not.toContain('aria-label="Notifications"')
     expect(html).toContain('Public site')
     expect(html).toContain('yoursparklesuite.com/milehighfizz')
     expect(html).toContain('aria-label="Copy public site address"')

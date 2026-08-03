@@ -50,7 +50,6 @@ import { createClient } from '@/lib/supabase/client'
 import { AccountSecurityCard } from './AccountSecurityCard'
 import {
   CalendarDays,
-  Bell,
   BookOpen,
   Check,
   ChevronDown,
@@ -5638,13 +5637,6 @@ function WorkspaceAppHeader({
         </div>
       </div>
       <div className={styles.appHeaderActions}>
-        <button
-          type="button"
-          className={styles.appHeaderIcon}
-          aria-label="Notifications"
-        >
-          <Bell aria-hidden="true" />
-        </button>
         <details className={styles.appProfileMenu}>
           <summary
             className={styles.appProfile}

@@ -390,8 +390,7 @@
 
 .appBrand,
 .appHeaderActions,
-.appProfile,
-.appHeaderIcon {
+.appProfile {
   min-width: 0;
 }
 
@@ -411,7 +410,6 @@
 }
 
 .appBrand:focus-visible,
-.appHeaderIcon:focus-visible,
 .appProfile:focus-visible,
 .appProfileLogout:focus-visible {
   outline: 2px solid rgba(115, 69, 202, 0.28);
@@ -566,32 +564,6 @@
 
 .appHeaderCopyButtonCopied {
   color: #0b8f5a;
-}
-
-.appHeaderIcon {
-  border: 0;
-  background: transparent;
-  color: #5c5275;
-  cursor: pointer;
-  font: inherit;
-}
-
-.appHeaderIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.appHeaderIcon:hover {
-  background: rgba(115, 69, 202, 0.08);
-}
-
-.appHeaderIcon svg {
-  width: 18px;
-  height: 18px;
 }
 
 .appProfileMenu {
@@ -5553,11 +5525,6 @@
 
   .appProfileCopy {
     display: none;
-  }
-
-  .appHeaderIcon {
-    width: 36px;
-    height: 36px;
   }
 
   .liveQueueSetupGrid,
