@@ -176,6 +176,7 @@ export function NicNacChatBody({
   initialMessages,
   onChatStateChange,
   onRolloverRecommended,
+  refreshSignal = 0,
   launchPrompt,
   onLaunchPromptConsumed,
 }: {
@@ -188,6 +189,7 @@ export function NicNacChatBody({
   initialMessages: UIMessage[]
   onChatStateChange: (s: { isStreaming: boolean; hasPendingApproval: boolean }) => void
   onRolloverRecommended: (conversationId: string) => Promise<boolean>
+  refreshSignal?: number
   resetSignal: string
   launchPrompt?: string | null
   onLaunchPromptConsumed?: () => void
@@ -400,6 +402,11 @@ export function NicNacChatBody({
 
     setMessages((current) => mergeServerMessages(current, body.messages ?? []))
   }, [conversationId, hasPendingApproval, onRolloverRecommended, setMessages, status])
+
+  useEffect(() => {
+    if (refreshSignal === 0) return
+    void refreshConversationMessages()
+  }, [refreshSignal, refreshConversationMessages])
 
   useEffect(() => {
     if (!conversationId || status !== 'ready' || hasPendingApproval) return

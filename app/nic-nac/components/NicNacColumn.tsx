@@ -9,12 +9,14 @@ export function NicNacColumn({
   variant,
   onClose,
   onNewConversation,
+  onRefreshConversation,
   newConversationDisabled,
 }: {
   children: ReactNode
   variant: 'desktop' | 'mobile'
   onClose?: () => void
   onNewConversation?: () => void
+  onRefreshConversation?: () => void
   newConversationDisabled?: boolean
 }) {
   const closeLabel = variant === 'desktop' ? 'Minimize Nic-Nac' : 'Close Nic-Nac'
@@ -26,6 +28,7 @@ export function NicNacColumn({
       <NicNacHeader
         onClose={onClose}
         onNewConversation={onNewConversation}
+        onRefreshConversation={onRefreshConversation}
         newConversationDisabled={newConversationDisabled}
         closeLabel={closeLabel}
       />

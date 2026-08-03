@@ -118,6 +118,23 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(hasDeclaration(css, '.main', 'padding: 6px')).toBe(true)
   })
 
+  it('keeps Nic-Nac conversation controls in both workspace chat rails', () => {
+    const client = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
+      'utf8',
+    )
+    const header = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/NicNacHeader.tsx'),
+      'utf8',
+    )
+
+    expect(client).toContain('variant="desktop"')
+    expect(client).toContain('onRefreshConversation={handleRefreshConversation}')
+    expect(client).toContain('refreshSignal={refreshSignal}')
+    expect(header).toContain('aria-label="New conversation"')
+    expect(header).toContain('aria-label="Refresh conversation"')
+  })
+
   it('does not use the espresso gradient as the dominant shell surface', () => {
     const css = readFileSync(
       resolve(
