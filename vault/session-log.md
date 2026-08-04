@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 4, 2026 - Customer List Import and Messages Separation
+
+- Restored **Messages** as a separate disabled `Coming soon` Tool after the customer roster had accidentally displaced it. Customer List remains a working standalone Tool.
+- Added customer-list import for CSV and modern Excel (`.xlsx`) files. Google Sheets are supported through its normal Download as CSV or Excel export.
+- Import up to 250 contacts per batch. Existing contacts are matched within the rep's own workspace by normalized email or phone; blank source fields leave saved profile values untouched, while conflicting email/phone matches are skipped for manual review.
+- Imports are deliberately profile-only: no spreadsheet can create SMS or email consent, and no existing consent is changed.
+
+---
+
 ## August 2, 2026 - Customer-Facing Site Setup, TikTok, and About Narrative
 
 **Customer-site setup and copy:**

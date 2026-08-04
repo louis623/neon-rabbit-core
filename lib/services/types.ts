@@ -469,6 +469,14 @@ export interface CustomerAudienceContactUpdateInput {
   tags?: string[]
 }
 
+export interface CustomerAudienceImportInput extends CustomerAudienceProfileInput {}
+
+export interface CustomerAudienceImportResult {
+  createdCount: number
+  updatedCount: number
+  skipped: Array<{ row: number; reason: string }>
+}
+
 export type CustomerAudienceChangeActorKind =
   | 'customer'
   | 'rep'

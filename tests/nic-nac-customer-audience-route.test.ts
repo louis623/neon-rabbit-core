@@ -5,6 +5,7 @@ const getCustomerAudienceMock = vi.fn()
 const unsubscribeCustomerAudienceMemberMock = vi.fn()
 const createCustomerAudienceContactMock = vi.fn()
 const updateCustomerAudienceContactMock = vi.fn()
+const importCustomerAudienceContactsMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -22,6 +23,8 @@ vi.mock('@/lib/services/customer-audience', () => ({
     createCustomerAudienceContactMock(...args),
   updateCustomerAudienceContact: (...args: unknown[]) =>
     updateCustomerAudienceContactMock(...args),
+  importCustomerAudienceContacts: (...args: unknown[]) =>
+    importCustomerAudienceContactsMock(...args),
 }))
 
 import { GET, PATCH, POST } from '@/app/api/nic-nac/customer-audience/route'
@@ -34,6 +37,7 @@ describe('GET /api/nic-nac/customer-audience', () => {
     unsubscribeCustomerAudienceMemberMock.mockReset()
     createCustomerAudienceContactMock.mockReset()
     updateCustomerAudienceContactMock.mockReset()
+    importCustomerAudienceContactsMock.mockReset()
   })
 
   it('returns the authenticated rep audience summary', async () => {
@@ -213,6 +217,51 @@ describe('GET /api/nic-nac/customer-audience', () => {
       'smsConsent',
     )
     expect(response.status).toBe(201)
+  })
+
+  it('imports contact profiles without accepting spreadsheet consent fields', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      supabase: { marker: 'supabase' },
+    })
+    importCustomerAudienceContactsMock.mockResolvedValueOnce({
+      createdCount: 1,
+      updatedCount: 0,
+      skipped: [],
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/customer-audience', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'import',
+          contacts: [{
+            name: 'Taylor Brooks',
+            email: 'taylor@example.com',
+            favoriteCollection: 'Simply Studs',
+            smsConsent: true,
+            emailConsent: true,
+          }],
+        }),
+      }),
+    )
+
+    expect(importCustomerAudienceContactsMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      [{
+        name: 'Taylor Brooks',
+        email: 'taylor@example.com',
+        favoriteCollection: 'Simply Studs',
+      }],
+      { actorKind: 'rep', actorRepId: 'rep-1' },
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      result: { createdCount: 1, updatedCount: 0, skipped: [] },
+    })
   })
 
   it('patches only profile fields submitted by the authenticated rep', async () => {

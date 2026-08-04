@@ -5,6 +5,8 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Add a synthetic reviewer import smoke when the reviewer token is repaired** - Customer List now accepts CSV/Excel imports without creating consent. Once the known too-short reviewer token configuration is corrected, run a synthetic rep import that verifies create, matched profile update, blank-cell preservation, conflict skip, and no-consent behavior. Do not use Louis's personal account or bypass the blocked reviewer-browser path.
+
 - [ ] **Complete landing-page acceptance review** - after the latest Vercel deployment for 3881da55, review the exact live root on desktop and mobile. Confirm the customer-site screenshot deck shows readable hero content from all three cards and that Nic-Nac proof appears only in the Rep Workspace section, not over the Trade Board hero.
 
 - [x] **Simplify the shared beta workspace and add Live Queue guidance** -

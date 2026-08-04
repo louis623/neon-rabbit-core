@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { File } from 'node:buffer'
 
 import {
   AccountBillingCard,
@@ -49,6 +50,7 @@ import {
   getVisibleContactValues,
   getCustomerRecoveryActions,
   getCustomerTimeline,
+  parseCustomerImportFile,
   getEstimatedTextsRemaining,
   getCalendarEventDetailGroups,
   getShowCalendarMetrics,
@@ -762,6 +764,7 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=team-management')).toBe('more')
     expect(getInitialWorkspaceSection('?section=collection-intake')).toBe('more')
     expect(getInitialWorkspaceSection('?section=customer-list')).toBe('customer-list')
+    expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('home')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
       'home',
@@ -798,6 +801,7 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
     expect(isComingSoonWorkspaceSection('collection-intake')).toBe(true)
     expect(isComingSoonWorkspaceSection('customer-list')).toBe(false)
+    expect(isComingSoonWorkspaceSection('messages')).toBe(true)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
     expect(resolveWorkspaceSectionForAccess('recipes', true, false)).toBe(
@@ -1999,6 +2003,24 @@ describe('DashboardPlaceholder', () => {
     ])
     expect(searchRosterCustomers(READY_STATE.customers, 'taylor@example')).toEqual([
       READY_STATE.customers[2],
+    ])
+  })
+
+  it('parses CSV contact imports without sending blank columns as profile updates', async () => {
+    const contacts = await parseCustomerImportFile(
+      new File([
+        'Name,Email,Favorite Material,Birthday,Tags\nJamie Lane,jamie@example.com,Silver,10/12/1990,"VIP, local"',
+      ], 'customers.csv', { type: 'text/csv' }),
+    )
+
+    expect(contacts).toEqual([
+      {
+        name: 'Jamie Lane',
+        email: 'jamie@example.com',
+        favoriteMaterial: 'Silver',
+        birthday: '10-12',
+        tags: ['VIP', 'local'],
+      },
     ])
   })
 

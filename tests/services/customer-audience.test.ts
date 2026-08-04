@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createCustomerAudienceContact,
   getCustomerAudienceMember,
+  importCustomerAudienceContacts,
   unsubscribeCustomerAudienceByPhone,
   unsubscribeCustomerAudienceByContact,
   unsubscribeCustomerAudienceMember,
@@ -531,5 +532,77 @@ describe('customer audience contact profile services', () => {
       }),
     ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
     expect(audienceInserts).toEqual([])
+  })
+
+  it('imports a partial spreadsheet row as a profile-only update without clearing omitted fields', async () => {
+    const existing: AudienceRow = {
+      id: 'aud-import-1',
+      rep_id: 'rep-1',
+      name: 'Jamie Lane',
+      phone: '+15555550101',
+      email: 'jamie@example.com',
+      address: '101 Sparkle Way',
+      favorite_material: 'Gold',
+      sms_consent: false,
+      email_consent: false,
+    }
+    const audienceUpdates: Array<Record<string, unknown>> = []
+    const changeLogs: Array<Record<string, unknown>> = []
+    const client = {
+      from(table: string) {
+        if (table === 'customer_audience_change_log') {
+          return {
+            insert(values: Record<string, unknown>) {
+              changeLogs.push(values)
+              return Promise.resolve({ error: null })
+            },
+          }
+        }
+        if (table !== 'customer_audience') throw new Error(`Unexpected table ${table}`)
+
+        return {
+          select() {
+            const chain = {
+              not() { return chain },
+              then(resolve: (value: { data: AudienceRow[]; error: null }) => unknown) {
+                return Promise.resolve({ data: [existing], error: null }).then(resolve)
+              },
+            }
+            return chain
+          },
+          update(values: Record<string, unknown>) {
+            audienceUpdates.push(values)
+            const chain = {
+              eq() { return chain },
+              select() {
+                return {
+                  maybeSingle() {
+                    return Promise.resolve({ data: { ...existing, ...values }, error: null })
+                  },
+                }
+              },
+            }
+            return chain
+          },
+        }
+      },
+    }
+
+    const result = await importCustomerAudienceContacts(client as never, 'rep-1', [
+      { name: 'Jamie Lane', email: 'jamie@example.com', favoriteMaterial: 'Silver' },
+      { name: '' },
+    ])
+
+    expect(result).toEqual({
+      createdCount: 0,
+      updatedCount: 1,
+      skipped: [{ row: 3, reason: 'Missing a customer name.' }],
+    })
+    expect(audienceUpdates).toEqual([
+      { name: 'Jamie Lane', email: 'jamie@example.com', favorite_material: 'Silver' },
+    ])
+    expect(audienceUpdates[0]).not.toHaveProperty('address')
+    expect(audienceUpdates[0]).not.toHaveProperty('sms_consent')
+    expect(changeLogs).toEqual([expect.objectContaining({ action: 'profile_updated' })])
   })
 })

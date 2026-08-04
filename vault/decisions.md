@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 4, 2026 - Customer List Boundaries
+
+**Customer List and future communications are separate tools**
+Customer List is a usable rep-owned contact/profile workspace. Messages stays visible as its own disabled `Coming soon` communications tool, so the roster does not overpromise campaign delivery before provider, compliance, and reviewer-smoke work is ready.
+
+**Imported contacts are not marketing opt-ins**
+CSV/Excel imports can enrich or create rep-owned contact profiles, but they must never set SMS or email consent. Matching is rep-scoped, blank columns do not erase existing profile data, and conflicting email/phone matches are skipped instead of guessed or merged.
+
+---
+
 ## August 2, 2026 - Customer-Facing Media and Narrative Ownership
 
 **Customer-facing site setup is a destination-specific tool**

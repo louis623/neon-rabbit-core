@@ -6,6 +6,8 @@ import type {
   CustomerAudienceChangeContext,
   CustomerAudienceContactCreateInput,
   CustomerAudienceContactUpdateInput,
+  CustomerAudienceImportInput,
+  CustomerAudienceImportResult,
   CustomerAudienceMember,
   CustomerAudienceProfileInput,
   CustomerAudienceResult,
@@ -504,6 +506,99 @@ export async function updateCustomerAudienceContact(
   })
 
   return mapAudienceRow(row)
+}
+
+/**
+ * Imports a rep's existing contact file without manufacturing marketing
+ * consent. Rows match only within the rep's own audience by normalized email
+ * or phone; a match receives profile-only updates, otherwise a new contact is
+ * created. Existing rows are never merged or deleted.
+ */
+export async function importCustomerAudienceContacts(
+  supabase: SupabaseClient,
+  repId: string,
+  contacts: CustomerAudienceImportInput[],
+  context: CustomerAudienceChangeContext = { actorKind: 'rep' },
+): Promise<CustomerAudienceImportResult> {
+  if (!repId) throw errors.UNAUTHORIZED('repId required')
+  if (contacts.length === 0) {
+    throw errors.INVALID_INPUT('contacts required', 'Choose a spreadsheet with at least one contact.')
+  }
+  if (contacts.length > 250) {
+    throw errors.INVALID_INPUT('too many contacts', 'Import up to 250 contacts at a time.')
+  }
+
+  const existingRows = (await listCustomerAudienceRows(supabase)).filter(
+    (row) => row.rep_id === repId,
+  )
+  const byEmail = new Map<string, CustomerAudienceRow>()
+  const byPhone = new Map<string, CustomerAudienceRow>()
+  for (const row of existingRows) {
+    const email = normalizeEmail(row.email ?? undefined)
+    const phone = normalizePhoneDigits(row.phone ?? undefined)
+    if (email) byEmail.set(email, row)
+    if (phone) byPhone.set(phone, row)
+  }
+
+  const result: CustomerAudienceImportResult = {
+    createdCount: 0,
+    updatedCount: 0,
+    skipped: [],
+  }
+
+  for (const [index, input] of contacts.entries()) {
+    const row = index + 2
+    const name = normalizeText(input.name)
+    if (!name) {
+      result.skipped.push({ row, reason: 'Missing a customer name.' })
+      continue
+    }
+
+    const email = normalizeEmail(input.email ?? undefined)
+    const phone = normalizePhoneDigits(input.phone ?? undefined)
+    const emailMatch = email ? byEmail.get(email) : undefined
+    const phoneMatch = phone ? byPhone.get(phone) : undefined
+    if (emailMatch && phoneMatch && emailMatch.id !== phoneMatch.id) {
+      result.skipped.push({
+        row,
+        reason: 'Email and phone match different existing customers.',
+      })
+      continue
+    }
+    const existing = emailMatch ?? phoneMatch
+
+    if (existing) {
+      await updateCustomerAudienceContact(
+        supabase,
+        repId,
+        { audienceId: existing.id, ...input },
+        context,
+      )
+      result.updatedCount += 1
+      if (email) byEmail.set(email, existing)
+      if (phone) byPhone.set(phone, existing)
+      continue
+    }
+
+    const customer = await createCustomerAudienceContact(
+      supabase,
+      repId,
+      input,
+      context,
+    )
+    result.createdCount += 1
+    const createdRow = {
+      id: customer.id,
+      name: customer.name,
+      rep_id: repId,
+      phone: customer.phone,
+      email: customer.email,
+    } as CustomerAudienceRow
+    if (email) byEmail.set(email, createdRow)
+    if (phone) byPhone.set(phone, createdRow)
+  }
+
+  return result
 }
 
 export async function unsubscribeCustomerAudienceByPhone(

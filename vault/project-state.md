@@ -1,6 +1,12 @@
 # Project State
 
-**Last updated:** August 2, 2026
+## August 4 Customer List and Import Checkpoint
+
+- Tools now presents **Customer List** as a working, standalone customer-profile tool. **Messages** remains a separate, disabled `Coming soon` communications tool; the roster must never replace or imply that future communications work.
+- Customer List accepts `.csv` and `.xlsx` files. Reps can download a Google Sheet as CSV or Excel, then import up to 250 rows at once. Recognized columns include name, email, phone, address, birthday, jewelry preferences, notes, and tags.
+- Imports are profile-only. They never create SMS or email marketing consent, match existing contacts only within the authenticated rep's workspace by email or phone, preserve omitted values, and skip ambiguous email/phone matches rather than merging records.
+
+**Last updated:** August 4, 2026
 
 ---
 

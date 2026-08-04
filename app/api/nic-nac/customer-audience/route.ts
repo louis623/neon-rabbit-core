@@ -7,6 +7,7 @@ import { ServiceError } from '@/lib/services/errors'
 import {
   createCustomerAudienceContact,
   getCustomerAudience,
+  importCustomerAudienceContacts,
   unsubscribeCustomerAudienceMember,
   updateCustomerAudienceContact,
 } from '@/lib/services/customer-audience'
@@ -138,6 +139,25 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, unknown>
     const { repId, supabase } = await getPaidNicNacContext()
+
+    if (body.action === 'import') {
+      const rawContacts = Array.isArray(body.contacts) ? body.contacts : []
+      const contacts = rawContacts
+        .filter((contact): contact is Record<string, unknown> =>
+          typeof contact === 'object' && contact !== null,
+        )
+        .map((contact) => ({
+          ...readContactProfilePatch(contact),
+          name: readString(contact.name),
+        }))
+      const result = await importCustomerAudienceContacts(
+        supabase,
+        repId,
+        contacts,
+        { actorKind: 'rep', actorRepId: repId },
+      )
+      return NextResponse.json({ ok: true, result })
+    }
 
     if (!readString(body.audienceId)) {
       const customer = await createCustomerAudienceContact(

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import type { FormEvent, ReactNode } from 'react'
+import type { ChangeEvent, FormEvent, ReactNode } from 'react'
 import {
   useCallback,
   useEffect,
@@ -15,6 +15,8 @@ import type {
   BoardResult,
   CalendarEvent,
   CustomerAudienceMember,
+  CustomerAudienceImportInput,
+  CustomerAudienceImportResult,
   CustomerAudienceSummary,
   FulfillmentQueueItem,
   HelpResource,
@@ -62,6 +64,7 @@ import {
   HelpCircle,
   Images,
   LogOut,
+  MessagesSquare,
   RadioTower,
   Search,
   Settings2,
@@ -153,6 +156,13 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     label: 'Customer List',
     shortLabel: 'Customers',
     icon: Users,
+  },
+  {
+    key: 'messages',
+    label: 'Messages',
+    shortLabel: 'Messages',
+    icon: MessagesSquare,
+    comingSoon: true,
   },
   {
     key: 'site-settings',
@@ -1542,6 +1552,128 @@ export type CustomerProfileInput = {
 }
 
 type CustomerProfile = CustomerAudienceMember & Partial<CustomerProfileInput>
+
+function normalizeImportHeader(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
+function importedText(row: Record<string, unknown>, aliases: string[]) {
+  for (const [key, value] of Object.entries(row)) {
+    if (!aliases.includes(normalizeImportHeader(key))) continue
+    if (typeof value === 'string' && value.trim()) return value.trim()
+    if (typeof value === 'number') return String(value)
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return `${value.getMonth() + 1}/${value.getDate()}/${value.getFullYear()}`
+    }
+  }
+  return ''
+}
+
+function normalizeImportedBirthday(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^\d{2}-\d{2}$/.test(trimmed)) return trimmed
+  const isoMatch = /^\d{4}-(\d{2})-(\d{2})$/.exec(trimmed)
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}`
+  const match = /^(\d{1,2})[/-](\d{1,2})(?:[/-]\d{2,4})?$/.exec(trimmed)
+  if (!match) return trimmed
+  return `${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
+}
+
+function addImportedText(
+  target: CustomerAudienceImportInput,
+  field: Exclude<keyof CustomerAudienceImportInput, 'name' | 'tags'>,
+  value: string,
+) {
+  if (value.trim()) target[field] = value.trim()
+}
+
+export async function parseCustomerImportFile(file: File): Promise<CustomerAudienceImportInput[]> {
+  const isCsv = file.name.toLowerCase().endsWith('.csv')
+  const rows = isCsv
+    ? parseCustomerImportCsv(await file.text())
+    : await parseCustomerImportWorkbook(file)
+  if (rows.length === 0) throw new Error('That spreadsheet does not contain any customer rows.')
+  if (rows.length > 250) throw new Error('Import up to 250 customer rows at a time.')
+
+  return rows.map((row, index) => {
+    const firstName = importedText(row, ['firstname', 'first'])
+    const lastName = importedText(row, ['lastname', 'last'])
+    const name = importedText(row, ['name', 'fullname', 'customername']) ||
+      [firstName, lastName].filter(Boolean).join(' ')
+    const contact: CustomerAudienceImportInput = { name }
+    addImportedText(contact, 'email', importedText(row, ['email', 'emailaddress']))
+    addImportedText(contact, 'phone', importedText(row, ['phone', 'mobile', 'cell', 'phonenumber', 'mobilenumber']))
+    addImportedText(contact, 'address', importedText(row, ['address', 'streetaddress', 'addressline1']))
+    const birthday = normalizeImportedBirthday(importedText(row, ['birthday', 'birthdate', 'bday']))
+    if (birthday && !/^\d{2}-\d{2}$/.test(birthday)) {
+      throw new Error(`Birthday in row ${index + 2} must use MM-DD or M/D/YYYY.`)
+    }
+    addImportedText(contact, 'birthday', birthday)
+    addImportedText(contact, 'favoriteGemOrStone', importedText(row, ['favoritegem', 'favoritegemorstone', 'gem', 'stone']))
+    addImportedText(contact, 'favoriteMaterial', importedText(row, ['favoritematerial', 'material']))
+    addImportedText(contact, 'favoriteCut', importedText(row, ['favoritecut', 'cut']))
+    addImportedText(contact, 'favoriteCollection', importedText(row, ['favoritecollection', 'collection']))
+    addImportedText(contact, 'notes', importedText(row, ['notes', 'note']))
+    const tags = importedText(row, ['tags', 'tag'])
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+    if (tags.length) contact.tags = tags
+    return contact
+  })
+}
+
+function parseCustomerImportCsv(source: string): Record<string, unknown>[] {
+  const cells: string[][] = [[]]
+  let quoted = false
+  let cell = ''
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index]
+    if (character === '"') {
+      if (quoted && source[index + 1] === '"') {
+        cell += '"'
+        index += 1
+      } else {
+        quoted = !quoted
+      }
+      continue
+    }
+    if (character === ',' && !quoted) {
+      cells[cells.length - 1].push(cell)
+      cell = ''
+      continue
+    }
+    if ((character === '\n' || character === '\r') && !quoted) {
+      if (character === '\r' && source[index + 1] === '\n') index += 1
+      cells[cells.length - 1].push(cell)
+      cell = ''
+      cells.push([])
+      continue
+    }
+    cell += character
+  }
+  cells[cells.length - 1].push(cell)
+  return customerImportRowsFromCells(cells)
+}
+
+async function parseCustomerImportWorkbook(file: File): Promise<Record<string, unknown>[]> {
+  if (!file.name.toLowerCase().endsWith('.xlsx')) {
+    throw new Error('Choose a CSV or .xlsx Excel spreadsheet.')
+  }
+  const { default: readXlsxFile } = await import('read-excel-file/browser')
+  const [firstSheet] = await readXlsxFile(file)
+  return customerImportRowsFromCells(firstSheet?.data ?? [])
+}
+
+function customerImportRowsFromCells(cells: unknown[][]): Record<string, unknown>[] {
+  const [headerRow, ...dataRows] = cells
+  const headers = (headerRow ?? []).map((value) => String(value ?? '').trim())
+  if (!headers.some(Boolean)) return []
+  return dataRows
+    .filter((row) => row.some((value) => String(value ?? '').trim()))
+    .map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])))
+}
 
 const PUBLIC_SITE_MEDIA_MIME_TYPES = new Set([
   'image/jpeg',
@@ -5275,7 +5407,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       )
     }
 
-    if (canRenderWorkspaceSections && activeSection === 'customer-list') {
+    if (canRenderWorkspaceSections && activeSection === 'messages') {
       return (
         <div className={styles.workspaceSectionStack}>
           <MessagesCenterCard
@@ -5288,6 +5420,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onCreateSupportRequest={handleCreateSupportRequest}
             onMarkRead={handleMarkMessageRead}
           />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'customer-list') {
+      return (
+        <div className={styles.workspaceSectionStack}>
           <CustomerRosterCard
             state={audienceState}
             activeFilter={rosterFilter}
@@ -5334,6 +5473,22 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               const payload = await response.json().catch(() => null) as { error?: string } | null
               if (!response.ok) throw new Error(payload?.error || 'Unable to update this customer.')
               await loadAudience()
+            }}
+            onImport={async (contacts) => {
+              const response = await fetch('/api/nic-nac/customer-audience', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ action: 'import', contacts }),
+              })
+              const payload = (await response.json().catch(() => null)) as
+                | { error?: string; result?: CustomerAudienceImportResult }
+                | null
+              if (!response.ok || !payload?.result) {
+                throw new Error(payload?.error || 'Unable to import this customer list.')
+              }
+              await loadAudience()
+              return payload.result
             }}
           />
         </div>
@@ -10057,6 +10212,7 @@ export function CustomerRosterCard({
   onSendEmail,
   onCreate,
   onUpdate,
+  onImport,
 }: {
   state: AudienceState
   activeFilter: RosterFilter
@@ -10087,6 +10243,9 @@ export function CustomerRosterCard({
     audienceId: string,
     profile: CustomerProfileInput,
   ) => Promise<void> | void
+  onImport?: (
+    contacts: CustomerAudienceImportInput[],
+  ) => Promise<CustomerAudienceImportResult>
 }) {
   const emptyProfile = (): CustomerProfileInput => ({
     name: '',
@@ -10121,6 +10280,12 @@ export function CustomerRosterCard({
     pending: boolean
     error: string | null
   } | null>(null)
+  const [importState, setImportState] = useState<{
+    contacts: CustomerAudienceImportInput[]
+    pending: boolean
+    error: string | null
+    success: string | null
+  } | null>(null)
 
   const openCreate = () =>
     setEditor({ audienceId: null, profile: emptyProfile(), pending: false, error: null })
@@ -10154,6 +10319,45 @@ export function CustomerRosterCard({
         ...current,
         pending: false,
         error: error instanceof Error ? error.message : 'Unable to save this customer.',
+      } : current)
+    }
+  }
+
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    try {
+      const contacts = await parseCustomerImportFile(file)
+      setImportState({ contacts, pending: false, error: null, success: null })
+    } catch (error) {
+      setImportState({
+        contacts: [],
+        pending: false,
+        error: error instanceof Error ? error.message : 'Unable to read that spreadsheet.',
+        success: null,
+      })
+    } finally {
+      event.target.value = ''
+    }
+  }
+
+  const saveImport = async () => {
+    if (!importState?.contacts.length || !onImport) return
+    setImportState((current) => current ? { ...current, pending: true, error: null, success: null } : current)
+    try {
+      const result = await onImport(importState.contacts)
+      const skipped = result.skipped.length ? ` ${result.skipped.length} row${result.skipped.length === 1 ? '' : 's'} skipped.` : ''
+      setImportState({
+        contacts: [],
+        pending: false,
+        error: null,
+        success: `${result.createdCount} added and ${result.updatedCount} updated.${skipped}`,
+      })
+    } catch (error) {
+      setImportState((current) => current ? {
+        ...current,
+        pending: false,
+        error: error instanceof Error ? error.message : 'Unable to import this customer list.',
       } : current)
     }
   }
@@ -10196,6 +10400,16 @@ export function CustomerRosterCard({
         <button type="button" className={styles.bulkActionButton} onClick={openCreate} disabled={!onCreate}>
           Add customer
         </button>
+        <label className={styles.bulkActionButton}>
+          Import spreadsheet
+          <input
+            className={styles.customerImportInput}
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={handleImportFile}
+            disabled={!onImport || importState?.pending}
+          />
+        </label>
       </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
@@ -10499,6 +10713,38 @@ export function CustomerRosterCard({
             </button>
             <button type="button" className={styles.helperButton} onClick={() => setEditor(null)} disabled={editor.pending}>Cancel</button>
           </div>
+        </section>
+      ) : null}
+      {importState ? (
+        <section className={styles.customerEditor} aria-label="Import customer list">
+          <div className={styles.rosterHeadingRow}>
+            <div>
+              <h3 className={styles.editorHeading}>Import customer list</h3>
+              <p className={styles.rosterIntro}>
+                {importState.contacts.length
+                  ? `${importState.contacts.length} rows are ready to review.`
+                  : 'Choose a CSV or Excel spreadsheet to import.'}
+                {' '}Imported contacts do not receive SMS or email consent automatically.
+              </p>
+            </div>
+            <button type="button" className={styles.helperButton} onClick={() => setImportState(null)} disabled={importState.pending}>Close</button>
+          </div>
+          <p className={styles.customerImportHint}>
+            We recognize columns such as Name, First name, Last name, Email, Phone, Address, Birthday, Favorite gem or stone, Material, Cut, Collection, Notes, and Tags. Existing contacts match by email or phone within your workspace.
+          </p>
+          {importState.error ? <div className={styles.actionError}>{importState.error}</div> : null}
+          {importState.success ? <div className={styles.helperMessage}>{importState.success}</div> : null}
+          {importState.contacts.length ? (
+            <div className={styles.actionRow}>
+              <button type="button" className={styles.actionButton} onClick={saveImport} disabled={importState.pending || !onImport}>
+                {importState.pending ? 'Importing...' : `Import ${importState.contacts.length} customer${importState.contacts.length === 1 ? '' : 's'}`}
+              </button>
+              <label className={styles.helperButton}>
+                Choose another file
+                <input className={styles.customerImportInput} type="file" accept=".csv,.xlsx" onChange={handleImportFile} disabled={importState.pending} />
+              </label>
+            </div>
+          ) : null}
         </section>
       ) : null}
     </div>
