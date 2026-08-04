@@ -4,6 +4,16 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 4, 2026 - Waitlist Removal Safety
+
+**Waitlist removal is permanent but deliberately hard to trigger**
+Only an authenticated Control Center operator can remove a waitlist record. The visible dialog names the exact person, explains that the Control Center/Supabase waitlist row will be permanently removed, requires the displayed name to be typed exactly, and the server independently repeats that check before it executes the delete. No bulk-delete or one-click removal is provided.
+
+**Waitlist removal is not account or consent management**
+Deleting a waitlist record does not create, activate, or delete an account, and it does not change marketing consent elsewhere. Those flows retain their own explicit controls and audit rules.
+
+---
+
 ## August 4, 2026 - Customer List Boundaries
 
 **Customer List and future communications are separate tools**

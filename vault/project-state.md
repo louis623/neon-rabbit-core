@@ -1,5 +1,15 @@
 # Project State
 
+## August 4 Control Center Waitlist Removal Checkpoint
+
+- Control Center operators can now permanently remove a Customer Waitlist entry from both the visible list and `public.sparkle_suite_waitlist`. The removal dialog states that it is irreversible and requires the customer name to be typed exactly before the final button is enabled; the API repeats the same guard after authentication.
+- This capability does not remove a customer account, create any account state, or change marketing consent. No existing waitlist data was removed while implementing or verifying the feature.
+- Focused waitlist/auth tests passed (14 tests). The local Next production build and TypeScript command each exceeded the Codex shell time limit without a reported compiler failure; Vercel production build and deployment verification remain the authoritative release checks.
+
+**Last updated:** August 4, 2026
+
+---
+
 ## August 4 Control Center Customer Waitlist Checkpoint
 
 - Control Center now has a dedicated **Customer Waitlist** section that combines coming-soon landing-page signups with operator-created manual entries. Each entry shows its source, contact details, private operator notes, and a non-destructive **Account activated** tracker.

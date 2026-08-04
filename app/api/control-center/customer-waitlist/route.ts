@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import {
   CUSTOMER_WAITLIST_SELECT,
+  hasExactWaitlistDeleteConfirmation,
   normalizeCustomerWaitlistRow,
   type CustomerWaitlistRow,
 } from '@/lib/prelaunch/customer-waitlist'
@@ -114,6 +115,46 @@ export async function PATCH(request: Request) {
     return NextResponse.json({
       lead: normalizeCustomerWaitlistRow(data as unknown as CustomerWaitlistRow),
     })
+  } catch (error) {
+    return errorResponse(error)
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    await getAuthenticatedOperator()
+    const body = (await request.json()) as Record<string, unknown>
+    const id = text(body.id)
+    const confirmation = text(body.confirmation)
+    if (!id) {
+      return NextResponse.json({ error: 'Waitlist entry is required.' }, { status: 400 })
+    }
+
+    const admin = createAdminClient()
+    const { data: lead, error: readError } = await admin
+      .from('sparkle_suite_waitlist')
+      .select('id, name')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (readError) throw readError
+    if (!lead) {
+      return NextResponse.json({ error: 'Waitlist entry was not found.' }, { status: 404 })
+    }
+    if (!hasExactWaitlistDeleteConfirmation(lead.name, confirmation)) {
+      return NextResponse.json(
+        { error: 'Type the customer name exactly to delete this entry.' },
+        { status: 400 },
+      )
+    }
+
+    const { error: deleteError } = await admin
+      .from('sparkle_suite_waitlist')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) throw deleteError
+    return NextResponse.json({ ok: true, id })
   } catch (error) {
     return errorResponse(error)
   }

@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 4, 2026 - Customer Waitlist Guarded Removal
+
+- Added the operator-only **Remove** control to each Customer Waitlist entry in Control Center.
+- Removal opens a clear irreversible-action dialog and keeps the final action disabled until the operator types the displayed customer name exactly. The authenticated API reads the current record and rechecks that exact confirmation before deleting the same `sparkle_suite_waitlist` row.
+- No waitlist row was created, changed, or deleted as part of implementation verification. The known reviewer-token limitation remains in effect; do not use Louis's account for a destructive smoke action.
+
+---
+
 ## August 4, 2026 - Customer List Import and Messages Separation
 
 - Restored **Messages** as a separate disabled `Coming soon` Tool after the customer roster had accidentally displaced it. Customer List remains a working standalone Tool.

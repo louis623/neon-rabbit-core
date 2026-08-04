@@ -54,6 +54,11 @@ export function normalizeCustomerWaitlistRow(
   }
 }
 
+export function hasExactWaitlistDeleteConfirmation(name: string, confirmation: string) {
+  const expected = name.trim()
+  return Boolean(expected) && confirmation.trim() === expected
+}
+
 export async function loadCustomerWaitlist(
   admin: AdminClient = createAdminClient(),
   limit = 250,
