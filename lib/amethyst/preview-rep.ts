@@ -159,9 +159,6 @@ export async function resolveAmethystPreviewRep(
   }
 
   if (repId) {
-    const rep = await loadRepById(admin, repId, select)
-    if (rep) return (await canServePublicCustomerSite(admin, rep.id)) ? rep : null
-
     for (const customDomain of getAmethystCustomDomainCandidates(repId)) {
       const customDomainRep = await loadRepByCustomDomain(admin, customDomain, select)
       if (customDomainRep) {
@@ -170,6 +167,9 @@ export async function resolveAmethystPreviewRep(
           : null
       }
     }
+
+    const rep = await loadRepById(admin, repId, select)
+    if (rep) return (await canServePublicCustomerSite(admin, rep.id)) ? rep : null
   }
 
   for (const email of getCandidateEmails(env)) {

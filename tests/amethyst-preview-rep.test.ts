@@ -356,6 +356,19 @@ describe('Amethyst preview rep resolver', () => {
     })
   })
 
+  it('resolves a custom domain before attempting an ID lookup', async () => {
+    const admin = makeAdminClient({
+      repsByCustomDomain: {
+        'brisglowtique.com': { id: 'rep-bri', email: 'bri@example.test' },
+      },
+      paidRepIds: ['rep-bri'],
+    })
+
+    await expect(
+      resolveAmethystPreviewRep(admin, { repId: 'brisglowtique.com' }),
+    ).resolves.toEqual({ id: 'rep-bri', email: 'bri@example.test' })
+  })
+
   it('resolves Mile High Fizz by public site slug when Lindsey has active workspace access', async () => {
     const admin = makeAdminClient({
       repsByPublicSiteSlug: {
