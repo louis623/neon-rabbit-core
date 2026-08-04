@@ -4599,7 +4599,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 }
 
 .sparkle-landing-v2 .sl2-customer-site-proof__deck {
-  min-height: min(62vw, 310px);
+  min-height: min(94vw, 500px);
   position: relative;
 }
 
@@ -4616,19 +4616,19 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 
 .sparkle-landing-v2 .sl2-customer-site-proof__card--violet {
   left: 0;
-  top: 8%;
+  top: 0;
   transform: rotate(-4deg);
 }
 
 .sparkle-landing-v2 .sl2-customer-site-proof__card--night {
   left: 9%;
-  top: 2%;
+  top: 24%;
   transform: rotate(1deg);
 }
 
 .sparkle-landing-v2 .sl2-customer-site-proof__card--blush {
   right: 0;
-  top: 13%;
+  top: 48%;
   transform: rotate(4deg);
 }
 
@@ -5325,7 +5325,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   }
 
   .sparkle-landing-v2 .sl2-customer-site-proof__deck {
-    min-height: 390px;
+    min-height: 520px;
   }
 
   .sparkle-landing-v2 .sl2-customer-site-proof__card {
