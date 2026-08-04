@@ -2,9 +2,9 @@
 
 ## August 4 Control Center Waitlist Removal Checkpoint
 
-- Control Center operators can now permanently remove a Customer Waitlist entry from both the visible list and `public.sparkle_suite_waitlist`. The removal dialog states that it is irreversible and requires the customer name to be typed exactly before the final button is enabled; the API repeats the same guard after authentication.
-- This capability does not remove a customer account, create any account state, or change marketing consent. No existing waitlist data was removed while implementing or verifying the feature.
-- Focused waitlist/auth tests passed (14 tests). The local Next production build and TypeScript command each exceeded the Codex shell time limit without a reported compiler failure; Vercel production build and deployment verification remain the authoritative release checks.
+- Control Center operators can permanently remove a Customer Waitlist entry from both the visible list and `public.sparkle_suite_waitlist`. The confirmation is intentionally a clear second click: `Delete Jane Doe?` followed by an explicit `Delete Jane Doe` action. Errors remain visible in the dialog instead of appearing off-screen in the manual-entry form.
+- The initial delete attempt exposed a historical schema conflict: deleting a waitlist source correctly set an old linked launch build's source field to null, but that build had an outdated constraint forbidding an archived source. Migration `20260804250000_ss_archive_launch_build_sources.sql` now timestamps the source removal before deletion and allows that preserved historical build to remain valid. It does not delete a customer account, create account state, or change marketing consent.
+- Focused waitlist/auth tests passed (13 tests), and a rollback-only linked-production test created a synthetic waitlist/build pair, deleted the synthetic waitlist row, asserted that the historical build was preserved and unlinked, then rolled back all test data. No real waitlist entry was removed by Codex.
 
 **Last updated:** August 4, 2026
 

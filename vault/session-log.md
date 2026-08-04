@@ -4,11 +4,12 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
-## August 4, 2026 - Customer Waitlist Guarded Removal
+## August 4, 2026 - Customer Waitlist Removal Repair
 
 - Added the operator-only **Remove** control to each Customer Waitlist entry in Control Center.
-- Removal opens a clear irreversible-action dialog and keeps the final action disabled until the operator types the displayed customer name exactly. The authenticated API reads the current record and rechecks that exact confirmation before deleting the same `sparkle_suite_waitlist` row.
-- No waitlist row was created, changed, or deleted as part of implementation verification. The known reviewer-token limitation remains in effect; do not use Louis's account for a destructive smoke action.
+- Updated the interaction to the requested two-click confirmation: **Delete Jane Doe?** followed by **Delete Jane Doe**. Any failure is shown inside the dialog.
+- Production logs showed that the initial delete request was reaching the database but failed because the foreign key's `ON DELETE SET NULL` action violated a stale launch-build source constraint. Applied migration `20260804250000_ss_archive_launch_build_sources.sql` to preserve the linked historical build with `source_removed_at` before allowing the waitlist deletion.
+- A rollback-only linked-production test created a synthetic waitlist/build pair, deleted the synthetic row, asserted that the build persisted with its waitlist link removed and an archive timestamp present, and rolled all test data back. The known reviewer-token limitation remains in effect; do not use Louis's account for a destructive smoke action.
 
 ---
 

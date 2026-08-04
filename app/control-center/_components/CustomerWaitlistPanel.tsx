@@ -27,8 +27,8 @@ export function CustomerWaitlistPanel({
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<CustomerWaitlistLead | null>(null)
-  const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const visibleLeads = useMemo(() => {
     const query = filter.trim().toLowerCase()
@@ -79,23 +79,22 @@ export function CustomerWaitlistPanel({
   }
 
   const deleteLead = async () => {
-    if (!pendingDelete || deleteConfirmation.trim() !== pendingDelete.name.trim()) return
+    if (!pendingDelete) return
     setDeleting(true)
-    setMessage(null)
+    setDeleteError(null)
     try {
       const response = await fetch('/api/control-center/customer-waitlist', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: pendingDelete.id, confirmation: deleteConfirmation }),
+        body: JSON.stringify({ id: pendingDelete.id }),
       })
       const payload = (await response.json()) as { error?: string }
       if (!response.ok) throw new Error(payload.error ?? 'Unable to remove the entry.')
       setLeads((current) => current.filter((lead) => lead.id !== pendingDelete.id))
       setMessage(`${pendingDelete.name} was removed from the waitlist.`)
       setPendingDelete(null)
-      setDeleteConfirmation('')
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Unable to remove the entry.')
+      setDeleteError(error instanceof Error ? error.message : 'Unable to remove the entry.')
     } finally {
       setDeleting(false)
     }
@@ -164,7 +163,7 @@ export function CustomerWaitlistPanel({
                           className="text-sm font-semibold text-rose-700 underline underline-offset-2 hover:text-rose-800"
                           onClick={() => {
                             setPendingDelete(lead)
-                            setDeleteConfirmation('')
+                            setDeleteError(null)
                           }}
                           type="button"
                         >
@@ -233,27 +232,18 @@ export function CustomerWaitlistPanel({
       {pendingDelete ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation">
           <div aria-describedby="waitlist-delete-description" aria-labelledby="waitlist-delete-title" aria-modal="true" className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl" role="dialog">
-            <h3 className="text-lg font-semibold text-slate-950" id="waitlist-delete-title">Remove from the waitlist?</h3>
+            <h3 className="text-lg font-semibold text-slate-950" id="waitlist-delete-title">Delete {pendingDelete.name}?</h3>
             <p className="mt-2 text-sm text-slate-700" id="waitlist-delete-description">
-              This permanently removes <strong>{pendingDelete.name}</strong> from the Control Center and Supabase waitlist. This cannot be undone.
+              Are you sure you want to delete <strong>{pendingDelete.name}</strong> from the Control Center and Supabase waitlist? This cannot be undone.
             </p>
-            <label className="mt-4 block text-sm font-semibold text-slate-800" htmlFor="waitlist-delete-confirmation">
-              Type <span className="font-bold">{pendingDelete.name}</span> exactly to confirm
-              <input
-                autoFocus
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
-                id="waitlist-delete-confirmation"
-                onChange={(event) => setDeleteConfirmation(event.target.value)}
-                value={deleteConfirmation}
-              />
-            </label>
+            {deleteError ? <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800" role="alert">{deleteError}</p> : null}
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800"
                 disabled={deleting}
                 onClick={() => {
                   setPendingDelete(null)
-                  setDeleteConfirmation('')
+                  setDeleteError(null)
                 }}
                 type="button"
               >
@@ -261,11 +251,11 @@ export function CustomerWaitlistPanel({
               </button>
               <button
                 className="rounded-md bg-rose-700 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={deleting || deleteConfirmation.trim() !== pendingDelete.name.trim()}
+                disabled={deleting}
                 onClick={deleteLead}
                 type="button"
               >
-                {deleting ? 'Removing…' : 'Permanently remove'}
+                {deleting ? 'Deleting…' : `Delete ${pendingDelete.name}`}
               </button>
             </div>
           </div>

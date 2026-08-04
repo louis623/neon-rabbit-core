@@ -5,7 +5,7 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
-- [ ] **Run a synthetic reviewer destructive-action smoke when the reviewer token is repaired** - the Control Center Waitlist removal dialog requires an exact-name confirmation and the authenticated API repeats that guard. With a safe synthetic waitlist row only, verify cancel, mismatched confirmation, exact confirmation, Supabase removal, and no impact to account or consent data. Do not use Louis's personal account or any real waitlist entry.
+- [ ] **Run a synthetic reviewer destructive-action smoke when the reviewer token is repaired** - the Control Center Waitlist removal dialog requires a deliberate second `Delete [name]` click. With a safe synthetic waitlist row only, verify cancel, confirmation, Supabase removal, preserved linked historical launch record, and no impact to account or consent data. Do not use Louis's personal account or any real waitlist entry.
 
 - [ ] **Add a synthetic reviewer import smoke when the reviewer token is repaired** - Customer List now accepts CSV/Excel imports without creating consent. Once the known too-short reviewer token configuration is corrected, run a synthetic rep import that verifies create, matched profile update, blank-cell preservation, conflict skip, and no-consent behavior. Do not use Louis's personal account or bypass the blocked reviewer-browser path.
 

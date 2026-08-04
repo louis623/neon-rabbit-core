@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  hasExactWaitlistDeleteConfirmation,
-  normalizeCustomerWaitlistRow,
-} from '@/lib/prelaunch/customer-waitlist'
+import { normalizeCustomerWaitlistRow } from '@/lib/prelaunch/customer-waitlist'
 
 describe('customer waitlist', () => {
   it('keeps landing-page signups and manual entries in one operator view', () => {
@@ -38,12 +35,5 @@ describe('customer waitlist', () => {
       notes: 'Met at a local show.',
       accountActivatedAt: '2026-08-04T12:10:00.000Z',
     })
-  })
-
-  it('requires an exact customer-name confirmation before a removal can proceed', () => {
-    expect(hasExactWaitlistDeleteConfirmation('Taylor Morgan', 'Taylor Morgan')).toBe(true)
-    expect(hasExactWaitlistDeleteConfirmation('Taylor Morgan', 'taylor morgan')).toBe(false)
-    expect(hasExactWaitlistDeleteConfirmation('Taylor Morgan', 'Taylor')).toBe(false)
-    expect(hasExactWaitlistDeleteConfirmation('Taylor Morgan', '')).toBe(false)
   })
 })
