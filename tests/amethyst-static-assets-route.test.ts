@@ -68,6 +68,23 @@ describe('Amethyst static asset route', () => {
     expect(html).not.toContain('<script>alert')
   })
 
+  it('uses the public custom-domain path for canonicals after a customer-site proxy rewrite', async () => {
+    const response = await GET(
+      new Request('https://sparklebysasha.example/amethyst/Trade.html', {
+        headers: { 'x-sparkle-customer-site-path': '/trade' },
+      }),
+      { params: Promise.resolve({ asset: ['Trade.html'] }) },
+    )
+    const html = await response.text()
+
+    expect(html).toContain(
+      '<link rel="canonical" href="https://sparklebysasha.example/trade" />',
+    )
+    expect(html).toContain(
+      '<meta property="og:url" content="https://sparklebysasha.example/trade" />',
+    )
+  })
+
   it('carries customer targets into the unsubscribe bootstrap script', async () => {
     const response = await GET(
       new Request('https://preview.example/amethyst/Unsubscribe.html?c=rep-clean'),
