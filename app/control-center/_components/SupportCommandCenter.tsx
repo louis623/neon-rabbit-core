@@ -2,6 +2,8 @@ import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 
 import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle'
+import { CustomerWaitlistPanel } from '@/app/control-center/_components/CustomerWaitlistPanel'
+import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
 export type SupportReportRecord = {
   id: string
@@ -57,6 +59,7 @@ export type OperatorCustomerRecord = {
 interface SupportCommandCenterProps {
   reports: SupportReportRecord[]
   customers: OperatorCustomerRecord[]
+  waitlist: CustomerWaitlistLead[]
 }
 
 const CUSTOMER_DATABASE_KEYS = ['milehighfizz', 'brittwithbling', 'blingkitchen']
@@ -368,6 +371,7 @@ function CustomerProfile({
 export function SupportCommandCenter({
   customers,
   reports,
+  waitlist,
 }: SupportCommandCenterProps) {
   const activeReport = reports[0] ?? null
   const activeSnapshot = activeReport?.client_snapshot ?? null
@@ -417,6 +421,15 @@ export function SupportCommandCenter({
                 Trouble Tickets
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                   {openReports.length}
+                </span>
+              </a>
+              <a
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                href="#customer-waitlist"
+              >
+                Customer Waitlist
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  {waitlist.filter((lead) => !lead.accountActivatedAt).length}
                 </span>
               </a>
               <a
@@ -642,6 +655,8 @@ export function SupportCommandCenter({
                 </section>
               </div>
             </section>
+
+            <CustomerWaitlistPanel initialLeads={waitlist} />
 
             <details
               className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"

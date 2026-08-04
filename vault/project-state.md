@@ -1,5 +1,15 @@
 # Project State
 
+## August 4 Control Center Customer Waitlist Checkpoint
+
+- Control Center now has a dedicated **Customer Waitlist** section that combines coming-soon landing-page signups with operator-created manual entries. Each entry shows its source, contact details, private operator notes, and a non-destructive **Account activated** tracker.
+- Manual entries require only name and email, accept optional phone and notes, and never create email/SMS marketing consent. Checking Account activated records operator-only tracking metadata; it does not create, charge, or alter a customer account.
+- Production schema migration `20260804240000_ss_control_center_customer_waitlist.sql` adds optional operator notes, account-activation audit fields, and permits manual rows without landing-form-only TikTok/team fields. A no-op local witness `20260804230000_add_nfl_lab_saves.sql` documents the previously remote-only, unrelated NFL Lab migration so migration history remains aligned.
+
+**Last updated:** August 4, 2026
+
+---
+
 ## August 4 Customer-Site Brand Assets Checkpoint
 
 - Bri's Glowtique now has the approved stable dark-and-white cursive `B` monogram on `brisglowtique.com` through the request-aware `/icon` route. The favicon is intentionally independent of a skin change.

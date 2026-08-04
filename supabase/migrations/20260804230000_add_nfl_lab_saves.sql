@@ -1,0 +1,5 @@
+-- Historical migration witness.
+-- This migration was already applied to the linked production project before
+-- its source file reached this workspace. The Supabase migration ledger names
+-- it `add_nfl_lab_saves`; retain this no-op file solely to keep local and
+-- remote migration history aligned. It is unrelated to Sparkle Suite.
