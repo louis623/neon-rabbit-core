@@ -111,10 +111,18 @@ export function renderSilverPageContent(
             <Crown aria-hidden="true" className="size-7 text-[var(--sparkle-plum)]" strokeWidth={1.5} />
             <div>
               <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">
-                {isLocalPreview ? "Local fixture mode" : "Silver access active"}
+                {isLocalPreview
+                  ? "Local fixture mode"
+                  : entitlements.canUseSilverProfileActions
+                    ? "Silver access active"
+                    : "Silver access needed"}
               </p>
               <p className="text-sm leading-5 text-[var(--sparkle-ink-muted)]">
-                {isLocalPreview ? "Preview-only state, ready for later actions." : "Your account can save Sparkle Showcase updates."}
+                {isLocalPreview
+                  ? "Preview-only state, ready for later actions."
+                  : entitlements.canUseSilverProfileActions
+                    ? "Your account can save Sparkle Showcase updates."
+                    : "Silver access is needed to save Sparkle Showcase updates."}
               </p>
             </div>
           </div>

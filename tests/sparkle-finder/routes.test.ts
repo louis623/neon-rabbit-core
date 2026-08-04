@@ -1466,6 +1466,24 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Silver preview needed");
   });
 
+  it("does not claim expired Silver access can save Showcase updates", () => {
+    const accountState = activeTrialRouteAccountState();
+    accountState.membership = {
+      ...accountState.membership,
+      effectiveState: "free",
+      hasSilverAccess: false,
+      isTrialActive: false,
+      isTrialExpired: true,
+      trialEndsAt: "2026-06-10T12:00:00.000Z",
+    };
+
+    const markup = renderToStaticMarkup(renderSilverPageContent(accountState));
+
+    expect(markup).toContain("Silver access needed");
+    expect(markup).toContain("Silver access is needed to save Sparkle Showcase updates.");
+    expect(markup).not.toContain("Your account can save Sparkle Showcase updates.");
+  });
+
   it("keeps hub route copy inside Sparkle Finder guardrails", () => {
     const copy = [...routes, ...publicRoutes].map(([, renderRoute]) => renderRoute()).join(" ");
 
