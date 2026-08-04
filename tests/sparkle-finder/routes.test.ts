@@ -294,20 +294,19 @@ describe("Sparkle Finder hub routes", () => {
     expect(findSparkleFinderCopyViolations(`${privacyMarkup} ${termsMarkup}`)).toEqual([]);
   });
 
-  it("renders a simple account-gated public landing for anonymous visitors", () => {
+  it("renders a simple coming-soon landing for anonymous visitors", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
     expect(markup).toContain("Sparkle Finder");
-    expect(markup).toContain("Find the pieces you love.");
-    expect(markup).toContain("Build your collection with Sparkle Finder.");
-    expect(markup).toContain("Free or Silver account required.");
-    expect(markup).toContain("Create free account");
+    expect(markup).toContain("Sparkle Finder is coming soon.");
+    expect(markup).toContain("Coming soon");
+    expect(markup).toContain("Create account");
     expect(markup).toContain("Sign in");
     expect(markup).toContain("Sparkle Finder public navigation");
-    expect(markup).toContain('data-smoke="account-gate-copy"');
+    expect(markup).toContain('data-smoke="coming-soon-copy"');
     expect(markup).toContain('href="/auth/sign-up?next=/"');
     expect(markup).toContain('href="/auth/sign-in"');
-    expect(markup).toContain("use Sparkle Finder");
+    expect(markup).toContain("sign in now");
     expect(markup).not.toContain('data-smoke="public-hero-editorial"');
     expect(markup).not.toContain("Find it, favorite it, show it off.");
     expect(markup).not.toContain("Collector-first discovery");
@@ -318,6 +317,10 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Live show calendar.");
     expect(markup).not.toContain("Collect and show off.");
     expect(markup).not.toContain("Included tools");
+    expect(markup).not.toContain("Free or Silver account required.");
+    expect(markup).not.toContain("Create free account");
+    expect(markup).not.toContain("Free account");
+    expect(markup).not.toContain("Silver account");
     expect((markup.match(/data-tone="espresso"/g) ?? []).length).toBe(0);
     expect((markup.match(/data-tone="light"/g) ?? []).length).toBe(0);
     expect(markup).not.toContain("What Sparkle Finder helps with");
@@ -598,10 +601,11 @@ describe("Sparkle Finder hub routes", () => {
     expect(cardMarkup).toContain('loading="lazy"');
   });
 
-  it("keeps anonymous public landing gated and avoids live/demo jewelry data", () => {
+  it("keeps the anonymous coming-soon landing informational and avoids live/demo jewelry data", () => {
     const markup = renderToStaticMarkup(renderPublicHomeContent(anonymousRouteAccountState()));
 
-    expect(markup).toContain("Free or Silver account required.");
+    expect(markup).toContain("Sparkle Finder is coming soon.");
+    expect(markup).toContain("Coming soon");
     expect(markup).not.toContain("Independent discovery hub");
     expect(markup).not.toContain("Built for collectors, independently.");
     expect(markup).not.toContain("Sparkle Finder organizes the hunt");
