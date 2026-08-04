@@ -3640,3 +3640,19 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused Collection Intake, dashboard, and reviewer-smoke tests passed: 3 files, 113 tests.
 - `npm run build` passed with the active-branch safety gate, Next.js 16.2.1 production compilation, and TypeScript validation.
 - Local Browser QA reached the app but stalled at the setup-loading boundary before reviewer state resolved; no production or personal account was used as a fallback.
+# August 4, 2026 - Nic-Nac, Brianna, and public landing continuation
+
+## Completed
+
+- Restored the intended centered Nic-Nac experience after a rejected side-panel redesign; added the compact new-chat/refresh control beside the heading.
+- Re-enabled email-password sign-in in the authentication provider after production showed Email logins are disabled.
+- Reset the approved disposable demo-account password through the supported administrative path and verified a sign-in/sign-out. No secrets are stored here.
+- Configured Brianna Williams / Bri's Glowtique's grandfathered Stripe handoff ($39/month, no build fee), then simplified the account screen so Stripe remains the system of record for payments. Shared billing CTA wording is Stripe Billing and Payments; the header notifications control was removed.
+- Confirmed apparent old UI came from the legacy sparkle-suite-demo.vercel.app deployment rather than the live customer surface. The only normal review URL is https://www.yoursparklesuite.com.
+- Reworked the public landing proof using Louis-provided screenshots: Trade Board hero proof; Nic-Nac workspace proof in the Rep Workspace section; and three varied customer-site screenshots in a dedicated customization section. Iterated the screenshot deck from an overlaid stack to an intentionally open vertical cascade so all three hero treatments are legible.
+
+## Validation and release notes
+
+- Focused landing tests passed on each landing change (22 tests), and each production build passed. Local desktop screenshots were inspected for the relevant layout iterations.
+- Commits through this session's latest pushed landing adjustment: 3881da55 fix: reveal customer site proof heroes.
+- Production release verification must continue to use the exact live domain and both aliases. Authenticated reviewer smoke remains blocked by the known too-short reviewer token; do not bypass it with Louis's personal account.

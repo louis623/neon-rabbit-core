@@ -1004,3 +1004,10 @@ Moonstone's dark page background can keep light page text, but silver-pearl card
 
 **Onboarding links do not auto-publish public team cards**
 Team Management has two related but separate workflows: Start Strong onboarding access/progress/messages, and public Join Team roster cards. Creating an onboarding link should not automatically publish a rep to the customer-facing Join Team page. The team lead should explicitly save or show a Public Team Card before the rep appears publicly.
+# August 4, 2026 - Workspace and landing-page decisions
+
+- **Nic-Nac stays central.** A new conversation is an icon-level action beside the heading; it must not shrink the assistant into a sidebar or a narrow chat slice.
+- **Stripe owns payment operations.** Sparkle Suite presents the plan and one destination button, labelled Stripe Billing and Payments; it does not recreate card-on-file, invoice history, or payment-management views.
+- **Grandfathered offers are explicit account contracts.** Brianna's current presentation is $39/month with no build fee and the approved Stripe link. Do not infer a different price from general plan history.
+- **The public landing page proves configuration breadth with real examples.** Use the supplied customer-site screenshots, not generated substitutes, in a dedicated customization section. The copy promise is that reps can make the customer-facing experience fit their brand while retaining the core show, queue, trade-board, and update paths.
+- **Layered screenshot decks must be readable.** Vertical separation is a requirement, not ornament: each card needs enough exposed hero content to demonstrate that it is a distinct customer-site style.

@@ -5,6 +5,8 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Complete landing-page acceptance review** - after the latest Vercel deployment for 3881da55, review the exact live root on desktop and mobile. Confirm the customer-site screenshot deck shows readable hero content from all three cards and that Nic-Nac proof appears only in the Rep Workspace section, not over the Trade Board hero.
+
 - [x] **Simplify the shared beta workspace and add Live Queue guidance** -
   Jewelry Library now lives in Tools; Nic-Nac quick actions and preview
   controls were simplified; Team Management and Bulk Collection Intake are

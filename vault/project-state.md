@@ -10,6 +10,18 @@
 
 ---
 
+## August 4 Workspace, Billing, and Public Landing Checkpoint
+
+- Nic-Nac retains its centered, full-workspace conversation layout. The only reset control is a small new-chat/refresh icon beside the Nic-Nac heading; the rejected side-panel/chat-slice treatment is not part of the product.
+- The shared workspace header no longer shows a Notifications bell. Account billing calls-to-action use the plain label Stripe Billing and Payments.
+- Brianna Williams / Bri's Glowtique has a grandfathered account presentation: $39/month grandfathered plan - no build fee, with the approved Stripe payment link shown through the shared billing handoff. Sparkle Suite does not duplicate Stripe's card, invoice, or payment-history UI. Temporary credentials remain private and must never be placed in tracked files.
+- The old sparkle-suite-demo.vercel.app is legacy provenance only. It can legitimately show old UI; Louis reviews the single live surface at https://www.yoursparklesuite.com.
+- The public landing page now uses real product proof: Trade Board in the hero, Nic-Nac workspace proof in the Rep Workspace section, and a customer-facing-site customization section directly after the hero. The customization section uses three provided real site screenshots in a deliberately vertical cascading stack so each design's hero remains readable. The hero must not repeat the Nic-Nac overlay once that proof is used below.
+- Recent landing commits: d224bd3c, 17713c2d, c4133197, ec8ece67, 87ad21d7, e8216faf, and 3881da55. Every implementation checkpoint received focused landing tests, a production build, a Git push, and an automatic Vercel production deployment check. Preserve unrelated artifacts/ and test-results/ folders.
+- Visual-review lesson: for layered product screenshots, inspect a rendered desktop capture before release. A stacked treatment must expose meaningful content from every rear card, not merely headers or thin strips.
+
+---
+
 ## August 2 Customer-Facing Site Setup and Media Checkpoint
 
 - The workspace tool formerly called `Site Settings` is now consistently named
