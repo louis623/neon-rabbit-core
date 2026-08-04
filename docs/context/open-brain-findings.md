@@ -138,6 +138,53 @@ Key lessons:
 - Keep Supabase project-link metadata ignored, otherwise cleanup creates recurring local dirty files or loses the linked project after temp cleanup.
 - When a migration filename uses a nonstandard short timestamp, normalize it before relying on `supabase db push` as the future no-op check.
 
+## 2026-07-04 Mobile App Direction, Account Gate, And App Shell Addendum
+
+Louis reset the Sparkle Finder experience around one simple customer promise:
+
+> Find the pieces you love. Build your collection with Sparkle Finder.
+
+The prior signed-in homepage was too much like a wide web dashboard. Internal terms such as `Nic-Nac Home` and vague actions such as "Save the pieces I love" made it difficult to understand what to do first. The active product reference is the July 3 A/B/C mobile-app preview, not the older locked homepage concept.
+
+Current signed-in flow:
+
+- A is the simple Amethyst opening home: the primary action is `Find a Piece`, with clear paths to the collection and library.
+- C is the guided finding experience behind that primary action. It surfaces the next useful customer choice and puts Nic-Nac in the supporting/help role rather than making Nic-Nac a destination customers must decipher.
+- B is the Bling Vault/collection layer: profile cue, `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, `Found by Sparkle Finder`, Hero Piece, Wishlist, and the lazy-loading collection mosaic.
+- Primary navigation is `Home`, `Find`, `Collection`, `Reps`, and `Me`; the Library remains reachable through customer tasks instead of competing as a top-level conceptual mode.
+- The Reps tab is list-first, searchable, and ordered by aggregate favorite count, with compact profile treatment, state, next-show timing, View Rep links, Board links when available, and favorite-rep controls.
+
+Important implementation boundary:
+
+- This is a simplification and reorganization, not a feature removal project. Existing Finder persistence, Nic-Nac capabilities and routes, collection/Wishlist behavior, Reps, Library, Live Shows, Rep Boards, Favorites, Collectors, Silver Studio, auth/account, legal flows, and backend automations remain available.
+- Sparkle Finder remains a normal browser-based web app. App Store and Google Play distribution are future delivery channels for the same product experience, not replacements for the website.
+- The Sparkle Suite Amethyst customer-facing skin is the visual direction for both the public gate and signed-in app shell.
+
+Public access and account behavior completed:
+
+- Logged-out `/` is now a concise Amethyst account gate rather than a product-tour homepage. It presents the promise above, `Free or Silver account required.`, `Create free account`, and `Sign in`.
+- Customers must create or sign into a Free or Silver account before accessing product surfaces; signed-in users retain the app experience.
+- Signed-in desktop navigation and the mobile `Me`/Account path expose an intentional `Sign out` control. Sign-out links have prefetch disabled after smoke testing showed that prefetching a GET sign-out route could clear preview authentication before a customer clicked it.
+
+The Bling Vault correction completed after visual review:
+
+- Section 3 initially retained the obsolete wide `max-w-[112rem]` dashboard shape, which broke the A/B/C app flow even though the rest of the home was updated.
+- The section now shares the same app canvas as A and C: `max-w-[34rem]` on mobile and `lg:max-w-[56rem]` on desktop. Hero Piece, Wishlist, and mosaic stack in a single app flow; compact collection-stat panels replace the five-column dashboard row.
+- Regression coverage explicitly blocks the old `max-w-[112rem]` and `xl:grid-cols` Bling Vault pattern from returning.
+
+Verification and deployment record:
+
+- Signed-in UI alignment, Reps directory refinement, account gate, sign-out control, and Bling Vault correction were each checked with focused tests, lint, full test suite, production build, Sparkle Finder smoke suite, desktop/mobile visual review, Vercel readiness inspection, and live route checks appropriate to the change.
+- The current runtime app-layout correction is commit `521589b`, deployed as `dpl_3Dox4Dp6qvNx173ddcYoGGQi1nmy` and aliased at `https://sparkle-finder-dev.vercel.app`.
+
+Key lessons:
+
+- Treat the approved mobile preview as the visual acceptance reference. A feature-complete page can still be wrong when a later section changes the product from an app flow back into a web dashboard.
+- Customer-facing labels should state the customer's goal or next action. Preserve product names such as Nic-Nac, but do not make customers learn those names before they can start.
+- Keep one responsive app canvas across all signed-in home sections. A desktop breakpoint may add breathing room, but it should not create a different information architecture from the mobile app.
+- Verify authenticated and logged-out states separately. Visual testing that only sees one auth state can hide a missing sign-out affordance or an incorrect public landing.
+- For sign-out endpoints implemented as GET routes, disable framework link prefetch and smoke-test the rendered navigation; otherwise a visible link can unintentionally change authentication state.
+
 ## 2026-06-13 Shop Removal Addendum
 
 Louis decided Sparkle Finder should not carry a shop or paid-link storefront for now. The shop route, disclosure route, paid-link copy, Amazon program disclosure, product recommendation fixtures, and active shop docs should be removed from the current product surface.
