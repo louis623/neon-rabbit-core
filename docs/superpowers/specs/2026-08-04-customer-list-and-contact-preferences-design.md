@@ -1,7 +1,7 @@
 # Customer List and Contact Preferences Design
 
-**Status:** Proposed — ready for implementation approval  
-**Date:** August 4, 2026  
+**Status:** Proposed — ready for implementation approval
+**Date:** August 4, 2026
 **Scope:** Rep-scoped contact management, customer-site alert signup and preferences, and Nic-Nac contact actions. This release does **not** send email or SMS from Sparkle Suite.
 
 ## Decision summary
