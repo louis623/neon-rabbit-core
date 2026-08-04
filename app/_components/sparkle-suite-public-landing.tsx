@@ -32,21 +32,11 @@ function ProductHero() {
         <p>{hero.body}</p>
         <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
       </div>
-      <div className="sl2-product-stack" aria-label="Real Sparkle Suite customer site previews">
+      <div className="sl2-product-stack" aria-label="Real Sparkle Suite Trade Board preview">
         <img
-          className="sl2-shot sl2-shot--customer"
-          src={assets.customerMobile.src}
-          alt={assets.customerMobile.alt}
-        />
-        <img
-          className="sl2-shot sl2-shot--trade"
-          src={assets.customerTradeMobile.src}
-          alt={assets.customerTradeMobile.alt}
-        />
-        <img
-          className="sl2-shot sl2-shot--landing"
-          src={assets.customerDesktop.src}
-          alt={assets.customerDesktop.alt}
+          className="sl2-shot sl2-shot--trade-board-proof"
+          src={assets.tradeBoardDesktopProof.src}
+          alt={assets.tradeBoardDesktopProof.alt}
         />
       </div>
     </section>

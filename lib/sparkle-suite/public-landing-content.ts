@@ -26,17 +26,9 @@ export const sparkleSuitePublicLandingContent = {
       'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
   },
   assets: {
-    customerMobile: {
-      src: '/sparkle-suite/landing/jane-customer-home-mobile.png',
-      alt: "Jane's Sparkle Party customer site preview on mobile.",
-    },
-    customerTradeMobile: {
-      src: '/sparkle-suite/landing/jane-customer-trade-mobile.png',
-      alt: "Jane's Sparkle Party trade board preview on mobile.",
-    },
-    customerDesktop: {
-      src: '/sparkle-suite/landing/jane-customer-home-desktop.png',
-      alt: "Jane's Sparkle Party customer site preview on desktop.",
+    tradeBoardDesktopProof: {
+      src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
+      alt: 'Sparkle Suite customer Trade Board preview on desktop.',
     },
     workspaceDesktop: {
       src: '/sparkle-suite/landing/workspace-proof-desktop.png',

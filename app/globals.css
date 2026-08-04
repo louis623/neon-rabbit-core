@@ -4543,12 +4543,8 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 }
 
 .sparkle-landing-v2 .sl2-product-stack {
-  display: grid;
-  align-items: start;
-  gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: center;
   min-width: 0;
-  position: relative;
 }
 
 .sparkle-landing-v2 .sl2-shot {
@@ -4563,27 +4559,10 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   width: 100%;
 }
 
-.sparkle-landing-v2 .sl2-shot--customer {
-  aspect-ratio: 9 / 16;
-  border-radius: 24px;
-  max-height: 520px;
-  position: relative;
-  z-index: 3;
-}
-
-.sparkle-landing-v2 .sl2-shot--trade {
-  aspect-ratio: 9 / 16;
-  border-radius: 24px;
-  margin-top: 54px;
-  max-height: 520px;
-  z-index: 2;
-}
-
-.sparkle-landing-v2 .sl2-shot--landing {
-  display: none;
+.sparkle-landing-v2 .sl2-shot--trade-board-proof {
+  aspect-ratio: 1283 / 942;
   border-radius: 20px;
-  width: min(100%, 640px);
-  z-index: 1;
+  width: 100%;
 }
 
 .sparkle-landing-v2 .sl2-workspace-proof {
@@ -5277,41 +5256,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   }
 
   .sparkle-landing-v2 .sl2-product-stack {
-    align-items: center;
-    gap: 0;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-template-rows: repeat(10, minmax(42px, auto));
-    min-height: 600px;
-  }
-
-  .sparkle-landing-v2 .sl2-shot--customer {
-    align-self: start;
-    grid-column: 1 / span 4;
-    grid-row: 1 / span 7;
-    justify-self: start;
-    max-height: none;
-    max-width: 230px;
-    transform: translate(6px, 18px);
-  }
-
-  .sparkle-landing-v2 .sl2-shot--trade {
-    align-self: end;
-    grid-column: 9 / span 4;
-    grid-row: 4 / span 7;
-    justify-self: end;
-    margin-top: 0;
-    max-height: none;
-    max-width: 226px;
-    transform: translate(-4px, -12px);
-  }
-
-  .sparkle-landing-v2 .sl2-shot--landing {
-    align-self: center;
-    display: block;
-    grid-column: 3 / span 8;
-    grid-row: 2 / span 8;
-    justify-self: center;
-    width: min(100%, 620px);
+    width: min(100%, 720px);
   }
 
   .sparkle-landing-v2 .sl2-workspace-proof {

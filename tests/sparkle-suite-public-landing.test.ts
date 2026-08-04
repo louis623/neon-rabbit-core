@@ -61,17 +61,9 @@ describe('Sparkle Suite public landing page', () => {
     ])
 
     expect(sparkleSuitePublicLandingContent.assets).toEqual({
-      customerMobile: {
-        src: '/sparkle-suite/landing/jane-customer-home-mobile.png',
-        alt: "Jane's Sparkle Party customer site preview on mobile.",
-      },
-      customerTradeMobile: {
-        src: '/sparkle-suite/landing/jane-customer-trade-mobile.png',
-        alt: "Jane's Sparkle Party trade board preview on mobile.",
-      },
-      customerDesktop: {
-        src: '/sparkle-suite/landing/jane-customer-home-desktop.png',
-        alt: "Jane's Sparkle Party customer site preview on desktop.",
+      tradeBoardDesktopProof: {
+        src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
+        alt: 'Sparkle Suite customer Trade Board preview on desktop.',
       },
       workspaceDesktop: {
         src: '/sparkle-suite/landing/workspace-proof-desktop.png',
@@ -157,7 +149,7 @@ describe('Sparkle Suite public landing page', () => {
     )
     expect(html).toContain('Sparkle Suite Standard')
     expect(html).not.toContain('aria-label="Included in Sparkle Suite"')
-    expect(html).toContain('Real Sparkle Suite customer site previews')
+    expect(html).toContain('Real Sparkle Suite Trade Board preview')
     expect(html).toContain('Real Sparkle Suite workspace previews')
     expect(html).toContain('$49.99')
     expect(html).toContain('$74.99/month')
@@ -201,7 +193,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('TikTok')
   })
 
-  it('uses local product screenshot assets for customer-site and workspace proof', () => {
+  it('uses local product screenshot assets for Trade Board and workspace proof', () => {
     const html = renderLanding()
     const assets = Object.values(sparkleSuitePublicLandingContent.assets)
 
@@ -476,10 +468,9 @@ describe('Sparkle Suite public landing page', () => {
     expect(css).toContain('.sparkle-landing-v2 .sl2-hero h1 {')
     expect(css).toContain('font-size: clamp(3.4rem, 18vw, 5.2rem);')
     expect(css).toContain('.sparkle-landing-v2 .sl2-product-stack {')
-    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));')
+    expect(css).toContain('.sparkle-landing-v2 .sl2-shot--trade-board-proof {')
     expect(css).toContain('@media (min-width: 980px)')
     expect(css).toContain('grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);')
-    expect(css).toContain('grid-template-columns: repeat(12, minmax(0, 1fr));')
     expect(css).toContain('background: linear-gradient(145deg, #402924 0%, #36221d 100%);')
     expect(css).toContain('color: #f6e7da;')
     expect(css).toContain('.sparkle-landing-v2 .sl2-pricing .sl2-eyebrow {')
