@@ -21,14 +21,9 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone()
   url.pathname = publicAssetPath
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-sparkle-customer-site-path', request.nextUrl.pathname)
+  url.searchParams.set('__sparkle_customer_site_path', request.nextUrl.pathname)
 
-  return NextResponse.rewrite(url, {
-    request: {
-      headers: requestHeaders,
-    },
-  })
+  return NextResponse.rewrite(url)
 }
 
 export const config = {

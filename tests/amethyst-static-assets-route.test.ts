@@ -70,9 +70,9 @@ describe('Amethyst static asset route', () => {
 
   it('uses the public custom-domain path for canonicals after a customer-site proxy rewrite', async () => {
     const response = await GET(
-      new Request('https://sparklebysasha.example/amethyst/Trade.html', {
-        headers: { 'x-sparkle-customer-site-path': '/trade' },
-      }),
+      new Request(
+        'https://sparklebysasha.example/amethyst/Trade.html?__sparkle_customer_site_path=%2Ftrade',
+      ),
       { params: Promise.resolve({ asset: ['Trade.html'] }) },
     )
     const html = await response.text()

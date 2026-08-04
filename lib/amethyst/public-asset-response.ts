@@ -229,7 +229,9 @@ const CUSTOMER_SITE_CANONICAL_PATHS = new Set([
 function getCustomDomainCanonicalPath(request: Request) {
   if (!resolveAmethystRequestCustomDomainHost(request)) return null
 
-  const path = request.headers.get('x-sparkle-customer-site-path')
+  const path = new URL(request.url).searchParams.get(
+    '__sparkle_customer_site_path',
+  )
   return path && CUSTOMER_SITE_CANONICAL_PATHS.has(path) ? path : null
 }
 
@@ -359,12 +361,10 @@ function rewriteTemplateScriptTarget(
 }
 
 function rewriteAmethystStaticAssetUrls(html: string) {
-  return html.replace(
-    /\b(href|src)="(?!https?:\/\/|\/|#)([^"?]+\.(?:css|jsx?))(\?[^"]*)?"/g,
-    (_match, attribute: string, assetPath: string, query = '') => {
-      if (!AMETHYST_ASSETS.has(assetPath)) return `${attribute}="${assetPath}"`
-      return `${attribute}="/amethyst/${assetPath}${query}"`
-    },
+  return Array.from(AMETHYST_ASSETS).reduce(
+    (rewritten, assetPath) =>
+      rewritten.replaceAll(`="${assetPath}`, `="/amethyst/${assetPath}`),
+    html,
   )
 }
 
