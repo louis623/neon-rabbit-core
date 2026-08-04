@@ -30,6 +30,10 @@ export const sparkleSuitePublicLandingContent = {
       src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
       alt: 'Sparkle Suite customer Trade Board preview on desktop.',
     },
+    nicNacWorkspaceProof: {
+      src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
+      alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
+    },
     workspaceDesktop: {
       src: '/sparkle-suite/landing/workspace-proof-desktop.png',
       alt: 'Sparkle Suite workspace setup checklist preview.',

@@ -65,6 +65,10 @@ describe('Sparkle Suite public landing page', () => {
         src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
         alt: 'Sparkle Suite customer Trade Board preview on desktop.',
       },
+      nicNacWorkspaceProof: {
+        src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
+        alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
+      },
       workspaceDesktop: {
         src: '/sparkle-suite/landing/workspace-proof-desktop.png',
         alt: 'Sparkle Suite workspace setup checklist preview.',
@@ -149,7 +153,7 @@ describe('Sparkle Suite public landing page', () => {
     )
     expect(html).toContain('Sparkle Suite Standard')
     expect(html).not.toContain('aria-label="Included in Sparkle Suite"')
-    expect(html).toContain('Real Sparkle Suite Trade Board preview')
+    expect(html).toContain('Real Sparkle Suite product previews')
     expect(html).toContain('Real Sparkle Suite workspace previews')
     expect(html).toContain('$49.99')
     expect(html).toContain('$74.99/month')
@@ -469,6 +473,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(css).toContain('font-size: clamp(3.4rem, 18vw, 5.2rem);')
     expect(css).toContain('.sparkle-landing-v2 .sl2-product-stack {')
     expect(css).toContain('.sparkle-landing-v2 .sl2-shot--trade-board-proof {')
+    expect(css).toContain('.sparkle-landing-v2 .sl2-shot--nic-nac-workspace-proof {')
     expect(css).toContain('@media (min-width: 980px)')
     expect(css).toContain('grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);')
     expect(css).toContain('background: linear-gradient(145deg, #402924 0%, #36221d 100%);')
